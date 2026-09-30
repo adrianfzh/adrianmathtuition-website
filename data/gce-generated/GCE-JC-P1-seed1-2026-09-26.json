@@ -1,0 +1,2059 @@
+{
+ "key": "GCE-JC-P1",
+ "seed": 1,
+ "set": 1,
+ "variety": true,
+ "models": {
+  "author": "opus (Claude Code agent)",
+  "solver": "opus (Claude Code agent)",
+  "moderator": "fable (Claude Code agent)",
+  "figure": "opus (Claude Code agent)"
+ },
+ "earlier_sets": [],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "setLevel": "JC",
+  "exam": "A-Level",
+  "cut": 2017,
+  "duration": "3 hours",
+  "standardYears": "2022–2024",
+  "additional": "List of Formulae (MF26)",
+  "sections": {
+   "a": "Section A: Pure Mathematics [40 marks]",
+   "b": "Section B: Probability and Statistics [60 marks]"
+  },
+  "excludeTopics": [
+   "Distributions (Poisson)",
+   "Mathematical Induction"
+  ],
+  "figures": "an Argand diagram, a curve sketch with its asymptotes, a region to be rotated, a 3-D configuration for a vector question, a scatter diagram, a normal curve, a tree diagram, a printed table of data",
+  "notation": "H2 notation: \\mathrm{f}: x \\mapsto \\ldots, \\mathrm{f}^{-1}, \\mathrm{fg}, column vectors \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} (also \\mathbf{i}, \\mathbf{j}, \\mathbf{k}), \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}, \\mathbf{r} \\cdot \\mathbf{n} = d, \\mathbf{a} \\times \\mathbf{b}, z^{*}, \\arg z, \\sum_{r=1}^{n}, u_n and S_n, \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0 and \\mathrm{H}_1, \\mathrm{P}(A \\mid B), \\mathrm{e}^{x}.",
+  "scope": "PURE MATHEMATICS (all of Paper 1; Section A of Paper 2). Functions: domain and range, one-one functions and inverses (restricting a domain so that an inverse exists; the graph of f^{-1} as the reflection of f in y = x; the domain of f^{-1} is the range of f), composite functions and the condition for fg to exist, repeated composition (f^2, f^{2025}(x) by finding the pattern); NOT (fg)^{-1} = g^{-1}f^{-1}, NOT restricting a domain to make a composite exist. Graphs and transformations: sketching y = (ax+b)/(cx+d) and y = (ax^2+bx+c)/(dx+e) with their asymptotes (vertical, horizontal, oblique), intercepts, turning points and symmetry; y^2 = ax, x^2 = by, the ellipse x^2/a^2 + y^2/b^2 = 1 and the hyperbolas x^2/a^2 - y^2/b^2 = 1, y^2/b^2 - x^2/a^2 = 1; the transformations y = af(x), y = f(x) + a, y = f(x + a), y = f(ax) and combinations described as a SEQUENCE (order matters); the graphs of y = |f(x)|, y = f(|x|) and y = 1/f(x) from y = f(x); simple parametric curves and their sketches. Equations and inequalities: formulating an equation, a system of linear equations (solved on the graphing calculator) or an inequality from a situation; solving an equation exactly or numerically; inequalities f(x)/g(x) > 0 with linear or quadratic f and g by a sign test, never by cross-multiplying; the modulus and |x - a| < b <=> a - b < x < a + b, |x - a| > b <=> x < a - b or x > a + b; solving an inequality from a sketch, and a related inequality by a substitution (x -> |x|, x -> e^x) into one already solved. Sequences and series: a sequence as a function of n, the relation u_n = S_n - S_{n-1}, sequences given by a formula or by a recurrence u_{n+1} = f(u_n) (generating terms, a limit L satisfying L = f(L) when the sequence converges, the behaviour read from a graph or a table), sum and difference of two series, convergence of a series and the sum to infinity, arithmetic and geometric series (nth term, sum to n terms, the condition |r| < 1 for convergence, the sum to infinity), finance and other models built on them (savings with increasing deposits, a loan with monthly interest and repayments, a bouncing ball); NOT the method of differences (removed in the revised 9758 — never set a telescoping sum; a sum whose result is GIVEN may be used for a change of variable), NOT mathematical induction. Vectors: 2-D and 3-D vectors, position, displacement and direction vectors, magnitude, unit vectors, distance between points, collinearity, the ratio theorem (a point dividing a line in a given ratio, midpoints), the scalar product (angle between vectors, a . n-hat as a length of projection, perpendicularity), the vector product (area of a triangle or parallelogram, |a x n-hat| as a perpendicular distance, a normal to a plane); vector and cartesian equations of lines and of planes (r . n = d, r = a + lambda b + mu c, cartesian); the foot of the perpendicular from a point to a line or a plane and the distance, the reflection of a point in a line or a plane; the angle between two lines, a line and a plane, two planes; the relationship between two lines (intersecting, parallel, skew), a line and a plane (meets in a point, lies in it, parallel to it), two planes (the line of intersection); problems in a stated 3-D situation (an aircraft path, a pipeline under a plane of rock); NOT the shortest distance or common perpendicular between two skew lines, NOT triple products. Complex numbers: extending the number system, complex roots of a quadratic, conjugate roots of a polynomial equation with real coefficients (and using them to find unknown real coefficients or the remaining root), modulus, argument (principal, in (-pi, pi]) and conjugate, the four operations in cartesian form, equality of complex numbers (a pair of simultaneous equations in z and w solved by elimination or by comparing real and imaginary parts), the Argand diagram, the geometrical effect of conjugation, negation, addition, subtraction and multiplication by i (a rotation through a right angle); NOT polar or modulus-argument form, NOT exponential form r e^{i theta}, NOT de Moivre, NOT loci. Differentiation: the sign of f' and f'' read from and drawn on a graph, the graph of y = f'(x) from y = f(x), implicit and parametric differentiation, the nature of stationary points by the first or second derivative test, tangents and normals (including to implicit and parametric curves, and where a tangent meets the curve again or passes through a given point), maxima and minima in a modelled situation (an area, a volume, a cost) with the maximum shown to be one, connected rates of change (a bowl filling, a ladder, a shadow); NOT non-stationary points of inflexion, NOT the second derivative of a parametric curve. Maclaurin series: the standard series for (1+x)^n with rational n, e^x, sin x, cos x, ln(1+x) with their ranges of validity (all in MF26), the first terms of a series by repeated differentiation (also from a differential relation such as dy/dx = k e^x (1 + y^2), differentiating that relation again), by repeated implicit differentiation, or by multiplying and substituting standard series (e^x cos 2x, ln((1+x)/(1-x)), (1+x)^n with a non-integer n, tan^{-1}(sqrt 2 + x) via its derivatives), the series as an approximation (an integral estimated from its first terms, a value of pi or ln 2), small-angle approximations sin x ~ x, cos x ~ 1 - x^2/2, tan x ~ x; NOT the general term. Integration techniques: f'(x)[f(x)]^n (n = -1 included), f'(x) e^{f(x)}, sin^2 x, cos^2 x, tan^2 x and products of sines and cosines via the factor formulae, the four standard forms 1/(x^2 + a^2), 1/sqrt(a^2 - x^2), 1/(x^2 - a^2), 1/(a^2 - x^2) (results in MF26), partial fractions, integration by a GIVEN substitution (including a trigonometric one for sqrt(a^2 - x^2)), integration by parts (including ln x, x^2 e^x, e^x sin x by two rounds), a modulus integrand split at its zero; NOT reduction formulae. Definite integrals: the integral as a limit of a sum, area under and between curves and lines (regions below the x-axis, areas against the y-axis, a parametric curve via integral y (dx/dt) dt), volumes of revolution about the x-axis or the y-axis (a cartesian curve, a region between two curves, a spherical cap or a bowl), exact values by hand where asked and numerical values from the graphing calculator otherwise; NOT the volume of revolution of a parametric curve. Differential equations: general and particular solutions of dy/dx = f(x) g(y) by separating variables, including reducing an equation to that form by a GIVEN substitution, second-order equations of the form d^2y/dx^2 = f(x) or a first-order equation in v = dx/dt by direct integration, formulating an equation from a situation (rate of change proportional to the amount, rate in minus rate out, a logistic-type dP/dt = kP(N - P), Newton cooling, a falling parachutist), interpreting the solution and its long-term behaviour, sketching the solution curve. PROBABILITY AND STATISTICS (Section B of Paper 2 only). Probability and counting: the addition and multiplication principles, permutations and combinations, arrangements in a line or a circle with repetition and restrictions (identical objects, objects together, objects separated), selection of committees with conditions; addition and multiplication of probabilities, mutually exclusive and independent events (tested numerically), tables of outcomes, Venn diagrams, tree diagrams and counting methods for probabilities, conditional probability P(A|B) = P(A and B)/P(B), P(A or B) = P(A) + P(B) - P(A and B), games with turns and geometric-series probabilities, probabilities in terms of an unknown n or p. Discrete random variables: a probability distribution from a table, expectation and variance from it, E(aX + b) and Var(aX + b); the binomial distribution B(n, p) as a model with its two conditions stated in context (independent trials, a constant probability), its mean np and variance np(1 - p), probabilities and cumulative probabilities from the graphing calculator, the most likely value, a binomial on top of a binomial (the number of days on which an event happens), the range of p from a modal value; NOT cumulative distribution functions, NOT the Poisson distribution (removed from 9758), NOT the geometric distribution, NOT the normal approximation to the binomial. Normal distribution: N(mu, sigma^2) as a model, the standard normal, probabilities and inverse probabilities from the graphing calculator, the symmetry of the curve (drawn with its main features), finding mu and/or sigma from one or two given probabilities (standardising and solving), E and Var of aX + b and of aX + bY with X and Y independent (the sum of n independent copies X_1 + ... + X_n against the multiple nX; the difference of two totals; a percentage reduction as a scaling), the mass exceeded by a given percentage; NOT the normal approximation to the binomial. Sampling: population and simple random sample, why and how a random sample is taken and what makes one unsuitable, the sample mean as a random variable with E(X-bar) = mu and Var(X-bar) = sigma^2/n, its distribution from a normal population, the Central Limit Theorem for a large sample from any population (n >= 30 as the rule of thumb), unbiased estimates of the population mean and variance from raw data or from summarised data (sum x and sum x^2, or sum (x - a) and sum (x - a)^2). Hypothesis testing: null and alternative hypotheses stated with the parameter defined, the test statistic, critical region and critical value, level of significance and p-value, a test of a population mean from a normal population with known variance or from a large sample (a z-test), one-tail and two-tail tests and the reason for the choice, the conclusion in the context of the question, the assumptions a test needs, the range of a significance level or of a variance consistent with a stated conclusion; NOT the terms Type I and Type II error, NOT a test of the difference of two means, NOT a t-test. Correlation and linear regression: a scatter diagram and what it shows, the product moment correlation coefficient as a measure of linear fit and its interpretation (values near -1, 0 and 1; unaffected by a change of units), the least-squares regression line (the meaning of the residuals and of least squares; y on x, and x on y, and which to use), interpolation and extrapolation and the reliability of an estimate, a square, reciprocal, logarithmic or other transformation to achieve linearity and the choice between candidate models by comparing r; NOT deriving the formulae, NOT r^2 = b_1 b_2, NOT hypothesis tests on r. ASSUMED KNOWLEDGE (O-Level A Math): quadratics and the discriminant, surds, polynomials and partial fractions, binomial theorem for a positive integer index, indices and logarithms, trigonometric identities and the R-formula, the sine and cosine rules, basic differentiation and integration.",
+  "register": "REGISTER — how SEAB asks (9758)\n- Plain, exact, economical English. Every part is an imperative: Find, Show that, Hence (or Hence, or otherwise), Deduce, State, Sketch, Explain (why / whether / how you know / in context), Determine (whether / the possible values), Verify, Use … to …, Write down, Solve, Express, Describe (a sequence of transformations; the set of points; the relationship), Justify your answer, Give a reason, Suggest.\n- Parts are (a), (b), (c) with sub-parts (i), (ii); every leaf part carries its marks in [ ]; a 3–6 mark question may be unparted. The parts of a long question BUILD: an early \"Show that\" prints the result the later parts need, and \"Hence\", \"Using the result in part (b)\" or \"Use your answer to part (c)(i)\" says so.\n- Precision is stated when it matters: \"giving your answer in exact form\", \"in the form a + ib where a and b are real numbers\", \"correct to 3 significant figures\", \"in terms of p\", \"to the nearest cent\", \"correct to 2 decimal places\", \"as a single simplified fraction\"; otherwise the rubric's 3 s.f. applies and nothing is said. \"Find exactly\", \"Find the exact value\" and \"Solve exactly\" forbid a decimal; \"Use calculus\", \"Using calculus\", \"By integration\" and \"Show by integration\" forbid a calculator read-off; \"Do not use a calculator in answering this question.\" opens a whole question (a complex-number question, an exact-integral question, an exact inequality); \"Without using a calculator\" opens a part. Section B says \"State the distribution you use\", \"In this question you should state the parameters of any distributions you use\", \"Define any symbols you use\", \"Give your conclusion in the context of the question\".\n- The graphing calculator is assumed. Numerical roots, definite integrals, the regression constants, r, binomial and normal probabilities and inverse-normal values are READ from it and the question asks only for the value — a question that wants the working says so. Where a graph is used to find a solution the candidate sketches it. Unsupported calculator answers earn no method marks, so a 4-mark part is never a single calculator read.\n- Notation is the syllabus's: \\mathrm{f}: x \\mapsto \\frac{ax+k}{x-a}, x \\in \\mathbb{R}, x \\neq a; \\mathrm{f}(x), \\mathrm{f}^{-1}, \\mathrm{fg}, \\mathrm{f}^2; \\frac{\\mathrm{d}y}{\\mathrm{d}x}, \\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2}, \\int \\ldots \\,\\mathrm{d}x; \\sum_{r=1}^{n}; u_n and S_n; column vectors and \\mathbf{i}, \\mathbf{j}, \\mathbf{k}; \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}; \\mathbf{r} \\cdot \\mathbf{n} = d; the cartesian line \\frac{x+2}{3} = \\frac{y-1}{2} = z - 5; z^{*}, |z|, \\arg z; \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0: \\mu = 17.3, \\mathrm{P}(A \\mid B). Angles in radians unless degrees are named; \\mathrm{e}^{x}, \\ln x, \\mathrm{i} upright.\n- Contexts are brief, concrete and self-contained; they carry the numbers the model needs and nothing more (a pipeline under a river, an ornament cut from a sphere, a parachutist, a roller-coaster loop, savings then a loan, a company's two machines, a swimmer's times, a bird feeder, a quality-control sample). Units are given; constants are named (\"where k is a positive constant\", \"where \\alpha is a constant\"). No story, no chattiness, no names beyond one or two.\n- Paper 1 opens with 4–6-mark questions (a system of equations, an inequality, a vector fact, a complex-number question, a short sequence question) and climbs to two or three 12–15-mark closers — a differential-equation model, a vector problem in a stated 3-D situation, a finance question on arithmetic and geometric series, a parametric or graph model, a functions question with several parts — with one question that \"may require concepts and skills from more than one topic\" in a real-world context. Paper 2 Section A is four (occasionally five) pure questions of 6–13 marks; Section B climbs from a 5–6-mark probability or counting starter through binomial, normal, sampling and hypothesis-testing questions to a 12–17-mark closer, usually the regression or the normal-plus-test question, set in a real-world context.\n- Section B asks for words as often as numbers: \"State, in context, two assumptions needed for X to be well modelled by a binomial distribution\", \"Explain whether … should use a one-tailed or a two-tailed test\", \"State hypotheses for the test, defining any parameters you use\", \"give your conclusion in the context of the question\", \"Explain whether your estimate is reliable\", \"Explain what the scatter diagram tells you about the relationship\", \"Explain whether the 65 members comprise a sample or a population\", \"Explain why it is reasonable to assume that the two distributions are independent\". A 1-mark explain part expects one sentence with the reason in it; a 2-mark one, two distinct points.\n- Marks follow the work at about 1.8 minutes a mark (100 marks in 3 hours). 1–2 marks: state / write down / one deduction / one calculator value. 3–4: one standard routine, or a routine with one decision. 5–6: a routine with a decision and a second idea, a model built from the situation, or a proof. 7 or more in ONE part is rare and needs a chain (a differential equation solved from a substitution to a particular solution; a regression model chosen, fitted and used). Marks climb through each paper and through each section."
+ },
+ "paperNo": 1,
+ "total": 100,
+ "sections": null,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-09-26T22:51:49.458Z",
+ "topicList": [
+  "APGP",
+  "Binomial Expansion",
+  "Complex Numbers",
+  "Differentiation (Concavity)",
+  "Differentiation (Maclaurin Series)",
+  "Differentiation (Maximum and Minimum)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Techniques)",
+  "Equations",
+  "Functions",
+  "Graphing Techniques",
+  "Inequalities",
+  "Integration (Area and Volume)",
+  "Integration (Differential Equations)",
+  "Integration (Techniques)",
+  "Parametric Equations",
+  "Series and Sequences",
+  "Vectors",
+  "Distributions (Binomial)",
+  "Distributions (DRV)",
+  "Distributions (Normal)",
+  "Distributions (Sampling)",
+  "Hypothesis Testing",
+  "Linear Regression",
+  "Permutations and Combinations",
+  "Probability",
+  "Sampling Methods"
+ ],
+ "must_appear": [
+  "APGP",
+  "Complex Numbers",
+  "Integration (Differential Equations)",
+  "Vectors"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Series and Sequences",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.306
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.143
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.102
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.102
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.102
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.061
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.061
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.051
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.041
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.031
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "APGP",
+   "target": 5,
+   "marks": [
+    3,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Equations",
+     "weight": 0.197
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.132
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.124
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.116
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.083
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.083
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.083
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.066
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.05
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.041
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.025
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Differentiation (Techniques)",
+   "target": 6,
+   "marks": [
+    4,
+    7
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.17
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.172
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.14
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.108
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.108
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.097
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.065
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.054
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.043
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.043
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Complex Numbers",
+   "target": 8,
+   "marks": [
+    6,
+    10
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.219
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.198
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.187
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.132
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.132
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.055
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.044
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.033
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 8,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.215
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.189
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.135
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.108
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.081
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.068
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.068
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.054
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.041
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.041
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Graphing Techniques",
+   "target": 8,
+   "marks": [
+    6,
+    9
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.232
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.162
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.113
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.099
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.099
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.092
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.07
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.07
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.042
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.021
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Differentiation (Maclaurin Series)",
+   "target": 9,
+   "marks": [
+    7,
+    11
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.217
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.174
+    },
+    {
+     "topic": "Binomial Expansion",
+     "weight": 0.109
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.109
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.109
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.109
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.054
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.043
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.043
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.033
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Differentiation (Tangents and Normals)",
+   "target": 11,
+   "marks": [
+    8,
+    14
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "APGP",
+     "weight": 0.233
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.209
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.174
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.174
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.07
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.058
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.047
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.035
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Integration (Techniques)",
+   "target": 13,
+   "marks": [
+    10,
+    14
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.208
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.184
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.142
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.113
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.113
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.071
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.057
+    },
+    {
+     "topic": "Binomial Expansion",
+     "weight": 0.035
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.028
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.028
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.021
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Integration (Differential Equations)",
+   "target": 13,
+   "marks": [
+    12,
+    14
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.548
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.26
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.055
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.055
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.041
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.041
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Vectors",
+   "target": 14,
+   "marks": [
+    10,
+    16
+   ],
+   "parts": [
+    3,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.246
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.182
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.182
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.078
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.078
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.078
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.078
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.039
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.039
+    }
+   ]
+  }
+ ],
+ "title": "H2 Mathematics · Set 1 · Paper 1 · A-Level format",
+ "assembled_at": "2026-09-27T00:24:04.781Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Series and Sequences",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "A sequence $u_1, u_2, u_3, \\ldots$ is defined by\n$u_1 = a$ and $u_{n+1} = u_n^{2} - 6$ for $n \\geqslant 1$,\nwhere $a$ is a constant.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "It is given that $u_3 = u_1$ and that the sequence is not constant. Find the possible values of $a$, giving your answers in exact form.",
+      "marks": 3,
+      "answer": "$a = \\frac{-1 + \\sqrt{21}}{2}$ or $a = \\frac{-1 - \\sqrt{21}}{2}$"
+     },
+     {
+      "label": "(b)",
+      "text": "It is now given that $a > 0$. Find the exact value of $\\sum_{r=1}^{25} u_r$.",
+      "marks": 2,
+      "answer": "$\\frac{\\sqrt{21} - 25}{2}$"
+     }
+    ],
+    "answer": "(a) $a = \\frac{-1 \\pm \\sqrt{21}}{2}$; (b) $\\frac{\\sqrt{21} - 25}{2}$",
+    "total_marks": 5,
+    "topics": [
+     "Series and Sequences"
+    ],
+    "skills": [
+     "period-2 condition $u_3 = u_1$ on a quadratic recurrence, with the constant sequences (fixed points $L = L^2 - 6$) recognised as a factor and rejected",
+     "exact sum of a period-2 sequence over an odd number of terms"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $u_2 = a^2 - 6$ and $u_3 = (a^2 - 6)^2 - 6 = a^4 - 12a^2 + 30$.\n$u_3 = u_1 \\Rightarrow a^4 - 12a^2 - a + 30 = 0$.\nThe sequence is constant exactly when $u_2 = u_1$ (then every later term is the same), i.e. $a^2 - 6 = a$, $a^2 - a - 6 = 0$, $(a - 3)(a + 2) = 0$, $a = 3$ or $a = -2$. A constant sequence also has $u_3 = u_1$, so $a = 3$ and $a = -2$ are roots of the quartic and $a^2 - a - 6$ is a factor:\n$a^4 - 12a^2 - a + 30 = (a^2 - a - 6)(a^2 + a - 5)$.\n(Check: $(a^2 - a - 6)(a^2 + a - 5) = a^4 + a^3 - 5a^2 - a^3 - a^2 + 5a - 6a^2 - 6a + 30 = a^4 - 12a^2 - a + 30$.)\nThe sequence is not constant, so $a \\neq 3$ and $a \\neq -2$ (rejected: they give $u_2 = u_1$). Hence $a^2 + a - 5 = 0$,\n$a = \\frac{-1 \\pm \\sqrt{1 + 20}}{2} = \\frac{-1 \\pm \\sqrt{21}}{2}$.\n(For these values $u_2 = a^2 - 6 = (5 - a) - 6 = -1 - a$, which differs from $a$ since $a \\neq -\\frac{1}{2}$, so the sequence is indeed not constant.)\n\n(b) $a > 0 \\Rightarrow a = \\frac{-1 + \\sqrt{21}}{2}$.\nSince $a^2 = 5 - a$, $u_2 = a^2 - 6 = -1 - a = \\frac{-1 - \\sqrt{21}}{2}$, and $u_3 = u_1$, so the terms alternate: $u_r = a$ for odd $r$ and $u_r = -1 - a$ for even $r$. Each consecutive pair sums to $u_1 + u_2 = a + (-1 - a) = -1$.\n$\\sum_{r=1}^{25} u_r = 12(u_1 + u_2) + u_{25} = 12(-1) + a = -12 + \\frac{-1 + \\sqrt{21}}{2} = \\frac{\\sqrt{21} - 25}{2}$ $(\\approx -10.2)$.\n(A calculator iteration from a rounded $a$ is useless here: the 2-cycle is unstable and rounding error grows by a factor of about 20 every two terms, so the exact periodic argument is required.)",
+    "syllabus_check": "9758 (revised): a sequence generated by a recurrence $u_{n+1} = \\mathrm{f}(u_n)$ — the new syllabus item — its behaviour (constant, periodic), terms generated from a constant, and $\\sum$ notation for a sum of terms. Factorising a quartic with a known quadratic factor is assumed O-Level knowledge (polynomials, factor theorem). No method of differences, no induction, no AP or GP (Q2 owns those), no calculator ban needed.",
+    "originality_note": "New question. Unlike GCE 2025 P1 Q1 (a LINEAR recurrence, terms in terms of $a$ then a given sum fixing $a$), the constant here comes from a PERIODICITY condition on a quadratic recurrence, the decision is to recognise that the constant sequences (the fixed points $3$ and $-2$) also satisfy $u_3 = u_1$ and must be removed as a factor and rejected, and the sum is found afterwards from the 2-cycle with an odd count of terms. Unlike GCE 2012 P1 Q3 there is no limit and no induction; unlike GCE 2022 P1 Q6(d) the period-2 behaviour is a sequence property found from an equation, not a self-inverse function. No earlier Set exists and no other slot of this paper is written yet."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q1",
+     "jaccard": 0.181,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-09-26T22:51:49.595Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = (-1 + √21)/2 or a = (-1 - √21)/2  [from a^4 - 12a^2 - a + 30 = (a^2 - a - 6)(a^2 + a - 5) = 0; a = 3, -2 rejected as they give a constant sequence]",
+     "(b)": "(√21 - 25)/2  [terms alternate a, -1-a; sum = 13a + 12(-1-a) = a - 12]"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give a = (-1 + √21)/2 or (-1 - √21)/2. Verified: u3 = a^4 - 12a^2 + 30, so u3 = u1 gives a^4 - 12a^2 - a + 30 = 0; the constant sequences are the fixed points a^2 - a - 6 = 0 (a = 3, -2), both roots of the quartic, and (a^2 - a - 6)(a^2 + a - 5) expands back correctly. 'Not constant' rejects exactly a = 3 and a = -2; for the surviving roots u2 = -1 - a ≠ a since a ≠ -1/2, so they are genuine 2-cycles."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give (√21 - 25)/2. Verified: a > 0 selects a = (-1 + √21)/2; u2 = a^2 - 6 = (11 - √21)/2 - 6 = (-1 - √21)/2 (the other root of a^2 + a - 5 = 0), the sequence has period 2, and 13 odd-indexed terms plus 12 even-indexed terms give 13a + 12(-1 - a) = a - 12 = (√21 - 25)/2."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on both parts and both are right; I re-derived the quartic, its factorisation, the rejection of the two constant sequences and the 25-term sum independently.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register: 'It is given further that a > 0' → 'It is now given that a > 0' (the SEAB form: GCE 2022 P1 Q10(b), GCE 2024 P1 Q12(d)).",
+     "Register: 'Find the exact possible values of a' → 'Find the possible values of a, giving your answers in exact form' (or 'Find the exact values of a'); SEAB does not put 'exact' before 'possible'."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "At the 2022–2024 Q1 weight: the idea in (a) is supplied by the candidate — the fixed points a = 3, -2 also satisfy u3 = u1 and must be recognised and rejected for the reason the question gives ('not constant'), which reduces the quartic to a^2 + a - 5 = 0 (a root rejected for a reason from the question, cf. GCE 2024 P1 Q5(b)); (b) is a 2-mark consequence read exactly (the 2-cycle paired off, 13 odd terms against 12 even, in the manner of GCE 2022 P1 Q6(d)) and is GC-proof because the cycle is unstable, so 'exact' is earned not decorative. Numbers are clean (√21), the marks match the work, it is finishable in nine minutes, it fills the revised syllabus's recurrence slot, and it is not a re-skin of GCE 2025 P1 Q1 (linear recurrence, a found from a sum) or of any 2022–2024 question; the skills phrases are true and specific; gates all passed. Only the two register edits keep it from a 5. Note for assembly, not a defect of this slot: Q1(b) and Q2 both hinge on the parity of n, though the skills differ (a 2-cycle over an odd count vs the sign of r^n for r < 0)."
+   },
+   "exemplars": [
+    {
+     "id": "9d70caf8-0473-436c-b667-1cd5105f405c",
+     "ref": "GCE 2025 P1 Q1"
+    },
+    {
+     "id": "ed43d27e-6372-473d-8f12-7cadb591a7ea",
+     "ref": "GCE 2023 P1 Q2"
+    },
+    {
+     "id": "b17b9afc-2e10-4fae-bfed-53cfee8db44b",
+     "ref": "GCE 2019 P1 Q6"
+    },
+    {
+     "id": "84a5b21a-9c50-4e30-87de-f0a53f3fef85",
+     "ref": "GCE 2021 P1 Q5"
+    },
+    {
+     "id": "933b7e21-9efc-4dad-b526-ea377299aa2f",
+     "ref": "GCE 2024 P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "APGP",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "An arithmetic series has first term $a$ and common difference $d$. The sum of the first $m$ terms of the series is equal to the sum of the first $n$ terms, where $m$ and $n$ are positive integers and $m \\neq n$. Show that the sum of the first $(m+n)$ terms of the series is zero.",
+      "marks": 2,
+      "answer": "$(m-n)\\left[2a+(m+n-1)d\\right]=0$ and $m \\neq n$, so $2a+(m+n-1)d=0$ and $S_{m+n}=\\frac{m+n}{2}\\left[2a+(m+n-1)d\\right]=0$ (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "A geometric series has first term 6 and its sum to infinity is 4. The sum of the first $n$ terms of this series is $S_n$. Find the values of $n$ for which $S_n$ exceeds the sum to infinity by more than $0.01$.",
+      "marks": 3,
+      "answer": "$n = 1, 3, 5, 7$"
+     }
+    ],
+    "answer": "(a) Shown. (b) $n = 1, 3, 5, 7$",
+    "total_marks": 5,
+    "topics": [
+     "APGP"
+    ],
+    "skills": [
+     "proving that equal sums of the first $m$ and first $n$ terms of an AP ($m \\neq n$) force the sum of the first $m+n$ terms to be zero",
+     "deducing a negative common ratio from a sum to infinity smaller than the first term",
+     "using the parity of $n$ to decide when a partial sum of a GP with $r<0$ lies above its sum to infinity, then a size bound on $n$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $S_k$ denote the sum of the first $k$ terms, $S_k = \\frac{k}{2}\\left[2a+(k-1)d\\right]$.\n$S_m = S_n \\Rightarrow \\frac{m}{2}\\left[2a+(m-1)d\\right] = \\frac{n}{2}\\left[2a+(n-1)d\\right]$\n$\\Rightarrow 2a(m-n) + d\\left[m(m-1)-n(n-1)\\right] = 0$.\nNow $m(m-1)-n(n-1) = (m^2-n^2)-(m-n) = (m-n)(m+n-1)$, so\n$(m-n)\\left[2a+(m+n-1)d\\right] = 0$.   [M1: equate the sums and take out the factor $(m-n)$]\nSince $m \\neq n$, $m-n \\neq 0$, hence $2a+(m+n-1)d = 0$.\nTherefore $S_{m+n} = \\frac{m+n}{2}\\left[2a+(m+n-1)d\\right] = \\frac{m+n}{2}(0) = 0$.   [A1: $m \\neq n$ used and the bracket recognised as that of $S_{m+n}$]\n(Check: $a = 41$, $d = -2$, $m = 12$, $n = 30$ gives $S_{12} = S_{30} = 360$ and $S_{42} = 0$.)\n\n(b) Let the common ratio be $r$. $\\frac{6}{1-r} = 4 \\Rightarrow 1-r = \\frac{3}{2} \\Rightarrow r = -\\frac{1}{2}$ (and $|r| < 1$, so the series converges; the sum to infinity is less than the first term because $r < 0$).   [B1]\n$S_n = \\frac{6\\left[1-\\left(-\\frac{1}{2}\\right)^n\\right]}{1-\\left(-\\frac{1}{2}\\right)} = 4\\left[1-\\left(-\\frac{1}{2}\\right)^n\\right]$, so $S_n - 4 = -4\\left(-\\frac{1}{2}\\right)^n$.\nRequired: $-4\\left(-\\frac{1}{2}\\right)^n > 0.01$.   [M1]\nIf $n$ is even, $\\left(-\\frac{1}{2}\\right)^n > 0$, so $S_n - 4 < 0$: $S_n$ is below the sum to infinity and no even $n$ works.\nIf $n$ is odd, $\\left(-\\frac{1}{2}\\right)^n = -\\left(\\frac{1}{2}\\right)^n$, so $S_n - 4 = 4\\left(\\frac{1}{2}\\right)^n > 0.01 \\iff \\left(\\frac{1}{2}\\right)^n > \\frac{1}{400} \\iff 2^n < 400 \\iff n \\le 8$ (since $2^8 = 256$ and $2^9 = 512$).\nHence $n = 1, 3, 5, 7$.   [A1]\n(Check: $S_7 = 4 + \\frac{4}{128} = 4.03125 > 4.01$; $S_9 = 4 + \\frac{4}{512} = 4.0078125 < 4.01$; $S_8 = 3.984375 < 4$.)",
+    "syllabus_check": "9758 Sequences and series: the sum to $n$ terms of an arithmetic series with general $m$, $n$ carried through; the sum to $n$ terms and the sum to infinity of a geometric series, with $|r| < 1$ for convergence. No method of differences, no induction, no recurrence (Q1 owns the recurrence sequence), no calculator ban (Q4 owns it). Exact answers throughout; a graphing-calculator table of $S_n$ is a legitimate check in (b) once $r$ and $S_n$ are found.",
+    "originality_note": "No earlier Set exists. Not a re-skin of any real paper: GCE 2025 P1 Q2(a) finds $a$ and $d$ from two numerical sums and GCE 2019 P1 Q8(c) uses a sum and a product of four terms, whereas (a) here is a general proof that $S_m = S_n$ ($m \\neq n$) forces $S_{m+n} = 0$. (b) differs from GCE 2024 P1 Q5 ($r<0$ from the sum to infinity and a third term via a cubic, then $k$ from a tail-sum relation) and from GCE 2020 P1 Q8(b)(ii) ($r>0$, smallest $n$ with $S_n > 19.6$): here $r<0$ must be deduced because the sum to infinity is below the first term, and the answer is a set of odd values of $n$ fixed by the sign of $\\left(-\\frac{1}{2}\\right)^n$ and then a bound on its size."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2019 P1 Q8",
+     "jaccard": 0.145,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-09-26T22:51:49.599Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "n = 1, 3, 5, 7"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Verified independently: S_m - S_n = (1/2)(m-n)[2a+(m+n-1)d], so m != n forces 2a+(m+n-1)d = 0, which is exactly the bracket in S_{m+n} = ((m+n)/2)[2a+(m+n-1)d]; the d = 0 case is covered (then a = 0). The setter's numerical check (a=41, d=-2, m=12, n=30: S_12 = S_30 = 360, S_42 = 0) also holds."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both n = 1, 3, 5, 7. Verified: 6/(1-r) = 4 gives r = -1/2 (|r| < 1, converges); S_n - 4 = -4(-1/2)^n, which is positive only for odd n; then 4/2^n > 0.01 <=> 2^n < 400 <=> n <= 8, so the odd n are 1, 3, 5, 7. S_7 = 4.03125 > 4.01, S_9 = 4.0078125 < 4.01, S_8 = 3.984375 < 4."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement: the setter and the blind examiner agree on both parts and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean SEAB-register APGP question at the 2022-2024 weight for 5 marks: (a) is a 2-mark proof whose factorisation (m-n)(m+n-1) the candidate must find, and (b) is one routine (r = -1/2, S_n) with one decision the question does not announce - the negative ratio from a sum to infinity below the first term, and the parity split that 'exceeds' forces (every even n is rejected; a candidate working with |S_n - S_inf| gets n <= 8 and loses the A mark) - with examination-clean numbers (2^n < 400 falls between 256 and 512) and marks that match the work. Not a re-skin: GCE 2024 P1 Q5 shares only 'a GP with r < 0 and a sum to infinity' (its cubic, its printed r < 0 and its tail-equals-head equation are absent here), the gate's nearest GCE 2019 P1 Q8 (Jaccard 0.145) asks different things, no earlier Set exists, the named skills are true and specific, and all gates passed; the one note for the session is that Q1's last part also turns on an odd n - a different skill, but the same flavour two questions running."
+   },
+   "exemplars": [
+    {
+     "id": "5976d016-038e-4647-bca0-a85cb20d710d",
+     "ref": "GCE 2025 P1 Q2"
+    },
+    {
+     "id": "36e8d4b2-56c6-4910-9d85-c3940ee57a5f",
+     "ref": "GCE 2024 P1 Q5"
+    },
+    {
+     "id": "6b8ff679-e868-420d-b837-98302d65e604",
+     "ref": "GCE 2022 P1 Q9"
+    },
+    {
+     "id": "d3a59cd1-28a1-43fa-bcc2-92dd1cd19f99",
+     "ref": "GCE 2021 P2 Q4"
+    },
+    {
+     "id": "14da673c-8c78-4fa8-844f-d73ad6f0bcfe",
+     "ref": "GCE 2017 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Differentiation (Techniques)",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "The function $\\mathrm{f}$ is defined by\n$\\mathrm{f}: x \\mapsto \\tan^{-1}\\left(\\frac{x+\\sqrt{3}}{1-\\sqrt{3}\\,x}\\right) - \\tan^{-1} x, \\quad x \\in \\mathbb{R},\\ x \\neq \\frac{1}{\\sqrt{3}}.$",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\mathrm{f}'(x) = 0$.",
+      "marks": 3,
+      "answer": "$\\frac{\\mathrm{d}}{\\mathrm{d}x}\\tan^{-1}\\left(\\frac{x+\\sqrt{3}}{1-\\sqrt{3}\\,x}\\right) = \\frac{1}{1+x^2}$, so $\\mathrm{f}'(x) = \\frac{1}{1+x^2} - \\frac{1}{1+x^2} = 0$ (shown)",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence find the range of $\\mathrm{f}$, giving your answer in exact form.",
+      "marks": 3,
+      "answer": "$\\mathrm{R}_{\\mathrm{f}} = \\left\\{-\\frac{2\\pi}{3},\\ \\frac{\\pi}{3}\\right\\}$ ($\\mathrm{f}(x) = \\frac{\\pi}{3}$ for $x < \\frac{1}{\\sqrt{3}}$ and $\\mathrm{f}(x) = -\\frac{2\\pi}{3}$ for $x > \\frac{1}{\\sqrt{3}}$)",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $\\mathrm{f}'(x) = 0$ (shown); (b) $\\mathrm{R}_{\\mathrm{f}} = \\left\\{-\\frac{2\\pi}{3},\\ \\frac{\\pi}{3}\\right\\}$",
+    "total_marks": 6,
+    "topics": [
+     "Differentiation (Techniques)",
+     "Functions"
+    ],
+    "skills": [
+     "differentiating $\\tan^{-1}$ of a quotient by the chain rule, with $1 + u^2$ simplified to cancel",
+     "deducing from a zero derivative that a function is constant on EACH interval of its domain, with a different constant either side of the excluded point",
+     "range of a piecewise-constant function found by exact evaluation at a chosen point in each interval"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $u = \\frac{x+\\sqrt{3}}{1-\\sqrt{3}\\,x}$.\nBy the quotient rule, $\\frac{\\mathrm{d}u}{\\mathrm{d}x} = \\frac{(1)(1-\\sqrt{3}\\,x) - (x+\\sqrt{3})(-\\sqrt{3})}{(1-\\sqrt{3}\\,x)^2} = \\frac{1 - \\sqrt{3}\\,x + \\sqrt{3}\\,x + 3}{(1-\\sqrt{3}\\,x)^2} = \\frac{4}{(1-\\sqrt{3}\\,x)^2}$.   M1\n$1 + u^2 = \\frac{(1-\\sqrt{3}\\,x)^2 + (x+\\sqrt{3})^2}{(1-\\sqrt{3}\\,x)^2} = \\frac{1 - 2\\sqrt{3}\\,x + 3x^2 + x^2 + 2\\sqrt{3}\\,x + 3}{(1-\\sqrt{3}\\,x)^2} = \\frac{4(1+x^2)}{(1-\\sqrt{3}\\,x)^2}$.   M1\nSo $\\frac{\\mathrm{d}}{\\mathrm{d}x}\\tan^{-1} u = \\frac{1}{1+u^2}\\frac{\\mathrm{d}u}{\\mathrm{d}x} = \\frac{(1-\\sqrt{3}\\,x)^2}{4(1+x^2)} \\cdot \\frac{4}{(1-\\sqrt{3}\\,x)^2} = \\frac{1}{1+x^2}$.\nHence $\\mathrm{f}'(x) = \\frac{1}{1+x^2} - \\frac{1}{1+x^2} = 0$ for every $x$ in the domain of $\\mathrm{f}$ (shown).   A1\n(Alternative: $\\tan\\left(\\frac{\\pi}{3} + \\tan^{-1}x\\right) = \\frac{\\sqrt{3} + x}{1 - \\sqrt{3}\\,x}$, so $\\tan^{-1} u$ differs from $\\frac{\\pi}{3} + \\tan^{-1}x$ by a constant multiple of $\\pi$ on each interval, and its derivative is $\\frac{1}{1+x^2}$.)\n\n(b) Since $\\mathrm{f}'(x) = 0$, $\\mathrm{f}$ is constant on each interval of its domain. The domain is NOT one interval: it is $x < \\frac{1}{\\sqrt{3}}$ together with $x > \\frac{1}{\\sqrt{3}}$, and $\\mathrm{f}$ need not take the same constant on both. (As $x \\to \\frac{1}{\\sqrt{3}}$ from below, $u \\to +\\infty$ and $\\tan^{-1}u \\to \\frac{\\pi}{2}$; from above, $u \\to -\\infty$ and $\\tan^{-1}u \\to -\\frac{\\pi}{2}$, so $\\mathrm{f}$ jumps by $\\pi$ there.)   M1\nFor $x < \\frac{1}{\\sqrt{3}}$: take $x = 0$. $\\mathrm{f}(0) = \\tan^{-1}\\sqrt{3} - \\tan^{-1}0 = \\frac{\\pi}{3}$, so $\\mathrm{f}(x) = \\frac{\\pi}{3}$ for all $x < \\frac{1}{\\sqrt{3}}$.   A1\nFor $x > \\frac{1}{\\sqrt{3}}$: take $x = \\sqrt{3}$. Then $u = \\frac{2\\sqrt{3}}{1 - 3} = -\\sqrt{3}$, so $\\mathrm{f}(\\sqrt{3}) = \\tan^{-1}(-\\sqrt{3}) - \\tan^{-1}\\sqrt{3} = -\\frac{\\pi}{3} - \\frac{\\pi}{3} = -\\frac{2\\pi}{3}$, so $\\mathrm{f}(x) = -\\frac{2\\pi}{3}$ for all $x > \\frac{1}{\\sqrt{3}}$.\n(Or: as $x \\to \\infty$, $u \\to -\\frac{1}{\\sqrt{3}}$ and $\\tan^{-1}x \\to \\frac{\\pi}{2}$, so $\\mathrm{f}(x) \\to -\\frac{\\pi}{6} - \\frac{\\pi}{2} = -\\frac{2\\pi}{3}$.)\nRange of $\\mathrm{f}$: $\\mathrm{R}_{\\mathrm{f}} = \\left\\{-\\frac{2\\pi}{3},\\ \\frac{\\pi}{3}\\right\\}$.   A1\nA candidate who evaluates at one point only and gives $\\mathrm{R}_{\\mathrm{f}} = \\left\\{\\frac{\\pi}{3}\\right\\}$ scores at most M1 A1 A0.\n(Check without (a): $\\tan \\mathrm{f}(x) = \\frac{u - x}{1 + ux} = \\frac{\\sqrt{3}(1+x^2)/(1-\\sqrt{3}\\,x)}{(1+x^2)/(1-\\sqrt{3}\\,x)} = \\sqrt{3}$ and $-\\pi < \\mathrm{f}(x) < \\pi$, so $\\mathrm{f}(x) \\in \\left\\{\\frac{\\pi}{3}, -\\frac{2\\pi}{3}\\right\\}$; both values occur. Numerically $\\mathrm{f}(-5) = 1.0472$, $\\mathrm{f}(5) = -2.0944$.)",
+    "syllabus_check": "9758 Differentiation: derivative of $\\tan^{-1}x$ (MF26) with the chain rule and the quotient rule; Functions: range of a function. No calculator ban is needed (Q4 carries it) and a calculator gives no shortcut: (a) is a 'Show that' and (b) asks for exact values from the result of (a). Nothing outside 9758 as revised: no Maclaurin series, no tangent or normal (Q8), no maximum or minimum (Q5), no method of differences, no polar form.",
+    "originality_note": "No GCE 2008-2025 question differentiates a composite in order to show the derivative is zero; the nearest, GCE 2022 P1 Q2, differentiates $\\tan^{-1}(\\sqrt{2} + x)$ twice for a Maclaurin series, and GCE 2020 P1 Q9(i) justifies a $\\tan^{-1}$ identity from gradients of lines, not calculus. The last part is new in kind: a zero derivative on a domain that is two intervals, so the range has two values. No earlier Set of this level exists, and no other slot of this paper differentiates an inverse trigonometric function or asks for a range."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2014 P1 Q1",
+     "jaccard": 0.134,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-09-26T22:51:49.600Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "{-2π/3, π/3}"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both say shown. Verified: with u = (x+√3)/(1−√3x), u' = 4/(1−√3x)^2 and 1+u^2 = 4(1+x^2)/(1−√3x)^2, so d/dx tan^{-1}u = 1/(1+x^2) and f'(x) = 0 on the whole domain."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give {−2π/3, π/3}. Verified: f(0) = π/3 on x < 1/√3; f(√3) = tan^{-1}(−√3) − π/3 = −2π/3 on x > 1/√3 (limit x→∞ gives −π/6 − π/2 = −2π/3; f(−5) = 1.0472, f(5) = −2.0944). Both values are attained; the domain is two intervals, so the range is the two-element set."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on both parts and the key is exactly right: f'(x) = 0 by the chain rule with 1+u^2 cancelling, and the range is {−2π/3, π/3} because the domain splits at x = 1/√3 with a different constant on each side.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A clean 6-mark early question in SEAB's register: (a) is a standard derivation used as a gate, and (b) hands the candidate the one decision the 5–6 mark band asks for — that a zero derivative fixes f only on EACH interval of a disconnected domain, so the excluded point x = 1/√3 forces a second exact evaluation and the naive {π/3} is wrong. One idea, exam-clean surds and multiples of π, marks matching the work (cf. GCE 2022 P1 Q2, GCE 2023 P1 Q3 at 6); no 2022–2024 P1 question shares the structure, no earlier Set exists, and nothing else in this paper tests the piecewise-constant/range skill."
+   },
+   "exemplars": [
+    {
+     "id": "e82fa8b0-c7b5-417c-afd6-b83fffe22417",
+     "ref": "GCE 2025 P1 Q4"
+    },
+    {
+     "id": "47f78e98-dd30-48d6-80b7-89ae12d9143b",
+     "ref": "GCE 2022 P1 Q2"
+    },
+    {
+     "id": "5dde3d84-9f3a-458c-8684-788a526605cc",
+     "ref": "GCE 2021 P1 Q3"
+    },
+    {
+     "id": "6b4e1938-bab5-47e8-a601-4f3570e23e5d",
+     "ref": "GCE 2020 P1 Q2"
+    },
+    {
+     "id": "47351ec7-4424-4c90-8c9f-5e5579e6b0a5",
+     "ref": "GCE 2018 P1 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Complex Numbers",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "Do not use a calculator in answering this question.\nOn an Argand diagram, the points $A$ and $C$ represent the complex numbers $1 + 2\\mathrm{i}$ and $5 + 4\\mathrm{i}$ respectively. $A$ and $C$ are opposite vertices of a square $ABCD$, and the vertices $A$, $B$, $C$, $D$ are in anticlockwise order.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the complex numbers represented by $B$ and $D$.",
+      "marks": 3,
+      "answer": "$B$: $4 + \\mathrm{i}$; $D$: $2 + 5\\mathrm{i}$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Show that the complex numbers represented by $A$, $B$, $C$ and $D$ are the roots of an equation of the form $(z - p)^4 = q$, where $p$ and $q$ are complex numbers to be found.",
+      "marks": 3,
+      "answer": "$p = 3 + 3\\mathrm{i}$, $q = -7 + 24\\mathrm{i}$; each vertex is $p + \\mathrm{i}^k(-2 - \\mathrm{i})$, $k = 0, 1, 2, 3$, so all four have $(z - p)^4 = (-2 - \\mathrm{i})^4 = -7 + 24\\mathrm{i}$, and a degree-4 equation has no other roots (shown)",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Hence find the four roots of the equation $w^4 = q$, and the square roots of $q$.",
+      "marks": 2,
+      "answer": "$w = -2 - \\mathrm{i},\\ 1 - 2\\mathrm{i},\\ 2 + \\mathrm{i},\\ -1 + 2\\mathrm{i}$; square roots: $3 + 4\\mathrm{i}$ or square roots: $-3 - 4\\mathrm{i}$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $B$: $4 + \\mathrm{i}$, $D$: $2 + 5\\mathrm{i}$; (b) $p = 3 + 3\\mathrm{i}$, $q = -7 + 24\\mathrm{i}$ (shown); (c) $w = -2 - \\mathrm{i},\\ 1 - 2\\mathrm{i},\\ 2 + \\mathrm{i},\\ -1 + 2\\mathrm{i}$; $s = \\pm(3 + 4\\mathrm{i})$",
+    "total_marks": 8,
+    "topics": [
+     "Complex Numbers"
+    ],
+    "skills": [
+     "geometry seen, not computed: the four vertices of a square as successive quarter-turns (multiplication by $\\mathrm{i}$) of one vertex about the centre, so that $\\mathrm{i}^4 = 1$ gives all four the same fourth power relative to the centre — a quartic $(z - p)^4 = q$ built from the square, with no polar form",
+     "the other two vertices of a square from one diagonal on an Argand diagram: translate to the centre, rotate through a right angle, translate back, with the anticlockwise order deciding which point is $B$",
+     "square roots of $q$ read as the squares of the fourth roots of $q$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The diagonals of a square are equal and bisect each other at right angles, so the centre $M$ of the square is the midpoint of $AC$: $m = \\frac{1}{2}\\left[(1 + 2\\mathrm{i}) + (5 + 4\\mathrm{i})\\right] = 3 + 3\\mathrm{i}$.   M1\n$\\overrightarrow{MA}$ represents $a - m = (1 + 2\\mathrm{i}) - (3 + 3\\mathrm{i}) = -2 - \\mathrm{i}$. $MA$, $MB$, $MC$, $MD$ are equal in length and, as the vertices are in anticlockwise order, each is the one before turned anticlockwise through $\\frac{\\pi}{2}$ about $M$. Multiplication by $\\mathrm{i}$ is an anticlockwise rotation through $\\frac{\\pi}{2}$, so $b - m = \\mathrm{i}(a - m)$ and $d - m = -\\mathrm{i}(a - m)$.   M1\n$b - m = \\mathrm{i}(-2 - \\mathrm{i}) = 1 - 2\\mathrm{i}$, so $B$ represents $4 + \\mathrm{i}$; $d - m = -\\mathrm{i}(-2 - \\mathrm{i}) = -1 + 2\\mathrm{i}$, so $D$ represents $2 + 5\\mathrm{i}$.   A1\n(Check: $c - m = \\mathrm{i}(b - m) = \\mathrm{i}(1 - 2\\mathrm{i}) = 2 + \\mathrm{i}$, so $c = 5 + 4\\mathrm{i}$ as given; $|AB| = |3 - \\mathrm{i}| = \\sqrt{10} = |BC| = |1 + 3\\mathrm{i}|$; going $A(1, 2) \\to B(4, 1) \\to C(5, 4) \\to D(2, 5)$ is anticlockwise.) The two answers interchanged (clockwise order) score M1 M1 A0.\n\n(b) Take $p = 3 + 3\\mathrm{i}$, the centre of the square, and let $u = a - p = -2 - \\mathrm{i}$. By part (a),\n$a - p = u$, $b - p = \\mathrm{i}u$, $c - p = \\mathrm{i}^2 u = -u$, $d - p = \\mathrm{i}^3 u = -\\mathrm{i}u$.   M1\nSince $\\mathrm{i}^4 = 1$, $(\\mathrm{i}^k u)^4 = (\\mathrm{i}^4)^k u^4 = u^4$ for $k = 0, 1, 2, 3$, so each of $a, b, c, d$ satisfies $(z - p)^4 = u^4$.\n$u^2 = (-2 - \\mathrm{i})^2 = 4 + 4\\mathrm{i} + \\mathrm{i}^2 = 3 + 4\\mathrm{i}$, so $u^4 = (3 + 4\\mathrm{i})^2 = 9 + 24\\mathrm{i} + 16\\mathrm{i}^2 = -7 + 24\\mathrm{i}$. Hence $q = -7 + 24\\mathrm{i}$.   M1\n$a, b, c, d$ are four distinct roots of $(z - 3 - 3\\mathrm{i})^4 = -7 + 24\\mathrm{i}$, a polynomial equation of degree 4, which has at most four roots; so they are exactly its roots, with $p = 3 + 3\\mathrm{i}$ and $q = -7 + 24\\mathrm{i}$ (shown).   A1\n(A candidate who evaluates each fourth power separately, e.g. $(1 - 2\\mathrm{i})^2 = -3 - 4\\mathrm{i}$ and $(-3 - 4\\mathrm{i})^2 = -7 + 24\\mathrm{i}$, earns full marks. The values are forced: $(z - p)^4 - q = z^4 - 4pz^3 + \\ldots$, and comparing with $(z - a)(z - b)(z - c)(z - d)$ gives $4p = a + b + c + d = 12 + 12\\mathrm{i}$, so $p = 3 + 3\\mathrm{i}$ and then $q = (a - p)^4$. Geometrically: if $z_0$ is a root of $(z - p)^4 = q$ then so is $p + \\mathrm{i}(z_0 - p)$, so the roots form a square centred at $p$, and $p$ must be the centre $M$.)\n\n(c) Put $w = z - p$: $w^4 = q$ is $(z - p)^4 = q$, so its roots are $a - p$, $b - p$, $c - p$, $d - p$, i.e. $w = -2 - \\mathrm{i},\\ 1 - 2\\mathrm{i},\\ 2 + \\mathrm{i},\\ -1 + 2\\mathrm{i}$.   B1\nIf $w^4 = q$ then $(w^2)^2 = q$, so $w^2$ is a root of $s^2 = q$. From the roots above, $(-2 - \\mathrm{i})^2 = (2 + \\mathrm{i})^2 = 3 + 4\\mathrm{i}$ and $(1 - 2\\mathrm{i})^2 = (-1 + 2\\mathrm{i})^2 = -3 - 4\\mathrm{i}$. A quadratic equation has at most two roots, so $s = 3 + 4\\mathrm{i}$ or $s = -3 - 4\\mathrm{i}$.   B1\n(Check: $(3 + 4\\mathrm{i})^2 = 9 + 24\\mathrm{i} - 16 = -7 + 24\\mathrm{i}$.)",
+    "syllabus_check": "9758 Complex numbers, revised syllabus, cartesian form only: the Argand diagram; addition and subtraction as translations; multiplication by $\\mathrm{i}$ as a rotation through a right angle (the geometrical effects the syllabus lists); the four operations in cartesian form; a polynomial equation of degree $n$ has at most $n$ roots. The quartic is never solved by a general method: its roots are exhibited from the square and counted. No modulus-argument or exponential form, no de Moivre, no loci. This is the paper's one calculator-ban question: the ban protects (b) and (c), where a graphing calculator would evaluate $(-2 - \\mathrm{i})^4$ at once.",
+    "originality_note": "New question. The nearest real items run the other way: GCE 2025 P1 Q3(b) rotates one point through $\\frac{1}{2}\\pi$ about the ORIGIN and asks for $B$ in terms of $z$; the 9740-era $z^n = w$ questions (e.g. GCE 2018 P2 Q2(b), $w^3 = 27$) start from the equation and find its roots by polar form or factorisation. Here the square is given, the rotation is about its centre, and the equation $(z - p)^4 = q$ — with $p$ and $q$ unprinted — is the consequence the candidate must build, then used for fourth and square roots of $-7 + 24\\mathrm{i}$ with no polar form. No complex-number structure of GCE 2017 P1 Q8, GCE 2024 P1 Q3 or GCE 2024 P2 Q1 (conjugate roots, real coefficients, $z = az^* + b$) is used. No earlier Set exists; no other slot of this paper uses complex numbers (Q5's real palindromic quartic is a different object and skill)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q12",
+     "jaccard": 0.088,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-27T00:10:55.753Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "B: 4 + i ; D: 2 + 5i",
+     "(b)": "shown; p = 3 + 3i, q = -7 + 24i",
+     "(c)": "w = 2 + i, -1 + 2i, -2 - i, 1 - 2i ; s = 3 + 4i, -3 - 4i"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "B = 4 + i, D = 2 + 5i. Re-derived: M = 3 + 3i, a - m = -2 - i, i(-2 - i) = 1 - 2i so b = 4 + i, -i(-2 - i) = -1 + 2i so d = 2 + 5i. Shoelace on (1,2),(4,1),(5,4),(2,5) gives +20, so A, B, C, D is anticlockwise; every side is sqrt(10). The coordinate route (perpendicular bisector of AC, half-diagonal sqrt(5)) lands on the same two points and still needs the anticlockwise decision."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "p = 3 + 3i, q = -7 + 24i. Re-derived: u = -2 - i, u^2 = 3 + 4i, u^4 = (3 + 4i)^2 = -7 + 24i; the vertices are p + i^k u, k = 0..3, so all four have fourth power u^4. 'To be found' is well posed: comparing the z^3 coefficient of (z - p)^4 - q with (z - a)(z - b)(z - c)(z - d) forces 4p = a + b + c + d = 12 + 12i, and then q = (a - p)^4. Four distinct roots of a degree-4 equation are all of its roots. A candidate who evaluates the four fourth powers separately ((1 - 2i)^2 = -3 - 4i, (-3 - 4i)^2 = -7 + 24i, etc.) reaches the same q."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "w = -2 - i, 1 - 2i, 2 + i, -1 + 2i (the blind list is the same set in another order); s = 3 + 4i or -3 - 4i, checked (3 + 4i)^2 = 9 + 24i - 16 = -7 + 24i. The squares of the four w are 3 + 4i (twice) and -3 - 4i (twice), so the 'Hence' route and the direct route (x + iy)^2 = -7 + 24i, xy = 12, x^2 - y^2 = -7, agree."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; I re-derived all three (vertices, p and q with their uniqueness, the fourth and square roots) and the key is exactly right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(c): one situation in three letters (z, w, s) reads school-made — write 'Hence find the four roots of the equation w^4 = q, and the square roots of q.' [2]; the two roots of s^2 = q are exactly the square roots of q, so nothing else changes."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "template": null,
+    "move": "12. Geometry seen, not computed",
+    "why": "The square is given and the quartic is built from it — the reverse of the old 'solve z^4 = q and plot the square' — so the candidate must see the four vertices as p + i^k(a - p) about a centre the stem never names, use i^4 = 1 (or find p and compute four fourth powers), justify that four distinct roots of a quartic are all of them, then read the square roots of q as the squares of the fourth roots: three chained ideas in one line of thought, Gaussian integers throughout, inside the revised syllabus (GCE 2025 P1 Q3(b) tests rotation by i in cartesian form). Only part (a) is the familiar 'other two vertices from a diagonal' exercise, permitted as a lead-in; the idea's move is present and not walked to (the author hid p and q, which the idea had printed, and the anticlockwise order is the candidate's decision); no 2022-2024 question or earlier Set shares the object or the sequence of parts, the gates pass, the setter's skills phrases are true and specific, and 8 marks for about ten to twelve minutes of work sits at the 2022-2024 rate."
+   },
+   "exemplars": [
+    {
+     "id": "41683391-4f86-43bb-a76e-f7dc01545040",
+     "ref": "GCE 2020 P1 Q6"
+    },
+    {
+     "id": "ca3b6404-ae8d-4566-a597-27a6b6fb33e9",
+     "ref": "GCE 2025 P1 Q3"
+    },
+    {
+     "id": "c1dcba1d-786c-4500-bf0b-99960d1d840b",
+     "ref": "GCE 2022 P2 Q3"
+    },
+    {
+     "id": "c6d2fa97-a77b-4553-8ff0-1b53f0ef8aae",
+     "ref": "GCE 2021 P1 Q4"
+    },
+    {
+     "id": "e241ddfe-812d-4070-bcd7-910ad2febb17",
+     "ref": "GCE 2024 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The function $\\mathrm{f}$ is defined by $\\mathrm{f}: x \\mapsto x + \\frac{1}{x}$, $x \\in \\mathbb{R}$, $x \\neq 0$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Use calculus to find the range of $\\mathrm{f}$.",
+      "marks": 2,
+      "answer": "$(-\\infty, -2] \\cup [2, \\infty)$, i.e. $\\{y \\in \\mathbb{R} : y \\le -2 \\text{ or } y \\ge 2\\}$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence find the exact values of the real roots of the equation $x^4 - 4x^3 + 5x^2 - 4x + 1 = 0$, explaining why the equation has no other real roots.",
+      "marks": 4,
+      "answer": "$x = \\frac{3 - \\sqrt{5}}{2}$ or $x = \\frac{3 + \\sqrt{5}}{2}$; the other value $x + \\frac{1}{x} = 1$ gives no real $x$ because $1$ is not in the range of $\\mathrm{f}$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find the set of values of the constant $k$ for which the equation $x^4 - 4x^3 + kx^2 - 4x + 1 = 0$ has four distinct real roots.",
+      "marks": 2,
+      "answer": "$\\{k \\in \\mathbb{R} : k < -10\\}$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $(-\\infty, -2] \\cup [2, \\infty)$; (b) $x = \\frac{3 - \\sqrt{5}}{2}$, $x = \\frac{3 + \\sqrt{5}}{2}$; (c) $k < -10$",
+    "total_marks": 8,
+    "topics": [
+     "Differentiation (Maximum and Minimum)",
+     "Equations"
+    ],
+    "skills": [
+     "§8 move 8 (algebraic structure to exploit): seeing that the palindromic quartic $x^4 - 4x^3 + 5x^2 - 4x + 1 = 0$, which has no rational root, becomes a quadratic in $x + \\frac{1}{x}$ after dividing by $x^2$, via $x^2 + \\frac{1}{x^2} = \\left(x + \\frac{1}{x}\\right)^2 - 2$",
+     "using the range of $x + \\frac{1}{x}$, found from its stationary points by calculus, to reject a root of that quadratic and so justify that the quartic has no other real roots",
+     "§8 move 3 (a parameter carried): the values of $k$ for which the quadratic in $x + \\frac{1}{x}$ has one root below $-2$ and one above $2$ (the roots sum to 4), so that the quartic has four distinct real roots"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\mathrm{f}'(x) = 1 - \\frac{1}{x^2}$. $\\mathrm{f}'(x) = 0 \\Rightarrow x^2 = 1 \\Rightarrow x = 1$ or $x = -1$.\n$\\mathrm{f}''(x) = \\frac{2}{x^3}$: $\\mathrm{f}''(1) = 2 > 0$, so $(1, 2)$ is a minimum point; $\\mathrm{f}''(-1) = -2 < 0$, so $(-1, -2)$ is a maximum point.   [M1: stationary points $x = \\pm 1$ with values $\\pm 2$]\nFor $x > 0$: $\\mathrm{f}$ is continuous, $\\mathrm{f}(x) \\to \\infty$ as $x \\to 0^{+}$ and as $x \\to \\infty$, and its only stationary point is the minimum at $(1, 2)$, so $\\mathrm{f}$ takes every value in $[2, \\infty)$ and no value below 2.\nFor $x < 0$: $\\mathrm{f}(-x) = -\\mathrm{f}(x)$ (equivalently $\\mathrm{f}(x) \\to -\\infty$ as $x \\to 0^{-}$ and as $x \\to -\\infty$, with maximum $-2$ at $x = -1$), so $\\mathrm{f}$ takes every value in $(-\\infty, -2]$ and no value above $-2$.\nRange of $\\mathrm{f}$ $= (-\\infty, -2] \\cup [2, \\infty)$.   [A1]\n\n(b) $x = 0$ is not a root (the constant term is 1), so divide by $x^2$:\n$x^2 - 4x + 5 - \\frac{4}{x} + \\frac{1}{x^2} = 0 \\Rightarrow \\left(x^2 + \\frac{1}{x^2}\\right) - 4\\left(x + \\frac{1}{x}\\right) + 5 = 0$.\nLet $u = \\mathrm{f}(x) = x + \\frac{1}{x}$. Then $u^2 = x^2 + 2 + \\frac{1}{x^2}$, so $x^2 + \\frac{1}{x^2} = u^2 - 2$ and\n$u^2 - 2 - 4u + 5 = 0$, i.e. $u^2 - 4u + 3 = 0$.   [M1: divide by $x^2$ and use $x^2 + \\frac{1}{x^2} = u^2 - 2$ to reach a quadratic in $u$]\n$(u - 1)(u - 3) = 0 \\Rightarrow u = 1$ or $u = 3$.   [A1]\n$x + \\frac{1}{x} = 1$ has no real solution, because 1 is not in the range of $\\mathrm{f}$ found in part (a) (it lies strictly between $-2$ and $2$).   [B1: the rejection with its reason]\n$x + \\frac{1}{x} = 3 \\Rightarrow x^2 - 3x + 1 = 0 \\Rightarrow x = \\frac{3 \\pm \\sqrt{5}}{2}$.\nEvery real root of the quartic gives $u = 1$ or $u = 3$, so the only real roots are $x = \\frac{3 - \\sqrt{5}}{2}$ and $x = \\frac{3 + \\sqrt{5}}{2}$ (approximately 0.382 and 2.62).   [A1]\n(Check: $x^4 - 4x^3 + 5x^2 - 4x + 1 = (x^2 - 3x + 1)(x^2 - x + 1)$. The factor theorem finds no rational root: $x = 1$ gives $-1$ and $x = -1$ gives $15$.)\n\n(c) As in (b), $x = 0$ is not a root; dividing by $x^2$ and putting $u = x + \\frac{1}{x}$ gives $u^2 - 2 - 4u + k = 0$, i.e. $u^2 - 4u + (k - 2) = 0$.\nFor a real $u$, $x + \\frac{1}{x} = u \\iff x^2 - ux + 1 = 0$, whose discriminant is $u^2 - 4$: two distinct real $x$ when $|u| > 2$, one ($x = \\pm 1$) when $|u| = 2$, none when $|u| < 2$ (as the range in (a) says). Different values of $u$ give different values of $x$.\nSo the quartic has four distinct real roots $\\iff$ the quadratic in $u$ has two distinct real roots, each with $|u| > 2$.\nThe roots of $u^2 - 4u + (k - 2) = 0$ sum to 4, so they cannot both exceed 2 and cannot both be less than $-2$. Hence one root must be less than $-2$ and the other greater than 2: with $g(u) = u^2 - 4u + k - 2$, $g(-2) < 0$ and $g(2) < 0$.   [M1]\n$g(-2) = 4 + 8 + k - 2 = k + 10 < 0 \\Rightarrow k < -10$; $g(2) = 4 - 8 + k - 2 = k - 6 < 0 \\Rightarrow k < 6$.\nBoth hold $\\iff k < -10$. Set of values: $\\{k \\in \\mathbb{R} : k < -10\\}$.   [A1]\n(Equivalently: the roots are $u = 2 \\pm \\sqrt{6 - k}$; for $k < 6$ the larger always exceeds 2, and the smaller is below $-2 \\iff \\sqrt{6 - k} > 4 \\iff k < -10$. At $k = -10$ the root $u = -2$ gives only $x = -1$, so there are three distinct real roots and the inequality is strict; for $-10 < k < 6$ there are exactly two, as in part (b) where $k = 5$; $k = 6$ gives only $x = 1$; $k > 6$ gives none.)\n(Accepted alternative: $k = -\\frac{x^4 - 4x^3 - 4x + 1}{x^2}$, whose graph has a maximum point $(-1, -10)$ for $x < 0$ and a maximum point $(1, 6)$ for $x > 0$; the line $y = k$ meets it four times exactly when $k < -10$.)\n\nMark scheme notes (moderation, 27 Sep 2026). (b) Accepted alternative without part (a): matching coefficients in $(x^2 + ax + 1)(x^2 + bx + 1)$ with $a + b = -4$, $ab = 3$ gives $(x^2 - 3x + 1)(x^2 - x + 1)$; the second factor is rejected by its discriminant $-3$ — a complete answer with the explanation asked for; the B1 for the rejection with its reason is paid for the discriminant even when the range of f is not cited. (c) In the alternative route $k = 6 - (x - 1)^4/x^2$, the point $(1, 6)$ is a MAXIMUM for $x > 0$ (and $(-1, -10)$ a maximum for $x < 0$); each branch falls to $-\\infty$ at both ends, so $y = k$ meets the graph four times exactly when $k < -10$.",
+    "syllabus_check": "Inside 9758. Stationary points and their nature by the second-derivative test, and the range of a function deduced from them (Differentiation: maxima and minima; Functions: range). Solving a polynomial equation exactly by reducing it to a quadratic (Equations), with quadratics, the discriminant, the sign of a quadratic at a point and the identity $\\left(x + \\frac{1}{x}\\right)^2 = x^2 + 2 + \\frac{1}{x^2}$ all assumed O-Level A Math knowledge. No calculator ban (the paper's one ban is Q4); part (b) asks for exact values, which the graphing calculator cannot give, and 'Hence' fixes the route. Nothing outside the revised syllabus: no method of differences, polar or exponential form, induction or reduction formula.",
+    "originality_note": "Implements Q5.idea.md: move 8, the object f(x) = x + 1/x, the parts range, then a quartic via f, then a second quartic. Two improvements to its numbers. First, the idea's quartic x^4 - 3x^3 + 4x^2 - 3x + 1 has the root x = 1 and factorises as (x - 1)^2(x^2 - x + 1), so the factor theorem cracks it, which is the opposite of what the idea intended. The quartic here, x^4 - 4x^3 + 5x^2 - 4x + 1, has no rational root, and its real roots (3 ± √5)/2 come only from the substitution u = x + 1/x. Second, the idea's 1-mark (c) (a second fixed quartic whose quadratic in u has no real root) becomes a constant k. The range is then used on both branches, and the candidate must decide that the two u-roots, which sum to 4, have to straddle [-2, 2] (move 3 added to move 8). No 2017–2025 9758 question reduces a reciprocal quartic through x + 1/x. The nearest real questions, GCE 2022 P1 Q7 and GCE 2025 specimen P1 Q5 (a turning point, then an area) and GCE 2017 P1 Q3 (implicit stationary points), share only the stationary-point lead-in. In this paper it differs from Q3 (the range of a piecewise-constant inverse-tangent function found by evaluation) and Q1 (the fixed points of a recurrence) in object and skill. No earlier Set exists."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P2 Q3",
+     "jaccard": 0.066,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-27T00:12:10.830Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "f'(x) = 1 - 1/x^2 = 0 gives x = ±1; f''(x) = 2/x^3, so min f(1) = 2 and max f(-1) = -2; range of f = (-∞, -2] ∪ [2, ∞), i.e. {y ∈ ℝ : y ≤ -2 or y ≥ 2}",
+     "(b)": "x = 0 is not a root, so divide by x^2: (x + 1/x)^2 - 4(x + 1/x) + 3 = 0, so x + 1/x = 1 or 3. x + 1/x = 1 has no real solution since 1 is not in the range of f (from (a)). x + 1/x = 3 gives x^2 - 3x + 1 = 0, x = (3 + √5)/2 or x = (3 - √5)/2. These are the only real roots.",
+     "(c)": "With y = x + 1/x: y^2 - 4y + (k - 2) = 0, y = 2 ± √(6 - k). Need two distinct y values each with |y| > 2 (y = ±2 gives a repeated root x = ±1), so 2 - √(6 - k) < -2, i.e. k < -10. Set: {k ∈ ℝ : k < -10}"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: f'(x) = 1 - 1/x^2 = 0 at x = ±1, f(1) = 2 a minimum, f(-1) = -2 a maximum, range (-∞, -2] ∪ [2, ∞). Checked: on x > 0 the function tends to +∞ at both ends of the branch with its only stationary point the minimum 2; on x < 0 it is the odd reflection. Correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: divide by x^2 (x = 0 is not a root), u = x + 1/x, u^2 - 4u + 3 = 0, u = 1 rejected because 1 is not in the range of f, u = 3 gives x^2 - 3x + 1 = 0, x = (3 ± √5)/2, and no other real roots. Checked by factorising: x^4 - 4x^3 + 5x^2 - 4x + 1 = (x^2 - 3x + 1)(x^2 - x + 1), the second factor has discriminant -3. The factor theorem finds nothing rational (x = ±1 give -1 and 15), so the substitution is genuinely the candidate's to find. Correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: u^2 - 4u + (k - 2) = 0, u = 2 ± √(6 - k); four distinct real x need two distinct u each with |u| > 2; the larger root exceeds 2 for every k < 6, the smaller is below -2 iff √(6 - k) > 4 iff k < -10; so {k : k < -10}. Checked: at k = -10 the roots are u = 6 and u = -2, the latter giving only x = -1, three distinct roots, so the inequality is strict; for -10 < k < 6 exactly two real roots (k = 5 is part (b)). Correct. The setter's 'accepted alternative' mislabels (1, 6) as a minimum point: k = -(x^4 - 4x^3 - 4x + 1)/x^2 = 6 - (x - 1)^4/x^2, so (1, 6) is a MAXIMUM on x > 0 (k = 5.75 at x = 0.5 and at x = 2) and (-1, -10) a maximum on x < 0; the conclusion 'four meetings iff k < -10' still follows. The author also departed from Q5.idea.md here: the idea's (c) was a 1-mark 'state, with a reason, how many real roots' (a negative discriminant in u); the author wrote a parameter part instead (§8 move 3) at [2] and cut (a) from [3] to [2]. The main move (8) and the object are unchanged, and the new (c) hands the candidate a real decision (k < 6 from the discriminant alone is the trap; the range from (a) forces k < -10), so this is a note, not a fault."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right: range (-∞, -2] ∪ [2, ∞); real roots (3 ± √5)/2 with u = 1 rejected by the range; k < -10. The only defect is a wrong word in the setter's alternative for (c) — (1, 6) is a maximum, not a minimum.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Mark scheme, part (c), the accepted alternative: write 'a maximum point (1, 6) for x > 0', not 'a minimum point' — k = 6 - (x - 1)^4/x^2 falls away to -∞ at both ends of each branch from its maxima (1, 6) and (-1, -10); as printed the alternative contradicts its own conclusion that the line y = k meets the graph four times exactly when k < -10.",
+     "Mark scheme, part (b): add the accepted alternative for a candidate who does not use (a) and instead matches coefficients in (x^2 + ax + 1)(x^2 + bx + 1), a + b = -4, ab = 3, giving (x^2 - 3x + 1)(x^2 - x + 1) and rejecting the second factor by its discriminant -3 — that is a complete answer with the explanation asked for, and the scheme must say whether the B1 for 'the rejection with its reason' is paid for the discriminant when the range of f is not cited ('Hence' alone does not forbid this route)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The main step is §8 move 8 and the candidate must find it: the quartic has no rational root and 'exact values' blocks the calculator, so the only way in is to see the symmetric coefficients, divide by x^2 and read the quartic as a quadratic in f(x), then use the two-branch range from (a) to throw out u = 1 — the parts build and the printed range is a gate, as in GCE 2022 P1 Q4; (c) carries a parameter (move 3) and hides a decision (the discriminant gives k < 6, the range forces one root each side of ±2, so k < -10). It is not a §9 template ((a) is the textbook stationary-points lead-in, which is allowed), it matches no 2022–2024 P1 structure (the gate's nearest is a 9740-era paper at Jaccard 0.066), the register and numbers are SEAB-clean, 2 + 4 + 2 pays the work within a mark of 2022–2024 rates (GCE 2024 P1 Q5(c) paid a comparable reasoning part [3], and the fixed total of 8 leaves no better split), and the chain in (b) is one line of thought, so it is at standard, not above; the score is 4 rather than 5 only for the two mark-scheme edits above. Note for the session: Q3 also gives a two-piece range over an excluded point, but by a different mechanism (a zero derivative → constants on each interval, evaluated) and Q5's two-branch range is load-bearing for (c), so I do not count it a repeated skill.",
+    "template": null,
+    "move": "8. An identity or algebraic structure to exploit"
+   },
+   "exemplars": [
+    {
+     "id": "65e5180e-38e7-4bfc-9dff-ec2c713f22f9",
+     "ref": "GCE 2025 specimen P1 Q5"
+    },
+    {
+     "id": "26a6c240-08be-4a70-9bb3-45909d7a5dbe",
+     "ref": "GCE 2022 P1 Q7"
+    },
+    {
+     "id": "b4b49a44-9de0-43c8-9c9b-0177766fd6d4",
+     "ref": "GCE 2019 P2 Q3"
+    },
+    {
+     "id": "fa7d9255-4582-4050-9c3b-babb505e304b",
+     "ref": "GCE 2017 P1 Q3"
+    },
+    {
+     "id": "3070702f-68ca-41ea-87ea-b9cffcea4754",
+     "ref": "GCE 2024 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Graphing Techniques",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows the graph of $y = \\mathrm{f}'(x)$ for $0 \\leqslant x \\leqslant 6$. The graph meets the $x$-axis only at $x = 1$ and $x = 4$, and the areas of the three regions between the graph and the $x$-axis are 2, 8 and 9, as shown. It is given that $\\mathrm{f}(0) = 4$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "State the $x$-coordinates of the stationary points of the curve $y = \\mathrm{f}(x)$ for $0 \\leqslant x \\leqslant 6$ and determine, with a reason, the nature of each.",
+      "marks": 2,
+      "answer": "$x = 1$: minimum point ($\\mathrm{f}'(x)$ changes from negative to positive); $x = 4$: maximum point ($\\mathrm{f}'(x)$ changes from positive to negative)",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Find the greatest and least values of $\\mathrm{f}(x)$ for $0 \\leqslant x \\leqslant 6$.",
+      "marks": 3,
+      "answer": "Greatest value $10$ (at $x = 4$); least value $1$ (at $x = 6$) [$\\mathrm{f}(1) = 2$, $\\mathrm{f}(4) = 10$, $\\mathrm{f}(6) = 1$]",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find the coordinates of the stationary points of the curve $y = 3 - 2\\mathrm{f}\\left(\\frac{1}{2}x\\right)$ for $0 \\leqslant x \\leqslant 12$, and determine, with a reason, the nature of each.",
+      "marks": 3,
+      "answer": "$(2, -1)$ is a maximum point; $(8, -17)$ is a minimum point",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $x = 1$ minimum, $x = 4$ maximum (sign change of $\\mathrm{f}'$); (b) greatest $10$, least $1$; (c) $(2, -1)$ maximum, $(8, -17)$ minimum",
+    "total_marks": 8,
+    "topics": [
+     "Graphing Techniques",
+     "Integration (Area and Volume)",
+     "Differentiation (Maximum and Minimum)"
+    ],
+    "skills": [
+     "move 7 (two topics fused): reading the areas between a printed graph of $y = \\mathrm{f}'(x)$ and the $x$-axis as SIGNED changes in $\\mathrm{f}$ ($\\int_a^b \\mathrm{f}'(x)\\,\\mathrm{d}x = \\mathrm{f}(b) - \\mathrm{f}(a)$, negative below the axis) to rebuild $\\mathrm{f}(1)$, $\\mathrm{f}(4)$, $\\mathrm{f}(6)$ from $\\mathrm{f}(0)$ when $\\mathrm{f}$ itself is never given",
+     "greatest and least values of $\\mathrm{f}$ on a closed interval from its derivative's graph alone, with the least value at the endpoint $x = 6$ and not at the local minimum",
+     "stationary points of $y = 3 - 2\\mathrm{f}\\left(\\frac{1}{2}x\\right)$ from those of $\\mathrm{f}$: the stretch moves them to $x = 2$ and $x = 8$, the values come from the rebuilt $\\mathrm{f}(1)$ and $\\mathrm{f}(4)$, and the negative factor swaps maximum and minimum"
+    ],
+    "needs_figure": true,
+    "figure_description": "One pair of axes, $x$ horizontal and $y$ vertical, labelled $x$ and $y$, with $O$ at the origin. Axis window: $x$ from about $-0.5$ to $6.8$, $y$ from about $-7.5$ to $5$. The $x$-axis carries ticks labelled $1$, $4$ and $6$ only; the $y$-axis has NO numbered ticks and no grid. ONE smooth curve, drawn for $0 \\leqslant x \\leqslant 6$ only (it starts on the $y$-axis and stops at $x = 6$), labelled once with the text $y = \\mathrm{f}'(x)$ placed above and to the right of its highest point, clear of the numbers in the regions. Its shape: it starts on the negative $y$-axis at about $(0, -3.6)$, rises steadily, crosses the $x$-axis going UP at $x = 1$, reaches a single highest point at about $(2.5, 4.1)$, falls, crosses the $x$-axis going DOWN at $x = 4$, reaches a lowest point at about $(5.7, -6.9)$ and ends at about $(6, -6.4)$. So the curve is BELOW the $x$-axis for $0 \\leqslant x < 1$, ABOVE it for $1 < x < 4$ and BELOW it for $4 < x \\leqslant 6$; it touches the $x$-axis nowhere else. A short solid vertical segment at $x = 6$, from the $x$-axis down to the end of the curve, closes the third region (the $y$-axis closes the first). The three regions between the curve and the $x$-axis — for $0 \\leqslant x \\leqslant 1$ (below the axis, against the $y$-axis), $1 \\leqslant x \\leqslant 4$ (above the axis) and $4 \\leqslant x \\leqslant 6$ (below the axis) — are unshaded (a light shading of all three is acceptable), and each has its area printed as a plain number inside it: $2$ in the first, $8$ in the second, $9$ in the third. For drawing accuracy only, NEVER printed: the curve is $\\mathrm{f}'(x) = \\frac{(x-1)(x-4)(1285x^2 - 7255x - 9672)}{10800} = \\frac{1285x^4 - 13680x^3 + 31743x^2 + 19340x - 38688}{10800}$, whose three areas are exactly $2$, $8$ and $9$. Nothing else appears: no equation of the curve, no values of $\\mathrm{f}$, no $y$-coordinates, no dots or letters at the crossings or at the curve's highest and lowest points, and nothing of the curve $y = 3 - 2\\mathrm{f}\\left(\\frac{1}{2}x\\right)$.",
+    "solution": "(a) From the diagram, $\\mathrm{f}'(x) = 0$ only at $x = 1$ and $x = 4$, so the stationary points of $y = \\mathrm{f}(x)$ are at $x = 1$ and $x = 4$.\nAt $x = 1$ the graph of $\\mathrm{f}'$ passes from below the $x$-axis to above it: $\\mathrm{f}'(x)$ changes from negative to positive, so $x = 1$ gives a MINIMUM point.   B1\nAt $x = 4$ it passes from above to below: $\\mathrm{f}'(x)$ changes from positive to negative, so $x = 4$ gives a MAXIMUM point.   B1\n\n(b) $\\mathrm{f}$ is an antiderivative of $\\mathrm{f}'$, so $\\int_a^b \\mathrm{f}'(x)\\,\\mathrm{d}x = \\mathrm{f}(b) - \\mathrm{f}(a)$; where the graph of $\\mathrm{f}'$ lies below the $x$-axis the integral is MINUS the area.   M1\n$\\mathrm{f}(1) - \\mathrm{f}(0) = \\int_0^1 \\mathrm{f}'(x)\\,\\mathrm{d}x = -2$, so $\\mathrm{f}(1) = 4 - 2 = 2$.\n$\\mathrm{f}(4) - \\mathrm{f}(1) = \\int_1^4 \\mathrm{f}'(x)\\,\\mathrm{d}x = 8$, so $\\mathrm{f}(4) = 2 + 8 = 10$.\n$\\mathrm{f}(6) - \\mathrm{f}(4) = \\int_4^6 \\mathrm{f}'(x)\\,\\mathrm{d}x = -9$, so $\\mathrm{f}(6) = 10 - 9 = 1$.   A1 (all three)\n$\\mathrm{f}$ is decreasing on $0 \\leqslant x \\leqslant 1$, increasing on $1 \\leqslant x \\leqslant 4$ and decreasing on $4 \\leqslant x \\leqslant 6$, so its greatest and least values on $0 \\leqslant x \\leqslant 6$ are among $\\mathrm{f}(0) = 4$, $\\mathrm{f}(1) = 2$, $\\mathrm{f}(4) = 10$ and $\\mathrm{f}(6) = 1$.\nGreatest value $= 10$ (at $x = 4$). Least value $= 1$ (at the endpoint $x = 6$) — lower than the local minimum value $\\mathrm{f}(1) = 2$.   A1\n(A candidate who adds the areas without their signs, e.g. $\\mathrm{f}(1) = 6$ or $\\mathrm{f}(6) = 19$, scores M0. A candidate who gives the least value as $2$, the local minimum, scores A0 for the last mark.)\n\n(c) Let $y = 3 - 2\\mathrm{f}\\left(\\frac{1}{2}x\\right)$, $0 \\leqslant x \\leqslant 12$. Then $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = -2 \\cdot \\frac{1}{2}\\mathrm{f}'\\left(\\frac{1}{2}x\\right) = -\\mathrm{f}'\\left(\\frac{1}{2}x\\right)$.\n$\\frac{\\mathrm{d}y}{\\mathrm{d}x} = 0 \\iff \\mathrm{f}'\\left(\\frac{1}{2}x\\right) = 0 \\iff \\frac{1}{2}x = 1$ or $\\frac{1}{2}x = 4 \\iff x = 2$ or $x = 8$.   B1\nAt $x = 2$: $y = 3 - 2\\mathrm{f}(1) = 3 - 4 = -1$. At $x = 8$: $y = 3 - 2\\mathrm{f}(4) = 3 - 20 = -17$. The stationary points are $(2, -1)$ and $(8, -17)$.   B1\nNature: as $x$ increases through $2$, $\\frac{1}{2}x$ increases through $1$, where $\\mathrm{f}'$ changes from negative to positive, so $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = -\\mathrm{f}'\\left(\\frac{1}{2}x\\right)$ changes from positive to negative: $(2, -1)$ is a MAXIMUM point. As $x$ increases through $8$, $\\mathrm{f}'$ changes from positive to negative, so $\\frac{\\mathrm{d}y}{\\mathrm{d}x}$ changes from negative to positive: $(8, -17)$ is a MINIMUM point.   B1\n(Equivalently, by transformations: a stretch of factor 2 parallel to the $x$-axis takes the minimum $(1, 2)$ and the maximum $(4, 10)$ of $y = \\mathrm{f}(x)$ to $(2, 2)$ and $(8, 10)$; then $y \\mapsto 3 - 2y$ — a stretch of factor 2 parallel to the $y$-axis, a reflection in the $x$-axis and a translation of 3 units in the positive $y$-direction — gives $(2, -1)$ and $(8, -17)$, and the reflection turns the minimum into a maximum and the maximum into a minimum.)\n(Check: the endpoints $x = 0$ and $x = 12$ give $y = 3 - 2(4) = -5$ and $y = 3 - 2(1) = 1$; they are not stationary points, since $\\mathrm{f}'(0) \\neq 0$ and $\\mathrm{f}'(6) \\neq 0$.)\n\n(Verification of the figure: with $\\mathrm{f}'(x) = \\frac{(x-1)(x-4)(1285x^2 - 7255x - 9672)}{10800}$, exact integration gives $\\int_0^1 \\mathrm{f}' = -2$, $\\int_1^4 \\mathrm{f}' = 8$, $\\int_4^6 \\mathrm{f}' = -9$; the quadratic factor has roots about $-1.11$ and $6.76$, so $\\mathrm{f}'$ vanishes in $[0, 6]$ only at $x = 1$ and $x = 4$; and $\\mathrm{f}(x) = 4 + \\int_0^x \\mathrm{f}'$ has minimum $1$ at $x = 6$ and maximum $10$ at $x = 4$ on $[0, 6]$.)",
+    "syllabus_check": "9758 Differentiation: the sign of $\\mathrm{f}'$ read from a graph and the graph of $y = \\mathrm{f}'(x)$ related to the graph of $y = \\mathrm{f}(x)$; the first-derivative test for the nature of a stationary point; greatest and least values on an interval (Maximum and Minimum). 9758 Definite integrals: the definite integral as area, with regions below the $x$-axis giving a negative integral, and $\\int_a^b \\mathrm{f}'(x)\\,\\mathrm{d}x = \\mathrm{f}(b) - \\mathrm{f}(a)$. 9758 Graphs and transformations: $y = a\\mathrm{f}(x) + b$ and $y = \\mathrm{f}(ax)$ combined. No calculator ban is needed (Q4 carries the paper's one) and a calculator gives no shortcut, because $\\mathrm{f}$ is never given. Nothing outside the revised 9758: no second derivative test is needed, no non-stationary inflexion, no method of differences, no polar form. Timing: 2 + 3 + 3 marks at about 1.8 minutes a mark, about 14 minutes.",
+    "originality_note": "No GCE 2008–2025 question gives the graph of a DERIVATIVE with the areas it encloses and asks for values of the function it came from. The nearest real questions go the other way or use a given function: GCE 2010 P2 Q3(iii) sketches $y = \\mathrm{f}'(x)$ from a known $\\mathrm{f}$; GCE 2010 P1 Q6 finds areas under a given cubic; GCE 2015 P1 Q5(iii) sketches $y = 1 + \\mathrm{f}\\left(\\frac{1}{2}x\\right)$ from a piecewise $\\mathrm{f}$ that is printed; GCE 2014 P1 Q4 transforms a printed $y = \\mathrm{f}(x)$ to $y^2 = \\mathrm{f}(x)$; GCE 2021 P1 Q6(c) and GCE 2022 P1 Q6(a) describe transformations of known curves. Here $\\mathrm{f}$ is never seen: every value of it is rebuilt from signed areas, the least value is at an endpoint and not at the local minimum, and the transformation is applied to points the candidate has had to construct, with the nature reversed. No earlier Set of this level exists; in this paper Q3 asks a range of a piecewise-constant function and Q8 an area under a parametric curve, neither reads a derivative's graph nor transforms a curve."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P2 Q2",
+     "jaccard": 0.062,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-27T00:12:10.837Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "x = 1: minimum point, since f'(x) changes sign from negative to positive as x increases through 1; x = 4: maximum point, since f'(x) changes sign from positive to negative as x increases through 4",
+     "(b)": "Greatest value 10 (at x = 4); least value 1 (at x = 6)  [f(0)=4, f(1)=4-2=2, f(4)=2+8=10, f(6)=10-9=1]",
+     "(c)": "(2, -1) is a maximum point; (8, -17) is a minimum point"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: x = 1 minimum (f' changes from negative to positive), x = 4 maximum (positive to negative). Correct: the stem says the graph meets the x-axis only at 1 and 4 and the figure crosses at both."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: greatest 10 at x = 4, least 1 at x = 6, via f(1) = 4 - 2 = 2, f(4) = 2 + 8 = 10, f(6) = 10 - 9 = 1. Re-derived: f decreases on [0,1], increases on [1,4], decreases on [4,6], so the extremes are among f(0) = 4, f(1) = 2, f(4) = 10, f(6) = 1; the endpoint value 1 beats the local minimum 2."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: (2, -1) maximum, (8, -17) minimum. Re-derived: dy/dx = -f'(x/2) vanishes at x = 2, 8 only in [0,12]; y(2) = 3 - 2(2) = -1, y(8) = 3 - 2(10) = -17; the negative factor reverses the sign change of f', so the minimum of f becomes a maximum and the maximum a minimum. Endpoints y(0) = -5, y(12) = 1 are not stationary."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The blind examiner and the setter agree on every part and both are right; I re-derived all three parts, and the figure's quartic f'(x) = (x-1)(x-4)(1285x^2 - 7255x - 9672)/10800 checks exactly (integrals -2, 8, -9 on the three intervals, negative on [0,1), positive on (1,4), negative on (4,6], no other zero in [0,6], f'(0) = -3.58, peak about (2.5, 4.1), trough about (5.7, -6.9), f'(6) = -6.43), so the printed picture cannot mislead.",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "7 — Two topics fused, the second acting on the first's output (the signed areas under the printed f' rebuild the values of f; the transformation y = 3 - 2f(x/2) then acts on those stationary points and values)",
+    "fixes": [
+     "(c): ask for the reason — 'Find the coordinates of the stationary points of the curve y = 3 - 2f(1/2 x) for 0 <= x <= 12 and determine, with a reason, the nature of each.' — so the reversal of maximum and minimum under the factor -2 (dy/dx = -f'(1/2 x), the sign change of f' reversed) is argued and earns its B1, instead of a 'state' that a candidate can call at evens; the third mark stays in (c), no re-mark needed.",
+     "(a) in SEAB's cadence, with the interval the idea carried restored since f is defined only by the diagram on 0 <= x <= 6: 'State the x-coordinates of the stationary points of the curve y = f(x) for 0 <= x <= 6 and determine, with a reason, the nature of each.' Same for the stem's third clause: 'The areas of the three regions between the graph and the x-axis are 2, 8 and 9, as shown.'"
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "Nothing about f is printed except its derivative's graph and three areas, so the values of f can only come from reading the areas as signed changes (the integral of f' as f(b) - f(a)), which the stem never names — a move the candidate must find, not the textbook f'-graph exercise that stops at part (a); the endpoint then beats the local minimum in (b), and (c) chains a stretch, a reflection and the reversal of nature in one line of thought, all inside 9758 and paid what 2022-2024 pays (a 2-mark lead-in, a 3-mark idea with a decision, a 3-mark chain), at position 6 where the real papers sit 8-9 marks. No 2017-2025 paper carries a printed f' with areas (the gates' nearest, GCE 2021 P2 Q2, is a Riemann-sum question with a different object and parts), no earlier Set exists, and nothing in this paper tests these skills (Q5 uses stationary points by calculus for a range, Q8 integrates for an area); the numbers close exactly and the figure is verified. The writing load is light for 8 marks, which is why (c) should examine the reasoning for its nature mark; that and the (a)/stem cadence are the light edits between this and a real question."
+   },
+   "exemplars": [
+    {
+     "id": "32eeb68f-cd31-4bcf-a415-e4ac4f23f1b1",
+     "ref": "GCE 2021 P1 Q6"
+    },
+    {
+     "id": "cf79ca42-68c4-4ad3-b788-78db41057b9e",
+     "ref": "GCE 2018 P1 Q4"
+    },
+    {
+     "id": "3276fbf0-a5fd-41e8-9ebf-afeb8b29b5ea",
+     "ref": "GCE 2017 P1 Q4"
+    },
+    {
+     "id": "c2f145c6-9309-40f4-959c-976b3e485efb",
+     "ref": "GCE 2025 specimen P1 Q3"
+    },
+    {
+     "id": "dccd7467-715d-431c-8a49-7e340d09cf17",
+     "ref": "GCE 2022 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Differentiation (Maclaurin Series)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A straight rail $AB$ of length $2a$ m is fixed at both ends. When the rail is heated, its length increases to $2a(1 + k)$ m, where $k$ is a positive constant. The ends $A$ and $B$ remain $2a$ m apart, so the rail bows upwards into an arc of a circle of radius $r$ m. This arc subtends an angle of $2\\theta$ radians at the centre of the circle.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\theta = (1 + k)\\sin\\theta$.",
+      "marks": 2,
+      "answer": "Arc: $2r\\theta = 2a(1 + k)$; chord: $2r\\sin\\theta = 2a$; dividing gives $\\frac{\\theta}{\\sin\\theta} = 1 + k$, so $\\theta = (1 + k)\\sin\\theta$.",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "It is given that $k$ is small, so that $\\theta$ is also small. Find an approximation for $\\theta$ in terms of $k$.",
+      "marks": 3,
+      "answer": "$\\theta \\approx \\sqrt{6k}$ (from $\\theta^2 \\approx \\frac{6k}{1 + k}$; accept $\\theta \\approx \\sqrt{\\frac{6k}{1 + k}}$). The approximation $\\sin\\theta \\approx \\theta$ alone gives $k\\theta = 0$, a straight rail, so the $\\theta^3$ term must be kept.",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find, in terms of $a$ and $\\theta$, the greatest height of the arc above the line $AB$, and deduce that this height is approximately $\\frac{1}{2}a\\theta$.",
+      "marks": 2,
+      "answer": "$h = \\frac{a(1 - \\cos\\theta)}{\\sin\\theta}$ $\\left(= a\\tan\\frac{1}{2}\\theta\\right)$; with $1 - \\cos\\theta \\approx \\frac{1}{2}\\theta^2$ and $\\sin\\theta \\approx \\theta$, $h \\approx \\frac{a \\cdot \\frac{1}{2}\\theta^2}{\\theta} = \\frac{1}{2}a\\theta$.",
+      "subparts": []
+     },
+     {
+      "label": "(d)",
+      "text": "A rail of length 60 m, fixed at both ends, increases in length by 1 cm. Estimate the greatest height of the arc above the line joining the fixed ends, and comment on the size of this height compared with the increase in the length of the rail.",
+      "marks": 2,
+      "answer": "$0.474$ m (about 47 cm), from $a = 30$, $k = \\frac{1}{6000}$, $\\theta \\approx \\sqrt{0.001} \\approx 0.0316$. Comment: the middle of the rail rises about 47 cm, nearly 50 times the 1 cm increase in length (the rise grows like $\\sqrt{k}$, not like $k$), so a very small expansion makes a large bow; a rail fixed at both ends with no room to expand buckles badly, which is why gaps are left for expansion.",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) shown; (b) $\\theta \\approx \\sqrt{6k}$; (c) $\\frac{a(1 - \\cos\\theta)}{\\sin\\theta}$ $\\left(= a\\tan\\frac{1}{2}\\theta\\right) \\approx \\frac{1}{2}a\\theta$; (d) $0.474$ m (about 47 cm): nearly 50 times the 1 cm expansion, so a tiny expansion makes a large bow and rails need room to expand.",
+    "total_marks": 9,
+    "topics": [
+     "Differentiation (Maclaurin Series)"
+    ],
+    "skills": [
+     "§8 move 6 (the situation changes the maths): the small-angle approximation $\\sin\\theta \\approx \\theta$ turns $\\theta = (1 + k)\\sin\\theta$ into $k\\theta = 0$, a straight rail that the longer rail rules out, so the candidate must decide to keep the $\\theta^3$ term of the Maclaurin series of $\\sin\\theta$ and reach $\\theta^2 \\approx 6k$, with no target printed",
+     "modelling a rail that bows between fixed ends as a circular arc: arc length $2r\\theta$ against chord $2r\\sin\\theta$, then the rise $r(1 - \\cos\\theta) = \\frac{a(1 - \\cos\\theta)}{\\sin\\theta}$ approximated by the leading terms of the series for $\\cos\\theta$ and $\\sin\\theta$",
+     "judging the size of a modelled effect in context: the rise $\\frac{1}{2}a\\sqrt{6k}$ grows like $\\sqrt{k}$, so a 1 cm expansion of a 60 m rail lifts its middle about 47 cm"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $O$ be the centre of the circle and $M$ the midpoint of $AB$.\nThe arc $AB$ subtends $2\\theta$ at $O$ and has the new length of the rail: $r(2\\theta) = 2a(1 + k)$, so $r\\theta = a(1 + k)$.   [B1]\n$OM$ is perpendicular to $AB$ and bisects angle $AOB$, so angle $AOM = \\theta$ and $AM = r\\sin\\theta = a$ (the chord $AB$ is still $2a$).\nDividing, $\\frac{r\\theta}{r\\sin\\theta} = \\frac{a(1 + k)}{a}$, so $\\frac{\\theta}{\\sin\\theta} = 1 + k$, i.e. $\\theta = (1 + k)\\sin\\theta$.   [B1, AG]\n\n(b) The first approximation for small $\\theta$, $\\sin\\theta \\approx \\theta$, gives $\\theta = (1 + k)\\theta$, i.e. $k\\theta = 0$, so $\\theta = 0$ since $k > 0$. That is a straight rail, impossible because the rail is now longer than $AB$: the first-order terms cancel and this approximation gives no information about $\\theta$. The next term of the Maclaurin series must be kept: $\\sin\\theta \\approx \\theta - \\frac{\\theta^3}{6}$.   [M1: the $\\theta^3$ term used, with or without the failed first attempt shown]\n$\\theta \\approx (1 + k)\\left(\\theta - \\frac{\\theta^3}{6}\\right)$. As $\\theta \\neq 0$, divide by $\\theta$: $1 \\approx (1 + k)\\left(1 - \\frac{\\theta^2}{6}\\right)$.   [M1: cancel $\\theta$ and rearrange for $\\theta^2$]\n$1 - \\frac{\\theta^2}{6} \\approx \\frac{1}{1 + k} \\Rightarrow \\frac{\\theta^2}{6} \\approx 1 - \\frac{1}{1 + k} = \\frac{k}{1 + k} \\Rightarrow \\theta^2 \\approx \\frac{6k}{1 + k}$.\nSince $k$ is small, $1 + k \\approx 1$, so $\\theta^2 \\approx 6k$ and, as $\\theta > 0$, $\\theta \\approx \\sqrt{6k}$.   [A1; accept $\\sqrt{\\frac{6k}{1 + k}}$]\n(Alternative: $\\frac{\\theta}{\\sin\\theta} = \\left(1 - \\frac{\\theta^2}{6} + \\ldots\\right)^{-1} \\approx 1 + \\frac{\\theta^2}{6}$, so $1 + \\frac{\\theta^2}{6} \\approx 1 + k$ and $\\theta^2 \\approx 6k$.)\n\n(c) $OM = r\\cos\\theta$. The rail bows upwards and $\\theta$ is small, so $O$ lies below $AB$ and the highest point $P$ of the arc lies on $OM$ produced, with $OP = r$. The greatest height is\n$h = MP = r - r\\cos\\theta = r(1 - \\cos\\theta) = \\frac{a(1 - \\cos\\theta)}{\\sin\\theta}$, using $r = \\frac{a}{\\sin\\theta}$ from (a).   [B1; accept $a\\tan\\frac{1}{2}\\theta$ or $a\\operatorname{cosec}\\theta - a\\cot\\theta$]\nFor small $\\theta$, $\\cos\\theta \\approx 1 - \\frac{1}{2}\\theta^2$ and $\\sin\\theta \\approx \\theta$, so $h \\approx \\frac{a \\cdot \\frac{1}{2}\\theta^2}{\\theta} = \\frac{1}{2}a\\theta$.   [B1, AG]\n(Here the leading terms do not cancel, so the first terms of the series are enough; taking $\\cos\\theta \\approx 1$ would give $h \\approx 0$, the same trap as in (b).)\nIn terms of $k$: $h \\approx \\frac{1}{2}a\\sqrt{6k} = a\\sqrt{\\frac{3k}{2}}$.\n\n(d) $2a = 60$, so $a = 30$. The increase in length is $2ak = 0.01$ m, so $k = \\frac{0.01}{60} = \\frac{1}{6000}$.\n$\\theta \\approx \\sqrt{6k} = \\sqrt{0.001} \\approx 0.03162$ (small, so the approximations are justified).\nGreatest height $\\approx \\frac{1}{2}a\\theta = 15 \\times 0.03162 \\approx 0.474$ m, about 47 cm.   [B1]\n(Check: solving $\\theta = \\left(1 + \\frac{1}{6000}\\right)\\sin\\theta$ on the graphing calculator gives $\\theta = 0.031621$ and $h = 30\\tan\\frac{1}{2}\\theta = 0.4744$ m; the radius is about 949 m.)\nComment: a 1 cm increase in the length of a 60 m rail lifts its middle by about 47 cm, nearly 50 times the expansion itself. Because the rise is about $\\frac{1}{2}a\\sqrt{6k}$, it grows like $\\sqrt{k}$ rather than $k$, so even a very small expansion produces a large bow; a rail fixed at both ends with no room to expand would buckle dangerously, which is why gaps are left between rails for expansion.   [B1: the height is large compared with the 1 cm expansion, with a consequence in context]",
+    "syllabus_check": "Inside 9758. The Maclaurin series of $\\sin x$ and $\\cos x$ (MF26) and the small-angle approximations $\\sin x \\approx x$, $\\cos x \\approx 1 - \\frac{1}{2}x^2$ (Differentiation: Maclaurin series), used to approximate the root of a transcendental equation in terms of a parameter; no general term is asked for. Arc length $r\\theta$, the chord $2r\\sin\\theta$ and the perpendicular from the centre bisecting a chord are assumed O-Level knowledge (radian measure, circle properties); the binomial $(1 - u)^{-1}$ in the alternative route is in MF26. Calculator allowed (the paper's one ban is Q4): (b) and (c) are in terms of $k$ and $\\theta$, so no calculator read replaces the work, and (d) is a numerical estimate. Nothing outside the revised syllabus: no polar or exponential form, no method of differences, no induction.",
+    "originality_note": "Implements Q7.idea.md: move 6, the object (a rail of length $2a(1 + k)$ bowing into a circular arc between ends kept $2a$ apart, half-angle $\\theta$) and its four parts with marks 2 + 3 + 2 + 2. One change of wording hands the move to the candidate: the idea's (b) opened with 'Explain why the approximation $\\sin\\theta \\approx \\theta$ gives no information about $\\theta$ here' and printed 'show that $\\theta \\approx \\sqrt{6k}$', which names the trap and prints its answer; here (b) asks only for an approximation for $\\theta$ in terms of $k$, so the candidate who reaches for $\\sin\\theta \\approx \\theta$ gets $k\\theta = 0$ (a straight rail), must reject it from the situation and decide to keep the $\\theta^3$ term, and the mark scheme pays that decision. (c) asks for the rise in terms of $a$ and $\\theta$ unprinted and prints only the approximation $\\frac{1}{2}a\\theta$ that (d) needs as a gate; (d) asks for the comment 'in the context of the question' so it is markable. No 2017–2025 9758 Maclaurin question has a first-order approximation that cancels: GCE 2024 P1 Q8, GCE 2023 P2 Q2, GCE 2021 P1 Q7, GCE 2025 P1 Q9, GCE 2022 P1 Q2, GCE 2020 P1 Q3, GCE 2019 P2 Q4, GCE 2018 P2 Q4 and GCE 2017 P1 Q1 all build a series from a given function or differential relation. The nearest real question is GCE 2025 specimen P1 Q9 (a man on a mountain: a tangent to the earth, 'h is small compared to R', a printed binomial target $\\sin\\theta \\approx (2\\alpha)^{\\frac{1}{2}}\\left(1 - \\frac{3}{4}\\alpha\\right)$, then estimates from a measured angle); it shares the outline 'circle geometry, an approximation for a small ratio, numbers' but not the object, the move (its approximation is a printed binomial expansion; here the first-order approximation fails and no target is printed) or the closing judgement. The 9740 triangle questions GCE 2012 P1 Q4 and GCE 2008 P1 Q6 ('show that $AC \\approx a + b\\theta + c\\theta^2$') are the small-angle template this avoids. In this paper no other question uses a Maclaurin or small-angle series; Q8's trigonometric parametric curve and Q11's solar-panel vectors share no object or skill. No earlier Set exists."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P1 Q11",
+     "jaccard": 0.037,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-09-27T00:24:04.721Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (arc: 2r\\theta = 2a(1+k); chord: 2r\\sin\\theta = 2a \\Rightarrow r = a/\\sin\\theta \\Rightarrow \\theta = (1+k)\\sin\\theta)",
+     "(b)": "\\theta \\approx \\sqrt{6k}  (from 1 = (1+k)(1 - \\theta^2/6), \\theta^2 = 6k/(1+k) \\approx 6k)",
+     "(c)": "h = r(1-\\cos\\theta) = \\dfrac{a(1-\\cos\\theta)}{\\sin\\theta} = a\\tan\\tfrac{\\theta}{2}; for small \\theta, h \\approx a\\cdot\\tfrac{\\theta^2/2}{\\theta} = \\tfrac{1}{2}a\\theta (shown)",
+     "(d)": "a = 30, k = 0.01/60 = 1/6000, \\theta \\approx \\sqrt{0.001} \\approx 0.0316, h \\approx \\tfrac{1}{2}(30)(0.0316) \\approx 0.474 m (about 47 cm). Comment: a 1 cm extension produces a rise of about 47 cm, far larger than expected, so rails must have expansion gaps; \\theta \\approx 0.032 is small, so the small-angle approximations are justified."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: arc 2rθ = 2a(1 + k), chord 2r sin θ = 2a, divide. Re-derived: rθ = a(1 + k) and r sin θ = a give θ/sin θ = 1 + k. Shown."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both θ ≈ √(6k). Re-derived: sin θ ≈ θ − θ³/6 gives 1 = (1 + k)(1 − θ²/6), θ² = 6k/(1 + k) ≈ 6k. Keeping the θ⁵ term alters only the k² correction (θ² ≈ 6k − 4.2k²), so √(6k) is the leading-order answer and √(6k/(1 + k)) is rightly accepted as equivalent at this order."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both h = r(1 − cos θ) = a(1 − cos θ)/sin θ = a tan(θ/2) ≈ ½aθ. Re-derived: the apex lies on OM produced with O below AB, so h = r − r cos θ; r = a/sin θ from (a); the leading terms ½θ² over θ give ½aθ."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both a = 30, k = 0.01/60 = 1/6000, θ² ≈ 0.001, θ ≈ 0.0316, h ≈ 0.474 m. Checked against the exact root of θ = (1 + 1/6000) sin θ: θ = 0.031621, h = 30 tan(θ/2) = 0.4744 m, r ≈ 949 m. Both comment that a 1 cm expansion lifts the middle about 47 cm, hence expansion gaps."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The blind examiner and the setter agree on every part; each was re-derived and the key is exactly right, including the exact check in (d).",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "6. The situation changes the maths",
+    "fixes": [
+     "(d): direct the comment the B1 pays for, SEAB-style (as GCE 2022 P1 Q12(c) does): 'Comment on the size of this height compared with the increase in the length of the rail.' As printed, 'comment on your answer in the context of the question' is open: a candidate who writes only 'θ ≈ 0.03 is small, so the approximations are valid' (the blind examiner's second sentence) has answered the prompt but not earned the mark the scheme describes.",
+     "Stem, register only: state the constraint as its own sentence rather than a parenthetical — 'The ends A and B remain 2a m apart, so the rail bows upwards into an arc of a circle of radius r m.' The maths is unchanged."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The candidate builds the model from three sentences (arc 2rθ against chord 2r sin θ), and the approximation everyone reaches for first, sin θ ≈ θ, collapses to kθ = 0 — the straight rail the words exclude — so the θ³ term must be kept and θ found from k with no target printed; the author rightly dropped the idea's 'Explain why sin θ ≈ θ gives no information', which named the trap, and the direction is also reversed (θ is found from the relation, not an expression approximated for a given θ). The sagitta in (c) and the 47 cm surprise in (d) close it with a judgement; it follows no §9 template, no GCE 2017–2025 question or earlier Set has this object or sequence of parts, the numbers close exactly (θ² = 0.001), and the marks match the work — a real Q7 once the comment prompt is directed."
+   },
+   "exemplars": [
+    {
+     "id": "27f046a9-bee8-42d7-9830-32d19bc4c1b5",
+     "ref": "GCE 2024 P1 Q8"
+    },
+    {
+     "id": "d72d34dc-8e60-4409-af48-4e14a70b862c",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "1a3823d9-5073-45fd-b1d1-313924ab1802",
+     "ref": "GCE 2021 P1 Q7"
+    },
+    {
+     "id": "03644d2e-b017-4f5d-b4fa-52fa3c467ff9",
+     "ref": "GCE 2025 P1 Q9"
+    },
+    {
+     "id": "67e0c903-996c-43ec-a07f-cbc0e8336c2f",
+     "ref": "GCE 2018 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Differentiation (Tangents and Normals)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "The curve $C$ has parametric equations $x = t + \\sin t$, $y = \\sin t$, for $0 \\leqslant t \\leqslant \\pi$. The curve $C$ meets the $x$-axis at the origin $O$ and at the point $F$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that, for $0 \\leqslant t < \\pi$, $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{\\cos t}{1 + \\cos t}$.",
+      "marks": 2,
+      "answer": "$\\frac{\\mathrm{d}x}{\\mathrm{d}t} = 1 + \\cos t$, $\\frac{\\mathrm{d}y}{\\mathrm{d}t} = \\cos t$, so $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{\\cos t}{1 + \\cos t}$ (shown)"
+     },
+     {
+      "label": "(b)",
+      "text": "The line $y = h$, where $h$ is a constant such that $0 < h < 1$, meets $C$ at the points $A$ and $B$, where the $x$-coordinate of $A$ is less than the $x$-coordinate of $B$. The tangents to $C$ at $A$ and at $B$ are perpendicular. Find the exact value of $h$ and the exact coordinates of $B$.",
+      "marks": 4,
+      "answer": "$h = \\frac{\\sqrt{2}}{2}$; $B\\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2},\\ \\frac{\\sqrt{2}}{2}\\right)$"
+     },
+     {
+      "label": "(c)",
+      "text": "Find the exact area of the region bounded by the tangent to $C$ at $B$, the $x$-axis and the arc of $C$ between $B$ and $F$.",
+      "marks": 5,
+      "answer": "$\\frac{3\\sqrt{2} - 4}{4}$ $\\left(= \\frac{3\\sqrt{2}}{4} - 1\\right)$"
+     }
+    ],
+    "answer": "(a) shown; (b) $h = \\frac{\\sqrt{2}}{2}$, $B\\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2},\\ \\frac{\\sqrt{2}}{2}\\right)$; (c) $\\frac{3\\sqrt{2} - 4}{4}$",
+    "total_marks": 11,
+    "topics": [
+     "Differentiation (Tangents and Normals)",
+     "Parametric Equations",
+     "Integration (Area and Volume)"
+    ],
+    "skills": [
+     "perpendicular tangents at the two points of a parametric curve at the same height, found by recognising their parameters as $\\alpha$ and $\\pi - \\alpha$",
+     "area bounded by a tangent, the x-axis and a parametric arc that ends before the tangent reaches the axis: a triangle minus $\\int y\\frac{\\mathrm{d}x}{\\mathrm{d}t}\\,\\mathrm{d}t$",
+     "x-intercept of the tangent at a named point of a trigonometric parametric curve, in exact form"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\frac{\\mathrm{d}x}{\\mathrm{d}t} = 1 + \\cos t$ and $\\frac{\\mathrm{d}y}{\\mathrm{d}t} = \\cos t$. For $0 \\leqslant t < \\pi$, $1 + \\cos t \\neq 0$, so $\\frac{\\mathrm{d}y}{\\mathrm{d}x} = \\frac{\\mathrm{d}y/\\mathrm{d}t}{\\mathrm{d}x/\\mathrm{d}t} = \\frac{\\cos t}{1 + \\cos t}$. [B1 both derivatives; A1 shown]\n(b) A point of $C$ with $y = h$ has $\\sin t = h$. For $0 < h < 1$ this has exactly two roots in $0 \\leqslant t \\leqslant \\pi$: $t = \\alpha$ and $t = \\pi - \\alpha$, where $0 < \\alpha < \\frac{\\pi}{2}$, because $\\sin(\\pi - \\alpha) = \\sin\\alpha$. Since $\\frac{\\mathrm{d}x}{\\mathrm{d}t} = 1 + \\cos t > 0$ for $0 \\leqslant t < \\pi$, $x$ increases with $t$, so $A$ has parameter $\\alpha$ and $B$ has parameter $\\pi - \\alpha$. [M1]\nGradient at $A$: $\\frac{\\cos\\alpha}{1 + \\cos\\alpha}$. Gradient at $B$: $\\frac{\\cos(\\pi - \\alpha)}{1 + \\cos(\\pi - \\alpha)} = \\frac{-\\cos\\alpha}{1 - \\cos\\alpha}$. [M1]\nPerpendicular tangents: $\\frac{\\cos\\alpha}{1 + \\cos\\alpha} \\times \\frac{-\\cos\\alpha}{1 - \\cos\\alpha} = -1 \\Rightarrow \\frac{\\cos^2\\alpha}{1 - \\cos^2\\alpha} = 1 \\Rightarrow \\cos^2\\alpha = \\sin^2\\alpha \\Rightarrow \\tan^2\\alpha = 1$. As $0 < \\alpha < \\frac{\\pi}{2}$, $\\tan\\alpha = 1$, so $\\alpha = \\frac{\\pi}{4}$. [M1] (Equivalently, with $\\sin\\alpha = h$: $\\frac{1 - h^2}{h^2} = 1$, $h^2 = \\frac{1}{2}$.)\n$h = \\sin\\frac{\\pi}{4} = \\frac{\\sqrt{2}}{2}$. $B$ has parameter $\\frac{3\\pi}{4}$: $x = \\frac{3\\pi}{4} + \\sin\\frac{3\\pi}{4} = \\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2}$, $y = \\frac{\\sqrt{2}}{2}$, so $B = \\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2},\\ \\frac{\\sqrt{2}}{2}\\right)$. [A1] (Check: the gradients are $\\sqrt{2} - 1$ at $A$ and $-(\\sqrt{2} + 1)$ at $B$, product $-(2 - 1) = -1$.)\n(c) $F$: $\\sin t = 0$ with $t \\neq 0$ gives $t = \\pi$, so $F = (\\pi, 0)$.\nGradient at $B$: $\\frac{-\\frac{\\sqrt{2}}{2}}{1 - \\frac{\\sqrt{2}}{2}} = \\frac{-\\sqrt{2}}{2 - \\sqrt{2}} = -\\frac{\\sqrt{2}(2 + \\sqrt{2})}{2} = -(\\sqrt{2} + 1)$.\nTangent at $B$: $y - \\frac{\\sqrt{2}}{2} = -(\\sqrt{2} + 1)\\left(x - \\frac{3\\pi}{4} - \\frac{\\sqrt{2}}{2}\\right)$. [M1]\nAt $y = 0$: $x - \\frac{3\\pi}{4} - \\frac{\\sqrt{2}}{2} = \\frac{\\sqrt{2}/2}{\\sqrt{2} + 1} = \\frac{\\sqrt{2}}{2}(\\sqrt{2} - 1) = 1 - \\frac{\\sqrt{2}}{2}$, so the tangent meets the $x$-axis at $S\\left(\\frac{3\\pi}{4} + 1,\\ 0\\right)$. [A1] Since $1 > \\frac{\\pi}{4}$, $\\frac{3\\pi}{4} + 1 > \\pi$, so $S$ lies beyond $F$: the region is bounded above by the segment $BS$ of the tangent and below by the arc $BF$ of $C$ and the segment $FS$ of the $x$-axis. (The tangent lies above $C$, since $\\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2} = -\\frac{\\sin t}{(1 + \\cos t)^3} \\leqslant 0$.)\nLet $N = \\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2},\\ 0\\right)$ be the point of the $x$-axis directly below $B$. Area $=$ area of triangle $BNS$ $-$ area between the arc $BF$ and the $x$-axis. [M1]\nTriangle $BNS$: $NS = \\left(\\frac{3\\pi}{4} + 1\\right) - \\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2}\\right) = 1 - \\frac{\\sqrt{2}}{2}$ and $BN = \\frac{\\sqrt{2}}{2}$, so its area is $\\frac{1}{2}\\left(1 - \\frac{\\sqrt{2}}{2}\\right)\\frac{\\sqrt{2}}{2} = \\frac{\\sqrt{2} - 1}{4}$.\nArea under arc $BF$ $= \\int y\\,\\mathrm{d}x = \\int_{3\\pi/4}^{\\pi} \\sin t\\,(1 + \\cos t)\\,\\mathrm{d}t = \\left[-\\cos t + \\frac{1}{2}\\sin^2 t\\right]_{3\\pi/4}^{\\pi}$ [M1] $= (1 + 0) - \\left(\\frac{\\sqrt{2}}{2} + \\frac{1}{4}\\right) = \\frac{3}{4} - \\frac{\\sqrt{2}}{2}$.\nRequired area $= \\frac{\\sqrt{2} - 1}{4} - \\left(\\frac{3}{4} - \\frac{\\sqrt{2}}{2}\\right) = \\frac{3\\sqrt{2} - 4}{4}$ $\\left(= \\frac{3\\sqrt{2}}{4} - 1 \\approx 0.0607\\right)$. [A1]",
+    "syllabus_check": "9758 only: parametric differentiation and the gradient of a tangent (Differentiation), the perpendicular-gradient condition and sin(pi - a) = sin a, cos(pi - a) = -cos a (assumed O-Level A Math), the equation of a tangent and where it meets an axis, and the area under a parametric curve as the definite integral of y (dx/dt) dt, evaluated exactly with the f'(x)[f(x)]^n form (Definite integrals). No second derivative of a parametric curve is asked (it appears only as an optional remark in the key), no arc length, no volume of a parametric curve, no polar form. Exact answers are asked, so the calculator cannot supply the marks. Timing: 2 + 4 + 5 marks at about 1.8 minutes a mark is about 20 minutes.",
+    "originality_note": "The curve x = t + sin t, y = sin t (a sine arch sheared along y = x, with a gentle rise from O and a steep fall to a vertical tangent at F) appears in no GCE paper in the corpus, and no earlier Set exists. The decisive idea, that the two points at one height have parameters alpha and pi - alpha and that perpendicular tangents there force tan^2 alpha = 1, is asked in no real paper. The closest real questions differ in curve, condition and region: 2024 P1 Q9 (a polynomial curve, a tangent at 60 degrees, the area under C up to a vertical line), 2016 P2 Q3 (x = t - cos t, y = 1 - cos t, a normal meeting both axes, triangle OEF), 2020 P2 Q3 (the normal to a parabola and the area enclosed by C, N and the x-axis), 2009 P2 Q1 and 2023 P2 Q4 (a tangent meeting a curve again). Here the region is a tangent reaching the x-axis beyond the end of the arc, so the candidate must see it as a triangle minus a parametric integral with limits 3pi/4 to pi."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P1 Q9",
+     "jaccard": 0.149,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-26T22:51:49.601Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "h = \\frac{\\sqrt{2}}{2} (= \\frac{1}{\\sqrt{2}}); B = \\left(\\frac{3\\pi}{4} + \\frac{\\sqrt{2}}{2},\\ \\frac{\\sqrt{2}}{2}\\right)",
+     "(c)": "\\frac{3\\sqrt{2}}{4} - 1 \\approx 0.0607"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. dx/dt = 1 + cos t, dy/dt = cos t, and 1 + cos t > 0 on 0 <= t < pi, so the quotient is valid there. Correct."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give h = sqrt(2)/2 and B = (3pi/4 + sqrt(2)/2, sqrt(2)/2). Re-derived: sin t = h has roots t = alpha and pi - alpha; x increases with t, so A is alpha and B is pi - alpha; the gradient product is -cos^2(alpha)/sin^2(alpha) = -1, so tan alpha = 1 and alpha = pi/4 (equivalently (1 - h^2)/h^2 = 1). Correct."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 3sqrt(2)/4 - 1 (= (3sqrt(2) - 4)/4, about 0.0607). Re-derived: gradient at B = -(sqrt(2) + 1); the tangent meets the x-axis at x = 3pi/4 + 1 > pi, i.e. beyond F; d2y/dx2 = -sin t/(1 + cos t)^3 < 0 so the tangent lies above the arc; triangle (sqrt(2) - 1)/4 minus the integral of sin t (1 + cos t) dt from 3pi/4 to pi, which is 3/4 - sqrt(2)/2. Correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and each answer re-derives; the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "In-paper overlap: Q8(c) takes its area as a triangle minus the area under the arc, and Q9(b) of this paper ('the area taken as triangle minus the area under the curve') uses the same decomposition. Only one of the two needs to move. For Q8, change (c) to the region bounded by the arc AB of C and the chord AB: area = integral from pi/4 to 3pi/4 of (sin t - h)(1 + cos t) dt = sqrt(2) - pi*sqrt(2)/4 = sqrt(2)(4 - pi)/4, an integral minus a rectangle that builds on (b)'s A and B; if the tangent's exact x-intercept 3pi/4 + 1 is still wanted, ask for it as a 2-mark tail of (b) and set (c) at [3] so the total stays 11. Alternatively leave Q8 as it is and have the session re-brief Q9(b) to take its area as one integral of (line - curve) dx."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A genuine 2022-2024-shape parametric question: (a) gates the two later parts, (b) makes the candidate see that the two points at height h are t = alpha and pi - alpha before forming the gradient product, and (c) makes them find the tangent's x-intercept, notice it lies beyond F and decompose the sliver, with exact, clean numbers in SEAB's register. It shares only the generic show-derivative / locate-a-point / exact-area skeleton with GCE 2024 P1 Q9 while every demand differs; the one edit is the triangle-minus-integral decomposition it shares with Q9(b) of this paper."
+   },
+   "exemplars": [
+    {
+     "id": "f52cfdc7-5a82-45cf-a1e9-069a86a36bdb",
+     "ref": "GCE 2025 specimen P1 Q8"
+    },
+    {
+     "id": "26d49385-ae24-4b6d-9ff9-8e8660d2eea1",
+     "ref": "GCE 2020 P2 Q3"
+    },
+    {
+     "id": "10e83b95-a056-46fe-aacc-a894fc077a86",
+     "ref": "GCE 2017 P1 Q5"
+    },
+    {
+     "id": "d3575899-2863-41bc-87b5-cdf2830207d9",
+     "ref": "GCE 2023 P2 Q4"
+    },
+    {
+     "id": "4fe5f590-8bf5-48f8-b230-df11f07b38e5",
+     "ref": "GCE 2018 P1 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Integration (Techniques)",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "For $0 \\le k \\le \\ln 3$, the function $\\mathrm{J}$ is defined by $\\mathrm{J}(k) = \\int_{1}^{3} \\left| \\ln x - k \\right| \\,\\mathrm{d}x$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find $\\int \\ln x \\,\\mathrm{d}x$.",
+      "marks": 2,
+      "answer": "$x \\ln x - x + c$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Find $\\mathrm{J}(k)$ in terms of $k$.",
+      "marks": 4,
+      "answer": "$\\mathrm{J}(k) = 2\\mathrm{e}^{k} - 4k + 3\\ln 3 - 4$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Use calculus to find the exact value of $k$ for which $\\mathrm{J}(k)$ is least, and show that the least value of $\\mathrm{J}(k)$ is $\\ln \\frac{27}{16}$.",
+      "marks": 4,
+      "answer": "$k = \\ln 2$; least value $\\mathrm{J}(\\ln 2) = 3\\ln 3 - 4\\ln 2 = \\ln \\frac{27}{16}$ (shown)",
+      "subparts": []
+     },
+     {
+      "label": "(d)",
+      "text": "The function $\\mathrm{g}$ is continuous and increasing for $1 \\le x \\le 3$. Without doing any detailed calculation, state, in terms of $\\mathrm{g}$, the value of $k$ for which $\\int_{1}^{3} \\left| \\mathrm{g}(x) - k \\right| \\,\\mathrm{d}x$ is least, and explain your answer.",
+      "marks": 3,
+      "answer": "$k = \\mathrm{g}(2)$. The integral is the total area between $y = \\mathrm{g}(x)$ and $y = k$ for $1 \\le x \\le 3$; if the line meets the curve at $x = c$, raising the line by a small amount $\\delta$ adds about $\\delta(c - 1)$ to the area on the left and removes about $\\delta(3 - c)$ on the right, a net change of about $2\\delta(c - 2)$. So the area falls while $c < 2$ and rises once $c > 2$: it is least when the line meets the curve at the midpoint $x = 2$, i.e. $k = \\mathrm{g}(2)$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $x \\ln x - x + c$; (b) $\\mathrm{J}(k) = 2\\mathrm{e}^{k} - 4k + 3\\ln 3 - 4$; (c) $k = \\ln 2$, least value $\\ln \\frac{27}{16}$ (shown); (d) $k = \\mathrm{g}(2)$, with the explanation that raising the line changes the total area at the rate (length where the line is above the curve) $-$ (length where it is below), which is zero when the line crosses the curve at the midpoint $x = 2$",
+    "total_marks": 13,
+    "topics": [
+     "Integration (Techniques)",
+     "Integration (Area and Volume)",
+     "Differentiation (Maximum and Minimum)"
+    ],
+    "skills": [
+     "§8 move 3 (a general parameter carried to the end): splitting the modulus integrand $\\left| \\ln x - k \\right|$ at $x = \\mathrm{e}^{k}$, a point that moves with $k$, and carrying $k$ through the limits and the integration by parts of $\\ln x$ to $\\mathrm{J}(k) = 2\\mathrm{e}^{k} - 4k + 3\\ln 3 - 4$ (the form is not printed)",
+     "minimising a definite integral as a function of its parameter by calculus: $\\mathrm{J}'(k) = 2\\mathrm{e}^{k} - 4 = 0$ gives $k = \\ln 2$, justified as the least value, and the least value $\\ln \\frac{27}{16}$ as the check on the unprinted $\\mathrm{J}(k)$",
+     "§8 move 9 (a reasoning-only part): reading $k = \\ln 2$ as $\\ln$ of the midpoint of $[1, 3]$ and explaining, by the effect on the two areas of raising the line $y = k$ a little, why $\\int_{1}^{3} \\left| \\mathrm{g}(x) - k \\right| \\,\\mathrm{d}x$ is least at $k = \\mathrm{g}(2)$ for any continuous increasing $\\mathrm{g}$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Integrate by parts with $u = \\ln x$, $\\frac{\\mathrm{d}v}{\\mathrm{d}x} = 1$:\n$\\int \\ln x \\,\\mathrm{d}x = x \\ln x - \\int x \\cdot \\frac{1}{x} \\,\\mathrm{d}x = x \\ln x - x + c$.   [M1 by parts with $\\frac{\\mathrm{d}v}{\\mathrm{d}x} = 1$; A1]\n\n(b) The line $y = k$ meets the curve $y = \\ln x$ where $x = \\mathrm{e}^{k}$. Since $0 \\le k \\le \\ln 3$, $1 \\le \\mathrm{e}^{k} \\le 3$, so the split point lies in $[1, 3]$ and MOVES with $k$.\nFor $1 \\le x \\le \\mathrm{e}^{k}$, $\\ln x \\le k$, so $\\left| \\ln x - k \\right| = k - \\ln x$; for $\\mathrm{e}^{k} \\le x \\le 3$, $\\left| \\ln x - k \\right| = \\ln x - k$.   [M1: the split at $x = \\mathrm{e}^{k}$ with the correct sign on each side]\n$\\mathrm{J}(k) = \\int_{1}^{\\mathrm{e}^{k}} (k - \\ln x) \\,\\mathrm{d}x + \\int_{\\mathrm{e}^{k}}^{3} (\\ln x - k) \\,\\mathrm{d}x$.   [M1: both integrals evaluated with the result of (a) and the limits $\\mathrm{e}^{k}$]\nFirst integral: $\\left[ kx - x \\ln x + x \\right]_{1}^{\\mathrm{e}^{k}} = \\left( k\\mathrm{e}^{k} - k\\mathrm{e}^{k} + \\mathrm{e}^{k} \\right) - (k - 0 + 1) = \\mathrm{e}^{k} - k - 1$.   [A1]\nSecond integral: $\\left[ x \\ln x - x - kx \\right]_{\\mathrm{e}^{k}}^{3} = (3\\ln 3 - 3 - 3k) - \\left( k\\mathrm{e}^{k} - \\mathrm{e}^{k} - k\\mathrm{e}^{k} \\right) = 3\\ln 3 - 3 - 3k + \\mathrm{e}^{k}$.\n$\\mathrm{J}(k) = 2\\mathrm{e}^{k} - 4k + 3\\ln 3 - 4$.   [A1]\n(Checks: $\\mathrm{J}(0) = 3\\ln 3 - 2 = \\int_{1}^{3} \\ln x \\,\\mathrm{d}x$; $\\mathrm{J}(\\ln 3) = 2 - \\ln 3 = \\int_{1}^{3} (\\ln 3 - \\ln x) \\,\\mathrm{d}x$. A candidate who ignores the modulus gets $3\\ln 3 - 2 - 2k$, which has no stationary value, so part (c) exposes the error.)\n\n(c) $\\mathrm{J}'(k) = 2\\mathrm{e}^{k} - 4$.   [M1: differentiate the answer to (b) with respect to $k$ and set it equal to 0]\n$\\mathrm{J}'(k) = 0 \\Rightarrow \\mathrm{e}^{k} = 2 \\Rightarrow k = \\ln 2$, which lies in $[0, \\ln 3]$.   [A1]\n$\\mathrm{J}''(k) = 2\\mathrm{e}^{k} > 0$, so $k = \\ln 2$ gives a minimum; as it is the only stationary value in $[0, \\ln 3]$ ($\\mathrm{J}'(k) < 0$ for $k < \\ln 2$ and $\\mathrm{J}'(k) > 0$ for $k > \\ln 2$), it is the least value of $\\mathrm{J}$.   [B1]\n$\\mathrm{J}(\\ln 2) = 2(2) - 4\\ln 2 + 3\\ln 3 - 4 = 3\\ln 3 - 4\\ln 2 = \\ln 27 - \\ln 16 = \\ln \\frac{27}{16}$ (shown).   [A1]\n(Numerically $\\ln \\frac{27}{16} \\approx 0.523$, against $\\mathrm{J}(0) \\approx 1.30$ and $\\mathrm{J}(\\ln 3) \\approx 0.901$.)\n\n(d) $k = \\mathrm{g}(2)$.   [B1]\n$\\int_{1}^{3} \\left| \\mathrm{g}(x) - k \\right| \\,\\mathrm{d}x$ is the total area between the curve $y = \\mathrm{g}(x)$ and the line $y = k$ for $1 \\le x \\le 3$. As $\\mathrm{g}$ is increasing, a line with $\\mathrm{g}(1) \\le k \\le \\mathrm{g}(3)$ meets the curve at exactly one point, $x = c$, and is above the curve on $[1, c]$ and below it on $[c, 3]$.\nRaising the line by a small amount $\\delta$ adds a strip of height $\\delta$ over $[1, c]$ to the left-hand area (about $\\delta(c - 1)$) and removes a strip of height $\\delta$ over $[c, 3]$ from the right-hand area (about $\\delta(3 - c)$), a net change of about $\\delta[(c - 1) - (3 - c)] = 2\\delta(c - 2)$.   [B1]\nSo the total area decreases as the line rises while $c < 2$ and increases once $c > 2$: it is least when the line meets the curve at the midpoint $x = 2$ of the interval, i.e. when $k = \\mathrm{g}(2)$.   [B1]\n(A line wholly below the curve, $k < \\mathrm{g}(1)$, reduces the area by about $2\\delta$ when raised, and a line wholly above it, $k > \\mathrm{g}(3)$, reduces it when lowered, so the least value has the crossing inside $[1, 3]$.)\nConsistent with (c): for $\\mathrm{g}(x) = \\ln x$ the crossing is $c = \\mathrm{e}^{k}$ and $\\mathrm{J}'(k) = 2\\mathrm{e}^{k} - 4 = 2(c - 2)$, exactly the rate found above, and $k = \\ln 2 = \\mathrm{g}(2)$. The numbers of (c) point to $\\mathrm{g}(2)$ and to nothing else a candidate might guess: $\\frac{1}{2}[\\mathrm{g}(1) + \\mathrm{g}(3)] = \\frac{1}{2}\\ln 3 \\approx 0.549$ and the mean value $\\frac{1}{2}\\int_{1}^{3} \\ln x \\,\\mathrm{d}x = \\frac{3\\ln 3 - 2}{2} \\approx 0.648$, whereas $\\ln 2 \\approx 0.693$.\n\nMark scheme notes. (b) Any equivalent form earns the final A1, e.g. $2\\mathrm{e}^{k} - 4k + \\ln 27 - 4$. (c) The B1 needs a nature test (second derivative or sign of $\\mathrm{J}'$); a stationary value found without one scores M1 A1 B0 A1. (d) The value alone, with no reason, scores B1 only. Accept, for the explanation, the equivalent statement that at the least value the length of $[1, 3]$ on which $\\mathrm{g}(x) < k$ must equal the length on which $\\mathrm{g}(x) > k$, because a small rise in $k$ changes the area at the rate (first length) $-$ (second length); accept 'the line $y = k$ meets the curve at $x = 2$' for the value. A candidate who differentiates a general $\\int_{1}^{c} (k - \\mathrm{g}) \\,\\mathrm{d}x + \\int_{c}^{3} (\\mathrm{g} - k) \\,\\mathrm{d}x$ with respect to $k$ (the terms from the moving limit vanish because the integrand is zero at $x = c$) earns full marks, but this is not expected.",
+    "syllabus_check": "Inside 9758. Integration by parts for $\\ln x$ (Integration techniques); a modulus integrand split at its zero and a definite integral read as the area between a curve and a line (Integration techniques; Definite integrals: area between curves and lines); a least value by calculus with the nature shown (Differentiation: maxima and minima). The parameter enters only through the limits $\\mathrm{e}^{k}$ and the integrand, and $\\mathrm{J}(k)$ is found explicitly in (b), so differentiating under the integral sign (outside the syllabus) is never needed; (d) is argued from areas alone. Exact forms are asked in (b) and (c), so no calculator ban is needed (the paper's one ban is Q4). Nothing outside the revised syllabus: no method of differences, polar or exponential form, induction or reduction formula.",
+    "originality_note": "Implements Q9.idea.md: move 3, the object $\\mathrm{J}(k) = \\int_{1}^{3} \\left| \\ln x - k \\right| \\mathrm{d}x$ for $0 \\le k \\le \\ln 3$, the parts (a) $\\int \\ln x$, (b) $\\mathrm{J}(k)$, (c) the least value by calculus, (d) the reason behind the minimiser, and the marks 2/4/4/3, all unchanged. Two wording changes so that the candidate FINDS the steps. (b) is 'Find an expression for J(k)', not the idea's printed 'Show that J(k) = 2e^k - 4k + 3 ln 3 - 4': printing it shows e^k and so gives away the moving split point x = e^k, the step the question is about; the printed least value ln(27/16) in (c) becomes the check on (b) instead (a candidate who drops the modulus gets a linear J with no minimum and is stopped there). (d) asks the candidate to STATE the minimising k in terms of g and explain it, rather than printing 'k = g(2)': the candidate must read ln 2 as ln of the midpoint 2, and the numbers rule out the natural wrong guesses, (g(1) + g(3))/2 = 0.549 and the mean value 0.648. Real modulus integrals (GCE 2022 P1 Q8(b), GCE 2023 P1 Q4(d), GCE 2025 P1 Q5(b), GCE 2009 P1 Q11(iv)) split at a FIXED zero and ask for one number; none has a split point that moves with a parameter, none optimises the integral over the parameter, and none asks why the minimiser sits where it does. GCE 2023 P1 Q4(c) carries n through a fixed-limit integral but optimises nothing. In this paper Q6 reads areas under a printed graph of y = f'(x) as signed changes in f and finds greatest and least values of f; this question builds an integral as a function of a parameter from a modulus, minimises it and reasons about the minimiser, a different object and move. Q8's area (a triangle minus a parametric integral) and Q5's range by calculus share no structure with it. No earlier Set exists."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2008 P1 Q5",
+     "jaccard": 0.04,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-27T00:20:31.170Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "x ln x - x + C",
+     "(b)": "J(k) = 2e^k - 4k + 3 ln 3 - 4  (split at x = e^k: integral from 1 to e^k of (k - ln x) = e^k - k - 1, integral from e^k to 3 of (ln x - k) = 3 ln 3 - 3 + e^k - 3k)",
+     "(c)": "J'(k) = 2e^k - 4 = 0 gives k = ln 2 (J''(k) = 2e^k > 0, so minimum; ln 2 lies in [0, ln 3]); J(ln 2) = 4 - 4 ln 2 + 3 ln 3 - 4 = 3 ln 3 - 4 ln 2 = ln(27/16) — shown",
+     "(d)": "k = g(2). As k increases, the integral's rate of change is (length of x where g(x) < k) - (length where g(x) > k); since g is increasing, the integral is least when g(x) = k splits [1, 3] into two equal lengths, i.e. at the midpoint x = 2 (consistent with (c): ln 2 = g(2) for g = ln)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give x ln x - x + c (by parts with dv/dx = 1)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both split at x = e^k (inside [1, 3] because 0 <= k <= ln 3) and reach J(k) = 2e^k - 4k + 3 ln 3 - 4. Re-derived: (e^k - k - 1) + (3 ln 3 - 3 - 3k + e^k); the k e^k terms cancel; J(0) = 3 ln 3 - 2 and J(ln 3) = 2 - ln 3 both match direct integration."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: J'(k) = 2e^k - 4 = 0 gives k = ln 2, inside [0, ln 3]; J''(k) = 2e^k > 0 so a minimum, the only stationary value; J(ln 2) = 4 - 4 ln 2 + 3 ln 3 - 4 = 3 ln 3 - 4 ln 2 = ln(27/16), about 0.523, below J(0) = 1.30 and J(ln 3) = 0.90."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both give k = g(2) by the same reason: raising the line y = k by a small amount changes the total area at the rate (length of [1, 3] where g < k) - (length where g > k), which is negative while the crossing is left of x = 2 and positive after it, so the area is least when the crossing is the midpoint. Consistent with (c): ln 2 = g(2) for g = ln."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement: the examiner's (a)-(d) match the setter's key exactly, and my own working confirms J(k) = 2e^k - 4k + 3 ln 3 - 4, k = ln 2 with the least value ln(27/16), and k = g(2) in (d).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(d) register: open with SEAB's phrase and fold the two sentences into one - 'Without doing any detailed calculation, state, in terms of g, the value of k for which the integral from 1 to 3 of |g(x) - k| dx is least, and explain your answer.' (the form of GCE 2023 P2 Q9(f)).",
+     "(b) register: 'Find J(k) in terms of k.' - drop 'an expression for' (SEAB's shorter form, as in GCE 2023 P1 Q2(a) 'Find u_n in terms of n')."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The main step is a move the candidate must find and is not printed: the modulus splits at x = e^k, a point that moves with k, so k rides through the limits and the by-parts result to an unprinted J(k) that is then minimised (a candidate who ignores the modulus gets 3 ln 3 - 2 - 2k, which has no stationary value, so (c) exposes the error), and (d) asks for the value AND the reason for any increasing g with the answer unprinted and the natural wrong guesses (the mean of g, about 0.648; the average of g(1) and g(3), about 0.549) numerically distinct from ln 2, so the reasoning is both findable from (c) and paid. No 2017-2025 question minimises an integral over its own parameter (GCE 2023 P1 Q4 and GCE 2022 P1 Q8 have fixed split points and no optimisation), the marks match what 2022-2024 paid for a by-parts lead-in, a modulus split, a calculus minimum and a reasoned explanation, and only the register of (b) and (d) separates it from a real paper; for the session, move 3 is now used by Q5 and Q9, which is the paper's allowance.",
+    "template": null,
+    "move": "3 - a general parameter carried to the end (the split point x = e^k moves with k; k is carried through the limits, the integration and the minimisation to an unprinted J(k)); (d) adds 9 - a reasoning-only part"
+   },
+   "exemplars": [
+    {
+     "id": "5ce59773-1280-4413-a690-d846887fcd6d",
+     "ref": "GCE 2025 P2 Q4"
+    },
+    {
+     "id": "e293a70e-0b67-4717-8472-e61cee37e037",
+     "ref": "GCE 2021 P1 Q9"
+    },
+    {
+     "id": "4fe5f590-8bf5-48f8-b230-df11f07b38e5",
+     "ref": "GCE 2018 P1 Q9"
+    },
+    {
+     "id": "c059c763-b789-4e12-9924-65385f1e72ab",
+     "ref": "GCE 2024 P1 Q10"
+    },
+    {
+     "id": "7900f64d-b85d-48dd-bb51-53fbed6cd50d",
+     "ref": "GCE 2021 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Integration (Differential Equations)",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "A ball of ice is melting in a warm room and remains spherical as it melts. At time $t$ hours after it is first observed, its radius is $r$ cm and its volume is $V$ cm$^{3}$; the radius is $10$ cm when $t = 0$ and $8$ cm when $t = 1$. Two models are proposed for the melting: in model A, the rate of decrease of $V$ is proportional to the surface area of the ball, and in model B, the rate of decrease of $V$ is proportional to $V$.\n[The volume of a sphere of radius $r$ is $\\frac{4}{3}\\pi r^3$ and its surface area is $4\\pi r^2$.]",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Using model A, find $r$ in terms of $t$. Hence state the time at which, according to model A, the ball has melted completely.",
+      "marks": 4,
+      "answer": "$r = 10 - 2t$ (for $0 \\le t \\le 5$); the ball has melted completely when $t = 5$, i.e. 5 hours after it is first observed",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Using model B, find $r$ in terms of $t$.",
+      "marks": 3,
+      "answer": "$r = 10(0.8)^{t}$ $\\left(= 10\\mathrm{e}^{t\\ln 0.8} = 10\\mathrm{e}^{-0.223t}\\right)$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "When $t = 3$, the radius of the ball is measured as $4.2$ cm. Determine which model fits this measurement better.",
+      "marks": 2,
+      "answer": "Model A predicts $r = 4$ and model B predicts $r = 5.12$; since $|4.2 - 4| = 0.2 < |4.2 - 5.12| = 0.92$, model A fits the measurement better.",
+      "subparts": []
+     },
+     {
+      "label": "(d)",
+      "text": "Explain why model B cannot describe the whole of the melting.",
+      "marks": 1,
+      "answer": "In model B, $r = 10(0.8)^{t} > 0$ for every $t$ ($r \\to 0$ only as $t \\to \\infty$), so model B predicts that the ball never melts completely, whereas the ball melts completely in a finite time.",
+      "subparts": []
+     },
+     {
+      "label": "(e)",
+      "text": "Show that, for $0 < t < 1$, model B predicts a smaller radius than model A.",
+      "marks": 3,
+      "answer": "Let $h(t) = 10 - 2t - 10(0.8)^{t}$. Then $h(0) = h(1) = 0$ and $h''(t) = -10(\\ln 0.8)^2(0.8)^{t} < 0$, so the graph of $y = h(t)$ is concave downward and lies above its chord joining $(0, 0)$ and $(1, 0)$: $h(t) > 0$ for $0 < t < 1$, i.e. $10(0.8)^{t} < 10 - 2t$, so model B predicts the smaller radius.",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $r = 10 - 2t$; melted completely at $t = 5$ (5 hours); (b) $r = 10(0.8)^{t}$; (c) A predicts $4$ cm, B predicts $5.12$ cm, so model A fits better ($0.2 < 0.92$); (d) $10(0.8)^{t} > 0$ for all $t$, so in model B the ball never melts completely; (e) $h(t) = 10 - 2t - 10(0.8)^{t}$ has $h(0) = h(1) = 0$ and $h'' < 0$, so $h(t) > 0$ for $0 < t < 1$.",
+    "total_marks": 13,
+    "topics": [
+     "Integration (Differential Equations)"
+    ],
+    "skills": [
+     "move 11 (a model built from words): forming $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = -k(4\\pi r^2)$ unprompted and, through the chain rule $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = 4\\pi r^2\\frac{\\mathrm{d}r}{\\mathrm{d}t}$, finding that the surface area cancels so the radius falls at a constant rate, giving a linear $r$ and a finite melting time; beside it the proportional-to-volume model carried from $V$ to $r$ ($V \\propto r^3$, so $r = 10\\mathrm{e}^{-ct/3} = 10(0.8)^{t}$)",
+     "move 10 (two models compared algebraically): two models fitted to the SAME two readings, told apart by a third reading, by their end behaviour (model B never reaches $r = 0$) and between the readings",
+     "proving that the exponential model lies below the linear one for $0 < t < 1$: the difference $10 - 2t - 10(0.8)^{t}$ vanishes at $t = 0$ and $t = 1$ and has a negative second derivative (a convex curve lies below its chord, and model A's line is that chord)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Model A: the rate of decrease of $V$ is proportional to the surface area $4\\pi r^2$, so\n$\\frac{\\mathrm{d}V}{\\mathrm{d}t} = -k(4\\pi r^2)$, where $k$ is a positive constant.   M1\nSince $V = \\frac{4}{3}\\pi r^3$, by the chain rule $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = \\frac{\\mathrm{d}V}{\\mathrm{d}r} \\times \\frac{\\mathrm{d}r}{\\mathrm{d}t} = 4\\pi r^2\\frac{\\mathrm{d}r}{\\mathrm{d}t}$.\nSo $4\\pi r^2\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -4\\pi k r^2$, and since $r > 0$ while the ball exists, $\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -k$: the surface area cancels and the radius decreases at a constant rate.   M1\nIntegrating, $r = -kt + C$. When $t = 0$, $r = 10$, so $C = 10$; when $t = 1$, $r = 8$, so $8 = 10 - k$ and $k = 2$.\n$r = 10 - 2t$.   A1\nThe ball has melted completely when $r = 0$: $10 - 2t = 0$, so $t = 5$, i.e. 5 hours after it is first observed (model A applies for $0 \\le t \\le 5$).   B1\n(Alternative for the first two marks: $S = 4\\pi r^2 = (36\\pi)^{1/3}V^{2/3}$, so $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = -k(36\\pi)^{1/3}V^{2/3}$; separating, $3V^{1/3} = -k(36\\pi)^{1/3}t + D$, so $V^{1/3}$, and hence $r$, is a linear function of $t$. Same marks.)\n\n(b) Model B: $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = -cV$, where $c$ is a positive constant.   M1\nSeparating the variables: $\\int \\frac{1}{V}\\,\\mathrm{d}V = -\\int c\\,\\mathrm{d}t$, so $\\ln V = -ct + D$ ($V > 0$) and $V = V_0\\mathrm{e}^{-ct}$, where $V_0 = \\frac{4}{3}\\pi(10)^3$ is the volume when $t = 0$.   M1\nThen $\\frac{4}{3}\\pi r^3 = \\frac{4}{3}\\pi(1000)\\mathrm{e}^{-ct}$, so $r^3 = 1000\\mathrm{e}^{-ct}$ and $r = 10\\mathrm{e}^{-ct/3}$.   M1\n(Alternatively, in $r$ directly: $4\\pi r^2\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -c \\cdot \\frac{4}{3}\\pi r^3$, so $\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -\\frac{c}{3}r$ and $r = 10\\mathrm{e}^{-ct/3}$.)\nWhen $t = 1$, $r = 8$: $\\mathrm{e}^{-c/3} = 0.8$ (so $c = 3\\ln 1.25 = 0.669$).\n$r = 10\\left(\\mathrm{e}^{-c/3}\\right)^{t} = 10(0.8)^{t}$.   A1\n(Accept $r = 10\\mathrm{e}^{t\\ln 0.8}$ or $r = 10\\mathrm{e}^{-0.223t}$.)\n\n(c) When $t = 3$: model A gives $r = 10 - 2(3) = 4$; model B gives $r = 10(0.8)^3 = 5.12$.   M1\n$|4.2 - 4| = 0.2$ and $|4.2 - 5.12| = 0.92$. Since $0.2 < 0.92$, model A fits the measurement better.   A1\n(Comparing volumes leads to the same conclusion.)\n\n(d) In model B, $r = 10(0.8)^{t} > 0$ for every value of $t$, and $r \\to 0$ only as $t \\to \\infty$. So model B predicts that the ball never melts completely, whereas a ball of ice in a warm room melts completely in a finite time (model A has it gone at $t = 5$). So model B cannot describe the final stage of the melting.   B1\n\n(e) Let $h(t) = (10 - 2t) - 10(0.8)^{t}$, the radius predicted by model A minus the radius predicted by model B, for $0 \\le t \\le 1$.\nBoth models were fitted to the same two readings, so $h(0) = 10 - 10 = 0$ and $h(1) = 8 - 8 = 0$.\n$h'(t) = -2 - 10(\\ln 0.8)(0.8)^{t}$ and $h''(t) = -10(\\ln 0.8)^2(0.8)^{t} < 0$ for all $t$.   M1\nSo the graph of $y = h(t)$ is concave downward on $0 \\le t \\le 1$, and therefore lies above its chord joining $(0, 0)$ and $(1, 0)$, which is the $t$-axis. Hence $h(t) > 0$ for $0 < t < 1$, i.e. $10(0.8)^{t} < 10 - 2t$: model B predicts a smaller radius than model A.   A1\n(Equivalent argument: $h'$ is strictly decreasing, with $h'(0) = -2 - 10\\ln 0.8 = 0.231 > 0$ and $h'(1) = -2 - 8\\ln 0.8 = -0.215 < 0$, so $h$ increases to a single maximum and then decreases on $[0, 1]$; with $h(0) = h(1) = 0$ this gives $h(t) > 0$ for $0 < t < 1$. Or: $\\frac{\\mathrm{d}^2}{\\mathrm{d}t^2}\\left[10(0.8)^{t}\\right] = 10(\\ln 0.8)^2(0.8)^{t} > 0$, so model B's curve is concave upward, and model A's line $r = 10 - 2t$ is its chord through $(0, 10)$ and $(1, 8)$, so the curve lies below the line between these points.)\nMarker's notes: checking one or several values (e.g. $t = 0.5$: $9$ against $8.944$) or reading a graphing-calculator plot scores 0, since the difference is at most $0.0557$ cm (at $t = 0.491$) and a value check proves nothing about every $t$. The final mark needs both $h(0) = h(1) = 0$ and the sign of $h''$ (or the sign change of $h'$).\n(Remark: the same concavity gives $h(t) < 0$ for $1 < t \\le 5$ — model B predicts the LARGER radius after the second reading, as found at $t = 3$ in part (c). The two models never differ by more than $0.056$ cm during the first hour, which is why they can be told apart only by a reading taken later.)\n\nMark scheme note (moderation, 27 Sep 2026): re-marked (b) [3] and (e) [3] — (e) is the question's proof (h(0) = h(1) = 0 with h'' < 0, or the convexity of 0.8^t against its chord), (b) the standard separation with one constant.",
+    "syllabus_check": "9758 Differential equations: formulating a first-order differential equation from a situation stated in words (a rate of decrease proportional to a quantity), with the chain rule $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = \\frac{\\mathrm{d}V}{\\mathrm{d}r}\\frac{\\mathrm{d}r}{\\mathrm{d}t}$ linking $V$ and $r$ (connected rates used as a tool); solving $\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -k$ by direct integration and $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = -cV$ by separating the variables; particular solutions with the constants found from two data values; interpreting the solutions (the time of complete melting, $r \\to 0$ only as $t \\to \\infty$) and comparing two models against data. 9758 Differentiation: the graphical interpretation of $\\mathrm{f}''(x) < 0$ (concave downward), used to compare two functions on an interval. The volume and surface area of a sphere are printed in the question. No given substitution, no second-order equation, no method of differences, nothing outside the revised 9758. Calculator allowed; every answer is exact. Timing: 4 + 4 + 2 + 1 + 2 marks, about 23 minutes at 1.8 minutes a mark.",
+    "originality_note": "No GCE 2008–2025 question models a melting sphere, and none fits two competing models to the same data and then tells them apart. The nearest real differential-equation questions: GCE 2022 P1 Q12 (an exponential population model REFINED to a logistic one, compared only by the long-term value), GCE 2019 P1 Q11(ii) (ice thickness with a rate inversely proportional to the thickness — one model, one time found), GCE 2023 P1 Q10 (a mass model whose equation is printed in a 'Show that'). Here neither model is a refinement of the other: model A must be BUILT through the chain rule, and the candidate is never told that the surface area cancels to give a constant rate of decrease of the radius; model B must be carried from $V$ to $r$ through $V \\propto r^3$; and the two are compared three ways — a third reading, the end behaviour (model B never melts the ball), and a proof that between the readings the convex exponential lies below model A's line, which is its chord. The constant-rate property of a surface-area model is a known textbook result, but here it is the unprompted first step, not a printed 'Show that'. No earlier Set of this level exists; no other slot of this paper is on differential equations, and the concavity argument in (e) differs from the first-derivative test of Q6 and the range by calculus of Q5."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2014 P1 Q11",
+     "jaccard": 0.044,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-27T00:21:00.493Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "dV/dt = -k(4πr^2) and dV/dt = 4πr^2 dr/dt give dr/dt = -k, so r = 10 - kt; r = 8 at t = 1 gives k = 2. r = 10 - 2t. The ball has melted completely at t = 5 hours.",
+     "(b)": "dV/dt = -cV gives V = V_0 e^{-ct}, so r^3 = 1000 e^{-ct}, r = 10 e^{-ct/3}; r = 8 at t = 1 gives e^{-c/3} = 0.8. r = 10(0.8)^t (= 10 e^{t ln 0.8} ≈ 10 e^{-0.223t}).",
+     "(c)": "At t = 3: model A gives r = 4 cm, model B gives r = 10(0.8)^3 = 5.12 cm. |4.2 - 4| = 0.2 < |5.12 - 4.2| = 0.92, so model A fits the measurement better.",
+     "(d)": "Under model B, r = 10(0.8)^t > 0 for all t (it only tends to 0 as t → ∞), so the ball never melts completely in finite time, which cannot be true of the real ball.",
+     "(e)": "shown (let g(t) = 1 - 0.2t - 0.8^t; g(0) = g(1) = 0 and g''(t) = -(ln 0.8)^2 (0.8)^t < 0, so g is strictly concave and g(t) > 0 for 0 < t < 1; hence 10(0.8)^t < 10 - 2t)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give r = 10 - 2t and melting at t = 5. Re-derived: dV/dt = -k(4 pi r^2) with dV/dt = 4 pi r^2 dr/dt gives dr/dt = -k (the surface area cancels), r = 10 - kt, r(1) = 8 forces k = 2; r = 0 at t = 5."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give r = 10(0.8)^t. Re-derived: dV/dt = -cV, V = V0 e^{-ct}, r^3 = 1000 e^{-ct}, r = 10 e^{-ct/3}; r(1) = 8 gives e^{-c/3} = 0.8. The exact form 10 e^{t ln 0.8} is equivalent."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: A gives 4, B gives 5.12 at t = 3; |4.2 - 4| = 0.2 < 0.92, so model A fits better. Checked."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: 10(0.8)^t > 0 for every t, tending to 0 only as t -> infinity, so model B never has the ball melted; a real ball melts in finite time."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both prove it the same way: h(t) = 10 - 2t - 10(0.8)^t has h(0) = h(1) = 0 (both models were fitted to the same two readings) and h''(t) = -10 (ln 0.8)^2 (0.8)^t < 0, so h is strictly concave and positive on (0, 1). Checked; the in-syllabus form (h' strictly decreasing with h'(0) = 0.231 > 0 > h'(1) = -0.215, so h rises then falls between two zeros) gives the same. The 'show that' is true."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and I re-derived each: r = 10 - 2t with t = 5, r = 10(0.8)^t, 4 against 5.12 at t = 3, r > 0 for all t under model B, and h(0) = h(1) = 0 with h'' < 0 gives 10(0.8)^t < 10 - 2t on 0 < t < 1; nothing is disputed.",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "10 (compare two models algebraically) — the main step, parts (c)–(e); with 11 (a model built from words) in (a), where the candidate must form dV/dt = -k(4 pi r^2) and see through the chain rule that the surface area cancels",
+    "fixes": [
+     "re-mark: (e) gains one mark and (b) loses one — (e) 3 marks (M1 the difference h(t) = 10 - 2t - 10(0.8)^t with h(0) = h(1) = 0 because both models were fitted to the same readings; M1 h''(t) < 0, or h' strictly decreasing with h'(0) > 0 > h'(1); A1 the conclusion) and (b) 3 marks (form and separate; V to r; the constant from r(1) = 8), which is the allocation the idea itself carried. (e) is the question's one genuine proof and a 2-mark tag tells the candidate it is a one-line read; (b) is the standard separation that GCE 2022 P1 Q12(a) paid 5 with TWO constants to find, and here there is one."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The idea is implemented in full and made harder than briefed: (a) no longer prints 'show that r decreases at a constant rate', so the candidate must build the surface-area model and find the cancellation, and (e) states only the result, as GCE 2023 P2 Q10(b) does for move 10, leaving the difference-function-between-two-zeros argument for the candidate to find; (b) and (d) are the §9 exponential-model lead-in but the question does not follow that template — two rival models fitted to the same two readings are told apart by a third reading, by end behaviour and algebraically between the readings, which no 2022–2024 question does (GCE 2022 P1 Q12 solves a refinement, it does not compare rivals). Stem three sentences all used, clean numbers (0.8^t, 5.12, 4.2), SEAB register, finishable in twenty minutes; the one edit is the mark split, so 4 rather than 5."
+   },
+   "exemplars": [
+    {
+     "id": "340a9a8f-00d8-4fb4-b572-042e88d8ca72",
+     "ref": "GCE 2025 P2 Q3"
+    },
+    {
+     "id": "c09fce15-775c-497d-806c-7ee03f5d8528",
+     "ref": "GCE 2023 P1 Q10"
+    },
+    {
+     "id": "1e1e260d-c71a-43cb-bea5-f8d0db64bb5f",
+     "ref": "GCE 2022 P1 Q12"
+    },
+    {
+     "id": "e0283c14-4e8c-4643-bbe0-c09a3ab7cab8",
+     "ref": "GCE 2019 P1 Q11"
+    },
+    {
+     "id": "d452ee7e-d5ca-43e5-9d9d-10180528daa9",
+     "ref": "GCE 2018 P1 Q10"
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Vectors",
+   "target": 14,
+   "accepted": true,
+   "question": {
+    "stem": "A solar panel $ABCD$, in the shape of a rectangle, is fixed to the flat roof of a building. Coordinates $(x, y, z)$, in metres, are measured from an origin $O$ on the roof, with the $x$-axis pointing east, the $y$-axis pointing north and the $z$-axis pointing vertically upwards, so that the roof lies in the plane $z = 0$. The lower edge $AB$ of the panel rests on the roof, and the points $A$, $B$ and $D$ have coordinates $(4, 1, 0)$, $(8, 3, 0)$ and $(3, 3, 1)$ respectively. A vertical mast stands on the roof at the point $(4, 0, 0)$, and its top $T$ is $5$ m above the roof. The thicknesses of the panel and of the mast are negligible.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find a cartesian equation of the plane containing the panel.",
+      "marks": 4,
+      "answer": "$x - 2y + 5z = 2$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the acute angle between the panel and the roof.",
+      "marks": 2,
+      "answer": "$24.1^\\circ$"
+     },
+     {
+      "label": "(c)",
+      "text": "The sun's rays are modelled as parallel straight lines, and the power produced by the panel is proportional to $\\sin\\alpha$, where $\\alpha$ is the acute angle between the sun's rays and the panel. At 9 a.m. on a certain day, the sun's rays travel in the direction $\\begin{pmatrix} -1 \\\\ 0 \\\\ -1 \\end{pmatrix}$. Find the power produced by the panel at this time as a percentage of the greatest power that the panel can produce.",
+      "marks": 2,
+      "answer": "$77.5\\%$"
+     },
+     {
+      "label": "(d)",
+      "text": "At a certain time on another day, the panel produces the greatest power that it can. Find the coordinates of the point $S$ where the sun's ray through $T$ meets the plane containing the panel at this time.",
+      "marks": 4,
+      "answer": "$S(3.1,\\ 1.8,\\ 0.5)$"
+     },
+     {
+      "label": "(e)",
+      "text": "Determine whether the shadow of $T$ falls on the panel at this time.",
+      "marks": 2,
+      "answer": "No. $\\overrightarrow{AS} = -0.1\\,\\overrightarrow{AB} + 0.5\\,\\overrightarrow{AD}$; since the coefficient of $\\overrightarrow{AB}$ is negative (not between 0 and 1), $S$ lies outside the panel, beyond the edge $AD$, so the shadow of $T$ does not fall on the panel."
+     }
+    ],
+    "answer": "(a) $x - 2y + 5z = 2$; (b) $24.1^\\circ$; (c) $77.5\\%$; (d) $S(3.1,\\ 1.8,\\ 0.5)$; (e) No: $\\overrightarrow{AS} = -0.1\\,\\overrightarrow{AB} + 0.5\\,\\overrightarrow{AD}$ with $-0.1 < 0$, so $S$ is outside the panel (beyond edge $AD$).",
+    "total_marks": 14,
+    "topics": [
+     "Vectors"
+    ],
+    "skills": [
+     "deducing from a power model that the sun's rays are normal to the panel, so the shadow is the foot of the perpendicular from a point to a plane",
+     "deciding whether a point of a plane lies inside a rectangle by writing it as A + λAB + μAD and testing 0 ≤ λ, μ ≤ 1",
+     "angle between a line and a plane used as a sin-proportional power ratio, beside the angle between two planes (the panel's tilt)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) $\\overrightarrow{AB} = \\begin{pmatrix} 4 \\\\ 2 \\\\ 0 \\end{pmatrix}$, $\\overrightarrow{AD} = \\begin{pmatrix} -1 \\\\ 2 \\\\ 1 \\end{pmatrix}$.\nA normal to the panel is $\\overrightarrow{AB} \\times \\overrightarrow{AD} = \\begin{pmatrix} 2(1) - 0(2) \\\\ 0(-1) - 4(1) \\\\ 4(2) - 2(-1) \\end{pmatrix} = \\begin{pmatrix} 2 \\\\ -4 \\\\ 10 \\end{pmatrix} = 2\\begin{pmatrix} 1 \\\\ -2 \\\\ 5 \\end{pmatrix}$, so take $\\mathbf{n} = \\begin{pmatrix} 1 \\\\ -2 \\\\ 5 \\end{pmatrix}$.\n$\\mathbf{r} \\cdot \\mathbf{n} = \\overrightarrow{OA} \\cdot \\mathbf{n} = 4 - 2 + 0 = 2$, so the plane is $x - 2y + 5z = 2$.\n(Check: $B$ gives $8 - 6 + 0 = 2$ and $D$ gives $3 - 6 + 5 = 2$.) [M1 two direction vectors in the plane, M1 vector product, M1 $\\mathbf{r} \\cdot \\mathbf{n} = \\mathbf{a} \\cdot \\mathbf{n}$, A1]\n\n(b) The roof $z = 0$ has normal $\\mathbf{k} = \\begin{pmatrix} 0 \\\\ 0 \\\\ 1 \\end{pmatrix}$.\n$\\cos\\theta = \\dfrac{|\\mathbf{n} \\cdot \\mathbf{k}|}{|\\mathbf{n}||\\mathbf{k}|} = \\dfrac{5}{\\sqrt{30}}$, so $\\theta = 24.1^\\circ$ (24.095...$^\\circ$). [M1, A1]\n\n(c) Let $\\mathbf{d} = \\begin{pmatrix} -1 \\\\ 0 \\\\ -1 \\end{pmatrix}$. The angle between a line and a plane: $\\sin\\alpha = \\dfrac{|\\mathbf{d} \\cdot \\mathbf{n}|}{|\\mathbf{d}||\\mathbf{n}|} = \\dfrac{|-1 + 0 - 5|}{\\sqrt{2}\\sqrt{30}} = \\dfrac{6}{\\sqrt{60}} = \\dfrac{\\sqrt{15}}{5} = 0.7746$ ($\\alpha = 50.8^\\circ$).\nThe power is greatest when $\\sin\\alpha = 1$ (the rays perpendicular to the panel), so the power at 9 a.m. as a percentage of the greatest power is $100\\sin\\alpha = 77.5\\%$. [M1 $\\sin\\alpha$ from $|\\mathbf{d} \\cdot \\mathbf{n}|$, A1]\n\n(d) The greatest power needs $\\sin\\alpha = 1$, i.e. $\\alpha = 90^\\circ$: the sun's rays are perpendicular to the panel, so they are parallel to $\\mathbf{n}$ (travelling in the direction $-\\mathbf{n}$, downwards).\n$T$ is $(4, 0, 5)$. The ray through $T$ is $\\mathbf{r} = \\begin{pmatrix} 4 \\\\ 0 \\\\ 5 \\end{pmatrix} + s\\begin{pmatrix} 1 \\\\ -2 \\\\ 5 \\end{pmatrix}$.\nSubstituting into $x - 2y + 5z = 2$: $(4 + s) - 2(-2s) + 5(5 + 5s) = 2 \\Rightarrow 29 + 30s = 2 \\Rightarrow s = -\\frac{9}{10}$.\nSo $S = (4 - 0.9,\\ 0 + 1.8,\\ 5 - 4.5) = (3.1,\\ 1.8,\\ 0.5)$. ($S$ is the foot of the perpendicular from $T$ to the plane; the ray goes down from height 5 m to height 0.5 m, so it meets the plane before the roof.) [B1 rays parallel to $\\mathbf{n}$ (deduced from $\\sin\\alpha = 1$), M1 line through $T$, M1 substitute into the plane, A1]\n\n(e) The points of the panel are $\\overrightarrow{OA} + \\lambda\\overrightarrow{AB} + \\mu\\overrightarrow{AD}$ with $0 \\le \\lambda \\le 1$ and $0 \\le \\mu \\le 1$.\n$\\overrightarrow{AS} = \\begin{pmatrix} -0.9 \\\\ 0.8 \\\\ 0.5 \\end{pmatrix} = \\lambda\\begin{pmatrix} 4 \\\\ 2 \\\\ 0 \\end{pmatrix} + \\mu\\begin{pmatrix} -1 \\\\ 2 \\\\ 1 \\end{pmatrix}$: the $z$-components give $\\mu = 0.5$ and the $x$-components give $4\\lambda - 0.5 = -0.9$, so $\\lambda = -0.1$ (check $y$: $2(-0.1) + 2(0.5) = 0.8$).\n(Equivalently, since $AB \\perp AD$: $\\lambda = \\dfrac{\\overrightarrow{AS} \\cdot \\overrightarrow{AB}}{|\\overrightarrow{AB}|^2} = \\dfrac{-2}{20} = -0.1$ and $\\mu = \\dfrac{\\overrightarrow{AS} \\cdot \\overrightarrow{AD}}{|\\overrightarrow{AD}|^2} = \\dfrac{3}{6} = 0.5$.)\nSince $\\lambda = -0.1 < 0$, $S$ lies outside the rectangle, beyond the edge $AD$ (by $0.1|\\overrightarrow{AB}| = 0.447$ m). So the shadow of $T$ does not fall on the panel at this time. [M1 $\\lambda$ and $\\mu$ found, A1 conclusion with the reason $\\lambda < 0$]\nMarker's note: $S$ lies within the ranges of the corners' coordinates ($C$ is $(7, 5, 1)$, so $3 \\le x \\le 8$, $1 \\le y \\le 5$, $0 \\le z \\le 1$), so comparing coordinates with the corners does not decide the question; an answer 'yes' from that comparison, or from $S$ lying on the plane, scores 0.",
+    "syllabus_check": "9758 Vectors only: a plane through three points via the vector product and r.n = d; the angle between two planes; the angle between a line and a plane; a line meeting a plane (the foot of the perpendicular from a point to a plane); points of a plane in the form r = a + λb + μc. No shortest distance between skew lines, no common perpendicular, no triple product. Calculator allowed; answers exact where exact, otherwise 3 s.f.",
+    "originality_note": "New situation: a tilted rectangular solar panel on a flat roof, a mast beside it and the sun's rays, with a sin-proportional power model. No SEAB vectors question 2008-2025 uses it (2017 cables, 2019 light through a prism, 2022 pipeline and rock layer, 2024 air traffic and drone, 2018 oblique pyramid). Unlike 2022 P1 Q11 no length fixes a coordinate and the line-plane point is reached only after deducing the ray direction from 'greatest power'; unlike 2024 P1 Q12 the judgement is not a distance against a threshold but whether a point of a plane lies inside a bounded rectangle (λ, μ test), with the point chosen inside the corners' coordinate ranges so a coordinate comparison cannot decide it. No earlier Set exists; no other slot of this paper is on Vectors."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 11,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 specimen P1 Q10",
+     "jaccard": 0.029,
+     "nearest_set": null,
+     "jaccard_set": 0,
+     "repeated_skills": []
+    },
+    "marks": 14,
+    "checked_at": "2026-09-26T22:51:49.604Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "x - 2y + 5z = 2",
+     "(b)": "24.1° (cos θ = 5/√30, i.e. tan θ = 1/√5)",
+     "(c)": "77.5% (sin α = √15/5)",
+     "(d)": "S = (3.1, 1.8, 0.5)",
+     "(e)": "No: S = A − 0.1 AB + 0.5 AD, and the AB-parameter −0.1 is outside [0, 1], so S is outside rectangle ABCD and the shadow of T does not fall on the panel"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both x - 2y + 5z = 2. Verified: AB = (4,2,0), AD = (-1,2,1), AB x AD = (2,-4,10) = 2(1,-2,5), A.n = 2; B gives 8-6 = 2 and D gives 3-6+5 = 2. AB.AD = 0, so ABCD is a genuine rectangle with C = (7,5,1)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 24.1 degrees; cos(theta) = |n.k|/|n| = 5/sqrt(30) = 0.9129, theta = 24.09 degrees."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 77.5%; sin(alpha) = |d.n|/(|d||n|) = 6/sqrt(60) = sqrt(15)/5 = 0.7746 and the greatest power is sin(alpha) = 1. d.n = -6 < 0, so the 9 a.m. rays do strike the upward face, so the model is coherent."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both S = (3.1, 1.8, 0.5). Greatest power means rays parallel to n = (1,-2,5); T = (4,0,5); substituting the line into x - 2y + 5z = 2 gives 29 + 30s = 2, s = -9/10. S is on the plane (3.1 - 3.6 + 2.5 = 2) and above the roof (z = 0.5), so the ray meets the panel's plane before the roof. The sign of the direction does not affect S, so there is no sign trap."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both No. AS = (-0.9, 0.8, 0.5) = lambda AB + mu AD: z gives mu = 0.5, x gives 4 lambda - 0.5 = -0.9 so lambda = -0.1, y checks (2(-0.1) + 2(0.5) = 0.8); projection agrees (AS.AB/|AB|^2 = -2/20, AS.AD/|AD|^2 = 3/6). lambda < 0 puts S 0.45 m beyond edge AD. The marker's note is right: S = (3.1, 1.8, 0.5) lies inside the corners' ranges 3 <= x <= 8, 1 <= y <= 5, 0 <= z <= 1, so a bounding-box comparison wrongly says yes and must score 0."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and both are right; I re-derived all five answers independently and confirmed the rectangle condition AB perpendicular to AD, the sunlit-face check in (c), and that S lies above the roof in (d).",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A 3-D situation in five parts that build (plane, tilt, line-plane angle as a power ratio, then the foot of the perpendicular from T and a decision) with two candidate-supplied ideas a 14-mark closer may carry: deducing from 'greatest power' that the rays run along the normal (the context changes the maths, as 'below the level of Q' does in 2022 P1 Q11), and testing whether S lies inside the rectangle by writing AS = lambda AB + mu AD, which a coordinate-range check gets wrong; the routine parts are paid what 2022-2024 paid them (plane through three points 4, foot of perpendicular 4, angle 2), the numbers are exam-clean (n = (1,-2,5), s = -9/10, lambda = -0.1, mu = 0.5), the register is SEAB's ('Determine whether'), and neither the situation nor the structure re-skins the pipeline (2022 P1 Q11) or air-traffic (2024 P1 Q12) closers. No earlier Set exists and no other slot of this paper tests vectors; the setter's three skills phrases are true and specific; all gates passed (novelty 0.029 against GCE 2025 specimen P1 Q10)."
+   },
+   "exemplars": [
+    {
+     "id": "f81a396b-046b-43d8-b033-6a0958e171eb",
+     "ref": "GCE 2021 P1 Q8"
+    },
+    {
+     "id": "f3296368-d09a-4196-bf00-e7b79d6fd4f9",
+     "ref": "GCE 2024 P1 Q12"
+    },
+    {
+     "id": "e49372b4-b915-4fbf-9940-cb92bad85c52",
+     "ref": "GCE 2023 P1 Q9"
+    },
+    {
+     "id": "f1cc9a70-d496-4eef-9841-d2ffca103aa9",
+     "ref": "GCE 2022 P1 Q11"
+    },
+    {
+     "id": "9fbe5e96-ed8c-4617-867b-5a784d140940",
+     "ref": "GCE 2019 P1 Q12"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,2007 @@
+{
+ "key": "GCE-JC-P2",
+ "seed": 4,
+ "set": 1,
+ "variety": true,
+ "models": {
+  "author": "opus (Claude Code agent)",
+  "solver": "opus (Claude Code agent)",
+  "moderator": "fable (Claude Code agent)",
+  "figure": "opus (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1"
+ ],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "setLevel": "JC",
+  "exam": "A-Level",
+  "cut": 2017,
+  "duration": "3 hours",
+  "standardYears": "2022–2024",
+  "additional": "List of Formulae (MF26)",
+  "sections": {
+   "a": "Section A: Pure Mathematics [40 marks]",
+   "b": "Section B: Probability and Statistics [60 marks]"
+  },
+  "excludeTopics": [
+   "Distributions (Poisson)",
+   "Mathematical Induction"
+  ],
+  "figures": "an Argand diagram, a curve sketch with its asymptotes, a region to be rotated, a 3-D configuration for a vector question, a scatter diagram, a normal curve, a tree diagram, a printed table of data",
+  "notation": "H2 notation: \\mathrm{f}: x \\mapsto \\ldots, \\mathrm{f}^{-1}, \\mathrm{fg}, column vectors \\begin{pmatrix} 1 \\\\ 2 \\\\ 3 \\end{pmatrix} (also \\mathbf{i}, \\mathbf{j}, \\mathbf{k}), \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}, \\mathbf{r} \\cdot \\mathbf{n} = d, \\mathbf{a} \\times \\mathbf{b}, z^{*}, \\arg z, \\sum_{r=1}^{n}, u_n and S_n, \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0 and \\mathrm{H}_1, \\mathrm{P}(A \\mid B), \\mathrm{e}^{x}.",
+  "scope": "PURE MATHEMATICS (all of Paper 1; Section A of Paper 2). Functions: domain and range, one-one functions and inverses (restricting a domain so that an inverse exists; the graph of f^{-1} as the reflection of f in y = x; the domain of f^{-1} is the range of f), composite functions and the condition for fg to exist, repeated composition (f^2, f^{2025}(x) by finding the pattern); NOT (fg)^{-1} = g^{-1}f^{-1}, NOT restricting a domain to make a composite exist. Graphs and transformations: sketching y = (ax+b)/(cx+d) and y = (ax^2+bx+c)/(dx+e) with their asymptotes (vertical, horizontal, oblique), intercepts, turning points and symmetry; y^2 = ax, x^2 = by, the ellipse x^2/a^2 + y^2/b^2 = 1 and the hyperbolas x^2/a^2 - y^2/b^2 = 1, y^2/b^2 - x^2/a^2 = 1; the transformations y = af(x), y = f(x) + a, y = f(x + a), y = f(ax) and combinations described as a SEQUENCE (order matters); the graphs of y = |f(x)|, y = f(|x|) and y = 1/f(x) from y = f(x); simple parametric curves and their sketches. Equations and inequalities: formulating an equation, a system of linear equations (solved on the graphing calculator) or an inequality from a situation; solving an equation exactly or numerically; inequalities f(x)/g(x) > 0 with linear or quadratic f and g by a sign test, never by cross-multiplying; the modulus and |x - a| < b <=> a - b < x < a + b, |x - a| > b <=> x < a - b or x > a + b; solving an inequality from a sketch, and a related inequality by a substitution (x -> |x|, x -> e^x) into one already solved. Sequences and series: a sequence as a function of n, the relation u_n = S_n - S_{n-1}, sequences given by a formula or by a recurrence u_{n+1} = f(u_n) (generating terms, a limit L satisfying L = f(L) when the sequence converges, the behaviour read from a graph or a table), sum and difference of two series, convergence of a series and the sum to infinity, arithmetic and geometric series (nth term, sum to n terms, the condition |r| < 1 for convergence, the sum to infinity), finance and other models built on them (savings with increasing deposits, a loan with monthly interest and repayments, a bouncing ball); NOT the method of differences (removed in the revised 9758 — never set a telescoping sum; a sum whose result is GIVEN may be used for a change of variable), NOT mathematical induction. Vectors: 2-D and 3-D vectors, position, displacement and direction vectors, magnitude, unit vectors, distance between points, collinearity, the ratio theorem (a point dividing a line in a given ratio, midpoints), the scalar product (angle between vectors, a . n-hat as a length of projection, perpendicularity), the vector product (area of a triangle or parallelogram, |a x n-hat| as a perpendicular distance, a normal to a plane); vector and cartesian equations of lines and of planes (r . n = d, r = a + lambda b + mu c, cartesian); the foot of the perpendicular from a point to a line or a plane and the distance, the reflection of a point in a line or a plane; the angle between two lines, a line and a plane, two planes; the relationship between two lines (intersecting, parallel, skew), a line and a plane (meets in a point, lies in it, parallel to it), two planes (the line of intersection); problems in a stated 3-D situation (an aircraft path, a pipeline under a plane of rock); NOT the shortest distance or common perpendicular between two skew lines, NOT triple products. Complex numbers: extending the number system, complex roots of a quadratic, conjugate roots of a polynomial equation with real coefficients (and using them to find unknown real coefficients or the remaining root), modulus, argument (principal, in (-pi, pi]) and conjugate, the four operations in cartesian form, equality of complex numbers (a pair of simultaneous equations in z and w solved by elimination or by comparing real and imaginary parts), the Argand diagram, the geometrical effect of conjugation, negation, addition, subtraction and multiplication by i (a rotation through a right angle); NOT polar or modulus-argument form, NOT exponential form r e^{i theta}, NOT de Moivre, NOT loci. Differentiation: the sign of f' and f'' read from and drawn on a graph, the graph of y = f'(x) from y = f(x), implicit and parametric differentiation, the nature of stationary points by the first or second derivative test, tangents and normals (including to implicit and parametric curves, and where a tangent meets the curve again or passes through a given point), maxima and minima in a modelled situation (an area, a volume, a cost) with the maximum shown to be one, connected rates of change (a bowl filling, a ladder, a shadow); NOT non-stationary points of inflexion, NOT the second derivative of a parametric curve. Maclaurin series: the standard series for (1+x)^n with rational n, e^x, sin x, cos x, ln(1+x) with their ranges of validity (all in MF26), the first terms of a series by repeated differentiation (also from a differential relation such as dy/dx = k e^x (1 + y^2), differentiating that relation again), by repeated implicit differentiation, or by multiplying and substituting standard series (e^x cos 2x, ln((1+x)/(1-x)), (1+x)^n with a non-integer n, tan^{-1}(sqrt 2 + x) via its derivatives), the series as an approximation (an integral estimated from its first terms, a value of pi or ln 2), small-angle approximations sin x ~ x, cos x ~ 1 - x^2/2, tan x ~ x; NOT the general term. Integration techniques: f'(x)[f(x)]^n (n = -1 included), f'(x) e^{f(x)}, sin^2 x, cos^2 x, tan^2 x and products of sines and cosines via the factor formulae, the four standard forms 1/(x^2 + a^2), 1/sqrt(a^2 - x^2), 1/(x^2 - a^2), 1/(a^2 - x^2) (results in MF26), partial fractions, integration by a GIVEN substitution (including a trigonometric one for sqrt(a^2 - x^2)), integration by parts (including ln x, x^2 e^x, e^x sin x by two rounds), a modulus integrand split at its zero; NOT reduction formulae. Definite integrals: the integral as a limit of a sum, area under and between curves and lines (regions below the x-axis, areas against the y-axis, a parametric curve via integral y (dx/dt) dt), volumes of revolution about the x-axis or the y-axis (a cartesian curve, a region between two curves, a spherical cap or a bowl), exact values by hand where asked and numerical values from the graphing calculator otherwise; NOT the volume of revolution of a parametric curve. Differential equations: general and particular solutions of dy/dx = f(x) g(y) by separating variables, including reducing an equation to that form by a GIVEN substitution, second-order equations of the form d^2y/dx^2 = f(x) or a first-order equation in v = dx/dt by direct integration, formulating an equation from a situation (rate of change proportional to the amount, rate in minus rate out, a logistic-type dP/dt = kP(N - P), Newton cooling, a falling parachutist), interpreting the solution and its long-term behaviour, sketching the solution curve. PROBABILITY AND STATISTICS (Section B of Paper 2 only). Probability and counting: the addition and multiplication principles, permutations and combinations, arrangements in a line or a circle with repetition and restrictions (identical objects, objects together, objects separated), selection of committees with conditions; addition and multiplication of probabilities, mutually exclusive and independent events (tested numerically), tables of outcomes, Venn diagrams, tree diagrams and counting methods for probabilities, conditional probability P(A|B) = P(A and B)/P(B), P(A or B) = P(A) + P(B) - P(A and B), games with turns and geometric-series probabilities, probabilities in terms of an unknown n or p. Discrete random variables: a probability distribution from a table, expectation and variance from it, E(aX + b) and Var(aX + b); the binomial distribution B(n, p) as a model with its two conditions stated in context (independent trials, a constant probability), its mean np and variance np(1 - p), probabilities and cumulative probabilities from the graphing calculator, the most likely value, a binomial on top of a binomial (the number of days on which an event happens), the range of p from a modal value; NOT cumulative distribution functions, NOT the Poisson distribution (removed from 9758), NOT the geometric distribution, NOT the normal approximation to the binomial. Normal distribution: N(mu, sigma^2) as a model, the standard normal, probabilities and inverse probabilities from the graphing calculator, the symmetry of the curve (drawn with its main features), finding mu and/or sigma from one or two given probabilities (standardising and solving), E and Var of aX + b and of aX + bY with X and Y independent (the sum of n independent copies X_1 + ... + X_n against the multiple nX; the difference of two totals; a percentage reduction as a scaling), the mass exceeded by a given percentage; NOT the normal approximation to the binomial. Sampling: population and simple random sample, why and how a random sample is taken and what makes one unsuitable, the sample mean as a random variable with E(X-bar) = mu and Var(X-bar) = sigma^2/n, its distribution from a normal population, the Central Limit Theorem for a large sample from any population (n >= 30 as the rule of thumb), unbiased estimates of the population mean and variance from raw data or from summarised data (sum x and sum x^2, or sum (x - a) and sum (x - a)^2). Hypothesis testing: null and alternative hypotheses stated with the parameter defined, the test statistic, critical region and critical value, level of significance and p-value, a test of a population mean from a normal population with known variance or from a large sample (a z-test), one-tail and two-tail tests and the reason for the choice, the conclusion in the context of the question, the assumptions a test needs, the range of a significance level or of a variance consistent with a stated conclusion; NOT the terms Type I and Type II error, NOT a test of the difference of two means, NOT a t-test. Correlation and linear regression: a scatter diagram and what it shows, the product moment correlation coefficient as a measure of linear fit and its interpretation (values near -1, 0 and 1; unaffected by a change of units), the least-squares regression line (the meaning of the residuals and of least squares; y on x, and x on y, and which to use), interpolation and extrapolation and the reliability of an estimate, a square, reciprocal, logarithmic or other transformation to achieve linearity and the choice between candidate models by comparing r; NOT deriving the formulae, NOT r^2 = b_1 b_2, NOT hypothesis tests on r. ASSUMED KNOWLEDGE (O-Level A Math): quadratics and the discriminant, surds, polynomials and partial fractions, binomial theorem for a positive integer index, indices and logarithms, trigonometric identities and the R-formula, the sine and cosine rules, basic differentiation and integration.",
+  "register": "REGISTER — how SEAB asks (9758)\n- Plain, exact, economical English. Every part is an imperative: Find, Show that, Hence (or Hence, or otherwise), Deduce, State, Sketch, Explain (why / whether / how you know / in context), Determine (whether / the possible values), Verify, Use … to …, Write down, Solve, Express, Describe (a sequence of transformations; the set of points; the relationship), Justify your answer, Give a reason, Suggest.\n- Parts are (a), (b), (c) with sub-parts (i), (ii); every leaf part carries its marks in [ ]; a 3–6 mark question may be unparted. The parts of a long question BUILD: an early \"Show that\" prints the result the later parts need, and \"Hence\", \"Using the result in part (b)\" or \"Use your answer to part (c)(i)\" says so.\n- Precision is stated when it matters: \"giving your answer in exact form\", \"in the form a + ib where a and b are real numbers\", \"correct to 3 significant figures\", \"in terms of p\", \"to the nearest cent\", \"correct to 2 decimal places\", \"as a single simplified fraction\"; otherwise the rubric's 3 s.f. applies and nothing is said. \"Find exactly\", \"Find the exact value\" and \"Solve exactly\" forbid a decimal; \"Use calculus\", \"Using calculus\", \"By integration\" and \"Show by integration\" forbid a calculator read-off; \"Do not use a calculator in answering this question.\" opens a whole question (a complex-number question, an exact-integral question, an exact inequality); \"Without using a calculator\" opens a part. Section B says \"State the distribution you use\", \"In this question you should state the parameters of any distributions you use\", \"Define any symbols you use\", \"Give your conclusion in the context of the question\".\n- The graphing calculator is assumed. Numerical roots, definite integrals, the regression constants, r, binomial and normal probabilities and inverse-normal values are READ from it and the question asks only for the value — a question that wants the working says so. Where a graph is used to find a solution the candidate sketches it. Unsupported calculator answers earn no method marks, so a 4-mark part is never a single calculator read.\n- Notation is the syllabus's: \\mathrm{f}: x \\mapsto \\frac{ax+k}{x-a}, x \\in \\mathbb{R}, x \\neq a; \\mathrm{f}(x), \\mathrm{f}^{-1}, \\mathrm{fg}, \\mathrm{f}^2; \\frac{\\mathrm{d}y}{\\mathrm{d}x}, \\frac{\\mathrm{d}^2y}{\\mathrm{d}x^2}, \\int \\ldots \\,\\mathrm{d}x; \\sum_{r=1}^{n}; u_n and S_n; column vectors and \\mathbf{i}, \\mathbf{j}, \\mathbf{k}; \\mathbf{r} = \\mathbf{a} + \\lambda\\mathbf{b}; \\mathbf{r} \\cdot \\mathbf{n} = d; the cartesian line \\frac{x+2}{3} = \\frac{y-1}{2} = z - 5; z^{*}, |z|, \\arg z; \\mathrm{N}(\\mu, \\sigma^2), \\mathrm{B}(n, p), \\bar{X}, \\mathrm{H}_0: \\mu = 17.3, \\mathrm{P}(A \\mid B). Angles in radians unless degrees are named; \\mathrm{e}^{x}, \\ln x, \\mathrm{i} upright.\n- Contexts are brief, concrete and self-contained; they carry the numbers the model needs and nothing more (a pipeline under a river, an ornament cut from a sphere, a parachutist, a roller-coaster loop, savings then a loan, a company's two machines, a swimmer's times, a bird feeder, a quality-control sample). Units are given; constants are named (\"where k is a positive constant\", \"where \\alpha is a constant\"). No story, no chattiness, no names beyond one or two.\n- Paper 1 opens with 4–6-mark questions (a system of equations, an inequality, a vector fact, a complex-number question, a short sequence question) and climbs to two or three 12–15-mark closers — a differential-equation model, a vector problem in a stated 3-D situation, a finance question on arithmetic and geometric series, a parametric or graph model, a functions question with several parts — with one question that \"may require concepts and skills from more than one topic\" in a real-world context. Paper 2 Section A is four (occasionally five) pure questions of 6–13 marks; Section B climbs from a 5–6-mark probability or counting starter through binomial, normal, sampling and hypothesis-testing questions to a 12–17-mark closer, usually the regression or the normal-plus-test question, set in a real-world context.\n- Section B asks for words as often as numbers: \"State, in context, two assumptions needed for X to be well modelled by a binomial distribution\", \"Explain whether … should use a one-tailed or a two-tailed test\", \"State hypotheses for the test, defining any parameters you use\", \"give your conclusion in the context of the question\", \"Explain whether your estimate is reliable\", \"Explain what the scatter diagram tells you about the relationship\", \"Explain whether the 65 members comprise a sample or a population\", \"Explain why it is reasonable to assume that the two distributions are independent\". A 1-mark explain part expects one sentence with the reason in it; a 2-mark one, two distinct points.\n- Marks follow the work at about 1.8 minutes a mark (100 marks in 3 hours). 1–2 marks: state / write down / one deduction / one calculator value. 3–4: one standard routine, or a routine with one decision. 5–6: a routine with a decision and a second idea, a model built from the situation, or a proof. 7 or more in ONE part is rare and needs a chain (a differential equation solved from a substitution to a particular solution; a regression model chosen, fitted and used). Marks climb through each paper and through each section."
+ },
+ "paperNo": 2,
+ "total": 100,
+ "sections": {
+  "boundary": 5,
+  "a": "Section A: Pure Mathematics [40 marks]",
+  "b": "Section B: Probability and Statistics [60 marks]"
+ },
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-09-27T00:24:55.589Z",
+ "topicList": [
+  "APGP",
+  "Binomial Expansion",
+  "Complex Numbers",
+  "Differentiation (Concavity)",
+  "Differentiation (Maclaurin Series)",
+  "Differentiation (Maximum and Minimum)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Techniques)",
+  "Equations",
+  "Functions",
+  "Graphing Techniques",
+  "Inequalities",
+  "Integration (Area and Volume)",
+  "Integration (Differential Equations)",
+  "Integration (Techniques)",
+  "Parametric Equations",
+  "Series and Sequences",
+  "Vectors",
+  "Distributions (Binomial)",
+  "Distributions (DRV)",
+  "Distributions (Normal)",
+  "Distributions (Sampling)",
+  "Hypothesis Testing",
+  "Linear Regression",
+  "Permutations and Combinations",
+  "Probability",
+  "Sampling Methods"
+ ],
+ "must_appear": [
+  "Distributions (Binomial)",
+  "Distributions (Normal)",
+  "Hypothesis Testing",
+  "Linear Regression"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Inequalities",
+   "target": 7,
+   "marks": [
+    4,
+    8
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0222
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0194
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.139
+    },
+    {
+     "topic": "Equations",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.006900000000000001
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.005600000000000001
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.005600000000000001
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.005600000000000001
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 2,
+   "topic": "Differentiation (Techniques)",
+   "target": 9,
+   "marks": [
+    6,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.014199999999999999
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.013200000000000002
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.0079
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Inequalities",
+     "weight": 0.053
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0039000000000000003
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 3,
+   "topic": "Functions",
+   "target": 11,
+   "marks": [
+    7,
+    13
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Functions",
+     "weight": 0.016800000000000002
+    },
+    {
+     "topic": "Series and Sequences",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0158
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0108
+    },
+    {
+     "topic": "Complex Numbers",
+     "weight": 0.0083
+    },
+    {
+     "topic": "APGP",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.005000000000000001
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.0033000000000000004
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0033000000000000004
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0025000000000000005
+    },
+    {
+     "topic": "Integration (Differential Equations)",
+     "weight": 0.0025000000000000005
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 13,
+   "marks": [
+    10,
+    13
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Area and Volume)",
+     "weight": 0.021900000000000003
+    },
+    {
+     "topic": "Parametric Equations",
+     "weight": 0.0183
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0119
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Functions",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Graphing Techniques",
+     "weight": 0.0092
+    },
+    {
+     "topic": "Differentiation (Maclaurin Series)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0055000000000000005
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.0037
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.028
+    }
+   ],
+   "section": "A"
+  },
+  {
+   "pos": 5,
+   "topic": "Permutations and Combinations",
+   "target": 7,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.414
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.183
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.173
+    },
+    {
+     "topic": "Distributions (DRV)",
+     "weight": 0.154
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.038
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.038
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 6,
+   "topic": "Distributions (Binomial)",
+   "target": 8,
+   "marks": [
+    7,
+    11
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.409
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.286
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.095
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.086
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.076
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.048
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 7,
+   "topic": "Hypothesis Testing",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    3,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.202
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.202
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.162
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.152
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.111
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.101
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.04
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.03
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 8,
+   "topic": "Linear Regression",
+   "target": 10,
+   "marks": [
+    7,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.361
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.144
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.134
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.103
+    },
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.103
+    },
+    {
+     "topic": "Distributions (DRV)",
+     "weight": 0.093
+    },
+    {
+     "topic": "Permutations and Combinations",
+     "weight": 0.062
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 9,
+   "topic": "Probability",
+   "target": 13,
+   "marks": [
+    11,
+    15
+   ],
+   "parts": [
+    4,
+    8
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.359
+    },
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.337
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.196
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.065
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.043
+    }
+   ],
+   "section": "B"
+  },
+  {
+   "pos": 10,
+   "topic": "Distributions (Normal)",
+   "target": 14,
+   "marks": [
+    12,
+    17
+   ],
+   "parts": [
+    2,
+    8
+   ],
+   "pool": [
+    {
+     "topic": "Distributions (Normal)",
+     "weight": 0.234
+    },
+    {
+     "topic": "Hypothesis Testing",
+     "weight": 0.224
+    },
+    {
+     "topic": "Distributions (Binomial)",
+     "weight": 0.15
+    },
+    {
+     "topic": "Distributions (Sampling)",
+     "weight": 0.15
+    },
+    {
+     "topic": "Linear Regression",
+     "weight": 0.093
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.093
+    },
+    {
+     "topic": "Sampling Methods",
+     "weight": 0.056
+    }
+   ],
+   "section": "B"
+  }
+ ],
+ "title": "H2 Mathematics · Set 1 · Paper 2 · A-Level format",
+ "assembled_at": "2026-09-27T01:10:02.804Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Inequalities",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "A geometric series is given by $1 + \\frac{x-1}{x+2} + \\left(\\frac{x-1}{x+2}\\right)^{2} + \\left(\\frac{x-1}{x+2}\\right)^{3} + \\ldots$, where $x$ is real and $x \\neq -2$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the set of values of $x$ for which the series converges.",
+      "marks": 2,
+      "answer": "$\\left\\{x \\in \\mathbb{R} : x > -\\frac{1}{2}\\right\\}$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Find the sum to infinity of the series, giving your answer as a single fraction in terms of $x$.",
+      "marks": 1,
+      "answer": "$\\frac{x+2}{3}$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find exactly the set of values of $x$ for which the sum to infinity of the series exceeds $\\frac{2}{x}$.",
+      "marks": 4,
+      "answer": "$\\left\\{x \\in \\mathbb{R} : -\\frac{1}{2} < x < 0 \\text{ or } x > \\sqrt{7} - 1\\right\\}$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $x > -\\frac{1}{2}$; (b) $\\frac{x+2}{3}$; (c) $-\\frac{1}{2} < x < 0$ or $x > \\sqrt{7} - 1$",
+    "total_marks": 7,
+    "topics": [
+     "Inequalities",
+     "APGP"
+    ],
+    "skills": [
+     "§8 move 7 (two topics fused), with move 6 (the situation changes the maths): the convergence set $x > -\\frac{1}{2}$ of a geometric series with ratio $\\frac{x-1}{x+2}$ is the domain of a later inequality on its sum to infinity, unprinted in that part — the sign test gives $-1-\\sqrt{7} < x < 0$ or $x > \\sqrt{7}-1$, and convergence, not the sign test, cuts the first interval to $-\\frac{1}{2} < x < 0$",
+     "convergence of a geometric series whose ratio is a rational function of $x$: $\\left|\\frac{x-1}{x+2}\\right| < 1$ read as $|x-1| < |x+2|$ (nearer to $1$ than to $-2$), giving $x > -\\frac{1}{2}$",
+     "noticing that the sum to infinity collapses to the linear $\\frac{x+2}{3}$, defined for every $x$ though it is the sum only for $x > -\\frac{1}{2}$, then solving $\\frac{x+2}{3} > \\frac{2}{x}$ exactly by a sign test on $\\frac{x^2+2x-6}{3x}$ with the negative-$x$ interval kept (no cross-multiplying)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The series is geometric with first term $1$ and common ratio $r = \\frac{x-1}{x+2}$, so it converges if and only if $|r| < 1$.\n$\\left|\\frac{x-1}{x+2}\\right| < 1 \\iff |x-1| < |x+2|$ (as $x \\neq -2$).\nBoth sides are non-negative, so squaring keeps the inequality: $(x-1)^2 < (x+2)^2 \\iff x^2 - 2x + 1 < x^2 + 4x + 4 \\iff -6x < 3 \\iff x > -\\frac{1}{2}$.\n(Equivalently: $x$ is nearer to $1$ than to $-2$ on the number line, so it lies to the right of their midpoint $-\\frac{1}{2}$.)\nThe series converges for $\\left\\{x \\in \\mathbb{R} : x > -\\frac{1}{2}\\right\\}$. [M1 for $|x-1| < |x+2|$ or $-1 < \\frac{x-1}{x+2} < 1$; A1]\n\n(b) Sum to infinity $= \\frac{1}{1 - r} = \\frac{1}{1 - \\frac{x-1}{x+2}} = \\frac{x+2}{(x+2) - (x-1)} = \\frac{x+2}{3}$. [B1]\n\n(c) The decision: a sum to infinity exists only where the series converges, that is for $x > -\\frac{1}{2}$ by part (a). The expression $\\frac{x+2}{3}$ is defined for every $x$, but it is the sum of the series only on that set, so the inequality is solved on $x > -\\frac{1}{2}$ and not on all of $\\mathbb{R}$.\n$\\frac{x+2}{3} > \\frac{2}{x} \\iff \\frac{x+2}{3} - \\frac{2}{x} > 0 \\iff \\frac{x^2 + 2x - 6}{3x} > 0$. [M1: one side, single fraction, not cross-multiplied]\n$x^2 + 2x - 6 = 0 \\iff x = -1 \\pm \\sqrt{7}$, so the inequality is $\\frac{\\left(x + 1 + \\sqrt{7}\\right)\\left(x + 1 - \\sqrt{7}\\right)}{3x} > 0$, with critical values $-1 - \\sqrt{7}\\ (\\approx -3.65)$, $0$ and $\\sqrt{7} - 1\\ (\\approx 1.65)$.\nSign test: for $x < -1 - \\sqrt{7}$ the fraction is negative; for $-1 - \\sqrt{7} < x < 0$ it is positive; for $0 < x < \\sqrt{7} - 1$ it is negative; for $x > \\sqrt{7} - 1$ it is positive.\nSo $\\frac{x+2}{3} > \\frac{2}{x} \\iff -1 - \\sqrt{7} < x < 0$ or $x > \\sqrt{7} - 1$. [A1: the raw intervals from the sign test]\nRestrict to $x > -\\frac{1}{2}$: since $-1 - \\sqrt{7} < -\\frac{1}{2} < 0$, the first interval is cut to $-\\frac{1}{2} < x < 0$; the second is unchanged because $\\sqrt{7} - 1 > -\\frac{1}{2}$. [M1: the inequality restricted to the convergence set $x > -\\frac{1}{2}$, where alone $\\frac{x+2}{3}$ is the sum]\nRequired set: $\\left\\{x \\in \\mathbb{R} : -\\frac{1}{2} < x < 0 \\text{ or } x > \\sqrt{7} - 1\\right\\}$. [A1: the cut set. A candidate who solves $\\frac{x+2}{3} > \\frac{2}{x}$ on all of $\\mathbb{R}$ scores M1 A1 M0 A0, 2 of the 4 marks]\nThe values $-1 - \\sqrt{7} < x \\le -\\frac{1}{2}$ satisfy $\\frac{x+2}{3} > \\frac{2}{x}$ but are rejected: there $|r| \\ge 1$ (for example $x = -1$ gives $r = -2$), so the series has no sum to infinity; that interval even contains $x = -2$, where the series is not defined.\nAlternative (working on the convergence set from the start): for $-\\frac{1}{2} < x < 0$ the sum $\\frac{x+2}{3}$ lies between $\\frac{1}{2}$ and $\\frac{2}{3}$, so it is positive while $\\frac{2}{x} < 0$, and every such $x$ satisfies the inequality; for $x > 0$, multiplying by $3x > 0$ gives $x^2 + 2x - 6 > 0$, so $x > \\sqrt{7} - 1$ (the other root, $-1 - \\sqrt{7}$, is negative). The same set results.\nCommon errors: solving on all of $\\mathbb{R}$ gives $-1 - \\sqrt{7} < x < 0$ or $x > \\sqrt{7} - 1$ (convergence forgotten, final A0); cross-multiplying by $x$ as though it were positive gives $x^2 + 2x - 6 > 0$ and loses the interval $-\\frac{1}{2} < x < 0$.\nCheck: $x = -0.4$: $r = -0.875$, sum $= 0.533 > \\frac{2}{-0.4} = -5$ (in the set); $x = 1.6$: sum $= 1.2 < 1.25$ (not in the set); $x = 1.7$: sum $= 1.233 > 1.176$ (in the set); $x = -1$: $\\frac{x+2}{3} = \\frac{1}{3} > -2$ but $r = -2$, no sum (rejected).",
+    "syllabus_check": "9758 Sequences and series: a geometric series, the condition $|r| < 1$ for convergence, and the sum to infinity. 9758 Equations and inequalities: a modulus inequality $|x - a| < |x - b|$, and an inequality $\\frac{f(x)}{g(x)} > 0$ with a quadratic numerator and a linear denominator solved by a sign test (never by cross-multiplying), with exact roots from the quadratic formula. No calculator ban (the Set's one ban question is in Paper 1); 'Find exactly' requires $\\sqrt{7} - 1$, and the convergence step cannot be read from a calculator. Nothing outside the revised 9758: no method of differences, no induction, no polar form.",
+    "originality_note": "No earlier Set has an Inequalities question. Set 1 P1 Q2(b) is a geometric series with a fixed ratio (first term 6, sum to infinity 4) and tests partial sums against the sum to infinity by the parity of $n$; here the ratio is a function of $x$, and the convergence set is the object. Among the real papers, GCE 2023 P2 Q1 and GCE 2024 P1 Q4 solve a rational inequality on all of $\\mathbb{R}$, and GCE 2022 P1 Q9(b) sums a geometric series with ratio $-\\cos\\theta$ to a printed $\\tan k\\theta$; no 2017–2025 question makes the convergence set of a geometric series the domain of an inequality on its own sum. The sum collapses to the linear $\\frac{x+2}{3}$, defined for every $x$, so nothing in part (c) reminds the candidate that the series has no sum for $x \\le -\\frac{1}{2}$ — and that set, not the sign test, fixes the left end of the answer. Implemented from the chosen idea (Q1.idea.md) with one change: the inequality is 'greater than $\\frac{2}{x}$' rather than 'less than', so that the convergence boundary $-\\frac{1}{2}$ is an endpoint of the final answer (the sign-test interval $-1-\\sqrt{7} < x < 0$ is cut to $-\\frac{1}{2} < x < 0$) instead of a whole interval merely discarded, and cross-multiplying is punished visibly; the planner's numbers ($\\frac{x+2}{3}$, $-\\frac{1}{2}$, $\\sqrt{7} - 1$) are kept, and the sum in (b) is asked for, not printed as a 'Show that', so the collapse to a linear expression is the candidate's to notice. Nothing is shared with the first draft's Q1 ($|x - 4| < \\frac{3}{x}$ carried into $\\ln x$) or with any other slot of this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q1",
+     "jaccard": 0.094,
+     "nearest_set": "Set 1 P1 Q5",
+     "jaccard_set": 0.034,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-09-27T01:08:24.196Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "{x ∈ ℝ : x > -1/2}",
+     "(b)": "(x + 2)/3",
+     "(c)": "{x ∈ ℝ : -1/2 < x < 0 or x > -1 + √7}"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give {x ∈ ℝ : x > −1/2}. Re-derived: |x−1| < |x+2|, both sides non-negative so squaring is safe, −6x < 3. Checked x = 0 (r = −1/2, converges) and x = −1 (r = −2, does not)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give (x+2)/3. Re-derived: 1/(1 − (x−1)/(x+2)) = (x+2)/((x+2) − (x−1)) = (x+2)/3."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give {x ∈ ℝ : −1/2 < x < 0 or x > √7 − 1}. Re-derived: (x+2)/3 − 2/x = (x² + 2x − 6)/(3x), critical values −1 ± √7 and 0; positive on (−1−√7, 0) ∪ (√7 − 1, ∞) (checked at x = −1 and x = −0.25: positive; x = 1.6: 1.2 < 1.25; x = 2: 4/3 > 1). The sum exists only on x > −1/2 (part (a)), which cuts the left interval to (−1/2, 0); the right interval is untouched. The setter's mark scheme, the common-error notes and the numerical checks are all correct."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I re-derived each one; the key is exactly right, including the cut of (−1−√7, 0) to (−1/2, 0) by the convergence set.",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "7 Two topics fused (the GP's convergence set from (a) is the unprinted domain of the inequality on its sum in (c)), with 6 The situation changes the maths (the sum exists only where the series converges, so the sign-test interval (−1−√7, 0) is cut at −1/2 — an endpoint no sign test produces)",
+    "fixes": [
+     "re-mark inside (c), totals unchanged at 2 + 1 + 4: pay the sign test M1 A1 (single fraction with critical values −1 ± √7 and 0; the raw intervals) and the restriction to the convergence set M1 A1 (recognising that (x+2)/3 is the sum only for x > −1/2; the cut set), so a candidate who solves (x+2)/3 > 2/x on all of ℝ scores 2/4 and not 3/4 — the decision is the question's point and at present carries one mark of seven, thinner than Set 1 P1 Q1(a) and Q2(b), where the decision carries most of the part.",
+     "Light wording edit to SEAB's register in (b): 'Find the sum to infinity of the series, giving your answer as a single fraction in terms of x.' (cf. GCE 2022 P2 Q4(b) 'Write your answer as a single fraction in terms of m') in place of 'in terms of x, simplifying your answer'."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The idea is implemented faithfully and a little better than briefed: (b) is a 'Find', not the sketched 'Show that', so the collapse to the linear (x+2)/3 must be noticed, and the '>' direction makes the convergence set supply an endpoint of the answer (−1/2) rather than merely delete an interval — the candidate must decide, unprompted in (c), that a formula defined for every x is the sum only on x > −1/2, and both wrong routes (solving on ℝ; cross-multiplying by x) leave a visibly different set. It scores 4 rather than 5 because the lead-in (a)–(b) is the familiar tutorial shape 'GP with ratio a rational function of x → convergence set → S∞(x)' and the decision carries one mark of seven, on a technical skeleton (a two-modulus inequality, then an exact rational inequality by sign test) that mirrors GCE 2023 P2 Q1 — a different object, an extra part and a different move, so not a re-skin, but the same techniques; no part asks for words (List A item 6), which the real 2022–2024 Section A openers also lack, so it is not held against an opener. Not routine: it is the paper's opener and carries a decision, so the routine allowance stays unused. Variety: Set 1 P1 Q2 tests the AP S_m = S_n proof and the GP partial-sum parity with r < 0; this tests convergence of a ratio in x and the domain of validity of the sum — a different skill of the topic; nothing else in this paper solves an inequality. Gates: pass, no problems. as_good_as_set1 is omitted: no H2 Set has been read and approved by Adrian yet (standard.md §7)."
+   },
+   "exemplars": [
+    {
+     "id": "4ef4eabd-9eea-4f01-94ac-0d50746abf39",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "f7dccfcd-09b3-4c76-b897-eef349402dc5",
+     "ref": "GCE 2024 P1 Q4"
+    },
+    {
+     "id": "d22b230a-c38e-4196-907f-f30b9693f71b",
+     "ref": "GCE 2023 P2 Q1"
+    },
+    {
+     "id": "93af3416-c86a-4b29-88bf-6e1c123ee10d",
+     "ref": "GCE 2019 P1 Q4"
+    },
+    {
+     "id": "e6266236-99ab-4fab-9240-9408cba0f7b4",
+     "ref": "GCE 2019 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Differentiation (Techniques)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The curve $C$ has equation $y = \\mathrm{f}(x)$, where $\\mathrm{f}(x) = \\frac{\\ln x}{x}$ for $x > 0$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the exact coordinates of the stationary point of $C$, and show that it is a maximum point.",
+      "marks": 3,
+      "answer": "$\\left(\\mathrm{e}, \\frac{1}{\\mathrm{e}}\\right)$, a maximum: $\\mathrm{f}'(x) = \\frac{1 - \\ln x}{x^2}$ is positive for $0 < x < \\mathrm{e}$ and negative for $x > \\mathrm{e}$ (or $\\mathrm{f}''(\\mathrm{e}) = -\\frac{1}{\\mathrm{e}^3} < 0$)"
+     },
+     {
+      "label": "(b)",
+      "text": "Determine, with justification, which of $3^{\\pi}$ and $\\pi^{3}$ is greater.",
+      "marks": 3,
+      "answer": "$3^{\\pi} > \\pi^{3}$, since $3^{\\pi} > \\pi^{3} \\iff \\frac{\\ln 3}{3} > \\frac{\\ln \\pi}{\\pi}$, i.e. $\\mathrm{f}(3) > \\mathrm{f}(\\pi)$, which holds because $\\mathrm{f}$ is decreasing for $x > \\mathrm{e}$ and $\\mathrm{e} < 3 < \\pi$"
+     },
+     {
+      "label": "(c)",
+      "text": "Show that $x^{\\mathrm{e}} \\leqslant \\mathrm{e}^{x}$ for all $x > 0$.",
+      "marks": 1,
+      "answer": "Shown: $\\frac{1}{\\mathrm{e}}$ is the greatest value of $\\mathrm{f}$, so $\\frac{\\ln x}{x} \\leqslant \\frac{1}{\\mathrm{e}}$, giving $\\mathrm{e}\\ln x \\leqslant x$, i.e. $\\ln\\left(x^{\\mathrm{e}}\\right) \\leqslant \\ln\\left(\\mathrm{e}^{x}\\right)$, so $x^{\\mathrm{e}} \\leqslant \\mathrm{e}^{x}$"
+     },
+     {
+      "label": "(d)",
+      "text": "Find, with justification, all the positive integers $n$ for which $n^{\\frac{1}{n}} \\geqslant \\sqrt{2}$.",
+      "marks": 2,
+      "answer": "$n = 2, 3, 4$ (the inequality is $\\mathrm{f}(n) \\geqslant \\mathrm{f}(2)$, and $\\mathrm{f}(4) = \\mathrm{f}(2)$ exactly since $\\sqrt{2} = 4^{\\frac{1}{4}}$; $\\mathrm{f}(1) = 0$, and $\\mathrm{f}$ decreases for $x > \\mathrm{e}$ so $\\mathrm{f}(n) < \\mathrm{f}(4)$ for $n \\geqslant 5$) — a candidate who gives the tie $\\mathrm{f}(2) = \\mathrm{f}(4)$ without excluding every $n \\geqslant 5$ earns 1 of the 2 marks"
+     }
+    ],
+    "answer": "(a) $\\left(\\mathrm{e}, \\frac{1}{\\mathrm{e}}\\right)$, a maximum point; (b) shown; (c) $3^{\\pi} > \\pi^{3}$; (d) $n = 2, 3, 4$",
+    "total_marks": 9,
+    "topics": [
+     "Differentiation (Techniques)",
+     "Differentiation (Maximum and Minimum)"
+    ],
+    "skills": [
+     "§8 move 10 (compare two claims algebraically): turning a comparison of powers $a^{b}$ against $b^{a}$ into $\\frac{\\ln a}{a}$ against $\\frac{\\ln b}{b}$ (take logarithms, divide by $ab$), so that $3^{\\pi}$ against $\\pi^{3}$ is decided by $\\mathrm{f}$ DECREASING for $x > \\mathrm{e}$ with $\\mathrm{e} < 3 < \\pi$ — a step the maximum alone cannot give",
+     "a global inequality from a single maximum: $\\frac{\\ln x}{x} \\leqslant \\frac{1}{\\mathrm{e}}$ for all $x > 0$ rearranged to $x^{\\mathrm{e}} \\leqslant \\mathrm{e}^{x}$",
+     "§8 move 4 (discrete reasoning): every positive integer $n$ with $n^{\\frac{1}{n}} \\geqslant \\sqrt{2}$ from $\\mathrm{f}(n) \\geqslant \\mathrm{f}(2)$, seeing $\\sqrt{2} = 4^{\\frac{1}{4}}$ exactly so that $\\mathrm{f}(2) = \\mathrm{f}(4)$, with the rise of $\\mathrm{f}$ to $x = \\mathrm{e}$ and its fall after it settling all $n$ (only $2, 3, 4$)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) By the quotient rule, $\\mathrm{f}'(x) = \\frac{x \\cdot \\frac{1}{x} - \\ln x}{x^2} = \\frac{1 - \\ln x}{x^2}$.\nAt a stationary point $\\mathrm{f}'(x) = 0$, so $\\ln x = 1$, giving $x = \\mathrm{e}$ (the only solution), and $y = \\frac{\\ln \\mathrm{e}}{\\mathrm{e}} = \\frac{1}{\\mathrm{e}}$. The stationary point is $\\left(\\mathrm{e}, \\frac{1}{\\mathrm{e}}\\right)$.\nNature: $x^2 > 0$, so $\\mathrm{f}'(x)$ has the sign of $1 - \\ln x$. For $0 < x < \\mathrm{e}$, $\\ln x < 1$ and $\\mathrm{f}'(x) > 0$; for $x > \\mathrm{e}$, $\\ln x > 1$ and $\\mathrm{f}'(x) < 0$. $\\mathrm{f}'$ changes from positive to negative at $x = \\mathrm{e}$, so the point is a maximum. (Or: $\\mathrm{f}''(x) = \\frac{2\\ln x - 3}{x^3}$, and $\\mathrm{f}''(\\mathrm{e}) = -\\frac{1}{\\mathrm{e}^3} < 0$, so a maximum.)\n[M1 quotient rule to $\\frac{1 - \\ln x}{x^2}$; A1 $\\left(\\mathrm{e}, \\frac{1}{\\mathrm{e}}\\right)$ exact; A1 maximum by a correct first- or second-derivative test.]\n\n(b) Since $\\ln$ is increasing, $3^{\\pi} > \\pi^{3} \\iff \\pi\\ln 3 > 3\\ln \\pi \\iff \\frac{\\ln 3}{3} > \\frac{\\ln \\pi}{\\pi}$ (dividing by $3\\pi > 0$) $\\iff \\mathrm{f}(3) > \\mathrm{f}(\\pi)$.\nFrom (a), $\\mathrm{f}'(x) = \\frac{1 - \\ln x}{x^2} < 0$ for $x > \\mathrm{e}$, so $\\mathrm{f}$ is strictly decreasing for $x \\geqslant \\mathrm{e}$. Since $\\mathrm{e} < 3 < \\pi$, $\\mathrm{f}(3) > \\mathrm{f}(\\pi)$.\nHence $3^{\\pi} > \\pi^{3}$.\n[M1 the comparison of powers turned into $\\mathrm{f}(3)$ against $\\mathrm{f}(\\pi)$ unprompted; M1 $\\mathrm{f}$ decreasing for $x > \\mathrm{e}$ with $\\mathrm{e} < 3 < \\pi$; A1 $3^{\\pi} > \\pi^{3}$. Calculator values ($3^{\\pi} \\approx 31.5$, $\\pi^{3} \\approx 31.0$) alone earn no marks. The maximum alone does not decide it (both 3 and $\\pi$ lie beyond $\\mathrm{e}$).]\n\n(c) From (a), $\\mathrm{f}$ increases for $0 < x < \\mathrm{e}$ and decreases for $x > \\mathrm{e}$, so $\\frac{1}{\\mathrm{e}}$ is the greatest value of $\\mathrm{f}$: $\\frac{\\ln x}{x} \\leqslant \\frac{1}{\\mathrm{e}}$ for all $x > 0$.\nMultiplying by $\\mathrm{e}x$, which is positive: $\\mathrm{e}\\ln x \\leqslant x$, that is, $\\ln\\left(x^{\\mathrm{e}}\\right) \\leqslant x = \\ln\\left(\\mathrm{e}^{x}\\right)$.\nSince $\\ln$ is an increasing function, $x^{\\mathrm{e}} \\leqslant \\mathrm{e}^{x}$ for all $x > 0$ (with equality only at $x = \\mathrm{e}$).\n[B1 $\\frac{\\ln x}{x} \\leqslant \\frac{1}{\\mathrm{e}}$ used as the greatest value of $\\mathrm{f}$ for ALL $x > 0$ and rearranged through $\\mathrm{e}\\ln x \\leqslant x$ to the printed result, the multiplier $\\mathrm{e}x$ noted positive.]\n\n(d) Since $\\ln$ is increasing and $n > 0$, $n^{\\frac{1}{n}} \\geqslant \\sqrt{2} = 2^{\\frac{1}{2}} \\iff \\frac{1}{n}\\ln n \\geqslant \\frac{1}{2}\\ln 2 \\iff \\mathrm{f}(n) \\geqslant \\mathrm{f}(2)$.\nAlso $\\sqrt{2} = \\left(2^{2}\\right)^{\\frac{1}{4}} = 4^{\\frac{1}{4}}$, so $\\mathrm{f}(4) = \\frac{\\ln 4}{4} = \\frac{2\\ln 2}{4} = \\frac{\\ln 2}{2} = \\mathrm{f}(2)$ exactly.\n$n = 1$: $\\mathrm{f}(1) = 0 < \\mathrm{f}(2)$, so $n = 1$ fails. $n = 2$: equality holds, so $n = 2$ satisfies the inequality.\nFor $n \\geqslant 3$ we have $n > \\mathrm{e}$, where $\\mathrm{f}$ is strictly decreasing. $n = 3$: $3 < 4$ gives $\\mathrm{f}(3) > \\mathrm{f}(4) = \\mathrm{f}(2)$, so $n = 3$ satisfies it. $n = 4$: equality, so $n = 4$ satisfies it. $n \\geqslant 5$: $n > 4$ gives $\\mathrm{f}(n) < \\mathrm{f}(4) = \\mathrm{f}(2)$, so every $n \\geqslant 5$ fails.\nTherefore $n = 2, 3, 4$ only.\n[B1 the inequality as $\\mathrm{f}(n) \\geqslant \\mathrm{f}(2)$ with $\\mathrm{f}(4) = \\mathrm{f}(2)$ seen exactly (from $\\sqrt{2} = 4^{\\frac{1}{4}}$); A1 $n = 2, 3, 4$ with every $n \\geqslant 5$ excluded because $\\mathrm{f}$ decreases for $x > \\mathrm{e}$. A table of calculator values alone cannot settle all $n \\geqslant 5$, nor the exact tie at $n = 4$ ($1.41421\\ldots$ for both $n = 2$ and $n = 4$), and scores at most 1. A candidate who gives the tie $\\mathrm{f}(2) = \\mathrm{f}(4)$ without excluding every $n \\geqslant 5$ earns 1 of the 2 marks.]",
+    "syllabus_check": "9758 Differentiation: the derivative of $\\ln x$ and the quotient rule; a stationary point and its nature by the first- or second-derivative test; the sign of $\\mathrm{f}'$ read as increasing or decreasing. Assumed O-Level knowledge: laws of logarithms and indices ($4^{\\frac{1}{4}} = 2^{\\frac{1}{2}}$), and $\\ln x$ and $\\mathrm{e}^{x}$ as increasing inverse functions. No calculator ban on the question: part (c) requires the result of part (a) and part (d) asks for justification, so a calculator may be used but cannot settle either part. Nothing outside the revised 9758.",
+    "originality_note": "The real questions on this object, GCE 2018 P1 Q1 (the derivative of $\\frac{\\ln x}{x}$, then $\\int_{1}^{\\mathrm{e}} \\frac{\\ln x}{x^2}\\,\\mathrm{d}x$) and GCE 2022 P1 Q7 (the turning point of $x^{-3}\\ln x$, then an exact area), use the calculus to integrate. Here the stationary point is only the 3-mark lead-in and the marks sit in what the single maximum says about POWERS: a global inequality (b), a comparison of two powers that needs the decreasing branch beyond $\\mathrm{e}$ rather than the maximum, found by the candidate from powers back to $\\mathrm{f}$ (c), and a discrete set of integers with an exact tie at $n = 2$ and $n = 4$ (d). (b) is a printed proof that compares a value with the maximum; (c) runs the other way and needs monotonicity between two points past $\\mathrm{e}$, so (b) does not do (c)'s thinking. No earlier Set question compares powers or uses $\\frac{\\ln x}{x}$: Set 1 P1 Q3 (a zero derivative, constant on two intervals), Set 1 P1 Q5 (the range of $x + \\frac{1}{x}$ used to reject a root) and Set 1 P1 Q9 (an integral minimised in its parameter) test other skills of differentiation, and nothing in this paper so far uses a logarithmic comparison."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P1 Q11",
+     "jaccard": 0.084,
+     "nearest_set": "Set 1 P1 Q8",
+     "jaccard_set": 0.024,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-09-27T01:03:40.508Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "f'(x) = (1 - ln x)/x^2 = 0 gives x = e; stationary point (e, 1/e). f''(x) = (2 ln x - 3)/x^3, f''(e) = -1/e^3 < 0 (equivalently f' changes from + to - through x = e), so it is a maximum point.",
+     "(b)": "3^pi is greater. f'(x) < 0 for x > e, so f is strictly decreasing on (e, inf); since e < 3 < pi, f(3) > f(pi): ln3/3 > ln(pi)/pi, so pi ln 3 > 3 ln pi, giving 3^pi > pi^3 (3^pi ≈ 31.5, pi^3 ≈ 31.0).",
+     "(c)": "shown — max of f is 1/e, so ln x / x <= 1/e for all x > 0, i.e. e ln x <= x, i.e. ln(x^e) <= x, and since exp is increasing x^e <= e^x.",
+     "(d)": "n = 2, 3, 4. n^(1/n) >= sqrt2 <=> ln n / n >= (ln 2)/2 = (ln 4)/4, i.e. f(n) >= f(2) = f(4). f is increasing on (0, e] and decreasing on [e, inf): n = 1 gives f(1) = 0 < (ln 2)/2 (fails); n = 2 and n = 4 give equality; n = 3 gives f(3) = 0.366 > 0.347 (holds, 3^(1/3) ≈ 1.44); for n >= 5, f(n) < f(4) = (ln 2)/2 (fails)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both (e, 1/e), a maximum. Re-derived: f'(x) = (1 - ln x)/x^2 vanishes only at x = e; f''(x) = (2 ln x - 3)/x^3 gives f''(e) = -1/e^3 < 0, and f' goes + to - through e. Either test is a full A1."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both shown the same way: f(x) <= f(e) = 1/e for all x > 0, multiply by ex > 0 to e ln x <= x, i.e. ln(x^e) <= ln(e^x), ln increasing. Correct; equality only at x = e."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 3^pi > pi^3 with the same reason: 3^pi > pi^3 <=> pi ln 3 > 3 ln pi <=> f(3) > f(pi), true because f is strictly decreasing for x > e and e < 3 < pi. Checked: 3^pi = 31.54, pi^3 = 31.01. The maximum alone cannot decide it (both 3 and pi lie beyond e), so a candidate who only quotes (b) earns nothing here, as the key says."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both n = 2, 3, 4. Re-derived: n^(1/n) >= sqrt2 <=> f(n) >= f(2), and f(4) = (2 ln 2)/4 = f(2) exactly (4^(1/4) = sqrt2); f(1) = 0 fails, n = 2 and n = 4 are equalities (>= includes them), f(3) = 0.366 > 0.347 holds, and for n >= 5 f(n) <= f(5) = 0.322 < 0.347 with f decreasing beyond e. 5^(1/5) = 1.380 < 1.414 confirms."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; I re-derived f', f''(e), the two inequalities and the integer set independently, including the exact tie at n = 4.",
+    "score": 4,
+    "standard": "at",
+    "template": "(a) only: the §9 'stationary point -> nature' lead-in. The whole follows the well-known ln x / x power-comparison problem (the e^pi against pi^e tutorial classic), varied here to 3 against pi (which the maximum alone cannot decide) and an integer part with the exact tie f(2) = f(4); not a §9 template from start to finish.",
+    "move": "10 Compare two claims algebraically (a comparison of powers turned into f(3) against f(pi), decided by f falling beyond e), with 4 Structural or discrete reasoning in (d) (all n with f(n) >= f(2), settled by the tie at n = 4 and monotonicity)",
+    "fixes": [
+     "(b) prints x^e <= e^x as a 'Show that' that no later part uses, and its rearrangement (an inequality in f <=> an inequality in powers) is the very conversion (c) then asks the candidate to find with 3 and pi in place of x and e - half the move is handed over before it is asked for. Light edit that makes the candidate find the conversion first: swap the order and the marks. (b) 'Determine, with justification, which of 3^pi and pi^3 is greater.' [3: M1 the powers turned into f(3) against f(pi) unprompted; M1 f decreasing for x > e with e < 3 < pi; A1 3^pi > pi^3]. (c) 'Show that x^e <= e^x for all x > 0.' [1: the same rearrangement, now a consequence of the maximum]. (a) [3] and (d) [2] unchanged; total still 9. Drop the cue 'Use your answer to part (a)' - 'Hence, or otherwise' is enough if a cue is wanted.",
+     "Stem opening: Set 1 P1 Q3 and P1 Q5 (the Set's other paper) both open 'The function f is defined by f: x |-> ..., x in R, ...' followed by '(a) Use calculus to find ...' then 'Hence ...'; this makes a third question in one Set with the same skeleton (calculus on f, then its extreme applied elsewhere). Not a repeat - different object, moves 10 + 4 against 8 + 3, different skills - but vary the opening: 'The curve C has equation y = (ln x)/x, for x > 0. (a) Use calculus to find ...', naming f only where (d) needs it.",
+     "Marks note, no re-mark required: (d) at [2] is the paper's heaviest 2-mark part (the conversion to f(n) >= f(2), the exact tie sqrt2 = 4^(1/4), and every n >= 5 excluded by monotonicity), within one mark of what 2022-2024 paid such a part (GCE 2024 P2 Q7(a)(iii) [3]); its B1 bundles two steps, which the mark scheme should say so a candidate who gives the tie without the n >= 5 argument is paid 1 not 2."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "Not a §9 template: (a) is the textbook lead-in and every mark after it sits in a move the candidate must find - a comparison of powers turned into f(3) against f(pi) and decided by f falling beyond e (the maximum alone cannot decide it, the improvement on the e^pi / pi^e classic), then all n with n^(1/n) >= sqrt2 settled exactly by f(4) = f(2) and monotonicity; the idea in Q2.idea.md is implemented as designed with the move present and unprinted, both skills phrases are true and specific, the numbers close exactly (e, 1/e, the tie at 4, n = 2, 3, 4), the register is SEAB's, gates pass, nothing in the 2022-2024 Paper 2s or the exemplars re-skins it, and the paper's other slots test different skills (move 4 also carries Q6, its second use, for the session to count under List B). Scored 4 not 5 because (b) hands (c) its rearrangement before (c) asks for it and is used by nothing later, and because the object is a familiar tutorial classic rather than an unfamiliar one - both light edits. as_good_as_set1 is omitted: no H2 Set has been approved yet (standard.md §7)."
+   },
+   "exemplars": [
+    {
+     "id": "d72d34dc-8e60-4409-af48-4e14a70b862c",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "1a3823d9-5073-45fd-b1d1-313924ab1802",
+     "ref": "GCE 2021 P1 Q7"
+    },
+    {
+     "id": "f5fdd6a7-3060-474f-972d-06161088beee",
+     "ref": "GCE 2018 P1 Q7"
+    },
+    {
+     "id": "3276fbf0-a5fd-41e8-9ebf-afeb8b29b5ea",
+     "ref": "GCE 2017 P1 Q4"
+    },
+    {
+     "id": "1a661094-4551-46ba-93aa-9304a219abb3",
+     "ref": "GCE 2022 P1 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Functions",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "The function $\\mathrm{f}$ is defined by $\\mathrm{f}: x \\mapsto 1 - x^2,\\ x \\in \\mathbb{R},\\ x \\geqslant 0$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find $\\mathrm{f}^{-1}(x)$ and state the domain of $\\mathrm{f}^{-1}$.",
+      "marks": 2,
+      "answer": "$\\mathrm{f}^{-1}(x) = \\sqrt{1 - x}$; domain $x \\leqslant 1$, i.e. $(-\\infty, 1]$"
+     },
+     {
+      "label": "(b)",
+      "text": "Sketch, on the same diagram, the graphs of $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$, showing clearly the relationship between the two graphs and stating the coordinates of the points where each graph meets the axes.",
+      "marks": 2,
+      "answer": "$y = \\mathrm{f}(x)$: half-parabola from the end-point $(0, 1)$, decreasing through $(1, 0)$; $y = \\mathrm{f}^{-1}(x)$: its reflection in the line $y = x$, from the end-point $(1, 0)$ through $(0, 1)$, rising as $x \\to -\\infty$. Each graph meets the axes at $(0, 1)$ and $(1, 0)$."
+     },
+     {
+      "label": "(c)",
+      "text": "Find the exact coordinates of the points at which the graphs of $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$ meet, and show that there are no other such points.",
+      "marks": 4,
+      "answer": "$(0, 1)$, $(1, 0)$ and $\\left(\\frac{\\sqrt{5} - 1}{2}, \\frac{\\sqrt{5} - 1}{2}\\right)$ only: $1 - x^2 = \\sqrt{1 - x}$ for $0 \\leqslant x \\leqslant 1$ gives $x(1 - x)(x^2 + x - 1) = 0$, and the fourth root $x = \\frac{-1 - \\sqrt{5}}{2}$ is rejected as it is not in $0 \\leqslant x \\leqslant 1$"
+     },
+     {
+      "label": "(d)",
+      "text": "The function $\\mathrm{g}$ is increasing for all values of $x$ in its domain, so that $\\mathrm{g}^{-1}$ exists. Explain why every point at which the graphs of $y = \\mathrm{g}(x)$ and $y = \\mathrm{g}^{-1}(x)$ meet lies on the line $y = x$.",
+      "marks": 2,
+      "answer": "If $(a, b)$ is on both graphs, then $\\mathrm{g}(a) = b$ and $\\mathrm{g}(b) = a$. If $a < b$, g increasing gives $\\mathrm{g}(a) < \\mathrm{g}(b)$, i.e. $b < a$, a contradiction; similarly $a > b$ gives $b > a$. So $a = b$ and the point lies on $y = x$."
+     },
+     {
+      "label": "(e)",
+      "text": "The function $\\mathrm{h}$ is defined by $\\mathrm{h}: x \\mapsto 1 - x^2,\\ x \\in \\mathbb{R},\\ x \\leqslant 0$. Use the result of part (d) to find the exact coordinates of the point at which the graphs of $y = \\mathrm{h}(x)$ and $y = \\mathrm{h}^{-1}(x)$ meet.",
+      "marks": 1,
+      "answer": "$\\left(-\\frac{1 + \\sqrt{5}}{2}, -\\frac{1 + \\sqrt{5}}{2}\\right)$"
+     }
+    ],
+    "answer": "(a) $\\mathrm{f}^{-1}(x) = \\sqrt{1 - x}$, domain $x \\leqslant 1$; (b) $y = \\mathrm{f}(x)$ from the end-point $(0, 1)$ decreasing through $(1, 0)$, $y = \\mathrm{f}^{-1}(x)$ its reflection in $y = x$ from the end-point $(1, 0)$ through $(0, 1)$; (c) $(0, 1)$, $(1, 0)$ and $\\left(\\frac{\\sqrt{5} - 1}{2}, \\frac{\\sqrt{5} - 1}{2}\\right)$, and no others; (d) $\\mathrm{g}(a) = b$ and $\\mathrm{g}(b) = a$ with $a \\neq b$ contradicts g increasing, so $a = b$; (e) $\\left(-\\frac{1 + \\sqrt{5}}{2}, -\\frac{1 + \\sqrt{5}}{2}\\right)$",
+    "total_marks": 11,
+    "topics": [
+     "Functions",
+     "Graphing Techniques"
+    ],
+    "skills": [
+     "§8 move 5 (show which, and that there are no others): finding ALL the meeting points of $y = \\mathrm{f}(x)$ and $y = \\mathrm{f}^{-1}(x)$ for a DECREASING $\\mathrm{f}$ by solving $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ itself (or $\\mathrm{f}^2(x) = x$), not the habitual $\\mathrm{f}(x) = x$ — the count is not printed; the squared equation factorises as $x(1 - x)(x^2 + x - 1) = 0$, giving the reflected pair $(0, 1)$, $(1, 0)$ off the line $y = x$ beside $\\left(\\frac{\\sqrt{5} - 1}{2}, \\frac{\\sqrt{5} - 1}{2}\\right)$, with the root outside $0 \\leqslant x \\leqslant 1$ rejected",
+     "§8 move 12 (geometry seen, not computed): the sketch of $\\mathrm{f}$ and $\\mathrm{f}^{-1}$ sharing both intercepts $(0, 1)$ and $(1, 0)$ read as the sign that a decreasing function meets its reflection away from the mirror line ($\\mathrm{f}(0) = 1$ and $\\mathrm{f}(1) = 0$ swap)",
+     "§8 move 9 (a reasoning-only part): proving that for an INCREASING $\\mathrm{g}$ every meeting point of $y = \\mathrm{g}(x)$ and $y = \\mathrm{g}^{-1}(x)$ lies on $y = x$ ($\\mathrm{g}(a) = b$, $\\mathrm{g}(b) = a$ with $a \\neq b$ contradicts monotonicity), then using it on the increasing branch $x \\leqslant 0$ of $1 - x^2$, whose single meeting point is the root rejected in (c)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $y = 1 - x^2$, $x \\geqslant 0$. Then $x^2 = 1 - y$, and $x = \\sqrt{1 - y}$, taking the positive square root because $x \\geqslant 0$.\nSo $\\mathrm{f}^{-1}(x) = \\sqrt{1 - x}$.\nf is decreasing for $x \\geqslant 0$, with $\\mathrm{f}(0) = 1$ and $\\mathrm{f}(x) \\to -\\infty$ as $x \\to \\infty$, so $R_{\\mathrm{f}} = (-\\infty, 1]$.\n$D_{\\mathrm{f}^{-1}} = R_{\\mathrm{f}} = (-\\infty, 1]$, i.e. $x \\leqslant 1$.\n[B1 $\\sqrt{1 - x}$, the positive root; B1 the domain.]\n\n(b) One diagram, equal scales, the line $y = x$ drawn (dashed) as the mirror line.\n$y = \\mathrm{f}(x)$: the right half of the parabola $y = 1 - x^2$, starting at the end-point $(0, 1)$ on the $y$-axis (horizontal tangent there), decreasing and concave downwards, crossing the $x$-axis at $(1, 0)$ and continuing downwards as $x$ increases.\n$y = \\mathrm{f}^{-1}(x) = \\sqrt{1 - x}$: the reflection of $y = \\mathrm{f}(x)$ in the line $y = x$, starting at the end-point $(1, 0)$ on the $x$-axis (vertical tangent there), crossing the $y$-axis at $(0, 1)$ and rising as $x \\to -\\infty$.\nEach graph meets the axes at $(0, 1)$ and $(1, 0)$, so the two graphs share both of these points; between $x = 0$ and $x = 1$ the graph of $\\mathrm{f}$ is first above that of $\\mathrm{f}^{-1}$ and then below it, crossing it on the line $y = x$.\n[B1 each curve with its end-point and its intercepts; B1 the two graphs clearly reflections of each other in $y = x$.]\n\n(c) A point $(p, q)$ lies on both graphs when $q = \\mathrm{f}(p)$ and $q = \\mathrm{f}^{-1}(p)$, with $p$ in both domains: $p \\geqslant 0$ and $p \\leqslant 1$.\nSolving $\\mathrm{f}(x) = x$ finds only the meeting points ON the line $y = x$. Here $\\mathrm{f}$ is decreasing, and the sketch in (b) already shows two common points off that line, so the equation to solve is $\\mathrm{f}(x) = \\mathrm{f}^{-1}(x)$ itself:\n$1 - x^2 = \\sqrt{1 - x}$, $0 \\leqslant x \\leqslant 1$.\nFor $0 \\leqslant x \\leqslant 1$ both sides are non-negative, so squaring gives an equivalent equation:\n$(1 - x^2)^2 = 1 - x$\n$(1 - x)^2(1 + x)^2 - (1 - x) = 0$\n$(1 - x)\\left[(1 - x)(1 + x)^2 - 1\\right] = 0$\n$(1 - x)(1 + x - x^2 - x^3 - 1) = 0$\n$(1 - x)(x - x^2 - x^3) = 0$\n$x(1 - x)(1 - x - x^2) = 0$.\n[Alternatively: $(p, q)$ is on the graph of $\\mathrm{f}^{-1}$ exactly when $\\mathrm{f}(q) = p$, so a common point has $\\mathrm{f}(\\mathrm{f}(p)) = p$: $1 - (1 - x^2)^2 = x$, i.e. $x^4 - 2x^2 + x = 0$, $x(x - 1)(x^2 + x - 1) = 0$ — the same equation. The sketch shows that $x = 0$ and $x = 1$ are roots, which gives the factor $x(x - 1)$ at once.]\nSo $x = 0$, $x = 1$, or $x^2 + x - 1 = 0$, giving $x = \\frac{-1 \\pm \\sqrt{5}}{2}$.\n$x = \\frac{-1 - \\sqrt{5}}{2} \\approx -1.62$ is not in $0 \\leqslant x \\leqslant 1$ (it is outside the domain of $\\mathrm{f}$): rejected. [There $1 - x^2 < 0 < \\sqrt{1 - x}$, so it came only from squaring.]\n$x = \\frac{\\sqrt{5} - 1}{2} \\approx 0.618$ lies in $0 \\leqslant x \\leqslant 1$.\n$y$-coordinates: $\\mathrm{f}(0) = 1$; $\\mathrm{f}(1) = 0$; for $x = \\frac{\\sqrt{5} - 1}{2}$, $x^2 = 1 - x$, so $\\mathrm{f}(x) = 1 - x^2 = x = \\frac{\\sqrt{5} - 1}{2}$.\nThe quartic has only these four roots and one of them is rejected, so the graphs meet at exactly three points:\n$(0, 1)$, $(1, 0)$ and $\\left(\\frac{\\sqrt{5} - 1}{2}, \\frac{\\sqrt{5} - 1}{2}\\right)$.\nTwo of them lie off the line $y = x$: $\\mathrm{f}(0) = 1$ and $\\mathrm{f}(1) = 0$, so $(0, 1)$ and $(1, 0)$ are both on the graph of $\\mathrm{f}$, and as each is the reflection of the other in $y = x$, both are also on the graph of $\\mathrm{f}^{-1}$.\n[M1 equating $\\mathrm{f}(x)$ and $\\mathrm{f}^{-1}(x)$, or $\\mathrm{f}^2(x) = x$ — NOT $\\mathrm{f}(x) = x$; M1 squaring and factorising the quartic; A1 the four roots with $\\frac{-1 - \\sqrt{5}}{2}$ rejected for a stated reason; A1 all three points exact. A candidate who solves only $\\mathrm{f}(x) = x$ earns at most 1 mark.]\n\n(d) Let $(a, b)$ be a point on both graphs. Then $b = \\mathrm{g}(a)$, and $b = \\mathrm{g}^{-1}(a)$ gives $\\mathrm{g}(b) = a$.\nSuppose $a < b$. Since $\\mathrm{g}$ is increasing, $\\mathrm{g}(a) < \\mathrm{g}(b)$, that is $b < a$ — a contradiction.\nSuppose $a > b$. Then $\\mathrm{g}(a) > \\mathrm{g}(b)$, that is $b > a$ — a contradiction.\nHence $a = b$, and the point $(a, b)$ lies on the line $y = x$.\n[For the decreasing $\\mathrm{f}$ of part (c), $a < b$ gives $\\mathrm{f}(a) > \\mathrm{f}(b)$, that is $b > a$, which is no contradiction — which is why a point such as $(0, 1)$, with $a = 0$ and $b = 1$, can occur.]\n[B1 $\\mathrm{g}(a) = b$ and $\\mathrm{g}(b) = a$; B1 the contradiction from $\\mathrm{g}$ increasing, in both cases or 'without loss of generality'.]\n\n(e) For $x_1 < x_2 \\leqslant 0$, $x_1^2 > x_2^2$, so $\\mathrm{h}(x_1) < \\mathrm{h}(x_2)$: $\\mathrm{h}$ is increasing. By part (d), the meeting point lies on $y = x$, so $1 - x^2 = x$ with $x \\leqslant 0$:\n$x^2 + x - 1 = 0$, $x = \\frac{-1 \\pm \\sqrt{5}}{2}$, and $x \\leqslant 0$ gives $x = \\frac{-1 - \\sqrt{5}}{2}$ (also in the domain $x \\leqslant 1$ of $\\mathrm{h}^{-1}$).\nPoint: $\\left(-\\frac{1 + \\sqrt{5}}{2}, -\\frac{1 + \\sqrt{5}}{2}\\right)$ — the root rejected in part (c) is the meeting point for the other branch of $y = 1 - x^2$.\n[Check: $\\mathrm{h}^{-1}(x) = -\\sqrt{1 - x}$; at $x = -\\frac{1 + \\sqrt{5}}{2}$, $1 - x = \\frac{3 + \\sqrt{5}}{2} = \\left(\\frac{1 + \\sqrt{5}}{2}\\right)^2$, so $\\mathrm{h}^{-1}(x) = -\\frac{1 + \\sqrt{5}}{2} = x$.]\n[B1.]",
+    "syllabus_check": "9758 Functions and Graphing Techniques only: the inverse of a one-one function with the domain of $\\mathrm{f}^{-1}$ equal to the range of $\\mathrm{f}$, the graph of $\\mathrm{f}^{-1}$ as the reflection of the graph of $\\mathrm{f}$ in $y = x$ (sketched by the candidate, no figure printed), an equation solved exactly (squaring with the domain managed, a quartic factorised with the factor theorem — assumed O-Level knowledge), and increasing functions. The graphing calculator may be used throughout, but 'exact coordinates' and 'justifying that there are no other such points' need the algebra. No calculator ban, no composite restriction, nothing outside the revised 9758.",
+    "originality_note": "Every f = f^{-1} question in the 2008–2025 corpus has an INCREASING f, where the meeting points lie on y = x and the equation reduces to f(x) = x (GCE 2008 P2 Q4(iv), GCE 2011 P2 Q3(iii), GCE 2016 P1 Q10(a)(ii) with ff(x) = x printed as a cubic), or a self-inverse Möbius map (GCE 2012 P1 Q7, GCE 2021 P2 Q3(b)(ii)). Here f is DECREASING, the number of meeting points is not printed, two of the three lie OFF y = x, and part (d) asks the candidate to PROVE the principle those questions use, then (e) applies it to the increasing branch, whose meeting point is the root (c) rejected. It is unlike GCE 2024 P2 Q3 (range, sketch, fg^{-1}(1.5)) and GCE 2023 P1 Q7 (a modulus curve restricted for an inverse). It is unlike the rejected first draft's Q3 (e^x + 4e^{-x}, increasing, 'explain why f = f^{-1} has no solution', a composite in k) — the opposite case and a different result — and unlike Set 1 P1 Q3 (a tan^{-1} function constant on two intervals). It shares no object or skill with this paper's Q1 (a geometric series inequality), Q2 ((ln x)/x and powers) or Q4 (a vase filling). The idea's parts are kept; the count in (c) is withheld rather than printed (the candidate must find it), and part (e), one mark, is added so that the result of (d) is used and the rejected root is accounted for; (c) carries 4 marks to keep the total at 11."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P2 Q3",
+     "jaccard": 0.118,
+     "nearest_set": "Set 1 P1 Q5",
+     "jaccard_set": 0.054,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-09-27T01:06:15.221Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "f^{-1}(x) = \\sqrt{1 - x}, domain of f^{-1} = (-\\infty, 1] (i.e. x \\le 1)",
+     "(b)": "y = f(x): the right half of the parabola 1 - x^2, decreasing from (0, 1) through (1, 0) and on downwards for x > 1. y = f^{-1}(x) = \\sqrt{1-x}: its reflection in the line y = x, from (1, 0) through (0, 1) rising for x < 0. Both graphs meet the axes at (0, 1) and (1, 0); the line y = x is drawn to show the reflection",
+     "(c)": "(0, 1), (1, 0) and ((\\sqrt{5} - 1)/2, (\\sqrt{5} - 1)/2). From y = 1 - x^2 and x = 1 - y^2, y - x = y^2 - x^2 so (y - x)(x + y - 1) = 0: either y = x giving x^2 + x - 1 = 0, x = (\\sqrt{5}-1)/2 (x >= 0), or x + y = 1 giving x^2 - x = 0, x = 0 or 1. These cases are exhaustive, so there are no other points",
+     "(d)": "If (a, b) lies on both graphs then b = g(a) and b = g^{-1}(a), so g(b) = a. If a > b then, g being increasing, g(a) > g(b), i.e. b > a — contradiction; if a < b then g(a) < g(b), i.e. b < a — contradiction. Hence a = b, so the point lies on y = x",
+     "(e)": "((-1 - \\sqrt{5})/2, (-1 - \\sqrt{5})/2)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: f^{-1}(x) = sqrt(1 - x), domain (-inf, 1]. Checked: f decreasing on x >= 0 from f(0) = 1, so R_f = (-inf, 1] = D_{f^{-1}}; the positive root because x >= 0."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both sketches: the right half-parabola from the end-point (0, 1) through (1, 0), and sqrt(1 - x) from the end-point (1, 0) through (0, 1), reflections in y = x; each graph meets the axes at (0, 1) and (1, 0). Checked: f(0) = 1, f(1) = 0, f^{-1}(0) = 1, f^{-1}(1) = 0."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: (0, 1), (1, 0) and ((sqrt5 - 1)/2, (sqrt5 - 1)/2), exactly three. Worked both routes: a common point (p, q) has q = f(p) and q = f^{-1}(p), p in [0, 1]; squaring 1 - x^2 = sqrt(1 - x) is an equivalence there (both sides >= 0) and gives x^4 - 2x^2 + x = x(x - 1)(x^2 + x - 1) = 0, with (-1 - sqrt5)/2 outside [0, 1] rejected. The examiner's route is cleaner and needs no quartic: y = 1 - x^2 and x = 1 - y^2 subtract to (y - x)(x + y - 1) = 0, the two cases exhaustive. The third point: x^2 = 1 - x so f(x) = x. Key right, and the completeness argument is sound."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: (a, b) on both graphs gives g(a) = b and g(b) = a; a < b with g increasing gives b < a, a > b gives b > a; so a = b. The stem's 'so that g^{-1} exists' pins 'increasing' to strictly increasing, which the proof needs. Right."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both: ((-1 - sqrt5)/2, (-1 - sqrt5)/2). Checked: h is increasing on x <= 0, so by (d) the point is on y = x; x^2 + x - 1 = 0 with x <= 0 gives (-1 - sqrt5)/2, inside D_{h^{-1}} = (-inf, 1]; and h^{-1}(x) = -sqrt(1 - x) = -sqrt((3 + sqrt5)/2) = -(1 + sqrt5)/2 = x. Exactly one point, so 'the point' is right."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; I re-derived (c), (d) and (e) and the key is exactly right, including the completeness claim in (c) and the single meeting point in (e).",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "5 — show that there is none, or only one, or which (with 12, geometry seen, not computed, in the sketch that exposes the two off-line points; and 9, a reasoning-only part, the proof in (d))",
+    "fixes": [
+     "(c) wording, a light edit to SEAB's own form (GCE 2023 P2 Q4(b)): 'Find the exact coordinates of the points at which the graphs of y = f(x) and y = f^{-1}(x) meet, and show that there are no other such points.' — 'all the points … no other such points' says the same thing twice; the count still stays unprinted."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The idea is implemented with its move intact and the candidate not walked to it: the stem never names the equation to solve, the count is not printed, and the habitual route f(x) = x earns 1 of the 4 marks in (c) — the sketch in (b) (move 12) shows the reflected pair (0, 1), (1, 0) off the mirror line, and the candidate must then choose f(x) = f^{-1}(x) (or f^2(x) = x, or the symmetric pair y = 1 - x^2, x = 1 - y^2) and account for every root to justify exactly three, the GCE 2023 P2 Q4(b) demand at the same weight. (d) is a genuine reasoning-only part (move 9): the fact every drilled candidate uses is proved by contradiction from monotonicity, then (e) turns it on the other branch, where the root rejected in (c) becomes the one meeting point. (a) and (b) are the §9 Functions lead-in (f^{-1} → sketch f and f^{-1} → where they meet, the shape of GCE 2011 P2 Q3 with the increasing ln(2x + 1) + 3), and the main step reverses that template rather than following it, so 'template' is null; the gate's nearest real question is that 2011 one at Jaccard 0.117, a different object and move, and no 2022–2024 P2 question shares the structure. Not a repeat of Set 1 P1 Q3 (a constant-by-derivative function) or Set 1 P1 Q5 (a palindromic quartic through the range of x + 1/x): different objects, moves and sequences of parts; in this paper Q2 uses monotonicity to order two values, a different use from (d)'s contradiction. Marks match the work (2 + 2 + 4 + 2 + 1; (e) is one mark because the quadratic is already solved in (c) and only the branch and the sign are new). Register is SEAB's, numbers close exactly (the golden-ratio pair), all inside 9758, stem one sentence; gates all passed. One note, not a fault: the author added (e) as a follow-on and took its mark from (c) (idea: 5), where the idea allowed 'one lead-in part' — kept, because (e) adds a decision (h must be seen to be increasing before (d) applies) and closes the loop; if the session wants the idea's exact shape, fold the mark back into (c) at [5]. 'as_good_as_set1' is omitted: standard.md says no H2 Set has been approved yet, so there is no H2 benchmark."
+   },
+   "exemplars": [
+    {
+     "id": "f262fc91-148d-402e-9a99-5821ee630bc3",
+     "ref": "GCE 2024 P2 Q5"
+    },
+    {
+     "id": "7e948df2-adee-4917-b0d4-9b2a5028f9e3",
+     "ref": "GCE 2025 P1 Q10"
+    },
+    {
+     "id": "db50bc68-7fb3-4035-9062-af5d8275b80a",
+     "ref": "GCE 2023 P1 Q7"
+    },
+    {
+     "id": "30747ebc-40d9-4764-9e4b-5e31b21609d0",
+     "ref": "GCE 2017 P2 Q3"
+    },
+    {
+     "id": "dccd7467-715d-431c-8a49-7e340d09cf17",
+     "ref": "GCE 2022 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "The inside of a vase has a flat horizontal base and an open top at a height of $2\\pi$ cm above the base. At height $y$ cm above the base, where $0 \\leqslant y \\leqslant 2\\pi$, the horizontal cross-section of the inside of the vase is a circle of radius $(3 + \\cos y)$ cm (see diagram). The vase is initially empty and water is poured into it at a constant rate of $12\\pi$ cm$^3$ per second; at time $t$ seconds after pouring begins, the depth of the water is $h$ cm.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the rate at which the depth of the water is increasing at the instant when $h = \\frac{1}{2}\\pi$. Find also the rate of change of the radius of the water surface at this instant.",
+      "marks": 5,
+      "answer": "The depth is increasing at $\\frac{4}{3}$ cm per second. The rate of change of the radius of the water surface is $-\\frac{4}{3}$ cm per second: the radius is decreasing at $\\frac{4}{3}$ cm per second.",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Find the exact time taken to fill the vase.",
+      "marks": 4,
+      "answer": "$\\frac{19\\pi}{12}$ seconds (the capacity is $19\\pi^2$ cm$^3$)",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find the exact depth of the water at the instant when half of the time found in part (b) has passed. Justify your answer.",
+      "marks": 2,
+      "answer": "$\\pi$ cm. The rate of flow is constant, so the vase then holds half its capacity; since $3 + \\cos(2\\pi - y) = 3 + \\cos y$, the vase is symmetric about its narrowest section at $y = \\pi$, so exactly half the capacity lies below $y = \\pi$, and $V$ increases with $h$, so this is the only such depth.",
+      "subparts": []
+     },
+     {
+      "label": "(d)",
+      "text": "Without further differentiation, find the greatest and least values of the rate at which the depth of the water increases for $0 \\leqslant h \\leqslant 2\\pi$, and state the depths of the water at which they occur.",
+      "marks": 2,
+      "answer": "Greatest $3$ cm per second, when $h = \\pi$ (the narrowest section); least $\\frac{3}{4}$ cm per second, when $h = 0$ and when $h = 2\\pi$ (the widest sections).",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) Depth increasing at $\\frac{4}{3}$ cm per second; radius of the water surface changing at $-\\frac{4}{3}$ cm per second (decreasing). (b) $\\frac{19\\pi}{12}$ s. (c) $\\pi$ cm (half the capacity, and the vase is symmetric about its narrowest section $y = \\pi$). (d) Greatest $3$ cm per second at $h = \\pi$; least $\\frac{3}{4}$ cm per second at $h = 0$ and $h = 2\\pi$.",
+    "total_marks": 13,
+    "topics": [
+     "Differentiation (Rates of Change)",
+     "Integration (Area and Volume)",
+     "Integration (Techniques)"
+    ],
+    "skills": [
+     "§8 move 12 (geometry seen, not computed): with no formula for the volume printed, seeing that $\\frac{\\mathrm{d}V}{\\mathrm{d}h}$ is the area of the water surface, $\\pi(3 + \\cos h)^2$ (a thin horizontal layer, or $V = \\int_0^h \\pi(3 + \\cos y)^2\\,\\mathrm{d}y$), so the chain rule gives $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{12}{(3 + \\cos h)^2}$; then a second chain through the surface radius $r = 3 + \\cos h$, which is DECREASING ($-\\frac{4}{3}$ cm per second at $h = \\frac{1}{2}\\pi$) while the water rises, because the vase narrows",
+     "§8 move 2 (reverse the direction) (a time given, the depth asked), with a reasoning-only part (move 9): the depth after half the fill time read from the vase's symmetry about its narrowest section (constant inflow gives half the volume; $\\cos(2\\pi - y) = \\cos y$) as exactly $\\pi$, instead of solving the transcendental $V(h) = \\frac{1}{2}V(2\\pi)$; the greatest and least rates of rise, $3$ and $\\frac{3}{4}$ cm per second at the narrowest and widest sections, read from $\\frac{12}{(3 + \\cos h)^2}$ without differentiating again"
+    ],
+    "needs_figure": true,
+    "figure_description": "A vertical cross-section of the vase through its axis of symmetry (a flat 2-D drawing, not a 3-D view), same scale on both directions, drawing window: horizontal from -5 to 5, vertical from -0.5 to 7 (in cm). No coordinate axes, gridlines, tick marks or equations are drawn. The axis of symmetry is a vertical dashed line through the middle. The inside wall of the vase is two smooth curves that are mirror images of each other in the axis: on the right, the curve whose horizontal distance from the axis at height y is 3 + cos y for 0 <= y <= 2pi (distance 4 at the base, narrowing smoothly to 2 at y = pi, widening again to 4 at y = 2pi, about 6.28 high), and its reflection on the left. (The formula and the height y = pi of the narrowest point are drawing instructions only: neither is printed on the figure.) A thin outer wall may be drawn a small constant distance outside each curve. The base is a horizontal straight line joining the two curves at height 0 (width 8); the top at height 2pi is open (no line across it). Water is shaded lightly from the base up to a level surface at a height of about 1.2 (below the narrowest point), the water surface drawn as a horizontal line between the two curves. Labels: a double-headed vertical arrow outside the vase on the right, from the base to the water surface, labelled 'h cm'; a double-headed vertical arrow outside the vase on the left, from the base to the open top, labelled '2π cm'; three horizontal single-headed arrows from the axis to the right-hand wall, at the base labelled '4 cm', at the narrowest point labelled '2 cm', and at the top labelled '4 cm'. Nothing else is labelled: no height of the narrowest point, no formula 3 + cos y, no radius of the water surface, no volume, no rate, no time.",
+    "solution": "(a) Let the radius of the water surface be $r$ cm, so $r = 3 + \\cos h$.\nNo formula for the volume $V$ cm$^3$ of water is given. The water is made of thin horizontal circular slices: the volume of water is $V = \\int_0^h \\pi(3 + \\cos y)^2\\,\\mathrm{d}y$ (the region between the curve $x = 3 + \\cos y$ and the $y$-axis, for $0 \\leqslant y \\leqslant h$, rotated about the $y$-axis). Raising the depth by a small $\\delta h$ adds a thin layer of volume $\\delta V \\approx \\pi(3 + \\cos h)^2\\,\\delta h$, so $\\frac{\\mathrm{d}V}{\\mathrm{d}h} = \\pi(3 + \\cos h)^2$, the area of the water surface. [B1]\n(Or integrate first: $V = \\pi\\int_0^h \\left(9 + 6\\cos y + \\frac{1}{2} + \\frac{1}{2}\\cos 2y\\right)\\mathrm{d}y = \\pi\\left(\\frac{19}{2}h + 6\\sin h + \\frac{1}{4}\\sin 2h\\right)$, so $\\frac{\\mathrm{d}V}{\\mathrm{d}h} = \\pi\\left(\\frac{19}{2} + 6\\cos h + \\frac{1}{2}\\cos 2h\\right) = \\pi(9 + 6\\cos h + \\cos^2 h) = \\pi(3 + \\cos h)^2$.)\n$\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{\\mathrm{d}V}{\\mathrm{d}t} \\div \\frac{\\mathrm{d}V}{\\mathrm{d}h} = \\frac{12\\pi}{\\pi(3 + \\cos h)^2} = \\frac{12}{(3 + \\cos h)^2}$. [M1]\nWhen $h = \\frac{1}{2}\\pi$, $\\cos h = 0$, so $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{12}{9} = \\frac{4}{3}$: the depth is increasing at $\\frac{4}{3}$ cm per second. [A1]\n$\\frac{\\mathrm{d}r}{\\mathrm{d}t} = \\frac{\\mathrm{d}r}{\\mathrm{d}h} \\times \\frac{\\mathrm{d}h}{\\mathrm{d}t} = -\\sin h \\times \\frac{12}{(3 + \\cos h)^2}$. [M1]\nWhen $h = \\frac{1}{2}\\pi$, $\\sin h = 1$, so $\\frac{\\mathrm{d}r}{\\mathrm{d}t} = -\\frac{4}{3}$: the radius of the water surface is DECREASING at $\\frac{4}{3}$ cm per second (for $0 < h < \\pi$ the vase narrows as the water rises). [A1] (The answer $+\\frac{4}{3}$, or 'increasing', earns A0.)\n\n(b) The vase is full when $h = 2\\pi$. Its capacity is\n$\\int_0^{2\\pi} \\pi(3 + \\cos y)^2\\,\\mathrm{d}y = \\pi\\int_0^{2\\pi} \\left(9 + 6\\cos y + \\cos^2 y\\right)\\mathrm{d}y$ [M1]\n$= \\pi\\int_0^{2\\pi} \\left(9 + 6\\cos y + \\frac{1}{2} + \\frac{1}{2}\\cos 2y\\right)\\mathrm{d}y$, using $\\cos^2 y = \\frac{1}{2}(1 + \\cos 2y)$ [M1]\n$= \\pi\\left[\\frac{19}{2}y + 6\\sin y + \\frac{1}{4}\\sin 2y\\right]_0^{2\\pi} = \\pi(19\\pi + 0 + 0) = 19\\pi^2$ cm$^3$. [A1]\n(Over the full period $0 \\leqslant y \\leqslant 2\\pi$ the $\\cos y$ term contributes nothing and $\\cos^2 y$ contributes $\\pi$.)\nTime taken $= \\frac{19\\pi^2}{12\\pi} = \\frac{19\\pi}{12}$ seconds ($\\approx 4.97$ s). [A1]\n(A calculator value alone, $187.5$ cm$^3$ or $4.97$ s, is not exact and earns only the first M1 if the integral is set up.)\n\n(c) Water enters at a constant rate, so when half of $\\frac{19\\pi}{12}$ s, that is $\\frac{19\\pi}{24}$ s, has passed, the vase holds half its capacity, $\\frac{19\\pi^2}{2}$ cm$^3$. [B1]\nThe radius at height $2\\pi - y$ is $3 + \\cos(2\\pi - y) = 3 + \\cos y$, the radius at height $y$: the inside of the vase is symmetric about the horizontal plane at height $\\pi$, its narrowest section (radius 2). So the part of the vase below height $\\pi$ holds exactly half the capacity, and since $V$ increases as $h$ increases, no other depth gives half: the depth is $\\pi$ cm. [B1]\n(Check with $V$ from (a): $V = \\pi\\left(\\frac{19}{2}\\pi + 6\\sin \\pi + \\frac{1}{4}\\sin 2\\pi\\right) = \\frac{19\\pi^2}{2}$ when $h = \\pi$. A calculator solution of $\\frac{19}{2}h + 6\\sin h + \\frac{1}{4}\\sin 2h = \\frac{19}{2}\\pi$ giving $3.14$ earns the second mark only when the exact value $\\pi$ is stated and verified.)\n\n(d) From (a), $\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{12}{(3 + \\cos h)^2}$: the depth rises fastest where the water surface is smallest and slowest where it is largest. Since $-1 \\leqslant \\cos h \\leqslant 1$, $2 \\leqslant 3 + \\cos h \\leqslant 4$.\nGreatest rate $= \\frac{12}{2^2} = 3$ cm per second, when $\\cos h = -1$, that is $h = \\pi$ (the narrowest section). [B1]\nLeast rate $= \\frac{12}{4^2} = \\frac{3}{4}$ cm per second, when $\\cos h = 1$, that is $h = 0$ (as pouring begins) and $h = 2\\pi$ (as the vase becomes full). [B1]\n(The greatest rate is 4 times the least: $\\left(\\frac{4}{2}\\right)^2$, the ratio of the areas of the widest and narrowest sections. By (c), the depth rises fastest exactly half way through the filling, when $t = \\frac{19\\pi}{24}$.)",
+    "syllabus_check": "9758 only. Connected rates of change by the chain rule ($\\frac{\\mathrm{d}h}{\\mathrm{d}t} = \\frac{\\mathrm{d}V}{\\mathrm{d}t} \\div \\frac{\\mathrm{d}V}{\\mathrm{d}h}$, $\\frac{\\mathrm{d}r}{\\mathrm{d}t} = \\frac{\\mathrm{d}r}{\\mathrm{d}h}\\frac{\\mathrm{d}h}{\\mathrm{d}t}$); the volume of revolution about the $y$-axis of $x = 3 + \\cos y$ (a bowl or vase is the syllabus's own example); $\\cos^2 y$ integrated by the double-angle formula; the range of $\\cos h$. $\\frac{\\mathrm{d}V}{\\mathrm{d}h} = \\pi(3 + \\cos h)^2$ is reachable two ways inside 9758: the thin-slice view of the integral as a limit of a sum, or integrating $V$ as a function of $h$ exactly and differentiating it, so no result outside the syllabus is needed. No calculator is needed; 'exact' in (b) and (c) forbids a decimal. Nothing from the removed topics. The main step is found, never printed: no formula for $V$ appears anywhere and no 'Show that' gives $\\frac{\\mathrm{d}V}{\\mathrm{d}h}$.",
+    "originality_note": "Implements Q4.idea.md (the vase of radius $3 + \\cos y$, $12\\pi$ cm$^3$ per second, no $V(h)$ printed, $\\frac{4}{3}$ and $-\\frac{4}{3}$ at $h = \\frac{1}{2}\\pi$, $\\frac{19\\pi}{12}$ s, fastest at the narrowest section and slowest at the widest). One change: the idea's (a) 'Explain why $\\frac{\\mathrm{d}V}{\\mathrm{d}h} = \\pi(3 + \\cos h)^2$' would have printed the main step, so it is folded into (a) as a step the candidate must find, and its 2 marks move to a new (c) — the depth after half the fill time, found from the vase's symmetry about its narrowest section rather than from the transcendental equation $V(h) = \\frac{1}{2}V(2\\pi)$. Every real rates-of-change question in the corpus gives the solid's volume formula or a named solid (GCE 2025 P2 Q4, a hemispherical bowl with $V = \\frac{1}{3}\\pi h^2(45 - h)$ printed, time to fill then the rate at a depth; GCE 2016 P2 Q1 and the O-Level cones; GCE 2022 P2 Q2, a cylinder filled at $kt$; GCE 2025 specimen P1 Q1, an ink blot); here there is no volume formula, the second rate is NEGATIVE although the water rises, and the last two parts are read from the shape. GCE 2022 P2 Q5 derives a spherical cap's volume by a printed 'Show by integration'; here the capacity is not printed and feeds a time. Earlier Sets: no question on Differentiation (Rates of Change); Set 1 P1 Q10 (the melting ice ball) uses $\\frac{\\mathrm{d}V}{\\mathrm{d}t} = 4\\pi r^2\\frac{\\mathrm{d}r}{\\mathrm{d}t}$ inside a differential-equation model with a printed sphere formula, whereas this is a container with a variable cross-section, no differential equation and no formula; Set 1 P1 Q9 integrates $\\ln x$ by parts with a moving split point, a different integration skill. Not the first draft's horizontal cylindrical fuel tank (rates through the angle at the centre): a different object and a different move. Nothing in Q5, Q7-Q10 of this paper or in the Q1-Q3 ideas (a GP inequality, $\\frac{\\ln x}{x}$, a decreasing $\\mathrm{f}$ and $\\mathrm{f}^{-1}$) touches rates, volumes or a trigonometric integral."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P2 Q4",
+     "jaccard": 0.08,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.025,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-27T01:06:49.846Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "dh/dt = 12/(3 + cos h)^2, so at h = π/2 the depth increases at 4/3 cm/s; r = 3 + cos h gives dr/dt = −sin h · dh/dt = −4/3 cm/s (radius decreasing at 4/3 cm/s)",
+     "(b)": "V = π∫_0^{2π}(3 + cos y)^2 dy = π(18π + π) = 19π^2 cm^3; time = 19π^2/(12π) = 19π/12 s",
+     "(c)": "h = π; V(π) = π∫_0^{π}(3 + cos y)^2 dy = π(9π + π/2) = 19π^2/2 = half the vase (cross-section symmetric about y = π since cos(2π − y) = cos y), and V is strictly increasing in h, so at t = 19π/24 the depth is π cm",
+     "(d)": "dh/dt = 12/(3 + cos h)^2: greatest 3 cm/s at h = π (narrowest, radius 2); least 3/4 cm/s at h = 0 and h = 2π (radius 4)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: dV/dh = π(3 + cos h)² (no V(h) printed; V = π∫₀ʰ(3 + cos y)² dy, or the thin-layer argument), so dh/dt = 12/(3 + cos h)² = 4/3 cm/s at h = π/2; r = 3 + cos h gives dr/dt = −sin h · dh/dt = −4/3 cm/s, the radius DECREASING. Checked by the integrate-first route too: V = π(19h/2 + 6 sin h + ¼ sin 2h), dV/dh at π/2 = π(19/2 − ½) = 9π, 12π/9π = 4/3."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: capacity π∫₀^{2π}(9 + 6cos y + cos² y) dy = π(18π + 0 + π) = 19π² cm³; time 19π²/(12π) = 19π/12 s (≈ 4.97 s). Verified."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: constant inflow → half the capacity, 19π²/2, at t = 19π/24; cos(2π − y) = cos y makes the vase symmetric about y = π, and V(π) = π(9π + π/2) = 19π²/2 confirms it; V strictly increasing so the depth is uniquely π cm. Verified."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: dh/dt = 12/(3 + cos h)² with 2 ≤ 3 + cos h ≤ 4 → greatest 3 cm/s at h = π (radius 2), least 3/4 cm/s at h = 0 and h = 2π (radius 4). Verified."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; I re-derived all four and the key is exactly right, including the sign of dr/dt and the exact 19π² capacity.",
+    "score": 4,
+    "standard": "at",
+    "template": "connected rates in a container filling at a constant rate, then the time to fill — the spine of (a)–(b) only, with V(h) unprinted; (c)–(d) leave the template",
+    "move": "12 Geometry seen, not computed — with no V(h) printed, dV/dh is the water-surface area π(3 + cos h)² (or V = π∫(3 + cos y)² dy), and in (c) the vase's symmetry about its waist gives the half-time depth exactly π in place of solving V(h) = ½V(2π); with 9 (a reasoning-only part) in (c) and (d)",
+    "fixes": [
+     "(d): pin the range — write 'for 0 ≤ h ≤ 2π' (or 'from the moment pouring begins until the vase is full') so that the least rate at h = 0 and h = 2π is unambiguous; as worded, 'while the vase is being filled' lets a careful candidate exclude both endpoints and answer that the least value is approached but not attained.",
+     "skills: drop '§8 move 7 (two topics fused)' for (b) — the capacity is a standard volume of revolution about the y-axis with ∫cos² by the double angle over a full period, a routine lead that 2022–2024 pays 4–5 marks (GCE 2022 P2 Q5(a)), not a fusion; and (c)'s 'a time given, the depth asked' is move 2 (reverse the direction), not 'move 12 again'. The moves the question actually holds are 12 (dV/dh seen as the surface area with no V(h) printed) and 9/12 in (c) (the waist symmetry). The phrases must be true and specific."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "At standard: the §9 container template underlies (a)–(b), but V(h) is never printed, the surface radius shrinks (a sign the candidate must decide), and (c) forces the symmetry of the vase about its waist for the exact depth π — a 2-mark reasoning part of exactly the GCE 2022 P2 Q5(c) kind; two moves for 13 marks, all inside 9758, marks at 2022–2024 rates. The thinking sits in 4 of the 13 marks, thinner than GCE 2023 P2 Q4 but the shape of GCE 2022 P2 Q5, so a 4 not a 5. Same family as GCE 2016 P2 Q1 / GCE 2025 P2 Q4 (a container at a constant rate) but not the same sequence of parts or move, so no too_close_to; Set 1 P1 Q10 also turns on dV/dt = (surface area) × (linear rate), from the opposite direction (V printed, the area cancels) and in a different structure, so no repeats_set — noted for the Set's variety. Gates all passed. as_good_as_set1 omitted: no H2 Set has been approved yet (standard.md §7)."
+   },
+   "exemplars": [
+    {
+     "id": "5ce59773-1280-4413-a690-d846887fcd6d",
+     "ref": "GCE 2025 P2 Q4"
+    },
+    {
+     "id": "c5c73788-48fd-4c56-b07e-afa63e8a0b62",
+     "ref": "GCE 2025 specimen P1 Q1"
+    },
+    {
+     "id": "b15dc58b-d392-4aed-a7e2-f60a04ba3f3d",
+     "ref": "GCE 2016 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Permutations and Combinations",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "The integers $1$, $2$, $3$, $4$ and $5$ are arranged in a row, each integer being used exactly once. Such an arrangement is called a 'ridge' if the integers to the left of $5$ increase from left to right and the integers to the right of $5$ decrease from left to right. For example, $2 \\quad 3 \\quad 5 \\quad 4 \\quad 1$ and $5 \\quad 4 \\quad 3 \\quad 2 \\quad 1$ are ridges, but $2 \\quad 5 \\quad 3 \\quad 4 \\quad 1$ is not.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the number of ridges in which $5$ is in the middle position.",
+      "marks": 1,
+      "answer": "$6$"
+     },
+     {
+      "label": "(b)",
+      "text": "Show that there are $16$ ridges.",
+      "marks": 2,
+      "answer": "Shown: each of $1, 2, 3, 4$ is either to the left or to the right of $5$, giving $2^4 = 16$ choices, and each choice gives exactly one ridge because the order on each side is then forced (or ${}^4C_0 + {}^4C_1 + {}^4C_2 + {}^4C_3 + {}^4C_4 = 16$)."
+     },
+     {
+      "label": "(c)",
+      "text": "Explain why, in every ridge, $1$ is at one of the two ends.",
+      "marks": 1,
+      "answer": "$1$ is the smallest integer: if it is to the left of $5$ it must come first, since the integers there increase from the left-hand end; if it is to the right of $5$ it must come last, since the integers there decrease to the right-hand end."
+     },
+     {
+      "label": "(d)",
+      "text": "The integers $1, 2, 3, \\ldots, n$, where $n \\geqslant 2$, are now arranged in a row in a random order, and a ridge is defined in the same way, with $n$ in place of $5$. Find the smallest value of $n$ for which the probability that the arrangement is a ridge is less than $0.01$.",
+      "marks": 3,
+      "answer": "$n = 8$ (P(ridge) $= \\frac{2^{n-1}}{n!}$, which decreases with $n$; $n = 7$: $0.0127$, $n = 8$: $0.00317$)"
+     }
+    ],
+    "answer": "(a) $6$; (b) $16$ (shown); (c) $1$ is the smallest integer, so it is first if it is on the increasing side and last if it is on the decreasing side; (d) $n = 8$",
+    "total_marks": 7,
+    "topics": [
+     "Permutations and Combinations",
+     "Probability"
+    ],
+    "skills": [
+     "§8 move 1 (define, then reason): seeing that a 'ridge' defined in the question is fixed by WHICH integers lie to the left of the largest (their order is then forced), so ridges are counted as subsets, ${}^4C_2$ with $5$ in the middle and $2^{n-1}$ in all, not as arrangements",
+     "structural reasoning from a definition: the smallest integer must stand at an end of every ridge (first on the increasing side, last on the decreasing side)",
+     "carrying the count to general $n$ unprompted and finding the smallest $n$ for which the probability $\\frac{2^{n-1}}{n!}$ that a random arrangement is a ridge falls below $0.01$ (a table of values on the calculator earns full marks)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) With $5$ in the middle position there are two integers on each side of it. Choose which $2$ of $1, 2, 3, 4$ go to the left of $5$: ${}^4C_2 = 6$ ways. The two on the left must be written in increasing order and the two on the right in decreasing order, so each choice gives exactly one ridge.\nNumber of ridges $= 6$.\n\n(b) In a ridge, each of the integers $1, 2, 3, 4$ is either to the left or to the right of $5$: $2 \\times 2 \\times 2 \\times 2 = 2^4$ ways of splitting them into the two sides. Once the two sides are decided, the integers on the left must be in increasing order and those on the right in decreasing order, so each split gives exactly one ridge, and different splits give different ridges.\nNumber of ridges $= 2^4 = 16$ (shown).\n[Alternatively, with $k$ integers to the left of $5$ ($k = 0, 1, 2, 3, 4$) there are ${}^4C_k$ ridges, as in (a), so the total is ${}^4C_0 + {}^4C_1 + {}^4C_2 + {}^4C_3 + {}^4C_4 = 1 + 4 + 6 + 4 + 1 = 16$.]\n\n(c) $1$ is not $5$, so it is on one side of $5$, and it is the smallest of the integers. If $1$ is to the left of $5$: the integers there increase from left to right, so the smallest of them is first, and $1$ is at the left-hand end. If $1$ is to the right of $5$: the integers there decrease from left to right, so the smallest of them is last, and $1$ is at the right-hand end. Either way $1$ is at one of the two ends.\n\n(d) As in (b), each of $1, 2, \\ldots, n-1$ is either to the left or to the right of $n$, and the order on each side is then forced, so there are $2^{n-1}$ ridges.\n[Alternatively, by (c): removing $1$ from a ridge of $1, 2, \\ldots, n$ leaves a ridge of $2, 3, \\ldots, n$, and $1$ can be placed at either end of any such ridge, so the number of ridges doubles each time $n$ increases by $1$; with $1$ ridge when $n = 1$, there are $2^{n-1}$.]\nThere are $n!$ equally likely arrangements, so\n$\\mathrm{P}(\\text{ridge}) = p_n = \\frac{2^{n-1}}{n!}$.\n$\\frac{p_{n+1}}{p_n} = \\frac{2^{n}}{(n+1)!} \\times \\frac{n!}{2^{n-1}} = \\frac{2}{n+1} < 1$ for $n \\geqslant 2$, so $p_n$ decreases as $n$ increases.\n$p_6 = \\frac{32}{720} = 0.0444$\n$p_7 = \\frac{64}{5040} = 0.0127 > 0.01$\n$p_8 = \\frac{128}{40320} = 0.00317 < 0.01$\nSmallest value of $n$ is $8$.",
+    "syllabus_check": "9758 Section B, Permutations and Combinations and Probability: arrangements in a row, selections (${}^nC_r$), the multiplication principle ($2^{n-1}$ from two choices for each of $n-1$ integers; the O-Level binomial sum $\\sum {}^{n-1}C_k = 2^{n-1}$ is an alternative, assumed knowledge), and probability as a ratio of equally likely arrangements ($n!$). The smallest $n$ is found by evaluating the probability, as in GCE 2022 P2 Q4(d). No calculator ban, no figure, nothing outside the revised 9758.",
+    "originality_note": "No 2017–2025 GCE question in the corpus and no earlier Set (none has a Permutations and Combinations question) defines an arrangement by an increase-then-decrease rule. The real counting questions arrange objects under together/apart or end restrictions (GCE 2025 P2 Q7's digit cards), choose committees with conditions (GCE 2024 P2 Q6, GCE 2022 P2 Q7) or solve for numbers of counters (GCE 2023 P2 Q6, GCE 2020 P2 Q8); here the object is defined in the stem, the count turns out to be a subset choice (which integers lie left of the largest), a structural fact is explained from the definition, and the count is carried to general n and turned into a probability threshold. It shares no context or skill with Q6 (pooled testing, binomial) or Q7 (a spinner's total, a test)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2010 P2 Q8",
+     "jaccard": 0.036,
+     "nearest_set": "Set 1 P1 Q2",
+     "jaccard_set": 0.017,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-09-27T00:53:40.334Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "6  (choose which 2 of 1,2,3,4 go left of 5: C(4,2) = 6; each side's order is then forced)",
+     "(b)": "shown  (each of 1,2,3,4 is independently placed left or right of 5, and each side's order is then forced: 2^4 = 16)",
+     "(c)": "1 is the smallest integer. If it is left of 5, the left side increases, so 1 must come first (left end); if it is right of 5, the right side decreases, so 1 must come last (right end). 1 is never 5, so it is always at an end.",
+     "(d)": "n = 8  (P(ridge) = 2^(n-1)/n!; n = 7 gives 64/5040 = 0.0127 > 0.01, n = 8 gives 128/40320 = 0.00317 < 0.01)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 6: choose which 2 of {1,2,3,4} sit left of 5, C(4,2) = 6, each side's order then forced. Verified by enumeration."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both show 2^4 = 16 by the left/right choice for each of 1,2,3,4 with the order on each side forced (the setter also gives the casework sum 1+4+6+4+1). Enumeration of all 120 arrangements gives exactly 16 ridges."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Same argument: 1 is the smallest and is never 5; on the increasing left side it is first, on the decreasing right side it is last. True of all 16 ridges."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both n = 8 from P(ridge) = 2^(n-1)/n!: p_7 = 64/5040 = 0.0127 > 0.01, p_8 = 128/40320 = 0.00317 < 0.01. Checked for n = 2 to 8 by brute force; the ratio p_(n+1)/p_n = 2/(n+1) < 1 for n >= 2, so the sequence is decreasing and 8 is the smallest."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; I re-derived each answer by enumeration and the general count 2^(n-1) holds for n = 2 to 8.",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "1 define, then reason (with 4 structural or discrete reasoning in (c) and the general-n count of (d))",
+    "fixes": [
+     "Skills phrase: drop 'with the probability shown to decrease' — (d) does not ask for it, and a candidate who tabulates n = 6, 7, 8 on the calculator earns full marks; the mark scheme should say so. If the decrease is wanted as work, ask for it ('Show that this probability decreases as n increases, and hence find …') and re-mark (d) to [4], the paper's Section B then being one mark over.",
+     "Light wording edit for SEAB's order of phrases in (d): 'are now arranged in a row in a random order'; and print the three example arrangements of the stem on their own displayed line, as SEAB does with a defined object.",
+     "Note for the session, not a rejection: Q7 of this paper (the spinner) also runs on the scores 1 to 5, so two Section B questions open on '1 to 5' — cosmetic, and this slot is the one to keep as it is (5 must be odd-positioned for (a) to have a middle)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A 'ridge' is defined in three sentences and the candidate must find that a ridge is fixed by WHICH integers lie left of the largest (a subset count, not an arrangement count) — (a) and the printed 16 of (b) are leads, (c) pays a reason, and the 3-mark (d) makes the candidate produce 2^(n-1) unprompted and turn it into a probability with a smallest-n decision, exactly the idea in Q5.idea.md and the shape of GCE 2024 P2 Q7(a) and 2024 P2 Q4 without their object or move; not a §9 template (no together/apart rule, no committee, no tree), no earlier-Set question on the topic, nothing in Q6–Q8 of this paper repeats its skills, gates pass, marks match the work within one. Scored 4 not 5 only for the light edits above; as_good_as_set1 is omitted because no H2 Set has been approved yet (standard.md §7)."
+   },
+   "exemplars": [
+    {
+     "id": "232a8b8e-28d7-4241-b313-6aca1d37c784",
+     "ref": "GCE 2020 P2 Q8"
+    },
+    {
+     "id": "eca2cf75-cec1-4d5a-b639-ae0751834839",
+     "ref": "GCE 2025 P2 Q7"
+    },
+    {
+     "id": "d9e58d77-8afb-49f0-b9b2-3457c30c44b1",
+     "ref": "GCE 2024 P2 Q6"
+    },
+    {
+     "id": "54e3d49b-026b-4a0f-8e8b-9fec5b2a0d90",
+     "ref": "GCE 2023 P2 Q6"
+    },
+    {
+     "id": "3407ab1c-7cb5-4829-959d-1fec4a5a10c5",
+     "ref": "GCE 2022 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Distributions (Binomial)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A lamp is controlled by a worn push-button switch. Each time the switch is pressed, the lamp changes state (from on to off, or from off to on) with probability $p$, where $0 < p < 1$, and otherwise stays as it is, independently of what happens at any other press. The lamp is on before the switch is first pressed, and the probability that the lamp is on after the switch has been pressed $n$ times is denoted by $L_n$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $L_n = \\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$.",
+      "marks": 3,
+      "answer": "$L_n = \\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$ (shown): the lamp is on exactly when the number of presses that change its state, $X \\sim \\mathrm{B}(n, p)$, is even, and adding the expansions of $(q + p)^n$ and $(q - p)^n$, where $q = 1 - p$, gives $2\\,\\mathrm{P}(X \\text{ even}) = 1 + (1 - 2p)^n$."
+     },
+     {
+      "label": "(b)",
+      "text": "Without using the result in part (a), explain why $L_n = \\frac{1}{2}$ for every positive integer $n$ when $p = \\frac{1}{2}$.",
+      "marks": 1,
+      "answer": "Whatever the state of the lamp just before the last press, that press changes the state with probability $\\frac{1}{2}$ and leaves it unchanged with probability $\\frac{1}{2}$, so after it the lamp is on with probability $\\frac{1}{2}$; the earlier presses make no difference."
+     },
+     {
+      "label": "(c)",
+      "text": "For a particular switch, $p = 0.9$. Find $L_{10}$.",
+      "marks": 1,
+      "answer": "$0.554$"
+     },
+     {
+      "label": "(d)",
+      "text": "For a different switch, $L_2 = 0.58$. Find the possible values of $p$.",
+      "marks": 2,
+      "answer": "$p = 0.3$ or $p = 0.7$ (both kept: $\\frac{1}{2}\\left[1 + (1 - 2p)^2\\right] = 0.58$ gives $(1 - 2p)^2 = 0.16$, $1 - 2p = \\pm 0.4$, and both values lie in $0 < p < 1$; a candidate who rejects one of them loses the A mark)"
+     },
+     {
+      "label": "(e)",
+      "text": "For any switch, explain, in context, what happens to $L_n$ as $n$ becomes large.",
+      "marks": 1,
+      "answer": "$L_n \\to \\frac{1}{2}$, since $|1 - 2p| < 1$ so $(1 - 2p)^n \\to 0$: after many presses the lamp is almost equally likely to be on or off, whatever the value of $p$, so the fact that it started on no longer matters."
+     }
+    ],
+    "answer": "(a) $L_n = \\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$ (shown). (b) The last press alone decides: whatever the state before it, it changes the state with probability $\\frac{1}{2}$, so the lamp is on after it with probability $\\frac{1}{2}$. (c)(i) $0.554$. (c)(ii) $n = 1, 3, 5, \\ldots, 17$. (d) $L_n \\to \\frac{1}{2}$ because $|1 - 2p| < 1$: after many presses the lamp is equally likely to be on or off, whatever $p$ is, and its starting state no longer matters.",
+    "total_marks": 8,
+    "topics": [
+     "Distributions (Binomial)",
+     "Probability"
+    ],
+    "skills": [
+     "§8 move 4 (structural or discrete reasoning — parity): seeing, with no hint in the stem, that the lamp is on after $n$ presses exactly when the number of presses that change its state, $X \\sim \\mathrm{B}(n, p)$, is EVEN, and turning $\\mathrm{P}(X \\text{ even})$ into the closed form $\\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$ by adding the binomial expansions of $(q + p)^n$ and $(q - p)^n$ (or by the recurrence $L_{n+1} = p + (1 - 2p)L_n$) — a parity filter by the binomial theorem, not a calculator sum",
+     "§8 move 2 in a sub-part (reverse the direction): from $L_2 = 0.58$ back to the switch, $(1 - 2p)^2 = 0.16$ with BOTH roots $p = 0.3$ and $p = 0.7$ kept because both lie in $0 < p < 1$ — after an even number of presses a switch with probability $p$ and one with $1 - p$ are indistinguishable, the parity of the question's own move",
+     "reasoning without the formula: when $p = \\frac{1}{2}$ the last press alone decides the state, and as $n$ grows the lamp forgets that it started on because $|1 - 2p| < 1$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $X$ be the number of the $n$ presses that change the state of the lamp. The $n$ presses are independent and each changes the state with the same probability $p$, so $X \\sim \\mathrm{B}(n, p)$. Every change of state switches the lamp between on and off, and the lamp starts on, so after $n$ presses the lamp is on exactly when it has changed state an even number of times, that is, when $X$ is even. [B1]\nHence, with $q = 1 - p$, $L_n = \\mathrm{P}(X \\text{ even}) = \\sum_{k \\text{ even}} \\binom{n}{k} p^k q^{n-k}$.\nBy the binomial theorem,\n$(q + p)^n = \\sum_{k=0}^{n} \\binom{n}{k} p^k q^{n-k} = \\mathrm{P}(X \\text{ even}) + \\mathrm{P}(X \\text{ odd})$,\n$(q - p)^n = \\sum_{k=0}^{n} \\binom{n}{k} (-p)^k q^{n-k} = \\mathrm{P}(X \\text{ even}) - \\mathrm{P}(X \\text{ odd})$, since $(-p)^k = p^k$ when $k$ is even and $(-p)^k = -p^k$ when $k$ is odd. [M1]\nAdding, with $q + p = 1$ and $q - p = 1 - 2p$: $1 + (1 - 2p)^n = 2\\,\\mathrm{P}(X \\text{ even})$, so $L_n = \\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$. [A1]\nAlternative route (full marks): conditioning on the state just before the $(n+1)$th press, $L_{n+1} = (1 - p)L_n + p(1 - L_n) = p + (1 - 2p)L_n$ [B1]. Then $L_{n+1} - \\frac{1}{2} = (1 - 2p)\\left(L_n - \\frac{1}{2}\\right)$, so $L_n - \\frac{1}{2}$ is a geometric sequence with common ratio $1 - 2p$ [M1]; since $L_1 = 1 - p$ gives $L_1 - \\frac{1}{2} = \\frac{1}{2}(1 - 2p)$, $L_n - \\frac{1}{2} = \\frac{1}{2}(1 - 2p)^n$ and $L_n = \\frac{1}{2}\\left[1 + (1 - 2p)^n\\right]$ [A1].\nCheck: $L_1 = 1 - p = \\frac{1}{2}\\left[1 + (1 - 2p)\\right]$ and $L_2 = (1 - p)^2 + p^2 = 1 - 2p + 2p^2 = \\frac{1}{2}\\left[1 + (1 - 2p)^2\\right]$. Verifying the formula for particular values of $n$ only does not show it.\n\n(b) Consider the last ($n$th) press. Whatever the state of the lamp just before it, this press changes the state with probability $\\frac{1}{2}$ and leaves it unchanged with probability $\\frac{1}{2}$, so $L_n = \\frac{1}{2}L_{n-1} + \\frac{1}{2}(1 - L_{n-1}) = \\frac{1}{2}$ for every $n \\geqslant 1$: the last press alone decides whether the lamp is on, and the earlier presses make no difference. [B1] (Consistent with part (a): $p = \\frac{1}{2}$ makes $(1 - 2p)^n = 0$.)\n\n(c) With $p = 0.9$, $1 - 2p = -0.8$, so $L_{10} = \\frac{1}{2}\\left[1 + (-0.8)^{10}\\right] = \\frac{1}{2}(1 + 0.107374) = 0.553687 = 0.554$ (3 s.f.). [B1]\n\n(d) $L_2 = \\frac{1}{2}\\left[1 + (1 - 2p)^2\\right] = 0.58$, so $(1 - 2p)^2 = 0.16$ and $1 - 2p = 0.4$ or $1 - 2p = -0.4$. [M1: the formula at $n = 2$ solved for $(1 - 2p)^2$, both square roots taken]\nSo $p = 0.3$ or $p = 0.7$. Both values lie in $0 < p < 1$, so both are possible: a switch that changes the state with probability $0.3$ and one that changes it with probability $0.7$ give the same $L_2$ (check: $0.7^2 + 0.3^2 = 0.58$ either way), because after an even number of presses the two switches cannot be told apart. [A1: both values; rejecting one of them earns A0]\n\n(e) For $0 < p < 1$, $-1 < 1 - 2p < 1$, so $(1 - 2p)^n \\to 0$ and $L_n \\to \\frac{1}{2}$ as $n \\to \\infty$. In context: after a large number of presses the lamp is almost equally likely to be on or off, whatever the value of $p$ — the fact that it started on no longer affects its state. [B1] (For $p = 0.9$ the values of $L_n$ lie alternately above and below $\\frac{1}{2}$ and close in on $\\frac{1}{2}$; for $p < \\frac{1}{2}$ they decrease towards $\\frac{1}{2}$ from above.)",
+    "syllabus_check": "All inside 9758 Section B: $\\mathrm{B}(n, p)$ as a model, with its conditions (a fixed number of presses, independent presses, a constant probability $p$) stated in the stem and not asked for (Q7 and Q10 of this paper already pay for assumptions); $\\mathrm{P}(X = k) = \\binom{n}{k}p^k(1 - p)^{n-k}$; the binomial theorem for a positive integer index and logarithms are assumed O-Level A Math knowledge; the limit of $(1 - 2p)^n$ for $|1 - 2p| < 1$ is the condition met in the sum to infinity of a GP; the alternative route in (a) is a first-order recurrence $u_{n+1} = a u_n + b$ of the kind in the revised syllabus (no induction is needed or asked for). No calculator probability is required anywhere; no Poisson, no normal approximation, nothing removed from the revised 9758.",
+    "originality_note": "A new object for this paper and the corpus: a lamp whose state is toggled by a switch that works with probability $p$, reasoned with through the PARITY of a binomial count. No 2017–2025 GCE question and no earlier-Set question asks for the probability that a binomial variable is even or builds a closed form from $(q + p)^n \\pm (q - p)^n$; the binomial exemplars (sweets with a modal value, $\\mathrm{B}(8, p)$ with mean against variance, the bug at the forks, counters until two red, pies and burgers in quality control) all run assumptions, then calculator probabilities, then a binomial of a binomial — here nothing is read from a calculator. Nothing in this paper shares it: Q5 (ridges), Q7 (a spinner's total), Q8 (spring regression), Q9 (the urn that adds a ball), Q10 (the rod gauge's median rule). Part (c)(ii) is not Q5(d)'s smallest-$n$ search: its answer is a finite set of ODD $n$, fixed by the sign of $(-0.8)^n$. Caution for the session: $\\mathrm{P}(X \\text{ even}) = \\frac{1}{2}[1 + (1 - 2p)^n]$ is a classic exercise of university probability texts, so a well-read candidate may know it; the lamp, the reasoning parts and the $p > \\frac{1}{2}$ parity split are ours."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P2 Q9",
+     "jaccard": 0.022,
+     "nearest_set": "Set 1 P1 Q1",
+     "jaccard_set": 0.013,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-27T01:05:24.844Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — L_n = (1-p)L_{n-1} + p(1-L_{n-1}) = p + (1-2p)L_{n-1}, L_0 = 1; so L_n - 1/2 = (1-2p)(L_{n-1} - 1/2), giving L_n - 1/2 = (1-2p)^n (L_0 - 1/2) = (1/2)(1-2p)^n, i.e. L_n = (1/2)[1 + (1-2p)^n]",
+     "(b)": "When p = 1/2, whatever state the lamp is in just before the n-th (last) press, that press leaves it on with probability 1/2 (changes with prob 1/2, stays with prob 1/2), so L_n = 1/2 for every n >= 1",
+     "(c)": "L_10 = (1/2)(1 + 0.8^10) = 0.554 (0.55369)",
+     "(d)": "p = 0.3 or p = 0.7 (session-verified: (1-2p)^2 = 0.16, both roots in (0,1))",
+     "(e)": "Since 0 < p < 1, |1-2p| < 1 so (1-2p)^n -> 0 and L_n -> 1/2: after many presses the lamp is equally likely to be on or off, whatever its starting state"
+    },
+    "solvable": true,
+    "issues": [
+     "(d) rewritten by the session after moderation (the moderator's own fix); its answer checked numerically by the session, not by a fresh blind solve"
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown', by different routes, and both routes re-derived here. Setter: the lamp is on iff the number of state changes X ~ B(n, p) is even, and (q+p)^n + (q-p)^n = 2 P(X even) with q - p = 1 - 2p. Examiner: L_n = (1-p)L_{n-1} + p(1-L_{n-1}) = p + (1-2p)L_{n-1}, L_0 = 1, so L_n - 1/2 = (1-2p)^n (L_0 - 1/2). Checks: L_1 = 1 - p, L_2 = (1-p)^2 + p^2 = 1 - 2p + 2p^2 = (1/2)[1 + (1-2p)^2]. The target is true for every n >= 0; the setter's scheme rightly pays either route and refuses verification at particular n."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Same argument: whatever the state before the last press, that press leaves the lamp on with probability 1/2, so L_n = (1/2)L_{n-1} + (1/2)(1 - L_{n-1}) = 1/2 for every n >= 1. Consistent with (a), where (1-2p)^n = 0."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both 0.554. Re-derived: 1 - 2p = -0.8, (-0.8)^10 = 0.8^10 = 0.1073742, L_10 = 0.5536871 = 0.554 (3 s.f.)."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both n = 1, 3, 5, 7, 9, 11, 13, 15, 17. Re-derived: L_n < 0.49 iff (-0.8)^n < -0.02, impossible for even n (L_n > 1/2), so n is odd and 0.8^n > 0.02, i.e. n < ln 0.02 / ln 0.8 = 17.53. Checks: L_17 = (1/2)(1 - 0.022518) = 0.48874 < 0.49; L_18 = 0.50901; L_19 = (1/2)(1 - 0.014412) = 0.49279 > 0.49. The set is finite and well-posed; the boundary 17.53 sits clear of an integer."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: 0 < p < 1 gives |1 - 2p| < 1, so (1-2p)^n -> 0 and L_n -> 1/2; after many presses the lamp is as likely off as on, whatever p, and its starting state no longer matters."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and every value re-derives exactly; the key is right, including the parity split and the finite set in (c)(ii).",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "4 structural or discrete reasoning (parity): the lamp is on after n presses exactly when the number of state changes X ~ B(n, p) is EVEN, and P(X even) is closed by the binomial identity (q+p)^n + (q-p)^n = 2 P(X even) or by the recurrence L_{n+1} = p + (1-2p)L_n — found by the candidate, since the stem names no X and hints no parity; with 9 (a reasoning-only part) in (b), and the same parity move a second time in (c)(ii) on the sign of (-0.8)^n.",
+    "fixes": [
+     "APPLIED by the session (27 Sep 2026): (c)(ii) 'values of n with L_n < 0.49' (the Set 1 P1 Q2(b) skill) replaced by the moderator's reversal '(d) For a different switch, L_2 = 0.58. Find the possible values of p.' [2] — p = 0.3 or 0.7, both kept; the limit part re-lettered (e); no mark printed on a stem line; the skills phrase rewritten.",
+     "Note for the session, not a rejection: move 4 is now the main step of Q6 and a named move of Q2 in this paper — at List B item 9's limit of two, for the session's count."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "On its own this is a real Section B question after a light edit and AT the 2022-2024 standard: three sentences of stem naming no random variable and hinting no parity, so (a)'s printed target is a gate whose ROUTE the candidate must find (a binomial count filtered by parity through (q+p)^n + (q-p)^n, or the recurrence) exactly as Q6.idea.md asked — the interesting step is the route, not the printed result, and (a) is re-used at p = 0.9 and in the limit (section 5 item 5); (b) and (d) pay words, the numbers close (1 - 2p = -0.8, the boundary 17.53 clear of an integer), 8 marks in about 14 minutes, not the section 9 binomial template (no assumptions asked, no calculator sum, no table), and structurally unlike GCE 2022 P2 Q9 (a path count with p and q) or GCE 2024 P2 Q7(a) (a range of n on a different object) — no 2017-2025 question asks P(X even). What stops it is a 2-mark sub-part, not the question: the author's change of p to 0.9 turned (c)(ii) into 'n odd, then a bound by logarithms, a finite set of odd n', the skill Set 1 P1 Q2(b) tests the same way in this Set's other paper (the gate's Jaccard 0.021 cannot see a skill), so repeats_set is set and fixes[0] gives the swap that makes this a 4 that stands. as_good_as_set1 is omitted per standard.md section 7: no H2 Set has been approved by Adrian yet. [Session, after the fix: repeats_set cleared — the repeated skill was confined to the replaced 2-mark sub-part.]"
+   },
+   "exemplars": [
+    {
+     "id": "016e6135-7dc1-4c3d-b932-33ba9e18aed6",
+     "ref": "GCE 2025 specimen P2 Q7"
+    },
+    {
+     "id": "093eb388-262e-493c-a45a-60b0c61b6fa6",
+     "ref": "GCE 2022 P2 Q8"
+    },
+    {
+     "id": "2ce77b2a-cf63-4834-a536-17ced88b460b",
+     "ref": "GCE 2018 P2 Q6"
+    },
+    {
+     "id": "b845c6e0-bcf4-47ab-a49f-1d9678c8e5e8",
+     "ref": "GCE 2017 P2 Q5"
+    },
+    {
+     "id": "5769402e-9fad-47d8-a24c-205407b27fb2",
+     "ref": "GCE 2024 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Hypothesis Testing",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A spinner can land on any one of the scores 1, 2, 3, 4 and 5, and it is fair if these five scores are equally likely. Wei suspects that his spinner favours high scores. He spins it 50 times and records only $T$, the total of the 50 scores, and he assumes that the variance of the score on a single spin of his spinner is the same as for a fair spinner.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "State hypotheses for a test of Wei's suspicion, defining any parameters that you use.",
+      "marks": 1,
+      "answer": "$\\mathrm{H}_0: \\mu = 3$, $\\mathrm{H}_1: \\mu > 3$, where $\\mu$ is the population mean score on one spin of Wei's spinner (accept $\\mathrm{H}_0$ written as 'the spinner is fair, i.e. $\\mu = 3$')."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the least value of $T$ that would lead Wei to conclude, at the $5\\%$ level of significance, that his spinner favours high scores.",
+      "marks": 4,
+      "answer": "$167$"
+     },
+     {
+      "label": "(c)",
+      "text": "Explain why Wei's test is valid although the score on a single spin is not normally distributed.",
+      "marks": 1,
+      "answer": "The sample of 50 spins is large, so by the Central Limit Theorem $T$ (equivalently the mean score) is approximately normally distributed, whatever the distribution of a single score."
+     },
+     {
+      "label": "(d)",
+      "text": "Nadia spins a different spinner 50 times and obtains a total of 150. She says that this shows that her spinner is fair. Explain why Nadia is wrong, and give the probabilities of the five scores for a spinner that is not fair but whose score has the same mean and the same variance as the score on a fair spinner.",
+      "marks": 2,
+      "answer": "A total of 150 only means there is no evidence that the mean score differs from 3; not rejecting $\\mathrm{H}_0$ does not prove it, and the total depends on the scores only through their mean and variance, so an unfair spinner with mean 3 and variance 2 gives totals just like a fair one. For example $\\mathrm{P}(1) = \\mathrm{P}(5) = 0.22$, $\\mathrm{P}(2) = \\mathrm{P}(4) = 0.12$, $\\mathrm{P}(3) = 0.32$ (mean $3$, $\\mathrm{E}(X^2) = 11$, variance $2$); accept any non-uniform distribution on 1 to 5 with mean 3 and variance 2, including one with a zero probability."
+     }
+    ],
+    "answer": "(a) $\\mathrm{H}_0: \\mu = 3$, $\\mathrm{H}_1: \\mu > 3$, $\\mu$ the population mean score on one spin. (b) $167$. (c) $n = 50$ is large, so by the Central Limit Theorem $T$ is approximately normal. (d) Not rejecting $\\mathrm{H}_0$ does not prove fairness; the total reflects only the mean (and variance) of a score. E.g. $\\mathrm{P}(1) = \\mathrm{P}(5) = \\frac{1}{4}$, $\\mathrm{P}(3) = \\frac{1}{2}$, $\\mathrm{P}(2) = \\mathrm{P}(4) = 0$.",
+    "total_marks": 8,
+    "topics": [
+     "Hypothesis Testing",
+     "Distributions (DRV)"
+    ],
+    "skills": [
+     "§8 move 11 (a model built from words): the null distribution of a total built from the word 'fair' alone — $\\mathrm{E}(X) = 3$, $\\mathrm{Var}(X) = 2$ for a uniform score on 1 to 5, $\\mathrm{Var}(T) = 50\\,\\mathrm{Var}(X)$ for 50 independent spins, approximate normality by the Central Limit Theorem — with no data summary and no variance to estimate",
+     "critical region for an integer-valued total: $T > 166.45$ read as the least total 167",
+     "judging a non-rejection: a total equal to its expected value does not show fairness, shown by constructing an unfair distribution on 1 to 5 with the fair mean 3 and variance 2"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $\\mu$ be the population mean score on one spin of Wei's spinner. $\\mathrm{H}_0: \\mu = 3$ (the spinner is fair), $\\mathrm{H}_1: \\mu > 3$ (the spinner favours high scores). [B1]\n\n(b) Let $X$ be the score on one spin. Under $\\mathrm{H}_0$ the spinner is fair, so $\\mathrm{P}(X = x) = \\frac{1}{5}$ for $x = 1, 2, 3, 4, 5$.\n$\\mathrm{E}(X) = \\frac{1 + 2 + 3 + 4 + 5}{5} = 3$, $\\mathrm{E}(X^2) = \\frac{1 + 4 + 9 + 16 + 25}{5} = 11$, so $\\mathrm{Var}(X) = 11 - 3^2 = 2$. [B1]\nThe 50 scores are independent, so under $\\mathrm{H}_0$, $\\mathrm{E}(T) = 50 \\times 3 = 150$ and $\\mathrm{Var}(T) = 50 \\times 2 = 100$ (not $50^2 \\times 2$). Since $n = 50$ is large, by the Central Limit Theorem $T \\sim \\mathrm{N}(150, 100)$ approximately. [M1]\nWei concludes that the spinner favours high scores when $\\mathrm{P}(T \\geq t) \\leq 0.05$ under $\\mathrm{H}_0$, i.e. when $\\frac{t - 150}{10} \\geq 1.6449$, so $t \\geq 150 + 1.6449 \\times 10 = 166.45$. [M1]\n(Equivalently, with the mean score $\\bar{X} \\sim \\mathrm{N}\\left(3, \\frac{2}{50}\\right)$ approximately, $\\bar{x} > 3 + 1.6449 \\times 0.2 = 3.329$ and $T = 50\\bar{x} > 166.45$.)\n$T$ is an integer, so the least value of $T$ is $167$. [A1]\nCheck: $\\mathrm{P}(T \\geq 167) = \\mathrm{P}(Z \\geq 1.7) = 0.0446 < 0.05$, while $\\mathrm{P}(T \\geq 166) = \\mathrm{P}(Z \\geq 1.6) = 0.0548 > 0.05$.\n\n(c) The score on a spin has a discrete uniform distribution, not a normal one, but the sample of 50 spins is large ($n \\geq 30$), so by the Central Limit Theorem the total $T$ of the 50 independent scores (equivalently their mean) is approximately normally distributed, so the $z$-test in (b) is valid. [B1]\n\n(d) A total of 150 is exactly the expected total under $\\mathrm{H}_0$, so the test would not reject $\\mathrm{H}_0$; but not rejecting $\\mathrm{H}_0$ only means there is insufficient evidence that the spinner is unfair — it does not show that it is fair. The total depends on the individual scores only through their mean and variance: any spinner whose mean score is 3 has expected total 150, and a spinner whose score has mean 3 and variance 2 gives $T \\sim \\mathrm{N}(150, 100)$ approximately, exactly as a fair spinner does, so no value of $T$ can tell the two apart. [B1]\nExample: take $\\mathrm{P}(1) = \\mathrm{P}(5) = a$ and $\\mathrm{P}(3) = 1 - 2a$; the mean is 3 by symmetry and the variance is $a(1 - 3)^2 + a(5 - 3)^2 = 8a = 2$, so $a = \\frac{1}{4}$: $\\mathrm{P}(1) = \\frac{1}{4}$, $\\mathrm{P}(2) = 0$, $\\mathrm{P}(3) = \\frac{1}{2}$, $\\mathrm{P}(4) = 0$, $\\mathrm{P}(5) = \\frac{1}{4}$. Check: mean $= \\frac{1}{4} + \\frac{3}{2} + \\frac{5}{4} = 3$, $\\mathrm{E}(X^2) = \\frac{1}{4} + \\frac{9}{2} + \\frac{25}{4} = 11$, variance $= 11 - 9 = 2$. [B1]\n(Any non-uniform distribution on 1 to 5 with mean 3 and variance 2 earns the mark, e.g. $\\mathrm{P}(1) = \\mathrm{P}(5) = \\frac{1}{6}$, $\\mathrm{P}(2) = \\mathrm{P}(4) = \\frac{1}{3}$, $\\mathrm{P}(3) = 0$; the symmetric family is $\\mathrm{P}(1) = \\mathrm{P}(5) = a$, $\\mathrm{P}(2) = \\mathrm{P}(4) = 1 - 4a$, $\\mathrm{P}(3) = 6a - 1$ with $\\frac{1}{6} \\leq a \\leq \\frac{1}{4}$, $a \\neq \\frac{1}{5}$.)",
+    "syllabus_check": "9758 only: expectation and variance of a discrete random variable from its distribution; $\\mathrm{E}$ and $\\mathrm{Var}$ of the sum of $n$ independent copies ($n\\sigma^2$, not $n^2\\sigma^2$); the Central Limit Theorem for a large sample ($n = 50 \\geq 30$) from a non-normal population; a one-tail $z$-test of a population mean with the variance known under $\\mathrm{H}_0$ (no unbiased estimate needed); the critical region for an integer statistic. No continuity correction is used (none is in 9758) — the exact distribution of the total of 50 fair scores gives $\\mathrm{P}(T \\geq 167) = 0.0495$ and $\\mathrm{P}(T \\geq 166) = 0.0606$, so the answer 167 is the same either way. No Poisson, no $t$-test, no normal approximation to the binomial, no named error types.",
+    "originality_note": "No earlier Set has a hypothesis-testing question, and nothing else in this paper tests a mean. Every real 9758 test of a mean (GCE 2017 P2 Q7, 2018 P2 Q5, 2019 P2 Q9, 2021 P2 Q8, 2022 P2 Q11, 2023 P2 Q8, 2024 P2 Q8) supplies data (a list, or sums of x and x squared, or coded sums) and a stated population mean. Here no data are given at all: the null mean AND variance must be built from the definition of a fair spinner, the statistic is a total of 50 discrete scores rather than a sample mean, and the answer is an integer critical total. Part (d) reverses the direction: instead of computing from a distribution, the candidate constructs an unfair distribution with the fair mean and variance to show why a non-rejection proves nothing. Part (c) is the familiar one-mark Central Limit Theorem reason, worded afresh."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P2 Q6",
+     "jaccard": 0.041,
+     "nearest_set": "Set 1 P1 Q9",
+     "jaccard_set": 0.007,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-09-27T00:53:40.339Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Let μ be the population mean score on a single spin. H0: μ = 3 (spinner fair), H1: μ > 3 (spinner favours high scores).",
+     "(b)": "Under H0 (fair): E(X) = 3, Var(X) = 11 − 9 = 2, so by CLT T ~ N(150, 100) approx. Reject H0 if T > 150 + 1.6449(10) = 166.45 (continuity correction gives the same integer). Least T = 167.",
+     "(c)": "n = 50 is large, so by the Central Limit Theorem T (equivalently the sample mean) is approximately normally distributed, whatever the distribution of a single score.",
+     "(d)": "A total of 150 only means there is insufficient evidence to reject H0 (the mean is consistent with 3); not rejecting H0 does not prove it true, and a test based on the total only tests the mean, so an unfair spinner with mean 3 would give the same result. Example of an unfair spinner with mean 3 and variance 2: P(1) = 0.225, P(2) = 0.1, P(3) = 0.35, P(4) = 0.1, P(5) = 0.225 (another valid example: 0.25, 0, 0.5, 0, 0.25; in general p = 0.2 + s(−1, 2, 0, −2, 1) + t(1, −4, 6, −4, 1), not both s, t zero, all p ≥ 0)."
+    },
+    "solvable": true,
+    "issues": [
+     "(a)/(b): H0: μ = 3 alone does not fix the null distribution of T — the variance 2 used in (b) comes from assuming the spinner is FAIR (a μ = 3 spinner can have variance anywhere from 0 to 4, e.g. P(1) = P(5) = 0.5 gives 4, which would change the critical value). Since only T is recorded, the variance cannot be estimated. The mark scheme should state H0 as 'the spinner is fair (μ = 3)' or accept σ² = 2 as the null variance explicitly.",
+     "(d): the unfair distribution is not unique (a two-parameter family); the mark scheme must accept any valid set of five non-negative probabilities summing to 1 with mean 3 and E(X²) = 11, not all equal to 0.2. Also, 'the spinner can land on any one of the scores' may make a zero probability (e.g. 0.25, 0, 0.5, 0, 0.25) arguable — accept or specify.",
+     "(d) packs two tasks (the explanation and a distribution) into 2 marks — tight but workable."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: H0: mu = 3, H1: mu > 3, mu the population mean score on one spin. The examiner's issue is upheld, not as a key error but as a wording gap: mu = 3 alone leaves Var(X) anywhere in [0, 4] (P(1) = P(5) = 1/2 gives 4, critical total 174), and T alone cannot estimate it, so the variance 2 used in (b) rests on 'fair', which the printed hypotheses do not carry. Ruled in fixes[0]."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Re-derived: E(X) = 3, E(X^2) = 11, Var(X) = 2; T approx N(150, 100); T >= 150 + 1.6449(10) = 166.45, least integer 167. Check P(T >= 167) = P(Z >= 1.7) = 0.0446 < 0.05, P(T >= 166) = 0.0548 > 0.05; a continuity correction (166.5 -> Z >= 1.65, 0.0495) gives 167 too, so the answer is robust either way. Both say 167."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: n = 50 is large, so by the Central Limit Theorem T (equivalently the sample mean) is approximately normal whatever the distribution of one score."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: 150 is the expected total under H0, so H0 is not rejected, and not rejecting is not proof; the total sees the scores only through their mean and variance. The distribution is a two-parameter family (five probabilities, three constraints): setter's (1/4, 0, 1/2, 0, 1/4) and examiner's (0.225, 0.1, 0.35, 0.1, 0.225) both verified (sum 1, mean 3, E(X^2) = 11). The setter's symmetric family P(1) = P(5) = a, P(2) = P(4) = 1 - 4a, P(3) = 6a - 1 has variance 8a + 2 - 8a = 2 for every a in [1/6, 1/4], a != 1/5, as claimed; non-symmetric members exist too, e.g. (0.15, 0.3, 0.2, 0.1, 0.25)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and the key is right; the examiner's one issue is a wording gap in the question, not an error in the key, and is ruled on in the fixes.",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "11 - a model built from words, then a judgement (the null distribution of T built from the word 'fair' with no data summary; (d) judges a non-rejection and constructs the counterexample)",
+    "fixes": [
+     "RULING on the blind examiner's issue (upheld): the null MODEL is under-specified. H0: mu = 3 is the right hypothesis (9758 tests a population mean), but it does not fix Var(X): a mu = 3 spinner with P(1) = P(5) = 1/2 has variance 4 and a critical total of 174, and since only T is recorded the variance cannot be estimated, so the 2 used in (b) comes only from 'fair'. Fix without printing 3 or 2: put the known-variance assumption in the stem, folded into the third sentence so the stem stays at three - 'He spins it 50 times, records only T, the total of the 50 scores, and assumes that the variance of the score on a single spin of his spinner is the same as for a fair spinner.' (Alternatively open (b) with 'Assuming that the variance of the score on Wei's spinner is the same as that of a fair spinner, find ...'.) This is exactly the assumption SEAB itself asks for in GCE 2022 P2 Q11(e) (Tan's variance unchanged); the candidate still has to derive mean 3 and variance 2 from 'fair', so the move is untouched and (c) and (d) are unchanged. The mark scheme should ALSO accept H0 written as 'the spinner is fair, i.e. mu = 3' - that null hypothesis specifies the whole distribution of X and is the reading most candidates will take. A stronger variant that pays the assumption as words (List A item 6): leave the stem as it is and make (c) 'State an assumption Wei must make about the variance of the score on his spinner in order to carry out the test in part (b), and explain why the test is valid although the score on a single spin is not normally distributed. [2]' - then re-mark to 9: (c) gains one mark, nothing loses.",
+     "(d) mark scheme: the exemplar (1/4, 0, 1/2, 0, 1/4) has the spinner never landing on 2 or 4, which sits against the stem's 'can land on any one of the scores 1, 2, 3, 4 and 5'. Make the model answer one with all five probabilities positive, e.g. P(1) = P(5) = 0.22, P(2) = P(4) = 0.12, P(3) = 0.32 (sum 1, mean 3, variance 2), and state the acceptance rule as: any five non-negative probabilities summing to 1 with mean 3 and E(X^2) = 11, not all 1/5 - a two-parameter family, not only the symmetric one; accept zero entries as well.",
+     "(d) scheme wording: pay the explanation B1 for EITHER strand (not rejecting H0 is not proof of H0; or the test sees the scores only through their mean and variance, so an unfair spinner with the fair mean and variance gives the same totals) - the setter's solution gives both, a candidate needs one."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "Not the 9758 hypothesis-test template (no estimates from a data summary, no conclusion read from a sample): the candidate must BUILD the null distribution of an integer-valued total from the single word 'fair' (DRV mean and variance, Var(T) = 50 Var(X), CLT) and reverse it into a critical total, then in (d) judge a non-rejection and construct a distribution that defeats the test - the idea's move 11 is present and the author removed the idea's 'show mean 3, variance 2' scaffold so nothing is walked. One real edit keeps it from 5: the known-variance assumption the z-test rests on is not stated; with it (and a positive-probability exemplar in the (d) scheme) it would sit in a 2022-2024 Section B, at the low end of the 8-13 mark range for this slot, structurally unlike 2024 P2 Q8, 2023 P2 Q8 and 2022 P2 Q11 and unlike anything in this Set's P1. as_good_as_set1 is omitted per standard.md section 7: no H2 Set has been approved by Adrian yet."
+   },
+   "exemplars": [
+    {
+     "id": "5e22b998-13e6-4754-9d81-96989d8627ed",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "6fcaef67-d9f4-4d8a-9115-ae5e79f4439f",
+     "ref": "GCE 2021 P2 Q8"
+    },
+    {
+     "id": "b60aa3a4-7a2e-42ec-b990-48bc7ff22ac4",
+     "ref": "GCE 2019 P2 Q9"
+    },
+    {
+     "id": "c4ca8080-284f-4164-bad3-7fc2475641c4",
+     "ref": "GCE 2018 P2 Q5"
+    },
+    {
+     "id": "c1845fb2-1a47-497e-b394-b818ab6a35f0",
+     "ref": "GCE 2017 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Linear Regression",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A student hangs loads of $x$ newtons from a spring and measures the length, $y$ cm, of the spring for each load. From her five pairs of values she calculated the equation of the least squares regression line of $y$ on $x$ as $y = 1.6x + 12.3$, but she later lost two of the lengths, shown as $p$ and $q$ in the table.\n\n$\\begin{array}{|l|c|c|c|c|c|} \\hline \\text{Load, } x \\text{ (N)} & 2 & 4 & 6 & 8 & 10 \\\\ \\hline \\text{Length, } y \\text{ (cm)} & 15.7 & p & 21.8 & q & 28.6 \\\\ \\hline \\end{array}$",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the values of $p$ and $q$.",
+      "marks": 4,
+      "answer": "$p = 18.6$, $q = 24.8$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Use a suitable regression line to estimate the load for which the length of the spring is $20.0$ cm, explaining your choice of line. Explain whether your estimate is reliable.",
+      "marks": 3,
+      "answer": "The loads were chosen by the student ($x$ is the controlled, independent variable), so the line of $y$ on $x$ is used: $x = \\frac{20.0 - 12.3}{1.6} = 4.81$ N. Reliable: $r = 0.999$ is very close to 1, and $20.0$ cm lies within the observed lengths (interpolation).",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "The student then repeats the measurement for a load of $6$ N and records a length of $21.9$ cm. Without doing any detailed calculation, explain whether including this sixth pair of values with the other five would change",
+      "marks": 3,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "the equation of the regression line of $y$ on $x$,",
+        "marks": 2,
+        "answer": "No change. $(6, 21.9)$ is the mean point $(\\bar{x}, \\bar{y})$ of the five pairs, so the means stay $6$ and $21.9$; its deviations $x - \\bar{x}$ and $y - \\bar{y}$ are both $0$, so it adds nothing to $\\sum (x - \\bar{x})(y - \\bar{y})$ or $\\sum (x - \\bar{x})^2$ and the gradient stays $1.6$. The line is still $y = 1.6x + 12.3$."
+       },
+       {
+        "label": "(ii)",
+        "text": "the value of the product moment correlation coefficient.",
+        "marks": 1,
+        "answer": "No change: with the means unchanged and both deviations of the new point zero, $\\sum (x - \\bar{x})(y - \\bar{y})$, $\\sum (x - \\bar{x})^2$ and $\\sum (y - \\bar{y})^2$ are all unchanged, so $r$ stays $0.999$ (it does not increase, although the point lies on the line)."
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $p = 18.6$, $q = 24.8$. (b) Line of $y$ on $x$ (the load $x$ is controlled by the student): $4.81$ N; reliable, since $r = 0.999$ is close to 1 and $20.0$ cm is within the data (interpolation). (c)(i) No change: $(6, 21.9)$ is $(\\bar{x}, \\bar{y})$, so the means and the gradient are unchanged; still $y = 1.6x + 12.3$. (ii) No change: every sum in $r$ is unchanged, so $r = 0.999$ still.",
+    "total_marks": 10,
+    "topics": [
+     "Linear Regression"
+    ],
+    "skills": [
+     "§8 move 2 (reverse the direction): the least squares line is given and two lost data values are recovered from it — the line passes through $(\\bar{x}, \\bar{y})$, which gives $p + q = 43.4$, and the MF26 gradient $b = \\frac{\\sum (x - \\bar{x})(y - \\bar{y})}{\\sum (x - \\bar{x})^2}$, linear in the unknowns, gives $q - p = 6.2$",
+     "choosing the regression line of $y$ on $x$ to estimate $x$ from a given $y$ because $x$ is the controlled variable, with the reliability judged from $r$ (found once the data are complete) and interpolation",
+     "reasoning without calculation: a sixth point at $(\\bar{x}, \\bar{y})$ leaves the means and all three sums of squares and products unchanged, so neither the line nor $r$ changes — against the intuition that a point on the line strengthens the correlation"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The least squares regression line of $y$ on $x$ passes through the mean point $(\\bar{x}, \\bar{y})$.\n$\\bar{x} = \\frac{2 + 4 + 6 + 8 + 10}{5} = 6$, so $\\bar{y} = 1.6(6) + 12.3 = 21.9$. [M1]\n$\\sum y = 5 \\times 21.9 = 109.5$, so $15.7 + p + 21.8 + q + 28.6 = 109.5$, giving $p + q = 43.4$. [A1]\nThe gradient of the line is $b = \\frac{\\sum (x - \\bar{x})(y - \\bar{y})}{\\sum (x - \\bar{x})^2}$ (MF26). The values of $x - \\bar{x}$ are $-4, -2, 0, 2, 4$, so $\\sum (x - \\bar{x})^2 = 16 + 4 + 0 + 4 + 16 = 40$.\nSince $\\sum (x - \\bar{x}) = 0$, $\\sum (x - \\bar{x})(y - \\bar{y}) = \\sum (x - \\bar{x})y = -4(15.7) - 2p + 0(21.8) + 2q + 4(28.6) = 51.6 + 2(q - p)$. [M1]\n$b = 1.6$: $\\frac{51.6 + 2(q - p)}{40} = 1.6$, so $51.6 + 2(q - p) = 64$ and $q - p = 6.2$.\nWith $p + q = 43.4$: $2q = 49.6$, so $q = 24.8$ and $p = 18.6$. [A1]\n(Alternative for the gradient: $\\sum xy = 2(15.7) + 4p + 6(21.8) + 8q + 10(28.6) = 448.2 + 4p + 8q$ and $\\sum x = 30$, so $\\sum xy - \\frac{\\sum x \\sum y}{5} = 448.2 + 4p + 8q - \\frac{30 \\times 109.5}{5} = 4p + 8q - 208.8$; $\\sum x^2 - \\frac{(\\sum x)^2}{5} = 220 - 180 = 40$; $\\frac{4p + 8q - 208.8}{40} = 1.6$ gives $p + 2q = 68.2$, and with $p + q = 43.4$, $q = 24.8$, $p = 18.6$.)\nCheck: with $y = 15.7, 18.6, 21.8, 24.8, 28.6$ the calculator gives the line $y = 1.6x + 12.3$; the residuals are $0.2, -0.1, -0.1, -0.3, 0.3$.\n\n(b) The loads $x$ were chosen by the student and the lengths $y$ were measured, so $x$ is the controlled (independent) variable and $y$ the dependent one. The regression line of $y$ on $x$ is therefore the suitable line, even though it is the load that is being estimated; the line of $x$ on $y$ is not used. [B1]\n$20.0 = 1.6x + 12.3 \\Rightarrow x = \\frac{7.7}{1.6} = 4.8125$, so the estimated load is $4.81$ N (3 s.f.). [B1]\n(The line of $x$ on $y$, $x = 0.624y - 7.66$, would give $4.82$ N: this earns neither mark.)\nWith the completed data, $r = 0.99883 = 0.999$ (3 s.f.), which is very close to 1, so there is a very strong positive linear correlation between $x$ and $y$; and $20.0$ cm lies within the range of the observed lengths, $15.7$ cm to $28.6$ cm (the estimated load lies within $2$ N to $10$ N), so the estimate is an interpolation. The estimate is reliable. [B1] (both reasons needed)\n\n(c)(i) From (a), $\\bar{x} = 6$ and $\\bar{y} = 21.9$, so the new pair $(6, 21.9)$ is exactly the mean point $(\\bar{x}, \\bar{y})$ of the five pairs (it lies on the regression line, at its mean point). With it included, the means of the six values of $x$ and of $y$ are $\\frac{30 + 6}{6} = 6$ and $\\frac{109.5 + 21.9}{6} = 21.9$: unchanged. [B1]\nFor the new pair, $x - \\bar{x} = 0$ and $y - \\bar{y} = 0$, so it adds $0$ to both $\\sum (x - \\bar{x})(y - \\bar{y})$ and $\\sum (x - \\bar{x})^2$; the gradient $b$ is still $\\frac{64}{40} = 1.6$ and the line still passes through $(6, 21.9)$. So the equation of the regression line of $y$ on $x$ does not change: it is still $y = 1.6x + 12.3$. [B1]\n(Also accepted: the new point lies on the line $y = 1.6x + 12.3$, so its residual for this line is $0$. For any line, the sum of the squared residuals of the six points is at least the sum for the original five points, which is least for $y = 1.6x + 12.3$; and for $y = 1.6x + 12.3$ the sixth point adds $0$. So $y = 1.6x + 12.3$ still minimises the sum of the squared residuals.)\n\n(ii) $r = \\frac{\\sum (x - \\bar{x})(y - \\bar{y})}{\\sqrt{\\sum (x - \\bar{x})^2 \\sum (y - \\bar{y})^2}}$. The means are unchanged and both deviations of the new point are $0$, so all three sums, $64$, $40$ and $102.64$, are unchanged, and $r$ does not change: it is still $0.999$. [B1]\n(Adding a point that lies exactly on the line does NOT strengthen the correlation here: the answer 'r increases' earns B0.)",
+    "syllabus_check": "9758 only: the least squares regression line of $y$ on $x$ and its passing through $(\\bar{x}, \\bar{y})$; the gradient formula $b = \\frac{\\sum (x - \\bar{x})(y - \\bar{y})}{\\sum (x - \\bar{x})^2}$ and the formula for $r$ are USED from MF26, never derived; the choice between the lines of $y$ on $x$ and $x$ on $y$ (the controlled variable); interpolation and the reliability of an estimate; the product moment correlation coefficient as a measure of linear fit. No derivation of the formulae, no $r^2 = b_1 b_2$, no hypothesis test on $r$, no transformation needed (a spring's length is linear in the load). Calculator: only $r$ in (b), once the data are complete; (a) cannot be done on a calculator because two values are unknown.",
+    "originality_note": "No earlier Set has a Linear Regression question, and nothing else in this paper uses a regression line. Every real 9758 and 9740 regression question (GCE 2008 P2 Q8 to GCE 2025 P2 Q8, and the 2025 specimen) gives the complete data and asks for the line, $r$, a model chosen by $r$ and an estimate; GCE 2019 P2 Q10(iii) only asks the candidate to STATE the point the line passes through, and GCE 2024 P2 Q11(b) gives a trial line and asks for residuals. Here the direction is reversed: the line is printed and two missing data values are recovered from it, using the mean point for one equation and the gradient formula, linear in the unknowns, for the other. Part (b)'s choice of line turns on the controlled variable (GCE 2010 P2 Q10(iv), a 9740 question, asked for a 'suitable' line for a transformation reason), and part (c) asks what a point added at $(\\bar{x}, \\bar{y})$ does to the line and to $r$ — a reasoning part no real paper has set. No scatter diagram, no two models compared by $r$, no transformation: none of the §9 regression template's parts appear."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q7",
+     "jaccard": 0.069,
+     "nearest_set": "Set 1 P1 Q9",
+     "jaccard_set": 0.014,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-09-27T01:08:24.201Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "p = 18.6, q = 24.8  (line passes through (x̄, ȳ) = (6, 21.9) so p + q = 43.4; b = Sxy/Sxx = 1.6 with Sxx = 40 gives Sxy = 64, so q − p = 6.2)",
+     "(b)": "Use the line of y on x, since the load x is the controlled (independent) variable: x = (20.0 − 12.3)/1.6 = 4.81 N (4.8125). Reliable: 20.0 cm lies within the data range of y (15.7 to 28.6), so it is interpolation, and r ≈ 0.999 is close to 1 (strong positive linear correlation).",
+     "(c)(i)": "No change. (6, 21.9) is exactly the mean point (x̄, ȳ), so the means stay at 6 and 21.9 and the point adds nothing to Sxy or Sxx; the gradient 1.6 and intercept 12.3 are unchanged, so y = 1.6x + 12.3 still.",
+     "(c)(ii)": "No change. The point at (x̄, ȳ) contributes zero to Sxy, Sxx and Syy, so r = Sxy/√(Sxx·Syy) is unchanged (≈ 0.999)."
+    },
+    "solvable": true,
+    "issues": [
+     "Part (c) carries a [3] header while its sub-parts carry [2] and [1] — the total is consistent (10) but the mark is printed twice; drop one of them.",
+     "(b) relies on the candidate recognising x (load) as the controlled variable so the y-on-x line is used even though x is being estimated; a candidate using x on y would get about 4.82 N (4.815), so the two lines nearly agree here — the mark scheme should state the expected reasoning."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give p = 18.6, q = 24.8. Checked: x̄ = 6 so ȳ = 1.6(6) + 12.3 = 21.9 and Σy = 109.5 gives p + q = 43.4; Sxx = 16 + 4 + 0 + 4 + 16 = 40 and b = 1.6 give Sxy = 64, and Sxy = Σ(x − x̄)y = 51.6 + 2(q − p), so q − p = 6.2. Two linear equations, one pair. The completed data (15.7, 18.6, 21.8, 24.8, 28.6) return y = 1.6x + 12.3 exactly (residuals 0.2, −0.1, −0.1, −0.3, 0.3, summing to 0), so the printed line is consistent with the table and no point lies on it — a candidate who reads p and q off the line (18.7, 25.1) is visibly wrong."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both choose the line of y on x because the load is the controlled variable and give x = 7.7/1.6 = 4.8125 = 4.81 N; both judge it reliable (20.0 cm lies inside 15.7–28.6 cm, and r is very close to 1). Checked r: Σy² = 2500.69, Syy = 2500.69 − 109.5²/5 = 102.64, r = 64/√(40 × 102.64) = 0.99883 = 0.999. The line of x on y gives x = 6 + (64/102.64)(20 − 21.9) = 4.8153 = 4.82 N, so a wrong choice of line still shows at 3 s.f. and the scheme's B1 for the choice is enforceable."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "Both: no change. (6, 21.9) is exactly (x̄, ȳ) from (a); with it the six-point means are 36/6 = 6 and 131.4/6 = 21.9, its deviations are both zero, so Sxx and Sxy are unchanged, b stays 64/40 = 1.6 and the line still passes through (6, 21.9): y = 1.6x + 12.3."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both: no change. Sxx, Sxy and Syy are all unchanged, so r = 0.999 is unchanged. The key's warning is right and worth its mark: a point ON the line but away from the centroid would raise |r| (Syy grows while the residual sum does not), so the question's placing of the sixth point at the mean point is exactly what the candidate must see."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and my own working confirms each value; the examiner's two 'issues' are not key faults — the doubled [3] on (c) is a rendering matter (a part carrying sub-parts prints no bracket of its own) and the choice-of-line reasoning in (b) is precisely what the scheme's first B1 pays, with the two lines' estimates still distinguishable at 3 s.f.",
+    "score": 5,
+    "standard": "at",
+    "template": null,
+    "move": "2. Reverse the direction",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "The idea is implemented as briefed and the candidate must find the move unaided: the line is the given and the two lost readings come from seeing that the centroid lies on the line AND that the MF26 gradient is linear in p and q — a chain of two ideas in one line of thought, so 'at' standard, not the §9 regression template (no scatter diagram, no models compared by r, no calculator read of the line), and structurally unlike every 2017–2025 regression question and every earlier-Set slot. (b) carries the syllabus's real decision (x controlled, so y on x even though x is estimated) and (c) is a §8 move 9 reasoning-only part whose answer runs against the natural intuition, with the story short (two sentences) and every sentence used; marks match the work (4 for two M1A1 pairs, 3 for choice + estimate + reliability as 2023 P2 Q7(c) + 1, 3 for the reasoning), it is finishable in about 18 minutes, the gates passed, and the setter's skills phrases are all true and specific. Note for the session only (List B, not a slot fault): Q10 also uses move 2, so this paper now has move 2 twice — the allowance, not over it."
+   },
+   "exemplars": [
+    {
+     "id": "eb999daf-761a-4284-9591-adb7c63dc05c",
+     "ref": "GCE 2025 specimen P2 Q6"
+    },
+    {
+     "id": "8ce2055f-c20e-47f0-a165-f000a7d19751",
+     "ref": "GCE 2017 P2 Q8"
+    },
+    {
+     "id": "12191fd4-e406-4588-a590-68bb4a5e5bda",
+     "ref": "GCE 2020 P2 Q7"
+    },
+    {
+     "id": "35a67a23-6f33-4e20-a74a-ba80f469e964",
+     "ref": "GCE 2018 P2 Q9"
+    },
+    {
+     "id": "942d54c6-e048-425b-97b6-6e63d14287b7",
+     "ref": "GCE 2023 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Probability",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "A bag contains 1 red ball and 1 blue ball. A ball is taken at random from the bag and its colour is noted; the ball is then returned to the bag together with one more ball of the same colour. This process is repeated.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the probability that the first two balls taken are the same colour.",
+      "marks": 2,
+      "answer": "$\\frac{2}{3}$"
+     },
+     {
+      "label": "(b)",
+      "text": "The colours of the first three balls taken are written in order; for example, RBB means that the first ball taken is red and the second and third are blue. Find the probabilities of RRB, RBR and BRR, and explain why these three probabilities are equal.",
+      "marks": 3,
+      "answer": "Each is $\\frac{1}{12}$. Whatever the order, the bag holds $2$, $3$ and $4$ balls at the three draws, so the denominators are $2 \\times 3 \\times 4$; a red ball is added only when a red is taken, so the first red is taken from $1$ red ball, the second red from $2$ red balls and the blue from $1$ blue ball, so the numerators are $1$, $2$ and $1$ in some order."
+     },
+     {
+      "label": "(c)",
+      "text": "Given that the third ball taken is red, find the probability that the first ball taken is red. Explain why your answer is not equal to $\\frac{1}{2}$, the probability that the first ball taken is red.",
+      "marks": 3,
+      "answer": "$\\frac{2}{3}$. The draws are not independent: a red first ball puts an extra red ball in the bag and so makes a red third ball more likely, so knowing that the third ball is red makes it more likely that the first ball was red."
+     },
+     {
+      "label": "(d)",
+      "text": "The random variable $X$ is the number of red balls among the first $n$ balls taken. Find the probability distribution of $X$.",
+      "marks": 3,
+      "answer": "$\\mathrm{P}(X = k) = \\frac{1}{n+1}$ for $k = 0, 1, 2, \\ldots, n$ (each of the ${}^nC_k$ sequences with $k$ reds has probability $\\frac{k!\\,(n-k)!}{(n+1)!}$)."
+     },
+     {
+      "label": "(e)",
+      "text": "Find the probability that at least $90$ of the first $99$ balls taken are the same colour. Explain why this probability is much greater than it would be if each ball taken were returned to the bag with no extra ball added.",
+      "marks": 2,
+      "answer": "$\\frac{1}{5}$. With the extra ball, each colour taken becomes more likely to be taken again, so whichever colour gets ahead early tends to stay ahead (every number of reds from $0$ to $99$ is equally likely); returned alone, each ball would be red with probability $\\frac{1}{2}$ independently of the others, the number of reds would be $\\mathrm{B}(99, \\frac{1}{2})$, concentrated near $50$, and $90$ or more of one colour would be almost impossible."
+     }
+    ],
+    "answer": "(a) $\\frac{2}{3}$; (b) each $\\frac{1}{12}$: the bag holds $2, 3, 4$ balls at the three draws whatever the colours, and the reds are taken from $1$ then $2$ red balls and the blue from $1$ blue ball in any order; (c) $\\frac{2}{3}$: a red first ball adds a red ball, making a red third ball more likely, so the events are not independent; (d) $\\mathrm{P}(X = k) = \\frac{1}{n+1}$, $k = 0, 1, \\ldots, n$; (e) $\\frac{1}{5}$: a colour once taken is more likely to be taken again, so an early lead is reinforced, whereas with plain replacement the number of reds is $\\mathrm{B}(99, \\frac{1}{2})$ and such an imbalance is almost impossible",
+    "total_marks": 13,
+    "topics": [
+     "Probability"
+    ],
+    "skills": [
+     "§8 move 8 (an identity or algebraic structure to exploit): discovering that when each ball taken goes back with one more of its colour, the probability of a sequence of colours depends only on how many reds it contains — the denominators $2, 3, 4, \\ldots$ are fixed by the draw number whatever is drawn, and the $j$th red (or blue) is always taken from $j$ balls of its colour — explained in words from RRB, RBR, BRR",
+     "using that structure unprompted for general $n$: each of the ${}^nC_k$ sequences with $k$ reds has probability $\\frac{k!\\,(n-k)!}{(n+1)!}$, so the number of reds is uniform, $\\mathrm{P}(X = k) = \\frac{1}{n+1}$, then read at $n = 99$ as a 1-in-5 chance that one colour takes at least 90 of the draws and explained as self-reinforcement against independent draws ($\\mathrm{B}(99, \\frac{1}{2})$)",
+     "conditional probability against the order of the draws with dependent draws: $\\mathrm{P}(\\text{first red} \\mid \\text{third red}) = \\frac{2}{3}$, with the reason, in context, that it is not $\\frac{1}{2}$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) After a red ball is taken the bag holds 2 red and 1 blue; after a blue, 1 red and 2 blue.\n$\\mathrm{P}(\\text{RR}) = \\frac{1}{2} \\times \\frac{2}{3} = \\frac{1}{3}$, $\\quad \\mathrm{P}(\\text{BB}) = \\frac{1}{2} \\times \\frac{2}{3} = \\frac{1}{3}$\nP(first two the same colour) $= \\frac{1}{3} + \\frac{1}{3} = \\frac{2}{3}$.\n\n(b) $\\mathrm{P}(\\text{RRB}) = \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{1}{4} = \\frac{1}{12}$ (after RR the bag holds 3 red, 1 blue)\n$\\mathrm{P}(\\text{RBR}) = \\frac{1}{2} \\times \\frac{1}{3} \\times \\frac{2}{4} = \\frac{1}{12}$ (after RB the bag holds 2 red, 2 blue)\n$\\mathrm{P}(\\text{BRR}) = \\frac{1}{2} \\times \\frac{1}{3} \\times \\frac{2}{4} = \\frac{1}{12}$ (after BR the bag holds 2 red, 2 blue)\nWhy they are equal: exactly one ball is added after every draw, whatever its colour, so the bag holds 2, 3 and 4 balls at the first, second and third draws; the denominators are $2, 3, 4$ in every order. A red ball is added only when a red ball is taken, so the first red ball taken is taken when the bag holds 1 red ball and the second when it holds 2 red balls, wherever they come in the sequence; likewise the one blue ball is taken when the bag holds 1 blue ball. So the numerators are $1, 2$ (for the reds) and $1$ (for the blue) in some order, and each probability is $\\frac{1 \\times 2 \\times 1}{2 \\times 3 \\times 4} = \\frac{1}{12}$.\n\n(c) The sequences with a red third ball are RRR, RBR, BRR and BBR.\n$\\mathrm{P}(\\text{RRR}) = \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{3}{4} = \\frac{1}{4}$, $\\quad \\mathrm{P}(\\text{BBR}) = \\frac{1}{2} \\times \\frac{2}{3} \\times \\frac{1}{4} = \\frac{1}{12}$, and $\\mathrm{P}(\\text{RBR}) = \\mathrm{P}(\\text{BRR}) = \\frac{1}{12}$ from (b).\nP(third red) $= \\frac{1}{4} + \\frac{1}{12} + \\frac{1}{12} + \\frac{1}{12} = \\frac{1}{2}$\n[or: the rule treats the two colours alike and the bag starts with one ball of each, so every draw is equally likely to be red or blue].\nP(first red and third red) $= \\mathrm{P}(\\text{RRR}) + \\mathrm{P}(\\text{RBR}) = \\frac{1}{4} + \\frac{1}{12} = \\frac{1}{3}$\nP(first red | third red) $= \\frac{1/3}{1/2} = \\frac{2}{3}$.\n[Using (b): $\\mathrm{P}(\\text{RBR}) = \\mathrm{P}(\\text{RRB})$, so P(first red and third red) $= \\mathrm{P}(\\text{RRR}) + \\mathrm{P}(\\text{RRB}) =$ P(first two red) $= \\frac{1}{3}$ from (a).]\nWhy it is not $\\frac{1}{2}$: the colour of the first ball changes the contents of the bag for the later draws. If the first ball is red, an extra red ball is added, so a red third ball is more likely than if the first ball is blue; the events 'first ball red' and 'third ball red' are therefore not independent, and knowing that the third ball is red makes it more likely that the first ball was red.\n\n(d) Take any one sequence of $n$ colours containing $k$ reds and $n - k$ blues, where $0 \\leqslant k \\leqslant n$.\nBefore the $r$th draw, $r - 1$ balls have been added, so the bag holds $r + 1$ balls whatever colours were taken: the denominators multiply to $2 \\times 3 \\times \\cdots \\times (n + 1) = (n + 1)!$.\nA red ball is added only when a red ball is taken, so the $j$th red ball taken is taken from a bag holding $j$ red balls: the red draws give the numerators $1 \\times 2 \\times \\cdots \\times k = k!$. In the same way the blue draws give $(n - k)!$.\nSo every sequence with $k$ reds has probability $\\frac{k!\\,(n-k)!}{(n+1)!}$, which depends only on $k$.\nThere are ${}^nC_k = \\frac{n!}{k!\\,(n-k)!}$ such sequences, so\n$\\mathrm{P}(X = k) = \\frac{n!}{k!\\,(n-k)!} \\times \\frac{k!\\,(n-k)!}{(n+1)!} = \\frac{n!}{(n+1)!} = \\frac{1}{n+1}$, for $k = 0, 1, 2, \\ldots, n$.\n$X$ is equally likely to take each of the $n + 1$ values $0, 1, \\ldots, n$. [Check, $n = 3$: BBB and RRR each $\\frac{1}{4}$; the three sequences with one red and the three with two reds each $\\frac{1}{12}$, so each value of $X$ has probability $\\frac{1}{4}$.]\n\n(e) With $n = 99$, $\\mathrm{P}(X = k) = \\frac{1}{100}$ for each $k = 0, 1, \\ldots, 99$.\nAt least 90 the same colour means $X \\geqslant 90$ (at least 90 red) or $X \\leqslant 9$ (at least 90 blue); these cannot both happen, since $90 + 90 > 99$.\n$X \\geqslant 90$: the 10 values $90, \\ldots, 99$; $\\quad X \\leqslant 9$: the 10 values $0, \\ldots, 9$.\nProbability $= \\frac{20}{100} = \\frac{1}{5}$.\nExplanation: because each ball taken goes back with another of its colour, a colour that is taken becomes more likely to be taken again (as in (a), the first two balls match with probability $\\frac{2}{3}$, not $\\frac{1}{2}$). Whichever colour happens to be taken more often in the early draws therefore tends to be taken more often afterwards: an early imbalance is reinforced, not corrected, and the number of reds is spread evenly over $0$ to $99$. If each ball were returned with no extra ball, every draw would be red with probability $\\frac{1}{2}$ independently of the others, so the number of reds would be $\\mathrm{B}(99, \\frac{1}{2})$, with mean $49.5$ and standard deviation about $5$, and 90 or more of one colour would be almost impossible (probability about $6 \\times 10^{-18}$).",
+    "syllabus_check": "9758 Section B, Probability: the multiplication and addition of probabilities for dependent draws from a bag whose contents change after each draw (a tree diagram or its products), conditional probability $\\mathrm{P}(A \\mid B) = \\frac{\\mathrm{P}(A \\cap B)}{\\mathrm{P}(B)}$, the number of arrangements of $k$ reds among $n$ draws as ${}^nC_k$ (Permutations and Combinations), and a discrete probability distribution for $X$. The comparison in (e) names $\\mathrm{B}(99, \\frac{1}{2})$ in words only; no binomial calculation is needed. No turns, no geometric series, no unknown $p$, no calculator ban, no figure; nothing outside the revised 9758.",
+    "originality_note": "No 2017–2025 GCE question in the corpus and no earlier Set uses a bag whose contents GROW with the colour drawn: the corpus's bags are fixed or emptied without replacement (GCE 2023 P2 Q6's counters, GCE 2018 P2 Q8's numbered balls, the 2025 specimen P2 Q8's discs), and none asks why two orders are equally likely. The question is carried by a structure the candidate discovers and explains in (b) (a sequence's probability depends only on its number of reds) and then uses unprompted for general $n$ in (d) to find a uniform distribution that no tree could reach, read in (e) as self-reinforcement; (c) asks a conditional probability against the order of the draws with a reason in words. It shares nothing with the first draft's penalty-kick game (no turns, no independence used to find $p$, no geometric series, no range of $p$). Within this paper: Q5 already asks the least $n$ for which a probability falls below $0.01$, so the idea's last part (the least $n$ for which all of the first $n$ are one colour with probability below $0.1$) is replaced by an interpretation of the uniform law at $n = 99$; Q6 (pooled testing, binomial), Q7 (a spinner's total, a test), Q8 (regression from a printed line) and Q10 (a gauge's median rule) share no context, structure or skill with it."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 specimen P2 Q8",
+     "jaccard": 0.039,
+     "nearest_set": "Set 1 P1 Q2",
+     "jaccard_set": 0.007,
+     "repeated_skills": []
+    },
+    "marks": 13,
+    "checked_at": "2026-09-27T00:53:12.198Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "P(RR) + P(BB) = (1/2)(2/3) + (1/2)(2/3) = 2/3",
+     "(b)": "P(RRB) = (1/2)(2/3)(1/4) = 1/12; P(RBR) = (1/2)(1/3)(2/4) = 1/12; P(BRR) = (1/2)(1/3)(2/4) = 1/12. They are equal because the bag holds 2, 3, 4 balls at the three draws whatever the order, so the denominators are always 2 x 3 x 4; the numerators for the two reds are always 1 then 2, and for the one blue always 1, so the product of numerators is 1 x 2 x 1 = 2 regardless of the order the colours appear.",
+     "(c)": "P(3rd R) = 1/2 (by symmetry, or 1/4 + 1/12 + 1/12 + 1/12); P(1st R and 3rd R) = P(RRR) + P(RBR) = 1/4 + 1/12 = 1/3; P(1st R | 3rd R) = (1/3)/(1/2) = 2/3. Not 1/2 because the draws are not independent: a red first ball adds an extra red ball, raising the chance of later reds, so knowing the third ball is red makes it more likely the first was red.",
+     "(d)": "P(X = r) = C(n, r) x r!(n - r)!/(n + 1)! = 1/(n + 1) for r = 0, 1, 2, ..., n (X is uniformly distributed on {0, 1, ..., n})",
+     "(e)": "P(X >= 90 or X <= 9) with n = 99 = 20/100 = 1/5 (0.2). With plain replacement X ~ B(99, 0.5), which is concentrated near 49.5, so this probability would be only about 6.05 x 10^-18; adding a ball of the drawn colour reinforces whichever colour gets ahead (draws are positively dependent, 'rich get richer'), so X is spread uniformly over 0 to 99 and extreme splits are far more likely."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 2/3. Checked: P(RR) + P(BB) = (1/2)(2/3) + (1/2)(2/3) = 2/3 (after a red the bag is 2R 1B, after a blue 1R 2B)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 1/12 for each of RRB, RBR and BRR, with the same reason. Checked: (1/2)(2/3)(1/4) = (1/2)(1/3)(2/4) = (1/2)(1/3)(2/4) = 1/12; the bag holds 2, 3, 4 balls at the three draws whatever is drawn, the j-th red is always taken from j reds and the one blue from 1 blue, so numerators 1, 2, 1 in some order over 2 x 3 x 4."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 2/3 with the same reason. Checked: P(third red) = P(RRR) + P(RBR) + P(BRR) + P(BBR) = 1/4 + 1/12 + 1/12 + 1/12 = 1/2 (or by the colour symmetry of the rule); P(first red and third red) = P(RRR) + P(RBR) = 1/4 + 1/12 = 1/3; quotient 2/3. Not 1/2 because a red first ball adds a red ball, so 'first red' and 'third red' are positively dependent."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both P(X = k) = 1/(n+1) for k = 0, 1, ..., n (uniform). Checked: before the r-th draw the bag holds r+1 balls, so every sequence has denominator (n+1)!; a sequence with k reds has numerators 1 x 2 x ... x k for the reds and 1 x 2 x ... x (n-k) for the blues, so probability k!(n-k)!/(n+1)!; there are nCk such sequences and nCk x k!(n-k)!/(n+1)! = n!/(n+1)! = 1/(n+1). Check at n = 3: each of 0, 1, 2, 3 reds has probability 1/4, matching (b)."
+     },
+     {
+      "label": "(e)",
+      "agree": true,
+      "note": "Both 1/5 with the same reason. Checked: with n = 99 each value 0..99 has probability 1/100; 'at least 90 the same colour' is X >= 90 or X <= 9, disjoint since 90 + 90 > 99, 10 + 10 values, 20/100 = 1/5. Both explain it as self-reinforcement (a colour drawn is more likely to be drawn again, so an early lead is kept and X is spread evenly) against independent draws, where X ~ B(99, 1/2) is concentrated near 49.5 with sd about 5 and the tail is about 6 x 10^-18."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and both are right; I re-derived each value and each explanation myself.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "template": null,
+    "move": "8. An identity or algebraic structure to exploit",
+    "why": "A different object and a different move from the first draft's penalty-kick game: that was a game of turns with an unknown p, independence used to find p, a geometric series and 'win by two clear goals' (the section 9 template 'a tree with an unknown p, then conditional probability'), and none of it survives here. The object is a bag that gains a ball of each colour drawn, and the main step is move 8, the exchangeability the candidate must discover in words in (b) (denominators fixed by the draw number, the j-th red always from j reds) and then generalise unprompted in (d), with no target printed, to P(X = k) = 1/(n+1), chained with nCk in one line of thought; it is read at n = 99 as a 1-in-5 chance of a 90-10 split and explained against B(99, 1/2) in a reasoning-only part (move 9), while (c) turns the same structure into a conditional probability against the order of dependent draws. Not a section 9 template and not a re-skin of any 2022-2024 P2 question (2023 P2 Q6's bag is hypergeometric ratios in r and b; 2022 P2 Q9 is a board with p and q; 2022 P2 Q6 is the game of turns), no earlier-Set probability question exists, no skill is shared with Q2, Q5, Q7, Q8 or Q10 of this paper, the gates pass, the stem is three sentences and every one is used, three parts pay words, every number closes exactly (1/12, 2/3, 1/(n+1), 1/5) and each part's marks sit within one of the 2022-2024 rate. The author reshaped the idea file's part list (dropped 'distribution of reds in three draws', replaced 'least n with P(all one colour) < 0.1' by the 90-of-99 reading) while keeping the move and the object intact, which removes a scaffold rather than adding one, so a note and not a fault. as_good_as_set1 is omitted per standard.md section 7: no H2 Set has been approved yet (assemble reads it as 'not false')."
+   },
+   "exemplars": [
+    {
+     "id": "7b54c12b-c661-445f-ab29-b9dda97b675d",
+     "ref": "GCE 2017 P2 Q9"
+    },
+    {
+     "id": "5769402e-9fad-47d8-a24c-205407b27fb2",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "61af0052-0808-4104-8e3c-1370fa35b2a9",
+     "ref": "GCE 2023 P2 Q10"
+    },
+    {
+     "id": "d10e876a-80db-489e-be38-b73b25cf9ef0",
+     "ref": "GCE 2018 P2 Q8"
+    },
+    {
+     "id": "afd1709c-6568-439b-bd56-e0883781a02f",
+     "ref": "GCE 2022 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Distributions (Normal)",
+   "target": 14,
+   "accepted": true,
+   "question": {
+    "stem": "In this question you should state the parameters of any distributions you use.\nA factory uses a gauge to check metal rods that are intended to be $200$ mm long. Each rod is measured $3$ times and is rejected if its recorded length is less than $199.2$ mm or greater than $200.8$ mm; under the mean rule the recorded length is the mean of the $3$ readings, and under the median rule it is the median of the $3$ readings. In parts (a) to (d), the $3$ readings of a rod whose length is exactly $200$ mm are modelled as independent observations of a random variable with the distribution $\\mathrm{N}(200, 0.5^2)$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the probability that a rod of length exactly $200$ mm is rejected under the mean rule.",
+      "marks": 2,
+      "answer": "$0.00558$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the probability that a rod of length exactly $200$ mm is rejected under the median rule, explaining your reasoning.",
+      "marks": 4,
+      "answer": "$0.0174$ (the median exceeds $200.8$ exactly when at least $2$ of the $3$ readings do, so the probability is $2\\,\\mathrm{P}(Y \\ge 2)$ where $Y \\sim \\mathrm{B}(3, 0.0548)$)"
+     },
+     {
+      "label": "(c)",
+      "text": "Suggest a reason why the factory might prefer the median rule, in spite of your answers to parts (a) and (b).",
+      "marks": 1,
+      "answer": "The median is not affected by a single wildly wrong reading (for example, dirt on the rod or a slip of the gauge), whereas such a reading pulls the mean towards it and can cause a good rod to be rejected."
+     },
+     {
+      "label": "(d)",
+      "text": "Find the value of $t$ such that, when the limits for the median rule are $(200 - t)$ mm and $(200 + t)$ mm, the probability that a rod of length exactly $200$ mm is rejected under the median rule is $0.01$.",
+      "marks": 3,
+      "answer": "$t = 0.867$"
+     },
+     {
+      "label": "(e)",
+      "text": "In fact the lengths of the rods vary. In a refined model, the length, in mm, of a randomly chosen rod has the distribution $\\mathrm{N}(200, 0.3^2)$, and each reading of the rod is equal to its length plus an error, in mm, which has the distribution $\\mathrm{N}(0, 0.4^2)$; the $3$ errors are independent of one another and of the length of the rod.",
+      "marks": 4,
+      "answer": "",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Explain why the $3$ readings of a randomly chosen rod are not independent.",
+        "marks": 1,
+        "answer": "Every reading of a rod is its length $L$ plus an error, so all $3$ readings contain the same value of $L$: a rod longer than $200$ mm tends to give $3$ readings above $200$ mm, so the value of one reading affects the probabilities for the others."
+       },
+       {
+        "label": "(ii)",
+        "text": "Find the probability that a randomly chosen rod is rejected under the mean rule.",
+        "marks": 3,
+        "answer": "$0.0346$"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $0.00558$. (b) $0.0174$. (c) The median is not affected by one wildly wrong reading, which would pull the mean and could reject a good rod. (d) $t = 0.867$. (e)(i) All $3$ readings of a rod contain the same length $L$ of that rod, so they are not independent. (e)(ii) $0.0346$.",
+    "total_marks": 14,
+    "topics": [
+     "Distributions (Normal)",
+     "Distributions (Binomial)"
+    ],
+    "skills": [
+     "§8 move 1 (define, then reason): turning the median rule defined in the question into a count — the median of $3$ readings exceeds $200.8$ exactly when at least $2$ of them do — so the rejection probability is $2\\,\\mathrm{P}(Y \\ge 2)$ with $Y \\sim \\mathrm{B}(3, q)$ on the normal tail $q = \\mathrm{P}(X > 200.8)$, the two tails mutually exclusive; the mean rule ($0.00558$) and the median rule ($0.0174$) compared, and the median defended by its resistance to one wild reading",
+     "§8 move 2 (reverse the direction): the limits $200 \\pm t$ found from a given rejection probability $0.01$ through the cubic $3p^2 - 2p^3 = 0.005$ in the tail probability $p$ (the roots outside $0 < p < 0.5$ rejected), then the inverse normal",
+     "§8 move 6 (the situation changes the maths): readings of one rod that share its length are dependent, so the mean of $3$ readings is $L + \\frac{1}{3}(E_1 + E_2 + E_3)$ with variance $0.3^2 + \\frac{0.4^2}{3}$, not $\\frac{0.5^2}{3}$, although each single reading is still $\\mathrm{N}(200, 0.5^2)$"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $X$ mm be a reading of a rod of length exactly $200$ mm, so $X \\sim \\mathrm{N}(200, 0.5^2)$. The mean of $3$ independent readings is $\\bar{X} \\sim \\mathrm{N}\\left(200, \\frac{0.5^2}{3}\\right) = \\mathrm{N}\\left(200, \\frac{1}{12}\\right)$. [B1]\n$\\mathrm{P}(\\text{rejected under the mean rule}) = \\mathrm{P}(\\bar{X} < 199.2) + \\mathrm{P}(\\bar{X} > 200.8) = 1 - \\mathrm{P}(199.2 \\le \\bar{X} \\le 200.8) = 2 \\times 0.0027918 = 0.00558$. [A1]\n\n(b) Place the $3$ readings in order $R_1 \\le R_2 \\le R_3$; the median is $R_2$. If $R_2 > 200.8$, then $R_3 \\ge R_2 > 200.8$ as well, so at least two readings exceed $200.8$; conversely, if at least two readings exceed $200.8$, then the two largest, $R_2$ and $R_3$, both do, so $R_2 > 200.8$. Hence the median exceeds $200.8$ exactly when at least $2$ of the $3$ readings exceed $200.8$, and likewise the median is less than $199.2$ exactly when at least $2$ readings are less than $199.2$. [B1]\n$q = \\mathrm{P}(X > 200.8) = 0.054799$. [B1]\nLet $Y$ be the number of the $3$ readings that exceed $200.8$. The readings are independent and each exceeds $200.8$ with the same probability $q$, so $Y \\sim \\mathrm{B}(3, 0.054799)$ and\n$\\mathrm{P}(\\text{median} > 200.8) = \\mathrm{P}(Y \\ge 2) = 3q^2(1 - q) + q^3 = 0.0086798$. [M1]\nBy symmetry $\\mathrm{P}(\\text{median} < 199.2) = 0.0086798$ also, and the two events cannot both happen (with only $3$ readings, at least $2$ cannot lie above $200.8$ while at least $2$ lie below $199.2$), so\n$\\mathrm{P}(\\text{rejected under the median rule}) = 2 \\times 0.0086798 = 0.0174$. [A1]\n(Using one tail only gives $0.00868$; using $\\mathrm{P}(Y \\ge 1)$ confuses the median with the largest reading.)\n\n(c) If one of the $3$ readings is wildly wrong (for example, because of dirt on the rod or a slip of the gauge), the mean is pulled towards that reading, so a good rod may be rejected (or a faulty rod accepted); the median is the middle reading and is not affected by a single extreme reading. [B1]\n\n(d) Let $p = \\mathrm{P}(X > 200 + t) = \\mathrm{P}(X < 200 - t)$. As in part (b), the rod is rejected under the median rule when at least $2$ readings exceed $200 + t$ or at least $2$ readings are less than $200 - t$, so\n$2\\left[3p^2(1 - p) + p^3\\right] = 0.01$, that is, $3p^2 - 2p^3 = 0.005$. [M1]\nFrom the GC, the roots of $2p^3 - 3p^2 + 0.005 = 0$ are $-0.0403$, $0.041400$ and $1.50$. Since $p$ is a probability and $t > 0$ requires $p < 0.5$, $p = 0.041400$. [M1]\nThen $\\mathrm{P}(X > 200 + t) = 0.041400$ gives $200 + t = 200.867$ (that is, $\\frac{t}{0.5} = 1.7347$), so $t = 0.867$. [A1]\nCheck: $\\mathrm{P}(X > 200.867) = 0.0414$ and $2\\left[3(0.0414)^2 - 2(0.0414)^3\\right] = 0.0100$.\n\n(e)(i) Each reading of a rod is its length $L$ plus an error, so all $3$ readings of the same rod contain the same value of $L$: a rod longer than $200$ mm tends to give $3$ readings above $200$ mm, so the value of one reading affects the probabilities for the others and the readings are not independent. [B1]\n(Each single reading $L + E$ still has the distribution $\\mathrm{N}(200, 0.3^2 + 0.4^2) = \\mathrm{N}(200, 0.5^2)$, exactly as in parts (a) to (d); only the independence has changed.)\n\n(e)(ii) Let $L$ mm be the length of the rod and $E_1, E_2, E_3$ mm the three errors, where $L \\sim \\mathrm{N}(200, 0.3^2)$, $E_i \\sim \\mathrm{N}(0, 0.4^2)$, all independent. The readings are $L + E_1$, $L + E_2$, $L + E_3$, so the mean of the $3$ readings is\n$M = L + \\frac{E_1 + E_2 + E_3}{3}$ (the length is not averaged away). [M1]\n$\\mathrm{E}(M) = 200$ and $\\mathrm{Var}(M) = 0.3^2 + \\frac{3 \\times 0.4^2}{9} = 0.09 + \\frac{0.16}{3} = \\frac{43}{300} = 0.14333$, so $M \\sim \\mathrm{N}\\left(200, \\frac{43}{300}\\right)$. [A1]\n$\\mathrm{P}(\\text{rejected}) = 1 - \\mathrm{P}(199.2 \\le M \\le 200.8) = 2 \\times 0.017297 = 0.0346$. [A1]\n(Treating the $3$ readings as independent $\\mathrm{N}(200, 0.5^2)$ observations gives variance $\\frac{0.25}{3}$ and $0.00558$ again, the answer to part (a): averaging reduces only the error part of the variance, not the variation between rods, so the rejection rate is about $6$ times as large.)",
+    "syllabus_check": "All inside 9758 Section B: normal probabilities and the inverse normal from the GC; a binomial $\\mathrm{B}(3, q)$ whose $q$ is a normal probability (as in GCE 2024 P2 Q10(b)); the mean of independent normals and a linear combination $L + \\frac{1}{3}(E_1 + E_2 + E_3)$ of independent normals, with $\\mathrm{Var}(aX + bY)$; a cubic in $p$ solved on the GC; the median is defined in the stem (O-Level knowledge) and never needs its own distribution. No hypothesis test (Q7 carries it), no normal approximation to the binomial, no Poisson, no order-statistic distributions beyond the counting argument.",
+    "originality_note": "A new object: a gauge with two recording rules (mean and median of three readings) defined in the stem and reasoned with. The nearest real questions, GCE 2024 P2 Q10 (plates; 'at least 5 of 8' as a binomial on a normal probability) and GCE 2023 P2 Q9 (planks; totals and sums of normals), use a fixed count on a fixed interval; here the candidate must discover that the median's rejection event IS a count ('at least 2 of 3' in each tail), reverse it through a cubic to set the limits, and see that readings sharing a rod's length are dependent so the rod's variance is not divided by 3. No earlier Set has a normal-distribution question; in this paper Q6's binomial is a pooled-testing count with $\\mathrm{E}(aY + b)$ and Q7 is a CLT test on a spinner — different objects and skills."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P2 Q9",
+     "jaccard": 0.052,
+     "nearest_set": "Set 1 P1 Q7",
+     "jaccard_set": 0.007,
+     "repeated_skills": []
+    },
+    "marks": 14,
+    "checked_at": "2026-09-27T01:08:24.204Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "Mean M ~ N(200, 0.5^2/3) = N(200, 1/12); P(rejected) = 1 - P(199.2 <= M <= 200.8) = 2P(Z > 2.771) = 0.00558",
+     "(b)": "Each reading X ~ N(200, 0.5^2); p = P(X < 199.2) = P(X > 200.8) = 0.054799. Median < 199.2 iff at least 2 of the 3 readings are below 199.2: with Y ~ B(3, 0.054799), P(Y >= 2) = 3p^2(1-p) + p^3 = 0.0086798; by symmetry the same for median > 200.8, and the two events are mutually exclusive. P(rejected) = 2(3p^2 - 2p^3) = 0.0174",
+     "(c)": "The median is not affected by a single wild/outlying reading (e.g. a faulty or mis-read measurement), whereas the mean is pulled by it, so the median rule is more robust to occasional gross reading errors",
+     "(d)": "Need 2(3q^2 - 2q^3) = 0.01 where q = P(X < 200 - t), X ~ N(200, 0.5^2); q = 0.041400, so -t/0.5 = -1.7347, t = 0.867",
+     "(e)(i)": "Every reading contains the same rod length L (reading = L + E_i), so the readings share a common random component: a rod longer than 200 mm tends to give all three readings high (Cov between readings = Var(L) = 0.09 != 0), hence they are not independent",
+     "(e)(ii)": "Mean reading = L + (E1+E2+E3)/3 ~ N(200, 0.3^2 + 0.4^2/3) = N(200, 0.14333); P(rejected) = 2P(Z > 0.8/0.37859) = 2P(Z > 2.113) = 0.0346"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: mean of 3 ~ N(200, 1/12), two tails, 2 x 0.0027918 = 0.00558. Re-derived: 0.005584."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: median > 200.8 iff at least 2 of the 3 readings do; q = P(X > 200.8) = 0.054799; Y ~ B(3, q), P(Y >= 2) = 3q^2(1-q) + q^3 = 0.0086798; the two tails are mutually exclusive (3 readings cannot have 2 above and 2 below), so 2 x 0.0086798 = 0.0174. Re-derived: 0.017360."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: the median is unaffected by one wild reading (dirt, a slip of the gauge) that would pull the mean and reject a good rod."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: 2(3p^2 - 2p^3) = 0.01 with p the one-sided tail; root in (0, 0.5) is p = 0.041400 (the others, -0.0403 and 1.499, are rejected); P(Z > t/0.5) = 0.0414 gives z = 1.7347, t = 0.867. Re-derived: p = 0.041400, t = 0.86733."
+     },
+     {
+      "label": "(e)(i)",
+      "agree": true,
+      "note": "Both: every reading is L + E_i with the same L, so a long rod tends to read high three times (Cov = Var(L) = 0.09 != 0); not independent."
+     },
+     {
+      "label": "(e)(ii)",
+      "agree": true,
+      "note": "Both: mean of readings = L + (E1+E2+E3)/3 ~ N(200, 0.09 + 0.16/3) = N(200, 43/300); 2 P(Z > 0.8/0.37859) = 0.0346. Re-derived: 0.034594. The numbers are engineered so a single reading is still N(200, 0.5^2) (0.09 + 0.16 = 0.25) and the independence trap returns exactly part (a)'s 0.00558."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and every value re-derives exactly; the key is right, including the mutual exclusivity in (b) and the root choice in (d).",
+    "score": 4,
+    "standard": "at",
+    "template": null,
+    "move": "1. Define, then reason (main step, part (b): the median rule defined in the stem must be turned by the candidate into 'at least 2 of the 3 readings', a binomial on a normal tail, with the two tails mutually exclusive); second move 6. The situation changes the maths (part (e)(ii): the three readings share the rod's length, so the mean is L + E-bar with variance 0.3^2 + 0.4^2/3, not 0.5^2/3); part (d) reverses the direction (move 2) through a cubic in the tail probability.",
+    "fixes": [
+     "Stem: drop the gloss '(the middle reading when the 3 readings are placed in order of size)' — the median is a syllabus term, and the gloss hands the candidate the first step of (b) (order the readings); the reasoning in (b) is the candidate's to find from the word 'median' alone, as GCE 2024 P2 Q11(b)(ii) defines only the non-syllabus term 'residual'.",
+     "(b) register: SEAB word order — 'Find the probability that a rod of length exactly 200 mm is rejected under the median rule, explaining your reasoning.' (cf. GCE 2025 P1 Q3(b) 'explaining your answer'); likewise (e)(i)/(ii) need not repeat 'in the refined model' / 'Using the refined model' — the (e) stem has already set it.",
+     "skills: drop the 'move 10 (two schemes compared)' claim — the mean rule and the median rule are compared as two computed numbers and a one-mark reason, not algebraically as §8 move 10 means (GCE 2023 P2 Q10(b)); the question's moves are 1 in (b) and 6 in (e)(ii), with the reversal of (d); claiming four moves overstates one question (§8: 'A question may use two')."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "why": "A real closer after a light edit: the rule is defined and reasoned with (median > a iff at least 2 of 3 exceed a — a binomial on a normal tail, not the §9 normal template of two products, sums and differences and the value exceeded by 5%), the reversed part is a cubic in the tail probability solved and its roots chosen, and the refined model's shared length makes the mean L + E-bar with three explain/reason parts the scheme can pay; the idea is implemented faithfully (both finds left to the candidate, nothing printed as a Show that), the numbers close (0.3^2 + 0.4^2 = 0.5^2), 14 marks in about 25 minutes. Not a re-skin of GCE 2024 P2 Q10 (whose binomial count is given, not hidden in a rule) or GCE 2023 P2 Q10(b) (binomial sampling schemes); no earlier Set question on the topic; the B(3, q) counting device is a different binomial skill from the new Q6's parity of a binomial count. Both moves 1 and 2 now appear twice in this paper (Q5, Q8) — the session's List B item, not a fault of the slot."
+   },
+   "exemplars": [
+    {
+     "id": "00339c8c-47f8-4b89-a72f-5aecb13c935f",
+     "ref": "GCE 2023 P2 Q9"
+    },
+    {
+     "id": "454ebc1e-7537-4713-9499-d4873f125c9d",
+     "ref": "GCE 2022 P2 Q11"
+    },
+    {
+     "id": "22f23ec6-58fa-41c3-823f-4169e063a1ae",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "22ba66f5-5c0c-446b-ba69-a6f90a76ac28",
+     "ref": "GCE 2018 P2 Q10"
+    },
+    {
+     "id": "867d16fa-7651-49ea-a71c-89c1ac380ec5",
+     "ref": "GCE 2024 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

@@ -490,5 +490,25 @@ to the H2 prompts (the moderator's verdict carries `template` and `move`). Adria
 of the first draft's Paper 1 questions; Paper 2 was rewritten whole. The first approved Set
 is held to the standard document alone (its §7).
 
+**Where H2 Set 1 lives (30 Sep 2026) — unpublished, awaiting Adrian's read.** The scratchpad
+run folder was cleared with a session restart and the DOCX/PDF copies went with it, so the
+set was rebuilt from its manifests and filed where every session can find it:
+- Manifests (the questions, solutions, gates, verdicts — the source of truth): COMMITTED as
+  `data/gce-generated/GCE-JC-P1-seed1-2026-09-26.json` (11 questions, Paper 1) and
+  `data/gce-generated/GCE-JC-P2-seed4-2026-09-27.json` (10 questions, Paper 2, the rewrite).
+- Figures: `data/gce-generated/h2-set1/p1/Q6.figure.cjs` (the graph of f′(x) with regions 2, 8, 9)
+  and `data/gce-generated/h2-set1/p2/Q4.figure.cjs` (the vase cross-section), committed with
+  their PNGs; `node scripts/gce-paper/figure.mjs --run data/gce-generated/h2-set1/p1 --slots 6`
+  redraws one.
+- The readable copies: Dropbox › Apps › AdrianMathNotes › School Papers ›
+  `AdrianMath-H2-Set1-Paper1.pdf`, `-Paper2.pdf`, each with `-solutions.pdf` and the `.docx`
+  (the same naming as the AM/EM sets beside them). Rebuild them with
+  `python3 scripts/gce-paper/export-docx.py <manifest> --figures data/gce-generated/h2-set1/p<n> --out …`
+  then `render_sheet.export_pdf` (Word).
+- To publish: `node scripts/gce-paper/publish.mjs` on each manifest with `--set 1` once Adrian
+  has read both papers; the `GCE-JC-*` blueprint rows and `lib/print-sets.ts` already know H2.
+The AM/EM set manifests beside them are NOT committed (they are in the bank already); the
+H2 ones are, because nothing else holds them until they are published.
+
 Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).
