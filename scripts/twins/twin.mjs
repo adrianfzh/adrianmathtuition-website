@@ -385,7 +385,7 @@ async function publish() {
   // the same sub-skill filing as the source — a twin answers to the same shelf
   const filing = (plan.subgroups ?? []).map((s) => ({ question_id: qid, subgroup_id: s.id, is_primary: !!s.is_primary, confidence: 1, source: 'twin', reason: `twin of ${plan.source}` }));
   if (filing.length) {
-    const { error } = await sb.from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id' });
+    const { error } = await sb.from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id,source' });
     if (error) log(`filing warning: ${error.message}`);
   }
   writeFileSync(runFile(dir, 'published.json'), JSON.stringify({ id: qid, item, at: row.gen_meta.generated_at, figure_url: figureUrl }, null, 1));
