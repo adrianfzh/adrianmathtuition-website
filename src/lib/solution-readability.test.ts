@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes, splitRelations, stepRows, leadIn, alignView, splitSolutionFull } from './solution-readability';
+import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes, splitRelations, stepRows, leadIn, alignView, splitSolutionFull, type AlignRow as AlignRowT } from './solution-readability';
 
 // AM Set 1 P2 Q4 as stored (Adrian's screenshot, 30 Sep 2026), shortened.
 const Q4 = [
@@ -150,5 +150,45 @@ describe('a mark scheme with a count or a part before its colon (H2 Set 1 P1, 30
     const { main, scheme: kept } = splitSolutionFull(`(a) Working.\nAnswer: 3.\n${scheme}\nNote: a GC root alone earns no A1.`);
     expect(main).toBe('(a) Working.\nAnswer: 3.');
     expect(kept).toContain('Note:');
+  });
+});
+
+// Adrian's "cases side by side" layout, 26 Sep 2026 (a trig R-formula sheet):
+//   sin x = 1  or  sin x = 1/6          ← both cases on one row
+//   x = 90°       basic angle = sin⁻¹(1/6)   ← the finished case left, the other owns "="
+//                             = 9.594°
+describe('the row after an "or" row — the finished case left, the worked case on "="', () => {
+  it('a single equation or a chain: the single one becomes `done`, the chain owns the "=" column', () => {
+    const rows = stepRows('$x = 90^\\circ$ or $\\alpha = \\sin^{-1}\\frac{1}{6} = 9.594^\\circ$');
+    expect(rows).toHaveLength(2);
+    expect(rows![0]).toMatchObject({ done: 'x = 90^\\circ', lhs: '\\alpha', rel: '=', rhs: '\\sin^{-1}\\frac{1}{6}' });
+    expect(rows![1]).toMatchObject({ lhs: '', rel: '=', rhs: '9.594^\\circ' });
+    expect(rows![1].done).toBeUndefined();
+  });
+  it('the finished case may come second', () => {
+    const rows = stepRows('$x = 180^\\circ - 9.594^\\circ = 170.4^\\circ$ or $x = 90^\\circ$');
+    expect(rows).toHaveLength(2);
+    expect(rows![0]).toMatchObject({ done: 'x = 90^\\circ', lhs: 'x', rhs: '180^\\circ - 9.594^\\circ' });
+  });
+  it('"or basic angle $= …$" names the worked case', () => {
+    const rows = stepRows('$x = 90^\\circ$ or basic angle $= \\sin^{-1}\\frac{1}{6} = 9.594^\\circ$');
+    expect(rows![0]).toMatchObject({ done: 'x = 90^\\circ', lhs: '\\text{basic angle}', rhs: '\\sin^{-1}\\frac{1}{6}' });
+    expect(rows).toHaveLength(2);
+  });
+  it('two cases both still being worked stay a sentence; two finished cases stay one row', () => {
+    expect(stepRows('$x = 1 + 1 = 2$ or $x = 2 + 1 = 3$')).toBeNull();
+    expect(stepRows('$x = 1$ or $x = 2$')?.length).toBe(1);
+    expect(stepRows('$x = 90^\\circ$ or basic angle is small')).toBeNull();
+  });
+  it('the reason goes to the row\'s note and the ∴ line stays a sentence at the left', () => {
+    const v = alignView(solutionLines(
+      '$\\sin x = 1$ or $\\sin x = \\frac{1}{6}$. $x = 90^\\circ$ or $\\alpha = \\sin^{-1}\\frac{1}{6} = 9.594^\\circ$ (sin positive: first and second quadrants). $\\therefore x = 9.6^\\circ, 90^\\circ, 170.4^\\circ$.'));
+    expect(v.map((l) => l.kind)).toEqual(['align', 'step']);
+    const block = v[0] as { kind: 'align'; rows: AlignRowT[] };
+    expect(block.rows).toHaveLength(3);
+    expect(block.rows[0].rhs).toContain('\\text{or}');
+    expect(block.rows[1]).toMatchObject({ done: 'x = 90^\\circ', lhs: '\\alpha' });
+    // the reason sits beside the last row of the case it explains
+    expect(block.rows[2]).toMatchObject({ lhs: '', rhs: '9.594^\\circ', note: 'sin positive: first and second quadrants' });
   });
 });

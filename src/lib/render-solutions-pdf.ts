@@ -120,7 +120,7 @@ function linesBlock(t: string): string {
           .map((r) => {
             const rhs = esc(`$${r.rel ? `{}${r.rel} ` : ''}${displayFractions(r.rhs)}$`);
             const note = r.note ? `<span class="sol-note">\u2190 ${esc(r.note)}</span>` : '';
-            return `<span class="sol-al-lead">${esc(r.lead ?? '')}</span><span class="sol-al-lhs">${r.lhs ? tex(r.lhs) : ''}</span><span class="sol-al-rhs">${rhs}${note}${mk(r.codes)}</span>`;
+            return `<span class="sol-al-lead">${esc(r.lead ?? '')}</span><span class="sol-al-lhs">${r.done || r.lhs ? tex(r.done ? `${r.done} \\qquad ${r.lhs}` : r.lhs) : ''}</span><span class="sol-al-rhs">${rhs}${note}${mk(r.codes)}</span>`;
           })
           .join('');
         return `<div class="sol-align">${rows}</div>`;

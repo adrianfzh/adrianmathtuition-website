@@ -201,12 +201,17 @@ export function withPartAnswers(lines: SolLine[], answers: Record<string, string
 //   • a step that is only equations joined by "so", "gives", "and", "then" …
 //     becomes rows of an aligned block; a chain "a = b = c" continues on its own
 //     row with an empty left side;
-//   • "… or $x = …$" stays on the same row (cases side by side);
+//   • "… or $x = …$" stays on the same row (cases side by side); when one case
+//     is finished and the other still has working, the finished one sits at the
+//     LEFT of the next row and the other owns the "=" column, its continuation
+//     rows hanging under the "=" (Adrian, 26 Sep 2026: "x = 90°  basic angle = …");
 //   • "(acute)" and other bracketed asides go grey at the right of the row;
 //   • "End values: …", "Comparing … with …: …" — the lead-in gets its own line.
 // A step with any other prose stays a sentence. Pure; the stored text is untouched.
 
-export type AlignRow = { lead?: string; lhs: string; rel: string; rhs: string; note?: string; codes?: string };
+/** `done` = a finished case printed at the left of the row while the other case
+ *  owns the "=" column (Adrian, 26 Sep 2026: "x = 90°   basic angle = sin⁻¹(1/6)"). */
+export type AlignRow = { lead?: string; lhs: string; rel: string; rhs: string; note?: string; codes?: string; done?: string };
 export type AlignedLine = ViewLine | { kind: 'sub'; text: string } | { kind: 'align'; rows: AlignRow[] };
 
 const CONNECTOR = /^(?:so|gives|giving|then|hence|thus|therefore|and|when|which gives|so that|or)?$/i;
@@ -283,7 +288,9 @@ function leadingAside(s: string): [string, string] | null {
 /** One step → aligned rows, or null when it carries prose that is not a joining word. */
 export function stepRows(text: string): AlignRow[] | null {
   const rows: AlignRow[] = [];
-  let lead = '', or = false;
+  let lead = '', or = false, orLabel = '';
+  // Where the rows of the last equation start (the "or" branch needs the whole equation).
+  let eqStart = 0;
   for (const p of pieces(text)) {
     if (!p.math) {
       let s = p.s.trim();
@@ -296,37 +303,63 @@ export function stepRows(text: string): AlignRow[] | null {
         s = aside[1];
       }
       const word = s.replace(/^[\s,.;:]+|[\s,.;:]+$/g, '');
+      // "or basic angle $= …$": a short name before "= …" is that case's left side.
+      const named = word.match(/^or\s+([a-z][a-z ]{1,24})$/i);
+      if (named && rows.length) { or = true; orLabel = named[1].trim(); lead = ''; continue; }
       if (!CONNECTOR.test(word)) return null;
       if (/^or$/i.test(word)) { if (!rows.length) return null; or = true; lead = ''; continue; }
       lead = word;
       continue;
     }
-    const eq = splitRelations(p.s);
+    let tex = p.s.trim();
+    if (orLabel) {
+      if (!tex.startsWith('=')) return null;
+      tex = `\\text{${orLabel}} ${tex}`;
+      orLabel = '';
+    }
+    const eq = splitRelations(tex);
     if (or) {
-      if (!eq && HAS_INEQ.test(p.s)) return null;
-      rows[rows.length - 1].rhs += ` \\quad\\text{or}\\quad ${p.s.trim()}`;
+      if (!eq && HAS_INEQ.test(tex)) return null;
+      const prev = rows.slice(eqStart), prevChain = prev.length >= 2, newChain = !!eq && eq.rels.length >= 2;
+      if (prevChain && newChain) return null;                 // two cases still being worked: a sentence
+      if (newChain && eq) {
+        // The finished case moves to the left; the case still being worked owns the "=" column.
+        const done = `${prev[0].lhs} ${prev[0].rel} ${prev[0].rhs}`;
+        const keep = prev[0].lead, note = prev[0].note;
+        rows.splice(eqStart);
+        eq.rels.forEach((rel, k) => rows.push({ ...(k === 0 && keep ? { lead: keep } : {}), ...(k === 0 ? { done } : {}), lhs: k === 0 ? eq.terms[0] : '', rel, rhs: eq.terms[k + 1] }));
+        if (note) rows[eqStart].note = note;
+      } else if (prevChain) {
+        rows[eqStart].done = tex;                              // the second case is the finished one
+      } else {
+        rows[rows.length - 1].rhs += ` \\quad\\text{or}\\quad ${tex}`;
+      }
       or = false; continue;
     }
+    eqStart = rows.length;
     if (!eq) {
       if (!rows.length || !lead) return null;
-      rows.push({ lead, lhs: '', rel: '', rhs: p.s.trim() });
+      rows.push({ lead, lhs: '', rel: '', rhs: tex });
     } else {
       eq.rels.forEach((rel, k) => rows.push({ ...(k === 0 && lead ? { lead } : {}), lhs: k === 0 ? eq.terms[0] : '', rel, rhs: eq.terms[k + 1] }));
     }
     lead = '';
   }
-  if (or || !rows.length) return null;
+  if (or || orLabel || !rows.length) return null;
   return rows;
 }
 
 /** "End values: at …" → ["End values:", "at …"]; "Comparing A with B: R cos α = …" too.
  *  The colon must sit outside the maths and the lead-in must be short. */
 export function leadIn(text: string): [string, string] | null {
-  let inMath = false;
+  let inMath = false, depth = 0;
   for (let i = 0; i < text.length - 1; i++) {
     if (text[i] === '$' && text[i - 1] !== '\\') inMath = !inMath;
+    // a colon inside a bracketed aside ("(sin positive: first quadrant)") is not a lead-in
+    if (!inMath && text[i] === '(') depth++;
+    else if (!inMath && text[i] === ')' && depth > 0) depth--;
     // not a ratio or a clock time ("2: 3", "10: 30")
-    if (!inMath && text[i] === ':' && text[i + 1] === ' ' && !(/\d/.test(text[i - 1] ?? '') && /\d/.test(text[i + 2] ?? ''))) {
+    if (!inMath && depth === 0 && text[i] === ':' && text[i + 1] === ' ' && !(/\d/.test(text[i - 1] ?? '') && /\d/.test(text[i + 2] ?? ''))) {
       const head = text.slice(0, i + 1).trim(), rest = text.slice(i + 2).trim();
       if (!rest || head.length > 160 || /^\(?\s*(?:check|let|since|so|because|if|as|hence|therefore|thus)\b/i.test(head)) return null;
       const prose = head.replace(/\$[^$]*\$/g, ' ');

@@ -9,14 +9,14 @@ import { solutionView, displayFractions, withPartAnswers, alignView, type Aligne
 const tex = (s: string) => ({ __html: mathHtml(`$${displayFractions(s)}$`) });
 const GREY = '#6b7280';
 
-/** Rows of equations on a grid: joining word | left side | = right side  ← note. */
+/** Rows of equations on a grid: joining word | (finished case) left side | = right side  ← note. */
 function Aligned({ rows }: { rows: AlignRow[] }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'max-content max-content minmax(0, 1fr)', columnGap: 6, rowGap: 7, alignItems: 'baseline', margin: '4px 0', overflowX: 'auto' }}>
       {rows.map((r, i) => (
         <div key={i} style={{ display: 'contents' }}>
           <span style={{ color: GREY, fontSize: '0.85em', textAlign: 'right' }}>{r.lead ?? ''}</span>
-          <span style={{ textAlign: 'right' }} dangerouslySetInnerHTML={r.lhs ? tex(r.lhs) : { __html: '' }} />
+          <span style={{ textAlign: 'right' }} dangerouslySetInnerHTML={r.done || r.lhs ? tex(r.done ? `${r.done} \\qquad ${r.lhs}` : r.lhs) : { __html: '' }} />
           <span style={{ lineHeight: 1.9 }}>
             <span dangerouslySetInnerHTML={tex(r.rel ? `{}${r.rel} ${r.rhs}` : r.rhs)} />
             {r.note && <span style={{ marginLeft: 12, color: GREY, fontSize: '0.85em' }}>← <span dangerouslySetInnerHTML={{ __html: mathHtml(r.note) }} /></span>}
