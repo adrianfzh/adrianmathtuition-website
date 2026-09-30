@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
   ladderSteps, ladderSlice, ladderLength, ladderMarkdown, parseLadderMeta, ladderAssisted, ladderAssistLine,
-  buildNextStepPrompt, parseNextStep,
 } from './proof-ladder';
 
 const TRIG = [
@@ -89,37 +88,13 @@ describe('ladderSlice', () => {
 describe('ladder meta', () => {
   it('parses what the client sends and rejects junk', () => {
     expect(parseLadderMeta({ revealed: 2, total: 5 })).toEqual({ revealed: 2, total: 5 });
-    expect(parseLadderMeta({ revealed: 0, total: 5, nextSteps: 1 })).toEqual({ revealed: 0, total: 5, nextSteps: 1 });
     expect(parseLadderMeta({ revealed: 0, total: 5 })).toBeNull();
     expect(parseLadderMeta({ revealed: 'x' })).toBeNull();
     expect(parseLadderMeta(null)).toBeNull();
   });
   it('an assisted pass says so in one line', () => {
     expect(ladderAssisted(null)).toBe(false);
-    expect(ladderAssistLine({ revealed: 1, total: 4 })).toMatch(/1 step of the working shown/);
-    expect(ladderAssistLine({ revealed: 3, total: 4, nextSteps: 2 })).toMatch(/3 steps.*next step asked 2 times/);
-  });
-});
-
-describe('next step', () => {
-  it('the prompt carries the key but forbids handing it over', () => {
-    const p = buildNextStepPrompt({ level: 'AM', question_text: 'Prove that …', steps: ladderSteps({ solution: TRIG }) });
-    expect(p).toContain('for your eyes only');
-    expect(p).toContain('WRONG:');
-    expect(p).not.toContain('Mark scheme');
-  });
-  it('parses the reply shape, caps at two lines, and treats none as no error', () => {
-    const r = parseNextStep('WRONG: none\nNEXT:\n$= \\dfrac{(1-\\cos\\theta)^2}{\\sin^2\\theta}$\n- $= \\dfrac{(1-\\cos\\theta)^2}{1-\\cos^2\\theta}$\nthird line must go');
-    expect(r.wrong).toBeNull();
-    expect(r.lines).toEqual(['$= \\dfrac{(1-\\cos\\theta)^2}{\\sin^2\\theta}$', '$= \\dfrac{(1-\\cos\\theta)^2}{1-\\cos^2\\theta}$']);
-  });
-  it('keeps the wrong-line sentence', () => {
-    const r = parseNextStep('WRONG: Line 2: $\\sec^2 x - 1$ is $\\tan^2 x$, not $\\cot^2 x$.\nNEXT:\nSo $= \\tan^2 x$');
-    expect(r.wrong).toMatch(/^Line 2/);
-    expect(r.lines).toEqual(['So $= \\tan^2 x$']);
-  });
-  it('an unusable reply gives no lines', () => {
-    expect(parseNextStep('I cannot read this photo.')).toEqual({ wrong: null, lines: [] });
-    expect(parseNextStep('')).toEqual({ wrong: null, lines: [] });
+    expect(ladderAssistLine({ revealed: 1, total: 4 })).toBe('You used 1 step. Try one like it without them.');
+    expect(ladderAssistLine({ revealed: 3, total: 4 })).toMatch(/^You used 3 steps/);
   });
 });

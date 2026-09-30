@@ -92,13 +92,6 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
               className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5 disabled:opacity-60" />
           </div>
         )}
-        {/* 🪜 Stuck on a worksheet question (1 Oct 2026): the Practice tab's photo page writes a twin
-            with the step-by-step ladder — the sheet itself has no bank row to ladder from. */}
-        {a.pdf_url && a.status === 'assigned' && (
-          <p className="text-xs text-slate-500 text-center">
-            Stuck on one? <Link href="/app/practice" className="underline font-semibold text-navy">Photograph it in Practice</Link> for the working step by step.
-          </p>
-        )}
       </div>
 
       {a.pdf_url && (

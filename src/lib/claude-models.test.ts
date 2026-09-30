@@ -24,8 +24,6 @@ const SWITCHED: Record<string, RegExp> = {
   'src/lib/practice-hint.ts': /HINT_MODEL = process\.env\.PRACTICE_HINT_MODEL \|\| SONNET_55;/,
   'src/lib/paper-book-split-io.ts': /COVER_MODEL = process\.env\.BOOK_COVER_MODEL \|\| SONNET_55;/,
   'src/app/api/admin-schedule/extract-exam-topics/route.ts': /const EXTRACTION_MODEL = SONNET_55;/,
-  // 🪜 Next step from my line (1 Oct 2026) — a new site, born on Sonnet 5.5.
-  'src/lib/proof-ladder.ts': /NEXT_STEP_MODEL = process\.env\.PRACTICE_NEXT_STEP_MODEL \|\| SONNET_55;/,
 };
 
 describe('Sonnet 5.5 setting', () => {
@@ -54,7 +52,6 @@ describe('Sonnet 5.5 setting', () => {
       ['src/app/api/portal/practice/hint/route.ts', /model: HINT_MODEL,[\s\S]*?messages:/],
       ['src/lib/paper-book-split-io.ts', /messages\.create\(\{\s*model,[\s\S]*?messages:/],
       ['src/app/api/admin-schedule/extract-exam-topics/route.ts', /model: EXTRACTION_MODEL,[\s\S]*?messages:/],
-      ['src/app/api/portal/practice/next-step/route.ts', /model: NEXT_STEP_MODEL,[\s\S]*?messages:/],
     ];
     for (const [f, re] of sites) {
       const m = read(f).match(re);

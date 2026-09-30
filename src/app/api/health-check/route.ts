@@ -893,14 +893,9 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
-    // 🪜 Stuck? Next step (1 Oct 2026): the ladder GET and the next-step POST both sit behind the session.
+    // 🪜 Stuck? Next step (1 Oct 2026): the ladder GET sits behind the session.
     timed('portal-ladder', async () => {
       const r = await fetch(`${base}/api/portal/practice/ladder?id=00000000-0000-0000-0000-000000000000&n=1`, { redirect: 'manual', signal: T(10000) });
-      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
-      return 'auth gate up';
-    }),
-    timed('portal-next-step', async () => {
-      const r = await fetch(`${base}/api/portal/practice/next-step`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),

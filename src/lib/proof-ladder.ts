@@ -2,24 +2,17 @@
 //
 // Adrian, on a student weak at trig identity proofs with an exam coming: the
 // Ask tab hands over the whole proof, which teaches nothing; what a stuck
-// student needs is the NEXT line only. Two doors on the practice screen:
-//   • the ladder — the bank solution's own working, one line revealed per tap,
-//     no model call (the lines are the ones Adrian already vets);
-//   • "next step from my line" — the student's photo of their working so far,
-//     and a model writes the one or two lines that follow from where they
-//     stopped (the red pen's "From your line" continuation, run before marking).
-// Both are pure here; the routes (api/portal/practice/ladder, next-step) do
-// the I/O. Lines revealed before Check ride on the attempt (marking_json.ladder)
-// so an assisted pass is never filed as a clean one.
+// student needs is the NEXT line only. ONE button on the practice screen: the
+// bank solution's own working, one line revealed per tap, no model call (the
+// lines are the ones Adrian already vets). A photo-continuation ("next step
+// from my line") and a worksheet-card signpost were built the same day and cut
+// within the hour — Adrian: "too complicated. simplify it".
+// Pure here; the route (api/portal/practice/ladder) does the I/O. Lines
+// revealed before Check ride on the attempt (marking_json.ladder) so an
+// assisted pass is never filed as a clean one.
 
 import type { BankPart } from './bank-question-markdown';
 import { solutionView, stripMarkNotes, displayFractions, type SolLine } from './solution-readability';
-import { SONNET_55 } from './claude-models';
-
-export const NEXT_STEP_MODEL = process.env.PRACTICE_NEXT_STEP_MODEL || SONNET_55;
-/** Next-step asks a student may make in one Singapore day (a model call each). */
-export const DAILY_NEXT_STEP_CAP = 30;
-export const NEXT_STEP_MAX_LINES = 2;
 
 export type LadderStep =
   /** A part heading — "(b)(ii)" — revealed with the line under it, never on its own. */
@@ -111,81 +104,25 @@ export function ladderMarkdown(steps: LadderStep[]): string {
 }
 
 /** What the attempt row records when the student checked after revealing steps. */
-export type LadderMeta = { revealed: number; total: number; nextSteps?: number };
+export type LadderMeta = { revealed: number; total: number };
 
 export function parseLadderMeta(raw: unknown): LadderMeta | null {
   if (!raw || typeof raw !== 'object') return null;
   const r = raw as Record<string, unknown>;
   const revealed = Number(r.revealed), total = Number(r.total);
-  const nextSteps = Number(r.nextSteps);
   if (!Number.isFinite(revealed) || !Number.isFinite(total) || revealed < 0 || total < 0) return null;
   const meta: LadderMeta = { revealed: Math.floor(revealed), total: Math.floor(total) };
-  if (Number.isFinite(nextSteps) && nextSteps > 0) meta.nextSteps = Math.floor(nextSteps);
-  if (meta.revealed === 0 && !meta.nextSteps) return null;
+  if (meta.revealed === 0) return null;
   return meta;
 }
 
 /** True when the student had help before checking: the pass is not a clean one. */
 export function ladderAssisted(meta: LadderMeta | null): boolean {
-  return !!meta && (meta.revealed > 0 || (meta.nextSteps ?? 0) > 0);
+  return !!meta && meta.revealed > 0;
 }
 
 /** The grey line under an assisted grade. */
 export function ladderAssistLine(meta: LadderMeta | null): string {
   if (!ladderAssisted(meta)) return '';
-  const bits: string[] = [];
-  if (meta!.revealed > 0) bits.push(`${meta!.revealed} step${meta!.revealed === 1 ? '' : 's'} of the working shown`);
-  if ((meta!.nextSteps ?? 0) > 0) bits.push(`next step asked ${meta!.nextSteps} time${meta!.nextSteps === 1 ? '' : 's'}`);
-  return `Marked with help: ${bits.join(', ')}. Try one like it without help before you call it fixed.`;
-}
-
-// ── "Next step from my line" ─────────────────────────────────────────────────
-
-export interface NextStepQuestion {
-  level: string | null;
-  question_text: string;
-  /** The key, for the writer's eyes only — the working the student is walking towards. */
-  steps: LadderStep[];
-}
-
-export const NEXT_STEP_RULES = [
-  'Read the photo of the student\'s working. Find the LAST line they wrote that is on a correct path.',
-  'If a line they wrote is wrong, say which line in at most one short sentence ("Line 3: sec²x − 1 is tan²x, not cot²x") — never the whole fix.',
-  `Then give the next ${NEXT_STEP_MAX_LINES} lines only, continuing from their last correct line — the way the working goes on, with the same letters and form the student used.`,
-  'Every line of maths is inline LaTeX between $…$ (write \\cos x, \\dfrac{a}{b}, \\sin^2 x), even though the student wrote by hand.',
-  'Never the whole proof, never the final line of a proof, never a result the question asks them to reach unless it is the very next line.',
-  'If the photo shows no working yet, give the first line only.',
-  'Plain student words. Inline LaTeX with $…$ for maths. No praise, no preamble, no "you should".',
-] as const;
-
-export function buildNextStepPrompt(q: NextStepQuestion): string {
-  const key = q.steps.filter(s => s.kind !== 'label').map(s => s.text).join('\n');
-  return [
-    `Level: ${q.level || '?'}.`,
-    `Question:\n${q.question_text}`,
-    key ? `The full working (for your eyes only — the student must NOT see more than the next ${NEXT_STEP_MAX_LINES} lines of it):\n${key}` : '',
-    `Rules:\n${NEXT_STEP_RULES.map(r => `- ${r}`).join('\n')}`,
-    'Reply in this exact shape, nothing else:',
-    'WRONG: <one sentence, or the single word none>',
-    'NEXT:',
-    '<line 1>',
-    '<line 2 (optional)>',
-  ].filter(Boolean).join('\n\n');
-}
-
-export interface NextStep { wrong: string | null; lines: string[] }
-
-/** The writer's reply → the two fields; an unusable reply gives no lines. */
-export function parseNextStep(raw: string | null | undefined): NextStep {
-  const text = String(raw || '').replace(/\r/g, '').trim();
-  const wrongM = text.match(/^\s*WRONG:\s*(.*)$/im);
-  let wrong: string | null = wrongM ? wrongM[1].trim() : null;
-  if (!wrong || /^none\.?$/i.test(wrong) || /^-+$/.test(wrong)) wrong = null;
-  const nextI = text.search(/^\s*NEXT:\s*$/im);
-  const body = nextI < 0 ? '' : text.slice(nextI).replace(/^\s*NEXT:\s*$/im, '');
-  const lines = body.split('\n')
-    .map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').trim())
-    .filter(l => l && !/^(?:<line \d+.*>)$/i.test(l))
-    .slice(0, NEXT_STEP_MAX_LINES);
-  return { wrong, lines };
+  return `You used ${meta!.revealed} step${meta!.revealed === 1 ? '' : 's'}. Try one like it without them.`;
 }
