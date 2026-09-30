@@ -9,10 +9,10 @@
     {
       "type": "title",
       "title": "Completing the Square",
-      "promise": "Every quadratic has a low point in its day, like your phone battery. This rewrite finds exactly where that low is — and proves it never hits zero.",
+      "promise": "Where does the curve turn? How low does it go? Can it ever hit zero? One rewrite — completing the square — answers all three.",
       "beats": [
         {
-          "say": "Welcome. In the next few minutes you learn one rewrite: completing the square. Think of it as learning to read your phone's battery graph.",
+          "say": "Hi. Today we learn one rewrite: completing the square. One rewrite, and a quadratic tells us its turning point straight away.",
           "do": [
             {
               "do": "write",
@@ -21,7 +21,7 @@
           ]
         },
         {
-          "say": "Every quadratic has a low point in its day, like your battery on a long school day. This rewrite finds exactly where that low is, and can prove the battery never hits zero.",
+          "say": "Where does the curve turn? How low does it go? Can it ever hit zero? One rewrite answers all three. Let's go.",
           "do": [
             {
               "do": "write",
@@ -34,10 +34,10 @@
     {
       "type": "caption",
       "heading": "Why the ordinary form hides things",
-      "text": "$y = x^2 - 4x$ is a battery graph written the unhelpful way. At a glance it tells you almost nothing: when does it hit its low? How low does it go?\n\nThe same curve written as $y = (x-2)^2 - 4$ answers both at a glance — lowest point $(2, -4)$, smallest value $-4$.\n\nThis lesson is the rewrite that takes you from the first form to the second, every time.",
+      "text": "$y = x^2 - 4x$ looks simple, but at a glance it tells you almost nothing: where is its lowest point? What is its smallest value?\n\nThe same curve written as $y = (x-2)^2 - 4$ answers both instantly — lowest point $(2, -4)$, smallest value $-4$.\n\nThis lesson is the rewrite that takes you from the first form to the second, every time.",
       "beats": [
         {
-          "say": "Look at y equals x squared minus four x. Written this way, it is a battery graph with the numbers rubbed off. When does it hit its low, and how low does it go? No idea.",
+          "say": "Look at y equals x squared minus four x. Simple, right? So, where is its lowest point? What is its smallest value? Hmm. We can't tell.",
           "do": [
             {
               "do": "write",
@@ -47,7 +47,7 @@
           ]
         },
         {
-          "say": "Now write the same curve as x minus two, all squared, minus four. Both answers are sitting right there: lowest point two comma minus four, smallest value minus four.",
+          "say": "Now write the same curve as x minus two, all squared, minus four. See it? Lowest point two comma minus four, smallest value minus four. Just sitting there.",
           "do": [
             {
               "do": "write",
@@ -57,7 +57,7 @@
           ]
         },
         {
-          "say": "This lesson is the rewrite that takes you from the first form to the second, every single time.",
+          "say": "So how do we get from the first form to the second? That is the rewrite. That is this whole lesson.",
           "do": [
             {
               "do": "write",
@@ -71,7 +71,7 @@
     {
       "type": "graph-morph",
       "heading": "Same curve, moved about",
-      "caption": "Every quadratic is $y = x^2$ moved about, like dragging a graph around your screen. In $y = a(x-h)^2 + k$: the $h$ slides it sideways, the $k$ lifts or drops it, and $a$ stretches it — a negative $a$ flips it upside down. The turning point is always $(h, k)$.",
+      "caption": "Every quadratic is $y = x^2$ moved about. In $y = a(x-h)^2 + k$: the $h$ slides it sideways, the $k$ lifts or drops it, and $a$ stretches it — a negative $a$ flips it upside down. The turning point is always $(h, k)$.",
       "window": {
         "xMin": -2,
         "xMax": 6,
@@ -130,11 +130,11 @@
       ],
       "beats": [
         {
-          "say": "Watch the curve. This is y equals x squared, the basic parabola, low point at the origin. Every quadratic you will ever meet is this same curve, dragged somewhere else.",
+          "say": "Watch the curve. This is y equals x squared, the basic parabola, turning point at the origin. Every quadratic we ever meet is this curve, moved about. So what moves it?",
           "do": []
         },
         {
-          "say": "Replace x by x minus two, and the whole curve slides two to the right. The low point is now at two comma zero. Same shape, same dip, later in the day.",
+          "say": "Replace x by x minus two, and the whole curve slides two to the right. Turning point now two comma zero. Same shape, just shifted. That's all the bracket does.",
           "do": [
             {
               "do": "morph",
@@ -144,7 +144,7 @@
           ]
         },
         {
-          "say": "Now take four away, and the whole curve drops by four. The low point falls to two comma minus four. The number on the end only lifts or drops the curve. That is its entire job.",
+          "say": "Now what happens if we take four away? The whole curve drops by four. Turning point falls to two comma minus four. The number on the end just lifts or drops. Nothing more.",
           "do": [
             {
               "do": "morph",
@@ -154,7 +154,7 @@
           ]
         },
         {
-          "say": "Put a minus in front and it flips upside down. Now it peaks at two comma three, a maximum. The completed-square form is just the record of every move you made.",
+          "say": "And a minus in front? It flips upside down. Now it peaks at two comma three, a maximum. So the completed-square form is just a record of the moves. That's it.",
           "do": [
             {
               "do": "morph",
@@ -210,7 +210,7 @@
       ],
       "beats": [
         {
-          "say": "Here is the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. Learn to read it the way you read a battery label.",
+          "say": "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. In plain words: a curve, slid across by h, lifted by k.",
           "do": [
             {
               "do": "write",
@@ -224,7 +224,7 @@
           ]
         },
         {
-          "say": "Three letters, and each one is a fact about the curve. Let's name them one at a time.",
+          "say": "Three letters. What does each one tell us about the curve? Let's name them, one at a time.",
           "do": [
             {
               "do": "highlight",
@@ -244,7 +244,7 @@
           ]
         },
         {
-          "say": "The a tells you which way it opens. Positive a: upwards, a dip, so the turning point is a minimum. Negative a: downwards, a peak, a maximum.",
+          "say": "The a says which way it opens. Positive a: upwards, so the turning point is a minimum. Negative a: downwards, a maximum. Sign of a, shape of the curve. Easy.",
           "do": [
             {
               "do": "highlight",
@@ -264,7 +264,7 @@
           ]
         },
         {
-          "say": "The h is the x-coordinate of the turning point, the when. And here is the trap, yes, that one again: x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h.",
+          "say": "The h is the x-coordinate of the turning point. Careful here, this is where the sign bites. x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h.",
           "do": [
             {
               "do": "highlight",
@@ -284,7 +284,7 @@
           ]
         },
         {
-          "say": "And k is the maximum or minimum value of y: how low, or how high, it gets. Put them together and the turning point is h comma k. Read it straight off, no working needed.",
+          "say": "And k? The maximum or minimum value of y. Put them together: turning point h comma k. We read it straight off. No working at all.",
           "do": [
             {
               "do": "highlight",
@@ -391,7 +391,7 @@
       ],
       "beats": [
         {
-          "say": "Here is the recipe. Express x squared minus three x plus two in completed-square form. Step one, the easy part: copy the expression down.",
+          "say": "Here's the recipe. Express x squared minus three x plus two in completed-square form. Where do we start? Just copy the expression down. Step one done.",
           "do": [
             {
               "do": "write",
@@ -405,7 +405,7 @@
           ]
         },
         {
-          "say": "Take the coefficient of x, that is minus three. Halve it: minus three over two. Square it: nine over four. Half it, square it. Say it until it is boring.",
+          "say": "Now, what number makes a perfect square? Take the coefficient of x, minus three. Halve it: minus three over two. Square it: nine over four. Half it, square it.",
           "do": [
             {
               "do": "note",
@@ -416,7 +416,7 @@
           ]
         },
         {
-          "say": "Now add that number and subtract it in the same breath. Plus nine over four, minus nine over four. Nothing has changed, and that is the whole trick.",
+          "say": "Can we just add nine over four? No, that changes the expression. So we add it AND subtract it, in the same breath. Value unchanged. That's the whole trick.",
           "do": [
             {
               "do": "write",
@@ -441,7 +441,7 @@
           ]
         },
         {
-          "say": "Look at the first three terms. Together they are a perfect square: x minus three over two, all squared.",
+          "say": "Now look at the first three terms. What are they? A perfect square: x minus three over two, all squared. In plain words: the bracket is x, minus half the coefficient.",
           "do": [
             {
               "do": "mark",
@@ -463,7 +463,7 @@
           ]
         },
         {
-          "say": "Don't take my word for it. Expand that bracket and you get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
+          "say": "Don't believe me? Expand that bracket. We get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
           "do": [
             {
               "do": "reveal",
@@ -478,7 +478,7 @@
           ]
         },
         {
-          "say": "Tidy the leftovers: minus nine over four plus two is minus a quarter. Read the low point straight off: three over two, minus a quarter. A minimum, because the curve opens upwards.",
+          "say": "Tidy the leftovers: minus nine over four plus two is minus a quarter. Turning point, straight off: three over two, minus a quarter. A minimum, since it opens upwards. See? That's all it is.",
           "do": [
             {
               "do": "write",
@@ -614,7 +614,7 @@
       ],
       "beats": [
         {
-          "say": "Now the coefficient of x squared is not one, it is two. The recipe is fussy: it only works when x squared has a one in front. So we make it one.",
+          "say": "Now the coefficient of x squared isn't one, it's two. Does the recipe still work? Only when x squared has a one in front. So what do we do? Make it one.",
           "do": [
             {
               "do": "write",
@@ -628,7 +628,7 @@
           ]
         },
         {
-          "say": "Factorize the two out of every term first. Every term, not just the first one. Inside the bracket: x squared plus five over two x, plus a half.",
+          "say": "Factorize the two out of every term. Every term, not just the first, or the last one gets left behind. Inside the bracket: x squared plus five over two x, plus a half.",
           "do": [
             {
               "do": "write",
@@ -654,7 +654,7 @@
           ]
         },
         {
-          "say": "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it: twenty-five over sixteen. Add it and subtract it in the same breath.",
+          "say": "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it: twenty-five over sixteen. Add it, subtract it, same breath.",
           "do": [
             {
               "do": "write",
@@ -670,7 +670,7 @@
           ]
         },
         {
-          "say": "The first three terms inside the bracket fold into x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half, which is eight over sixteen, gives minus seventeen over sixteen.",
+          "say": "The first three terms fold into x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half, that's eight over sixteen, gives minus seventeen over sixteen.",
           "do": [
             {
               "do": "reveal",
@@ -695,7 +695,7 @@
           ]
         },
         {
-          "say": "Then the step everyone forgets, me included: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Turning point: minus five over four, minus seventeen over eight.",
+          "say": "One more step, the one most people skip: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Turning point: minus five over four, minus seventeen over eight.",
           "do": [
             {
               "do": "reveal",
@@ -806,7 +806,7 @@
       ],
       "beats": [
         {
-          "say": "A negative in front works exactly the same way. Factorize minus four out of every term. The sign travels with it, no exceptions.",
+          "say": "A negative in front? Same recipe. Factorize minus four out of every term. Watch the signs: the minus travels with it, so every sign inside flips.",
           "do": [
             {
               "do": "write",
@@ -866,7 +866,7 @@
           ]
         },
         {
-          "say": "Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three comma one. It opens downwards, a peak, and h is minus three because the bracket says x plus three.",
+          "say": "Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three comma one. Opens downwards, and h is minus three because the bracket says x plus three. That's it.",
           "do": [
             {
               "do": "reveal",
@@ -913,7 +913,7 @@
       "why": "$-3x^2 + 12x - 4 = -3(x-2)^2 + 8$, so the turning point is $(2, 8)$ — a maximum, because $a = -3 < 0$.",
       "beats": [
         {
-          "say": "Your turn, on a real prelim question. Factorize the minus three out, complete the square inside, multiply back. Then type the turning point as h comma k. Take your time; the video is not going anywhere.",
+          "say": "Your turn, on a real prelim question. Same three moves: factorize the minus three out, complete the square inside, multiply back. Then type the turning point as h comma k. Take your time.",
           "do": [
             {
               "do": "write",
@@ -1000,7 +1000,7 @@
       ],
       "beats": [
         {
-          "say": "Now the other exam favourite: show a quadratic is always positive. In battery terms, prove the phone never dies. Same recipe. Half of minus four is minus two; square it, four. Add four and subtract four.",
+          "say": "Now the other exam favourite: show a quadratic is always positive. How? Same recipe. Half of minus four is minus two; square it, four. Add four and subtract four.",
           "do": [
             {
               "do": "write",
@@ -1049,7 +1049,7 @@
           ]
         },
         {
-          "say": "Here is the proof, and it is one line. A square can never be negative, so x minus two, all squared, is at least zero.",
+          "say": "So why is that always positive? Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero.",
           "do": [
             {
               "do": "write",
@@ -1065,7 +1065,7 @@
           ]
         },
         {
-          "say": "Add three, and the whole expression is at least three, which is bigger than zero. The battery never touches zero. That single line is the whole proof, and it is the line examiners want.",
+          "say": "Add three, and the whole thing is at least three, which is bigger than zero. That one line is the whole proof. Plain words: a square plus a positive number stays positive. Examiners want exactly that line.",
           "do": [
             {
               "do": "write",
@@ -1091,7 +1091,7 @@
     {
       "type": "caption",
       "heading": "The two green lights",
-      "text": "To prove a quadratic is **always positive**: complete the square into $a(x-h)^2 + k$, then check two things — $a > 0$ AND $k > 0$.\n\nMiss either and it isn't. Picture it: the curve opens upwards with its lowest point above the $x$-axis — the battery dips, but never to zero.\n\nExams flip it too: \"never greater than 4\" means $a < 0$ with $k = 4$.",
+      "text": "To prove a quadratic is **always positive**: complete the square into $a(x-h)^2 + k$, then check two things — $a > 0$ AND $k > 0$.\n\nMiss either and it isn't. Picture it: the curve opens upwards with its lowest point above the $x$-axis.\n\nExams flip it too: \"never greater than 4\" means $a < 0$ with $k = 4$.",
       "beats": [
         {
           "say": "Two green lights, every time. To prove a quadratic is always positive, complete the square, then check two things: a must be positive, and k must be positive.",
@@ -1104,7 +1104,7 @@
           ]
         },
         {
-          "say": "Miss either one and the proof collapses. In picture terms, the curve opens upwards and its lowest point sits above the x-axis. The battery dips, but never to zero.",
+          "say": "Why both? Miss either one and the proof collapses. In picture terms: the curve opens upwards, and its lowest point sits above the x-axis. Both, or nothing.",
           "do": [
             {
               "do": "write",
@@ -1114,7 +1114,7 @@
           ]
         },
         {
-          "say": "Exams flip it too: never greater than four means a negative a, with k equal to four.",
+          "say": "Exams flip it too: never greater than four means a negative a, with k equal to four. Same two lights, upside down.",
           "do": [
             {
               "do": "write",
@@ -1128,10 +1128,10 @@
     {
       "type": "caption",
       "heading": "The slip that costs the most marks",
-      "text": "Find the minimum value of $y = x^2 - 4x$: complete the square, $(x-2)^2 - 4$, turning point $(2, -4)$.\n\nThe minimum VALUE is $-4$ — the $y$-coordinate. Writing $2$ is the classic slip: $x = 2$ is only *where* it happens. Ask how low the battery got, and \"around lunchtime\" is not an answer.\n\nSay the sentence in full: \"minimum value $-4$, when $x = 2$\".",
+      "text": "Find the minimum value of $y = x^2 - 4x$: complete the square, $(x-2)^2 - 4$, turning point $(2, -4)$.\n\nBefore answering, look at the word: **value**. The minimum VALUE is $-4$ — the $y$-coordinate. Writing $2$ is the classic slip: $x = 2$ is only *where* it happens, not how low.\n\nSay the sentence in full: \"minimum value $-4$, when $x = 2$\".",
       "beats": [
         {
-          "say": "Here is the slip that costs the most marks. Find the minimum value of x squared minus four x. Complete the square: x minus two, squared, minus four. Turning point two comma minus four.",
+          "say": "Here's the costliest slip. Find the minimum value of x squared minus four x. Before we answer, look at the word: value. Complete the square: x minus two, squared, minus four. Turning point two comma minus four.",
           "do": [
             {
               "do": "write",
@@ -1141,7 +1141,7 @@
           ]
         },
         {
-          "say": "The minimum value is minus four, the y-coordinate. Writing two is the classic slip: x equals two is only where it happens. Ask how low the battery got, and around lunchtime is not an answer.",
+          "say": "So which number is the minimum value? Minus four, the y-coordinate. Writing two is the classic slip: x equals two is only where it happens, not how low.",
           "do": [
             {
               "do": "write",
@@ -1151,7 +1151,7 @@
           ]
         },
         {
-          "say": "So say the whole sentence, in full: minimum value minus four, when x equals two. Both halves, every time.",
+          "say": "So we say the whole sentence: minimum value minus four, when x equals two. Both halves, every time. Easy marks, once you say it in full.",
           "do": [
             {
               "do": "write",
@@ -1170,7 +1170,7 @@
       "why": "$5 + 8x - 2x^2 = -2(x-2)^2 + 13$, so the turning point is $(2, 13)$ — a maximum.",
       "beats": [
         {
-          "say": "Last one. Write it in descending powers first, then it is the same three moves: factorize the negative number out, complete the square inside, multiply back. Pause here, work it through, and type the turning point as h comma k.",
+          "say": "Last one. It's written backwards, so first write it in descending powers. Then the same three moves: factorize the negative out, complete the square inside, multiply back. Pause, work it through, type the turning point as h comma k.",
           "do": [
             {
               "do": "write",
@@ -1183,10 +1183,10 @@
     {
       "type": "caption",
       "heading": "You own the rewrite now",
-      "text": "Half it, square it, add and subtract → bracket → read off $(h, k)$.\n\nThat one rewrite answers every classic: turning points, maximum and minimum values, \"always positive\" proofs, and the word problem asking for the greatest height. It is also your battery graph read properly: when the low is, how low, and whether it ever hits zero. Go make it automatic.",
+      "text": "Half it, square it, add and subtract → bracket → read off $(h, k)$.\n\nThat one rewrite answers every classic: turning points, maximum and minimum values, \"always positive\" proofs, and the word problem asking for the greatest height. Go make it automatic.",
       "beats": [
         {
-          "say": "That is the whole topic. Half it, square it, add and subtract, bracket it, read off h and k. That is your battery graph read properly: when the low is, and how low.",
+          "say": "That's the whole topic. Half it, square it, add and subtract, bracket it, read off h and k. See? Five little moves.",
           "do": [
             {
               "do": "write",
@@ -1196,7 +1196,7 @@
           ]
         },
         {
-          "say": "One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem about a greatest height. Go make it automatic, so the maths runs even when your battery doesn't.",
+          "say": "One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem about a greatest height. Go make it automatic. You've got this.",
           "do": [
             {
               "do": "write",
