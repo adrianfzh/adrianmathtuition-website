@@ -78,14 +78,21 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
 // closed until SCIENCE_PRACTICE_OPEN_TO_STUDENTS flips, Adrian's admin cookie
 // previews it — so the science checks are async where the math ones are pure.
 import { studentSciences } from './portal-prefs';
-import { scienceSubjectOf, isScienceLevel, scienceLevelsFor } from './science-levels';
+import { scienceSubjectOf, scienceLevelForSubject, isScienceLevel, scienceLevelsFor } from './science-levels';
 import { sciencePracticeAccess } from './portal-beta';
 
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
 export async function practiceLevelsFor(caller: NonNullable<PracticeCaller>): Promise<{ key: string; label: string }[]> {
   if (caller.kind === 'admin') return ALL_QB_LEVELS;
   const math = studentMathLevels(caller.account);
-  const science = scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess());
+  const access = await sciencePracticeAccess();
+  const science = scienceLevelsFor(caller.account.subjects, access);
+  // 1 Oct 2026: the student's own science choice (prefs.sciences) opens those levels too.
+  const chosen = access === 'closed' ? null : studentSciences(caller.account.prefs);
+  for (const s of chosen?.subjects ?? []) {
+    const lvl = scienceLevelForSubject(s);
+    if (lvl && !science.some(l => l.key === lvl.key)) science.push({ key: lvl.key, label: lvl.label });
+  }
   return [...math, ...science];
 }
 

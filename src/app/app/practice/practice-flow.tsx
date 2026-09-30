@@ -123,7 +123,9 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false }: {
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false, lockedLevels = false }: {
+  /** The Science Practise run (1 Oct 2026): keep the one level the page passed — the overview's level list is not swapped in. */
+  lockedLevels?: boolean;
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
   /** Show the ⏱ Timed-set row — the server page decides (EXAM_PREP_OPEN_TO_STUDENTS
    *  or Adrian's admin cookie); the client never sees the flag itself. */
@@ -282,7 +284,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           setSheetTopic(target.topic);
           targetRef.current = null;
         }
-        if (Array.isArray(d.levels) && d.levels.length) {
+        if (!lockedLevels && Array.isArray(d.levels) && d.levels.length) {
           setLevels(d.levels);
           if (!d.levels.some((l: LevelOpt) => l.key === level)) setLevel(d.levels[0].key);
         }
