@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes, splitRelations, stepRows, leadIn, alignView } from './solution-readability';
+import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes, splitRelations, stepRows, leadIn, alignView, splitSolutionFull } from './solution-readability';
 
 // AM Set 1 P2 Q4 as stored (Adrian's screenshot, 30 Sep 2026), shortened.
 const Q4 = [
@@ -137,5 +137,18 @@ describe('alignment — bank audit regressions', () => {
     expect(leadIn('Since $0.0477<0.05$, we reject $H_0$: there is evidence')).toBeNull();
     expect(leadIn('So he is not correct: 12 students')).toBeNull();
     expect(leadIn('End values: at $x = 0$, $y = 1$')?.[0]).toBe('End values:');
+  });
+});
+
+describe('a mark scheme with a count or a part before its colon (H2 Set 1 P1, 30 Sep 2026)', () => {
+  it.each([
+    'Mark scheme (5): (a) M1 u3 shown; A1 u50 = a.',
+    'Mark scheme (a) (6), for any route: M1 the double tangent set up.',
+    'Mark scheme (c) [3]: B1 J_N >= 0.',
+    'Marks: (a) [1] B1 the sum written.',
+  ])('leaves out %s', (scheme) => {
+    const { main, scheme: kept } = splitSolutionFull(`(a) Working.\nAnswer: 3.\n${scheme}\nNote: a GC root alone earns no A1.`);
+    expect(main).toBe('(a) Working.\nAnswer: 3.');
+    expect(kept).toContain('Note:');
   });
 });

@@ -563,19 +563,47 @@ def split_long_math(latex, limit=70):
     first, rest = pieces[0].strip(), [q.strip() for q in pieces[1:]]
     return '\\begin{aligned} ' + first + ' &= ' + ' \\\\ &= '.join(rest) + ' \\end{aligned}'
 
+# What a student reads leaves the marker's material out (CLAUDE.md §Readability,
+# the same rules as lib/solution-readability.ts): a "Mark scheme:" / "Marks:"
+# paragraph is dropped from where it starts to the paragraph's end, and a
+# "[M1 for …]" note goes. The stored JSON keeps both for the marker.
+SCHEME_PARA = re.compile(r'^\s*(?:\*\*)?(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)'
+                         r'(?:\s*[(\[][^:\n]{0,40}|\s+for\s+[^:\n]{1,24})?\s*:', re.I)
+MARK_NOTE = re.compile(r'\[\s*((?:[BMA]\d\s*,?\s*)+)(?:[^\]]*)\]')
+BOLD_LABEL = re.compile(r'^\*\*\s*(\([^)]{1,5}\)(?:\s*\([^)]{1,5}\))?)\s*\*\*\s*')
+ANSWER = re.compile(r'^\**\s*Answers?\s*:\s*\**\s*', re.I)
+
+
+def drop_scheme(sol):
+    out = []
+    for para in re.split(r'\n\s*\n', (sol or '').strip()):
+        lines = para.split('\n')
+        cut = next((i for i, l in enumerate(lines) if SCHEME_PARA.match(l)), None)
+        keep = lines if cut is None else lines[:cut]
+        if any(l.strip() for l in keep):
+            out.append('\n'.join(keep))
+    return '\n\n'.join(out)
+
+
+def strip_mark_notes(line):
+    line = MARK_NOTE.sub('', line)
+    return re.sub(r'[ \t]{2,}', ' ', re.sub(r'[ \t]+([.,;:])', r'\1', line)).rstrip()
+
+
 def solution_rows(sol):
     rows, label, steps, prev_outer = [], None, [], None
+    sol = drop_scheme(sol)
 
     def flush():
         if label is not None or steps:
             rows.append((label or '', steps or [[('text', '')]]))
 
     for raw in (sol or '').split('\n'):
-        line = raw.strip()
+        line = BOLD_LABEL.sub(lambda b: b.group(1) + ' ', strip_mark_notes(raw.strip())).strip()
         if not line:
             continue
         m = LABEL_RE.match(line)
-        if m and (m.end() < len(line) or not steps):
+        if m:
             g1, g2 = m.group(1).lower(), (m.group(2) or '').lower()
             if g1 in ROMAN and prev_outer:
                 new = prev_outer + '(' + g1 + ')'
@@ -591,6 +619,11 @@ def solution_rows(sol):
         chk = re.match(r'^\(?\s*Check\s*:\s*(.*?)\)?\s*$', line, re.I | re.S)
         if chk:
             steps.append(('check', segs(chk.group(1))))
+            continue
+        ans = ANSWER.match(line)
+        if ans:
+            # the result stands out: a bold "Answer:" line
+            steps.append([('text', 'Answer: ', {'bold': True})] + segs(line[ans.end():]))
             continue
         disp = whole_math(line)
         if disp is not None:

@@ -29,7 +29,7 @@ export function stripMarkNotes(line: string): string {
   return line.replace(MARK_NOTE, '').replace(/[ \t]+([.,;:])/g, '$1').replace(/[ \t]{2,}/g, ' ').trimEnd();
 }
 
-export const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)(?:\s+for\s+[^:\n]{1,24})?\s*:/i;
+export const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)(?:\s*[([][^:\n]{0,40}|\s+for\s+[^:\n]{1,24})?\s*:/i;
 const ALT_PARA = /^\s*(?:alternatively|alternative(?:\s+(?:route|method|approach|solution|way))?|another (?:way|method))\s*[:,.—-]?\s*/i;
 
 /** Split a solution into its working, its alternative routes and any mark-scheme
