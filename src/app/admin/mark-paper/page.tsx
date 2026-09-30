@@ -22,6 +22,7 @@ import StudentPicker from '@/components/StudentPicker';
 import type { LayerMeta } from '@/lib/annotate/layer';
 import { fileHref } from '@/lib/student-files';
 import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs-list';
+import { tickPlan, tickPlanLine } from '@/lib/desk-state';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -455,6 +456,42 @@ export default function MarkPaperPage() {
       setMacOnlyBusy(false);
     }
   }
+  // ▶️ Auto-release (8 Sep 2026; moved here from the retired desk 30 Sep 2026):
+  // off = every marked hand-in waits for 📤 Release on its row below.
+  const [autoRelease, setAutoRelease] = useState<{ paused: boolean; at: string | null } | null>(null);
+  const [autoReleaseBusy, setAutoReleaseBusy] = useState(false);
+  useEffect(() => {
+    fetch('/api/admin/auto-release', { headers: authHeaders }).then(async r => {
+      if (!r.ok) return;
+      const d = await r.json();
+      if (typeof d?.paused === 'boolean') setAutoRelease({ paused: d.paused, at: d.at ?? null });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  async function flipAutoRelease() {
+    if (!autoRelease || autoReleaseBusy) return;
+    const on = !autoRelease.paused;
+    if (!window.confirm(on
+      ? 'Switch auto-release OFF? Every marked hand-in waits for you to tap 📤 Release on its row.'
+      : 'Switch auto-release ON? Tagged papers go to the student as soon as they are marked.')) return;
+    setAutoReleaseBusy(true);
+    try {
+      const r = await fetch('/api/admin/auto-release', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ paused: on }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setAutoRelease({ paused: !!d.paused, at: d.at ?? null });
+    } catch (e) {
+      alert(`Could not change the switch: ${(e as Error).message}`);
+    } finally {
+      setAutoReleaseBusy(false);
+    }
+  }
+  // 📘 Ticks for ONE Practice Again sheet over several papers (the desk's, moved
+  // here 30 Sep 2026): one sheet per student per maths, lib/desk-state tickPlan.
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
+  const [tickBusy, setTickBusy] = useState(false);
+  const tickableRun = (run: Run) => run.total_max != null && !!run.student_id && !run.practice_again;
+
   // Server-side paging for the history list. `runsTotal` is an exact count
   // from Supabase, so the summary can say "25 of 118" instead of a constant.
   const [runsTotal, setRunsTotal] = useState(0);
@@ -1192,7 +1229,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | 'remark' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | 'remark' | 'release' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   const [deletedNote, setDeletedNote] = useState<{ id: string; name: string } | null>(null);
   async function undoDelete() {
@@ -1225,6 +1262,48 @@ export default function MarkPaperPage() {
     } finally {
       setRowBusy((p) => ({ ...p, [run.id]: undefined }));
     }
+  }
+
+  // 📤 Release from the row (30 Sep 2026, the desk retired): for a tagged,
+  // marked paper auto-release did not send — the switch was off or it was missed.
+  async function releaseRun(run: Run) {
+    if (rowBusy[run.id]) return;
+    if (!window.confirm(`Release ${run.paper_name || 'this paper'} to ${run.student_name || 'the student'} now?`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'release' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/mark-triage', { method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'release', runId: run.id }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `could not release (${r.status})`);
+      const res = Array.isArray(d.results) ? d.results[0] : null;
+      if (!d.released) throw new Error(res?.note || 'not released');
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📤 Released to ${run.student_name || 'the student'}.` } }));
+      loadStats();
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } }));
+    } finally {
+      setRowBusy((p) => ({ ...p, [run.id]: undefined }));
+    }
+  }
+
+  async function queueTicked() {
+    const rows = recentRuns.filter((r) => ticked.has(r.id) && tickableRun(r));
+    const plan = tickPlan(rows.map((r) => ({ id: r.id, studentId: r.student_id ?? null, studentName: r.student_name ?? null, paperSubject: r.paper_subject ?? null })));
+    if (plan.kind !== 'ok' || tickBusy) return;
+    if (!window.confirm(`${tickPlanLine(plan)}\n\nOne sheet per student per maths; papers of the same maths are merged. Any sheet still being written for these papers is stopped.`)) return;
+    setTickBusy(true);
+    const done: string[] = []; let failed: string | null = null;
+    for (const g of plan.groups) {
+      try {
+        const r = await fetch('/api/admin/sheet-jobs', { method: 'POST', headers: authHeaders, body: JSON.stringify(g.runIds.length > 1 ? { runIds: g.runIds } : { runId: g.runIds[0] }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { failed = `${g.student} ${g.subject}: ${d.error || r.status}`; break; }
+        done.push(`${g.student} ${g.subject}`);
+      } catch (e) { failed = (e as Error).message; break; }
+    }
+    setTickBusy(false);
+    if (failed) alert(`${done.length ? `Queued: ${done.join(', ')}. ` : ''}Stopped at ${failed}`);
+    else setTicked(new Set());
+    loadStats();
   }
 
   // ✕ on the 📘 badge — stop a sheet Adrian didn't mean to start. A queued one
@@ -1677,10 +1756,8 @@ export default function MarkPaperPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
-      {/* Back to the hub on the left, the desk as a button on the right (Adrian, 5 Sep 2026). */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 8 }}>
         <a href="/admin" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>← Admin</a>
-        <a href="/admin/desk" style={{ fontSize: 13, color: '#fff', background: '#111827', textDecoration: 'none', padding: '6px 10px', borderRadius: 8 }}>🖊 Marking desk</a>
       </div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
       <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos, or a scanned PDF) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
@@ -1732,6 +1809,27 @@ export default function MarkPaperPage() {
             style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: macOnly.on ? '#0e7490' : '#d1d5db', opacity: macOnlyBusy ? 0.5 : 1, flexShrink: 0 }}
           >
             <span style={{ position: 'absolute', top: 4, left: macOnly.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
+          </button>
+        </div>
+      )}
+
+      {/* ▶️ Auto-release — moved from the retired desk (30 Sep 2026). */}
+      {autoRelease && (
+        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: autoRelease.paused ? '#fef2f2' : undefined, borderColor: autoRelease.paused ? '#fca5a5' : undefined }} data-auto-release={autoRelease.paused ? 'off' : 'on'}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700 }}>▶️ Auto-release{autoRelease.paused ? ' — OFF' : ' — on'}</div>
+            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
+              {autoRelease.paused
+                ? 'Off: a marked paper waits for you. Tap 📤 Release on its row below.'
+                : 'On: a tagged paper goes to the student as soon as it is marked. To change marks after that, ✏️ Annotate and Done re-issues their copy.'}
+              {autoRelease.at ? ` · since ${new Date(autoRelease.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
+            </div>
+          </div>
+          <button
+            type="button" role="switch" aria-checked={!autoRelease.paused} aria-label="Auto-release" disabled={autoReleaseBusy} onClick={flipAutoRelease}
+            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: !autoRelease.paused ? '#0e7490' : '#d1d5db', opacity: autoReleaseBusy ? 0.5 : 1, flexShrink: 0 }}
+          >
+            <span style={{ position: 'absolute', top: 4, left: !autoRelease.paused ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
           </button>
         </div>
       )}
@@ -1840,6 +1938,12 @@ export default function MarkPaperPage() {
                 (run.queue_failed || (!run.queued_at && Date.now() - new Date(run.created_at).getTime() >= 4 * 60 * 1000));
               return (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
+                {tickableRun(run) ? (
+                  <input type="checkbox" checked={ticked.has(run.id)} aria-label="Tick for a Practice Again sheet"
+                    title="Tick papers for one Practice Again sheet: one per student per maths, papers of the same maths merged"
+                    onChange={() => setTicked((prev) => { const next = new Set(prev); if (next.has(run.id)) next.delete(run.id); else next.add(run.id); return next; })}
+                    style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />
+                ) : <span style={{ width: 16, flexShrink: 0 }} />}
                 <span style={{ color: '#6b7280', minWidth: 120, whiteSpace: 'nowrap' }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {editTagId === run.id ? (
@@ -2066,6 +2170,13 @@ export default function MarkPaperPage() {
                         </button>
                       </>
                     )}
+                    {run.total_max != null && run.student_id && !run.released_at && !run.archived_at && (
+                      <button type="button" disabled={!!rowBusy[run.id]} title="Send this marked paper to the student now"
+                        onClick={() => releaseRun(run)}
+                        style={{ ...btn, background: '#047857', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                        {rowBusy[run.id] === 'release' ? '…' : '📤 Release'}
+                      </button>
+                    )}
                     {hasPdfs && (
                       <button type="button" disabled={!!rowBusy[run.id]} title="Save this marked copy into Dropbox → Marked Papers"
                         onClick={() => rowToDropbox(run)}
@@ -2145,6 +2256,25 @@ export default function MarkPaperPage() {
           </div>
         </details>
       )}
+
+      {/* 📘 The tick bar — one Practice Again sheet per student per maths. */}
+      {(() => {
+        const rows = recentRuns.filter((r) => ticked.has(r.id) && tickableRun(r));
+        if (!rows.length) return null;
+        const plan = tickPlan(rows.map((r) => ({ id: r.id, studentId: r.student_id ?? null, studentName: r.student_name ?? null, paperSubject: r.paper_subject ?? null })));
+        const n = plan.kind === 'ok' ? plan.groups.length : 0;
+        return (
+          <div style={{ position: 'sticky', bottom: 12, zIndex: 20, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', background: '#1e3a8a', color: '#fff', borderRadius: 12, padding: '10px 14px', marginBottom: 16, boxShadow: '0 6px 20px rgba(0,0,0,.18)' }}>
+            <span style={{ flex: 1, minWidth: 180, fontSize: 13 }}>📘 {tickPlanLine(plan)}</span>
+            <button type="button" onClick={queueTicked} disabled={tickBusy || !n}
+              style={{ ...btn, background: '#fff', color: '#1e3a8a', padding: '6px 12px', fontSize: 13 }}>
+              {tickBusy ? '…' : n > 1 ? `Queue ${n} sheets` : 'Queue one sheet'}
+            </button>
+            <button type="button" onClick={() => setTicked(new Set())}
+              style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,.4)', borderRadius: 8, padding: '6px 12px', fontSize: 13, cursor: 'pointer' }}>Clear</button>
+          </div>
+        );
+      })()}
 
       {/* Upload */}
       <div style={card}>
@@ -2598,8 +2728,8 @@ export default function MarkPaperPage() {
           student={annotateStudent}
           totals={totals}
           initialPage={annotateInitialPage}
-          // A released paper may be re-inked from here too (20 Sep 2026); the desk is
-          // where the re-issue lives, so this page only says the student's copy is old.
+          // A released paper may be re-inked from here too (20 Sep 2026); Done
+          // re-issues the student's copy (30 Sep 2026).
           allowReleased={!!recentRuns.find((r) => r.id === runId)?.released_at}
           onClose={closeAnnotate}
           onDone={({ url, linked, marks }) => {
@@ -2610,8 +2740,26 @@ export default function MarkPaperPage() {
             const wasReleased = !!recentRuns.find((r) => r.id === runId)?.released_at;
             const marksNote = marks ? ` Marks now ${marks.awarded}/${marks.max}.` : '';
             setSendNote(linked
-              ? { ok: true, text: `Annotated PDF attached — Download and Email now use it.${marksNote}${wasReleased ? ' The student still holds the old copy — re-issue it from the desk.' : ''}` }
+              ? { ok: true, text: `Annotated PDF attached — Download and Email now use it.${marksNote}${wasReleased ? ' Re-issuing the student\u2019s copy…' : ''}` }
               : { ok: false, text: 'Annotated PDF built (usable this session), but linking it to the run failed — hit Done again later to relink.' });
+            // ✏️ Annotate is the one way to change marks (30 Sep 2026, the desk
+            // retired): Done carries the change through. A released paper is
+            // re-issued to the student; an unreleased one has its PDFs rebuilt
+            // so pdf_stale clears and the release is not refused.
+            const doneRun = runId;
+            if (linked && doneRun) {
+              const call = wasReleased
+                ? fetch('/api/admin/mark-triage', { method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'reissue', runId: doneRun }) })
+                : fetch('/api/admin/desk/rebuild', { method: 'POST', headers: authHeaders, body: JSON.stringify({ runId: doneRun }) });
+              call.then(async (r) => {
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+                if (wasReleased) setSendNote({ ok: true, text: `Annotated and re-issued: the student now has the new copy${d.max != null ? ` (${d.awarded}/${d.max})` : ''}.` });
+              }).catch((e) => setSendNote({ ok: false, text: wasReleased
+                ? `Annotated, but re-issuing to the student failed: ${(e as Error).message}. Tap Done again to retry.`
+                : `Annotated, but rebuilding the PDFs failed: ${(e as Error).message}.` }))
+                .finally(() => loadStats());
+            }
             loadStats();
           }}
         />

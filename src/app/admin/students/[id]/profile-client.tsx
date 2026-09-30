@@ -885,7 +885,6 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 10 }}>
                   <a href={`/admin/mark-paper?student=${encodeURIComponent(studentId)}`} style={{ ...actionBtn(), background: '#1e3a5f', color: '#fff', borderColor: '#1e3a5f' }}>✍️ Mark a paper</a>
-                  <a href="/admin/desk" style={actionBtn()}>🖊 Desk</a>
                 </div>
                 {papersTab}
               </div>
