@@ -262,10 +262,8 @@ async function fileBookParts(
   item.parts = report;
   item.action = `split into ${book.parts.length} papers → moved to split/`;
   counts.split++;
-  // Ops, not Marking (30 Sep 2026, Adrian: "are these messages suppose to be in Marking?"):
-  // a book split is bank housekeeping; Marking is for students' papers. Science papers are
-  // not filed for the (maths) marker, so the line only says so for maths.
-  await sendTelegram(`📚 "${e.name}" was cut at its covers into ${names.map(n => n.replace(/\.pdf$/i, '')).join(' + ')} (${describeParts(book.parts)}); each is queued for extraction${parsed.subject === 'math' ? ' and filed for the marker' : ''}.`, 'ops').catch(() => {});
+  // No Telegram line per split book (30 Sep 2026, Adrian: "can we not have these notifications? it's spam").
+  // The tick's job_runs summary counts the splits; the book's row notes name its parts.
 }
 
 export async function GET(req: NextRequest) {
