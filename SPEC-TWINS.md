@@ -1,6 +1,6 @@
 # SPEC-TWINS — our own question for every school question we serve
 
-**Status: SPEC, 11 Sep 2026. Not built.** Adrian: *"creating questions based
+**Status: phase 0 BUILT 30 Sep 2026** — the `twin_queue` view + the `kiosk_pool` verified guard (`migrations/twin_queue.sql`; every serving door now refuses an unverified `ai_generated` row), `scripts/twins/twin.mjs` (queue · brief · check · publish · review) and the `twin-question` skill (Opus author → gates → Sonnet blind solve → Opus moderate → figure → insert `verified=false`). First 20 E Math twins written for Adrian's read the same day; phase 1 (the Fly `jobs.sh` lane) and phase 2 (`serving_policy` + the flip) wait on his 16/20 verdict. **Spec written 11 Sep 2026.** Adrian: *"creating questions based
 off the schools' questions and then serving our own questions, and not serving
 schools' questions — in the end our serving bank will just be wholly our own
 questions. need to consider running as a proper company."* Then: *"write the

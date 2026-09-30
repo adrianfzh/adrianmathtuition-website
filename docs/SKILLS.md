@@ -22,6 +22,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | Browse the bank, pick questions myself, then get a sheet | `worksheet-clerk` |
 | Generate a whole S4 prelim paper to blueprint | `prelim-paper` |
 | Write a NEW paper in the SEAB O-Level or A-Level H2 shape and file it as a Print-a-paper Set | `gce-paper` |
+| Write OUR OWN twin of a school question already in the bank (same sub-skill, structure, marks; new numbers, context, sentences; `verified=false` until I read it) | `twin-question` |
 | Second-guess a prelim draft I already saved | `setter-pass` |
 | Clean up a past-paper PDF I downloaded and add its answer key | `finish-practice-set` |
 | See which topics my students actually lose marks on | `bleed-table` |
