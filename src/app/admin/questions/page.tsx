@@ -106,7 +106,14 @@ type PaperRow = PaperMeta & {
   coverage?: { status: string; missingMarks: number; label: string } | null;
 };
 
-const LEVELS = ['AM', 'EM', 'EM_NA', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S1', 'JC2', 'JC1', 'JC2_H1'];
+const LEVELS = ['AM', 'AM_NA', 'EM', 'EM_NA', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S1', 'S1_NA', 'JC2', 'JC1', 'JC2_H1'];
+// What Adrian reads (30 Sep 2026: "can we say have EM G2 instead of EM_NA?"): N(A) = G2,
+// N(T) = G1. The stored value (and the filter's value) stays the bank's level code.
+const LEVEL_LABEL: Record<string, string> = {
+  AM_NA: 'AM G2', EM_NA: 'EM G2', S3_EM: 'S3 EM', S3_AM: 'S3 AM', S3_EM_NA: 'S3 EM G2', S3_EM_NT: 'S3 EM G1',
+  S1_NA: 'S1 G2', S2_NA: 'S2 G2', JC2_H1: 'JC2 H1',
+};
+const levelLabel = (l: string | null | undefined) => (l ? LEVEL_LABEL[l] ?? l : '');
 
 export default function QuestionBankPage() {
   const [password, setPassword] = useState('');
@@ -386,7 +393,7 @@ export default function QuestionBankPage() {
       .catch(() => flash('Copy failed'));
   };
 
-  const badge = (c: Card) => [c.school, c.year, c.level, c.paper ? `P${String(c.paper).replace(/^P/i, '')}` : null, c.examType]
+  const badge = (c: Card) => [c.school, c.year, levelLabel(c.level), c.paper ? `P${String(c.paper).replace(/^P/i, '')}` : null, c.examType]
     .filter(Boolean).join(' · ');
 
   // ── basket (persisted) ─────────────────────────────────────────────────────
@@ -982,7 +989,7 @@ export default function QuestionBankPage() {
         )}
         <select value={level} onChange={e => setLevel(e.target.value)} style={{ padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }}>
           <option value="">All levels</option>
-          {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          {LEVELS.map(l => <option key={l} value={l}>{levelLabel(l)}</option>)}
         </select>
         <input value={year} onChange={e => setYear(e.target.value)} placeholder="Year" inputMode="numeric"
           style={{ width: 76, padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }} />
@@ -1007,7 +1014,7 @@ export default function QuestionBankPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
             <h2 style={{ fontSize: 16.5, fontWeight: 700 }}>
               {paperView.meta.school} · {paperView.meta.year}
-              {paperView.meta.level ? ` · ${paperView.meta.level}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
+              {paperView.meta.level ? ` · ${levelLabel(paperView.meta.level)}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
               {paperView.meta.examType ? ` · ${paperView.meta.examType}` : ''}
             </h2>
             <span style={{ color: C.muted, fontSize: 13 }}>
@@ -1313,7 +1320,7 @@ export default function QuestionBankPage() {
             <button onClick={() => openPaper(pp)}
               style={{ display: 'flex', gap: 10, alignItems: 'baseline', flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <strong style={{ fontSize: 14.5 }}>{pp.school}</strong>
-              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {pp.level}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
+              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {levelLabel(pp.level)}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
               <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
                 <span style={{ color: C.muted, fontSize: 12.5 }}>
                   {pp.count} q{pp.marksTotal != null && pp.marksTotal > 0 ? ` · ${pp.marksTotal} marks` : ''}
@@ -1429,7 +1436,7 @@ export default function QuestionBankPage() {
               <button key={st.id} onClick={() => doAssign(st.id, st.name)} disabled={!!assignBusy}
                 style={{ display: 'flex', gap: 10, width: '100%', textAlign: 'left', alignItems: 'baseline', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}>
                 <strong style={{ fontSize: 14.5 }}>{assignBusy === st.id ? '…' : st.name}</strong>
-                <span style={{ color: C.muted, fontSize: 12.5 }}>{st.level}</span>
+                <span style={{ color: C.muted, fontSize: 12.5 }}>{levelLabel(st.level)}</span>
               </button>
             ))}
             {!students.length && <div style={{ color: C.muted, fontSize: 13.5, padding: 12 }}>Loading students…</div>}
