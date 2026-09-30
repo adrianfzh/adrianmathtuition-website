@@ -29,11 +29,26 @@
 // character) — every colour is a `--lsn-char-*` token.
 
 import type { CharacterPose } from '@/lib/lesson-script';
+import BlobCharacter from './characters/blob';
+import KidCharacter from './characters/kid';
+import CatCharacter from './characters/cat';
+import RobotCharacter from './characters/robot';
+
+/**
+ * Which drawing stands at the corner (1 Oct 2026, Adrian: "tutor is not
+ * interest/cute/fun … experiment and show me"). `teacher` is the drawing below,
+ * unchanged; the other four are the candidates in ./characters, each keeping the
+ * same six-pose contract and data attributes. Default `teacher` until he picks.
+ */
+export const CHARACTER_LOOKS = ['teacher', 'blob', 'kid', 'cat', 'robot'] as const;
+export type CharacterLook = (typeof CHARACTER_LOOKS)[number];
 
 export interface LessonCharacterProps {
   pose: CharacterPose;
   /** Which corner (default right). `--lsn-char-side` on an ancestor overrides it. */
   side?: 'right' | 'left';
+  /** Which drawing (default `teacher`). */
+  look?: CharacterLook;
 }
 
 export const CHARACTER_CSS = `
@@ -107,8 +122,19 @@ export const CHARACTER_CSS = `
 }
 `;
 
-/** The cartoon teacher. Pure presentation: a `data-pose` switch and one style block. */
-export default function LessonCharacter({ pose, side = 'right' }: LessonCharacterProps) {
+/** The character at the corner: dispatches on `look`; every drawing takes the same `pose` + `side`. */
+export default function LessonCharacter({ pose, side = 'right', look = 'teacher' }: LessonCharacterProps) {
+  switch (look) {
+    case 'blob': return <BlobCharacter pose={pose} side={side} />;
+    case 'kid': return <KidCharacter pose={pose} side={side} />;
+    case 'cat': return <CatCharacter pose={pose} side={side} />;
+    case 'robot': return <RobotCharacter pose={pose} side={side} />;
+    default: return <TeacherCharacter pose={pose} side={side} />;
+  }
+}
+
+/** The cartoon teacher (the original drawing, unchanged). Pure presentation: a `data-pose` switch and one style block. */
+export function TeacherCharacter({ pose, side = 'right' }: Omit<LessonCharacterProps, 'look'>) {
   return (
     <div className="lsn-char" data-lsn-char="" data-pose={pose} data-side={side} aria-hidden>
       <style>{CHARACTER_CSS}</style>

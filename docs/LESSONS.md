@@ -157,6 +157,24 @@ and transition and the pose still shows.
   never moves a glyph and the tap-to-pause still lands on the board. `--lsn-char-side: left`
   (or the `side` prop) puts it bottom-left and mirrors it so it still faces the working; a
   long working can run under it — the board's last lines are the ones to watch.
+- **Four candidates beside the teacher (1 Oct 2026, Adrian: "tutor is not
+  interest/cute/fun. something like bilibili? or may not even be a tutor/teacher.
+  experiment and show me").** `LessonCharacter` now takes `look: 'teacher' | 'blob' |
+  'kid' | 'cat' | 'robot'` (`CHARACTER_LOOKS`; default `teacher`, the drawing above,
+  unchanged). The four live in `app/lesson/[slug]/characters/` — `blob.tsx` (videotutor.io's
+  pink monster: a shape with a face, thick brows that snap into an angry V on `oops`),
+  `kid.tsx` (洋葱学园's 狗蛋: a big-headed pupil whose dot eyes balloon on `oops`, a cowlick,
+  a white school polo, a chalk stick), `cat.tsx` (a chubby tabby with a red bandana — ears
+  flatten on `oops`, tail up on `cheer`), `robot.tsx` (a screen face: pixel eyes, loading dots
+  on `think`, star eyes on `cheer`, a red flash on `oops`, a wobbling antenna). Each keeps
+  the SAME contract — the `.lsn-char` wrapper, `data-lsn-char` / `data-pose` / `data-side`,
+  the six poses, the size clamp, the side flip, reduced motion — plus `data-look` so its CSS
+  never leaks; `characters/base.ts` holds the shell, a 260 ms squash on every pose change
+  (six keyframe names with one shape, so a changed `animation-name` restarts it) and the
+  shared idle keyframes. The face is ~60% of every figure; all blink and breathe. Nothing in
+  the script schema or the player changed — `look` is wired once Adrian picks (the strip:
+  the session scratchpad's `character/candidates.mjs`, the same extract-and-stamp recipe as
+  `preview.mjs`, five looks × six poses).
 - **What Adrian still decides — the look.** Every colour is a token with a default
   (`--lsn-char-skin` / `-hair` / `-shirt` (the cardigan, default a calm blue) / `-collar` /
   `-pointer` / `-line` / `-dark` / `-cheek`; the OUTLINES take the theme's `--lsn-ink`, so
