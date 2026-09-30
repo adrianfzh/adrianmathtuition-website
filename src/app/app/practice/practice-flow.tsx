@@ -940,7 +940,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 {ladderVisible && !q.mcq && !q.subject && solution === null && !(ladder?.done) && (
                   <button onClick={revealStep} disabled={ladderLoading}
                     className="bg-white border border-sky-300 text-sky-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {ladderLoading ? '🪜 …' : ladder ? '🪜 One more step' : '🪜 Stuck? Next step'}
+                    {ladderLoading ? '🪜 …' : ladder ? '🪜 One more step' : '🤔 Stuck? Next step'}
                   </button>
                 )}
                 {/* A structured science answer is marked BEFORE the scheme shows (1 Oct 2026). */}
