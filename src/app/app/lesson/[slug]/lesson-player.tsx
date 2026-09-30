@@ -75,7 +75,7 @@ import { checkTypedAnswer } from '@/lib/notebook';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
-  type GraphMorphScene, type LessonTheme, type LessonTone, type PlayScene,
+  type GraphMorphScene, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
 import {
@@ -84,7 +84,7 @@ import {
   type PlaybackRate, type SpeechTrack, type SpeechState, type Window as SpeechWindow,
 } from '@/lib/lesson-speech';
 import {
-  beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, proseGroup, sceneNotes,
+  beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, proseGroup, sceneNotes, scenesHaveCharacter,
   tokKey, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
@@ -1171,8 +1171,15 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
+  /**
+   * The cartoon student at the board's corner (lesson-character.tsx). `student`
+   * shows it on any theme; `none` never. Left unset, it shows on a BOARD theme
+   * whose beats carry `character` actions (the explain clip) — a committed lesson
+   * without poses renders exactly as before.
+   */
+  character?: LessonCharacter;
   /** Where ‹ goes (the practice page for a lesson; the paper for a one-minute explanation). */
   backHref?: string;
   /** The small word above the title ("Lesson", "Explain"). */
@@ -1328,6 +1335,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     clip: narration.clock, beatClock,
   });
   const board = useMemo(() => (hasBeats(scene) ? boardStateAt(scene, step, fired) : null), [scene, step, fired]);
+  // The character: the script's word first; otherwise a board theme with posed beats.
+  const posed = useMemo(() => scenesHaveCharacter(scenes), [scenes]);
+  const characterOn = character === 'student' || (character === undefined && theme !== 'slide' && posed);
   const marginNotes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === null) : []), [board, scene]);
 
   // Telemetry — fire-and-forget beacons into portal_event_log (bounded kinds:
@@ -1571,7 +1581,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
           data-step={step}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
-          <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}>
+          <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
+            character={characterOn ? (board?.pose ?? 'idle') : null}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
             {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}

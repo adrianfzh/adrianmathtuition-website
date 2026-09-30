@@ -43,7 +43,7 @@
 
 import { splitParagraphs } from './lesson-speech';
 import {
-  hasBeats, type Beat, type BeatAction, type BeatTarget, type ClearScope, type MarkKind,
+  hasBeats, type Beat, type BeatAction, type BeatTarget, type CharacterPose, type ClearScope, type MarkKind,
   type PlayScene, type Scene,
 } from './lesson-script';
 
@@ -166,6 +166,8 @@ export interface BoardState {
   marks: BoardMark[];
   notes: BoardNote[];
   focus: BoardFocus | null;
+  /** The character's pose (the cartoon student at the corner) — `idle` until a `character` action; held until the next. */
+  pose: CharacterPose;
   /** Actions applied so far across the scene — the seq of the next one. */
   seq: number;
 }
@@ -188,8 +190,13 @@ export function emptyBoard(scene: Scene | PlayScene): BoardState {
   const { targeted, movable } = sceneTargets(scene);
   return {
     shown: new Set(), written: new Set(), targeted, movable, moved: new Set(),
-    state: 0, pulses: [], marks: [], notes: [], focus: null, seq: 0,
+    state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', seq: 0,
   };
+}
+
+/** Does any scene's beats ever pose the character? (The player's cue to show it when the script says nothing.) */
+export function scenesHaveCharacter(scenes: readonly (Scene | PlayScene)[]): boolean {
+  return scenes.some(s => hasBeats(s) && s.beats.some(b => b.do.some(a => a.do === 'character')));
 }
 
 const asList = (v: string | string[]): string[] => (Array.isArray(v) ? v : [v]);
@@ -267,6 +274,9 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       if (what === 'board') { board.shown.clear(); board.written.clear(); board.moved.clear(); }
       break;
     }
+    case 'character':
+      board.pose = action.pose;
+      break;
   }
 }
 

@@ -973,6 +973,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // 🔊 The one-minute explanation's voice (1 Oct 2026): make the clips for
+      // the run's first lost-marks questions now (lib/explain-voice-store, ≤ 6
+      // questions), so the first ▶ Explain it tap plays at once. After the
+      // response, regardless of the student-facing switch; a failure leaves
+      // that question silent — never a held or slowed release.
+      try {
+        const voiceRunId = run.id;
+        after(async () => {
+          const { prewarmExplainVoice } = await import('@/lib/explain-voice-store');
+          const r = await prewarmExplainVoice(voiceRunId);
+          if (r.questions) console.log('[explain-voice] prewarm', voiceRunId, r);
+        });
+      } catch (err) { console.warn('[explain-voice] prewarm scheduling failed:', (err as Error).message); }
+
       // Closure tracking (17 Sep 2026): a released Practice Again hand-in scores
       // the sections of the sheet it answers — closed / slip / still failing —
       // into sheet_section_outcomes, one line to the marking topic. After the

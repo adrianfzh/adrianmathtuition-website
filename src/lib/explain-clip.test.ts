@@ -45,6 +45,10 @@ describe('buildExplainScript', () => {
     expect(beats[1].do.some(a => a.do === 'mark')).toBe(true);
     expect(beats[2].say).toBe('Bring 4 across: it becomes minus 4.');
     expect(beats[4].say).toBe('And that is the answer.');
+    // The character reacts: point at your lines, oops on the ✗ line, think on the first step, nod after, cheer at the Answer.
+    expect(script!.character).toBe('student');
+    const poseOf = (b: typeof beats[number]) => b.do.find(a => a.do === 'character');
+    expect(beats.map(b => { const a = poseOf(b); return a && a.do === 'character' ? a.pose : null; })).toEqual(['point', 'oops', 'think', 'nod', 'cheer']);
   });
   it('falls back to the ✗ line + fix pairs when no part has a continuation (science)', () => {
     const q: StudentQuestion = { ...base, corrections: [{ yours: 'F = ma = 2 \\times 3 = 5', fix: 'F = ma = 2 \\times 3 = 6\\ \\text{N}' }] };
@@ -53,6 +57,7 @@ describe('buildExplainScript', () => {
     const scene = script!.scenes[0] as EquationStepsScene;
     expect(scene.steps).toHaveLength(2);
     expect(scene.beats!.map(b => b.say)).toEqual(['You wrote this line.', 'The fix: You moved 3x across without changing its sign.']);
+    expect(scene.beats!.map(b => b.do[0])).toEqual([{ do: 'character', pose: 'oops', at: 0.02 }, { do: 'character', pose: 'nod', at: 0.02 }]);
   });
   it('sets a science SENTENCE as written words, not maths (Adrian, 1 Oct 2026: the spaces vanished)', () => {
     expect(isProse('As black is a better emitter of heat, it cools faster.')).toBe(true);
@@ -71,6 +76,7 @@ describe('buildExplainScript', () => {
       'You wrote: As black is a better emitter of heat, it cools faster.',
       'Write instead: black is a better emitter of radiation: pan B radiates infra-red faster, so it cools faster. black is a better emitter of radiation',
     ]);
+    expect(cap.beats!.map(b => (b.do[0] as { pose?: string }).pose)).toEqual(['oops', 'nod']);
     const board = script.scenes[1] as EquationStepsScene;
     expect(board.steps[0].tokens[0].tex).toBe('Q = mc\\Delta T = 2 \\times 4200 \\times 5');
   });

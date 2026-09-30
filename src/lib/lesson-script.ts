@@ -142,6 +142,17 @@ export type MarkKind = (typeof MARK_KINDS)[number];
 export const CLEAR_SCOPES = ['pen', 'marks', 'notes', 'focus', 'board'] as const;
 export type ClearScope = (typeof CLEAR_SCOPES)[number];
 
+/** The character's poses (the cartoon student at the board's corner, 1 Oct 2026):
+ *  `idle` breathes, `point` gestures at the board, `think` hand on chin with a "?",
+ *  `oops` a wince and a sweat drop, `nod` a small nod, `cheer` arms up with sparkles. */
+export const CHARACTER_POSES = ['idle', 'point', 'think', 'oops', 'nod', 'cheer'] as const;
+export type CharacterPose = (typeof CHARACTER_POSES)[number];
+
+/** Whether a script has the character at all. `none` is the default, so every
+ *  committed lesson renders byte-identically; the explain clip sets `student`. */
+export const LESSON_CHARACTERS = ['student', 'none'] as const;
+export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
+
 /**
  * What a write / reveal / focus points at — exactly ONE of these per action.
  * `step` = an equation-steps line, `callout` = an annotate callout, `token` = a
@@ -179,10 +190,12 @@ export type BeatAction =
   /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
   | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
   /** Wipe the pen layer (default) or the whole board. */
-  | ({ do: 'clear'; what?: ClearScope } & Timed);
+  | ({ do: 'clear'; what?: ClearScope } & Timed)
+  /** The character at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
+  | ({ do: 'character'; pose: CharacterPose } & Timed);
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -246,6 +259,9 @@ export interface LessonScript {
   minutes: number;
   /** The stage's look (default `slide` — the original card, untouched). */
   theme?: LessonTheme;
+  /** The cartoon student at the board's corner (default `none`; the player also
+   *  shows it when a board theme's beats carry `character` actions). */
+  character?: LessonCharacter;
   scenes: Scene[];
 }
 
@@ -543,6 +559,11 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
         errors.push(`${where}: what must be one of ${CLEAR_SCOPES.join('/')}`);
       }
       break;
+    case 'character':
+      if (!(CHARACTER_POSES as readonly unknown[]).includes(a.pose)) {
+        errors.push(`${where}: pose must be one of ${CHARACTER_POSES.join('/')} (got "${String(a.pose)}")`);
+      }
+      break;
   }
 }
 
@@ -743,6 +764,9 @@ export function validateLessonScript(input: unknown): ValidationResult {
   }
   if (input.theme !== undefined && !(LESSON_THEMES as readonly unknown[]).includes(input.theme)) {
     errors.push(`theme must be one of ${LESSON_THEMES.join('/')} (got "${String(input.theme)}")`);
+  }
+  if (input.character !== undefined && !(LESSON_CHARACTERS as readonly unknown[]).includes(input.character)) {
+    errors.push(`character must be one of ${LESSON_CHARACTERS.join('/')} (got "${String(input.character)}")`);
   }
   if (!Array.isArray(input.scenes) || input.scenes.length === 0) {
     errors.push('scenes must be a non-empty array');

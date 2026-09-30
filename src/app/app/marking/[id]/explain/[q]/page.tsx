@@ -18,7 +18,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { buildExplainScript, canExplain } from '@/lib/explain-clip';
 import { buildPlayScenes } from '@/lib/lesson-load';
-import LessonPlayer from '../../../../lesson/[slug]/lesson-player';
+import ExplainPlayer from './explain-player';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,8 +53,13 @@ export default async function ExplainPage({ params, under = 'math' }: { params: 
   const script = question ? buildExplainScript(question, id) : null;
   if (!paper || !question || !script) redirect(paperHref);
 
+  // The voice (1 Oct 2026): ExplainPlayer renders the player silent at once and
+  // asks /api/portal/explain/voice for the beats' clips (lib/explain-voice-store —
+  // made at release, or on this first tap); when they arrive the 🔊 pill appears.
   return (
-    <LessonPlayer
+    <ExplainPlayer
+      runId={id}
+      q={question.questionNumber}
       slug={script.slug}
       title={script.title}
       topic={script.topic}
@@ -67,6 +72,7 @@ export default async function ExplainPage({ params, under = 'math' }: { params: 
       practiceLabel={question.revise ? `✏️ Practise: ${question.revise.name} →` : '‹ Back to my paper'}
       doneTitle="That's the fix"
       doneText="Your line, the slip, the steps from there. Try one like it while it's fresh."
+      character={script.character ?? 'student'}
       startAuto
     />
   );

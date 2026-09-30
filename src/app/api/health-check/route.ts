@@ -305,6 +305,13 @@ export async function GET(req: NextRequest) {
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),
+    // 🔊 The explanation's voice (1 Oct 2026): the clip door must refuse anonymous
+    // before it reads a run or spends a TTS call.
+    timed('portal-explain-voice', async () => {
+      const r = await fetch(`${base}/api/portal/explain/voice`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-science-qa', async () => {
       const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');

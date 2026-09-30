@@ -83,12 +83,77 @@ page is the video.**
   types the URL early is sent back to the paper. Health-check `portal-explain` probes the
   route. Telemetry rides the player's existing `lesson:<slug>:…` events (the slug is
   `explain-<run8>-<q>`), so "did anyone tap it" is answerable before opening it.
-- **Not yet.** No voice: the beats carry `say` but no `audio`, so the 🔊 pill never
-  shows. The next step, if the taps say so, is server TTS per beat (the same Gemini
-  voice as `generate-narration.mjs`) cached under the run's files, then the "what comes
-  next?" ask between the ✗ line and the fix (SPEC-COMPANY's voice-tutor shape, one
-  question at a time). The topic lessons above stay the long form, reached from a
-  card — never a Lessons tab.
+- **Voice (1 Oct 2026).** Every beat's `say` is read by the same Gemini voice as the
+  topic lessons (`gemini-2.5-flash-preview-tts`, Charon, the tutor `style` prefix —
+  the three constants sit in `lib/explain-voice-store.ts` beside
+  `generate-narration.mjs`'s DEFAULTS; change them together). The PCM comes back as
+  WAV (`lib/explain-voice.ts pcmToWav` — no ffmpeg on Vercel, no MP3 encoder in the
+  repo; ~48 KB a second, a beat is 3–8 s) and is cached in the student-files bucket
+  under `runs/<runId>/explain/<q-slug>/b<k>-<hash of say>.wav` (`voiceKey`; a changed
+  sentence gets a new clip), served through `/api/files` to Adrian or the owning
+  student. `POST /api/portal/explain/voice {runId, q}` (same access rule as the page +
+  `explainClipVisible`) rebuilds the script, lists the folder once, synthesises what is
+  missing four at a time (`ensureVoice`) and answers `{urls}` in beat order. The page's
+  `explain-player.tsx` renders the player silent at once, fires that POST on mount, and
+  hands the SAME player the scenes with `beats[k].audio` filled (`attachVoice`) — the
+  🔊 pill appears, playback is not reset, the student taps it (iOS needs the gesture).
+  **Pre-warm:** the release action in `mark-triage` calls `prewarmExplainVoice(runId)`
+  via `after()` for the run's first six lost-marks questions, regardless of the switch.
+  **Fallback:** a failed beat, a missing `GOOGLE_API_KEY`, a quota 429 or a slow request
+  changes nothing — the explanation plays silent on its Auto timers, beat by beat.
+  Health-check `portal-explain-voice` probes the 401.
+- **Not yet.** The "what comes next?" ask between the ✗ line and the fix (SPEC-COMPANY's
+  voice-tutor shape, one question at a time), and an MP3 encoder if the WAV weight ever
+  shows on a phone. The topic lessons above stay the long form, reached from a card —
+  never a Lessons tab.
+
+## The character (1 Oct 2026) — a cartoon student at the corner of the board
+
+Adrian, on the one-minute explanation: *"there should be an animated person so it's more
+engaging"* — the thing 洋葱学园 and videotutor.io keep on the slate. So: **a friendly cartoon
+student at the bottom-right corner of the board who reacts to the beats.** Not a video, not a
+Lottie file, not a dependency: one inline SVG in
+`app/lesson/[slug]/lesson-character.tsx` (round head, simple body, a pencil in the far hand),
+whose six poses are six states of the SAME drawing switched by `data-pose` — arms rotate at
+the shoulder, brows tilt, one of four mouths shows, the extras fade in — so a pose change is a
+250 ms CSS transition. Between beats it breathes and blinks (CSS keyframes);
+`prefers-reduced-motion` stops every loop and transition and the pose still shows.
+
+- **The poses** (`CHARACTER_POSES` in `lib/lesson-script.ts`): `idle` (breathing, a blink
+  every few seconds) · `point` (the near arm up toward the working) · `think` (hand to the
+  chin, a small "?" bubble, eyes up) · `oops` (a wince, brows pinched, a sweat drop, the head
+  tips) · `nod` (a small nod, the smile widens) · `cheer` (both arms up, a grin, two sparkles).
+- **The action.** `{ do: 'character', pose, at? }` in any beat. The validator refuses a pose
+  off the list. On the board it is state, like a morph: `BoardState.pose` (lib/lesson-beats)
+  starts `idle` on every scene, each fired action sets it, a beat without one keeps the last,
+  `clear` leaves it alone. Voice / Auto / Manual all go through `boardStateAt`, so the
+  character follows the pen for free — nothing in the player interprets it.
+- **Default OFF.** A script's optional `character: 'student' | 'none'` (validated). Unset means
+  none — **the two committed lessons render byte-identically** (`scenesHaveCharacter` is
+  false for them; the slide theme never shows one unless `character: 'student'` is set). The
+  player's rule (`LessonPlayer` prop `character`): `'student'` shows it on any theme, `'none'`
+  never, unset → shown on a board theme whose beats carry `character` actions — which is how
+  the explain clip gets it without the page passing anything.
+- **The explain clip sets it** (`lib/explain-clip.ts`: `character: 'student'` and a pose on
+  every beat): `point` while the student's earlier lines are written, `oops` on the ✗ line,
+  `think` on the first pen step, `nod` on the later ones, `cheer` at the Answer; a sentence
+  scene (science) goes `oops` then `nod`, and so does a ✗-line + fix pair.
+- **Giving a lesson a character.** Set `"character": "student"` on the script and put
+  `{ "do": "character", "pose": "…" }` in the beats where the student would react (a
+  `point` when the teacher says "look here", `think` before a step, `nod` when it lands,
+  `oops` on a pitfall, `cheer` at the answer). Without poses the switch alone shows an idle
+  student at the corner; without the switch, poses on a board theme are enough.
+- **Where it sits.** Inside the board's zoom wrapper, absolutely positioned bottom-right,
+  `clamp(84px, 27%, 120px)` wide, `pointer-events: none`, under the marks and the pen — it
+  never moves a glyph and the tap-to-pause still lands on the board. `--lsn-char-side: left`
+  (or the `side` prop) puts it bottom-left and mirrors it so it still faces the working; a
+  long working can run under it — the board's last lines are the ones to watch.
+- **What Adrian still decides — the look.** Every colour is a token with a default
+  (`--lsn-char-skin` / `-hair` / `-shirt` / `-line` / `-dark` / `-cheek`; the OUTLINES take
+  the theme's `--lsn-ink`, so on the slate the figure reads chalk-outlined); the hair, the
+  shirt, whether it is a boy or a girl or a mascot, how big it sits on a phone, and whether
+  a teacher figure (pointing from the other corner) should exist at all are his calls. The
+  drawing is one SVG — change it in one place.
 
 ## Map
 

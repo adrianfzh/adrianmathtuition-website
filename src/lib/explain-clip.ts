@@ -14,7 +14,7 @@
 // a committed lesson: beats, the chalk theme, ▶ Auto, tap to pause. Voice clips
 // are not written here (no `audio`); the player shows no 🔊 pill without them.
 
-import type { Beat, BeatAction, CaptionScene, EquationStep, EquationStepsScene, LessonScript, StepToken } from './lesson-script';
+import type { Beat, BeatAction, CaptionScene, CharacterPose, EquationStep, EquationStepsScene, LessonScript, StepToken } from './lesson-script';
 import type { StudentQuestion } from './portal-marking';
 
 /** The most of the student's lines shown before the ✗ one (the card shows two; the board has room for the same). */
@@ -132,6 +132,8 @@ function clip(text: string, max: number): string {
 }
 
 const write = (token: string, at?: number): BeatAction => (at === undefined ? { do: 'write', token } : { do: 'write', token, at });
+/** The character at the corner takes a pose (lesson-character.tsx) — the student reacting to the beat. */
+const pose = (p: CharacterPose, at: number): BeatAction => ({ do: 'character', pose: p, at });
 
 /** The question's own words for the verdict on a part: its slip line, else the marker's comment, else nothing.
  *  A slip starts with its part label — "(b): …", "(whole): …" — which the heading already says. */
@@ -155,7 +157,7 @@ function continuationScene(q: StudentQuestion, fix: NonNullable<StudentQuestion[
   if (before.length) {
     beats.push({
       say: before.length === 1 ? 'Here is your working, up to the line that went wrong.' : 'Here are your lines, up to the one that went wrong.',
-      do: before.map((_, i) => write(`y${i}`, Math.min(0.9, 0.15 + i * 0.35))),
+      do: [pose('point', 0.02), ...before.map((_, i) => write(`y${i}`, Math.min(0.9, 0.15 + i * 0.35)))],
     });
   }
   // The ✗ line, boxed, with the marker's verdict beside it.
@@ -164,7 +166,7 @@ function continuationScene(q: StudentQuestion, fix: NonNullable<StudentQuestion[
   const verdict = verdictFor(q, partIndex);
   const wrongBeat: Beat = {
     say: speakable(verdict, 'This line is where the marks went.'),
-    do: [write(wrongId, 0.05), { do: 'mark', kind: 'box', token: wrongId, at: 0.35 }],
+    do: [write(wrongId, 0.05), pose('oops', 0.3), { do: 'mark', kind: 'box', token: wrongId, at: 0.35 }],
   };
   if (verdict) wrongBeat.do.push({ do: 'note', text: clip(verdict, NOTE_MAX), near: wrongId, at: 0.5 });
   beats.push(wrongBeat);
@@ -176,14 +178,14 @@ function continuationScene(q: StudentQuestion, fix: NonNullable<StudentQuestion[
     steps.push(line(boardTex(st.latex), id, 'emerald', why ? clip(why, NOTE_MAX) : undefined));
     beats.push({
       say: speakable(why, i === 0 ? 'From your line, this is the step to take.' : 'Then this.'),
-      do: [write(id, 0.1)],
+      do: [pose(i === 0 ? 'think' : 'nod', 0.02), write(id, 0.1)],
     });
   });
   // The Answer, when the pen's last step is not already it.
   const final = s(fix.final);
   if (final) {
     steps.push(line(`\\textbf{Answer:}\\; ${boardTex(final)}`, 'ans'));
-    beats.push({ say: 'And that is the answer.', do: [write('ans', 0.2)] });
+    beats.push({ say: 'And that is the answer.', do: [pose('cheer', 0.1), write('ans', 0.2)] });
   }
   const label = fix.label ? `Q${q.questionNumber}${fix.label}` : `Q${q.questionNumber}`;
   return { type: 'equation-steps', heading: `${label} · where the mark went`, steps, beats };
@@ -212,8 +214,8 @@ function correctionScenes(q: StudentQuestion, corrections: NonNullable<StudentQu
         // timer is sized by the spoken words (lib/lesson-beats beatAutoMs) — a three-word
         // beat ended before the hand had written the line (1 Oct 2026).
         beats: [
-          { say: speakable(`${i === 0 ? 'You wrote' : 'Then you wrote'}: ${s(c.yours)}`), do: [{ do: 'write', text: 'text', para: 0, at: 0.05 }] },
-          { say: speakable(`Write instead: ${s(c.fix)}. ${verdict}`), do: [{ do: 'write', text: 'text', para: 1, at: 0.05 }] },
+          { say: speakable(`${i === 0 ? 'You wrote' : 'Then you wrote'}: ${s(c.yours)}`), do: [pose('oops', 0.02), { do: 'write', text: 'text', para: 0, at: 0.05 }] },
+          { say: speakable(`Write instead: ${s(c.fix)}. ${verdict}`), do: [pose('nod', 0.02), { do: 'write', text: 'text', para: 1, at: 0.05 }] },
         ],
       });
       return;
@@ -222,8 +224,8 @@ function correctionScenes(q: StudentQuestion, corrections: NonNullable<StudentQu
     const y = `y${i}`, f = `f${i}`;
     board.steps.push(line(boardTex(c.yours), y, 'rose'));
     board.steps.push(line(boardTex(c.fix), f, 'emerald'));
-    board.beats!.push({ say: i === 0 ? 'You wrote this line.' : 'Then you wrote this.', do: [write(y, 0.1), { do: 'mark', kind: 'box', token: y, at: 0.6 }] });
-    board.beats!.push({ say: fixSay, do: [write(f, 0.1)] });
+    board.beats!.push({ say: i === 0 ? 'You wrote this line.' : 'Then you wrote this.', do: [pose('oops', 0.02), write(y, 0.1), { do: 'mark', kind: 'box', token: y, at: 0.6 }] });
+    board.beats!.push({ say: fixSay, do: [pose('nod', 0.02), write(f, 0.1)] });
   });
   return out;
 }
@@ -261,6 +263,8 @@ export function buildExplainScript(q: StudentQuestion, runId: string): LessonScr
     topic: q.topic || 'This question',
     minutes: 1,
     theme: 'chalk',
+    // The cartoon student at the corner reacts to the beats (poses above).
+    character: 'student',
     scenes,
   };
 }
