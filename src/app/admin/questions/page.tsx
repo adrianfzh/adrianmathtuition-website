@@ -10,6 +10,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import { splitPipeTables } from '@/lib/pipe-tables';
+import SolutionText from '@/components/SolutionText';
 import { assessCoverage } from '@/lib/paper-reconstruction';
 import {
   A_MATH_EXAM_TOPICS, EM_OWN_TOPICS, JC_TOPICS, S1_EXAM_TOPICS, S2_EXAM_TOPICS,
@@ -39,6 +40,19 @@ function MathText({ text }: { text: string }) {
  * pipe-tables), so a stem cannot read as a table on paper and as literal
  * "| t | 1 | 2 |" rows in the browser (GCE 2022 AM P1 Q2, Adrian).
  */
+const hasTable = (t: string) => splitPipeTables(t).some(b => b.kind !== 'text');
+
+/** Part answers keyed like lib/solution-readability labelKey: "a", "b.ii". */
+function partAnswerMap(parts: Part[], prefix = ''): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const p of parts) {
+    const k = (prefix ? prefix + '.' : '') + String(p.label || '').replace(/[()]/g, '').toLowerCase();
+    if (p.answer) out[k] = p.answer;
+    Object.assign(out, partAnswerMap(p.subparts || [], k));
+  }
+  return out;
+}
+
 function MathBlock({ text }: { text: string }) {
   const blocks = splitPipeTables(text);
   if (blocks.length === 1 && blocks[0].kind === 'text') {
@@ -806,7 +820,7 @@ export default function QuestionBankPage() {
       {pt.image_url_after && <img src={pt.image_url_after} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
       {showSol && pt.solution && (
         <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', margin: '6px 0', fontSize: 14 }}>
-          <MathBlock text={pt.solution} />
+          {hasTable(pt.solution) ? <MathBlock text={pt.solution} /> : <SolutionText text={pt.solution} showScheme />}
         </div>
       )}
       {showSol && pt.solution_image && (
@@ -833,7 +847,7 @@ export default function QuestionBankPage() {
     <div style={{ marginTop: 10 }}>
       {d.solution && (
         <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 12, fontSize: 14.5 }}>
-          <MathBlock text={d.solution} />
+          {hasTable(d.solution) ? <MathBlock text={d.solution} /> : <SolutionText text={d.solution} showScheme partAnswers={partAnswerMap(d.parts || [])} />}
         </div>
       )}
       {(d.solutionImages || []).map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}

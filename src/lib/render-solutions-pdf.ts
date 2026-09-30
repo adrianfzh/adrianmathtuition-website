@@ -14,6 +14,8 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
+import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines } from '@/lib/solution-readability';
+export { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine };
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
 const NAVY = '#1c3a5e';
@@ -81,19 +83,6 @@ export function partLabel(labels: string[]): string {
     .join('');
 }
 
-/** Full-size fractions in the working and the answers: an inline \frac
- *  prints at ~70% and is the hardest thing on the page to read. The grey
- *  question text keeps its compact fractions. */
-export function displayFractions(tex: string): string {
-  return tex.replace(/\\frac(?![a-zA-Z])/g, '\\dfrac');
-}
-
-/** A self-check line ("Check: …", "Check in (2): …") — printed grey, since it
- *  is the solver verifying, not part of the answer a student writes. */
-export function isCheckLine(line: string): boolean {
-  return /^\(?\s*check\b/i.test(line.trim());
-}
-
 // ── Readability (Adrian, 29 Sep 2026: "can solutions pdf have better readability?
 // i keep asking … better readability has to apply to all solutions … basically
 // everything"). The bank's worked solutions are also where examiners' notes ended
@@ -106,45 +95,6 @@ export function isCheckLine(line: string): boolean {
 //   • an "Alternative …:" paragraph moves below the working, in its own quiet box;
 //   • a whole-line aside in brackets ("(or expanded: …)") prints grey, like a check;
 //   • a top-level solution's "(a)" / "(b)(ii)" at the start of a line prints bold navy.
-
-const MARK_NOTE = /\[\s*((?:[BMA]\d\s*,?\s*)+)(?:[^\]]*)\]/g;
-const MK_OPEN = '\u0001', MK_CLOSE = '\u0002';
-
-/** "[M1 for the two conditions …]" → the codes alone, wrapped for a chip. Pure. */
-export function markNotesToCodes(line: string): string {
-  return line.replace(MARK_NOTE, (_m, codes: string) =>
-    `${MK_OPEN}${codes.replace(/[,\s]+/g, ' ').trim()}${MK_CLOSE}`).replace(/\s+(\u0001)/g, ' $1');
-}
-
-const SCHEME_PARA = /^\s*(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)(?:\s+for\s+[^:\n]{1,24})?\s*:/i;
-const ALT_PARA = /^\s*(?:alternatively|alternative(?:\s+(?:route|method|approach|solution|way))?|another (?:way|method))\s*[:,.—-]?\s*/i;
-
-/** Split a solution into its working and its alternative routes, dropping any
- *  mark-scheme paragraph. Paragraphs are blank-line separated. Pure. */
-export function splitSolution(text: string): { main: string; alternatives: string[] } {
-  const paras = text.trim().split(/\n\s*\n/);
-  const main: string[] = [], alternatives: string[] = [];
-  for (const p of paras) {
-    // A scheme or alternative can also start partway down a paragraph (a line of
-    // its own, no blank line before it — AM Set 2 P1 Q4, 29 Sep 2026): cut there.
-    const lines = p.split('\n');
-    const cut = lines.findIndex((l) => SCHEME_PARA.test(l) || ALT_PARA.test(l));
-    const head = (cut < 0 ? lines : lines.slice(0, cut)).join('\n').trim();
-    const tail = cut < 0 ? '' : lines.slice(cut).join('\n');
-    if (head) main.push(head);
-    if (!tail) continue;
-    if (SCHEME_PARA.test(tail.split('\n')[0])) continue;
-    const body = tail.replace(ALT_PARA, '').trim();
-    if (body) alternatives.push(body);
-  }
-  return { main: main.join('\n\n'), alternatives };
-}
-
-/** A whole line in brackets that is an aside, not a part label. */
-export function isAsideLine(line: string): boolean {
-  const t = line.trim();
-  return /^\(.*\)[.;]?$/.test(t) && !/^\((?:[a-z]|i{1,3}|iv|vi{0,3}|ix|x)\)\s/i.test(t);
-}
 
 function lineHtml(l: string): string {
   const cls = isCheckLine(l) || isAsideLine(l) ? 'sol-check' : 'sol-line';
@@ -161,7 +111,7 @@ function linesBlock(t: string): string {
   }
   return `<div class="sol-lines">${t
     .split('\n')
-    .map((l) => (l.trim() ? lineHtml(l) : '<div class="sol-gap"></div>'))
+    .map((l) => (l.trim() ? stepLines(l).map(lineHtml).join('') : '<div class="sol-gap"></div>'))
     .join('')}</div>`;
 }
 
