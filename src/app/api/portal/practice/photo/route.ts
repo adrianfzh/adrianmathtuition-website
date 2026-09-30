@@ -25,6 +25,7 @@ import {
   DAILY_PRACTICE_PHOTO_CAP, PHOTO_CAP_MESSAGE, PHOTO_UNREADABLE_MESSAGE, PHOTO_UNFILED_MESSAGE,
   type PhotoCountingClient, type SeedCandidate,
 } from '@/lib/practice-photo';
+import { pickShelfTwin, seenQuestionIds, shelfLedgerNote, type ShelfTwin } from '@/lib/practice-shelf';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -36,6 +37,45 @@ type SeedRow = SeedCandidate & {
   flagged_count: number | null; verified: boolean | null; question_text: string | null; has_image: boolean | null;
   image_url: string | null; parts: unknown;
 };
+
+const TWIN_COLS = 'id, twin_of, total_marks, difficulty, verified, school, exam_type, reported_at, deleted_at, ai_generated, national, legacy_syllabus, flagged_count, question_text, has_image, image_url, parts, answer, solution';
+
+/** Verified twins filed under the sub-skill (the twin's own filing, else its source's), minus what this student has met. */
+async function shelfTwinFor(admin: ReturnType<typeof createServiceClient>, subgroupId: number, identity: string, marks: number | null) {
+  const byId = new Map<string, ShelfTwin>();
+  const add = (q: (ShelfTwin & Record<string, unknown>) | null | undefined) => {
+    if (q && q.school === 'AdrianMath' && q.exam_type === 'Twin' && practiceEligibility(q as never).ok) byId.set(q.id, q);
+  };
+  const { data: own } = await admin
+    .from('question_subgroups')
+    .select(`question_id, questions!inner(${TWIN_COLS})`)
+    .eq('subgroup_id', subgroupId)
+    .eq('questions.school', 'AdrianMath').eq('questions.exam_type', 'Twin').eq('questions.verified', true)
+    .is('questions.deleted_at', null)
+    .limit(400);
+  const sourceIds: string[] = [];
+  for (const f of (own ?? []) as unknown as { questions: (ShelfTwin & Record<string, unknown>) | (ShelfTwin & Record<string, unknown>)[] | null }[]) {
+    add(Array.isArray(f.questions) ? f.questions[0] : f.questions);
+  }
+  // A twin that carries no filing of its own serves its source's sub-skill.
+  const { data: src } = await admin.from('question_subgroups').select('question_id').eq('subgroup_id', subgroupId).limit(400);
+  for (const r of (src ?? []) as { question_id: string }[]) sourceIds.push(r.question_id);
+  if (sourceIds.length) {
+    const { data: viaSource } = await admin.from('questions').select(TWIN_COLS)
+      .in('twin_of', sourceIds).eq('school', 'AdrianMath').eq('exam_type', 'Twin').eq('verified', true).is('deleted_at', null).limit(400);
+    for (const q of (viaSource ?? []) as unknown as (ShelfTwin & Record<string, unknown>)[]) add(q);
+  }
+  if (!byId.size) return null;
+  const [{ data: asgs }, { data: atts }] = await Promise.all([
+    admin.from('portal_assignments').select('question_id, status').eq('airtable_student_id', identity).not('question_id', 'is', null).limit(2000),
+    admin.from('student_attempts').select('question_id').eq('airtable_student_id', identity).not('question_id', 'is', null).limit(5000),
+  ]);
+  const seen = seenQuestionIds((asgs ?? []) as never, (atts ?? []) as never);
+  const pick = pickShelfTwin([...byId.values()], { marks, seenIds: seen, seedKey: identity });
+  return pick ? { pick, size: byId.size } : null;
+}
+
+const intentTextForLedger = (t: string): string | null => (t.trim() ? t.trim().slice(0, 4000) : null);
 
 export async function POST(req: Request) {
   const supabase = await createSupabaseServer();
@@ -100,6 +140,28 @@ export async function POST(req: Request) {
   try {
     const { data: sg } = await admin.from('subgroups').select('level, visibility, ip_extra_level').eq('id', subgroup.id).maybeSingle<SubgroupAudienceRow>();
     if (sg && questionServableTo([sg], viewer)) {
+      // ── The shelf first (cost lever 5): a verified twin this student has not met ──
+      const shelf = await shelfTwinFor(admin, subgroup.id, identity, c.marks);
+      if (shelf) {
+        const title = writingTitle(subgroup);
+        const { data: asg, error: asgErr } = await admin
+          .from('portal_assignments')
+          .insert({
+            airtable_student_id: identity, kind: 'question', question_id: shelf.pick.id, title, topic: subgroup.topic,
+            level: level.slice(0, 20), tier: shelf.pick.tier, note: null, status: 'assigned', source: 'practice-photo',
+            generation_request_id: null,
+          })
+          .select('id').single<{ id: string }>();
+        if (!asgErr && asg) {
+          await logFindRow(admin, {
+            identity, kind: ask.mode, qbHit: true, generated: false, questionId: shelf.pick.id,
+            seedText: intentTextForLedger(c.extractedText), level, tier: 'practice-photo', assignmentId: asg.id,
+            candidates: { subgroup, confidence: c.confidence, marks: c.marks, figureExpected: c.figureExpected, ...shelfLedgerNote(shelf.pick, shelf.size) },
+          });
+          return NextResponse.json({ ok: true, assignmentId: asg.id, title, reskin: false, shelf: true, remaining: Math.max(0, DAILY_PRACTICE_PHOTO_CAP - used - 1) });
+        }
+        console.error('[practice-photo] shelf assignment insert failed (writing instead):', asgErr?.message);
+      }
       const { data: filings } = await admin
         .from('question_subgroups')
         .select('question_id, questions!inner(id, total_marks, difficulty, ai_generated, reported_at, deleted_at, school, national, legacy_syllabus, flagged_count, verified, question_text, has_image, image_url, parts)')
