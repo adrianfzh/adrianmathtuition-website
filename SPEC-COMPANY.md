@@ -882,3 +882,21 @@ one run answers both questions.
 - Caveats: 24 pages, one run each. The reference boxes were drawn by Gemini, which gives the
   Gemini set-ups a home advantage.
 
+**Second trial — cheaper non-Google models (30 Sep 2026, Adrian: "Gemini is getting expensive … any
+other models (including Chinese models)"; 24 bench pages, no cover pages, US$1.35):**
+
+| Set-up | Lines placed | Same row as drawn | Box fit (IoU) | Seconds / page | US$ / page |
+|---|---|---|---|---|---|
+| Gemini 3.1 Pro (today) | 87 % | **96 %** | **0.92** | 15 | 0.031 |
+| Qwen3-VL 235B (US host, via OpenRouter) | 88 % | 76 % | 0.58 | 105 | 0.003 |
+| Qwen3-VL 32B (Alibaba, via OpenRouter) | 87 % | 86 % | 0.65 | 129 | 0.001 |
+| Seed 2.0 Lite (ByteDance) | 78 % | 33 % | 0.06 | 187 | 0.010 |
+| Mathpix OCR, blocks split into lines | 64 % | 87 % | 0.39 | 2 | 0.002 |
+
+Which way up: Flash 43/48 (live), Qwen 235B 34/48, Seed 33/48, Qwen 32B 25/48. **None replaces
+Gemini:** the cheap ones put a tick on the wrong line one time in seven or worse, fit loosely, and
+Qwen/Seed are 7–12× slower. Mathpix groups handwritten working into blocks (no per-line boxes;
+word boxes skip handwritten maths). Qwen was asked in its native [x,y,x,y] order and converted —
+in production order it scored 7 %. Script: bot `scripts/vision-trial.cjs` (arms `qwen235`,
+`qwen32`, `seed`, `mathpix`, `--skip-covers`).
+
