@@ -31,6 +31,9 @@ const TWIN_EXAM_TYPE = 'Twin';
 const BUCKET = 'practice-figures';
 const PROMPT_VERSION = 'twin-v1';
 const MODELS = { author: 'opus (Claude Code agent)', blind: 'sonnet (Claude Code agent)', moderate: 'opus (Claude Code agent)', figure: 'opus (Claude Code agent)' };
+// JC (H2) blind solves on Opus (Adrian, 30 Sep 2026): Sonnet misses more long H2
+// working cold, and every miss is a false key alarm for the moderator.
+const modelsFor = (level) => (/^JC/.test(String(level ?? '')) ? { ...MODELS, blind: 'opus (Claude Code agent)' } : MODELS);
 
 const argv = process.argv.slice(2);
 const MODE = argv[0] && !argv[0].startsWith('--') ? argv[0] : 'queue';
@@ -185,7 +188,7 @@ async function brief() {
     if (r.ok) { const k = await r.json(); knowledge = [...(k?.methods ?? []).map((m) => ({ kind: 'method', title: m.question_type, body: `${m.method}${m.watch_out ? ` Watch out: ${m.watch_out}` : ''}` })), ...(k?.pitfalls ?? []).map((m) => ({ kind: 'pitfall', title: m.context, body: `wrong move: ${m.wrong_move}. ${m.why_wrong ?? ''} ${m.corrective_cue ? `Cue: ${m.corrective_cue}` : ''}` }))]; }
   } catch { /* background only */ }
   const marks = Number(src.total_marks) || sumMarks(src);
-  const plan = { source: id, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')), prompt_version: PROMPT_VERSION, models: MODELS, briefed_at: new Date().toISOString() };
+  const plan = { source: id, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')), prompt_version: PROMPT_VERSION, models: modelsFor(src.level), briefed_at: new Date().toISOString() };
   writeFileSync(runFile(dir, 'source.json'), JSON.stringify(src, null, 1));
   writeFileSync(runFile(dir, 'corpus.json'), JSON.stringify(corpus));
   writeFileSync(runFile(dir, 'plan.json'), JSON.stringify(plan, null, 1));
@@ -359,7 +362,7 @@ async function publish() {
     gen_meta: {
       kind: 'twin', twin_of: plan.source, twin_item: item, prompt_version: PROMPT_VERSION,
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
-      author_model: MODELS.author, blind_model: MODELS.blind, moderate_model: MODELS.moderate,
+      author_model: (plan.models ?? MODELS).author, blind_model: (plan.models ?? modelsFor(plan.level)).blind, moderate_model: (plan.models ?? MODELS).moderate,
       gates: { novelty: gates.novelty, number_swap: gates.novelty?.number_swap ?? null, structure: gates.structure?.ok ?? null, blind_agree: verdict.all_agree, moderator_score: verdict.score, figure_verify: q.needs_figure ? true : null, rounds: gates.rounds },
       figure: figureUrl ? { family: figSpec?.family ?? null, spec: figSpec, description: q.figure_description ?? null } : null,
       blind_answers: blind?.answers ?? null,

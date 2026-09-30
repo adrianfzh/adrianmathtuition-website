@@ -23,7 +23,7 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
    number-swap, lifted text, figure consistency). On failure send the agent the
    problems for ONE repair round (`prompts/author.md` §Repair); two failures → park.
    A pass also writes `Q1.solve.md` and `Q1.moderate.md`.
-5. **Blind solve** — a FRESH **Sonnet** agent with `prompts/blind.md`: it may read
+5. **Blind solve** — a FRESH **Sonnet** agent (**Opus for JC1/JC2** — `plan.json` `models.blind` says which; Adrian, 30 Sep 2026) with `prompts/blind.md`: it may read
    `Q1.solve.md` only (never `Q1.json`, `source.*` or the brief) → `Q1.blind.json`.
 6. **Moderate** — a FRESH **Opus** agent with `prompts/moderate.md` → `Q1.verdict.json`.
    Publish needs `all_agree && !reads_as_source && same_skill && same_method && score ≥ 4`.
