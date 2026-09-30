@@ -1,6 +1,6 @@
 # SPEC-PRACTICE-PHOTO — the Practice tab: photo a question, get one like it
 
-**Agreed with Adrian 23 Sep 2026** (discussion in full before this was written; "ok go, write the spec with re-skin as default"). Nothing built yet. This replaces the topic picker as what a student sees when they tap **Practice** in the bottom menu.
+**Agreed with Adrian 23 Sep 2026** (discussion in full before this was written; "ok go, write the spec with re-skin as default"). Built 23–24 Sep 2026; **open to students since 1 Oct 2026** (`PRACTICE_PHOTO_OPEN_TO_STUDENTS`). This replaces the topic picker as what a student sees when they tap **Practice** in the bottom menu.
 
 ## 0. The one-sentence version
 

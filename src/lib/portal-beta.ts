@@ -219,10 +219,10 @@ export const FIND_OPEN_TO_STUDENTS = true;
 
 // 📷 Practice photo (SPEC-PRACTICE-PHOTO.md, 23 Sep 2026): the Practice tab
 // becomes a photo page — a photographed question is filed under a sub-skill and
-// a bank seed is RE-SKINNED into a new question on the student's list. CLOSED
-// to students until Adrian has read the first 20 on /admin/generated; his
-// admin cookie and the demo student see it meanwhile.
-export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = false;
+// a bank seed is RE-SKINNED into a new question on the student's list. Was
+// closed to students until Adrian had read the first ones on /admin/generated;
+// OPEN since 1 Oct 2026 (Adrian: "we can flip the switch for Practice tab then").
+export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = true;
 export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
 export async function practicePhotoOpen(): Promise<boolean> {

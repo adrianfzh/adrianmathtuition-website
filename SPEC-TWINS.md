@@ -185,6 +185,18 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   each run takes ten sources from `twin_queue`, runs §4, stops. Runs every
   30 minutes while the desktop app is open; four in parallel when Adrian wants
   the fleet on it (each with its own RUNNER name).
+- **The pick is per sub-skill across both years (1 Oct 2026, Adrian: "we need a
+  twin (or a few twins) for every skill/type of question … Sec 3 A Math and Sec 3
+  E Math are quite similar right?").** The bank files Sec 3 rows under the Sec 4
+  sub-skills (S3_AM → AM's, S3_EM → EM's), so `twin.mjs queue` works the FAMILY
+  (`AM`+`S3_AM`, `EM`+`S3_EM`): the rows drawn in 90 days first, then ONE row for
+  every sub-skill with no twin in either year (largest first), then the rest one
+  row per sub-skill per round; inside a sub-skill the lane's own level goes
+  first. A lane started for either level draws from both. Measured that morning:
+  A Math 209 sub-skills / 36 covered, E Math 310 / 35 — the target is those
+  ~520 sub-skills, not the 36,000 school rows. Sum-and-product-of-roots (sub-skill
+  1522, out of the syllabus since 2021) was stamped `legacy_syllabus` the same day
+  so the queue skips it.
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic

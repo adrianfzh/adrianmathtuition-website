@@ -143,26 +143,44 @@ const runFile = (dir, f) => join(dir, f);
 const readIf = (p, loose = false) => (existsSync(p) ? (loose ? readJsonLoose(p) : JSON.parse(readFileSync(p, 'utf8'))) : null);
 
 // ---------------------------------------------------------------- queue ----
+// A Sec 3 paper and a Sec 4 paper test the SAME sub-skills (the bank files
+// S3_AM rows under the AM sub-skills and S3_EM under EM's), so the picker works
+// on the FAMILY, not the level (Adrian, 1 Oct 2026: "we need a twin (or a few
+// twins) for every skill/type of question"): a lane started for AM or S3_AM
+// draws from both, and a sub-skill counts as covered when ANY row of it, either
+// year, has a twin.
+const FAMILY = { AM: ['AM', 'S3_AM'], S3_AM: ['AM', 'S3_AM'], EM: ['EM', 'S3_EM'], S3_EM: ['EM', 'S3_EM'] };
+const familyOf = (level) => FAMILY[level] ?? [level];
+
 async function queue() {
   const env = loadEnv();
   const level = argOf('--level', 'EM');
   const limit = Number(argOf('--limit', '20'));
-  const rows = await restAll(env, `twin_queue?select=*&level=eq.${level}&text_len=gt.40&has_any_twin=is.false&order=draws_90d.desc,subgroup.asc,source_id.asc`);
-  // most-drawn first; then the rest of the pool grouped by sub-skill, the
-  // sub-skills with the most rows first (what students meet most)
+  const levels = familyOf(level);
+  const all = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&order=draws_90d.desc,subgroup.asc,source_id.asc`);
+  // a sub-skill with a twin already — from either year of the family
+  const covered = new Set(all.filter((r) => r.has_any_twin && r.subgroup_id != null).map((r) => r.subgroup_id));
+  const rows = all.filter((r) => !r.has_any_twin);
+  // most-drawn first; then ONE row for every sub-skill that has no twin yet
+  // (the biggest sub-skills first — what students meet most); then the rest of
+  // the pool one row per sub-skill per round — variety over depth
   const drawn = rows.filter((r) => r.draws_90d > 0);
   const rest = rows.filter((r) => r.draws_90d === 0 && r.subgroup);
   const bySg = new Map();
   for (const r of rest) bySg.set(r.subgroup, (bySg.get(r.subgroup) ?? 0) + 1);
-  // one row per sub-skill per round, the biggest sub-skills first — variety over depth
   const sgs = [...bySg.keys()].sort((a, b) => (bySg.get(b) - bySg.get(a)) || a.localeCompare(b));
-  const buckets = new Map(sgs.map((k) => [k, rest.filter((r) => r.subgroup === k).sort((a, b) => String(a.source_id).localeCompare(String(b.source_id)))]));
+  // within a sub-skill: the lane's own level first, then the other year, then by id
+  const inBucket = (a, b) => ((a.level === level ? 0 : 1) - (b.level === level ? 0 : 1)) || String(a.source_id).localeCompare(String(b.source_id));
+  const buckets = new Map(sgs.map((k) => [k, rest.filter((r) => r.subgroup === k).sort(inBucket)]));
+  const uncovered = sgs.filter((k) => !covered.has(buckets.get(k)[0].subgroup_id));
+  const first = uncovered.map((k) => buckets.get(k)[0]);
+  const taken = new Set(first.map((r) => r.source_id));
   const spread = [];
-  for (let round = 0; spread.length < rest.length; round++) for (const k of sgs) { const b = buckets.get(k); if (b[round]) spread.push(b[round]); }
-  const picked = [...drawn, ...spread].slice(0, limit);
+  for (let round = 0; spread.length + first.length < rest.length; round++) for (const k of sgs) { const b = buckets.get(k); if (b[round] && !taken.has(b[round].source_id)) spread.push(b[round]); }
+  const picked = [...drawn, ...first, ...spread].slice(0, limit);
   if (has('--json')) { console.log(JSON.stringify(picked, null, 1)); return; }
-  for (const r of picked) console.log(`${r.source_id}  draws ${String(r.draws_90d).padStart(2)}  ${String(r.total_marks).padStart(2)}m  ${r.has_image ? 'fig' : '   '}  ${r.school} ${r.year}  · ${r.topic} › ${r.subgroup ?? '(unfiled)'}`);
-  log(`${picked.length} of ${rows.length} untwinned ${level} rows (${drawn.length} drawn in 90 days)`);
+  for (const r of picked) console.log(`${r.source_id}  ${r.level.padEnd(5)} draws ${String(r.draws_90d).padStart(2)}  ${String(r.total_marks).padStart(2)}m  ${r.has_image ? 'fig' : '   '}  ${r.school} ${r.year}  · ${r.topic} › ${r.subgroup ?? '(unfiled)'}${r.subgroup_id != null && !covered.has(r.subgroup_id) ? '  ★ no twin yet' : ''}`);
+  log(`${picked.length} of ${rows.length} untwinned ${levels.join('+')} rows (${drawn.length} drawn in 90 days; ${uncovered.length} sub-skills with no twin yet, ${covered.size} covered)`);
 }
 
 // ---------------------------------------------------------------- brief ----
