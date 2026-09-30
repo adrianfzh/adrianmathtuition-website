@@ -361,7 +361,8 @@ export function leadIn(text: string): [string, string] | null {
     // not a ratio or a clock time ("2: 3", "10: 30")
     if (!inMath && depth === 0 && text[i] === ':' && text[i + 1] === ' ' && !(/\d/.test(text[i - 1] ?? '') && /\d/.test(text[i + 2] ?? ''))) {
       const head = text.slice(0, i + 1).trim(), rest = text.slice(i + 2).trim();
-      if (!rest || head.length > 160 || /^\(?\s*(?:check|let|since|so|because|if|as|hence|therefore|thus)\b/i.test(head)) return null;
+      // "Answer: $x = 3$" is one line everywhere (the bold Answer line is its own rule)
+      if (!rest || head.length > 160 || /^\(?\s*(?:check|let|since|so|because|if|as|hence|therefore|thus|answers?)\b/i.test(head)) return null;
       const prose = head.replace(/\$[^$]*\$/g, ' ');
       if (!/[A-Za-z]{3,}/.test(prose) || prose.trim().split(/\s+/).length > 6) return null;
       return [head, rest];

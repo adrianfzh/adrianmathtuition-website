@@ -662,10 +662,8 @@ def solution_rows(sol):
                     steps.append(segs(a['sub']))
             steps.append(aligned_latex(rows))
         else:
-            for a in pending:
-                if a.get('sub'):
-                    steps.append(segs(a['sub']))
-                steps.append(segs(a['line']))
+            for a in pending:   # one row only: the sentence as it was, lead-in and all
+                steps.append(segs((a.get('sub', '') + ' ' + a['line']).strip()))
         pending.clear()
 
     for line, its_steps in zip(cleaned, aligned):

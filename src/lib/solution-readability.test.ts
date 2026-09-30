@@ -137,6 +137,7 @@ describe('alignment — bank audit regressions', () => {
     expect(leadIn('Since $0.0477<0.05$, we reject $H_0$: there is evidence')).toBeNull();
     expect(leadIn('So he is not correct: 12 students')).toBeNull();
     expect(leadIn('End values: at $x = 0$, $y = 1$')?.[0]).toBe('End values:');
+    expect(leadIn('Answer: $x = 9.6^\\circ, 90^\\circ$')).toBeNull();
   });
 });
 
