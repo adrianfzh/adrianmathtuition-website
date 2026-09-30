@@ -121,7 +121,17 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // flips; once open, a student needs 'Physics' in Airtable Students.Subjects
 // (the option doesn't exist yet — add it via typecast when opening). Adrian's
 // admin cookie previews every science level.
-export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
+// OPEN since 1 Oct 2026 (Adrian: "option 2 …" — the Science Practise tab): the gate
+// is the student's own science choice (portal_accounts.prefs.sciences), not an
+// Airtable subject; see lib/practice practiceLevelAllowed.
+export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = true;
+// Structured (written-answer) practice for science stays behind Adrian's cookie: the
+// practice grader has not been checked against science scheme answers yet.
+export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = false;
+export async function scienceStructuredPracticeOpen(): Promise<boolean> {
+  if (SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS) return true;
+  return !(await viewingAsStudent()) && (await isNotesAuthed());
+}
 
 /** 'preview' = Adrian's admin cookie (every science level), 'open' = flag on (by subject), else 'closed'. */
 export async function sciencePracticeAccess(): Promise<ScienceAccess> {

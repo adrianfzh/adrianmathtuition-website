@@ -290,6 +290,13 @@ export async function GET(req: NextRequest) {
     }),
     // The qualitative-analysis flashcards (24 Sep 2026): the Chemistry tab's
     // door must not 404. Anonymous → the login redirect, which is fine.
+    // The Science Practise tab (1 Oct 2026): its door must not 404. Anonymous → the login redirect.
+    timed('portal-science-practice', async () => {
+      const r = await fetch(`${base}/app/science/practice`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/practice is missing — the Science Practise door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     timed('portal-science-qa', async () => {
       const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');

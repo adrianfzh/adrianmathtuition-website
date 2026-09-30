@@ -324,7 +324,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
-        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null },
+        // ?mode=mcq|structured — the Science Practise tab's switch (1 Oct 2026); ignored by the maths bank.
+        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null },
         fallback: 'Couldn’t load a question — try again.',
       });
       if (!d.question) { setExhausted(true); setQ(null); return; }

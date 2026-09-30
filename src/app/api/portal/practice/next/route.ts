@@ -19,8 +19,10 @@ export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude, tier, subgroupId } = body as {
+  const { level, topic, exclude, tier, subgroupId, kind } = body as {
     level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
+    /** science only (1 Oct 2026): 'mcq' | 'structured' — the Science Practise tab's switch */
+    kind?: string;
   };
   if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
   if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
@@ -29,6 +31,7 @@ export async function POST(req: NextRequest) {
   if (isScienceLevel(level)) {
     try {
       const q = await scienceNext({
+        kind: kind === 'mcq' || kind === 'structured' ? kind : null,
         levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
         tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
       });

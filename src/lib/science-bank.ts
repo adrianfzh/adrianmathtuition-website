@@ -65,7 +65,7 @@ function eligible<T = any>(q: any, subject: ScienceSubject): T { // eslint-disab
     .neq('question_text', '');
 }
 
-export interface ScienceTopicCount { topic: string; n: number; advanced_count: number }
+export interface ScienceTopicCount { topic: string; n: number; advanced_count: number; mcq_count: number }
 
 // Per-topic counts over the ELIGIBLE pool (bank_topics counts the whole bank,
 // images included, which would promise ~3× what the picker can serve). ~2.2k
@@ -80,14 +80,14 @@ export async function scienceTopicCounts(levelKey: string): Promise<ScienceTopic
   if (hit && Date.now() - hit.at < TOPIC_CACHE_MS) return hit.rows;
   // PostgREST caps every response at 1,000 rows (db-max-rows), so page.
   const PAGE = 1000;
-  const all: { topics: string[] | null; difficulty: string | null }[] = [];
+  const all: { topics: string[] | null; difficulty: string | null; answer?: string | null }[] = [];
   for (let from = 0; from < 20_000; from += PAGE) {
-    const { data, error } = await eligible<any>(getScienceClient().from('questions').select('topics, difficulty'), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const { data, error } = await eligible<any>(getScienceClient().from('questions').select('topics, difficulty, answer'), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
       .eq('level', lvl.bankLevel)
       .order('id')
       .range(from, from + PAGE - 1);
     if (error) throw new Error(`science topics: ${error.message}`);
-    const page = (data || []) as { topics: string[] | null; difficulty: string | null }[];
+    const page = (data || []) as { topics: string[] | null; difficulty: string | null; answer?: string | null }[];
     all.push(...page);
     if (page.length < PAGE) break;
   }
@@ -95,8 +95,9 @@ export async function scienceTopicCounts(levelKey: string): Promise<ScienceTopic
   for (const r of all) {
     const topic = r.topics?.[0];
     if (!topic) continue;
-    const cur = acc.get(topic) ?? { topic, n: 0, advanced_count: 0 };
+    const cur = acc.get(topic) ?? { topic, n: 0, advanced_count: 0, mcq_count: 0 };
     cur.n++;
+    if (isMcqAnswer(r.answer)) cur.mcq_count++;   // the MCQ | Structured switch (1 Oct 2026)
     if (r.difficulty && ADVANCED.includes(r.difficulty)) cur.advanced_count++;
     acc.set(topic, cur);
   }
@@ -151,6 +152,8 @@ export function toPayload(q: ScienceQuestionRow): ScienceQuestionPayload {
  */
 export async function scienceNext(opts: {
   levelKey: string; topic: string; exclude?: string[]; tier?: 'Standard' | 'Advanced' | null;
+  /** 'mcq' = rows whose answer is a bare letter; 'structured' = the rest; unset = either (1 Oct 2026). */
+  kind?: 'mcq' | 'structured' | null;
 }): Promise<ScienceQuestionRow | null> {
   const lvl = scienceLevel(opts.levelKey);
   if (!lvl) return null;
@@ -160,6 +163,8 @@ export async function scienceNext(opts: {
     let q = eligible<any>(sb.from('questions').select(select, head ? { count: 'exact', head: true } : undefined), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
       .eq('level', lvl.bankLevel)
       .contains('topics', [opts.topic]);
+    if (opts.kind === 'mcq') q = q.filter('answer', 'match', '^\\s*[A-Da-d]\\s*$');
+    else if (opts.kind === 'structured') q = q.not('answer', 'match', '^\\s*[A-Da-d]\\s*$');
     if (opts.tier === 'Advanced') q = q.in('difficulty', ADVANCED);
     else if (opts.tier === 'Standard') q = q.or(`difficulty.is.null,difficulty.not.in.(${ADVANCED.join(',')})`);
     const excl = (opts.exclude ?? []).filter(id => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 80);

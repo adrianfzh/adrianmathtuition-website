@@ -77,7 +77,8 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
 // Students reach it only through lib/portal-beta.sciencePracticeAccess —
 // closed until SCIENCE_PRACTICE_OPEN_TO_STUDENTS flips, Adrian's admin cookie
 // previews it — so the science checks are async where the math ones are pure.
-import { isScienceLevel, scienceLevelsFor } from './science-levels';
+import { studentSciences } from './portal-prefs';
+import { scienceSubjectOf, isScienceLevel, scienceLevelsFor } from './science-levels';
 import { sciencePracticeAccess } from './portal-beta';
 
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
@@ -93,5 +94,11 @@ export async function practiceLevelAllowed(caller: PracticeCaller, level: string
   if (!caller) return false;
   if (!isScienceLevel(level)) return levelAllowed(caller, level);
   if (caller.kind === 'admin') return true;
-  return scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess()).some(l => l.key === level);
+  const access = await sciencePracticeAccess();
+  if (access === 'closed') return false;
+  // 1 Oct 2026: the student's own science choice (the Science tab's first-visit picker)
+  // opens that science's practice; the Airtable subject is the fallback.
+  const chosen = studentSciences(caller.account.prefs);
+  if (chosen && chosen.subjects.includes(scienceSubjectOf(level) as never)) return true;
+  return scienceLevelsFor(caller.account.subjects, access).some(l => l.key === level);
 }
