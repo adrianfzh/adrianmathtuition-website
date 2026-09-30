@@ -118,6 +118,37 @@ the first only after the move has been shown in worked steps, never two in a row
 - `level` = bank level (AM/EM/JC/S1/S2); `topic` = the EXACT canonical string
   from `lib/canonical-topics.ts`; `slug` = `<topic-kebab>-<level>`.
 
+## 3b. The story pass — the frame and the jokes (Adrian, 1 Oct 2026)
+
+Adrian watched 洋葱学园's factorisation video: *"this video is actually quite good … can
+we build something like this?"* Onion's engagement is three things: a character who
+reacts (the player's character layer, `docs/LESSONS.md` § The character), a **story
+frame**, and **light humour in the writing**. Onion spends about ¥100,000 and two months
+per lesson, most of it on the writing. We do the writing pass with a model, in this
+session, plan-billed — never the API.
+
+After § 3's draft validates and BEFORE § 4, rewrite every beat's `say` through this pass:
+
+- **One story frame per lesson**, stated in the `title` scene's `promise` and paid off in
+  the closer: a small situation a Sec student recognises (the MRT gantry that will not
+  open, a bubble-tea order, the 2 a.m. Wi-Fi), never a fantasy world. The frame carries
+  the maths; the maths never bends to the frame.
+- **One light line every three beats**, never more: a wry aside, a mock-groan at the trap,
+  a "yes, that one again". The joke is always ON THE MATHS OR ON THE TEACHER, never on the
+  student, never on a mistake a real student made (the one-minute explanation replays a
+  real student's own line — it gets NO jokes, only warmth).
+- **Singapore, not Beijing and not California.** Short sentences, everyday register, no
+  slang a parent would wince at, no "guys", no exclamation marks in a row. Read it aloud;
+  if it would embarrass Adrian in front of a parent, cut it.
+- **Nothing added to the claims.** The pass may change words, order and tone; it may not
+  add a fact, a formula or a number § 1's notes do not carry — § 4's verifier still runs
+  on the result, and every `verify` assertion must still hold.
+- **Which model.** English scripts: **Claude Opus 5.5** in this session (it holds the
+  Singapore register and the O-Level content; the plan lane makes it free). A 华文 script
+  (the Languages family, later): a Chinese-trained model — Qwen3-Max or DeepSeek — for the
+  humour, then the same verifier. No model writes the frame unsupervised: Adrian reads
+  the `promise` line and the three funniest beats before the clips are generated (§ 7).
+
 ## 4. Verify until clean
 
 ```bash
