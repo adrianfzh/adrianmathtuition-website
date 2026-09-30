@@ -28,6 +28,6 @@ describe('science practice — the pure rules (1 Oct 2026)', () => {
   it('parsePracticeKind + the run href', () => {
     expect(parsePracticeKind('structured')).toBe('structured');
     expect(parsePracticeKind('anything')).toBe('mcq');
-    expect(sciencePracticeHref('PHY', 'Current electricity', 'mcq')).toBe('/app/practice?level=PHY&topic=Current%20electricity&mode=mcq');
+    expect(sciencePracticeHref('PHY', 'Current electricity', 'mcq')).toBe('/app/science/practice/run?level=PHY&topic=Current%20electricity&mode=mcq');
   });
 });

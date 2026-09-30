@@ -49,7 +49,7 @@ export function topicsForKind(counts: readonly { topic: string; n: number; mcq_c
   return counts.filter(c => (kind === 'mcq' ? c.mcq_count : c.n - c.mcq_count) > 0).map(c => c.topic);
 }
 
-/** The run lives on the existing practice page, told the level, the topic and the kind. */
+/** The run: the same PracticeFlow, mounted under the Science family (app/science/practice/run) so the bottom bar stays Science. */
 export function sciencePracticeHref(levelKey: string, topic: string, kind: PracticeKind): string {
-  return `/app/practice?level=${encodeURIComponent(levelKey)}&topic=${encodeURIComponent(topic)}&mode=${kind}`;
+  return `/app/science/practice/run?level=${encodeURIComponent(levelKey)}&topic=${encodeURIComponent(topic)}&mode=${kind}`;
 }
