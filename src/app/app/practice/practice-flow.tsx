@@ -175,8 +175,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const questionRef = useRef<HTMLDivElement>(null);
 
   const [solution, setSolution] = useState<string | null>(null);
-  // ?mode=structured on a SCIENCE run (1 Oct 2026, Adrian: "for structured, why not just show
-  // the solutions (mark scheme)"): no grader — work it on paper, then read the scheme.
+  // ?mode=structured on a SCIENCE run (1 Oct 2026): the student writes or photographs an
+  // answer and gets it MARKED first; the scheme shows only after a mark (Adrian, later
+  // that day: "for structured, they must practice right? then we mark? … no point just
+  // giving the answers straight away" — the scheme-only shortcut of that afternoon is gone).
   const [urlMode, setUrlMode] = useState<string | null>(null);
   useEffect(() => { setUrlMode(new URLSearchParams(window.location.search).get('mode')); }, []);
   const [solLoading, setSolLoading] = useState(false);
@@ -854,10 +856,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
               />
 
-              {q.subject && !q.mcq && urlMode === 'structured' ? (
-                /* Structured science (scheme only): nothing to type — the mark scheme is the teaching. */
-                <p className="text-sm text-slate-600">Work it out on paper, then check yourself against the mark scheme.</p>
-              ) : q.mcq ? (
+              {q.mcq ? (
                 /* MCQ (science bank): tap the option — marked instantly, no model. */
                 <>
                   <p className="text-[11px] text-slate-400 mb-2">Pick the option:</p>
@@ -903,20 +902,19 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               )}
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                {!(q.subject && !q.mcq && urlMode === 'structured') && (
                 <button onClick={submitForMarking}
                   disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
                 </button>
-                )}
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
                     {hintLoading ? 'Loading…' : '💡 How to approach it'}
                   </button>
                 )}
-                {solution === null && (!assignment || grade) && (
+                {/* A structured science answer is marked BEFORE the scheme shows (1 Oct 2026). */}
+                {solution === null && (!assignment || grade) && !(q.subject && !q.mcq && urlMode === 'structured' && !grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
                     {solLoading ? 'Loading…' : (q.subject && !q.mcq && urlMode === 'structured' ? '🔎 Show the mark scheme' : '🔎 Show solution')}
@@ -939,7 +937,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                     {fixedQ.topic ? 'More of this topic →' : 'Practise more →'}
                   </a>
                 )}
-                {solution !== null && !(q.subject && !q.mcq && urlMode === 'structured') && (
+                {solution !== null && (
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
                 )}
               </div>
