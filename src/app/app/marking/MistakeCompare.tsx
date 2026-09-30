@@ -30,6 +30,8 @@ import AnnotatedSolution from './AnnotatedSolution';
 const COMPARE = 'grid grid-cols-1 gap-2 landscape:grid-cols-2 md:grid-cols-2';
 const YOURS_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-gray-400';
 const RIGHT_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700';
+/** The part a window or a group of steps belongs to — "(b)(i)". */
+const PART_HEAD = 'text-[11px] font-semibold text-gray-500 pt-1';
 
 /** The window onto the student's page: the image scaled and shifted inside a box the window's shape. */
 function SnippetWindow({ s }: { s: NonNullable<StudentQuestion['snippets']>[number] }) {
@@ -59,17 +61,27 @@ export default function MistakeCompare({ q, runId, paperName = null, explain = f
     ? (q.working ?? [])
     : fixes.flatMap(f => f.yours.map((text, k) => ({ text, wrong: k === f.yours.length - 1 })))
   ).map(l => ({ text: l.text, tone: l.wrong ? 'wrong' : 'plain' }));
-  // Right: the fix for each ✗ line, then the pen's steps from the wrong line on, then the Answer.
-  const right: AlignedLine[] = [
-    ...corrections.map(k => ({ text: k.fix, tone: 'fix' as const })),
-    ...fixes.flatMap(f => f.steps.map(st => ({ text: st.latex, why: st.why || undefined, tone: 'step' as const }))),
-  ];
-  const answer = fixes.map(f => f.final).find(Boolean) ?? null;
-  if (answer) right.push({ text: answer, tone: 'answer' });
+  // Right: per PART (Adrian, 1 Oct 2026: "the right steps doesn't say it's for which part?") —
+  // the fix for each ✗ line of that part, then the pen's steps from the wrong line on, then
+  // the Answer. A part with no label (a one-part question) heads no group.
+  const groups: { label: string; lines: AlignedLine[] }[] = [];
+  const groupFor = (label: string) => {
+    let g = groups.find(x => x.label === label);
+    if (!g) { g = { label, lines: [] }; groups.push(g); }
+    return g;
+  };
+  for (const k of corrections) groupFor(k.label ?? '').lines.push({ text: k.fix, tone: 'fix' });
+  for (const f of fixes) {
+    const g = groupFor(f.label ?? '');
+    for (const st of f.steps) g.lines.push({ text: st.latex, why: st.why || undefined, tone: 'step' });
+    if (f.final) g.lines.push({ text: f.final, tone: 'answer' });
+  }
+  // The parts in the paper's order — the label sorts ((a) before (b)(i) before (c)(iii)); unlabelled first.
+  groups.sort((a, b) => a.label.localeCompare(b.label));
   // No fix and no corrected line at all: the worked solution stands on the right instead.
-  const compareAll = right.length === 0 && (typed.length > 0 || snippets.length > 0) && !!q.solution;
-  if (compareAll) for (const line of String(q.solution).split('\n').map(l => l.trim()).filter(Boolean)) right.push({ text: line, tone: 'plain' });
-  const shown = right.length > 0;
+  const compareAll = groups.length === 0 && (typed.length > 0 || snippets.length > 0) && !!q.solution;
+  if (compareAll) groupFor('').lines.push(...String(q.solution).split('\n').map(l => l.trim()).filter(Boolean).map(line => ({ text: line, tone: 'plain' as const })));
+  const shown = groups.length > 0;
   const card = { runId, photoIndex: q.photoIndex ?? null, question: q };
 
   return (
@@ -97,7 +109,12 @@ export default function MistakeCompare({ q, runId, paperName = null, explain = f
             <p className={YOURS_HEAD}>Your working</p>
             {snippets.length > 0 ? (
               <>
-                {snippets.map((s, i) => <SnippetWindow key={`${s.photoIndex}:${i}`} s={s} />)}
+                {snippets.map((s, i) => (
+                  <div key={`${s.photoIndex}:${i}`} className="space-y-0.5">
+                    {s.label && <p className={PART_HEAD}>{s.label}</p>}
+                    <SnippetWindow s={s} />
+                  </div>
+                ))}
                 {typed.length > 0 && (
                   <details className="group/typed pt-1">
                     <summary className="cursor-pointer list-none text-[11px] font-semibold text-gray-400 flex items-center gap-1">
@@ -111,7 +128,12 @@ export default function MistakeCompare({ q, runId, paperName = null, explain = f
           </div>
           <div className="min-w-0 space-y-1">
             <p className={RIGHT_HEAD}>The right steps</p>
-            <AlignedMath lines={right} />
+            {groups.map((g, i) => (
+              <div key={g.label || i} className="space-y-0.5" data-part={g.label || undefined}>
+                {g.label && <p className={PART_HEAD}>{g.label}</p>}
+                <AlignedMath lines={g.lines} />
+              </div>
+            ))}
           </div>
         </div>
       )}

@@ -77,7 +77,7 @@ export function buildWorkingLines(lines: unknown): WorkingLine[] {
 }
 
 /** A wrong line and the red pen's fix for it, as the card shows them: ✗ yours, then ✓ the fix. */
-export interface LineCorrection { yours: string; fix: string }
+export interface LineCorrection { yours: string; fix: string; /** The line's index in `marking_output.lines` — its part is looked up from the marker's boxes (1 Oct 2026). */ at?: number }
 
 /**
  * Every ✗ line that carries the red pen's correction, in page order (30 Sep 2026,
@@ -102,7 +102,7 @@ export function buildLineCorrections(lines: unknown, skip: readonly number[] = [
     const c = rec(l.correction);
     const fix = c ? readable(s(c.text_latex), s(c.text_plain)) : '';
     const yours = readable(s(l.transcription_latex), s(l.transcription_plain));
-    if (yours && fix) out.push({ yours, fix });
+    if (yours && fix) out.push({ yours, fix, at: i });
   });
   return out;
 }

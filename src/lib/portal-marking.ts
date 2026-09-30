@@ -17,7 +17,7 @@
 // Input is already-fetched rows; no I/O.
 
 import { buildLineCorrections, buildReviewFixes, buildWorkingLines, type LineCorrection, type ReviewFix, type WorkingLine } from './review-fix';
-import { regionAt, snippetsFor, type Snippet } from './mistake-snippet';
+import { partOfLine, regionAt, snippetsFor, type Snippet } from './mistake-snippet';
 import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
@@ -110,8 +110,8 @@ export interface StudentQuestion {
   revise: { name: string; href: string; examplesHref: string } | null;
   /** The red pen's "from your line" per part — the Review card's side-by-side (lib/review-fix). Empty when none. */
   fixes?: ReviewFix[];
-  /** Every ✗ line with the red pen's fix under it — science cards live on these (lib/review-fix). */
-  corrections?: LineCorrection[];
+  /** Every ✗ line with the red pen's fix under it — science cards live on these (lib/review-fix); `label` = its part, by the marker's boxes (1 Oct 2026). */
+  corrections?: (LineCorrection & { label?: string })[];
   /** No fix on any part: the student's own lines, ✗ marked, for the card's comparison beside `solution` (lib/review-fix). */
   working?: WorkingLine[];
   /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
@@ -358,7 +358,9 @@ function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefine
     solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
     fixes,
-    corrections: max > 0 && awarded < max ? buildLineCorrections(output?.lines, fixes.map(f => f.at)) : [],
+    corrections: max > 0 && awarded < max
+      ? buildLineCorrections(output?.lines, fixes.map(f => f.at)).map(k => ({ ...k, label: photoIndex == null || k.at == null ? '' : partOfLine(ctx.annotationDebug, photoIndex, k.at) }))
+      : [],
     working: max > 0 && awarded < max ? buildWorkingLines(output?.lines) : [],
     ...(r.added_by_audit === true ? { unmarked: true } : {}),
   };

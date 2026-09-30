@@ -31,6 +31,8 @@ export interface Snippet {
   x: number; y: number; w: number; h: number;
   /** The page image's height ÷ width — the box's `top` offset needs it (the window's own aspect is h/w × this). */
   pageAspect: number;
+  /** The lost parts in this window, "(b)(i), (b)(ii)" — '' when the marker gave the part no label. */
+  label: string;
 }
 
 /** Padding around a part's box, in layer units (the page is 960 wide). */
@@ -53,9 +55,15 @@ function frameOf(photo: unknown): Frame | null {
   return { canvasW, totalH, pageW, url };
 }
 
+/** "(b)(i)" — the marker's label for a part; '' for a one-part question ("" or "(whole)"). */
+function partLabel(r: Json): string {
+  const l = str(r.label);
+  return l && l !== '(whole)' ? l : '';
+}
+
 const sameQuestion = (a: string, b: string) => a.replace(/\s+/g, '').toLowerCase() === b.replace(/\s+/g, '').toLowerCase();
 
-interface Box { x1: number; y1: number; x2: number; y2: number }
+interface Box { x1: number; y1: number; x2: number; y2: number; label?: string }
 
 /**
  * A stretch of full-mark parts between two lost ones longer than this (a
@@ -86,6 +94,7 @@ export function windowsFor(lost: readonly Box[], lines: readonly { y1: number; y
     const last = out[out.length - 1];
     if (last && p.y1 - last.y2 <= GAP_SPLIT * pageH) {
       last.x1 = Math.min(last.x1, p.x1); last.x2 = Math.max(last.x2, p.x2); last.y2 = Math.max(last.y2, p.y2);
+      if (p.label) last.label = last.label ? `${last.label}, ${p.label}` : p.label;
     } else {
       out.push({ ...p });
     }
@@ -127,14 +136,14 @@ export function snippetsFor(annotationDebug: unknown, annotatedPhotos: unknown, 
     const regions = (Array.isArray(g.partRegions) ? g.partRegions : []).map(rec).filter((r): r is Json => !!r)
       .filter(r => sameQuestion(str(r.question), questionNumber) && r.not_attempted !== true)
       .filter(r => !(num(r.max) > 0) || !(num(r.awarded) >= num(r.max)))
-      .map(r => rec(r.bbox)).filter((b): b is Json => !!b);
+      .map(r => { const b = rec(r.bbox); return b ? { ...b, label: partLabel(r) } : null; }).filter((b): b is Json & { label: string } => !!b);
     if (!regions.length) continue;
     // The per-line boxes on this page (box_2d = [y1, x1, y2, x2]) — the lines above a window's first lost part.
     const lines = (Array.isArray(g.boxes) ? g.boxes : []).map(rec).filter((b): b is Json => !!b)
       .map(b => (Array.isArray(b.box_2d) ? b.box_2d.map(num) : []))
       .filter(b => b.length === 4 && b.every(Number.isFinite))
       .map(([ly1, , ly2]) => ({ y1: ly1, y2: ly2 }));
-    for (const win of windowsFor(regions.map(b => ({ x1: num(b.x1), y1: num(b.y1), x2: num(b.x2), y2: num(b.y2) })), lines, spaceH)) {
+    for (const win of windowsFor(regions.map(b => ({ x1: num(b.x1), y1: num(b.y1), x2: num(b.x2), y2: num(b.y2), label: str(b.label) })), lines, spaceH)) {
       const x1 = Math.max(0, win.x1 - SNIPPET_PAD);
       const y1 = Math.max(0, win.y1 - SNIPPET_PAD);
       const y2 = Math.min(spaceH, win.y2 + SNIPPET_PAD);
@@ -149,6 +158,7 @@ export function snippetsFor(annotationDebug: unknown, annotatedPhotos: unknown, 
         x: (x1 * k) / frame.canvasW, y: (y1 * k) / frame.totalH,
         w: (x2 - x1 * k) / frame.canvasW, h: ((y2 - y1) * k) / frame.totalH,
         pageAspect: frame.totalH / frame.canvasW,
+        label: win.label ?? '',
       });
     }
   }
@@ -183,4 +193,26 @@ export function regionAt(annotationDebug: unknown, annotatedPhotos: unknown, que
   if (!on.length) return null;
   const top = Math.min(...on.map(s => s.y)), bottom = Math.max(...on.map(s => s.y + s.h));
   return { at: (top + bottom) / 2, span: bottom - top };
+}
+
+/**
+ * The part a transcribed line belongs to, by geometry: the page's per-line box
+ * (`grounding.boxes`, keyed by `line_index`) against the parts' regions. '' when
+ * the run has no boxes, the line has none, or no region holds its centre.
+ */
+export function partOfLine(annotationDebug: unknown, photoIndex: number, lineIndex: number): string {
+  const entries: unknown[] = Array.isArray(annotationDebug) ? annotationDebug : Object.values(rec(annotationDebug) ?? {});
+  const d = entries.map(rec).find(e => e && num(e.photo_index) === photoIndex) ?? (Array.isArray(annotationDebug) ? rec(annotationDebug[photoIndex]) : null);
+  const g = rec(d?.grounding);
+  if (!g) return '';
+  const box = (Array.isArray(g.boxes) ? g.boxes : []).map(rec).find(b => b && num(b.line_index) === lineIndex);
+  const b2 = Array.isArray(box?.box_2d) ? box!.box_2d.map(num) : [];
+  if (b2.length !== 4 || !b2.every(Number.isFinite)) return '';
+  const cy = (b2[0] + b2[2]) / 2, cx = (b2[1] + b2[3]) / 2;
+  for (const raw of Array.isArray(g.partRegions) ? g.partRegions : []) {
+    const r = rec(raw); const bb = rec(r?.bbox);
+    if (!r || !bb) continue;
+    if (cy >= num(bb.y1) && cy <= num(bb.y2) && cx >= num(bb.x1) - 40 && cx <= num(bb.x2) + 40) return partLabel(r);
+  }
+  return '';
 }

@@ -59,7 +59,7 @@ describe('buildLineCorrections', () => {
     { verdict: 'wrong', transcription_plain: 'It also means usefulness.', correction: { text_plain: 'say what 75% means here' } },
   ];
   it('pairs each wrong line with its fix, in page order', () => {
-    expect(buildLineCorrections(sci)).toEqual([
+    expect(buildLineCorrections(sci).map(({ yours, fix }) => ({ yours, fix }))).toEqual([
       { yours: '= 33.33 Pa', fix: '$33 \\text{ N/cm}^2$' },
       { yours: 'It also means usefulness.', fix: 'say what 75% means here' },
     ]);
@@ -69,7 +69,7 @@ describe('buildLineCorrections', () => {
       { verdict: 'wrong', transcription_latex: '$\\text{Cooking food}$', transcription_plain: 'Cooking food', correction: { text_latex: '$\\text{a thermostat}$', text_plain: 'a thermostat' } },
       { verdict: 'wrong', transcription_latex: '$m = \\frac{9000}{4200}$', transcription_plain: 'm = 9000/4200', correction: { text_latex: '$m = 0.5$', text_plain: 'm = 0.5' } },
     ]);
-    expect(a).toEqual({ yours: 'Cooking food', fix: 'a thermostat' });
+    expect({ yours: a.yours, fix: a.fix }).toEqual({ yours: 'Cooking food', fix: 'a thermostat' });
     expect(b.yours).toBe('$m = \\frac{9000}{4200}$');
   });
   it('leaves out the lines a continuation already covers', () => {

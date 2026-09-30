@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CONTEXT_LINES, GAP_SPLIT, SNIPPET_PAD, regionAt, snippetStyle, snippetsFor, windowsFor } from './mistake-snippet';
+import { CONTEXT_LINES, GAP_SPLIT, SNIPPET_PAD, partOfLine, regionAt, snippetStyle, snippetsFor, windowsFor } from './mistake-snippet';
 
 // The A Math page of 1 Oct 2026: layer 960 × 1280, strip 250, no panel; the
 // saved image is 1210 × 1280 at 2.03×. Q3's one part sits at x 292–637, y 205–535.
@@ -52,7 +52,7 @@ describe('snippetsFor — the window of the student\'s page a card shows (1 Oct 
   });
   it('snippetStyle: the box keeps the window\'s true shape and the image is shifted by the page\'s aspect', () => {
     // A 1202 × 1394 page: a window at y 0.5 with h 0.25, full width.
-    const css = snippetStyle({ photoIndex: 0, url: 'u', x: 0, y: 0.5, w: 1, h: 0.25, pageAspect: 1394 / 1202 });
+    const css = snippetStyle({ photoIndex: 0, url: 'u', x: 0, y: 0.5, w: 1, h: 0.25, pageAspect: 1394 / 1202, label: '' });
     expect(css.box.aspectRatio).toBe(`1 / ${0.25 * 1394 / 1202}`);
     expect(css.img.width).toBe('100.000%');
     expect(Number.parseFloat(css.img.left)).toBe(0);
@@ -109,5 +109,25 @@ describe('windowsFor — one window or several, by the question and its mistakes
     // The jump spans both windows.
     const r = regionAt(dbg, photos, '10', 2)!;
     expect(r.span).toBeCloseTo((900 + SNIPPET_PAD - (100 - SNIPPET_PAD)) / 1280);
+  });
+});
+
+describe('part labels (1 Oct 2026, Adrian: "the right steps doesn\'t say it\'s for which part?")', () => {
+  const dbg = [null, null, { rot: 0, photo_index: 2, grounding: { space: { w: 960, h: 1280 },
+    partRegions: [
+      { question: '10', label: '(b)(i)', bbox: { x1: 100, y1: 100, x2: 600, y2: 200 }, awarded: 0, max: 1 },
+      { question: '10', label: '(b)(ii)', bbox: { x1: 100, y1: 210, x2: 600, y2: 300 }, awarded: 0, max: 2 },
+      { question: '10', label: '(c)(iii)', bbox: { x1: 100, y1: 710, x2: 600, y2: 900 }, awarded: 1, max: 3 },
+    ],
+    boxes: [{ line_index: 4, box_2d: [120, 150, 140, 500] }, { line_index: 9, box_2d: [800, 150, 820, 500] }] } }];
+  it('a window names the lost parts it holds', () => {
+    const s = snippetsFor(dbg, photos, '10');
+    expect(s.map(x => x.label)).toEqual(['(b)(i), (b)(ii)', '(c)(iii)']);
+  });
+  it('partOfLine: a transcribed line\'s part, by its box', () => {
+    expect(partOfLine(dbg, 2, 4)).toBe('(b)(i)');
+    expect(partOfLine(dbg, 2, 9)).toBe('(c)(iii)');
+    expect(partOfLine(dbg, 2, 99)).toBe('');
+    expect(partOfLine(undefined, 2, 4)).toBe('');
   });
 });
