@@ -24,6 +24,21 @@ function title(it: Item) {
   return bits || it.qid.slice(0, 8);
 }
 
+/** The image exactly as stored: a grey mat, and a sharp outline hugging
+ *  the picture's own edge — nothing is padded or boxed around it, so whatever is
+ *  inside the line (a caption, a stray mark, a white margin) is IN the image
+ *  (Adrian, 30 Sep 2026: "i can't tell if the caption is inside the image").
+ *  Tap to open it full size. */
+function Picture({ src, alt }: { src: string; alt: string }) {
+  return (
+    <a href={src} target="_blank" rel="noreferrer" className="block rounded-xl bg-gray-300 p-3 text-center">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} className="inline-block max-w-full max-h-[70vh] h-auto w-auto outline outline-2 outline-gray-900" />
+      <span className="block pt-1.5 text-[11px] text-gray-600">The black line is the edge of the image · tap to open full size</span>
+    </a>
+  );
+}
+
 function Card({ it, onDone }: { it: Item; onDone: () => void }) {
   const [busy, setBusy] = useState('');
   const [err, setErr] = useState('');
@@ -53,18 +68,14 @@ function Card({ it, onDone }: { it: Item; onDone: () => void }) {
         </span>
       </div>
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={it.afterUrl} alt="the fixed figure" className="w-full max-h-[70vh] object-contain rounded-xl border border-gray-100 bg-white" />
+      <Picture src={it.afterUrl} alt="the fixed figure" />
       {it.whatChanged && <p className="text-[12px] text-gray-500">{it.whatChanged.replace(/^#B\d+-\d+\s*·?\s*/, '')}</p>}
       {it.holdReason && <p className="text-[12px] text-amber-700">⚠ {it.holdReason}</p>}
 
       <button type="button" onClick={() => setShowBefore(v => !v)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">
         {showBefore ? 'Hide the old one' : 'Show the old one'}
       </button>
-      {showBefore && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={it.beforeUrl} alt="the figure before" className="w-full max-h-[40vh] object-contain rounded-xl border border-gray-100 opacity-80" />
-      )}
+      {showBefore && <Picture src={it.beforeUrl} alt="the figure before" />}
 
       {asking ? (
         <div className="space-y-2">

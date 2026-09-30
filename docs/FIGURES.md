@@ -138,6 +138,12 @@ he should never have to hunt through their views for a batch.
 - **What it lists:** every `status='held'` flag, either kind, that has an object under
   `candidates/`. Nothing else. Batch order from the sidecar note (`#B5-12`). `GET
   /api/admin/figures-bank?kind=check` (`total`, `sentBack`).
+- **No caption inside a figure image — ever** (Adrian, 30 Sep 2026: *"if the caption is in
+  the image, it will not be approved"*). The line that names the graph ("y = |f(2 − x)|: f
+  reflected …") belongs in the solution text, never baked into the PNG; a label ON a curve
+  is fine. Registry specs leave `caption` unset; a stored PNG is trimmed to the drawing with
+  an even white margin, no blank strip. The card shows each image on a grey mat with a black
+  line at the picture's own edge, so anything inside the line is in the image.
 - **Three buttons:** ✓ Approve (the lane's own `approve-candidate` — the figure goes live),
   💬 Not good enough (a comment is required), ✏️ Redraw.
 - **A send-back** (`POST {kind:'check', lane, path, questionId, action:'redo'|'redraw', comment}`)
