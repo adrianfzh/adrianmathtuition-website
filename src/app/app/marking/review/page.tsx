@@ -72,10 +72,10 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
               {promptLines(q.prompt).map((line, j) => <div key={j} className="text-[12px] text-gray-500 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />)}
             </div>
           )}
-          {/* 1 — what went wrong, one line a part (the verdict first). */}
+          {/* 1 — why marks were lost, one line a part (the verdict first). */}
           {q.slips.length > 0 ? (
             <section className="space-y-1">
-              <p className={WRONG_HEAD}>What went wrong</p>
+              <p className={WRONG_HEAD}>Why you lost marks</p>
               <ul className="space-y-1">
                 {q.slips.map((s, j) => <li key={j} className="text-[13px] text-gray-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(s) }} />)}
               </ul>
@@ -84,7 +84,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
           {/* 2 — each line that went wrong, with the fix right under it. */}
           {corrections.length > 0 && (
             <section className="space-y-2" data-review-corrections>
-              <p className={RIGHT_HEAD}>Your line → the fix</p>
+              <p className={RIGHT_HEAD}>What you wrote → what to write</p>
               {corrections.map((k, j) => (
                 <div key={j} className="rounded-xl border border-black/5 overflow-hidden">
                   <div className="flex items-start gap-1.5 bg-rose-50 px-2.5 py-1.5 text-[12.5px] leading-snug text-rose-900 overflow-x-auto">
