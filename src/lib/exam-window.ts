@@ -1,7 +1,8 @@
-// Which exams are close, and whether a topic belongs to one — the two rules
-// Review my mistakes (lib/review-cards.ts) pre-ticks papers with. They lived
-// in lib/before-paper.ts until 21 Sep 2026, when the Notebook's Before-the-
-// paper page went; the rules stayed because the Papers tab still needs them.
+// Which exams are close, and whether a topic belongs to one. They lived in
+// lib/before-paper.ts until 21 Sep 2026 (the Notebook's Before-the-paper page),
+// then served Review my mistakes' exam band until 1 Oct 2026 (the deck went —
+// every Notebook card shows its comparison now). Kept, tested, for the next
+// exam-week surface.
 import type { UpcomingExam } from './portal-exams';
 
 /** Days before an exam it counts as "upcoming" for Review my mistakes (Adrian, 11 Sep 2026 — not a fortnight). */

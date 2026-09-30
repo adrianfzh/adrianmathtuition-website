@@ -122,3 +122,49 @@ export function mathHtml(s: string): string {
     })
     .join('');
 }
+
+/**
+ * One line the writer MEANT as maths — a red-pen step, a fix, a final line.
+ * The pen wraps each step in `$…$`, and now and then drops the closing one
+ * ("$P(\text{at most 2 white}) = 3\left[…\right] +", Prelim Set 3 P2 Q6,
+ * 1 Oct 2026) — `mathHtml` then shows the raw TeX. An odd count of `$` means
+ * the dollars are wrapping, not maths: strip them and render the line as TeX.
+ * A balanced line goes through `mathHtml` unchanged.
+ */
+export function mathLineHtml(s: string): string {
+  const t = s.replace(/\\\$/g, '\u0000');
+  const dollars = (t.match(/\$/g) ?? []).length;
+  const inner = t.replace(/\$/g, '').replaceAll('\u0000', '\\$').trim();
+  if (!inner) return '';
+  // A prose line the marker wrapped as maths — "$\text{Sketch: both meters drawn as
+  // circles labelled A and V}$" (a physics transcription, 1 Oct 2026) — renders as one
+  // unbreakable KaTeX span and is cut off on a phone. Its leading \text{…} becomes
+  // ordinary prose that wraps; whatever maths follows stays one formula.
+  const prose = leadingText(inner);
+  if (prose) return mathHtml(prose.rest ? `${prose.text} $${prose.rest}$` : prose.text);
+  if (dollars % 2 === 0) return mathHtml(s);
+  try {
+    return katex.renderToString(inner, { throwOnError: false, output: 'html', macros: { ...KATEX_MACROS } });
+  } catch {
+    return escapeHtml(inner);
+  }
+}
+
+/** "\\text{finish at } (12\\text{ V})" → { text: "finish at", rest: "(12\\text{ V})" }; null when the line does not open with \\text{. */
+function leadingText(inner: string): { text: string; rest: string } | null {
+  if (!inner.startsWith('\\text{')) return null;
+  let depth = 0;
+  for (let i = 5; i < inner.length; i++) {
+    const ch = inner[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        const text = inner.slice(6, i).trim();
+        const rest = inner.slice(i + 1).trim();
+        return text ? { text, rest } : null;
+      }
+    }
+  }
+  return null;
+}

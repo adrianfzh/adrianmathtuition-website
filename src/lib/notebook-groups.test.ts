@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OPEN_GROUPS, groupHeading, groupMistakes, isPaperGroup, notebookSubject, reviewRunIds, splitBySubject, splitFold } from './notebook-groups';
+import { OPEN_GROUPS, groupHeading, groupMistakes, attachQuestions, isPaperGroup, notebookSubject, questionNumbersIn, splitBySubject, splitCards, splitFold } from './notebook-groups';
 import type { MistakeRow } from './notebook-mistakes-store';
 
 const paper = (ref: string, paper: string, date: string, label = 'Q3') => ({ kind: 'paper' as const, ref, label, paper, date, clean: false });
@@ -63,11 +63,33 @@ describe('splitBySubject — one tab per subject (30 Sep 2026)', () => {
   });
 });
 
-describe('reviewRunIds — the papers the Notebook\'s review button opens (30 Sep 2026)', () => {
-  const g = (key: string) => ({ key, title: key, at: '', mistakes: [] });
-  it('keeps only paper groups, newest first, at most three', () => {
-    expect(reviewRunIds([g('run-a'), g('practice'), g('run-b'), g('other'), g('run-c'), g('run-d')])).toEqual(['run-a', 'run-b', 'run-c']);
-    expect(reviewRunIds([g('practice')])).toEqual([]);
-    expect(isPaperGroup(g('other'))).toBe(false);
+
+describe('attachQuestions — one card per lost-marks question (1 Oct 2026)', () => {
+  it('reads the question numbers off an entry\'s label', () => {
+    expect(questionNumbersIn('Q6(a)(ii), Q3(b), Q10(c)(iii)1., Q6(b)')).toEqual(['6', '3', '10']);
+    expect(questionNumbersIn(null)).toEqual([]);
+  });
+  it('attaches entries to the paper\'s dropped questions, keeps the paper\'s order, leaves the rest loose', () => {
+    const rows = [
+      row({ id: 'a', title: 'Sign slip in Vectors', evidence: [paper('run-a', 'Prelim P1', '2026-09-12T00:00:00Z', 'Q3, Q7(a)')] }),
+      row({ id: 'b', title: 'Units in Kinematics', evidence: [paper('run-a', 'Prelim P1', '2026-09-12T00:00:00Z', 'Q7(b)')] }),
+      row({ id: 'c', title: 'On a deleted paper', evidence: [paper('run-gone', 'Old', '2026-09-01T00:00:00Z', 'Q1')] }),
+      row({ id: 'd', title: 'Named a question the paper did not drop', evidence: [paper('run-a', 'Prelim P1', '2026-09-12T00:00:00Z', 'Q12')] }),
+    ];
+    const g = groupMistakes(rows);
+    const [pa, gone] = attachQuestions(g.groups, [{ id: 'run-a', dropped: [{ questionNumber: '7' }, { questionNumber: '3' }, { questionNumber: '9' }] }]);
+    expect(pa.cards.map(c => c.questionNumber)).toEqual(['7', '3', '9']);
+    expect(pa.cards[0].entries.map(e => e.id).sort()).toEqual(['a', 'b']);
+    expect(pa.cards[1].entries.map(e => e.id)).toEqual(['a']);
+    expect(pa.cards[2].entries).toEqual([]);
+    expect(pa.loose.map(e => e.id)).toEqual(['d']);
+    expect(gone.cards).toEqual([]);
+    expect(gone.loose.map(e => e.id)).toEqual(['c']);
+  });
+  it('folds after three cards', () => {
+    const cards = ['1', '2', '3', '4', '5'].map(n => ({ key: `r:${n}`, runId: 'r', questionNumber: n, entries: [] }));
+    const { open, more } = splitCards(cards);
+    expect(open.map(c => c.questionNumber)).toEqual(['1', '2', '3']);
+    expect(more.map(c => c.questionNumber)).toEqual(['4', '5']);
   });
 });

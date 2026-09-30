@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, looksLikeMath, mathHtml } from './math-inline';
+import { escapeHtml, looksLikeMath, mathHtml, mathLineHtml } from './math-inline';
 
 describe('looksLikeMath', () => {
   it('TeX commands and structure are math', () => {
@@ -261,5 +261,24 @@ describe('mathHtml — display maths', () => {
   });
   it('still leaves two prices as prose', () => {
     expect(mathHtml('a meal at $96 and the other at $x')).not.toContain('katex');
+  });
+});
+
+describe('mathLineHtml — a line meant as one TeX expression (1 Oct 2026)', () => {
+  it('renders a step the pen left with only its opening $', () => {
+    const html = mathLineHtml('$P(\\text{at most 2 white}) = 3\\left[\\frac{1}{2}\\right] +');
+    expect(html).toContain('katex');
+    expect(html).not.toContain('\\left');
+  });
+  it('turns a prose line the marker wrapped in $\\text{…}$ into prose that wraps, keeping the maths after it', () => {
+    expect(mathLineHtml('$\\text{Sketch: both meters drawn as circles labelled A and V}$')).toBe('Sketch: both meters drawn as circles labelled A and V');
+    const html = mathLineHtml('$\\text{finish at } (12\\text{ V},\\ 0.25\\text{ A})$');
+    expect(html.startsWith('finish at ')).toBe(true);
+    expect(html).toContain('katex');
+    expect(html).not.toContain('\\text');
+  });
+  it('leaves a balanced line to mathHtml', () => {
+    expect(mathLineHtml('$= \\frac{7}{8}$')).toBe(mathHtml('$= \\frac{7}{8}$'));
+    expect(mathLineHtml('add the case with no white seeds')).toBe('add the case with no white seeds');
   });
 });

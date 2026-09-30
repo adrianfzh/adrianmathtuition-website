@@ -108,18 +108,13 @@ export function groupMistakes<T extends Row>(
 }
 
 /** The groups a student sees without opening the fold, and the rest. */
-export function splitFold(groups: readonly NotebookGroup[]): { open: NotebookGroup[]; earlier: NotebookGroup[] } {
+export function splitFold<G extends NotebookGroup>(groups: readonly G[]): { open: G[]; earlier: G[] } {
   return { open: groups.slice(0, OPEN_GROUPS), earlier: groups.slice(OPEN_GROUPS) };
 }
 
 /** A group that is one marked paper (its key is the run id), not Practice or Other. */
 export function isPaperGroup(g: Pick<NotebookGroup, 'key'>): boolean {
   return g.key !== 'practice' && g.key !== 'other';
-}
-
-/** The papers "Review my mistakes" opens (30 Sep 2026): the newest paper groups, at most `max`. */
-export function reviewRunIds(groups: readonly NotebookGroup[], max = 3): string[] {
-  return groups.filter(isPaperGroup).slice(0, max).map(g => g.key);
 }
 
 /** Tab order: the maths, then the sciences, then anything else. */
@@ -154,4 +149,69 @@ export function splitBySubject<T extends Row>(rows: readonly T[]): { subjects: {
   }
   const subjects = SUBJECT_ORDER.filter(s => by.has(s)).map(subject => ({ subject, rows: by.get(subject)! }));
   return { subjects, defaultSubject: newest?.subject ?? subjects[0]?.subject ?? null };
+}
+
+// ---------------------------------------------------------------------------
+// One card per lost-marks QUESTION (1 Oct 2026, Adrian: "I want student to be
+// able to see their mistakes and the correct steps side by side … without
+// clicking the review button"). A paper group's entries are attached to the
+// paper's dropped questions by the "Q6(a)(ii), Q3(b)" label each entry carries;
+// the card then shows the marking's own comparison (lib/review-fix) and the
+// entry's actions. An entry whose question the loaded papers do not hold (a
+// deleted run, a practice attempt) stays a title-only card, as before.
+// ---------------------------------------------------------------------------
+
+/** How many question cards a paper group shows before "n more on this paper". */
+export const OPEN_CARDS = 3;
+
+export interface NotebookQuestionCard {
+  /** `${runId}:${questionNumber}` — the key the page renders the comparison under. */
+  key: string;
+  runId: string;
+  questionNumber: string;
+  /** The entries this question is evidence for — their tags and buttons sit on the card. */
+  entries: NotebookMistake[];
+}
+
+export interface NotebookGroupWithCards extends NotebookGroup {
+  /** The paper's lost-marks questions, in the paper's own order (biggest loss first). */
+  cards: NotebookQuestionCard[];
+  /** Entries no card claimed — drawn as title-only cards after the questions. */
+  loose: NotebookMistake[];
+}
+
+/** "Q6(a)(ii), Q3(b), Q10(c)(iii)1." → ["6", "3", "10"] (each once, in order). */
+export function questionNumbersIn(label: string | null | undefined): string[] {
+  const out: string[] = [];
+  for (const m of String(label ?? '').matchAll(/\bQ\s*(\d+[A-Za-z]?)/g)) {
+    const n = m[1].toLowerCase();
+    if (!out.includes(n)) out.push(n);
+  }
+  return out;
+}
+
+export function attachQuestions(
+  groups: readonly NotebookGroup[],
+  papers: readonly { id: string; dropped: readonly { questionNumber: string }[] }[],
+): NotebookGroupWithCards[] {
+  const byId = new Map(papers.map(p => [p.id, p]));
+  return groups.map(g => {
+    const paper = isPaperGroup(g) ? byId.get(g.key) : undefined;
+    if (!paper) return { ...g, cards: [], loose: g.mistakes };
+    const claimed = new Set<string>();
+    const cards: NotebookQuestionCard[] = [];
+    for (const q of paper.dropped) {
+      const n = q.questionNumber.toLowerCase();
+      if (cards.some(c => c.questionNumber.toLowerCase() === n)) continue;
+      const entries = g.mistakes.filter(m => questionNumbersIn(m.where).includes(n));
+      for (const m of entries) claimed.add(m.id);
+      cards.push({ key: `${paper.id}:${q.questionNumber}`, runId: paper.id, questionNumber: q.questionNumber, entries });
+    }
+    return { ...g, cards, loose: g.mistakes.filter(m => !claimed.has(m.id)) };
+  });
+}
+
+/** The cards a group shows before its fold, and the question numbers of the rest ("Q8, Q1, Q2 — 3 more"). */
+export function splitCards(cards: readonly NotebookQuestionCard[]): { open: NotebookQuestionCard[]; more: NotebookQuestionCard[] } {
+  return { open: cards.slice(0, OPEN_CARDS), more: cards.slice(OPEN_CARDS) };
 }
