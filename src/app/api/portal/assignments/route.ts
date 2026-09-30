@@ -1,7 +1,9 @@
 // GET /api/portal/assignments — the signed-in student's Practice to-do list
 // (SPEC-PORTAL-V2 §3): every row they may see, newest first, with `source`
 // (adrian | practice-again | find), `skill_title` and `status` so a client can
-// group it, plus `sections` already grouped (lib/practice-todo). Held rows
+// group it, plus `sections` already grouped (lib/practice-todo; every key,
+// including practice-again — the Practice TAB itself leaves that one out since
+// 1 Oct 2026, lib/practice-todo practiceTabSections). Held rows
 // (created by the sheet hand-back, not yet released) and revoked rows are
 // excluded IN THE QUERY; a row carrying a subject is shown only when the
 // account has that subject (lib/portal-subjects). Student session only: this is

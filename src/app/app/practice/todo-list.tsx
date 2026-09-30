@@ -1,8 +1,9 @@
 // /app/practice for a STUDENT — the to-do list (SPEC-PORTAL-V2 §3).
 //
 // Adrian, 6 Sep 2026: a student's Practice tab is their to-do list and nothing
-// else — (1) work he assigned, (2) Practice Again questions handed back from
-// their own marked papers, (3) questions they found with Find a question. The
+// else — (1) work he assigned, (2) questions they found with Find a question,
+// (3) the sheets written from their photos. Practice Again is NOT listed here
+// since 1 Oct 2026 — its line sits under the paper on Papers (practiceTabSections). The
 // open topic picker and the timed set stay behind his admin cookie
 // (lib/portal-beta practiceAccess); the page swaps this in for a 'list' caller.
 //
@@ -18,7 +19,7 @@ import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { listStudentAssignments, paperNamesForStudent } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
 import {
-  groupPracticeTodo, sourceRunIds, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
+  groupPracticeTodo, practiceTabSections, sourceRunIds, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
   type TodoState,
 } from '@/lib/practice-todo';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -66,7 +67,8 @@ export default async function PracticeTodo({ account, top = null }: { account: P
     }
   }
   const paperNames = await paperNamesForStudent(identity, sourceRunIds(rows));
-  const sections = groupPracticeTodo(rows).filter(s => s.items.length > 0);
+  // Practice Again sheets live with their paper on Papers, not here (Adrian, 1 Oct 2026).
+  const sections = practiceTabSections(groupPracticeTodo(rows)).filter(s => s.items.length > 0);
   const summary = summaryLine(todoTotals(sections));
 
   return (
@@ -81,11 +83,11 @@ export default async function PracticeTodo({ account, top = null }: { account: P
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-sm font-semibold text-navy">Nothing to practise yet.</p>
           <p className="text-sm text-gray-600">
-            This is your to-do list. Work Adrian sends you, your Practice Again sheets,
-            and questions you find all land here.
+            This is your to-do list. Work Adrian sends you, and the sheets written from
+            your photos, land here.
           </p>
           <p className="text-xs text-gray-400">
-            Handed a paper in? Your marked copy and its practice arrive together in <Link href="/app/marking" className="underline">Papers</Link>.
+            Your Practice Again sheets sit with their papers in <Link href="/app/marking" className="underline">Papers</Link>.
           </p>
         </div>
       )}

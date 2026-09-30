@@ -19,7 +19,7 @@ export type TodoSectionKey = AssignmentSource;
 /** The four sections, in display order. */
 export const TODO_SECTIONS: readonly { key: TodoSectionKey; title: string; icon: string; blurb: string }[] = [
   { key: 'adrian', title: 'From Adrian', icon: '📬', blurb: 'Work Adrian sent you.' },
-  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },
+  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },   // grouped, but NOT shown on the tab — see practiceTabSections
   { key: 'find', title: 'Found by you', icon: '🔍', blurb: 'Questions you found with Find a question.' },
   { key: 'practice-photo', title: 'From your photos', icon: '📷', blurb: 'Questions written from the ones you photographed.' },
 ];
@@ -85,6 +85,18 @@ export function groupPracticeTodo<R extends TodoRow>(rows: R[]): TodoSection<R>[
     s.items.sort((a, b) => STATE_RANK[a.state] - STATE_RANK[b.state] || Date.parse(b.created_at) - Date.parse(a.created_at));
   }
   return sections;
+}
+
+/**
+ * The sections the Practice TAB shows. Practice Again is not one of them since
+ * 1 Oct 2026 (Adrian: "for practice again, do not put it under practice tab
+ * (confusing). practice again should just be together with their PDFs") — the
+ * sheet's line sits under its paper on Papers (lib/practice-again-line), where
+ * Hand in lives too. The rows still exist and still group (the API's `sections`
+ * keeps every key for a client that wants them); only the tab leaves them out.
+ */
+export function practiceTabSections<S extends { key: TodoSectionKey }>(sections: S[]): S[] {
+  return sections.filter(s => s.key !== 'practice-again');
 }
 
 /** Totals across sections — the tab's own summary line. */

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  groupPracticeTodo, todoState, sectionFor, visibleToStudent, todoTotals, todoStateLabel, todoSubtitle, sourceRunIds,
+  groupPracticeTodo, practiceTabSections, todoState, sectionFor, visibleToStudent, todoTotals, todoStateLabel, todoSubtitle, sourceRunIds,
   TODO_SECTIONS,
 } from './practice-todo';
 import type { AssignmentRow } from './assignments';
@@ -124,5 +124,25 @@ describe('labels', () => {
       { source: 'practice-again', source_run_id: 'r2' }, { source: 'adrian', source_run_id: 'r3' },
       { source: 'practice-again', source_run_id: null },
     ])).toEqual(['r1', 'r2']);
+  });
+});
+
+describe('practiceTabSections — Practice Again is not on the tab (Adrian, 1 Oct 2026)', () => {
+  it('drops the practice-again section and keeps the other three in order', () => {
+    const rows = [
+      row({ id: 'a', source: 'adrian' }),
+      row({ id: 'p', source: 'practice-again', source_run_id: 'run-1' }),
+      row({ id: 'f', source: 'find' }),
+      row({ id: 'g', source: 'practice-photo' }),
+    ];
+    const tab = practiceTabSections(groupPracticeTodo(rows));
+    expect(tab.map(s => s.key)).toEqual(['adrian', 'find', 'practice-photo']);
+    expect(tab.flatMap(s => s.items.map(i => i.id))).toEqual(['a', 'f', 'g']);
+    // the tab's summary counts only what the tab shows
+    expect(todoTotals(tab).todo).toBe(3);
+  });
+  it('the full grouping still carries the section for other readers', () => {
+    const all = groupPracticeTodo([row({ id: 'p', source: 'practice-again' })]);
+    expect(all.find(s => s.key === 'practice-again')?.items.map(i => i.id)).toEqual(['p']);
   });
 });
