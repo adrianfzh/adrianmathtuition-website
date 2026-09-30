@@ -263,8 +263,11 @@ plan (topic, marks, parts per position) from that paper instead of drawing a new
 briefs of the rejected slots match the paper they go back into. Put the kept questions in
 `kept-questions.md` (the check refuses the pre-17-Sep rows, which have no `skills`, so
 `paper-so-far.md` stays empty), the rejected one as `old-Q<n>.json`, append Adrian's words
-to each author prompt, then run author → check → blind → moderate as usual and re-publish in
-place. Run: `~/Dropbox/AdrianMath Work/GCE Sets/AM Set 1 swap 2026-09-30/run-P2`.
+to each author prompt, then run `standard.mjs --run "$RUN"` (brief does not write
+`standard.md` / `standard-questions-P<n>.md`; the Set 2 P1 Q13 swap was first authored
+without them), then author → check → blind → moderate as usual and re-publish in place.
+Copy `kept-questions.md` over `paper-so-far.md` after every check (the check rewrites it).
+Runs: `~/Dropbox/AdrianMath Work/GCE Sets/AM Set 1 swap 2026-09-30/run-P2`, `…/AM Set 2 swap 2026-09-30/run-P1`.
 
 **Sets must differ from each other — the variety rule (17 Sep 2026).** Adrian: "the
 papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other.
