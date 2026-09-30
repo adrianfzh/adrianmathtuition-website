@@ -342,8 +342,8 @@ async function publish() {
     school: TWIN_SCHOOL,
     year: new Date().getFullYear(),
     exam_type: TWIN_EXAM_TYPE,
-    paper: src.paper ?? null,
-    question_number: src.question_number ?? null,
+    paper: null,             // a twin sits in no paper — idx_questions_dedup keys on (school, year, paper, question_number, level, exam_type)
+    question_number: null,   // and two sources sharing 'Paper 1 Q5' would collide; the source's paper/Q live in gen_meta.source_ref
     difficulty: plan.difficulty ?? 'Standard',
     has_image: !!figureUrl,
     figure_url: figureUrl,
@@ -358,6 +358,7 @@ async function publish() {
     deleted_at: null,
     gen_meta: {
       kind: 'twin', twin_of: plan.source, twin_item: item, prompt_version: PROMPT_VERSION,
+      source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       author_model: MODELS.author, blind_model: MODELS.blind, moderate_model: MODELS.moderate,
       gates: { novelty: gates.novelty, number_swap: gates.novelty?.number_swap ?? null, structure: gates.structure?.ok ?? null, blind_agree: verdict.all_agree, moderator_score: verdict.score, figure_verify: q.needs_figure ? true : null, rounds: gates.rounds },
       figure: figureUrl ? { family: figSpec?.family ?? null, spec: figSpec, description: q.figure_description ?? null } : null,
@@ -396,7 +397,9 @@ const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').
 const md = (s) => esc(s).replace(/\n/g, '<br>');
 function review() {
   const i = argv.indexOf('--runs');
-  const dirs = i >= 0 ? argv.slice(i + 1).filter((a) => !a.startsWith('--')).map((d) => resolve(d)) : [];
+  const rest_ = i >= 0 ? argv.slice(i + 1) : [];
+  const stop = rest_.findIndex((a) => a.startsWith('--'));
+  const dirs = (stop >= 0 ? rest_.slice(0, stop) : rest_).map((d) => resolve(d));
   const out = resolve(argOf('--out', 'twins-review.html'));
   const cards = [];
   let n = 0, ok = 0;
