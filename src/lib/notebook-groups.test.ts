@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OPEN_GROUPS, groupHeading, groupMistakes, splitFold } from './notebook-groups';
+import { OPEN_GROUPS, groupHeading, groupMistakes, notebookSubject, splitBySubject, splitFold } from './notebook-groups';
 import type { MistakeRow } from './notebook-mistakes-store';
 
 const paper = (ref: string, paper: string, date: string, label = 'Q3') => ({ kind: 'paper' as const, ref, label, paper, date, clean: false });
@@ -42,5 +42,23 @@ describe('groupMistakes — by the paper each mistake was last seen on (21 Sep 2
     expect(OPEN_GROUPS).toBe(2);
     expect(open.map(x => x.title)).toEqual(['Prelim P1', 'Practice']);
     expect(earlier.map(x => x.title)).toEqual(['WA2']);
+  });
+});
+
+describe('splitBySubject — one tab per subject (30 Sep 2026)', () => {
+  it('maths first, then sciences; placeholders open no tab; default = newest live sighting', () => {
+    const { subjects, defaultSubject } = splitBySubject([
+      row({ id: 'p', subject: 'Physics', evidence: [paper('r1', 'Phy P2', '2026-09-20T00:00:00Z')] }),
+      row({ id: 'a', subject: 'AM', evidence: [paper('r2', 'Prelim P1', '2026-09-12T00:00:00Z')] }),
+      row({ id: 'e', subject: 'E Math', state: 'fixed', evidence: [paper('r3', 'WA2', '2026-09-25T00:00:00Z')] }),
+      row({ id: 'x', subject: null, seen_count: 0, evidence: [] }),
+    ]);
+    expect(subjects.map(s => s.subject)).toEqual(['A Math', 'E Math', 'Physics']);
+    expect(defaultSubject).toBe('Physics'); // the E Math one is fixed
+  });
+  it('normalises the subject names', () => {
+    expect(notebookSubject('EM')).toBe('E Math');
+    expect(notebookSubject('chemistry')).toBe('Chemistry');
+    expect(notebookSubject(null)).toBe('Other');
   });
 });

@@ -11,6 +11,7 @@
 //   • Fixed entries are not in the groups: they go under a single "Fixed (n)"
 //     link at the foot. Removed entries never arrive here (shownByDefault).
 import { bandOf, latestSighting, stateLabel, type MistakeEntry, type MistakeEvidence } from './notebook-mistakes';
+import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS } from './portal-subjects';
 
 /** How many paper groups are open before the fold. */
 export const OPEN_GROUPS = 2;
@@ -109,4 +110,38 @@ export function groupMistakes<T extends Row>(
 /** The groups a student sees without opening the fold, and the rest. */
 export function splitFold(groups: readonly NotebookGroup[]): { open: NotebookGroup[]; earlier: NotebookGroup[] } {
   return { open: groups.slice(0, OPEN_GROUPS), earlier: groups.slice(OPEN_GROUPS) };
+}
+
+/** Tab order: the maths, then the sciences, then anything else. */
+const SUBJECT_ORDER: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_PAPER_SUBJECTS, 'Other'];
+
+/** 'AM' / 'A Math' → 'A Math'; an unknown or missing subject → 'Other'. */
+export function notebookSubject(subject: string | null | undefined): string {
+  const t = String(subject ?? '').trim();
+  if (/^(am|a[ -]?math)$/i.test(t)) return 'A Math';
+  if (/^(em|e[ -]?math)$/i.test(t)) return 'E Math';
+  if (/^h2( math)?$/i.test(t)) return 'H2 Math';
+  const hit = SUBJECT_ORDER.find(s => s.toLowerCase() === t.toLowerCase());
+  return hit ?? 'Other';
+}
+
+/**
+ * One tab per subject (30 Sep 2026: the Notebook listed physics slips beside A Math).
+ * Placeholders (never seen) do not open a tab. The default tab is the subject of the
+ * most recent sighting that is not fixed, else the first tab.
+ */
+export function splitBySubject<T extends Row>(rows: readonly T[]): { subjects: { subject: string; rows: T[] }[]; defaultSubject: string | null } {
+  const by = new Map<string, T[]>();
+  let newest: { at: string; subject: string } | null = null;
+  for (const m of rows) {
+    if (m.seen_count <= 0) continue;
+    const k = notebookSubject(m.subject);
+    by.set(k, [...(by.get(k) ?? []), m]);
+    if (bandOf(m.state) !== 'fixed') {
+      const at = latestSighting(m)?.date ?? m.last_seen_at ?? '';
+      if (!newest || at > newest.at) newest = { at, subject: k };
+    }
+  }
+  const subjects = SUBJECT_ORDER.filter(s => by.has(s)).map(subject => ({ subject, rows: by.get(subject)! }));
+  return { subjects, defaultSubject: newest?.subject ?? subjects[0]?.subject ?? null };
 }

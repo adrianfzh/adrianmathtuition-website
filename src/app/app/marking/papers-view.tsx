@@ -491,12 +491,14 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
         {/* The whole line opens the marked sheet — the old "See your marked sheet ›" was a
             small underlined tail at the end of a wrapped line, easy to miss on an iPad
             (Adrian, 22 Sep 2026: "i can't click on the Practice Again sheet"). */}
+        {/* The text keeps at least 12rem (30 Sep 2026): at phone width the buttons wrap
+            below it — before, it squeezed to one word a line beside Print · Start · Hand in. */}
         {openMarked ? (
-          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="min-w-0 flex-1 -mx-1 -my-1 rounded-xl px-1 py-1 text-[13px] font-semibold active:bg-black/5">
+          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="min-w-0 flex-[1_1_12rem] -mx-1 -my-1 rounded-xl px-1 py-1 text-[13px] font-semibold active:bg-black/5">
             <span aria-hidden>{t.mark}</span> {line.text} <span className="whitespace-nowrap underline underline-offset-2">See your marked sheet ›</span>
           </Link>
         ) : (
-          <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+          <p className="min-w-0 flex-[1_1_12rem] text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
         )}
         {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}

@@ -18,6 +18,13 @@ describe('buildReviewCards', () => {
     expect(cards[2].photoIndex).toBe(2);
     expect(cards[2].at).toBeCloseTo(0.62);
   });
+  it('a question no page showed goes to the very end, even from the newest paper', () => {
+    const cards = buildReviewCards([
+      paper('old', '2026-09-01', [q('3', 1, 4)]),
+      paper('new', '2026-09-10', [q('10', 0, 12, { unmarked: true }), q('2', 2, 3)]),
+    ]);
+    expect(cards.map(c => c.key)).toEqual(['new:2', 'old:3', 'new:10']);
+  });
 });
 
 describe('regionFraction / jumpHref', () => {

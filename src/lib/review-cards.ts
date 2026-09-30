@@ -21,7 +21,10 @@ export interface ReviewCard {
   at: number;
 }
 
-/** Newest paper first; inside a paper, the biggest loss first (StudentPaper.dropped is already so ordered). */
+/**
+ * Newest paper first; inside a paper, the biggest loss first (StudentPaper.dropped is already so ordered).
+ * A question no page showed (`unmarked`) has nothing to review, so those go to the very end (30 Sep 2026).
+ */
 export function buildReviewCards(papers: readonly StudentPaper[]): ReviewCard[] {
   const ordered = [...papers].sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
   const out: ReviewCard[] = [];
@@ -33,7 +36,7 @@ export function buildReviewCards(papers: readonly StudentPaper[]): ReviewCard[] 
       });
     }
   }
-  return out;
+  return [...out.filter(c => !c.question.unmarked), ...out.filter(c => c.question.unmarked)];
 }
 
 /** The marker's "region" words → how far down the page to land. Unknown words land near the top. */

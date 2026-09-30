@@ -25,6 +25,8 @@ import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { loadNotebook } from '@/lib/notebook-load';
 import NotebookMistakes from './mistakes';
+import SubjectPanels, { type SubjectPanel } from '../marking/SubjectPanels';
+import { subjectPill } from '@/lib/portal-subjects';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,7 +52,16 @@ export default async function MyNotebookPage() {
     );
   }
 
-  const { groups, weakest } = await loadNotebook(account, sid);
+  const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid);
+  // One tab per subject (30 Sep 2026), the Papers tab's own switcher; one subject → no tabs.
+  const panels: SubjectPanel[] = subjects.map(p => ({
+    key: p.subject,
+    // Four or more tabs don't fit a phone with full names — use the pill's short text.
+    label: subjects.length > 3 ? (subjectPill(p.subject)?.text ?? p.subject) : p.subject,
+    tone: subjectPill(p.subject)?.tone ?? 'other',
+    count: p.groups.groups.reduce((n, g) => n + g.mistakes.length, 0),
+    content: <NotebookMistakes initial={p.groups} weakest={p.weakest} />,
+  }));
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -60,7 +71,9 @@ export default async function MyNotebookPage() {
           What each marked paper found, so you know what to fix before the next one.
         </p>
       </div>
-      <NotebookMistakes initial={groups} weakest={weakest} />
+      {panels.length > 0
+        ? <SubjectPanels panels={panels} defaultKey={defaultSubject ?? panels[0].key} rememberKey="portal_notebook_subject" />
+        : <NotebookMistakes initial={groups} weakest={weakest} />}
     </div>
   );
 }

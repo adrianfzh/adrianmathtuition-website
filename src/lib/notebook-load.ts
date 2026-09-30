@@ -12,11 +12,21 @@ import { createServiceClient } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
 import { loadMistakes, type MistakeRow } from './notebook-mistakes-store';
 import { shownByDefault } from './notebook-mistakes';
-import { groupMistakes, type NotebookGroups } from './notebook-groups';
+import { groupMistakes, notebookSubject, splitBySubject, type NotebookGroups } from './notebook-groups';
 import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
-import { subjectAllowed } from './portal-subjects';
+import { isScienceSubject, subjectAllowed } from './portal-subjects';
+
+/** One subject's tab (30 Sep 2026): its own list and its own weakest topics. */
+export interface NotebookSubjectPanel {
+  subject: string;
+  groups: NotebookGroups;
+  weakest: { topic: string; pct: number }[];
+}
 
 export interface NotebookLoad {
+  /** One per subject that has a mistake, in tab order; empty when the list is. */
+  subjects: NotebookSubjectPanel[];
+  defaultSubject: string | null;
   groups: NotebookGroups;
   /**
    * Weakest topics across the student's released papers — the "Work on next"
@@ -32,7 +42,7 @@ const WEAKEST_MAX_PAPERS = 40;
 
 export async function loadNotebook(account: PortalAccount, sid: string): Promise<NotebookLoad> {
   const svc = createServiceClient();
-  const [mistakes, weakest] = await Promise.all([
+  const [mistakes, runs] = await Promise.all([
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
     // Weakest topics: the same released + subject-gated rows the Papers tab lists.
@@ -42,9 +52,8 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
       .eq('student_id', sid).not('released_at', 'is', null).is('superseded_by', null)
       .order('created_at', { ascending: false }).limit(WEAKEST_MAX_PAPERS)
       .then(r => {
-        const rows = ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject));
-        return buildStudentMarking(rows, { studentName: account.display_name ?? null }).focus.map(t => ({ topic: t.topic, pct: t.pct }));
-      }, () => [] as { topic: string; pct: number }[]),
+        return ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject) || isScienceSubject(x.paper_subject));
+      }, () => [] as MarkingRunRow[]),
   ]);
 
   // Removed entries stay in the table and leave every student surface; fixed
@@ -68,5 +77,15 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
   const practiceFor = (m: MistakeRow) =>
     m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
 
-  return { groups: groupMistakes(shown, practiceFor), weakest };
+  // Weakest topics per subject: an A Math focus line under a Physics tab would send the student the wrong way.
+  const weakestOf = (list: MarkingRunRow[]) =>
+    buildStudentMarking(list, { studentName: account.display_name ?? null }).focus.map(t => ({ topic: t.topic, pct: t.pct }));
+  const split = splitBySubject(shown);
+  const subjects = split.subjects.map(({ subject, rows }) => ({
+    subject,
+    groups: groupMistakes(rows, practiceFor),
+    weakest: weakestOf(runs.filter(x => notebookSubject(x.paper_subject) === subject)),
+  }));
+
+  return { subjects, defaultSubject: split.defaultSubject, groups: groupMistakes(shown, practiceFor), weakest: weakestOf(runs.filter(x => !isScienceSubject(x.paper_subject))) };
 }

@@ -106,6 +106,8 @@ export interface StudentQuestion {
    * link is not.
    */
   revise: { name: string; href: string; examplesHref: string } | null;
+  /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
+  unmarked?: boolean;
 }
 
 /**
@@ -315,6 +317,8 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     const why = str(part.error_summary);
     if (!why) continue;
     const label = str(part.label);
+    // The audit's words are for Adrian ("check whether it was attempted"); the student reads this instead.
+    if (part.added_by_audit === true) { if (!slips.includes(UNMARKED_SLIP)) slips.push(UNMARKED_SLIP); continue; }
     slips.push(label ? `${label}: ${why}` : why);
   }
 
@@ -332,8 +336,11 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     schemes,
     solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
+    ...(r.added_by_audit === true ? { unmarked: true } : {}),
   };
 }
+
+export const UNMARKED_SLIP = 'No working for this question was found on your pages.';
 
 /**
  * result_json.revise → question-number → follow-up links. Every field is
