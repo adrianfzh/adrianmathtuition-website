@@ -9,7 +9,7 @@
 //   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--json]
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
-//   node scripts/twins/twin.mjs publish --run <dir> [--dry]  (insert/refresh the row, verified=false)
+//   node scripts/twins/twin.mjs publish --run <dir> [--dry]  (insert/refresh the row, verified=true — every check passed)
 //   node scripts/twins/twin.mjs review  --runs <dir> [<dir>…] --out <file.html>
 //
 // Run dir files: source.json, corpus.json, plan.json, author-brief.md (from brief);
@@ -353,7 +353,7 @@ async function publish() {
     image_url: null,
     images: [],
     image_size: 'md',
-    verified: false,            // Adrian's read flips it — never here (SPEC-TWINS §3)
+    verified: true,             // every check passed to get here — that IS the verify (Adrian, 30 Sep 2026: "if they pass the checks consider them verified")
     ai_generated: true,
     twin_of: plan.source,
     solution: q.solution ?? null,
@@ -369,7 +369,7 @@ async function publish() {
       verdict: { key_verdict: verdict.key_verdict, why: verdict.why, fixes: verdict.fixes ?? [] },
       method_note: q.method_note ?? null, originality_note: q.originality_note ?? null,
       subgroups: (plan.subgroups ?? []).map((s) => s.id),
-      generated_at: new Date().toISOString(), verified_at: null,
+      generated_at: new Date().toISOString(), verified_at: new Date().toISOString(), verified_by: 'checks',
     },
   };
   if (dry) { console.log(JSON.stringify(row, null, 1)); return; }
@@ -392,7 +392,7 @@ async function publish() {
     if (error) log(`filing warning: ${error.message}`);
   }
   writeFileSync(runFile(dir, 'published.json'), JSON.stringify({ id: qid, item, at: row.gen_meta.generated_at, figure_url: figureUrl }, null, 1));
-  console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (twin of ${plan.source}, verified=false)`);
+  console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (twin of ${plan.source}, verified by the checks)`);
 }
 
 // -------------------------------------------------------------- review ----
@@ -419,7 +419,7 @@ function review() {
     if (accepted) ok++;
     const fig = existsSync(runFile(dir, 'Q1.figure.png')) ? `<img src="data:image/png;base64,${readFileSync(runFile(dir, 'Q1.figure.png')).toString('base64')}" style="max-width:320px">` : '';
     const srcImg = src?.figure_url ? `<img src="${esc(src.figure_url)}" style="max-width:320px">` : (src?.has_image ? '<em>(source diagram lives in its image)</em>' : '');
-    const status = accepted ? '✅ published (verified=false)' : !q ? '⛔ no draft' : !gates?.pass ? `✗ gates: ${esc((gates?.problems ?? []).join('; '))}` : !verdictOk(verdict) ? `✗ moderator: score ${verdict?.score ?? '?'}, agree ${verdict?.all_agree}, reads_as_source ${verdict?.reads_as_source} — ${esc(verdict?.why ?? '')}` : '⏳ not published';
+    const status = accepted ? '✅ published (verified by the checks)' : !q ? '⛔ no draft' : !gates?.pass ? `✗ gates: ${esc((gates?.problems ?? []).join('; '))}` : !verdictOk(verdict) ? `✗ moderator: score ${verdict?.score ?? '?'}, agree ${verdict?.all_agree}, reads_as_source ${verdict?.reads_as_source} — ${esc(verdict?.why ?? '')}` : '⏳ not published';
     cards.push(`<section class="card ${accepted ? 'ok' : 'no'}"><h2>${n}. ${esc(plan?.subject ?? '')} · ${plan?.marks ?? '?'} marks · ${esc((plan?.subgroups ?? []).map((s) => s.name).join('; '))}</h2>
 <p class="status">${status}${verdict ? ` · moderator ${verdict.score}/5` : ''}${gates?.novelty ? ` · Jaccard vs source ${gates.novelty.vs_source}, nearest ${esc(gates.novelty.nearest)} @ ${gates.novelty.nearest_jaccard}` : ''}${pub ? ` · <code>${pub.id}</code>` : ''}</p>
 <div class="cols"><div><h3>Source — ${esc(src?.school)} ${src?.year ?? ''}</h3>${srcImg}<div class="q">${md(questionText(src ?? {}))}</div><details><summary>key</summary>${md(flatParts(src?.parts).map((p) => `${p.label} ${p.answer ?? ''}`).join('\n') || src?.answer)}</details></div>
@@ -428,7 +428,7 @@ function review() {
   const html = `<!doctype html><meta charset="utf-8"><title>Twins review</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\\\[',right:'\\\\]',display:true},{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false}]})"></script>
 <style>body{font:15px/1.5 -apple-system,Helvetica,sans-serif;max-width:1100px;margin:24px auto;padding:0 16px;color:#222}.card{border:1px solid #ddd;border-radius:10px;padding:14px 18px;margin:18px 0}.card.ok{border-color:#7c9}.card.no{border-color:#e99;background:#fff8f8}.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.q{white-space:normal;margin:8px 0}h2{font-size:17px;margin:0 0 4px}h3{font-size:14px;color:#666;margin:6px 0}.status{font-size:13px;color:#444}.why{font-size:13px;color:#555;border-left:3px solid #ccc;padding-left:8px}details{font-size:13px;color:#444}@media(max-width:800px){.cols{grid-template-columns:1fr}}</style>
-<h1>Twins — ${ok} of ${n} published for your read</h1><p>Every published twin sits in the bank with <code>verified=false</code>: nothing serves until you flip it. Source on the left, our twin on the right.</p>${cards.join('\n')}`;
+<h1>Twins — ${ok} of ${n} published for your read</h1><p>Every published twin passed every check and sits in the bank verified; Retire on /admin/generated takes one out. Source on the left, our twin on the right.</p>${cards.join('\n')}`;
   writeFileSync(out, html);
   console.log(`${out}: ${ok}/${n} accepted`);
 }

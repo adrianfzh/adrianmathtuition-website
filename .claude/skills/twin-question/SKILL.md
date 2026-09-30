@@ -1,6 +1,6 @@
 ---
 name: twin-question
-description: Write OUR OWN twin of one school question in the bank (same sub-skill, structure, marks, method; new numbers, context, sentences) through the gates in SPEC-TWINS.md — author → novelty/structure gates → blind solve → moderate → figure → insert with verified=false. Plan-billed Claude Code agents only, never the API. Use when Adrian asks for twins, "our own questions", or a paper's questions replaced by ours.
+description: Write OUR OWN twin of one school question in the bank (same sub-skill, structure, marks, method; new numbers, context, sentences) through the gates in SPEC-TWINS.md — author → novelty/structure gates → blind solve → moderate → figure → insert with verified=true (passing every check is the verify, Adrian 30 Sep 2026). Plan-billed Claude Code agents only, never the API. Use when Adrian asks for twins, "our own questions", or a paper's questions replaced by ours.
 ---
 
 # Twin a question
@@ -35,13 +35,15 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
    `node scripts/gce-paper/figure.mjs --run <dir> --slots 1` (verify fails closed).
 8. **Publish** — `node scripts/twins/twin.mjs publish --run <dir>` (`--dry` first).
    Row: `school='AdrianMath'`, `exam_type='Twin'`, `ai_generated=true`, `twin_of`,
-   **`verified=false`** — nothing serves until Adrian flips it. Idempotent on
+   **`verified=true`** — publish only runs once every gate and the moderator passed,
+   and that IS the verify (Adrian, 30 Sep 2026: "if they pass the checks consider
+   them verified"); Retire on /admin/generated takes one out. Idempotent on
    `gen_meta.twin_item`. The source's `question_subgroups` filing is copied.
 9. **Review** — `node scripts/twins/twin.mjs review --runs <dirs…> --out twins-review.html`
    and hand Adrian the file (source beside twin, KaTeX). Report the tally:
    accepted / rejected at which gate / parked. Phase 0 bar: 16 of 20.
 
 ## Red lines (SPEC-TWINS §9)
-Never the API. Never `verified=true` or `image_watermark_status='clean'` from here.
+Never the API. Never `verified=true` except through `publish` after every check passed; never `image_watermark_status='clean'` from here.
 Never touch the source row. Never flip serving without Adrian. A twin that reads
 as the source re-numbered is a reject, not a light edit.
