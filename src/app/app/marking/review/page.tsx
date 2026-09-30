@@ -58,6 +58,35 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
               {q.slips.map((s, j) => <li key={j} className="text-[12px] text-amber-900 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5" dangerouslySetInnerHTML={{ __html: mathHtml(s) }} />)}
             </ul>
           )}
+          {(q.fixes ?? []).map((f, j) => (
+            <div key={j} className="space-y-1" data-review-fix>
+              {f.label && <p className="text-[11px] font-semibold text-gray-500">{f.label}</p>}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="min-w-0 space-y-1">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-gray-400">Your working</p>
+                  {f.yours.map((line, k) => {
+                    const wrong = k === f.yours.length - 1;
+                    return (
+                      <div key={k} className={`flex items-start gap-1 rounded-lg px-1.5 py-1 overflow-x-auto text-[12.5px] leading-snug ${wrong ? 'bg-rose-50 border border-rose-200 text-rose-900' : 'text-gray-500'}`}>
+                        {wrong && <span className="shrink-0 font-bold text-rose-600">✗</span>}
+                        <span dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="min-w-0 space-y-1">
+                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">From your line</p>
+                  {f.steps.map((st, k) => (
+                    <div key={k} className="rounded-lg bg-emerald-50/60 px-1.5 py-1 overflow-x-auto">
+                      <div className="text-[12.5px] leading-snug text-navy" dangerouslySetInnerHTML={{ __html: mathHtml(st.latex) }} />
+                      {st.why && <p className="text-[11px] leading-snug text-gray-500">{st.why}</p>}
+                    </div>
+                  ))}
+                  {f.final && <div className="px-1.5 overflow-x-auto text-[12.5px] font-bold text-navy" dangerouslySetInnerHTML={{ __html: mathHtml(f.final) }} />}
+                </div>
+              </div>
+            </div>
+          ))}
           {q.solution && (
             <details className="group/sol">
               <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">

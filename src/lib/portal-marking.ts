@@ -16,6 +16,7 @@
 // Pure (repo testing policy: marks logic never inline in a route or component).
 // Input is already-fetched rows; no I/O.
 
+import { buildReviewFixes, type ReviewFix } from './review-fix';
 import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
@@ -106,6 +107,8 @@ export interface StudentQuestion {
    * link is not.
    */
   revise: { name: string; href: string; examplesHref: string } | null;
+  /** The red pen's "from your line" per part — the Review card's side-by-side (lib/review-fix). Empty when none. */
+  fixes?: ReviewFix[];
   /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
   unmarked?: boolean;
 }
@@ -336,6 +339,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     schemes,
     solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
+    fixes: buildReviewFixes(parts, output?.lines),
     ...(r.added_by_audit === true ? { unmarked: true } : {}),
   };
 }
