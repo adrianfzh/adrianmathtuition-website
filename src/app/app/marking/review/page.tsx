@@ -48,6 +48,8 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   const { papers } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
   const cards = buildReviewCards(papers);
 
+  // The sideways hint only when some card has two columns to put side by side.
+  let sideBySide = false;
   const items: DeckItem[] = cards.map(c => {
     const q = c.question;
     const fixes = q.fixes ?? [];
@@ -56,6 +58,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
     const compareAll = !fixes.length && !corrections.length && (q.working ?? []).length > 0 && !!q.solution;
     const solutionLines = compareAll ? String(q.solution).split('\n').map(l => l.trim()).filter(Boolean) : [];
     const shown = fixes.length > 0 || corrections.length > 0 || compareAll;
+    if (fixes.length > 0 || compareAll) sideBySide = true;
     return {
       key: c.key,
       node: (
@@ -162,7 +165,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
       ) : (
         <>
           <p className="text-[12px] text-gray-500">{cards.length} question{cards.length === 1 ? '' : 's'} across {papers.length} paper{papers.length === 1 ? '' : 's'}. Swipe or tap to move on.</p>
-          {items.length > 0 && <TurnHint />}
+          {sideBySide && <TurnHint />}
           <ReviewDeck items={items} />
         </>
       )}
