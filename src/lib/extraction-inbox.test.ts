@@ -56,6 +56,19 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
   });
 });
 
+describe('parseSourceFilename — G2 A-Math and H1 (30 Sep 2026)', () => {
+  it('Sec 3 G2 A-Math is S3_AM_NA, never S3 E-Math G2; Sec 4 stays AM_NA', () => {
+    expect(parseSourceFilename('S3 AM SA2 (NA) 2020 Bedok South P1.pdf')).toMatchObject({ ok: true, level: 'S3_AM_NA', school: 'Bedok South', paper: 'p1' });
+    expect(parseSourceFilename('S3 EM SA2 (NA) 2020 Bedok South P1.pdf')).toMatchObject({ ok: true, level: 'S3_EM_NA' });
+    expect(parseSourceFilename('AM PRELIM (NA) 2021 Bedok South P2.pdf')).toMatchObject({ ok: true, level: 'AM_NA', paper: 'p2' });
+  });
+  it('H1 wins over a JC2 token', () => {
+    expect(parseSourceFilename('JC2 H1 PRELIM 2019 ACJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'ACJC', examType: 'Prelim' });
+    expect(parseSourceFilename('H1 PRELIM 2021 TMJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'TMJC' });
+    expect(parseSourceFilename('JC2 PRELIM 2019 ACJC P1.pdf')).toMatchObject({ ok: true, level: 'JC2' });
+  });
+});
+
 describe('parseSourceFilename — the science tokens (26 Sep 2026)', () => {
   it('a pure science at Sec 4: BIO / CHEM / PHY and their long forms, filed for the science bank', () => {
     expect(parseSourceFilename('BIO PRELIM 2018 West Spring P1.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', year: 2018, school: 'West Spring', examType: 'Prelim', paper: 'p1' });

@@ -51,6 +51,9 @@ export function isSettled(entry: InboxEntry, now: Date, minAgeMs = 90_000): bool
 // S1/S2 + (NA) or G2 → S1_NA / S2_NA; S1; S2; S3+AM → S3_AM; S3 (+EM) → S3_EM; JC1; JC2; AM; EM. Never bare 'JC'.
 const LEVEL_RULES: Array<[RegExp, string]> = [
   [/\bS3\b[\s\S]*(\(NT\)|\b4046\b)|(\(NT\)|\b4046\b)[\s\S]*\bS3\b/i, 'S3_EM_NT'],
+  // Sec 3 G2 A-Math (30 Sep 2026): "S3 AM SA2 (NA) 2020 X" — before the S3 (NA) rule,
+  // which is E-Math.
+  [/(?=[\s\S]*\bS3\b)(?=[\s\S]*\bAM\b)(?=[\s\S]*\(NA\))/i, 'S3_AM_NA'],
   [/\bS3\b[\s\S]*\(NA\)|\(NA\)[\s\S]*\bS3\b/i, 'S3_EM_NA'],
   [/\bAM\b[\s\S]*\(NA\)|\(NA\)[\s\S]*\bAM\b/i, 'AM_NA'],
   // Lower-sec N(A) (28 Sep 2026, the Sec 1 G2 papers): "S1 (NA)" / "S1 G2" → S1_NA,
@@ -62,6 +65,8 @@ const LEVEL_RULES: Array<[RegExp, string]> = [
   [/\bS2\b/i, 'S2'],
   [/\bS3\b[\s\S]*\bAM\b|\bAM\b[\s\S]*\bS3\b/i, 'S3_AM'],
   [/\bS3\b/i, 'S3_EM'],
+  // H1 before JC1/JC2 (30 Sep 2026): "JC2 H1 PRELIM 2019 ACJC" is H1, not H2.
+  [/\bH1\b/i, 'JC2_H1'],
   [/\bJC1\b/i, 'JC1'],
   [/\bJC2\b/i, 'JC2'],
   // The A-Level TYS names its subject, not a JC year: "A Level H2 Math TYS 2025"
