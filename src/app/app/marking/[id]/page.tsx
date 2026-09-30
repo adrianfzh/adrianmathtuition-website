@@ -314,9 +314,14 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
               </div>
               {paper.pages.map(p => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={p.index} src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+                // `page-N` so "See it on my paper" can land here too (1 Oct 2026 — a science card used to land on the cover).
+                <div key={p.index} id={Number.isInteger(p.index) ? `page-${p.index}` : undefined}
+                  style={p.layerW && p.layerH ? { aspectRatio: `${p.layerW} / ${p.layerH}` } : undefined}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+                </div>
               ))}
+              <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
             </section>
           )}
 

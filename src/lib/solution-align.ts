@@ -26,7 +26,7 @@ const ALIGN_LHS_MAX = 26;
 const CHAIN_SPLIT_MIN = 34;
 
 /** The whole line is exactly one `$…$` maths run → its inner TeX, else null. */
-function oneMathRun(line: string): string | null {
+export function oneMathRun(line: string): string | null {
   const m = /^\s*\$([^$]+)\$\s*$/.exec(line);
   return m ? m[1].trim() : null;
 }

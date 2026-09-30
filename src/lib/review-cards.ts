@@ -15,9 +15,12 @@ export function regionFraction(region: string | null | undefined): number {
 }
 
 /** The URL "See it on my paper" opens. */
-export function jumpHref(card: { runId: string; photoIndex: number | null; at?: number; question: Pick<StudentQuestion, 'questionNumber' | 'region'> }): string {
+export function jumpHref(card: { runId: string; photoIndex: number | null; at?: number; question: Pick<StudentQuestion, 'questionNumber' | 'region' | 'jump'> }): string {
   const q = encodeURIComponent(card.question.questionNumber);
   if (card.photoIndex == null) return `/app/marking/${card.runId}?q=${q}`;
+  // The marker's own box first (1 Oct 2026, `span` says so); else the region words.
+  const box = card.question.jump;
+  if (box) return `/app/marking/${card.runId}?q=${q}&page=${card.photoIndex}&at=${box.at.toFixed(3)}&span=${box.span.toFixed(3)}#page-${card.photoIndex}`;
   const at = card.at ?? regionFraction(card.question.region);
   return `/app/marking/${card.runId}?q=${q}&page=${card.photoIndex}&at=${at.toFixed(2)}#page-${card.photoIndex}`;
 }

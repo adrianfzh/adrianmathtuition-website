@@ -1,16 +1,18 @@
 // One lost-marks question, the way My Notebook shows it (1 Oct 2026, Adrian:
 // "left panel shows their mistake and right panel shows their correct steps …
-// without clicking the review button" and, later that day, "shouldn't it just
-// be your working on the left and the right steps on the right?"): the printed
-// question folded, then ONE comparison — the student's own lines with the ✗
-// ones marked, beside the fix for each ✗ line, the red pen's steps from there
-// and the Answer — the marker's verdict as one quiet line under it, the full
-// solution folded, and the two doors. Server component: KaTeX runs here, the
-// client list only places the cards.
+// without clicking the review button"; "shouldn't it just be your working on
+// the left and the right steps on the right?"; "won't you be able to show the
+// snippet of their mistake?"): the printed question folded, then ONE comparison
+// — LEFT, the window of the student's own page where the question sits, the
+// pen's marks and all (lib/mistake-snippet; the typed lines one tap away under
+// "as text", and on their own when the run has no boxes); RIGHT, the ✓ fix for
+// each ✗ line, the red pen's steps from there with a reason under each, and
+// the bold Answer, aligned at the equals sign (AlignedMath) — the marker's
+// verdict as one quiet line under it, the full solution folded, and the two
+// doors. Server component: KaTeX runs here, the client list only places cards.
 //
 // It was the Review card (17–30 Sep 2026, /app/marking/review, a swipe deck
-// behind a "Review this paper" button) with three headed sections; the deck
-// is gone and the sections are folded into the one comparison.
+// behind a "Review this paper" button) with three headed sections.
 //
 // Phone upright: the mistake ABOVE the fix (Adrian picked it over two forced
 // columns — long equations get squeezed at 390 px). Sideways, a tablet or a
@@ -18,18 +20,27 @@
 import Link from 'next/link';
 import { promptLines, type StudentQuestion } from '@/lib/portal-marking';
 import { jumpHref } from '@/lib/review-cards';
-import { mathHtml, mathLineHtml } from '@/lib/math-inline';
+import { mathHtml } from '@/lib/math-inline';
+import { fileHref } from '@/lib/student-files-url';
+import AlignedMath, { type AlignedLine } from './AlignedMath';
 import AnnotatedSolution from './AnnotatedSolution';
 
 const COMPARE = 'grid grid-cols-1 gap-2 landscape:grid-cols-2 md:grid-cols-2';
 const YOURS_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-gray-400';
 const RIGHT_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700';
 
-function WorkLine({ text, wrong }: { text: string; wrong: boolean }) {
+/** The window onto the student's page: the image scaled and shifted inside a box the window's shape. */
+function SnippetWindow({ s }: { s: NonNullable<StudentQuestion['snippets']>[number] }) {
   return (
-    <div className={`flex items-start gap-1 rounded-lg px-1.5 py-1 overflow-x-auto text-[12.5px] leading-snug ${wrong ? 'bg-rose-50 border border-rose-200 text-rose-900' : 'text-gray-500'}`}>
-      {wrong && <span className="shrink-0 font-bold text-rose-600">✗</span>}
-      <span dangerouslySetInnerHTML={{ __html: mathLineHtml(text) }} />
+    <div className="relative w-full overflow-hidden rounded-lg border border-black/10 bg-white" style={{ aspectRatio: `${s.w} / ${s.h}` }} data-snippet={s.photoIndex}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={fileHref(s.url)}
+        alt="Your working, from your page"
+        className="absolute max-w-none"
+        style={{ width: `${(100 / s.w).toFixed(3)}%`, left: `${(-100 * s.x / s.w).toFixed(3)}%`, top: `${(-100 * s.y / s.h).toFixed(3)}%` }}
+        loading="lazy"
+      />
     </div>
   );
 }
@@ -42,20 +53,23 @@ export default function MistakeCompare({ q, runId, paperName = null }: {
 }) {
   const fixes = q.fixes ?? [];
   const corrections = q.corrections ?? [];
-  // Left: every line the marker read, ✗ where it went wrong; when the lines were not
+  const snippets = q.snippets ?? [];
+  // Typed lines: every line the marker read, ✗ where it went wrong; when the lines were not
   // kept as a whole (an older run), the red pen's own "your lines up to the wrong one".
-  const left: { text: string; wrong: boolean }[] = (q.working ?? []).length
+  const typed: AlignedLine[] = ((q.working ?? []).length
     ? (q.working ?? [])
-    : fixes.flatMap(f => f.yours.map((text, k) => ({ text, wrong: k === f.yours.length - 1 })));
+    : fixes.flatMap(f => f.yours.map((text, k) => ({ text, wrong: k === f.yours.length - 1 })))
+  ).map(l => ({ text: l.text, tone: l.wrong ? 'wrong' : 'plain' }));
   // Right: the fix for each ✗ line, then the pen's steps from the wrong line on, then the Answer.
-  const right: { text: string; why: string; fix: boolean }[] = [
-    ...corrections.map(k => ({ text: k.fix, why: '', fix: true })),
-    ...fixes.flatMap(f => f.steps.map(st => ({ text: st.latex, why: st.why, fix: false }))),
+  const right: AlignedLine[] = [
+    ...corrections.map(k => ({ text: k.fix, tone: 'fix' as const })),
+    ...fixes.flatMap(f => f.steps.map(st => ({ text: st.latex, why: st.why || undefined, tone: 'step' as const }))),
   ];
   const answer = fixes.map(f => f.final).find(Boolean) ?? null;
+  if (answer) right.push({ text: answer, tone: 'answer' });
   // No fix and no corrected line at all: the worked solution stands on the right instead.
-  const compareAll = right.length === 0 && left.length > 0 && !!q.solution;
-  if (compareAll) for (const line of String(q.solution).split('\n').map(l => l.trim()).filter(Boolean)) right.push({ text: line, why: '', fix: false });
+  const compareAll = right.length === 0 && (typed.length > 0 || snippets.length > 0) && !!q.solution;
+  if (compareAll) for (const line of String(q.solution).split('\n').map(l => l.trim()).filter(Boolean)) right.push({ text: line, tone: 'plain' });
   const shown = right.length > 0;
   const card = { runId, photoIndex: q.photoIndex ?? null, question: q };
 
@@ -82,20 +96,23 @@ export default function MistakeCompare({ q, runId, paperName = null }: {
         <div className={COMPARE} data-review-compare>
           <div className="min-w-0 space-y-1">
             <p className={YOURS_HEAD}>Your working</p>
-            {left.map((l, k) => <WorkLine key={k} text={l.text} wrong={l.wrong} />)}
+            {snippets.length > 0 ? (
+              <>
+                {snippets.map(s => <SnippetWindow key={s.photoIndex} s={s} />)}
+                {typed.length > 0 && (
+                  <details className="group/typed pt-1">
+                    <summary className="cursor-pointer list-none text-[11px] font-semibold text-gray-400 flex items-center gap-1">
+                      <span className="group-open/typed:rotate-90 transition-transform inline-block">›</span>as text
+                    </summary>
+                    <div className="mt-1"><AlignedMath lines={typed} /></div>
+                  </details>
+                )}
+              </>
+            ) : typed.length > 0 ? <AlignedMath lines={typed} /> : null}
           </div>
           <div className="min-w-0 space-y-1">
             <p className={RIGHT_HEAD}>The right steps</p>
-            {right.map((r, k) => (
-              <div key={k} className="rounded-lg bg-emerald-50/60 px-1.5 py-1 overflow-x-auto">
-                <div className="flex items-start gap-1 text-[12.5px] leading-snug text-navy">
-                  {r.fix && <span className="shrink-0 font-bold text-emerald-600">✓</span>}
-                  <span dangerouslySetInnerHTML={{ __html: mathLineHtml(r.text) }} />
-                </div>
-                {r.why && <p className="text-[11px] leading-snug text-gray-500">{r.why}</p>}
-              </div>
-            ))}
-            {answer && <div className="px-1.5 overflow-x-auto text-[12.5px] font-bold text-navy"><span className="mr-1">Answer:</span><span dangerouslySetInnerHTML={{ __html: mathLineHtml(answer) }} /></div>}
+            <AlignedMath lines={right} />
           </div>
         </div>
       )}

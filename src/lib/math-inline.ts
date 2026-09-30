@@ -132,7 +132,10 @@ export function mathHtml(s: string): string {
  * A balanced line goes through `mathHtml` unchanged.
  */
 export function mathLineHtml(s: string): string {
-  const t = s.replace(/\\\$/g, '\u0000');
+  const t = s.trim().replace(/\\\$/g, '\u0000');
+  // A line that opens and closes with dollars is one formula, however many the
+  // writer typed ("$$= \frac{12}{b^2}(4b^2) = 48$", a transcription, 1 Oct 2026).
+  const wrapped = /^\$+[^$]+\$+$/.test(t);
   const dollars = (t.match(/\$/g) ?? []).length;
   const inner = t.replace(/\$/g, '').replaceAll('\u0000', '\\$').trim();
   if (!inner) return '';
@@ -142,7 +145,7 @@ export function mathLineHtml(s: string): string {
   // ordinary prose that wraps; whatever maths follows stays one formula.
   const prose = leadingText(inner);
   if (prose) return mathHtml(prose.rest ? `${prose.text} $${prose.rest}$` : prose.text);
-  if (dollars % 2 === 0) return mathHtml(s);
+  if (dollars % 2 === 0 && !wrapped) return mathHtml(s);
   try {
     return katex.renderToString(inner, { throwOnError: false, output: 'html', macros: { ...KATEX_MACROS } });
   } catch {

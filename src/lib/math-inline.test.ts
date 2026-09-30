@@ -277,6 +277,11 @@ describe('mathLineHtml — a line meant as one TeX expression (1 Oct 2026)', () 
     expect(html).toContain('katex');
     expect(html).not.toContain('\\text');
   });
+  it('renders a formula the writer wrapped in doubled dollars', () => {
+    const html = mathLineHtml('$$= \\frac{12}{b^2}(4b^2) = 48$');
+    expect(html).toContain('katex');
+    expect(html).not.toContain('$$');
+  });
   it('leaves a balanced line to mathHtml', () => {
     expect(mathLineHtml('$= \\frac{7}{8}$')).toBe(mathHtml('$= \\frac{7}{8}$'));
     expect(mathLineHtml('add the case with no white seeds')).toBe('add the case with no white seeds');

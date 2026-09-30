@@ -17,6 +17,7 @@
 // Input is already-fetched rows; no I/O.
 
 import { buildLineCorrections, buildReviewFixes, buildWorkingLines, type LineCorrection, type ReviewFix, type WorkingLine } from './review-fix';
+import { regionAt, snippetsFor, type Snippet } from './mistake-snippet';
 import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
@@ -115,6 +116,10 @@ export interface StudentQuestion {
   working?: WorkingLine[];
   /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
   unmarked?: boolean;
+  /** The windows of the student's own page(s) this question sits on (lib/mistake-snippet, 1 Oct 2026). Empty = show typed lines. */
+  snippets?: Snippet[];
+  /** Where the question sits down its page, from the marker's boxes — "See it on my paper" lands on it exactly. */
+  jump?: { at: number; span: number } | null;
 }
 
 /**
@@ -291,7 +296,10 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
-function toQuestion(raw: unknown): StudentQuestion | null {
+/** What the run knows about its pages, for the snippet + the jump (1 Oct 2026). */
+interface PageContext { annotationDebug: unknown; annotatedPhotos: unknown }
+
+function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefined, annotatedPhotos: undefined }): StudentQuestion | null {
   const r = asRecord(raw);
   if (!r) return null;
   const marking = asRecord(r.marking);
@@ -330,12 +338,17 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   }
 
   const fixes = buildReviewFixes(parts, output?.lines);
+  const questionNumber = str(r.question_number) || '?';
+  const photoIndex = Number.isInteger(r.photo_index) ? (r.photo_index as number) : null;
+  const snippets = snippetsFor(ctx.annotationDebug, ctx.annotatedPhotos, questionNumber);
   return {
-    questionNumber: str(r.question_number) || '?',
+    questionNumber,
+    snippets,
+    jump: photoIndex == null ? null : regionAt(ctx.annotationDebug, ctx.annotatedPhotos, questionNumber, photoIndex),
     awarded,
     max,
     topic: str(meta.topic_detected) || null,
-    photoIndex: Number.isInteger(r.photo_index) ? (r.photo_index as number) : null,
+    photoIndex,
     region: str(r.region) || null,
     comment: str(marking.overall_comment),
     slips,
@@ -515,7 +528,8 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
   // show, and listing it as "0/0" reads as a paper they scored nothing on.
   if (!Array.isArray(results)) return null;
 
-  const questions = results.map(toQuestion).filter((q): q is StudentQuestion => q !== null);
+  const pageCtx: PageContext = { annotationDebug: rj?.annotation_debug, annotatedPhotos: rj?.annotated_photos };
+  const questions = results.map(x => toQuestion(x, pageCtx)).filter((q): q is StudentQuestion => q !== null);
 
   // Attach revise links to their questions. Full-mark questions never get one
   // (there is nothing to fix), even if a stale mapping names them.

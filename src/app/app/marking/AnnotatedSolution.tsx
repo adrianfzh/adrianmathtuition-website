@@ -4,6 +4,7 @@
 // and the ✱ teaching note. Server component; maths typeset via mathHtml
 // (the page already loads the KaTeX stylesheet).
 import { mathHtml } from '@/lib/math-inline';
+import AlignedMath from './AlignedMath';
 
 export interface SchemePart {
   label: string | null;
@@ -57,16 +58,8 @@ export default function AnnotatedSolution({ solution, schemes, hideLines = false
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-2">
         The solution, line by line
       </p>
-      <ol className="list-none m-0 p-0 space-y-1.5">
-        {lines.map((l, i) => (
-          <li key={i} className="flex items-baseline gap-2.5">
-            <span className="shrink-0 text-[11px] font-bold text-gray-300 tabular-nums">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <Math text={l} className="text-[13px] text-gray-800 min-w-0" />
-          </li>
-        ))}
-      </ol>
+      {/* Aligned at the equals sign, the Answer bold (1 Oct 2026, Adrian's readability rule). */}
+      <AlignedMath lines={lines.map((l, i) => ({ text: l, n: String(i + 1).padStart(2, '0') }))} size="text-[13px]" />
       </>}
 
       {schemes.length > 0 && (
