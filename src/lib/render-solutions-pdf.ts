@@ -14,7 +14,7 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
-import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines } from '@/lib/solution-readability';
+import { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine, stepLines, solutionLines, alignView } from '@/lib/solution-readability';
 export { displayFractions, isCheckLine, markNotesToCodes, splitSolution, isAsideLine };
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 
@@ -109,10 +109,29 @@ function linesBlock(t: string): string {
     const h = esc(markNotesToCodes(t)).replace(/\u0001([^\u0002]*)\u0002/g, '<span class="sol-mk">$1</span>');
     return `<div class="sol-body">${h}</div>`;
   }
-  return `<div class="sol-lines">${t
-    .split('\n')
-    .map((l) => (l.trim() ? stepLines(l).map(lineHtml).join('') : '<div class="sol-gap"></div>'))
-    .join('')}</div>`;
+  const mk = (c?: string) => (c ? `<span class="sol-mk">${esc(c)}</span>` : '');
+  const tex = (m: string) => esc(`$${displayFractions(m)}$`);
+  const html = alignView(solutionLines(t))
+    .map((l) => {
+      if (l.kind === 'label') return `<div class="sol-lab"><span class="sol-inlabel">${esc(l.text)}</span></div>`;
+      if (l.kind === 'sub') return `<div class="sol-sub">${esc(displayFractions(l.text))}</div>`;
+      if (l.kind === 'align') {
+        const rows = l.rows
+          .map((r) => {
+            const rhs = esc(`$${r.rel ? `{}${r.rel} ` : ''}${displayFractions(r.rhs)}$`);
+            const note = r.note ? `<span class="sol-note">\u2190 ${esc(r.note)}</span>` : '';
+            return `<span class="sol-al-lead">${esc(r.lead ?? '')}</span><span class="sol-al-lhs">${r.lhs ? tex(r.lhs) : ''}</span><span class="sol-al-rhs">${rhs}${note}${mk(r.codes)}</span>`;
+          })
+          .join('');
+        return `<div class="sol-align">${rows}</div>`;
+      }
+      if (l.kind === 'step' || l.kind === 'quiet') {
+        return `<div class="${l.kind === 'quiet' ? 'sol-check' : 'sol-line'}">${esc(displayFractions(l.text))}${mk(l.codes)}</div>`;
+      }
+      return '';
+    })
+    .join('');
+  return `<div class="sol-lines">${html}</div>`;
 }
 
 /**
@@ -228,6 +247,13 @@ ${katexInlineHead()}
   .sol-body{white-space:pre-wrap}
   .sol-line{white-space:pre-wrap;margin:1pt 0}
   .sol-gap{height:5pt}
+  .sol-lab{margin-top:5pt}
+  .sol-sub{font-weight:600;margin:3pt 0 1pt}
+  .sol-align{display:grid;grid-template-columns:max-content max-content minmax(0,1fr);column-gap:5pt;row-gap:5pt;align-items:baseline;margin:3pt 0}
+  .sol-al-lead{color:#8a8a8a;font-size:9pt;text-align:right}
+  .sol-al-lhs{text-align:right}
+  .sol-al-rhs{min-width:0}
+  .sol-note{color:#8a8a8a;font-size:9pt;margin-left:10pt}
   .sol-check{white-space:pre-wrap;color:#8a8a8a;font-size:9.5pt}
   .sol-check .katex{color:#8a8a8a}
   .sol-part{position:relative;padding-left:34pt;margin-top:7pt;break-inside:avoid}
