@@ -462,8 +462,19 @@ async function brief() {
     log(`companion ${comp.key} seed ${comp.seed}: down-weighting ${used.size} topics it already covers`);
   }
   const rng = libs.mulberry32(SEED);
-  const topics = libs.walkTopics(def, rng);
-  const targets = libs.targetMarks(def, { difficulty: 'standard' });
+  let topics = libs.walkTopics(def, rng);
+  let targets = libs.targetMarks(def, { difficulty: 'standard' });
+  // --plan-from <paper.json>: swapping slots in a paper already written. The
+  // blueprint has moved since (recency weights, 26 Sep 2026), so a fresh walk
+  // would not give that paper's slots back; take its topics + marks as they are.
+  const planFrom = argOf('--plan-from', null);
+  if (planFrom) {
+    const src = JSON.parse(readFileSync(resolve(planFrom), 'utf8'));
+    def = { ...def, slots: src.plan.map((sp) => def.slots.find((s) => Number(s.pos) === sp.pos) ?? { pos: sp.pos, marks: sp.marks, parts: sp.parts, topic_pool: sp.pool }) };
+    topics = src.plan.map((sp) => sp.topic);
+    targets = src.plan.map((sp) => sp.target);
+    log(`plan taken from ${src.key} seed ${src.seed} (${src.plan.length} slots)`);
+  }
   const total = targets.reduce((a, b) => a + b, 0);
   const topicList = [...new Set([
     ...libs.getTopicsForLevel(shape.level).flatMap((c) => c.topics),

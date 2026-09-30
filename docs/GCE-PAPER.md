@@ -256,6 +256,16 @@ the draft PDF/DOCX and the answer key at the end is black. The durable copy of e
 output + figure spec is `~/Dropbox/AdrianMath Work/GCE Sets/E Math Set 1/` (the scratchpad
 is wiped on reboot).
 
+**Replacing questions in a published Set — `--plan-from` (30 Sep 2026).** Adrian rejected
+three questions of A Math Set 1 P2 ("too standard"; "drawing graphs by translation is not in
+secondary syllabus"). `generate.mjs brief --plan-from <published paper JSON>` takes the slot
+plan (topic, marks, parts per position) from that paper instead of drawing a new one, so the
+briefs of the rejected slots match the paper they go back into. Put the kept questions in
+`kept-questions.md` (the check refuses the pre-17-Sep rows, which have no `skills`, so
+`paper-so-far.md` stays empty), the rejected one as `old-Q<n>.json`, append Adrian's words
+to each author prompt, then run author → check → blind → moderate as usual and re-publish in
+place. Run: `~/Dropbox/AdrianMath Work/GCE Sets/AM Set 1 swap 2026-09-30/run-P2`.
+
 **Sets must differ from each other — the variety rule (17 Sep 2026).** Adrian: "the
 papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other.
 should aim to test a wide variety of skills". Until then a new Set was only compared
