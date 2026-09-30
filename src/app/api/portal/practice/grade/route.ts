@@ -21,6 +21,7 @@ import { parseTimedMeta } from '@/lib/timed-set';
 import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
+import { scienceLevelOpenFor } from '@/lib/practice';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 
 export const runtime = 'nodejs';
@@ -87,7 +88,8 @@ export async function POST(req: NextRequest) {
     // SCIENCE_PRACTICE_OPEN_TO_STUDENTS; Adrian's admin cookie previews).
     const access = await sciencePracticeAccess();
     const sciLevel = scienceLevelForSubject(scienceSubject);
-    if (!sciLevel || !scienceLevelsFor(account.subjects, access).some(l => l.key === sciLevel.key)) {
+    // 1 Oct 2026: the student's own science choice opens it too (lib/practice scienceLevelOpenFor).
+    if (!sciLevel || !scienceLevelOpenFor(account, access, sciLevel.key)) {
       return NextResponse.json({ error: 'Science practice isn’t open yet' }, { status: 403 });
     }
     let sq;
