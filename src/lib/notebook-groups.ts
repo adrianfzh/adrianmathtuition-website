@@ -112,6 +112,16 @@ export function splitFold(groups: readonly NotebookGroup[]): { open: NotebookGro
   return { open: groups.slice(0, OPEN_GROUPS), earlier: groups.slice(OPEN_GROUPS) };
 }
 
+/** A group that is one marked paper (its key is the run id), not Practice or Other. */
+export function isPaperGroup(g: Pick<NotebookGroup, 'key'>): boolean {
+  return g.key !== 'practice' && g.key !== 'other';
+}
+
+/** The papers "Review my mistakes" opens (30 Sep 2026): the newest paper groups, at most `max`. */
+export function reviewRunIds(groups: readonly NotebookGroup[], max = 3): string[] {
+  return groups.filter(isPaperGroup).slice(0, max).map(g => g.key);
+}
+
 /** Tab order: the maths, then the sciences, then anything else. */
 const SUBJECT_ORDER: readonly string[] = [...PAPER_SUBJECTS, ...SCIENCE_PAPER_SUBJECTS, 'Other'];
 

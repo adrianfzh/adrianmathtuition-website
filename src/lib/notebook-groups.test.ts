@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OPEN_GROUPS, groupHeading, groupMistakes, notebookSubject, splitBySubject, splitFold } from './notebook-groups';
+import { OPEN_GROUPS, groupHeading, groupMistakes, isPaperGroup, notebookSubject, reviewRunIds, splitBySubject, splitFold } from './notebook-groups';
 import type { MistakeRow } from './notebook-mistakes-store';
 
 const paper = (ref: string, paper: string, date: string, label = 'Q3') => ({ kind: 'paper' as const, ref, label, paper, date, clean: false });
@@ -60,5 +60,14 @@ describe('splitBySubject — one tab per subject (30 Sep 2026)', () => {
     expect(notebookSubject('EM')).toBe('E Math');
     expect(notebookSubject('chemistry')).toBe('Chemistry');
     expect(notebookSubject(null)).toBe('Other');
+  });
+});
+
+describe('reviewRunIds — the papers the Notebook\'s review button opens (30 Sep 2026)', () => {
+  const g = (key: string) => ({ key, title: key, at: '', mistakes: [] });
+  it('keeps only paper groups, newest first, at most three', () => {
+    expect(reviewRunIds([g('run-a'), g('practice'), g('run-b'), g('other'), g('run-c'), g('run-d')])).toEqual(['run-a', 'run-b', 'run-c']);
+    expect(reviewRunIds([g('practice')])).toEqual([]);
+    expect(isPaperGroup(g('other'))).toBe(false);
   });
 });

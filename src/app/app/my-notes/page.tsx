@@ -60,7 +60,7 @@ export default async function MyNotebookPage() {
     label: subjects.length > 3 ? (subjectPill(p.subject)?.text ?? p.subject) : p.subject,
     tone: subjectPill(p.subject)?.tone ?? 'other',
     count: p.groups.groups.reduce((n, g) => n + g.mistakes.length, 0),
-    content: <NotebookMistakes initial={p.groups} weakest={p.weakest} />,
+    content: <NotebookMistakes initial={p.groups} weakest={p.weakest} examBand={p.examBand} />,
   }));
 
   return (

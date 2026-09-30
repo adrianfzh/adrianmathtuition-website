@@ -6,7 +6,7 @@
 // this file only draws them and keeps two toggles.
 import { useState } from 'react';
 import Link from 'next/link';
-import { groupHeading, splitFold, type NotebookGroup, type NotebookGroups } from '@/lib/notebook-groups';
+import { groupHeading, isPaperGroup, reviewRunIds, splitFold, type NotebookGroup, type NotebookGroups } from '@/lib/notebook-groups';
 import { CorrectedButton, RemoveButton } from './mistake-actions';
 import PaperSubjectPill from '@/components/PaperSubjectPill';
 import { isScienceSubject } from '@/lib/portal-subjects';
@@ -14,8 +14,12 @@ import { isScienceSubject } from '@/lib/portal-subjects';
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const TONE = { rose: 'bg-rose-50 text-rose-700', amber: 'bg-amber-50 text-amber-800' } as const;
 
-export default function NotebookMistakes({ initial, weakest }: {
+const reviewHref = (ids: readonly string[]) => `/app/marking/review?papers=${ids.join(',')}`;
+
+export default function NotebookMistakes({ initial, weakest, examBand = null }: {
   initial: NotebookGroups;
+  /** An exam in this subject within five days: the review button names it. */
+  examBand?: { label: string; paperIds: string[] } | null;
   /** Weakest topics across the marked papers — one line at the top. */
   weakest: { topic: string; pct: number }[];
 }) {
@@ -24,6 +28,7 @@ export default function NotebookMistakes({ initial, weakest }: {
   const [fixedOpen, setFixedOpen] = useState(false);
   const { open, earlier } = splitFold(groups);
   const total = groups.reduce((n, g) => n + g.mistakes.length, 0);
+  const reviewIds = reviewRunIds(groups);
 
   function drop(id: string) {
     setGroups(prev => prev.map(g => ({ ...g, mistakes: g.mistakes.filter(m => m.id !== id) })).filter(g => g.mistakes.length > 0));
@@ -31,7 +36,11 @@ export default function NotebookMistakes({ initial, weakest }: {
 
   const Group = ({ g }: { g: NotebookGroup }) => (
     <section className="space-y-2" data-group={g.key}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 pt-1">{groupHeading(g)}</p>
+      <div className="flex items-baseline justify-between gap-3 pt-1">
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">{groupHeading(g)}</p>
+        {/* 🔁 the review cards for this one paper (30 Sep 2026). */}
+        {isPaperGroup(g) && <Link href={reviewHref([g.key])} className="shrink-0 text-[12px] font-semibold text-navy underline underline-offset-2">Review ›</Link>}
+      </div>
       {g.mistakes.map(m => (
         <div key={m.id} data-item-id={`mistake:${m.id}`} className={`${CARD} p-4`}>
           <div className="flex items-start gap-3">
@@ -79,6 +88,18 @@ export default function NotebookMistakes({ initial, weakest }: {
             </span>
           ))}
         </p>
+      )}
+
+      {/* 🔁 Review my mistakes (moved from Papers, 30 Sep 2026): the newest papers'
+          questions as cards; five days before an exam it names the exam. */}
+      {reviewIds.length > 0 && (
+        <Link href={reviewHref(examBand?.paperIds.length ? examBand.paperIds : reviewIds)} data-review-door
+          className={`block rounded-2xl px-4 py-3 ${examBand ? 'bg-navy text-white shadow-sm' : 'bg-white border border-black/10 text-navy'}`}>
+          <p className="font-semibold">🔁 {examBand ? `${examBand.label} — review your mistakes ›` : 'Review my mistakes ›'}</p>
+          <p className={`text-[12px] mt-0.5 ${examBand ? 'text-white/80' : 'text-gray-500'}`}>
+            {examBand?.paperIds.length ? `${examBand.paperIds.length} paper${examBand.paperIds.length === 1 ? '' : 's'} with mistakes on the tested topics.` : `Your working beside the right working, one question at a time.`}
+          </p>
+        </Link>
       )}
 
       {total === 0 && (

@@ -15,12 +15,17 @@ import { shownByDefault } from './notebook-mistakes';
 import { groupMistakes, notebookSubject, splitBySubject, type NotebookGroups } from './notebook-groups';
 import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
 import { isScienceSubject, subjectAllowed } from './portal-subjects';
+import { getDashboardData } from './portal-dashboard';
+import type { UpcomingExam } from './portal-exams';
+import { examReviewBands } from './review-cards';
 
 /** One subject's tab (30 Sep 2026): its own list and its own weakest topics. */
 export interface NotebookSubjectPanel {
   subject: string;
   groups: NotebookGroups;
   weakest: { topic: string; pct: number }[];
+  /** An exam in this subject within five days (moved here from Papers, 30 Sep 2026): the review button says so. */
+  examBand: { label: string; paperIds: string[] } | null;
 }
 
 export interface NotebookLoad {
@@ -42,7 +47,7 @@ const WEAKEST_MAX_PAPERS = 40;
 
 export async function loadNotebook(account: PortalAccount, sid: string): Promise<NotebookLoad> {
   const svc = createServiceClient();
-  const [mistakes, runs] = await Promise.all([
+  const [mistakes, runs, exams] = await Promise.all([
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
     // Weakest topics: the same released + subject-gated rows the Papers tab lists.
@@ -54,6 +59,8 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
       .then(r => {
         return ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject) || isScienceSubject(x.paper_subject));
       }, () => [] as MarkingRunRow[]),
+    // The exam band: Home's own cached Airtable batch, fail-soft.
+    getDashboardData(account).then(d => d.upcomingExams, (): UpcomingExam[] => []),
   ]);
 
   // Removed entries stay in the table and leave every student surface; fixed
@@ -80,11 +87,20 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
   // Weakest topics per subject: an A Math focus line under a Physics tab would send the student the wrong way.
   const weakestOf = (list: MarkingRunRow[]) =>
     buildStudentMarking(list, { studentName: account.display_name ?? null }).focus.map(t => ({ topic: t.topic, pct: t.pct }));
+  const examBandOf = (subject: string, list: MarkingRunRow[]): NotebookSubjectPanel['examBand'] => {
+    if (!exams.length) return null;
+    const { papers } = buildStudentMarking(list, { studentName: account.display_name ?? null });
+    const [b] = examReviewBands(exams, papers, subject);
+    if (!b) return null;
+    const when = b.exam.daysLeft === 0 ? 'is today' : b.exam.daysLeft === 1 ? 'is tomorrow' : `in ${b.exam.daysLeft} days`;
+    return { label: `${b.exam.label}${b.exam.paper ? ` ${b.exam.paper}` : ''} ${when}`, paperIds: b.paperIds };
+  };
   const split = splitBySubject(shown);
   const subjects = split.subjects.map(({ subject, rows }) => ({
     subject,
     groups: groupMistakes(rows, practiceFor),
     weakest: weakestOf(runs.filter(x => notebookSubject(x.paper_subject) === subject)),
+    examBand: examBandOf(subject, runs.filter(x => notebookSubject(x.paper_subject) === subject)),
   }));
 
   return { subjects, defaultSubject: split.defaultSubject, groups: groupMistakes(shown, practiceFor), weakest: weakestOf(runs.filter(x => !isScienceSubject(x.paper_subject))) };

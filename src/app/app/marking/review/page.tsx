@@ -131,10 +131,10 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="space-y-3 pb-24 sm:pb-6">
-      <Link href="/app/marking" className="inline-block text-sm font-semibold text-navy hover:underline">← Papers</Link>
+      <Link href="/app/my-notes" className="inline-block text-sm font-semibold text-navy hover:underline">← My Notebook</Link>
       <h1 className="text-xl font-bold text-navy">Review my mistakes</h1>
       {papers.length === 0 ? (
-        <p className="text-sm text-gray-600 bg-white rounded-3xl p-5 border border-black/5">Pick one or more papers on the Papers tab first.</p>
+        <p className="text-sm text-gray-600 bg-white rounded-3xl p-5 border border-black/5">Open it from My Notebook: tap Review beside a paper.</p>
       ) : cards.length === 0 ? (
         <p className="text-sm text-emerald-800 bg-emerald-50 rounded-3xl p-5 border border-emerald-100">✅ Full marks on every marked question in {papers.length === 1 ? 'this paper' : 'these papers'} — nothing to review.</p>
       ) : (
