@@ -15,11 +15,11 @@ copy and the sheet together afterwards; you never send anything to a student.
 
 ## Read first (binding, in this order)
 
-1. `~/Desktop/AdrianMath/teaching_style/FEEDBACK.md` — every entry is a rule
+1. `docs/teaching-style/FEEDBACK.md` — every entry is a rule
    Adrian already corrected once. The 30 Aug entries decide the whole layout:
    teaching lives inside the annotated example, equation steps align at the
    `=`, one idea per line.
-2. `~/Desktop/AdrianMath/.claude/skills/create-teaching-notes/STYLE.md` — the
+2. `docs/teaching-style/STYLE.md` — the
    house DOCX style (fonts, boxes, colour semantics, orange answers).
 3. The `create-teaching-notes` skill itself — it owns the rendering pipeline
    (python-docx / pandoc, figures, verification harness). Invoke it; this skill
@@ -241,7 +241,7 @@ cut a six-section sheet to four plus an optional one, losing a third of the
 paragraphs, and that is the shape he sends. The rest is ② in one line each,
 ③ at the back, or shelved.
 
-Four more rules from that edit (full account in `teaching_style/FEEDBACK.md`):
+Four more rules from that edit (full account in `docs/teaching-style/FEEDBACK.md`):
 
 - **An optional TOPIC is optional whole.** Told the trigonometry could be
   optional, the sheet made one trig ITEM optional and kept two trig sections as
@@ -404,7 +404,7 @@ What makes it the reference — all of it reproducible, none of it accidental:
 
 He rewrote two of Sophie's worked examples by hand and asked for the difference
 to be followed on every surface. The full diff is in
-`~/Desktop/AdrianMath/teaching_style/FEEDBACK.md` § "How Adrian explains";
+`docs/teaching-style/FEEDBACK.md` § "How Adrian explains";
 the shape, in one breath:
 
 - **Box opens with 2–3 grey italic principle lines** (general rule → the trick →

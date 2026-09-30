@@ -15,7 +15,7 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
    question is only an image (the queue already drops `text_len ≤ 40`).
 2. **Brief** — `node scripts/twins/twin.mjs brief --source <uuid> --run <dir>` writes
    `source.json`, `corpus.json`, `plan.json`, `author-brief.md`. Keep run dirs under
-   `~/Desktop/AdrianMath/Twins/<date>/<source-id>/` (the scratchpad wipes).
+   `~/Dropbox/AdrianMath Work/Twins/<date>/<source-id>/` (the scratchpad wipes).
 3. **Author** — spawn an **Opus** agent with `prompts/author.md` (fill RUN). It writes
    `Q1.json` only. Up to four authors at once, staggered.
 4. **Gates** — `node scripts/twins/twin.mjs check --run <dir>` → `Q1.gates.json`

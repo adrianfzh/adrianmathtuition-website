@@ -15,7 +15,7 @@
 >
 > Machinery lives elsewhere: [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) (assignment
 > rails), [`docs/MARKING.md`](docs/MARKING.md) (marking → triage → release),
-> `AdrianMath/teaching_style/FEEDBACK.md` (binding authoring style),
+> `docs/teaching-style/FEEDBACK.md` (binding authoring style),
 > [`IDEAS.md`](IDEAS.md) (queued builds that shorten the round).
 
 ## The round
@@ -59,7 +59,7 @@ never through them.
    overwhelm. Deferred topics carry their evidence forward.
 3. **Completeness** — nothing goes out as bare questions: every practice item
    carries its teaching (a worked example on the sheet).
-4. **Style** — `AdrianMath/teaching_style/FEEDBACK.md` is binding: teaching
+4. **Style** — `docs/teaching-style/FEEDBACK.md` is binding: teaching
    lives inside the annotated example, plain skill-phrase headings, teach by
    contrast, chained examples, escalating practice, tight colour semantics,
    equation steps aligned at the `=`.

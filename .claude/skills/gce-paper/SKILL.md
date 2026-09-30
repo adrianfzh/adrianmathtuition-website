@@ -75,7 +75,7 @@ the gates, the figure files, publishing). Student-facing side:
   print either value.
 - DOCX export: `python3` + `pandoc` (the `create-worksheet` skill's `worksheet_lib.py`
   is imported by `export-docx.py`).
-- A scratch run directory: `$SCRATCH/gce/runs/<key>-seed<n>` (the session scratchpad).
+- A run directory that survives a reboot: `~/Dropbox/AdrianMath Work/GCE Sets/<Set name>/runs/<key>-seed<n>` (Dropbox since 30 Sep 2026; the session scratchpad is wiped on reboot, and `~/Desktop/AdrianMath` is a frozen archive).
 - **Off the Mac (Linux / a cloud container, 23 Sep 2026)** — every Mac path has a fallback,
   no edits needed; only the bank reads stay Mac-only (`docs/CLOUD.md`):
   - PDFs (`assemble`): Chrome comes from `CHROME_PATH` / `PUPPETEER_EXECUTABLE_PATH`, else

@@ -253,7 +253,7 @@ placed AFTER the part that says "On the grid …" with no blank working space un
 printed width in mm when he asks for bigger/smaller; `assemble --set N` prints the same
 title the app shows (`setPaperTitle`: "E Math · Set 1 · Paper 1 · O-Level format") on
 the draft PDF/DOCX and the answer key at the end is black. The durable copy of every
-output + figure spec is `~/Desktop/AdrianMath/GCE Sets/E Math Set 1/` (the scratchpad
+output + figure spec is `~/Dropbox/AdrianMath Work/GCE Sets/E Math Set 1/` (the scratchpad
 is wiped on reboot).
 
 **Sets must differ from each other — the variety rule (17 Sep 2026).** Adrian: "the

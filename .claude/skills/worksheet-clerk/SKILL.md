@@ -119,7 +119,7 @@ Assemble one document and produce it with the `anthropic-skills:create-worksheet
 
 Formatting conventions (annotated worked examples inline, right-aligned orange `[Ans: ...]` under each practice question, diagram rules, docx→pdf via `docx2pdf`) are defined in the `create-worksheet` skill — follow its "Worked-Example Sections" and "Output Modes" sections.
 
-**Where the output goes:** save finished files to `~/Desktop/AdrianMath/worksheets/<YYYY-MM-DD>-<level>-<topic-slug>/` (create the folder). In Cowork also copy to `/mnt/user-data/outputs/` so Adrian gets a download card.
+**Where the output goes:** save finished files to `~/Dropbox/AdrianMath Work/worksheets/<YYYY-MM-DD>-<level>-<topic-slug>/` (create the folder). In Cowork also copy to `/mnt/user-data/outputs/` so Adrian gets a download card.
 
 Then log the export:
 
