@@ -1813,47 +1813,11 @@ export default function MarkPaperPage() {
         </div>
       )}
 
-      {/* ▶️ Auto-release — moved from the retired desk (30 Sep 2026). */}
-      {autoRelease && (
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: autoRelease.paused ? '#fef2f2' : undefined, borderColor: autoRelease.paused ? '#fca5a5' : undefined }} data-auto-release={autoRelease.paused ? 'off' : 'on'}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700 }}>▶️ Auto-release{autoRelease.paused ? ' — OFF' : ' — on'}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {autoRelease.paused
-                ? 'Off: a marked paper waits for you. Tap 📤 Release on its row below.'
-                : 'On: a tagged paper goes to the student as soon as it is marked. To change marks after that, ✏️ Annotate and Done re-issues their copy.'}
-              {autoRelease.at ? ` · since ${new Date(autoRelease.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
-          </div>
-          <button
-            type="button" role="switch" aria-checked={!autoRelease.paused} aria-label="Auto-release" disabled={autoReleaseBusy} onClick={flipAutoRelease}
-            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: !autoRelease.paused ? '#0e7490' : '#d1d5db', opacity: autoReleaseBusy ? 0.5 : 1, flexShrink: 0 }}
-          >
-            <span style={{ position: 'absolute', top: 4, left: !autoRelease.paused ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-          </button>
-        </div>
-      )}
-
-      {/* 🧪 Science tab for students — the release switch (11 Sep 2026). */}
-      {scienceOpen && (
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: scienceOpen.on ? '#f0fdfa' : undefined, borderColor: scienceOpen.on ? '#99f6e4' : undefined }} data-science-open={scienceOpen.on ? 'on' : 'off'}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700 }}>🧪 Science tab for students{scienceOpen.on ? ' — OPEN' : ' — closed'}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {scienceOpen.on
-                ? 'Every signed-in student sees Math | Science and can hand in physics, chemistry and biology papers — free, marks labelled an estimate, feedback first, “Was this useful?” on every paper.'
-                : 'Closed: students see the maths app only. Your admin login previews the Science tab regardless. One tap opens it to everyone, no deploy.'}
-              {scienceOpen.at ? ` · since ${new Date(scienceOpen.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
-          </div>
-          <button
-            type="button" role="switch" aria-checked={scienceOpen.on} aria-label="Science tab for students" disabled={scienceBusy} onClick={flipScienceOpen}
-            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: scienceOpen.on ? '#0d9488' : '#d1d5db', opacity: scienceBusy ? 0.5 : 1, flexShrink: 0 }}
-          >
-            <span style={{ position: 'absolute', top: 4, left: scienceOpen.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-          </button>
-        </div>
-      )}
+      {/* ▶️ Auto-release and 🧪 Science tab for students: their switch cards sat here
+          until 1 Oct 2026 (Adrian: "we can remove auto release toggle and science tab
+          toggle > they are done"). Both settings still exist and are still read — the
+          desk-state auto-release switch and the Airtable `science_marking_open` row
+          (POST /api/admin/marking-settings {scienceOpen}) — only the cards are gone. */}
 
       {/* ⏻ Slots by account — one switch per Claude account the Mac slots spend (13 Sep 2026). */}
       {slotAccounts && (
