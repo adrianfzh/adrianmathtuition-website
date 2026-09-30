@@ -851,7 +851,11 @@ export default function QuestionBankPage() {
         </div>
       )}
       {(d.solutionImages || []).map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
-      {d.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={d.answer} /></div>}
+      {/* Each part's answer already closes its working as a bold Answer line;
+          the combined orange line only for a solution without part answers. */}
+      {d.answer && !(d.solution && !hasTable(d.solution) && Object.keys(partAnswerMap(d.parts || [])).length) && (
+        <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={d.answer} /></div>
+      )}
       {!d.solution && !(d.parts || []).some(pt => pt.solution || pt.solution_image) && !d.answer && (
         <div style={{ color: C.muted, fontSize: 13.5, marginTop: 6 }}>No stored solution on this question.</div>
       )}

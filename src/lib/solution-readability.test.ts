@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes } from './solution-readability';
+import { stepLines, solutionLines, solutionView, readableSolutionText, withPartAnswers, labelKey, stripMarkNotes, splitRelations, stepRows, leadIn, alignView } from './solution-readability';
 
 // AM Set 1 P2 Q4 as stored (Adrian's screenshot, 30 Sep 2026), shortened.
 const Q4 = [
@@ -64,5 +64,41 @@ describe('readableSolutionText', () => {
   });
   it('strips mark notes for students', () => {
     expect(stripMarkNotes('$x = 3$ [M1 for method].')).toBe('$x = 3$.');
+  });
+});
+
+describe('equations lined up on "=" (30 Sep 2026)', () => {
+  it('splits a top-level chain, ignoring "=" inside brackets and refusing inequalities', () => {
+    expect(splitRelations('R = \\sqrt{4} = 2')).toEqual({ terms: ['R', '\\sqrt{4}', '2'], rels: ['=', '='] });
+    expect(splitRelations('f\\left(x = 1\\right) + 2')).toBeNull();
+    expect(splitRelations('0 \\le x = 2')).toBeNull();
+    expect(splitRelations('a < b')).toBeNull();
+    expect(splitRelations('y \\approx 3.2')).toEqual({ terms: ['y', '3.2'], rels: ['\\approx'] });
+  });
+  it('turns an equations-only step into rows, keeping "or" cases side by side and asides as notes', () => {
+    const rows = stepRows('Then $2x = \\frac{\\pi}{12}$ or $\\frac{19\\pi}{12}$, so $x = \\frac{\\pi}{24}$ (acute).')!;
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({ lead: 'Then', lhs: '2x', rel: '=' });
+    expect(rows[0].rhs).toContain('\\text{or}');
+    expect(rows[1]).toMatchObject({ lead: 'so', lhs: 'x', note: 'acute' });
+  });
+  it('leaves a sentence alone', () => {
+    expect(stepRows('cosine is positive in the first quadrant, so $x = 1$')).toBeNull();
+    expect(stepRows('$x = 2$ is not a solution')).toBeNull();
+  });
+  it('puts a short lead-in on its own line', () => {
+    expect(leadIn('End values: at $x = 0$, $y = 1$')).toEqual(['End values:', 'at $x = 0$, $y = 1$']);
+    expect(leadIn('Check: $x = 1$')).toBeNull();
+    expect(leadIn('$2x = 285^\\circ$: fine')).toBeNull();
+  });
+  it('merges consecutive equation steps into one block; a lone equation stays a line', () => {
+    const v = alignView(solutionLines('(a) $R = \\sqrt{4} = 2$. Hence $f(x) = 2\\cos x$.\n(b) $x = 3$.'));
+    expect(v.map((l) => l.kind)).toEqual(['label', 'align', 'label', 'step']);
+    const block = v[1] as { kind: 'align'; rows: unknown[] };
+    expect(block.rows).toHaveLength(3);
+  });
+  it('keeps the rest of a split check quiet', () => {
+    const v = solutionLines('$x = 1$. Check: $x = 1$ works; $x = 2$ fails.');
+    expect(v.map((l) => l.kind)).toEqual(['step', 'quiet', 'quiet']);
   });
 });

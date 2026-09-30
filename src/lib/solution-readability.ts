@@ -133,12 +133,15 @@ export function solutionLines(text: string): SolLine[] {
       out.push({ kind: 'label', text: lab[1] });
       line = line.slice(lab[0].length);
     }
+    // A "Check: A; B" split at its semicolon: B is still part of the check.
+    let inCheck = false;
     for (const step of stepLines(line)) {
       const coded = markNotesToCodes(step);
       const codes = [...coded.matchAll(/\u0001([^\u0002]*)\u0002/g)].map((m) => m[1]).join(' ');
-      const bare = coded.replace(/\s*\u0001[^\u0002]*\u0002/g, '').trim();
+      const bare = coded.replace(/\s*\u0001[^\u0002]*\u0002/g, '').trim().replace(/;$/, '');
       if (!bare) continue;
-      out.push({ kind: isCheckLine(bare) || isAsideLine(bare) ? 'quiet' : 'step', text: bare, ...(codes ? { codes } : {}) });
+      if (isCheckLine(bare)) inCheck = true;
+      out.push({ kind: inCheck || isAsideLine(bare) ? 'quiet' : 'step', text: bare, ...(codes ? { codes } : {}) });
     }
   }
   return out;
@@ -190,5 +193,162 @@ export function withPartAnswers(lines: SolLine[], answers: Record<string, string
     out.push(l);
   }
   close();
+  return out;
+}
+
+// ── Equations lined up on "=" (Adrian, 30 Sep 2026: "equations align at equal
+// sign, and statements on their own line if required") ──────────────────────
+//   • a step that is only equations joined by "so", "gives", "and", "then" …
+//     becomes rows of an aligned block; a chain "a = b = c" continues on its own
+//     row with an empty left side;
+//   • "… or $x = …$" stays on the same row (cases side by side);
+//   • "(acute)" and other bracketed asides go grey at the right of the row;
+//   • "End values: …", "Comparing … with …: …" — the lead-in gets its own line.
+// A step with any other prose stays a sentence. Pure; the stored text is untouched.
+
+export type AlignRow = { lead?: string; lhs: string; rel: string; rhs: string; note?: string; codes?: string };
+export type AlignedLine = ViewLine | { kind: 'sub'; text: string } | { kind: 'align'; rows: AlignRow[] };
+
+const CONNECTOR = /^(?:so|gives|giving|then|hence|thus|therefore|and|when|which gives|so that|or)?$/i;
+const REL_CMD = /^\\(?:approx|equiv)(?![a-zA-Z])/;
+const INEQ = /^(?:<|>|\\(?:le|leq|ge|geq|lt|gt|ne|neq)(?![a-zA-Z]))/;
+
+/** Split TeX at its top-level "=" (and ≈, ≡). null when it is not an equation
+ *  (no relation, or an inequality anywhere at the top level). */
+export function splitRelations(tex: string): { terms: string[]; rels: string[] } | null {
+  const terms: string[] = [], rels: string[] = [];
+  let depth = 0, cur = '';
+  for (let i = 0; i < tex.length; i++) {
+    const c = tex[i], rest = tex.slice(i);
+    if (c === '\\') {
+      const cmd = rest.match(/^\\(?:left|right|big|Big|bigg|Bigg)[lr]?(?![a-zA-Z])\s*(\\[{}]|[()[\]|.])?/);
+      if (cmd) {
+        if (/^\\(?:left|big|Big|bigg|Bigg)l?(?![a-zA-Z])/.test(rest) && !/^\\[a-zA-Z]+r/.test(rest)) depth++;
+        else if (/^\\right|^\\[a-zA-Z]+r(?![a-zA-Z])/.test(rest)) depth = Math.max(0, depth - 1);
+        cur += cmd[0]; i += cmd[0].length - 1; continue;
+      }
+      if (depth === 0 && INEQ.test(rest)) return null;
+      const rc = depth === 0 ? rest.match(REL_CMD) : null;
+      if (rc) { terms.push(cur.trim()); rels.push(rc[0]); cur = ''; i += rc[0].length - 1; continue; }
+      const word = rest.match(/^\\(?:[a-zA-Z]+|.)/);
+      cur += word![0]; i += word![0].length - 1; continue;
+    }
+    if (c === '{' || c === '(' || c === '[') depth++;
+    else if ((c === '}' || c === ')' || c === ']') && depth > 0) depth--;
+    if (depth === 0 && (c === '<' || c === '>')) return null;
+    if (depth === 0 && c === '=') { terms.push(cur.trim()); rels.push('='); cur = ''; continue; }
+    cur += c;
+  }
+  terms.push(cur.trim());
+  if (!rels.length || terms.some((t) => !t)) return null;
+  return { terms, rels };
+}
+
+/** A step's text in math and prose pieces ("$…$" only; display maths never gets here). */
+function pieces(text: string): { math: boolean; s: string }[] {
+  const raw = text.split(/(\$[^$]+\$)/g).filter((p) => p !== '')
+    .map((p) => (p.length > 2 && p.startsWith('$') && p.endsWith('$') ? { math: true, s: p.slice(1, -1) } : { math: false, s: p }));
+  // A bracketed aside that holds maths ("(the only such value in $…$)") is ONE
+  // prose piece, so it can go to the row's note whole.
+  const out: { math: boolean; s: string }[] = [];
+  let open = 0;
+  for (const p of raw) {
+    const prev = out[out.length - 1];
+    if (open > 0 && prev) prev.s += p.math ? `$${p.s}$` : p.s;
+    else out.push({ ...p });
+    if (!p.math) open = Math.max(0, open + (p.s.match(/\(/g) || []).length - (p.s.match(/\)/g) || []).length);
+  }
+  return out;
+}
+
+/** "(aside) rest" → [aside, rest], by bracket balance. */
+function leadingAside(s: string): [string, string] | null {
+  const t = s.replace(/^[\s,;]+/, '');
+  if (!t.startsWith('(')) return null;
+  let d = 0;
+  for (let i = 0; i < t.length; i++) {
+    if (t[i] === '(') d++;
+    else if (t[i] === ')' && --d === 0) return [t.slice(1, i).trim(), t.slice(i + 1)];
+  }
+  return null;
+}
+
+/** One step → aligned rows, or null when it carries prose that is not a joining word. */
+export function stepRows(text: string): AlignRow[] | null {
+  const rows: AlignRow[] = [];
+  let lead = '', or = false;
+  for (const p of pieces(text)) {
+    if (!p.math) {
+      let s = p.s.trim();
+      const aside = leadingAside(s);
+      if (aside && rows.length) {
+        const last = rows[rows.length - 1];
+        last.note = [last.note, aside[0]].filter(Boolean).join('; ');
+        s = aside[1];
+      }
+      const word = s.replace(/^[\s,.;:]+|[\s,.;:]+$/g, '');
+      if (!CONNECTOR.test(word)) return null;
+      if (/^or$/i.test(word)) { if (!rows.length) return null; or = true; lead = ''; continue; }
+      lead = word;
+      continue;
+    }
+    const eq = splitRelations(p.s);
+    if (or) {
+      rows[rows.length - 1].rhs += ` \\quad\\text{or}\\quad ${p.s.trim()}`;
+      or = false; continue;
+    }
+    if (!eq) {
+      if (!rows.length || !lead) return null;
+      rows.push({ lead, lhs: '', rel: '', rhs: p.s.trim() });
+    } else {
+      eq.rels.forEach((rel, k) => rows.push({ ...(k === 0 && lead ? { lead } : {}), lhs: k === 0 ? eq.terms[0] : '', rel, rhs: eq.terms[k + 1] }));
+    }
+    lead = '';
+  }
+  if (or || !rows.length) return null;
+  return rows;
+}
+
+/** "End values: at …" → ["End values:", "at …"]; "Comparing A with B: R cos α = …" too.
+ *  The colon must sit outside the maths and the lead-in must be short. */
+export function leadIn(text: string): [string, string] | null {
+  let inMath = false;
+  for (let i = 0; i < text.length - 1; i++) {
+    if (text[i] === '$') inMath = !inMath;
+    if (!inMath && text[i] === ':' && text[i + 1] === ' ') {
+      const head = text.slice(0, i + 1).trim(), rest = text.slice(i + 2).trim();
+      if (!rest || head.length > 160 || /^\(?\s*check\b/i.test(head)) return null;
+      const prose = head.replace(/\$[^$]*\$/g, ' ');
+      if (!/[A-Za-z]{3,}/.test(prose) || prose.trim().split(/\s+/).length > 6) return null;
+      return [head, rest];
+    }
+  }
+  return null;
+}
+
+/** Working lines → the same lines with equation runs lined up on "=". Pure. */
+export function alignView(lines: ViewLine[]): AlignedLine[] {
+  const out: AlignedLine[] = [];
+  let run: { rows: AlignRow[]; src: ViewLine[] } | null = null;
+  const flush = () => {
+    if (!run) return;
+    if (run.rows.length >= 2) out.push({ kind: 'align', rows: run.rows });
+    else out.push(...run.src);
+    run = null;
+  };
+  for (const l of lines) {
+    if (l.kind !== 'step') { flush(); out.push(l); continue; }
+    let text = l.text;
+    const li = leadIn(text);
+    if (li) { flush(); out.push({ kind: 'sub', text: li[0] }); text = li[1]; }
+    const rows = stepRows(text);
+    const line: ViewLine = { ...l, text };
+    if (!rows) { flush(); out.push(line); continue; }
+    if (l.codes) rows[rows.length - 1].codes = l.codes;
+    if (!run) run = { rows: [], src: [] };
+    run.rows.push(...rows);
+    run.src.push(line);
+  }
+  flush();
   return out;
 }
