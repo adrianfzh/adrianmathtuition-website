@@ -394,7 +394,8 @@ async function publish() {
 
 // -------------------------------------------------------------- review ----
 const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const md = (s) => esc(s).replace(/\n/g, '<br>');
+// Display maths ($$…$$ — the bank's tables and stem-and-leaf arrays) keeps its newlines as spaces so <br> never lands inside KaTeX.
+const md = (s) => esc(String(s ?? '').replace(/\$\$[\s\S]*?\$\$/g, (m) => m.replace(/\n/g, ' '))).replace(/\n/g, '<br>');
 function review() {
   const i = argv.indexOf('--runs');
   const rest_ = i >= 0 ? argv.slice(i + 1) : [];
@@ -422,7 +423,7 @@ function review() {
 <div><h3>Twin</h3>${fig}<div class="q">${q ? md(questionText(q)) : ''}</div>${q ? `<details><summary>key + solution</summary>${md(flatParts(q.parts).map((p) => `${p.label} ${p.answer ?? ''}`).join('\n') || q.answer)}<hr>${md(q.solution)}</details>` : ''}${verdict ? `<p class="why">${esc(verdict.why ?? '')}${verdict.fixes?.length ? `<br>fixes: ${esc(verdict.fixes.join(' · '))}` : ''}</p>` : ''}</div></div></section>`);
   }
   const html = `<!doctype html><meta charset="utf-8"><title>Twins review</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false}]})"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\\\[',right:'\\\\]',display:true},{left:'$',right:'$',display:false},{left:'\\\\(',right:'\\\\)',display:false}]})"></script>
 <style>body{font:15px/1.5 -apple-system,Helvetica,sans-serif;max-width:1100px;margin:24px auto;padding:0 16px;color:#222}.card{border:1px solid #ddd;border-radius:10px;padding:14px 18px;margin:18px 0}.card.ok{border-color:#7c9}.card.no{border-color:#e99;background:#fff8f8}.cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}.q{white-space:normal;margin:8px 0}h2{font-size:17px;margin:0 0 4px}h3{font-size:14px;color:#666;margin:6px 0}.status{font-size:13px;color:#444}.why{font-size:13px;color:#555;border-left:3px solid #ccc;padding-left:8px}details{font-size:13px;color:#444}@media(max-width:800px){.cols{grid-template-columns:1fr}}</style>
 <h1>Twins — ${ok} of ${n} published for your read</h1><p>Every published twin sits in the bank with <code>verified=false</code>: nothing serves until you flip it. Source on the left, our twin on the right.</p>${cards.join('\n')}`;
   writeFileSync(out, html);
