@@ -58,6 +58,9 @@ const LEVEL_RULES: Array<[RegExp, string]> = [
   [/\bAM\b[\s\S]*\(NA\)|\(NA\)[\s\S]*\bAM\b/i, 'AM_NA'],
   // Lower-sec N(A) (28 Sep 2026, the Sec 1 G2 papers): "S1 (NA)" / "S1 G2" → S1_NA,
   // "S2 (NA)" / "S2 G2" → S2_NA — before the bare (NA) rule, which means Sec 4.
+  // Lower-sec G1 (30 Sep 2026): "S2 (NT)" / "S2 G1" → S2_NT (and S1) — like S3_EM_NT.
+  [/\bS1\b[\s\S]*(\(NT\)|\bG1\b)|(\(NT\)|\bG1\b)[\s\S]*\bS1\b/i, 'S1_NT'],
+  [/\bS2\b[\s\S]*(\(NT\)|\bG1\b)|(\(NT\)|\bG1\b)[\s\S]*\bS2\b/i, 'S2_NT'],
   [/\bS1\b[\s\S]*(\(NA\)|\bG2\b)|(\(NA\)|\bG2\b)[\s\S]*\bS1\b/i, 'S1_NA'],
   [/\bS2\b[\s\S]*(\(NA\)|\bG2\b)|(\(NA\)|\bG2\b)[\s\S]*\bS2\b/i, 'S2_NA'],
   [/\(NA\)|\b4045\b/i, 'EM_NA'],

@@ -62,6 +62,12 @@ describe('parseSourceFilename — G2 A-Math and H1 (30 Sep 2026)', () => {
     expect(parseSourceFilename('S3 EM SA2 (NA) 2020 Bedok South P1.pdf')).toMatchObject({ ok: true, level: 'S3_EM_NA' });
     expect(parseSourceFilename('AM PRELIM (NA) 2021 Bedok South P2.pdf')).toMatchObject({ ok: true, level: 'AM_NA', paper: 'p2' });
   });
+  it('Sec 1–2 G1 is S1_NT / S2_NT; Sec 3 G1 stays S3_EM_NT', () => {
+    expect(parseSourceFilename('S2 SA2 (NT) 2023 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NT', school: 'Bedok View' });
+    expect(parseSourceFilename('S2 G1 SA2 2023 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NT' });
+    expect(parseSourceFilename('S3 SA2 (NT) 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S3_EM_NT' });
+    expect(parseSourceFilename('S2 SA2 (NA) 2018 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NA' });
+  });
   it('H1 wins over a JC2 token', () => {
     expect(parseSourceFilename('JC2 H1 PRELIM 2019 ACJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'ACJC', examType: 'Prelim' });
     expect(parseSourceFilename('H1 PRELIM 2021 TMJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'TMJC' });

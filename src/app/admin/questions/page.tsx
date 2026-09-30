@@ -106,12 +106,12 @@ type PaperRow = PaperMeta & {
   coverage?: { status: string; missingMarks: number; label: string } | null;
 };
 
-const LEVELS = ['AM', 'AM_NA', 'EM', 'EM_NA', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S1', 'S1_NA', 'JC2', 'JC1', 'JC2_H1'];
+const LEVELS = ['AM', 'AM_NA', 'EM', 'EM_NA', 'S3_AM', 'S3_AM_NA', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S2_NA', 'S2_NT', 'S1', 'S1_NA', 'S1_NT', 'JC2', 'JC1', 'JC2_H1'];
 // What Adrian reads (30 Sep 2026: "can we say have EM G2 instead of EM_NA?"): N(A) = G2,
 // N(T) = G1. The stored value (and the filter's value) stays the bank's level code.
 const LEVEL_LABEL: Record<string, string> = {
   AM_NA: 'AM G2', EM_NA: 'EM G2', S3_EM: 'S3 EM', S3_AM: 'S3 AM', S3_EM_NA: 'S3 EM G2', S3_EM_NT: 'S3 EM G1',
-  S1_NA: 'S1 G2', S2_NA: 'S2 G2', JC2_H1: 'JC2 H1',
+  S1_NA: 'S1 G2', S2_NA: 'S2 G2', S1_NT: 'S1 G1', S2_NT: 'S2 G1', S3_AM_NA: 'S3 AM G2', JC2_H1: 'JC2 H1',
 };
 const levelLabel = (l: string | null | undefined) => (l ? LEVEL_LABEL[l] ?? l : '');
 
