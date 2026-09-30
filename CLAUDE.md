@@ -139,6 +139,30 @@ points below in the reply, briefly**, and check the work against them:
    - An append-only credit ledger from day one: unspent credits are deferred revenue a buyer
      will ask about.
 
+## 🚪 Student-facing switches — check before every promote (Adrian, 1 Oct 2026)
+
+Every unfinished student surface is behind ONE constant in `src/lib/portal-beta.ts`, named
+`*_OPEN_TO_STUDENTS`. `false` = students never see it; **Adrian's admin cookie and the preview
+student (`portal-teste@example.com`) always do**, so he can test as a student. Flipping one is a
+one-word change plus a push; nothing else gates them. **Before a promote, list them
+(`grep -n "OPEN_TO_STUDENTS = " src/lib/portal-beta.ts`) and say in the report which are open** —
+Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future sessions know".
+
+| Switch | State (1 Oct 2026) | What it opens |
+|---|---|---|
+| `SCIENCE_PRACTICE_OPEN_TO_STUDENTS` | **closed** (opened and closed again 1 Oct 2026 before the promote) | the Science Practise tab (MCQ by topic) |
+| `SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS` | **closed** until the seeded grader check passes | structured science practice (write, get marked, then the scheme) |
+| `EXPLAIN_CLIP_OPEN_TO_STUDENTS` | **closed** until Adrian has watched a few | ▶ Explain it · 1 min on the paper page + Notebook cards (`docs/LESSONS.md`) |
+| `SCIENCE_MARKING_OPEN_TO_STUDENTS` | closed in code — the LIVE switch is the Airtable `Settings` row `science_marking_open` (on since 25 Sep 2026) | the Science tab |
+| `QA_FLASHCARDS_OPEN_TO_STUDENTS` | closed | `/app/science/qa` |
+| `ESSAY_MARKING_OPEN_TO_STUDENTS` | closed | the Languages family |
+| `EXAM_PREP_OPEN_TO_STUDENTS` | closed | ⏱ Timed set + the exam card's door |
+| `NOTES_OPEN_TO_STUDENTS`, `PRACTICE_PICKER_OPEN_TO_STUDENTS`, `LAST_LESSON_OPEN_TO_STUDENTS`, `MARK_SUBJECT_OPEN_TO_STUDENTS` | closed | the marking-only beta's held-back surfaces |
+| `FIND_OPEN_TO_STUDENTS`, `PRACTICE_PHOTO_OPEN_TO_STUDENTS`, `PROOF_LADDER_OPEN_TO_STUDENTS` | **open** | Find a question · Practice photo · 🤔 Stuck? Next step (opened 1 Oct 2026) |
+
+The table is a snapshot; the file is the truth. When you add a switch, add a row. When Adrian
+opens one, update the row in the same commit.
+
 ## Commands
 
 - `npm run dev` / `next dev` — run locally
