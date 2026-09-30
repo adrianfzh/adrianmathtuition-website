@@ -166,12 +166,13 @@ export default function CalibrationPage() {
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState<Set<string>>(new Set());
+  const [truth, setTruth] = useState<'' | 'human' | 'seeded'>('');
 
   const load = useCallback(async () => {
     setLoading(true);
     setErr('');
     try {
-      const r = await fetch('/api/admin/calibration');
+      const r = await fetch(`/api/admin/calibration${truth ? `?truth=${truth}` : ''}`);
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       setData(d);
@@ -180,7 +181,7 @@ export default function CalibrationPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [truth]);
 
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
@@ -219,6 +220,15 @@ export default function CalibrationPage() {
             {loading ? 'Refreshing…' : '↻ Refresh'}
           </button>
         </header>
+
+        <div className="flex gap-1.5 px-1 text-sm">
+          {([['', 'All'], ['human', 'Human marking'], ['seeded', '🌱 Seeded scripts']] as const).map(([v, label]) => (
+            <button key={v} onClick={() => setTruth(v)}
+              className={`rounded-full px-3 py-1 border ${truth === v ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-600 border-neutral-300'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
 
         {stats && (
           <p className="text-sm text-neutral-600 px-1">

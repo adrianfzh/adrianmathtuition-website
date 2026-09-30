@@ -18,9 +18,15 @@ const plain = s => String(s)
   .replace(/_\{([^}]*)\}/g, (m, x) => [...x].map(c => /\d/.test(c) ? SUB[c] : c).join('')).replace(/_(\d)/g, (m, d) => SUB[d])
   .replace(/\\times/g, '×').replace(/\\text\{([^}]*)\}/g, '$1').replace(/\\[a-zA-Z]+/g, '').replace(/[{}]/g, '');
 const wrap = (t, w) => { const out = []; for (const para of String(t).split('\n')) { let l = ''; for (const x of para.split(/\s+/)) { if ((l + ' ' + x).trim().length > w) { out.push(l.trim()); l = x; } else l = l + ' ' + x; } out.push(l.trim()); } return out; };
+// "[131/53]I" in an answer = a nuclide as a student writes it: the nucleon number stacked
+// over the proton number, both in front of the symbol.
+const nuclide = s => s.replace(/\[(\d+)\/(-?\d+)\]/g, (m, a, z) => {
+  const cw = 11, back = a.length * cw, gap = Math.max(0, a.length - z.length) * cw + 3;
+  return `<tspan font-size="20" dy="-13">${a}</tspan><tspan font-size="20" dx="-${back}" dy="26">${z}</tspan><tspan dx="${gap}" dy="-13">&#8203;</tspan>`;
+});
 async function page(q, parts, n, of) {
   let y = 60; const L = [];
-  const add = (t, cls, size, x, w) => { for (const ln of wrap(t, w)) { if (ln) L.push(`<text x="${x}" y="${y}" class="${cls}">${esc(ln)}</text>`); y += size; } };
+  const add = (t, cls, size, x, w) => { for (const ln of wrap(t, w)) { if (ln) L.push(`<text x="${x}" y="${y}" class="${cls}">${nuclide(esc(ln))}</text>`); y += size; } };
   L.push(`<text x="70" y="${y}" class="hand">Name: BENCH SCRIPT      Class: 4X      Index no: 00</text>`); y += 56;
   add(q.question, 'qn', 34, 70, 90); y += 4;
   if (q.stem) { add(plain(q.stem), 'print', 27, 70, 92); y += 14; }

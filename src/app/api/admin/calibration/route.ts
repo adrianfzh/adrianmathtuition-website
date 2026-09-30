@@ -1,6 +1,8 @@
 // /api/admin/calibration — the numbers behind /admin/calibration.
 //
-// GET [?subject=] → { rows, stats, limit, generatedAt }
+// GET [?subject=] [?truth=seeded|human] → { rows, stats, limit, generatedAt }
+//   truth=seeded = only the science bench's seeded scripts (truth by construction,
+//   SPEC-SCIENCE-BENCH §1); truth=human = everything else; absent = all rows
 //   rows  = the latest 200 calibration_results, newest first (per_question included)
 //   stats = lib/calibration-stats.ts over THOSE rows — per subject: papers, share
 //           within the ±2 gate, mean |Δ|, question agreement, over/under shares,
@@ -34,12 +36,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: `unknown subject "${subject}"` }, { status: 400 });
   }
 
+  const truth = req.nextUrl.searchParams.get('truth') || '';
+  if (truth && truth !== 'seeded' && truth !== 'human') {
+    return NextResponse.json({ error: `unknown truth "${truth}"` }, { status: 400 });
+  }
+
   let query = getSupabaseAdmin()
     .from('calibration_results')
     .select(COLUMNS)
     .order('created_at', { ascending: false })
     .limit(LIMIT);
   if (subject) query = query.eq('subject', subject);
+  if (truth === 'seeded') query = query.eq('truth_source', 'seeded');
+  if (truth === 'human') query = query.neq('truth_source', 'seeded');
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
