@@ -56,6 +56,8 @@
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { decideSolutionNote, decidedSolutionKind, isCorrectnessHold, parseFitnessNote, releaseNote } from '@/lib/figure-flag-release';
+import { batchKey, isSentBack, sendBackNote, sentBackObject, sgtDayLabel, type CheckLane } from '@/lib/figure-check';
+import { sgtTodayISO } from '@/lib/sgt';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -942,6 +944,100 @@ async function fitnessLanePost(
   return NextResponse.json({ ok: true, status: (patch.status as string | undefined) ?? 'held', note });
 }
 
+/* ── ✅ Check fixes (30 Sep 2026) ─────────────────────────────────────────────
+ * Adrian: "i only need the fixed diagrams or redrawn diagrams in front of me,
+ * then i click approve or a comment to say why it is still not good enough, or
+ * just redraw". Every HELD flag, either kind, that has a candidate waiting —
+ * nothing else. Approve reuses the lanes' own approve; the two send-backs move
+ * the candidate to sent-back/<day>/ and write the ask on the flag
+ * (lib/figure-check.ts). */
+
+async function checkLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
+  const { data: flags, error } = await supa
+    .from('figure_flags').select('path, question_id, note, kind, created_at')
+    .in('kind', ['solution', 'question']).eq('status', 'held')
+    .order('created_at', { ascending: false }).limit(2000);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const held = flags ?? [];
+  const names = await listCandidateNames(supa, held.map((f) => obj(f.path as string)));
+  const waiting = held.filter((f) => names.has(obj(f.path as string)));
+  const sentBack = held.filter((f) => isSentBack(f.note as string | null)).length;
+
+  // Sidecars carry the batch order ("#B5-12"); read them all — the list is small.
+  const sides = new Map<string, Record<string, unknown>>();
+  await Promise.all(waiting.map(async (f) => {
+    const p = f.path as string;
+    sides.set(p, names.has(`${obj(p)}.json`) ? await readSidecar(supa, p) : {});
+  }));
+  waiting.sort((a, b) => {
+    const ka = batchKey(str(sides.get(a.path as string)?.note)), kb = batchKey(str(sides.get(b.path as string)?.note));
+    return ka[0] - kb[0] || ka[1] - kb[1];
+  });
+
+  const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+  const pageSize = Math.min(40, Math.max(1, Number(sp.get('pageSize') ?? 12) || 12));
+  const slice = waiting.slice(page * pageSize, page * pageSize + pageSize);
+  const qids = [...new Set(slice.map((f) => f.question_id as string))];
+  const meta: Record<string, Row> = {};
+  if (qids.length) {
+    const { data: qs } = await supa.from('questions')
+      .select('id, level, school, year, paper, question_number, parts, solution_images, solution')
+      .in('id', qids);
+    for (const q of qs ?? []) meta[q.id as string] = q as Row;
+  }
+  const items = slice.map((f) => {
+    const path = f.path as string;
+    const q = meta[f.question_id as string];
+    const side = sides.get(path) ?? {};
+    const lane: CheckLane = f.kind === 'solution' ? 'solution' : 'question';
+    return {
+      lane, path, qid: f.question_id,
+      level: q?.level ?? null, school: q?.school ?? null, year: q?.year ?? null,
+      paper: q?.paper ?? null, qnum: q?.question_number ?? null,
+      partLabel: q && lane === 'solution' ? partLabelFor(q, path) : null,
+      beforeUrl: imgSrc(`${BUCKET}/${obj(path)}`),
+      afterUrl: candidateUrl(path, side),
+      whatChanged: str(side.note),
+      holdReason: str(side.hold_reason),
+    };
+  });
+  return NextResponse.json({ items, page, pageSize, total: waiting.length, sentBack });
+}
+
+async function checkLanePost(supa: SupabaseClient, body: Record<string, unknown>, rawPath: string, questionId: string) {
+  const lane: CheckLane = body.lane === 'solution' ? 'solution' : 'question';
+  const path = await storedFlagPath(supa, rawPath, lane);
+  const action = typeof body.action === 'string' ? body.action : '';
+  if (action === 'approve') {
+    return lane === 'solution'
+      ? solutionLanePost(supa, { action: 'approve-candidate' }, path, questionId)
+      : approveQuestionCandidate(supa, path, questionId);
+  }
+  if (action !== 'redo' && action !== 'redraw') return NextResponse.json({ error: `unknown check action: ${action || '(none)'}` }, { status: 400 });
+  const comment = typeof body.comment === 'string' ? body.comment.trim().slice(0, 500) : '';
+  if (action === 'redo' && !comment) return NextResponse.json({ error: 'say what is still wrong' }, { status: 400 });
+
+  const { data: fl, error: readErr } = await supa.from('figure_flags').select('note, question_id')
+    .eq('path', path).eq('kind', lane).eq('status', 'held').maybeSingle();
+  if (readErr) return step('read', readErr.message);
+  if (!fl) return step('read', 'no held flag at that path');
+  if (fl.question_id !== questionId) return step('read', 'questionId does not match the flag');
+
+  // Keep the turned-down candidate for the redo session, then take it off the page.
+  const day = sgtTodayISO();
+  for (const suffix of ['', '.json']) {
+    const from = `candidates/${obj(path)}${suffix}`;
+    const to = sentBackObject(`${obj(path)}${suffix}`, day);
+    await supa.storage.from(BUCKET).remove([to]);   // a second send-back the same day replaces the first copy
+    const mv = await supa.storage.from(BUCKET).move(from, to);
+    if (mv.error && suffix === '') return step('move', mv.error.message);
+  }
+  const note = sendBackNote(fl.note as string | null, lane, action, comment, sgtDayLabel());
+  const { error } = await supa.from('figure_flags').update({ note }).eq('path', path).eq('kind', lane);
+  if (error) return step('flag', error.message);
+  return NextResponse.json({ ok: true, status: 'held', note });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -949,6 +1045,7 @@ export async function GET(req: NextRequest) {
 
   if (sp.get('kind') === 'solution') return solutionLaneGet(supa, sp);
   if (sp.get('kind') === 'fitness') return fitnessLaneGet(supa, sp);
+  if (sp.get('kind') === 'check') return checkLaneGet(supa, sp);
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
@@ -1056,6 +1153,7 @@ export async function POST(req: NextRequest) {
   // answered "no held question flag at that path" on a card it had just listed,
   // and a Solutions-lane tap updated zero rows while reporting ok. Resolve the
   // STORED spelling once here; every lane below then hits the row it was shown.
+  if (body.kind === 'check') return checkLanePost(supa, body, rawPath, questionId);
   const path = await storedFlagPath(supa, rawPath, body.kind === 'solution' ? 'solution' : 'question');
   // The solution vet lane and the fitness lane are separate verb sets on the
   // same table; every question-figure behaviour below is untouched.

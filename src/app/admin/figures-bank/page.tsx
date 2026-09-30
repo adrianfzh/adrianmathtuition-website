@@ -468,7 +468,13 @@ export default function FiguresPage() {
               : tab === 'fitness' ? 'question figures the fitness pass held for a look — hide, accept, or send to repair'
                 : 'each figure with its question and what the checks found'}
         </span>
-        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6 }}>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {/* ✅ Check fixes (30 Sep 2026): only the repaired / redrawn figures, three buttons each. */}
+          <a href="/admin/figures-check"
+            style={{ fontSize: 13.5, fontWeight: 700, color: '#fff', background: '#059669', border: '1px solid #059669',
+              borderRadius: 8, padding: '6px 14px', textDecoration: 'none' }}>
+            ✅ Check fixed figures
+          </a>
           {/* Filled = where you are. The old pair read as two buttons rather
               than a choice, and the review kept getting missed. */}
           <button onClick={() => goTab('all')}

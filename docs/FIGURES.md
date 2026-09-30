@@ -128,6 +128,28 @@ at any other level goes into `gate.unjudged`, and `solutionMarkdown` then render
 lands and JC is added to the set. A failed level read treats every question as unjudged.
 Adrian: "There must be no watermark images — important."
 
+### ✅ Check fixed figures — `/admin/figures-check` (30 Sep 2026)
+
+Adrian: *"i only need the fixed diagrams or redrawn diagrams in front of me, then i click
+approve or a comment to say why it is still not good enough, or just redraw"*. **This is
+where a repair batch's candidates are judged now** — the two lanes below still work, but
+he should never have to hunt through their views for a batch.
+
+- **What it lists:** every `status='held'` flag, either kind, that has an object under
+  `candidates/`. Nothing else. Batch order from the sidecar note (`#B5-12`). `GET
+  /api/admin/figures-bank?kind=check` (`total`, `sentBack`).
+- **Three buttons:** ✓ Approve (the lane's own `approve-candidate` — the figure goes live),
+  💬 Not good enough (a comment is required), ✏️ Redraw.
+- **A send-back** (`POST {kind:'check', lane, path, questionId, action:'redo'|'redraw', comment}`)
+  moves the candidate + sidecar to `sent-back/<SGT day>/<object>` (kept, so the redo session
+  sees what he turned down) and writes the ask on the flag, in front of what was there:
+  `Adrian: repair · redo 30 Sep: <his words> · …` (question) / `Adrian: redraw · redraw from
+  scratch 30 Sep · …` (solution). The lane prefix is kept, so the row stays on Fitness ›
+  Repair / Solutions › Redraw. Rules in `lib/figure-check.ts` (pure, tested).
+- **A repair session starts here:** `figure_flags` rows where `isSentBack(note)` —
+  `readSendBack(note)` gives `{ask, date, comment}`. Do the ask, upload a new candidate,
+  and it is back on his page.
+
 ### Solution lane — `/admin/figures-bank` → 🖼 Solutions
 
 The held rows above are Adrian's to judge, and since 2026-09-03 they have a
