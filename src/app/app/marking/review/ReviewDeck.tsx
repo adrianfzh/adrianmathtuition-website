@@ -20,7 +20,7 @@ export default function ReviewDeck({ items }: { items: DeckItem[] }) {
     <div className="space-y-2" data-review-deck>
       <div ref={ref} className="flex overflow-x-auto snap-x snap-mandatory gap-3 -mx-4 px-4 pb-1 [scrollbar-width:none]" style={{ scrollbarWidth: 'none' }}>
         {items.map(it => (
-          <div key={it.key} className="snap-center shrink-0 w-full" style={{ height: '64vh' }}>{it.node}</div>
+          <div key={it.key} className="snap-center shrink-0 w-full h-[64vh] max-md:landscape:h-[82vh]">{it.node}</div>
         ))}
       </div>
       <div className="flex items-center justify-between">

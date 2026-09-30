@@ -53,3 +53,23 @@ export function buildReviewFixes(parts: unknown, lines: unknown): ReviewFix[] {
   }
   return out;
 }
+
+/** One of the student's lines on a card with no red-pen fix; `wrong` = the marker's ✗. */
+export interface WorkingLine { text: string; wrong: boolean }
+
+/**
+ * The comparison when no part has a fix (30 Sep 2026, Adrian: the side by side on
+ * every card): the student's own lines for the question, crossed-out ones dropped,
+ * the ✗ lines marked — shown beside the worked solution. Empty when no line was
+ * read or none went wrong (then there is nothing to compare line by line).
+ */
+export function buildWorkingLines(lines: unknown): WorkingLine[] {
+  const out: WorkingLine[] = [];
+  for (const raw of Array.isArray(lines) ? lines : []) {
+    const l = rec(raw);
+    if (!l || l.is_crossed_out === true) continue;
+    const t = s(l.transcription_latex) || s(l.transcription_plain);
+    if (t) out.push({ text: t, wrong: l.verdict === 'wrong' });
+  }
+  return out.some(l => l.wrong) ? out : [];
+}

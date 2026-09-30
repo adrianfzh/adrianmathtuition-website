@@ -44,13 +44,16 @@ function Math({ text, className }: { text: string; className?: string }) {
   return <span className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }
 
-export default function AnnotatedSolution({ solution, schemes }: {
+export default function AnnotatedSolution({ solution, schemes, hideLines = false }: {
   solution: string;
   schemes: SchemePart[];
+  /** The lines are already on screen (the Review card's comparison) — show only where the marks live. */
+  hideLines?: boolean;
 }) {
   const lines = solution.split('\n').map(l => l.trim()).filter(Boolean);
   return (
     <div className="mt-2 rounded-xl border border-gray-100 bg-white p-3">
+      {!hideLines && <>
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-2">
         The solution, line by line
       </p>
@@ -64,9 +67,10 @@ export default function AnnotatedSolution({ solution, schemes }: {
           </li>
         ))}
       </ol>
+      </>}
 
       {schemes.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5">
+        <div className={hideLines ? 'space-y-2.5' : 'mt-3 pt-3 border-t border-gray-100 space-y-2.5'}>
           <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
             Where the marks live — and where yours went
           </p>

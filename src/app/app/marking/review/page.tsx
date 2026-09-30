@@ -12,9 +12,25 @@ import { buildReviewCards, jumpHref } from '@/lib/review-cards';
 import { mathHtml } from '@/lib/math-inline';
 import AnnotatedSolution from '../AnnotatedSolution';
 import ReviewDeck, { type DeckItem } from './ReviewDeck';
+import TurnHint from './TurnHint';
 import 'katex/dist/katex.min.css';
 
 export const dynamic = 'force-dynamic';
+
+// The comparison (30 Sep 2026, Adrian): top and bottom on a phone held upright,
+// side by side when it is turned sideways, and always on a tablet or laptop.
+const COMPARE = 'grid grid-cols-1 gap-2 landscape:grid-cols-2 md:grid-cols-2';
+const YOURS_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-gray-400';
+const RIGHT_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700';
+
+function WorkLine({ text, wrong, faint = false }: { text: string; wrong: boolean; faint?: boolean }) {
+  return (
+    <div className={`flex items-start gap-1 rounded-lg px-1.5 py-1 overflow-x-auto text-[12.5px] leading-snug ${wrong ? 'bg-rose-50 border border-rose-200 text-rose-900' : faint ? 'text-gray-500' : 'text-gray-700'}`}>
+      {wrong && <span className="shrink-0 font-bold text-rose-600">✗</span>}
+      <span dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />
+    </div>
+  );
+}
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject';
 
@@ -33,6 +49,9 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
 
   const items: DeckItem[] = cards.map(c => {
     const q = c.question;
+    // No red-pen fix on any part: compare the student's whole working with the worked solution instead.
+    const compareAll = !(q.fixes ?? []).length && (q.working ?? []).length > 0 && !!q.solution;
+    const solutionLines = compareAll ? String(q.solution).split('\n').map(l => l.trim()).filter(Boolean) : [];
     return {
       key: c.key,
       node: (
@@ -61,21 +80,13 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
           {(q.fixes ?? []).map((f, j) => (
             <div key={j} className="space-y-1" data-review-fix>
               {f.label && <p className="text-[11px] font-semibold text-gray-500">{f.label}</p>}
-              <div className="grid grid-cols-2 gap-2">
+              <div className={COMPARE}>
                 <div className="min-w-0 space-y-1">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-gray-400">Your working</p>
-                  {f.yours.map((line, k) => {
-                    const wrong = k === f.yours.length - 1;
-                    return (
-                      <div key={k} className={`flex items-start gap-1 rounded-lg px-1.5 py-1 overflow-x-auto text-[12.5px] leading-snug ${wrong ? 'bg-rose-50 border border-rose-200 text-rose-900' : 'text-gray-500'}`}>
-                        {wrong && <span className="shrink-0 font-bold text-rose-600">✗</span>}
-                        <span dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />
-                      </div>
-                    );
-                  })}
+                  <p className={YOURS_HEAD}>Your working</p>
+                  {f.yours.map((line, k) => <WorkLine key={k} text={line} wrong={k === f.yours.length - 1} faint />)}
                 </div>
                 <div className="min-w-0 space-y-1">
-                  <p className="text-[10.5px] font-semibold uppercase tracking-wide text-emerald-700">From your line</p>
+                  <p className={RIGHT_HEAD}>From your line</p>
                   {f.steps.map((st, k) => (
                     <div key={k} className="rounded-lg bg-emerald-50/60 px-1.5 py-1 overflow-x-auto">
                       <div className="text-[12.5px] leading-snug text-navy" dangerouslySetInnerHTML={{ __html: mathHtml(st.latex) }} />
@@ -87,12 +98,26 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
               </div>
             </div>
           ))}
-          {q.solution && (
-            <details className="group/sol">
+          {compareAll && (
+            <div className={COMPARE} data-review-compare>
+              <div className="min-w-0 space-y-1">
+                <p className={YOURS_HEAD}>Your working</p>
+                {(q.working ?? []).map((l, k) => <WorkLine key={k} text={l.text} wrong={l.wrong} />)}
+              </div>
+              <div className="min-w-0 space-y-1">
+                <p className={RIGHT_HEAD}>The right working</p>
+                {solutionLines.map((line, k) => (
+                  <div key={k} className="rounded-lg bg-emerald-50/60 px-1.5 py-1 overflow-x-auto text-[12.5px] leading-snug text-navy" dangerouslySetInnerHTML={{ __html: mathHtml(line) }} />
+                ))}
+              </div>
+            </div>
+          )}
+          {q.solution && (!compareAll || q.schemes.length > 0) && (
+            <details open className="group/sol">
               <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">
-                <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>📖 The worked solution, annotated
+                <span className="text-gray-400 group-open/sol:rotate-90 transition-transform inline-block">›</span>{compareAll ? '📖 Where the marks went' : '📖 The worked solution, annotated'}
               </summary>
-              <AnnotatedSolution solution={q.solution} schemes={q.schemes} />
+              <AnnotatedSolution solution={q.solution} schemes={q.schemes} hideLines={compareAll} />
             </details>
           )}
           <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -115,6 +140,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
       ) : (
         <>
           <p className="text-[12px] text-gray-500">{cards.length} question{cards.length === 1 ? '' : 's'} across {papers.length} paper{papers.length === 1 ? '' : 's'}. Swipe or tap to move on.</p>
+          {items.length > 0 && <TurnHint />}
           <ReviewDeck items={items} />
         </>
       )}

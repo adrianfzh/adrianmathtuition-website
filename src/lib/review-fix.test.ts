@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildReviewFixes } from './review-fix';
+import { buildReviewFixes, buildWorkingLines } from './review-fix';
 
 const lines = [
   { verdict: 'correct', transcription_latex: '$4p^2 + 2p + 110 = 140$' },
@@ -34,5 +34,18 @@ describe('buildReviewFixes', () => {
     const [f] = buildReviewFixes([{ ...part, label: '(whole)', continuation: { ...part.continuation, final_latex: '$p = 2.5 \\text{ (shown)}$' } }], lines);
     expect(f.label).toBeNull();
     expect(f.final).toBe('$p = 2.5 \\text{ (shown)}$');
+  });
+});
+
+describe('buildWorkingLines', () => {
+  it('keeps the read lines in order, marks the wrong ones, drops crossed-out and blank', () => {
+    const w = buildWorkingLines([...lines, { verdict: 'wrong', transcription_latex: '$x = 9$', is_crossed_out: true }, { verdict: 'correct' }]);
+    expect(w.map(l => l.text)).toEqual(['$4p^2 + 2p + 110 = 140$', '$4p^2 + 2p - 30 = 0$', 'a = 4, b = 2', '$p = \\frac{-2 \\pm \\sqrt{484}}{2(-30)}$']);
+    expect(w.map(l => l.wrong)).toEqual([false, false, false, true]);
+  });
+
+  it('is empty when nothing went wrong or nothing was read', () => {
+    expect(buildWorkingLines([{ verdict: 'correct', transcription_latex: '$x = 1$' }])).toEqual([]);
+    expect(buildWorkingLines(null)).toEqual([]);
   });
 });
