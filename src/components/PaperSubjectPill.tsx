@@ -20,14 +20,14 @@ export const SUBJECT_TONE: Record<Exclude<SubjectTone, 'other'>, { soft: string;
   // Set 2 (25 Sep 2026, Adrian picked it from three sets after "for orange, why
   // not the same colour here?" and "should be coherent with the overall app"):
   // one colour per subject, and the card's edge (strip) and the tag (solid) are
-  // that SAME colour — A Math royal blue (blue-700), E Math yellow (#ECC24B since 1 Oct
+  // that SAME colour — A Math royal blue (blue-700), E Math sunflower (#FFD43B since 1 Oct
   // 2026, was orange-400; dark text on the tag: white fails contrast on it), Physics cyan, Chemistry
   // purple-500, Biology green-600. Beside the app's own slate / amber notice /
   // emerald done / rose lost marks none of the five is a state colour. H2 has no
   // row: a JC paper is plain (portal-subjects subjectPill).
   am: { soft: 'bg-blue-700/10 text-blue-800', solid: 'bg-blue-700 text-white', strip: 'bg-blue-700', tint: 'bg-blue-700/[0.06] border-blue-700/20' },
-  // E Math yellow since 1 Oct 2026 (Adrian: "a lighter orange/yellow like the Book Free Trial button", #ECC24B).
-  em: { soft: 'bg-[#ecc24b]/25 text-[#5a4300]', solid: 'bg-[#ecc24b] text-[#2a2000]', strip: 'bg-[#ecc24b]', tint: 'bg-[#ecc24b]/10 border-[#ecc24b]/40' },
+  // E Math sunflower #FFD43B since 1 Oct 2026 (Adrian, later that day: "can we just change the yellow/orange to sunflower? keep the blue unchanged"; #ECC24B for a few hours before that, orange-400 before).
+  em: { soft: 'bg-[#ffd43b]/25 text-[#5a4300]', solid: 'bg-[#ffd43b] text-[#2a2000]', strip: 'bg-[#ffd43b]', tint: 'bg-[#ffd43b]/10 border-[#ffd43b]/40' },
   phy: { soft: 'bg-cyan-100 text-cyan-800', solid: 'bg-cyan-600 text-white', strip: 'bg-cyan-600', tint: 'bg-cyan-50/70 border-cyan-200/70' },
   chem: { soft: 'bg-purple-100 text-purple-800', solid: 'bg-purple-500 text-white', strip: 'bg-purple-500', tint: 'bg-purple-50/60 border-purple-200/70' },
   bio: { soft: 'bg-green-100 text-green-800', solid: 'bg-green-600 text-white', strip: 'bg-green-600', tint: 'bg-green-50/60 border-green-200/70' },
