@@ -69,7 +69,6 @@ interface Stats {
   thisWeek: { count: number; weekLabel: string };
   // Attention counts (each null when its sub-fetch failed server-side;
   // examGaps is also null outside an exam season) — cards hide on 0/null.
-  pendingPapers?: { count: number; possiblyMarking: number } | null;
   unmarkedLessons?: number | null;
   lessonsToLog?: number | null;
   examGaps?: { examType: string; count: number } | null;
@@ -217,7 +216,6 @@ export default function AdminHub() {
   // Attention cards — shown only when the count is non-zero (a clean day keeps
   // the hub as bare as before). Same .stat-card markup/classes as the original
   // status strip (2×2 grid, whole card is the tap target).
-  const papersCard = stats?.pendingPapers && stats.pendingPapers.count > 0 ? stats.pendingPapers : null;
   const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
   const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
@@ -227,7 +225,7 @@ export default function AdminHub() {
   const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
   // Hand-ins that failed on a student's phone in the last 24 h (lib/submit-failure.ts, 7 Sep 2026) — red, first.
   const failedCard = portalActivity?.failedHandins?.length ? portalActivity.failedHandins : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
+  const hasAttentionCards = !!(unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
 
   return (
     <>
@@ -260,18 +258,6 @@ export default function AdminHub() {
                     {failedCard.slice(0, 3).map(f => `${(f.displayName || 'A student').split(' ')[0]}: ${f.reason} (${f.uploaded}/${f.pages} pages)`).join(' · ')}
                   </div>
                 </Link>
-              )}
-              {papersCard && (
-                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{papersCard.count}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">⏳ Papers to mark</div>
-                  {papersCard.possiblyMarking > 0 && (
-                    <div className="stat-label">+{papersCard.possiblyMarking} possibly marking now</div>
-                  )}
-                </a>
               )}
               {triageCard && (
                 <a href="/admin/desk" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>

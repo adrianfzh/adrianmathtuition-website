@@ -1130,6 +1130,11 @@ export default function DeskPage() {
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
                   <div style={{ fontWeight: 700, fontSize: 16, color: scoreColour(row.pct) }}>{row.max > 0 ? `${row.awarded}/${row.max}` : '—'}</div>
                   {row.pct !== null && <div style={{ fontSize: 11.5, color: C.faint }}>{row.pct}%</div>}
+                  {row.studentId && row.releasedAt && (
+                    <a href={`/app/marking/${row.id}`} onClick={e => e.stopPropagation()}
+                      title="Open this paper in the student's profile, as they see it, and change it with ✏️ Edit marking"
+                      style={{ display: 'inline-block', marginTop: 4, fontSize: 12, color: C.link, textDecoration: 'none', whiteSpace: 'nowrap' }}>✏️ Annotate ›</a>
+                  )}
                 </div>
               </div>
             ))}
@@ -1391,6 +1396,13 @@ function DetailView(p: {
                   style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
                   {busy === 'checked' ? '…' : '✓ Looked at'}
                 </button>
+              )}
+              {run.studentId && released && (
+                <a href={`/app/marking/${run.id}`}
+                  title="Open this paper in the student's profile, as they see it, and change it with ✏️ Edit marking"
+                  style={{ border: '1px solid #bae6fd', background: '#f0f9ff', color: '#0369a1', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, textDecoration: 'none' }}>
+                  ✏️ Annotate in their profile ›
+                </a>
               )}
               {!d.revising && run.max > 0 && (
                 <button onClick={p.onRemarkWhole} disabled={busy === 'remark:' + run.id}
