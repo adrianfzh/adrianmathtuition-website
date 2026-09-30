@@ -898,6 +898,8 @@ answer on its own.
 
 ## The marking desk (2 Sep 2026) — `/admin/desk`
 
+> **RETIRED 30 Sep 2026.** `/admin/desk` redirects to `/admin/mark-paper` (`?run=` carried). Mark a paper now holds the auto-release switch, 📤 Release per row, the ticks for a merged Practice Again sheet, and ✏️ Annotate as the only way to change marks (Done re-issues a released paper, rebuilds an unreleased one). Agree/Override, Re-mark this page and Rebuild buttons are gone with the desk UI. What follows is history.
+
 Spec: [`../SPEC-MARKING-DESK.md`](../SPEC-MARKING-DESK.md). Adrian: *"now i have 3
 places to look at for marking — mark paper, triage, and papers … the flow should
 just be a marked paper appears (with analysis and total marks on the first page)

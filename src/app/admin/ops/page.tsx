@@ -44,7 +44,7 @@ const JOB_LINKS: Record<string, string> = {
   'progress-digest': '/admin/digests',
   'qb-topup': '/admin/bank-health',
   'file-subgroups': '/admin/bank-health',
-  'plan-marking': '/admin/desk?lane=released',
+  'plan-marking': '/admin/mark-paper',
 };
 
 function ago(iso: string): string {
@@ -164,7 +164,7 @@ export default function OpsPage() {
                 · {data.queue.rows.filter(r => r.phase === 'reading').length} of {data.slots.marking} marking slots reading
               </span>
             )}
-            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+            <a href="/admin/mark-paper" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">mark a paper →</a>
           </div>
 
           {/* The plan lane is closed: every slot on that account is exiting on a
@@ -244,7 +244,7 @@ export default function OpsPage() {
                 · 7d: {data.sheetCost.sheets} sheet{data.sheetCost.sheets === 1 ? '' : 's'} · avg {data.sheetCost.avgMinutes} min · {data.sheetCost.avgTokens >= 1e6 ? `${(data.sheetCost.avgTokens / 1e6).toFixed(1)}M` : `${Math.round(data.sheetCost.avgTokens / 1e3)}k`} tokens{data.sheetCost.avgCostUsd != null ? ` · $${data.sheetCost.avgCostUsd.toFixed(2)} at API rates` : ''}
               </span>
             )}
-            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+            <a href="/admin/mark-paper" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">mark a paper →</a>
           </div>
           {!!data?.sheets && (data.sheets.active.length > 0 || data.sheets.queued.length > 0) && (
             <div className="border-t border-neutral-100 divide-y divide-neutral-100 text-sm">

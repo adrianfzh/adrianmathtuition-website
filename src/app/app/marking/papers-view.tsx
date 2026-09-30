@@ -564,10 +564,10 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       )}
 
       {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={sheetLook} manualLink={!!(sheet?.note === 'linked by Adrian' && sheet.run_id)} /></div>}
-      {/* Adrian's doors (17 Sep 2026): the desk row for this paper, the paper as the student sees it. */}
+      {/* Adrian's doors (17 Sep 2026): annotate on Mark a paper (the desk retired 30 Sep 2026), the paper as the student sees it. */}
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
-          <a href={`/admin/desk?run=${paper.id}`} className="text-sky-700 underline">desk</a>
+          <a href={`/admin/mark-paper?run=${paper.id}&annotate=1`} className="text-sky-700 underline">✏️ annotate</a>
           <a href={`/app/marking/${paper.id}`} className="text-sky-700 underline">as student ›</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}

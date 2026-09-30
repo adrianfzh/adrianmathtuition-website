@@ -109,7 +109,7 @@ export default function CostsPage() {
                   <tr key={r.id} className="border-t border-neutral-100">
                     <td className="py-1 whitespace-nowrap">{new Date(r.at).toLocaleString('en-SG', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Singapore' })}</td>
                     <td className="whitespace-nowrap">{r.student ?? '—'}{r.handin ? <span className="ml-1 text-[10px] text-teal-700">hand-in</span> : null}</td>
-                    <td className="max-w-[240px] truncate" title={r.paper}><a href={`/admin/desk?run=${r.id}`} className="hover:underline">{r.paper}</a></td>
+                    <td className="max-w-[240px] truncate" title={r.paper}><a href={`/admin/mark-paper?run=${r.id}`} className="hover:underline">{r.paper}</a></td>
                     <td className="whitespace-nowrap">{PATH_LABEL[r.path] ?? r.path}{r.macPages && r.macPages < r.pages ? <span className="text-xs text-neutral-400"> · {r.macPages} Mac</span> : null}{r.batched === false && r.path === 'api-queue' ? <span className="text-xs text-amber-700"> · not batched</span> : null}</td>
                     <td>{r.pages}</td>
                     <td className="text-right tabular-nums whitespace-nowrap">{money(r.cost)}{r.geminiCost != null ? <div className="text-[10px] text-neutral-400" title={r.gemini?.models.join(', ') || undefined}>Claude {money(r.claudeCost)} · Gemini {money(r.geminiCost)}</div> : null}</td>

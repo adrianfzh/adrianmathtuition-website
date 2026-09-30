@@ -165,7 +165,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
       {isAdmin ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Link href={`/admin/students/${sid}?tab=papers`} className="inline-block text-sm font-semibold text-navy hover:underline">← {viewerName || 'Student'}&apos;s papers</Link>
-          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/desk?run=${paper.id}`} className="underline text-sky-700">open on the desk ›</a></p>
+          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/mark-paper?run=${paper.id}`} className="underline text-sky-700">open in Mark a paper ›</a></p>
         </div>
       ) : (
         <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
