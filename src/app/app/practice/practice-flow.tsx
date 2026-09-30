@@ -934,20 +934,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {hintLoading ? 'Loading…' : '💡 How to approach it'}
+                    {hintLoading ? '💡 Thinking…' : '💡 Hints'}
                   </button>
                 )}
                 {ladderVisible && !q.mcq && !q.subject && solution === null && !(ladder?.done) && (
                   <button onClick={revealStep} disabled={ladderLoading}
                     className="bg-white border border-sky-300 text-sky-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {ladderLoading ? 'Loading…' : ladder ? '🪜 Next step' : '🪜 Stuck? Next step'}
+                    {ladderLoading ? '🪜 …' : ladder ? '🪜 One more step' : '🪜 Stuck? Next step'}
                   </button>
                 )}
                 {/* A structured science answer is marked BEFORE the scheme shows (1 Oct 2026). */}
                 {solution === null && (!assignment || grade) && !(q.subject && !q.mcq && urlMode === 'structured' && !grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {solLoading ? 'Loading…' : (q.subject && !q.mcq && urlMode === 'structured' ? '🔎 Show the mark scheme' : '🔎 Show solution')}
+                    {solLoading ? '🔎 …' : (q.subject && !q.mcq && urlMode === 'structured' ? '🔎 Show the mark scheme' : '🔎 Show solution')}
                   </button>
                 )}
                 {!assignment && !fixedQ && (
@@ -977,13 +977,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {/* 💡 Method hint — Adrian's method for this question type, answer-free */}
           {isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 Hints</div>
               {hint ? (
                 <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
                   <MathMarkdown content={hint} />
                 </div>
               ) : (
-                <p className="text-sm text-amber-900/80">Nothing to add for this one — have a go, then check the solution.</p>
+                <p className="text-sm text-amber-900/80">No hints for this one — just have a go! 💪</p>
               )}
             </div>
           )}
@@ -992,7 +992,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {isStudent && ladder && (
             <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs font-bold uppercase tracking-wide text-sky-800">🪜 The working, step by step</div>
+                <div className="text-xs font-bold uppercase tracking-wide text-sky-800">🪜 Step by step</div>
                 <span className="text-[11px] text-sky-700/70">{ladder.revealed} of {ladder.total}</span>
               </div>
               {ladder.total === 0 ? (
@@ -1003,7 +1003,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 </div>
               )}
               {ladder.done && ladder.total > 0 && (
-                <p className="text-[11px] text-sky-700/70 mt-2">That&apos;s the whole working. Now try one like it without the steps.</p>
+                <p className="text-[11px] text-sky-700/70 mt-2">🏁 That&apos;s all of it. Now try one like it on your own.</p>
               )}
             </div>
           )}
@@ -1109,14 +1109,14 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {!isStudent && q && hint === null && !q.mcq && !q.subject && (
             <button onClick={showHint} disabled={hintLoading}
               className="mr-2 bg-amber-500 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-              {hintLoading ? 'Loading…' : '💡 How to approach it'}
+              {hintLoading ? '💡 Thinking…' : '💡 Hints'}
             </button>
           )}
           {!isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-3">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 Hints</div>
               {hint ? <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed"><MathMarkdown content={hint} /></div>
-                    : <p className="text-sm text-amber-900/80">Nothing to add for this one.</p>}
+                    : <p className="text-sm text-amber-900/80">No hints for this one — just have a go! 💪</p>}
             </div>
           )}
           {!isStudent && q && solution === null && (
