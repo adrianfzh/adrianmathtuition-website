@@ -10,6 +10,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { markingShare, type MarkingShare, type MarkingRunRow } from '@/lib/marking-path';
 import { markingQueueState, type MarkingQueueState, type QueueRunRow } from '@/lib/marking-queue-state';
 import { batchLaneNote, markerUnreachableNote, type BatchLaneNote } from '@/lib/bot-queue-status';
+import { orderReadiness, type TopicReadiness } from '@/lib/serving-policy';
 
 const BOT_QUEUE_QUIET_URL = 'https://adrianmath-telegram-math-bot.fly.dev/queue-quiet';
 
@@ -152,8 +153,19 @@ export async function GET(req: NextRequest) {
       }
     } catch { /* fail-soft — see comment above */ }
 
+    // 👯 Twins — the flip (SPEC-TWINS §6, 30 Sep 2026): per (tree level, topic),
+    // verified twins against school rows drawn in 90 days; the Flip button on
+    // the board posts to /api/admin/serving-policy. Fail-soft: an empty list
+    // when the view is unreadable, never a broken page.
+    let twins: TopicReadiness[] = [];
+    try {
+      const { data } = await getSupabaseAdmin().from('twin_readiness').select('*');
+      twins = orderReadiness((data ?? []) as TopicReadiness[]).slice(0, 60);
+    } catch { twins = []; }
+
     return NextResponse.json({
       jobs,
+      twins,
       neverStamped: neverStamped(latest).map(j => ({ job: j, rhythm: JOB_RHYTHMS[j].label })),
       planLane,
       sheets,

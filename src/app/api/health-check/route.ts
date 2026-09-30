@@ -633,6 +633,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 👯 The flip's one door (SPEC-TWINS §6, 30 Sep 2026) — admin only.
+    timed('serving-policy', async () => {
+      const r = await fetch(`${base}/api/admin/serving-policy`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-activity', async () => {
       const r = await fetch(`${base}/api/admin/portal-activity`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

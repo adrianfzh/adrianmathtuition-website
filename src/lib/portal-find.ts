@@ -13,6 +13,7 @@
 // `portal_generation_log` (one row per similar/generate call — kind
 // 'photo'|'search', qb_hit, generated, question_id).
 import { sgtStartOfDayIso } from './portal-submit-limit';
+import { isOurRow } from './serving-policy';
 import { qbLevelsFor } from './qb-levels';
 import { allowedSubjects, type PaperSubject } from './portal-subjects';
 
@@ -135,7 +136,12 @@ function partsHaveAnswer(parts: unknown): boolean {
   });
 }
 
-export function practiceEligibility(q: EligibilityRow): { ok: true } | { ok: false; reason: string } {
+/**
+ * @param opts.schoolRowsRetired — the topic has been FLIPPED (SPEC-TWINS §6,
+ *   `serving_policy.school_rows = false`): only our own rows are served there.
+ *   Mirrors `serving_school_rows()` in the four RPCs for direct reads.
+ */
+export function practiceEligibility(q: EligibilityRow, opts?: { schoolRowsRetired?: boolean }): { ok: true } | { ok: false; reason: string } {
   if (q.deleted_at) return { ok: false, reason: 'removed from the bank' };
   // National papers are GROUNDING-ONLY (Adrian, 11 Sep 2026: "yes keep gce
   // questions out of serving"): SEAB sells them and licenses the TYS
@@ -150,6 +156,7 @@ export function practiceEligibility(q: EligibilityRow): { ok: true } | { ok: fal
   if (q.legacy_syllabus === true) return { ok: false, reason: 'not in the current syllabus' };
   if ((q.flagged_count ?? 0) >= 3) return { ok: false, reason: 'flagged by students' };
   if (q.ai_generated === true && q.verified !== true) return { ok: false, reason: 'AI question not yet verified' };
+  if (opts?.schoolRowsRetired && !isOurRow(q.school)) return { ok: false, reason: 'school rows retired for this topic — ours only' };
   const hasContent =
     nonEmpty(q.question_text) ||
     q.has_image === true ||
