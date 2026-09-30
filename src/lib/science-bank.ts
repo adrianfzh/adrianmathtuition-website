@@ -164,7 +164,7 @@ export async function scienceNext(opts: {
       .eq('level', lvl.bankLevel)
       .contains('topics', [opts.topic]);
     if (opts.kind === 'mcq') q = q.filter('answer', 'match', '^\\s*[A-Da-d]\\s*$');
-    else if (opts.kind === 'structured') q = q.not('answer', 'match', '^\\s*[A-Da-d]\\s*$');
+    else if (opts.kind === 'structured') q = q.not('answer', 'match', '^\\s*[A-Da-d]\\s*$').not('solution', 'is', null).neq('solution', '');   // scheme-only: a question with no scheme teaches nothing
     if (opts.tier === 'Advanced') q = q.in('difficulty', ADVANCED);
     else if (opts.tier === 'Standard') q = q.or(`difficulty.is.null,difficulty.not.in.(${ADVANCED.join(',')})`);
     const excl = (opts.exclude ?? []).filter(id => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 80);

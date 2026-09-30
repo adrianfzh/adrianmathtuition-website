@@ -125,9 +125,11 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // is the student's own science choice (portal_accounts.prefs.sciences), not an
 // Airtable subject; see lib/practice practiceLevelAllowed.
 export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = true;
-// Structured (written-answer) practice for science stays behind Adrian's cookie: the
-// practice grader has not been checked against science scheme answers yet.
-export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = false;
+// Structured science practice is SCHEME-ONLY (Adrian, 1 Oct 2026: "for structured, why
+// not just show the solutions (mark scheme) — only show questions with mark scheme"):
+// the student works it on paper and reads the scheme; no grader, so nothing to check
+// first, and it is open. Only rows with a solution are served (scienceNext kind).
+export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = true;
 export async function scienceStructuredPracticeOpen(): Promise<boolean> {
   if (SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS) return true;
   return !(await viewingAsStudent()) && (await isNotesAuthed());

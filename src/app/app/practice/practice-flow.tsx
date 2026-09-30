@@ -173,6 +173,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const questionRef = useRef<HTMLDivElement>(null);
 
   const [solution, setSolution] = useState<string | null>(null);
+  // ?mode=structured on a SCIENCE run (1 Oct 2026, Adrian: "for structured, why not just show
+  // the solutions (mark scheme)"): no grader — work it on paper, then read the scheme.
+  const [urlMode, setUrlMode] = useState<string | null>(null);
+  useEffect(() => { setUrlMode(new URLSearchParams(window.location.search).get('mode')); }, []);
   const [solLoading, setSolLoading] = useState(false);
   // 💡 "How to approach it" (23 Sep 2026, was the topic's method templates):
   // three short answer-free lines written for THIS question and cached on the
@@ -848,7 +852,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 onChange={(e) => { handlePhotoPick(e.target.files?.[0]); e.target.value = ''; }}
               />
 
-              {q.mcq ? (
+              {q.subject && !q.mcq && urlMode === 'structured' ? (
+                /* Structured science (scheme only): nothing to type — the mark scheme is the teaching. */
+                <p className="text-sm text-slate-600">Work it out on paper, then check yourself against the mark scheme.</p>
+              ) : q.mcq ? (
                 /* MCQ (science bank): tap the option — marked instantly, no model. */
                 <>
                   <p className="text-[11px] text-slate-400 mb-2">Pick the option:</p>
@@ -894,11 +901,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               )}
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
+                {!(q.subject && !q.mcq && urlMode === 'structured') && (
                 <button onClick={submitForMarking}
                   disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
                 </button>
+                )}
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
@@ -908,7 +917,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 {solution === null && (!assignment || grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {solLoading ? 'Loading…' : '🔎 Show solution'}
+                    {solLoading ? 'Loading…' : (q.subject && !q.mcq && urlMode === 'structured' ? '🔎 Show the mark scheme' : '🔎 Show solution')}
                   </button>
                 )}
                 {!assignment && !fixedQ && (
@@ -928,7 +937,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                     {fixedQ.topic ? 'More of this topic →' : 'Practise more →'}
                   </a>
                 )}
-                {solution !== null && (
+                {solution !== null && !(q.subject && !q.mcq && urlMode === 'structured') && (
                   <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
                 )}
               </div>
@@ -1071,7 +1080,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           )}
           {solution !== null && (
             <div className="bg-white border border-emerald-100 rounded-2xl p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">Worked solution</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">{q?.subject && !q.mcq && urlMode === 'structured' ? 'Mark scheme' : 'Worked solution'}</div>
               {/* Aligned working from lib/solution-format.ts: left-align the display
                   blocks (KaTeX centres by default) and let wide lines scroll. */}
               <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed math-working">
