@@ -18,6 +18,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
 import { parseTimedMeta } from '@/lib/timed-set';
+import { parseLadderMeta, ladderAssisted } from '@/lib/proof-ladder';
 import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
@@ -42,12 +43,13 @@ export async function POST(req: NextRequest) {
   const identity = portalIdentity(account);
 
   const body = await req.json().catch(() => ({}));
-  const { questionId, lines, image, assignmentId, timed } = body as {
+  const { questionId, lines, image, assignmentId, timed, ladder } = body as {
     questionId?: string;
     lines?: string[];
     image?: { data?: string; mediaType?: string };
     assignmentId?: string;
     timed?: unknown;
+    ladder?: unknown;
     subject?: unknown;
   };
   if (!questionId) return NextResponse.json({ error: 'questionId required' }, { status: 400 });
@@ -59,6 +61,9 @@ export async function POST(req: NextRequest) {
   // practice. The attempt row then carries duration_seconds + marking_json.timed
   // so Adrian can see pace, not just marks. Cap and grading are unchanged.
   const timedMeta = parseTimedMeta(timed);
+  // 🪜 Steps revealed / next-steps asked before Check (lib/proof-ladder): recorded
+  // on the attempt, and an assisted pass is not a clean result in the Notebook.
+  const ladderMeta = parseLadderMeta(ladder);
 
   // Photo path (primary for students) or typed-lines path — exactly one.
   let attemptImage: { data: string; mediaType: 'image/jpeg' | 'image/png' | 'image/webp' } | undefined;
@@ -272,6 +277,7 @@ export async function POST(req: NextRequest) {
       marking_json: {
         ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics,
         ...(timedMeta ? { timed: timedMeta } : {}),
+        ...(ladderMeta ? { ladder: ladderMeta } : {}),
         ...(generated ? { generated: { assignmentId: generated.id, source: generated.source, skillTitle: generated.skill_title } } : {}),
       },
     })
@@ -286,7 +292,7 @@ export async function POST(req: NextRequest) {
   // to fix); a correct one is a clean result on the topic / the linked entries.
   // The attempt id is the idempotency key, so only a persisted attempt counts.
   // Fail-soft — a notebook hiccup never turns a grade into an error.
-  if (inserted?.id != null) {
+  if (inserted?.id != null && !(ladderAssisted(ladderMeta) && result.verdict === 'correct')) {
     try {
       await applyGradedAttempt(admin, identity, {
         attemptId: inserted.id,

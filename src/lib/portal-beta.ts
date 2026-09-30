@@ -270,3 +270,24 @@ export async function explainClipVisible(identity?: string | null): Promise<bool
   const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
   return admin && !(await viewingAsStudent());
 }
+
+// 🪜 "Stuck? Next step" on a practice question (1 Oct 2026, from a student weak
+// at trig identity proofs): the bank working one line per tap, and "next step
+// from my line" on a photo of their working (lib/proof-ladder). ADMIN-ONLY plus
+// the preview student until Adrian has tried it — flip this to open it for
+// every student. The routes gate with `proofLadderAllowedFor`; the page passes
+// the same answer to the client as a prop, the client never sees the flag.
+export const PROOF_LADDER_OPEN_TO_STUDENTS = false;
+export const PROOF_LADDER_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+/** Pure: is this student (by Airtable id) allowed the ladder? Admin callers pass without it. */
+export function proofLadderAllowedFor(identity: string | null | undefined): boolean {
+  if (PROOF_LADDER_OPEN_TO_STUDENTS) return true;
+  return !!identity && PROOF_LADDER_PREVIEW_IDENTITIES.includes(identity);
+}
+export async function proofLadderVisible(identity?: string | null): Promise<boolean> {
+  if (proofLadderAllowedFor(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}

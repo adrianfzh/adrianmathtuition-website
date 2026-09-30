@@ -69,6 +69,7 @@ type GradeResult = {
 // /app/find's finder ("Snap a question"), which sends the same kind of photo.
 import { fileToJpegDataUrl } from './image-downscale';
 import { findTierLabel } from '@/lib/assignments';
+import { ladderAssistLine } from '@/lib/proof-ladder';
 
 // `initialLevels` comes from the server page for a signed-in student (their
 // scoped QB levels) so the level control is right on first paint; null means
@@ -123,7 +124,10 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false, lockedLevels = false }: {
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false, lockedLevels = false, ladderVisible = false }: {
+  /** 🪜 Stuck? Next step (1 Oct 2026): the server page decides (PROOF_LADDER_OPEN_TO_STUDENTS,
+   *  a preview identity, or Adrian's cookie); the client never sees the flag itself. */
+  ladderVisible?: boolean;
   /** The Science Practise run (1 Oct 2026): keep the one level the page passed — the overview's level list is not swapped in. */
   lockedLevels?: boolean;
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
@@ -188,6 +192,15 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // null = not asked; '' = asked, nothing to say.
   const [hint, setHint] = useState<string | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
+  // 🪜 Stuck? Next step (1 Oct 2026, lib/proof-ladder): the bank working one line
+  // per tap — only the revealed lines reach the page. `nextStep` = the model's
+  // continuation from a photo of the student's own working. Both ride on the
+  // grade (marking_json.ladder) so an assisted pass is not a clean one.
+  const [ladder, setLadder] = useState<{ markdown: string; revealed: number; total: number; done: boolean } | null>(null);
+  const [ladderLoading, setLadderLoading] = useState(false);
+  const [nextStep, setNextStep] = useState<{ wrong: string | null; lines: string[] } | null>(null);
+  const [nextStepLoading, setNextStepLoading] = useState(false);
+  const [nextStepCount, setNextStepCount] = useState(0);
 
   // Grading state (students only)
   const [working, setWorking] = useState('');
@@ -323,6 +336,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   function resetAttempt() {
     setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null); setHint(null);
+    setLadder(null); setNextStep(null); setNextStepCount(0);
   }
 
   const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier, sgArg?: Subgroup | null) => {
@@ -403,6 +417,33 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     finally { setSolLoading(false); }
   }
 
+  async function revealStep() {
+    if (!q || ladderLoading) return;
+    const n = (ladder?.revealed ?? 0) + 1;
+    setLadderLoading(true);
+    try {
+      const d = await portalFetch<{ markdown: string; revealed: number; total: number; done: boolean }>(
+        `/api/portal/practice/ladder?id=${q.id}&n=${n}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`,
+        { fallback: 'Could not load the next step — try again.' });
+      setLadder(d);
+    } catch (e) { setError(portalMessage(e)); }
+    finally { setLadderLoading(false); }
+  }
+
+  async function askNextStep() {
+    if (!q || !photo || nextStepLoading) return;
+    setNextStepLoading(true); setError('');
+    try {
+      const d = await portalFetch<{ wrong: string | null; lines: string[] }>('/api/portal/practice/next-step', {
+        json: { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' }, ...(q.subject ? { subject: q.subject } : {}) },
+        fallback: 'Could not read your working — try a clearer photo.',
+      });
+      setNextStep(d);
+      setNextStepCount(c => c + 1);
+    } catch (e) { setError(portalMessage(e)); }
+    finally { setNextStepLoading(false); }
+  }
+
   async function handlePhotoPick(file: File | undefined) {
     if (!file) return;
     setPhotoBusy(true); setError('');
@@ -422,6 +463,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
           : { questionId: q.id, lines }),
         ...(assignment ? { assignmentId: assignment.id } : {}),
+        ...((ladder?.revealed || nextStepCount) ? { ladder: { revealed: ladder?.revealed ?? 0, total: ladder?.total ?? 0, nextSteps: nextStepCount } } : {}),
         // Science bank rows: the grade route looks the id up in the other project.
         ...(q.subject ? { subject: q.subject } : {}),
       };
@@ -913,6 +955,18 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                     {hintLoading ? 'Loading…' : '💡 How to approach it'}
                   </button>
                 )}
+                {ladderVisible && !q.mcq && !q.subject && solution === null && !(ladder?.done) && (
+                  <button onClick={revealStep} disabled={ladderLoading}
+                    className="bg-white border border-sky-300 text-sky-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                    {ladderLoading ? 'Loading…' : ladder ? '🪜 Next step' : '🪜 Stuck? Next step'}
+                  </button>
+                )}
+                {ladderVisible && !q.mcq && !q.subject && solution === null && photo && (
+                  <button onClick={askNextStep} disabled={nextStepLoading || grading}
+                    className="bg-white border border-sky-300 text-sky-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                    {nextStepLoading ? 'Reading your working… (≈15s)' : '➡️ Next step from my line'}
+                  </button>
+                )}
                 {/* A structured science answer is marked BEFORE the scheme shows (1 Oct 2026). */}
                 {solution === null && (!assignment || grade) && !(q.subject && !q.mcq && urlMode === 'structured' && !grade) && (
                   <button onClick={showSolution} disabled={solLoading}
@@ -958,6 +1012,44 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
             </div>
           )}
 
+          {/* 🪜 The ladder — the working so far, one line per tap */}
+          {isStudent && ladder && (
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-bold uppercase tracking-wide text-sky-800">🪜 The working, step by step</div>
+                <span className="text-[11px] text-sky-700/70">{ladder.revealed} of {ladder.total}</span>
+              </div>
+              {ladder.total === 0 ? (
+                <p className="text-sm text-sky-900/80">No worked steps for this one yet — try the hint, or check the solution.</p>
+              ) : (
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
+                  <MathMarkdown content={ladder.markdown} />
+                </div>
+              )}
+              {ladder.done && ladder.total > 0 && (
+                <p className="text-[11px] text-sky-700/70 mt-2">That&apos;s the whole working. Now try one like it without the steps.</p>
+              )}
+            </div>
+          )}
+
+          {/* ➡️ Next step from the student's own line */}
+          {isStudent && nextStep && (
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+              <div className="text-xs font-bold uppercase tracking-wide text-sky-800 mb-2">➡️ From your line</div>
+              {nextStep.wrong && (
+                <p className="text-sm text-rose-700 mb-2"><MathText text={nextStep.wrong} /></p>
+              )}
+              {nextStep.lines.length ? (
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
+                  <MathMarkdown content={nextStep.lines.join('\n\n')} />
+                </div>
+              ) : (
+                <p className="text-sm text-sky-900/80">Couldn&apos;t make out your working — retake the photo with the page flat and well lit.</p>
+              )}
+              <p className="text-[11px] text-sky-700/70 mt-2">Carry on from here, then get it marked.</p>
+            </div>
+          )}
+
           {/* Feedback panel */}
           {isStudent && grade && (
             <div className="bg-white border border-slate-200 rounded-2xl p-5">
@@ -983,6 +1075,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   📷 Transcribed from your photo — if a step was misread, retake a clearer shot.
                 </p>
               )}
+              {(ladder?.revealed || nextStepCount) ? (
+                <p className="text-[11px] text-slate-500 mb-2">🪜 {ladderAssistLine({ revealed: ladder?.revealed ?? 0, total: ladder?.total ?? 0, nextSteps: nextStepCount })}</p>
+              ) : null}
 
               {/* Working with per-line verdicts */}
               <div className="rounded-xl border border-slate-100 divide-y divide-slate-50 mb-4">
