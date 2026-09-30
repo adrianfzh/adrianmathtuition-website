@@ -107,53 +107,64 @@ page is the video.**
   shows on a phone. The topic lessons above stay the long form, reached from a card —
   never a Lessons tab.
 
-## The character (1 Oct 2026) — a cartoon student at the corner of the board
+## The character (1 Oct 2026) — a cartoon teacher at the corner of the board
 
 Adrian, on the one-minute explanation: *"there should be an animated person so it's more
 engaging"* — the thing 洋葱学园 and videotutor.io keep on the slate. So: **a friendly cartoon
-student at the bottom-right corner of the board who reacts to the beats.** Not a video, not a
+teacher at the bottom-right corner of the board who reacts to the beats.** It started the
+morning as a student; Adrian's decision later the same day: **a TEACHER figure, not a
+student** — a friendly young tutor at the board in the 洋葱学园 / VideoTutor cartoon look:
+clean flat shapes, a big readable face, a rounded body, adult proportions (a taller body,
+a smaller head than the student had), a cardigan over a white collared shirt, round glasses,
+a pointer stick in the near hand, gender-neutral-leaning-friendly. Not a video, not a
 Lottie file, not a dependency: one inline SVG in
-`app/lesson/[slug]/lesson-character.tsx` (round head, simple body, a pencil in the far hand),
-whose six poses are six states of the SAME drawing switched by `data-pose` — arms rotate at
-the shoulder, brows tilt, one of four mouths shows, the extras fade in — so a pose change is a
-250 ms CSS transition. Between beats it breathes and blinks (CSS keyframes);
-`prefers-reduced-motion` stops every loop and transition and the pose still shows.
+`app/lesson/[slug]/lesson-character.tsx`, whose six poses are six states of the SAME
+drawing switched by `data-pose` — arms rotate at the shoulder, brows tilt, one of four
+mouths shows, the extras fade in — so a pose change is a 250 ms CSS transition. Between
+beats it breathes and blinks (CSS keyframes); `prefers-reduced-motion` stops every loop
+and transition and the pose still shows.
 
-- **The poses** (`CHARACTER_POSES` in `lib/lesson-script.ts`): `idle` (breathing, a blink
-  every few seconds) · `point` (the near arm up toward the working) · `think` (hand to the
-  chin, a small "?" bubble, eyes up) · `oops` (a wince, brows pinched, a sweat drop, the head
-  tips) · `nod` (a small nod, the smile widens) · `cheer` (both arms up, a grin, two sparkles).
+- **The poses** (`CHARACTER_POSES` in `lib/lesson-script.ts`), a teacher reacting: `idle`
+  (breathing, a blink every few seconds, the pointer resting) · `point` (the near arm lifts
+  the pointer toward the working) · `think` (the far hand to the chin, a small "?" bubble,
+  eyes up) · `oops` (a gentle "hmm, careful" — one brow up, the far hand raised palm-out, a
+  small pursed mouth; NOT a wince or a sweat drop) · `nod` (a small nod, the smile widens) ·
+  `cheer` (a thumbs-up beside the face, a smile, two sparkles; NOT arms flung up).
 - **The action.** `{ do: 'character', pose, at? }` in any beat. The validator refuses a pose
   off the list. On the board it is state, like a morph: `BoardState.pose` (lib/lesson-beats)
   starts `idle` on every scene, each fired action sets it, a beat without one keeps the last,
   `clear` leaves it alone. Voice / Auto / Manual all go through `boardStateAt`, so the
   character follows the pen for free — nothing in the player interprets it.
-- **Default OFF.** A script's optional `character: 'student' | 'none'` (validated). Unset means
-  none — **the two committed lessons render byte-identically** (`scenesHaveCharacter` is
-  false for them; the slide theme never shows one unless `character: 'student'` is set). The
-  player's rule (`LessonPlayer` prop `character`): `'student'` shows it on any theme, `'none'`
-  never, unset → shown on a board theme whose beats carry `character` actions — which is how
-  the explain clip gets it without the page passing anything.
-- **The explain clip sets it** (`lib/explain-clip.ts`: `character: 'student'` and a pose on
+- **Default OFF.** A script's optional `character: 'teacher' | 'student' | 'none'`
+  (validated; `student` is the older name and draws the same teacher — kept so an older
+  script still validates). Unset means none — **the two committed lessons render
+  byte-identically** (`scenesHaveCharacter` is false for them; the slide theme never shows
+  one unless `character` is set). The player's rule (`LessonPlayer` prop `character`):
+  `'teacher'` (or `'student'`) shows it on any theme, `'none'` never, unset → shown on a
+  board theme whose beats carry `character` actions — which is how the explain clip gets it
+  without the page passing anything (the explain page's own default is `'teacher'`).
+- **The explain clip sets it** (`lib/explain-clip.ts`: `character: 'teacher'` and a pose on
   every beat): `point` while the student's earlier lines are written, `oops` on the ✗ line,
   `think` on the first pen step, `nod` on the later ones, `cheer` at the Answer; a sentence
   scene (science) goes `oops` then `nod`, and so does a ✗-line + fix pair.
-- **Giving a lesson a character.** Set `"character": "student"` on the script and put
-  `{ "do": "character", "pose": "…" }` in the beats where the student would react (a
-  `point` when the teacher says "look here", `think` before a step, `nod` when it lands,
-  `oops` on a pitfall, `cheer` at the answer). Without poses the switch alone shows an idle
-  student at the corner; without the switch, poses on a board theme are enough.
+- **Giving a lesson a character.** Set `"character": "teacher"` on the script and put
+  `{ "do": "character", "pose": "…" }` in the beats where the teacher would react (a
+  `point` at "look here", `think` before a step, `nod` when it lands, `oops` on a pitfall,
+  `cheer` at the answer). Without poses the switch alone shows an idle teacher at the
+  corner; without the switch, poses on a board theme are enough.
 - **Where it sits.** Inside the board's zoom wrapper, absolutely positioned bottom-right,
   `clamp(84px, 27%, 120px)` wide, `pointer-events: none`, under the marks and the pen — it
   never moves a glyph and the tap-to-pause still lands on the board. `--lsn-char-side: left`
   (or the `side` prop) puts it bottom-left and mirrors it so it still faces the working; a
   long working can run under it — the board's last lines are the ones to watch.
 - **What Adrian still decides — the look.** Every colour is a token with a default
-  (`--lsn-char-skin` / `-hair` / `-shirt` / `-line` / `-dark` / `-cheek`; the OUTLINES take
-  the theme's `--lsn-ink`, so on the slate the figure reads chalk-outlined); the hair, the
-  shirt, whether it is a boy or a girl or a mascot, how big it sits on a phone, and whether
-  a teacher figure (pointing from the other corner) should exist at all are his calls. The
-  drawing is one SVG — change it in one place.
+  (`--lsn-char-skin` / `-hair` / `-shirt` (the cardigan, default a calm blue) / `-collar` /
+  `-pointer` / `-line` / `-dark` / `-cheek`; the OUTLINES take the theme's `--lsn-ink`, so
+  on the slate the figure reads chalk-outlined); the hair, the glasses, the cardigan, how
+  big it sits on a phone, and whether a second figure should ever exist are his calls. The
+  drawing is one SVG — change it in one place. A standalone six-pose render for a quick look
+  (no dev server) is the previous sessions' `preview.mjs` recipe: pull `CHARACTER_CSS` and
+  the `<svg>` out of the TSX, swap the JSX attribute names, stamp six copies with `data-pose`.
 
 ## Map
 

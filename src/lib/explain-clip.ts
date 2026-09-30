@@ -263,8 +263,8 @@ export function buildExplainScript(q: StudentQuestion, runId: string): LessonScr
     topic: q.topic || 'This question',
     minutes: 1,
     theme: 'chalk',
-    // The cartoon student at the corner reacts to the beats (poses above).
-    character: 'student',
+    // The cartoon teacher at the corner reacts to the beats (poses above).
+    character: 'teacher',
     scenes,
   };
 }

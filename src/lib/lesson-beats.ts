@@ -166,7 +166,7 @@ export interface BoardState {
   marks: BoardMark[];
   notes: BoardNote[];
   focus: BoardFocus | null;
-  /** The character's pose (the cartoon student at the corner) — `idle` until a `character` action; held until the next. */
+  /** The character's pose (the cartoon teacher at the corner) — `idle` until a `character` action; held until the next. */
   pose: CharacterPose;
   /** Actions applied so far across the scene — the seq of the next one. */
   seq: number;

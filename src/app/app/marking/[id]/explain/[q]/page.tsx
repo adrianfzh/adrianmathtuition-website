@@ -72,7 +72,7 @@ export default async function ExplainPage({ params, under = 'math' }: { params: 
       practiceLabel={question.revise ? `✏️ Practise: ${question.revise.name} →` : '‹ Back to my paper'}
       doneTitle="That's the fix"
       doneText="Your line, the slip, the steps from there. Try one like it while it's fresh."
-      character={script.character ?? 'student'}
+      character={script.character ?? 'teacher'}
       startAuto
     />
   );

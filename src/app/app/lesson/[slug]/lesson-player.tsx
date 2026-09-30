@@ -1174,8 +1174,8 @@ type Pacing = 'manual' | 'auto' | 'narrated';
 export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
-   * The cartoon student at the board's corner (lesson-character.tsx). `student`
-   * shows it on any theme; `none` never. Left unset, it shows on a BOARD theme
+   * The cartoon teacher at the board's corner (lesson-character.tsx). `teacher`
+   * (or the older `student`) shows it on any theme; `none` never. Left unset, it shows on a BOARD theme
    * whose beats carry `character` actions (the explain clip) — a committed lesson
    * without poses renders exactly as before.
    */
@@ -1337,7 +1337,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const board = useMemo(() => (hasBeats(scene) ? boardStateAt(scene, step, fired) : null), [scene, step, fired]);
   // The character: the script's word first; otherwise a board theme with posed beats.
   const posed = useMemo(() => scenesHaveCharacter(scenes), [scenes]);
-  const characterOn = character === 'student' || (character === undefined && theme !== 'slide' && posed);
+  const characterOn = character === 'teacher' || character === 'student' || (character === undefined && theme !== 'slide' && posed);
   const marginNotes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === null) : []), [board, scene]);
 
   // Telemetry — fire-and-forget beacons into portal_event_log (bounded kinds:

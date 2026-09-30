@@ -46,7 +46,7 @@ describe('buildExplainScript', () => {
     expect(beats[2].say).toBe('Bring 4 across: it becomes minus 4.');
     expect(beats[4].say).toBe('And that is the answer.');
     // The character reacts: point at your lines, oops on the ✗ line, think on the first step, nod after, cheer at the Answer.
-    expect(script!.character).toBe('student');
+    expect(script!.character).toBe('teacher');
     const poseOf = (b: typeof beats[number]) => b.do.find(a => a.do === 'character');
     expect(beats.map(b => { const a = poseOf(b); return a && a.do === 'character' ? a.pose : null; })).toEqual(['point', 'oops', 'think', 'nod', 'cheer']);
   });

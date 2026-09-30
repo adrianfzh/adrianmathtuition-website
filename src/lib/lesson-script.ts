@@ -142,15 +142,18 @@ export type MarkKind = (typeof MARK_KINDS)[number];
 export const CLEAR_SCOPES = ['pen', 'marks', 'notes', 'focus', 'board'] as const;
 export type ClearScope = (typeof CLEAR_SCOPES)[number];
 
-/** The character's poses (the cartoon student at the board's corner, 1 Oct 2026):
- *  `idle` breathes, `point` gestures at the board, `think` hand on chin with a "?",
- *  `oops` a wince and a sweat drop, `nod` a small nod, `cheer` arms up with sparkles. */
+/** The character's poses (the cartoon TEACHER at the board's corner, 1 Oct 2026):
+ *  `idle` breathes, `point` the pointer toward the board, `think` chin on hand with a "?",
+ *  `oops` a gentle "hmm, careful" (raised brow, a hand up), `nod` a small nod,
+ *  `cheer` a thumbs-up and sparkles. */
 export const CHARACTER_POSES = ['idle', 'point', 'think', 'oops', 'nod', 'cheer'] as const;
 export type CharacterPose = (typeof CHARACTER_POSES)[number];
 
 /** Whether a script has the character at all. `none` is the default, so every
- *  committed lesson renders byte-identically; the explain clip sets `student`. */
-export const LESSON_CHARACTERS = ['student', 'none'] as const;
+ *  committed lesson renders byte-identically; the explain clip sets `teacher`.
+ *  Adrian, 1 Oct 2026: the figure is a TEACHER, not a student — `student` stays
+ *  accepted (older scripts) and draws the same teacher. */
+export const LESSON_CHARACTERS = ['teacher', 'student', 'none'] as const;
 export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
 
 /**
@@ -191,7 +194,7 @@ export type BeatAction =
   | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
   /** Wipe the pen layer (default) or the whole board. */
   | ({ do: 'clear'; what?: ClearScope } & Timed)
-  /** The character at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
+  /** The character (the teacher) at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
   | ({ do: 'character'; pose: CharacterPose } & Timed);
 
 export type BeatActionKind = BeatAction['do'];
@@ -259,8 +262,9 @@ export interface LessonScript {
   minutes: number;
   /** The stage's look (default `slide` — the original card, untouched). */
   theme?: LessonTheme;
-  /** The cartoon student at the board's corner (default `none`; the player also
-   *  shows it when a board theme's beats carry `character` actions). */
+  /** The cartoon teacher at the board's corner (default `none`; the player also
+   *  shows it when a board theme's beats carry `character` actions; `student` is
+   *  the older name for the same figure). */
   character?: LessonCharacter;
   scenes: Scene[];
 }
