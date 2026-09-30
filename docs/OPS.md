@@ -137,6 +137,8 @@ topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
 `find-review` health-check probe). Install on the Mac with
 `bash scripts/find-review/install.sh`.
 
+**`twin-batch`** (the Fly worker's 👯 twins lane since 30 Sep 2026, SPEC-TWINS §10 phase 1 — bot `worker/fly/twins.sh`, a `jobs.sh` lane every 15 min at nice 15: by day only when the marking queue is empty, always 00–06 SGT; `TWINS_LANE=0` parks it, `TWINS_LEVEL`/`TWINS_PER_RUN` tune it). One run = up to 3 untwinned school questions → our own twins with `verified=false`, each role its own `claude -p` on a pooled login (author Opus → gates → Sonnet blind → Opus moderate → figure → publish); run dirs `/data/twins/<source-id>/` with `published` / `parked` markers; Adrian verifies on `/admin/generated` (✓ Verify). Stamps on every run that looked at the queue, empty or not; `meta` carries `published` / `parked_*` / `failed`. Rhythm `'twin-batch': { kind: 'interval', hours: 30 }`.
+
 **`figure-fitness`** (nightly 3:10am SGT on the Fly worker since 25 Sep 2026 — the ingestion figure-fitness catch-up,
 [`FIGURES.md`](FIGURES.md) §4) keeps the nightly shape it had as a Mac
 task: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`

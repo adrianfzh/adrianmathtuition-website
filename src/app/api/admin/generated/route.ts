@@ -7,7 +7,8 @@
 //   first, each with its seed (id, school, year, question_text head), the
 //   report (reported_at/by/reason) and the student it was written for (the
 //   generation_requests row via gen_meta.request_id, if stamped).
-// POST { id, action: 'restore' | 'retire' }
+// POST { id, action: 'restore' | 'retire' | 'verify' }
+//   verify  = Adrian's read of a twin: verified=true (SPEC-TWINS §7 — the serving doors refuse an unverified ai_generated row)
 //   restore = clear the report so it can be served/seeded again
 //   retire  = set deleted_at (never served, never a seed; the row stays for the ledger)
 import { NextRequest, NextResponse } from 'next/server';
@@ -17,12 +18,12 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const COLUMNS = 'id, created_at, level, topics, question_text, solution, answer, total_marks, difficulty, has_image, image_url, figure_url, question_image_url, images, parts, twin_of, gen_meta, reported_at, reported_by, report_reason, deleted_at, flagged_count';
+const COLUMNS = 'id, created_at, level, topics, question_text, solution, answer, total_marks, difficulty, has_image, image_url, figure_url, question_image_url, images, parts, twin_of, verified, gen_meta, reported_at, reported_by, report_reason, deleted_at, flagged_count';
 
 export type GeneratedRow = {
   id: string; created_at: string; level: string | null; topics: string[] | null; question_text: string | null;
   solution: string | null; answer: string | null; total_marks: number | null; difficulty: string | null;
-  has_image: boolean | null; image_url: string | null; figure_url: string | null; question_image_url: string | null; images: unknown; parts: unknown; twin_of: string | null;
+  has_image: boolean | null; image_url: string | null; figure_url: string | null; question_image_url: string | null; images: unknown; parts: unknown; twin_of: string | null; verified: boolean | null;
   gen_meta: Record<string, unknown> | null; reported_at: string | null; reported_by: string | null;
   report_reason: string | null; deleted_at: string | null; flagged_count: number | null;
   seed?: { id: string; school: string | null; year: number | null; paper: string | null; question_text: string | null; total_marks: number | null } | null;
@@ -72,11 +73,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null) as { id?: string; action?: string } | null;
   const id = typeof body?.id === 'string' ? body.id : '';
   const action = body?.action;
-  if (!id || (action !== 'restore' && action !== 'retire')) return NextResponse.json({ error: 'id + action (restore|retire) required' }, { status: 400 });
+  if (!id || (action !== 'restore' && action !== 'retire' && action !== 'verify')) return NextResponse.json({ error: 'id + action (restore|retire|verify) required' }, { status: 400 });
   const sb = getSupabaseAdmin();
   const patch = action === 'restore'
     ? { reported_at: null, reported_by: null, report_reason: null, deleted_at: null }
-    : { deleted_at: new Date().toISOString() };
+    : action === 'verify' ? { verified: true }
+    : { deleted_at: new Date().toISOString(), verified: false };
   const { error } = await sb.from('questions').update(patch).eq('id', id).eq('ai_generated', true);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, id, action });
