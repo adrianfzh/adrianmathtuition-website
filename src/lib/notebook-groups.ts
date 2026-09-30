@@ -215,3 +215,33 @@ export function attachQuestions(
 export function splitCards(cards: readonly NotebookQuestionCard[]): { open: NotebookQuestionCard[]; more: NotebookQuestionCard[] } {
   return { open: cards.slice(0, OPEN_CARDS), more: cards.slice(OPEN_CARDS) };
 }
+
+// ---------------------------------------------------------------------------
+// Two Notebooks, one per family (1 Oct 2026, Adrian: "math mistakes go to math
+// notebook and science mistakes go to science notebook … the tabs for science
+// should only be showing the subjects they are taking"). Pure.
+// ---------------------------------------------------------------------------
+
+export type NotebookFamily = 'math' | 'science';
+
+/** Which family a Notebook subject belongs to. */
+export function familyOf(subject: string): NotebookFamily {
+  return (SCIENCE_PAPER_SUBJECTS as readonly string[]).includes(subject) ? 'science' : 'math';
+}
+
+/**
+ * The subject tabs a family's Notebook shows, in tab order:
+ *   math    — every maths subject that has a mistake;
+ *   science — the sciences the student says they take (their Science choice),
+ *             each as a tab even with nothing on it yet, so the tabs never
+ *             jump; a student who has not chosen yet sees the sciences that
+ *             have a mistake.
+ * One subject → the page shows no tabs (the caller's rule).
+ */
+export function familySubjects(withRows: readonly string[], family: NotebookFamily, chosenSciences: readonly string[] | null): string[] {
+  const inFamily = SUBJECT_ORDER.filter(s => familyOf(s) === family);
+  if (family === 'science' && chosenSciences && chosenSciences.length) {
+    return inFamily.filter(s => chosenSciences.includes(s));
+  }
+  return inFamily.filter(s => withRows.includes(s));
+}

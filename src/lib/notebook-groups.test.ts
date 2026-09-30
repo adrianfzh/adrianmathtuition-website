@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { OPEN_GROUPS, groupHeading, groupMistakes, attachQuestions, isPaperGroup, notebookSubject, questionNumbersIn, splitBySubject, splitCards, splitFold } from './notebook-groups';
+import { OPEN_GROUPS, groupHeading, groupMistakes, attachQuestions, familyOf, familySubjects, isPaperGroup, notebookSubject, questionNumbersIn, splitBySubject, splitCards, splitFold } from './notebook-groups';
 import type { MistakeRow } from './notebook-mistakes-store';
 
 const paper = (ref: string, paper: string, date: string, label = 'Q3') => ({ kind: 'paper' as const, ref, label, paper, date, clean: false });
@@ -91,5 +91,19 @@ describe('attachQuestions — one card per lost-marks question (1 Oct 2026)', ()
     const { open, more } = splitCards(cards);
     expect(open.map(c => c.questionNumber)).toEqual(['1', '2', '3']);
     expect(more.map(c => c.questionNumber)).toEqual(['4', '5']);
+  });
+});
+
+describe('familySubjects — two Notebooks, one per family (1 Oct 2026)', () => {
+  const rows = ['E Math', 'A Math', 'Physics', 'Biology', 'Other'];
+  it('maths: the maths subjects with a mistake, in tab order', () => {
+    expect(familySubjects(rows, 'math', null)).toEqual(['A Math', 'E Math', 'Other']);
+    expect(familyOf('Chemistry')).toBe('science');
+    expect(familyOf('H2 Math')).toBe('math');
+  });
+  it('science: the sciences the student takes, even one with nothing on it; no choice yet → the ones with a mistake', () => {
+    expect(familySubjects(rows, 'science', ['Physics', 'Chemistry'])).toEqual(['Physics', 'Chemistry']);
+    expect(familySubjects(rows, 'science', null)).toEqual(['Physics', 'Biology']);
+    expect(familySubjects(rows, 'science', [])).toEqual(['Physics', 'Biology']);
   });
 });

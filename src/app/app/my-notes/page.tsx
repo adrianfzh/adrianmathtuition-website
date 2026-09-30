@@ -34,7 +34,7 @@ import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { explainClipVisible } from '@/lib/portal-beta';
 import { loadNotebook, type NotebookSubjectPanel } from '@/lib/notebook-load';
-import { OPEN_GROUPS } from '@/lib/notebook-groups';
+import { OPEN_GROUPS, type NotebookFamily } from '@/lib/notebook-groups';
 import NotebookMistakes, { type CompareNodes } from './mistakes';
 import MistakeCompare from '../marking/MistakeCompare';
 import SubjectPanels, { type SubjectPanel } from '../marking/SubjectPanels';
@@ -59,9 +59,19 @@ function compareNodes(p: NotebookSubjectPanel, all: boolean, explain: boolean): 
   return out;
 }
 
-export default async function MyNotebookPage({ searchParams }: { searchParams: Promise<{ earlier?: string }> }) {
+/**
+ * Two Notebooks, one per family (1 Oct 2026, Adrian: "math mistakes go to math
+ * notebook and science mistakes go to science notebook"): /app/my-notes is the
+ * maths one, /app/science/my-notes the science one (the same page under the
+ * Science family, so the shell's switcher and the science bottom menu stay put).
+ * The science tabs are the sciences the student takes — two for Combined —
+ * and a family with one subject shows no tabs. Its "Earlier papers" link
+ * stays on its own route.
+ */
+export default async function MyNotebookPage({ searchParams, family = 'math' }: { searchParams: Promise<{ earlier?: string }>; family?: NotebookFamily }) {
   const { earlier } = await searchParams;
   const showEarlier = earlier === '1';
+  const base = family === 'science' ? '/app/science/my-notes' : '/app/my-notes';
   // Adrian's admin cookie may browse /app/* without a student session, but a
   // notebook belongs to a student — show the pointer card.
   const account = await sessionAccount();
@@ -81,7 +91,7 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
     );
   }
 
-  const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid);
+  const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid, family);
   const explain = await explainClipVisible(sid);
   // One tab per subject (30 Sep 2026), the Papers tab's own switcher; one subject → no tabs.
   const panels: SubjectPanel[] = subjects.map(p => ({
@@ -98,12 +108,12 @@ export default async function MyNotebookPage({ searchParams }: { searchParams: P
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          What each marked paper found, so you know what to fix before the next one.
+          What each marked {family === 'science' ? 'science ' : ''}paper found, so you know what to fix before the next one.
         </p>
       </div>
       {panels.length > 0
-        ? <SubjectPanels panels={panels} defaultKey={defaultSubject ?? panels[0].key} rememberKey="portal_notebook_subject" />
-        : <NotebookMistakes initial={groups} cardGroups={[]} compare={{}} showEarlier={showEarlier} weakest={weakest} />}
+        ? <SubjectPanels panels={panels} defaultKey={defaultSubject ?? panels[0].key} rememberKey={family === 'science' ? 'portal_notebook_science_subject' : 'portal_notebook_subject'} />
+        : <NotebookMistakes initial={groups} cardGroups={[]} compare={{}} showEarlier={showEarlier} weakest={weakest} base={base} />}
     </div>
   );
 }

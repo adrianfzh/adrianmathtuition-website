@@ -20,8 +20,10 @@ const TONE = { rose: 'bg-rose-50 text-rose-700', amber: 'bg-amber-50 text-amber-
 /** `${runId}:${questionNumber}` → the server-rendered comparison. Missing = the group is folded. */
 export type CompareNodes = Record<string, ReactNode>;
 
-export default function NotebookMistakes({ initial, cardGroups, compare, showEarlier, weakest }: {
+export default function NotebookMistakes({ initial, cardGroups, compare, showEarlier, weakest, base = '/app/my-notes' }: {
   initial: NotebookGroups;
+  /** This Notebook's own route — /app/my-notes or /app/science/my-notes (1 Oct 2026). */
+  base?: string;
   cardGroups: NotebookGroupWithCards[];
   compare: CompareNodes;
   /** `?earlier=1`: every group is open and rendered. */
@@ -145,12 +147,12 @@ export default function NotebookMistakes({ initial, cardGroups, compare, showEar
       {shownGroups.map(g => <Group key={g.key} g={g} />)}
 
       {earlier.length > 0 && !showEarlier && (
-        <Link href="?earlier=1" data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
+        <Link href={`${base}?earlier=1`} data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
           Earlier papers ({earlier.length}) ›
         </Link>
       )}
       {showEarlier && earlier.length > 0 && (
-        <Link href="/app/my-notes" data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
+        <Link href={base} data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
           Hide earlier papers
         </Link>
       )}
