@@ -61,27 +61,46 @@ export default function MistakeCompare({ q, runId, paperName = null, explain = f
     ? (q.working ?? [])
     : fixes.flatMap(f => f.yours.map((text, k) => ({ text, wrong: k === f.yours.length - 1 })))
   ).map(l => ({ text: l.text, tone: l.wrong ? 'wrong' : 'plain' }));
-  // Right: per PART (Adrian, 1 Oct 2026: "the right steps doesn't say it's for which part?") —
-  // the fix for each ✗ line of that part, then the pen's steps from the wrong line on, then
-  // the Answer. A part with no label (a one-part question) heads no group.
-  const groups: { label: string; lines: AlignedLine[] }[] = [];
-  const groupFor = (label: string) => {
-    let g = groups.find(x => x.label === label);
-    if (!g) { g = { label, lines: [] }; groups.push(g); }
-    return g;
+  // ONE ROW PER PART (Adrian, 1 Oct 2026: "the right steps doesn't say it's for
+  // which part?" then "preferably the right steps is level with their working?"):
+  // left, that part's window of the page (or its typed lines when the run has no
+  // boxes); right, that part's ✓ fixes, the pen's steps from the wrong line on,
+  // then its Answer. A window that holds two parts ("(b)(i), (b)(ii)") is one row
+  // with both parts' steps under it. A one-part question is one unlabelled row.
+  type Row = { label: string; parts: string[]; windows: typeof snippets; left: AlignedLine[]; right: AlignedLine[] };
+  const rows: Row[] = [];
+  const rowFor = (label: string): Row => {
+    let r = rows.find(x => x.parts.includes(label) || x.label === label);
+    if (!r) { r = { label, parts: label ? label.split(', ') : [''], windows: [], left: [], right: [] }; rows.push(r); }
+    return r;
   };
-  for (const k of corrections) groupFor(k.label ?? '').lines.push({ text: k.fix, tone: 'fix' });
-  for (const f of fixes) {
-    const g = groupFor(f.label ?? '');
-    for (const st of f.steps) g.lines.push({ text: st.latex, why: st.why || undefined, tone: 'step' });
-    if (f.final) g.lines.push({ text: f.final, tone: 'answer' });
+  for (const s of snippets) rowFor(s.label).windows.push(s);
+  for (const k of corrections) {
+    const r = rowFor(k.label ?? '');
+    r.right.push({ text: k.fix, tone: 'fix' });
+    if (!r.windows.length) r.left.push({ text: k.yours, tone: 'wrong' });
   }
-  // The parts in the paper's order — the label sorts ((a) before (b)(i) before (c)(iii)); unlabelled first.
-  groups.sort((a, b) => a.label.localeCompare(b.label));
-  // No fix and no corrected line at all: the worked solution stands on the right instead.
-  const compareAll = groups.length === 0 && (typed.length > 0 || snippets.length > 0) && !!q.solution;
-  if (compareAll) groupFor('').lines.push(...String(q.solution).split('\n').map(l => l.trim()).filter(Boolean).map(line => ({ text: line, tone: 'plain' as const })));
-  const shown = groups.length > 0;
+  for (const f of fixes) {
+    const r = rowFor(f.label ?? '');
+    if (!r.windows.length) r.left.push(...f.yours.map((text, k) => ({ text, tone: (k === f.yours.length - 1 ? 'wrong' : 'plain') as AlignedLine['tone'] })));
+    for (const st of f.steps) r.right.push({ text: st.latex, why: st.why || undefined, tone: 'step' });
+    if (f.final) r.right.push({ text: f.final, tone: 'answer' });
+  }
+  // No fix and no corrected line at all: the worked solution stands on the right of one row.
+  const compareAll = rows.every(r => !r.right.length) && (typed.length > 0 || snippets.length > 0) && !!q.solution;
+  if (compareAll) {
+    const r = rowFor('');
+    if (!r.windows.length && !r.left.length) r.left.push(...typed);
+    r.right.push(...String(q.solution).split('\n').map(l => l.trim()).filter(Boolean).map(line => ({ text: line, tone: 'plain' as const })));
+  }
+  // A run with no boxes and one row: the whole typed working stands on the left, ✗ lines marked.
+  if (!snippets.length && rows.length === 1 && typed.length) rows[0].left = typed;
+  // A window with nothing to say on the right still shows (the part lost marks; the pen wrote no fix).
+  const shownRows = rows.filter(r => r.windows.length || r.left.length || r.right.length)
+    // The paper's order: the label sorts ((a) before (b)(i) before (c)(iii)); a row the boxes
+    // could not place (no label) goes LAST — it is usually the final answer line.
+    .sort((a, b) => (a.label === '' ? 1 : b.label === '' ? -1 : a.label.localeCompare(b.label)));
+  const shown = shownRows.some(r => r.right.length > 0);
   const card = { runId, photoIndex: q.photoIndex ?? null, question: q };
 
   return (
@@ -104,37 +123,37 @@ export default function MistakeCompare({ q, runId, paperName = null, explain = f
         </details>
       )}
       {shown && (
-        <div className={COMPARE} data-review-compare>
-          <div className="min-w-0 space-y-1">
+        <div className="space-y-3" data-review-compare>
+          {/* Side by side: the two column heads once, above every row. Stacked (a phone upright):
+              each row heads its own halves, and only the halves it has. */}
+          <div className={`${COMPARE} hidden landscape:grid md:grid`}>
             <p className={YOURS_HEAD}>Your working</p>
-            {snippets.length > 0 ? (
-              <>
-                {snippets.map((s, i) => (
-                  <div key={`${s.photoIndex}:${i}`} className="space-y-0.5">
-                    {s.label && <p className={PART_HEAD}>{s.label}</p>}
-                    <SnippetWindow s={s} />
-                  </div>
-                ))}
-                {typed.length > 0 && (
-                  <details className="group/typed pt-1">
-                    <summary className="cursor-pointer list-none text-[11px] font-semibold text-gray-400 flex items-center gap-1">
-                      <span className="group-open/typed:rotate-90 transition-transform inline-block">›</span>as text
-                    </summary>
-                    <div className="mt-1"><AlignedMath lines={typed} /></div>
-                  </details>
-                )}
-              </>
-            ) : typed.length > 0 ? <AlignedMath lines={typed} /> : null}
-          </div>
-          <div className="min-w-0 space-y-1">
             <p className={RIGHT_HEAD}>The right steps</p>
-            {groups.map((g, i) => (
-              <div key={g.label || i} className="space-y-0.5" data-part={g.label || undefined}>
-                {g.label && <p className={PART_HEAD}>{g.label}</p>}
-                <AlignedMath lines={g.lines} />
-              </div>
-            ))}
           </div>
+          {shownRows.map((r, i) => (
+            <div key={r.label || i} className="space-y-1" data-part={r.label || undefined}>
+              {r.label && <p className={PART_HEAD}>{r.label}</p>}
+              <div className={COMPARE}>
+                <div className="min-w-0 space-y-1">
+                  {(r.windows.length > 0 || r.left.length > 0) && <p className={`${YOURS_HEAD} landscape:hidden md:hidden`}>Your working</p>}
+                  {r.windows.map((s, k) => <SnippetWindow key={`${s.photoIndex}:${k}`} s={s} />)}
+                  {!r.windows.length && r.left.length > 0 && <AlignedMath lines={r.left} />}
+                </div>
+                <div className="min-w-0 space-y-1">
+                  {r.right.length > 0 && <p className={`${RIGHT_HEAD} landscape:hidden md:hidden`}>The right steps</p>}
+                  {r.right.length > 0 && <AlignedMath lines={r.right} />}
+                </div>
+              </div>
+            </div>
+          ))}
+          {snippets.length > 0 && typed.length > 0 && (
+            <details className="group/typed">
+              <summary className="cursor-pointer list-none text-[11px] font-semibold text-gray-400 flex items-center gap-1">
+                <span className="group-open/typed:rotate-90 transition-transform inline-block">›</span>as text
+              </summary>
+              <div className="mt-1"><AlignedMath lines={typed} /></div>
+            </details>
+          )}
         </div>
       )}
       {/* The marker's verdict, one quiet line a part. */}
