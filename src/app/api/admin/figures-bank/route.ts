@@ -68,10 +68,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import sharp from 'sharp';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
-  containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
+  containsImageRef, partLabelFor, cleanedObjectKey, imageKey, sanitisePartSlug, type RefPair,
 } from '@/lib/solution-image-apply';
 import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
 import { trimWhite } from '@/lib/figure-trim';
+import { addSolutionImageRef } from '@/lib/solution-image-add';
 
 export const runtime = 'nodejs';
 // 🧹 Clean asks a vision judge to look at the figure before erasing — 20–40 s.
@@ -1008,10 +1009,59 @@ async function checkLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       beforeUrl: imgSrc(`${BUCKET}/${obj(path)}`),
       afterUrl: candidateUrl(path, side),
       whatChanged: str(side.note),
+      // A new diagram (the pilot): there is no "before" — the question had none.
+      isNew: !!(side.add && typeof side.add === 'object'),
       holdReason: str(side.hold_reason),
     };
   });
   return NextResponse.json({ items, page, pageSize, total: waiting.length, sentBack });
+}
+
+/** ✅ Approve on a NEW solution diagram (30 Sep 2026, the pilot). The sidecar's
+ *  `add: {part}` says which part it answers. Upload the trimmed image, put it on
+ *  the part when that slot is empty or at the end of solution_images
+ *  (lib/solution-image-add.ts), re-read to prove it landed, log it, close the
+ *  flag and write the allow-list row for the new object. */
+async function addNewSolutionImage(supa: SupabaseClient, path: string, questionId: string, side: Record<string, unknown>) {
+  const add = side.add as Record<string, unknown>;
+  if (add.questionId && add.questionId !== questionId) return step('read', 'questionId does not match the card');
+  const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
+  if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no candidate stored');
+  const { bytes } = await trimWhite(Buffer.from(await dl.data.arrayBuffer()));
+  if (!bytes.length) return step('candidate', 'the stored candidate is empty');
+  const { data: row, error } = await supa.from('questions').select('id, parts, solution_images').eq('id', questionId).maybeSingle();
+  if (error || !row) return step('read', error?.message ?? 'question row not found');
+
+  const partLabel = typeof add.part === 'string' ? add.part : null;
+  const sha8 = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  const dest = `solutions/drawn/${questionId}-${sanitisePartSlug(partLabel)}-${sha8}.png`;
+  const ref = `${BUCKET}/${dest}`;
+  const up = await supa.storage.from(BUCKET).upload(dest, bytes, { contentType: 'image/png', upsert: false, cacheControl: '3600' });
+  if (up.error && !/exist|duplicate/i.test(up.error.message)) return step('upload', up.error.message);
+
+  const { patch, field } = addSolutionImageRef(row as Row, ref, partLabel);
+  const upd = await supa.from('questions').update(patch).eq('id', questionId).select('id, parts, solution_images');
+  if (upd.error) return step('write', upd.error.message);
+  if (!upd.data?.length || !containsImageRef(upd.data[0] as Row, ref)) {
+    await supa.from('questions').update({ parts: row.parts, solution_images: row.solution_images }).eq('id', questionId);
+    return step('verify', 'the new drawing was not on the row after the write — reverted');
+  }
+  const log = await supa.from('figure_clean_log').insert({
+    question_id: questionId, field: field.startsWith('parts') ? 'part' : 'solution_images', old_path: path, new_path: ref, batch: 'soldiag-pilot',
+  });
+  if (log.error) return step('log', `the drawing is live but the ledger write failed (${log.error.message}) — record ${path} → ${ref} by hand`);
+
+  const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', 'solution').maybeSingle();
+  const prev = ((fl?.note as string | null) ?? '').trim();
+  await supa.from('figure_flags').update({ status: 'fixed', note: `Adrian approved the new drawing · ${prev}`.slice(0, 500) })
+    .eq('path', path).eq('kind', 'solution');
+  await supa.from('figure_flags').upsert({
+    path: ref, question_id: questionId, kind: 'solution', status: 'fixed',
+    claimed_by: 'soldiag-pilot', claimed_at: new Date().toISOString(),
+    note: `ALLOW-LIST RECORD for a new solution drawing approved on the Check page (card ${path})`,
+  }, { onConflict: 'path', ignoreDuplicates: true });
+  await supa.storage.from(BUCKET).remove([`candidates/${obj(path)}`, `candidates/${obj(path)}.json`]);
+  return NextResponse.json({ ok: true, status: 'fixed', field, newPath: ref });
 }
 
 async function checkLanePost(supa: SupabaseClient, body: Record<string, unknown>, rawPath: string, questionId: string) {
@@ -1019,6 +1069,10 @@ async function checkLanePost(supa: SupabaseClient, body: Record<string, unknown>
   const path = await storedFlagPath(supa, rawPath, lane);
   const action = typeof body.action === 'string' ? body.action : '';
   if (action === 'approve') {
+    if (lane === 'solution') {
+      const side = await readSidecar(supa, path);
+      if (side.add && typeof side.add === 'object') return addNewSolutionImage(supa, path, questionId, side);
+    }
     return lane === 'solution'
       ? solutionLanePost(supa, { action: 'approve-candidate' }, path, questionId)
       : approveQuestionCandidate(supa, path, questionId);

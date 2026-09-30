@@ -14,6 +14,8 @@ type Item = {
   level: string | null; school: string | null; year: number | null; paper: string | null; qnum: string | null;
   partLabel: string | null; beforeUrl: string; afterUrl: string;
   whatChanged: string | null; holdReason: string | null;
+  /** A new drawing for a question that had none — no old one to show. */
+  isNew?: boolean;
 };
 
 const PAGE = 12;
@@ -64,7 +66,7 @@ function Card({ it, onDone }: { it: Item; onDone: () => void }) {
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-bold text-navy">{title(it)}</p>
         <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${it.lane === 'solution' ? 'bg-violet-50 text-violet-700' : 'bg-sky-50 text-sky-700'}`}>
-          {it.lane === 'solution' ? 'Solution figure' : 'Question figure'}{it.level ? ` · ${it.level}` : ''}
+          {it.isNew ? 'New solution drawing' : it.lane === 'solution' ? 'Solution figure' : 'Question figure'}{it.level ? ` · ${it.level}` : ''}
         </span>
       </div>
 
@@ -72,10 +74,14 @@ function Card({ it, onDone }: { it: Item; onDone: () => void }) {
       {it.whatChanged && <p className="text-[12px] text-gray-500">{it.whatChanged.replace(/^#B\d+-\d+\s*·?\s*/, '')}</p>}
       {it.holdReason && <p className="text-[12px] text-amber-700">⚠ {it.holdReason}</p>}
 
-      <button type="button" onClick={() => setShowBefore(v => !v)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">
-        {showBefore ? 'Hide the old one' : 'Show the old one'}
-      </button>
-      {showBefore && <Picture src={it.beforeUrl} alt="the figure before" />}
+      {it.isNew ? (
+        <p className="text-[12px] text-gray-500">New — this answer had no drawing before.</p>
+      ) : (<>
+        <button type="button" onClick={() => setShowBefore(v => !v)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">
+          {showBefore ? 'Hide the old one' : 'Show the old one'}
+        </button>
+        {showBefore && <Picture src={it.beforeUrl} alt="the figure before" />}
+      </>)}
 
       {asking ? (
         <div className="space-y-2">
