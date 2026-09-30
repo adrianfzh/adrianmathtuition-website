@@ -65,6 +65,15 @@ export function isDeskTab(s: string | null | undefined): s is DeskTab {
   return !!s && (DESK_TABS as readonly string[]).includes(s);
 }
 
+/**
+ * A science-bench script (SPEC-SCIENCE-BENCH): a seeded test paper handed in by
+ * data/science-bench/handin.js, named "BENCH · …". It never has a student, so the
+ * desk leaves it out (Adrian, 30 Sep 2026: "can this interface be simplified?").
+ */
+export function isBenchRun(paperName: string | null | undefined): boolean {
+  return /^BENCH ·/.test((paperName ?? '').trim());
+}
+
 /** The rows a tab shows — every row for All, that lane's rows otherwise. */
 export function rowsForTab<T extends { lane: DeskLane }>(rows: T[], tab: DeskTab): T[] {
   return tab === 'all' ? rows.slice() : rows.filter(r => r.lane === tab);
@@ -272,16 +281,16 @@ export function markingProgressOf(run: { result_json?: unknown; num_photos?: num
   // Handed back (10 Sep 2026, bot lib/handback.js): every page saved, the
   // claim released with `handed_back_at`, the bot assembles it on its next tick.
   if (claim && typeof claim === 'object' && claim.handed_back_at) {
-    return { state: 'assembling', label: `💻 handed back${done != null && total != null ? ` (${done}/${total} pages)` : ''} · the bot assembles it next`, done, total, attempts, queuedAt };
+    return { state: 'assembling', label: `pages read${done != null && total != null ? ` (${done}/${total})` : ''} · putting the marking together`, done, total, attempts, queuedAt };
   }
   if (claim && typeof claim === 'object' && !claim.released_at) {
-    return { state: 'reading', label: `💻 a Mac slot is reading it${pages}`, done, total, attempts, queuedAt };
+    return { state: 'reading', label: `reading the pages${pages}`, done, total, attempts, queuedAt };
   }
   if (q.claimed_by) {
-    return { state: 'assembling', label: `🌙 the bot is marking it${done != null && total != null && done > 0 ? ` from the Mac's ${done}/${total} page reads` : ''}`, done, total, attempts, queuedAt };
+    return { state: 'assembling', label: `putting the marking together${done != null && total != null && done > 0 ? ` · ${done}/${total} pages read` : ''}`, done, total, attempts, queuedAt };
   }
   if (claim && typeof claim === 'object' && claim.released_at && done != null && done > 0) {
-    return { state: 'assembling', label: `💻 read ${done}/${total ?? '?'} on the Mac · waiting for the bot to assemble it`, done, total, attempts, queuedAt };
+    return { state: 'assembling', label: `${done}/${total ?? '?'} pages read · waiting to put the marking together`, done, total, attempts, queuedAt };
   }
   if (err && attempts > 0) {
     return { state: 'stuck', label: `⚠ attempt ${attempts} failed — ${err.length > 90 ? `${err.slice(0, 89)}…` : err} · the queue retries`, done, total, attempts, queuedAt };

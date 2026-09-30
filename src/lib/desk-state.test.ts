@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  laneFor, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
+  laneFor, isBenchRun, sheetStageLabel, isPracticeAgainHandin, releasedViaLabel, handinOriginOf, approveBlockers, releaseBlockers, deskFlags, defaultLane,
   amendedStatusFor, latestLiveJob, noSheetOf, pdfStaleOf, DESK_LANES, LANE_LABEL, orderLane, revisingOf, revisingLabel, sheetOutcomeOf, sheetInProgressOf,
   DESK_TABS, TAB_LABEL, isDeskTab, rowsForTab, orderTab,
   markingProgressOf,
@@ -465,12 +465,12 @@ describe('markingProgressOf — where a queued paper is', () => {
   it('read on the Mac, claim released, waiting for the bot to assemble', () => {
     const p = markingProgressOf({ result_json: { queue: { ...queued, external_claim: { by: 'mac-plan-x', released_at: '2026-09-10T10:00:00Z', progress: { done: 10, total: 10 } } } } });
     expect(p).toMatchObject({ state: 'assembling', done: 10, total: 10 });
-    expect(p?.label).toMatch(/waiting for the bot/);
+    expect(p?.label).toMatch(/waiting to put the marking together/);
   });
   it('a handed-back claim (reads saved, bot to assemble) reads as assembling', () => {
     const p = markingProgressOf({ result_json: { queue: { ...queued, external_claim: { by: 'mac-plan-x', released_at: '2026-09-10T10:00:00Z', handed_back_at: '2026-09-10T10:00:00Z', progress: { done: 17, total: 17 } } } } });
     expect(p).toMatchObject({ state: 'assembling', done: 17, total: 17 });
-    expect(p?.label).toMatch(/handed back/);
+    expect(p?.label).toMatch(/pages read \(17\/17\)/);
   });
   it('the bot itself holds the paper', () => {
     expect(markingProgressOf({ result_json: { queue: { ...queued, claimed_by: 'fly-worker' } } })).toMatchObject({ state: 'assembling' });
@@ -548,5 +548,13 @@ describe('matchesStudent — the desk filter (11 Sep 2026)', () => {
     expect(matchesStudent(null, '')).toBe(true);
     expect(matchesStudent('Anyone', '   ')).toBe(true);
     expect(matchesStudent(null, 'a')).toBe(false);
+  });
+});
+
+describe('isBenchRun', () => {
+  it('knows a bench script by its name', () => {
+    expect(isBenchRun('BENCH · physics · AHS 2025 Prelim Physics P2 · A · seed 01')).toBe(true);
+    expect(isBenchRun('E Math · GCE 2021 · Paper 1')).toBe(false);
+    expect(isBenchRun(null)).toBe(false);
   });
 });

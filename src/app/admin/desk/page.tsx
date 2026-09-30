@@ -32,7 +32,7 @@ import SubjectChip from '@/components/SubjectChip';
 import GroundingChip from '@/components/GroundingChip';
 import RulesTag from '@/components/RulesTag';
 import { mathHtml } from '@/lib/math-inline';
-import { DESK_TABS, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, TAB_LABEL, TAB_HINT_ALL, isDeskTab, rowsForTab, orderTab, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type DeskTab, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress, matchesStudent } from '@/lib/desk-state';
+import { DESK_TABS, LANES_HIDDEN_AT_ZERO, releasedViaLabel, LANE_LABEL, TAB_LABEL, isDeskTab, rowsForTab, orderTab, HANDIN_ORIGIN_LABEL, tickPlan, tickPlanLine, type DeskLane, type DeskTab, type HandinOrigin, revisingLabel, type Revising, type SheetOutcome, type MarkingProgress, matchesStudent } from '@/lib/desk-state';
 import { ERROR_KINDS, ERROR_KIND_HINT, isErrorKind } from '@/lib/error-kinds';
 import { PAPER_SUBJECTS, SCIENCE_PAPER_SUBJECTS, subjectPill } from '@/lib/portal-subjects';
 // The pen, in place (desk round 3, 8 Sep 2026): the same overlay mark-paper uses.
@@ -316,14 +316,6 @@ function PaperSubjectChip({ subject }: { subject: string | null | undefined }) {
   return <span title={`${subject} paper`} style={{ background: t.bg, color: t.fg, borderRadius: 999, padding: '1px 7px', fontSize: 11, fontWeight: 700, lineHeight: '16px', whiteSpace: 'nowrap' }}>{pill.text}</span>;
 }
 
-const LANE_HINT: Record<DeskTab, string> = {
-  all: TAB_HINT_ALL,
-  untagged: 'A paper with no student reaches nobody — tag it so it reaches them.',
-  'awaiting-sheet': 'Marked, and nobody has asked for a sheet. Vet the marking; Approve & release sends the paper on its own. A sheet you queue here and release is the student’s to do; it is compulsory (the app reminds them until it is handed in) only when the release says so. Students can ask for their own from the app once the paper is out; those go out by themselves once they clear the gate.',
-  ready: 'Marked, sheet written, not yet with the student. It goes out by itself on the 12-hour clock unless something holds it — the reasons sit under the button. Open one to agree or override, read the sheet, or Approve & release without waiting.',
-  auto: 'Released by the system and not yet looked at — or a sheet being revised. Look it over if you want: Agree or Override still work here (an override re-issues their copy), ✓ Looked at moves it to Completed; anything you leave files itself under Completed after 7 days. A paper whose sheet is being revised sits at the top until the revised sheet is filed, then goes back to where it was.',
-  released: 'With the student. Read-only — the folder link is the record.',
-};
 
 export default function DeskPage() {
   // ── auth ───────────────────────────────────────────────────────────────────
@@ -832,39 +824,16 @@ export default function DeskPage() {
     if (detail?.run.id === id) refresh(id);
   }
 
-  // The same tap from a LIST row (9 Sep 2026 — Adrian: "i don't see a looked
-  // at"): the button had lived only inside the paper's page.
-  async function markCheckedRow(id: string, label?: string) {
-    setBusy('checked');
-    const { ok, d } = await postJson('/api/admin/mark-triage', { action: 'checked', runId: id });
-    setBusy('');
-    if (!ok) { setToast(d.error || 'Could not mark it'); return; }
-    setUndoChecked({ runId: id, label: label || 'this paper' });
-    setToast(`Marked as looked at — ${label || 'this paper'} moved to Completed.`);
-    loadQueue(false);
-  }
-
-  // 📘 ONE paper's sheet and 🔁 a FULL re-mark, from the LIST row (11 Sep 2026,
-  // Adrian: "can we allow sheet generation here? as well as full remark?").
-  // The sheet is the same door as the detail view's 📘 Queue (single run); the
-  // re-mark is the queue's own re-mark of the whole paper (`enqueue` + remark,
-  // no pages) — so under 🖥 Mac plan only it goes to a Mac slot, never the API.
-  async function queueSheetRow(id: string, label?: string) {
-    if (!window.confirm(`Queue a Practice Again sheet for ${label || 'this paper'}?`)) return;
-    setBusy('sheet:' + id);
-    const { ok, d } = await postJson('/api/admin/sheet-jobs', { runId: id });
-    setBusy('');
-    if (!ok) { setToast(d.error || 'Could not queue the sheet'); return; }
-    setToast(`📘 Sheet queued for ${label || 'this paper'}.`);
-    loadQueue(false);
-  }
+  // 🔁 A FULL re-mark (11 Sep 2026; on the paper's page since 30 Sep 2026, off the
+  // list rows): the queue's own re-mark of the whole paper (`enqueue` + remark, no pages).
   async function remarkRow(id: string, label?: string, released?: boolean) {
-    if (!window.confirm(`Re-mark the WHOLE paper — ${label || 'this paper'}? Every page is read again on a Mac slot when one is free, the paper is redrawn and its sheet revised for what changed.${released ? ' The student\u2019s released copy is replaced.' : ''}`)) return;
+    if (!window.confirm(`Re-mark the WHOLE paper — ${label || 'this paper'}? Every page is read again, the paper is redrawn and its sheet revised for what changed.${released ? ' The student\u2019s released copy is replaced.' : ''}`)) return;
     setBusy('remark:' + id);
     const { ok, d } = await postJson('/api/admin/mark-paper', { phase: 'enqueue', id, model: 'opus', style: 'teacher', remark: true });
     setBusy('');
     if (!ok) { setToast(d.error || 'Could not queue the re-mark'); return; }
-    setToast(`🔁 Re-mark queued for ${label || 'this paper'} — it shows as being marked until the Mac hands it back.`);
+    setToast(`🔁 Re-mark queued for ${label || 'this paper'} — it shows as being marked until it is done.`);
+    go({ run: null });
     loadQueue(false);
   }
 
@@ -1047,21 +1016,31 @@ export default function DeskPage() {
         </div>
       </header>
       {/* ⚙ The switches, off the header (17 Sep 2026, SPEC-STUDENT-FIRST §5) — the same three the mark page carries. */}
-      {settingsOpen && <div style={{ maxWidth: 720, margin: '0 auto 14px' }}><MarkingSwitches /></div>}
+      {/* Auto-release + All seen moved in here too (30 Sep 2026, "can this interface be simplified?"). */}
+      {settingsOpen && (
+        <div style={{ maxWidth: 720, margin: '0 auto 14px', display: 'grid', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <AutoReleaseSwitch />
+            <button onClick={markAllSeen} disabled={busy === 'seen-all'} className="desk-tab"
+              title="Papers you marked by hand and handed back in class: mark every unreleased one as seen so it stops waiting here. Held student hand-ins are kept. Nothing is sent to anyone.">
+              {busy === 'seen-all' ? '…' : '👁 All seen'}
+            </button>
+          </div>
+          <MarkingSwitches />
+        </div>
+      )}
 
       {/* ── queue ─────────────────────────────────────────────────────────── */}
       {!runId && (
         <>
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6, alignItems: 'center' }}>
-            <AutoReleaseSwitch />
-            {DESK_TABS.filter(l => !(l !== 'all' && LANES_HIDDEN_AT_ZERO.includes(l) && counts && !(counts[l] ?? 0) && activeLane !== l)).map(l => (
+          {counts && <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 6, marginBottom: 6, alignItems: 'center' }}>
+            {DESK_TABS.filter(l => !(l !== 'all' && LANES_HIDDEN_AT_ZERO.includes(l) && !(counts[l] ?? 0) && activeLane !== l)).map(l => (
               <button key={l} className={`desk-tab${activeLane === l ? ' on' : ''}`} onClick={() => go({ lane: l })}>
-                {TAB_LABEL[l]}<span className="n">{counts ? (l === 'all' ? tabTotal : counts[l]) : '·'}</span>
+                {TAB_LABEL[l]}<span className="n">{l === 'all' ? tabTotal : counts[l]}</span>
               </button>
             ))}
-          </div>
+          </div>}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 12px', flexWrap: 'wrap' }}>
-            <p style={{ fontSize: 12.5, color: C.muted, margin: 0, flex: '1 1 260px' }}>{LANE_HINT[activeLane]}</p>
             {/* 👤 Filter by student — a name fragment; the list below shows only that student's papers. */}
             <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
               <span aria-hidden>👤</span>
@@ -1073,12 +1052,6 @@ export default function DeskPage() {
                 <button onClick={() => go({ student: '' })} className="desk-tab" title="Show everyone" style={{ padding: '5px 9px' }}>✕</button>
               )}
             </label>
-            {activeLane !== 'released' && (
-              <button onClick={markAllSeen} disabled={busy === 'seen-all'} className="desk-tab"
-                title="Papers you marked by hand and handed back in class: mark every unreleased one as seen so it stops waiting here. Held student hand-ins are kept. Nothing is sent to anyone.">
-                {busy === 'seen-all' ? '…' : '👁 All seen'}
-              </button>
-            )}
           </div>
 
           {queueError && <p style={{ color: C.danger }}>{queueError}</p>}
@@ -1086,7 +1059,7 @@ export default function DeskPage() {
           {studentFilter.trim() && laneRows.length > 0 && (
             <p style={{ fontSize: 12.5, color: C.muted, margin: '0 0 8px' }}>Showing {laneRows.length} of {laneAll.length} {activeLane === 'all' ? 'on the desk' : 'in this lane'} for “{studentFilter.trim()}”.</p>
           )}
-          {!queueLoading && !queueError && laneRows.length === 0 && (
+          {counts && !queueLoading && !queueError && laneRows.length === 0 && (
             <p style={{ color: C.muted, padding: '32px 0', textAlign: 'center' }}>
               {studentFilter.trim()
                 ? `No paper for “${studentFilter.trim()}” ${activeLane === 'all' ? 'on the desk' : 'in this lane'}${laneAll.length ? ` — ${laneAll.length} other${laneAll.length === 1 ? '' : 's'} here` : ''}.`
@@ -1105,13 +1078,12 @@ export default function DeskPage() {
                     {row.studentName || <span style={{ color: C.flag }}>⚠ Needs a student</span>}
                     <span style={{ color: C.muted, fontWeight: 400 }}>·</span>
                     <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{row.paperName}</span>
-                    <PaperSubjectChip subject={row.paperSubject} />
-                    <SubjectChip subject={row.subject} />
+                    {row.paperSubject ? <PaperSubjectChip subject={row.paperSubject} /> : <SubjectChip subject={row.subject} />}
                     <Chip label="🌙 being marked" bg="#fef3c7" color="#92400e" title="The paper is in the marking queue. It becomes a normal row here the moment its marking is stored." />
                   </div>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                     <span>handed in {fmtDate(row.createdAt)}</span>
-                    {row.origin && <OriginChip origin={row.origin} />}
+                    {row.origin && row.origin !== 'app' && row.origin !== 'telegram' && <OriginChip origin={row.origin} />}
                     {row.practiceAgain && <Chip label="📘 Practice Again hand-in" bg="#ecfdf5" color="#047857" />}
                     <span style={{ color: row.marking.state === 'stuck' ? C.danger : C.link, fontWeight: 600 }}>{row.marking.label}</span>
                   </div>
@@ -1138,53 +1110,21 @@ export default function DeskPage() {
                     {row.studentName || <span style={{ color: C.flag }}>⚠ Needs a student</span>}
                     <span style={{ color: C.muted, fontWeight: 400 }}>·</span>
                     <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{row.paperName}</span>
-                    <PaperSubjectChip subject={row.paperSubject} />
-                    <SubjectChip subject={row.subject} />
+                    {row.paperSubject ? <PaperSubjectChip subject={row.paperSubject} /> : <SubjectChip subject={row.subject} />}
                   </div>
                   <div style={{ fontSize: 12.5, color: C.muted, marginTop: 3, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span>marked {fmtDate(row.createdAt)}</span>
-                    {row.origin && <OriginChip origin={row.origin} />}
+                    <span>{fmtDate(row.createdAt)}</span>
+                    {row.origin && row.origin !== 'app' && row.origin !== 'telegram' && <OriginChip origin={row.origin} />}
                     {row.practiceAgain && <Chip label="📘 Returned Practice Again sheet — marked as a paper" bg="#d1fae5" color="#065f46" />}
-                    {row.lane !== 'released' && !row.practiceAgain && (
-                      <span style={{ color: row.sheet?.status === 'done' ? C.ok : row.sheet?.status === 'failed' ? C.danger : C.link }}>
-                        📘 {row.sheet?.label ?? 'no sheet yet'}{row.sheet?.requestedBy === 'student' ? ' · asked by the student' : ''}
+                    {row.lane !== 'released' && !row.practiceAgain && row.sheet && (
+                      <span style={{ color: row.sheet.status === 'done' ? C.ok : row.sheet.status === 'failed' ? C.danger : C.link }}>
+                        📘 {row.sheet.label}{row.sheet.requestedBy === 'student' ? ' · asked by the student' : ''}
                       </span>
                     )}
                     {row.lane === 'released' && row.releasedAt && <span>released {fmtDate(row.releasedAt)}{sheetOutcomeShort(row)}</span>}
-                    {row.lane === 'released' && row.checkedAt && (
-                      <button onClick={e => { e.stopPropagation(); unmarkChecked(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'checked'}
-                        title="Undo ✓ Looked at — the paper goes back to Still to deal with"
-                        style={{ border: '1px solid #d1d5db', background: '#fff', color: '#6b7280', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                        ↩ Not looked at
-                      </button>
-                    )}
                     {row.pending > 0 && <span style={{ color: C.flag, fontWeight: 600 }}>⏳ {row.pending} to check</span>}
                     {row.flags.map(f => <span key={f} style={{ color: C.flag, fontWeight: 600 }}>⚠ {f}</span>)}
-                    {/* 📘 one sheet / 🔁 full re-mark from the row (11 Sep 2026) — marked papers only, not while a marking or sheet job is in motion */}
-                    {!row.marking && !row.practiceAgain && row.max > 0 && !['queued', 'claimed'].includes(row.sheet?.status ?? '') && !row.revising && (
-                      <>
-                        {row.lane !== 'released' && row.sheet?.status !== 'done' && !!row.studentId && (
-                          <button onClick={e => { e.stopPropagation(); queueSheetRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'sheet:' + row.id}
-                            title="Queue a Practice Again sheet for this paper alone (tick two or more for one merged sheet)"
-                            style={{ border: '1px solid #c7d2fe', background: '#eef2ff', color: '#3730a3', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                            {busy === 'sheet:' + row.id ? '…' : '📘 Sheet'}
-                          </button>
-                        )}
-                        <button onClick={e => { e.stopPropagation(); remarkRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`, row.lane === 'released'); }} disabled={busy === 'remark:' + row.id}
-                          title="Re-mark the whole paper through the queue — on a Mac slot while Mac plan only is on"
-                          style={{ border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#5b21b6', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                          {busy === 'remark:' + row.id ? '…' : '🔁 Re-mark'}
-                        </button>
-                      </>
-                    )}
                     {row.revising && <Chip label={revisingLabel(row.revising)} bg="#fdf2f8" color="#9d174d" title="The sheet went back to the worker. This paper sits here, at the top, until the revised sheet is filed — then it goes back to where it was." />}
-                    {row.lane === 'auto' && !row.revising && !['queued', 'claimed', 'failed'].includes(row.sheet?.status ?? '') && (
-                      <button onClick={e => { e.stopPropagation(); markCheckedRow(row.id, `${row.studentName || 'untagged'} · ${row.paperName}`); }} disabled={busy === 'checked'}
-                        title="Marks this paper as looked at — it moves to Completed. Nothing about the sheet changes."
-                        style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '1px 8px', fontSize: 12, cursor: 'pointer' }}>
-                        ✓ Looked at
-                      </button>
-                    )}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -1226,6 +1166,7 @@ export default function DeskPage() {
           onQueueSheet={queueSheet} onCancelSheet={cancelSheet} onAutoRelease={autoRelease} onApprove={approve} onReleaseOnly={releaseWithoutSheet} onToast={setToast} onRefresh={() => refresh(detail.run.id)}
           onSeen={markSeen} onUploadAmended={uploadAmended} onShelve={shelve} shelved={shelved}
           onRevise={reviseSheet} onRemarkPage={remarkPage} onPreviewPage={previewPage} previews={previews} onApproveScheme={() => approveScheme(false)} onAuditAllocation={auditAllocation} onChecked={markChecked}
+          onRemarkWhole={() => detail && remarkRow(detail.run.id, `${detail.run.studentName || 'this paper'} · ${detail.run.paperName || ''}`.trim(), !!detail.run.releasedAt)}
           onUnchecked={() => detail && unmarkChecked(detail.run.id, `${detail.run.studentName || 'this paper'} · ${detail.run.paperName || ''}`.trim())}
           onSendSheet={sendSheetNow}
         />
@@ -1281,7 +1222,7 @@ function DetailView(p: {
   onRevise: (instructions: string) => void; onRemarkPage: (photoIndex: number) => void;
   /** 🧪 draw this page in the natural red-ink look, live pipeline untouched (23 Sep 2026). */
   onPreviewPage: (photoIndex: number) => void; previews: Record<number, { url: string; overflowUrl: string | null; at: string }>;
-  onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void;
+  onApproveScheme: () => void; onAuditAllocation: () => void; onChecked: () => void; onRemarkWhole: () => void;
   /** ↩ undo of ✓ Looked at (10 Sep 2026). */
   onUnchecked: () => void;
   onSendSheet: () => void;
@@ -1449,6 +1390,13 @@ function DetailView(p: {
                   title="Released by the system without your vetting. Marks it as looked at — it leaves this lane; Agree/Override still work here and re-issue the student's copy."
                   style={{ border: '1px solid #67e8f9', background: '#ecfeff', color: '#0e7490', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
                   {busy === 'checked' ? '…' : '✓ Looked at'}
+                </button>
+              )}
+              {!d.revising && run.max > 0 && (
+                <button onClick={p.onRemarkWhole} disabled={busy === 'remark:' + run.id}
+                  title="Mark the whole paper again through the queue"
+                  style={{ border: '1px solid #ddd6fe', background: '#f5f3ff', color: '#5b21b6', borderRadius: 8, padding: '3px 10px', fontSize: 12.5, cursor: 'pointer' }}>
+                  {busy === 'remark:' + run.id ? '…' : '🔁 Re-mark the paper'}
                 </button>
               )}
             </div>
