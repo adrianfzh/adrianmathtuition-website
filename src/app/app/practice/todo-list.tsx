@@ -19,13 +19,14 @@ import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { listStudentAssignments, paperNamesForStudent } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
 import {
-  groupPracticeTodo, practiceTabSections, sourceRunIds, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
+  groupPracticeTodo, practiceTabSections, sourceRunIds, splitDoneFold, studentMayComplete, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
   type TodoState,
 } from '@/lib/practice-todo';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { queuedLabel } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
 import RemoveSheetButton from './remove-sheet-button';
+import DoneButton from './done-button';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -34,6 +35,7 @@ const CHIP: Record<TodoState, string> = {
   todo: 'bg-[hsl(45,80%,94%)] text-navy',
   done: 'bg-blue-50 text-blue-700',
   marked: 'bg-emerald-50 text-emerald-800',
+  ticked: 'bg-gray-100 text-gray-600',
 };
 
 function sentOn(iso: string): string {
@@ -45,8 +47,14 @@ function summaryLine(t: Record<TodoState, number>): string | null {
   if (t.writing) parts.push(`${t.writing} being written`);
   if (t.todo) parts.push(`${t.todo} to do`);
   if (t.done) parts.push(`${t.done} being marked`);
-  if (t.marked) parts.push(`${t.marked} marked`);
   return parts.length ? parts.join(' · ') : null;
+}
+
+function doneCaption(c: { marked: number; ticked: number }): string {
+  const parts: string[] = [];
+  if (c.marked) parts.push(`${c.marked} marked`);
+  if (c.ticked) parts.push(`${c.ticked} you ticked`);
+  return parts.join(' · ');
 }
 
 export default async function PracticeTodo({ account, top = null }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'>; top?: React.ReactNode }) {
@@ -68,7 +76,11 @@ export default async function PracticeTodo({ account, top = null }: { account: P
   }
   const paperNames = await paperNamesForStudent(identity, sourceRunIds(rows));
   // Practice Again sheets live with their paper on Papers, not here (Adrian, 1 Oct 2026).
-  const sections = practiceTabSections(groupPracticeTodo(rows)).filter(s => s.items.length > 0);
+  // Finished items (marked, or ticked Done by the student) leave their section for
+  // the collapsed Done fold at the bottom (Adrian, 1 Oct 2026); the summary counts
+  // what is still on the list.
+  const fold = splitDoneFold(practiceTabSections(groupPracticeTodo(rows)));
+  const sections = fold.active.filter(s => s.items.length > 0);
   const summary = summaryLine(todoTotals(sections));
 
   return (
@@ -79,7 +91,14 @@ export default async function PracticeTodo({ account, top = null }: { account: P
       </div>
       {top}
 
-      {sections.length === 0 && (
+      {sections.length === 0 && fold.done.length > 0 && (
+        <div className={`${CARD} p-5`}>
+          <p className="text-sm font-semibold text-navy">Nothing left to do.</p>
+          <p className="text-sm text-gray-600 mt-1">Everything on your list is done — it is under Done below.</p>
+        </div>
+      )}
+
+      {sections.length === 0 && fold.done.length === 0 && (
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-sm font-semibold text-navy">Nothing to practise yet.</p>
           <p className="text-sm text-gray-600">
@@ -130,12 +149,48 @@ export default async function PracticeTodo({ account, top = null }: { account: P
                 </div>
               );
             }
+            // The student's own to-do item carries ✓ Done beside the card (outside
+            // the link, like Remove on a writing row).
+            if (studentMayComplete(r)) {
+              return (
+                <div key={r.id} className={`${CARD} p-4`}>
+                  <Link href={assignmentHref(r)} className="block hover:opacity-90 active:scale-[0.99] transition">{body}</Link>
+                  <DoneButton id={r.id} />
+                </div>
+              );
+            }
             return (
               <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>{body}</Link>
             );
           })}
         </section>
       ))}
+
+      {fold.done.length > 0 && (
+        <details className="group">
+          <summary className="flex items-baseline justify-between gap-3 cursor-pointer list-none select-none py-2 border-t border-black/5">
+            <span className="text-sm font-semibold text-gray-500"><span aria-hidden className="inline-block mr-1.5 transition group-open:rotate-90">▸</span>Done ({fold.done.length})</span>
+            <span className="text-[11px] text-gray-400">{doneCaption(fold.doneCounts)}</span>
+          </summary>
+          <div className="space-y-2 mt-2">
+            {fold.done.map(r => {
+              const subtitle = todoSubtitle(r, r.source_run_id ? paperNames.get(r.source_run_id) ?? null : null);
+              return (
+                <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-3 opacity-80 hover:opacity-100 transition`}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-navy truncate">{r.title}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{subtitle ? `${subtitle} · ` : ''}{sentOn(r.created_at)}</div>
+                    </div>
+                    <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{todoStateLabel(r.state, r)}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </details>
+      )}
 
       {sections.length > 0 && (
         <p className="text-[11px] text-gray-400">
