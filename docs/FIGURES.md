@@ -144,6 +144,12 @@ he should never have to hunt through their views for a batch.
   is fine. Registry specs leave `caption` unset; a stored PNG is trimmed to the drawing with
   an even white margin, no blank strip. The card shows each image on a grey mat with a black
   line at the picture's own edge, so anything inside the line is in the image.
+- **Tight crops** (Adrian, 30 Sep 2026: *"crops should not leave too much white space"*).
+  A figure keeps a white border of 2% of its longer side, 8–20 px, and no more —
+  `lib/figure-trim.ts` (`tightPad`, `trimWhite`, tested). Approve trims on the way out
+  (both lanes), so nothing loose goes live; a figure already inside the rule keeps its bytes.
+  🧹 Clean candidates are not trimmed while they wait (their red erased boxes are canvas
+  fractions) — Approve trims them.
 - **Three buttons:** ✓ Approve (the lane's own `approve-candidate` — the figure goes live),
   💬 Not good enough (a comment is required), ✏️ Redraw.
 - **A send-back** (`POST {kind:'check', lane, path, questionId, action:'redo'|'redraw', comment}`)

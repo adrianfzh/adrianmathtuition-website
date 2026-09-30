@@ -71,6 +71,7 @@ import {
   containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
 } from '@/lib/solution-image-apply';
 import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
+import { trimWhite } from '@/lib/figure-trim';
 
 export const runtime = 'nodejs';
 // 🧹 Clean asks a vision judge to look at the figure before erasing — 20–40 s.
@@ -637,7 +638,8 @@ async function cleanAsCandidate(
 async function approveQuestionCandidate(supa: SupabaseClient, path: string, questionId: string) {
   const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
   if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
-  const bytes = Buffer.from(await dl.data.arrayBuffer());
+  // Tight crop on the way out (Adrian: "crops should not leave too much white space").
+  const { bytes } = await trimWhite(Buffer.from(await dl.data.arrayBuffer()));
   if (!bytes.length) return step('candidate', 'the stored candidate is empty');
   const { data: q, error } = await supa.from('questions').select('id, image_url, figure_url, parts').eq('id', questionId).maybeSingle();
   if (error || !q) return step('read', error?.message ?? 'question row not found');
@@ -750,9 +752,12 @@ async function solutionLanePost(
   if (action === 'approve-candidate') {
     const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
     if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
-    const bytes = Buffer.from(await dl.data.arrayBuffer());
-    if (!bytes.length) return step('candidate', 'the stored candidate is empty');
-    const contentType = /jpe?g/i.test(dl.data.type ?? '') ? 'image/jpeg' : 'image/png';
+    const raw = Buffer.from(await dl.data.arrayBuffer());
+    if (!raw.length) return step('candidate', 'the stored candidate is empty');
+    // Tight crop on the way out — a trimmed image is always a PNG.
+    const t = await trimWhite(raw);
+    const bytes = t.bytes;
+    const contentType = !t.trimmed && /jpe?g/i.test(dl.data.type ?? '') ? 'image/jpeg' : 'image/png';
     return applyCleanedSolutionImage(supa, {
       path, questionId, bytes, contentType, note: 'Adrian approved cleaned candidate',
     });
