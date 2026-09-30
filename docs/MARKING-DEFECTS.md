@@ -512,3 +512,34 @@ equation". Proof on the worker: `npm test` 3457/3458 (the one red was the case-s
 push; the touched files re-run 60/60 on the final tree); the 15 other pen cases whose page carries a
 "From your line" column redrawn on the fix, all green — the other 35 cannot change (the heading is
 dropped only when every note under it is a column).
+
+# 30 Sep 2026 — the fixer's run on the findings of 30 Sep (9 papers, 40 pages, ~74 findings)
+
+The second guard: F39 (bot `0040d5d`, empty "Marker's notes:" heading) and F41 (`9accbb4`) are on
+main and held — no empty heading on 40 pages drawn after them; today's self-check false alarm on
+Sun p6 is a different shape (an all-maths reason, F44). F38's " * " glue is gone. Nothing to revert.
+This morning's first two fixer runs lost their work to worker reboots (a push touching the worker
+redeploys it and wipes `/tmp`); the third rebuilt it from the second run's transcript and worked on
+the `/data` volume. Fix-forward; nothing delivered was re-inked.
+
+| # | complaint | bin | root cause | fix | status |
+|---|---|---|---|---|---|
+| F42 | symbols spelt out as words in column reasons and notes (7 pages): "sub (pi/4, 1)" (Denise AM 2024 P2 p5), "from 6costheta × t = 15" (Denise AM 2025 P2 p15), "32, 8 and sqrt2" on an indices page (Beryl p1), "curved surface is 2pi(6)(15)" (Beryl p12), "∠s in same seg" as "angle s in same seg" (Shayenne p9, Denise p14), θ as "theta" (Shayenne p15), and "tan ⊥ rad" as a tofu box (Shayenne p9) | pen (text) | a pen line with no `$…$` went to `penSafe` whole, which transliterates (π→pi, θ→theta, √→sqrt, ∠→angle, ⊥ none); only a line that already had maths typeset its symbols | bot `e3110fd`: `penRunsOf` also splits a line whose words hold a symbol the hand cannot write and the typesetter can (`needsTypeset`); the symbol keeps its spacing ("∠s", "π/4"), a surd takes its operand. `text-renders` takes an `absent` list. Seven cases (`shayenne-em25p1-p9-perp-and-angle-words` …), FAIL on main, PASS on the fix | ✅ fixed |
+| F43 | Alessi EM 2025 P1 p12 Q20(b) verdict "write AP as $31 – PB$ and solve" — raw dollars, read as money; the self-check passed the page | pen (text) | the pen's own `autoTexProse` wrapped "31 − PB" in `$…$`, and the currency-aware `splitMathRuns` refused it as prices and drew the delimiters | bot `9652e33`: `autoTexProse` wraps only what `looksLikeMath` accepts. Case `alessi-em25p1-p12-verdict-dollars`, FAIL on main, PASS on the fix | ✅ fixed |
+| F44 | the pen self-check failed Sun EM 2024 P1 p6 "lost the reason √484 = 22 / 2 reasons on 1 row" although it sits on its own row (a false watch-out, F41's cousin) | pen self-check | `continuation-is-a-column` found a reason by the words before its first maths token; an all-maths reason has none | bot `a375ad7`: a reason is found by its hand-written words only, an all-maths reason is not counted either way, and every `<text>` on one baseline is one row (F42 draws "tan ⊥ rad" as pieces). Unit tests red on main's check; case `sun-em24p1-p6-all-maths-reason` | ✅ fixed |
+| F45 | two different "should be"s on one part — Denise AM 2025 P2 p15 Q11(b): "should be 15/(6cos53.130)" (worked on her wrong angle) and "should be 3.125" (comprehension FAIL; 29 Sep saw the same class) | marker rule (wording) | the rules cover an inherited answer and a slip inside a wrong route, not a real second slip worked on an inherited value | bot `0590dec` on `proposal/2026-09-30-follow-through-fix-says-so`: fix the operation without the inherited number, or label both numbers in one sentence (Beryl p13's "$132.30 on your area; with the correct 917 cm² it is 4 tins, $75.60") | ⚠️ Adrian's call |
+
+**Report only (the read):** Sun EM 2024 P1 p4 Q15 0/3 — the photo cuts off her working and no other
+photo has Q15; the note says it "could not be marked" and scores 0/3 (71/90 released; worth asking
+her to resend the page). Eva TKGS Prelim 2025 P1 p8 Q8(b) 0/1 "the median value of marbles" (possibly
+harsh). Alessi EM 2025 P1 p10 Q16(b): the B1 tick sits on her wrong same-segment line (which line
+the B1 belongs to may be the read's attribution). Shayenne St Gabriel 2025 P1 p15 Q22(b) 1/2: which
+mark was withheld is never said.
+
+**Not worked (residue, the reader's counts):** the correction-pen sentence dropped from Denise p15
+Q11(c)(i) (1 page; bench candidate `1467f2da` photo 13), ✗ on a crossed-out line (Sun p4; 2nd page in
+two days), glyphs on print / on her answer (~8), ✗/✓ on the wrong line (~9), notes seated at the
+wrong part (4), arrows at nothing (4), leaders through her ink (~7), "underline" drawn at mid-height
+(2), carets (F33), clipping at the page foot (4), a rule head said twice (Shayenne p19, after
+`9bab0e2`), the same point three times at one error (~9, wording), a vague next step (Sun p6 Q23(a),
+comprehension FAIL), "circular" (Shayenne p9, comprehension FAIL).
