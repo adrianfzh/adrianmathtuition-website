@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, promptLines, type MarkingRunRow } from '@/lib/portal-marking';
-import { subjectAllowed } from '@/lib/portal-subjects';
+import { isScienceSubject, subjectAllowed } from '@/lib/portal-subjects';
 import { buildReviewCards, jumpHref } from '@/lib/review-cards';
 import { mathHtml } from '@/lib/math-inline';
 import AnnotatedSolution from '../AnnotatedSolution';
@@ -44,7 +44,7 @@ export default async function ReviewPage({ searchParams }: { searchParams: Promi
   const { data } = ids.length
     ? await sb.from('paper_marking_runs').select(COLUMNS).eq('student_id', sid).not('released_at', 'is', null).in('id', ids)
     : { data: [] };
-  const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject));
+  const rows = ((data ?? []) as MarkingRunRow[]).filter(r => subjectAllowed(account, r.paper_subject) || isScienceSubject(r.paper_subject));  // the Notebook's rule: science papers are every student's
   const { papers } = buildStudentMarking(rows, { studentName: account?.display_name ?? null });
   const cards = buildReviewCards(papers);
 
