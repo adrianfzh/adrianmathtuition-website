@@ -22,6 +22,7 @@ import { promptLines, type StudentQuestion } from '@/lib/portal-marking';
 import { jumpHref } from '@/lib/review-cards';
 import { mathHtml } from '@/lib/math-inline';
 import { fileHref } from '@/lib/student-files-url';
+import { snippetStyle } from '@/lib/mistake-snippet';
 import AlignedMath, { type AlignedLine } from './AlignedMath';
 import AnnotatedSolution from './AnnotatedSolution';
 
@@ -31,16 +32,11 @@ const RIGHT_HEAD = 'text-[10.5px] font-semibold uppercase tracking-wide text-eme
 
 /** The window onto the student's page: the image scaled and shifted inside a box the window's shape. */
 function SnippetWindow({ s }: { s: NonNullable<StudentQuestion['snippets']>[number] }) {
+  const css = snippetStyle(s);
   return (
-    <div className="relative w-full overflow-hidden rounded-lg border border-black/10 bg-white" style={{ aspectRatio: `${s.w} / ${s.h}` }} data-snippet={s.photoIndex}>
+    <div className="relative w-full overflow-hidden rounded-lg border border-black/10 bg-white" style={css.box} data-snippet={s.photoIndex}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={fileHref(s.url)}
-        alt="Your working, from your page"
-        className="absolute max-w-none"
-        style={{ width: `${(100 / s.w).toFixed(3)}%`, left: `${(-100 * s.x / s.w).toFixed(3)}%`, top: `${(-100 * s.y / s.h).toFixed(3)}%` }}
-        loading="lazy"
-      />
+      <img src={fileHref(s.url)} alt="Your working, from your page" className="absolute max-w-none" style={css.img} loading="lazy" />
     </div>
   );
 }

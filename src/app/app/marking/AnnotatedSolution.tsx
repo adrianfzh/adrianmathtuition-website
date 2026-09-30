@@ -58,8 +58,9 @@ export default function AnnotatedSolution({ solution, schemes, hideLines = false
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-2">
         The solution, line by line
       </p>
-      {/* Aligned at the equals sign, the Answer bold (1 Oct 2026, Adrian's readability rule). */}
-      <AlignedMath lines={lines.map((l, i) => ({ text: l, n: String(i + 1).padStart(2, '0') }))} size="text-[13px]" />
+      {/* Aligned at the equals sign, the Answer bold, no row numbers (1 Oct 2026, Adrian's readability
+          rule — the 01 02 03 came from the public /solutions page and told a student nothing). */}
+      <AlignedMath lines={lines.map(l => ({ text: l }))} size="text-[13px]" />
       </>}
 
       {schemes.length > 0 && (

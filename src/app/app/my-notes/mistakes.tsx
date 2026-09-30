@@ -48,7 +48,7 @@ export default function NotebookMistakes({ initial, cardGroups, compare, showEar
     <>
       {entries.filter(alive).map(m => (
         <div key={m.id} data-item-id={`mistake:${m.id}`} className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-black/5" data-mistake-actions>
-          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-orange-50 text-orange-800 rounded-full px-2.5 py-0.5">
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-[#ecc24b]/25 text-[#5a4300] rounded-full px-2.5 py-0.5">
             {m.title}
             {isScienceSubject(m.subject) && <PaperSubjectPill subject={m.subject} />}
           </span>

@@ -16,6 +16,9 @@
 // The strip to the right of the page holds the pen's notes; the window keeps
 // it (Adrian, 1 Oct 2026: the cut edge looked abrupt without them).
 //
+// Only the parts that lost marks count (a full-mark part beside them stays out
+// of the window); a part with no marks recorded is treated as lost.
+//
 // Rules: a page the marker rotated (rot ≠ 0) gets no snippet — the boxes are
 // in the rotated frame and the image is not; a run before the boxes existed
 // (the Aug 2026 test papers) gets none; then the card shows the typed lines.
@@ -26,6 +29,8 @@ export interface Snippet {
   url: string;
   /** The window as fractions of the page image: left, top, width, height. */
   x: number; y: number; w: number; h: number;
+  /** The page image's height ÷ width — the box's `top` offset needs it (the window's own aspect is h/w × this). */
+  pageAspect: number;
 }
 
 /** Padding around a part's box, in layer units (the page is 960 wide). */
@@ -73,8 +78,11 @@ export function snippetsFor(annotationDebug: unknown, annotatedPhotos: unknown, 
     if (!frame) continue;
     const spaceW = num(space.w), spaceH = num(space.h);
     if (!(spaceW > 0) || !(spaceH > 0)) continue;
+    // Only the parts that LOST marks (Adrian, 1 Oct 2026: the window covered the
+    // full-mark parts around them); a part with no marks recorded counts as lost.
     const regions = (Array.isArray(g.partRegions) ? g.partRegions : []).map(rec).filter((r): r is Json => !!r)
       .filter(r => sameQuestion(str(r.question), questionNumber) && r.not_attempted !== true)
+      .filter(r => !(num(r.max) > 0) || !(num(r.awarded) >= num(r.max)))
       .map(r => rec(r.bbox)).filter((b): b is Json => !!b);
     if (!regions.length) continue;
     const x1 = Math.max(0, Math.min(...regions.map(b => num(b.x1))) - SNIPPET_PAD);
@@ -90,9 +98,28 @@ export function snippetsFor(annotationDebug: unknown, annotatedPhotos: unknown, 
       photoIndex, url: frame.url,
       x: (x1 * k) / frame.canvasW, y: (y1 * k) / frame.totalH,
       w: (x2 - x1 * k) / frame.canvasW, h: ((y2 - y1) * k) / frame.totalH,
+      pageAspect: frame.totalH / frame.canvasW,
     });
   }
   return out;
+}
+
+/**
+ * The CSS that places the page image inside a box of the window's shape (the
+ * box is `w/h × pageAspect` tall for its width): the image is 1/w of the box
+ * wide, shifted left by x/w of the box, and up by y × pageAspect / h of the box.
+ * The last one is where a first cut went wrong — the box's height is not the
+ * image's, so `top` in box units carries the page's own aspect.
+ */
+export function snippetStyle(s: Snippet): { box: { aspectRatio: string }; img: { width: string; left: string; top: string } } {
+  return {
+    box: { aspectRatio: `${s.w} / ${s.h * s.pageAspect}` },
+    img: {
+      width: `${(100 / s.w).toFixed(3)}%`,
+      left: `${(-100 * s.x / s.w).toFixed(3)}%`,
+      top: `${(-100 * s.y * s.pageAspect / (s.h * s.pageAspect)).toFixed(3)}%`,
+    },
+  };
 }
 
 /**

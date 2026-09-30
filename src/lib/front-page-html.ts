@@ -139,7 +139,7 @@ export function coverSubject(subject: string | null | undefined): { label: strin
   if (!pill || pill.tone === 'other') return null;
   const T: Record<Exclude<SubjectTone, 'other'>, { label: string; band: string; solid: string; ink?: string }> = {
     am: { label: 'A Math', band: '#1D4ED8', solid: '#1D4ED8' },                  // royal blue (blue-700)
-    em: { label: 'E Math', band: '#FB923C', solid: '#FB923C', ink: '#431407' },  // orange (orange-400; orange-950 text on the tag)
+    em: { label: 'E Math', band: '#ECC24B', solid: '#ECC24B', ink: '#2A2000' },  // yellow (the app's button yellow since 1 Oct 2026, was orange-400; dark text on the tag)
     // H2 Math: no row — a JC paper's cover is plain (25 Sep 2026, "Remove h2").
     phy: { label: 'Physics', band: '#0891B2', solid: '#0891B2' },                // cyan (cyan-600)
     chem: { label: 'Chemistry', band: '#A855F7', solid: '#A855F7' },             // purple (purple-500)
