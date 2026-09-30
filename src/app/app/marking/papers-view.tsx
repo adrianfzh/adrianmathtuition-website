@@ -326,10 +326,10 @@ export default async function PapersView({ account, sid, admin = false }: {
     const bands = admin ? [] : examReviewBands(exams, listed, subject);
     const content: ReactNode = (
       <div className="space-y-4">
-        {/* The bright band five days before an exam (Adrian: "make sure it can be clearly seen"). */}
+        {/* The band five days before an exam (Adrian: "make sure it can be clearly seen"; then 30 Sep 2026: "this bright red looks scary" — navy, the app's own colour, stays clear without alarm). */}
         {bands.map(b => (
           <Link key={b.exam.id} href={b.paperIds.length ? `/app/marking/review?papers=${b.paperIds.join(',')}` : `/app/marking/review?papers=${reviewable.slice(0, 3).map(p => p.id).join(',')}`}
-            className="block rounded-3xl bg-rose-600 text-white px-4 py-3.5 shadow-[0_8px_24px_-10px_rgba(225,29,72,0.8)]">
+            className="block rounded-3xl bg-navy text-white px-4 py-3.5 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.6)]">
             <p className="font-bold">🔁 {b.exam.label}{b.exam.paper ? ` ${b.exam.paper}` : ''} {b.exam.daysLeft === 0 ? 'is today' : b.exam.daysLeft === 1 ? 'is tomorrow' : `in ${b.exam.daysLeft} days`} — review your mistakes ›</p>
             <p className="text-[12px] text-white/85 mt-0.5">{b.paperIds.length ? `${b.paperIds.length} paper${b.paperIds.length === 1 ? '' : 's'} with mistakes on the tested topics, ready to scroll.` : 'Scroll the questions you lost marks on before the paper.'}</p>
           </Link>
