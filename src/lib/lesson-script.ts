@@ -149,11 +149,12 @@ export type ClearScope = (typeof CLEAR_SCOPES)[number];
 export const CHARACTER_POSES = ['idle', 'point', 'think', 'oops', 'nod', 'cheer'] as const;
 export type CharacterPose = (typeof CHARACTER_POSES)[number];
 
-/** Whether a script has the character at all. `none` is the default, so every
- *  committed lesson renders byte-identically; the explain clip sets `teacher`.
- *  Adrian, 1 Oct 2026: the figure is a TEACHER, not a student — `student` stays
- *  accepted (older scripts) and draws the same teacher. */
-export const LESSON_CHARACTERS = ['teacher', 'student', 'none'] as const;
+/** Whether a script has the character at all, and which one. `none` is the
+ *  default, so every committed lesson renders byte-identically; the explain clip
+ *  sets `tutor-picture` (the generated tutor's six PNG cut-outs, 1 Oct 2026).
+ *  `teacher` is the drawn cartoon; `student` stays accepted (older scripts) and
+ *  draws the same teacher. */
+export const LESSON_CHARACTERS = ['teacher', 'student', 'none', 'tutor-picture'] as const;
 export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
 
 /** Stickers (1 Oct 2026, Adrian: "do the stickers") — small reaction pictures the

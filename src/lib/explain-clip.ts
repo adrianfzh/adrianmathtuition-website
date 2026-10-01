@@ -279,8 +279,9 @@ export function buildExplainScript(q: StudentQuestion, runId: string): LessonScr
     topic: q.topic || 'This question',
     minutes: 1,
     theme: 'chalk',
-    // The cartoon teacher at the corner reacts to the beats (poses above).
-    character: 'teacher',
+    // The tutor at the corner reacts to the beats (poses above) — the generated
+    // tutor's pictures since 1 Oct 2026 (lesson-character.tsx look `tutor-picture`).
+    character: 'tutor-picture',
     scenes,
   };
 }

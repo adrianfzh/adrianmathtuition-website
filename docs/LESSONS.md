@@ -178,6 +178,33 @@ and transition and the pose still shows.
   the script schema or the player changed — `look` is wired once Adrian picks (the strip:
   the session scratchpad's `character/candidates.mjs`, the same extract-and-stamp recipe as
   `preview.mjs`, five looks × six poses).
+- **The PICTURE look — `tutor-picture` (1 Oct 2026, Adrian approved a generated tutor; the
+  explain clip's default since then).** Not a drawing: six PNG cut-outs with transparent
+  backgrounds, one per pose, at `public/lessons/characters/tutor/{idle,point,think,oops,nod,cheer}.png`
+  (512×512, bottom-aligned, ~90 KB each). `characters/picture.tsx` (`<PictureCharacter set="tutor">`)
+  keeps the same six-pose contract — the `.lsn-char` wrapper, `data-lsn-char` / `data-pose` /
+  `data-side`, the corner, the side flip, reduced motion — plus `data-look="picture"` and
+  `data-set`. All six pictures are in the DOM from the first paint (stacked, eager), so a
+  pose switch never flashes: the current pose's `<img>` is opaque, a change is a 220 ms
+  crossfade plus the shared squash from `characters/base.ts`; between beats a slow 2.5 %
+  breathing loop from the feet. No box, no border — a transparent PNG over the slate. The
+  size clamp tops out at 150 px (`clamp(96px, 32%, 150px)`, square) because a cut-out reads
+  smaller than a drawn figure at the same width; it still sits inside the board, bottom-right,
+  `pointer-events: none`, under the marks and the pen like the others. The tutor set was drawn
+  pointing to the viewer's RIGHT, so at the right corner the picture is mirrored to face the
+  working (`scaleX(-1 × --lsn-char-flip)`) and `data-side="left"` un-mirrors it. **Wiring:** the
+  script word `character: 'tutor-picture'` (in `LESSON_CHARACTERS`) → the player's
+  `characterLook()` (`lesson-character.tsx`) picks the look and `BoardLayer` hands it to
+  `LessonCharacter look=…`; `teacher` / `student` / unset still draw the cartoon teacher, and
+  the player's unset case is unchanged (shown only on a board theme with posed beats). The
+  explain clip sets `character: 'tutor-picture'` (`lib/explain-clip.ts`) and the explain page's
+  own default is `'tutor-picture'`. **A new set** = six PNGs in
+  `public/lessons/characters/<name>/` named by pose + one `set` name in the dispatcher (a
+  new `look` word mapping to `<PictureCharacter set="<name>">`); nothing to draw. **Known
+  flaw in the first set (1 Oct 2026):** the background removal also removed the tutor's WHITE
+  hair and white T-shirt (alpha 0 in all six files), so on the slate he reads as dark-haired
+  in a dark shirt — coherent on chalk by accident, wrong on a paper theme; re-cut the six with
+  the white regions kept (or give him a non-white shirt) when regenerating.
 - **What Adrian still decides — the look.** Every colour is a token with a default
   (`--lsn-char-skin` / `-hair` / `-shirt` (the cardigan, default a calm blue) / `-collar` /
   `-pointer` / `-line` / `-dark` / `-cheek`; the OUTLINES take the theme's `--lsn-ink`, so

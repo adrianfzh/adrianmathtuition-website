@@ -96,6 +96,7 @@ import {
 } from '@/lib/lesson-stage';
 import { useNarration, usePref, useRatePref, writePref, writeRate } from './lesson-narration';
 import BoardLayer, { EASE, MathText, NoteSlotView, offsetRect, useIsoLayoutEffect } from './lesson-board';
+import { characterLook } from './lesson-character';
 import { ChalkWriter } from './chalk-writer';
 
 // ── Small shared renderers ───────────────────────────────────────────────────
@@ -1174,8 +1175,9 @@ type Pacing = 'manual' | 'auto' | 'narrated';
 export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
-   * The cartoon teacher at the board's corner (lesson-character.tsx). `teacher`
-   * (or the older `student`) shows it on any theme; `none` never. Left unset, it shows on a BOARD theme
+   * The character at the board's corner (lesson-character.tsx). `teacher`
+   * (or the older `student`) shows the drawn teacher on any theme, `tutor-picture` the
+   * generated tutor's pictures; `none` never. Left unset, it shows on a BOARD theme
    * whose beats carry `character` actions (the explain clip) — a committed lesson
    * without poses renders exactly as before.
    */
@@ -1337,7 +1339,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const board = useMemo(() => (hasBeats(scene) ? boardStateAt(scene, step, fired) : null), [scene, step, fired]);
   // The character: the script's word first; otherwise a board theme with posed beats.
   const posed = useMemo(() => scenesHaveCharacter(scenes), [scenes]);
-  const characterOn = character === 'teacher' || character === 'student' || (character === undefined && theme !== 'slide' && posed);
+  const characterOn = character !== undefined ? character !== 'none' : theme !== 'slide' && posed;
+  const look = characterLook(character);
   const marginNotes = useMemo(() => (board ? sceneNotes(scene).filter(n => n.line === null) : []), [board, scene]);
 
   // Telemetry — fire-and-forget beacons into portal_event_log (bounded kinds:
@@ -1582,7 +1585,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           data-step={step}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
-            character={characterOn ? (board?.pose ?? 'idle') : null}>
+            character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
             {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}

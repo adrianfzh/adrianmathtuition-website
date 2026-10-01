@@ -875,6 +875,7 @@ describe('character action + script switch', () => {
     expect(CHARACTER_POSES).toEqual(['idle', 'point', 'think', 'oops', 'nod', 'cheer']);
     expect(withCharacter('teacher', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true);
     expect(withCharacter('student', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true); // the older name still draws the teacher
+    expect(withCharacter('tutor-picture', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true); // the generated tutor's pictures
     expect(withCharacter('none', []).ok).toBe(true);
     const r = validateLessonScript(baseScript());
     expect(r.ok && r.script.character).toBeUndefined();
@@ -882,7 +883,7 @@ describe('character action + script switch', () => {
   it('refuses an unknown pose and an unknown character', () => {
     expect(errorsOf(withCharacter(undefined, [{ do: 'character', pose: 'dance' }]))).toMatch(/pose must be one of idle\/point\/think\/oops\/nod\/cheer \(got "dance"\)/);
     expect(errorsOf(withCharacter(undefined, [{ do: 'character' }]))).toMatch(/pose must be one of/);
-    expect(errorsOf(withCharacter('mascot', []))).toMatch(/character must be one of teacher\/student\/none \(got "mascot"\)/);
+    expect(errorsOf(withCharacter('mascot', []))).toMatch(/character must be one of teacher\/student\/none\/tutor-picture \(got "mascot"\)/);
   });
   it('keeps the at rule: a pose never runs backwards inside a beat', () => {
     expect(errorsOf(withCharacter(undefined, [{ do: 'character', pose: 'oops', at: 0.5 }, { do: 'character', pose: 'nod', at: 0.2 }]))).toMatch(/runs backwards/);

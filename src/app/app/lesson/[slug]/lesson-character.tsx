@@ -28,8 +28,9 @@
 // paper as an inked one. The look is Adrian's to change (docs/LESSONS.md § The
 // character) — every colour is a `--lsn-char-*` token.
 
-import type { CharacterPose } from '@/lib/lesson-script';
+import type { CharacterPose, LessonCharacter as LessonCharacterKind } from '@/lib/lesson-script';
 import BlobCharacter from './characters/blob';
+import PictureCharacter from './characters/picture';
 import KidCharacter from './characters/kid';
 import CatCharacter from './characters/cat';
 import RobotCharacter from './characters/robot';
@@ -40,8 +41,17 @@ import RobotCharacter from './characters/robot';
  * unchanged; the other four are the candidates in ./characters, each keeping the
  * same six-pose contract and data attributes. Default `teacher` until he picks.
  */
-export const CHARACTER_LOOKS = ['teacher', 'blob', 'kid', 'cat', 'robot'] as const;
+export const CHARACTER_LOOKS = ['teacher', 'blob', 'kid', 'cat', 'robot', 'tutor-picture'] as const;
 export type CharacterLook = (typeof CHARACTER_LOOKS)[number];
+
+/**
+ * The look a script's `character` word asks for (1 Oct 2026): `tutor-picture` is
+ * the generated tutor — six PNG cut-outs in public/lessons/characters/tutor
+ * (characters/picture.tsx); `teacher` / `student` (and unset) draw the teacher.
+ */
+export function characterLook(character: LessonCharacterKind | undefined): CharacterLook {
+  return character === 'tutor-picture' ? 'tutor-picture' : 'teacher';
+}
 
 export interface LessonCharacterProps {
   pose: CharacterPose;
@@ -129,6 +139,7 @@ export default function LessonCharacter({ pose, side = 'right', look = 'teacher'
     case 'kid': return <KidCharacter pose={pose} side={side} />;
     case 'cat': return <CatCharacter pose={pose} side={side} />;
     case 'robot': return <RobotCharacter pose={pose} side={side} />;
+    case 'tutor-picture': return <PictureCharacter set="tutor" pose={pose} side={side} />;
     default: return <TeacherCharacter pose={pose} side={side} />;
   }
 }
