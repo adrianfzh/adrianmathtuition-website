@@ -9,7 +9,7 @@ describe('voiceKey', () => {
   it('is deterministic, a valid student-file key under the run, and changes with the sentence', () => {
     const a = voiceKey(RUN, '3', 0, 'You wrote this line.');
     expect(a).toBe(voiceKey(RUN, '3', 0, 'You wrote this line.'));
-    expect(a).toMatch(new RegExp(`^runs/${RUN}/explain/3/b0-[0-9a-f]{8}\\.wav$`));
+    expect(a).toMatch(new RegExp(`^runs/${RUN}/explain/3/b0-[0-9a-f]{8}\\.mp3$`));
     expect(isValidKey(a)).toBe(true);
     expect(voiceKey(RUN, '3', 0, 'You wrote this line!')).not.toBe(a);
     expect(voiceKey(RUN, '3', 1, 'You wrote this line.')).not.toBe(a);

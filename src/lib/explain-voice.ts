@@ -12,8 +12,8 @@
 import type { Beat } from './lesson-script';
 
 /** The clip container. WAV until an encoder is worth a dependency. */
-export const VOICE_EXT = 'wav';
-export const VOICE_CONTENT_TYPE = 'audio/wav';
+export const VOICE_EXT = 'mp3';
+export const VOICE_CONTENT_TYPE = 'audio/mpeg';
 
 /** A scene that may carry beats — a LessonScript scene or the player's PlayScene. */
 // `type` is on every scene; without it the weak-type rule refuses the `check-skipped` marker.
@@ -41,7 +41,7 @@ export function voiceFolder(runId: string, questionNumber: string): string {
 }
 
 /**
- * Where beat k's clip lives: `runs/<runId>/explain/<q-slug>/b<k>-<hash>.wav`.
+ * Where beat k's clip lives: `runs/<runId>/explain/<q-slug>/b<k>-<hash>.mp3` (MiniMax answers MP3 since 1 Oct 2026; the earlier Gemini WAVs sit beside, unreferenced).
  * The hash is of the spoken sentence, so a changed `say` (a re-mark, a wording
  * fix in lib/explain-clip) gets a new clip and the old one is simply unused.
  */

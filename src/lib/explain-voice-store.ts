@@ -5,7 +5,8 @@
 // question, never a head per beat), the missing ones are synthesised with the
 // same Gemini TTS request scripts/lessons/generate-narration.mjs makes (model,
 // voice Charon, the tutor `style` prefix — the topic lessons and the
-// explanation are one voice), wrapped as WAV (lib/explain-voice pcmToWav; no
+// explanation are one voice), as MP3 straight from MiniMax (1 Oct 2026; the first day's
+// clips were Gemini PCM wrapped as WAV — lib/explain-voice pcmToWav stays for that),
 // ffmpeg on Vercel) and put under `runs/<runId>/explain/<q>/…` — a student's
 // own data, served only through /api/files to Adrian or the owning student
 // once the run is released. Four beats in flight; a beat that fails stays
@@ -15,16 +16,21 @@
 // question of the run (≤ 6) are made ahead of the first tap, fire-and-forget.
 
 import { buildExplainScript, canExplain } from './explain-clip';
-import { VOICE_CONTENT_TYPE, beatSays, pcmToWav, voiceFolder, voiceKey } from './explain-voice';
+import { VOICE_CONTENT_TYPE, beatSays, voiceFolder, voiceKey } from './explain-voice';
 import type { LessonScript } from './lesson-script';
 import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
 import { fileUrl, listStudentFiles, putStudentFile } from './student-files';
 import { getSupabaseAdmin } from './supabase';
 
-/** The same three as scripts/lessons/generate-narration.mjs DEFAULTS — change them together. */
-export const TTS_MODEL = 'gemini-2.5-flash-preview-tts';
-export const TTS_VOICE = 'Charon';
-export const TTS_STYLE = 'Read this as a warm, calm maths tutor talking to one student — clear and friendly, at a natural conversational pace: ';
+/** MiniMax Speech-02 (Adrian, 1 Oct 2026, after fifteen samples: "english friendlyperson" —
+ *  the Gemini voices sounded too Western / too deep). The same voice for the lessons:
+ *  scripts/lessons/generate-narration.mjs --provider minimax — change them together. */
+export const TTS_PROVIDER = 'minimax';
+export const TTS_MODEL = 'speech-02-hd';
+export const TTS_VOICE = 'English_FriendlyPerson';
+/** calm, a touch of warmth — a student is reading their own mistake. */
+export const TTS_EMOTION = 'calm';
+export const TTS_SPEED = 1;
 
 const CONCURRENCY = 4;
 /** Questions pre-warmed per release — the paper's first lost-marks questions, not every one. */
@@ -32,45 +38,38 @@ export const PREWARM_MAX_QUESTIONS = 6;
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-/** One beat's sentence → 16-bit mono PCM + its rate. Throws on any failure; the caller makes that beat silent. */
-async function synthesize(text: string, apiKey: string): Promise<{ pcm: Uint8Array; rate: number }> {
+/** One beat's sentence → MP3 bytes (MiniMax t2a_v2, hex-encoded audio). Throws on any failure; the caller makes that beat silent. */
+async function synthesize(text: string, apiKey: string): Promise<Uint8Array> {
   const body = {
-    contents: [{ parts: [{ text: TTS_STYLE + text }] }],
-    generationConfig: {
-      responseModalities: ['AUDIO'],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: TTS_VOICE } } },
-    },
+    model: TTS_MODEL,
+    text,
+    voice_setting: { voice_id: TTS_VOICE, speed: TTS_SPEED, vol: 1, pitch: 0, emotion: TTS_EMOTION },
+    audio_setting: { format: 'mp3', sample_rate: 24000, bitrate: 64000, channel: 1 },
   };
-  let part: { inlineData?: { mimeType?: string; data?: string } } | undefined;
-  // Three tries: 429 / 5xx back off; the preview model's occasional 200 with no
-  // audio (finishReason "OTHER") is re-asked the same way. A daily-quota 429
-  // stops at once — there is no point hammering it.
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${TTS_MODEL}:generateContent`, {
+    const r = await fetch('https://api.minimax.io/v1/t2a_v2', {
       method: 'POST',
-      headers: { 'x-goog-api-key': apiKey, 'content-type': 'application/json' },
+      headers: { Authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(25_000),
     });
     const raw = await r.text();
     if (!r.ok) {
-      if (r.status === 429 && /per day|daily|PerDay/i.test(raw)) throw new Error(`TTS daily quota: ${raw.slice(0, 160)}`);
       if ((r.status === 429 || r.status >= 500) && attempt < 3) { await sleep(1500 * attempt); continue; }
       throw new Error(`TTS HTTP ${r.status}: ${raw.slice(0, 200)}`);
     }
-    const j = JSON.parse(raw) as { candidates?: { content?: { parts?: { inlineData?: { mimeType?: string; data?: string } }[] } }[] };
-    part = j.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-    if (part) break;
+    const j = JSON.parse(raw) as { data?: { audio?: string }; base_resp?: { status_code?: number; status_msg?: string } };
+    const code = j.base_resp?.status_code ?? 0;
+    if (code !== 0) {
+      // 1008 = insufficient balance — stop at once, nothing to retry.
+      if (code === 1008) throw new Error(`TTS daily quota: ${j.base_resp?.status_msg}`);
+      if (attempt < 3) { await sleep(1000 * attempt); continue; }
+      throw new Error(`TTS ${code}: ${j.base_resp?.status_msg}`);
+    }
+    if (j.data?.audio) return new Uint8Array(Buffer.from(j.data.audio, 'hex'));
     if (attempt < 3) await sleep(1000 * attempt);
   }
-  if (!part?.inlineData?.data) throw new Error('TTS answered with no audio');
-  const mime = String(part.inlineData.mimeType || '');
-  // 2.5 answers "audio/L16;codec=pcm;rate=24000"; 3.1 "audio/l16; rate=24000; channels=1".
-  if (!/audio\/l16/i.test(mime)) throw new Error(`unexpected TTS mime "${mime}"`);
-  const channels = Number(/channels=(\d+)/i.exec(mime)?.[1] || 1);
-  if (channels !== 1) throw new Error(`expected mono PCM, got channels=${channels}`);
-  const rate = Number(/rate=(\d+)/i.exec(mime)?.[1] || 24000);
-  return { pcm: new Uint8Array(Buffer.from(part.inlineData.data, 'base64')), rate };
+  throw new Error('TTS answered with no audio');
 }
 
 export interface EnsureVoiceResult {
@@ -104,10 +103,10 @@ export async function ensureVoice(runId: string, questionNumber: string, script:
   const todo = keys.map((key, k) => k).filter(k => urls[k] === null);
   if (!todo.length) return { urls, made: 0, failed };
 
-  const apiKey = (process.env.GOOGLE_API_KEY || '').trim();
+  const apiKey = (process.env.MINIMAX_API_KEY || '').trim();
   if (!apiKey) {
-    console.warn('[explain-voice] GOOGLE_API_KEY missing — the explanation stays silent');
-    return { urls, made: 0, failed: todo.map(beat => ({ beat, error: 'GOOGLE_API_KEY missing' })) };
+    console.warn('[explain-voice] MINIMAX_API_KEY missing — the explanation stays silent');
+    return { urls, made: 0, failed: todo.map(beat => ({ beat, error: 'MINIMAX_API_KEY missing' })) };
   }
 
   let made = 0;
@@ -118,9 +117,8 @@ export async function ensureVoice(runId: string, questionNumber: string, script:
       if (k === undefined) return;
       if (quotaHit) { failed.push({ beat: k, error: 'daily quota' }); continue; }
       try {
-        const { pcm, rate } = await synthesize(says[k], apiKey);
-        const wav = pcmToWav(pcm, rate);
-        const { url } = await putStudentFile({ key: keys[k], body: wav, contentType: VOICE_CONTENT_TYPE });
+        const mp3 = await synthesize(says[k], apiKey);
+        const { url } = await putStudentFile({ key: keys[k], body: mp3, contentType: VOICE_CONTENT_TYPE });
         urls[k] = url;
         made++;
       } catch (e) {
