@@ -42,9 +42,16 @@ export async function GET(req: NextRequest) {
   }
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 502 });
-  const { data: counts } = await getSupabaseAdmin().from('paper_library').select('status').eq('kind', 'source');
+  // EXACT counts, one head request per status (2 Oct 2026). The old read pulled the status
+  // column unpaged, so past 1,000 source rows it counted an arbitrary 1,000 of them — and the
+  // Fly worker starts an extraction lane only when `counts.queued` > 0, so a short tail of the
+  // queue could read as 0 and stall. A count that fails is left out, never reported as 0.
   const byStatus: Record<string, number> = {};
-  for (const r of counts ?? []) byStatus[String(r.status)] = (byStatus[String(r.status)] || 0) + 1;
+  await Promise.all([...STATUSES].map(async (st) => {
+    const { count, error: cErr } = await getSupabaseAdmin().from('paper_library')
+      .select('id', { count: 'exact', head: true }).eq('kind', 'source').eq('status', st);
+    if (!cErr && typeof count === 'number' && count > 0) byStatus[st] = count;
+  }));
   return NextResponse.json({ ok: true, status, counts: byStatus, rows: data ?? [] });
 }
 
