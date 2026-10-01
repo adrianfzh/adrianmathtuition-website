@@ -861,6 +861,21 @@ and the same grounding as a whole re-mark, and the reading is filed in
 `paper_marking_runs.result_json.shadow_runs[]` (the last 8 kept) beside the
 paper's real marking. Monday's `auto-release-report` prints one line.
 
+**👻 The cheaper-reader shadow (1 Oct 2026, bot `lib/shadow-read.js`).** The same
+invariant, a different question: would Sonnet 5.5, reading against the bank's
+reference solutions, give the marks Opus delivered? Armed on the BOT by
+`MARKING_SHADOW_ARMS=claude-sonnet-5-5+ref:50` (unset = off); after a maths paper
+is delivered, Sonnet re-reads every marked page through the same request the real
+read sent and its per-part marks are filed in `result_json.shadow_read` — nothing
+else changes, its tokens sit on their own CostLog feature. Roll-up: `node
+scripts/shadow-sonnet-report.cjs --diffs` in the bot repo — agreement per level
+against the **noise floor** this weekly shadow gives (the latest consistency read vs
+the delivered marks: 92.7 % of 232 parts on 1 Oct 2026). A level may move to the
+cheaper reader only where it agrees with the delivered marks at least as often as
+the marker agrees with itself, over ≥ 10 papers, and only when Adrian says so after
+adjudicating the listed disagreements. One arm answers two questions at once: the
+reader AND the reference read (`MARKING_READ_AGAINST_REFERENCE`, still off).
+
 **THE INVARIANT:**
 
 > **A shadow read changes nothing a student, a parent or the desk can see.**
