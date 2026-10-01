@@ -955,7 +955,9 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const d = dimsRef.current[i]; const { tops } = layoutRef.current; const k = kFactor();
       if (!d) return null;
       const sc = d.w / DOC_W;
-      return { x: viewRef.current.ox + (lx / sc) * k, y: viewRef.current.oy + (tops[i] + ly / sc) * k };
+      // Pointer maths is relative to the base canvas; a page-level caller wants viewport css.
+      const r = baseRef.current?.getBoundingClientRect();
+      return { x: (r?.left ?? 0) + viewRef.current.ox + (lx / sc) * k, y: (r?.top ?? 0) + viewRef.current.oy + (tops[i] + ly / sc) * k };
     };
     const w = window as unknown as { __annotate?: unknown };
     w.__annotate = {
