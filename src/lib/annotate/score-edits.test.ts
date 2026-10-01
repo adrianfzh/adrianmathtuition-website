@@ -70,6 +70,13 @@ describe('score chip repaint', () => {
     expect(out).toContain('>M1 A0</text>');
     expect(out).not.toContain('#d32424');
   });
+  it('keeps a self-closing <rect/> well-formed — the broken "/ fill=" tag failed every save that changed marks (1 Oct 2026)', () => {
+    for (const out of [applyScoreText(full, 'Q3(a) 1/2'), restyleScoreInner(full, true), restyleScoreInner(full.replace('fill="#1a7f37" stroke="none"', 'fill="none" stroke="#d32424" stroke-width="2.1"'), true)]) {
+      expect(out).not.toMatch(/\/\s+[a-z-]+=/);
+      expect(out).toMatch(/<rect\b[^>]*\/>/);
+      expect(out.match(/<rect\b/g)).toHaveLength(1);
+    }
+  });
   it('a purple re-marked chip keeps its ink', () => {
     const purple = full.replace('#1a7f37', '#7c3aed');
     expect(restyleScoreInner(purple, false)).toBe(purple);

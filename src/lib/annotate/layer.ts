@@ -337,10 +337,15 @@ export function restyleScoreInner(inner: string, full: boolean): string {
   const isDefault = [paint, stroke].some(c => c.toLowerCase() === CHIP_FULL_GREEN || c.toLowerCase() === CHIP_RED);
   if (!isDefault) return inner;
   const sw = (attrs.match(/\sstroke-width="([^"]*)"/) || [])[1] || '1.8';
-  const nextAttrs = attrs
+  // A self-closing `<rect …/>` captures its `/` inside the attributes: appending the new
+  // paint AFTER it made `<rect … / fill="…">`, which librsvg refuses ("Couldn't find end
+  // of Start Tag rect") — so every save that changed a chip's marks failed (Adrian on the
+  // iPad, 1 Oct 2026: "i can't save my work after annotating"). Strip it, re-add it last.
+  const selfClosing = /\/\s*$/.test(attrs);
+  const nextAttrs = attrs.replace(/\/\s*$/, '')
     .replace(/\sfill="[^"]*"/, '').replace(/\sstroke="[^"]*"/, '').replace(/\sstroke-width="[^"]*"/, '')
     + (full ? ` fill="${CHIP_FULL_GREEN}" stroke="none"` : ` fill="none" stroke="${CHIP_RED}" stroke-width="${sw}"`);
-  let out = inner.replace(rectRe, `<rect${nextAttrs}>`);
+  let out = inner.replace(rectRe, `<rect${nextAttrs}${selfClosing ? '/' : ''}>`);
   out = out.replace(/<text\b([^>]*)>/g, (m, a: string) => `<text${a.replace(/\sfill="[^"]*"/, ` fill="${full ? '#ffffff' : CHIP_RED}"`)}>`);
   return out;
 }
