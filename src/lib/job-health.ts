@@ -23,7 +23,10 @@ export type Rhythm =
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
-  'file-subgroups':    { kind: 'interval', hours: 36, label: 'nightly 4:15am' },
+  // 🗂 The sub-skill filer: on the Fly worker since 2 Oct 2026 (the Mac task had not run since
+  // 9 Sep), maths 04:15 + 16:15, science 10:15 + 22:15 (bot worker/fly/jobs.sh job_file_subgroups).
+  'file-subgroups':    { kind: 'interval', hours: 36, label: '4:15am + 4:15pm' },
+  'file-subgroups-science': { kind: 'interval', hours: 36, label: '10:15am + 10:15pm' },
   // Daily since 18 Sep 2026 (the Fly worker's scheduler, 05:45 after the day-review).
   'bot-review':        { kind: 'interval', hours: 36, label: 'daily 5:45am' },
   // 🔎 The page reader (19 Sep 2026, bot skill marking-review): yesterday's marked pages as the student sees them.
