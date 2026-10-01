@@ -52,6 +52,7 @@ import type { CharacterPose } from '@/lib/lesson-script';
 import { scaleBeat } from '@/lib/lesson-speech';
 import { ChalkWriter, plainTextOf } from './chalk-writer';
 import LessonCharacter from './lesson-character';
+import LessonSticker from './lesson-stickers';
 
 // useLayoutEffect measures; on the server it must quietly be useEffect.
 export const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -466,6 +467,8 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         <div ref={penRef} className="lsn-pen" aria-hidden />
         {/* The character, under the marks and the pen, at the corner — reacts to board.pose. */}
         {character && <LessonCharacter pose={character} />}
+        {/* The beat's sticker (lesson-stickers.tsx): keyed by seq so a new action re-pops it; gone with the beat. */}
+        {board.sticker && <LessonSticker key={board.sticker.seq} kind={board.sticker.kind} near={board.sticker.near} zoomRef={zoomRef} />}
       </div>
     </div>
   );

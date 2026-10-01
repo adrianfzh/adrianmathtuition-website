@@ -330,3 +330,37 @@ describe('character pose', () => {
     expect(r.ok, JSON.stringify(r)).toBe(true);
   });
 });
+
+// ── Stickers (1 Oct 2026): a beat's own, gone at the boundary — unlike the pose ──
+
+describe('sticker state', () => {
+  const stuck = recipe([
+    { say: 'Look here.', do: [W({ text: 'intro' }), { do: 'character', pose: 'oops', at: 0.3 }, { do: 'sticker', kind: 'warning', near: 'lhs', at: 0.4 }] },
+    { say: 'No sticker on this beat.', do: [W({ step: 1 })] },
+    { say: 'The corner.', do: [{ do: 'sticker', kind: 'confetti' }, { do: 'clear', what: 'board', at: 0.9 }] },
+  ]);
+  it('is set by its action, null before it fires and null again once the next beat starts', () => {
+    expect(emptyBoard(stuck).sticker).toBeNull();
+    expect(boardStateAt(stuck, 0, 2).sticker).toBeNull();
+    expect(boardStateAt(stuck, 0, 3).sticker).toEqual({ kind: 'warning', near: 'lhs', seq: 2 });
+    expect(boardStateAt(stuck, 1, 0).sticker).toBeNull();
+    expect(boardStateAt(stuck, 1, 1).sticker).toBeNull();
+    // The pose carries across the same boundary — that is the difference.
+    expect(boardStateAt(stuck, 1, 1).pose).toBe('oops');
+    expect(boardStateAt(stuck, 2, 1).sticker).toEqual({ kind: 'confetti', near: null, seq: 4 });
+    // A clear of the board leaves the beat's sticker alone (it goes with the beat, not the pen).
+    expect(boardStateAt(stuck, 2, 2).sticker).toEqual({ kind: 'confetti', near: null, seq: 4 });
+  });
+  it('shows nothing on the board itself and is not a target', () => {
+    const b = emptyBoard(stuck);
+    applyAction(b, stuck, { do: 'sticker', kind: 'star' });
+    expect(b.sticker?.kind).toBe('star');
+    expect(b.shown.size).toBe(0);
+    expect(sceneTargets(stuck).targeted.has('tok:0:0')).toBe(false);
+    expect(beatTimeline(stuck, 0).map(x => x.at)).toEqual([0, 0.3, 0.4]);
+  });
+  it('validates as a whole script', () => {
+    const r = validateLessonScript({ slug: 't', title: 'T', level: 'AM', topic: 'Quadratic Functions', minutes: 1, theme: 'chalk', scenes: [stuck] });
+    expect(r.ok, JSON.stringify(r)).toBe(true);
+  });
+});

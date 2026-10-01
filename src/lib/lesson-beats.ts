@@ -33,6 +33,9 @@
 //     (today's behaviour); with one, it waits for the move.
 //   · The graph starts on state 0; `morph` moves it.
 //   · The pen layer accumulates until `clear`.
+//   · A STICKER lives for its beat only: set by its action, gone the moment the
+//     next beat starts (boardStateAt resets it at every beat boundary). The
+//     character's POSE is the opposite — held until the next pose, across beats.
 //
 // `at` is estimated: an action fires when the clip's elapsed fraction reaches
 // it. Unspecified `at`s are spread in listed order — the first unspecified
@@ -44,7 +47,7 @@
 import { splitParagraphs } from './lesson-speech';
 import {
   hasBeats, type Beat, type BeatAction, type BeatTarget, type CharacterPose, type ClearScope, type MarkKind,
-  type PlayScene, type Scene,
+  type PlayScene, type Scene, type StickerKind,
 } from './lesson-script';
 
 export type ElementKey = string;
@@ -148,6 +151,8 @@ export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number }
 export interface BoardNote { id: ElementKey; text: string; near: string | null; seq: number }
 export interface BoardPulse { tokens: string[]; seq: number }
 export interface BoardFocus { key: ElementKey; hold: number; seq: number }
+/** The sticker on the board right now — beside token `near` (null = the top-right corner). */
+export interface BoardSticker { kind: StickerKind; near: string | null; seq: number }
 
 export interface BoardState {
   /** Elements made visible so far (lines, tokens by key, callouts, prose, notes). */
@@ -168,6 +173,8 @@ export interface BoardState {
   focus: BoardFocus | null;
   /** The character's pose (the cartoon teacher at the corner) — `idle` until a `character` action; held until the next. */
   pose: CharacterPose;
+  /** The beat's sticker, if its action has fired — null again as soon as the next beat starts (never carried over, unlike `pose`). */
+  sticker: BoardSticker | null;
   /** Actions applied so far across the scene — the seq of the next one. */
   seq: number;
 }
@@ -190,7 +197,7 @@ export function emptyBoard(scene: Scene | PlayScene): BoardState {
   const { targeted, movable } = sceneTargets(scene);
   return {
     shown: new Set(), written: new Set(), targeted, movable, moved: new Set(),
-    state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', seq: 0,
+    state: 0, pulses: [], marks: [], notes: [], focus: null, pose: 'idle', sticker: null, seq: 0,
   };
 }
 
@@ -277,6 +284,9 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
     case 'character':
       board.pose = action.pose;
       break;
+    case 'sticker':
+      board.sticker = { kind: action.kind, near: action.near ?? null, seq };
+      break;
   }
 }
 
@@ -292,6 +302,8 @@ export function boardStateAt(scene: Scene | PlayScene, beat: number, fired: numb
     if (k > beat) return;
     const upTo = k < beat ? b.do.length : Math.min(fired, b.do.length);
     for (let j = 0; j < upTo; j++) applyAction(board, scene, b.do[j], `${k}:${j}`);
+    // A sticker is the beat's own: the boundary takes it down (the pose stays).
+    if (k < beat) board.sticker = null;
   });
   return board;
 }

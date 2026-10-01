@@ -156,6 +156,14 @@ export type CharacterPose = (typeof CHARACTER_POSES)[number];
 export const LESSON_CHARACTERS = ['teacher', 'student', 'none'] as const;
 export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
 
+/** Stickers (1 Oct 2026, Adrian: "do the stickers") — small reaction pictures the
+ *  clip drops onto the board at the moment the voice says the thing, gone when the
+ *  next beat starts (the 洋葱学园 / 作业帮 "viral shot"). A FIXED curated set — never
+ *  a live search; the art is app/lesson/[slug]/lesson-stickers.tsx, one inline SVG
+ *  per kind, so a LottieFiles / Tenor asset can replace any one behind its name. */
+export const STICKER_KINDS = ['facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes'] as const;
+export type StickerKind = (typeof STICKER_KINDS)[number];
+
 /**
  * What a write / reveal / focus points at — exactly ONE of these per action.
  * `step` = an equation-steps line, `callout` = an annotate callout, `token` = a
@@ -195,10 +203,12 @@ export type BeatAction =
   /** Wipe the pen layer (default) or the whole board. */
   | ({ do: 'clear'; what?: ClearScope } & Timed)
   /** The character (the teacher) at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
-  | ({ do: 'character'; pose: CharacterPose } & Timed);
+  | ({ do: 'character'; pose: CharacterPose } & Timed)
+  /** A sticker pops in beside the token `near` (else the board's top-right corner) and is gone when the next beat starts. At most ONE per beat. */
+  | ({ do: 'sticker'; kind: StickerKind; near?: string } & Timed);
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -568,6 +578,14 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
         errors.push(`${where}: pose must be one of ${CHARACTER_POSES.join('/')} (got "${String(a.pose)}")`);
       }
       break;
+    case 'sticker':
+      if (!(STICKER_KINDS as readonly unknown[]).includes(a.kind)) {
+        errors.push(`${where}: kind must be one of ${STICKER_KINDS.join('/')} (got "${String(a.kind)}")`);
+      }
+      if (a.near !== undefined && (!nonEmptyString(a.near) || !scope.tokenIds.has(a.near))) {
+        errors.push(`${where}: near "${String(a.near)}" is not a token id in this scene`);
+      }
+      break;
   }
 }
 
@@ -597,6 +615,7 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
     if (!Array.isArray(b.do)) { errors.push(`${bAt}: do must be an array of actions (empty for a beat that only speaks)`); return; }
     if (scope === null) return; // the scene body failed — references cannot be judged
     let lastAt = -1;
+    let stickers = 0;
     b.do.forEach((action, j) => {
       const aAt = `${bAt}.do[${j}]`;
       validateAction(action, scope, aAt, errors);
@@ -604,6 +623,8 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
         if (action.at < lastAt) errors.push(`${aAt}: at ${action.at} runs backwards — actions fire in listed order, so at must not decrease within a beat`);
         lastAt = Math.max(lastAt, action.at);
       }
+      // One sticker per beat (Adrian's rule): a second one would land on the first.
+      if (isRecord(action) && action.do === 'sticker' && ++stickers === 2) errors.push(`${aAt}: a beat carries at most one sticker`);
     });
   });
 }

@@ -187,6 +187,48 @@ and transition and the pose still shows.
   (no dev server) is the previous sessions' `preview.mjs` recipe: pull `CHARACTER_CSS` and
   the `<svg>` out of the TSX, swap the JSX attribute names, stamp six copies with `data-pose`.
 
+## Stickers (1 Oct 2026) — a reaction picture for the beat
+
+Adrian: *"do the stickers"* — the small reaction pictures 洋葱学园 / 作业帮 clips drop on the
+board at the moment the voice says the thing, the "viral shot" feel. The rules he agreed:
+**at most ONE per beat, two or three per clip, a FIXED curated set (never a live search),
+sized like a thumb (~64–96 px on a phone), beside the line it is about or at a corner.**
+
+- **The action.** `{ do: 'sticker', kind, near?, at? }` in any beat. `kind` is one of the
+  twelve below; `near` is a token id of the scene (the sticker sits just right of that
+  token's line); without `near` it sits at the board's top-right corner. The validator
+  refuses a kind off the list, a `near` that is not a token id, and a SECOND sticker in
+  the same beat.
+- **Gone on the next beat.** `BoardState.sticker` (`lib/lesson-beats.ts`) is set by the
+  action and `boardStateAt` resets it to null at every beat boundary — a sticker never
+  carries over, and `clear` does not touch it (it belongs to the beat, not the pen). This
+  is the OPPOSITE of the character's `pose`, which holds until the next pose. The board
+  layer renders it keyed by `seq`, so a new action re-pops.
+- **The twelve kinds** (`STICKER_KINDS`, `lib/lesson-script.ts`): `facepalm` · `lightbulb` ·
+  `confetti` · `magnifier` · `warning` · `check` · `question` · `fire` · `sweat` · `star` ·
+  `clap` · `eyes`. The art is `app/lesson/[slug]/lesson-stickers.tsx` — one inline SVG
+  per kind (`STICKER_ART`), flat, two or three colours, readable at 64 px; a pop-in
+  (scale 0.6 → 1.05 → 1, 220 ms) and a tiny idle wobble, none under
+  `prefers-reduced-motion`. No image files, no dependency.
+- **Placement.** `near` is measured like a mark (the token's resting box inside the zoom
+  wrapper, re-measured on resize) and the sticker goes right of it, vertically centred on
+  the line; when there is no room to the right, or that spot would reach into the
+  character's bottom-right corner, it falls back to the top-right corner. `pointer-events:
+  none`, absolutely positioned in the overlay — it never moves a glyph.
+- **The explain clip** (`lib/explain-clip.ts`, `STICKERS_MAX = 3`, a budget spent in scene
+  order): `warning` beside the ✗ line, `lightbulb` beside the first pen step, `confetti` at
+  the Answer; a sentence (caption) scene gets `warning` at the corner on its first beat
+  only; a ✗-line + fix board gets `warning` beside each ✗ line while the budget lasts. A
+  two-part clip spends all three on part (a).
+- **Swapping one for a LottieFiles / Tenor asset later.** Replace that kind's function in
+  `STICKER_ART` with a component that renders the asset (a `<video>` / `<img>` or a Lottie
+  player) inside the same `.lsn-sticker` box — the kind name, the schema, the budget and
+  the placement are untouched. Keep it under the size clamp and still at 64 px.
+- **The gallery** — `/app/lesson/stickers` (admin-only like the lesson page, linked from
+  nowhere): the twelve on a slate swatch, each labelled, tap a card or "Pop all" to replay
+  the pop-in. Prune the set there; a removed kind comes out of `STICKER_KINDS` and
+  `STICKER_ART` together (the type makes the two agree).
+
 ## Map
 
 | Piece | Where | Notes |
