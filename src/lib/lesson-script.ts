@@ -161,7 +161,11 @@ export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
  *  next beat starts (the 洋葱学园 / 作业帮 "viral shot"). A FIXED curated set — never
  *  a live search; the art is app/lesson/[slug]/lesson-stickers.tsx, one inline SVG
  *  per kind, so a LottieFiles / Tenor asset can replace any one behind its name. */
-export const STICKER_KINDS = ['facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes'] as const;
+export const STICKER_KINDS = [
+  'facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes',
+  // Ten more (1 Oct 2026, Adrian: "are there more?")
+  'thumbsup', 'hundred', 'clock', 'rocket', 'trophy', 'brain', 'pencil', 'zzz', 'exclaim', 'target',
+] as const;
 export type StickerKind = (typeof STICKER_KINDS)[number];
 
 /**

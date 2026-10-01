@@ -1,4 +1,4 @@
-// /app/lesson/stickers — Adrian's look at the sticker set (1 Oct 2026): the twelve
+// /app/lesson/stickers — Adrian's look at the sticker set (1 Oct 2026): the twenty-two
 // kinds on a slate swatch, each labelled, with a "pop again" button, so he can prune
 // the set. Linked from nowhere — he opens the URL. Admin-only like the lesson page
 // (requireFullPortal bounces students to /app while the marking-only beta is on).

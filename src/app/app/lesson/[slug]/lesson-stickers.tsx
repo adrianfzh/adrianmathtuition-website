@@ -7,7 +7,7 @@
 // search), sized like a thumb (~64–96 px on a phone), placed beside the line it is
 // about or at a corner.
 //
-// The twelve kinds (lib/lesson-script STICKER_KINDS) are inline SVG — no image
+// The twenty-two kinds (lib/lesson-script STICKER_KINDS) are inline SVG — no image
 // files, no dependency — flat, bold, two or three colours each, readable at 64 px.
 // Each is one function keyed by its kind name, so a LottieFiles / Tenor asset can
 // replace any one later behind the same name (docs/LESSONS.md § Stickers). The
@@ -53,12 +53,16 @@ const Y = '#ffd34e', YD = '#e8a93a', K = '#2b2320', W = '#ffffff';
 function Facepalm() {
   return (
     <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="32" cy="34" r="24" fill={Y} className="s-line" />
-      <path d="M22 46 Q32 40 42 46" fill="none" className="s-line" />
-      <circle cx="43" cy="28" r="2.6" fill={K} />
-      {/* the hand over the brow */}
-      <path d="M8 24 Q10 12 20 12 L36 12 Q44 12 44 20 L44 30 Q44 36 36 36 L22 36 Q10 36 8 24 Z" fill={YD} className="s-line" />
-      <path d="M18 14 L18 34 M26 12 L26 36 M34 12 L34 36" fill="none" stroke={K} strokeWidth="1.6" strokeLinecap="round" opacity="0.5" />
+      {/* the face */}
+      <circle cx="32" cy="36" r="25" fill={Y} className="s-line" />
+      {/* two closed eyes — big arcs that stay visible above the fingertips */}
+      <path d="M15 25 Q22 17 29 25" fill="none" stroke={K} strokeWidth="3.4" strokeLinecap="round" />
+      <path d="M35 25 Q42 17 49 25" fill="none" stroke={K} strokeWidth="3.4" strokeLinecap="round" />
+      {/* the hand slapped over the face: four fingertips just under the eyes, palm down over the mouth */}
+      <path d="M11 44 Q9 36 15 35 L15 33 Q15 29 19 29 Q23 29 23 33 L23 32 Q23 28 27 28 Q31 28 31 32 L31 31 Q31 27 35 27 Q39 27 39 31 L39 33 Q39 29 43 29 Q47 29 47 33 L47 46 Q47 56 37 58 L23 58 Q13 58 11 48 Z" fill={YD} className="s-line" />
+      <path d="M23 33 L23 44 M31 32 L31 44 M39 33 L39 44" fill="none" stroke={K} strokeWidth="1.8" strokeLinecap="round" opacity="0.45" />
+      {/* a sweat drop */}
+      <path d="M56 6 Q63 18 58 23 Q53 26 51 21 Q49 16 56 6 Z" fill="#4fb0ff" className="s-line" />
     </svg>
   );
 }
@@ -191,10 +195,129 @@ function Eyes() {
   );
 }
 
+function Thumbsup() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 30 L8 56 L18 56 L18 30 Z" fill="#4fb0ff" className="s-line" />
+      <path d="M18 32 L28 10 Q34 6 36 12 L34 26 L52 26 Q58 26 57 32 L53 52 Q52 56 46 56 L18 56 Z" fill="#f6cfa6" className="s-line" />
+      <path d="M36 36 L54 36 M36 46 L52 46" fill="none" stroke={K} strokeWidth="1.8" strokeLinecap="round" opacity="0.45" />
+    </svg>
+  );
+}
+
+function Hundred() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <text x="32" y="38" textAnchor="middle" fontFamily="Arial Black, Helvetica, Arial, sans-serif" fontWeight="900" fontSize="30" fill="#e8463a" stroke={K} strokeWidth="1.6" paintOrder="stroke">100</text>
+      <path d="M8 46 L56 46 M8 54 L56 54" fill="none" stroke="#e8463a" strokeWidth="4.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Clock() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 6 L58 12 M14 6 L6 12" fill="none" stroke={K} strokeWidth="4" strokeLinecap="round" />
+      <circle cx="32" cy="34" r="24" fill={W} className="s-line" />
+      <path d="M32 18 L32 34 L44 40" fill="none" stroke={K} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="32" cy="34" r="3" fill="#e8463a" />
+      <path d="M32 14 L32 17 M52 34 L49 34 M32 54 L32 51 M12 34 L15 34" fill="none" stroke={K} strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Rocket() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 60 Q28 52 32 52 Q36 52 42 60 Q32 56 22 60 Z" fill="#ff7a2f" className="s-line" />
+      <path d="M26 56 Q32 50 38 56 Q32 54 26 56 Z" fill={Y} />
+      <path d="M20 46 L12 50 L16 36 L22 32 Z" fill="#e8463a" className="s-line" />
+      <path d="M44 46 L52 50 L48 36 L42 32 Z" fill="#e8463a" className="s-line" />
+      <path d="M32 4 Q46 16 42 46 L22 46 Q18 16 32 4 Z" fill={W} className="s-line" />
+      <circle cx="32" cy="24" r="5" fill="#4fb0ff" className="s-line" />
+    </svg>
+  );
+}
+
+function Trophy() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 14 L8 14 Q6 30 18 32 M50 14 L56 14 Q58 30 46 32" fill="none" stroke={YD} strokeWidth="4" strokeLinecap="round" />
+      <path d="M14 8 L50 8 L48 30 Q46 40 32 42 Q18 40 16 30 Z" fill={Y} className="s-line" />
+      <path d="M28 42 L28 50 L36 50 L36 42 Z" fill={YD} className="s-line" />
+      <rect x="18" y="50" width="28" height="8" rx="2" fill="#a8713a" className="s-line" />
+      <path d="M32 16 L34.5 22 L41 22.5 L36 26.5 L37.5 33 L32 29.5 L26.5 33 L28 26.5 L23 22.5 L29.5 22 Z" fill={W} />
+    </svg>
+  );
+}
+
+function Brain() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M31 10 Q20 6 16 16 Q6 18 8 30 Q4 42 16 46 Q18 56 30 54 L31 54 Z" fill="#ff8fb4" className="s-line" />
+      <path d="M33 10 Q44 6 48 16 Q58 18 56 30 Q60 42 48 46 Q46 56 34 54 L33 54 Z" fill="#ff8fb4" className="s-line" />
+      <path d="M32 10 L32 54" fill="none" className="s-line" />
+      <path d="M14 26 Q20 24 24 30 M12 38 Q20 34 24 42 M50 26 Q44 24 40 30 M52 38 Q44 34 40 42" fill="none" stroke="#c8405f" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function Pencil() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <g transform="rotate(45 32 32)">
+        <rect x="24" y="4" width="16" height="8" rx="2" fill="#ff8fb4" className="s-line" />
+        <rect x="24" y="12" width="16" height="4" fill="#9aa3ad" className="s-line" />
+        <rect x="24" y="16" width="16" height="30" fill={Y} className="s-line" />
+        <path d="M29 16 L29 46 M35 16 L35 46" fill="none" stroke={YD} strokeWidth="2" />
+        <path d="M24 46 L40 46 L32 60 Z" fill="#f6cfa6" className="s-line" />
+        <path d="M29 54 L35 54 L32 60 Z" fill={K} />
+      </g>
+    </svg>
+  );
+}
+
+function Zzz() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="26" cy="38" r="20" fill={Y} className="s-line" />
+      <path d="M14 36 Q19 32 24 36 M30 36 Q35 32 40 36" fill="none" stroke={K} strokeWidth="3" strokeLinecap="round" />
+      <ellipse cx="26" cy="48" rx="4" ry="2.5" fill={K} />
+      <text x="40" y="26" fontFamily="Arial Black, Helvetica, Arial, sans-serif" fontWeight="900" fontSize="13" fill="#4fb0ff" stroke={K} strokeWidth="1" paintOrder="stroke">z</text>
+      <text x="47" y="17" fontFamily="Arial Black, Helvetica, Arial, sans-serif" fontWeight="900" fontSize="17" fill="#4fb0ff" stroke={K} strokeWidth="1.2" paintOrder="stroke">Z</text>
+      <text x="56" y="8" fontFamily="Arial Black, Helvetica, Arial, sans-serif" fontWeight="900" fontSize="9" fill="#4fb0ff" stroke={K} strokeWidth="0.8" paintOrder="stroke">z</text>
+    </svg>
+  );
+}
+
+function Exclaim() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22 6 L42 6 L38 40 L26 40 Z" fill="#e8463a" className="s-line" />
+      <circle cx="32" cy="52" r="7" fill="#e8463a" className="s-line" />
+    </svg>
+  );
+}
+
+function Target() {
+  return (
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="30" cy="34" r="25" fill="#e8463a" className="s-line" />
+      <circle cx="30" cy="34" r="17" fill={W} />
+      <circle cx="30" cy="34" r="10" fill="#e8463a" />
+      <circle cx="30" cy="34" r="3.5" fill={W} />
+      <path d="M30 34 L54 10" stroke={K} strokeWidth="4" strokeLinecap="round" />
+      <path d="M54 10 L58 4 M54 10 L60 6 M54 10 L48 12 M54 10 L50 16" fill="none" stroke="#4fb0ff" strokeWidth="3.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 /** The art by kind name — swap one entry for a LottieFiles / Tenor asset later; nothing else changes. */
 export const STICKER_ART: Record<StickerKind, () => React.JSX.Element> = {
   facepalm: Facepalm, lightbulb: Lightbulb, confetti: Confetti, magnifier: Magnifier, warning: Warning, check: Check,
   question: Question, fire: Fire, sweat: Sweat, star: Star, clap: Clap, eyes: Eyes,
+  thumbsup: Thumbsup, hundred: Hundred, clock: Clock, rocket: Rocket, trophy: Trophy, brain: Brain,
+  pencil: Pencil, zzz: Zzz, exclaim: Exclaim, target: Target,
 };
 
 /** One sticker's picture, no placement — the gallery and the board layer both use it. */
@@ -273,7 +396,7 @@ export function StickerGallery({ board, ink }: { board: string; ink: string }) {
 .lsn-sticker-swatch .lsn-sticker-ghost { position: absolute; left: 10px; right: 10px; top: 12px; height: 7px; border-radius: 4px; background: ${ink}; opacity: 0.12; }
 .lsn-sticker-swatch .lsn-sticker-ghost + .lsn-sticker-ghost { top: 26px; width: 60%; }`}</style>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-sm text-slate-600">Twelve kinds. One per beat, two or three per clip, gone on the next beat. Tap a card to pop it again.</p>
+        <p className="text-sm text-slate-600">Twenty-two kinds. One per beat, two or three per clip, gone on the next beat. Tap a card to pop it again.</p>
         <button type="button" onClick={popAll} className="shrink-0 ml-3 rounded-full bg-slate-900 text-white text-xs font-semibold px-3 py-1.5">Pop all</button>
       </div>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">

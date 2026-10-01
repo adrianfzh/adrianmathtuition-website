@@ -901,7 +901,11 @@ describe('sticker action', () => {
     return validateLessonScript(s);
   };
   it('accepts every kind, beside a token or bare', () => {
-    expect(STICKER_KINDS).toEqual(['facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes']);
+    expect(STICKER_KINDS).toEqual([
+      'facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes',
+      'thumbsup', 'hundred', 'clock', 'rocket', 'trophy', 'brain', 'pencil', 'zzz', 'exclaim', 'target',
+    ]);
+    expect(STICKER_KINDS).toHaveLength(22);
     for (const kind of STICKER_KINDS) expect(withStickers([{ do: 'write', token: 'a' }, { do: 'sticker', kind, near: 'a', at: 0.4 }]).ok).toBe(true);
     expect(withStickers([{ do: 'sticker', kind: 'warning' }], 'caption').ok).toBe(true);
   });

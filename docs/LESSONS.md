@@ -195,7 +195,7 @@ board at the moment the voice says the thing, the "viral shot" feel. The rules h
 sized like a thumb (~64–96 px on a phone), beside the line it is about or at a corner.**
 
 - **The action.** `{ do: 'sticker', kind, near?, at? }` in any beat. `kind` is one of the
-  twelve below; `near` is a token id of the scene (the sticker sits just right of that
+  twenty-two below; `near` is a token id of the scene (the sticker sits just right of that
   token's line); without `near` it sits at the board's top-right corner. The validator
   refuses a kind off the list, a `near` that is not a token id, and a SECOND sticker in
   the same beat.
@@ -204,9 +204,14 @@ sized like a thumb (~64–96 px on a phone), beside the line it is about or at a
   carries over, and `clear` does not touch it (it belongs to the beat, not the pen). This
   is the OPPOSITE of the character's `pose`, which holds until the next pose. The board
   layer renders it keyed by `seq`, so a new action re-pops.
-- **The twelve kinds** (`STICKER_KINDS`, `lib/lesson-script.ts`): `facepalm` · `lightbulb` ·
-  `confetti` · `magnifier` · `warning` · `check` · `question` · `fire` · `sweat` · `star` ·
-  `clap` · `eyes`. The art is `app/lesson/[slug]/lesson-stickers.tsx` — one inline SVG
+- **The twenty-two kinds** (`STICKER_KINDS`, `lib/lesson-script.ts`): the first twelve —
+  `facepalm` · `lightbulb` · `confetti` · `magnifier` · `warning` · `check` · `question` ·
+  `fire` · `sweat` · `star` · `clap` · `eyes` — and ten more added the same evening after
+  Adrian's read ("facepalm is not good, the rest are okay, but are there more?"; facepalm
+  was redrawn as a face with a hand slapped over the eyes, closed-eye arcs above the
+  fingers, a sweat drop): `thumbsup` · `hundred` (a "100" with two underlines) · `clock`
+  (time running) · `rocket` · `trophy` · `brain` · `pencil` · `zzz` (sleepy — a rule that
+  was forgotten) · `exclaim` (a bold "!") · `target` (bullseye with an arrow). The art is `app/lesson/[slug]/lesson-stickers.tsx` — one inline SVG
   per kind (`STICKER_ART`), flat, two or three colours, readable at 64 px; a pop-in
   (scale 0.6 → 1.05 → 1, 220 ms) and a tiny idle wobble, none under
   `prefers-reduced-motion`. No image files, no dependency.
@@ -225,7 +230,7 @@ sized like a thumb (~64–96 px on a phone), beside the line it is about or at a
   player) inside the same `.lsn-sticker` box — the kind name, the schema, the budget and
   the placement are untouched. Keep it under the size clamp and still at 64 px.
 - **The gallery** — `/app/lesson/stickers` (admin-only like the lesson page, linked from
-  nowhere): the twelve on a slate swatch, each labelled, tap a card or "Pop all" to replay
+  nowhere): all twenty-two on a slate swatch, each labelled, tap a card or "Pop all" to replay
   the pop-in. Prune the set there; a removed kind comes out of `STICKER_KINDS` and
   `STICKER_ART` together (the type makes the two agree).
 
