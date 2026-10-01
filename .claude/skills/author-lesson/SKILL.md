@@ -191,6 +191,15 @@ npx tsc --noEmit
 
 ## 6. Preview
 
+Voice clips first (idempotent; MiniMax `English_FriendlyPerson` is the default since
+1 Oct 2026 — no `--voice` needed; after an engagement pass delete the lesson's old clips,
+they belong to the old words):
+
+```bash
+node scripts/lessons/generate-narration.mjs <slug>            # writes beats[].audio
+node scripts/lessons/generate-narration.mjs <slug> --verify   # ASR round-trip, ≥ 85 % a clip
+```
+
 Commit + push to `dev` per repo policy (three code files + the JSON together),
 re-alias the preview, then the URL Adrian opens is
 

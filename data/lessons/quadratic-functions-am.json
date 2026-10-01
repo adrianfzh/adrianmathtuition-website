@@ -9,17 +9,17 @@
     {
       "type": "title",
       "title": "Completing the Square",
-      "promise": "Turn any quadratic into the form that hands you its turning point — and proves it can never dip below zero.",
+      "promise": "Where does the curve turn? How low does it go? Can it ever hit zero? One rewrite — completing the square — answers all three.",
       "beats": [
         {
-          "say": "Welcome. In the next few minutes you'll learn one rewrite: completing the square.",
+          "say": "Hi. Today we learn one rewrite: completing the square. One rewrite, and a quadratic tells us its turning point straight away.",
           "do": [
             { "do": "write", "text": "title" }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-01-b1.mp3"
         },
         {
-          "say": "It turns any quadratic into a form that hands you its turning point on a plate — and lets you prove it never dips below zero.",
+          "say": "Where does the curve turn? How low does it go? Can it ever hit zero? One rewrite answers all three. Let's go.",
           "do": [
             { "do": "write", "text": "promise" }
           ],
@@ -33,21 +33,21 @@
       "text": "$y = x^2 - 4x$ looks simple, but at a glance it tells you almost nothing: where is its lowest point? What is its smallest value?\n\nThe same curve written as $y = (x-2)^2 - 4$ answers both instantly — lowest point $(2, -4)$, smallest value $-4$.\n\nThis lesson is the rewrite that takes you from the first form to the second, every time.",
       "beats": [
         {
-          "say": "Look at y equals x squared minus four x. It looks simple, but at a glance it tells you almost nothing: where is its lowest point, and what is its smallest value?",
+          "say": "Look at y equals x squared minus four x. Simple, right? So, where is its lowest point? What is its smallest value? Hmm. We can't tell.",
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-02-b1.mp3"
         },
         {
-          "say": "Now write the same curve as x minus two, all squared, minus four. Both answers are sitting right there: lowest point two comma minus four, smallest value minus four.",
+          "say": "Now write the same curve as x minus two, all squared, minus four. See it? Lowest point two comma minus four, smallest value minus four. Just sitting there.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-02-b2.mp3"
         },
         {
-          "say": "This lesson is the rewrite that takes you from the first form to the second, every single time.",
+          "say": "So how do we get from the first form to the second? That is the rewrite. That is this whole lesson.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
@@ -75,26 +75,26 @@
       ],
       "beats": [
         {
-          "say": "Watch the curve. Start with y equals x squared, the basic parabola, turning point at the origin. Every quadratic you will ever meet is this curve, moved about.",
+          "say": "Watch the curve. This is y equals x squared, the basic parabola, turning point at the origin. Every quadratic we ever meet is this curve, moved about. So what moves it?",
           "do": [],
           "audio": "/lessons/quadratic-functions-am/scene-03-b1.mp3"
         },
         {
-          "say": "Replace x by x minus two, and the whole curve slides two to the right. The turning point is now at two comma zero. Same shape, just shifted sideways.",
+          "say": "Replace x by x minus two, and the whole curve slides two to the right. Turning point now two comma zero. Same shape, just shifted. That's all the bracket does.",
           "do": [
             { "do": "morph", "state": 1, "at": 0.15 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-03-b2.mp3"
         },
         {
-          "say": "Now take four away, and the curve drops by four. The turning point falls to two comma minus four. The number on the end lifts or drops the curve — that is all it does.",
+          "say": "Now what happens if we take four away? The whole curve drops by four. Turning point falls to two comma minus four. The number on the end just lifts or drops. Nothing more.",
           "do": [
             { "do": "morph", "state": 2, "at": 0.15 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-03-b3.mp3"
         },
         {
-          "say": "Put a minus in front and it flips upside down. This one peaks at two comma three, a maximum. The completed-square form is simply the record of the moves.",
+          "say": "And a minus in front? It flips upside down. Now it peaks at two comma three, a maximum. So the completed-square form is just a record of the moves. That's it.",
           "do": [
             { "do": "morph", "state": 3, "at": 0.12 },
             { "do": "write", "text": "caption", "at": 0.55 }
@@ -132,7 +132,7 @@
       ],
       "beats": [
         {
-          "say": "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k.",
+          "say": "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. In plain words: a curve, slid across by h, lifted by k.",
           "do": [
             { "do": "write", "text": "intro" },
             { "do": "write", "text": "expression", "at": 0.3 }
@@ -140,7 +140,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-04-b1.mp3"
         },
         {
-          "say": "Three letters, and each one tells you something about the curve. Let's name them one at a time.",
+          "say": "Three letters. What does each one tell us about the curve? Let's name them, one at a time.",
           "do": [
             { "do": "highlight", "token": "a", "at": 0.3 },
             { "do": "highlight", "token": "sq", "at": 0.5 },
@@ -149,7 +149,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-04-b2.mp3"
         },
         {
-          "say": "The a tells you which way it opens. Positive a: upwards, and the turning point is a minimum. Negative a: downwards, a maximum.",
+          "say": "The a says which way it opens. Positive a: upwards, so the turning point is a minimum. Negative a: downwards, a maximum. Sign of a, shape of the curve. Easy.",
           "do": [
             { "do": "highlight", "token": "a" },
             { "do": "reveal", "callout": 0, "at": 0.1 },
@@ -158,7 +158,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-04-b3.mp3"
         },
         {
-          "say": "The h is the x-coordinate of the turning point. And here's the trap: x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h.",
+          "say": "The h is the x-coordinate of the turning point. Careful here, this is where the sign bites. x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h.",
           "do": [
             { "do": "highlight", "token": "sq" },
             { "do": "reveal", "callout": 1, "at": 0.1 },
@@ -167,7 +167,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-04-b4.mp3"
         },
         {
-          "say": "And k is the maximum or minimum value of y. Put them together and the turning point is simply h comma k — read it straight off, no working needed.",
+          "say": "And k? The maximum or minimum value of y. Put them together: turning point h comma k. We read it straight off. No working at all.",
           "do": [
             { "do": "highlight", "token": "k" },
             { "do": "reveal", "callout": 2, "at": 0.1 },
@@ -217,7 +217,7 @@
       ],
       "beats": [
         {
-          "say": "Here's the recipe. Express x squared minus three x plus two in completed-square form. Start by copying the expression.",
+          "say": "Here's the recipe. Express x squared minus three x plus two in completed-square form. Where do we start? Just copy the expression down. Step one done.",
           "do": [
             { "do": "write", "text": "intro" },
             { "do": "write", "token": "lhs", "at": 0.5 }
@@ -225,14 +225,14 @@
           "audio": "/lessons/quadratic-functions-am/scene-05-b1.mp3"
         },
         {
-          "say": "Take the coefficient of x — that's minus three. Halve it: minus three over two. Square it: nine over four.",
+          "say": "Now, what number makes a perfect square? Take the coefficient of x, minus three. Halve it: minus three over two. Square it: nine over four. Half it, square it.",
           "do": [
             { "do": "note", "text": "half it: $-\\tfrac{3}{2}$ · square it: $\\tfrac{9}{4}$", "near": "lhs", "at": 0.25 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-05-b2.mp3"
         },
         {
-          "say": "Now add that number and subtract it in the same breath — so the value hasn't changed at all.",
+          "say": "Can we just add nine over four? No, that changes the expression. So we add it AND subtract it, in the same breath. Value unchanged. That's the whole trick.",
           "do": [
             { "do": "write", "token": "sq", "at": 0.05 },
             { "do": "write", "token": "magic", "at": 0.45 },
@@ -242,7 +242,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-05-b3.mp3"
         },
         {
-          "say": "Look at the first three terms. They are now a perfect square: x minus three over two, all squared.",
+          "say": "Now look at the first three terms. What are they? A perfect square: x minus three over two, all squared. In plain words: the bracket is x, minus half the coefficient.",
           "do": [
             { "do": "mark", "kind": "underline", "token": "sq", "at": 0.1 },
             { "do": "focus", "token": "sq", "at": 0.15, "hold": 2.4 },
@@ -251,7 +251,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-05-b4.mp3"
         },
         {
-          "say": "Don't believe me? Expand that bracket and you get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
+          "say": "Don't believe me? Expand that bracket. We get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
           "do": [
             { "do": "reveal", "step": 1, "at": 0.02 },
             { "do": "move", "from": "magic", "at": 0.55 }
@@ -259,7 +259,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-05-b5.mp3"
         },
         {
-          "say": "Tidy the leftovers: minus nine over four plus two is minus a quarter. Read the turning point straight off: three over two, minus a quarter — a minimum, because the curve opens upwards.",
+          "say": "Tidy the leftovers: minus nine over four plus two is minus a quarter. Turning point, straight off: three over two, minus a quarter. A minimum, since it opens upwards. See? That's all it is.",
           "do": [
             { "do": "write", "step": 2, "at": 0.05 },
             { "do": "highlight", "token": "k", "at": 0.6 },
@@ -319,7 +319,7 @@
       ],
       "beats": [
         {
-          "say": "Now the coefficient of x squared isn't one — it's two. Don't fight it. The recipe only works when x squared has a one in front.",
+          "say": "Now the coefficient of x squared isn't one, it's two. Does the recipe still work? Only when x squared has a one in front. So what do we do? Make it one.",
           "do": [
             { "do": "write", "text": "intro" },
             { "do": "write", "token": "lhs5", "at": 0.45 }
@@ -327,7 +327,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-06-b1.mp3"
         },
         {
-          "say": "So factorize the two out of every term first. Inside the bracket: x squared plus five over two x, plus a half.",
+          "say": "Factorize the two out of every term. Every term, not just the first, or the last one gets left behind. Inside the bracket: x squared plus five over two x, plus a half.",
           "do": [
             { "do": "write", "token": "two", "at": 0.1 },
             { "do": "highlight", "token": "two", "at": 0.15 },
@@ -337,7 +337,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-06-b2.mp3"
         },
         {
-          "say": "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it, twenty-five over sixteen, and add it and subtract it in the same breath.",
+          "say": "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it: twenty-five over sixteen. Add it, subtract it, same breath.",
           "do": [
             { "do": "write", "step": 1, "at": 0.25 },
             { "do": "mark", "kind": "underline", "token": "sq", "at": 0.7 }
@@ -345,7 +345,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-06-b3.mp3"
         },
         {
-          "say": "The first three terms inside the bracket become x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half, that's plus eight over sixteen, gives minus seventeen over sixteen.",
+          "say": "The first three terms fold into x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half, that's eight over sixteen, gives minus seventeen over sixteen.",
           "do": [
             { "do": "reveal", "step": 2, "at": 0.02 },
             { "do": "move", "from": "sq", "at": 0.1 },
@@ -355,7 +355,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-06-b4.mp3"
         },
         {
-          "say": "Then the step people forget: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Turning point: minus five over four, minus seventeen over eight.",
+          "say": "One more step, the one most people skip: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Turning point: minus five over four, minus seventeen over eight.",
           "do": [
             { "do": "reveal", "step": 3, "at": 0.02 },
             { "do": "move", "from": "c16", "at": 0.35 },
@@ -405,7 +405,7 @@
       ],
       "beats": [
         {
-          "say": "A negative in front works exactly the same way. Factorize minus four out of every term — the sign travels with it.",
+          "say": "A negative in front? Same recipe. Factorize minus four out of every term. Watch the signs: the minus travels with it, so every sign inside flips.",
           "do": [
             { "do": "write", "text": "intro" },
             { "do": "write", "token": "lhs6", "at": 0.35 },
@@ -432,13 +432,13 @@
           "audio": "/lessons/quadratic-functions-am/scene-07-b3.mp3"
         },
         {
-          "say": "Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three comma one — it opens downwards, and h is minus three because the bracket says x plus three.",
+          "say": "Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three comma one. Opens downwards, and h is minus three because the bracket says x plus three. That's it.",
           "do": [
             { "do": "reveal", "step": 2, "at": 0.02 },
             { "do": "move", "from": "sq", "at": 0.08 },
             { "do": "move", "from": "q", "at": 0.3 },
             { "do": "mark", "kind": "circle", "token": "ans6", "at": 0.5 },
-          { "do": "focus", "token": "ans6", "at": 0.52, "hold": 2 },
+            { "do": "focus", "token": "ans6", "at": 0.52, "hold": 2 },
             { "do": "note", "text": "$h = -3$: the bracket says $x + 3$", "near": "ans6", "at": 0.7 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-07-b4.mp3"
@@ -453,7 +453,7 @@
       "why": "$-3x^2 + 12x - 4 = -3(x-2)^2 + 8$, so the turning point is $(2, 8)$ — a maximum, because $a = -3 < 0$.",
       "beats": [
         {
-          "say": "Your turn, on a real prelim question. Factorize the minus three out, complete the square inside, and multiply back. Then type the turning point as h comma k.",
+          "say": "Your turn, on a real prelim question. Same three moves: factorize the minus three out, complete the square inside, multiply back. Then type the turning point as h comma k. Take your time.",
           "do": [
             { "do": "write", "text": "prompt" }
           ],
@@ -498,7 +498,7 @@
       ],
       "beats": [
         {
-          "say": "Now the other exam favourite: show that a quadratic is always positive. Same recipe. Half of minus four is minus two; square it, and that's four. Add four and subtract four.",
+          "say": "Now the other exam favourite: show a quadratic is always positive. How? Same recipe. Half of minus four is minus two; square it, four. Add four and subtract four.",
           "do": [
             { "do": "write", "text": "intro" },
             { "do": "write", "token": "lhs8", "at": 0.3 },
@@ -518,7 +518,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-09-b2.mp3"
         },
         {
-          "say": "Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero.",
+          "say": "So why is that always positive? Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero.",
           "do": [
             { "do": "write", "token": "nonneg", "at": 0.3 },
             { "do": "mark", "kind": "underline", "token": "nonneg", "at": 0.7 }
@@ -526,7 +526,7 @@
           "audio": "/lessons/quadratic-functions-am/scene-09-b3.mp3"
         },
         {
-          "say": "Add three, and the whole expression is at least three — which is bigger than zero. That single line is the whole proof, and it's the line examiners want to see.",
+          "say": "Add three, and the whole thing is at least three, which is bigger than zero. That one line is the whole proof. Plain words: a square plus a positive number stays positive. Examiners want exactly that line.",
           "do": [
             { "do": "write", "token": "proof", "at": 0.1 },
             { "do": "mark", "kind": "box", "token": "proof", "at": 0.55 },
@@ -549,14 +549,14 @@
           "audio": "/lessons/quadratic-functions-am/scene-10-b1.mp3"
         },
         {
-          "say": "Miss either one and the proof collapses. In picture terms, the curve opens upwards and its lowest point sits above the x-axis.",
+          "say": "Why both? Miss either one and the proof collapses. In picture terms: the curve opens upwards, and its lowest point sits above the x-axis. Both, or nothing.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-10-b2.mp3"
         },
         {
-          "say": "Exams flip it too: never greater than four means a negative a, with k equal to four.",
+          "say": "Exams flip it too: never greater than four means a negative a, with k equal to four. Same two lights, upside down.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
@@ -567,24 +567,24 @@
     {
       "type": "caption",
       "heading": "The slip that costs the most marks",
-      "text": "Find the minimum value of $y = x^2 - 4x$: complete the square, $(x-2)^2 - 4$, turning point $(2, -4)$.\n\nThe minimum VALUE is $-4$ — the $y$-coordinate. Writing $2$ is the classic slip: $x = 2$ is only *where* it happens.\n\nSay the sentence in full: \"minimum value $-4$, when $x = 2$\".",
+      "text": "Find the minimum value of $y = x^2 - 4x$: complete the square, $(x-2)^2 - 4$, turning point $(2, -4)$.\n\nBefore answering, look at the word: **value**. The minimum VALUE is $-4$ — the $y$-coordinate. Writing $2$ is the classic slip: $x = 2$ is only *where* it happens, not how low.\n\nSay the sentence in full: \"minimum value $-4$, when $x = 2$\".",
       "beats": [
         {
-          "say": "Here's the slip that costs the most marks. Find the minimum value of x squared minus four x. Complete the square: x minus two, squared, minus four. Turning point two comma minus four.",
+          "say": "Here's the costliest slip. Find the minimum value of x squared minus four x. Before we answer, look at the word: value. Complete the square: x minus two, squared, minus four. Turning point two comma minus four.",
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-11-b1.mp3"
         },
         {
-          "say": "The minimum value is minus four — the y-coordinate. Writing two is the classic slip: x equals two is only where it happens.",
+          "say": "So which number is the minimum value? Minus four, the y-coordinate. Writing two is the classic slip: x equals two is only where it happens, not how low.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-11-b2.mp3"
         },
         {
-          "say": "Say the whole sentence in full: minimum value minus four, when x equals two.",
+          "say": "So we say the whole sentence: minimum value minus four, when x equals two. Both halves, every time. Easy marks, once you say it in full.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
@@ -600,7 +600,7 @@
       "why": "$5 + 8x - 2x^2 = -2(x-2)^2 + 13$, so the turning point is $(2, 13)$ — a maximum.",
       "beats": [
         {
-          "say": "Last one. Write it in descending powers first — then it's the same three moves: factorize the negative number out, complete the square inside, multiply back. Pause here, work it through, and type the turning point as h comma k.",
+          "say": "Last one. It's written backwards, so first write it in descending powers. Then the same three moves: factorize the negative out, complete the square inside, multiply back. Pause, work it through, type the turning point as h comma k.",
           "do": [
             { "do": "write", "text": "prompt" }
           ],
@@ -614,14 +614,14 @@
       "text": "Half it, square it, add and subtract → bracket → read off $(h, k)$.\n\nThat one rewrite answers every classic: turning points, maximum and minimum values, \"always positive\" proofs, and the word problem asking for the greatest height. Go make it automatic.",
       "beats": [
         {
-          "say": "That's the whole topic. Half it, square it, add and subtract, bracket it, read off h and k.",
+          "say": "That's the whole topic. Half it, square it, add and subtract, bracket it, read off h and k. See? Five little moves.",
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
           "audio": "/lessons/quadratic-functions-am/scene-13-b1.mp3"
         },
         {
-          "say": "One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem that asks for a greatest height. Go make it automatic.",
+          "say": "One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem about a greatest height. Go make it automatic. You've got this.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],

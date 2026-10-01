@@ -1,16 +1,30 @@
 #!/usr/bin/env node
 // scripts/lessons/generate-narration.mjs — the voice track for an animated lesson.
 //
-// For every scene in data/lessons/<slug>.json that has `narration` but no
-// committed clip yet, synthesize speech with the Gemini TTS API (the existing
-// GOOGLE_API_KEY), encode it to a small mono MP3 with ffmpeg, write it to
+// For every scene in data/lessons/<slug>.json that has `narration` (or `beats`)
+// but no committed clip yet, synthesize speech, write a small mono MP3 to
 // public/lessons/<slug>/, and set the scene's `audio` to the served path.
 // Zero runtime infrastructure: the clips are committed static assets.
+//
+// Providers (--provider, default minimax since 1 Oct 2026):
+//   minimax  MiniMax Speech-02 (`speech-02-hd`, voice English_FriendlyPerson,
+//            emotion calm, speed 1 — Adrian's pick after fifteen samples; the
+//            one-minute explanation uses the SAME voice, src/lib/explain-voice-store.ts
+//            — change them together). MINIMAX_API_KEY in .env.local. The API
+//            answers MP3 already (24 kHz mono 64 kbps, hex-encoded), so no PCM
+//            step: with ffmpeg on PATH (and no --keep-silence) the clip is trimmed
+//            of lead/tail silence and re-encoded at --bitrate (40k); without it the
+//            bytes are written as they came. No style prefix — MiniMax has
+//            `emotion` + `speed` instead.
+//   gemini   the original path, byte-for-byte: Gemini TTS (GOOGLE_API_KEY) → raw
+//            PCM → ffmpeg → MP3, with the tutor STYLE prefix on every segment.
+// --verify (the ASR round-trip) always transcribes with Gemini (GOOGLE_API_KEY).
 //
 //   node scripts/lessons/generate-narration.mjs binomial-theorem-am
 //   node scripts/lessons/generate-narration.mjs binomial-theorem-am --dry
 //   node scripts/lessons/generate-narration.mjs binomial-theorem-am --scene 7 --force
 //   node scripts/lessons/generate-narration.mjs binomial-theorem-am --verify
+//   node scripts/lessons/generate-narration.mjs binomial-theorem-am --provider gemini --voice Charon
 //
 // File names (1-based, zero-padded, so they sort like the lesson plays):
 //   scene-07.mp3        a scene narrated by ONE string (whole-scene clip)
@@ -26,22 +40,31 @@
 // names — re-run nothing, the player only ever reads `audio` paths.
 //
 // Flags
-//   --voice <name>     prebuilt voice (default Charon — see VOICES below)
-//   --model <id>       TTS model (default gemini-2.5-flash-preview-tts)
-//   --style "<text>"   the spoken-style instruction prefixed to every segment
-//   --bitrate <k>      MP3 bitrate (default 40k mono — ~5 KB/s of speech)
+//   --provider <p>     minimax (default) | gemini
+//   --voice <name>     voice id (minimax default English_FriendlyPerson; gemini
+//                      default Charon — see VOICES below)
+//   --model <id>       TTS model (minimax default speech-02-hd; gemini default
+//                      gemini-2.5-flash-preview-tts)
+//   --emotion <e>      minimax only (default calm)
+//   --speed <x>        minimax only (default 1)
+//   --style "<text>"   gemini only — the spoken-style instruction prefixed to every segment
+//   --bitrate <k>      MP3 bitrate of the ffmpeg encode (default 40k mono, ~5 KB/s
+//                      — both providers; lesson-script.test.ts caps a lesson's
+//                      clips at 3 MiB). Without ffmpeg a minimax clip stays at
+//                      the API's 64 kbps.
 //   --scene <n>        only scene n (1-based)
 //   --force            regenerate even when a clip exists
 //   --keep-silence     skip the leading/trailing silence trim
-//   --masters <dir>    also keep a lossless 24 kHz WAV of each clip there (OUTSIDE
-//                      the repo) so a later bitrate change is a re-encode, not
-//                      a re-synthesis
+//   --masters <dir>    also keep a master of each clip there (OUTSIDE the repo):
+//                      gemini — a lossless 24 kHz WAV, so a later bitrate change
+//                      is a re-encode, not a re-synthesis; minimax — the API's
+//                      untrimmed MP3 as it came back
 //   --dry              plan only — no API calls, no writes
 //   --verify           transcribe every clip back (Gemini audio understanding)
 //                      and score it against its narration — the listen-check a
 //                      terminal can do. Adds nothing to the repo.
 //
-// Voices the API exposes (probed 2026-09-02 — the error for an unknown name
+// Gemini voices the API exposes (probed 2026-09-02 — the error for an unknown name
 // lists them): achernar, achird, algenib, algieba, alnilam, aoede, autonoe,
 // callirrhoe, charon, despina, enceladus, erinome, fenrir, gacrux, iapetus,
 // kore, laomedeia, leda, orus, puck, pulcherrima, rasalgethi, sadachbia,
@@ -58,6 +81,8 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 
 const DEFAULTS = {
+  provider: 'minimax',
+  minimax: { model: 'speech-02-hd', voice: 'English_FriendlyPerson', emotion: 'calm', speed: 1, bitrate: '40k' },
   // gemini-3.1-flash-tts-preview also works (same request shape; mime differs
   // only in casing) but read the maths at ~1.6 words/s in the 2026-09-02 probe
   // — the 2.5 flash TTS model lands at a natural 2.0–2.4 words/s.
@@ -91,13 +116,19 @@ function parseArgs(argv) {
 const { flags, positional } = parseArgs(process.argv.slice(2));
 const slug = positional[0];
 if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-  console.error('usage: node scripts/lessons/generate-narration.mjs <slug> [--voice Charon] [--model …] [--scene N] [--force] [--dry] [--verify]');
+  console.error('usage: node scripts/lessons/generate-narration.mjs <slug> [--provider minimax|gemini] [--voice …] [--model …] [--scene N] [--force] [--dry] [--verify]');
   process.exit(2);
 }
-const MODEL = flags.model || DEFAULTS.model;
-const VOICE = flags.voice || DEFAULTS.voice;
-const BITRATE = flags.bitrate || DEFAULTS.bitrate;
+const PROVIDER = typeof flags.provider === 'string' ? flags.provider : DEFAULTS.provider;
+if (PROVIDER !== 'minimax' && PROVIDER !== 'gemini') { console.error(`--provider must be minimax or gemini (got "${PROVIDER}")`); process.exit(2); }
+const MINIMAX = PROVIDER === 'minimax';
+const MODEL = flags.model || (MINIMAX ? DEFAULTS.minimax.model : DEFAULTS.model);
+const VOICE = flags.voice || (MINIMAX ? DEFAULTS.minimax.voice : DEFAULTS.voice);
+const BITRATE = flags.bitrate || (MINIMAX ? DEFAULTS.minimax.bitrate : DEFAULTS.bitrate);
 const STYLE = typeof flags.style === 'string' ? flags.style : DEFAULTS.style;
+const EMOTION = typeof flags.emotion === 'string' ? flags.emotion : DEFAULTS.minimax.emotion;
+const SPEED = flags.speed !== undefined ? Number(flags.speed) : DEFAULTS.minimax.speed;
+if (!Number.isFinite(SPEED) || SPEED <= 0) { console.error(`--speed must be a positive number (got "${flags.speed}")`); process.exit(2); }
 const ONLY_SCENE = flags.scene ? Number(flags.scene) : null;
 const FORCE = flags.force === true;
 const DRY = flags.dry === true;
@@ -126,6 +157,7 @@ function loadEnv() {
 }
 const env = { ...loadEnv(), ...process.env };
 const API_KEY = env.GOOGLE_API_KEY;
+const MINIMAX_API_KEY = (env.MINIMAX_API_KEY || '').trim();
 
 // ── Lesson + segment plan ────────────────────────────────────────────────────
 
@@ -226,11 +258,53 @@ async function synthesize(text) {
   return { pcm: Buffer.from(part.inlineData.data, 'base64'), rate };
 }
 
+// ── MiniMax Speech-02 ────────────────────────────────────────────────────────
+
+/** Text → MP3 bytes (t2a_v2; `data.audio` is HEX). Same request as lib/explain-voice-store.ts. */
+async function synthesizeMinimax(text) {
+  const body = {
+    model: MODEL,
+    text,
+    voice_setting: { voice_id: VOICE, speed: SPEED, vol: 1, pitch: 0, emotion: EMOTION },
+    audio_setting: { format: 'mp3', sample_rate: 24000, bitrate: 64000, channel: 1 },
+  };
+  let lastErr;
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const r = await fetch('https://api.minimax.io/v1/t2a_v2', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${MINIMAX_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(60_000),
+    });
+    const raw = await r.text();
+    if (!r.ok) {
+      lastErr = new Error(`HTTP ${r.status}: ${raw.slice(0, 300)}`);
+      if (r.status === 429 || r.status >= 500) { await sleep(Math.min(30_000, 2_000 * 2 ** (attempt - 1))); continue; }
+      throw lastErr;
+    }
+    const j = JSON.parse(raw);
+    const code = j.base_resp?.status_code ?? 0;
+    if (code !== 0) {
+      // 1008 = insufficient balance — stop the run, nothing to retry (the worker reads "daily").
+      if (code === 1008) throw new Error(`MiniMax daily quota / balance (${code}): ${j.base_resp?.status_msg}`);
+      lastErr = new Error(`MiniMax ${code}: ${j.base_resp?.status_msg}`);
+      await sleep(1500 * attempt);
+      continue;
+    }
+    if (j.data?.audio) return Buffer.from(j.data.audio, 'hex');
+    lastErr = new Error(`no audio in response: ${raw.slice(0, 200)}`);
+    await sleep(1500 * attempt);
+  }
+  throw lastErr;
+}
+
 // ── ffmpeg / ffprobe ─────────────────────────────────────────────────────────
 
 function haveBinary(name) {
   try { execFileSync(name, ['-version'], { stdio: 'ignore' }); return true; } catch { return false; }
 }
+const HAVE_FFMPEG = haveBinary('ffmpeg');
+const HAVE_FFPROBE = haveBinary('ffprobe');
 
 /** Keep 150 ms of lead-in and 300 ms of tail; drop the rest of the digital silence. */
 const TRIM_FILTER = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.15,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.3,areverse';
@@ -254,7 +328,30 @@ function encodeMp3(pcm, rate, outFile) {
   }
 }
 
+/**
+ * MiniMax path: the bytes ARE the clip. Trim the lead/tail silence through
+ * ffmpeg when it is on PATH (a re-encode at --bitrate, 40k by default — the
+ * API's 64 kbps would bust the 3 MiB-per-lesson test); otherwise — or with
+ * --keep-silence — write them as they came.
+ */
+function writeMp3(mp3, outFile) {
+  if (MASTERS_DIR) {
+    fs.mkdirSync(MASTERS_DIR, { recursive: true });
+    fs.writeFileSync(path.join(MASTERS_DIR, path.basename(outFile)), mp3);
+  }
+  if (KEEP_SILENCE || !HAVE_FFMPEG) { fs.writeFileSync(outFile, mp3); return; }
+  const tmp = outFile + '.raw.mp3';
+  fs.writeFileSync(tmp, mp3);
+  try {
+    execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', TRIM_FILTER,
+      '-c:a', 'libmp3lame', '-b:a', BITRATE, '-ac', '1', '-id3v2_version', '0', outFile], { stdio: ['ignore', 'ignore', 'pipe'] });
+  } finally {
+    fs.rmSync(tmp, { force: true });
+  }
+}
+
 function probe(file) {
+  if (!HAVE_FFPROBE) return { codec: 'mp3', rate: 24000, channels: 1, secs: NaN, bytes: fs.statSync(file).size };
   const out = execFileSync('ffprobe', [
     '-v', 'error', '-show_entries', 'stream=codec_name,sample_rate,channels,bit_rate:format=duration',
     '-of', 'json', file,
@@ -369,12 +466,17 @@ async function main() {
 
   const todo = segments.filter(s => FORCE || !s.present);
   console.log(`${slug}: ${segments.length} segment(s), ${segments.length - todo.length} already have clips, ${todo.length} to synthesize` +
-    (DRY ? ' (dry run)' : ` — ${MODEL} / ${VOICE} / ${BITRATE} mono`));
+    (DRY ? ' (dry run)' : ` — ${PROVIDER} ${MODEL} / ${VOICE}${MINIMAX ? ` / ${EMOTION} ×${SPEED}` : ` / ${BITRATE}`} mono`));
   for (const s of todo) console.log(`  · ${s.key}  (${words(s.text)} words)`);
   if (DRY || todo.length === 0) { if (!DRY) writeScript(segments); return; }
 
-  if (!API_KEY) throw new Error('GOOGLE_API_KEY missing (.env.local)');
-  for (const bin of ['ffmpeg', 'ffprobe']) if (!haveBinary(bin)) throw new Error(`${bin} not found on PATH (brew install ffmpeg)`);
+  if (MINIMAX) {
+    if (!MINIMAX_API_KEY) throw new Error('MINIMAX_API_KEY missing (.env.local)');
+    if (!HAVE_FFMPEG && !KEEP_SILENCE) console.log('  (ffmpeg not on PATH — clips written untrimmed, as the API returned them)');
+  } else {
+    if (!API_KEY) throw new Error('GOOGLE_API_KEY missing (.env.local)');
+    for (const bin of ['ffmpeg', 'ffprobe']) if (!haveBinary(bin)) throw new Error(`${bin} not found on PATH (brew install ffmpeg)`);
+  }
   fs.mkdirSync(outDir, { recursive: true });
 
   // Two in flight: kind to the rate limit, half the wall time of sequential.
@@ -386,17 +488,22 @@ async function main() {
       const seg = queue.shift();
       if (!seg) return;
       try {
-        const { pcm, rate } = await synthesize(seg.text);
-        encodeMp3(pcm, rate, seg.file);
+        if (MINIMAX) {
+          writeMp3(await synthesizeMinimax(seg.text), seg.file);
+        } else {
+          const { pcm, rate } = await synthesize(seg.text);
+          encodeMp3(pcm, rate, seg.file);
+        }
         const p = probe(seg.file);
         seg.present = true;
         results.push({ seg, p });
         const wps = words(seg.text) / p.secs;
-        console.log(`  ✓ ${seg.key}  ${p.secs.toFixed(1)}s  ${(p.bytes / 1024).toFixed(0)} KB  ${wps.toFixed(2)} w/s${wps < 1.6 || wps > 3.4 ? '  ⚠ pace' : ''}`);
+        const pace = Number.isFinite(wps) ? `  ${wps.toFixed(2)} w/s${wps < 1.6 || wps > 3.4 ? '  ⚠ pace' : ''}` : '';
+        console.log(`  ✓ ${seg.key}  ${Number.isFinite(p.secs) ? p.secs.toFixed(1) + 's' : '?s'}  ${(p.bytes / 1024).toFixed(0)} KB${pace}`);
       } catch (e) {
         failures.push({ seg, error: e.message });
         console.log(`  ✗ ${seg.key}: ${e.message}`);
-        if (/per day|daily|PerDay/i.test(e.message)) { queue.length = 0; }
+        if (/per day|daily|PerDay|balance/i.test(e.message)) { queue.length = 0; }
       }
     }
   }
@@ -414,7 +521,7 @@ async function main() {
   for (const seg of segments) {
     if (!fs.existsSync(seg.file)) continue;
     const p = probe(seg.file);
-    totalSecs += p.secs; totalBytes += p.bytes;
+    totalSecs += Number.isFinite(p.secs) ? p.secs : 0; totalBytes += p.bytes;
     if (p.codec !== 'mp3' || p.channels !== 1) console.log(`  ⚠ ${seg.key}: ${p.codec} ${p.channels}ch — expected mono mp3`);
   }
   console.log(`  ${segments.filter(s => fs.existsSync(s.file)).length} file(s), ${(totalSecs / 60).toFixed(1)} min, ${(totalBytes / 1024).toFixed(0)} KB total`);

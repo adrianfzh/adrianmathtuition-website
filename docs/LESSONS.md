@@ -83,17 +83,20 @@ page is the video.**
   types the URL early is sent back to the paper. Health-check `portal-explain` probes the
   route. Telemetry rides the player's existing `lesson:<slug>:…` events (the slug is
   `explain-<run8>-<q>`), so "did anyone tap it" is answerable before opening it.
-- **Voice (1 Oct 2026).** Every beat's `say` is read by the same Gemini voice as the
-  topic lessons (`gemini-2.5-flash-preview-tts`, Charon, the tutor `style` prefix —
-  the three constants sit in `lib/explain-voice-store.ts` beside
-  `generate-narration.mjs`'s DEFAULTS; change them together). The PCM comes back as
-  WAV (`lib/explain-voice.ts pcmToWav` — no ffmpeg on Vercel, no MP3 encoder in the
-  repo; ~48 KB a second, a beat is 3–8 s) and is cached in the student-files bucket
-  under `runs/<runId>/explain/<q-slug>/b<k>-<hash of say>.wav` (`voiceKey`; a changed
-  sentence gets a new clip), served through `/api/files` to Adrian or the owning
-  student. `POST /api/portal/explain/voice {runId, q}` (same access rule as the page +
-  `explainClipVisible`) rebuilds the script, lists the folder once, synthesises what is
-  missing four at a time (`ensureVoice`) and answers `{urls}` in beat order. The page's
+- **Voice (1 Oct 2026).** Every beat's `say` is read by **MiniMax Speech-02**
+  (`speech-02-hd`, voice `English_FriendlyPerson`, emotion calm, speed 1 — Adrian's pick
+  out of fifteen samples that evening; the constants sit in `lib/explain-voice-store.ts`
+  and the topic lessons use the same voice through `generate-narration.mjs --provider
+  minimax`; change them together). MiniMax answers MP3 (hex in the JSON), ~28 KB for a
+  five-second beat, cached in the student-files bucket under
+  `runs/<runId>/explain/<q-slug>/b<k>-<hash of say>.mp3` (`voiceKey`; a changed sentence
+  gets a new clip; the first day's Gemini WAVs sit beside, unreferenced), served through
+  `/api/files` to Adrian or the owning student. `POST /api/portal/explain/voice {runId, q}`
+  (same access rule as the page + `explainClipVisible`) rebuilds the script, lists the
+  folder once, synthesises what is missing four at a time (`ensureVoice`) and answers
+  `{urls}` in beat order. `MINIMAX_API_KEY` is on Vercel (Production + Preview); a 1008
+  "insufficient balance" stops a run the way Gemini's daily quota did — top up at
+  platform.minimax.io › Pay-as-you-go › Balance. The page's
   `explain-player.tsx` renders the player silent at once, fires that POST on mount, and
   hands the SAME player the scenes with `beats[k].audio` filled (`attachVoice`) — the
   🔊 pill appears, playback is not reset, the student taps it (iOS needs the gesture).
@@ -232,7 +235,10 @@ node scripts/lessons/verify-lesson.mjs quadratic-functions-am     # [--offline] 
 node scripts/lessons/register-lesson.mjs quadratic-functions-am
 npx vitest run src/lib/lesson src/lib/notebook && npx tsc --noEmit
 
-# 6. voice clips (idempotent; see § Regenerating audio)
+# 6. voice clips (idempotent; MiniMax English_FriendlyPerson by default, no --voice needed;
+#    see § Regenerating audio). After an engagement pass (the skill's § 3b) delete the old
+#    clips first — they belong to the old words — then re-run, then --verify.
+node scripts/lessons/generate-narration.mjs quadratic-functions-am
 node scripts/lessons/generate-narration.mjs quadratic-functions-am --verify
 
 # 7. commit + push to dev, re-alias → Adrian previews with his admin cookie
@@ -786,14 +792,26 @@ node scripts/lessons/generate-narration.mjs <slug> --scene 7 --force
 node scripts/lessons/generate-narration.mjs <slug> --verify     # ASR round-trip check
 ```
 
-- Provider: **Gemini TTS** (`gemini-2.5-flash-preview-tts`, voice **Charon** —
-  the calm, informative male prebuilt voice) via the existing `GOOGLE_API_KEY`
-  in `.env.local`. `--voice` / `--model` / `--style` swap any of the three;
-  the script's header lists the 30 voices the API exposes.
-  `gemini-3.1-flash-tts-preview` also works but read maths at ~1.6 words/s.
+- **Provider: MiniMax Speech-02 since 1 Oct 2026** (`--provider minimax`, the
+  default): model `speech-02-hd`, voice **`English_FriendlyPerson`**, emotion
+  `calm`, speed 1 — Adrian's pick after fifteen samples (the Gemini voices
+  sounded too Western / too deep). `MINIMAX_API_KEY` in `.env.local`. The
+  one-minute explanation's clips use the SAME voice and the same request
+  (`lib/explain-voice-store.ts` `TTS_*` constants) — change them together.
+  No style prefix (MiniMax has `--emotion` / `--speed` instead); `--voice` /
+  `--model` still override. The API answers MP3 already, so there is no PCM
+  step — ffmpeg only trims the lead/tail silence and re-encodes at `--bitrate`
+  (40k; without ffmpeg the clip is written as it came, 64 kbps).
+  **`--provider gemini`** keeps the old path byte for byte: Gemini TTS
+  (`gemini-2.5-flash-preview-tts`, voice **Charon**, the tutor `--style`
+  prefix) via `GOOGLE_API_KEY`; the script's header lists the 30 voices the
+  API exposes. `gemini-3.1-flash-tts-preview` also works but read maths at
+  ~1.6 words/s. `--verify` transcribes with Gemini under either provider.
 - Output: 24 kHz mono MP3, 40 kbps CBR (~5 KB/s), leading/trailing silence
-  trimmed to 150 ms / 300 ms. The pilot's 31 clips total ≈ 2 MB. Two requests
-  in flight; `429`/`5xx` back off; daily-quota exhaustion stops the run.
+  trimmed to 150 ms / 300 ms. The pilot's 31 clips total ≈ 2 MB; the quadratic
+  lesson's 43 MiniMax clips (the engagement pass, 1 Oct 2026) ≈ 2.5 MB —
+  `lesson-script.test.ts` caps a lesson at 3 MiB. Two requests in flight;
+  `429`/`5xx` back off; quota / insufficient-balance (MiniMax 1008) stops the run.
 - **Idempotent.** A scene whose clip(s) exist is skipped. To redo one scene,
   delete its files or pass `--scene N --force`. A per-step scene's `audio`
   array is only written once every step's clip exists.
