@@ -156,6 +156,10 @@
       "schedule": "0 14 * * 0"
     },
     {
+      "path": "/api/cron/shadow-read-report",
+      "schedule": "0 1 * * 4"
+    },
+    {
       "path": "/api/cron/daily-queue",
       "schedule": "0 16 * * *"
     }

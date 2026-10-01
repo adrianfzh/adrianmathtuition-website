@@ -44,6 +44,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // re-marked on the Mac lane on a Sunday night so Monday can say how far the
   // marking moved. Weekly, so the same 8.5-day grace as the report above.
   'consistency-remark': { kind: 'interval', hours: 204, label: 'Sundays 10pm' },
+  // 👻 The cheaper-reader shadow read back weekly (1 Oct 2026, Thursdays 9am SGT).
+  'shadow-read-report': { kind: 'interval', hours: 204, label: 'Thursdays 9am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },
   // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
   'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },

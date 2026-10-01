@@ -20,6 +20,8 @@ import { setAutoReleasePaused, getAutoReleaseSetting } from '@/lib/auto-release-
 import { summariseAutoReleases } from '@/lib/auto-release-report';
 import { consistencyReport, weeklyRollups } from '@/lib/consistency-set';
 import { consistencyLine } from '@/lib/shadow-diff';
+import { shadowLine } from '@/lib/shadow-read-report';
+import { loadShadowSummary } from '@/lib/shadow-read-store';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -91,6 +93,13 @@ export async function GET(req: NextRequest) {
     const line = consistencyLine(weeklyRollups(await consistencyReport(true)));
     if (line) measure += `\n${line}`;
   } catch (e) { console.warn('[auto-release-report] consistency line skipped:', (e as Error).message); }
+  // 👻 The cheaper-reader shadow (1 Oct 2026): Sonnet + reference re-reading every
+  // delivered maths paper beside Opus. One line while the test runs; the Thursday
+  // shadow-read-report carries the verdict per level and the parts to adjudicate.
+  try {
+    const line = shadowLine(await loadShadowSummary());
+    if (line) measure += `\n${line}`;
+  } catch (e) { console.warn('[auto-release-report] shadow line skipped:', (e as Error).message); }
   // Papers marked this week without a scheme we hold (18 Sep 2026) — for Adrian
   // only: drop the scheme in the inbox and the next marking is grounded.
   try {
