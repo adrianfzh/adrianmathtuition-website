@@ -289,12 +289,16 @@ function FavouriteSwatches({ kind, favs, current, onPick, onOpen, onHold, holdRe
   );
 }
 
-/** The full grid under the toolbar: 12 hues × 3 shades + greys, the current one ringed;
- *  tap picks; the ☆ row adds the current colour to the favourites. */
+/** The palette under the toolbar, Notability's shape (Adrian, 1 Oct 2026, with two screenshots
+ *  of Notability's "Colors" + "Custom Color"): a grid of swatches, the current one ringed, and a
+ *  🎨 wheel that opens the SYSTEM colour picker (iPadOS's own spectrum square, hue slider and hex
+ *  field — `<input type="color">`), so any colour is reachable without us drawing a spectrum.
+ *  Tap picks; "☆ Add to favourites" puts the current colour in the toolbar row. */
 function PalettePopover({ current, favs, onPick, onFavourite, onClose }: {
   current: string; favs: string[]; onPick: (c: string) => void; onFavourite: (c: string) => void; onClose: () => void;
 }) {
   const [top, setTop] = useState(66);
+  const customRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const tb = document.querySelector('[data-annotate-toolbar]');
     if (tb) setTop(Math.round(tb.getBoundingClientRect().bottom) + 6);
@@ -305,6 +309,19 @@ function PalettePopover({ current, favs, onPick, onFavourite, onClose }: {
       background: '#fff', border: '1px solid #d1d5db', borderRadius: 14, padding: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
       display: 'flex', flexDirection: 'column', gap: 8,
     }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Colours</span>
+        <button aria-label="Custom colour" title="Any colour — the spectrum, a hue slider and a hex field" onClick={() => customRef.current?.click()}
+          style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #d1d5db', padding: 0, cursor: 'pointer',
+            background: 'conic-gradient(#ef4444, #f59e0b, #facc15, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444)' }}>
+          <span style={{ display: 'block', width: 14, height: 14, margin: '0 auto', borderRadius: '50%', background: current, border: '2px solid #fff' }} />
+        </button>
+        {/* The system picker: visually hidden, opened by the wheel; every drag picks live, the final choice can be starred. */}
+        <input ref={customRef} type="color" value={current} aria-label="Custom colour value"
+          onInput={(e) => onPick((e.target as HTMLInputElement).value)}
+          onChange={(e) => onPick((e.target as HTMLInputElement).value)}
+          style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+      </div>
       {PALETTE_GRID.map((row, r) => (
         <div key={r} style={{ display: 'flex', gap: 6 }}>
           {row.map((c) => (
