@@ -810,7 +810,7 @@ thing for a buyer to check, and every cost in one ledger.
 4. **Switch only where Claude is at least as good on the bench**, one call type at a time, with
    Gemini kept as the fallback for a month.
 
-**Decision (Adrian, 24 Sep 2026): keep Gemini, and make it cheaper.** The test was built the
+**Decision (Adrian, 24 Sep 2026): keep Gemini, and make it cheaper.** **1 Oct 2026, Adrian: "forget about gemini vision trial - we will be keeping gemini pro"** — the four-way trial below is NOT to be run; placement stays on `gemini-3.1-pro-preview`. The cheaper levers that do not change the model (thinking low on every placement call, fewer calls per page, skipping the upright check when the previous page was upright) remain open. The test was built the
 same day as `scripts/vision-trial.cjs` in the bot repo (run on the Mac — it needs the Google,
 Anthropic and Supabase keys; `--dry` shows the pages and the estimate, about US$4.50). It runs
 four set-ups on the bench's pages — Gemini as it runs today, the same model with thinking set
