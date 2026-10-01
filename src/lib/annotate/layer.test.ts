@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseLayer, serializeLayer, applyText, wrapText, objectTextLines, strokesToSvg, layerDirty, layerSnapshot, layerRestore, addTextObject, markType, swapMark, recordEditsFor, addMarkObject, setScoreAwarded } from './layer';
+import { parseLayer, serializeLayer, applyText, wrapText, objectTextLines, strokesToSvg, layerDirty, layerSnapshot, layerRestore, addTextObject, markType, swapMark, recordEditsFor, addMarkObject, setScoreAwarded, objectTransform, scoreChange } from './layer';
 
 const BODY =
   '<rect x="0" y="0" width="5" height="5"/>' +
@@ -147,3 +147,26 @@ describe('§14 ④–⑤: snapshots, typed text, ✓⇄✗, record edits', () =>
   });
 });
 
+
+describe('resize + the marks-changed badge (1 Oct 2026)', () => {
+  it('a resized object is wrapped in a scale about its anchor, after its move; untouched → no wrapper', () => {
+    expect(objectTransform({ dx: 0, dy: 0 })).toBe('');
+    expect(objectTransform({ dx: 10, dy: -4.26 })).toBe('translate(10 -4.3)');
+    expect(objectTransform({ dx: 0, dy: 0, scale: 1.5, anchor: { x: 100, y: 40 } })).toBe('translate(100 40) scale(1.5) translate(-100 -40)');
+    expect(objectTransform({ dx: 5, dy: 5, scale: 0.5, anchor: { x: 10, y: 10 } })).toBe('translate(5 5) translate(10 10) scale(0.5) translate(-10 -10)');
+    expect(objectTransform({ dx: 0, dy: 0, scale: 1.0004 })).toBe('');
+  });
+  it('a resized object makes the layer dirty', () => {
+    const p = parseLayer('<g data-obj="mark" data-id="m1"><path d="M0 0"/></g>');
+    expect(layerDirty(p)).toBe(false);
+    p.objects[0].scale = 1.3; p.objects[0].anchor = { x: 0, y: 0 };
+    expect(layerDirty(p)).toBe(true);
+    expect(serializeLayer(p)).toContain('scale(1.3)');
+  });
+  it('scoreChange names the chip\'s before and after, and nothing when the marks are unchanged', () => {
+    const chip = { kind: 'score', inner: '<rect/><text x="1" y="1">Q3(ii) 3/3</text>', textOverride: null as string | null };
+    expect(scoreChange(chip)).toBeNull();
+    expect(scoreChange({ ...chip, textOverride: 'Q3(ii) 2/3' })).toEqual({ from: '3/3', to: '2/3' });
+    expect(scoreChange({ ...chip, textOverride: 'Q3(ii) 3/3' })).toBeNull();
+  });
+});

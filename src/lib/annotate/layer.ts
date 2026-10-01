@@ -33,6 +33,9 @@ export type LayerObj = {
   swapped: boolean;
   /** An object Adrian added (typed text, a stamped mark) — dirty by existence. */
   added?: boolean;
+  /** Adrian resized it (1 Oct 2026): the factor, about `anchor` (the box's top-left in layer space). 1 = untouched. */
+  scale?: number;
+  anchor?: { x: number; y: number };
 };
 
 export type LayerItem = { type: 'bg'; svg: string } | { type: 'obj'; obj: LayerObj };
@@ -162,15 +165,37 @@ export function serializeLayer(parsed: ParsedLayer): string {
     if (o.deleted) continue;
     const inner = o.textOverride != null ? (o.kind === 'score' ? applyScoreText(o.inner, o.textOverride) : applyText(o.inner, o.textOverride)) : o.inner;
     const g = `${o.open}${inner}</g>`;
-    out += o.dx || o.dy ? `<g transform="translate(${round(o.dx)} ${round(o.dy)})">${g}</g>` : g;
+    out += objectTransform(o) ? `<g transform="${objectTransform(o)}">${g}</g>` : g;
   }
   return out;
+}
+
+/** The transform a moved and/or resized object is wrapped in — '' when untouched. A reloaded
+ *  layer keeps the wrapper as background, so a second edit nests another (that is fine). */
+export function objectTransform(o: Pick<LayerObj, 'dx' | 'dy' | 'scale' | 'anchor'>): string {
+  const parts: string[] = [];
+  if (o.dx || o.dy) parts.push(`translate(${round(o.dx)} ${round(o.dy)})`);
+  const s = o.scale ?? 1;
+  if (Math.abs(s - 1) > 0.001) {
+    const ax = round(o.anchor?.x ?? 0), ay = round(o.anchor?.y ?? 0);
+    parts.push(`translate(${ax} ${ay}) scale(${Math.round(s * 1000) / 1000}) translate(${-ax} ${-ay})`);
+  }
+  return parts.join(' ');
+}
+
+/** A retyped score chip's change, "3/3" → "2/3", or null when the marks are as the marker left them. */
+export function scoreChange(o: Pick<LayerObj, 'kind' | 'textOverride' | 'inner'>): { from: string; to: string } | null {
+  if (o.kind !== 'score' || o.textOverride == null) return null;
+  const was = parseScoreText(objectTextLines(o as LayerObj).join(' '));
+  const now = parseScoreText(o.textOverride);
+  if (!was || !now || (was.awarded === now.awarded && was.max === now.max)) return null;
+  return { from: `${was.awarded}/${was.max}`, to: `${now.awarded}/${now.max}` };
 }
 const round = (n: number) => Math.round(n * 10) / 10;
 
 /** Has anything changed against the stored layer? */
 export function layerDirty(parsed: ParsedLayer): boolean {
-  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null || o.swapped || o.added);
+  return parsed.objects.some(o => o.deleted || o.dx || o.dy || o.textOverride != null || o.swapped || o.added || Math.abs((o.scale ?? 1) - 1) > 0.001);
 }
 
 /** Adrian's ink as SVG in the same coordinate space as the layer. */

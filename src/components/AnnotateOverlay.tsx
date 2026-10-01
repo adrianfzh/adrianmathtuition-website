@@ -33,7 +33,7 @@ import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
 import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
 import {
-  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines, addMarkObject, parseScoreText, setScoreAwarded,
+  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines, addMarkObject, parseScoreText, setScoreAwarded, scoreChange,
   layerSnapshot, layerRestore as restoreLayerSnapshot, addTextObject, markType, swapMark, recordEditsFor,
   type LayerMeta, type LayerObj, type ParsedLayer, type LayerSnapshot,
 } from '@/lib/annotate/layer';
@@ -95,7 +95,9 @@ const PDF_PAGE_W = 595;             // pt — matches lib/marked-pdf-layout PAGE
 // on a 1280px-wide marked photo (Adrian, 2 Aug 2026: "allow for thinner lines").
 const PEN_WIDTHS_PT = [1.2, 2, 3.5, 6];
 const HL_WIDTH_PT = 13;
-const PEN_COLORS = ['#dc2626', '#2563eb', '#111827'];
+// The full palette (Adrian, 1 Oct 2026: "allow for the complete colour palette (instead of
+// just 3 colours)"): red first (the marker's), then the wheel, black last.
+const PEN_COLORS = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#2563eb', '#4f46e5', '#7c3aed', '#db2777', '#111827'];
 const HL_COLORS = ['#facc15', '#4ade80'];
 const MAX_ZOOM = 4;
 const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory)
@@ -355,6 +357,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const layerImgRef = useRef<(HTMLImageElement | null)[]>(pages.map(() => null));
   const layerBBoxRef = useRef<Map<string, LayerBox>[]>(pages.map(() => new Map()));
   const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
+  // Live drag + resize of the marker's objects (Adrian, 1 Oct 2026: "when i move the annotations,
+  // the annotation does not follow, only upon release"): while an object is selected the page's
+  // layer bitmap is rebuilt WITHOUT it and the object is rasterised on its own, so the render
+  // loop can draw it under the in-flight translate / scale every frame.
+  const layerSelImgRef = useRef<{ id: string; img: HTMLImageElement } | null>(null);
+  const layerResizeRef = useRef<{ startDist: number; scale0: number; anchor: { x: number; y: number }; scale: number } | null>(null);
   const layerMoveRef = useRef<{ startX: number; startY: number; dx: number; dy: number } | null>(null);
   const fontCssRef = useRef<string>('');
   // Marks Adrian swapped (✗⇄✓), per page: id → what it is now. Feeds the desk's ink hints.
@@ -394,6 +402,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     moveSelRef.current = null;
     layerSelRef.current = null;
     layerMoveRef.current = null;
+    layerResizeRef.current = null;
+    if (layerSelImgRef.current) {
+      const img = layerSelImgRef.current.img;
+      layerSelImgRef.current = null;
+      if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    }
     resizeSelRef.current = null;
     lassoPathRef.current = null;
     chipPosRef.current = null;
@@ -586,21 +600,59 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           const fl = (DOC_W * k) / dl.w;
           ctx.setTransform(dpr * fl, 0, 0, dpr * fl, dpr * x, dpr * y);
           ctx.drawImage(li, 0, 0, dl.w, dl.h);
+          // "was 3/3" beside every chip whose marks Adrian changed (1 Oct 2026: "put at the side
+          // 0/2, 1/2, 2/2 according to the change, in some other colour badge") — purple, the
+          // re-mark colour the student will see.
+          {
+            const parsed = layerRef.current[i];
+            for (const o of parsed?.objects ?? []) {
+              const ch = !o.deleted ? scoreChange(o) : null;
+              const b = ch ? layerObjBox(i, o, false) : null;
+              if (!ch || !b) continue;
+              const fs = Math.max(11, b.h * 0.7);
+              ctx.font = `700 ${fs}px "Patrick Hand", sans-serif`;
+              const label = `was ${ch.from}`;
+              const tw = ctx.measureText(label).width + fs * 0.9;
+              const bx = b.x + b.w + 6 / fl, by = b.y + (b.h - fs * 1.3) / 2;
+              ctx.fillStyle = '#7c3aed';
+              ctx.beginPath(); ctx.roundRect(bx, by, tw, fs * 1.3, fs * 0.65); ctx.fill();
+              ctx.fillStyle = '#ffffff';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bx + fs * 0.45, by + fs * 0.65);
+              ctx.textBaseline = 'alphabetic';
+            }
+          }
           const ls = layerSelRef.current;
           if (ls && ls.pageIdx === i) {
             const parsed = layerRef.current[i];
             const o = parsed?.objects.find((q) => q.id === ls.id);
-            const b = o && !o.deleted ? layerBBoxRef.current[i].get(o.id) : null;
-            if (o && b) {
-              const mv = layerMoveRef.current;
-              const ox = o.dx + (mv?.dx ?? 0), oy = o.dy + (mv?.dy ?? 0);
+            const b0 = o && !o.deleted ? layerBBoxRef.current[i].get(o.id) : null;
+            const b = o && b0 ? layerObjBox(i, o) : null;
+            if (o && b0 && b) {
+              // The lifted object itself, under the in-flight move / scale.
+              const sel = layerSelImgRef.current;
+              if (sel && sel.id === o.id) {
+                const mv = layerMoveRef.current, rs = layerResizeRef.current;
+                const sc = rs ? rs.scale : (o.scale ?? 1);
+                const a = rs ? rs.anchor : (o.anchor ?? { x: b0.x, y: b0.y });
+                ctx.save();
+                ctx.translate(o.dx + (mv?.dx ?? 0), o.dy + (mv?.dy ?? 0));
+                ctx.translate(a.x, a.y); ctx.scale(sc, sc); ctx.translate(-a.x, -a.y);
+                ctx.drawImage(sel.img, 0, 0, dl.w, dl.h);
+                ctx.restore();
+              }
               const pad = 6 / fl;
               ctx.strokeStyle = '#7c3aed';
               ctx.lineWidth = 1.5 / fl;
               ctx.setLineDash([6 / fl, 4 / fl]);
-              ctx.strokeRect(b.x + ox - pad, b.y + oy - pad, b.w + pad * 2, b.h + pad * 2);
+              ctx.strokeRect(b.x - pad, b.y - pad, b.w + pad * 2, b.h + pad * 2);
               ctx.setLineDash([]);
-              const cssX = x + (b.x + ox - pad) * fl, cssY = y + (b.y + oy - pad) * fl;
+              // The resize handle: bottom-right corner, white square with a purple border.
+              const hs = 10 / fl;
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(b.x + b.w + pad - hs / 2, b.y + b.h + pad - hs / 2, hs, hs);
+              ctx.strokeRect(b.x + b.w + pad - hs / 2, b.y + b.h + pad - hs / 2, hs, hs);
+              const cssX = x + (b.x - pad) * fl, cssY = y + (b.y - pad) * fl;
               const next = { x: Math.max(8, cssX), y: Math.max(58, cssY - 44) };
               const prev = chipPosRef.current;
               if (!prev || Math.abs(prev.x - next.x) > 1 || Math.abs(prev.y - next.y) > 1) {
@@ -849,11 +901,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, []);
 
   // ── layer objects: rasterise, snapshot, restore, hit-test ──────────────────
-  const rebuildLayerImage = useCallback((i: number) => {
+  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null) => {
     const parsed = layerRef.current[i];
     const meta = pages[i]?.layer;
     if (!parsed || !meta) return;
-    const doc = layerDocument(serializeLayer(parsed), meta, fontCssRef.current);
+    // The selected object is left out of the page bitmap — it is drawn on its own (live drag).
+    const body = hideId
+      ? serializeLayer({ items: parsed.items.map(it => (it.type === 'obj' && it.obj.id === hideId ? { type: 'obj', obj: { ...it.obj, deleted: true } } : it)), objects: parsed.objects })
+      : serializeLayer(parsed);
+    const doc = layerDocument(body, meta, fontCssRef.current);
     const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
     const img = new Image();
     img.onload = () => {
@@ -865,6 +921,57 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
   }, [pages, scheduleBase]);
+  /** The selected object alone, at its stored place with NO move / scale applied — the render loop applies those. */
+  const buildSelObjImage = useCallback((i: number, id: string) => {
+    const parsed = layerRef.current[i];
+    const meta = pages[i]?.layer;
+    const o = parsed?.objects.find(q => q.id === id);
+    if (!parsed || !meta || !o) return;
+    const bare = { ...o, dx: 0, dy: 0, scale: 1, anchor: undefined };
+    const doc = layerDocument(serializeLayer({ items: [{ type: 'obj', obj: bare }], objects: [bare] }), meta, fontCssRef.current);
+    const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => { layerSelImgRef.current = { id, img }; rebuildLayerImage(i, id); };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }, [pages, rebuildLayerImage]);
+  /** The object's box on the page as it stands: its measured box, scaled about its anchor, moved. */
+  const layerObjBox = (i: number, o: LayerObj, live = true): LayerBox | null => {
+    const b = layerBBoxRef.current[i].get(o.id);
+    if (!b) return null;
+    const mv = live ? layerMoveRef.current : null;
+    const rs = live ? layerResizeRef.current : null;
+    const s = rs ? rs.scale : (o.scale ?? 1);
+    const a = rs ? rs.anchor : (o.anchor ?? { x: b.x, y: b.y });
+    const dx = o.dx + (mv?.dx ?? 0), dy = o.dy + (mv?.dy ?? 0);
+    return { x: a.x + (b.x - a.x) * s + dx, y: a.y + (b.y - a.y) * s + dy, w: b.w * s, h: b.h * s };
+  };
+  // A headless-check hook (only behind ?mouse=1, the same gate that lets a mouse draw):
+  // layer coords → css, the selection's box, and every object's box on a page. Nothing
+  // in the overlay reads it; the puppeteer check that proves live drag / resize does.
+  useEffect(() => {
+    if (!mouseAllowed || typeof window === 'undefined') return;
+    const toCss = (i: number, lx: number, ly: number) => {
+      const d = dimsRef.current[i]; const { tops } = layoutRef.current; const k = kFactor();
+      if (!d) return null;
+      const sc = d.w / DOC_W;
+      return { x: viewRef.current.ox + (lx / sc) * k, y: viewRef.current.oy + (tops[i] + ly / sc) * k };
+    };
+    const w = window as unknown as { __annotate?: unknown };
+    w.__annotate = {
+      toCss,
+      objects: (i: number) => (layerRef.current[i]?.objects ?? []).filter(o => !o.deleted).map(o => ({ id: o.id, kind: o.kind, q: o.q, text: o.text, box: layerObjBox(i, o, false), scale: o.scale ?? 1 })),
+      sel: () => {
+        const ls = layerSelRef.current; if (!ls) return null;
+        const o = layerRef.current[ls.pageIdx]?.objects.find(q => q.id === ls.id); if (!o) return null;
+        const b = layerObjBox(ls.pageIdx, o, false); if (!b) return null;
+        const tl = toCss(ls.pageIdx, b.x, b.y), br = toCss(ls.pageIdx, b.x + b.w, b.y + b.h);
+        return { pageIdx: ls.pageIdx, id: o.id, kind: o.kind, box: b, scale: o.scale ?? 1, dx: o.dx, dy: o.dy, css: tl && br ? { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y } : null };
+      },
+    };
+    return () => { delete w.__annotate; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mouseAllowed]);
   const layerSnap = (parsed: ParsedLayer): LayerSnapshot => layerSnapshot(parsed);
   const layerRestore = useCallback((i: number, snap: LayerSnapshot) => {
     const parsed = layerRef.current[i];
@@ -878,14 +985,22 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const boxes = layerBBoxRef.current[pageIdx];
     const d = dimsRef.current[pageIdx];
     const slack = d ? 10 * (d.w / (kFactor() * DOC_W)) : 8;
+    // The smallest box under the finger wins (1 Oct 2026): a note with its long leader arrow
+    // spans most of a line, and used to swallow the tick drawn beside it — Adrian: "the
+    // annotations is tied together with the ticks … able to separate?"
+    let best: LayerObj | null = null, bestArea = Infinity;
     for (let k = parsed.objects.length - 1; k >= 0; k--) {
       const o = parsed.objects[k];
       if (o.deleted) continue;
-      const b = boxes.get(o.id);
+      if (!boxes.get(o.id)) continue;
+      const b = layerObjBox(pageIdx, o, false);
       if (!b) continue;
-      if (x >= b.x + o.dx - slack && x <= b.x + o.dx + b.w + slack && y >= b.y + o.dy - slack && y <= b.y + o.dy + b.h + slack) return o;
+      if (x >= b.x - slack && x <= b.x + b.w + slack && y >= b.y - slack && y <= b.y + b.h + slack) {
+        const area = (b.w + slack * 2) * (b.h + slack * 2);
+        if (area < bestArea) { best = o; bestArea = area; }
+      }
     }
-    return null;
+    return best;
   };
 
   const undo = useCallback((pageIdx: number) => {
@@ -1346,15 +1461,37 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           return;
         }
         if (tool === 'select') {
-          // The marker's ink: tap an object to select it, drag to move it.
+          // The marker's ink: tap an object to select it, drag to move it, drag its
+          // bottom-right handle to resize it (1 Oct 2026).
           const pt = toImage(x, y);
           if (!pt) { penDownRef.current = false; return; }
+          const ls = layerSelRef.current;
+          if (ls && ls.pageIdx === pt.pageIdx) {
+            const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+            const b = o ? layerObjBox(ls.pageIdx, o, false) : null;
+            const d = dimsRef.current[ls.pageIdx];
+            const grab = d ? 16 * (d.w / (kFactor() * DOC_W)) : 12;
+            if (o && b && Math.abs(pt.x - (b.x + b.w)) <= grab && Math.abs(pt.y - (b.y + b.h)) <= grab) {
+              const anchor = o.anchor ?? { x: b.x - o.dx, y: b.y - o.dy };
+              const startDist = Math.max(4, Math.hypot(pt.x - (anchor.x + o.dx), pt.y - (anchor.y + o.dy)));
+              layerResizeRef.current = { startDist, scale0: o.scale ?? 1, anchor, scale: o.scale ?? 1 };
+              selDownAtRef.current = performance.now();
+              scheduleBase();
+              return;
+            }
+          }
           const hit = hitLayerObject(pt.pageIdx, pt.x, pt.y);
-          clearSelection();
+          const keep = hit && ls && ls.id === hit.id && ls.pageIdx === pt.pageIdx;
+          if (!keep) {
+            const prevPage = ls?.pageIdx ?? null;
+            clearSelection();
+            if (prevPage != null) rebuildLayerImage(prevPage, null);
+          }
           if (hit) {
             layerSelRef.current = { pageIdx: pt.pageIdx, id: hit.id };
             layerMoveRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
             selDownAtRef.current = performance.now();
+            if (!keep) buildSelObjImage(pt.pageIdx, hit.id);
           }
           scheduleBase();
           return;
@@ -1448,7 +1585,17 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         e.preventDefault();
         if (strokeSrcRef.current === 'pointer') lastPointerAtRef.current = performance.now();
         if (tool === 'select') {
-          const ls = layerSelRef.current, mv = layerMoveRef.current;
+          const ls = layerSelRef.current, mv = layerMoveRef.current, rs = layerResizeRef.current;
+          if (ls && rs) {
+            const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+            const pt = toImage(x, y, ls.pageIdx);
+            if (pt && o) {
+              const dNow = Math.hypot(pt.x - (rs.anchor.x + o.dx), pt.y - (rs.anchor.y + o.dy));
+              rs.scale = Math.min(6, Math.max(0.2, rs.scale0 * (dNow / rs.startDist)));
+              scheduleBase();
+            }
+            return;
+          }
           if (ls && mv) {
             const pt = toImage(x, y, ls.pageIdx);
             if (pt) { mv.dx = pt.x - mv.startX; mv.dy = pt.y - mv.startY; scheduleBase(); }
@@ -1569,6 +1716,22 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       touchStrokeIdRef.current = null;
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       if (tool === 'select') {
+        // Commit a resize of the marker's object as one undo step; the selection stays.
+        const rs = layerResizeRef.current;
+        if (rs && layerSelRef.current) {
+          const ls0 = layerSelRef.current;
+          const parsed = layerRef.current[ls0.pageIdx];
+          const o = parsed?.objects.find((q) => q.id === ls0.id);
+          if (parsed && o && Math.abs(rs.scale - (o.scale ?? 1)) > 0.005) {
+            const before = layerSnap(parsed);
+            o.scale = rs.scale; o.anchor = rs.anchor;
+            pushUndo(ls0.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+            bumpInk();
+          }
+          layerResizeRef.current = null;
+          scheduleBase();
+          return;
+        }
         // Commit a move of the marker's object as one undo step; the selection stays.
         const ls = layerSelRef.current, mv = layerMoveRef.current;
         const moved = !!mv && (Math.abs(mv.dx) > 0.5 || Math.abs(mv.dy) > 0.5);
@@ -1586,7 +1749,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             o.dx += mv.dx; o.dy += mv.dy;
             pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
             bumpInk();
-            rebuildLayerImage(ls.pageIdx);
+            // The object is still drawn on its own while selected — no page rebuild needed.
           }
         }
         layerMoveRef.current = null;
@@ -2656,6 +2819,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         <button style={{ ...btn, opacity: canRedo ? 1 : 0.35 }} onClick={() => redo(currentPageIdx)} disabled={!canRedo} aria-label="Redo" title="Redo (3-finger tap)"><IconRedo /></button>
 
         <div style={{ flex: 1 }} />
+        {(() => {
+          const changed = layerRef.current.reduce((n, p) => n + (p?.objects.filter(o => !o.deleted && scoreChange(o)).length ?? 0), 0);
+          return changed > 0 ? (
+            <span data-marks-changed style={{ background: '#7c3aed', color: '#fff', borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 700, marginRight: 8, whiteSpace: 'nowrap' }}
+              title="Done writes these marks and repaints the paper">{changed} mark{changed === 1 ? '' : 's'} changed</span>
+          ) : null;
+        })()}
         <button
           style={{
             ...btn, background: (isStudent ? (hasInk() || dirtyRef.current) : hasInk()) && !busy ? '#2563eb' : '#93c5fd', color: '#fff',
@@ -2728,7 +2898,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
                 })()}
                 {layerSelHasText() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={editLayerText}>✏️ Edit text</button>}
                 {layerSelMark() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={swapLayerMark} title="Turn this tick into a cross, or this cross into a tick">{layerSelMark() === 'tick' ? '✓ → ✗' : '✗ → ✓'}</button>}
-                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { const pg = layerSelRef.current?.pageIdx ?? null; clearSelection(); if (pg != null) rebuildLayerImage(pg, null); scheduleBase(); }}>Deselect</button>
               </>
             ) : (
               <>
