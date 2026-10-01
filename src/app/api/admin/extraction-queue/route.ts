@@ -4,7 +4,7 @@
 // route exists so a worker on ANY machine — in-app session, Mac A launchd, a
 // cloud session — needs only the admin bearer and curl, never the service key
 // or a bucket credential:
-//   GET  ?status=queued|claimed|done|flagged|all&limit=50   → the rows
+//   GET  ?status=queued|claimed|done|flagged|held|all&limit=50 → the rows
 //   POST {action:'claim',   runner, subject?}                → one row (subject = math|biology|chemistry|physics|science; omitted = any) + a 1-hour signed download URL (204 when the queue is empty)
 //   POST {action:'download', id}                             → a fresh signed URL for a row you hold
 //   POST {action:'finish',  id, runner, status, notes?}      → done | skipped | flagged | failed (claimant only)
@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic';
 
 const BUCKET = 'paper-library';
 const SIGNED_URL_SECONDS = 3600;
-const STATUSES = new Set(['queued', 'claimed', 'done', 'skipped', 'flagged', 'failed']);
+// 'held' (2 Oct 2026) = parked on purpose; the claim RPC only takes 'queued', so a held row waits untouched.
+const STATUSES = new Set(['queued', 'claimed', 'done', 'skipped', 'flagged', 'failed', 'held']);
 
 async function signedUrl(storagePath: string): Promise<string> {
   const { data, error } = await getSupabaseAdmin().storage.from(BUCKET).createSignedUrl(storagePath, SIGNED_URL_SECONDS);

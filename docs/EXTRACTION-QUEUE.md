@@ -174,6 +174,23 @@ Columns added: `status`, `claimed_by`, `claimed_at`, `finished_at`, `inbox_path`
 - `finish_extraction_paper(p_id, p_runner, p_status, p_notes = null)` — only the
   claimant may finish; anyone may hand a row back to `queued`.
 
+### 2a. On hold — the `held` status (2 Oct 2026)
+
+Adrian: *"we should prioritise recent years first - 2023 to 2025 for A Math E Math JC H1 and
+the sciences … the rest put on hold first"*.
+
+- `held` is a seventh status. The claim RPC only takes `queued`, so a held row waits untouched;
+  nothing in the worker changed.
+- On 2 Oct 2026, 561 queued rows were held and 233 stayed queued: years 2023–2025 at levels
+  `AM`, `EM`, `JC2_H1`, `PHYS`, `CHEM`, `BIO`, `CS_PHYS`, `CS_CHEM`, `CS_BIO` and their `_NA`
+  twins. Held: everything older, the 2026 papers, and the Sec 2 / Sec 3 / N(A) / N(T) maths.
+  Each held row's `notes` ends with `ON HOLD 2 Oct 2026: …`.
+- **A paper dropped in the inbox still arrives `queued`**, whatever its year — the hold was a
+  one-off sweep, not a rule in the watcher.
+- Release: `update paper_library set status='queued' where kind='source' and status='held'`
+  plus whatever narrows it (a year, a level). `GET /api/admin/extraction-queue?status=held`
+  lists them. Migration `migrations/paper_library_held_status.sql`.
+
 ## 3. The worker contract — `/api/admin/extraction-queue`
 
 A worker on **any** machine needs only the admin bearer and `curl`. No service
