@@ -4102,7 +4102,7 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 > restores it on close. Bot side the same day: the printed "Correct solution" keeps only the
 > parts that lost marks (`ai/solution-parts.js`) — Denise's Q7 printed (b) under a 2/2.
 
-Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
+Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13; **§17 = 1 Oct 2026: live drag, corner resize, smallest-object hit, the "was a/b" marks badge, ten colours, and the `<rect …/ fill>` save bug that failed every Done after a mark change — website + bot twins**). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):
 > iPadOS **Live Text** system-intercepts Pencil strokes over the printed text in
 > page photos — Safari offers no opt-out, so strokes intermittently vanish there;

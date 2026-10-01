@@ -536,3 +536,60 @@ the pure helpers in `lib/annotate/layer.ts` (`addMarkObject`, `markGlyph`,
 
 Not built, by agreement: item 5, changing the mark when a ✓ is swapped to a ✗ — a
 swap stays ink only.
+
+
+## 17. Live drag, resize, the marks badge, the palette — and the save bug (1 Oct 2026)
+
+Adrian on the iPad, after annotating Beryl's EM P2: "when i update the marks, the marks
+need to redraw? any ways to indicate that change?"; "when i move the annotations, the
+annotation does not follow, only upon release"; "the annotations is tied together with the
+ticks sometimes? able to separate?"; "able to change the size of the red circle drawn?";
+"allow for the complete colour palette (instead of just 3 colours)"; and "most importantly,
+i can't save my work after annotating".
+
+**The save bug (website `1499cf44`, bot `008c6aa7`).** A retyped score chip is repainted
+red/green by rewriting its `<rect>`. Both `lib/annotate/layer.ts restyleScoreInner` and the
+bot's `ai/compose-page.js repaintScoreChips` matched `<rect …/>` with the self-closing slash
+inside the captured attributes and appended the new paint AFTER it — `<rect … / fill="…">` —
+which librsvg refuses ("XML parse error … Couldn't find end of Start Tag rect"), so Done
+failed on every page where a chip's marks had been changed. Annotation without a mark
+change saved fine, which is why it looked random. Both now strip the slash and put it back
+last; both tests assert a well-formed rect. **The two are twins: change both or neither.**
+
+**Live drag + resize (website `58aec702`, `b4426604`).** While an object is selected the
+page's layer bitmap is rebuilt WITHOUT it (`rebuildLayerImage(i, hideId)`) and the object is
+rasterised on its own (`rasteriseSelObj`), so the render loop draws it under the in-flight
+translate / scale every frame; Deselect rebuilds the page. A bottom-right handle on the
+selection box scales the object about its box's top-left (`LayerObj.scale` + `anchor`;
+`objectTransform` wraps the group in `translate(dx dy) translate(ax ay) scale(s)
+translate(-ax -ay)`; `layerDirty` counts it; one undo step; tested). An edit to a lifted
+object (a chip's number row, retyped text, ✓⇄✗) re-rasterises the lifted copy, so the chip
+shows its new number while still selected. The whole object scales — a circled line grows
+with its circle; splitting a circle from its note is bot-side, like the tick/note split.
+
+**The smallest object under the finger wins** (`hitLayerObject`): a note's long leader
+arrow spans most of a line and used to swallow the tick beside it — that was "tied together
+with the ticks". The bot's groups were never merged; the hit test picked the top-most box.
+
+**The marks badge.** `scoreChange(o)` (lib, tested) names a retyped chip's before and after;
+the render loop draws a purple "was 3/3" pill beside the chip and the toolbar shows "N marks
+changed" beside Done. Purple = the re-mark colour the student will see. Done is still what
+writes the marks (`scoreEdits` → `applyOverride`) and repaints the paper; nothing is
+written before it.
+
+**The palette.** `PEN_COLORS` = ten (red, orange, amber, green, teal, blue, indigo, purple,
+pink, black); the remembered colour must be one of them.
+
+**Checking it headlessly.** Behind `?mouse=1` (the gate that lets a mouse draw) the overlay
+exposes `window.__annotate = { toCss(i, lx, ly), objects(i), sel() }` — layer coords →
+viewport css, every object's box, the selection's box. The check that proved this round
+(`scratchpad/annotate-check-final.js` in the 1 Oct 2026 session: open `/admin/mark-paper?run=
+<id>&mouse=1` with the admin cookie on the PREVIEW — the local dev server has no bot, so the
+run never loads — press-hold-release a tick, drag mid-way, drag the handle, set a chip to 0,
+count swatches) ran on Charlotte's unreleased Maclaurin paper WITHOUT pressing Done. A real
+Done with a resized object is still the proof of the compose path for `scale` — the bot
+renders the wrapper as plain SVG, as it does for moves.
+
+**Filed, not fixed here (docs/MARKING-DEFECTS.md F50, F51):** the note's arrow landing on
+the ✗ row instead of the line the slip is on; a second independent slip on the same line
+going unnamed. "2pi(6)(15)" as words was F42, fixed forward before her paper was marked.
