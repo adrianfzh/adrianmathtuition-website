@@ -112,6 +112,8 @@ const PALETTE_GRID: string[][] = [
   ['#ffffff', '#e5e7eb', '#9ca3af', '#6b7280', '#374151', '#111827', '#5b4636', '#8b5a2b', '#b45309', '#3f6212', '#1d4ed8', '#000000'],
 ];
 const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+/** A colour held into slot `keep` leaves any other slot it already sat in (never two of one colour). */
+const dedupeFavs = (favs: string[], keep: number) => favs.filter((c, k) => k === keep || c.toLowerCase() !== favs[keep].toLowerCase());
 const HL_COLORS = ['#facc15', '#4ade80'];
 const MAX_ZOOM = 4;
 const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory)
@@ -2953,11 +2955,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
                 </button>
               ))}
             </div>
-            <FavouriteSwatches kind="pen" favs={penFavs} current={penColor} onPick={setPenColor} onOpen={() => setPalette(p => (p === 'pen' ? null : 'pen'))} onHold={(i) => setPenFavs(f => f.map((c, k) => (k === i ? penColor : c)))} holdRef={favHoldRef} />
+            <FavouriteSwatches kind="pen" favs={penFavs} current={penColor} onPick={setPenColor} onOpen={() => setPalette(p => (p === 'pen' ? null : 'pen'))} onHold={(i) => setPenFavs(f => dedupeFavs(f.map((c, k) => (k === i ? penColor : c)), i))} holdRef={favHoldRef} />
           </>
         )}
         {tool === 'highlighter' && (
-          <FavouriteSwatches kind="hl" favs={hlFavs} current={hlColor} onPick={setHlColor} onOpen={() => setPalette(p => (p === 'hl' ? null : 'hl'))} onHold={(i) => setHlFavs(f => f.map((c, k) => (k === i ? hlColor : c)))} holdRef={favHoldRef} />
+          <FavouriteSwatches kind="hl" favs={hlFavs} current={hlColor} onPick={setHlColor} onOpen={() => setPalette(p => (p === 'hl' ? null : 'hl'))} onHold={(i) => setHlFavs(f => dedupeFavs(f.map((c, k) => (k === i ? hlColor : c)), i))} holdRef={favHoldRef} />
         )}
 
         <button style={{ ...btn, opacity: canUndo ? 1 : 0.35 }} onClick={() => undo(currentPageIdx)} disabled={!canUndo} aria-label="Undo" title="Undo (2-finger tap)"><IconUndo /></button>
