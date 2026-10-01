@@ -98,6 +98,20 @@ const HL_WIDTH_PT = 13;
 // The full palette (Adrian, 1 Oct 2026: "allow for the complete colour palette (instead of
 // just 3 colours)"): red first (the marker's), then the wheel, black last.
 const PEN_COLORS = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#2563eb', '#4f46e5', '#7c3aed', '#db2777', '#111827'];
+// Notability-shaped picker (Adrian, 1 Oct 2026: "can the color picker be like how notability
+// is like?"): a short row of FAVOURITES in the toolbar with the current one ringed; tapping the
+// ringed one opens the full grid; holding a favourite replaces it with the current colour.
+// Favourites are remembered per device with the other tool settings (TOOLS_KEY).
+const PEN_FAVOURITES_DEFAULT = ['#dc2626', '#2563eb', '#111827', '#16a34a', '#7c3aed'];
+const HL_FAVOURITES_DEFAULT = ['#facc15', '#4ade80', '#f472b6', '#60a5fa'];
+/** The grid: 12 hues × 3 shades (light / mid / dark) + greys. */
+const PALETTE_GRID: string[][] = [
+  ['#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac', '#5eead4', '#67e8f9', '#93c5fd', '#a5b4fc', '#c4b5fd', '#f0abfc', '#f9a8d4'],
+  ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a', '#0d9488', '#0891b2', '#2563eb', '#4f46e5', '#7c3aed', '#c026d3', '#db2777'],
+  ['#7f1d1d', '#7c2d12', '#78350f', '#365314', '#14532d', '#134e4a', '#164e63', '#1e3a8a', '#312e81', '#4c1d95', '#701a7a', '#831843'],
+  ['#ffffff', '#e5e7eb', '#9ca3af', '#6b7280', '#374151', '#111827', '#5b4636', '#8b5a2b', '#b45309', '#3f6212', '#1d4ed8', '#000000'],
+];
+const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
 const HL_COLORS = ['#facc15', '#4ade80'];
 const MAX_ZOOM = 4;
 const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory)
@@ -238,6 +252,76 @@ function measureLayer(body: string, meta: LayerMeta, fontCss: string): Map<strin
   } finally { host.remove(); }
   return out;
 }
+const SWATCH_BTN: React.CSSProperties = {
+  minWidth: 44, height: 44, borderRadius: 10, border: '1px solid #d1d5db',
+  background: '#fff', fontSize: 18, cursor: 'pointer', padding: '0 10px',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+};
+/** The toolbar's favourites: a short row, the current colour ringed. Tap a favourite to use it;
+ *  tap the ringed one again to open the full grid; HOLD any favourite (500 ms) to replace it
+ *  with the current colour. A current colour that is not a favourite shows as a sixth ring. */
+function FavouriteSwatches({ kind, favs, current, onPick, onOpen, onHold, holdRef }: {
+  kind: 'pen' | 'hl'; favs: string[]; current: string;
+  onPick: (c: string) => void; onOpen: () => void; onHold: (i: number) => void;
+  holdRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const list = favs.includes(current) ? favs : [...favs, current];
+  const held = useRef(false);
+  return (
+    <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }} data-favourites={kind}>
+      {list.map((c, i) => {
+        const on = c === current;
+        return (
+          <button key={`${c}-${i}`} style={{ ...SWATCH_BTN, border: on ? '3px solid #111827' : '1px solid #d1d5db', position: 'relative' }}
+            aria-label={on ? `Colour ${c} — tap again for more colours` : `Colour ${c}`} title={on ? 'More colours' : 'Hold to make this slot the current colour'}
+            onPointerDown={() => { held.current = false; if (i < favs.length) { if (holdRef.current) clearTimeout(holdRef.current); holdRef.current = setTimeout(() => { held.current = true; onHold(i); }, 500); } }}
+            onPointerUp={() => { if (holdRef.current) { clearTimeout(holdRef.current); holdRef.current = null; } }}
+            onPointerLeave={() => { if (holdRef.current) { clearTimeout(holdRef.current); holdRef.current = null; } }}
+            onClick={() => { if (held.current) { held.current = false; return; } if (on) onOpen(); else onPick(c); }}>
+            <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block', boxShadow: c.toLowerCase() === '#ffffff' ? 'inset 0 0 0 1px #d1d5db' : undefined }} />
+            {on && <span style={{ position: 'absolute', right: 2, bottom: 1, fontSize: 9, lineHeight: 1, color: '#374151' }}>▾</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The full grid under the toolbar: 12 hues × 3 shades + greys, the current one ringed;
+ *  tap picks; the ☆ row adds the current colour to the favourites. */
+function PalettePopover({ current, favs, onPick, onFavourite, onClose }: {
+  current: string; favs: string[]; onPick: (c: string) => void; onFavourite: (c: string) => void; onClose: () => void;
+}) {
+  const [top, setTop] = useState(66);
+  useEffect(() => {
+    const tb = document.querySelector('[data-annotate-toolbar]');
+    if (tb) setTop(Math.round(tb.getBoundingClientRect().bottom) + 6);
+  }, []);
+  return (
+    <div data-palette style={{
+      position: 'fixed', top, left: 12, zIndex: 3100,
+      background: '#fff', border: '1px solid #d1d5db', borderRadius: 14, padding: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+      display: 'flex', flexDirection: 'column', gap: 8,
+    }}>
+      {PALETTE_GRID.map((row, r) => (
+        <div key={r} style={{ display: 'flex', gap: 6 }}>
+          {row.map((c) => (
+            <button key={c} aria-label={`Colour ${c}`} onClick={() => onPick(c)}
+              style={{ width: 30, height: 30, borderRadius: '50%', background: c, border: c === current ? '3px solid #111827' : '1px solid #d1d5db', padding: 0, cursor: 'pointer' }} />
+          ))}
+        </div>
+      ))}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
+        <span style={{ fontSize: 12, color: '#6b7280' }}>Hold a favourite in the toolbar to replace it with the current colour.</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {!favs.includes(current) && <button style={{ ...SWATCH_BTN, fontSize: 13, height: 32 }} onClick={() => onFavourite(current)}>☆ Add to favourites</button>}
+          <button style={{ ...SWATCH_BTN, fontSize: 13, height: 32 }} onClick={onClose}>Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const IconSelect = () => (
   <svg {...iconProps}>
     <path d="M5 3l14 8.5-6.5 1.5L10 20 5 3z" />
@@ -319,6 +403,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // didn't end them). Triple-tap the page counter to copy it; also persisted to
   // localStorage on every pen lift so a closed overlay still has the trail.
   const inkLogRef = useRef<Record<string, unknown>[]>([]);
+  // Per-stroke timing (1 Oct 2026, Adrian: "a little clunky and lag a little sometimes"):
+  // pointer events taken, frames painted, the longest gap between two paints, all for the
+  // stroke under the pen; logged as one `stroke` line on lift, so "Send the ink log" after a
+  // laggy session carries numbers from the device, not a guess from a Mac.
+  const strokePerfRef = useRef<{ t0: number; events: number; frames: number; lastPaint: number; maxGap: number } | null>(null);
   const inkT0Ref = useRef(Date.now());
   const chipTapsRef = useRef<number[]>([]);
   const cursorRef = useRef<{ x: number; y: number; mode: 'dot' | 'ring' } | null>(null);
@@ -379,6 +468,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [tool, setTool] = useState<ToolSel>('pen');
   const lastInkToolRef = useRef<ToolKind>('pen');
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
+  const [penFavs, setPenFavs] = useState<string[]>(PEN_FAVOURITES_DEFAULT);
+  const [hlFavs, setHlFavs] = useState<string[]>(HL_FAVOURITES_DEFAULT);
+  const [palette, setPalette] = useState<null | 'pen' | 'hl'>(null);
+  const favHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const penColorRef = useRef(penColor);
   penColorRef.current = penColor;
   const [penWidthPt, setPenWidthPt] = useState(PEN_WIDTHS_PT[1]);
@@ -743,6 +836,39 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     }
   }, [drawStrokes, ensureBitmaps, n, visibleRange]);
 
+  // The stroke under the pen, drawn CHEAPLY (1 Oct 2026, Adrian: "a little clunky and lag a
+  // little sometimes"): every frame used to throw the live outline away and recompute it —
+  // the zero-phase tremor filter forward and back over every point so far, then
+  // perfect-freehand over them again — so the per-frame cost grew with the stroke and a
+  // long underline, circle or cursive line got heavier until the pen lifted. Now the live
+  // stroke is one round-capped polyline through a one-pass smoothed copy of its points
+  // (flat cost per point); the real outline is computed once, on lift, as before, and
+  // with the near-constant width (ink-outline thinning 0.15) the swap is barely visible.
+  // A snapped shape, a typed note and the highlighter ribbon draw as they always did.
+  const drawLiveStroke = useCallback((ctx: CanvasRenderingContext2D, s: Stroke) => {
+    if (s.text || s.snapped || s.points.length < 2) { drawStrokes(ctx, [s], s.tool === 'highlighter' ? 'hl' : 'pen'); return; }
+    const hl = s.tool === 'highlighter';
+    ctx.globalAlpha = hl ? 0.38 : 1;
+    ctx.globalCompositeOperation = hl ? 'multiply' : 'source-over';
+    ctx.strokeStyle = s.color;
+    // perfect-freehand's filled outline is `size` wide at full pressure and ~0.85 × size at
+    // rest; the live line sits in between so the lift does not visibly fatten or thin it.
+    ctx.lineWidth = hl ? s.width : s.width * 0.92;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    // One forward EMA (α 0.5) — the same strength as the stored filter's forward pass —
+    // with the pen-tip point left raw so the ink always reaches the tip.
+    const pts = s.points;
+    let sx = pts[0].x, sy = pts[0].y;
+    ctx.moveTo(sx, sy);
+    for (let i = 1; i < pts.length - 1; i++) { sx = sx + (pts[i].x - sx) * 0.5; sy = sy + (pts[i].y - sy) * 0.5; ctx.lineTo(sx, sy); }
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }, [drawStrokes]);
+
   const renderLive = useCallback(() => {
     const canvas = liveRef.current;
     if (!canvas) return;
@@ -759,7 +885,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const f = (DOC_W * k) / d.w;
         const x = viewRef.current.ox, y = viewRef.current.oy + layoutRef.current.tops[cur.pageIdx] * k;
         ctx.setTransform(dpr * f, 0, 0, dpr * f, dpr * x, dpr * y);
-        drawStrokes(ctx, [cur.stroke], cur.stroke.tool === 'highlighter' ? 'hl' : 'pen');
+        drawLiveStroke(ctx, cur.stroke);
+        const perf = strokePerfRef.current;
+        if (perf) {
+          const now = performance.now();
+          if (perf.frames > 0) perf.maxGap = Math.max(perf.maxGap, now - perf.lastPaint);
+          perf.frames += 1; perf.lastPaint = now;
+        }
       }
     }
 
@@ -804,7 +936,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         ctx.fill();
       }
     }
-  }, [drawStrokes, hlColor, penColor, tool]);
+  }, [drawLiveStroke, hlColor, penColor, tool]);
 
   // Every scheduled render RACES a timer against requestAnimationFrame.
   // iPadOS Safari parks the rAF display-link right after Apple Pencil
@@ -1293,6 +1425,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const d = dimsRef.current[pt.pageIdx]!;
       const ptPerImg = d.w / PDF_PAGE_W;                  // 1 pt at page scale, in image px
       const widthPt = tool === 'highlighter' ? HL_WIDTH_PT : penWidthPt;
+      strokePerfRef.current = { t0: performance.now(), events: 1, frames: 0, lastPaint: 0, maxGap: 0 };
       currentRef.current = {
         stroke: {
           tool: tool as ToolKind,
@@ -1344,7 +1477,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const cur = currentRef.current;
       if (!cur || cur.snapLocked) return;
       const pt = toImage(x, y, cur.pageIdx);
-      if (pt) cur.stroke.points.push({ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 });
+      if (pt) { cur.stroke.points.push({ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 }); if (strokePerfRef.current) strokePerfRef.current.events += 1; }
       pathCache.current.delete(cur.stroke);
       if (Math.hypot(x - cur.lastStable.x, y - cur.lastStable.y) > HOLD_MOVE_PX) {
         cur.lastStable = { x, y };
@@ -1676,7 +1809,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         for (const ce of events) {
           const p = cssPos(ce);
           const pt = toImage(p.x, p.y, cur.pageIdx);
-          if (pt) cur.stroke.points.push({ x: pt.x, y: pt.y, p: ce.pressure > 0 ? ce.pressure : 0.5 });
+          if (pt) { cur.stroke.points.push({ x: pt.x, y: pt.y, p: ce.pressure > 0 ? ce.pressure : 0.5 }); if (strokePerfRef.current) strokePerfRef.current.events += 1; }
         }
         pathCache.current.delete(cur.stroke);
         // Hold-to-snap bookkeeping (screen-space stillness).
@@ -1874,6 +2007,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         logInk('commit', { n: cur.stroke.points.length, page: cur.pageIdx, snapped: cur.stroke.snapped || '' });
         strokesRef.current[cur.pageIdx].push(cur.stroke);
         pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
+        {
+          const perf = strokePerfRef.current;
+          if (perf) {
+            const ms = Math.round(performance.now() - perf.t0);
+            logInk('stroke', { pts: cur.stroke.points.length, ms, ev: perf.events, frames: perf.frames, maxGap: Math.round(perf.maxGap), fps: ms > 0 ? Math.round((perf.frames * 1000) / ms) : null });
+          }
+          strokePerfRef.current = null;
+        }
         baseResetPendingRef.current = true;   // fresh base surface under the commit repaint
         bumpInk();
         // Post-commit pixel probe (missing-strokes hunt, 4 Aug 2026): 120ms
@@ -2370,9 +2511,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const t = JSON.parse(localStorage.getItem(TOOLS_KEY) || 'null');
       if (t) {
         if (t.tool === 'pen' || t.tool === 'highlighter') { setTool(t.tool); lastInkToolRef.current = t.tool; }
-        if (PEN_COLORS.includes(t.penColor)) setPenColor(t.penColor);
+        if (isHex(t.penColor)) setPenColor(t.penColor);
+        if (Array.isArray(t.penFavs) && t.penFavs.length >= 3 && t.penFavs.every(isHex)) setPenFavs(t.penFavs.slice(0, 6));
+        if (Array.isArray(t.hlFavs) && t.hlFavs.length >= 2 && t.hlFavs.every(isHex)) setHlFavs(t.hlFavs.slice(0, 6));
         if (PEN_WIDTHS_PT.includes(t.penWidthPt)) setPenWidthPt(t.penWidthPt);
-        if (HL_COLORS.includes(t.hlColor)) setHlColor(t.hlColor);
+        if (isHex(t.hlColor)) setHlColor(t.hlColor);
         if (t.eraserMode === 'stroke' || t.eraserMode === 'partial') setEraserMode(t.eraserMode);
       }
     } catch { /* defaults are fine */ }
@@ -2423,10 +2566,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     try {
       localStorage.setItem(TOOLS_KEY, JSON.stringify({
         tool: tool === 'eraser' || tool === 'lasso' || tool === 'select' || tool === 'text' ? lastInkToolRef.current : tool,
-        penColor, penWidthPt, hlColor, eraserMode,
+        penColor, penWidthPt, hlColor, eraserMode, penFavs, hlFavs,
       }));
     } catch { /* best-effort */ }
-  }, [tool, penColor, penWidthPt, hlColor, eraserMode]);
+  }, [tool, penColor, penWidthPt, hlColor, eraserMode, penFavs, hlFavs]);
 
   const hasInk = () => strokesRef.current.some((s) => s.length > 0) || layerRef.current.some((l) => !!l && layerDirty(l));
   const inkedCount = strokesRef.current.filter((s) => s.length > 0).length;
@@ -2749,7 +2892,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       userSelect: 'none', WebkitUserSelect: 'none',
     }}>
       {/* top bar */}
-      <div style={{
+      <div data-annotate-toolbar style={{
         padding: 'calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px',
         background: '#fff', borderBottom: '1px solid #e5e7eb',
         display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
@@ -2810,23 +2953,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
                 </button>
               ))}
             </div>
-            <div style={{ display: 'inline-flex', gap: 4 }}>
-              {PEN_COLORS.map((c) => (
-                <button key={c} style={{ ...btn, border: penColor === c ? '3px solid #111827' : '1px solid #d1d5db' }} onClick={() => setPenColor(c)} aria-label={`Colour ${c}`}>
-                  <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block' }} />
-                </button>
-              ))}
-            </div>
+            <FavouriteSwatches kind="pen" favs={penFavs} current={penColor} onPick={setPenColor} onOpen={() => setPalette(p => (p === 'pen' ? null : 'pen'))} onHold={(i) => setPenFavs(f => f.map((c, k) => (k === i ? penColor : c)))} holdRef={favHoldRef} />
           </>
         )}
         {tool === 'highlighter' && (
-          <div style={{ display: 'inline-flex', gap: 4 }}>
-            {HL_COLORS.map((c) => (
-              <button key={c} style={{ ...btn, border: hlColor === c ? '3px solid #111827' : '1px solid #d1d5db' }} onClick={() => setHlColor(c)} aria-label={`Highlight ${c}`}>
-                <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block' }} />
-              </button>
-            ))}
-          </div>
+          <FavouriteSwatches kind="hl" favs={hlFavs} current={hlColor} onPick={setHlColor} onOpen={() => setPalette(p => (p === 'hl' ? null : 'hl'))} onHold={(i) => setHlFavs(f => f.map((c, k) => (k === i ? hlColor : c)))} holdRef={favHoldRef} />
         )}
 
         <button style={{ ...btn, opacity: canUndo ? 1 : 0.35 }} onClick={() => undo(currentPageIdx)} disabled={!canUndo} aria-label="Undo" title="Undo (2-finger tap)"><IconUndo /></button>
@@ -2888,6 +3019,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           }}>
             ✏️ ink on {inkedCount} page{inkedCount > 1 ? 's' : ''}
           </div>
+        )}
+        {palette && (
+          <PalettePopover
+            current={palette === 'pen' ? penColor : hlColor}
+            favs={palette === 'pen' ? penFavs : hlFavs}
+            onPick={(c) => { if (palette === 'pen') setPenColor(c); else setHlColor(c); }}
+            onFavourite={(c) => {
+              const set = palette === 'pen' ? setPenFavs : setHlFavs;
+              set(f => (f.includes(c) ? f : [...f.slice(0, 5), c]));
+            }}
+            onClose={() => setPalette(null)}
+          />
         )}
         {selChip && (
           <div style={{
