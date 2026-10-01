@@ -901,10 +901,32 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, []);
 
   // ── layer objects: rasterise, snapshot, restore, hit-test ──────────────────
-  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null) => {
+  /** Rasterise one object alone, at its stored place with NO move / scale applied — the render loop applies those. */
+  const rasteriseSelObj = useCallback((i: number, id: string, onReady?: () => void) => {
+    const parsed = layerRef.current[i];
+    const meta = pages[i]?.layer;
+    const o = parsed?.objects.find(q => q.id === id);
+    if (!parsed || !meta || !o) return;
+    const bare = { ...o, dx: 0, dy: 0, scale: 1, anchor: undefined };
+    const doc = layerDocument(serializeLayer({ items: [{ type: 'obj', obj: bare }], objects: [bare] }), meta, fontCssRef.current);
+    const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => {
+      const prev = layerSelImgRef.current;
+      layerSelImgRef.current = { id, img };
+      if (prev && prev.img.src.startsWith('blob:')) URL.revokeObjectURL(prev.img.src);
+      onReady?.();
+      scheduleBase();
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }, [pages, scheduleBase]);
+  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null, refreshSel = true) => {
     const parsed = layerRef.current[i];
     const meta = pages[i]?.layer;
     if (!parsed || !meta) return;
+    // An edit while an object is lifted (a chip's marks, retyped text, ✓⇄✗) must reach the lifted copy too.
+    if (refreshSel && hideId && layerSelImgRef.current?.id === hideId) rasteriseSelObj(i, hideId);
     // The selected object is left out of the page bitmap — it is drawn on its own (live drag).
     const body = hideId
       ? serializeLayer({ items: parsed.items.map(it => (it.type === 'obj' && it.obj.id === hideId ? { type: 'obj', obj: { ...it.obj, deleted: true } } : it)), objects: parsed.objects })
@@ -920,21 +942,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     };
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
-  }, [pages, scheduleBase]);
-  /** The selected object alone, at its stored place with NO move / scale applied — the render loop applies those. */
+  }, [pages, scheduleBase, rasteriseSelObj]);
+  /** Lift the selected object out of the page: its own bitmap, then the page without it. */
   const buildSelObjImage = useCallback((i: number, id: string) => {
-    const parsed = layerRef.current[i];
-    const meta = pages[i]?.layer;
-    const o = parsed?.objects.find(q => q.id === id);
-    if (!parsed || !meta || !o) return;
-    const bare = { ...o, dx: 0, dy: 0, scale: 1, anchor: undefined };
-    const doc = layerDocument(serializeLayer({ items: [{ type: 'obj', obj: bare }], objects: [bare] }), meta, fontCssRef.current);
-    const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
-    const img = new Image();
-    img.onload = () => { layerSelImgRef.current = { id, img }; rebuildLayerImage(i, id); };
-    img.onerror = () => URL.revokeObjectURL(url);
-    img.src = url;
-  }, [pages, rebuildLayerImage]);
+    rasteriseSelObj(i, id, () => rebuildLayerImage(i, id, false));
+  }, [rasteriseSelObj, rebuildLayerImage]);
   /** The object's box on the page as it stands: its measured box, scaled about its anchor, moved. */
   const layerObjBox = (i: number, o: LayerObj, live = true): LayerBox | null => {
     const b = layerBBoxRef.current[i].get(o.id);
