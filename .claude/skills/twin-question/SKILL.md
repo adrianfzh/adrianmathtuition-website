@@ -11,7 +11,11 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
 ## Steps
 
 1. **Pick sources** — `node scripts/twins/twin.mjs queue --level EM --limit 20`
-   (drawn-in-90-days first, then the pool one row per sub-skill). Skip a row whose
+   lists only sub-skills still short of **3 twins** (`--per-skill`, env `TWINS_PER_SKILL`;
+   Adrian, 1 Oct 2026: the goal is twins per sub-skill, not one per school question),
+   one row per sub-skill per round, most-drawn first. `twin.mjs need --level EM
+   --subgroup <id>` says how many that sub-skill still wants — ask it right before
+   writing one. Skip a row whose
    question is only an image (the queue already drops `text_len ≤ 40`).
 2. **Brief** — `node scripts/twins/twin.mjs brief --source <uuid> --run <dir>` writes
    `source.json`, `corpus.json`, `plan.json`, `author-brief.md`. Keep run dirs under

@@ -6,7 +6,8 @@
 // the writing is done by plan-billed Claude Code agents (the `twin-question`
 // skill), never the API.
 //
-//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--json]
+//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 3] [--json]  (only sub-skills short of 3 twins)
+//   node scripts/twins/twin.mjs need    --level EM --subgroup <id>   (prints how many more that sub-skill wants)
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
 //   node scripts/twins/twin.mjs publish --run <dir> [--dry]  (insert/refresh the row, verified=true — every check passed)
@@ -147,40 +148,63 @@ const readIf = (p, loose = false) => (existsSync(p) ? (loose ? readJsonLoose(p) 
 // S3_AM rows under the AM sub-skills and S3_EM under EM's), so the picker works
 // on the FAMILY, not the level (Adrian, 1 Oct 2026: "we need a twin (or a few
 // twins) for every skill/type of question"): a lane started for AM or S3_AM
-// draws from both, and a sub-skill counts as covered when ANY row of it, either
-// year, has a twin.
+// draws from both, and a sub-skill's twins are counted across both years.
 const FAMILY = { AM: ['AM', 'S3_AM'], S3_AM: ['AM', 'S3_AM'], EM: ['EM', 'S3_EM'], S3_EM: ['EM', 'S3_EM'] };
 const familyOf = (level) => FAMILY[level] ?? [level];
 
+// The goal is TWINS_PER_SKILL twins per sub-skill, not one per school question
+// (Adrian, 1 Oct 2026: "its twins per skill not by each question right?").
+// twinCounts → how many live twins each sub-skill of a family already has, counted
+// through the source each twin was written from (the source's primary filing).
+const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 3);
+async function twinCounts(env, level) {
+  const lv = familyOf(level).join(',');
+  const rows = await restAll(env, `twin_queue?select=source_id,subgroup_id&level=in.(${lv})`);
+  const sgOf = new Map(rows.map((r) => [r.source_id, r.subgroup_id]));
+  const twins = await restAll(env, `questions?select=twin_of&level=in.(${lv})&twin_of=not.is.null&deleted_at=is.null&order=id.asc`);
+  const have = new Map();
+  for (const t of twins) { const sg = sgOf.get(t.twin_of); if (sg) have.set(sg, (have.get(sg) ?? 0) + 1); }
+  return { rows, have };
+}
 async function queue() {
   const env = loadEnv();
   const level = argOf('--level', 'EM');
   const limit = Number(argOf('--limit', '20'));
+  const per = Number(argOf('--per-skill', String(PER_SKILL)));
   const levels = familyOf(level);
-  const all = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&order=draws_90d.desc,subgroup.asc,source_id.asc`);
-  // a sub-skill with a twin already — from either year of the family
-  const covered = new Set(all.filter((r) => r.has_any_twin && r.subgroup_id != null).map((r) => r.subgroup_id));
-  const rows = all.filter((r) => !r.has_any_twin);
-  // most-drawn first; then ONE row for every sub-skill that has no twin yet
-  // (the biggest sub-skills first — what students meet most); then the rest of
-  // the pool one row per sub-skill per round — variety over depth
-  const drawn = rows.filter((r) => r.draws_90d > 0);
-  const rest = rows.filter((r) => r.draws_90d === 0 && r.subgroup);
-  const bySg = new Map();
-  for (const r of rest) bySg.set(r.subgroup, (bySg.get(r.subgroup) ?? 0) + 1);
-  const sgs = [...bySg.keys()].sort((a, b) => (bySg.get(b) - bySg.get(a)) || a.localeCompare(b));
-  // within a sub-skill: the lane's own level first, then the other year, then by id
-  const inBucket = (a, b) => ((a.level === level ? 0 : 1) - (b.level === level ? 0 : 1)) || String(a.source_id).localeCompare(String(b.source_id));
-  const buckets = new Map(sgs.map((k) => [k, rest.filter((r) => r.subgroup === k).sort(inBucket)]));
-  const uncovered = sgs.filter((k) => !covered.has(buckets.get(k)[0].subgroup_id));
-  const first = uncovered.map((k) => buckets.get(k)[0]);
-  const taken = new Set(first.map((r) => r.source_id));
+  const { have } = await twinCounts(env, level);
+  const rows = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&has_any_twin=is.false&subgroup_id=not.is.null&order=draws_90d.desc,source_id.asc`);
+  // only sub-skills still short of `per`; inside one, the most-drawn sources first,
+  // the lane's own level before the other year
+  const buckets = new Map();
+  for (const r of rows) {
+    const need = per - (have.get(r.subgroup_id) ?? 0);
+    if (need <= 0) continue;
+    if (!buckets.has(r.subgroup_id)) buckets.set(r.subgroup_id, { need, draws: 0, rows: [] });
+    const b = buckets.get(r.subgroup_id); b.rows.push({ ...r, need, have: per - need }); b.draws += r.draws_90d;
+  }
+  const inBucket = (a, b) => (b.draws_90d - a.draws_90d) || ((a.level === level ? 0 : 1) - (b.level === level ? 0 : 1)) || String(a.source_id).localeCompare(String(b.source_id));
+  for (const b of buckets.values()) b.rows.sort(inBucket);
+  // sub-skills students meet (drawn in 90 days) first, then the emptiest, then the biggest
+  const order = [...buckets.entries()].sort(([ka, a], [kb, b]) => (b.draws - a.draws) || (b.need - a.need) || (b.rows.length - a.rows.length) || String(ka).localeCompare(String(kb)));
+  // one source per sub-skill per round — every row a sub-skill offers stays listed, so a
+  // lane that finds the first one parked can take the next; twins.sh takes ONE per sub-skill a run
   const spread = [];
-  for (let round = 0; spread.length + first.length < rest.length; round++) for (const k of sgs) { const b = buckets.get(k); if (b[round] && !taken.has(b[round].source_id)) spread.push(b[round]); }
-  const picked = [...drawn, ...first, ...spread].slice(0, limit);
+  for (let round = 0; ; round++) { let any = false; for (const [, b] of order) if (b.rows[round]) { spread.push(b.rows[round]); any = true; } if (!any) break; }
+  const picked = spread.slice(0, limit);
   if (has('--json')) { console.log(JSON.stringify(picked, null, 1)); return; }
-  for (const r of picked) console.log(`${r.source_id}  ${r.level.padEnd(5)} draws ${String(r.draws_90d).padStart(2)}  ${String(r.total_marks).padStart(2)}m  ${r.has_image ? 'fig' : '   '}  ${r.school} ${r.year}  · ${r.topic} › ${r.subgroup ?? '(unfiled)'}${r.subgroup_id != null && !covered.has(r.subgroup_id) ? '  ★ no twin yet' : ''}`);
-  log(`${picked.length} of ${rows.length} untwinned ${levels.join('+')} rows (${drawn.length} drawn in 90 days; ${uncovered.length} sub-skills with no twin yet, ${covered.size} covered)`);
+  for (const r of picked) console.log(`${r.source_id}  ${r.level.padEnd(5)} have ${r.have}/${per}  draws ${String(r.draws_90d).padStart(2)}  ${String(r.total_marks).padStart(2)}m  ${r.has_image ? 'fig' : '   '}  ${r.school} ${r.year}  · ${r.topic} › ${r.subgroup}`);
+  log(`${levels.join('+')}: ${buckets.size} sub-skills short of ${per} twins (${[...buckets.values()].reduce((n, b) => n + b.need, 0)} twins to write); listed ${picked.length}`);
+}
+// need — how many more twins one sub-skill wants (twins.sh asks just before it writes,
+// so two lanes, or a stale list, never push a sub-skill past the target)
+async function need() {
+  const env = loadEnv();
+  const level = argOf('--level', 'EM'); const sg = argOf('--subgroup', null);
+  const per = Number(argOf('--per-skill', String(PER_SKILL)));
+  if (sg == null) throw new Error('--subgroup <id>');
+  const { have } = await twinCounts(env, level);
+  console.log(Math.max(0, per - (have.get(Number(sg)) ?? have.get(sg) ?? 0)));
 }
 
 // ---------------------------------------------------------------- brief ----
@@ -451,6 +475,6 @@ function review() {
   console.log(`${out}: ${ok}/${n} accepted`);
 }
 
-const modes = { queue, brief, check, publish, review };
+const modes = { queue, need, brief, check, publish, review };
 if (!modes[MODE]) { log(`unknown mode ${MODE}`); process.exit(2); }
 Promise.resolve(modes[MODE]()).catch((e) => { log(`twin.mjs ${MODE}: ${e.message}`); process.exit(1); });
