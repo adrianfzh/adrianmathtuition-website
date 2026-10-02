@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 // "is there a good icon for desk also?") — the in-tray on the cover's brown,
 // drawn by scripts/generate-icons.js.
 export const metadata: Metadata = {
-  title: "Marking desk — Adrian's Math Tuition",
+  title: "Mark a paper — Adrian's Math Tuition",
   manifest: '/manifest-desk.json',
   appleWebApp: {
     capable: true,

@@ -80,7 +80,7 @@ export default function AdminMarkingPen({ runId, pages, initial, other }: {
         const rd = await rr.json().catch(() => ({}));
         setNote(rr.ok && !rd.error
           ? `Saved and re-issued to the student${rd.via === 'telegram' ? ' — Telegram sent' : rd.via === 'app' ? ' — a note in their app' : ''}.${marksNote}`
-          : `Saved, but not re-issued: ${rd.error || 'try again from the desk'}.${marksNote}`);
+          : `Saved, but not re-issued: ${rd.error || 'tap Done again'}.${marksNote}`);
       } catch (e) { setNote(`Saved, but not re-issued: ${(e as Error).message}.${marksNote}`); }
     } else setNote(`Saved.${marksNote}`);
     router.refresh();

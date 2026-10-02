@@ -19,13 +19,13 @@ export type TodoSectionKey = AssignmentSource;
 /** The four sections, in display order. */
 export const TODO_SECTIONS: readonly { key: TodoSectionKey; title: string; icon: string; blurb: string }[] = [
   { key: 'adrian', title: 'From Adrian', icon: '📬', blurb: 'Work Adrian sent you.' },
-  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },
+  { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },   // grouped, but NOT shown on the tab — see practiceTabSections
   { key: 'find', title: 'Found by you', icon: '🔍', blurb: 'Questions you found with Find a question.' },
   { key: 'practice-photo', title: 'From your photos', icon: '📷', blurb: 'Questions written from the ones you photographed.' },
 ];
 
-/** writing (a photo's twin on its way) → to do → done (handed in, being marked) → marked. Held and revoked rows have no state: they are not shown. */
-export type TodoState = 'writing' | 'todo' | 'done' | 'marked';
+/** writing (a photo's twin on its way) → to do → done (handed in, being marked) → marked; 'ticked' = the student's own Done (status completed, 1 Oct 2026). Held and revoked rows have no state: they are not shown. */
+export type TodoState = 'writing' | 'todo' | 'done' | 'marked' | 'ticked';
 
 export function todoState(status: AssignmentStatus | string): TodoState | null {
   switch (status) {
@@ -33,6 +33,7 @@ export function todoState(status: AssignmentStatus | string): TodoState | null {
     case 'assigned': return 'todo';
     case 'submitted': return 'done';
     case 'marked': return 'marked';
+    case 'completed': return 'ticked';
     default: return null;
   }
 }
@@ -53,7 +54,7 @@ export function visibleToStudent(row: Pick<AssignmentRow, 'status'> & { subject?
   return subjectAllowed(account, row.subject ?? null);
 }
 
-const STATE_RANK: Record<TodoState, number> = { writing: 0, todo: 1, done: 2, marked: 3 };
+const STATE_RANK: Record<TodoState, number> = { writing: 0, todo: 1, done: 2, marked: 3, ticked: 4 };
 
 export type TodoSection<R extends TodoRow = TodoRow> = {
   key: TodoSectionKey;
@@ -72,7 +73,7 @@ export type TodoSection<R extends TodoRow = TodoRow> = {
  * returned, empty or not — the page decides what to render.
  */
 export function groupPracticeTodo<R extends TodoRow>(rows: R[]): TodoSection<R>[] {
-  const sections = TODO_SECTIONS.map(s => ({ ...s, items: [] as (R & { state: TodoState })[], counts: { writing: 0, todo: 0, done: 0, marked: 0 } as Record<TodoState, number> }));
+  const sections = TODO_SECTIONS.map(s => ({ ...s, items: [] as (R & { state: TodoState })[], counts: { writing: 0, todo: 0, done: 0, marked: 0, ticked: 0 } as Record<TodoState, number> }));
   const byKey = new Map(sections.map(s => [s.key, s]));
   for (const r of rows) {
     const state = todoState(r.status);
@@ -87,9 +88,63 @@ export function groupPracticeTodo<R extends TodoRow>(rows: R[]): TodoSection<R>[
   return sections;
 }
 
+/**
+ * The sections the Practice TAB shows. Practice Again is not one of them since
+ * 1 Oct 2026 (Adrian: "for practice again, do not put it under practice tab
+ * (confusing). practice again should just be together with their PDFs") — the
+ * sheet's line sits under its paper on Papers (lib/practice-again-line), where
+ * Hand in lives too. The rows still exist and still group (the API's `sections`
+ * keeps every key for a client that wants them); only the tab leaves them out.
+ */
+export function practiceTabSections<S extends { key: TodoSectionKey }>(sections: S[]): S[] {
+  return sections.filter(s => s.key !== 'practice-again');
+}
+
+/** Finished = marked, or ticked Done by the student. These leave the main list for the fold. */
+export const FINISHED_STATES: ReadonlySet<TodoState> = new Set<TodoState>(['marked', 'ticked']);
+
+/**
+ * THE DONE FOLD (Adrian, 1 Oct 2026: "what if they completed the practices? any
+ * way for the practices to retire/mark completed?"). The tab is a to-do list, so
+ * finished items leave their section and sit together under one collapsed
+ * "Done (n)" row at the bottom, newest first — nothing is deleted. `active` keeps
+ * every section with only its unfinished items (sections may come back empty; the
+ * page drops those), `done` is the fold's list, `doneCounts` its caption.
+ */
+export function splitDoneFold<R extends TodoRow>(sections: TodoSection<R>[]): {
+  active: TodoSection<R>[];
+  done: (R & { state: TodoState; sectionKey: TodoSectionKey })[];
+  doneCounts: { marked: number; ticked: number };
+} {
+  const done: (R & { state: TodoState; sectionKey: TodoSectionKey })[] = [];
+  const active = sections.map(s => {
+    const keep = s.items.filter(i => !FINISHED_STATES.has(i.state));
+    for (const i of s.items) if (FINISHED_STATES.has(i.state)) done.push({ ...i, sectionKey: s.key });
+    const counts = { writing: 0, todo: 0, done: 0, marked: 0, ticked: 0 } as Record<TodoState, number>;
+    for (const i of keep) counts[i.state]++;
+    return { ...s, items: keep, counts };
+  });
+  done.sort((a, b) => {
+    const at = a.state === 'ticked' ? a.completed_at : a.marked_at;
+    const bt = b.state === 'ticked' ? b.completed_at : b.marked_at;
+    return Date.parse(bt || b.created_at) - Date.parse(at || a.created_at);
+  });
+  return { active, done, doneCounts: { marked: done.filter(i => i.state === 'marked').length, ticked: done.filter(i => i.state === 'ticked').length } };
+}
+
+/**
+ * THE DONE BUTTON: which rows a student may tick Done themselves — their OWN
+ * items (Found by you, From your photos) still to do. Work Adrian sent and
+ * Practice Again stay until marked or withdrawn: he tracks those. A sheet still
+ * being written has Remove instead.
+ */
+export function studentMayComplete(row: Pick<AssignmentRow, 'status' | 'source'>): boolean {
+  return row.status === 'assigned' && (row.source === 'find' || row.source === 'practice-photo');
+}
+
 /** Totals across sections — the tab's own summary line. */
 export function todoTotals(sections: TodoSection[]): Record<TodoState, number> {
-  const t: Record<TodoState, number> = { writing: 0, todo: 0, done: 0, marked: 0 };
+  const t: Record<TodoState, number> = { writing: 0, todo: 0, done: 0, marked: 0, ticked: 0 };
   for (const s of sections) for (const k of Object.keys(t) as TodoState[]) t[k] += s.counts[k];
   return t;
 }
@@ -99,6 +154,7 @@ export function todoStateLabel(state: TodoState, row: Pick<AssignmentRow, 'score
   if (state === 'writing') return 'Writing…';
   if (state === 'todo') return 'To do';
   if (state === 'done') return 'Being marked';
+  if (state === 'ticked') return 'Done';
   return row.score != null && row.out_of != null ? `Marked · ${row.score}/${row.out_of}` : 'Marked';
 }
 

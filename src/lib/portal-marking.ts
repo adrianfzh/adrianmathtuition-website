@@ -16,6 +16,8 @@
 // Pure (repo testing policy: marks logic never inline in a route or component).
 // Input is already-fetched rows; no I/O.
 
+import { buildLineCorrections, buildReviewFixes, buildWorkingLines, type LineCorrection, type ReviewFix, type WorkingLine } from './review-fix';
+import { partOfLine, regionAt, snippetsFor, type Snippet } from './mistake-snippet';
 import { displayPaperName } from './paper-display-name';
 import { aggregateTopicBleed, type TopicBleed, type ReportPaper } from '@/lib/report-facts';
 import { recomputeTotals } from '@/lib/mark-triage';
@@ -88,7 +90,11 @@ export interface StudentQuestion {
    * marker emits since 2026-08-24, plus that part's red-ink reason and ✱
    * teaching note for the annotated-solution view. Empty for older runs.
    */
-  schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[];
+  schemes: {
+    label: string | null; scheme: string; why: string | null; teach: string | null;
+    /** Science, a point lost for wording (24 Sep 2026): the scheme's phrase beside the student's own, both verbatim. */
+    words: { scheme: string; yours: string } | null;
+  }[];
   /** The complete correct solution, one step per line ($…$ TeX). */
   solution: string | null;
   /**
@@ -102,6 +108,20 @@ export interface StudentQuestion {
    * link is not.
    */
   revise: { name: string; href: string; examplesHref: string } | null;
+  /** The red pen's "from your line" per part — the Review card's side-by-side (lib/review-fix). Empty when none. */
+  fixes?: ReviewFix[];
+  /** Every ✗ line with the red pen's fix under it — science cards live on these (lib/review-fix); `label` = its part, by the marker's boxes (1 Oct 2026). */
+  corrections?: (LineCorrection & { label?: string })[];
+  /** No fix on any part: the student's own lines, ✗ marked, for the card's comparison beside `solution` (lib/review-fix). */
+  working?: WorkingLine[];
+  /** No page showed this question — the allocation audit added it at 0 (30 Sep 2026: Review puts these last). */
+  unmarked?: boolean;
+  /** The labels of the parts this reading holds, "(a)", "(b)(i)" — how two readings of one question are told apart (mergeSplitQuestions). */
+  partLabels?: string[];
+  /** The windows of the student's own page(s) this question sits on (lib/mistake-snippet, 1 Oct 2026). Empty = show typed lines. */
+  snippets?: Snippet[];
+  /** Where the question sits down its page, from the marker's boxes — "See it on my paper" lands on it exactly. */
+  jump?: { at: number; span: number } | null;
 }
 
 /**
@@ -262,11 +282,60 @@ function num(v: unknown): number {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 }
+/**
+ * The marker's `scheme_words` on a science part lost for wording (24 Sep 2026):
+ * `{ scheme, yours }`, two verbatim quotations. Both must be there, or it is nothing.
+ */
+export function schemeWords(v: unknown): { scheme: string; yours: string } | null {
+  const r = asRecord(v);
+  if (!r) return null;
+  const scheme = str(r.scheme).trim();
+  const yours = str(r.yours).trim();
+  return scheme && yours ? { scheme, yours } : null;
+}
+
 function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
-function toQuestion(raw: unknown): StudentQuestion | null {
+/**
+ * A question the marker read on two pages comes back as two results with the
+ * same number, each holding its own parts (physics Q10: (a)–(b)(i) on one photo,
+ * (b)(ii)–(c) on the next). The student sees ONE question (1 Oct 2026 — the
+ * Notebook card showed a (b)(i) window with no (b)(i) fix, the fix sat on the
+ * twin): marks summed, slips / fixes / corrections / working joined in page
+ * order, the first page's place kept for the jump. Two results that are the
+ * SAME parts read twice (a re-mark's leftover) are not merged — their part
+ * labels overlap — the first wins, as before.
+ */
+export function mergeSplitQuestions(questions: StudentQuestion[]): StudentQuestion[] {
+  const out: StudentQuestion[] = [];
+  const byNumber = new Map<string, StudentQuestion>();
+  for (const q of questions) {
+    const prev = byNumber.get(q.questionNumber);
+    if (!prev) { byNumber.set(q.questionNumber, q); out.push(q); continue; }
+    const labels = new Set(prev.partLabels ?? []);
+    const overlap = (q.partLabels ?? []).some(x => labels.has(x));
+    if (overlap || !labels.size || !(q.partLabels ?? []).length) continue;
+    prev.partLabels = [...(prev.partLabels ?? []), ...(q.partLabels ?? [])];
+    prev.awarded += q.awarded; prev.max += q.max;
+    prev.full = prev.max > 0 && prev.awarded >= prev.max;
+    prev.slips = [...prev.slips, ...q.slips.filter(x => !prev.slips.includes(x))];
+    prev.schemes = [...prev.schemes, ...q.schemes];
+    prev.fixes = [...(prev.fixes ?? []), ...(q.fixes ?? [])];
+    prev.corrections = [...(prev.corrections ?? []), ...(q.corrections ?? [])];
+    prev.working = [...(prev.working ?? []), ...(q.working ?? [])];
+    if (!prev.solution && q.solution) prev.solution = q.solution;
+    if (!prev.prompt && q.prompt) prev.prompt = q.prompt;
+    if (!prev.comment && q.comment) prev.comment = q.comment;
+  }
+  return out;
+}
+
+/** What the run knows about its pages, for the snippet + the jump (1 Oct 2026). */
+interface PageContext { annotationDebug: unknown; annotatedPhotos: unknown }
+
+function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefined, annotatedPhotos: undefined }): StudentQuestion | null {
   const r = asRecord(raw);
   if (!r) return null;
   const marking = asRecord(r.marking);
@@ -279,7 +348,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
   const parts = Array.isArray(marking.parts) ? marking.parts : [];
 
   const slips: string[] = [];
-  const schemes: { label: string | null; scheme: string; why: string | null; teach: string | null }[] = [];
+  const schemes: StudentQuestion['schemes'] = [];
   for (const p of parts) {
     const part = asRecord(p);
     if (!part) continue;
@@ -290,6 +359,7 @@ function toQuestion(raw: unknown): StudentQuestion | null {
         scheme,
         why: str(part.error_summary) || null,
         teach: str(part.study_note) || null,
+        words: schemeWords(part.scheme_words),
       });
     }
     // A part that scored full marks has nothing to say; `error_summary` on a
@@ -298,15 +368,25 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     const why = str(part.error_summary);
     if (!why) continue;
     const label = str(part.label);
+    // The audit's words are for Adrian ("check whether it was attempted"); the student reads this instead.
+    if (part.added_by_audit === true) { if (!slips.includes(UNMARKED_SLIP)) slips.push(UNMARKED_SLIP); continue; }
     slips.push(label ? `${label}: ${why}` : why);
   }
 
+  const fixes = buildReviewFixes(parts, output?.lines);
+  const partLabels = parts.map(p => str(asRecord(p)?.label)).filter(Boolean);
+  const questionNumber = str(r.question_number) || '?';
+  const photoIndex = Number.isInteger(r.photo_index) ? (r.photo_index as number) : null;
+  const snippets = snippetsFor(ctx.annotationDebug, ctx.annotatedPhotos, questionNumber);
   return {
-    questionNumber: str(r.question_number) || '?',
+    questionNumber,
+    partLabels,
+    snippets,
+    jump: photoIndex == null ? null : regionAt(ctx.annotationDebug, ctx.annotatedPhotos, questionNumber, photoIndex),
     awarded,
     max,
     topic: str(meta.topic_detected) || null,
-    photoIndex: Number.isInteger(r.photo_index) ? (r.photo_index as number) : null,
+    photoIndex,
     region: str(r.region) || null,
     comment: str(marking.overall_comment),
     slips,
@@ -315,8 +395,16 @@ function toQuestion(raw: unknown): StudentQuestion | null {
     schemes,
     solution: str(asRecord(output?.correct)?.full_solution_latex) || null,
     revise: null, // attached per-paper from result_json.revise in toPaper
+    fixes,
+    corrections: max > 0 && awarded < max
+      ? buildLineCorrections(output?.lines, fixes.map(f => f.at)).map(k => ({ ...k, label: photoIndex == null || k.at == null ? '' : partOfLine(ctx.annotationDebug, photoIndex, k.at) }))
+      : [],
+    working: max > 0 && awarded < max ? buildWorkingLines(output?.lines) : [],
+    ...(r.added_by_audit === true ? { unmarked: true } : {}),
   };
 }
+
+export const UNMARKED_SLIP = 'No working for this question was found on your pages.';
 
 /**
  * result_json.revise → question-number → follow-up links. Every field is
@@ -480,7 +568,8 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
   // show, and listing it as "0/0" reads as a paper they scored nothing on.
   if (!Array.isArray(results)) return null;
 
-  const questions = results.map(toQuestion).filter((q): q is StudentQuestion => q !== null);
+  const pageCtx: PageContext = { annotationDebug: rj?.annotation_debug, annotatedPhotos: rj?.annotated_photos };
+  const questions = mergeSplitQuestions(results.map(x => toQuestion(x, pageCtx)).filter((q): q is StudentQuestion => q !== null));
 
   // Attach revise links to their questions. Full-mark questions never get one
   // (there is nothing to fix), even if a stale mapping names them.

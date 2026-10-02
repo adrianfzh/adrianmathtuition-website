@@ -60,6 +60,78 @@ import { createHeldPracticeItems, deleteHeldPracticeItems } from '@/lib/practice
 import { archiveSheetToStore } from '@/lib/sheet-archive';
 import { fileSheetSections } from '@/lib/sheet-sections-store';
 import { sectionsFromCompletion } from '@/lib/sheet-sections';
+import { sgtTodayISO } from '@/lib/sgt';
+import { putStudentFile, assignmentKey } from '@/lib/student-files';
+import { sendTelegramTo } from '@/lib/telegram';
+import { sendPushToStudent } from '@/lib/portal-push';
+import { resolveRecipient } from '@/lib/student-recipient';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DiagnosisSkill } from '@/lib/sheet-diagnosis';
+
+// The waiting list (SPEC-PRACTICE-PHOTO §14, 24 Sep 2026): a job with a
+// scheduled_for day is invisible to peek/next until that Singapore day.
+const dueFilter = () => `scheduled_for.is.null,scheduled_for.lte.${sgtTodayISO()}`;
+
+async function tellStudent(identity: string, title: string, body: string, url: string): Promise<void> {
+  const site = process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com';
+  await sendPushToStudent(identity, { title, body, url }).catch(() => {});
+  const to = await resolveRecipient(identity).catch(() => null);
+  if (to) await sendTelegramTo(to.chatId, `${title}\n${body}\n${site}${url}`).catch(() => {});
+}
+
+function diagnosisSkills(raw: unknown): DiagnosisSkill[] {
+  try { return (normaliseDiagnosis(raw)?.skills ?? []) as DiagnosisSkill[]; } catch { return []; }
+}
+
+/**
+ * 📷 A photo sheet is done (SPEC-PRACTICE-PHOTO §14): no run, no cover, no
+ * diagnosis on a run, no auto-release clock. The PDF the worker filed in
+ * Dropbox is copied into the student's own folder of the student-files bucket,
+ * the 'writing' worksheet row flips to 'assigned' with that PDF, the taught
+ * parts go into the section bank, and the student is told. The row's result
+ * (with the cleaned questions) was stored by the caller.
+ */
+async function finishPhotoSheet(sb: SupabaseClient, job: SheetJob, result: SheetJobResult, rawDiagnosis: unknown) {
+  const identity = job.airtable_student_id;
+  const who = job.student_name || identity;
+  const { data: asg } = await sb.from('portal_assignments').select('id')
+    .eq('sheet_job_id', job.id).eq('source', 'practice-photo').maybeSingle<{ id: string }>();
+  if (isNoSheet(result)) {
+    if (asg) await sb.from('portal_assignments').update({ status: 'revoked', revoked_at: new Date().toISOString(), note: result.reason }).eq('id', asg.id).eq('status', 'writing');
+    notify_marking(`📷 Practice sheet for <b>${who}</b>: nothing written — ${result.reason}`).catch(() => {});
+    tellStudent(identity, 'Your practice sheet', `We could not write a sheet from those photos: ${result.reason}`, '/app/practice').catch(() => {});
+    logJobRun('sheet-worker', true, `${who}: practice sheet — nothing written`).catch(() => {});
+    return NextResponse.json({ ok: true, photoSheet: true, noSheet: true });
+  }
+  let pdfUrl: string | null = null;
+  if (result.pdf_path) {
+    try {
+      const buf = await downloadFile(result.pdf_path);
+      pdfUrl = (await putStudentFile({ key: assignmentKey(identity), body: buf, contentType: 'application/pdf' })).url;
+    } catch (e) { console.warn('[sheet-jobs] photo sheet PDF not copied', (e as Error).message); }
+  }
+  if (!pdfUrl) {
+    notify_marking(`⚠️ Practice sheet for <b>${who}</b> was written (${result.pdf_path || 'no pdf_path'}) but its PDF could not be copied into the app — the row stays “Writing…”. Re-run done once the file is in Dropbox.`).catch(() => {});
+    return NextResponse.json({ ok: false, photoSheet: true, error: 'pdf not copied' }, { status: 502 });
+  }
+  const questions = sanitizeSheetQuestions((result as { questions?: unknown }).questions).questions;
+  if (asg) {
+    await sb.from('portal_assignments')
+      .update({ status: 'assigned', pdf_url: pdfUrl, pdf_source: result.pdf_path ? `dropbox:${result.pdf_path}` : null })
+      .eq('id', asg.id).eq('status', 'writing');
+  }
+  try {
+    const rows = sectionsFromCompletion({ jobId: job.id, runId: null, studentName: job.student_name, paperName: job.paper_name, subject: null, level: null, skills: diagnosisSkills(rawDiagnosis), result });
+    if (rows.length) await fileSheetSections(sb, rows);
+  } catch (e) { console.warn('[sheet-jobs] photo sheet sections not filed', (e as Error).message); }
+  const url = asg ? `/app/assignments/${asg.id}` : '/app/practice';
+  const n = questions.length;
+  tellStudent(identity, 'Your practice sheet is ready', `${n ? `${n} question${n === 1 ? '' : 's'}` : 'Questions'} from the photos you sent — open Practice to do it.`, url).catch(() => {});
+  const np = job.photos?.length ?? 0;
+  notify_marking(`📷 Practice sheet written for <b>${who}</b> — ${n} question${n === 1 ? '' : 's'} from ${np} photo${np === 1 ? '' : 's'}${job.worked_example ? ' · worked example' : ''}`).catch(() => {});
+  logJobRun('sheet-worker', true, `${who}: practice sheet, ${n} questions`).catch(() => {});
+  return NextResponse.json({ ok: true, photoSheet: true, assignmentId: asg?.id ?? null, questions: n });
+}
 
 /** A worker's 'fail' whose reason is really 'no gap to teach' — treated as a noSheet completion. */
 const NO_SHEET_RE = /nothing to teach|no sheet needed|no real gap|no action needed|nothing to practise|nothing to practice/i;
@@ -130,7 +202,7 @@ export async function GET(req: NextRequest) {
   if (sp.get('peek') === '1') {
     const sbp = getSupabaseAdmin();
     const { data: open, error: perr } = await sbp.from('sheet_jobs')
-      .select('status, attempts, heartbeat_at, claimed_at').in('status', ['queued', 'claimed']);
+      .select('status, attempts, heartbeat_at, claimed_at').in('status', ['queued', 'claimed']).or(dueFilter());
     if (perr) return NextResponse.json({ error: perr.message }, { status: 500 });
     let off: string[] = [];
     try { off = offKeys(await getSlotAccounts()); } catch { /* fails open: nobody is off */ }
@@ -180,7 +252,7 @@ export async function POST(req: NextRequest) {
   // ── worker: claim the next job ────────────────────────────────────────────
   if (body.action === 'next') {
     const by = String(body.by || 'worker').slice(0, 60);
-    const { data: open } = await sb.from('sheet_jobs').select('*').in('status', ['queued', 'claimed']);
+    const { data: open } = await sb.from('sheet_jobs').select('*').in('status', ['queued', 'claimed']).or(dueFilter());
     const next = pickNextJob((open ?? []) as SheetJob[]);
     if (!next) return NextResponse.json({ job: null });
     const now = new Date().toISOString();
@@ -208,6 +280,7 @@ export async function POST(req: NextRequest) {
     if (!job) return NextResponse.json({ error: 'job not found' }, { status: 404 });
     const r = (job.result || null) as SheetFiledResult | null;
     if (!r || isNoSheet(r)) return NextResponse.json({ error: 'this job has no sheet to archive' }, { status: 409 });
+    if (!job.run_id) return NextResponse.json({ error: 'a photo sheet has no run to archive under' }, { status: 400 });
     const out = await archiveSheetToStore(job.run_id, { pdfPath: r.pdf_path, docxPath: r.docx_path }, 'done');
     return out.ok
       ? NextResponse.json({ ok: true, runId: job.run_id, archive: out.archive })
@@ -339,6 +412,10 @@ export async function POST(req: NextRequest) {
       .eq('id', body.id).neq('status', 'cancelled').select('*').maybeSingle<SheetJob>();
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     if (!job) return NextResponse.json({ ok: false, cancelled: true, error: 'cancelled — this sheet was stopped' }, { status: 409 });
+    // 📷 A photo sheet has no run: its own finish, nothing below applies.
+    if (job.kind === 'photo-sheet') return finishPhotoSheet(sb, job, result, (body.result as { diagnosis?: unknown } | null | undefined)?.diagnosis);
+    if (!job.run_id) return NextResponse.json({ error: 'this sheet job has no run' }, { status: 500 });
+    const paJob = job as SheetJob & { run_id: string };
     // Best-effort: a Telegram hiccup must not undo a finished sheet.
     if (noSheet) {
       // The student asked for this one (8 Sep 2026): the app tells them there
@@ -360,7 +437,7 @@ export async function POST(req: NextRequest) {
     // until Adrian's Approve & release flips them with the paper and the sheet.
     // Idempotent on (sheet_job_id, position); a bad questions[] never fails the
     // job — it is counted and reported, and the sheet is already filed.
-    const held = await createHeldPracticeItems(sb, job, rawQuestions);
+    const held = await createHeldPracticeItems(sb, paJob, rawQuestions);
     if (held.error) console.warn('[sheet-jobs] practice items degraded', job.id, held.error);
     // ── The sheet goes into the private store NOW, not only at release (7 Sep
     // 2026): the bot attaches `practice_again_archive.pdf_url` as the question
@@ -370,7 +447,7 @@ export async function POST(req: NextRequest) {
     // A batch sheet (10 Sep 2026) is archived onto EVERY paper it covers, so a
     // Telegram hand-in of it is read against the sheet whichever paper the bot
     // picks as the source.
-    for (const rid of coveredRunIds(job)) {
+    for (const rid of coveredRunIds(paJob)) {
       const archived = await archiveSheetToStore(rid, { pdfPath: result.pdf_path, docxPath: result.docx_path }, 'done');
       if (!archived.ok) console.warn('[sheet-jobs] sheet archive skipped', job.id, rid, archived.error);
     }
@@ -432,7 +509,7 @@ export async function POST(req: NextRequest) {
           notify_marking(requestedHeldLine(who, job.paper_name, gate.reasons, deskUrl)).catch(() => {});
           return;
         }
-        const sent = await deliverRequestedSheet(req, job.run_id);
+        const sent = await deliverRequestedSheet(req, paJob.run_id);
         if (sent.ok) {
           await sb.from('sheet_jobs').update({ auto_released_at: new Date().toISOString(), stage: 'sent — the student asked for it' }).eq('id', job.id);
           notify_marking(requestedSentLine(who, job.paper_name, gate.watch)).catch(() => {});
@@ -542,7 +619,7 @@ export async function POST(req: NextRequest) {
       // A batch sheet (10 Sep 2026): each covered paper's cover reads only the
       // skills that name it (`runs` on the entry); the primary keeps everything
       // unnamed. A single-paper sheet reads exactly as before.
-      const covered = coveredRunIds(job);
+      const covered = coveredRunIds(paJob);
       const whole = covered.length > 1 ? normaliseDiagnosis(rawDiagnosis, { sheetJobId: job.id }) : null;
       const perRun = whole ? splitDiagnosisByRun(whole.skills, covered) : null;
       const diagnosis = perRun
@@ -650,6 +727,21 @@ export async function POST(req: NextRequest) {
     // on the queue — 'failed' requeues, which is exactly the trap that made a
     // hand-written DELETE the only way to stop one.
     if (job?.status === 'cancelled') return NextResponse.json({ ok: true, cancelled: true, requeued: false });
+    // 📷 A photo sheet that failed: back on the queue, or after MAX_ATTEMPTS the
+    // student's 'writing' row is taken off the list and they are told.
+    if (job?.kind === 'photo-sheet') {
+      const spentPhoto = (job.attempts ?? 0) >= MAX_ATTEMPTS;
+      await sb.from('sheet_jobs')
+        .update({ status: spentPhoto ? 'failed' : 'queued', error: msg, claimed_by: null, claimed_at: null, heartbeat_at: null })
+        .eq('id', body.id);
+      if (spentPhoto) {
+        await sb.from('portal_assignments').update({ status: 'revoked', revoked_at: new Date().toISOString() })
+          .eq('sheet_job_id', job.id).eq('status', 'writing');
+        notify_marking(`⚠️ Practice sheet failed ${MAX_ATTEMPTS}× for <b>${job.student_name || job.airtable_student_id}</b>\n${msg}`).catch(() => {});
+        tellStudent(job.airtable_student_id, 'Your practice sheet', 'We could not write a sheet from those photos this time. Try again with clearer photos.', '/app/practice').catch(() => {});
+      }
+      return NextResponse.json({ ok: true, requeued: !spentPhoto, photoSheet: true });
+    }
     // "Nothing to teach" reported as a FAILURE is still a completion (Adrian,
     // 5 Sep 2026: "if there is nothing to teach, don't create the sheet — just
     // give a note"). The worker prompt says so, but a Mac running a stale copy

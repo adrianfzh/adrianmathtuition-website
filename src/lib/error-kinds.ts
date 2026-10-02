@@ -32,6 +32,12 @@ export const ERROR_KINDS = [
   // five specific slips (dropped term, lost factor, wrong coefficient in the same
   // line). Appended, so stored codes and rollups keyed on the first eight still read.
   'careless',
+  // keywords — the tenth code (24 Sep 2026, the chemistry study loop): SCIENCE
+  // ONLY. The right idea in words that miss the scheme's required term or phrase
+  // ("it goes cloudy" for "a white precipitate forms"). The marker quotes the
+  // scheme's phrase beside the student's own in `scheme_words` on the part; the
+  // Notebook files it as "wrong keywords". Never on a maths paper. Appended.
+  'keywords',
 ] as const;
 export type ErrorKind = (typeof ERROR_KINDS)[number];
 
@@ -54,6 +60,7 @@ export const ERROR_KIND_LABEL: Record<ErrorKind, string> = {
   misread: 'misread',
   incomplete: 'incomplete',
   careless: 'careless',
+  keywords: 'wording',
 };
 
 /** What each code means — the hint beside it in the desk's Override select. */
@@ -67,6 +74,7 @@ export const ERROR_KIND_HINT: Record<ErrorKind, string> = {
   misread: 'answered a different question / missed a condition',
   incomplete: 'stopped short, or not attempted',
   careless: 'a slip in a step they know how to do — dropped term, lost factor',
+  keywords: "the right idea in words that miss the scheme's term (science only)",
 };
 
 /**

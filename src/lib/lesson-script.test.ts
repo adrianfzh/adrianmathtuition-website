@@ -5,7 +5,7 @@ import {
   validateLessonScript, checkQids, sceneStepCount,
   narrationAt, narrationLayout, nextNarrationAudio, nextNarrationCue, lessonHasAudio, isLessonAudioUrl,
   isLessonTimingUrl, classifyPlayRejection, hasBeats, sceneNarration, beatClipPath,
-  NARRATION_MAX_CHARS, NOTE_MAX_CHARS,
+  NARRATION_MAX_CHARS, NOTE_MAX_CHARS, CHARACTER_POSES, STICKER_KINDS,
   type LessonScript, type PlayScene, type Beat,
 } from './lesson-script';
 import {
@@ -857,5 +857,65 @@ describe('classifyPlayRejection', () => {
     expect(classifyPlayRejection(new Error('boom'))).toBe('failed');
     expect(classifyPlayRejection(undefined)).toBe('failed');
     expect(classifyPlayRejection('NotAllowedError')).toBe('failed'); // a string is not an error
+  });
+});
+
+// ── The character (1 Oct 2026): a pose per beat, a switch per script ─────────
+
+describe('character action + script switch', () => {
+  const errorsOf = (r: ReturnType<typeof validateLessonScript>) => (r.ok ? '' : r.errors.join(' | '));
+  const withCharacter = (character: unknown, actions: unknown[]) => {
+    const s = baseScript();
+    if (character !== undefined) s.character = character;
+    (s.scenes as unknown[]).push({ type: 'caption', text: 'One line.', beats: [{ say: 'The student reacts here.', do: actions }] });
+    return validateLessonScript(s);
+  };
+  it('accepts every pose and the script values; the default is no character', () => {
+    for (const pose of CHARACTER_POSES) expect(withCharacter(undefined, [{ do: 'character', pose, at: 0.2 }]).ok).toBe(true);
+    expect(CHARACTER_POSES).toEqual(['idle', 'point', 'think', 'oops', 'nod', 'cheer']);
+    expect(withCharacter('teacher', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true);
+    expect(withCharacter('student', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true); // the older name still draws the teacher
+    expect(withCharacter('tutor-picture', [{ do: 'character', pose: 'cheer' }]).ok).toBe(true); // the generated tutor's pictures
+    expect(withCharacter('none', []).ok).toBe(true);
+    const r = validateLessonScript(baseScript());
+    expect(r.ok && r.script.character).toBeUndefined();
+  });
+  it('refuses an unknown pose and an unknown character', () => {
+    expect(errorsOf(withCharacter(undefined, [{ do: 'character', pose: 'dance' }]))).toMatch(/pose must be one of idle\/point\/think\/oops\/nod\/cheer \(got "dance"\)/);
+    expect(errorsOf(withCharacter(undefined, [{ do: 'character' }]))).toMatch(/pose must be one of/);
+    expect(errorsOf(withCharacter('mascot', []))).toMatch(/character must be one of teacher\/student\/none\/tutor-picture \(got "mascot"\)/);
+  });
+  it('keeps the at rule: a pose never runs backwards inside a beat', () => {
+    expect(errorsOf(withCharacter(undefined, [{ do: 'character', pose: 'oops', at: 0.5 }, { do: 'character', pose: 'nod', at: 0.2 }]))).toMatch(/runs backwards/);
+  });
+});
+
+// ── Stickers (1 Oct 2026): one per beat, a fixed set, beside a token or at the corner ──
+
+describe('sticker action', () => {
+  const errorsOf = (r: ReturnType<typeof validateLessonScript>) => (r.ok ? '' : r.errors.join(' | '));
+  const withStickers = (actions: unknown[], type: 'caption' | 'equation-steps' = 'equation-steps') => {
+    const s = baseScript();
+    (s.scenes as unknown[]).push(type === 'caption'
+      ? { type: 'caption', text: 'One line.', beats: [{ say: 'A sticker pops.', do: actions }] }
+      : { type: 'equation-steps', steps: [{ tokens: [{ tex: 'x = 1', id: 'a' }] }], beats: [{ say: 'A sticker pops.', do: actions }] });
+    return validateLessonScript(s);
+  };
+  it('accepts every kind, beside a token or bare', () => {
+    expect(STICKER_KINDS).toEqual([
+      'facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes',
+      'thumbsup', 'hundred', 'clock', 'rocket', 'trophy', 'brain', 'pencil', 'zzz', 'exclaim', 'target',
+    ]);
+    expect(STICKER_KINDS).toHaveLength(22);
+    for (const kind of STICKER_KINDS) expect(withStickers([{ do: 'write', token: 'a' }, { do: 'sticker', kind, near: 'a', at: 0.4 }]).ok).toBe(true);
+    expect(withStickers([{ do: 'sticker', kind: 'warning' }], 'caption').ok).toBe(true);
+  });
+  it('refuses an unknown kind, a near that is not a token, and two in one beat', () => {
+    expect(errorsOf(withStickers([{ do: 'sticker', kind: 'gif' }]))).toMatch(/kind must be one of facepalm\/lightbulb.*\(got "gif"\)/);
+    expect(errorsOf(withStickers([{ do: 'sticker', kind: 'star', near: 'zz' }]))).toMatch(/near "zz" is not a token id/);
+    expect(errorsOf(withStickers([{ do: 'sticker', kind: 'star', near: 'a' }], 'caption'))).toMatch(/near "a" is not a token id/);
+    const two = errorsOf(withStickers([{ do: 'sticker', kind: 'star', at: 0.1 }, { do: 'sticker', kind: 'fire', at: 0.5 }]));
+    expect(two).toMatch(/beats\[0\]\.do\[1\]: a beat carries at most one sticker/);
+    expect(two.split('at most one sticker').length).toBe(2);
   });
 });

@@ -2,7 +2,7 @@
 // scripts/marking-eval.mjs — golden-set regression eval for the AI marking prompt.
 //
 // Ground truth: Adrian's own red-pen marking, transcribed into
-// scripts/marking-golden-set.json (source scans in ~/Desktop/AdrianMath/marking_calibration/;
+// scripts/marking-golden-set.json (source scans in ~/Dropbox/AdrianMath Work/marking_calibration/;
 // conventions in MARKING_CONVENTIONS.md there).
 //
 // This evaluates the RULES encoding (mark arithmetic, ECF, reasons-required,

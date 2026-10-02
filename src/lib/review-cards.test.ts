@@ -1,24 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { buildReviewCards, regionFraction, jumpHref } from './review-cards';
-import type { StudentPaper, StudentQuestion } from './portal-marking';
+import { regionFraction, jumpHref } from './review-cards';
+import type { StudentQuestion } from './portal-marking';
 
-const q = (n: string, awarded: number, max: number, extra: Partial<StudentQuestion> = {}): StudentQuestion =>
-  ({ questionNumber: n, awarded, max, topic: null, comment: '', slips: [], full: awarded >= max, prompt: null, schemes: [], solution: null, revise: null, photoIndex: null, region: null, ...extra } as StudentQuestion);
-const paper = (id: string, date: string, dropped: StudentQuestion[]): StudentPaper =>
-  ({ id, date, name: `P${id}`, awarded: 0, max: 0, pct: null, questions: dropped, dropped, pdfUrl: null, fullPdfUrl: null, pages: [], notice: null, practice: [], practiceDocxUrl: null } as unknown as StudentPaper);
-
-describe('buildReviewCards', () => {
-  it('newest paper first, then the paper\'s own order, with marks lost and the page', () => {
-    const cards = buildReviewCards([
-      paper('old', '2026-09-01', [q('3', 1, 4, { photoIndex: 2, region: 'bottom of page' })]),
-      paper('new', '2026-09-10', [q('7', 0, 5), q('2', 2, 3)]),
-    ]);
-    expect(cards.map(c => c.key)).toEqual(['new:7', 'new:2', 'old:3']);
-    expect(cards[0].lost).toBe(5);
-    expect(cards[2].photoIndex).toBe(2);
-    expect(cards[2].at).toBeCloseTo(0.62);
-  });
-});
+const q = (n: string, extra: Partial<StudentQuestion> = {}): Pick<StudentQuestion, 'questionNumber' | 'region' | 'jump'> =>
+  ({ questionNumber: n, region: null, jump: null, ...extra });
 
 describe('regionFraction / jumpHref', () => {
   it('maps the marker\'s words to a place on the page', () => {
@@ -28,7 +13,13 @@ describe('regionFraction / jumpHref', () => {
     expect(regionFraction(null)).toBeCloseTo(0.08);
   });
   it('builds the jump with the page anchor, or just the question when no page was recorded', () => {
-    expect(jumpHref({ runId: 'r', photoIndex: 3, at: 0.62, question: q('11(a)', 0, 2) })).toBe('/app/marking/r?q=11(a)&page=3&at=0.62#page-3');
-    expect(jumpHref({ runId: 'r', photoIndex: null, at: 0.1, question: q('4', 0, 2) })).toBe('/app/marking/r?q=4');
+    expect(jumpHref({ runId: 'r', photoIndex: 3, at: 0.62, question: q('11(a)') })).toBe('/app/marking/r?q=11(a)&page=3&at=0.62#page-3');
+    expect(jumpHref({ runId: 'r', photoIndex: null, at: 0.1, question: q('4') })).toBe('/app/marking/r?q=4');
+  });
+  it('carries the marker\'s own box as at + span when the question knows it (1 Oct 2026)', () => {
+    expect(jumpHref({ runId: 'r', photoIndex: 2, question: q('3', { jump: { at: 0.2725, span: 0.295 } }) })).toBe('/app/marking/r?q=3&page=2&at=0.273&span=0.295#page-2');
+  });
+  it('reads the place off the marker\'s region words when no `at` is given (1 Oct 2026)', () => {
+    expect(jumpHref({ runId: 'r', photoIndex: 1, question: q('2', { region: 'bottom of page' }) })).toBe('/app/marking/r?q=2&page=1&at=0.62#page-1');
   });
 });

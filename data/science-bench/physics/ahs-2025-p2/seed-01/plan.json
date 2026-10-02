@@ -1,0 +1,219 @@
+{
+ "subject": "physics",
+ "paperKey": "AHS 2025 Prelim Physics P2",
+ "grade": "A",
+ "seed": 1,
+ "runs": {
+  "rules-alone": {
+   "runId": "973b57c6-e594-4b29-a115-b349ac20dd6e",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · A · seed 01",
+   "queuedAt": "2026-09-30T08:46:28.837Z"
+  },
+  "scheme-grounded": {
+   "runId": "c394eac2-0e05-4177-8269-eeba0bd32297",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · A · seed 01 · scheme",
+   "scheme": "scheme.pdf",
+   "queuedAt": "2026-09-30T08:46:33.762Z"
+  }
+ },
+ "parts": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Electric current and temperature.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "10⁻¹",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "G, k, m, μ, n",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "7",
+   "label": "(a)",
+   "max": 1,
+   "answer": "The distance between the optical centre of the lens and its focal point.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "7",
+   "label": "(b)",
+   "max": 2,
+   "answer": "Point the lens at a distant object, such as a window across the room, and hold a screen behind the lens. Move the screen until a sharp image of the window is formed on it. Measure the distance from the lens to the screen. This distance is the focal length.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "7",
+   "label": "(d)",
+   "max": 2,
+   "answer": "The image is virtual and upright.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "9",
+   "label": "(a)",
+   "max": 1,
+   "answer": "TV and computer: 2.0 kWh\nkettle: 0.40 kWh\nlights: 2.4 kWh\nwater heater: 0.70 kWh\nair conditioner: 9.0 kWh",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "9",
+   "label": "(b)",
+   "max": 2,
+   "answer": "Total energy = 2.0 + 0.40 + 2.4 + 0.70 + 9.0 = 14.5 kWh\nCost = 14.5 × $0.31 = $4.50",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "9",
+   "label": "(c)",
+   "max": 2,
+   "answer": "The water heater has a much higher power, so a larger current flows in its wires. A thicker wire has a lower resistance, so less power is lost as heat and the wires do not overheat.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(a)",
+   "max": 1,
+   "answer": "The surrounding (room) temperature.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(b)",
+   "max": 1,
+   "answer": "Polystyrene. After 25 minutes only 30 g of ice melted in the polystyrene bowl without a lid, but 79 g melted in the paper cardboard bowl.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(c)",
+   "max": 1,
+   "answer": "With a lid, air is trapped above the ice. Air is a poor conductor of heat, so less energy reaches the ice by conduction. The lid also stops convection currents.",
+   "defect": "EXTRA_WRONG",
+   "truth": 1,
+   "why": "scheme: \"if more than 1 thermal process is stated, mark only the first\" — the first is conduction, which is right → 1"
+  },
+  {
+   "question": "11",
+   "label": "(d)",
+   "max": 1,
+   "answer": "Light-coloured, because a light surface is a poorer absorber of infra-red radiation.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(e)(i)",
+   "max": 2,
+   "answer": "340 J of energy is transferred for every 1 g of water to change between the solid and liquid states, at constant temperature.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(e)(ii)",
+   "max": 1,
+   "answer": "As the water solidifies, the particles move closer together and the attraction between them increases, so their potential energy decreases. The temperature is constant, so their kinetic energy does not change. The internal energy therefore decreases.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "11",
+   "label": "(e)(iii)",
+   "max": 3,
+   "answer": "Cooling the water: Q = mcΔθ = 500 × 4.2 × 25.0 = 52 500\nFreezing: Q = ml = 500 × 340 = 170 000\nCooling the ice: Q = mcΔθ = 500 × 2.1 × 3.0 = 3 150\nTotal = 225 650 ≈ 226 000",
+   "defect": "NO_UNIT",
+   "truth": 2,
+   "why": "both formula marks given; the final answer carries no unit (J) → answer mark withheld (convention)"
+  },
+  {
+   "question": "12",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Beta particles are fast-moving electrons, but gamma rays are electromagnetic waves.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "any 2 differences, one given → 1/2"
+  },
+  {
+   "question": "12",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "Radioactive decay is random and spontaneous.",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "12",
+   "label": "(b)(ii)",
+   "max": 2,
+   "answer": "Average = (40 + 38 + 36 + 40) ÷ 4 = 38.5 per second\nVolume = 144 000 ÷ 38.5 × 2.0 = 7480 cm³ ≈ 7500 cm³",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "[131/53]I → [131/54]Xe + [0/-1]β",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iv)",
+   "max": 2,
+   "answer": "16 days = 2 half-lives\nCount rate = 40 ÷ 2 ÷ 2 = 10 per second",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  },
+  {
+   "question": "12",
+   "label": "(c)",
+   "max": 2,
+   "answer": "It must have a short half-life.\nIt must not be poisonous to the body.",
+   "defect": "CLEAN",
+   "truth": 2,
+   "why": "fully correct"
+  }
+ ]
+}

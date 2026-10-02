@@ -118,6 +118,57 @@ the first only after the move has been shown in worked steps, never two in a row
 - `level` = bank level (AM/EM/JC/S1/S2); `topic` = the EXACT canonical string
   from `lib/canonical-topics.ts`; `slug` = `<topic-kebab>-<level>`.
 
+## 3b. The engagement pass — clear and engaging, no story (Adrian, 1 Oct 2026)
+
+Adrian watched 洋葱学园's factorisation video and, after reading a story-framed draft,
+said: *"there isn't a need to have a story. do like what the bilibili video did, explain
+in a clear and engaging manner → voice is important, and the flow and style of the
+video."* Onion has no plot: a cheerful young narrator, one idea at a time, a question
+before each reveal, a plain-words line after each formula, the trap named before the
+student falls in, a quick "see? that's all it is" after the hard bit. Warm and quick,
+never a lecture. We do that writing pass with a model, in this session, plan-billed —
+never the API.
+
+After § 3's draft validates and BEFORE § 4, rewrite every beat's `say` through this pass.
+The beat count and every `at` stay as they are — the manner lands as sentences inside
+the existing beats, never as new beats.
+
+**The Onion manner — concrete rules**
+
+- (a) **A question before every reveal.** The beat that reveals a step, a form or an
+  answer is preceded by the question it answers — "so what do we do with this?", "where
+  is its lowest point?", "why is that always positive?" — in the beat before, or as the
+  first sentence of the reveal itself.
+- (b) **Plain words after every formula.** A beat that states a formula or a form ends
+  with a restatement in everyday words, ≤ 12 words ("a curve, slid across by h, lifted
+  by k").
+- (c) **Name the trap BEFORE it bites.** The sign in the bracket, the term left outside
+  the factor, the multiply-back, the "value not the x" slip — each is called out in the
+  sentence before the step where a student would make it, never only after.
+- (d) **Relief after every hard step.** One short beat of relief once the hard bit is
+  done — "see? that's all it is", "and that's it", "five little moves" — then move on.
+- (e) **A cheerful, quick voice.** Short sentences. Present tense. "We" and "let's", not
+  "you must". No exclamation marks in a row, no "guys".
+- (f) **No plot.** No story frame, no mascot storyline, no invented situation (no
+  battery, no bubble tea, no MRT gantry). The maths is the only thing on the board.
+
+**What stays from before**
+
+- **Light lines land on the maths or on the teacher only** — "the step most people skip",
+  "yes, that one again" — never on a student, and never on a mistake a real student made
+  (the one-minute explanation replays a real student's own line — it gets warmth only).
+- **Singapore register.** Everyday words a parent would not wince at; read it aloud, and
+  if it would embarrass Adrian in front of a parent, cut it.
+- **Nothing added to the claims.** The pass may change words, order and tone; it may not
+  add a fact, a formula or a number § 1's notes do not carry — § 4's verifier still runs
+  on the result, and every `verify` assertion must still hold.
+- **Which model.** English scripts: **Claude Opus 5.5** in this session (it holds the
+  Singapore register and the O-Level content; the plan lane makes it free). A 华文 script
+  (the Languages family, later): a Chinese-trained model — Qwen3-Max or DeepSeek — then
+  the same verifier. No model's rewrite goes to clips unsupervised: **Adrian reads three
+  beats before the clips are generated (§ 7) — the opening beat, the trap beat and the
+  closer.**
+
 ## 4. Verify until clean
 
 ```bash
@@ -139,6 +190,15 @@ npx tsc --noEmit
 ```
 
 ## 6. Preview
+
+Voice clips first (idempotent; MiniMax `English_FriendlyPerson` is the default since
+1 Oct 2026 — no `--voice` needed; after an engagement pass delete the lesson's old clips,
+they belong to the old words):
+
+```bash
+node scripts/lessons/generate-narration.mjs <slug>            # writes beats[].audio
+node scripts/lessons/generate-narration.mjs <slug> --verify   # ASR round-trip, ≥ 85 % a clip
+```
 
 Commit + push to `dev` per repo policy (three code files + the JSON together),
 re-alias the preview, then the URL Adrian opens is

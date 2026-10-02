@@ -44,6 +44,24 @@ describe('coverRemark — a specific sentence or nothing', () => {
   });
 });
 
+describe('a science paper (25 Sep 2026) — concept gaps, and never "do the practice"', () => {
+  it('mostly concept: the science line, no practice sheet', () => {
+    expect(coverRemark({ awarded: 60, max: 90, kinds: kinds({ careless: 1, concept: 21, incomplete: 8 }), family: 'science' }))
+      .toBe('21 of the 30 marks you lost were concept gaps. Go through the corrections and read those topics again.');
+  });
+  it('mixed: concept gaps, not the wrong method', () => {
+    expect(coverRemark({ awarded: 70, max: 80, kinds: kinds({ careless: 4, concept: 4, incomplete: 2 }), family: 'science' }))
+      .toBe('4 careless mistakes, 4 marks from concept gaps. Check your answers, and go through the corrections.');
+  });
+  it('the maths lines are unchanged without the family', () => {
+    expect(coverRemark({ awarded: 60, max: 90, kinds: kinds({ careless: 1, concept: 21, incomplete: 8 }) }))
+      .toMatch(/wrong method\. Go through the corrections and do the practice\.$/);
+  });
+  it('no science line mentions practice', () => {
+    for (const [k, t] of Object.entries(REMARK_BANK)) if (k.startsWith('science')) expect(t, k).not.toMatch(/practice/i);
+  });
+});
+
 it('every remark stays short — at most 25 words before the comparison', () => {
   for (const [k, t] of Object.entries(REMARK_BANK)) {
     if (k === 'up' || k === 'down') continue;

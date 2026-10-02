@@ -909,23 +909,79 @@ function sanityCheck(bp) {
 // would be noise here. This branch keeps the same reconstruction + slot mapping
 // and swaps every population statistic for the thin-data version:
 //   base            = ONLY current-syllabus papers (4049 AM from 2021, 4052 EM from
-//                     2023, 9758 H2 unchanged) — an older-shape paper never feeds a
+//                     2023, 9758 H2 from 2017 — the 9740 papers of 2008–2016 carried
+//                     Poisson and a heavier sampling section, and leaked both into the
+//                     H2 pools until 26 Sep 2026) — an older-shape paper never feeds a
 //                     GCE slot, however many there are
-//   slot mark range = min..max actually seen at that position
-//   slot pool       = EVERY topic seen at that position, weighted by count
-//   must_appear     = topics in >= 80% of base papers (capped to the slot count)
+//   year weight     = recent sittings count for more (GCE_RECENCY below): every
+//                     per-slot statistic is a weighted count over the base papers
+//   slot mark range = min..max actually seen at that position (a range is a range —
+//                     never weighted)
+//   slot pool       = EVERY topic seen at that position, weighted by (weighted) count
+//   must_appear     = topics in >= 80% of the base papers' weight (capped to the slot count)
 //   rules           = no mined never_together pairs (no support to mine them)
 //   slots           = never merged into position ranges
 // Output keys are GCE-<level>-P<n>; presets are untouched (the standard overlay
 // is empty, so every consumer's default path works on a GCE key unchanged).
-const GCE_CUT = { AM: 2021, EM: 2023, JC: null };
+const GCE_CUT = { AM: 2021, EM: 2023, JC: 2017 };
 const GCE_MIN_BASE = 2;
+
+// Year weights (Adrian, 26 Sep 2026: "we should take more weightage into account of
+// papers of the more recent years (discount year 2025 because somehow that year was
+// too easy)"). The three most recent full-weight sittings weigh 1, the next two 0.6,
+// every older sitting 0.4; a DISCOUNTED sitting keeps the weight named for it whatever
+// its recency (and does not count as one of the recent three); SEAB's specimen weighs
+// 0.5 — the syllabus's own shape statement, not a sitting. Weighted: topic pools,
+// must-appear presence, typical marks per slot, diagram rate, the question count.
+// Unweighted on purpose: the min..max mark and part ranges, min_distinct_topics.
+const GCE_RECENCY = [1, 1, 1, 0.6, 0.6];
+const GCE_OLDER = 0.4;
+const GCE_SPECIMEN = 0.5;
+const GCE_DISCOUNT = { JC: { 2025: 0.3 } }; // H2 2025: the first sitting of the revised syllabus read as too easy
+// Must-appear presence counted on each question's LEADING tag only, per family. The
+// walk gives every must-appear topic a slot of its own, and the H2 topic list is short
+// against its slot count (19 Paper 1 topics over 11 slots; "Differentiation
+// (Techniques)" and "Integration (Techniques)" ride as the second tag of many
+// questions), so on all tags the weighting pinned ten of Paper 1's eleven slots
+// (26 Sep 2026). Tags per question are alike across families (about 1.5 for H2, 1.4
+// and 1.7 for A Math, 1.2 and 2.6 for E Math); the O-Level lists are longer relative
+// to their slots (13 and 27 in Paper 1) and stayed sensible on every tag.
+const GCE_MUST_LEADING_TAG = { JC: true };
+const yearKey = (p) => `${p.year}${p.school === 'GCE Specimen' ? 's' : ''}`;
+function gceYearWeights(fam, base) {
+  const discount = GCE_DISCOUNT[fam] ?? {};
+  const sittings = [...new Set(base.filter((p) => p.school !== 'GCE Specimen' && !(p.year in discount)).map((p) => p.year))]
+    .sort((a, b) => b - a);
+  const w = new Map();
+  for (const p of base) {
+    if (p.school === 'GCE Specimen') w.set(yearKey(p), GCE_SPECIMEN);
+    else if (p.year in discount) w.set(yearKey(p), discount[p.year]);
+    else { const i = sittings.indexOf(p.year); w.set(yearKey(p), i < GCE_RECENCY.length ? GCE_RECENCY[i] : GCE_OLDER); }
+  }
+  return w;
+}
+// weighted mode: the value carrying the most weight, ties toward the plain median
+function wmode(pairs) {
+  const c = new Map();
+  for (const [x, w] of pairs) c.set(x, (c.get(x) ?? 0) + w);
+  const xs = pairs.map(([x]) => x).sort((a, b) => a - b);
+  const med = xs[Math.floor(xs.length / 2)];
+  let best, bestW = -1;
+  for (const [x, w] of c) {
+    if (w > bestW + 1e-9 || (Math.abs(w - bestW) <= 1e-9 && Math.abs(x - med) < Math.abs(best - med))) { best = x; bestW = w; }
+  }
+  return best;
+}
+const wmean = (pairs) => {
+  const tw = pairs.reduce((a, [, w]) => a + w, 0);
+  return tw ? pairs.reduce((a, [x, w]) => a + x * w, 0) / tw : NaN;
+};
 
 function deriveGce(rows) {
   const papers = reconstructPapers(rows);
   const complete = papers.filter((p) => p.status === 'COMPLETE');
   const say = (s) => console.log(s);
-  const out = { papers: {}, papers_complete: {}, base_years: {} };
+  const out = { papers: {}, papers_complete: {}, base_years: {}, year_weights: {} };
 
   say('== GCE: recovered papers ==');
   for (const key of PAPER_KEYS) {
@@ -958,29 +1014,43 @@ function deriveGce(rows) {
       });
       if (clean.length < base.length) say(`sectioning: dropped ${base.length - clean.length} base paper(s) without a clean pure->stats split`);
       base = clean;
-      pureN = mode(base.map((p) => p.pureQ.length));
-      statsN = mode(base.map((p) => p.statsQ.length));
-      pureTotal = mode(base.map((p) => p.pureQ.reduce((a, q) => a + q.marks, 0)));
-      statsTotal = mode(base.map((p) => p.statsQ.reduce((a, q) => a + q.marks, 0)));
+    }
+    const weights = gceYearWeights(famOf(key), base);
+    const wOf = (p) => weights.get(yearKey(p));
+    const totalW = base.reduce((a, p) => a + wOf(p), 0);
+    if (sectioned) {
+      pureN = wmode(base.map((p) => [p.pureQ.length, wOf(p)]));
+      statsN = wmode(base.map((p) => [p.statsQ.length, wOf(p)]));
+      pureTotal = wmode(base.map((p) => [p.pureQ.reduce((a, q) => a + q.marks, 0), wOf(p)]));
+      statsTotal = wmode(base.map((p) => [p.statsQ.reduce((a, q) => a + q.marks, 0), wOf(p)]));
     }
 
-    const canonicalTotal = mode(base.map((p) => p.total));
+    const canonicalTotal = wmode(base.map((p) => [p.total, wOf(p)]));
     const ns = base.map((p) => p.n);
-    const typN = sectioned ? pureN + statsN : mode(ns);
+    const typN = sectioned ? pureN + statsN : wmode(base.map((p) => [p.n, wOf(p)]));
     if (sectioned && pureTotal + statsTotal !== canonicalTotal) {
       say(`WARN: section mark modes ${pureTotal}+${statsTotal} != total ${canonicalTotal}; pinning stats to the remainder`);
       statsTotal = canonicalTotal - pureTotal;
     }
-    const years = base.map((p) => `${p.year}${p.school === 'GCE Specimen' ? 's' : ''}`).sort();
-    say(`base = ${base.length} papers [${years.join(', ')}]${cut ? ` (year>=${cut})` : ''}; total mode=${canonicalTotal}; Q-count mode=${mode(ns)} range=[${Math.min(...ns)},${Math.max(...ns)}]`);
+    const years = base.map(yearKey).sort();
+    const yearWeights = Object.fromEntries(years.map((y) => [y, weights.get(y)]));
+    say(`base = ${base.length} papers [${years.join(', ')}]${cut ? ` (year>=${cut})` : ''}; total mode=${canonicalTotal}; Q-count mode=${typN} range=[${Math.min(...ns)},${Math.max(...ns)}]`);
+    say(`year weights: ${years.map((y) => `${y}×${weights.get(y)}`).join(' ')}`);
     if (sectioned) say(`sections: pure ${pureN} slots / ${pureTotal} marks, stats ${statsN} slots / ${statsTotal} marks`);
 
     // ---- must-appear over the base
+    // weighted presence: a topic every recent paper carries counts for more than one
+    // the 2017 paper alone carried. For H2 (GCE_MUST_LEADING_TAG) counted on each
+    // question's LEADING tag only — the bank lists a question's topics in the
+    // order its parts meet them. Pools still list every tag seen at a position, so
+    // a slot may pair its topic with one of them.
+    const leadingOnly = GCE_MUST_LEADING_TAG[famOf(key)] === true;
     const basePresence = new Map();
     for (const p of base) {
-      for (const t of new Set(p.questions.flatMap((q) => q.topics))) basePresence.set(t, (basePresence.get(t) ?? 0) + 1);
+      const tags = leadingOnly ? p.questions.map((q) => q.topics[0]).filter(Boolean) : p.questions.flatMap((q) => q.topics);
+      for (const t of new Set(tags)) basePresence.set(t, (basePresence.get(t) ?? 0) + wOf(p));
     }
-    let mustAppear = [...basePresence.entries()].filter(([, k]) => k / base.length >= 0.8).map(([t]) => t).sort();
+    let mustAppear = [...basePresence.entries()].filter(([, k]) => k / totalW >= 0.8 - 1e-9).map(([t]) => t).sort();
     const capMusts = (list, cap, label) => {
       if (list.length <= cap) return list;
       const kept = [...list].sort((a, b) => basePresence.get(b) - basePresence.get(a)).slice(0, cap).sort();
@@ -993,26 +1063,27 @@ function deriveGce(rows) {
           ...capMusts(mustAppear.filter(isJcStats), statsN, 'stats-section'),
         ].sort()
       : capMusts(mustAppear, typN, 'slot');
-    say(`must-appear (>=80% of ${base.length} base papers): ${mustAppear.join(', ')}`);
+    say(`must-appear (>=80% of the base papers' weight, ${round2(totalW)} over ${base.length} papers${leadingOnly ? ', leading tag only' : ''}): ${mustAppear.join(', ')}`);
 
     // ---- slots: every base question mapped onto 1..typN normalized positions
-    const slotSamples = Array.from({ length: typN }, () => ({ marks: [], topics: new Map(), parts: [], diagrams: [] }));
-    const pushSample = (idx, q) => {
+    const slotSamples = Array.from({ length: typN }, () => ({ marks: [], wmarks: [], topics: new Map(), parts: [], diagrams: [] }));
+    const pushSample = (idx, q, w) => {
       const slot = slotSamples[idx];
       slot.marks.push(q.marks);
-      slot.diagrams.push(q.diagram ? 1 : 0);
+      slot.wmarks.push([q.marks, w]);
+      slot.diagrams.push([q.diagram ? 1 : 0, w]);
       if (q.nParts !== null) slot.parts.push(Math.max(1, q.nParts));
-      for (const t of q.topics) slot.topics.set(t, (slot.topics.get(t) ?? 0) + 1);
+      for (const t of q.topics) slot.topics.set(t, (slot.topics.get(t) ?? 0) + w);
     };
-    const mapOnto = (list, offset, width) => {
+    const mapOnto = (list, offset, width, w) => {
       list.forEach((q, i) => {
         const s = list.length === 1 ? 0 : Math.round((i / (list.length - 1)) * (width - 1));
-        pushSample(offset + s, q);
+        pushSample(offset + s, q, w);
       });
     };
     for (const p of base) {
-      if (sectioned) { mapOnto(p.pureQ, 0, pureN); mapOnto(p.statsQ, pureN, statsN); }
-      else mapOnto(p.questions, 0, typN);
+      if (sectioned) { mapOnto(p.pureQ, 0, pureN, wOf(p)); mapOnto(p.statsQ, pureN, statsN, wOf(p)); }
+      else mapOnto(p.questions, 0, typN, wOf(p));
     }
     if (sectioned) {
       slotSamples.forEach((s, i) => {
@@ -1021,13 +1092,30 @@ function deriveGce(rows) {
     }
     const typs = new Array(typN).fill(0);
     const scaleRange = (from, to, target) => {
-      const raw = slotSamples.slice(from, to).map((s) => mean(s.marks));
+      const raw = slotSamples.slice(from, to).map((s) => wmean(s.wmarks));
       const scale = target / raw.reduce((a, b) => a + b, 0);
       const scaled = raw.map((m) => m * scale);
       const floors = scaled.map(Math.floor);
       const deficit = target - floors.reduce((a, b) => a + b, 0);
       const rema = scaled.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0]);
       for (let i = 0; i < deficit; i++) floors[rema[i][1]]++;
+      // A typical must sit inside its slot's own min..max (targetMarks and the
+      // builder's tests hold it there): weighting can pull a scaled typical under
+      // the range of a slot only the newest papers carry (GCE-AM-P2 Q11, 26 Sep
+      // 2026), so clamp, then move the difference onto the slots with headroom.
+      const lo = slotSamples.slice(from, to).map((s) => Math.min(...s.marks));
+      const hi = slotSamples.slice(from, to).map((s) => Math.max(...s.marks));
+      floors.forEach((v, i) => { floors[i] = Math.min(hi[i], Math.max(lo[i], v)); });
+      let diff = target - floors.reduce((a, b) => a + b, 0);
+      while (diff !== 0) {
+        const dir = Math.sign(diff);
+        const room = floors.map((v, i) => (dir > 0 ? hi[i] - v : v - lo[i]));
+        let idx = -1;
+        for (let i = 0; i < room.length; i++) if (room[i] > 0 && (idx < 0 || room[i] > room[idx])) idx = i;
+        if (idx < 0) { say(`WARN: slot typicals cannot land ${target} inside the observed ranges (off by ${diff})`); break; }
+        floors[idx] += dir;
+        diff -= dir;
+      }
       floors.forEach((v, i) => { typs[from + i] = v; });
     };
     if (sectioned) { scaleRange(0, pureN, pureTotal); scaleRange(pureN, typN, statsTotal); }
@@ -1046,7 +1134,7 @@ function deriveGce(rows) {
         typ: typs[i],
         topic_pool: pool,
         ...(partsSorted.length ? { parts: [partsSorted[0], partsSorted[partsSorted.length - 1]] } : {}),
-        diagram_rate: round2(mean(s.diagrams)),
+        diagram_rate: round2(wmean(s.diagrams)),
       };
     });
     const minDistinct = Math.min(...base.map((p) => new Set(p.questions.flatMap((q) => q.topics)).size));
@@ -1085,8 +1173,9 @@ function deriveGce(rows) {
         ? { section_boundary: pureN + 1 }
         : {}),
       notes:
-        `${shapeNote} Derived from ${base.length} real papers [${years.join(', ')}; s = SEAB specimen] — thin-data rules: ` +
-        'slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.' +
+        `${shapeNote} Derived from ${base.length} real papers [${years.join(', ')}; s = SEAB specimen], recent sittings weighted up ` +
+        `(${years.map((y) => `${y}×${weights.get(y)}`).join(', ')}) — thin-data rules: ` +
+        'slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.' +
         (sectioned ? ` Slots 1-${pureN} Section A (Pure, ${pureTotal} marks), ${pureN + 1}-${typN} Section B (Statistics, ${statsTotal} marks).` : ''),
       slots,
       must_appear: mustAppear,
@@ -1094,6 +1183,7 @@ function deriveGce(rows) {
     };
     out.papers_complete[`GCE-${key}`] = comp.length;
     out.base_years[`GCE-${key}`] = years;
+    out.year_weights[`GCE-${key}`] = yearWeights;
     say('slots: ' + slots.map((s) => `${s.pos}:${s.typ}[${s.marks.join('-')}]×${s.topic_pool.length}`).join(' '));
   }
   return out;
@@ -1125,6 +1215,7 @@ async function mainGce() {
       rows: rows.length,
       papers_complete: gce.papers_complete,
       base_years: gce.base_years,
+      year_weights: gce.year_weights,
     },
   };
   sanityCheck(blueprint);

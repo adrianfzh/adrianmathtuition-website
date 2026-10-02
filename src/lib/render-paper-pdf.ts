@@ -15,9 +15,9 @@
  * (lib/paper-reconstruction.workingSpaceMm — generous 4 lines per mark),
  * and an optional ANSWER KEY on a final page of its own.
  *
- * Honesty rule: a paper the bank only partially covers says so — the coverage
- * warning prints under the header, so a photocopied sheet can't masquerade as
- * the full paper. Same for questions whose figure is
+ * The coverage warning CAN print under the header, but the bank route no longer
+ * passes one (Adrian, 26 Sep 2026: the "partial — N marks missing" line on the
+ * Answers PDF is "not necessary"); the bank page's chip still says it. Questions whose figure is
  * flagged (has_image) but missing from the bank: a placeholder box marks the
  * hole instead of silently printing a figureless stem.
  *
@@ -27,7 +27,7 @@
  */
 
 import { getBrowser } from '@/lib/generate-pdf';
-import { workingSpaceMm } from '@/lib/paper-reconstruction';
+import { workingSpaceMm, isConstructionQuestion, constructionSpaceMm } from '@/lib/paper-reconstruction';
 import type { Part } from '@/lib/kiosk-worksheet-images';
 import { splitPipeTables } from '@/lib/pipe-tables';
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 7;   // 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 16;   // 16: a grid prints after the part that asks for the graph; a table-of-values array prints as a table (29 Sep 2026); 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -65,6 +65,15 @@ export interface PaperPdfQuestion {
    * Off (the default) for the bank's scanned crops, which the cap protects.
    */
   uncappedFigures?: boolean;
+  /** A chosen print width for this question's figures, mm (gen_meta.figure.width_mm; Adrian, 29 Sep 2026: "can make the diagram slightly bigger?"). Still never wider than the column. */
+  figureWidthMm?: number | null;
+  /**
+   * A heading printed ABOVE this question — "Section A: Pure Mathematics
+   * [40 marks]" on the first question of an H2 Paper 2 and "Section B: …" on
+   * the first statistics question (scripts/gce-paper/generate.mjs assemble).
+   * Absent on every other paper.
+   */
+  sectionHeading?: string;
 }
 
 export interface PaperPdfInput {
@@ -81,6 +90,9 @@ export interface PaperPdfInput {
   coverageWarning?: string | null;
   /** Colour of the ANSWER KEY entries (default the house orange; a printed set uses '#111'). */
   answerKeyColor?: string;
+  /** The answer key ALONE — no questions, name bar or End of Paper; the key
+   *  starts on page 1 (Adrian, 25 Sep 2026: "a button for an Answers PDF"). */
+  answersOnly?: boolean;
 }
 
 function esc(s: string): string {
@@ -100,20 +112,53 @@ function esc(s: string): string {
  * The SPLITTING lives in @/lib/pipe-tables, shared with the on-screen question
  * view — the same stem has to become the same table in print and in a browser.
  */
+/** esc() + markdown bold: the bank writes emphasis as **part (a)** / **not**, which
+ *  printed with its asterisks (GCE 2023 EM P1 Q3(b), 26 Sep 2026). Only a same-line
+ *  **…** pair becomes bold; a lone ** stays as typed. */
+/** A table of values written as a TeX array — "$\\begin{array}{|c|c|} \\hline x & 1 \\\\ \\hline y & 6.5 \\\\ \\hline \\end{array}$"
+ *  — printed as a real table at text size (29 Sep 2026, E Math Set 1 P2 Q3: the array
+ *  came out tiny under the grid). Each cell stays maths ($…$) for the auto-render.
+ *  Returns null when the text is not exactly one such array. Pure. */
+export function arrayTable(tex: string): string[][] | null {
+  const m = tex.trim().match(/^\$\s*\\begin\{array\}\{[^}]*\}([\s\S]*?)\\end\{array\}\s*\$$/);
+  if (!m) return null;
+  const rows = m[1].replace(/\\hline/g, '').split(/\\\\/).map((r) => r.trim()).filter(Boolean)
+    .map((r) => r.split('&').map((c) => c.trim()));
+  return rows.length && rows.every((r) => r.length === rows[0].length) ? rows : null;
+}
+
+function arrayTableHtml(rows: string[][]): string {
+  return '<table class="pp-table pp-values"><tbody>' + rows.map((r) => '<tr>' + r.map((c, i) =>
+    `<${i === 0 ? 'th' : 'td'}>${c ? esc(`$${c}$`) : ''}</${i === 0 ? 'th' : 'td'}>`).join('') + '</tr>').join('') + '</tbody></table>';
+}
+
+/** Text with any table-of-values arrays (one per line) printed as tables. */
+function withArrayTables(text: string): string {
+  return text.split('\n').map((line) => {
+    const rows = arrayTable(line);
+    return rows ? arrayTableHtml(rows) : escBold(line);
+  }).join('\n');
+}
+
+function escBold(s: string): string {
+  return esc(s).replace(/\*\*([^*\n]+?)\*\*/g, '<strong>$1</strong>');
+}
+
 export function richText(s: string): string {
   return splitPipeTables(s).map((b) => {
-    if (b.kind === 'text') return esc(b.text);
+    if (b.kind === 'text') return withArrayTables(b.text);
     const [head, ...rest] = b.rows;
-    return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${esc(c)}</th>`).join('') + '</tr></thead>' +
+    return '<table class="pp-table"><thead><tr>' + head.map((c) => `<th>${escBold(c)}</th>`).join('') + '</tr></thead>' +
       (rest.length
-        ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${esc(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
+        ? '<tbody>' + rest.map((r) => '<tr>' + r.map((c) => `<td>${escBold(c)}</td>`).join('') + '</tr>').join('') + '</tbody>'
         : '') +
       '</table>';
   }).join('\n');
 }
 
-function img(u: string, uncapped = false): string {
-  return `<img class="pp-figure${uncapped ? ' pp-figure-tall' : ''}" src="${esc(u)}" alt="figure">`;
+function img(u: string, uncapped = false, widthMm: number | null = null): string {
+  const w = widthMm && widthMm > 0 ? ` data-wmm="${Math.round(widthMm)}"` : '';
+  return `<img class="pp-figure${uncapped ? ' pp-figure-tall' : ''}"${w} src="${esc(u)}" alt="figure">`;
 }
 
 function spacer(marks: number | null | undefined): string {
@@ -147,12 +192,22 @@ function partHtml(p: Part, workingSpace: boolean, uncapped = false): string {
   return `<div class="pp-part">${before}${text}${after}${space}${subs}</div>`;
 }
 
+function flatPartTexts(parts: Part[]): string[] {
+  return parts.flatMap((p) => [p.text ?? '', ...flatPartTexts(p.subparts ?? [])]);
+}
+
+/** The top-level part that asks for the graph on the printed grid, or -1. Pure. */
+export function gridPartIndex(parts: Part[]): number {
+  return parts.findIndex((p) => /\b(on the grid|on the graph paper|graph paper|on the axes)\b/i.test(flatPartTexts([p]).join(' ')));
+}
+
 function partsCarryMarks(parts: Part[]): boolean {
   return parts.some((p) => !!p.marks || partsCarryMarks(p.subparts ?? []));
 }
 
 function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
-  const figures = q.images.map((u) => img(u, q.uncappedFigures === true)).join('');
+  const gridInPart = q.uncappedFigures === true && q.images.length === 1 && gridPartIndex(q.parts) >= 0;
+  const figures = gridInPart ? '' : q.images.map((u) => img(u, q.uncappedFigures === true, q.figureWidthMm ?? null)).join('');
   const hole = q.missingFigure
     ? '<div class="pp-missing-figure">[ figure referenced by this question is not in the bank ]</div>'
     : '';
@@ -161,19 +216,46 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const stem = q.stem.trim()
     ? lineWithMarks('pp-stem', richText(q.stem.trim()), stemMarks)
     : (stemMarks ? lineWithMarks('pp-stem', '', stemMarks) : '');
-  const parts = q.parts.map((p) => partHtml(p, workingSpace, q.uncappedFigures === true)).join('');
-  const stemSpace = workingSpace && !inParts ? spacer(q.marks) : '';
+  // A construction question gets ONE blank area after its last part (the triangle is
+  // drawn there and the later parts build on it), never a strip under each part —
+  // and no less than a 15 cm block (Adrian, 28 Sep 2026, E Math Set 1 P1 Q7).
+  const construction = workingSpace && isConstructionQuestion(q.stem, flatPartTexts(q.parts));
+  // A graph-paper grid prints AFTER the part that asks for the graph ("On the grid,
+  // draw …"), where it is that part's working space — never above part (a)'s table
+  // (29 Sep 2026, E Math Set 1 P2 Q3; the Word export already did this).
+  const gridAt = q.uncappedFigures && q.images.length === 1 ? gridPartIndex(q.parts) : -1;
+  const partsForHtml = gridAt >= 0
+    ? q.parts.map((p, i) => (i === gridAt ? { ...p, image_url_after: q.images[0] } : p))
+    : q.parts;
+  const parts = partsForHtml.map((p) => partHtml(p, workingSpace && !construction, q.uncappedFigures === true)).join('');
+  const stemSpace = workingSpace && !inParts && !construction ? spacer(q.marks) : '';
+  const constructionSpace = construction ? `<div class="pp-space" style="height:${constructionSpaceMm(q.marks)}mm"></div>` : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
   // stem + figures travel as one .pp-intro unit so a page break can never
   // strand a stem on the page before its diagram.
+  const intro = `<div class="pp-intro">${stem}${figures}${hole}</div>`;
+  if (q.sectionHeading) {
+    // The heading travels with the question's opening block (one break-inside:avoid
+    // unit), so a page can never end on "Section B" with its first question overleaf —
+    // break-after:avoid alone let that happen when the question was taller than the
+    // space left (26 Sep 2026). The number is positioned inside that first block.
+    return `
+    <li class="pp-q">
+      <div class="pp-keep">
+        <div class="pp-section">${esc(q.sectionHeading)}</div>
+        <div class="pp-q-body pp-q-headed"><span class="pp-qnum">${esc(q.qnum)}</span>${intro}</div>
+      </div>
+      <div class="pp-q-body">${parts}${stemSpace}${constructionSpace}</div>
+    </li>`;
+  }
   return `
     <li class="pp-q">
       <span class="pp-qnum">${esc(q.qnum)}</span>
-      <div class="pp-q-body"><div class="pp-intro">${stem}${figures}${hole}</div>${parts}${stemSpace}</div>
+      <div class="pp-q-body">${intro}${parts}${stemSpace}${constructionSpace}</div>
     </li>`;
 }
 
-function answerKeyHtml(questions: PaperPdfQuestion[]): string {
+function answerKeyHtml(questions: PaperPdfQuestion[], firstPage = false): string {
   const rows = questions
     .map((q) => {
       const body = q.answerLines.length
@@ -183,7 +265,7 @@ function answerKeyHtml(questions: PaperPdfQuestion[]): string {
     })
     .join('\n');
   return `
-  <section class="pp-answers">
+  <section class="pp-answers${firstPage ? ' pp-answers-first' : ''}">
     <div class="pp-answers-h">Answer Key</div>
     <ol class="pp-answer-list">${rows}</ol>
   </section>`;
@@ -192,7 +274,10 @@ function answerKeyHtml(questions: PaperPdfQuestion[]): string {
 export function buildPaperHTML(input: PaperPdfInput): string {
   const { title, metaLine, questions, workingSpace, answerKey } = input;
   const warning = (input.coverageWarning ?? '').trim();
-  const answerColor = (input.answerKeyColor ?? '').trim() || ANSWER_ORANGE;
+  // Black by default since 28 Sep 2026 (Adrian: "answers can be in black, not orange");
+  // the orange stays for the heading rule only.
+  const answerColor = (input.answerKeyColor ?? '').trim() || '#111';
+  const answersOnly = input.answersOnly === true;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -215,6 +300,8 @@ ${katexInlineHead()}
 
   .pp-questions{list-style:none;padding-left:24pt;margin:0}
   .pp-q{margin-bottom:8pt;position:relative}
+  .pp-section{font-weight:700;color:${NAVY};letter-spacing:.04em;margin:12pt 0 8pt -24pt}
+  .pp-q-headed{position:relative}
   .pp-qnum{position:absolute;left:-24pt;top:0;font-weight:700}
   .pp-stem{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
   .pp-txt{flex:1 1 auto;min-width:0}
@@ -223,6 +310,7 @@ ${katexInlineHead()}
   .pp-table{white-space:normal;border-collapse:collapse;margin:4pt 0;break-inside:avoid}
   .pp-table th,.pp-table td{border:0.75pt solid #444;padding:2pt 8pt;text-align:center}
   .pp-table th{font-weight:700}
+  .pp-values td,.pp-values th{padding:3pt 9pt;min-width:22pt}
   .pp-part{margin-top:4pt}
   .pp-part .pp-part{margin-left:15pt}
   .pp-part-text{white-space:pre-wrap;break-inside:avoid;display:flex;justify-content:space-between;align-items:flex-end;gap:8pt}
@@ -238,6 +326,7 @@ ${katexInlineHead()}
   .pp-end{text-align:center;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
     font-size:9.5pt;color:${NAVY};margin:14pt 0 2pt;break-inside:avoid;page-break-inside:avoid}
   .pp-answers{break-before:page;page-break-before:always;padding-top:2pt}
+  .pp-answers-first{break-before:auto;page-break-before:auto}
   .pp-answers-h{color:${NAVY};font-weight:700;font-size:12pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
   .pp-answer-list{list-style:none;padding-left:24pt;margin:0}
   .pp-a{position:relative;margin-bottom:5pt;break-inside:avoid;color:${answerColor}}
@@ -248,6 +337,12 @@ ${katexInlineHead()}
 </style>
 </head>
 <body>
+${answersOnly ? `  <div class="pp-header">
+    <div class="pp-title">${esc(title)}</div>
+    <div class="pp-meta">${esc(metaLine)}</div>
+    ${warning ? `<div class="pp-warning">&#9888; ${esc(warning)}</div>` : ''}
+  </div>
+${answerKeyHtml(questions, true)}` : `
   <div class="pp-header">
     <div class="pp-title">${esc(title)}</div>
     <div class="pp-meta">${esc(metaLine)}${workingSpace ? ' &middot; Answer ALL questions in the spaces provided.' : ''}</div>
@@ -267,7 +362,7 @@ ${questions.map((q) => questionHtml(q, workingSpace)).join('\n')}
        overleaf (Adrian, 2026-08-31). -->
   <div class="pp-end">End of Paper</div>
 
-${answerKey ? answerKeyHtml(questions) : ''}
+${answerKey ? answerKeyHtml(questions) : ''}`}
 ${katexAutoRenderScript()}
 </body>
 </html>`;
@@ -303,7 +398,10 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         const aspect = img.naturalWidth / img.naturalHeight;
         const PX_PER_MM = 96 / 25.4;
         const tall = img.classList.contains('pp-figure-tall');
-        const capWidth = tall ? Infinity : (aspect >= 1.5 ? 100 : 80) * PX_PER_MM;
+        // A question may carry its own width (data-wmm) — its figure prints at that
+        // width, taller too, instead of the 80/100 mm default.
+        const chosenMm = Number(img.dataset.wmm) || 0;
+        const capWidth = tall ? Infinity : (chosenMm > 0 ? chosenMm : (aspect >= 1.5 ? 100 : 80)) * PX_PER_MM;
         let width = Math.min(sharpWidth, colWidth, capWidth);
         if (tall) {
           // A grid keeps its 1 cm squares even when it is wider than the question's
@@ -328,7 +426,8 @@ export async function renderPaperPDF(input: PaperPdfInput): Promise<Buffer> {
         // Q26, Adrian 21 Sep 2026). Shrink the width so the capped height is met
         // in proportion instead.
         if (!img.classList.contains('pp-figure-tall')) {
-          const widthAtCap = CAP_HEIGHT_PX * img.naturalWidth / img.naturalHeight;
+          const capH = chosenMm > 0 ? Math.max(CAP_HEIGHT_PX, chosenMm * PX_PER_MM / aspect) : CAP_HEIGHT_PX;
+          const widthAtCap = capH * img.naturalWidth / img.naturalHeight;
           width = Math.min(width, widthAtCap);
         }
         img.style.width = `${width}px`;

@@ -13,6 +13,9 @@ import rehypeRaw from 'rehype-raw';
 import 'katex/dist/katex.min.css';
 import { getOfflineSettings, queryLocalBank, syncEnabledLevels } from '@/lib/offline/qb-cache';
 import { ProposalSheet, loadRejected, subsetQuestion, type Proposal, type AcceptedPicks } from './ProposalSheet';
+import { readableSolutionText } from '@/lib/solution-readability';
+// One step a paragraph, scheme and mark notes out (lib/solution-readability).
+const readable = (s: string) => '\n\n' + readableSolutionText(s).replace(/\n/g, '\n\n');
 import type { DocxCard } from '@/lib/lesson-docx-build';
 
 export type BankQuestion = {
@@ -304,18 +307,18 @@ export function buildBankWorkedExampleTemplate(q: BankQuestion): { title: string
     subparts?: Array<{ label?: string; solution?: string; solution_image?: string }>;
   };
   const solBits: string[] = [];
-  if (q.solution) solBits.push(renderInlineImagesInText(q.solution));
+  if (q.solution) solBits.push(renderInlineImagesInText(readable(q.solution)));
   for (const u of getSolutionImageUrls(q.solution_images)) {
     solBits.push(`<img src="${toStorageUrl(u)}" alt="solution diagram" loading="lazy" decoding="async" style="max-width:100%;display:block;margin:6px 0" />`);
   }
   if (Array.isArray(q.parts)) {
     for (const p of q.parts as PartSolution[]) {
-      if (p?.solution) solBits.push(`**(${p.label})** ${renderInlineImagesInText(p.solution)}`);
+      if (p?.solution) solBits.push(`**(${p.label})** ${renderInlineImagesInText(readable(p.solution))}`);
       const psi = partImageHtml(p?.solution_image);
       if (psi) solBits.push(psi);
       if (Array.isArray(p?.subparts)) {
         for (const sp of p.subparts) {
-          if (sp?.solution) solBits.push(`**(${p.label})(${sp.label})** ${renderInlineImagesInText(sp.solution)}`);
+          if (sp?.solution) solBits.push(`**(${p.label})(${sp.label})** ${renderInlineImagesInText(readable(sp.solution))}`);
           const spsi = partImageHtml(sp?.solution_image);
           if (spsi) solBits.push(spsi);
         }

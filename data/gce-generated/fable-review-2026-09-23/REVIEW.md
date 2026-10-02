@@ -43,7 +43,7 @@ branch had it. The `set`/`title` fields of P1 had regressed to "Set 1" on
 re-assembly and are restored to Set 2 here.
 
 The paper and solutions PDFs/docx from this build are on the Mac at
-`~/Desktop/AdrianMath/GCE Sets/AM Set 2 swap 2026-09-23/` (not committed).
+`~/Dropbox/AdrianMath Work/GCE Sets/AM Set 2 swap 2026-09-23/` (not committed).
 
 ## Afterwards (24 Sep 2026)
 

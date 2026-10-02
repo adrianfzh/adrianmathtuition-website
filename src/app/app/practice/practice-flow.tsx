@@ -69,6 +69,7 @@ type GradeResult = {
 // /app/find's finder ("Snap a question"), which sends the same kind of photo.
 import { fileToJpegDataUrl } from './image-downscale';
 import { findTierLabel } from '@/lib/assignments';
+import { ladderAssistLine } from '@/lib/proof-ladder';
 
 // `initialLevels` comes from the server page for a signed-in student (their
 // scoped QB levels) so the level control is right on first paint; null means
@@ -123,7 +124,12 @@ const FIXED_FROM: Record<NonNullable<FixedQuestion['from']> | 'link', { label: s
   link: { label: '🎯 Practice question', blurb: 'Work it here — snap or type your working and get it marked.' },
 };
 
-export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false }: {
+export default function PracticeFlow({ initialLevels = null, initialAssignment = null, initialTarget = null, initialQuestion = null, timedEntry = false, lessonsVisible = false, lockedLevels = false, ladderVisible = false }: {
+  /** 🪜 Stuck? Next step (1 Oct 2026): the server page decides (PROOF_LADDER_OPEN_TO_STUDENTS,
+   *  a preview identity, or Adrian's cookie); the client never sees the flag itself. */
+  ladderVisible?: boolean;
+  /** The Science Practise run (1 Oct 2026): keep the one level the page passed — the overview's level list is not swapped in. */
+  lockedLevels?: boolean;
   initialLevels?: LevelOpt[] | null; initialAssignment?: InitialAssignment | null;
   /** Show the ⏱ Timed-set row — the server page decides (EXAM_PREP_OPEN_TO_STUDENTS
    *  or Adrian's admin cookie); the client never sees the flag itself. */
@@ -173,6 +179,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   const questionRef = useRef<HTMLDivElement>(null);
 
   const [solution, setSolution] = useState<string | null>(null);
+  // ?mode=structured on a SCIENCE run (1 Oct 2026): the student writes or photographs an
+  // answer and gets it MARKED first; the scheme shows only after a mark (Adrian, later
+  // that day: "for structured, they must practice right? then we mark? … no point just
+  // giving the answers straight away" — the scheme-only shortcut of that afternoon is gone).
+  const [urlMode, setUrlMode] = useState<string | null>(null);
+  useEffect(() => { setUrlMode(new URLSearchParams(window.location.search).get('mode')); }, []);
   const [solLoading, setSolLoading] = useState(false);
   // 💡 "How to approach it" (23 Sep 2026, was the topic's method templates):
   // three short answer-free lines written for THIS question and cached on the
@@ -180,6 +192,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // null = not asked; '' = asked, nothing to say.
   const [hint, setHint] = useState<string | null>(null);
   const [hintLoading, setHintLoading] = useState(false);
+  // 🪜 Stuck? Next step (1 Oct 2026, lib/proof-ladder): the bank working one line
+  // per tap — only the revealed lines reach the page. Rides on the grade
+  // (marking_json.ladder) so an assisted pass is not a clean one.
+  const [ladder, setLadder] = useState<{ markdown: string; revealed: number; total: number; done: boolean } | null>(null);
+  const [ladderLoading, setLadderLoading] = useState(false);
 
   // Grading state (students only)
   const [working, setWorking] = useState('');
@@ -278,7 +295,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           setSheetTopic(target.topic);
           targetRef.current = null;
         }
-        if (Array.isArray(d.levels) && d.levels.length) {
+        if (!lockedLevels && Array.isArray(d.levels) && d.levels.length) {
           setLevels(d.levels);
           if (!d.levels.some((l: LevelOpt) => l.key === level)) setLevel(d.levels[0].key);
         }
@@ -315,6 +332,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   function resetAttempt() {
     setWorking(''); setGrade(null); setGradedLines([]); setGradedViaPhoto(false); setPrevScore(null); setSolution(null); setHint(null);
+    setLadder(null);
   }
 
   const fetchNext = useCallback(async (excludeIds: string[], topicArg?: string, tierArg?: Tier, sgArg?: Subgroup | null) => {
@@ -324,7 +342,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
       const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
-        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null },
+        // ?mode=mcq|structured — the Science Practise tab's switch (1 Oct 2026); ignored by the maths bank.
+        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null },
         fallback: 'Couldn’t load a question — try again.',
       });
       if (!d.question) { setExhausted(true); setQ(null); return; }
@@ -394,6 +413,19 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     finally { setSolLoading(false); }
   }
 
+  async function revealStep() {
+    if (!q || ladderLoading) return;
+    const n = (ladder?.revealed ?? 0) + 1;
+    setLadderLoading(true);
+    try {
+      const d = await portalFetch<{ markdown: string; revealed: number; total: number; done: boolean }>(
+        `/api/portal/practice/ladder?id=${q.id}&n=${n}${q.subject ? `&subject=${encodeURIComponent(q.subject)}` : ''}`,
+        { fallback: 'Could not load the next step — try again.' });
+      setLadder(d);
+    } catch (e) { setError(portalMessage(e)); }
+    finally { setLadderLoading(false); }
+  }
+
   async function handlePhotoPick(file: File | undefined) {
     if (!file) return;
     setPhotoBusy(true); setError('');
@@ -413,6 +445,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           ? { questionId: q.id, image: { data: photo.split(',')[1], mediaType: 'image/jpeg' } }
           : { questionId: q.id, lines }),
         ...(assignment ? { assignmentId: assignment.id } : {}),
+        ...(ladder?.revealed ? { ladder: { revealed: ladder.revealed, total: ladder.total } } : {}),
         // Science bank rows: the grade route looks the id up in the other project.
         ...(q.subject ? { subject: q.subject } : {}),
       };
@@ -901,13 +934,20 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {hintLoading ? 'Loading…' : '💡 How to approach it'}
+                    {hintLoading ? '💡 Thinking…' : '💡 Hints'}
                   </button>
                 )}
-                {solution === null && (!assignment || grade) && (
+                {ladderVisible && !q.mcq && !q.subject && solution === null && !(ladder?.done) && (
+                  <button onClick={revealStep} disabled={ladderLoading}
+                    className="bg-white border border-sky-300 text-sky-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
+                    {ladderLoading ? '🪜 …' : ladder ? '🪜 One more step' : '🤔 Stuck? Next step'}
+                  </button>
+                )}
+                {/* A structured science answer is marked BEFORE the scheme shows (1 Oct 2026). */}
+                {solution === null && (!assignment || grade) && !(q.subject && !q.mcq && urlMode === 'structured' && !grade) && (
                   <button onClick={showSolution} disabled={solLoading}
                     className="bg-white border border-emerald-300 text-emerald-700 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-                    {solLoading ? 'Loading…' : '🔎 Show solution'}
+                    {solLoading ? '🔎 …' : (q.subject && !q.mcq && urlMode === 'structured' ? '🔎 Show the mark scheme' : '🔎 Show solution')}
                   </button>
                 )}
                 {!assignment && !fixedQ && (
@@ -937,13 +977,33 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {/* 💡 Method hint — Adrian's method for this question type, answer-free */}
           {isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 Hints</div>
               {hint ? (
                 <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
                   <MathMarkdown content={hint} />
                 </div>
               ) : (
-                <p className="text-sm text-amber-900/80">Nothing to add for this one — have a go, then check the solution.</p>
+                <p className="text-sm text-amber-900/80">No hints for this one — just have a go! 💪</p>
+              )}
+            </div>
+          )}
+
+          {/* 🪜 The ladder — the working so far, one line per tap */}
+          {isStudent && ladder && (
+            <div className="bg-sky-50 border border-sky-200 rounded-2xl p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs font-bold uppercase tracking-wide text-sky-800">🪜 Step by step</div>
+                <span className="text-[11px] text-sky-700/70">{ladder.revealed} of {ladder.total}</span>
+              </div>
+              {ladder.total === 0 ? (
+                <p className="text-sm text-sky-900/80">No worked steps for this one yet — try the hint, or check the solution.</p>
+              ) : (
+                <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed">
+                  <MathMarkdown content={ladder.markdown} />
+                </div>
+              )}
+              {ladder.done && ladder.total > 0 && (
+                <p className="text-[11px] text-sky-700/70 mt-2">🏁 That&apos;s all of it. Now try one like it on your own.</p>
               )}
             </div>
           )}
@@ -973,6 +1033,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   📷 Transcribed from your photo — if a step was misread, retake a clearer shot.
                 </p>
               )}
+              {ladder?.revealed ? (
+                <p className="text-[11px] text-slate-500 mb-2">🪜 {ladderAssistLine({ revealed: ladder.revealed, total: ladder.total })}</p>
+              ) : null}
 
               {/* Working with per-line verdicts */}
               <div className="rounded-xl border border-slate-100 divide-y divide-slate-50 mb-4">
@@ -1046,14 +1109,14 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {!isStudent && q && hint === null && !q.mcq && !q.subject && (
             <button onClick={showHint} disabled={hintLoading}
               className="mr-2 bg-amber-500 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
-              {hintLoading ? 'Loading…' : '💡 How to approach it'}
+              {hintLoading ? '💡 Thinking…' : '💡 Hints'}
             </button>
           )}
           {!isStudent && hint !== null && (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-3">
-              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 How to approach it</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-amber-800 mb-2">💡 Hints</div>
               {hint ? <div className="prose prose-sm max-w-none text-slate-800 leading-relaxed"><MathMarkdown content={hint} /></div>
-                    : <p className="text-sm text-amber-900/80">Nothing to add for this one.</p>}
+                    : <p className="text-sm text-amber-900/80">No hints for this one — just have a go! 💪</p>}
             </div>
           )}
           {!isStudent && q && solution === null && (
@@ -1070,7 +1133,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           )}
           {solution !== null && (
             <div className="bg-white border border-emerald-100 rounded-2xl p-5">
-              <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">Worked solution</div>
+              <div className="text-xs font-bold uppercase tracking-wide text-emerald-700 mb-2">{q?.subject && !q.mcq && urlMode === 'structured' ? 'Mark scheme' : 'Worked solution'}</div>
               {/* Aligned working from lib/solution-format.ts: left-align the display
                   blocks (KaTeX centres by default) and let wide lines scroll. */}
               <div className="prose prose-sm max-w-none text-slate-700 leading-relaxed math-working">

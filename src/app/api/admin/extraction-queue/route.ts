@@ -4,8 +4,8 @@
 // route exists so a worker on ANY machine — in-app session, Mac A launchd, a
 // cloud session — needs only the admin bearer and curl, never the service key
 // or a bucket credential:
-//   GET  ?status=queued|claimed|done|flagged|all&limit=50   → the rows
-//   POST {action:'claim',   runner}                          → one row + a 1-hour signed download URL (204 when the queue is empty)
+//   GET  ?status=queued|claimed|done|flagged|held|all&limit=50 → the rows
+//   POST {action:'claim',   runner, subject?}                → one row (subject = math|biology|chemistry|physics|science; omitted = any) + a 1-hour signed download URL (204 when the queue is empty)
 //   POST {action:'download', id}                             → a fresh signed URL for a row you hold
 //   POST {action:'finish',  id, runner, status, notes?}      → done | skipped | flagged | failed (claimant only)
 //   POST {action:'requeue', id, notes?}                      → back to 'queued', claim cleared (admin)
@@ -20,7 +20,8 @@ export const dynamic = 'force-dynamic';
 
 const BUCKET = 'paper-library';
 const SIGNED_URL_SECONDS = 3600;
-const STATUSES = new Set(['queued', 'claimed', 'done', 'skipped', 'flagged', 'failed']);
+// 'held' (2 Oct 2026) = parked on purpose; the claim RPC only takes 'queued', so a held row waits untouched.
+const STATUSES = new Set(['queued', 'claimed', 'done', 'skipped', 'flagged', 'failed', 'held']);
 
 async function signedUrl(storagePath: string): Promise<string> {
   const { data, error } = await getSupabaseAdmin().storage.from(BUCKET).createSignedUrl(storagePath, SIGNED_URL_SECONDS);
@@ -33,7 +34,7 @@ export async function GET(req: NextRequest) {
   const status = req.nextUrl.searchParams.get('status') || 'queued';
   const limit = Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit') || 50)));
   let q = getSupabaseAdmin().from('paper_library')
-    .select('id, key, status, source_file, level, year, school, exam_type, paper, size_bytes, sha256, storage_path, inbox_path, claimed_by, claimed_at, finished_at, notes, indexed_at')
+    .select('id, key, status, source_file, level, year, school, exam_type, paper, subject, size_bytes, sha256, storage_path, inbox_path, claimed_by, claimed_at, finished_at, notes, indexed_at')
     .eq('kind', 'source').order('indexed_at', { ascending: true }).limit(limit);
   if (status !== 'all') {
     if (!STATUSES.has(status)) return NextResponse.json({ error: `status must be one of ${[...STATUSES].join('|')}|all` }, { status: 400 });
@@ -41,9 +42,16 @@ export async function GET(req: NextRequest) {
   }
   const { data, error } = await q;
   if (error) return NextResponse.json({ error: error.message }, { status: 502 });
-  const { data: counts } = await getSupabaseAdmin().from('paper_library').select('status').eq('kind', 'source');
+  // EXACT counts, one head request per status (2 Oct 2026). The old read pulled the status
+  // column unpaged, so past 1,000 source rows it counted an arbitrary 1,000 of them — and the
+  // Fly worker starts an extraction lane only when `counts.queued` > 0, so a short tail of the
+  // queue could read as 0 and stall. A count that fails is left out, never reported as 0.
   const byStatus: Record<string, number> = {};
-  for (const r of counts ?? []) byStatus[String(r.status)] = (byStatus[String(r.status)] || 0) + 1;
+  await Promise.all([...STATUSES].map(async (st) => {
+    const { count, error: cErr } = await getSupabaseAdmin().from('paper_library')
+      .select('id', { count: 'exact', head: true }).eq('kind', 'source').eq('status', st);
+    if (!cErr && typeof count === 'number' && count > 0) byStatus[st] = count;
+  }));
   return NextResponse.json({ ok: true, status, counts: byStatus, rows: data ?? [] });
 }
 
@@ -57,7 +65,10 @@ export async function POST(req: NextRequest) {
     const runner = String(body.runner || '').trim().slice(0, 80);
     if (!runner) return NextResponse.json({ error: 'runner required' }, { status: 400 });
     const lease = Number.isFinite(Number(body.leaseHours)) ? Math.min(24, Math.max(1, Number(body.leaseHours))) : 3;
-    const { data, error } = await sb.rpc('claim_extraction_paper', { p_runner: runner, p_lease_hours: lease });
+    // `subject` (26 Sep 2026): a worker started with one bank project's keys claims only
+    // that subject's rows — math | biology | chemistry | physics | science. Omitted = any.
+    const subject = body.subject ? String(body.subject).trim().toLowerCase().slice(0, 20) : null;
+    const { data, error } = await sb.rpc('claim_extraction_paper', { p_runner: runner, p_lease_hours: lease, p_subject: subject });
     if (error) return NextResponse.json({ error: error.message }, { status: 502 });
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) return new NextResponse(null, { status: 204 });

@@ -42,9 +42,12 @@ export default function JumpToMistake({ pages = [] }: { pages?: JumpPage[] }) {
     const t = setTimeout(async () => {
       // Pixel-exact when the page has the marker's layer and the question is in it; else the marker's region words.
       let frac = Number.isFinite(atParam) ? Math.max(0, Math.min(1, atParam)) : 0.1;
-      let span = 0;
+      // `span` in the URL = the marker's own box for the question (lib/mistake-snippet regionAt,
+      // 1 Oct 2026) — exact, so nothing to measure; the layer measure stays for older links.
+      const spanParam = Number(sp?.get('span') ?? '');
+      let span = Number.isFinite(spanParam) && spanParam > 0 ? Math.min(1, spanParam) : 0;
       const pg = pages.find(p => String(p.index) === String(page));
-      if (pg?.layerUrl && pg.layerH && q) {
+      if (!span && pg?.layerUrl && pg.layerH && q) {
         const m = await measureInLayer(pg.layerUrl, pg.layerH, q);
         if (m) { frac = m.at; span = m.span; }
       }

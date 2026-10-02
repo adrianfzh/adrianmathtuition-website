@@ -40,6 +40,8 @@ import {
   type EnrollmentRow,
   type StudentRow,
 } from '@/lib/enrollment-end';
+import { leavingStatus } from '@/lib/graduation';
+import { draftFinalExtrasInvoice, fetchExtrasPool, setLeavingStatus } from '@/lib/final-extras-store';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -82,6 +84,14 @@ export async function GET(req: NextRequest) {
     status: (r.fields['Status'] as string | undefined) ?? null,
   }));
   const nameOf = new Map(students.map((s) => [s.id, s.name]));
+  const levelOf = new Map(studentRecs.map((r: any) => [r.id, (r.fields['Level'] as string | undefined) ?? null]));
+  // A leaver's last end date and rate — for 'Graduated' vs 'Inactive' and the final bill.
+  const rateOf = new Map(enrollRecs.map((r: any) => [r.id, Number(r.fields['Rate Per Lesson']) || 0]));
+  const lastEndOf = (studentId: string) => due.filter((d) => d.studentId === studentId).map((d) => d.endDate || '').sort().pop() || '';
+  const lastRateOf = (studentId: string) => {
+    const mine = due.filter((d) => d.studentId === studentId).sort((a, b) => (a.endDate || '').localeCompare(b.endDate || ''));
+    return mine.map((d) => rateOf.get(d.id) || 0).filter((x) => x > 0).pop() || 0;
+  };
 
   const toDeactivate = studentsLeftWithoutEnrollment(all, due.map((d) => d.id), students);
 
@@ -89,7 +99,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       ok: true, dry: true, today,
       ending: due.map((d) => ({ id: d.id, who: d.studentId ? nameOf.get(d.studentId) ?? d.studentId : '(no student)', endDate: d.endDate })),
-      deactivating: toDeactivate.map((s) => ({ id: s.id, name: s.name })),
+      deactivating: toDeactivate.map((s) => ({ id: s.id, name: s.name, becomes: leavingStatus(levelOf.get(s.id), lastEndOf(s.id)) })),
     });
   }
 
@@ -114,23 +124,34 @@ export async function GET(req: NextRequest) {
   }
 
   const deactivated: { name: string }[] = [];
+  const billLines: string[] = [];
+  let pool: Awaited<ReturnType<typeof fetchExtrasPool>> | null = null;
   for (const s of toDeactivate) {
     // Only if EVERY one of this student's due enrollments actually ended —
     // a failed PATCH above leaves them enrolled, so they stay Active.
     const theirs = due.filter((d) => d.studentId === s.id);
     if (!theirs.every((d) => endedIds.has(d.id))) continue;
+    const endISO = lastEndOf(s.id);
     try {
-      await airtableRequest('Students', `/${s.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ fields: { Status: 'Inactive' } }),
-      });
-      deactivated.push({ name: s.name });
+      // 'Graduated' for a final-year student leaving in the exam season, else 'Inactive' (lib/graduation.ts).
+      const { status, fellBack } = await setLeavingStatus(s.id, levelOf.get(s.id) ?? null, endISO);
+      deactivated.push({ name: `${s.name}${status === 'Graduated' ? ' 🎓' : ''}${fellBack ? ' (add a "Graduated" option to Students.Status)' : ''}` });
     } catch (e) {
       failures.push(`student ${s.id} (${s.name}): ${(e as Error).message}`);
+      continue;
+    }
+    // The last extra lessons ride no next invoice — bill them now; the 15th's send cron sends it.
+    try {
+      pool ??= await fetchExtrasPool(today);
+      const bill = await draftFinalExtrasInvoice(s.id, endISO, lastRateOf(s.id), pool);
+      if (bill.invoiceId) billLines.push(`• ${s.name}: ${bill.dates.length} additional lesson(s), $${bill.amount} — ${bill.month}, drafted; goes out with the 15th's send`);
+      if (bill.unmarked.length) billLines.push(`• ${s.name}: extra lesson(s) still unmarked on ${bill.unmarked.join(', ')} — mark attendance, then they need billing by hand`);
+    } catch (e) {
+      failures.push(`final bill ${s.id} (${s.name}): ${(e as Error).message}`);
     }
   }
 
-  const line = endSummaryLine(ended, deactivated);
+  const line = endSummaryLine(ended, deactivated) + (billLines.length ? `\n\n🧾 Final bills\n${billLines.join('\n')}` : '');
   if (line) await sendTelegram(line).catch(() => {});
   const summary = `ended ${ended.length}, deactivated ${deactivated.length}${failures.length ? `; ${failures.length} failure(s)` : ''}`;
   await logJobRun('end-enrollments', failures.length === 0, summary).catch(() => {});

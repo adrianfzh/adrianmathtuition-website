@@ -78,6 +78,16 @@ student Practice tab lists, newest first, with a state (to do / done / marked):
    labelled with the paper and the skill it fixes.
 3. **Found by you** — questions from Find a question (§4), labelled with the tier.
 
+**1 Oct 2026 — the list is a to-do list again.** (a) Practice Again is NOT shown on the
+tab any more (Adrian: "confusing … practice again should just be together with their
+PDFs") — its line sits under the paper on Papers; `practiceTabSections`. (b) **The Done
+fold**: finished items (marked, or ticked Done) leave their section for one collapsed
+"Done (n)" row at the bottom, newest first, nothing deleted; `splitDoneFold`. (c) **The
+Done button**: a student's OWN to-do item (Found by you, From your photos) carries
+"✓ Done" → `POST /api/portal/assignments {action:'complete', id}` → status `completed`
+(+ `completed_at`; migration `portal_assignments_completed`), no attempt, no score;
+Adrian's work and Practice Again get no button — he tracks those; `studentMayComplete`.
+
 The topic picker, timed set and exam card remain behind the admin cookie
 (`PRACTICE_PICKER_OPEN_TO_STUDENTS = false`, `practiceAccess()` in `lib/portal-beta.ts`).
 §1, §2 and §7 are live on dev, so marking-only beta may lift for Practice when Adrian

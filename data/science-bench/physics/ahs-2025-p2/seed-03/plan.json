@@ -1,0 +1,219 @@
+{
+ "subject": "physics",
+ "paperKey": "AHS 2025 Prelim Physics P2",
+ "grade": "E",
+ "seed": 3,
+ "runs": {
+  "rules-alone": {
+   "runId": "52e8a71d-a646-4b16-8e90-4f63039a0e69",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03",
+   "queuedAt": "2026-09-30T08:46:48.771Z"
+  },
+  "scheme-grounded": {
+   "runId": "4a5365c3-a2e0-448d-a62f-317e9ae186c9",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03 · scheme",
+   "scheme": "scheme.pdf",
+   "queuedAt": "2026-09-30T08:46:55.216Z"
+  }
+ },
+ "parts": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Temperature.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "one base quantity of the two asked → 1/2"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "10⁻²",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "deci is 10⁻¹; 10⁻² is centi → 0"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "max": 1,
+   "answer": "G, k, m, μ, n",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "7",
+   "label": "(a)",
+   "max": 1,
+   "answer": "The distance from the lens to the image.",
+   "defect": "WRONG_WORD",
+   "truth": 0,
+   "why": "scheme: optical centre to focal point; lens-to-image is the image distance → 0"
+  },
+  {
+   "question": "7",
+   "label": "(b)",
+   "max": 2,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "no answer"
+  },
+  {
+   "question": "7",
+   "label": "(d)",
+   "max": 2,
+   "answer": "Upright.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "upright [1]; virtual not stated → 1/2"
+  },
+  {
+   "question": "9",
+   "label": "(a)",
+   "max": 1,
+   "answer": "TV and computer: 2.0 kWh\nkettle: 0.40 kWh\nlights: 2.4 kWh\nwater heater: 0.70 kWh\nair conditioner: 9.0 kWh",
+   "defect": "CLEAN",
+   "truth": 1,
+   "why": "fully correct"
+  },
+  {
+   "question": "9",
+   "label": "(b)",
+   "max": 2,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "no answer"
+  },
+  {
+   "question": "9",
+   "label": "(c)",
+   "max": 2,
+   "answer": "The water heater takes more current so it needs a thicker wire.",
+   "defect": "HALF_POINT",
+   "truth": 1,
+   "why": "one point (higher current) → \"1 mark for 1–2 points\""
+  },
+  {
+   "question": "11",
+   "label": "(a)",
+   "max": 1,
+   "answer": "The time.",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "time is the variable being measured against, not a controlled variable → 0"
+  },
+  {
+   "question": "11",
+   "label": "(b)",
+   "max": 1,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "no answer"
+  },
+  {
+   "question": "11",
+   "label": "(c)",
+   "max": 1,
+   "answer": "The lid stops convection.",
+   "defect": "EXTRA_WRONG",
+   "truth": 0,
+   "why": "scheme: reject convection → 0"
+  },
+  {
+   "question": "11",
+   "label": "(d)",
+   "max": 1,
+   "answer": "Dark-coloured, because dark colours absorb heat better.",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "the scheme answer is light-coloured → 0"
+  },
+  {
+   "question": "11",
+   "label": "(e)(i)",
+   "max": 2,
+   "answer": "It is the energy needed to raise the temperature of 1 g of water by 1 °C.",
+   "defect": "WRONG_WORD",
+   "truth": 0,
+   "why": "scheme: \"zero marks if change in temperature is suggested\" → 0"
+  },
+  {
+   "question": "11",
+   "label": "(e)(ii)",
+   "max": 1,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "no answer"
+  },
+  {
+   "question": "11",
+   "label": "(e)(iii)",
+   "max": 3,
+   "answer": "Q = mcΔθ = 500 × 4.2 × 28 = 58 800 J",
+   "defect": "WRONG_FORMULA",
+   "truth": 1,
+   "why": "Q = mcΔθ written [1]; no Q = ml for the freezing, final answer wrong → 1/3"
+  },
+  {
+   "question": "12",
+   "label": "(a)",
+   "max": 2,
+   "answer": "Gamma rays are more penetrating than beta particles.",
+   "defect": "MISS_POINT",
+   "truth": 1,
+   "why": "one difference of the two asked → 1/2"
+  },
+  {
+   "question": "12",
+   "label": "(b)(i)",
+   "max": 1,
+   "answer": "Because of background radiation.",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "background is already subtracted; the scheme wants random, spontaneous decay → 0"
+  },
+  {
+   "question": "12",
+   "label": "(b)(ii)",
+   "max": 2,
+   "answer": "Average = (40 + 38 + 36 + 40) ÷ 4 = 38.5\nVolume = 144 000 ÷ 38.5 = 3740 cm³",
+   "defect": "WRONG_FORMULA",
+   "truth": 1,
+   "why": "average 38.5 [1]; forgot × 2.0 cm³ per sample, so 3740, not 7500 → answer mark withheld"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iii)",
+   "max": 1,
+   "answer": "[131/53]I → [131/52]Xe + [0/1]β",
+   "defect": "WRONG_ANSWER",
+   "truth": 0,
+   "why": "the atomic number must rise to 54 and the beta particle is ⁰₋₁ → 0"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iv)",
+   "max": 2,
+   "answer": "",
+   "defect": "BLANK",
+   "truth": 0,
+   "why": "no answer"
+  },
+  {
+   "question": "12",
+   "label": "(c)",
+   "max": 2,
+   "answer": "It must not be harmful.\nIt must be able to penetrate the skin.",
+   "defect": "WRONG_WORD",
+   "truth": 0,
+   "why": "scheme rejects both: \"harmful\" is too general; penetrating the skin is not needed as the blood samples are removed → 0"
+  }
+ ]
+}

@@ -12,8 +12,9 @@ import {
   COVER_PROMPT, MAX_BOOK_PAGES, MAX_BYTES_PER_CALL, chunkRanges, parseCoverAnswer, planSplit,
   type BookPart, type CoverHit, type SplitPlan,
 } from './paper-book-split';
+import { SONNET_55 } from './claude-models';
 
-export const COVER_MODEL = process.env.BOOK_COVER_MODEL || 'claude-sonnet-5';
+export const COVER_MODEL = process.env.BOOK_COVER_MODEL || SONNET_55; // Sonnet 5.5 since 30 Sep 2026 (was claude-sonnet-5)
 
 export type BookRead = {
   plan: SplitPlan;

@@ -10,6 +10,8 @@ import {
   mistakeTitle,
   observationsFromAttempt,
   partLabel,
+  scienceReason,
+  scienceTitle,
   questionNumberOf,
   sightingLine,
   stateLabel,
@@ -147,6 +149,46 @@ describe('entriesFromRun — no diagnosis (parts with error kinds)', () => {
   it('handles a run with no results at all', () => {
     expect(entriesFromRun({}, 'r', '2026-09-01T00:00:00Z')).toEqual([]);
     expect(entriesFromRun(null, 'r', '2026-09-01T00:00:00Z')).toEqual([]);
+  });
+});
+
+describe('entriesFromRun — a science paper files under three reasons (24 Sep 2026)', () => {
+  const rj = run([
+    { n: '1', topic: 'Acids and bases', parts: [{ label: '(a)', max: 2, awarded: 1, kind: 'keywords' }, { label: '(b)', max: 2, awarded: 2 }] },
+    { n: '2', topic: 'Acids and bases', parts: [{ max: 3, awarded: 1, kind: 'misread' }, { label: '(b)', max: 1, awarded: 0, kind: 'concept' }] },
+    { n: '3', topic: 'Mole concept', parts: [{ max: 2, awarded: 1, kind: 'arithmetic' }, { label: '(b)', max: 2, awarded: 1, kind: 'units' }] },
+    { n: '4', topic: 'Mole concept', parts: [{ max: 2, awarded: 0, kind: 'incomplete' }, { label: '(b)', max: 2, awarded: 1 }] },
+  ]);
+  const obs = entriesFromRun(rj, 'run-c', '2026-09-24T02:00:00Z', { paperName: 'Cedar 2025 Chemistry Prelim P2', subject: 'Chemistry' });
+  const mistakes = obs.filter(o => o.kind === 'mistake');
+
+  it('wrong keywords, concept gap (concept + misread folded), careless slip (the six slips folded), incomplete, and the topic alone for an unstamped part', () => {
+    expect(mistakes.map(m => m.title).sort()).toEqual([
+      'Careless slip in Mole concept', 'Concept gap in Acids and bases', 'Incomplete in Mole concept',
+      'Marks lost in Mole concept', 'Wrong keywords in Acids and bases',
+    ]);
+  });
+  it('the stored kind is the reason, the subject rides along, and every folded part is named', () => {
+    const careless = mistakes.find(m => m.title === 'Careless slip in Mole concept')!;
+    expect(careless.kind === 'mistake' && careless.errorKind).toBe('careless');
+    expect(careless.kind === 'mistake' && careless.subject).toBe('Chemistry');
+    expect(careless.evidence.label).toBe('Q3, Q3(b)');
+    const gap = mistakes.find(m => m.title === 'Concept gap in Acids and bases')!;
+    expect(gap.evidence.label).toBe('Q2, Q2(b)');
+    const words = mistakes.find(m => m.title === 'Wrong keywords in Acids and bases')!;
+    expect(words.kind === 'mistake' && words.errorKind).toBe('keywords');
+  });
+  it('scienceReason folds the nine kinds; scienceTitle names the reason', () => {
+    expect(scienceReason('sign')).toBe('careless');
+    expect(scienceReason('misread')).toBe('concept');
+    expect(scienceReason('keywords')).toBe('keywords');
+    expect(scienceReason(null)).toBeNull();
+    expect(scienceTitle('keywords', 'Salts')).toBe('Wrong keywords in Salts');
+    expect(scienceTitle(null, 'Salts')).toBe('Marks lost in Salts');
+  });
+  it('a maths paper is untouched by the science fold', () => {
+    const maths = entriesFromRun(rj, 'run-m', '2026-09-24T02:00:00Z', { subject: 'A Math' }).filter(o => o.kind === 'mistake');
+    expect(maths.map(m => m.title)).toContain('Misread in Acids and bases');
   });
 });
 

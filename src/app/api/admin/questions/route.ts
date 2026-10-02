@@ -18,6 +18,7 @@ import { renderBotWorksheetPDF, type BotWorksheetQuestion } from '@/lib/render-b
 import { renderSolutionsPDF, type SolutionsItem, type SolutionsPart } from '@/lib/render-solutions-pdf';
 import { rollupSolution } from '@/lib/solution-rollup';
 import { renderPaperPDF, PAPER_PDF_RENDER_VERSION, type PaperPdfQuestion } from '@/lib/render-paper-pdf';
+import { figureWidthMm } from '@/lib/print-paper';
 import { createHash } from 'crypto';
 import { assessCoverage, answerKeyLines, type AnswerPart } from '@/lib/paper-reconstruction';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
@@ -28,7 +29,7 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { paperFileNames } from '@/lib/paper-filename';
 import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
-import { solutionImageAllowed, type SolutionImageGate } from '@/lib/bank-question-markdown';
+import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 
 export const runtime = 'nodejs';
@@ -133,7 +134,11 @@ function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: str
     if (typeof o.solution_image === 'string' && !solutionImageAllowed(o.solution_image, gate, questionId)) delete o.solution_image;
     for (const k of ['image_url', 'image_url_after', 'solution_image'] as const) {
       if (typeof o[k] === 'string' && o[k] && !/^https?:/i.test(o[k] as string) && isPlausibleImagePath(o[k])) {
-        o[k] = imgSrc(o[k] as string);
+        // A part's figure is sometimes stored as a JSON list — '["question_images/x.png"]'
+        // (29 questions, e.g. GCE 2023 EM P1 Q22(b)'s Venn diagram). Treating that text as
+        // one path glued the brackets into the URL and printed a broken image (26 Sep 2026).
+        const first = partImagePaths(o[k]).find(isPlausibleImagePath);
+        if (first) o[k] = imgSrc(first); else delete o[k];
       }
     }
     if (o.subparts) o.subparts = resolveParts(o.subparts, gate, questionId);
@@ -180,6 +185,7 @@ function solutionItemsFrom(rows: Row[], gate?: SolutionImageGate): { items: Solu
       qnum: (row.question_number as string | null) ?? null,
       questionText: ((row.question_text as string | null) ?? '').trim(),
       solution,
+      solutionFromParts: !(typeof row.solution === 'string' && row.solution.trim()),
       answer: ((row.answer as string | null) ?? '').trim(),
       parts: (row.parts as SolutionsPart[] | null) ?? null,
       solutionImages,
@@ -320,7 +326,13 @@ export async function GET(req: NextRequest) {
     let pq = supa.from('paper_index').select('*');
     if (level) pq = pq.eq('level', level);
     if (year) pq = pq.eq('year', Number(year));
-    if (filter) pq = pq.ilike('school', `%${filter.replace(/[%_]/g, '')}%`);
+    // Word by word (29 Sep 2026, the shared search box): a four-digit word is the year
+    // when no year was picked, every other word must appear in the school's name —
+    // so "crescent 2024" and "adrian" both find their papers.
+    for (const w of filter.split(/\s+/).map(x => x.replace(/[%_,]/g, '')).filter(Boolean)) {
+      if (/^(19|20)\d{2}$/.test(w) && !year) pq = pq.eq('year', Number(w));
+      else pq = pq.ilike('school', `%${w}%`);
+    }
     const { data, error } = await pq.order('year', { ascending: false }).order('school').limit(1000);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     const papers = ((data ?? []) as Row[]).map(r => {
@@ -342,8 +354,14 @@ export async function GET(req: NextRequest) {
           ? { status: assessed.status, missingMarks: assessed.missingMarks, label: assessed.label }
           : null,
       };
+    // One sitting's papers sit together, Paper 1 then Paper 2 (29 Sep 2026, Adrian: "should this
+    // be in the order of the same year together, then paper 1 then paper 2 next?") — so level and
+    // exam type (a Set's "Set 1", a school's Prelim / EOY) group BEFORE the paper number.
     }).sort((a, b) =>
-      b.year - a.year || a.school.localeCompare(b.school) || String(a.paper).localeCompare(String(b.paper)));
+      b.year - a.year || a.school.localeCompare(b.school)
+      || String(a.level ?? '').localeCompare(String(b.level ?? ''))
+      || String(a.examType ?? '').localeCompare(String(b.examType ?? ''), undefined, { numeric: true })
+      || String(a.paper).localeCompare(String(b.paper), undefined, { numeric: true }));
     return NextResponse.json({ papers: papers.slice(0, 400), total: papers.length });
   }
 
@@ -849,7 +867,9 @@ export async function POST(req: NextRequest) {
     // both are asked for) — so one file is the paper, its answers and its
     // solutions in the order you would hand them out. Opt-in: a sit-able paper
     // with the solutions stapled on is not what you give a student.
-    const withSolutions = body.solutions === true;
+    // The answer key ALONE (Adrian, 25 Sep 2026) — no questions, no solutions.
+    const answersOnly = body.answersOnly === true;
+    const withSolutions = !answersOnly && body.solutions === true;
 
     const partHasImage = (list: Part[] | null | undefined): boolean =>
       (list ?? []).some((pt) =>
@@ -869,6 +889,11 @@ export async function POST(req: NextRequest) {
         missingFigure,
         parts,
         answerLines: answerKeyLines(parts as AnswerPart[], (row.answer as string | null) ?? null),
+        // A Set paper's authored figure with a stored print width (a graph-paper grid
+        // whose squares must print at 1 cm) keeps its true size instead of the 80 mm
+        // cap (Adrian, 28 Sep 2026: "graph too small. make it to scale").
+        uncappedFigures: !!figureWidthMm((row.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm as string | number | null | undefined),
+        figureWidthMm: (() => { const n = Number((row.gen_meta as { figure?: { width_mm?: unknown } } | null)?.figure?.width_mm); return Number.isFinite(n) && n > 0 && n <= 166 ? n : null; })(),
       };
     });
 
@@ -878,7 +903,7 @@ export async function POST(req: NextRequest) {
     }, 0);
     const cov = assessCoverage(marksTotal, rows.length, level);
     const answerless = questions.filter((qq) => !qq.answerLines.length).length;
-    if (answerKey && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
+    if ((answerKey || answersOnly) && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
 
     const autoTitle = [
       `${school} ${year}`, level,
@@ -886,7 +911,8 @@ export async function POST(req: NextRequest) {
     ].filter(Boolean).join(' · ');
     // Adrian can type his own title on the print card; blank falls back to the
     // auto title (which the UI shows as the input's placeholder).
-    const titleBits = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
+    const baseTitle = typeof body.title === 'string' && body.title.trim() ? body.title.trim() : autoTitle;
+    const titleBits = answersOnly ? `${baseTitle} — answers` : baseTitle;
 
     // Cache: the render is ~20s of Puppeteer, so same content + same options
     // returns the stored Blob URL instantly. The key hashes the FULL question
@@ -895,8 +921,9 @@ export async function POST(req: NextRequest) {
     // toggle misses naturally, with no manual invalidation to forget.
     const cacheKey = createHash('sha256').update(JSON.stringify({
       v: PAPER_PDF_RENDER_VERSION,
-      opts: { workingSpace, answerKey, originalNumbering, withSolutions, title: titleBits },
-      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image]),
+      opts: { workingSpace, answerKey, originalNumbering, withSolutions, answersOnly, title: titleBits },
+      // The stored print width decides a grid's size, so it is part of the key (28 Sep 2026).
+      rows: rows.map((r) => [r.id, r.question_number, r.total_marks, r.question_text, r.parts, r.answer, r.image_url, r.figure_url, r.has_image, (r.gen_meta as { figure?: { print_width_mm?: unknown } } | null)?.figure?.print_width_mm ?? null, (r.gen_meta as { figure?: { width_mm?: unknown } } | null)?.figure?.width_mm ?? null]),
     })).digest('hex');
     const payload = {
       count: rows.length, marksTotal,
@@ -917,7 +944,10 @@ export async function POST(req: NextRequest) {
         questions,
         workingSpace,
         answerKey,
-        coverageWarning: cov.label || null,
+        answersOnly,
+        // No "partial — N marks missing" banner on the printout (Adrian, 26 Sep 2026: "that's not
+        // necessary"); the bank page still shows the coverage chip.
+        coverageWarning: null,
       });
       timings.render_ms = Date.now() - tStart;
       if (withSolutions) {

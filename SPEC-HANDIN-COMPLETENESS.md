@@ -8,7 +8,31 @@ Q1(d) and Q2:
 
 Then: "missing-questions check at hand-in, spec first? — yes".
 
-Status: **SPEC ONLY, 22 Sep 2026 — nothing built.** Follows the 5-step recipe in
+Status: **BUILT 29–30 Sep 2026** (Adrian: "do the build order you suggest"), in four steps:
+
+1. **➕ Add pages while the paper waits** — `/app/submit?addTo=<run>` (and the science
+   twin). Opening it holds the paper out of the queue for 10 min; the bot reads every page
+   and puts the whole paper back in question order (bot `lib/page-order.js`,
+   `ai/handin-reader.js`, `phase:'pages-hold'|'add-pages'`). Refused once a lane started.
+   Site: `lib/add-pages.ts`, `api/portal/handin/add-pages`.
+   **The button on a waiting paper was REMOVED 30 Sep 2026** (Adrian: "yes remove it" — the check before
+   sending covers it, and a paper is usually claimed within a minute or two). The route and the
+   page-ordering stay: ➕ Add missing pages after marking uses them.
+2. **The check at hand-in** — ①–⑤ below. Bot `lib/handin-completeness.js`, fixture
+   `test/fixtures/handin-joey-gce2024-em-p2.json`; site `lib/handin-check.ts`.
+   **Joey's real gaps are Q1 and Q2(a) in the bank's numbering** — the "Q1(a), Q1(d), Q2"
+   written below was read off the student's own labels and is wrong; the examples keep it
+   as written in the spec.
+3. **Add missing pages to a MARKED paper** — within 14 days of release: the photos are
+   appended, only the new pages are re-marked (`queue.pages_added`), the copy is re-issued
+   with notice `pages-added`. Bot `addToMarkedRefusal` / `addPagesToMarkedRun`.
+4. **The backstop ⑥** — at every release (`api/admin/mark-triage`), `missingAfterMarking`
+   (`lib/handin-check.ts`: `unattempted_questions` + a sent-anyway check, minus what the
+   student said they didn't do; app hand-ins only, never a sheet) → notice
+   `missing-questions` naming them for 3 days with ➕ Add missing pages under it, and a
+   ⚠️ watch-out. Not built: the Monday count, the marker reading `answer:'not-done'`.
+
+Follows the 5-step recipe in
 CLAUDE.md §Building doctrine. Owner of the standard: Adrian. Related:
 [`SPEC-PAPER-MATCH.md`](SPEC-PAPER-MATCH.md) (the paper key, bank, library and fingerprint
 this reuses), `docs/MARKING.md`.

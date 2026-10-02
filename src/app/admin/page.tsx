@@ -69,7 +69,6 @@ interface Stats {
   thisWeek: { count: number; weekLabel: string };
   // Attention counts (each null when its sub-fetch failed server-side;
   // examGaps is also null outside an exam season) — cards hide on 0/null.
-  pendingPapers?: { count: number; possiblyMarking: number } | null;
   unmarkedLessons?: number | null;
   lessonsToLog?: number | null;
   examGaps?: { examType: string; count: number } | null;
@@ -217,7 +216,6 @@ export default function AdminHub() {
   // Attention cards — shown only when the count is non-zero (a clean day keeps
   // the hub as bare as before). Same .stat-card markup/classes as the original
   // status strip (2×2 grid, whole card is the tap target).
-  const papersCard = stats?.pendingPapers && stats.pendingPapers.count > 0 ? stats.pendingPapers : null;
   const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
   const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
   const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
@@ -227,7 +225,7 @@ export default function AdminHub() {
   const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
   // Hand-ins that failed on a student's phone in the last 24 h (lib/submit-failure.ts, 7 Sep 2026) — red, first.
   const failedCard = portalActivity?.failedHandins?.length ? portalActivity.failedHandins : null;
-  const hasAttentionCards = !!(papersCard || unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
+  const hasAttentionCards = !!(unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
 
   return (
     <>
@@ -261,20 +259,8 @@ export default function AdminHub() {
                   </div>
                 </Link>
               )}
-              {papersCard && (
-                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{papersCard.count}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">⏳ Papers to mark</div>
-                  {papersCard.possiblyMarking > 0 && (
-                    <div className="stat-label">+{papersCard.possiblyMarking} possibly marking now</div>
-                  )}
-                </a>
-              )}
               {triageCard && (
-                <a href="/admin/desk" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
+                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
                   <div className="stat-top">
                     <span className="stat-num">{triageCard.flagged || triageCard.readyToRelease}</span>
                     <span className="stat-arrow">›</span>
@@ -288,7 +274,7 @@ export default function AdminHub() {
                 </a>
               )}
               {compulsoryCard && (
-                <a href="/admin/desk" className="stat-card" style={{ borderLeftColor: '#047857' }}>
+                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#047857' }}>
                   <div className="stat-top">
                     <span className="stat-num">{compulsoryCard.count}</span>
                     <span className="stat-arrow">›</span>
@@ -398,13 +384,11 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
-  // 🖊 The marking desk is the front door for everything after marking (2 Sep
-  // 2026, SPEC-MARKING-DESK.md): the old triage + papers-library tiles fold into
-  // it and stay reachable from its "Other views" row. Mark a paper stays — it is
-  // where a paper enters, not where it is looked at.
-  { emoji: '🖊', title: 'Marking desk', sub: 'Marked papers → vet script + sheet → Approve & release', href: '/admin/desk' },
+  { emoji: '🎚', title: 'Switches',      sub: 'Plan accounts · worker jobs · Mac plan only', href: '/admin/switches'   },
+  // 🖊 The marking desk retired into Mark a paper on 30 Sep 2026 (Adrian: "do we
+  // need the desk?"); /admin/desk redirects there.
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
-  { emoji: '✍️', title: 'Mark a paper',   sub: 'Question PDF + working photos → marks', href: '/admin/mark-paper'  },
+  { emoji: '✍️', title: 'Mark a paper',   sub: 'Mark · release · annotate · Practice Again sheets', href: '/admin/mark-paper'  },
   { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
   { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
   { emoji: '🎯', title: 'Trap review',     sub: 'Approve the traps students get told about', href: '/admin/pitfalls' },

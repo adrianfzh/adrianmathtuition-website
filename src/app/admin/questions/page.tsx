@@ -10,6 +10,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import { splitPipeTables } from '@/lib/pipe-tables';
+import SolutionText from '@/components/SolutionText';
 import { assessCoverage } from '@/lib/paper-reconstruction';
 import {
   A_MATH_EXAM_TOPICS, EM_OWN_TOPICS, JC_TOPICS, S1_EXAM_TOPICS, S2_EXAM_TOPICS,
@@ -39,6 +40,19 @@ function MathText({ text }: { text: string }) {
  * pipe-tables), so a stem cannot read as a table on paper and as literal
  * "| t | 1 | 2 |" rows in the browser (GCE 2022 AM P1 Q2, Adrian).
  */
+const hasTable = (t: string) => splitPipeTables(t).some(b => b.kind !== 'text');
+
+/** Part answers keyed like lib/solution-readability labelKey: "a", "b.ii". */
+function partAnswerMap(parts: Part[], prefix = ''): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const p of parts) {
+    const k = (prefix ? prefix + '.' : '') + String(p.label || '').replace(/[()]/g, '').toLowerCase();
+    if (p.answer) out[k] = p.answer;
+    Object.assign(out, partAnswerMap(p.subparts || [], k));
+  }
+  return out;
+}
+
 function MathBlock({ text }: { text: string }) {
   const blocks = splitPipeTables(text);
   if (blocks.length === 1 && blocks[0].kind === 'text') {
@@ -106,7 +120,14 @@ type PaperRow = PaperMeta & {
   coverage?: { status: string; missingMarks: number; label: string } | null;
 };
 
-const LEVELS = ['AM', 'EM', 'EM_NA', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S1', 'JC2', 'JC1', 'JC2_H1'];
+const LEVELS = ['AM', 'AM_NA', 'EM', 'EM_NA', 'S3_AM', 'S3_AM_NA', 'S3_EM', 'S3_EM_NA', 'S3_EM_NT', 'S2', 'S2_NA', 'S2_NT', 'S1', 'S1_NA', 'S1_NT', 'JC2', 'JC1', 'JC2_H1'];
+// What Adrian reads (30 Sep 2026: "can we say have EM G2 instead of EM_NA?"): N(A) = G2,
+// N(T) = G1. The stored value (and the filter's value) stays the bank's level code.
+const LEVEL_LABEL: Record<string, string> = {
+  AM_NA: 'AM G2', EM_NA: 'EM G2', S3_EM: 'S3 EM', S3_AM: 'S3 AM', S3_EM_NA: 'S3 EM G2', S3_EM_NT: 'S3 EM G1',
+  S1_NA: 'S1 G2', S2_NA: 'S2 G2', S1_NT: 'S1 G1', S2_NT: 'S2 G1', S3_AM_NA: 'S3 AM G2', JC2_H1: 'JC2 H1',
+};
+const levelLabel = (l: string | null | undefined) => (l ? LEVEL_LABEL[l] ?? l : '');
 
 export default function QuestionBankPage() {
   const [password, setPassword] = useState('');
@@ -190,6 +211,8 @@ export default function QuestionBankPage() {
   const [pdfTitle, setPdfTitle] = useState(''); // prefilled with the auto title on paper open, editable in place
   const [pdfResult, setPdfResult] = useState<{ url: string; count: number; marksTotal: number; cached: boolean } | null>(null);
   const [solResult, setSolResult] = useState<{ url: string; count: number } | null>(null);
+  const [ansBusy, setAnsBusy] = useState(false);
+  const [ansResult, setAnsResult] = useState<{ url: string; count: number; cached: boolean } | null>(null);
   const replaceRef = useRef<HTMLInputElement | null>(null);
   const [replaceTarget, setReplaceTarget] = useState<string | null>(null); // figure URL being replaced
   const [replBusy, setReplBusy] = useState(false);
@@ -242,13 +265,21 @@ export default function QuestionBankPage() {
     finally { setLoading(false); }
   }, [query, level, year, school, mode, cacheCards]);
 
+  // The search box is shared by both tabs (Adrian, 29 Sep 2026: "when i type in
+  // search box, then switch to papers tab, can whatever i typed still remain in
+  // search box?"). On Papers it narrows the list by school / paper name. Read
+  // through a ref so typing does not refetch the list on every key — Enter or Go
+  // (or switching to the tab) does.
+  const queryRef = useRef(query);
+  queryRef.current = query;
   const loadPapers = useCallback(async () => {
     setLoading(true); setApiError('');
     try {
       const p = new URLSearchParams({ papers: '1' });
       if (level) p.set('level', level);
       if (year) p.set('year', year);
-      if (school) p.set('q', school);
+      const q = [school, queryRef.current].map(x => x.trim()).filter(Boolean).join(' ');
+      if (q) p.set('q', q);
       const r = await fetch(`/api/admin/questions?${p}`);
       const d = await r.json();
       if (d.error) { setApiError(d.error); return; }
@@ -338,7 +369,7 @@ export default function QuestionBankPage() {
         `${meta.school} ${meta.year}`, meta.level,
         meta.paper ? `Paper ${String(meta.paper).replace(/^P/i, '')}` : null, meta.examType,
       ].filter(Boolean).join(' · '));
-      setPdfResult(null); setSolResult(null);
+      setPdfResult(null); setSolResult(null); setAnsResult(null);
       setOpenDetail(null);
       window.scrollTo({ top: 0 });
     } catch (e) { setApiError((e as Error).message); }
@@ -376,7 +407,7 @@ export default function QuestionBankPage() {
       .catch(() => flash('Copy failed'));
   };
 
-  const badge = (c: Card) => [c.school, c.year, c.level, c.paper ? `P${String(c.paper).replace(/^P/i, '')}` : null, c.examType]
+  const badge = (c: Card) => [c.school, c.year, levelLabel(c.level), c.paper ? `P${String(c.paper).replace(/^P/i, '')}` : null, c.examType]
     .filter(Boolean).join(' · ');
 
   // ── basket (persisted) ─────────────────────────────────────────────────────
@@ -574,6 +605,32 @@ export default function QuestionBankPage() {
     finally { setPdfBusy(false); }
   };
 
+  // Answers PDF — the open paper's answer key on its own (Adrian, 25 Sep 2026).
+  // Same paper-pdf action with answersOnly, so it shares the key the Paper PDF
+  // prints and the original-numbering toggle and title.
+  const generateAnswersPdf = async () => {
+    if (!paperView || ansBusy) return;
+    setAnsBusy(true);
+    try {
+      const m = paperView.meta;
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'paper-pdf', school: m.school, year: m.year,
+          level: m.level || undefined, paper: m.paper || undefined, examType: m.examType || undefined,
+          originalNumbering: pdfOrigNum, answersOnly: true,
+          title: pdfTitle.trim() || undefined,
+        }),
+      });
+      const d = await r.json();
+      if (d.error) { flash(d.error); return; }
+      (d.warnings || []).forEach((w: string) => flash(w));
+      setAnsResult({ url: d.url, count: d.count, cached: !!d.cached });
+      navigator.clipboard?.writeText(d.url).catch(() => {});
+    } catch (e) { flash((e as Error).message); }
+    finally { setAnsBusy(false); }
+  };
+
   // Honest coverage of the open paper, from the same lib the API uses.
   const paperCoverage = useMemo(() => {
     if (!paperView) return null;
@@ -763,7 +820,7 @@ export default function QuestionBankPage() {
       {pt.image_url_after && <img src={pt.image_url_after} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
       {showSol && pt.solution && (
         <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', margin: '6px 0', fontSize: 14 }}>
-          <MathBlock text={pt.solution} />
+          {hasTable(pt.solution) ? <MathBlock text={pt.solution} /> : <SolutionText text={pt.solution} showScheme />}
         </div>
       )}
       {showSol && pt.solution_image && (
@@ -790,11 +847,15 @@ export default function QuestionBankPage() {
     <div style={{ marginTop: 10 }}>
       {d.solution && (
         <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: 12, fontSize: 14.5 }}>
-          <MathBlock text={d.solution} />
+          {hasTable(d.solution) ? <MathBlock text={d.solution} /> : <SolutionText text={d.solution} showScheme partAnswers={partAnswerMap(d.parts || [])} />}
         </div>
       )}
       {(d.solutionImages || []).map(u => <img key={u} src={u} alt="solution" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />)}
-      {d.answer && <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={d.answer} /></div>}
+      {/* Each part's answer already closes its working as a bold Answer line;
+          the combined orange line only for a solution without part answers. */}
+      {d.answer && !(d.solution && !hasTable(d.solution) && Object.keys(partAnswerMap(d.parts || [])).length) && (
+        <div style={{ color: '#843C0C', marginTop: 8, fontSize: 14.5 }}>Ans: <MathText text={d.answer} /></div>
+      )}
       {!d.solution && !(d.parts || []).some(pt => pt.solution || pt.solution_image) && !d.answer && (
         <div style={{ color: C.muted, fontSize: 13.5, marginTop: 6 }}>No stored solution on this question.</div>
       )}
@@ -919,20 +980,21 @@ export default function QuestionBankPage() {
       </header>
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-        {tab === 'search' && (
-          <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
-            <input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => e.key === 'Enter' && search(0)}
-              placeholder={dragging ? 'Drop the photo here' : mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school… or drop / paste a photo'} inputMode="search"
+        <div style={{ flex: '1 1 100%', display: 'flex', gap: 6 }}>
+            <input value={query} onChange={e => setQuery(e.target.value)}
+              onKeyDown={e => { if (e.key !== 'Enter') return; if (tab === 'search') search(0); else { setPaperView(null); loadPapers(); } }}
+              placeholder={tab === 'papers' ? 'Filter papers by school or name — "adrian", "Crescent 2024"…' : dragging ? 'Drop the photo here' : mode === 'smart' ? 'Describe the question — "ladder against wall trig"…' : 'Search question text or school… or drop / paste a photo'} inputMode="search"
               style={{ flex: 1, padding: '10px 12px', fontSize: 16, borderRadius: 10,
                 border: dragging ? `2px dashed ${C.navy}` : `1px solid ${C.border}`, background: dragging ? 'rgba(20,41,82,0.05)' : '#fff' }} />
-            <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
-              style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
-              {ocrBusy ? '…' : '📷'}
-            </button>
+            {tab === 'search' && (
+              <button onClick={() => cameraRef.current?.click()} disabled={ocrBusy} title="Snap a question to find it"
+                style={{ padding: '0 12px', fontSize: 18, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 10, cursor: 'pointer' }}>
+                {ocrBusy ? '…' : '📷'}
+              </button>
+            )}
             <input ref={cameraRef} type="file" accept="image/*" capture="environment" hidden
               onChange={e => onPhotoPicked(e.target.files?.[0] ?? null)} />
           </div>
-        )}
         {tab === 'search' && (
           <div style={{ display: 'flex', gap: 4 }}>
             {(['text', 'smart'] as const).map(m => (
@@ -945,7 +1007,7 @@ export default function QuestionBankPage() {
         )}
         <select value={level} onChange={e => setLevel(e.target.value)} style={{ padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }}>
           <option value="">All levels</option>
-          {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          {LEVELS.map(l => <option key={l} value={l}>{levelLabel(l)}</option>)}
         </select>
         <input value={year} onChange={e => setYear(e.target.value)} placeholder="Year" inputMode="numeric"
           style={{ width: 76, padding: 8, fontSize: 14, border: `1px solid ${C.border}`, borderRadius: 8 }} />
@@ -970,7 +1032,7 @@ export default function QuestionBankPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
             <h2 style={{ fontSize: 16.5, fontWeight: 700 }}>
               {paperView.meta.school} · {paperView.meta.year}
-              {paperView.meta.level ? ` · ${paperView.meta.level}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
+              {paperView.meta.level ? ` · ${levelLabel(paperView.meta.level)}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
               {paperView.meta.examType ? ` · ${paperView.meta.examType}` : ''}
             </h2>
             <span style={{ color: C.muted, fontSize: 13 }}>
@@ -996,6 +1058,10 @@ export default function QuestionBankPage() {
                 disabled={solBusy}
                 style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: solBusy ? 0.6 : 1 }}>
                 {solBusy ? 'Building…' : '📄 Solutions PDF'}
+              </button>
+              <button onClick={generateAnswersPdf} disabled={ansBusy}
+                style={{ fontSize: 12.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 8, padding: '3px 9px', cursor: 'pointer', opacity: ansBusy ? 0.6 : 1 }}>
+                {ansBusy ? 'Building…' : '🔑 Answers PDF'}
               </button>
               <button onClick={() => {
                 const open = paperView.questions.every(q => solOpen[q.id]);
@@ -1049,6 +1115,15 @@ export default function QuestionBankPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
                 <span>✅ Paper ready — {pdfResult.count} questions · {pdfResult.marksTotal} marks{pdfResult.cached ? ' · instant (cached)' : ''} · link copied</span>
                 <a href={pdfResult.url} target="_blank" rel="noopener noreferrer"
+                  style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
+                  Open PDF ↗
+                </a>
+              </div>
+            )}
+            {ansResult && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 8, background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 8, padding: '6px 10px', fontSize: 13 }}>
+                <span>✅ Answers ready — {ansResult.count} question{ansResult.count === 1 ? '' : 's'}{ansResult.cached ? ' · instant (cached)' : ''} · link copied</span>
+                <a href={ansResult.url} target="_blank" rel="noopener noreferrer"
                   style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 600, color: '#fff', background: '#15803d', borderRadius: 8, padding: '4px 12px', textDecoration: 'none' }}>
                   Open PDF ↗
                 </a>
@@ -1263,7 +1338,7 @@ export default function QuestionBankPage() {
             <button onClick={() => openPaper(pp)}
               style={{ display: 'flex', gap: 10, alignItems: 'baseline', flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <strong style={{ fontSize: 14.5 }}>{pp.school}</strong>
-              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {pp.level}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
+              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {levelLabel(pp.level)}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
               <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
                 <span style={{ color: C.muted, fontSize: 12.5 }}>
                   {pp.count} q{pp.marksTotal != null && pp.marksTotal > 0 ? ` · ${pp.marksTotal} marks` : ''}
@@ -1379,7 +1454,7 @@ export default function QuestionBankPage() {
               <button key={st.id} onClick={() => doAssign(st.id, st.name)} disabled={!!assignBusy}
                 style={{ display: 'flex', gap: 10, width: '100%', textAlign: 'left', alignItems: 'baseline', background: C.card, border: `1px solid ${C.border}`, borderRadius: 10, padding: '10px 12px', marginBottom: 6, cursor: 'pointer' }}>
                 <strong style={{ fontSize: 14.5 }}>{assignBusy === st.id ? '…' : st.name}</strong>
-                <span style={{ color: C.muted, fontSize: 12.5 }}>{st.level}</span>
+                <span style={{ color: C.muted, fontSize: 12.5 }}>{levelLabel(st.level)}</span>
               </button>
             ))}
             {!students.length && <div style={{ color: C.muted, fontSize: 13.5, padding: 12 }}>Loading students…</div>}

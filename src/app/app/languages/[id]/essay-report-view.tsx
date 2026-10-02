@@ -27,13 +27,15 @@ function Marked({ text, marks }: { text: string; marks: EssayMark[] }) {
               s.mark ? (
                 <span key={j} className="relative inline">
                   <mark
-                    className="bg-rose-50 text-rose-900 underline decoration-rose-500 decoration-2 underline-offset-2 rounded-sm px-0.5"
-                    title={[s.mark.fix ? `→ ${s.mark.fix}` : null, s.mark.reason, codeLabel('english', s.mark.code)].filter(Boolean).join(' · ')}
+                    className={s.mark.confirmed === false
+                      ? 'bg-transparent text-gray-800 underline decoration-dotted decoration-rose-300 decoration-2 underline-offset-2 px-0.5'
+                      : 'bg-rose-50 text-rose-900 underline decoration-rose-500 decoration-2 underline-offset-2 rounded-sm px-0.5'}
+                    title={[s.mark.fix ? `→ ${s.mark.fix}` : null, s.mark.reason, codeLabel('english', s.mark.code)].filter(Boolean).join(' · ') + (s.mark.confirmed === false ? ' · one to check' : '')}
                   >
                     {s.text}
                   </mark>
                   {s.mark.fix && s.mark.fix !== s.text && (
-                    <span className="ml-1 text-[12px] font-semibold text-emerald-700 align-baseline">{s.mark.fix}</span>
+                    <span className={`ml-1 text-[12px] font-semibold align-baseline ${s.mark.confirmed === false ? 'text-gray-500' : 'text-emerald-700'}`}>{s.mark.fix}</span>
                   )}
                 </span>
               ) : (
@@ -60,6 +62,11 @@ export default function EssayReportView({ text, report, criteria, subject }: {
           Underlined in red is a slip; the green words beside it are the fix. Tap a slip for the reason.
           {report.marks.length ? ` ${report.marks.length} marked.` : ' Nothing to mark — clean.'}
         </p>
+        {report.marks.some(m => m.confirmed === false) && (
+          <p className="text-[12px] text-gray-500 mb-3">
+            A dotted underline is one to check. Only one of our two reads flagged it.
+          </p>
+        )}
         <Marked text={text} marks={report.marks} />
       </section>
 

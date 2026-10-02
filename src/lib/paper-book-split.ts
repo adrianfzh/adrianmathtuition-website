@@ -163,7 +163,24 @@ export function partFileName(
   const year = part.year ?? book.year;
   const national = book.school.toUpperCase() === 'GCE' || exam === 'GCE';
   const school = national ? '' : ` ${book.school}`;
-  return `${book.level} ${national ? 'GCE' : exam} ${year}${school} Paper ${part.paper}.${ext}`;
+  return `${levelNameTokens(book.level)} ${national ? 'GCE' : exam} ${year}${school} Paper ${part.paper}.${ext}`;
+}
+
+/**
+ * A bank level written the way the inbox's filename reader reads it back (30 Sep 2026).
+ * The part names used to carry the level code itself — "CS_PHYS_NA PRELIM 2023 Dunearn
+ * Paper 1" — and the reader cannot see words inside an underscore code, so every split
+ * part of a G2 / Sec 3 / H1 / Combined Science book was refused and never queued.
+ * Pinned by a round-trip test over every level.
+ */
+const LEVEL_NAME: Record<string, string> = {
+  EM_NA: 'EM (NA)', AM_NA: 'AM (NA)', S1_NA: 'S1 (NA)', S2_NA: 'S2 (NA)', S1_NT: 'S1 (NT)', S2_NT: 'S2 (NT)',
+  S3_EM: 'S3 EM', S3_AM: 'S3 AM', S3_EM_NA: 'S3 EM (NA)', S3_EM_NT: 'S3 EM (NT)', S3_AM_NA: 'S3 AM (NA)',
+  JC2_H1: 'H1', PHYS: 'PHY', S3_PHYS: 'S3 PHY', S3_CHEM: 'S3 CHEM', S3_BIO: 'S3 BIO',
+  CS_CHEM: 'CS CHEM', CS_PHYS: 'CS PHY', CS_BIO: 'CS BIO', CS_CHEM_NA: 'CS CHEM G2', CS_PHYS_NA: 'CS PHY G2', CS_BIO_NA: 'CS BIO G2',
+};
+export function levelNameTokens(level: string): string {
+  return LEVEL_NAME[level] ?? level;
 }
 
 /** "AM GCE 2025 Paper 1 (pp. 1–16), Paper 2 (pp. 17–34)" — for the row's notes and the tick's response. Pure. */

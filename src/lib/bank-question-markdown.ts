@@ -5,6 +5,7 @@
 // parallel logic; unify into this module if it's touched again.
 
 import { formatSolution, normalizeMathDelimiters } from './solution-format';
+import { readableSolutionText } from './solution-readability';
 
 const STORAGE_BUCKET =
   'https://nempslbewxtlikfzachi.supabase.co/storage/v1/object/public/question_images/';
@@ -343,7 +344,7 @@ export function questionStructured(q: BankQuestion): { stem: string; parts: Stru
 // (lib/solution-format.ts). Images are substituted AFTER formatting so the
 // {{IMG:…}} lines pass through the formatter untouched.
 function workedSolution(text: string, gate?: SolutionImageGate): string {
-  return renderInlineImagesInText(formatSolution(text), gate);
+  return renderInlineImagesInText(formatSolution(readableSolutionText(text)), gate);
 }
 
 /**

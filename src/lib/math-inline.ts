@@ -43,6 +43,19 @@ export function looksLikeMath(c: string): boolean {
   // "(see, above)" stays prose.
   if (c.length <= 32 && !/[a-zA-Z]{2,}/.test(c) &&
       /^\(\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*(\s*,\s*[-+−]?[\w√.]+(\s*[-+−]?\s*[\w√.]+)*)+\s*\)$/.test(c.trim())) return true;
+  // A ratio — "$3 : 1$", "$9 : 4$", "$x : y$", "$1.5 : 2 : 3$" (29 Sep 2026, E Math Set 2
+  // P1 Q10 printed "$3 : 1$" raw). Short terms only (a number or one letter), so prose
+  // with a colon ("Note: see $5") never matches; a segment ratio "$PQ : PR$" is 2–3 capitals.
+  if (c.length <= 30 && /^\s*(\d+(\.\d+)?|[a-zA-Z]|[A-Z]{2,3})(\s*:\s*(\d+(\.\d+)?|[a-zA-Z]|[A-Z]{2,3}))+\s*$/.test(c)) return true;
+  // A lone signed number with a space — "$- 6$".
+  if (/^\s*[−–-]\s*\d+(\.\d+)?\s*$/.test(c)) return true;
+  // A NAMED point — "$H(1, 5)$", "$P(-2, a)$", "$A'(3, 4)$" (29 Sep 2026, A Math Set 2
+  // P1 Q13 printed "$H(1, 5)$." raw): one capital, an optional prime or subscript
+  // digit, then a coordinate pair that the rules above would accept on its own.
+  {
+    const m = c.trim().match(/^[A-Z](?:'|′|_?\d)?\s*(\(.*\))$/);
+    if (m && looksLikeMath(m[1])) return true;
+  }
   // Bare numeric lists — "$2, 3$" in a study note (Kayla's P2 script printed the
   // raw dollars, 2026-08-29). A digit is REQUIRED after every comma, so the
   // "5, " caught between two prices ("$5, $6") still reads as prose.
@@ -78,9 +91,18 @@ const PARALLEL_GLYPH = /\u2225/g;
 
 /** Render a comment string to safe HTML: math spans via KaTeX, the rest escaped. */
 export function mathHtml(s: string): string {
-  const parts = s.replace(PARALLEL_GLYPH, '//').replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$[^$\n]+\$)/g);
+  // `$$…$$` is DISPLAY maths (a bank stem's own line — "$$3 \qquad 7 \qquad 13 \qquad 21$$",
+  // E Math Set 1 P1 Q25, 29 Sep 2026): split it out first, or the inline scan pairs the inner
+  // dollars and leaves a stray "$" at each end. Always TeX — nobody writes a price as "$$".
+  const parts = s.replace(PARALLEL_GLYPH, '//').replace(/\\\$/g, ESCAPED_DOLLAR).split(/(\$\$[^$]+\$\$|\$[^$\n]+\$)/g);
   return parts
     .map((part, i) => {
+      if (part.length > 4 && part.startsWith('$$') && part.endsWith('$$')) {
+        const inner = part.slice(2, -2).replaceAll(ESCAPED_DOLLAR, '\\$');
+        try {
+          return katex.renderToString(inner, { throwOnError: false, output: 'html', displayMode: true, macros: { ...KATEX_MACROS } });
+        } catch { /* fall through — show the literal text */ }
+      }
       if (part.length > 2 && part.startsWith('$') && part.endsWith('$')) {
         const inner = part.slice(1, -1).replaceAll(ESCAPED_DOLLAR, '\\$');
         // Two prices colliding, not a span: in "… $420 = $52.50 …" the closing $
@@ -99,4 +121,53 @@ export function mathHtml(s: string): string {
       return escapeHtml(part.replaceAll(ESCAPED_DOLLAR, '$'));
     })
     .join('');
+}
+
+/**
+ * One line the writer MEANT as maths — a red-pen step, a fix, a final line.
+ * The pen wraps each step in `$…$`, and now and then drops the closing one
+ * ("$P(\text{at most 2 white}) = 3\left[…\right] +", Prelim Set 3 P2 Q6,
+ * 1 Oct 2026) — `mathHtml` then shows the raw TeX. An odd count of `$` means
+ * the dollars are wrapping, not maths: strip them and render the line as TeX.
+ * A balanced line goes through `mathHtml` unchanged.
+ */
+export function mathLineHtml(s: string): string {
+  const t = s.trim().replace(/\\\$/g, '\u0000');
+  // A line that opens and closes with dollars is one formula, however many the
+  // writer typed ("$$= \frac{12}{b^2}(4b^2) = 48$", a transcription, 1 Oct 2026).
+  const wrapped = /^\$+[^$]+\$+$/.test(t);
+  const dollars = (t.match(/\$/g) ?? []).length;
+  const inner = t.replace(/\$/g, '').replaceAll('\u0000', '\\$').trim();
+  if (!inner) return '';
+  // A prose line the marker wrapped as maths — "$\text{Sketch: both meters drawn as
+  // circles labelled A and V}$" (a physics transcription, 1 Oct 2026) — renders as one
+  // unbreakable KaTeX span and is cut off on a phone. Its leading \text{…} becomes
+  // ordinary prose that wraps; whatever maths follows stays one formula.
+  const prose = leadingText(inner);
+  if (prose) return mathHtml(prose.rest ? `${prose.text} $${prose.rest}$` : prose.text);
+  if (dollars % 2 === 0 && !wrapped) return mathHtml(s);
+  try {
+    return katex.renderToString(inner, { throwOnError: false, output: 'html', macros: { ...KATEX_MACROS } });
+  } catch {
+    return escapeHtml(inner);
+  }
+}
+
+/** "\\text{finish at } (12\\text{ V})" → { text: "finish at", rest: "(12\\text{ V})" }; null when the line does not open with \\text{. */
+function leadingText(inner: string): { text: string; rest: string } | null {
+  if (!inner.startsWith('\\text{')) return null;
+  let depth = 0;
+  for (let i = 5; i < inner.length; i++) {
+    const ch = inner[i];
+    if (ch === '{') depth++;
+    else if (ch === '}') {
+      depth--;
+      if (depth === 0) {
+        const text = inner.slice(6, i).trim();
+        const rest = inner.slice(i + 1).trim();
+        return text ? { text, rest } : null;
+      }
+    }
+  }
+  return null;
 }

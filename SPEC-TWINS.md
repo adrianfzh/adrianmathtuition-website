@@ -1,6 +1,6 @@
 # SPEC-TWINS — our own question for every school question we serve
 
-**Status: SPEC, 11 Sep 2026. Not built.** Adrian: *"creating questions based
+**Verified by the checks since 30 Sep 2026** (Adrian: *"if they pass the checks consider them verified"*): `publish` runs only after every gate, the blind solve and the moderator passed, so it writes `verified=true` (`gen_meta.verified_by = 'checks'`); Adrian's per-twin read is no longer a step, Retire on `/admin/generated` takes one out. The 51 twins written before the change were flipped the same day. Flipping a topic to ours-only stays his. **Status: phase 2 BUILT 30 Sep 2026** — `serving_policy` + `serving_school_rows()` + the `twin_readiness` view (`migrations/serving_policy.sql`), the four serving RPCs admit school rows only where the policy says so, `practiceEligibility {schoolRowsRetired}` mirrors it, `GET|POST /api/admin/serving-policy` (409 below the threshold), the 👯 Flip section on `/admin/ops` (`lib/serving-policy.ts` pure/tested); Adrian flips, nothing flips itself. **Phase 1 BUILT** the same day (the Fly worker's `twins` lane). **Phase 0 BUILT 30 Sep 2026** — the `twin_queue` view + the `kiosk_pool` verified guard (`migrations/twin_queue.sql`; every serving door now refuses an unverified `ai_generated` row), `scripts/twins/twin.mjs` (queue · brief · check · publish · review) and the `twin-question` skill (Opus author → gates → Sonnet blind solve → Opus moderate → figure → insert `verified=false`). 40 E Math twins written for Adrian's read the same day (Adrian: "40 in review page is good, we can go ahead"). **Phase 1 BUILT 30 Sep 2026** — the Fly worker's `twins` lane (bot `worker/fly/twins.sh` + `jobs.sh`, every 15 min at nice 15 behind marking, ≤3 sources a run, EM first via `TWINS_LEVEL`, `job_runs` `twin-batch`, `docs/OPS.md`) and Adrian's per-twin ✓ Verify on `/admin/generated` (`POST /api/admin/generated {action:'verify'}`). Phase 2 (`serving_policy` + the flip) waits until verified twins ≥ the drawn school rows of a topic. **Spec written 11 Sep 2026.** Adrian: *"creating questions based
 off the schools' questions and then serving our own questions, and not serving
 schools' questions — in the end our serving bank will just be wholly our own
 questions. need to consider running as a proper company."* Then: *"write the
@@ -94,8 +94,8 @@ step, `assemble`'s gate logic).
    the registry refuses is a reject when the source had a figure; a twin may
    drop a purely decorative figure the source had only if the moderator says
    the question stands without it.
-7. **Insert** with `verified=false`; flip to `verified=true` when all gates are
-   green, gates recorded in `gen_meta`. A rejected twin is not inserted; the
+7. **Insert** with `verified=true` once all gates are green (the only way to
+   reach publish), gates recorded in `gen_meta`. A rejected twin is not inserted; the
    reason goes to the batch log so the next attempt can avoid it (up to two
    retries per source, then the source is parked with the reasons).
 
@@ -185,6 +185,18 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   each run takes ten sources from `twin_queue`, runs §4, stops. Runs every
   30 minutes while the desktop app is open; four in parallel when Adrian wants
   the fleet on it (each with its own RUNNER name).
+- **The pick is per sub-skill across both years (1 Oct 2026, Adrian: "we need a
+  twin (or a few twins) for every skill/type of question … Sec 3 A Math and Sec 3
+  E Math are quite similar right?").** The bank files Sec 3 rows under the Sec 4
+  sub-skills (S3_AM → AM's, S3_EM → EM's), so `twin.mjs queue` works the FAMILY
+  (`AM`+`S3_AM`, `EM`+`S3_EM`): the rows drawn in 90 days first, then ONE row for
+  every sub-skill with no twin in either year (largest first), then the rest one
+  row per sub-skill per round; inside a sub-skill the lane's own level goes
+  first. A lane started for either level draws from both. Measured that morning:
+  A Math 209 sub-skills / 36 covered, E Math 310 / 35 — the target is those
+  ~520 sub-skills, not the 36,000 school rows. Sum-and-product-of-roots (sub-skill
+  1522, out of the syllabus since 2021) was stamped `legacy_syllabus` the same day
+  so the queue skips it.
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic

@@ -10,5 +10,5 @@ import { redirect } from 'next/navigation';
 export const dynamic = 'force-dynamic';
 
 export default function TriageRetired() {
-  redirect('/admin/desk');
+  redirect('/admin/mark-paper');
 }

@@ -355,8 +355,10 @@ export function getTopicsForPaperLevel(level: string): TopicCategory[] {
     case 'JC':
     case 'JC1':
     case 'JC2': return JC_TOPICS;                // H2 Math family
-    case 'S1': return S1_EXAM_TOPICS;
-    case 'S2': return S2_EXAM_TOPICS;
+    case 'S1':
+    case 'S1_NA': return S1_EXAM_TOPICS;              // Sec 1 N(A) shares Sec 1's list (28 Sep 2026)
+    case 'S2':
+    case 'S2_NA': return S2_EXAM_TOPICS;
     default: return [];
   }
 }

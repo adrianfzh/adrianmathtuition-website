@@ -17,6 +17,7 @@ import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
 import { waDigits, waDisplay } from '@/lib/wa-number';
 import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
 import { adhocDatesText } from '@/lib/adhoc-billing';
+import { FINAL_EXTRAS_FORMULA, isFinalExtrasInvoice } from '@/lib/graduation';
 import { getPriorBalance } from '@/lib/invoice-consolidate';
 
 export const runtime = 'nodejs';
@@ -458,7 +459,7 @@ export async function POST(req: NextRequest) {
       } else if (isAmended) {
         html = buildAmendedEmailHtml(invoice, {
           reason: customMessage,
-          holidayNote: holidayNoteHtml(
+          holidayNote: isFinalExtrasInvoice(rec.fields || {}) ? '' : holidayNoteHtml(
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined, subjectLevel: stu.fields['Subject Level'] as string | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
             studentName,
@@ -482,7 +483,7 @@ export async function POST(req: NextRequest) {
           arrearsNote: arrearsNoteFrom(rec.fields['Auto Notes'] as string),
           prepNote: examPrepNoteFrom(rec.fields['Auto Notes'] as string),
           graduation: examCutoffNoteFrom(rec.fields['Auto Notes'] as string) ? graduationNote(studentName) : null,
-          holidayNote: holidayNoteHtml(
+          holidayNote: isFinalExtrasInvoice(rec.fields || {}) ? '' : holidayNoteHtml(
             { level: invoice.level, subjects: stu.fields['Subjects'] as string[] | undefined, subjectLevel: stu.fields['Subject Level'] as string | undefined },
             invoiceMonthNumber(rec.fields['Month'] as string),
             studentName,
@@ -544,7 +545,10 @@ export async function POST(req: NextRequest) {
       }
       // Scope to this run's invoice month only so stale rows from previous
       // cycles don't get re-sent automatically.
-      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),{Month}='${targetMonthLabel}')`;
+      // …plus a leaver's final-extras bill (lib/graduation.ts), which carries the
+      // month of its lessons, not this run's month — drafted when their last
+      // enrollment closed, it goes out with the next send.
+      const formula = `AND(OR({Status}='Draft',{Status}='Approved'),OR({Month}='${targetMonthLabel}',${FINAL_EXTRAS_FORMULA}))`;
       const data = await airtableRequestAll('Invoices', `?filterByFormula=${encodeURIComponent(formula)}`);
       const candidates: any[] = data.records || [];
 
@@ -563,8 +567,9 @@ export async function POST(req: NextRequest) {
         if ((f['Custom Email Message'] || '').trim()) return false;         // bespoke email
         return true;
       };
-      invoiceRecords = candidates.filter(isCleanRegular);
-      heldForReview = candidates.filter(r => !isCleanRegular(r));
+      const sendsItself = (r: any) => isCleanRegular(r) || isFinalExtrasInvoice(r.fields || {});
+      invoiceRecords = candidates.filter(sendsItself);
+      heldForReview = candidates.filter(r => !sendsItself(r));
       console.log(`[send-invoices] cron classifier: ${invoiceRecords.length} clean → auto-send, ${heldForReview.length} held for review`);
     }
 
@@ -712,7 +717,7 @@ export async function POST(req: NextRequest) {
       } else if (isAmended) {
         html = buildAmendedEmailHtml(invoice, {
           reason: customMessage,
-          holidayNote: holidayNoteHtml(
+          holidayNote: isFinalExtrasInvoice(invoiceRecord.fields || {}) ? '' : holidayNoteHtml(
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined, subjectLevel: student['Subject Level'] as string | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
             invoice.studentName,
@@ -736,7 +741,7 @@ export async function POST(req: NextRequest) {
           arrearsNote: arrearsNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           prepNote: examPrepNoteFrom(invoiceRecord.fields['Auto Notes'] as string),
           graduation: examCutoffNoteFrom(invoiceRecord.fields['Auto Notes'] as string) ? graduationNote(invoice.studentName) : null,
-          holidayNote: holidayNoteHtml(
+          holidayNote: isFinalExtrasInvoice(invoiceRecord.fields || {}) ? '' : holidayNoteHtml(
             { level: invoice.level, subjects: student['Subjects'] as string[] | undefined, subjectLevel: student['Subject Level'] as string | undefined },
             invoiceMonthNumber(invoiceRecord.fields['Month'] as string),
             invoice.studentName,

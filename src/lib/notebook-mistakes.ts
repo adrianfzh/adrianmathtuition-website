@@ -30,7 +30,8 @@
 // that already holds that ref ignores the observation — so a release hook that
 // fires twice, or the backfill re-run, changes nothing.
 
-import { ERROR_KIND_LABEL, isErrorKind, type ErrorKind } from './error-kinds';
+import { CARELESS_KINDS, ERROR_KIND_LABEL, isErrorKind, type ErrorKind } from './error-kinds';
+import { isScienceSubject } from './portal-subjects';
 import { readDiagnosis } from './sheet-diagnosis';
 import { sgtDateISO } from './sgt';
 
@@ -149,6 +150,35 @@ export function mistakeTitle(kind: ErrorKind, topic: string): string {
 export function unclassifiedTitle(topic: string): string {
   const t = topic.replace(/\s+/g, ' ').trim().slice(0, MAX_TOPIC_IN_TITLE);
   return `Marks lost in ${t}`.slice(0, MAX_TITLE);
+}
+
+/**
+ * A science paper files its lost marks under ONE OF THREE REASONS (24 Sep 2026,
+ * the chemistry study loop — Adrian's three: a concept gap, a careless slip, or
+ * the wrong keywords), plus "incomplete" for a point never written. The marker's
+ * nine maths kinds fold into them: concept / misread → concept; the six slips →
+ * careless; keywords (science's own tenth kind) → keywords; incomplete stays.
+ * Stored as the entry's error_kind so the rollups still read.
+ */
+export const SCIENCE_REASONS = ['concept', 'careless', 'keywords', 'incomplete'] as const;
+export type ScienceReason = (typeof SCIENCE_REASONS)[number];
+
+export function scienceReason(kind: ErrorKind | null): ScienceReason | null {
+  if (!kind) return null;
+  if (kind === 'keywords' || kind === 'incomplete') return kind;
+  if (CARELESS_KINDS.includes(kind)) return 'careless';
+  return 'concept';   // concept, misread
+}
+
+const SCIENCE_REASON_TITLE: Record<ScienceReason, string> = {
+  concept: 'Concept gap', careless: 'Careless slip', keywords: 'Wrong keywords', incomplete: 'Incomplete',
+};
+
+/** "Wrong keywords in Acids and bases" — a science entry's title; no reason → the topic alone. */
+export function scienceTitle(reason: ScienceReason | null, topic: string): string {
+  if (!reason) return unclassifiedTitle(topic);
+  const t = topic.replace(/\s+/g, ' ').trim().slice(0, MAX_TOPIC_IN_TITLE);
+  return `${SCIENCE_REASON_TITLE[reason]} in ${t}`.slice(0, MAX_TITLE);
 }
 
 /** Topics compare case-insensitively, whitespace-collapsed. */
@@ -289,6 +319,8 @@ export function entriesFromRun(
   const questions = readRunQuestions(resultJson);
   const paper = meta.paperName?.trim() || null;
   const subject = meta.subject?.trim() || null;
+  // A science paper (24 Sep 2026) files under the three reasons, not the nine kinds.
+  const science = isScienceSubject(subject);
   const ev = (label: string | null, clean: boolean): MistakeEvidence =>
     ({ kind: 'paper', ref: runId, label, paper, date: releasedAt, clean });
   const out: Observation[] = [];
@@ -308,7 +340,7 @@ export function entriesFromRun(
         out.push({
           kind: 'mistake',
           title: skill.title.slice(0, MAX_TITLE),
-          errorKind: dominantKind(named.flatMap(q => q.parts)),
+          errorKind: science ? scienceReason(dominantKind(named.flatMap(q => q.parts))) : dominantKind(named.flatMap(q => q.parts)),
           topic, subject,
           evidence: ev(label, false),
         });
@@ -326,8 +358,9 @@ export function entriesFromRun(
       if (!q.topic) continue;
       for (const p of q.parts) {
         if (p.max - p.awarded <= 0) continue;
-        const key = `${topicKey(q.topic)}|${p.kind ?? '-'}`;
-        const g = groups.get(key) ?? { topic: q.topic, kind: p.kind, labels: [] };
+        const kind = science ? scienceReason(p.kind) : p.kind;
+        const key = `${topicKey(q.topic)}|${kind ?? '-'}`;
+        const g = groups.get(key) ?? { topic: q.topic, kind, labels: [] };
         g.labels.push(partLabel(q.number, p.label));
         groups.set(key, g);
       }
@@ -335,7 +368,8 @@ export function entriesFromRun(
     for (const g of groups.values()) {
       out.push({
         kind: 'mistake',
-        title: g.kind ? mistakeTitle(g.kind, g.topic) : unclassifiedTitle(g.topic),
+        title: science ? scienceTitle(scienceReason(g.kind), g.topic)
+          : g.kind ? mistakeTitle(g.kind, g.topic) : unclassifiedTitle(g.topic),
         errorKind: g.kind, topic: g.topic, subject,
         evidence: ev(g.labels.join(', '), false),
       });

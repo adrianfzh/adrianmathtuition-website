@@ -12,8 +12,9 @@
 //   standard-questions-P<n>.md  every real question of those years for this paper number,
 //                               from the run's own corpus.json, in Q order — difficulty
 //                               anchors AND the re-skin list for the moderator.
-//   standard.md                 the written standard for the level (E Math: the skill's
-//                               reference/em-standard-2024-2025.md); a note when none exists.
+//   standard.md                 the written standard for the level (the skill's
+//                               reference/{em,am}-standard-2024-2025.md, jc-standard-2022-2024.md);
+//                               a note when none exists.
 // Both files are named by the prompt templates in .claude/skills/gce-paper/prompts/.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -23,13 +24,19 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const argv = process.argv.slice(2);
 const argOf = (n, d) => { const i = argv.indexOf(n); return i >= 0 ? argv[i + 1] : d; };
 const RUN = argOf('--run', null);
-const YEARS = argOf('--years', '2024,2025').split(',').map(s => s.trim()).filter(Boolean);
 if (!RUN) { console.error('usage: standard.mjs --run <run dir> [--years 2024,2025]'); process.exit(2); }
 
 const plan = JSON.parse(readFileSync(join(RUN, 'plan.json'), 'utf8'));
 const corpus = JSON.parse(readFileSync(join(RUN, 'corpus.json'), 'utf8'));
 const paperNo = Number(plan.paperNo);
-const level = /^GCE-EM/.test(plan.key) ? 'EM' : /^GCE-AM/.test(plan.key) ? 'AM' : null;
+const level = /^GCE-EM/.test(plan.key) ? 'EM' : /^GCE-AM/.test(plan.key) ? 'AM' : /^GCE-JC/.test(plan.key) ? 'JC' : null;
+// The sittings that set the standard. O-Level: 2024 + 2025 (Adrian, 12 Sep 2026, above).
+// H2: 2022–2024 — Adrian, 26 Sep 2026: "discount year 2025 because somehow that year was
+// too easy"; 2025 was the first sitting of the revised 9758 (recurrence in, method of
+// differences out), so its questions are still in the run's corpus as syllabus anchors
+// and in the novelty gate, but they do not set the difficulty.
+const DEFAULT_YEARS = level === 'JC' ? '2022,2023,2024' : '2024,2025';
+const YEARS = argOf('--years', DEFAULT_YEARS).split(',').map(s => s.trim()).filter(Boolean);
 const kind = paperNo === 1 ? 'a short question' : 'a long question';
 
 const re = new RegExp(`^GCE (${YEARS.join('|')}) P${paperNo} Q(\\d+)`);
@@ -42,7 +49,8 @@ rows.sort((a, b) => {
 if (!rows.length) { console.error(`no GCE ${YEARS.join('/')} P${paperNo} questions in ${join(RUN, 'corpus.json')}`); process.exit(1); }
 
 const out = [];
-out.push(`# The recent standard — every GCE ${YEARS.join(' and ')} Paper ${paperNo} question`, '');
+const yearsText = YEARS.length > 1 ? `${YEARS.slice(0, -1).join(', ')} and ${YEARS[YEARS.length - 1]}` : YEARS[0];
+out.push(`# The recent standard — every GCE ${yearsText} Paper ${paperNo} question`, '');
 out.push(`Read these for DIFFICULTY and for what ${kind} now demands. They are the real papers; the novelty gate and the moderator reject any new question that re-skins one of them (same situation or structure with new numbers). Marks are in [n].`, '', '');
 let year = null;
 for (const q of rows) {
@@ -55,7 +63,7 @@ const qPath = join(RUN, `standard-questions-P${paperNo}.md`);
 writeFileSync(qPath, out.join('\n'));
 console.log(`${qPath}  (${rows.length} questions: ${YEARS.map(y => `${y}: ${rows.filter(r => r.ref.startsWith(`GCE ${y} `)).length}`).join(', ')})`);
 
-const refFile = { EM: 'em-standard-2024-2025.md', AM: 'am-standard-2024-2025.md' }[level];
+const refFile = { EM: 'em-standard-2024-2025.md', AM: 'am-standard-2024-2025.md', JC: 'jc-standard-2022-2024.md' }[level];
 const ref = refFile ? join(ROOT, '.claude', 'skills', 'gce-paper', 'reference', refFile) : null;
 const sPath = join(RUN, 'standard.md');
 if (ref && existsSync(ref)) {

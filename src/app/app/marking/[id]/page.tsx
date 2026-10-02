@@ -4,16 +4,17 @@
 // the sheet written from it, then the PDF for anyone who wants the file.
 // Same access rule as the list: the logged-in student's own released run.
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { canAddPagesAfterMarking, pagesBeingAdded, type MarkedRow } from '@/lib/add-pages';
+import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { viewingAsStudent } from '@/lib/portal-beta';
+import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { fileHref } from '@/lib/student-files-url';
-import PaperSubjectPill from '@/components/PaperSubjectPill';
+import PaperSubjectPill, { subjectTone } from '@/components/PaperSubjectPill';
 import PaperTabs from '../PaperTabs';
 import PracticeAgainRequest, { type PracticeAgainState } from '../PracticeAgainRequest';
 import NextWave from '../NextWave';
@@ -24,10 +25,6 @@ import { coveredRunIds } from '@/lib/sheet-queue';
 import { shelvedGaps, shelfWorthAWave } from '@/lib/student-batch';
 import { followUpDepthOf } from '@/lib/sheet-queue';
 import { displayPaperName } from '@/lib/paper-display-name';
-import { subjectLabel } from '@/lib/mark-subjects';
-import { TEACHER_TOTAL_LABEL } from '@/lib/science-truth';
-import ScienceTeacherMark from '../ScienceTeacherMark';
-import ScienceUseful from '../ScienceUseful';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import StarPaper from '../StarPaper';
@@ -46,7 +43,12 @@ function niceDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
-export default async function PaperPage({ params }: { params: Promise<{ id: string }> }) {
+// `under` = which family's route rendered the page (25 Sep 2026): the shell picks
+// the Math | Science switcher AND the bottom menu from the path, so a chemistry
+// paper at /app/marking/<id> showed the Math tab and the maths menu. A science
+// run belongs at /app/science/marking/<id> (that route wraps this page) and
+// either door redirects to the right one, so old links and pushes still work.
+export default async function PaperPage({ params, under = 'math' }: { params: Promise<{ id: string }>; under?: 'math' | 'science' }) {
   const { id } = await params;
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   // Adrian's admin sign-in opens any student's released paper (18 Sep 2026 —
@@ -59,7 +61,7 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
   const account: Awaited<ReturnType<typeof currentAccount>> | null = isAdmin ? null : await currentAccount();
   const sb = getSupabaseAdmin();
-  let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id').eq('id', id).not('released_at', 'is', null);
+  let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id, queue_status').eq('id', id).not('released_at', 'is', null);
   if (!isAdmin) q = q.eq('student_id', portalIdentity(account!));
   const { data: row } = await q.maybeSingle();
   if (!row) notFound();
@@ -77,24 +79,18 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
   const paper = papers[0];
   if (!paper) notFound();
 
-  // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the
-  // disclaimer on the page, whether the school's scheme grounded the marking,
-  // the teacher's-mark card — and no Practice Again (that sheet is maths).
+  // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the cover,
+  // the marked pages and the lost marks, one column — and no Practice Again (that
+  // sheet is maths). The "Our estimate" card, the teacher's-mark card and "Was this
+  // marking useful?" that closed the page went on 25 Sep 2026 (Adrian: "remove
+  // these") — the one notice on Science Home says the marking is a tool now.
   const lane = String((row as { subject?: string | null }).subject ?? 'math');
   const isScience = lane !== 'math';
-  const rjRaw = (row as { result_json?: Record<string, unknown> | null }).result_json ?? {};
-  const groundingSource = (() => {
-    const g = rjRaw.grounding;
-    return g && typeof g === 'object' ? String((g as { source?: unknown }).source ?? '') : '';
-  })();
-  const schemeGrounded = /scheme|attached|stored|fingerprint/i.test(groundingSource);
-  const bankGrounded = !schemeGrounded && /bank|matched/i.test(groundingSource);
-  let teacherTotal: { awarded: number; max: number } | null = null;
-  if (isScience) {
-    const { data: t } = await sb.from('calibration_results').select('truth_awarded, truth_max')
-      .eq('run_id', id).eq('truth_source', 'teacher').eq('truth_label', TEACHER_TOTAL_LABEL).limit(1).maybeSingle();
-    if (t) teacherTotal = { awarded: Number(t.truth_awarded), max: Number(t.truth_max) };
-  }
+  if (isScience && under !== 'science') redirect(`/app/science/marking/${id}`);
+  if (!isScience && under === 'science') redirect(`/app/marking/${id}`);
+  const tone = subjectTone(paper.subject);
+  // ▶ Explain it (1 Oct 2026): admin-only until the flag flips; the preview student sees it.
+  const explain = await explainClipVisible(sid);
 
   const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
@@ -171,13 +167,14 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {isAdmin ? (
         <div className="flex flex-wrap items-center justify-between gap-2">
           <Link href={`/admin/students/${sid}?tab=papers`} className="inline-block text-sm font-semibold text-navy hover:underline">← {viewerName || 'Student'}&apos;s papers</Link>
-          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/desk?run=${paper.id}`} className="underline text-sky-700">open on the desk ›</a></p>
+          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/mark-paper?run=${paper.id}`} className="underline text-sky-700">open in Mark a paper ›</a></p>
         </div>
       ) : (
         <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
       )}
 
-      <header className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+      <header className={`relative overflow-hidden rounded-3xl p-4 pt-5 border shadow-sm ${tone ? tone.tint : 'bg-white border-black/5'}`}>
+        {tone && <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 ${tone.strip}`} />}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             {/* ✏️ the student's own name for the paper (17 Sep 2026) — rawName is Adrian's and never changes. */}
@@ -193,8 +190,8 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
               </span>
             </p>
           </div>
-          {/* A science paper leads with the feedback; its total sits below the
-              pages as an estimate (Adrian, 11 Sep 2026). Maths keeps the pill. */}
+          {/* A science paper leads with the feedback — no score pill; its total is
+              on the cover (Adrian, 11 Sep 2026). Maths keeps the pill. */}
           {!isScience && !isAdmin && <StarPaper runId={paper.id} starred={!!paper.starred} size="md" />}
           {!isScience && (
             <span className="shrink-0 text-sm font-bold rounded-full px-3 py-1 bg-navy/5 text-navy">
@@ -223,24 +220,24 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {paper.notice && (
         <p className="text-xs text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+          {paper.notice.addPages && !isAdmin && canAddPagesAfterMarking(row as unknown as MarkedRow) && (
+            <>{' '}<a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold underline underline-offset-2">➕ Add missing pages</a></>
+          )}
         </p>
       )}
 
-      {isScience && (
-        <section className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900 space-y-1">
-          <p className="font-bold">🧪 {subjectLabel(lane)} marking — feedback first, the total is an estimate</p>
-          <p>
-            Use the comments on each question: what a full answer needed, and where the marks went. The total at the bottom is our estimate, not a grade.{' '}
-            Calculations are checked properly.{' '}
-            {schemeGrounded
-              ? <>Explain answers were marked against <b>your school&apos;s mark scheme</b>.</>
-              : bankGrounded
-              ? <>Explain answers were marked against the <b>marking points for this paper</b> in our bank.</>
-              : <>Explain answers were marked against <b>standard syllabus points</b> — no mark scheme was attached, so a point your school words differently may be scored differently.</>}
-          </p>
-          <p>Compare with your teacher&apos;s marking when you get the paper back, and enter their total below.</p>
-        </section>
-      )}
+      {/* ➕ Pages added after marking (29 Sep 2026, SPEC-HANDIN-COMPLETENESS phase 3): while
+          only the new pages are being marked, say so; otherwise offer the door, for 14 days. */}
+      {pagesBeingAdded((row as { result_json?: unknown }).result_json, (row as { queue_status?: string | null }).queue_status) ? (
+        <p className="text-xs text-teal-900 bg-teal-50 border border-teal-200 rounded-2xl px-3 py-2">
+          <span className="font-semibold">➕ Your added pages are being marked.</span> Your paper updates here when they&apos;re done — usually within the hour.
+        </p>
+      ) : !isAdmin && !paper.notice?.addPages && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
+        <p className="text-xs text-gray-600">
+          Missing a page?{' '}
+          <a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold text-navy underline underline-offset-2">➕ Add missing pages</a>
+        </p>
+      ) : null}
 
       {/* 📘 Practice Again sits at the TOP (18 Sep 2026, Adrian: "put the request for practice again at the
           top, instead of the end") — the sheet's status and doors when one exists, else the Request button. */}
@@ -265,8 +262,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            {sheet.pdf_url && <a href={fileHref(sheet.pdf_url)} target="_blank" rel="noopener noreferrer" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5">Open sheet</a>}
-            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
+            {/* 🖨 Print = the share sheet (Print is in it on iPhone/iPad; a tab on a computer). Open sheet = a tab on a
+                browser, the share sheet inside the installed app where a tab has no way back (28 Sep 2026). */}
+            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} label="🖨 Print" title="Print the sheet or save the PDF" className="text-xs font-semibold bg-emerald-700 text-white rounded-xl px-3 py-1.5 disabled:opacity-60" />}
+            {sheet.pdf_url && <OpenInApp url={fileHref(sheet.pdf_url)} name={`Practice Again — ${paper.name}`} label="Open sheet" mode="tab" title="Open the sheet" className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white disabled:opacity-60" />}
             {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && sheet.pdf_url && <Link href={`/app/work/${sheet.id}`} className="text-xs font-bold text-white bg-emerald-700 rounded-xl px-3 py-1.5">✍️ Do it in the app</Link>}
             {!isAdmin && sheet.status !== 'marked' && sheet.status !== 'submitted' && <Link href={`/app/submit?assignment=${sheet.id}`} className="text-xs font-semibold text-emerald-900 border border-emerald-700/30 rounded-xl px-3 py-1.5 bg-white">Hand in a photo</Link>}
           </div>
@@ -290,10 +289,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
       {paper.pdfUrl && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {/* 📤 straight to Notability / GoodNotes / Files via the share sheet (11 Sep 2026) */}
-          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name}
+          <OpenInApp url={`/api/portal/marking-pdf?run=${paper.id}&kind=marked`} name={paper.name} label="🖨 Print" title="Print the marked paper, or open it in Notability, GoodNotes, Files…"
             className="inline-block text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2 hover:opacity-90 disabled:opacity-60" />
           {/* ⬇ three-way (Adrian, 22 Sep 2026): marked · with my notes · with Adrian's notes */}
-          <DownloadMenu runId={paper.id}
+          <DownloadMenu runId={paper.id} name={paper.name}
             hasMine={!!ink && Object.values(ink).some(pg => pg?.strokes?.length)}
             hasAdrian={!!teacherInk && Object.values(teacherInk).some(pg => pg?.strokes?.length)}
             mineLabel={isAdmin ? 'With their notes' : 'With my notes'} />
@@ -317,15 +316,20 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
                 <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your marked pages</h2>
               </div>
               {paper.pages.map(p => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img key={p.index} src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+                // `page-N` so "See it on my paper" can land here too (1 Oct 2026 — a science card used to land on the cover).
+                <div key={p.index} id={Number.isInteger(p.index) ? `page-${p.index}` : undefined}
+                  style={p.layerW && p.layerH ? { aspectRatio: `${p.layerW} / ${p.layerH}` } : undefined}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={fileHref(p.url)} alt={p.overflow ? `Worked solution after page ${Math.floor(p.index) + 1}` : `Page ${p.index + 1}`} loading="lazy" className="w-full rounded-2xl border border-black/5 bg-white" />
+                </div>
               ))}
+              <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
             </section>
           )}
 
           {/* Every question that dropped marks, with the comment and the annotated
               worked solution — moved here from the Papers list on 17 Sep 2026. */}
-          <LostMarks paper={paper} />
+          <LostMarks paper={paper} explain={explain} />
         </>
       ) : (
         <Suspense fallback={null}>
@@ -351,25 +355,10 @@ export default async function PaperPage({ params }: { params: Promise<{ id: stri
                 </div>
               )}
             </>}
-            marks={<LostMarks paper={paper} />} />
+            marks={<LostMarks paper={paper} explain={explain} />} />
         </Suspense>
       )}
 
-      {isScience && paper.max > 0 && (
-        <section className="rounded-2xl border border-black/5 bg-white p-4 flex items-center justify-between gap-3" data-science-estimate>
-          <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400">Our estimate</p>
-            <p className="text-[12px] text-gray-500">Not your teacher&apos;s mark. The feedback above is the part to use.</p>
-          </div>
-          <span className="shrink-0 text-lg font-bold text-navy">
-            {paper.awarded}/{paper.max}{paper.pct !== null && <span className="text-sm font-semibold text-gray-500"> · {paper.pct}%</span>}
-          </span>
-        </section>
-      )}
-      {isScience && paper.max > 0 && (
-        <ScienceTeacherMark runId={paper.id} ours={{ awarded: paper.awarded, max: paper.max }} existing={teacherTotal} />
-      )}
-      {isScience && !isAdmin && <ScienceUseful runId={paper.id} />}
     </div>
   );
 }

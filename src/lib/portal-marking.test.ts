@@ -389,8 +389,23 @@ describe('buildStudentMarking — SEAB scheme chips', () => {
       ] },
     })];
     const { papers } = buildStudentMarking(rows);
-    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0', why: 'slip', teach: null }]);
+    expect(papers[0].questions[0].schemes).toEqual([{ label: '(a)', scheme: 'M1 A1 A0', why: 'slip', teach: null, words: null }]);
     expect(papers[0].questions[1].schemes).toEqual([]);
+  });
+  it('a science part lost for wording carries the scheme\'s phrase beside the student\'s own (24 Sep 2026); half a pair is nothing', () => {
+    const rows = [run({
+      id: 'r1',
+      result_json: { results: [
+        q({ n: '1', awarded: 1, max: 2, parts: [
+          { label: '(a)', awarded: 1, max: 2, error_kind: 'keywords', error_summary: 'the scheme wants the precipitate named', scheme: 'M1 A0',
+            scheme_words: { scheme: 'a white precipitate forms', yours: 'it goes cloudy' } } as never,
+        ] }),
+        q({ n: '2', awarded: 0, max: 2, parts: [{ label: '(a)', awarded: 0, max: 2, error_summary: 'x', scheme: 'A0', scheme_words: { scheme: 'only one side' } } as never] }),
+      ] },
+    })];
+    const { papers } = buildStudentMarking(rows);
+    expect(papers[0].questions[0].schemes[0].words).toEqual({ scheme: 'a white precipitate forms', yours: 'it goes cloudy' });
+    expect(papers[0].questions[1].schemes[0].words).toBeNull();
   });
 });
 
@@ -547,5 +562,30 @@ describe('buildStudentMarking — streak notice', () => {
   it('one paper alone earns nothing', () => {
     const { streakNote } = buildStudentMarking([scoredRun('a', '2026-08-01', 9)]);
     expect(streakNote).toBeNull();
+  });
+});
+
+describe('mergeSplitQuestions — a question read on two pages is one question (1 Oct 2026)', () => {
+  it('joins the two halves: marks summed, slips joined, the first page kept', () => {
+    const row = run({ id: 'r', result_json: { results: [
+      { ...q({ n: '10', awarded: 4, max: 5, parts: [{ label: '(a)', awarded: 4, max: 4 }, { label: '(b)(i)', awarded: 0, max: 1, error_summary: 'emitter of radiation, not heat' }] }), photo_index: 10 },
+      { ...q({ n: '10', awarded: 5, max: 8, parts: [{ label: '(b)(ii)', awarded: 0, max: 2, error_summary: 'the graph does not reverse' }, { label: '(c)', awarded: 5, max: 6 }] }), photo_index: 11 },
+      q({ n: '11', awarded: 2, max: 2 }),
+    ] } });
+    const { papers } = buildStudentMarking([row], { studentName: null });
+    expect(papers[0].questions.map(x => x.questionNumber)).toEqual(['10', '11']);
+    const ten = papers[0].questions[0];
+    expect([ten.awarded, ten.max]).toEqual([9, 13]);
+    expect(ten.slips).toEqual(['(b)(i): emitter of radiation, not heat', '(b)(ii): the graph does not reverse']);
+    expect(ten.photoIndex).toBe(10);
+  });
+  it('leaves two readings of the SAME parts apart (a re-mark leftover): the first wins', () => {
+    const row = run({ id: 'r', result_json: { results: [
+      q({ n: '3', awarded: 1, max: 4, parts: [{ label: '(a)', awarded: 1, max: 4 }] }),
+      q({ n: '3', awarded: 4, max: 4, parts: [{ label: '(a)', awarded: 4, max: 4 }] }),
+    ] } });
+    const { papers } = buildStudentMarking([row], { studentName: null });
+    expect(papers[0].questions).toHaveLength(1);
+    expect(papers[0].questions[0].awarded).toBe(1);
   });
 });

@@ -94,7 +94,7 @@ export function endSummaryLine(
   const lines = [`🎓 Enrollments ended (${ended.length})`];
   for (const e of ended) lines.push(`• ${e.name} — ended ${e.endDate}`);
   if (deactivated.length) {
-    lines.push('', `Now Inactive (no enrollment left): ${deactivated.map((d) => d.name).join(', ')}`);
+    lines.push('', `No enrollment left — now Inactive, 🎓 = Graduated: ${deactivated.map((d) => d.name).join(', ')}`);
   }
   return lines.join('\n');
 }

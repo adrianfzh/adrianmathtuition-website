@@ -77,21 +77,39 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
 // Students reach it only through lib/portal-beta.sciencePracticeAccess —
 // closed until SCIENCE_PRACTICE_OPEN_TO_STUDENTS flips, Adrian's admin cookie
 // previews it — so the science checks are async where the math ones are pure.
-import { isScienceLevel, scienceLevelsFor } from './science-levels';
+import { studentSciences } from './portal-prefs';
+import { scienceSubjectOf, scienceLevelForSubject, isScienceLevel, scienceLevelsFor, type ScienceAccess } from './science-levels';
 import { sciencePracticeAccess } from './portal-beta';
 
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
 export async function practiceLevelsFor(caller: NonNullable<PracticeCaller>): Promise<{ key: string; label: string }[]> {
   if (caller.kind === 'admin') return ALL_QB_LEVELS;
   const math = studentMathLevels(caller.account);
-  const science = scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess());
+  const access = await sciencePracticeAccess();
+  const science = scienceLevelsFor(caller.account.subjects, access);
+  // 1 Oct 2026: the student's own science choice (prefs.sciences) opens those levels too.
+  const chosen = access === 'closed' ? null : studentSciences(caller.account.prefs);
+  for (const s of chosen?.subjects ?? []) {
+    const lvl = scienceLevelForSubject(s);
+    if (lvl && !science.some(l => l.key === lvl.key)) science.push({ key: lvl.key, label: lvl.label });
+  }
   return [...math, ...science];
 }
 
 /** levelAllowed, plus the science gate for science keys. */
+/** Is one science level open to this account: their own science choice (prefs.sciences,
+ *  the Science tab's first-visit picker — 1 Oct 2026) or the Airtable subject. */
+export function scienceLevelOpenFor(account: Pick<PortalAccount, 'subjects' | 'prefs'>, access: ScienceAccess, levelKey: string): boolean {
+  if (access === 'closed') return false;
+  const chosen = studentSciences(account.prefs);
+  const subject = scienceSubjectOf(levelKey);
+  if (chosen && subject && chosen.subjects.includes(subject)) return true;
+  return scienceLevelsFor(account.subjects, access).some(l => l.key === levelKey);
+}
+
 export async function practiceLevelAllowed(caller: PracticeCaller, level: string): Promise<boolean> {
   if (!caller) return false;
   if (!isScienceLevel(level)) return levelAllowed(caller, level);
   if (caller.kind === 'admin') return true;
-  return scienceLevelsFor(caller.account.subjects, await sciencePracticeAccess()).some(l => l.key === level);
+  return scienceLevelOpenFor(caller.account, await sciencePracticeAccess(), level);
 }

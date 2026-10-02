@@ -1,63 +1,126 @@
 'use client';
 // My Notebook's one list (21 Sep 2026): mistakes grouped by the paper they
 // were last seen on, newest paper first, older papers folded, fixed ones under
-// one link at the foot. Every card carries the two student actions on its
-// face. The groups come pre-built from lib/notebook-groups (pure, tested);
-// this file only draws them and keeps two toggles.
-import { useState } from 'react';
+// one link at the foot. Since 1 Oct 2026 a paper's cards are its lost-marks
+// QUESTIONS, each showing the comparison the page rendered (`compare[key]`,
+// app/marking/MistakeCompare.tsx) with the entry tags and the two student
+// actions under it; an entry no question claimed is a title-only card. The
+// groups come pre-built from lib/notebook-groups (pure, tested); this file
+// only draws them and keeps the toggles.
+import { useState, type ReactNode } from 'react';
 import Link from 'next/link';
-import { groupHeading, splitFold, type NotebookGroup, type NotebookGroups } from '@/lib/notebook-groups';
+import { groupHeading, isPaperGroup, splitCards, splitFold, type NotebookGroup, type NotebookGroupWithCards, type NotebookGroups, type NotebookMistake } from '@/lib/notebook-groups';
 import { CorrectedButton, RemoveButton } from './mistake-actions';
+import PaperSubjectPill from '@/components/PaperSubjectPill';
+import { isScienceSubject } from '@/lib/portal-subjects';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 const TONE = { rose: 'bg-rose-50 text-rose-700', amber: 'bg-amber-50 text-amber-800' } as const;
 
-export default function NotebookMistakes({ initial, weakest }: {
+/** `${runId}:${questionNumber}` → the server-rendered comparison. Missing = the group is folded. */
+export type CompareNodes = Record<string, ReactNode>;
+
+export default function NotebookMistakes({ initial, cardGroups, compare, showEarlier, weakest, base = '/app/my-notes' }: {
   initial: NotebookGroups;
+  /** This Notebook's own route — /app/my-notes or /app/science/my-notes (1 Oct 2026). */
+  base?: string;
+  cardGroups: NotebookGroupWithCards[];
+  compare: CompareNodes;
+  /** `?earlier=1`: every group is open and rendered. */
+  showEarlier: boolean;
   /** Weakest topics across the marked papers — one line at the top. */
   weakest: { topic: string; pct: number }[];
 }) {
-  const [groups, setGroups] = useState<NotebookGroup[]>(initial.groups);
-  const [earlierOpen, setEarlierOpen] = useState(false);
+  const [removed, setRemoved] = useState<Set<string>>(() => new Set());
+  const [moreOpen, setMoreOpen] = useState<Set<string>>(() => new Set());
   const [fixedOpen, setFixedOpen] = useState(false);
+  const alive = (m: NotebookMistake) => !removed.has(m.id);
+  const drop = (id: string) => setRemoved(prev => new Set(prev).add(id));
+
+  // The question-card groups when the page built them, else the plain ones (no papers loaded).
+  const groups: NotebookGroupWithCards[] = cardGroups.length
+    ? cardGroups
+    : initial.groups.map((g): NotebookGroupWithCards => ({ ...g, cards: [], loose: g.mistakes }));
   const { open, earlier } = splitFold(groups);
-  const total = groups.reduce((n, g) => n + g.mistakes.length, 0);
+  const shownGroups = showEarlier ? groups : open;
+  const total = groups.reduce((n, g) => n + g.mistakes.filter(alive).length + g.cards.filter(c => c.entries.length === 0).length, 0);
 
-  function drop(id: string) {
-    setGroups(prev => prev.map(g => ({ ...g, mistakes: g.mistakes.filter(m => m.id !== id) })).filter(g => g.mistakes.length > 0));
-  }
-
-  const Group = ({ g }: { g: NotebookGroup }) => (
-    <section className="space-y-2" data-group={g.key}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 pt-1">{groupHeading(g)}</p>
-      {g.mistakes.map(m => (
-        <div key={m.id} data-item-id={`mistake:${m.id}`} className={`${CARD} p-4`}>
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className={`text-sm font-bold leading-snug ${m.tone === 'rose' ? 'text-navy' : 'text-gray-600'}`}>{m.title}</p>
-              <p className="text-[12px] text-gray-500 mt-0.5">
-                {[m.where, m.seen > 1 ? `seen ${m.seen} times` : ''].filter(Boolean).join(' · ')}
-              </p>
-              {m.cameBack && <p className="text-[12px] text-rose-700 font-semibold mt-0.5">It came back after you marked it fixed.</p>}
-            </div>
-            <span className={`shrink-0 text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${TONE[m.tone]}`}>{m.stateText}</span>
-          </div>
-          {m.practice.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {m.practice.map(p => (
-                <Link key={p.id} href={`/app/assignments/${p.id}`} className="text-[12px] font-semibold bg-amber-50 text-amber-800 rounded-full px-3 py-1">✏️ {p.title}</Link>
-              ))}
-            </div>
-          )}
-          {/* Remove on every card; "I've fixed this" only while the student has not said so yet. */}
-          <div className="flex flex-wrap items-center gap-2 mt-2.5" data-mistake-actions>
-            {m.live && <CorrectedButton id={m.id} />}
-            <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
-          </div>
+  /** The tags + the two actions for the entries on a card (each entry keeps its own buttons). */
+  const Entries = ({ entries }: { entries: NotebookMistake[] }) => (
+    <>
+      {entries.filter(alive).map(m => (
+        <div key={m.id} data-item-id={`mistake:${m.id}`} className="flex flex-wrap items-center gap-2 pt-2.5 border-t border-black/5" data-mistake-actions>
+          <span className="inline-flex items-center gap-1.5 text-[12px] font-semibold bg-[#ffd43b]/25 text-[#5a4300] rounded-full px-2.5 py-0.5">
+            {m.title}
+            {isScienceSubject(m.subject) && <PaperSubjectPill subject={m.subject} />}
+          </span>
+          <span className={`text-[11px] rounded-full px-2 py-0.5 font-semibold whitespace-nowrap ${TONE[m.tone]}`}>{m.stateText}</span>
+          {m.seen > 1 && <span className="text-[12px] text-gray-400">seen {m.seen} times</span>}
+          {m.cameBack && <span className="text-[12px] text-rose-700 font-semibold">It came back after you marked it fixed.</span>}
+          {m.practice.map(p => (
+            <Link key={p.id} href={`/app/assignments/${p.id}`} className="text-[12px] font-semibold bg-amber-50 text-amber-800 rounded-full px-3 py-1">✏️ {p.title}</Link>
+          ))}
+          <span className="basis-full" />
+          {m.live && <CorrectedButton id={m.id} />}
+          <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
         </div>
       ))}
-    </section>
+    </>
   );
+
+  /** An entry the loaded papers hold no question for (a deleted run, a practice attempt): the title-only card. */
+  const LooseCard = ({ m }: { m: NotebookMistake }) => (
+    <div data-item-id={`mistake:${m.id}`} className={`${CARD} p-4`}>
+      <div className="flex items-start gap-3">
+        <div className="min-w-0 flex-1">
+          <p className={`text-sm font-bold leading-snug ${m.tone === 'rose' ? 'text-navy' : 'text-gray-600'}`}>
+            {m.title}
+            {isScienceSubject(m.subject) && <span className="ml-1.5 align-middle"><PaperSubjectPill subject={m.subject} /></span>}
+          </p>
+          <p className="text-[12px] text-gray-500 mt-0.5">{[m.where, m.seen > 1 ? `seen ${m.seen} times` : ''].filter(Boolean).join(' · ')}</p>
+          {m.cameBack && <p className="text-[12px] text-rose-700 font-semibold mt-0.5">It came back after you marked it fixed.</p>}
+        </div>
+        <span className={`shrink-0 text-[11px] rounded-full px-2.5 py-0.5 font-semibold whitespace-nowrap ${TONE[m.tone]}`}>{m.stateText}</span>
+      </div>
+      {m.practice.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-2">
+          {m.practice.map(p => <Link key={p.id} href={`/app/assignments/${p.id}`} className="text-[12px] font-semibold bg-amber-50 text-amber-800 rounded-full px-3 py-1">✏️ {p.title}</Link>)}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-2 mt-2.5" data-mistake-actions>
+        {m.live && <CorrectedButton id={m.id} />}
+        <RemoveButton id={m.id} onRemoved={() => drop(m.id)} />
+      </div>
+    </div>
+  );
+
+  const Group = ({ g }: { g: NotebookGroupWithCards }) => {
+    // A card whose every entry the student removed goes with them; a card with no entry stays (it is the paper's own record).
+    const cards = g.cards.filter(c => c.entries.length === 0 || c.entries.some(alive));
+    const { open: openCards, more } = splitCards(cards);
+    const showAll = moreOpen.has(g.key);
+    const shown = showAll ? cards : openCards;
+    const loose = g.loose.filter(alive);
+    if (!shown.length && !loose.length) return null;
+    return (
+      <section className="space-y-2" data-group={g.key}>
+        <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 pt-1">{groupHeading(g)}</p>
+        {shown.map(c => (
+          <div key={c.key} data-question-card={c.key} className={`${CARD} p-4 space-y-2`}>
+            {compare[c.key] ?? <p className="text-sm font-bold text-navy">Q{c.questionNumber}</p>}
+            <Entries entries={c.entries} />
+          </div>
+        ))}
+        {more.length > 0 && !showAll && (
+          <button type="button" onClick={() => setMoreOpen(prev => new Set(prev).add(g.key))} data-more
+            className="text-[13px] font-semibold text-navy underline underline-offset-2">
+            {more.map(c => `Q${c.questionNumber}`).join(', ')} — {more.length} more on this paper ›
+          </button>
+        )}
+        {loose.map(m => <LooseCard key={m.id} m={m} />)}
+      </section>
+    );
+  };
 
   return (
     <div className="space-y-4" data-notebook-mistakes>
@@ -81,16 +144,17 @@ export default function NotebookMistakes({ initial, weakest }: {
         </div>
       )}
 
-      {open.map(g => <Group key={g.key} g={g} />)}
+      {shownGroups.map(g => <Group key={g.key} g={g} />)}
 
-      {earlier.length > 0 && (
-        <div className="space-y-4">
-          <button type="button" onClick={() => setEarlierOpen(v => !v)} data-earlier
-            className="text-[13px] font-semibold text-navy underline underline-offset-2">
-            {earlierOpen ? 'Hide earlier papers' : `Earlier papers (${earlier.length}) ›`}
-          </button>
-          {earlierOpen && earlier.map(g => <Group key={g.key} g={g} />)}
-        </div>
+      {earlier.length > 0 && !showEarlier && (
+        <Link href={`${base}?earlier=1`} data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
+          Earlier papers ({earlier.length}) ›
+        </Link>
+      )}
+      {showEarlier && earlier.length > 0 && (
+        <Link href={base} data-earlier className="inline-block text-[13px] font-semibold text-navy underline underline-offset-2">
+          Hide earlier papers
+        </Link>
       )}
 
       {initial.fixed.length > 0 && (

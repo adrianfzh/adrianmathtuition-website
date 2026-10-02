@@ -4,6 +4,15 @@
 // One list. Newest paper first, older papers folded under "Earlier papers",
 // fixed entries under "Fixed (n)" at the foot, the weakest-topics line on top.
 // Every card carries "I've fixed this" and "Remove" (mistake-actions.tsx).
+//
+// Since 1 Oct 2026 a card is one lost-marks QUESTION and shows the comparison
+// on its face — the student's working with the wrong line marked beside the
+// red pen's right steps (app/marking/MistakeCompare.tsx, rendered here on the
+// server, KaTeX and all) — Adrian: "see their mistakes and the correct steps
+// side by side … without clicking the review button". The Review deck went
+// with it. The comparison is rendered for the OPEN paper groups; "Earlier
+// papers" is a link to `?earlier=1`, which renders every group (a year of
+// papers' KaTeX is too much to ship for a fold nobody opens).
 // The rows come from notebook_mistakes (SPEC-PORTAL-V2 §6): born from released
 // papers and graded practice, fading as clean results arrive — Still happening,
 // Getting better, Fixed; evidence can bring one back.
@@ -23,14 +32,46 @@
 // never calls the gate (lib/portal-beta.ts).
 import Link from 'next/link';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
-import { loadNotebook } from '@/lib/notebook-load';
-import NotebookMistakes from './mistakes';
+import { explainClipVisible } from '@/lib/portal-beta';
+import { loadNotebook, type NotebookSubjectPanel } from '@/lib/notebook-load';
+import { OPEN_GROUPS, type NotebookFamily } from '@/lib/notebook-groups';
+import NotebookMistakes, { type CompareNodes } from './mistakes';
+import MistakeCompare from '../marking/MistakeCompare';
+import SubjectPanels, { type SubjectPanel } from '../marking/SubjectPanels';
+import { subjectPill } from '@/lib/portal-subjects';
+import 'katex/dist/katex.min.css';
 
 export const dynamic = 'force-dynamic';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
-export default async function MyNotebookPage() {
+/** The comparison for every card in the groups the page shows — open ones, or all with `?earlier=1`. */
+function compareNodes(p: NotebookSubjectPanel, all: boolean, explain: boolean): CompareNodes {
+  const out: CompareNodes = {};
+  for (const g of all ? p.cardGroups : p.cardGroups.slice(0, OPEN_GROUPS)) {
+    const paper = p.papers.get(g.key);
+    if (!paper) continue;
+    for (const c of g.cards) {
+      const q = paper.dropped.find(x => x.questionNumber === c.questionNumber);
+      if (q) out[c.key] = <MistakeCompare q={q} runId={paper.id} explain={explain} />;
+    }
+  }
+  return out;
+}
+
+/**
+ * Two Notebooks, one per family (1 Oct 2026, Adrian: "math mistakes go to math
+ * notebook and science mistakes go to science notebook"): /app/my-notes is the
+ * maths one, /app/science/my-notes the science one (the same page under the
+ * Science family, so the shell's switcher and the science bottom menu stay put).
+ * The science tabs are the sciences the student takes — two for Combined —
+ * and a family with one subject shows no tabs. Its "Earlier papers" link
+ * stays on its own route.
+ */
+export default async function MyNotebookPage({ searchParams, family = 'math' }: { searchParams: Promise<{ earlier?: string }>; family?: NotebookFamily }) {
+  const { earlier } = await searchParams;
+  const showEarlier = earlier === '1';
+  const base = family === 'science' ? '/app/science/my-notes' : '/app/my-notes';
   // Adrian's admin cookie may browse /app/* without a student session, but a
   // notebook belongs to a student — show the pointer card.
   const account = await sessionAccount();
@@ -50,17 +91,29 @@ export default async function MyNotebookPage() {
     );
   }
 
-  const { groups, weakest } = await loadNotebook(account, sid);
+  const { subjects, defaultSubject, groups, weakest } = await loadNotebook(account, sid, family);
+  const explain = await explainClipVisible(sid);
+  // One tab per subject (30 Sep 2026), the Papers tab's own switcher; one subject → no tabs.
+  const panels: SubjectPanel[] = subjects.map(p => ({
+    key: p.subject,
+    // Four or more tabs don't fit a phone with full names — use the pill's short text.
+    label: subjects.length > 3 ? (subjectPill(p.subject)?.text ?? p.subject) : p.subject,
+    tone: subjectPill(p.subject)?.tone ?? 'other',
+    count: p.groups.groups.reduce((n, g) => n + g.mistakes.length, 0),
+    content: <NotebookMistakes initial={p.groups} cardGroups={p.cardGroups} compare={compareNodes(p, showEarlier, explain)} showEarlier={showEarlier} weakest={p.weakest} />,
+  }));
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
         <h1 className="text-xl font-bold text-navy">My Notebook</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          What each marked paper found, so you know what to fix before the next one.
+          What each marked {family === 'science' ? 'science ' : ''}paper found, so you know what to fix before the next one.
         </p>
       </div>
-      <NotebookMistakes initial={groups} weakest={weakest} />
+      {panels.length > 0
+        ? <SubjectPanels panels={panels} defaultKey={defaultSubject ?? panels[0].key} rememberKey={family === 'science' ? 'portal_notebook_science_subject' : 'portal_notebook_subject'} />
+        : <NotebookMistakes initial={groups} cardGroups={[]} compare={{}} showEarlier={showEarlier} weakest={weakest} base={base} />}
     </div>
   );
 }

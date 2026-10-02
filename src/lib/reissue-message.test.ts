@@ -60,3 +60,12 @@ describe('reissueLine', () => {
     expect(parseReissueReason({ reason: 'pages-recovered' })).toBe('checked');
   });
 });
+
+describe('pages-added (29 Sep 2026)', () => {
+  it('says the added pages are marked and gives the new total', () => {
+    const line = reissueLine({ reason: 'pages-added', paper: 'O Level 2024 P2', awarded: 61, max: 90, internal: false, site: 'https://x' });
+    expect(line).toContain('The pages you added to <b>O Level 2024 P2</b> are marked');
+    expect(line).toContain('<b>61/90</b>');
+    expect(parseReissueReason('pages-added')).toBe('pages-added');
+  });
+});

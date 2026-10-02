@@ -11,15 +11,15 @@
   },
   "prelim_rows": 10669,
   "gce": {
-   "derived_at": "2026-09-08",
-   "rows": 1803,
+   "derived_at": "2026-09-26",
+   "rows": 1885,
    "papers_complete": {
-    "GCE-AM-P1": 22,
-    "GCE-AM-P2": 19,
-    "GCE-EM-P1": 25,
-    "GCE-EM-P2": 25,
-    "GCE-JC-P1": 18,
-    "GCE-JC-P2": 18
+    "GCE-AM-P1": 23,
+    "GCE-AM-P2": 20,
+    "GCE-EM-P1": 26,
+    "GCE-EM-P2": 26,
+    "GCE-JC-P1": 19,
+    "GCE-JC-P2": 19
    },
    "base_years": {
     "GCE-AM-P1": [
@@ -27,35 +27,30 @@
      "2021s",
      "2022",
      "2023",
-     "2024"
+     "2024",
+     "2025"
     ],
     "GCE-AM-P2": [
      "2021",
      "2021s",
      "2022",
      "2023",
-     "2024"
+     "2024",
+     "2025"
     ],
     "GCE-EM-P1": [
      "2023",
      "2023s",
-     "2024"
+     "2024",
+     "2025"
     ],
     "GCE-EM-P2": [
      "2023",
      "2023s",
-     "2024"
+     "2024",
+     "2025"
     ],
     "GCE-JC-P1": [
-     "2008",
-     "2009",
-     "2010",
-     "2011",
-     "2012",
-     "2013",
-     "2014",
-     "2015",
-     "2016",
      "2017",
      "2018",
      "2019",
@@ -64,18 +59,10 @@
      "2022",
      "2023",
      "2024",
+     "2025",
      "2025s"
     ],
     "GCE-JC-P2": [
-     "2008",
-     "2009",
-     "2010",
-     "2011",
-     "2012",
-     "2013",
-     "2014",
-     "2015",
-     "2016",
      "2017",
      "2018",
      "2019",
@@ -84,8 +71,63 @@
      "2022",
      "2023",
      "2024",
+     "2025",
      "2025s"
     ]
+   },
+   "year_weights": {
+    "GCE-AM-P1": {
+     "2021": 0.6,
+     "2022": 0.6,
+     "2023": 1,
+     "2024": 1,
+     "2025": 1,
+     "2021s": 0.5
+    },
+    "GCE-AM-P2": {
+     "2021": 0.6,
+     "2022": 0.6,
+     "2023": 1,
+     "2024": 1,
+     "2025": 1,
+     "2021s": 0.5
+    },
+    "GCE-EM-P1": {
+     "2023": 1,
+     "2024": 1,
+     "2025": 1,
+     "2023s": 0.5
+    },
+    "GCE-EM-P2": {
+     "2023": 1,
+     "2024": 1,
+     "2025": 1,
+     "2023s": 0.5
+    },
+    "GCE-JC-P1": {
+     "2017": 0.4,
+     "2018": 0.4,
+     "2019": 0.4,
+     "2020": 0.6,
+     "2021": 0.6,
+     "2022": 1,
+     "2023": 1,
+     "2024": 1,
+     "2025": 0.3,
+     "2025s": 0.5
+    },
+    "GCE-JC-P2": {
+     "2017": 0.4,
+     "2018": 0.4,
+     "2019": 0.4,
+     "2020": 0.6,
+     "2021": 0.6,
+     "2022": 1,
+     "2023": 1,
+     "2024": 1,
+     "2025": 0.3,
+     "2025s": 0.5
+    }
    }
   }
  },
@@ -3929,7 +3971,7 @@
     13,
     14
    ],
-   "notes": "GCE O-Level Additional Mathematics 4049 (first examined 2021): each paper 90 marks, 2 h 15 min. Derived from 5 real papers [2021, 2021s, 2022, 2023, 2024; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.",
+   "notes": "GCE O-Level Additional Mathematics 4049 (first examined 2021): each paper 90 marks, 2 h 15 min. Derived from 6 real papers [2021, 2021s, 2022, 2023, 2024, 2025; s = SEAB specimen], recent sittings weighted up (2021×0.6, 2021s×0.5, 2022×0.6, 2023×1, 2024×1, 2025×1) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.",
    "slots": [
     {
      "pos": 1,
@@ -3941,34 +3983,38 @@
      "topic_pool": [
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.285
+       "weight": 0.174
       },
       {
        "topic": "Differentiation (Rates of Change)",
-       "weight": 0.143
+       "weight": 0.159
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.159
       },
       {
        "topic": "Nature of Roots",
-       "weight": 0.143
-      },
-      {
-       "topic": "Quadratic Functions",
-       "weight": 0.143
+       "weight": 0.159
       },
       {
        "topic": "Simultaneous Equations",
-       "weight": 0.143
+       "weight": 0.159
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.095
       },
       {
        "topic": "Surds",
-       "weight": 0.143
+       "weight": 0.095
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.2
+     "diagram_rate": 0.21
     },
     {
      "pos": 2,
@@ -3980,38 +4026,46 @@
      "topic_pool": [
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.142
+       "weight": 0.138
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.143
+       "weight": 0.137
       },
       {
-       "topic": "Linear Law",
-       "weight": 0.143
-      },
-      {
-       "topic": "Logarithms",
-       "weight": 0.143
+       "topic": "Nature of Roots",
+       "weight": 0.137
       },
       {
        "topic": "Partial Fractions",
-       "weight": 0.143
+       "weight": 0.137
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.137
+      },
+      {
+       "topic": "Linear Law",
+       "weight": 0.082
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.082
       },
       {
        "topic": "Simultaneous Equations",
-       "weight": 0.143
+       "weight": 0.082
       },
       {
        "topic": "Trigonometry (Graphs)",
-       "weight": 0.143
+       "weight": 0.068
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.2
+     "diagram_rate": 0.21
     },
     {
      "pos": 3,
@@ -4023,30 +4077,34 @@
      "topic_pool": [
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.332
-      },
-      {
-       "topic": "Binomial Theorem",
-       "weight": 0.167
-      },
-      {
-       "topic": "Partial Fractions",
-       "weight": 0.167
+       "weight": 0.318
       },
       {
        "topic": "Polynomials",
-       "weight": 0.167
+       "weight": 0.254
+      },
+      {
+       "topic": "Proof",
+       "weight": 0.159
+      },
+      {
+       "topic": "Partial Fractions",
+       "weight": 0.095
       },
       {
        "topic": "Quadratic Functions",
-       "weight": 0.167
+       "weight": 0.095
+      },
+      {
+       "topic": "Binomial Theorem",
+       "weight": 0.079
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.4
+     "diagram_rate": 0.43
     },
     {
      "pos": 4,
@@ -4058,38 +4116,38 @@
      "topic_pool": [
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.223
+       "weight": 0.295
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.222
+       "weight": 0.295
       },
       {
        "topic": "Circles",
-       "weight": 0.111
+       "weight": 0.114
       },
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.111
-      },
-      {
-       "topic": "Differentiation (Increasing and Decreasing Functions)",
-       "weight": 0.111
-      },
-      {
-       "topic": "Differentiation (Rates of Change)",
-       "weight": 0.111
+       "weight": 0.114
       },
       {
        "topic": "Quadratic Inequalities",
-       "weight": 0.111
+       "weight": 0.068
+      },
+      {
+       "topic": "Differentiation (Increasing and Decreasing Functions)",
+       "weight": 0.057
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.057
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.2
+     "diagram_rate": 0.21
     },
     {
      "pos": 5,
@@ -4097,30 +4155,34 @@
       6,
       8
      ],
-     "typ": 7,
+     "typ": 6,
      "topic_pool": [
       {
        "topic": "Binomial Theorem",
-       "weight": 0.4
+       "weight": 0.34
       },
       {
-       "topic": "Logarithms",
-       "weight": 0.2
-      },
-      {
-       "topic": "Partial Fractions",
-       "weight": 0.2
+       "topic": "Linear Law",
+       "weight": 0.213
       },
       {
        "topic": "Trigonometry (Equations)",
-       "weight": 0.2
+       "weight": 0.213
+      },
+      {
+       "topic": "Partial Fractions",
+       "weight": 0.128
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.106
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.2
+     "diagram_rate": 0.21
     },
     {
      "pos": 6,
@@ -4132,34 +4194,38 @@
      "topic_pool": [
       {
        "topic": "Differentiation (Increasing and Decreasing Functions)",
-       "weight": 0.165
+       "weight": 0.177
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.175
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.167
-      },
-      {
-       "topic": "Integration (Applications)",
-       "weight": 0.167
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.167
+       "weight": 0.175
       },
       {
        "topic": "Plane Geometry",
-       "weight": 0.167
+       "weight": 0.175
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.105
       },
       {
        "topic": "Polynomials",
-       "weight": 0.167
+       "weight": 0.105
+      },
+      {
+       "topic": "Integration (Applications)",
+       "weight": 0.088
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.4
+     "diagram_rate": 0.43
     },
     {
      "pos": 7,
@@ -4170,43 +4236,47 @@
      "typ": 7,
      "topic_pool": [
       {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.125
+       "topic": "Binomial Theorem",
+       "weight": 0.145
       },
       {
        "topic": "Nature of Roots",
-       "weight": 0.125
-      },
-      {
-       "topic": "Plane Geometry",
-       "weight": 0.125
-      },
-      {
-       "topic": "Proof",
-       "weight": 0.125
-      },
-      {
-       "topic": "Quadratic Functions",
-       "weight": 0.125
+       "weight": 0.145
       },
       {
        "topic": "Quadratic Inequalities",
-       "weight": 0.125
+       "weight": 0.145
       },
       {
        "topic": "Surds",
-       "weight": 0.125
+       "weight": 0.145
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.087
+      },
+      {
+       "topic": "Plane Geometry",
+       "weight": 0.087
+      },
+      {
+       "topic": "Proof",
+       "weight": 0.087
       },
       {
        "topic": "Trigonometry (Graphs)",
-       "weight": 0.125
+       "weight": 0.087
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.072
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.53
     },
     {
      "pos": 8,
@@ -4217,35 +4287,35 @@
      "typ": 7,
      "topic_pool": [
       {
-       "topic": "Simultaneous Equations",
-       "weight": 0.285
+       "topic": "Nature of Roots",
+       "weight": 0.277
       },
       {
-       "topic": "Coordinate Geometry",
-       "weight": 0.143
+       "topic": "Simultaneous Equations",
+       "weight": 0.276
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.143
+       "weight": 0.172
       },
       {
-       "topic": "Nature of Roots",
-       "weight": 0.143
+       "topic": "Coordinate Geometry",
+       "weight": 0.103
       },
       {
        "topic": "Surds",
-       "weight": 0.143
+       "weight": 0.086
       },
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.143
+       "weight": 0.086
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.6
+     "diagram_rate": 0.47
     },
     {
      "pos": 9,
@@ -4256,39 +4326,39 @@
      "typ": 8,
      "topic_pool": [
       {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.25
-      },
-      {
-       "topic": "Differentiation (Increasing and Decreasing Functions)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Nature of Roots",
-       "weight": 0.125
-      },
-      {
-       "topic": "Polynomials",
-       "weight": 0.125
-      },
-      {
-       "topic": "Quadratic Functions",
-       "weight": 0.125
-      },
-      {
        "topic": "Trigonometry (Equations)",
-       "weight": 0.125
+       "weight": 0.201
       },
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.125
+       "weight": 0.203
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.19
+      },
+      {
+       "topic": "Nature of Roots",
+       "weight": 0.127
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.127
+      },
+      {
+       "topic": "Differentiation (Increasing and Decreasing Functions)",
+       "weight": 0.076
+      },
+      {
+       "topic": "Polynomials",
+       "weight": 0.076
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.4
+     "diagram_rate": 0.32
     },
     {
      "pos": 10,
@@ -4296,38 +4366,42 @@
       6,
       10
      ],
-     "typ": 8,
+     "typ": 9,
      "topic_pool": [
       {
        "topic": "Trigonometry (Graphs)",
-       "weight": 0.285
+       "weight": 0.254
       },
       {
        "topic": "Circles",
-       "weight": 0.143
+       "weight": 0.159
       },
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.143
+       "weight": 0.159
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.159
       },
       {
        "topic": "Plane Geometry",
-       "weight": 0.143
-      },
-      {
-       "topic": "Polynomials",
-       "weight": 0.143
+       "weight": 0.095
       },
       {
        "topic": "Proof",
-       "weight": 0.143
+       "weight": 0.095
+      },
+      {
+       "topic": "Polynomials",
+       "weight": 0.079
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.4
+     "diagram_rate": 0.34
     },
     {
      "pos": 11,
@@ -4338,39 +4412,39 @@
      "typ": 8,
      "topic_pool": [
       {
-       "topic": "Coordinate Geometry",
-       "weight": 0.142
-      },
-      {
        "topic": "Differentiation (Rates of Change)",
-       "weight": 0.143
-      },
-      {
-       "topic": "Indices",
-       "weight": 0.143
+       "weight": 0.318
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.143
-      },
-      {
-       "topic": "Logarithms",
-       "weight": 0.143
-      },
-      {
-       "topic": "Plane Geometry",
-       "weight": 0.143
+       "weight": 0.159
       },
       {
        "topic": "Trigonometry (R-Formula)",
-       "weight": 0.143
+       "weight": 0.159
+      },
+      {
+       "topic": "Coordinate Geometry",
+       "weight": 0.095
+      },
+      {
+       "topic": "Indices",
+       "weight": 0.095
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.095
+      },
+      {
+       "topic": "Plane Geometry",
+       "weight": 0.079
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.6
+     "diagram_rate": 0.74
     },
     {
      "pos": 12,
@@ -4381,93 +4455,97 @@
      "typ": 9,
      "topic_pool": [
       {
-       "topic": "Differentiation (Rates of Change)",
-       "weight": 0.112
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.111
-      },
-      {
        "topic": "Integration (Definite Integrals)",
-       "weight": 0.111
-      },
-      {
-       "topic": "Kinematics",
-       "weight": 0.111
+       "weight": 0.129
       },
       {
        "topic": "Partial Fractions",
-       "weight": 0.111
+       "weight": 0.128
       },
       {
        "topic": "Quadratic Functions",
-       "weight": 0.111
+       "weight": 0.128
       },
       {
        "topic": "Quadratic Inequalities",
-       "weight": 0.111
+       "weight": 0.128
+      },
+      {
+       "topic": "Trigonometry (Graphs)",
+       "weight": 0.128
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.077
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.077
+      },
+      {
+       "topic": "Kinematics",
+       "weight": 0.077
       },
       {
        "topic": "Trigonometry (Equations)",
-       "weight": 0.111
+       "weight": 0.064
       },
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.111
+       "weight": 0.064
       }
      ],
      "parts": [
       2,
       5
      ],
-     "diagram_rate": 0.4
+     "diagram_rate": 0.55
     },
     {
      "pos": 13,
      "marks": [
-      10,
+      9,
       10
      ],
      "typ": 10,
      "topic_pool": [
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.334
+       "weight": 0.294
       },
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.222
+       "weight": 0.213
       },
       {
        "topic": "Integration (Area)",
-       "weight": 0.222
+       "weight": 0.213
+      },
+      {
+       "topic": "Circles",
+       "weight": 0.133
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.111
+       "weight": 0.08
       },
       {
        "topic": "Kinematics",
-       "weight": 0.111
+       "weight": 0.067
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.8
+     "diagram_rate": 0.68
     }
    ],
    "must_appear": [
-    "Coordinate Geometry",
     "Differentiation (Maximum and Minimum)",
     "Differentiation (Rates of Change)",
     "Integration (Techniques)",
-    "Partial Fractions",
-    "Plane Geometry",
     "Quadratic Functions",
-    "Trigonometry (Graphs)",
     "Trigonometry (Identities)"
    ],
    "rules": {
@@ -4479,10 +4557,10 @@
    "total_marks": 90,
    "question_count": [
     9,
-    10,
+    11,
     11
    ],
-   "notes": "GCE O-Level Additional Mathematics 4049 (first examined 2021): each paper 90 marks, 2 h 15 min. Derived from 5 real papers [2021, 2021s, 2022, 2023, 2024; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.",
+   "notes": "GCE O-Level Additional Mathematics 4049 (first examined 2021): each paper 90 marks, 2 h 15 min. Derived from 6 real papers [2021, 2021s, 2022, 2023, 2024, 2025; s = SEAB specimen], recent sittings weighted up (2021×0.6, 2021s×0.5, 2022×0.6, 2023×1, 2024×1, 2025×1) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.",
    "slots": [
     {
      "pos": 1,
@@ -4494,22 +4572,26 @@
      "topic_pool": [
       {
        "topic": "Logarithms",
-       "weight": 0.6
+       "weight": 0.468
       },
       {
        "topic": "Binomial Theorem",
-       "weight": 0.2
+       "weight": 0.213
+      },
+      {
+       "topic": "Surds",
+       "weight": 0.213
       },
       {
        "topic": "Partial Fractions",
-       "weight": 0.2
+       "weight": 0.106
       }
      ],
      "parts": [
       1,
       2
      ],
-     "diagram_rate": 0.6
+     "diagram_rate": 0.77
     },
     {
      "pos": 2,
@@ -4517,77 +4599,81 @@
       5,
       10
      ],
-     "typ": 7,
+     "typ": 6,
      "topic_pool": [
       {
        "topic": "Polynomials",
-       "weight": 0.332
-      },
-      {
-       "topic": "Linear Law",
-       "weight": 0.167
+       "weight": 0.212
       },
       {
        "topic": "Nature of Roots",
-       "weight": 0.167
+       "weight": 0.175
       },
       {
        "topic": "Plane Geometry",
-       "weight": 0.167
+       "weight": 0.175
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.175
       },
       {
        "topic": "Quadratic Inequalities",
-       "weight": 0.167
+       "weight": 0.175
+      },
+      {
+       "topic": "Linear Law",
+       "weight": 0.088
       }
      ],
      "parts": [
       1,
       2
      ],
-     "diagram_rate": 0.6
+     "diagram_rate": 0.55
     },
     {
      "pos": 3,
      "marks": [
       5,
-      10
+      8
      ],
-     "typ": 8,
+     "typ": 6,
      "topic_pool": [
       {
-       "topic": "Logarithms",
-       "weight": 0.25
+       "topic": "Integration (Applications)",
+       "weight": 0.186
       },
       {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.125
+       "topic": "Integration (Techniques)",
+       "weight": 0.185
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.185
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Integration (Area)",
-       "weight": 0.125
+       "weight": 0.111
       },
       {
        "topic": "Integration (Definite Integrals)",
-       "weight": 0.125
+       "weight": 0.111
       },
       {
        "topic": "Trigonometry (Equations)",
-       "weight": 0.125
+       "weight": 0.111
       },
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.125
+       "weight": 0.111
       }
      ],
      "parts": [
       1,
-      3
+      2
      ],
-     "diagram_rate": 0.8
+     "diagram_rate": 0.5
     },
     {
      "pos": 4,
@@ -4595,182 +4681,288 @@
       7,
       10
      ],
-     "typ": 9,
+     "typ": 8,
      "topic_pool": [
       {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.125
-      },
-      {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.125
+       "weight": 0.147
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.125
+       "weight": 0.147
       },
       {
-       "topic": "Nature of Roots",
-       "weight": 0.125
+       "topic": "Logarithms",
+       "weight": 0.147
       },
       {
-       "topic": "Quadratic Functions",
-       "weight": 0.125
+       "topic": "Polynomials",
+       "weight": 0.147
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.088
       },
       {
        "topic": "Trigonometry (Applications)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Trigonometry (Identities)",
-       "weight": 0.125
+       "weight": 0.088
       },
       {
        "topic": "Trigonometry (R-Formula)",
-       "weight": 0.125
+       "weight": 0.088
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.074
+      },
+      {
+       "topic": "Integration (Area)",
+       "weight": 0.074
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.8
+     "diagram_rate": 0.79
     },
     {
      "pos": 5,
      "marks": [
       6,
-      9
+      10
      ],
      "typ": 7,
      "topic_pool": [
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.165
-      },
-      {
-       "topic": "Logarithms",
-       "weight": 0.167
-      },
-      {
-       "topic": "Nature of Roots",
-       "weight": 0.167
-      },
-      {
-       "topic": "Quadratic Inequalities",
-       "weight": 0.167
-      },
-      {
-       "topic": "Surds",
-       "weight": 0.167
+       "weight": 0.239
       },
       {
        "topic": "Trigonometry (Identities)",
-       "weight": 0.167
+       "weight": 0.19
+      },
+      {
+       "topic": "Nature of Roots",
+       "weight": 0.131
+      },
+      {
+       "topic": "Differentiation (Increasing and Decreasing Functions)",
+       "weight": 0.119
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.119
+      },
+      {
+       "topic": "Quadratic Inequalities",
+       "weight": 0.071
+      },
+      {
+       "topic": "Surds",
+       "weight": 0.071
+      },
+      {
+       "topic": "Quadratic Functions",
+       "weight": 0.06
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.55
     },
     {
      "pos": 6,
      "marks": [
-      9,
+      7,
       10
      ],
-     "typ": 9,
+     "typ": 8,
      "topic_pool": [
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.272
-      },
-      {
-       "topic": "Binomial Theorem",
-       "weight": 0.091
-      },
-      {
-       "topic": "Circles",
-       "weight": 0.091
-      },
-      {
-       "topic": "Coordinate Geometry",
-       "weight": 0.091
-      },
-      {
-       "topic": "Indices",
-       "weight": 0.091
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Logarithms",
-       "weight": 0.091
+       "weight": 0.249
       },
       {
        "topic": "Polynomials",
-       "weight": 0.091
+       "weight": 0.167
       },
       {
        "topic": "Simultaneous Equations",
-       "weight": 0.091
+       "weight": 0.167
+      },
+      {
+       "topic": "Trigonometry (Equations)",
+       "weight": 0.167
+      },
+      {
+       "topic": "Trigonometry (Identities)",
+       "weight": 0.167
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.083
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.57
+    },
+    {
+     "pos": 7,
+     "marks": [
+      7,
+      12
+     ],
+     "typ": 8,
+     "topic_pool": [
+      {
+       "topic": "Indices",
+       "weight": 0.172
+      },
+      {
+       "topic": "Logarithms",
+       "weight": 0.17
+      },
+      {
+       "topic": "Circles",
+       "weight": 0.106
+      },
+      {
+       "topic": "Coordinate Geometry",
+       "weight": 0.106
+      },
+      {
+       "topic": "Kinematics",
+       "weight": 0.106
+      },
+      {
+       "topic": "Polynomials",
+       "weight": 0.106
+      },
+      {
+       "topic": "Binomial Theorem",
+       "weight": 0.064
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.064
+      },
+      {
+       "topic": "Trigonometry (Applications)",
+       "weight": 0.053
+      },
+      {
+       "topic": "Trigonometry (R-Formula)",
+       "weight": 0.053
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.66
     },
     {
-     "pos": 7,
+     "pos": 8,
      "marks": [
       9,
-      12
+      11
      ],
-     "typ": 10,
+     "typ": 9,
      "topic_pool": [
       {
        "topic": "Logarithms",
-       "weight": 0.2
-      },
-      {
-       "topic": "Trigonometry (Applications)",
-       "weight": 0.2
-      },
-      {
-       "topic": "Trigonometry (R-Formula)",
-       "weight": 0.2
+       "weight": 0.297
       },
       {
        "topic": "Indices",
-       "weight": 0.1
+       "weight": 0.185
       },
       {
        "topic": "Kinematics",
-       "weight": 0.1
+       "weight": 0.185
       },
       {
        "topic": "Linear Law",
-       "weight": 0.1
+       "weight": 0.111
       },
       {
-       "topic": "Polynomials",
-       "weight": 0.1
+       "topic": "Trigonometry (Applications)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Trigonometry (R-Formula)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.8
+     "diagram_rate": 0.5
     },
     {
-     "pos": 8,
+     "pos": 9,
+     "marks": [
+      10,
+      12
+     ],
+     "typ": 10,
+     "topic_pool": [
+      {
+       "topic": "Kinematics",
+       "weight": 0.177
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.122
+      },
+      {
+       "topic": "Integration (Area)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Trigonometry (Equations)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Trigonometry (Graphs)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Trigonometry (Identities)",
+       "weight": 0.111
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.067
+      },
+      {
+       "topic": "Integration (Applications)",
+       "weight": 0.067
+      },
+      {
+       "topic": "Integration (Definite Integrals)",
+       "weight": 0.067
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.056
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.77
+    },
+    {
+     "pos": 10,
      "marks": [
       10,
       12
@@ -4778,85 +4970,38 @@
      "typ": 11,
      "topic_pool": [
       {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.181
-      },
-      {
-       "topic": "Kinematics",
-       "weight": 0.182
-      },
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Differentiation (Rates of Change)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Integration (Applications)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Integration (Definite Integrals)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Trigonometry (Equations)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Trigonometry (Graphs)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Trigonometry (Identities)",
-       "weight": 0.091
-      }
-     ],
-     "parts": [
-      2,
-      3
-     ],
-     "diagram_rate": 0.6
-    },
-    {
-     "pos": 9,
-     "marks": [
-      11,
-      12
-     ],
-     "typ": 12,
-     "topic_pool": [
-      {
        "topic": "Circles",
-       "weight": 0.334
+       "weight": 0.23
       },
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.333
+       "weight": 0.23
       },
       {
        "topic": "Linear Law",
-       "weight": 0.111
+       "weight": 0.135
+      },
+      {
+       "topic": "Plane Geometry",
+       "weight": 0.135
       },
       {
        "topic": "Trigonometry (Applications)",
-       "weight": 0.111
+       "weight": 0.135
       },
       {
        "topic": "Trigonometry (R-Formula)",
-       "weight": 0.111
+       "weight": 0.135
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.6
+     "diagram_rate": 0.77
     },
     {
-     "pos": 10,
+     "pos": 11,
      "marks": [
       12,
       12
@@ -4865,45 +5010,48 @@
      "topic_pool": [
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.3
+       "weight": 0.277
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.2
+       "weight": 0.213
       },
       {
        "topic": "Integration (Area)",
-       "weight": 0.2
+       "weight": 0.128
+      },
+      {
+       "topic": "Trigonometry (Equations)",
+       "weight": 0.106
+      },
+      {
+       "topic": "Trigonometry (R-Formula)",
+       "weight": 0.106
       },
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.1
+       "weight": 0.064
       },
       {
        "topic": "Indices",
-       "weight": 0.1
+       "weight": 0.053
       },
       {
        "topic": "Logarithms",
-       "weight": 0.1
+       "weight": 0.053
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.8
+     "diagram_rate": 0.68
     }
    ],
    "must_appear": [
-    "Circles",
-    "Coordinate Geometry",
-    "Differentiation (Maximum and Minimum)",
     "Differentiation (Techniques)",
     "Logarithms",
-    "Polynomials",
-    "Trigonometry (Applications)",
-    "Trigonometry (R-Formula)"
+    "Polynomials"
    ],
    "rules": {
     "never_together": [],
@@ -4917,7 +5065,7 @@
     27,
     27
    ],
-   "notes": "GCE O-Level Mathematics 4052 (first examined 2023): each paper 90 marks, 2 h 15 min. Derived from 3 real papers [2023, 2023s, 2024; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.",
+   "notes": "GCE O-Level Mathematics 4052 (first examined 2023): each paper 90 marks, 2 h 15 min. Derived from 4 real papers [2023, 2023s, 2024, 2025; s = SEAB specimen], recent sittings weighted up (2023×1, 2023s×0.5, 2024×1, 2025×1) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.",
    "slots": [
     {
      "pos": 1,
@@ -4929,49 +5077,57 @@
      "topic_pool": [
       {
        "topic": "Algebra (Expressions)",
-       "weight": 0.334
+       "weight": 0.285
       },
       {
-       "topic": "Algebra (Linear Equations)",
-       "weight": 0.333
+       "topic": "Numbers (Estimation)",
+       "weight": 0.286
       },
       {
        "topic": "Numbers (Ratio)",
-       "weight": 0.333
+       "weight": 0.286
+      },
+      {
+       "topic": "Algebra (Linear Equations)",
+       "weight": 0.143
       }
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 2,
      "marks": [
       1,
-      3
+      4
      ],
-     "typ": 2,
+     "typ": 3,
      "topic_pool": [
       {
        "topic": "Algebra (Inequalities)",
-       "weight": 0.25
+       "weight": 0.223
       },
       {
        "topic": "Circular Measure",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
-       "topic": "Numbers (HCF and LCM)",
-       "weight": 0.25
+       "topic": "Proportion",
+       "weight": 0.222
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Numbers (HCF and LCM)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     },
     {
      "pos": 3,
@@ -4983,84 +5139,104 @@
      "topic_pool": [
       {
        "topic": "Financial Math (Hire Purchase)",
-       "weight": 0.25
+       "weight": 0.223
+      },
+      {
+       "topic": "Financial Math (Interest)",
+       "weight": 0.222
       },
       {
        "topic": "Indices",
-       "weight": 0.25
-      },
-      {
-       "topic": "Indices (Standard Form)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Numbers (Percentages)",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Indices (Standard Form)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 4,
      "marks": [
-      2,
+      1,
       3
      ],
      "typ": 2,
      "topic_pool": [
       {
-       "topic": "Algebra (Expansion)",
-       "weight": 0.25
+       "topic": "Numbers (Estimation)",
+       "weight": 0.223
       },
       {
        "topic": "Numbers (HCF and LCM)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Numbers (Prime Factorization)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Statistics",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Algebra (Expansion)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     },
     {
      "pos": 5,
      "marks": [
       2,
-      3
+      6
      ],
-     "typ": 3,
+     "typ": 4,
      "topic_pool": [
       {
+       "topic": "Algebra (Expansion)",
+       "weight": 0.181
+      },
+      {
+       "topic": "Algebra (Factorization)",
+       "weight": 0.182
+      },
+      {
        "topic": "Algebra (Fractions)",
-       "weight": 0.334
+       "weight": 0.182
+      },
+      {
+       "topic": "Algebra (Linear Equations)",
+       "weight": 0.182
       },
       {
        "topic": "Financial Math (Interest)",
-       "weight": 0.333
+       "weight": 0.182
       },
       {
        "topic": "Statistics",
-       "weight": 0.333
+       "weight": 0.091
       }
      ],
      "parts": [
       2,
-      2
+      3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.43
     },
     {
      "pos": 6,
@@ -5072,22 +5248,26 @@
      "topic_pool": [
       {
        "topic": "Algebra (Quadratic Graphs)",
-       "weight": 0.5
+       "weight": 0.334
       },
       {
        "topic": "Algebra (Expressions)",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Algebra (Inequalities)",
+       "weight": 0.222
       },
       {
        "topic": "Map Scales",
-       "weight": 0.25
+       "weight": 0.222
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 7,
@@ -5098,23 +5278,23 @@
      "typ": 4,
      "topic_pool": [
       {
-       "topic": "Algebra (Factorization)",
-       "weight": 0.334
+       "topic": "Geometrical Constructions",
+       "weight": 0.428
       },
       {
-       "topic": "Geometrical Constructions",
-       "weight": 0.333
+       "topic": "Algebra (Factorization)",
+       "weight": 0.286
       },
       {
        "topic": "Numbers (Percentages)",
-       "weight": 0.333
+       "weight": 0.286
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.71
     },
     {
      "pos": 8,
@@ -5125,23 +5305,27 @@
      "typ": 3,
      "topic_pool": [
       {
-       "topic": "Algebra (Identities)",
-       "weight": 0.334
-      },
-      {
        "topic": "Number Patterns",
-       "weight": 0.333
+       "weight": 0.285
       },
       {
        "topic": "Statistics",
-       "weight": 0.333
+       "weight": 0.286
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.286
+      },
+      {
+       "topic": "Algebra (Identities)",
+       "weight": 0.143
       }
      ],
      "parts": [
-      3,
+      2,
       3
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 9,
@@ -5152,19 +5336,23 @@
      "typ": 2,
      "topic_pool": [
       {
-       "topic": "Circle Properties",
-       "weight": 0.334
+       "topic": "Circular Measure",
+       "weight": 0.285
       },
       {
-       "topic": "Circular Measure",
-       "weight": 0.333
+       "topic": "Mensuration",
+       "weight": 0.286
       },
       {
        "topic": "Numbers (Rate)",
-       "weight": 0.333
+       "weight": 0.286
+      },
+      {
+       "topic": "Circle Properties",
+       "weight": 0.143
       }
      ],
-     "diagram_rate": 1
+     "diagram_rate": 0.71
     },
     {
      "pos": 10,
@@ -5172,26 +5360,30 @@
       2,
       5
      ],
-     "typ": 4,
+     "typ": 3,
      "topic_pool": [
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.334
+       "weight": 0.285
       },
       {
-       "topic": "Numbers (Ratio)",
-       "weight": 0.333
+       "topic": "Numbers (Prime Factorization)",
+       "weight": 0.286
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.333
+       "weight": 0.286
+      },
+      {
+       "topic": "Numbers (Ratio)",
+       "weight": 0.143
       }
      ],
      "parts": [
-      3,
+      2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     },
     {
      "pos": 11,
@@ -5203,57 +5395,61 @@
      "topic_pool": [
       {
        "topic": "Statistics",
-       "weight": 0.5
+       "weight": 0.556
       },
       {
        "topic": "Algebra (Fractions)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Probability",
-       "weight": 0.25
+       "weight": 0.222
       }
      ],
      "parts": [
       2,
-      2
+      3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.86
     },
     {
      "pos": 12,
      "marks": [
-      3,
+      1,
       5
      ],
-     "typ": 4,
+     "typ": 3,
      "topic_pool": [
       {
        "topic": "Algebra (Expansion)",
-       "weight": 0.2
+       "weight": 0.181
+      },
+      {
+       "topic": "Algebra (Expressions)",
+       "weight": 0.182
       },
       {
        "topic": "Algebra (Factorization)",
-       "weight": 0.2
-      },
-      {
-       "topic": "Algebra (Fractions)",
-       "weight": 0.2
+       "weight": 0.182
       },
       {
        "topic": "Algebra (Subject of Formula)",
-       "weight": 0.2
+       "weight": 0.182
       },
       {
        "topic": "Numbers (Estimation)",
-       "weight": 0.2
+       "weight": 0.182
+      },
+      {
+       "topic": "Algebra (Fractions)",
+       "weight": 0.091
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 13,
@@ -5264,27 +5460,31 @@
      "typ": 3,
      "topic_pool": [
       {
-       "topic": "Algebra (Fractions)",
-       "weight": 0.25
+       "topic": "Algebra (Linear Equations)",
+       "weight": 0.223
       },
       {
-       "topic": "Algebra (Linear Equations)",
-       "weight": 0.25
+       "topic": "Angles",
+       "weight": 0.222
       },
       {
        "topic": "Circle Properties",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Probability",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Algebra (Fractions)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.86
     },
     {
      "pos": 14,
@@ -5292,18 +5492,22 @@
       2,
       3
      ],
-     "typ": 2,
+     "typ": 3,
      "topic_pool": [
       {
        "topic": "Algebra (Simultaneous Equations)",
-       "weight": 0.5
+       "weight": 0.334
       },
       {
        "topic": "Angles",
-       "weight": 0.5
+       "weight": 0.333
+      },
+      {
+       "topic": "Numbers (Percentages)",
+       "weight": 0.333
       }
      ],
-     "diagram_rate": 0.5
+     "diagram_rate": 0.33
     },
     {
      "pos": 15,
@@ -5315,49 +5519,65 @@
      "topic_pool": [
       {
        "topic": "Algebra (Expansion)",
-       "weight": 0.25
+       "weight": 0.223
       },
       {
        "topic": "Algebra (Factorization)",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Algebra (Quadratic Graphs)",
+       "weight": 0.222
       },
       {
        "topic": "Angles",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.25
-      }
-     ],
-     "diagram_rate": 0.67
-    },
-    {
-     "pos": 16,
-     "marks": [
-      1,
-      5
-     ],
-     "typ": 3,
-     "topic_pool": [
-      {
-       "topic": "Congruency and Similarity",
-       "weight": 0.334
-      },
-      {
-       "topic": "Financial Math (Interest)",
-       "weight": 0.333
-      },
-      {
-       "topic": "Indices",
-       "weight": 0.333
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.86
+    },
+    {
+     "pos": 16,
+     "marks": [
+      1,
+      6
+     ],
+     "typ": 3,
+     "topic_pool": [
+      {
+       "topic": "Circle Properties",
+       "weight": 0.223
+      },
+      {
+       "topic": "Congruency and Similarity",
+       "weight": 0.222
+      },
+      {
+       "topic": "Financial Math (Interest)",
+       "weight": 0.222
+      },
+      {
+       "topic": "Mensuration",
+       "weight": 0.222
+      },
+      {
+       "topic": "Indices",
+       "weight": 0.111
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0.57
     },
     {
      "pos": 17,
@@ -5369,18 +5589,22 @@
      "topic_pool": [
       {
        "topic": "Sets",
-       "weight": 0.667
+       "weight": 0.571
+      },
+      {
+       "topic": "Indices",
+       "weight": 0.286
       },
       {
        "topic": "Congruency and Similarity",
-       "weight": 0.333
+       "weight": 0.143
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 1
+     "diagram_rate": 0.71
     },
     {
      "pos": 18,
@@ -5388,30 +5612,34 @@
       3,
       5
      ],
-     "typ": 4,
+     "typ": 3,
      "topic_pool": [
       {
-       "topic": "Algebra (Factorization)",
-       "weight": 0.25
+       "topic": "Algebra (Subject of Formula)",
+       "weight": 0.223
       },
       {
        "topic": "Congruency and Similarity",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Indices (Standard Form)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Mensuration",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Algebra (Factorization)",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 19,
@@ -5423,53 +5651,65 @@
      "topic_pool": [
       {
        "topic": "Algebra (Quadratic Graphs)",
-       "weight": 0.25
-      },
-      {
-       "topic": "Matrices",
-       "weight": 0.25
+       "weight": 0.445
       },
       {
        "topic": "Numbers (HCF and LCM)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Numbers (Prime Factorization)",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Matrices",
+       "weight": 0.111
       }
      ],
      "parts": [
       3,
       3
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 20,
      "marks": [
       2,
-      3
+      6
      ],
      "typ": 3,
      "topic_pool": [
       {
+       "topic": "Trigonometry",
+       "weight": 0.307
+      },
+      {
        "topic": "Algebra (Factorization)",
-       "weight": 0.25
+       "weight": 0.154
       },
       {
        "topic": "Algebra (Fractions)",
-       "weight": 0.25
+       "weight": 0.154
+      },
+      {
+       "topic": "Algebra (Quadratic Equations)",
+       "weight": 0.154
+      },
+      {
+       "topic": "Congruency and Similarity",
+       "weight": 0.154
       },
       {
        "topic": "Polygons",
-       "weight": 0.25
-      },
-      {
-       "topic": "Trigonometry",
-       "weight": 0.25
+       "weight": 0.077
       }
      ],
-     "diagram_rate": 0.67
+     "parts": [
+      2,
+      2
+     ],
+     "diagram_rate": 0.71
     },
     {
      "pos": 21,
@@ -5477,30 +5717,38 @@
       3,
       5
      ],
-     "typ": 4,
+     "typ": 5,
      "topic_pool": [
       {
        "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.25
+       "weight": 0.181
       },
       {
-       "topic": "Circle Properties",
-       "weight": 0.25
+       "topic": "Congruency and Similarity",
+       "weight": 0.182
       },
       {
        "topic": "Matrices",
-       "weight": 0.25
+       "weight": 0.182
+      },
+      {
+       "topic": "Mensuration",
+       "weight": 0.182
       },
       {
        "topic": "Statistics",
-       "weight": 0.25
+       "weight": 0.182
+      },
+      {
+       "topic": "Circle Properties",
+       "weight": 0.091
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.43
     },
     {
      "pos": 22,
@@ -5512,26 +5760,30 @@
      "topic_pool": [
       {
        "topic": "Algebra (Expansion)",
-       "weight": 0.25
+       "weight": 0.223
       },
       {
        "topic": "Algebra (Simultaneous Equations)",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
-       "topic": "Circular Measure",
-       "weight": 0.25
+       "topic": "Distance and Speed Time Graphs",
+       "weight": 0.222
       },
       {
        "topic": "Mensuration",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Circular Measure",
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.71
     },
     {
      "pos": 23,
@@ -5543,53 +5795,65 @@
      "topic_pool": [
       {
        "topic": "Trigonometry",
-       "weight": 0.5
+       "weight": 0.363
       },
       {
        "topic": "Algebra (Expansion)",
-       "weight": 0.25
+       "weight": 0.182
+      },
+      {
+       "topic": "Algebra (Fractions)",
+       "weight": 0.182
+      },
+      {
+       "topic": "Algebra (Quadratic Equations)",
+       "weight": 0.182
       },
       {
        "topic": "Sets",
-       "weight": 0.25
+       "weight": 0.091
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     },
     {
      "pos": 24,
      "marks": [
-      3,
+      2,
       5
      ],
      "typ": 3,
      "topic_pool": [
       {
        "topic": "Algebra (Factorization)",
-       "weight": 0.25
+       "weight": 0.223
       },
       {
        "topic": "Algebra (Fractions)",
-       "weight": 0.25
+       "weight": 0.222
+      },
+      {
+       "topic": "Indices",
+       "weight": 0.222
       },
       {
        "topic": "Proportion",
-       "weight": 0.25
+       "weight": 0.222
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.25
+       "weight": 0.111
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.43
     },
     {
      "pos": 25,
@@ -5600,23 +5864,23 @@
      "typ": 4,
      "topic_pool": [
       {
+       "topic": "Statistics",
+       "weight": 0.428
+      },
+      {
        "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.334
+       "weight": 0.286
       },
       {
        "topic": "Number Patterns",
-       "weight": 0.333
-      },
-      {
-       "topic": "Statistics",
-       "weight": 0.333
+       "weight": 0.286
       }
      ],
      "parts": [
       2,
       2
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 26,
@@ -5628,15 +5892,23 @@
      "topic_pool": [
       {
        "topic": "Mensuration",
-       "weight": 0.6
+       "weight": 0.384
+      },
+      {
+       "topic": "Algebra (Graph on Graph Paper)",
+       "weight": 0.154
       },
       {
        "topic": "Congruency and Similarity",
-       "weight": 0.2
+       "weight": 0.154
+      },
+      {
+       "topic": "Graphs of Functions",
+       "weight": 0.154
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.2
+       "weight": 0.154
       }
      ],
      "parts": [
@@ -5648,39 +5920,46 @@
     {
      "pos": 27,
      "marks": [
-      5,
+      4,
       7
      ],
-     "typ": 6,
+     "typ": 5,
      "topic_pool": [
       {
        "topic": "Vectors",
-       "weight": 0.667
+       "weight": 0.571
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.286
       },
       {
        "topic": "Number Patterns",
-       "weight": 0.333
+       "weight": 0.143
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     }
    ],
    "must_appear": [
     "Algebra (Expansion)",
+    "Algebra (Expressions)",
     "Algebra (Factorization)",
     "Algebra (Fractions)",
-    "Circular Measure",
+    "Angles",
     "Congruency and Similarity",
+    "Financial Math (Interest)",
     "Mensuration",
-    "Number Patterns",
-    "Numbers (HCF and LCM)",
-    "Sets",
+    "Numbers (Percentages)",
+    "Numbers (Prime Factorization)",
+    "Probability",
     "Statistics",
-    "Trigonometry"
+    "Trigonometry",
+    "Vectors"
    ],
    "rules": {
     "never_together": [],
@@ -5694,7 +5973,7 @@
     9,
     9
    ],
-   "notes": "GCE O-Level Mathematics 4052 (first examined 2023): each paper 90 marks, 2 h 15 min. Derived from 3 real papers [2023, 2023s, 2024; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.",
+   "notes": "GCE O-Level Mathematics 4052 (first examined 2023): each paper 90 marks, 2 h 15 min. Derived from 4 real papers [2023, 2023s, 2024, 2025; s = SEAB specimen], recent sittings weighted up (2023×1, 2023s×0.5, 2024×1, 2025×1) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.",
    "slots": [
     {
      "pos": 1,
@@ -5706,101 +5985,121 @@
      "topic_pool": [
       {
        "topic": "Algebra (Fractions)",
-       "weight": 0.181
-      },
-      {
-       "topic": "Algebra (Inequalities)",
-       "weight": 0.091
-      },
-      {
-       "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.091
+       "weight": 0.193
       },
       {
        "topic": "Algebra (Simultaneous Equations)",
-       "weight": 0.091
+       "weight": 0.115
       },
       {
-       "topic": "Algebra (Subject of Formula)",
-       "weight": 0.091
+       "topic": "Algebra (Factorization)",
+       "weight": 0.077
+      },
+      {
+       "topic": "Algebra (Inequalities)",
+       "weight": 0.077
+      },
+      {
+       "topic": "Algebra (Linear Equations)",
+       "weight": 0.077
       },
       {
        "topic": "Indices",
-       "weight": 0.091
+       "weight": 0.077
       },
       {
        "topic": "Indices (Standard Form)",
-       "weight": 0.091
+       "weight": 0.077
       },
       {
        "topic": "Map Scales",
-       "weight": 0.091
+       "weight": 0.077
       },
       {
        "topic": "Numbers (Percentages)",
-       "weight": 0.091
+       "weight": 0.077
       },
       {
        "topic": "Numbers (Rate)",
-       "weight": 0.091
+       "weight": 0.077
+      },
+      {
+       "topic": "Algebra (Quadratic Equations)",
+       "weight": 0.038
+      },
+      {
+       "topic": "Algebra (Subject of Formula)",
+       "weight": 0.038
       }
      ],
      "parts": [
       3,
       4
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 2,
      "marks": [
-      9,
+      8,
       12
      ],
-     "typ": 11,
+     "typ": 10,
      "topic_pool": [
       {
        "topic": "Numbers (Percentages)",
-       "weight": 0.2
+       "weight": 0.128
       },
       {
        "topic": "Algebra (Fractions)",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
        "topic": "Algebra (Inequalities)",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
        "topic": "Algebra (Linear Equations)",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
        "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
        "topic": "Algebra (Subject of Formula)",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
-       "topic": "Financial Math (Hire Purchase)",
-       "weight": 0.1
+       "topic": "Indices (Standard Form)",
+       "weight": 0.083
       },
       {
        "topic": "Matrices",
-       "weight": 0.1
+       "weight": 0.083
       },
       {
        "topic": "Numbers (Ratio)",
-       "weight": 0.1
+       "weight": 0.083
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.083
+      },
+      {
+       "topic": "Statistics",
+       "weight": 0.083
+      },
+      {
+       "topic": "Financial Math (Hire Purchase)",
+       "weight": 0.042
       }
      ],
      "parts": [
       3,
       4
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 3,
@@ -5811,66 +6110,94 @@
      "typ": 9,
      "topic_pool": [
       {
-       "topic": "Algebra (Graph on Graph Paper)",
-       "weight": 0.2
-      },
-      {
        "topic": "Coordinate Geometry",
-       "weight": 0.2
+       "weight": 0.124
       },
       {
-       "topic": "Graphs of Functions",
-       "weight": 0.2
+       "topic": "Map Scales",
+       "weight": 0.125
+      },
+      {
+       "topic": "Matrices",
+       "weight": 0.125
       },
       {
        "topic": "Mensuration",
-       "weight": 0.2
+       "weight": 0.125
+      },
+      {
+       "topic": "Numbers (Percentages)",
+       "weight": 0.125
+      },
+      {
+       "topic": "Numbers (Ratio)",
+       "weight": 0.125
       },
       {
        "topic": "Vectors",
-       "weight": 0.2
+       "weight": 0.125
+      },
+      {
+       "topic": "Algebra (Graph on Graph Paper)",
+       "weight": 0.063
+      },
+      {
+       "topic": "Graphs of Functions",
+       "weight": 0.063
       }
      ],
      "parts": [
       3,
       4
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     },
     {
      "pos": 4,
      "marks": [
       10,
-      11
+      12
      ],
      "typ": 11,
      "topic_pool": [
       {
        "topic": "Algebra (Graph on Graph Paper)",
-       "weight": 0.285
+       "weight": 0.222
       },
       {
        "topic": "Graphs of Functions",
-       "weight": 0.286
+       "weight": 0.222
+      },
+      {
+       "topic": "Congruency and Similarity",
+       "weight": 0.111
       },
       {
        "topic": "Indices",
-       "weight": 0.143
+       "weight": 0.111
+      },
+      {
+       "topic": "Polygons",
+       "weight": 0.111
+      },
+      {
+       "topic": "Trigonometry",
+       "weight": 0.111
       },
       {
        "topic": "Probability",
-       "weight": 0.143
+       "weight": 0.056
       },
       {
        "topic": "Statistics",
-       "weight": 0.143
+       "weight": 0.056
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 5,
@@ -5881,58 +6208,74 @@
      "typ": 9,
      "topic_pool": [
       {
+       "topic": "Trigonometry",
+       "weight": 0.267
+      },
+      {
        "topic": "Circle Properties",
-       "weight": 0.285
+       "weight": 0.2
       },
       {
        "topic": "Circular Measure",
-       "weight": 0.286
+       "weight": 0.2
       },
       {
-       "topic": "Trigonometry",
-       "weight": 0.286
+       "topic": "Graphs of Functions",
+       "weight": 0.133
+      },
+      {
+       "topic": "Indices",
+       "weight": 0.133
       },
       {
        "topic": "Congruency and Similarity",
-       "weight": 0.143
+       "weight": 0.067
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 1
+     "diagram_rate": 0.71
     },
     {
      "pos": 6,
      "marks": [
       11,
-      11
+      13
      ],
-     "typ": 11,
+     "typ": 12,
      "topic_pool": [
       {
        "topic": "Coordinate Geometry",
-       "weight": 0.333
+       "weight": 0.214
       },
       {
        "topic": "Vectors",
-       "weight": 0.333
+       "weight": 0.214
       },
       {
        "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.167
+       "weight": 0.143
+      },
+      {
+       "topic": "Mensuration",
+       "weight": 0.143
       },
       {
        "topic": "Numbers (Speed)",
-       "weight": 0.167
+       "weight": 0.143
+      },
+      {
+       "topic": "Trigonometry",
+       "weight": 0.143
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.29
     },
     {
      "pos": 7,
@@ -5944,22 +6287,26 @@
      "topic_pool": [
       {
        "topic": "Probability",
-       "weight": 0.4
+       "weight": 0.461
       },
       {
        "topic": "Statistics",
-       "weight": 0.4
+       "weight": 0.308
+      },
+      {
+       "topic": "Sets",
+       "weight": 0.154
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.2
+       "weight": 0.077
       }
      ],
      "parts": [
       2,
-      2
+      3
      ],
-     "diagram_rate": 1
+     "diagram_rate": 0.71
     },
     {
      "pos": 8,
@@ -5971,88 +6318,93 @@
      "topic_pool": [
       {
        "topic": "Algebra (Quadratic Equations)",
-       "weight": 0.25
+       "weight": 0.292
       },
       {
        "topic": "Circle Properties",
-       "weight": 0.125
+       "weight": 0.118
       },
       {
        "topic": "Circular Measure",
-       "weight": 0.125
+       "weight": 0.118
       },
       {
        "topic": "Congruency and Similarity",
-       "weight": 0.125
+       "weight": 0.118
       },
       {
-       "topic": "Mensuration",
-       "weight": 0.125
+       "topic": "Coordinate Geometry",
+       "weight": 0.118
       },
       {
        "topic": "Number Patterns",
-       "weight": 0.125
+       "weight": 0.118
+      },
+      {
+       "topic": "Mensuration",
+       "weight": 0.059
       },
       {
        "topic": "Trigonometry",
-       "weight": 0.125
+       "weight": 0.059
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 1
+     "diagram_rate": 0.71
     },
     {
      "pos": 9,
      "marks": [
-      10,
+      9,
       11
      ],
      "typ": 10,
      "topic_pool": [
       {
        "topic": "Math In Real World Context",
-       "weight": 0.334
+       "weight": 0.369
       },
       {
        "topic": "Numbers (Rate)",
-       "weight": 0.222
-      },
-      {
-       "topic": "Congruency and Similarity",
-       "weight": 0.111
-      },
-      {
-       "topic": "Mensuration",
-       "weight": 0.111
+       "weight": 0.158
       },
       {
        "topic": "Numbers (Speed)",
-       "weight": 0.111
+       "weight": 0.158
+      },
+      {
+       "topic": "Congruency and Similarity",
+       "weight": 0.105
+      },
+      {
+       "topic": "Mensuration",
+       "weight": 0.105
       },
       {
        "topic": "Statistics",
-       "weight": 0.111
+       "weight": 0.105
       }
      ],
      "parts": [
       2,
-      3
+      4
      ],
-     "diagram_rate": 0.67
+     "diagram_rate": 0.57
     }
    ],
    "must_appear": [
     "Algebra (Fractions)",
-    "Algebra (Graph on Graph Paper)",
     "Algebra (Quadratic Equations)",
-    "Circle Properties",
-    "Circular Measure",
     "Coordinate Geometry",
     "Graphs of Functions",
-    "Math In Real World Context"
+    "Math In Real World Context",
+    "Mensuration",
+    "Numbers (Percentages)",
+    "Probability",
+    "Statistics"
    ],
    "rules": {
     "never_together": [],
@@ -6066,74 +6418,62 @@
     11,
     12
    ],
-   "notes": "GCE A-Level H2 Mathematics 9758: each paper 100 marks, 3 h. Derived from 18 real papers [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025s; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules.",
+   "notes": "GCE A-Level H2 Mathematics 9758: each paper 100 marks, 3 h. Derived from 10 real papers [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2025s; s = SEAB specimen], recent sittings weighted up (2017×0.4, 2018×0.4, 2019×0.4, 2020×0.6, 2021×0.6, 2022×1, 2023×1, 2024×1, 2025×0.3, 2025s×0.5) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules.",
    "slots": [
     {
      "pos": 1,
      "marks": [
       4,
-      7
+      6
      ],
      "typ": 5,
      "topic_pool": [
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.157
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.154
-      },
-      {
-       "topic": "Inequalities",
-       "weight": 0.115
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.115
+       "weight": 0.306
       },
       {
        "topic": "Complex Numbers",
-       "weight": 0.077
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.077
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.077
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.038
-      },
-      {
-       "topic": "Differentiation (Rates of Change)",
-       "weight": 0.038
+       "weight": 0.143
       },
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.038
+       "weight": 0.102
       },
       {
-       "topic": "Functions",
-       "weight": 0.038
+       "topic": "Graphing Techniques",
+       "weight": 0.102
       },
       {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.038
+       "topic": "Integration (Techniques)",
+       "weight": 0.102
+      },
+      {
+       "topic": "Equations",
+       "weight": 0.061
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.061
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.051
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.041
       },
       {
        "topic": "Series and Sequences",
-       "weight": 0.038
+       "weight": 0.031
       }
      ],
      "parts": [
       2,
-      3
+      2
      ],
-     "diagram_rate": 0.17
+     "diagram_rate": 0
     },
     {
      "pos": 2,
@@ -6145,200 +6485,156 @@
      "topic_pool": [
       {
        "topic": "Equations",
-       "weight": 0.193
+       "weight": 0.197
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.129
+       "weight": 0.132
       },
       {
        "topic": "Graphing Techniques",
-       "weight": 0.129
+       "weight": 0.124
       },
       {
        "topic": "Inequalities",
-       "weight": 0.129
+       "weight": 0.116
       },
       {
        "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Binomial Expansion",
-       "weight": 0.032
-      },
-      {
-       "topic": "Functions",
-       "weight": 0.032
-      },
-      {
-       "topic": "Mathematical Induction",
-       "weight": 0.032
+       "weight": 0.083
       },
       {
        "topic": "Series and Sequences",
-       "weight": 0.032
+       "weight": 0.083
       },
       {
        "topic": "Vectors",
-       "weight": 0.032
+       "weight": 0.083
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.066
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.05
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.041
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.025
       }
      ],
      "parts": [
       2,
-      3
+      2
      ],
-     "diagram_rate": 0.11
+     "diagram_rate": 0
     },
     {
      "pos": 3,
      "marks": [
       4,
-      8
+      7
      ],
      "typ": 6,
      "topic_pool": [
       {
-       "topic": "Graphing Techniques",
-       "weight": 0.149
-      },
-      {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.111
+       "weight": 0.17
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.111
-      },
-      {
-       "topic": "Series and Sequences",
-       "weight": 0.111
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.111
-      },
-      {
-       "topic": "Inequalities",
-       "weight": 0.074
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.074
+       "weight": 0.172
       },
       {
        "topic": "Complex Numbers",
-       "weight": 0.037
+       "weight": 0.14
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.108
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.108
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.097
       },
       {
        "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.037
+       "weight": 0.065
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.054
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.037
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.037
+       "weight": 0.043
       },
       {
        "topic": "Integration (Differential Equations)",
-       "weight": 0.037
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.037
-      },
-      {
-       "topic": "Mathematical Induction",
-       "weight": 0.037
+       "weight": 0.043
       }
      ],
      "parts": [
       2,
-      3
+      2
      ],
-     "diagram_rate": 0.11
+     "diagram_rate": 0
     },
     {
      "pos": 4,
      "marks": [
-      5,
+      6,
       10
      ],
-     "typ": 7,
+     "typ": 8,
      "topic_pool": [
       {
-       "topic": "Graphing Techniques",
-       "weight": 0.176
-      },
-      {
        "topic": "Integration (Techniques)",
-       "weight": 0.138
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.103
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.103
+       "weight": 0.219
       },
       {
        "topic": "Inequalities",
-       "weight": 0.103
+       "weight": 0.198
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.187
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.132
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.132
       },
       {
        "topic": "APGP",
-       "weight": 0.069
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.069
+       "weight": 0.055
       },
       {
        "topic": "Equations",
-       "weight": 0.069
-      },
-      {
-       "topic": "Binomial Expansion",
-       "weight": 0.034
+       "weight": 0.044
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.034
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.034
-      },
-      {
-       "topic": "Functions",
-       "weight": 0.034
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.034
+       "weight": 0.033
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.17
+     "diagram_rate": 0
     },
     {
      "pos": 5,
@@ -6349,126 +6645,106 @@
      "typ": 8,
      "topic_pool": [
       {
-       "topic": "Functions",
-       "weight": 0.16
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.16
-      },
-      {
        "topic": "Series and Sequences",
-       "weight": 0.12
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.12
+       "weight": 0.215
       },
       {
        "topic": "Equations",
-       "weight": 0.08
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.08
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.08
+       "weight": 0.189
       },
       {
        "topic": "APGP",
-       "weight": 0.04
+       "weight": 0.135
       },
       {
-       "topic": "Complex Numbers",
-       "weight": 0.04
+       "topic": "Functions",
+       "weight": 0.108
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.081
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.04
+       "weight": 0.068
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.068
       },
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.04
+       "weight": 0.054
       },
       {
-       "topic": "Mathematical Induction",
-       "weight": 0.04
+       "topic": "Inequalities",
+       "weight": 0.041
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.041
       }
      ],
      "parts": [
       2,
       3
      ],
-     "diagram_rate": 0.11
+     "diagram_rate": 0
     },
     {
      "pos": 6,
      "marks": [
       6,
-      12
+      9
      ],
-     "typ": 9,
+     "typ": 8,
      "topic_pool": [
       {
-       "topic": "Series and Sequences",
-       "weight": 0.146
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.118
-      },
-      {
        "topic": "Integration (Area and Volume)",
-       "weight": 0.118
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.118
-      },
-      {
-       "topic": "Mathematical Induction",
-       "weight": 0.088
-      },
-      {
-       "topic": "Binomial Expansion",
-       "weight": 0.059
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.059
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.059
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.059
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.059
+       "weight": 0.232
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.059
+       "weight": 0.162
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.113
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.099
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.099
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.092
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.029
+       "weight": 0.07
       },
       {
        "topic": "Functions",
-       "weight": 0.029
+       "weight": 0.07
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.042
+      },
+      {
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.021
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.14
+     "diagram_rate": 0
     },
     {
      "pos": 7,
@@ -6476,70 +6752,54 @@
       7,
       11
      ],
-     "typ": 10,
+     "typ": 9,
      "topic_pool": [
       {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.12
-      },
-      {
        "topic": "Integration (Techniques)",
-       "weight": 0.12
+       "weight": 0.217
       },
       {
-       "topic": "APGP",
-       "weight": 0.08
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.174
       },
       {
        "topic": "Binomial Expansion",
-       "weight": 0.08
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.08
+       "weight": 0.109
       },
       {
        "topic": "Differentiation (Techniques)",
-       "weight": 0.08
+       "weight": 0.109
       },
       {
        "topic": "Functions",
-       "weight": 0.08
+       "weight": 0.109
       },
       {
        "topic": "Graphing Techniques",
-       "weight": 0.08
+       "weight": 0.109
       },
       {
-       "topic": "Vectors",
-       "weight": 0.08
+       "topic": "Complex Numbers",
+       "weight": 0.054
       },
       {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.04
+       "topic": "APGP",
+       "weight": 0.043
       },
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.04
+       "weight": 0.043
       },
       {
-       "topic": "Equations",
-       "weight": 0.04
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.04
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.04
+       "topic": "Vectors",
+       "weight": 0.033
       }
      ],
      "parts": [
       2,
       5
      ],
-     "diagram_rate": 0.33
+     "diagram_rate": 0.08
     },
     {
      "pos": 8,
@@ -6550,141 +6810,46 @@
      "typ": 11,
      "topic_pool": [
       {
-       "topic": "Complex Numbers",
-       "weight": 0.234
+       "topic": "APGP",
+       "weight": 0.233
       },
       {
-       "topic": "APGP",
-       "weight": 0.192
+       "topic": "Complex Numbers",
+       "weight": 0.209
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.174
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.174
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.07
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.058
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.047
       },
       {
        "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.077
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.077
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.077
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.077
-      },
-      {
-       "topic": "Binomial Expansion",
-       "weight": 0.038
-      },
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.038
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.038
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.038
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.038
-      },
-      {
-       "topic": "Series and Sequences",
-       "weight": 0.038
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.038
+       "weight": 0.035
       }
      ],
      "parts": [
       2,
       4
      ],
-     "diagram_rate": 0.11
+     "diagram_rate": 0
     },
     {
      "pos": 9,
-     "marks": [
-      10,
-      14
-     ],
-     "typ": 12,
-     "topic_pool": [
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.124
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.094
-      },
-      {
-       "topic": "Inequalities",
-       "weight": 0.094
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.094
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.094
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.063
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.063
-      },
-      {
-       "topic": "Series and Sequences",
-       "weight": 0.063
-      },
-      {
-       "topic": "APGP",
-       "weight": 0.031
-      },
-      {
-       "topic": "Binomial Expansion",
-       "weight": 0.031
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.031
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.031
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.031
-      },
-      {
-       "topic": "Mathematical Induction",
-       "weight": 0.031
-      }
-     ],
-     "parts": [
-      2,
-      4
-     ],
-     "diagram_rate": 0.22
-    },
-    {
-     "pos": 10,
      "marks": [
       10,
       14
@@ -6692,323 +6857,87 @@
      "typ": 13,
      "topic_pool": [
       {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.351
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.217
-      },
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.087
-      },
-      {
        "topic": "Graphing Techniques",
-       "weight": 0.087
-      },
-      {
-       "topic": "APGP",
-       "weight": 0.043
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.043
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.043
-      },
-      {
-       "topic": "Functions",
-       "weight": 0.043
+       "weight": 0.208
       },
       {
        "topic": "Integration (Area and Volume)",
-       "weight": 0.043
+       "weight": 0.184
       },
       {
        "topic": "Integration (Techniques)",
-       "weight": 0.043
+       "weight": 0.142
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.113
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.113
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.071
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.057
+      },
+      {
+       "topic": "Binomial Expansion",
+       "weight": 0.035
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.028
+      },
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.028
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.021
       }
      ],
      "parts": [
       2,
-      5
+      4
      ],
-     "diagram_rate": 0.17
+     "diagram_rate": 0.08
     },
     {
-     "pos": 11,
+     "pos": 10,
      "marks": [
       12,
-      17
+      14
      ],
-     "typ": 14,
+     "typ": 13,
      "topic_pool": [
       {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.16
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.161
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.548
       },
       {
        "topic": "Vectors",
-       "weight": 0.161
+       "weight": 0.26
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.097
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.097
-      },
-      {
-       "topic": "APGP",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.065
+       "weight": 0.055
       },
       {
        "topic": "Graphing Techniques",
-       "weight": 0.065
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.032
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.032
-      }
-     ],
-     "parts": [
-      2,
-      5
-     ],
-     "diagram_rate": 0.28
-    }
-   ],
-   "must_appear": [
-    "Complex Numbers",
-    "Graphing Techniques",
-    "Integration (Area and Volume)",
-    "Integration (Differential Equations)",
-    "Vectors"
-   ],
-   "rules": {
-    "never_together": [],
-    "min_distinct_topics": 11
-   }
-  },
-  "GCE-JC-P2": {
-   "total_marks": 100,
-   "question_count": [
-    10,
-    10,
-    12
-   ],
-   "section_boundary": 5,
-   "notes": "GCE A-Level H2 Mathematics 9758: each paper 100 marks, 3 h. Derived from 18 real papers [2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025s; s = SEAB specimen] — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there, no mined co-occurrence rules. Slots 1-4 Section A (Pure, 40 marks), 5-10 Section B (Statistics, 60 marks).",
-   "slots": [
-    {
-     "pos": 1,
-     "marks": [
-      4,
-      9
-     ],
-     "typ": 7,
-     "topic_pool": [
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.166
+       "weight": 0.055
       },
       {
        "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.125
+       "weight": 0.041
       },
       {
        "topic": "Parametric Equations",
-       "weight": 0.125
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.083
-      },
-      {
-       "topic": "Functions",
-       "weight": 0.083
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.083
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.042
-      },
-      {
-       "topic": "Differentiation (Rates of Change)",
-       "weight": 0.042
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.042
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.042
-      },
-      {
-       "topic": "Inequalities",
-       "weight": 0.042
-      }
-     ],
-     "parts": [
-      2,
-      4
-     ],
-     "diagram_rate": 0.06
-    },
-    {
-     "pos": 2,
-     "marks": [
-      6,
-      12
-     ],
-     "typ": 10,
-     "topic_pool": [
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.178
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.13
-      },
-      {
-       "topic": "Series and Sequences",
-       "weight": 0.13
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.087
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.087
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.087
-      },
-      {
-       "topic": "APGP",
-       "weight": 0.043
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.043
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.043
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.043
-      },
-      {
-       "topic": "Inequalities",
-       "weight": 0.043
-      },
-      {
-       "topic": "Integration (Differential Equations)",
-       "weight": 0.043
-      },
-      {
-       "topic": "Mathematical Induction",
-       "weight": 0.043
-      }
-     ],
-     "parts": [
-      2,
-      4
-     ],
-     "diagram_rate": 0.28
-    },
-    {
-     "pos": 3,
-     "marks": [
-      7,
-      12
-     ],
-     "typ": 11,
-     "topic_pool": [
-      {
-       "topic": "Functions",
-       "weight": 0.191
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.161
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.097
-      },
-      {
-       "topic": "APGP",
-       "weight": 0.065
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.065
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.065
-      },
-      {
-       "topic": "Series and Sequences",
-       "weight": 0.065
-      },
-      {
-       "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.032
-      },
-      {
-       "topic": "Differentiation (Techniques)",
-       "weight": 0.032
-      },
-      {
-       "topic": "Equations",
-       "weight": 0.032
+       "weight": 0.041
       }
      ],
      "parts": [
@@ -7018,115 +6947,341 @@
      "diagram_rate": 0.05
     },
     {
-     "pos": 4,
+     "pos": 11,
      "marks": [
       10,
-      14
+      16
      ],
-     "typ": 12,
+     "typ": 14,
      "topic_pool": [
       {
-       "topic": "Integration (Area and Volume)",
-       "weight": 0.143
-      },
-      {
-       "topic": "Functions",
-       "weight": 0.107
-      },
-      {
-       "topic": "Graphing Techniques",
-       "weight": 0.107
-      },
-      {
-       "topic": "Integration (Techniques)",
-       "weight": 0.107
-      },
-      {
-       "topic": "Complex Numbers",
-       "weight": 0.071
-      },
-      {
-       "topic": "Differentiation (Maclaurin Series)",
-       "weight": 0.071
-      },
-      {
-       "topic": "Parametric Equations",
-       "weight": 0.071
-      },
-      {
-       "topic": "Vectors",
-       "weight": 0.071
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.246
       },
       {
        "topic": "APGP",
-       "weight": 0.036
+       "weight": 0.182
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.182
       },
       {
        "topic": "Differentiation (Maximum and Minimum)",
-       "weight": 0.036
+       "weight": 0.078
       },
       {
-       "topic": "Differentiation (Tangents and Normals)",
-       "weight": 0.036
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.078
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.078
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.078
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.039
+      },
+      {
+       "topic": "Equations",
+       "weight": 0.039
+      }
+     ],
+     "parts": [
+      3,
+      5
+     ],
+     "diagram_rate": 0.26
+    }
+   ],
+   "must_appear": [
+    "APGP",
+    "Complex Numbers",
+    "Integration (Differential Equations)",
+    "Vectors"
+   ],
+   "rules": {
+    "never_together": [],
+    "min_distinct_topics": 12
+   }
+  },
+  "GCE-JC-P2": {
+   "total_marks": 100,
+   "question_count": [
+    10,
+    10,
+    11
+   ],
+   "section_boundary": 5,
+   "notes": "GCE A-Level H2 Mathematics 9758: each paper 100 marks, 3 h. Derived from 10 real papers [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2025s; s = SEAB specimen], recent sittings weighted up (2017×0.4, 2018×0.4, 2019×0.4, 2020×0.6, 2021×0.6, 2022×1, 2023×1, 2024×1, 2025×0.3, 2025s×0.5) — thin-data rules: slot mark ranges are the min..max seen at that position, pools list every topic seen there (weighted by year), no mined co-occurrence rules. Slots 1-4 Section A (Pure, 40 marks), 5-10 Section B (Statistics, 60 marks).",
+   "slots": [
+    {
+     "pos": 1,
+     "marks": [
+      4,
+      8
+     ],
+     "typ": 7,
+     "topic_pool": [
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.222
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.194
       },
       {
        "topic": "Inequalities",
-       "weight": 0.036
+       "weight": 0.139
+      },
+      {
+       "topic": "Equations",
+       "weight": 0.125
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.083
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.069
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.056
       },
       {
        "topic": "Integration (Differential Equations)",
-       "weight": 0.036
+       "weight": 0.056
       },
       {
-       "topic": "Mathematical Induction",
-       "weight": 0.036
+       "topic": "Parametric Equations",
+       "weight": 0.056
+      }
+     ],
+     "parts": [
+      2,
+      3
+     ],
+     "diagram_rate": 0
+    },
+    {
+     "pos": 2,
+     "marks": [
+      6,
+      12
+     ],
+     "typ": 9,
+     "topic_pool": [
+      {
+       "topic": "Series and Sequences",
+       "weight": 0.142
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.132
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.132
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.132
+      },
+      {
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.132
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.079
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.053
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.053
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.053
+      },
+      {
+       "topic": "Inequalities",
+       "weight": 0.053
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.039
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.26
+    },
+    {
+     "pos": 3,
+     "marks": [
+      7,
+      13
+     ],
+     "typ": 11,
+     "topic_pool": [
+      {
+       "topic": "Functions",
+       "weight": 0.168
       },
       {
        "topic": "Series and Sequences",
-       "weight": 0.036
+       "weight": 0.167
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.158
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.108
+      },
+      {
+       "topic": "Complex Numbers",
+       "weight": 0.083
+      },
+      {
+       "topic": "APGP",
+       "weight": 0.05
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.05
+      },
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.05
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.05
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.033
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.033
+      },
+      {
+       "topic": "Differentiation (Techniques)",
+       "weight": 0.025
+      },
+      {
+       "topic": "Integration (Differential Equations)",
+       "weight": 0.025
       }
      ],
      "parts": [
       2,
       5
      ],
-     "diagram_rate": 0.22
+     "diagram_rate": 0.04
+    },
+    {
+     "pos": 4,
+     "marks": [
+      10,
+      13
+     ],
+     "typ": 13,
+     "topic_pool": [
+      {
+       "topic": "Integration (Area and Volume)",
+       "weight": 0.219
+      },
+      {
+       "topic": "Parametric Equations",
+       "weight": 0.183
+      },
+      {
+       "topic": "Integration (Techniques)",
+       "weight": 0.119
+      },
+      {
+       "topic": "Differentiation (Tangents and Normals)",
+       "weight": 0.092
+      },
+      {
+       "topic": "Functions",
+       "weight": 0.092
+      },
+      {
+       "topic": "Graphing Techniques",
+       "weight": 0.092
+      },
+      {
+       "topic": "Differentiation (Maclaurin Series)",
+       "weight": 0.083
+      },
+      {
+       "topic": "Differentiation (Maximum and Minimum)",
+       "weight": 0.055
+      },
+      {
+       "topic": "Vectors",
+       "weight": 0.037
+      },
+      {
+       "topic": "Differentiation (Rates of Change)",
+       "weight": 0.028
+      }
+     ],
+     "parts": [
+      2,
+      4
+     ],
+     "diagram_rate": 0.53
     },
     {
      "pos": 5,
      "marks": [
-      3,
+      5,
       10
      ],
-     "typ": 6,
+     "typ": 7,
      "topic_pool": [
       {
-       "topic": "Sampling Methods",
-       "weight": 0.36
-      },
-      {
        "topic": "Probability",
-       "weight": 0.28
-      },
-      {
-       "topic": "Distributions (DRV)",
-       "weight": 0.12
+       "weight": 0.414
       },
       {
        "topic": "Permutations and Combinations",
-       "weight": 0.12
+       "weight": 0.183
+      },
+      {
+       "topic": "Sampling Methods",
+       "weight": 0.173
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.154
       },
       {
        "topic": "Distributions (Binomial)",
-       "weight": 0.04
-      },
-      {
-       "topic": "Distributions (Normal)",
-       "weight": 0.04
+       "weight": 0.038
       },
       {
        "topic": "Hypothesis Testing",
-       "weight": 0.04
+       "weight": 0.038
       }
      ],
      "parts": [
@@ -7138,101 +7293,85 @@
     {
      "pos": 6,
      "marks": [
-      4,
+      7,
       11
      ],
-     "typ": 9,
+     "typ": 8,
      "topic_pool": [
       {
        "topic": "Probability",
-       "weight": 0.187
-      },
-      {
-       "topic": "Distributions (Binomial)",
-       "weight": 0.156
+       "weight": 0.409
       },
       {
        "topic": "Permutations and Combinations",
-       "weight": 0.156
-      },
-      {
-       "topic": "Distributions (Normal)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Hypothesis Testing",
-       "weight": 0.125
+       "weight": 0.286
       },
       {
        "topic": "Sampling Methods",
-       "weight": 0.094
+       "weight": 0.095
       },
       {
-       "topic": "Distributions (Poisson)",
-       "weight": 0.063
+       "topic": "Distributions (Normal)",
+       "weight": 0.086
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.076
       },
       {
        "topic": "Linear Regression",
-       "weight": 0.063
-      },
-      {
-       "topic": "Distributions (Sampling)",
-       "weight": 0.031
+       "weight": 0.048
       }
      ],
      "parts": [
       2,
       5
      ],
-     "diagram_rate": 0.05
+     "diagram_rate": 0.11
     },
     {
      "pos": 7,
      "marks": [
-      6,
+      7,
       10
      ],
-     "typ": 9,
+     "typ": 8,
      "topic_pool": [
       {
-       "topic": "Probability",
-       "weight": 0.286
-      },
-      {
        "topic": "Distributions (Sampling)",
-       "weight": 0.143
+       "weight": 0.202
       },
       {
        "topic": "Hypothesis Testing",
-       "weight": 0.143
-      },
-      {
-       "topic": "Distributions (Binomial)",
-       "weight": 0.107
+       "weight": 0.202
       },
       {
        "topic": "Linear Regression",
-       "weight": 0.107
+       "weight": 0.162
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.152
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.111
       },
       {
        "topic": "Distributions (Normal)",
-       "weight": 0.071
-      },
-      {
-       "topic": "Permutations and Combinations",
-       "weight": 0.071
-      },
-      {
-       "topic": "Distributions (Poisson)",
-       "weight": 0.036
+       "weight": 0.101
       },
       {
        "topic": "Sampling Methods",
-       "weight": 0.036
+       "weight": 0.04
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.03
       }
      ],
      "parts": [
-      2,
+      3,
       5
      ],
      "diagram_rate": 0
@@ -7247,149 +7386,123 @@
      "topic_pool": [
       {
        "topic": "Probability",
-       "weight": 0.257
-      },
-      {
-       "topic": "Linear Regression",
-       "weight": 0.194
+       "weight": 0.361
       },
       {
        "topic": "Hypothesis Testing",
-       "weight": 0.129
+       "weight": 0.144
       },
       {
-       "topic": "Distributions (Normal)",
-       "weight": 0.097
-      },
-      {
-       "topic": "Distributions (Sampling)",
-       "weight": 0.097
-      },
-      {
-       "topic": "Permutations and Combinations",
-       "weight": 0.097
-      },
-      {
-       "topic": "Distributions (DRV)",
-       "weight": 0.065
+       "topic": "Linear Regression",
+       "weight": 0.134
       },
       {
        "topic": "Distributions (Binomial)",
-       "weight": 0.032
+       "weight": 0.103
       },
       {
-       "topic": "Distributions (Poisson)",
-       "weight": 0.032
+       "topic": "Distributions (Sampling)",
+       "weight": 0.103
+      },
+      {
+       "topic": "Distributions (DRV)",
+       "weight": 0.093
+      },
+      {
+       "topic": "Permutations and Combinations",
+       "weight": 0.062
       }
      ],
      "parts": [
       2,
-      7
+      3
      ],
-     "diagram_rate": 0.09
+     "diagram_rate": 0.26
     },
     {
      "pos": 9,
      "marks": [
-      8,
+      11,
       15
      ],
-     "typ": 12,
+     "typ": 13,
      "topic_pool": [
       {
        "topic": "Distributions (Binomial)",
-       "weight": 0.208
-      },
-      {
-       "topic": "Linear Regression",
-       "weight": 0.207
+       "weight": 0.359
       },
       {
        "topic": "Distributions (Normal)",
-       "weight": 0.172
+       "weight": 0.337
       },
       {
-       "topic": "Permutations and Combinations",
-       "weight": 0.138
-      },
-      {
-       "topic": "Probability",
-       "weight": 0.138
-      },
-      {
-       "topic": "Hypothesis Testing",
-       "weight": 0.069
-      },
-      {
-       "topic": "Distributions (Sampling)",
-       "weight": 0.034
+       "topic": "Linear Regression",
+       "weight": 0.196
       },
       {
        "topic": "Sampling Methods",
-       "weight": 0.034
+       "weight": 0.065
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.043
+      }
+     ],
+     "parts": [
+      4,
+      8
+     ],
+     "diagram_rate": 0.32
+    },
+    {
+     "pos": 10,
+     "marks": [
+      12,
+      17
+     ],
+     "typ": 14,
+     "topic_pool": [
+      {
+       "topic": "Distributions (Normal)",
+       "weight": 0.234
+      },
+      {
+       "topic": "Hypothesis Testing",
+       "weight": 0.224
+      },
+      {
+       "topic": "Distributions (Binomial)",
+       "weight": 0.15
+      },
+      {
+       "topic": "Distributions (Sampling)",
+       "weight": 0.15
+      },
+      {
+       "topic": "Linear Regression",
+       "weight": 0.093
+      },
+      {
+       "topic": "Probability",
+       "weight": 0.093
+      },
+      {
+       "topic": "Sampling Methods",
+       "weight": 0.056
       }
      ],
      "parts": [
       2,
       8
      ],
-     "diagram_rate": 0.1
-    },
-    {
-     "pos": 10,
-     "marks": [
-      9,
-      15
-     ],
-     "typ": 14,
-     "topic_pool": [
-      {
-       "topic": "Distributions (Normal)",
-       "weight": 0.406
-      },
-      {
-       "topic": "Distributions (Poisson)",
-       "weight": 0.219
-      },
-      {
-       "topic": "Distributions (Binomial)",
-       "weight": 0.125
-      },
-      {
-       "topic": "Hypothesis Testing",
-       "weight": 0.094
-      },
-      {
-       "topic": "Distributions (Sampling)",
-       "weight": 0.063
-      },
-      {
-       "topic": "Linear Regression",
-       "weight": 0.031
-      },
-      {
-       "topic": "Probability",
-       "weight": 0.031
-      },
-      {
-       "topic": "Sampling Methods",
-       "weight": 0.031
-      }
-     ],
-     "parts": [
-      2,
-      6
-     ],
-     "diagram_rate": 0.11
+     "diagram_rate": 0.23
     }
    ],
    "must_appear": [
     "Distributions (Binomial)",
     "Distributions (Normal)",
     "Hypothesis Testing",
-    "Linear Regression",
-    "Permutations and Combinations",
-    "Probability"
+    "Linear Regression"
    ],
    "rules": {
     "never_together": [],

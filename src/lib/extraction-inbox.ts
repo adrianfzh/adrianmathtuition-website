@@ -27,8 +27,11 @@
 
 export interface InboxEntry { name: string; path: string; size?: number | null; modified?: string | null }
 
+/** Which bank a source belongs to: 'math' is the math project, everything else the science project (26 Sep 2026). */
+export type SourceSubject = 'math' | 'biology' | 'chemistry' | 'physics' | 'science';
+
 export type ParsedSourceName =
-  | { ok: true; level: string; year: number; school: string; examType: string | null; paper: string; ext: 'docx' | 'pdf'; stem: string }
+  | { ok: true; level: string; subject: SourceSubject; year: number; school: string; examType: string | null; paper: string; ext: 'docx' | 'pdf'; stem: string }
   | { ok: false; reason: string; stem: string; ext: 'docx' | 'pdf' | null };
 
 /** The inbox takes Word and PDF only; anything else is left where it is. */
@@ -45,16 +48,28 @@ export function isSettled(entry: InboxEntry, now: Date, minAgeMs = 90_000): bool
 
 // The fleet law's level order, first match wins: S3+(NT)/4046 → S3_EM_NT (tested
 // first of all); S3+(NA) → S3_EM_NA; AM+(NA) → AM_NA; bare (NA)/4045 → EM_NA;
-// S1; S2; S3+AM → S3_AM; S3 (+EM) → S3_EM; JC1; JC2; AM; EM. Never bare 'JC'.
+// S1/S2 + (NA) or G2 → S1_NA / S2_NA; S1; S2; S3+AM → S3_AM; S3 (+EM) → S3_EM; JC1; JC2; AM; EM. Never bare 'JC'.
 const LEVEL_RULES: Array<[RegExp, string]> = [
   [/\bS3\b[\s\S]*(\(NT\)|\b4046\b)|(\(NT\)|\b4046\b)[\s\S]*\bS3\b/i, 'S3_EM_NT'],
+  // Sec 3 G2 A-Math (30 Sep 2026): "S3 AM SA2 (NA) 2020 X" — before the S3 (NA) rule,
+  // which is E-Math.
+  [/(?=[\s\S]*\bS3\b)(?=[\s\S]*\bAM\b)(?=[\s\S]*\(NA\))/i, 'S3_AM_NA'],
   [/\bS3\b[\s\S]*\(NA\)|\(NA\)[\s\S]*\bS3\b/i, 'S3_EM_NA'],
   [/\bAM\b[\s\S]*\(NA\)|\(NA\)[\s\S]*\bAM\b/i, 'AM_NA'],
+  // Lower-sec N(A) (28 Sep 2026, the Sec 1 G2 papers): "S1 (NA)" / "S1 G2" → S1_NA,
+  // "S2 (NA)" / "S2 G2" → S2_NA — before the bare (NA) rule, which means Sec 4.
+  // Lower-sec G1 (30 Sep 2026): "S2 (NT)" / "S2 G1" → S2_NT (and S1) — like S3_EM_NT.
+  [/\bS1\b[\s\S]*(\(NT\)|\bG1\b)|(\(NT\)|\bG1\b)[\s\S]*\bS1\b/i, 'S1_NT'],
+  [/\bS2\b[\s\S]*(\(NT\)|\bG1\b)|(\(NT\)|\bG1\b)[\s\S]*\bS2\b/i, 'S2_NT'],
+  [/\bS1\b[\s\S]*(\(NA\)|\bG2\b)|(\(NA\)|\bG2\b)[\s\S]*\bS1\b/i, 'S1_NA'],
+  [/\bS2\b[\s\S]*(\(NA\)|\bG2\b)|(\(NA\)|\bG2\b)[\s\S]*\bS2\b/i, 'S2_NA'],
   [/\(NA\)|\b4045\b/i, 'EM_NA'],
   [/\bS1\b/i, 'S1'],
   [/\bS2\b/i, 'S2'],
   [/\bS3\b[\s\S]*\bAM\b|\bAM\b[\s\S]*\bS3\b/i, 'S3_AM'],
   [/\bS3\b/i, 'S3_EM'],
+  // H1 before JC1/JC2 (30 Sep 2026): "JC2 H1 PRELIM 2019 ACJC" is H1, not H2.
+  [/\bH1\b/i, 'JC2_H1'],
   [/\bJC1\b/i, 'JC1'],
   [/\bJC2\b/i, 'JC2'],
   // The A-Level TYS names its subject, not a JC year: "A Level H2 Math TYS 2025"
@@ -90,6 +105,51 @@ function detectLevel(stem: string): string | null {
   return null;
 }
 
+// ── Science (26 Sep 2026, Adrian: "science tokens in the inbox rule: BIO, CHEM,
+// PHY, plus the Sec 3 and combined variants") ──────────────────────────────────
+// Tested BEFORE the maths rules — "S1 SCI SA2 2021 X" is a Sec 1 science paper,
+// not a Sec 1 maths one. A subject word (BIO/CHEM/PHY and their long forms) is
+// decisive on its own; S3 in front of it is the Sec 3 internal paper. The
+// combined-science words (SCI, COMBINED, a bare SCIENCE) count only when no
+// maths level token is in the name: "School of Science and Technology" is a
+// maths school and its "Science" is never a subject. The science bank's levels
+// are BIO / CHEM / PHYS (Sec 4 pure), S3_BIO / S3_CHEM / S3_PHYS (Sec 3
+// internal) and S1 / S2 (lower-sec general science); combined science at
+// Sec 3–4 and JC science have no level there yet, so such a name is refused
+// with the reason — never filed under the wrong level.
+const SCIENCE_SUBJECT_RULES: Array<[RegExp, string, SourceSubject]> = [
+  [/\bBIO(?:LOGY)?\b/i, 'BIO', 'biology'],
+  [/\bCHEM(?:ISTRY)?\b/i, 'CHEM', 'chemistry'],
+  [/\bPHY(?:S(?:ICS)?)?\b/i, 'PHYS', 'physics'],
+];
+const COMBINED_SCIENCE = /\bCOMBINED\b|\bSCI\b|(?<!\b(?:of|and)\s)\bSCIENCE\b/i;
+/** Beside a subject word, these make it the combined paper. */
+const COMBINED_MARK = /\b(?:CS|SCI|SC|COMB|COMBINED|SCIENCE)\b/i;
+const CS_NA = /\bG2\b|\(NA\)|\b4NA\b|\bN\(A\)/i;
+const MATH_LEVEL_TOKEN = /\b(?:AM|EM|JC[12]|H[12])\b|\((?:NA|NT)\)/i;
+const JC_TOKEN = /\b(?:JC[12]|H[12])\b/i;
+/** The words and syllabus codes that name a science; never part of a school. */
+const SCIENCE_WORDS = /\b(?:BIO|BIOLOGY|CHEM|CHEMISTRY|PHY|PHYS|PHYSICS|SCI|SCIENCE|COMBINED|PURE|CS|SC|COMB|G[23])\b|\((?:NA)\)|\b4NA\b/gi;
+const SCIENCE_CODES = /\b(?:6091|6092|6093|5059|5073|5076|5077|5078|5086|5087|5088|5105|5106|5107)\b/g;
+
+function detectScience(stem: string): { level: string; subject: SourceSubject } | { refuse: string } | null {
+  const sec3 = /\bS3\b/i.test(stem);
+  for (const [re, level, subject] of SCIENCE_SUBJECT_RULES) {
+    if (!re.test(stem)) continue;
+    if (JC_TOKEN.test(stem)) return { refuse: 'JC science has no level in the science bank yet (BIO/CHEM/PHY are the O-Level pure sciences)' };
+    // Combined Science (30 Sep 2026): "CS CHEM PRELIM 2024 Bowen P3" — or Sci / Sc /
+    // Comb / Combined beside the subject word — is the Sec 4 combined paper
+    // (CS_CHEM / CS_PHYS / CS_BIO); G2 / (NA) / 4NA makes it the N(A) one (_NA).
+    // "Science (Chemistry)" is always combined in Singapore; the pure paper says Chemistry alone.
+    if (!sec3 && COMBINED_MARK.test(stem)) return { level: `CS_${level}${CS_NA.test(stem) ? '_NA' : ''}`, subject };
+    return { level: sec3 ? `S3_${level}` : level, subject };
+  }
+  if (!COMBINED_SCIENCE.test(stem) || MATH_LEVEL_TOKEN.test(stem)) return null;
+  const lower = stem.match(/\bS([12])\b/i);
+  if (lower) return { level: `S${lower[1]}`, subject: 'science' };
+  return { refuse: 'combined science above Sec 2 has no level in the science bank yet — Sec 1–2 general science is S1/S2, the pure sciences are BIO/CHEM/PHY' };
+}
+
 function detectExam(stem: string): { examType: string | null; token: RegExp | null } {
   for (const [re, examType] of EXAM_RULES) if (re.test(stem)) return { examType, token: re };
   return { examType: null, token: null };
@@ -109,8 +169,11 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const stem = String(name).replace(/\.(docx|pdf)$/i, '').replace(/\s+/g, ' ').trim();
   if (!ext) return { ok: false, reason: 'not a .docx or .pdf', stem, ext: null };
 
-  const level = detectLevel(stem);
-  if (!level) return { ok: false, reason: 'no level token (AM/EM/S1–S3/JC1/JC2)', stem, ext };
+  const sci = detectScience(stem);
+  if (sci && 'refuse' in sci) return { ok: false, reason: sci.refuse, stem, ext };
+  const level = sci ? sci.level : detectLevel(stem);
+  const subject: SourceSubject = sci ? sci.subject : 'math';
+  if (!level) return { ok: false, reason: 'no level token (AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY)', stem, ext };
   const yearMatch = stem.match(/\b(19|20)\d{2}\b/);
   if (!yearMatch) return { ok: false, reason: 'no 4-digit year', stem, ext };
   const year = Number(yearMatch[0]);
@@ -122,9 +185,14 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   let school = stem
     .replace(yearMatch[0], ' ')
     .replace(/\b(S[1-4]|JC[12]|H[12]|AM|EM|Sec\s?[1-4])\b/gi, ' ')
-    .replace(/\((NA|NT)\)|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
+    .replace(/\((NA|NT)\)|\bG[123]\b|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
     .replace(/\bP(?:aper)?\s?[1-4]\b/gi, ' ')
-    .replace(/\bPaper\b/gi, ' ');
+    .replace(/\bPaper\b/gi, ' ')
+    // A kind word is never a school either (26 Sep 2026): "West Spring P1 MS" is
+    // West Spring's scheme, and the queue pairs a scheme with its paper by the
+    // school column — until then the source row said school "West Spring MS".
+    .replace(KIND_PARENS, ' ').replace(KIND_WORDS, ' ');
+  if (subject !== 'math') school = school.replace(SCIENCE_WORDS, ' ').replace(SCIENCE_CODES, ' ');
   if (token) school = school.replace(new RegExp(token.source, 'gi'), ' ');
   school = school.replace(/\s+/g, ' ').replace(/^[\s\-–_,.]+|[\s\-–_,.]+$/g, '').trim();
   // "EM GCE 2004 GCE P2": the exam token IS the school once the exam token is stripped.
@@ -138,7 +206,7 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   if (examType === 'GCE' && NATIONAL.test(school)) school = 'GCE';
   if (!school) return { ok: false, reason: 'no school left in the name once level/exam/year/paper are removed', stem, ext };
 
-  return { ok: true, level, year, school, examType, paper, ext, stem };
+  return { ok: true, level, subject, year, school, examType, paper, ext, stem };
 }
 
 /** `paper_library.key` for a source: the normalised filename stem, so the same
@@ -258,6 +326,10 @@ export type LibraryRow = {
  */
 export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: LibraryRow } | { skip: string } {
   if (!parsed.ok) return { skip: 'the name could not be filed at all' };
+  // The marker library is the MATHS marker's (26 Sep 2026): a science source
+  // goes to the science bank through the queue, and its scheme is paired there
+  // by level, year and school — never keyed for the maths marker's lookup.
+  if (parsed.subject !== 'math') return { skip: 'a science paper — the queue pairs its scheme by level, year and school; the marker library is the maths marker\'s' };
   if (parsed.paper === 'all') {
     return { skip: 'the name says no paper number and no cover page said either, so the marker cannot look it up — split the book into one file per paper, named like `AM GCE 2025 Paper 1.pdf`' };
   }
@@ -282,7 +354,7 @@ export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: Li
 // (Yishun)", "Anglo Chinese School (Barker Road)" — and the bank spells them
 // that way, so only a bracket whose whole content is a kind word comes off.
 const KIND_PARENS = /\(\s*(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp)\s*\)/gi;
-const KIND_WORDS = /\b(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|questions?|qns?|qp)\b/gi;
+const KIND_WORDS = /\b(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp)\b/gi;
 
 /** The `questions.school` value this file belongs under, or ''. Pure. */
 function markerSchool(parsed: ParsedSourceName & { ok: true }, name: string): string {
@@ -407,9 +479,10 @@ export function regroundNotice(label: string, run: Pick<RegroundRun, 'student_na
 }
 
 /** The one-line summary the job log and the tick response carry. */
-export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed?: number; remarked?: number; split?: number }): string {
+export function inboxSummary(counts: { queued: number; flagged: number; duplicate: number; moved: number; waiting: number; failed: number; filed?: number; remarked?: number; split?: number; schemes?: number }): string {
   const parts = [`${counts.queued} queued`];
   if (counts.split) parts.push(`${counts.split} book${counts.split === 1 ? '' : 's'} cut at the covers`);
+  if (counts.schemes) parts.push(`${counts.schemes} mark scheme${counts.schemes === 1 ? '' : 's'} kept for pairing`);
   if (counts.filed) parts.push(`${counts.filed} filed for the marker`);
   if (counts.remarked) parts.push(`${counts.remarked} re-marked against it`);
   if (counts.flagged) parts.push(`${counts.flagged} flagged (bad name)`);

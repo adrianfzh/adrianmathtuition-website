@@ -40,7 +40,7 @@ function partAnswers(parts: unknown, depth = 0): string {
   }).filter(Boolean).join('\n\n');
 }
 
-function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action: 'restore' | 'retire') => Promise<void> }) {
+function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action: 'restore' | 'retire' | 'verify') => Promise<void> }) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const retired = Boolean(r.deleted_at);
@@ -64,6 +64,7 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
         {r.topics?.length ? <span className="rounded-full bg-neutral-100 px-2 py-0.5">{r.topics.join(" · ")}</span> : null}
         {typeof meta.subgroup === 'string' && <span className="rounded-full bg-sky-50 text-sky-700 px-2 py-0.5">{meta.subgroup}</span>}
         {r.total_marks != null && <span>[{r.total_marks}]</span>}
+        {r.twin_of && (r.verified ? <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5">✓ verified</span> : <span className="rounded-full bg-amber-50 text-amber-700 px-2 py-0.5">unverified — not served</span>)}
         <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-0.5">{sourceChip(meta, r.twin_of)}</span>
         <span className={`rounded-full px-2 py-0.5 ${reskin ? 'bg-violet-50 text-violet-700' : 'bg-amber-50 text-amber-700'}`}>{reskin ? 're-skin' : 'from scratch'}</span>
         {r.student && <span>for <b>{r.student}</b></span>}
@@ -108,6 +109,10 @@ function Card({ r, onAction }: { r: GeneratedRow; onAction: (id: string, action:
           <button disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'restore'); setBusy(false); }}
             className="text-xs rounded-lg border border-emerald-300 text-emerald-700 px-3 py-1 hover:bg-emerald-50">Restore</button>
         )}
+        {!retired && r.twin_of && !r.verified && (
+          <button disabled={busy} onClick={async () => { setBusy(true); await onAction(r.id, 'verify'); setBusy(false); }}
+            className="text-xs rounded-lg bg-emerald-600 text-white px-3 py-1 hover:bg-emerald-700">✓ Verify — serve it</button>
+        )}
         {!retired && (
           <button disabled={busy} onClick={async () => { if (!confirm('Retire this question? It will never be served or used as a seed again.')) return; setBusy(true); await onAction(r.id, 'retire'); setBusy(false); }}
             className="text-xs rounded-lg border border-neutral-300 text-neutral-600 px-3 py-1 hover:bg-neutral-50">Retire</button>
@@ -138,7 +143,7 @@ export default function GeneratedPage() {
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
-  async function onAction(id: string, action: 'restore' | 'retire') {
+  async function onAction(id: string, action: 'restore' | 'retire' | 'verify') {
     const r = await fetch('/api/admin/generated', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });
     if (!r.ok) { setErr(`${action} failed: HTTP ${r.status}`); return; }
     await load();

@@ -128,6 +128,40 @@ at any other level goes into `gate.unjudged`, and `solutionMarkdown` then render
 lands and JC is added to the set. A failed level read treats every question as unjudged.
 Adrian: "There must be no watermark images — important."
 
+### ✅ Check fixed figures — `/admin/figures-check` (30 Sep 2026)
+
+Adrian: *"i only need the fixed diagrams or redrawn diagrams in front of me, then i click
+approve or a comment to say why it is still not good enough, or just redraw"*. **This is
+where a repair batch's candidates are judged now** — the two lanes below still work, but
+he should never have to hunt through their views for a batch.
+
+- **What it lists:** every `status='held'` flag, either kind, that has an object under
+  `candidates/`. Nothing else. Batch order from the sidecar note (`#B5-12`). `GET
+  /api/admin/figures-bank?kind=check` (`total`, `sentBack`).
+- **No caption inside a figure image — ever** (Adrian, 30 Sep 2026: *"if the caption is in
+  the image, it will not be approved"*). The line that names the graph ("y = |f(2 − x)|: f
+  reflected …") belongs in the solution text, never baked into the PNG; a label ON a curve
+  is fine. Registry specs leave `caption` unset; a stored PNG is trimmed to the drawing with
+  an even white margin, no blank strip. The card shows each image on a grey mat with a black
+  line at the picture's own edge, so anything inside the line is in the image.
+- **Tight crops** (Adrian, 30 Sep 2026: *"crops should not leave too much white space"*).
+  A figure keeps a white border of 2% of its longer side, 8–20 px, and no more —
+  `lib/figure-trim.ts` (`tightPad`, `trimWhite`, tested). Approve trims on the way out
+  (both lanes), so nothing loose goes live; a figure already inside the rule keeps its bytes.
+  🧹 Clean candidates are not trimmed while they wait (their red erased boxes are canvas
+  fractions) — Approve trims them.
+- **Three buttons:** ✓ Approve (the lane's own `approve-candidate` — the figure goes live),
+  💬 Not good enough (a comment is required), ✏️ Redraw.
+- **A send-back** (`POST {kind:'check', lane, path, questionId, action:'redo'|'redraw', comment}`)
+  moves the candidate + sidecar to `sent-back/<SGT day>/<object>` (kept, so the redo session
+  sees what he turned down) and writes the ask on the flag, in front of what was there:
+  `Adrian: repair · redo 30 Sep: <his words> · …` (question) / `Adrian: redraw · redraw from
+  scratch 30 Sep · …` (solution). The lane prefix is kept, so the row stays on Fitness ›
+  Repair / Solutions › Redraw. Rules in `lib/figure-check.ts` (pure, tested).
+- **A repair session starts here:** `figure_flags` rows where `isSentBack(note)` —
+  `readSendBack(note)` gives `{ask, date, comment}`. Do the ask, upload a new candidate,
+  and it is back on his page.
+
 ### Solution lane — `/admin/figures-bank` → 🖼 Solutions
 
 The held rows above are Adrian's to judge, and since 2026-09-03 they have a
@@ -393,9 +427,11 @@ note `ingest-fitness <date> · <severity> · <verdict> · <reason>`. Both outcom
 also append a `fitness:…` stamp to `image_watermark_notes`, which is how the
 catch-up below tells a judged row from an unjudged one.
 
-**2 · A nightly catch-up re-judges what ingestion missed.** Desktop scheduled
-task **`figure-fitness`** (3:10am SGT daily, `~/.claude/scheduled-tasks/figure-fitness/SKILL.md`,
-registry row in [`docs/OPS.md`](OPS.md)). It takes up to 120 figures per run —
+**2 · A nightly catch-up re-judges what ingestion missed.** The Fly worker job
+**`figure-fitness`** (3:10am SGT daily, bot `worker/fly/figfit/figfit.sh` fired by
+`worker/fly/jobs.sh` under a pooled login — **since 25 Sep 2026**; until then a
+Claude scheduled task on the MacBook Pro, last real run 9 Sep; registry row in
+[`docs/OPS.md`](OPS.md)). It takes up to 120 figures per run —
 questions with `has_image` whose `created_at` is inside 7 days, plus older
 questions whose figure actually changed (a `figure_clean_log` or
 `question_image_placement_log` row inside 7 days) — that carry no `fitness:`
@@ -403,14 +439,27 @@ stamp, and judges them by the same five checks. **`questions.updated_at` is NOT
 the freshness signal**: measured 3 Sep 2026, 5,827 image-carrying rows had
 `updated_at` inside 7 days with no figure change (bulk column sweeps bump it)
 against 1,048 genuinely new rows; the two log tables are the durable record of a
-figure moving. The task is thin on purpose — the rubric lives in the law row, not
-in the SKILL.md, so one edit propagates to ingestion and catch-up together. It
+figure moving. The job is thin on purpose — the rubric lives in the law row, not
+in the scripts (`law.mjs` cuts the section fresh each run), so one edit propagates to ingestion and catch-up together. It
 calibrates on 4 planted swaps before any real verdict, is judge-only (it never
 writes `image_watermark_status`, an image reference or a bucket object), stamps
-`job_runs` slug `figure-fitness`, and is resumable per
+`job_runs` slug `figure-fitness` (quiet nights too), and is resumable per
 [`docs/RESUMABLE-JOBS.md`](RESUMABLE-JOBS.md) — its per-item state is the
 `fitness:` stamp in the database, so a killed run loses nothing and re-running is
-a no-op. Strong model only (Opus/Fable class); a weak run exits without judging.
+a no-op. Strong model only (`claude -p --model claude-fable-5-1`). The shape on Fly:
+deterministic node/python steps (law → candidates → build → select → fetch →
+measure → calib → units → contact sheets of 6 tiles with the stems beside them)
+build the night's material; ONE `claude -p` run calibrates on 12 tiles with 4
+planted swaps (the key is on disk but never read by the judge; `calib-score.mjs`
+scores it afterwards — 4/4 caught and 0 false positives, or nothing is written),
+judges every tile through `verdict.mjs` (the only pen; the vocabulary is
+enforced), then `write.mjs --apply` stamps and flags; the whole run is capped at
+2 h. Telegram only on an `open` flag. **Run it outside the slot** with the recipe at the
+top of `worker/fly/figfit/run-now.sh` (the `with_pool_login` replica; `jobs.sh` has no
+run-now subcommand). First run on the worker 25 Sep 2026 21:35 SGT: 3 figures, calibration
+4/4, 3 rows stamped `ok`, no flags — the only fault was the summary line (an f-string the
+worker's Python 3.11 rejects; the Mac's 3.12 had passed it), fixed the same night. ⚠ The
+worker's `python3` is **3.11**: no backslash inside an f-string expression, Pillow 9.4.
 
 **Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
 exceptions the catch-up may set to `open` itself, because they are correctness

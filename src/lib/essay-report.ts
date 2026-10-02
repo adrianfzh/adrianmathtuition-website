@@ -10,6 +10,8 @@ export interface EssayMark {
   fix: string | null;
   code: string | null;
   reason: string | null;
+  /** false = only ONE of the marker's reads flagged it — drawn quietly, "one to check". Missing on older reports = treat as confirmed. */
+  confirmed?: boolean;
 }
 export interface EssayHabit { code: string; count: number; example: string | null; advice: string | null }
 export interface EssayTask {

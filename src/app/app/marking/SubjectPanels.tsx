@@ -19,17 +19,17 @@ export interface SubjectPanel {
   content: ReactNode;
 }
 
-export default function SubjectPanels({ panels, defaultKey }: { panels: SubjectPanel[]; defaultKey: string }) {
+export default function SubjectPanels({ panels, defaultKey, rememberKey = REMEMBER_KEY }: { panels: SubjectPanel[]; defaultKey: string; rememberKey?: string }) {
   const [active, setActive] = useState(defaultKey);
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(REMEMBER_KEY);
+      const saved = localStorage.getItem(rememberKey);
       if (saved && panels.some(p => p.key === saved)) setActive(saved);
     } catch { /* private mode — the default tab is fine */ }
-  }, [panels]);
+  }, [panels, rememberKey]);
   const pick = (key: string) => {
     setActive(key);
-    try { localStorage.setItem(REMEMBER_KEY, key); } catch { /* ignore */ }
+    try { localStorage.setItem(rememberKey, key); } catch { /* ignore */ }
   };
   if (panels.length === 0) return null;
   const current = panels.find(p => p.key === active) ?? panels[0];

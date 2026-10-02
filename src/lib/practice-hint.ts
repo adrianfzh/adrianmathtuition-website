@@ -11,8 +11,9 @@
 
 import type { TeachingKnowledge } from './teaching-knowledge';
 import { methodsPromptLines, pitfallsPromptLines } from './teaching-knowledge';
+import { SONNET_55 } from './claude-models';
 
-export const HINT_MODEL = process.env.PRACTICE_HINT_MODEL || 'claude-sonnet-5';
+export const HINT_MODEL = process.env.PRACTICE_HINT_MODEL || SONNET_55; // Sonnet 5.5 since 30 Sep 2026 (was claude-sonnet-5)
 export const HINT_MAX_LINES = 3;
 export const HINT_MAX_LINE_CHARS = 160;
 

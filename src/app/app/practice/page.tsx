@@ -44,7 +44,7 @@ import { getStudentAssignment, paperNamesForStudent } from '@/lib/portal-assignm
 import { dueLabel, opensInGrader } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { examPrepVisible, sciencePracticeAccess } from '@/lib/portal-beta';
+import { examPrepVisible, sciencePracticeAccess, proofLadderVisible } from '@/lib/portal-beta';
 import { scienceLevelsFor } from '@/lib/science-levels';
 import { bankScope } from '@/lib/qb-levels';
 import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
@@ -228,6 +228,8 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   const timedEntry = await examPrepVisible();
   // Animated lessons: admin preview only until Adrian releases them.
   const lessonsVisible = await fullPortalVisible();
+  // 🪜 Stuck? Next step (1 Oct 2026): admin + the preview student until PROOF_LADDER_OPEN_TO_STUDENTS.
+  const ladderVisible = await proofLadderVisible(account?.airtable_student_id);
 
   return (
     <>
@@ -243,7 +245,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           Pick a topic below instead, or snap a question to find one like it.
         </div>
       )}
-      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} />
+      <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} ladderVisible={ladderVisible} />
     </>
   );
 }

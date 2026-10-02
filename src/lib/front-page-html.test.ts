@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine } from './front-page-html';
+import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject } from './front-page-html';
 import { changedPartCount, ungroundedFrontPage, lostPartsFromRun } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
@@ -206,6 +206,18 @@ describe('frontPageHtml', () => {
       expect(h).toContain('Ordered by what cost you most, with the marker');
       expect(h).not.toContain('same order');
     }
+  });
+
+  it('never promises a practice sheet on a science cover — the corrections are the next move', () => {
+    for (const subject of ['Physics', 'Chemistry', 'Biology']) {
+      const h = frontPageHtml({ ...base, subject, paperName: 'Cambridge 5054 Physics 2014 Paper 2' });
+      expect(h).toContain('Start with <b>Q5</b>');
+      expect(h).toContain('Work through the corrections on those first, then read the topics behind them.');
+      expect(h).not.toMatch(/practice sheet/i);
+    }
+    // Maths keeps its line.
+    expect(frontPageHtml({ ...base, subject: 'A Math' })).toContain('drills exactly that');
+    expect(frontPageHtml({ ...base, subject: 'E Math' })).not.toContain('Work through the corrections');
   });
 
   it('ties the closing line to every question the sheet named, not only the printed one', () => {
@@ -606,5 +618,43 @@ describe('errorKindTotals ignores the audit', () => {
     const t = errorKindTotals([real, phantom]);
     expect(t.lostTotal).toBe(2);
     expect(t.unlabelled).toBe(0);
+  });
+});
+
+// The subject frame (25 Sep 2026, Adrian: colour-code the cover "so it's easily
+// recognizable"): a band + a tag in the paper's tone, the red kept below.
+describe('frontPageHtml — the subject frame', () => {
+  it('wears the subject tone as a top band and a tag beside the brand, and keeps the red below', () => {
+    const html = frontPageHtml({ ...base, subject: 'Chemistry' });
+    expect(html).toMatch(/body\{border-top:2\.4mm solid #A855F7;padding-top:12\.6mm\}/);
+    expect(html).toContain('<span class="subject-tag">Chemistry</span>');
+    expect(html).toContain('--verdict:#C4342C');
+    expect(html).toContain('border-left:4px solid var(--verdict)');
+  });
+  it('is byte-identical without a subject, or for Other', () => {
+    const plain = frontPageHtml(base);
+    expect(frontPageHtml({ ...base, subject: null })).toBe(plain);
+    expect(frontPageHtml({ ...base, subject: 'Other' })).toBe(plain);
+    expect(frontPageHtml({ ...base, subject: 'Latin' })).toBe(plain);
+    expect(plain).not.toContain('subject-tag');
+    expect(plain).not.toContain('border-top:2.4mm');
+  });
+  it('E Math: the yellow tag prints dark text (white fails on it); the others stay white', () => {
+    const em = frontPageHtml({ ...base, subject: 'E Math' });
+    expect(em).toMatch(/body\{border-top:2\.4mm solid #FFD43B;padding-top:12\.6mm\}/);
+    expect(em).toContain('background:#FFD43B;color:#2A2000;');
+    expect(frontPageHtml({ ...base, subject: 'Chemistry' })).toContain('background:#A855F7;color:#fff;');
+  });
+
+  it('coverSubject: the five tones the app uses, by the run\'s paper_subject; H2 is plain', () => {
+    expect(coverSubject('A Math')).toEqual({ label: 'A Math', band: '#1D4ED8', solid: '#1D4ED8' });
+    expect(coverSubject('E Math')).toEqual({ label: 'E Math', band: '#FFD43B', solid: '#FFD43B', ink: '#2A2000' });
+    expect(coverSubject('H2 Math')).toBeNull();
+    expect(coverSubject('Physics')?.band).toBe('#0891B2');
+    expect(coverSubject('Biology')?.band).toBe('#16A34A');
+    // Set 2: the band and the tag are one colour for every subject
+    for (const s of ['A Math', 'E Math', 'Physics', 'Chemistry', 'Biology']) expect(coverSubject(s)?.band).toBe(coverSubject(s)?.solid);
+    expect(coverSubject('Other')).toBeNull();
+    expect(coverSubject(undefined)).toBeNull();
   });
 });

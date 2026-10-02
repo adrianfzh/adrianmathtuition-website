@@ -14,9 +14,11 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked,
+  email, displayName, level, telegramChatId, telegramLinked, tuition = false,
 }: {
   email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
+  /** A tuition student (linked to Adrian's roster) — sees the "When your lessons end" note. */
+  tuition?: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -148,9 +150,20 @@ export default function SettingsClient({
           JSON file. Or permanently delete the account. Details in the{' '}
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
         </p>
-        <a href="/api/portal/export" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">
-          ⬇️ Download my data
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <a href="/api/portal/marked-papers-zip" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">
+            ⬇️ Download all my marked papers
+          </a>
+          <a href="/api/portal/export" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">
+            ⬇️ Download my data
+          </a>
+        </div>
+        {tuition && <div className="mt-4 pt-3 border-t border-black/5 text-sm text-gray-600 space-y-1">
+          <p className="font-semibold text-navy">When your lessons end</p>
+          <p>The app stays open for about a month after your last lesson.</p>
+          <p>After that it closes.</p>
+          <p>Download your marked papers before then — they come as one zip of PDFs.</p>
+        </div>}
       </div>
 
       <div className={`${card} border-red-200`}>

@@ -379,6 +379,29 @@ The rules are pure in `lib/adhoc-billing.ts` (tested).
   disagreed with the email's) and stored every PDF under `<name>-<month>.pdf` with
   allowOverwrite, so an ad-hoc PDF replaced that month's regular invoice PDF.
 
+## Leavers — "Graduated" and the final bill (29 Sep 2026)
+
+Adrian, on Kayla (IP Sec 4, last exam 29 Sep): "the 25 sep [additional lesson] should
+automatically be generated and send out during the scheduled send outs right?" It was not:
+Additional lessons ride the NEXT month's advance invoice, and a leaver has none. Now
+(`lib/graduation.ts` pure/tested + `lib/final-extras-store.ts`):
+
+- When a student's LAST enrollment closes — `cron/end-enrollments` the morning after its End
+  Date, or Discontinue — ONE Draft `Invoice Type='Adjustment'` invoice is drafted for their
+  Completed, un-billed Additional lessons up to the end date (guards: the `Billed` checkbox AND
+  "date already on one of their invoices"), Month = the lessons' month, Auto Notes
+  `Additional lesson(s) on …` (prints on the PDF). The lessons are marked Billed.
+- The 15th's `send-invoices` cron also fetches these drafts (any month, `FINAL_EXTRAS_FORMULA`)
+  and sends them unattended when nothing else is on them (`isFinalExtrasInvoice`); subject
+  "Additional Lessons — Invoice for <month>", no holiday paragraph.
+- A past extra still at `Scheduled` is never billed blind — listed in the Telegram line.
+- Students.Status becomes **`Graduated`** for Sec 4/5/JC2 leaving from September (`leavingStatus`),
+  else `Inactive`. Until the base has a `Graduated` option the write falls back to `Inactive`
+  and the Telegram line says so.
+- End dates: Sec 4 O-Level students carry their last paper as End Date; the six 2026 JC2s were
+  set to 6 Nov 2026 (their post-exam Regular lessons Cancelled, not deleted); IP students' dates
+  are set by hand.
+
 ## Deferred Adjustments (carry a credit/charge to a FUTURE month's invoice)
 
 For when an adjustment must land on a month whose invoice doesn't exist yet (e.g. a referral credit deferred from June to July). Stored on the student's **current** invoice via 4 Invoices fields:

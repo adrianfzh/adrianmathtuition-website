@@ -28,7 +28,11 @@ export type ReissueReason =
   /** Pages that never uploaded are in the copy now; the marking did not change. */
   | 'pages-recovered'
   /** The ticks and crosses were re-placed; the marking and the mark did not change. */
-  | 'marks-realigned';
+  | 'marks-realigned'
+  /** The paper's total was corrected; the marks earned did not change. */
+  | 'marks-recalibrated'
+  /** The student added pages after marking; only those pages were marked. */
+  | 'pages-added';
 
 export type ReissueLineInput = {
   reason: ReissueReason;
@@ -70,6 +74,14 @@ export function reissueLine(input: ReissueLineInput): string {
     return `📄 On some pages of your marked ${paper} the ticks and crosses didn't line up with your working. They do now — nothing about the marking changed${score ? `, and your mark is still ${score}` : ''}.\n\n${link}`;
   }
 
+  if (input.reason === 'marks-recalibrated') {
+    return `📄 Your marks for ${paper} have been recalibrated${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
+  }
+
+  if (input.reason === 'pages-added') {
+    return `📄 The pages you added to ${paper} are marked${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
+  }
+
   return `✏️ Adrian checked your marked ${paper} and updated it${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
 }
 
@@ -77,5 +89,7 @@ export function reissueLine(input: ReissueLineInput): string {
 export function parseReissueReason(v: unknown): ReissueReason {
   if (v === 'pages-recovered') return 'pages-recovered';
   if (v === 'marks-realigned') return 'marks-realigned';
+  if (v === 'marks-recalibrated') return 'marks-recalibrated';
+  if (v === 'pages-added') return 'pages-added';
   return 'checked';
 }

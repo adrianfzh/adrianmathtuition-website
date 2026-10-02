@@ -771,7 +771,7 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                   }}>
                   {inviteState === 'sending' ? 'Sending…' : '🔗 Portal link'}
                 </button>
-                {s.status === 'Inactive' && (
+                {(s.status === 'Inactive' || s.status === 'Graduated') && (
                   // ↩ Reinstate (17 Sep 2026, Option A): put the enrolments, the lessons and the Active status back as they were.
                   <button style={actionBtn('#166534', '#bbf7d0', '#f0fdf4')} onClick={async () => {
                     if (!confirm(`Reinstate ${s.name}? The ended enrolments come back, the deleted future lessons are re-created in their slots, and the student is Active again. Invoices voided at discontinue stay voided.`)) return;
@@ -783,10 +783,10 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                     } catch { showToast('err', 'Network error'); }
                   }}>↩ Reinstate</button>
                 )}
-                {s.status !== 'Inactive' && (
+                {s.status !== 'Inactive' && s.status !== 'Graduated' && (
                   <button onClick={openHoliday} style={actionBtn('#0369a1', '#bae6fd', '#f0f9ff')}>🏖 Holiday opt-out</button>
                 )}
-                {s.status !== 'Inactive' && (
+                {s.status !== 'Inactive' && s.status !== 'Graduated' && (
                   <button onClick={() => setDiscModal({ date: new Date().toISOString().slice(0, 10), reason: '', voidUnsent: true, emailParent: true, saving: false })}
                     style={actionBtn('#b91c1c', '#fecaca', '#fef2f2')}>⏹ Discontinue</button>
                 )}
@@ -885,7 +885,6 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
               <div style={{ marginBottom: 12 }}>
                 <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginBottom: 10 }}>
                   <a href={`/admin/mark-paper?student=${encodeURIComponent(studentId)}`} style={{ ...actionBtn(), background: '#1e3a5f', color: '#fff', borderColor: '#1e3a5f' }}>✍️ Mark a paper</a>
-                  <a href="/admin/desk" style={actionBtn()}>🖊 Desk</a>
                 </div>
                 {papersTab}
               </div>
@@ -1351,7 +1350,8 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
             This will:<br />
             • End all <b>Active enrollments</b> (End Date = day before)<br />
             • Delete future <b>Scheduled Regular</b> lessons from that date<br />
-            • Set the student to <b>Inactive</b> and log the reason<br />
+            • Set the student to <b>Graduated</b> (Sec 4/5 or JC2 leaving from September) or <b>Inactive</b>, and log the reason<br />
+            • Draft one final bill for any attended <b>extra lessons</b> not yet invoiced — it goes out with the 15th's send<br />
             • {discModal.voidUnsent ? 'Void unsent invoices; ' : ''}list any <b>sent</b> invoices for your review<br />
             • Send you a Telegram summary{discModal.emailParent ? ' + email the parent' : ''}<br />
             <span style={{ color: '#16a34a' }}>Makeup / rescheduled lessons and history are kept.</span>

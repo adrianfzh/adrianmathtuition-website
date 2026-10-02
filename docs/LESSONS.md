@@ -43,6 +43,224 @@ model below).
 > (§ The slate, re-cut · § Sizes). Still additive: `slide` is byte-unchanged
 > — proved again by a screenshot diff of the binomial pilot.
 
+## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board
+
+Adrian, after the China scan (洋葱学园's 5-minute animations, 作业帮's per-question
+讲题 videos, the 学习机 diagnose-and-push loop): *"students have too short attention
+span to sit through even a 20 minute lesson, they usually want to know immediately
+what they need to know … dominant unit is one question sounds like somewhat along the
+right path"* — and *"or perhaps html?"*. So: **the same player, one lost-marks
+question, built from the marker's own steps, no model call, no file rendered — the
+page is the video.**
+
+- **What it shows.** `/app/marking/[id]/explain/[q]` (a science run redirects to
+  `/app/science/marking/[id]/explain/[q]`): the student's lines up to the ✗ one (their
+  last two before it), the ✗ line boxed in pink with the marker's verdict written in
+  chalk beside it, then the red pen's "from your line" steps in green with the reason
+  under each, then **Answer**. One `equation-steps` scene per part with a continuation
+  (≤ 2 parts, ≤ 6 pen steps); with no continuation anywhere (science, an older run) the
+  ✗ line + fix pairs (≤ 3) — a pair of SENTENCES (a science answer) is a `caption` scene
+  written by the chalk hand and wrapping on a phone, never set as maths (Adrian's screenshot,
+  1 Oct 2026: the spaces vanished); its beats say the sentence itself so the silent Auto
+  timer covers the writing. About 25–40 s at 1×. Starts in ▶ Auto (`startAuto`), tap
+  the board to pause, ‹ goes back to the paper, the closer is the card's own Practise
+  link.
+- **Where it is built.** `lib/explain-clip.ts` (pure, tested): `buildExplainScript(q,
+  runId)` from a `StudentQuestion` (`fixes` / `corrections` — lib/review-fix), `canExplain`
+  gates the door, `explainHref` names the route, `speakable()` turns a pen reason with
+  `$…$` into words a voice could say (fractions, powers, roots, relations) — the
+  validator refuses TeX in a spoken line, and these `say` strings are what a voice clip
+  would read. Output passes `validateLessonScript`. The page (`app/marking/[id]/explain/
+  [q]/page.tsx`) applies the paper page's access rule, then hands the script to
+  `LessonPlayer` with its new props (`backHref`, `kicker`, `practiceHref`,
+  `practiceLabel`, `doneTitle`, `doneText`, `startAuto`) — every committed lesson renders
+  exactly as before.
+- **The doors.** "▶ Explain it · 1 min" on every lost-marks question of the paper page
+  (`LostMarks`, `explain` prop) and on every Notebook mistake card (`MistakeCompare`,
+  `explain` prop) — only where `canExplain` says there is something to replay.
+- **The switch.** `EXPLAIN_CLIP_OPEN_TO_STUDENTS` in `lib/portal-beta.ts` (`explainClipVisible`):
+  **admin-only + the preview student until Adrian has watched a few**; a student who
+  types the URL early is sent back to the paper. Health-check `portal-explain` probes the
+  route. Telemetry rides the player's existing `lesson:<slug>:…` events (the slug is
+  `explain-<run8>-<q>`), so "did anyone tap it" is answerable before opening it.
+- **Voice (1 Oct 2026).** Every beat's `say` is read by **MiniMax Speech-02**
+  (`speech-02-hd`, voice `English_FriendlyPerson`, emotion calm, speed 1 — Adrian's pick
+  out of fifteen samples that evening; the constants sit in `lib/explain-voice-store.ts`
+  and the topic lessons use the same voice through `generate-narration.mjs --provider
+  minimax`; change them together). MiniMax answers MP3 (hex in the JSON), ~28 KB for a
+  five-second beat, cached in the student-files bucket under
+  `runs/<runId>/explain/<q-slug>/b<k>-<hash of say>.mp3` (`voiceKey`; a changed sentence
+  gets a new clip; the first day's Gemini WAVs sit beside, unreferenced), served through
+  `/api/files` to Adrian or the owning student. `POST /api/portal/explain/voice {runId, q}`
+  (same access rule as the page + `explainClipVisible`) rebuilds the script, lists the
+  folder once, synthesises what is missing four at a time (`ensureVoice`) and answers
+  `{urls}` in beat order. `MINIMAX_API_KEY` is on Vercel (Production + Preview); a 1008
+  "insufficient balance" stops a run the way Gemini's daily quota did — top up at
+  platform.minimax.io › Pay-as-you-go › Balance. The page's
+  `explain-player.tsx` renders the player silent at once, fires that POST on mount, and
+  hands the SAME player the scenes with `beats[k].audio` filled (`attachVoice`) — the
+  🔊 pill appears, playback is not reset, the student taps it (iOS needs the gesture).
+  **Pre-warm:** the release action in `mark-triage` calls `prewarmExplainVoice(runId)`
+  via `after()` for the run's first six lost-marks questions, regardless of the switch.
+  **Fallback:** a failed beat, a missing `GOOGLE_API_KEY`, a quota 429 or a slow request
+  changes nothing — the explanation plays silent on its Auto timers, beat by beat.
+  Health-check `portal-explain-voice` probes the 401.
+- **Not yet.** The "what comes next?" ask between the ✗ line and the fix (SPEC-COMPANY's
+  voice-tutor shape, one question at a time), and an MP3 encoder if the WAV weight ever
+  shows on a phone. The topic lessons above stay the long form, reached from a card —
+  never a Lessons tab.
+
+## The character (1 Oct 2026) — a cartoon teacher at the corner of the board
+
+Adrian, on the one-minute explanation: *"there should be an animated person so it's more
+engaging"* — the thing 洋葱学园 and videotutor.io keep on the slate. So: **a friendly cartoon
+teacher at the bottom-right corner of the board who reacts to the beats.** It started the
+morning as a student; Adrian's decision later the same day: **a TEACHER figure, not a
+student** — a friendly young tutor at the board in the 洋葱学园 / VideoTutor cartoon look:
+clean flat shapes, a big readable face, a rounded body, adult proportions (a taller body,
+a smaller head than the student had), a cardigan over a white collared shirt, round glasses,
+a pointer stick in the near hand, gender-neutral-leaning-friendly. Not a video, not a
+Lottie file, not a dependency: one inline SVG in
+`app/lesson/[slug]/lesson-character.tsx`, whose six poses are six states of the SAME
+drawing switched by `data-pose` — arms rotate at the shoulder, brows tilt, one of four
+mouths shows, the extras fade in — so a pose change is a 250 ms CSS transition. Between
+beats it breathes and blinks (CSS keyframes); `prefers-reduced-motion` stops every loop
+and transition and the pose still shows.
+
+- **The poses** (`CHARACTER_POSES` in `lib/lesson-script.ts`), a teacher reacting: `idle`
+  (breathing, a blink every few seconds, the pointer resting) · `point` (the near arm lifts
+  the pointer toward the working) · `think` (the far hand to the chin, a small "?" bubble,
+  eyes up) · `oops` (a gentle "hmm, careful" — one brow up, the far hand raised palm-out, a
+  small pursed mouth; NOT a wince or a sweat drop) · `nod` (a small nod, the smile widens) ·
+  `cheer` (a thumbs-up beside the face, a smile, two sparkles; NOT arms flung up).
+- **The action.** `{ do: 'character', pose, at? }` in any beat. The validator refuses a pose
+  off the list. On the board it is state, like a morph: `BoardState.pose` (lib/lesson-beats)
+  starts `idle` on every scene, each fired action sets it, a beat without one keeps the last,
+  `clear` leaves it alone. Voice / Auto / Manual all go through `boardStateAt`, so the
+  character follows the pen for free — nothing in the player interprets it.
+- **Default OFF.** A script's optional `character: 'teacher' | 'student' | 'none'`
+  (validated; `student` is the older name and draws the same teacher — kept so an older
+  script still validates). Unset means none — **the two committed lessons render
+  byte-identically** (`scenesHaveCharacter` is false for them; the slide theme never shows
+  one unless `character` is set). The player's rule (`LessonPlayer` prop `character`):
+  `'teacher'` (or `'student'`) shows it on any theme, `'none'` never, unset → shown on a
+  board theme whose beats carry `character` actions — which is how the explain clip gets it
+  without the page passing anything (the explain page's own default is `'teacher'`).
+- **The explain clip sets it** (`lib/explain-clip.ts`: `character: 'teacher'` and a pose on
+  every beat): `point` while the student's earlier lines are written, `oops` on the ✗ line,
+  `think` on the first pen step, `nod` on the later ones, `cheer` at the Answer; a sentence
+  scene (science) goes `oops` then `nod`, and so does a ✗-line + fix pair.
+- **Giving a lesson a character.** Set `"character": "teacher"` on the script and put
+  `{ "do": "character", "pose": "…" }` in the beats where the teacher would react (a
+  `point` at "look here", `think` before a step, `nod` when it lands, `oops` on a pitfall,
+  `cheer` at the answer). Without poses the switch alone shows an idle teacher at the
+  corner; without the switch, poses on a board theme are enough.
+- **Where it sits.** Inside the board's zoom wrapper, absolutely positioned bottom-right,
+  `clamp(84px, 27%, 120px)` wide, `pointer-events: none`, under the marks and the pen — it
+  never moves a glyph and the tap-to-pause still lands on the board. `--lsn-char-side: left`
+  (or the `side` prop) puts it bottom-left and mirrors it so it still faces the working; a
+  long working can run under it — the board's last lines are the ones to watch.
+- **Four candidates beside the teacher (1 Oct 2026, Adrian: "tutor is not
+  interest/cute/fun. something like bilibili? or may not even be a tutor/teacher.
+  experiment and show me").** `LessonCharacter` now takes `look: 'teacher' | 'blob' |
+  'kid' | 'cat' | 'robot'` (`CHARACTER_LOOKS`; default `teacher`, the drawing above,
+  unchanged). The four live in `app/lesson/[slug]/characters/` — `blob.tsx` (videotutor.io's
+  pink monster: a shape with a face, thick brows that snap into an angry V on `oops`),
+  `kid.tsx` (洋葱学园's 狗蛋: a big-headed pupil whose dot eyes balloon on `oops`, a cowlick,
+  a white school polo, a chalk stick), `cat.tsx` (a chubby tabby with a red bandana — ears
+  flatten on `oops`, tail up on `cheer`), `robot.tsx` (a screen face: pixel eyes, loading dots
+  on `think`, star eyes on `cheer`, a red flash on `oops`, a wobbling antenna). Each keeps
+  the SAME contract — the `.lsn-char` wrapper, `data-lsn-char` / `data-pose` / `data-side`,
+  the six poses, the size clamp, the side flip, reduced motion — plus `data-look` so its CSS
+  never leaks; `characters/base.ts` holds the shell, a 260 ms squash on every pose change
+  (six keyframe names with one shape, so a changed `animation-name` restarts it) and the
+  shared idle keyframes. The face is ~60% of every figure; all blink and breathe. Nothing in
+  the script schema or the player changed — `look` is wired once Adrian picks (the strip:
+  the session scratchpad's `character/candidates.mjs`, the same extract-and-stamp recipe as
+  `preview.mjs`, five looks × six poses).
+- **The PICTURE look — `tutor-picture` (1 Oct 2026, Adrian approved a generated tutor; the
+  explain clip's default since then).** Not a drawing: six PNG cut-outs with transparent
+  backgrounds, one per pose, at `public/lessons/characters/tutor/{idle,point,think,oops,nod,cheer}.png`
+  (512×512, bottom-aligned, ~90 KB each). `characters/picture.tsx` (`<PictureCharacter set="tutor">`)
+  keeps the same six-pose contract — the `.lsn-char` wrapper, `data-lsn-char` / `data-pose` /
+  `data-side`, the corner, the side flip, reduced motion — plus `data-look="picture"` and
+  `data-set`. All six pictures are in the DOM from the first paint (stacked, eager), so a
+  pose switch never flashes: the current pose's `<img>` is opaque, a change is a 220 ms
+  crossfade plus the shared squash from `characters/base.ts`; between beats a slow 2.5 %
+  breathing loop from the feet. No box, no border — a transparent PNG over the slate. The
+  size clamp tops out at 150 px (`clamp(96px, 32%, 150px)`, square) because a cut-out reads
+  smaller than a drawn figure at the same width; it still sits inside the board, bottom-right,
+  `pointer-events: none`, under the marks and the pen like the others. The tutor set was drawn
+  pointing to the viewer's RIGHT, so at the right corner the picture is mirrored to face the
+  working (`scaleX(-1 × --lsn-char-flip)`) and `data-side="left"` un-mirrors it. **Wiring:** the
+  script word `character: 'tutor-picture'` (in `LESSON_CHARACTERS`) → the player's
+  `characterLook()` (`lesson-character.tsx`) picks the look and `BoardLayer` hands it to
+  `LessonCharacter look=…`; `teacher` / `student` / unset still draw the cartoon teacher, and
+  the player's unset case is unchanged (shown only on a board theme with posed beats). The
+  explain clip sets `character: 'tutor-picture'` (`lib/explain-clip.ts`) and the explain page's
+  own default is `'tutor-picture'`. **A new set** = six PNGs in
+  `public/lessons/characters/<name>/` named by pose + one `set` name in the dispatcher (a
+  new `look` word mapping to `<PictureCharacter set="<name>">`); nothing to draw. **Known
+  flaw in the first set (1 Oct 2026):** the background removal also removed the tutor's WHITE
+  hair and white T-shirt (alpha 0 in all six files), so on the slate he reads as dark-haired
+  in a dark shirt — coherent on chalk by accident, wrong on a paper theme; re-cut the six with
+  the white regions kept (or give him a non-white shirt) when regenerating.
+- **What Adrian still decides — the look.** Every colour is a token with a default
+  (`--lsn-char-skin` / `-hair` / `-shirt` (the cardigan, default a calm blue) / `-collar` /
+  `-pointer` / `-line` / `-dark` / `-cheek`; the OUTLINES take the theme's `--lsn-ink`, so
+  on the slate the figure reads chalk-outlined); the hair, the glasses, the cardigan, how
+  big it sits on a phone, and whether a second figure should ever exist are his calls. The
+  drawing is one SVG — change it in one place. A standalone six-pose render for a quick look
+  (no dev server) is the previous sessions' `preview.mjs` recipe: pull `CHARACTER_CSS` and
+  the `<svg>` out of the TSX, swap the JSX attribute names, stamp six copies with `data-pose`.
+
+## Stickers (1 Oct 2026) — a reaction picture for the beat
+
+Adrian: *"do the stickers"* — the small reaction pictures 洋葱学园 / 作业帮 clips drop on the
+board at the moment the voice says the thing, the "viral shot" feel. The rules he agreed:
+**at most ONE per beat, two or three per clip, a FIXED curated set (never a live search),
+sized like a thumb (~64–96 px on a phone), beside the line it is about or at a corner.**
+
+- **The action.** `{ do: 'sticker', kind, near?, at? }` in any beat. `kind` is one of the
+  twenty-two below; `near` is a token id of the scene (the sticker sits just right of that
+  token's line); without `near` it sits at the board's top-right corner. The validator
+  refuses a kind off the list, a `near` that is not a token id, and a SECOND sticker in
+  the same beat.
+- **Gone on the next beat.** `BoardState.sticker` (`lib/lesson-beats.ts`) is set by the
+  action and `boardStateAt` resets it to null at every beat boundary — a sticker never
+  carries over, and `clear` does not touch it (it belongs to the beat, not the pen). This
+  is the OPPOSITE of the character's `pose`, which holds until the next pose. The board
+  layer renders it keyed by `seq`, so a new action re-pops.
+- **The twenty-two kinds** (`STICKER_KINDS`, `lib/lesson-script.ts`): the first twelve —
+  `facepalm` · `lightbulb` · `confetti` · `magnifier` · `warning` · `check` · `question` ·
+  `fire` · `sweat` · `star` · `clap` · `eyes` — and ten more added the same evening after
+  Adrian's read ("facepalm is not good, the rest are okay, but are there more?"; facepalm
+  was redrawn as a face with a hand slapped over the eyes, closed-eye arcs above the
+  fingers, a sweat drop): `thumbsup` · `hundred` (a "100" with two underlines) · `clock`
+  (time running) · `rocket` · `trophy` · `brain` · `pencil` · `zzz` (sleepy — a rule that
+  was forgotten) · `exclaim` (a bold "!") · `target` (bullseye with an arrow). The art is `app/lesson/[slug]/lesson-stickers.tsx` — one inline SVG
+  per kind (`STICKER_ART`), flat, two or three colours, readable at 64 px; a pop-in
+  (scale 0.6 → 1.05 → 1, 220 ms) and a tiny idle wobble, none under
+  `prefers-reduced-motion`. No image files, no dependency.
+- **Placement.** `near` is measured like a mark (the token's resting box inside the zoom
+  wrapper, re-measured on resize) and the sticker goes right of it, vertically centred on
+  the line; when there is no room to the right, or that spot would reach into the
+  character's bottom-right corner, it falls back to the top-right corner. `pointer-events:
+  none`, absolutely positioned in the overlay — it never moves a glyph.
+- **The explain clip** (`lib/explain-clip.ts`, `STICKERS_MAX = 3`, a budget spent in scene
+  order): `warning` beside the ✗ line, `lightbulb` beside the first pen step, `confetti` at
+  the Answer; a sentence (caption) scene gets `warning` at the corner on its first beat
+  only; a ✗-line + fix board gets `warning` beside each ✗ line while the budget lasts. A
+  two-part clip spends all three on part (a).
+- **Swapping one for a LottieFiles / Tenor asset later.** Replace that kind's function in
+  `STICKER_ART` with a component that renders the asset (a `<video>` / `<img>` or a Lottie
+  player) inside the same `.lsn-sticker` box — the kind name, the schema, the budget and
+  the placement are untouched. Keep it under the size clamp and still at 64 px.
+- **The gallery** — `/app/lesson/stickers` (admin-only like the lesson page, linked from
+  nowhere): all twenty-two on a slate swatch, each labelled, tap a card or "Pop all" to replay
+  the pop-in. Prune the set there; a removed kind comes out of `STICKER_KINDS` and
+  `STICKER_ART` together (the type makes the two agree).
+
 ## Map
 
 | Piece | Where | Notes |
@@ -91,7 +309,10 @@ node scripts/lessons/verify-lesson.mjs quadratic-functions-am     # [--offline] 
 node scripts/lessons/register-lesson.mjs quadratic-functions-am
 npx vitest run src/lib/lesson src/lib/notebook && npx tsc --noEmit
 
-# 6. voice clips (idempotent; see § Regenerating audio)
+# 6. voice clips (idempotent; MiniMax English_FriendlyPerson by default, no --voice needed;
+#    see § Regenerating audio). After an engagement pass (the skill's § 3b) delete the old
+#    clips first — they belong to the old words — then re-run, then --verify.
+node scripts/lessons/generate-narration.mjs quadratic-functions-am
 node scripts/lessons/generate-narration.mjs quadratic-functions-am --verify
 
 # 7. commit + push to dev, re-alias → Adrian previews with his admin cookie
@@ -645,14 +866,26 @@ node scripts/lessons/generate-narration.mjs <slug> --scene 7 --force
 node scripts/lessons/generate-narration.mjs <slug> --verify     # ASR round-trip check
 ```
 
-- Provider: **Gemini TTS** (`gemini-2.5-flash-preview-tts`, voice **Charon** —
-  the calm, informative male prebuilt voice) via the existing `GOOGLE_API_KEY`
-  in `.env.local`. `--voice` / `--model` / `--style` swap any of the three;
-  the script's header lists the 30 voices the API exposes.
-  `gemini-3.1-flash-tts-preview` also works but read maths at ~1.6 words/s.
+- **Provider: MiniMax Speech-02 since 1 Oct 2026** (`--provider minimax`, the
+  default): model `speech-02-hd`, voice **`English_FriendlyPerson`**, emotion
+  `calm`, speed 1 — Adrian's pick after fifteen samples (the Gemini voices
+  sounded too Western / too deep). `MINIMAX_API_KEY` in `.env.local`. The
+  one-minute explanation's clips use the SAME voice and the same request
+  (`lib/explain-voice-store.ts` `TTS_*` constants) — change them together.
+  No style prefix (MiniMax has `--emotion` / `--speed` instead); `--voice` /
+  `--model` still override. The API answers MP3 already, so there is no PCM
+  step — ffmpeg only trims the lead/tail silence and re-encodes at `--bitrate`
+  (40k; without ffmpeg the clip is written as it came, 64 kbps).
+  **`--provider gemini`** keeps the old path byte for byte: Gemini TTS
+  (`gemini-2.5-flash-preview-tts`, voice **Charon**, the tutor `--style`
+  prefix) via `GOOGLE_API_KEY`; the script's header lists the 30 voices the
+  API exposes. `gemini-3.1-flash-tts-preview` also works but read maths at
+  ~1.6 words/s. `--verify` transcribes with Gemini under either provider.
 - Output: 24 kHz mono MP3, 40 kbps CBR (~5 KB/s), leading/trailing silence
-  trimmed to 150 ms / 300 ms. The pilot's 31 clips total ≈ 2 MB. Two requests
-  in flight; `429`/`5xx` back off; daily-quota exhaustion stops the run.
+  trimmed to 150 ms / 300 ms. The pilot's 31 clips total ≈ 2 MB; the quadratic
+  lesson's 43 MiniMax clips (the engagement pass, 1 Oct 2026) ≈ 2.5 MB —
+  `lesson-script.test.ts` caps a lesson at 3 MiB. Two requests in flight;
+  `429`/`5xx` back off; quota / insufficient-balance (MiniMax 1008) stops the run.
 - **Idempotent.** A scene whose clip(s) exist is skipped. To redo one scene,
   delete its files or pass `--scene N --force`. A per-step scene's `audio`
   array is only written once every step's clip exists.

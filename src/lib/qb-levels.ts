@@ -6,7 +6,7 @@
 // ADMIN_LEVELS in the practice page so both the picker UI and the overview
 // endpoint agree on the admin view.
 export const ALL_QB_LEVELS: { key: string; label: string }[] = [
-  { key: 'S1', label: 'Sec 1' }, { key: 'S2', label: 'Sec 2' },
+  { key: 'S1', label: 'Sec 1' }, { key: 'S1_NA', label: 'Sec 1 (NA)' }, { key: 'S2', label: 'Sec 2' }, { key: 'S2_NA', label: 'Sec 2 (NA)' },
   { key: 'S3_EM', label: 'Sec 3 E-Math' }, { key: 'S3_AM', label: 'Sec 3 A-Math' },
   { key: 'EM', label: 'O-Level E-Math' }, { key: 'EM_NA', label: 'E-Math (NA)' },
   { key: 'AM', label: 'O-Level A-Math' }, { key: 'JC1', label: 'JC1 H2 Math' },

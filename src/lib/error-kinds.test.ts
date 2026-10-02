@@ -17,8 +17,8 @@ const question = (parts: unknown[]) => ({
 });
 
 describe('the contract', () => {
-  it('is exactly the eight codes the bot writes, in this order', () => {
-    expect([...ERROR_KINDS]).toEqual(['concept', 'arithmetic', 'transfer', 'sign', 'rounding', 'units', 'misread', 'incomplete', 'careless']);
+  it('is exactly the ten codes the bot writes, in this order (careless the ninth, 5 Sep 2026; keywords the tenth, 24 Sep 2026, science only)', () => {
+    expect([...ERROR_KINDS]).toEqual(['concept', 'arithmetic', 'transfer', 'sign', 'rounding', 'units', 'misread', 'incomplete', 'careless', 'keywords']);
   });
 
   it('every code has a student label and a desk hint', () => {
@@ -29,9 +29,11 @@ describe('the contract', () => {
     }
   });
 
-  it('buckets partition the codes: careless + concept-side + incomplete', () => {
-    const all = [...CARELESS_KINDS, ...CONCEPT_KINDS, 'incomplete'].sort();
+  it('buckets partition the maths codes: careless + concept-side + incomplete; keywords (science only) sits in none of them', () => {
+    const all = [...CARELESS_KINDS, ...CONCEPT_KINDS, 'incomplete', 'keywords'].sort();
     expect(all).toEqual([...ERROR_KINDS].sort());
+    expect(CARELESS_KINDS).not.toContain('keywords');
+    expect(CONCEPT_KINDS).not.toContain('keywords');
   });
 
   it('isErrorKind accepts the codes and nothing else', () => {

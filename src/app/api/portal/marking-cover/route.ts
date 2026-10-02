@@ -32,7 +32,19 @@ export async function GET(req: NextRequest) {
   // follows the latest of release and re-issue.
   const stampSrc = (run as { reissued_at?: string | null }).reissued_at || run.released_at;
   const stamp = String(stampSrc).replace(/[^0-9]/g, '').slice(0, 12);
-  const key = runKey(runId, `cover-${stamp}.png`);
+  // "-subject": the look changed on 25 Sep 2026 (the subject frame — band + tag
+  // in the paper's tone). A cover cached under the old name is rendered once
+  // more, on its next view, so a student's list never mixes the two looks.
+  // "-subject2": the maths tones changed later that day (A Math navy, E Math
+  // amber, H2 plain) — the same rule, one more render on the next view.
+  // "-subject3": Set 2 (every subject's band = its tag; A Math royal blue, E Math
+  // orange, Physics cyan) — once more.
+  // "-subject4": the science remark (25 Sep 2026 — concept gaps, no "do the practice"
+  // line on a paper that gets no sheet) — once more.
+  // "-subject5": the science FOOTER (same day — "Your next move" on a science
+  // cover names the corrections, not "the practice sheet that came with this
+  // paper"; the remark box and the footer are built in two files) — once more.
+  const key = runKey(runId, `cover-${stamp}-subject5.png`);
   const headers = { 'Content-Type': 'image/png', 'Cache-Control': 'private, max-age=3600' };
   try {
     const cached = await downloadStudentFile(key);

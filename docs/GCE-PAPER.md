@@ -14,8 +14,24 @@ node scripts/derive-paper-blueprints.mjs --gce --from-dump data/gce-rows.json   
 ```
 
 - Base papers = real GCE + SEAB specimen papers of the current syllabus (`GCE_CUT`:
-  AM ≥ 2021, EM ≥ 2023, JC all); specimen rows sit under school `GCE Specimen` so a
+  AM ≥ 2021, EM ≥ 2023, **JC ≥ 2017 since 26 Sep 2026** — the 9740 papers of 2008–2016
+  carried Poisson and a heavier sampling section, and a mock walked from the old entry
+  could ask for a Poisson slot); specimen rows sit under school `GCE Specimen` so a
   specimen and a real paper of the same year never collapse into one.
+- **Year weights (26 Sep 2026** — Adrian: "we should take more weightage into account of
+  papers of the more recent years (discount year 2025 because somehow that year was too
+  easy)"): every per-slot statistic (topic pools, must-appear presence, typical marks,
+  diagram rate, question count) is a weighted count over the base papers — the three
+  newest full-weight sittings ×1, the next two ×0.6, older ×0.4, SEAB's specimen ×0.5,
+  and a discounted sitting keeps its own weight (`GCE_DISCOUNT`: H2 2025 ×0.3). The
+  min..max ranges stay unweighted. `source.gce.year_weights` in the file records what
+  each entry was derived with; `paper-blueprints.test.ts` pins the H2 cut and the
+  discount. For H2 alone, must-appear presence counts each question's LEADING tag
+  (`GCE_MUST_LEADING_TAG`): the H2 list is short against its slots and technique
+  topics ride as second tags, so on all tags the weighting pinned ten of Paper 1's
+  eleven slots. Typicals are clamped into their slot's range after scaling.
+  Which H2 years are representative and why 2025 is discounted:
+  `.claude/skills/gce-paper/reference/jc-standard-2022-2024.md` §1.
 - Thin-data rules (2–5 base papers): slot mark ranges are the min..max seen at that
   position, pools list every topic seen there, must_appear = topics in ≥ 80 % of base
   papers, and — since 9 Sep — **trimmed until every must can take a distinct slot**
@@ -245,8 +261,21 @@ placed AFTER the part that says "On the grid …" with no blank working space un
 printed width in mm when he asks for bigger/smaller; `assemble --set N` prints the same
 title the app shows (`setPaperTitle`: "E Math · Set 1 · Paper 1 · O-Level format") on
 the draft PDF/DOCX and the answer key at the end is black. The durable copy of every
-output + figure spec is `~/Desktop/AdrianMath/GCE Sets/E Math Set 1/` (the scratchpad
+output + figure spec is `~/Dropbox/AdrianMath Work/GCE Sets/E Math Set 1/` (the scratchpad
 is wiped on reboot).
+
+**Replacing questions in a published Set — `--plan-from` (30 Sep 2026).** Adrian rejected
+three questions of A Math Set 1 P2 ("too standard"; "drawing graphs by translation is not in
+secondary syllabus"). `generate.mjs brief --plan-from <published paper JSON>` takes the slot
+plan (topic, marks, parts per position) from that paper instead of drawing a new one, so the
+briefs of the rejected slots match the paper they go back into. Put the kept questions in
+`kept-questions.md` (the check refuses the pre-17-Sep rows, which have no `skills`, so
+`paper-so-far.md` stays empty), the rejected one as `old-Q<n>.json`, append Adrian's words
+to each author prompt, then run `standard.mjs --run "$RUN"` (brief does not write
+`standard.md` / `standard-questions-P<n>.md`; the Set 2 P1 Q13 swap was first authored
+without them), then author → check → blind → moderate as usual and re-publish in place.
+Copy `kept-questions.md` over `paper-so-far.md` after every check (the check rewrites it).
+Runs: `~/Dropbox/AdrianMath Work/GCE Sets/AM Set 1 swap 2026-09-30/run-P2`, `…/AM Set 2 swap 2026-09-30/run-P1`.
 
 **Sets must differ from each other — the variety rule (17 Sep 2026).** Adrian: "the
 papers generated say set 1, set 2, set 3, .. should not be (too) similar to each other.
@@ -371,8 +400,22 @@ blind solve (agrees), Fable moderator 4/5 at standard; its one wording fix appli
 old ending is in the run's `replaced/Q10-least-S.*`.
 The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are in
 `data/gce-generated/figures/<key>-seed2/`, which is the `--figures` directory for
-`publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
-key (the Mac).
+`publish.mjs`. **Published as A Math Set 2 on 28 Sep 2026** from the Mac (13 + 10 rows) — Adrian
+reads it published and names slots to amend.
+
+**29 Sep 2026, Adrian's read of A Math Set 2 P1** ("Q3a, should there be some hints … Q3b is still
+doable if students can't solve 3a … need a diagram for this question 4 … tone down the difficulty for
+Q7a and b … Q9, tone down the difficulty a little (same question) … Q10 sounds confusing … Does Q13
+need a diagram?"). Re-published in place (13 rows updated) from
+`data/gce-generated/GCE-AM-P1-seed2-2026-09-29.json`: Q3 (a) a show-that with sin 2A = 2 sin A cos A as
+the hint, so (b) stands alone, (b) states the substitution θ = π/7; Q4 a trough figure; Q7 (a) says O
+is a minimum point, (b) is the tangent at the first point of gradient 24 (the tangents' meeting point
+and the left/right argument are gone); Q9 (b) the derivative as a show-that, (c) hence x = 4 and
+36.9° (the complementary-angles part dropped); Q10 (a) x − 2 a factor, (b) the quadratic factor,
+(c) the repeated root (the "no other factor of the form x − a" clause gone); Q13 a not-to-scale
+triangle labelled A(10, 2), B(0, 7), H and C only. Later that day (Adrian: "Q13 seems too hard for Sec 4 students, tone down the difficulty") Q13 became five steps on the same diagram, now on x- and y-axes: (a) gradient of AH [1], (b) show BC is y = 3x + 7 [2], (c) equation of AC [3], (d) C(−4, −5) [2], (e) show AB ⊥ CH [2]; the old 'find C in one step' and 'K without equations' parts are gone. Fresh blind solve agrees ("fair Sec 4 level … routine rather than demanding"). Q4's trough now shows the water along its whole length. Also that day: Q2(a) became "Show that dy/dx = 1/√(x² + a²)" [3] (Adrian: "perhaps Q2a should be a show question"), and Q6(b) [4] was split into (b) show that ∫₁ᵏ f = 0 gives u³ − 21u + 20 = 0 with u = √k [2] and (c) hence k = 16 [2] ("students may not recognize that the equation is a cubic"). Set figures now publish with ?v=<fingerprint> so a redrawn figure is never served from a cache. Q2 kept (in syllabus). Fresh Opus blind solves
+agreed on every changed part; a Fable moderator scored Q3 Q7 Q9 Q10 5/5. Solutions rewritten one
+step a line with no mark notes (CLAUDE.md §Readability). Figures in `figures/GCE-AM-P1-seed2/`.
 
 **A Math Set 1 P2 Q4 rewritten (2 Oct 2026, Adrian: "secondary A Math syllabus has no such
 graph sketching (involving sketching y = sin(x + a))" → "change the whole R-formula
@@ -405,8 +448,10 @@ and agreed (P1 Q10 Q12 Q17 Q21 Q24, P2 Q1 Q6 Q7). Shape by `assemble`: P1 39 ans
 16 unparted, largest part 4; P2 32 answer spaces, exactly three parts of 5+ (Q2(a) 5, Q8(b) 5,
 Q9(b) 7). P1 Q13's figure leaves the radius OC undrawn so the 35° mark can only be read as
 angle ACB; P1 Q23 says "not drawn to scale" and is drawn off its answer proportions.
-Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Not published yet** (as
-A Math Set 2).
+Figures in `data/gce-generated/figures/GCE-EM-P{1,2}-seed3/`. **Published as E Math Set 2 on
+28 Sep 2026** (27 + 9 rows), together with A Math Set 2 (13 + 10 rows) — Adrian: "publish set 2";
+he reads it published and names slots to amend (publish is an upsert, so a repaired slot is
+re-published in place).
 
 **The Word export, fixed the same day.** `export-docx.py` turned a markdown pipe table into a
 Word table but left a LaTeX `\begin{array}` line as maths — a matrix with no rules, whose
@@ -440,5 +485,55 @@ construction figure therefore cannot print at true size — construction slots a
 self-contained. Unverified: whether `max-height` + the explicit width distorts a
 near-square PNG on `/app/print` (the published path) — check a printed Set paper.
 
-Known gaps: no JC shape yet (`SHAPE` has AM + EM — the EM entry, its 4052 register and the 4052 formula sheet in `export-docx.py` landed with E Math Set 1, 11 Sep 2026); the run folder lives wherever `--out` points (scratchpad
+### H2 Mathematics 9758 (26 Sep 2026)
+
+`SHAPE.JC` in `generate.mjs`: subject Mathematics, code 9758, `exam: 'A-Level'`, bank level
+`JC2` for the GCE rows and `setLevel: 'JC'` for a Set's rows, `cut: 2017`, 3 hours,
+`standardYears: '2022–2024'`, the 9758 scope written from the syllabus document (with the
+revised-syllabus exclusions: no method of differences, no polar or exponential form, no
+Poisson, no induction, no skew-line distance, no reduction formulae, no t-test) and an
+A-Level register (graphing calculator assumed; "Use calculus" / "exact" / "Do not use a
+calculator" as the working switches; Section B asks for words in context). `excludeTopics`
+drops the bank's `Distributions (Poisson)` and `Mathematical Induction` from the author's
+topic list and the gate. Paper 2's `section_boundary` becomes `plan.json.sections`
+(`{boundary, a, b}`): every slot brief names its section, `assemble` passes a
+`sectionHeading` to `render-paper-pdf` (new optional field; `PAPER_PDF_RENDER_VERSION` 9)
+and `export-docx.py` prints the headings (Section B on a fresh page). The DOCX front page
+is the A-Level one — `INSTRUCTIONS_JC`, an "Additional Materials: List of Formulae (MF26)"
+line, no formula sheet (`formulae_for` returns none for 9758). `standard.mjs` defaults a JC
+run to `--years 2022,2023,2024` and copies `reference/jc-standard-2022-2024.md`; the prompt
+templates take `__EXAM__`, `__YEARS__` and `__STANDARD_NOTE__` from `render.sh`. Verified
+26 Sep 2026 with a two-question fixture through `brief → check → assemble → export-docx`
+(both section headings on the printed paper). **The first H2 Set 1 draft (26 Sep 2026) was
+rejected by Adrian as "too easy and very standard"** although every slot had passed the
+gates: the moderator's test rewarded a clean question with one twist, and the topic-first
+briefs produced each topic's textbook route. Since 27 Sep 2026 an H2 run has an IDEAS STEP
+before authoring (`prompts/ideas.md`, two planners, the session chooses one idea per slot
+into `Q<n>.idea.md`), the H2 standard's §5–§6 make the §8 MOVE the main step and the §9
+TEMPLATES below standard, and `render.sh` appends `prompts/JC-extra-{author,moderate,repair}.md`
+to the H2 prompts (the moderator's verdict carries `template` and `move`). Adrian kept five
+of the first draft's Paper 1 questions; Paper 2 was rewritten whole. The first approved Set
+is held to the standard document alone (its §7).
+
+**Where H2 Set 1 lives (30 Sep 2026) — unpublished, awaiting Adrian's read.** The scratchpad
+run folder was cleared with a session restart and the DOCX/PDF copies went with it, so the
+set was rebuilt from its manifests and filed where every session can find it:
+- Manifests (the questions, solutions, gates, verdicts — the source of truth): COMMITTED as
+  `data/gce-generated/GCE-JC-P1-seed1-2026-09-26.json` (11 questions, Paper 1) and
+  `data/gce-generated/GCE-JC-P2-seed4-2026-09-27.json` (10 questions, Paper 2, the rewrite).
+- Figures: `data/gce-generated/h2-set1/p1/Q6.figure.cjs` (the graph of f′(x) with regions 2, 8, 9)
+  and `data/gce-generated/h2-set1/p2/Q4.figure.cjs` (the vase cross-section), committed with
+  their PNGs; `node scripts/gce-paper/figure.mjs --run data/gce-generated/h2-set1/p1 --slots 6`
+  redraws one.
+- The readable copies: Dropbox › Apps › AdrianMathNotes › School Papers ›
+  `AdrianMath-H2-Set1-Paper1.pdf`, `-Paper2.pdf`, each with `-solutions.pdf` and the `.docx`
+  (the same naming as the AM/EM sets beside them). Rebuild them with
+  `python3 scripts/gce-paper/export-docx.py <manifest> --figures data/gce-generated/h2-set1/p<n> --out …`
+  then `render_sheet.export_pdf` (Word).
+- To publish: `node scripts/gce-paper/publish.mjs` on each manifest with `--set 1` once Adrian
+  has read both papers; the `GCE-JC-*` blueprint rows and `lib/print-sets.ts` already know H2.
+The AM/EM set manifests beside them are NOT committed (they are in the bank already); the
+H2 ones are, because nothing else holds them until they are published.
+
+Known gaps: the run folder lives wherever `--out` points (scratchpad
 for trials); `function-graph` has no `ticks:false` (the step trick stands in for it).

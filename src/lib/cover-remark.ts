@@ -18,6 +18,10 @@ export type RemarkFacts = {
   kinds: ErrorKindTotals | null | undefined;
   /** The student's previous released paper at the same level, when there is one. */
   previous?: { awarded: number; max: number } | null;
+  /** 'science' (25 Sep 2026): a science paper's concept marks are concept gaps, not a
+   *  wrong method, and no Practice Again sheet follows it — so its lines never say
+   *  "do the practice". Default 'math'. */
+  family?: 'math' | 'science';
 };
 
 /** {lost} = marks lost, {careless} / {concept} / {incomplete} = marks by kind,
@@ -33,6 +37,10 @@ export const REMARK_BANK = {
   mostlyConcept: '{concept} of the {lost} marks you lost were from using the wrong method. Go through the corrections and do the practice.',
   mostlyIncomplete: '{incomplete} of the {lost} marks you lost were because you stopped before the final answer. Always finish the question.',
   mixed: '{careless} careless mistakes, {concept} marks from the wrong method. Check your answers, and go through the corrections.',
+  // Science (25 Sep 2026, the day the tab opened — Adrian: fix the closing line):
+  // no practice sheet to do, and the concept marks are gaps in the concept.
+  scienceConcept: '{concept} of the {lost} marks you lost were concept gaps. Go through the corrections and read those topics again.',
+  scienceMixed: '{careless} careless mistakes, {concept} marks from concept gaps. Check your answers, and go through the corrections.',
   up: ' Up from {prevPct}% last paper — keep it up.',
   down: ' This is a big drop from {prevPct}% last paper — come and talk to me about it.',
 } as const;
@@ -56,11 +64,12 @@ export function coverRemark(f: RemarkFacts): string | null {
     // Say nothing when most of the lost marks carry no kind — the sentence would be a guess.
     if (labelled * 2 >= k.lostTotal) {
       const v = { lost, careless, concept, incomplete };
+      const sci = f.family === 'science';
       if (lost <= 3 && careless === lost) line = REMARK_BANK.fewCareless;
       else if (careless * 10 >= lost * 6) line = fill(REMARK_BANK.mostlyCareless, v);
-      else if (concept * 2 >= lost) line = fill(REMARK_BANK.mostlyConcept, v);
+      else if (concept * 2 >= lost) line = fill(sci ? REMARK_BANK.scienceConcept : REMARK_BANK.mostlyConcept, v);
       else if (incomplete * 2 >= lost) line = fill(REMARK_BANK.mostlyIncomplete, v);
-      else if (careless > 0 && concept > 0) line = fill(REMARK_BANK.mixed, v);
+      else if (careless > 0 && concept > 0) line = fill(sci ? REMARK_BANK.scienceMixed : REMARK_BANK.mixed, v);
     }
   }
   if (!line) return null;

@@ -56,6 +56,8 @@
 import { createHash } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { decideSolutionNote, decidedSolutionKind, isCorrectnessHold, parseFitnessNote, releaseNote } from '@/lib/figure-flag-release';
+import { batchKey, isSentBack, sendBackNote, sentBackObject, sgtDayLabel, type CheckLane } from '@/lib/figure-check';
+import { sgtTodayISO } from '@/lib/sgt';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -66,9 +68,11 @@ import Anthropic from '@anthropic-ai/sdk';
 import sharp from 'sharp';
 import {
   replaceSolutionImageRefsMany, repairPairsFor, verifyRefPairs,
-  containsImageRef, partLabelFor, cleanedObjectKey, imageKey, type RefPair,
+  containsImageRef, partLabelFor, cleanedObjectKey, imageKey, sanitisePartSlug, type RefPair,
 } from '@/lib/solution-image-apply';
 import { partImagePaths, inlineImagePaths } from '@/lib/bank-question-markdown';
+import { trimWhite } from '@/lib/figure-trim';
+import { addSolutionImageRef } from '@/lib/solution-image-add';
 
 export const runtime = 'nodejs';
 // 🧹 Clean asks a vision judge to look at the figure before erasing — 20–40 s.
@@ -340,11 +344,16 @@ async function applyCleanedSolutionImage(
   const ext = /jpe?g/i.test(o.contentType) ? 'jpg' : 'png';
   const dest = cleanedObjectKey(o.questionId, partLabel, sha8, ext);
 
+  const newUrl = imgSrc(`${BUCKET}/${dest}`);
+  // Prove the swap finds the old key BEFORE uploading, so a refusal leaves no
+  // stray object behind (30 Sep 2026: NJC 2024 P2 Q3's markdown image did).
+  if (!replaceSolutionImageRefsMany(row, [{ oldPath: o.path, newUrl }]).pairs[0].replaced) {
+    return step('replace', 'no reference matched the old key');
+  }
   const up = await supa.storage.from(BUCKET).upload(dest, o.bytes, {
     contentType: o.contentType, upsert: false, cacheControl: '3600',
   });
   if (up.error) return step('upload', up.error.message);
-  const newUrl = imgSrc(`${BUCKET}/${dest}`);
 
   // Every earlier apply on THIS question, so a clobbered one rides along and is
   // repaired by the same PATCH. A log we cannot read is a refusal, not a shrug:
@@ -630,7 +639,8 @@ async function cleanAsCandidate(
 async function approveQuestionCandidate(supa: SupabaseClient, path: string, questionId: string) {
   const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
   if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
-  const bytes = Buffer.from(await dl.data.arrayBuffer());
+  // Tight crop on the way out (Adrian: "crops should not leave too much white space").
+  const { bytes } = await trimWhite(Buffer.from(await dl.data.arrayBuffer()));
   if (!bytes.length) return step('candidate', 'the stored candidate is empty');
   const { data: q, error } = await supa.from('questions').select('id, image_url, figure_url, parts').eq('id', questionId).maybeSingle();
   if (error || !q) return step('read', error?.message ?? 'question row not found');
@@ -743,9 +753,12 @@ async function solutionLanePost(
   if (action === 'approve-candidate') {
     const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
     if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no cleaned candidate stored');
-    const bytes = Buffer.from(await dl.data.arrayBuffer());
-    if (!bytes.length) return step('candidate', 'the stored candidate is empty');
-    const contentType = /jpe?g/i.test(dl.data.type ?? '') ? 'image/jpeg' : 'image/png';
+    const raw = Buffer.from(await dl.data.arrayBuffer());
+    if (!raw.length) return step('candidate', 'the stored candidate is empty');
+    // Tight crop on the way out — a trimmed image is always a PNG.
+    const t = await trimWhite(raw);
+    const bytes = t.bytes;
+    const contentType = !t.trimmed && /jpe?g/i.test(dl.data.type ?? '') ? 'image/jpeg' : 'image/png';
     return applyCleanedSolutionImage(supa, {
       path, questionId, bytes, contentType, note: 'Adrian approved cleaned candidate',
     });
@@ -942,6 +955,153 @@ async function fitnessLanePost(
   return NextResponse.json({ ok: true, status: (patch.status as string | undefined) ?? 'held', note });
 }
 
+/* ── ✅ Check fixes (30 Sep 2026) ─────────────────────────────────────────────
+ * Adrian: "i only need the fixed diagrams or redrawn diagrams in front of me,
+ * then i click approve or a comment to say why it is still not good enough, or
+ * just redraw". Every HELD flag, either kind, that has a candidate waiting —
+ * nothing else. Approve reuses the lanes' own approve; the two send-backs move
+ * the candidate to sent-back/<day>/ and write the ask on the flag
+ * (lib/figure-check.ts). */
+
+async function checkLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
+  const { data: flags, error } = await supa
+    .from('figure_flags').select('path, question_id, note, kind, created_at')
+    .in('kind', ['solution', 'question']).eq('status', 'held')
+    .order('created_at', { ascending: false }).limit(2000);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const held = flags ?? [];
+  const names = await listCandidateNames(supa, held.map((f) => obj(f.path as string)));
+  const waiting = held.filter((f) => names.has(obj(f.path as string)));
+  const sentBack = held.filter((f) => isSentBack(f.note as string | null)).length;
+
+  // Sidecars carry the batch order ("#B5-12"); read them all — the list is small.
+  const sides = new Map<string, Record<string, unknown>>();
+  await Promise.all(waiting.map(async (f) => {
+    const p = f.path as string;
+    sides.set(p, names.has(`${obj(p)}.json`) ? await readSidecar(supa, p) : {});
+  }));
+  waiting.sort((a, b) => {
+    const ka = batchKey(str(sides.get(a.path as string)?.note)), kb = batchKey(str(sides.get(b.path as string)?.note));
+    return ka[0] - kb[0] || ka[1] - kb[1];
+  });
+
+  const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+  const pageSize = Math.min(40, Math.max(1, Number(sp.get('pageSize') ?? 12) || 12));
+  const slice = waiting.slice(page * pageSize, page * pageSize + pageSize);
+  const qids = [...new Set(slice.map((f) => f.question_id as string))];
+  const meta: Record<string, Row> = {};
+  if (qids.length) {
+    const { data: qs } = await supa.from('questions')
+      .select('id, level, school, year, paper, question_number, parts, solution_images, solution')
+      .in('id', qids);
+    for (const q of qs ?? []) meta[q.id as string] = q as Row;
+  }
+  const items = slice.map((f) => {
+    const path = f.path as string;
+    const q = meta[f.question_id as string];
+    const side = sides.get(path) ?? {};
+    const lane: CheckLane = f.kind === 'solution' ? 'solution' : 'question';
+    return {
+      lane, path, qid: f.question_id,
+      level: q?.level ?? null, school: q?.school ?? null, year: q?.year ?? null,
+      paper: q?.paper ?? null, qnum: q?.question_number ?? null,
+      partLabel: q && lane === 'solution' ? partLabelFor(q, path) : null,
+      beforeUrl: imgSrc(`${BUCKET}/${obj(path)}`),
+      afterUrl: candidateUrl(path, side),
+      whatChanged: str(side.note),
+      // A new diagram (the pilot): there is no "before" — the question had none.
+      isNew: !!(side.add && typeof side.add === 'object'),
+      holdReason: str(side.hold_reason),
+    };
+  });
+  return NextResponse.json({ items, page, pageSize, total: waiting.length, sentBack });
+}
+
+/** ✅ Approve on a NEW solution diagram (30 Sep 2026, the pilot). The sidecar's
+ *  `add: {part}` says which part it answers. Upload the trimmed image, put it on
+ *  the part when that slot is empty or at the end of solution_images
+ *  (lib/solution-image-add.ts), re-read to prove it landed, log it, close the
+ *  flag and write the allow-list row for the new object. */
+async function addNewSolutionImage(supa: SupabaseClient, path: string, questionId: string, side: Record<string, unknown>) {
+  const add = side.add as Record<string, unknown>;
+  if (add.questionId && add.questionId !== questionId) return step('read', 'questionId does not match the card');
+  const dl = await supa.storage.from(BUCKET).download(`candidates/${obj(path)}`);
+  if (dl.error || !dl.data) return step('candidate', dl.error?.message ?? 'no candidate stored');
+  const { bytes } = await trimWhite(Buffer.from(await dl.data.arrayBuffer()));
+  if (!bytes.length) return step('candidate', 'the stored candidate is empty');
+  const { data: row, error } = await supa.from('questions').select('id, parts, solution_images').eq('id', questionId).maybeSingle();
+  if (error || !row) return step('read', error?.message ?? 'question row not found');
+
+  const partLabel = typeof add.part === 'string' ? add.part : null;
+  const sha8 = createHash('sha256').update(bytes).digest('hex').slice(0, 8);
+  const dest = `solutions/drawn/${questionId}-${sanitisePartSlug(partLabel)}-${sha8}.png`;
+  const ref = `${BUCKET}/${dest}`;
+  const up = await supa.storage.from(BUCKET).upload(dest, bytes, { contentType: 'image/png', upsert: false, cacheControl: '3600' });
+  if (up.error && !/exist|duplicate/i.test(up.error.message)) return step('upload', up.error.message);
+
+  const { patch, field } = addSolutionImageRef(row as Row, ref, partLabel);
+  const upd = await supa.from('questions').update(patch).eq('id', questionId).select('id, parts, solution_images');
+  if (upd.error) return step('write', upd.error.message);
+  if (!upd.data?.length || !containsImageRef(upd.data[0] as Row, ref)) {
+    await supa.from('questions').update({ parts: row.parts, solution_images: row.solution_images }).eq('id', questionId);
+    return step('verify', 'the new drawing was not on the row after the write — reverted');
+  }
+  const log = await supa.from('figure_clean_log').insert({
+    question_id: questionId, field: field.startsWith('parts') ? 'part' : 'solution_images', old_path: path, new_path: ref, batch: 'soldiag-pilot',
+  });
+  if (log.error) return step('log', `the drawing is live but the ledger write failed (${log.error.message}) — record ${path} → ${ref} by hand`);
+
+  const { data: fl } = await supa.from('figure_flags').select('note').eq('path', path).eq('kind', 'solution').maybeSingle();
+  const prev = ((fl?.note as string | null) ?? '').trim();
+  await supa.from('figure_flags').update({ status: 'fixed', note: `Adrian approved the new drawing · ${prev}`.slice(0, 500) })
+    .eq('path', path).eq('kind', 'solution');
+  await supa.from('figure_flags').upsert({
+    path: ref, question_id: questionId, kind: 'solution', status: 'fixed',
+    claimed_by: 'soldiag-pilot', claimed_at: new Date().toISOString(),
+    note: `ALLOW-LIST RECORD for a new solution drawing approved on the Check page (card ${path})`,
+  }, { onConflict: 'path', ignoreDuplicates: true });
+  await supa.storage.from(BUCKET).remove([`candidates/${obj(path)}`, `candidates/${obj(path)}.json`]);
+  return NextResponse.json({ ok: true, status: 'fixed', field, newPath: ref });
+}
+
+async function checkLanePost(supa: SupabaseClient, body: Record<string, unknown>, rawPath: string, questionId: string) {
+  const lane: CheckLane = body.lane === 'solution' ? 'solution' : 'question';
+  const path = await storedFlagPath(supa, rawPath, lane);
+  const action = typeof body.action === 'string' ? body.action : '';
+  if (action === 'approve') {
+    if (lane === 'solution') {
+      const side = await readSidecar(supa, path);
+      if (side.add && typeof side.add === 'object') return addNewSolutionImage(supa, path, questionId, side);
+    }
+    return lane === 'solution'
+      ? solutionLanePost(supa, { action: 'approve-candidate' }, path, questionId)
+      : approveQuestionCandidate(supa, path, questionId);
+  }
+  if (action !== 'redo' && action !== 'redraw') return NextResponse.json({ error: `unknown check action: ${action || '(none)'}` }, { status: 400 });
+  const comment = typeof body.comment === 'string' ? body.comment.trim().slice(0, 500) : '';
+  if (action === 'redo' && !comment) return NextResponse.json({ error: 'say what is still wrong' }, { status: 400 });
+
+  const { data: fl, error: readErr } = await supa.from('figure_flags').select('note, question_id')
+    .eq('path', path).eq('kind', lane).eq('status', 'held').maybeSingle();
+  if (readErr) return step('read', readErr.message);
+  if (!fl) return step('read', 'no held flag at that path');
+  if (fl.question_id !== questionId) return step('read', 'questionId does not match the flag');
+
+  // Keep the turned-down candidate for the redo session, then take it off the page.
+  const day = sgtTodayISO();
+  for (const suffix of ['', '.json']) {
+    const from = `candidates/${obj(path)}${suffix}`;
+    const to = sentBackObject(`${obj(path)}${suffix}`, day);
+    await supa.storage.from(BUCKET).remove([to]);   // a second send-back the same day replaces the first copy
+    const mv = await supa.storage.from(BUCKET).move(from, to);
+    if (mv.error && suffix === '') return step('move', mv.error.message);
+  }
+  const note = sendBackNote(fl.note as string | null, lane, action, comment, sgtDayLabel());
+  const { error } = await supa.from('figure_flags').update({ note }).eq('path', path).eq('kind', lane);
+  if (error) return step('flag', error.message);
+  return NextResponse.json({ ok: true, status: 'held', note });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -949,6 +1109,7 @@ export async function GET(req: NextRequest) {
 
   if (sp.get('kind') === 'solution') return solutionLaneGet(supa, sp);
   if (sp.get('kind') === 'fitness') return fitnessLaneGet(supa, sp);
+  if (sp.get('kind') === 'check') return checkLaneGet(supa, sp);
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
@@ -1056,6 +1217,7 @@ export async function POST(req: NextRequest) {
   // answered "no held question flag at that path" on a card it had just listed,
   // and a Solutions-lane tap updated zero rows while reporting ok. Resolve the
   // STORED spelling once here; every lane below then hits the row it was shown.
+  if (body.kind === 'check') return checkLanePost(supa, body, rawPath, questionId);
   const path = await storedFlagPath(supa, rawPath, body.kind === 'solution' ? 'solution' : 'question');
   // The solution vet lane and the fitness lane are separate verb sets on the
   // same table; every question-figure behaviour below is untouched.

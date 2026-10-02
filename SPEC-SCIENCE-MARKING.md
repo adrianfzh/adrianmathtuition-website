@@ -137,7 +137,9 @@ a scheme and says so — and the disclaimer says so to the student.
 1. **Two families, one app.** A top switcher **Math | Science** in the app shell; the
    bottom menu is per family (`components/PortalTabs.tsx` picks by pathname). Science's
    menu is marking first: **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
-   `/app/science/papers`). Nothing else for science yet — no Practice, no Practice Again, no
+   `/app/science/papers` — the maths shape; 24 Sep 2026: the first visit asks which sciences the
+   student takes, Combined Science included, and Home + Papers then carry one tab per science —
+   `docs/MARKING.md` §Which sciences). Nothing else for science yet — no Practice, no Practice Again, no
    Notebook. Everything under `/app/science/*` is science; everything else stays math.
 2. **`paper_subject` widens** to `A Math | E Math | H2 Math | Physics | Chemistry | Biology |
    Other`. The math Papers list, Home counts and every math gate already filter with
@@ -159,8 +161,10 @@ a scheme and says so — and the disclaimer says so to the student.
    and passed to `save-paper` as `source.scheme_source` (`{pdf_url}` or `{pages:[{url}]}`),
    the shape the admin attach already uses. The bot extracts it, grounds on it, and STORES
    it in `paper_schemes` keyed by paper — every later hand-in of that paper, by anyone,
-   is grounded on it. *Phase 2 (not built): queue the stored scheme + paper into the science
-   bank's extraction inbox so the questions land in the QB.*
+   is grounded on it. *Phase 2 — the inbox HALF is built (26 Sep 2026): a science paper or scheme dropped
+   into `Extraction Inbox` by name is queued with its subject and extracted into the
+   science bank by the Fly lane (`docs/EXTRACTION-QUEUE.md` §4a; the law's §Science
+   papers). NOT built: the automatic hand-off of a `paper_schemes` row into that inbox.*
 6. **Release.** Auto-release as for math (free + disclaimer, no pre-release hold). The
    completion Telegram names the subject (🧪 physics). No Practice Again for science:
    `sheetQueueGuard` refuses a run whose `subject` is not math (status `science`) from both
@@ -220,6 +224,13 @@ taxonomy (the nine math kinds are used as-is; biology's "missing point / impreci
 reads as `incomplete` / `concept`).
 
 
+## Decision 25 Sep 2026 — OPEN
+
+Adrian: "turn on science now." The switch below was flipped on at 09:40 SGT on
+25 Sep 2026 (`science_marking_open` on, note "Adrian: turn on science now"), the same
+morning Set 2 of the subject colours was promoted. Every signed-in student now sees the
+Science tab; the demo student and the admin preview saw it already.
+
 ## Decision 11 Sep 2026 — ready to release, not released
 
 Adrian: "put in the disclaimer, don't open it yet. i will see test through student
@@ -233,14 +244,21 @@ notice." Built:
   hard override. Adrian's admin preview sees the tab either way, and so does the demo
   student (`SCIENCE_PREVIEW_IDENTITIES`), which is how Adrian tests it as a student.
 - **Feedback first.** A science paper page has no score pill in the header. The
-  disclaimer says the total is an estimate and the comments are the part to use; the
-  cover and the marked pages follow; then an "Our estimate" card with the total, then
-  the teacher's-mark card, then "Was this marking useful?". The list card says
-  `est. 31/40`.
-- **"Was this marking useful?"** — 👍 / 👎 and an optional line, one Telegram line to
-  the marking topic per tap and a `portal_event_log` row (`science:feedback`). This is
-  the student's opinion of the feedback; the teacher's mark (rule 7) is still the only
-  truth signal.
+  cover, the marked pages and the lost marks, one column; the total is on the cover and
+  on the list card (`31/40 · 78%`). The page's route is `/app/science/marking/<id>`.
+- **One notice, nothing repeated (25 Sep 2026).** Adrian: "leave the first-visit picker
+  and just put this on at the page … and remove these". Science Home carries the "Dear
+  students" notice for good (a tool to prepare for exams, not a replacement for your
+  teacher; consult your teacher or tutor on any doubt; attach the answers or scheme for
+  better results; two papers a day) — WITHOUT the sentence "The total is an estimate,
+  and explain answers can be marked a little differently from how your school words
+  them", which he struck. The first-visit picker keeps its one estimate bullet. Removed
+  the same day: the quiet estimate line under the Papers list; on every paper page the
+  "Our estimate" card, the ✏️ teacher's-mark card (rule 7's student door — the route
+  `/api/portal/science-truth` stays, nothing on the app calls it now) and "Was this
+  marking useful?" (`science:feedback` — the event kind and `lib/science-feedback.ts`
+  stay). Earlier that day the amber per-page disclaimer and the `est.` prefix went ("no
+  need to keep repeating"). Either card comes back as one component when he asks.
 
 Calibration stays where the night of 10–11 Sep left it: physics A/C/E fail the ±2 gate
 on single runs (A +3, C +3, E +8; per-part agreement 28/23/23 of 33), and one re-run per
@@ -361,3 +379,47 @@ Cambridge 5054 2014 P2, the ECR scripts (1 = grade E, 2 = C, 3 = A). A blind she
 Unlike chemistry, the teacher and the Cambridge examiner disagree with each other more than our marker disagrees with either. On the weak script he gives the keyword marks the way our marker does (10 against the examiner's 5, ours 12; he sides with our marker on 8 of the 13 parts); on working carried forward he is stricter than both (the four parts on scripts 2–3: examiner 13, ours 9, teacher 2). His 1/8 on script 3's 10(c) is below anything the answer supports ((i) and (ii) are right, and (iii)2 is a correct carry-forward) and is worth asking him about.
 
 Where the two humans agree against us (three parts, 4 marks, all ours too kind), that is the physics fix: no mark for one right word inside a wrong answer (9(f) "stopwatch", 10(b)(i) "black emits more heat"), and no end-point marks on a graph of the wrong shape (11(c) script 2). On script 1's 10(c) he gives the (iii) method mark for 9000 × 8 = 72 000 J that our marker gave and the examiner withheld, and nothing for (ii) "boils vigorously causing harm to the surrounding" — too vague to say what the disadvantage is. The truth for the ±2 gate stays the examiner's (the two truths never mix, SPEC-MARKING-CALIBRATION); a teacher's marks are evidence of convention, not a second truth.
+
+### The slots were marking science on the maths rules — found and fixed (24 Sep 2026)
+
+After the teacher-read rules shipped (bot `32a86640`), the six bench re-marks did not move
+(physics 60/34/28 against the examiner's 64/37/20). The cause was not the rules: the Mac/Fly
+plan slots fetch their prompts from the bot's `external-prompts` phase, which served the
+**bare maths prompts with no subject block**, while the run was still stamped with the
+science `rules_version`. Every science paper a slot had marked until then — both teacher
+comparisons above included — was read with no physics/chemistry rules; the chemistry
+scheme was carrying the chemistry numbers. Fixed in bot `4d1cd35c`: `lib/external-prompts.js`
+wraps both prompts in `withSubjectRules` as the API lane does, the runbook sends
+`run.subject` and releases when the returned subject differs; maths is byte-identical.
+
+The same six papers re-marked on the fixed slots:
+
+| Script | Truth | Maths rules (before) | Science rules (after) |
+|---|---|---|---|
+| Physics A | 64 | 60 | 60 (10(c) now 6/8 = Adrian's adjudication; 9(f) still +2) |
+| Physics C | 37 | 34 | 39 — gate PASS |
+| Physics E | 20 | 28 | 21 — gate PASS |
+| Chemistry A (seeded) | 32 | 32 | 32 — gate PASS |
+| Chemistry C (seeded) | 25 | 28 | 27 — gate PASS |
+| Chemistry E (seeded) | 10 | 13 | 10 — gate PASS |
+
+Script 3 (grade A) 10(c) settled at 6/8 — (iii)1 = 1/3, (iii)2 = 2/2 carried forward
+(Adrian, 24 Sep 2026). Caveat: the teacher-read rules were written from these same
+parts, so the bench improving is weaker evidence than fresh scripts would be.
+
+## The chemistry study loop — built 24 Sep 2026
+
+Adrian: "Build all three chemistry study ideas". What shipped (the detail lives in
+`docs/MARKING.md` §The Science tab › The chemistry study loop):
+
+1. **The tenth error kind `keywords` (science only)** + `scheme_words {scheme, yours}`
+   on the part → "Scheme says / You wrote" on the paper page. The rule lives in the
+   brains' shared `SCIENCE_COMMON` block and is gated only by the existing science gate
+   + precedent checks — the bench of `SPEC-SCIENCE-BENCH.md` is not built, so a drift in
+   how often the marker reaches for `keywords` would show first on the teacher's-mark
+   rows, not on a bench.
+2. **`/app/science/qa`** — the SEAB 6092 qualitative-analysis table as flashcards, the
+   door on the Chemistry tab of Science Home. **Admin only** since 25 Sep 2026
+   (`QA_FLASHCARDS_OPEN_TO_STUDENTS`, Adrian: "gate to admin only first").
+3. **Science lost marks filed in My Notebook** under four reasons (concept gap · careless
+   slip · wrong keywords · incomplete).

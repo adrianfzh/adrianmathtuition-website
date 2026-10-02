@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import Anthropic from '@anthropic-ai/sdk';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { anthropicText } from '@/lib/claude-models';
 
 // ── Embedded font (loaded once at module init, injected into every SVG) ───────
 
@@ -702,7 +703,7 @@ export async function callSonnetMarking(
 
   // Attempt 1: standard prompt
   const response1 = await makeCall("Mark this student's handwritten working.");
-  const text1 = response1.content[0].type === 'text' ? response1.content[0].text : '';
+  const text1 = anthropicText(response1); // Opus 5.5 always thinks — content[0] is a thinking block
   try {
     return extractJsonFromSonnetResponse(text1) as MarkingOutput;
   } catch {
@@ -713,7 +714,7 @@ export async function callSonnetMarking(
   const response2 = await makeCall(
     'Your previous response was not valid JSON. Please respond ONLY with the JSON object matching the schema — no prose, no markdown fences, just raw JSON starting with { and ending with }.'
   );
-  const text2 = response2.content[0].type === 'text' ? response2.content[0].text : '';
+  const text2 = anthropicText(response2);
   try {
     return extractJsonFromSonnetResponse(text2) as MarkingOutput;
   } catch {

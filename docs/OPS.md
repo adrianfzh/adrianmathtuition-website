@@ -31,6 +31,7 @@ Writers:
   through the same `mark-triage {release, auto:true, sweep:true}` door, until it
   succeeds; rule refusals and holds are left to the desk; the bot stamps every
   outcome on `result_json.auto_release` — 9 Sep 2026, Sophie's 1 Sep hand-in),
+  `daily-queue` (**midnight SGT**, `0 16 * * *` UTC — the waiting list's clock, SPEC-PRACTICE-PHOTO §14, 24 Sep 2026: every science hand-in whose `result_json.queued_for` is today or earlier and that is neither released to the 🌙 queue nor removed goes into the bot's marking queue and is stamped `queue_released_at`; photo-sheet `sheet_jobs` carry `scheduled_for` and the sheet worker's own peek (`dueFilter()`) picks them up when their day comes, so the cron has nothing to do for them; stamps even on an empty night — a missing stamp means queued papers are sitting past their day; `job-health` allows 36 h),
   `practice-again-reminders` (daily 9am SGT — **PAUSED since 17 Sep 2026**, `REMINDERS_PAUSED` in `lib/practice-again-reminders.ts`: the cron stamps a 'paused' line and sends nothing. When on, nudges students whose COMPULSORY
   Practice Again sheet is still not handed in: `portal_assignments.required_at`
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
@@ -69,8 +70,11 @@ Writers:
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
   every run including quiet ones (`queue empty`) and `ok=false` when it exits on
   a weak model or a failed calibration → [`FIGURES.md`](FIGURES.md) §4,
-  `pdf-extract` — the last stamps only on runs that actually claimed a file, so
-  it has no rhythm/alarm; the ops board just shows the newest extraction) — a
+  `pdf-extract` — stamps only on runs that actually claimed a row, so it has no
+  rhythm/alarm; the ops board just shows the newest extraction. **Since 25 Sep 2026
+  the Fly worker's `extract` job does the claiming** (bot `worker/fly/extract.sh`,
+  every 15 min, POSTs the stamp through `/api/job-log`) →
+  [`EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md) §4) — a
   direct `insert into job_runs …` through the Supabase access each skill
   already has. **`plan-marking` is stamped by its launchd WRAPPER, not the
   session** (bot `worker/plan-marking/run.sh`, 2 Sep 2026): ok=true per paper
@@ -133,9 +137,13 @@ topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
 `find-review` health-check probe). Install on the Mac with
 `bash scripts/find-review/install.sh`.
 
-**`figure-fitness`** (nightly 3:10am SGT — the ingestion figure-fitness catch-up,
-[`FIGURES.md`](FIGURES.md) §4) takes the nightly shape every plan-billed Mac
-worker uses: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`
+**`twin-batch`** (the Fly worker's 👯 twins lane since 30 Sep 2026, SPEC-TWINS §10 phase 1 — bot `worker/fly/twins.sh`, a `jobs.sh` lane every 15 min at nice 15: by day only when the marking queue is empty, always 00–06 SGT; `TWINS_LANE=0` parks it, `TWINS_LEVEL`/`TWINS_PER_RUN` tune it). One run = up to 3 untwinned school questions → our own twins with `verified=false`, each role its own `claude -p` on a pooled login (author Opus → gates → Sonnet blind → Opus moderate → figure → publish); run dirs `/data/twins/<source-id>/` with `published` / `parked` markers; Adrian verifies on `/admin/generated` (✓ Verify). Stamps on every run that looked at the queue, empty or not; `meta` carries `published` / `parked_*` / `failed`. Rhythm `'twin-batch': { kind: 'interval', hours: 30 }`. **Three lanes since 30 Sep 2026** (`TWINS_LANES=3` in the bot's `fly.worker.toml`; `twins2` / `twins3` in `jobs.sh`, each 5 min behind the one before, logs `twins2.log` / `twins3.log`): lane two works the A Math tree (`TWINS_LEVEL_2`), lane three lane one's level; a source is claimed by an atomic `mkdir` under `/tmp/adrianmath-twins-locks`, the marking queue is asked again between sources, a run waits under 1.5 GB free, and twin sessions do not count against `MAX_SESSIONS` (the `[twins lane]` prompt prefix, like extraction's exclusion).
+
+**👯 Twins — the flip** (the board's own section, SPEC-TWINS §6 phase 2, 30 Sep 2026): one row per (tree level, topic) from the `twin_readiness` view — verified twins, pending twins, school rows drawn in 90 days, school rows filed — and a **Flip** button enabled only when verified twins ≥ drawn and ≥ 1. Flip = `POST /api/admin/serving-policy {level, topic, schoolRows:false}` → a `serving_policy` row; `serving_school_rows(level, topic)` is read inside the four serving RPCs (`practice_next`, `practice_pool`, `practice_candidates`, `kiosk_pool`), so a flipped topic serves only `AdrianMath` / `AI Generated` rows from the next call (`lib/serving-policy.ts flipReady`, `practiceEligibility {schoolRowsRetired}` mirrors it). The route 409s below the threshold; nothing flips itself; undo puts the school rows back. Health-check `serving-policy` probes the 401.
+
+**`figure-fitness`** (nightly 3:10am SGT on the Fly worker since 25 Sep 2026 — the ingestion figure-fitness catch-up,
+[`FIGURES.md`](FIGURES.md) §4) keeps the nightly shape it had as a Mac
+task: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`
 — the same 36h grace as `qb-topup`, so one skipped night (a sleeping laptop) is
 quiet and a genuinely dead task ambers on the board and alarms on the next
 6-hourly check. It stamps on quiet nights too, so a dead task and an empty queue
@@ -236,6 +244,20 @@ tick writing one Practice-tab photo question on the plan, SPEC-PRACTICE-PHOTO §
 it stamps on success and on a plan limit, never on a rhythm) and to any future
 queue-driven worker: rhythms are for jobs that MUST run on a clock.
 
+**Since 25 Sep 2026 no Mac runs a plan-billed worker.** The Fly worker
+`adrianmath-worker` holds every lane — 9 marking slots, 9 sheet slots
+(`SHEET_SLOTS_ON='1'`), `worksheets`, `extract`, `find-review`, `bot-review` — and
+each job picks the login with the least 7-day usage before it starts (bot
+`scripts/claude-pick.sh`; the meters are the ⏻ slot-accounts card on
+`/admin/mark-paper`). The Air's LaunchAgents were unloaded that morning; the
+Pro's `com.adrianmath.planmarking{,2,3}`, `sheetworker` and `worksheetworker`
+were booted out and disabled by Adrian that evening (`launchctl list | grep
+com.adrianmath` → nothing). The Macs now carry only Adrian's own sessions and
+the Claude scheduled tasks in the table below. A `plan-marking` / `sheet-worker`
+stamp whose `meta.slot` is a Mac after that date means an `install.sh` was
+re-run — a Mac slot never uses the picker (no `pool-here`), so it would spend
+that Mac's keychain login again.
+
 ## Claude Code scheduled tasks — per-Mac registry
 
 Claude Code desktop scheduled tasks are **machine-local**: stored under
@@ -256,23 +278,20 @@ Rules:
 
 | Task | Schedule | Mac | Status (2026-08-27) | What it does |
 |---|---|---|---|---|
-| `topup-bank-nightly` | 3:30am daily | A (MacBook Pro) | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`) |
-| `file-subgroups-nightly` | 4:15am daily | A (MacBook Pro) | ✅ live | sub-group filing backfill after the topup (stamps `file-subgroups`) |
-| `s1s2-math-extraction-worker` | every 20 min | A (MacBook Pro) | ⏸ retired | superseded by `pdf-extraction-worker` (below) — delete when convenient |
-| `pdf-extraction-worker` | every 20 min | A (MacBook Pro) | ✅ live (2026-08-28) | drains `~/Desktop/AdrianMath/papers/` ONE file per run under the live law + CLAUDE.md overrides (GCE priority); stamps `pdf-extract` only on claiming runs |
-| `pdf-extraction-worker-b` | :07/:27/:47 hourly | A (MacBook Pro) | ✅ live (2026-08-28) | second Mac A worker, staggered against the first; RUNNER prefix `PDF-Pipeline-MacA-SchedB-<HHMM>`; otherwise identical |
-| `pdf-extraction-worker-c` | :13/:33/:53 hourly | A (MacBook Pro) | ✅ live (2026-08-28) | third Mac A worker; RUNNER prefix `PDF-Pipeline-MacA-SchedC-<HHMM>`; otherwise identical |
-| `pdf-extraction-worker` (clone) | every 20 min | *(new Mac, Adrian setting up)* | 🔜 planned (2026-08-28) | same task on a second machine — recipe: copy this repo's task SKILL.md, change RUNNER prefix to `PDF-Pipeline-<MacName>-Sched-`. **Both Macs share the SAME iCloud-synced `~/Desktop/AdrianMath`** (confirmed by Adrian 2026-08-28) — do NOT split `papers/` into slices. Caveats of the shared folder: `mv -n` claims are atomic only within one filesystem, so cross-machine races are possible during sync lag — the claim files + the both-legs claim-confirm test (law v2026-08-28) + re-running the dedup guard immediately before the first INSERT are the mitigations (a lost race wastes paid extraction but can't corrupt the bank). iCloud may also evict/lag files on the second Mac — a worker that sees an empty or partial `papers/` should just exit (the next 20-min run retries); `brctl download <file>` force-hydrates. **One machine per append-only file** (8 Sep 2026): both Macs appending to the shared `papers/processing_log.txt` lost EVERY line this MacBook Pro's cc1–cc4 workers wrote between 7 Sep 21:56 and 8 Sep 03:30 SGT (32 papers' DONE lines + their stale-claim notes, ~100 lines) when iCloud resolved the two-writer conflict in favour of the other Mac's copy — the other Mac's lines in the same window survived, the bank and `processed/` were untouched, and no local process wrote the file at the wipe moment (03:30–03:32). The last local event before it was a worker REWRITING the whole 2.5 MB file in place at 03:01 to fix a typo in its own line — never do that on a shared file (a big in-place rewrite is exactly what makes iCloud re-evaluate the conflict); typo fixes are a `CORRECTION` line. Restored verbatim from the runs' transcripts (`LOG-RESTORE` block + addendum in the log). Until the law moves the log to Supabase (or per-host files), a lost run is recoverable: its append command sits in `~/.claude/projects/<cwd-dir>/<session>.jsonl` as a Bash `tool_use` |
-| `question-mine-daily` | Mon & Thu 7:00am | A (MacBook Pro) | ✅ live (2026-08-28; daily → twice-weekly same day, Adrian: "daily is too frequent") | student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
+| `topup-bank-nightly` | 3:30am daily | B (the MacBook Air since 10 Sep 2026) | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`) |
+| `file-subgroups` + `file-subgroups-science` | maths 04:15 + 16:15 · science 10:15 + 22:15 | the Fly worker (`worker/fly/jobs.sh job_file_subgroups`, since 2 Oct 2026) | ✅ live once deployed | 🗂 the sub-skill filer: 300 topic-tagged questions a run filed under ONE sub-skill each (`question_subgroups`, source `cc_backfill`), Opus 5.5 at medium effort (measured: effort makes no difference to the labels), two-reader rule under 0.75, never the API. The Mac task that ran it had not stamped since 9 Sep 2026 — three weeks of extraction went unfiled (maths 2,547, science 7,100 on 2 Oct). Science = the science project, trees PHY / CHEM / BIO, a Combined Science question filed under its subject's pure tree. The wrapper stamps the backlog before and after. N(A) / N(T) / JC H1 maths and lower-sec science have no tree and are never filed. |
+| `extract` (Fly worker) | every 15 min, the marking queue empty or 00:00–06:59 SGT | **Fly `adrianmath-worker`** (bot `worker/fly/extract.sh`, since 25 Sep 2026) | ✅ live | drains the `paper_library` queue ONE row per run under the live law + the prompt's box overrides; runner `PDF-Pipeline-Fly-<ddHHMM>`; stamps `pdf-extract` on claiming runs → [`EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md) §4. The Mac rows this replaced (`pdf-extraction-worker`, `-b`, `-c`, `s1s2-…`) were deleted from the Pro; `inbox-extract` + `exam-extraction-cc1..3` below are redundant since the same day |
+| `question-mine-daily` | Mon & Thu 7:00am | B (the MacBook Air since 10 Sep 2026) | ✅ live (2026-08-28; daily → twice-weekly same day, Adrian: "daily is too frequent") | student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
-| `exam-extraction-cc1..6` | `*/5 * * * *` (was `*/30`; cadence pre-set 2026-09-02) | **this MacBook Pro** (registered on Adrian's main account — the machine the rows above call "A") | cc1–cc3 ✅ enabled (`*/5`); cc4–cc6 ⏸ retired 8 Sep 2026 (a 4th worker never gets a slot — see the cap note) | the main paper→bank producer (40 of ~57 DONE on 2026-09-02); thin shims, law = Supabase `extraction_worker_prompt` id `exam-extraction`. The runner never double-starts a task and launches a missed fire the moment a run ends, so `*/5` ≈ continuous. **The app dispatches at most 3 scheduled-task runs at once** (`main.log` `[CCDScheduledTasks] … global_limit (active=3, limit=3)`, `per_task_limit (limit=1)`; undocumented, no setting) and re-checks due tasks every minute in registry order cc1→cc2→cc3→cc4, so a finished `*/5` task is already overdue and refills its own slot before cc4 is reached: a 4th enabled worker runs only on its enable-run (cc4: 1 run in 7 h on 8 Sep, 383 `global_limit` skips). **Per-run cost is the lever (law v2026-09-08-onecall, 8 Sep 2026):** content goes to the bank through `scripts/bank_insert.py` (one call, `bank_insert_paper`) and the V gates through `bank_insert.py verify` (one call, `verify_paper`) instead of ~22 `execute_sql` calls with base64 DO blocks; CLAUDE.md read once (finished batches in `CLAUDE-ARCHIVE.md`). Measured before: 33 min / 56 API calls / 135k output tokens (75% reasoning) / 13.8M cached tokens per paper — the reasoning share is the part that stays. Budget note (measured 2026-09-02): 6 workers ≈ 300M context tokens/h and hit the 5-hour session limit 3× in a morning; a run that hits it PARKS with its claim held until the reset (85-min and 4-hour parks measured). 3 workers at `*/5` ≈ 175M/h is the no-park size — drop cc4–cc6 if limit hits recur. Does NOT stamp `job_runs` (the law has no stamp step) |
-| *(extraction fleet)* | various | B | ❓ list from Mac B | the `pdf-pipeline-cc-*` shims (RUNNER `PDF-Pipeline-CC`) — also seen running on the main account 2026-09-02 02:12–08:41; keep only ONE family enabled per account |
-| `figure-fitness` | `10 3 * * *` (3:10am SGT daily; the app adds ~6 min jitter) | **this MacBook Pro**, the account whose registry holds `solution-image-pass` + `pdf-pipeline-cc-*` | ✅ live (2026-09-03) | the ingestion figure-fitness catch-up: judges question figures ingested in the last 7 days that carry no `fitness:` stamp, holds failures for Adrian's `/admin/figures-bank?kind=fitness` lane, may un-serve only `wrong-figure`/`answer-leak`. **Rubric is NOT in the SKILL.md** — it is the `## Figure fitness` section of the Supabase law row `extraction_worker_prompt` id `exam-extraction`, shared with every extraction worker, so one edit moves both. Ceiling 120 figures/run, strong model only, stamps `figure-fitness` → [`FIGURES.md`](FIGURES.md) §4 |
+| `exam-extraction-cc1..6` | ⏸ **superseded 25 Sep 2026** by the Fly `extract` job above (cc4–6 retired 8 Sep; cc1–3 + the Pro's `inbox-extract` task are redundant now — claims are atomic, so leaving them on is harmless; Adrian removes them) | the MacBook Pro | ⏸ redundant | was: the queue-only shims under the fleet law, `PDF-Pipeline-CC<n>` runners |
+| *(extraction fleet)* | — | B (the Air) | ⏸ redundant since 25 Sep 2026 | the `pdf-pipeline-cc-*` shims read the same queue; the Fly lane replaces them |
+| `figure-fitness` | 03:10 SGT daily from the Fly worker's `jobs.sh` timed table | **the Fly worker `adrianmath-worker`** (bot `worker/fly/figfit/figfit.sh` under a pooled login, `with_pool_login`; state `/data/home/.adrianmath_figfit`, runs pruned at 14 days) — **since 25 Sep 2026**; it was a paused Claude scheduled task on the MacBook Pro whose last real run was 9 Sep | ✅ live (2026-09-03; on Fly 25 Sep 2026) | the ingestion figure-fitness catch-up: judges question figures ingested in the last 7 days (Lane A) or whose figure changed since their last stamp (Lane B, the two placement logs' `applied_at`) that carry no `fitness:` stamp, holds failures for Adrian's `/admin/figures-bank?kind=fitness` lane, may un-serve only `wrong-figure`/`answer-leak`. **Rubric is NOT in the scripts** — `law.mjs` cuts the `## Figure fitness` section of the Supabase law row `extraction_worker_prompt` id `exam-extraction` at every run, shared with every extraction worker, so one edit moves both. Ceiling 120 figures/run, one `claude -p` judge (Fable), 12-tile calibration with 4 planted swaps or nothing is written; stamps `figure-fitness` every night incl. quiet → [`FIGURES.md`](FIGURES.md) §4 |
 
 <!-- preview-build tick 2026-08-29a — dev-only nudge so Vercel builds a preview when dev == main (same-commit builds get skipped) -->
 
 - `auto-release-report` — Mondays 8am SGT (`0 0 * * 1` UTC): the auto-release number — hand-ins released without Adrian in the last 7 days, how many he changed afterwards, and the auto-pause rule (≥5 released and >10 % changed → `auto_release_paused` set, Telegram). Route `/api/cron/auto-release-report`, pure `lib/auto-release-report.ts`.
 - `consistency-remark` — **Sundays 10pm SGT** (`0 14 * * 0` UTC): 📏 the weekly marking-consistency measure (17 Sep 2026, Adrian: *"we need consistency in marking … how can we measure the effectiveness of all these changes?"*). Every active paper in `consistency_set` is asked to be read again in **SHADOW** — the bot queues it on the Mac lane, a slot reads it with the same prompt and grounding as a whole re-mark, and the reading is filed in `paper_marking_runs.result_json.shadow_runs[]` beside the paper's real marking. **Nothing is delivered**: no student, no parent and no desk lane can see a shadow (bot `lib/shadow-run.js`, proved by `test/shadow-invariant.test.js`). Monday's `auto-release-report` then prints the 📏 Consistency line from `lib/shadow-diff.ts`. Route `/api/cron/consistency-remark`; the set is `lib/consistency-set.ts` + `/api/admin/consistency-set`; the numbers are `/api/admin/consistency`. **It costs plan time, never money** — about 8 × 16 min of Mac plan on a Sunday night, and there is deliberately no API-lane path, so a shadow that finds no slot waits for next Sunday. 22:00 is after the evening's hand-ins have been marked and released, so a measurement never sits in front of a student.
+- `shadow-read-report` — **Thursdays 9am SGT** (`0 1 * * 4` UTC): 👻 the cheaper-reader shadow read back (1 Oct 2026, Adrian: "wire the three"). Every delivered maths paper the bot shadowed (`result_json.shadow_read`, bot `lib/shadow-read.js`, `MARKING_SHADOW_ARMS=claude-sonnet-5-5+ref:50`) rolled up per arm and per level against the noise floor from `consistency-remark`'s re-reads; ONE Telegram message to the marking topic with the verdict per level (≥ 10 papers and agreement at or above the marker's own) and the first disagreeing parts with their `/admin/mark-paper?run=` doors; silent while nothing is shadowed, stamped either way. Monday's `auto-release-report` prints the same measure as one 👻 line. The bot pings the topic once more when an arm's cap is reached. Pure `lib/shadow-read-report.ts` (the twin of the bot's summariser). Nothing flips itself.
 
 ## Plan-marking attribution — which Mac, and which Claude account (9 Sep 2026)
 
@@ -298,6 +317,11 @@ Mac, so there is one account per machine and the hostname identifies it:
 |---|---|---|
 | `Adrians-MacBook-Pro` (Mac B) | `adrianmathtuition@gmail.com` | Max |
 
+**25 Sep 2026: the table above is history** — no Mac slot is loaded (see "Since
+25 Sep 2026" under on-demand workers); every claim now comes from the Fly
+worker (its `hostname -s` is the machine id `286d921a104298`), the account
+chosen per job by the picker and written into the same `BY` tag.
+
 Check the current mapping with `claude auth status` on the machine in question
 (it prints `email` and `subscriptionType`). Update this table if a slot is ever
 pointed at an `oauth_token` file instead of the keychain — that is the one way a
@@ -314,3 +338,31 @@ workers.** A desktop-app session runs as whoever is signed into the app, which m
 differ from the CLI's keychain login; when they differ the two draw on separate
 plan quotas, and a heavy interactive session does not eat the markers' 5-hour
 window. Do not assume they share a plan without checking both.
+
+## Switches — one page, `/admin/switches` (2 Oct 2026)
+
+Adrian: *"can you put toggles for pdf extraction, twins extraction and whatever other worker
+jobs there are together with the toggles for accounts … have a page just for toggles?"*
+
+| Switch | Stored in | Read by | Off means |
+|---|---|---|---|
+| 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
+| Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
+| Worker jobs ×14 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+
+- **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
+  share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `subject-retag`,
+  `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `worksheets`,
+  `proposals`, `flagjudge`. `prune` (disk hygiene) is never switchable.
+- **A switch stops new work only.** A run in flight finishes. A timed job switched back on runs
+  its latest missed slot once (the scheduler's stamp rule).
+- **Fail-safe direction.** No entry = on. The route answers a failed read with 502 and NO `off`
+  list, and the worker keeps the last list it read, so a job Adrian parked never restarts because
+  Airtable blinked. A freshly booted worker that cannot reach the site runs everything.
+- **Not switchable here, on purpose:** marking seats and sheet slots (a stray tap must never
+  park a student's paper), auto-release and the Science tab (settled, their cards were removed
+  1 Oct 2026), and every `*_OPEN_TO_STUDENTS` constant (code, `lib/portal-beta.ts`).
+- **A job that is OFF still goes amber on the board above** once its rhythm lapses — the amber
+  is true (it is not running); the Switches page says why.
+- Adding a worker job: a line in `WORKER_JOBS` + `job_on <key>` at its start site in the bot's
+  `worker/fly/jobs.sh`. Each flip sends one line to the ops topic.

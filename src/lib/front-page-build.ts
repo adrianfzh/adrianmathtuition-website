@@ -7,6 +7,7 @@ import { analyse, worstQuestions, type LostPart } from '@/lib/paper-analysis';
 import { readDiagnosis, themesFromDiagnosis } from '@/lib/sheet-diagnosis';
 import { errorKindTotals } from '@/lib/error-kinds';
 import { coverRemark } from '@/lib/cover-remark';
+import { isScienceSubject } from '@/lib/portal-subjects';
 import { levelFromPaperName } from '@/lib/sheet-sections';
 import { renderFrontPagePng } from '@/lib/render-front-page';
 import { isUngroundedTotal } from '@/lib/paper-total-text';
@@ -37,7 +38,7 @@ export async function buildFrontPage(
 ): Promise<Buffer | null> {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('paper_marking_runs')
-    .select('id, student_id, student_name, paper_name, created_at, result_json').eq('id', runId).maybeSingle();
+    .select('id, student_id, student_name, paper_name, paper_subject, created_at, result_json').eq('id', runId).maybeSingle();
   if (!run) return null;
 
   const parts = lostPartsFromRun(run as RunRow);
@@ -73,7 +74,9 @@ export async function buildFrontPage(
       const same = (earlier ?? []).find(r => levelFromPaperName(r.paper_name) === level && Number(r.total_max) > 0 && !/practice again/i.test(String(r.paper_name || '')));
       if (same) previous = { awarded: Number(same.total_awarded) || 0, max: Number(same.total_max) };
     }
-    remark = coverRemark({ awarded: meta.awarded, max: meta.max, kinds: errorKinds, previous });
+    // A science run (25 Sep 2026): its own lines — concept gaps, no practice sheet to do.
+    const family = isScienceSubject((run as { paper_subject?: string | null }).paper_subject) ? 'science' : 'math';
+    remark = coverRemark({ awarded: meta.awarded, max: meta.max, kinds: errorKinds, previous, family });
   } catch (e) { console.warn('[front-page] remark skipped:', (e as Error).message); }
 
   // A re-marked paper (10 Sep 2026): the run keeps previous_results from the
@@ -101,6 +104,8 @@ export async function buildFrontPage(
     remark,
     studentName: meta.studentName || run.student_name,
     paperName: meta.paperName || run.paper_name,
+    // The subject frame (25 Sep 2026): the run's own tag, never the caller's guess.
+    subject: (run as { paper_subject?: string | null }).paper_subject ?? null,
     markedOn: null,
     awarded: meta.awarded, max: meta.max,
     papersRead: 1,

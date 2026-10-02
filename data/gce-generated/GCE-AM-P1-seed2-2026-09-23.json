@@ -1921,57 +1921,103 @@
    "target": 10,
    "accepted": true,
    "question": {
-    "stem": "Solutions to this question by accurate drawing will not be accepted.\nThe points $A(10, 2)$ and $B(0, 7)$ are two of the vertices of a triangle $ABC$. The line through $A$ perpendicular to $BC$ and the line through $B$ perpendicular to $AC$ intersect at the point $H(1, 5)$.",
+    "stem": "Solutions to this question by accurate drawing will not be accepted.\nThe points $A(-4,\\,4)$ and $B(4,\\,-2)$ are two vertices of triangle $ABC$, and $C$ lies on the line $y = 3x - 4$.",
     "parts": [
      {
       "label": "(a)",
-      "text": "Find the coordinates of $C$.",
+      "text": "Find the coordinates of each of the possible positions of $C$ for which triangle $ABC$ is right-angled.",
       "marks": 6,
-      "answer": "$C(-4, -5)$"
+      "answer": "$(8,\\,20)$ (right angle at $A$), $(-2,\\,-10)$ (right angle at $B$), $(0,\\,-4)$ and $(3,\\,5)$ (right angle at $C$)"
      },
      {
       "label": "(b)",
-      "text": "The line through $B$ perpendicular to $HC$ and the line through $C$ perpendicular to $HB$ meet at the point $K$. Without finding the equation of either line, find the coordinates of $K$. Explain your answer.",
-      "marks": 4,
-      "answer": "$K(10, 2)$, i.e. $K$ is the point $A$. Gradient of $HC = 2$ and gradient of $AB = -\\frac{1}{2}$, so $AB$ is perpendicular to $HC$ and the line through $B$ perpendicular to $HC$ is the line $BA$; $AC$ is perpendicular to $HB$ (given), so the line through $C$ perpendicular to $HB$ is the line $CA$; the lines $BA$ and $CA$ meet only at $A$."
+      "text": "Find the equation of the circle that passes through $A$, $B$ and both positions of $C$ for which angle $ACB = 90^\\circ$. Explain your answer.",
+      "marks": 2,
+      "answer": "Angle $ACB = 90^\\circ$ means $C$ lies on the circle with diameter $AB$ (angle in a semicircle); $x^2 + (y - 1)^2 = 25$, i.e. $x^2 + y^2 - 2y - 24 = 0$"
+     },
+     {
+      "label": "(c)",
+      "text": "The point $X$ moves on the circle in part (b). Find the greatest possible area of triangle $ABX$.",
+      "marks": 2,
+      "answer": "$25$ units$^2$"
      }
     ],
-    "answer": "(a) $C(-4, -5)$; (b) $K(10, 2)$, the point $A$ — since $AB$ is perpendicular to $HC$ (gradients $-\\frac{1}{2}$ and $2$) and $AC$ is perpendicular to $HB$, the two lines are $BA$ and $CA$, which meet at $A$.",
+    "answer": "(a) $(8,\\,20)$, $(-2,\\,-10)$, $(0,\\,-4)$, $(3,\\,5)$; (b) the circle with diameter $AB$ (angle in a semicircle), $x^2 + (y - 1)^2 = 25$; (c) $25$ units$^2$",
     "total_marks": 10,
     "topics": [
-     "Coordinate Geometry"
+     "Coordinate Geometry",
+     "Circles"
     ],
     "skills": [
-     "recover an unknown vertex of a triangle from the point where two of its perpendiculars meet: each perpendicular fixes the direction of a side through a known vertex, and the vertex is where the two sides cross",
-     "decide, with no target printed and without forming either line's equation, to test by gradients whether AB is perpendicular to HC",
-     "recognise the two perpendiculars as the sides BA (AB perpendicular to HC, shown) and CA (AC perpendicular to HB, given) and so name their meeting point K as the vertex A, without solving"
+     "deciding, with nothing signposted, that the right angle of a triangle with a vertex on a given line can sit at any of the three vertices, and testing each case by perpendicular gradients or Pythagoras",
+     "recognising the right-angle-at-C positions as points of the circle on AB as diameter (converse of the angle in a semicircle) and writing its equation from the midpoint and half of AB",
+     "greatest area of a triangle on a fixed chord with its third vertex on a circle: the height is at most the radius when the chord is a diameter"
     ],
     "needs_figure": false,
     "figure_description": "",
-    "solution": "(a) The line through $A$ perpendicular to $BC$ passes through $H$, so $AH$ is perpendicular to $BC$. Likewise the line through $B$ perpendicular to $AC$ passes through $H$, so $BH$ is perpendicular to $AC$.\nGradient of $AH = \\frac{5 - 2}{1 - 10} = -\\frac{1}{3}$ and gradient of $BH = \\frac{5 - 7}{1 - 0} = -2$.   [M1 either gradient]\nSo gradient of $BC = 3$ and gradient of $AC = \\frac{1}{2}$ ($m_1 m_2 = -1$).   [M1 both perpendicular gradients]\n$BC$ passes through $B(0, 7)$: $y = 3x + 7$.   [M1]\n$AC$ passes through $A(10, 2)$: $y - 2 = \\frac{1}{2}(x - 10)$, i.e. $y = \\frac{1}{2}x - 3$.   [M1]\n$C$ lies on both lines: $3x + 7 = \\frac{1}{2}x - 3 \\Rightarrow \\frac{5}{2}x = -10 \\Rightarrow x = -4$, $y = 3(-4) + 7 = -5$.   [M1]\nCheck on $AC$: $\\frac{1}{2}(-4) - 3 = -5$.\n$C(-4, -5)$.   [A1]\n(Trap: pairing the wrong lines, e.g. taking $AH$ perpendicular to $AC$, or using the gradient of $AH$ itself for $BC$.)\n\n(b) The candidate must first decide what to check: whether $AB$ is perpendicular to $HC$.\nGradient of $HC = \\frac{5 - (-5)}{1 - (-4)} = 2$ and gradient of $AB = \\frac{7 - 2}{0 - 10} = -\\frac{1}{2}$; $2 \\times \\left(-\\frac{1}{2}\\right) = -1$, so $AB$ is perpendicular to $HC$.   [M1]\nThe line through $B$ perpendicular to $HC$ is therefore the line $BA$ (there is only one line through $B$ perpendicular to $HC$, and $BA$ is such a line).   [B1]\n$AC$ is perpendicular to $HB$ (given in the stem: the line through $B$ perpendicular to $AC$ passes through $H$), so the line through $C$ perpendicular to $HB$ is the line $CA$.   [B1]\nThe lines $BA$ and $CA$ are distinct (gradients $-\\frac{1}{2}$ and $\\frac{1}{2}$) and meet only at $A$, so $K$ is $A$: $K(10, 2)$.   [A1]\nMarking notes: a candidate who finds and solves the equations of the two lines earns at most the M1 (the question forbids that route). $K(10, 2)$ (or \"$K$ is $A$\") stated with no working, or supported only by an assertion such as \"by symmetry\" or \"$A$ is where the perpendiculars of triangle $HBC$ meet\" without the gradient check that $AB$ is perpendicular to $HC$, earns 1 mark only. The second B1 must cite that $AC$ is perpendicular to $HB$ from the stem; the A1 needs both lines identified as $BA$ and $CA$ and $K$ named as $A$. (In triangle $HBC$ the point $A$ plays the part that $H$ plays in triangle $ABC$.)",
-    "syllabus_check": "4049 coordinate geometry only: gradient of a line through two points, the condition $m_1 m_2 = -1$ for perpendicular lines, the equation of a straight line through a point, and the intersection of two lines by simultaneous linear equations. No named triangle centre or concurrency theorem is assumed: in (b) the perpendicularity of $AB$ and $HC$ is established by gradients and the rest follows from the given perpendicular; the question forbids finding either line's equation, so the reasoning route is required. Triangle is acute and scalene ($AB^2 = 125$, $BC^2 = 160$, $CA^2 = 245$, $125 + 160 > 245$), so $H$ lies inside it; every line has a finite non-zero gradient. (a) [6] is an answer with no intermediate result printed.",
-    "originality_note": "New situation: the triangle is recovered from the point where two of its perpendiculars meet — the usual construction run backwards, so the unknown is a vertex and each side's direction comes from a line it does not contain; the closing part then exchanges the roles of A and H with no printed target and forbids finding either line's equation (as GCE 2024 P2 Q7(c) forbids finding R), so the candidate must choose to check that AB is perpendicular to HC, see that the two lines are BA and CA, and conclude that K is A. Two parts only, (a) [6] and (b) [4], neither printing an intermediate result; no printed m1 m2 = -1 'show that' (Set 1 P1 Q8(c) and Set 1 P2 Q6(b) both asked one). It is not a re-skin of GCE 2016 P1 Q8 (right angle at B on a printed line), GCE 2021 P1 Q9 or GCE 2018/2019 P1 Q9 (kites), GCE 2023 P1 Q13 (perpendicular bisector with h), GCE 2025 P1 Q13 or GCE 2024 P2 Q7 (circles). It shares no situation, structure or sequence of parts with Set 1's coordinate geometry (distance inequality in k and least distance; reflection in a perpendicular bisector and least AX + XB; trapezium, right angle, area and rectangle; tangents from an external point to a circle and a square)."
+    "solution": "**(a)** Let $C = (x,\\,3x - 4)$.\n\n$AB^2 = 8^2 + 6^2 = 100$\n\n$AC^2 = (x + 4)^2 + (3x - 8)^2 = 10x^2 - 40x + 80$\n\n$BC^2 = (x - 4)^2 + (3x - 2)^2 = 10x^2 - 20x + 20$\n\nThe right angle can be at $A$, at $B$ or at $C$: all three are tried.\n\nRight angle at $A$:\n\n$AB^2 + AC^2 = BC^2$\n\n$100 + 10x^2 - 40x + 80 = 10x^2 - 20x + 20$\n\n$20x = 160$\n\n$x = 8$, so $C(8,\\,20)$\n\n(Or: gradient of $AB = -\\tfrac{3}{4}$, so gradient of $AC = \\tfrac{4}{3}$: $\\dfrac{3x - 8}{x + 4} = \\dfrac{4}{3}$.)\n\nRight angle at $B$:\n\n$AB^2 + BC^2 = AC^2$\n\n$100 + 10x^2 - 20x + 20 = 10x^2 - 40x + 80$\n\n$20x = -40$\n\n$x = -2$, so $C(-2,\\,-10)$\n\nRight angle at $C$:\n\n$AC^2 + BC^2 = AB^2$\n\n$20x^2 - 60x + 100 = 100$\n\n$20x(x - 3) = 0$\n\n$x = 0$, so $C(0,\\,-4)$\n\n$x = 3$, so $C(3,\\,5)$\n\n(Check $C(3,\\,5)$: gradient of $AC = \\tfrac{1}{7}$, gradient of $BC = -7$, product $-1$.)\n\n**Answer:** $C(8,\\,20)$, $C(-2,\\,-10)$, $C(0,\\,-4)$, $C(3,\\,5)$\n\n**(b)** Angle $ACB = 90^\\circ$, so $C$ lies on the circle with diameter $AB$ (the angle in a semicircle is a right angle, and conversely). This one circle passes through $A$, $B$ and both positions of $C$.\n\nCentre = midpoint of $AB = (0,\\,1)$\n\nRadius $= \\tfrac{1}{2}AB = 5$\n\n**Answer:** $x^2 + (y - 1)^2 = 25$\n\n(Check: $(0,\\,-4)$ gives $0 + 25 = 25$; $(3,\\,5)$ gives $9 + 16 = 25$.)\n\n**(c)** $AB = 10$ is a diameter, so the height of triangle $ABX$ from $X$ to $AB$ is at most the radius, $5$.\n\nIt equals $5$ when $X$ is at an end of the diameter perpendicular to $AB$, e.g. $X(3,\\,5)$.\n\nGreatest area $= \\tfrac{1}{2} \\times 10 \\times 5$\n\n**Answer:** $25$ units$^2$\n\n(Alternative: $X(3,\\,5)$ from (a) gives $AX = BX = \\sqrt{50}$ and area $\\tfrac{1}{2} \\times \\sqrt{50} \\times \\sqrt{50} = 25$, but the candidate must still say why this position gives the greatest height.)\n\nMark scheme: (a) M1 C in terms of x with the distances (or gradients); M1 a right-angle condition set up at each of the three vertices; A1 each of the four positions. A candidate who tries only the right angle at C scores 3 of 6. The gradient route (m1 m2 = -1) earns the same marks. (b) B1 AB is a diameter, with the reason (angle in a semicircle); B1 the equation. (c) M1 height at most the radius 5, with the reason; A1 25. X(3, 5) with no reason why it gives the greatest height: B1 only.",
+    "syllabus_check": "4049 Coordinate geometry in two dimensions: distance between two points, gradients, condition for perpendicular lines; 4049 Equation of a circle; the angle in a semicircle is a plane-geometry property the syllabus lists. Pythagoras and its converse are prerequisite O-Level knowledge. No vectors, no inequalities.",
+    "originality_note": "C is given only as a point on a line, with no parameter printed: the candidate chooses how to describe it, then must see for themselves that the right angle can sit at any of the three vertices (four positions, none signposted). The two right-angle-at-C positions are then read as points of the circle on AB as diameter, and the question ends on a greatest-area argument from the geometry of that circle, with no calculus and no inequality. Unlike Set 1 P1 Q4 there is no distance-in-a-parameter inequality and no set of values; unlike Set 1 P2 Q9 and Set 2 P2 Q9 the circle comes from a diameter, not completing the square or touching an axis; unlike Set 1 P2 Q6 and the gardens question no area is computed from coordinates. Not modelled on any 2024/25 paper question."
    },
-   "draft": null,
+   "draft": {
+    "stem": "Solutions to this question by accurate drawing will not be accepted.\nThe points $A(-4,\\,4)$ and $B(4,\\,-2)$ are two vertices of triangle $ABC$, and $C$ lies on the line $y = 3x - 4$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of each of the possible positions of $C$ for which triangle $ABC$ is right-angled.",
+      "marks": 6,
+      "answer": "$(8,\\,20)$ (right angle at $A$), $(-2,\\,-10)$ (right angle at $B$), $(0,\\,-4)$ and $(3,\\,5)$ (right angle at $C$)"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the equation of the circle that passes through $A$, $B$ and both positions of $C$ for which angle $ACB = 90^\\circ$. Explain your answer.",
+      "marks": 2,
+      "answer": "Angle $ACB = 90^\\circ$ means $C$ lies on the circle with diameter $AB$ (angle in a semicircle); $x^2 + (y - 1)^2 = 25$, i.e. $x^2 + y^2 - 2y - 24 = 0$"
+     },
+     {
+      "label": "(c)",
+      "text": "The point $X$ moves on the circle in part (b). Find the greatest possible area of triangle $ABX$.",
+      "marks": 2,
+      "answer": "$25$ units$^2$"
+     }
+    ],
+    "answer": "(a) $(8,\\,20)$, $(-2,\\,-10)$, $(0,\\,-4)$, $(3,\\,5)$; (b) the circle with diameter $AB$ (angle in a semicircle), $x^2 + (y - 1)^2 = 25$; (c) $25$ units$^2$",
+    "total_marks": 10,
+    "topics": [
+     "Coordinate Geometry",
+     "Circles"
+    ],
+    "skills": [
+     "deciding, with nothing signposted, that the right angle of a triangle with a vertex on a given line can sit at any of the three vertices, and testing each case by perpendicular gradients or Pythagoras",
+     "recognising the right-angle-at-C positions as points of the circle on AB as diameter (converse of the angle in a semicircle) and writing its equation from the midpoint and half of AB",
+     "greatest area of a triangle on a fixed chord with its third vertex on a circle: the height is at most the radius when the chord is a diameter"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "**(a)** Let $C = (x,\\,3x - 4)$.\n\n$AB^2 = 8^2 + 6^2 = 100$\n\n$AC^2 = (x + 4)^2 + (3x - 8)^2 = 10x^2 - 40x + 80$\n\n$BC^2 = (x - 4)^2 + (3x - 2)^2 = 10x^2 - 20x + 20$\n\nThe right angle can be at $A$, at $B$ or at $C$: all three are tried.\n\nRight angle at $A$:\n\n$AB^2 + AC^2 = BC^2$\n\n$100 + 10x^2 - 40x + 80 = 10x^2 - 20x + 20$\n\n$20x = 160$\n\n$x = 8$, so $C(8,\\,20)$\n\n(Or: gradient of $AB = -\\tfrac{3}{4}$, so gradient of $AC = \\tfrac{4}{3}$: $\\dfrac{3x - 8}{x + 4} = \\dfrac{4}{3}$.)\n\nRight angle at $B$:\n\n$AB^2 + BC^2 = AC^2$\n\n$100 + 10x^2 - 20x + 20 = 10x^2 - 40x + 80$\n\n$20x = -40$\n\n$x = -2$, so $C(-2,\\,-10)$\n\nRight angle at $C$:\n\n$AC^2 + BC^2 = AB^2$\n\n$20x^2 - 60x + 100 = 100$\n\n$20x(x - 3) = 0$\n\n$x = 0$, so $C(0,\\,-4)$\n\n$x = 3$, so $C(3,\\,5)$\n\n(Check $C(3,\\,5)$: gradient of $AC = \\tfrac{1}{7}$, gradient of $BC = -7$, product $-1$.)\n\n**Answer:** $C(8,\\,20)$, $C(-2,\\,-10)$, $C(0,\\,-4)$, $C(3,\\,5)$\n\n**(b)** Angle $ACB = 90^\\circ$, so $C$ lies on the circle with diameter $AB$ (the angle in a semicircle is a right angle, and conversely). This one circle passes through $A$, $B$ and both positions of $C$.\n\nCentre = midpoint of $AB = (0,\\,1)$\n\nRadius $= \\tfrac{1}{2}AB = 5$\n\n**Answer:** $x^2 + (y - 1)^2 = 25$\n\n(Check: $(0,\\,-4)$ gives $0 + 25 = 25$; $(3,\\,5)$ gives $9 + 16 = 25$.)\n\n**(c)** $AB = 10$ is a diameter, so the height of triangle $ABX$ from $X$ to $AB$ is at most the radius, $5$.\n\nIt equals $5$ when $X$ is at an end of the diameter perpendicular to $AB$, e.g. $X(3,\\,5)$.\n\nGreatest area $= \\tfrac{1}{2} \\times 10 \\times 5$\n\n**Answer:** $25$ units$^2$\n\n(Alternative: $X(3,\\,5)$ from (a) gives $AX = BX = \\sqrt{50}$ and area $\\tfrac{1}{2} \\times \\sqrt{50} \\times \\sqrt{50} = 25$, but the candidate must still say why this position gives the greatest height.)\n\nMark scheme: (a) M1 C in terms of x with the distances (or gradients); M1 a right-angle condition set up at each of the three vertices; A1 each of the four positions. A candidate who tries only the right angle at C scores 3 of 6. The gradient route (m1 m2 = -1) earns the same marks. (b) B1 AB is a diameter, with the reason (angle in a semicircle); B1 the equation. (c) M1 height at most the radius 5, with the reason; A1 25. X(3, 5) with no reason why it gives the greatest height: B1 only.",
+    "syllabus_check": "4049 Coordinate geometry in two dimensions: distance between two points, gradients, condition for perpendicular lines; 4049 Equation of a circle; the angle in a semicircle is a plane-geometry property the syllabus lists. Pythagoras and its converse are prerequisite O-Level knowledge. No vectors, no inequalities.",
+    "originality_note": "C is given only as a point on a line, with no parameter printed: the candidate chooses how to describe it, then must see for themselves that the right angle can sit at any of the three vertices (four positions, none signposted). The two right-angle-at-C positions are then read as points of the circle on AB as diameter, and the question ends on a greatest-area argument from the geometry of that circle, with no calculus and no inequality. Unlike Set 1 P1 Q4 there is no distance-in-a-parameter inequality and no set of values; unlike Set 1 P2 Q9 and Set 2 P2 Q9 the circle comes from a diameter, not completing the square or touching an axis; unlike Set 1 P2 Q6 and the gardens question no area is computed from coordinates. Not modelled on any 2024/25 paper question."
+   },
    "gates": {
     "pos": 13,
     "pass": true,
     "problems": [],
     "novelty": {
      "nearest": "GCE 2009 P1 Q11",
-     "jaccard": 0.089,
-     "nearest_set": "Set 1 P1 Q10",
-     "jaccard_set": 0.042,
+     "jaccard": 0.107,
+     "nearest_set": "Set 2 P2 Q9",
+     "jaccard_set": 0.076,
      "repeated_skills": []
     },
     "marks": 10,
-    "checked_at": "2026-09-23T11:41:29.800Z",
-    "rounds": 3
+    "checked_at": "2026-09-30T13:21:49.694Z",
+    "rounds": 6
    },
    "blind": {
     "answers": {
-     "(a)": "C(-4, -5)",
-     "(b)": "K(10, 2), i.e. K is A. Gradient HC = 2 and gradient AB = -1/2, so AB is perpendicular to HC and the line through B perpendicular to HC is line AB; gradient HB = -2 and gradient AC = 1/2, so AC is perpendicular to HB and the line through C perpendicular to HB is line AC. Lines AB and AC meet at A(10, 2). (Check: y = -x/2 + 7 and y = x/2 - 3 meet at (10, 2).)"
+     "(a)": "Right angle at A: C(8, 20); right angle at B: C(-2, -10); right angle at C: C(0, -4) or C(3, 5)",
+     "(b)": "Angle in a semicircle is 90 deg, so C lies on the circle with AB as diameter (centre = midpoint (0, 1), radius = AB/2 = 5): x^2 + (y - 1)^2 = 25",
+     "(c)": "25 square units"
     },
     "solvable": true,
     "issues": []
@@ -1981,27 +2027,33 @@
      {
       "label": "(a)",
       "agree": true,
-      "note": "Both give C(-4, -5). I checked it with exact arithmetic. Gradient AH = 3/(-9) = -1/3, so gradient BC = 3 and BC is y = 3x + 7. Gradient BH = -2, so gradient AC = 1/2 and AC is y = x/2 - 3. Then 3x + 7 = x/2 - 3 gives x = -4, y = -5. The triangle is acute (AB^2 = 125, BC^2 = 160, CA^2 = 245), so H lies inside it and every gradient is finite and non-zero."
+      "note": "Checked with C = (x, 3x - 4): AB^2 = 100, AC^2 = 10x^2 - 40x + 80, BC^2 = 10x^2 - 20x + 20. Right angle at A: 20x = 160, C(8, 20) (gradients of AC and AB are 4/3 and -3/4). At B: 20x = -40, C(-2, -10). At C: 20x(x - 3) = 0, C(0, -4) (gradients -2 and 1/2) and C(3, 5) (gradients 1/7 and -7). The line misses A and B, so no triangle is degenerate. Setter and blind examiner both give the four positions."
      },
      {
       "label": "(b)",
       "agree": true,
-      "note": "Both give K(10, 2), the point A, with the same reason. Gradient HC = 10/5 = 2 and gradient AB = -1/2, so AB is perpendicular to HC and the line through B perpendicular to HC is BA. AC is perpendicular to HB (given), so the line through C perpendicular to HB is CA. The two lines meet only at A. Checked by computation: y = -x/2 + 7 and y = x/2 - 3 meet at (10, 2)."
+      "note": "Converse of the angle in a semicircle: C lies on the circle with diameter AB, centre (0, 1), radius 5, x^2 + (y - 1)^2 = 25. Both (0, -4) and (3, 5) lie on it. Setter and blind examiner agree."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "AB = 10 is a diameter, so the height from X to AB is at most the radius, 5. Greatest area = 1/2 x 10 x 5 = 25, at the ends of the diameter perpendicular to AB, (3, 5) and (-3, -3). (3, 5) is a position from (a), a good link. Both give 25."
      }
     ],
     "all_agree": true,
-    "key_verdict": "There is no dispute. The setter and the blind examiner agree on both parts, and my exact computation confirms C(-4, -5) and K = A(10, 2).",
+    "key_verdict": "Setter and blind examiner agree on every part, and my own working confirms the key: four positions of C, x^2 + (y - 1)^2 = 25, and greatest area 25 units^2.",
     "score": 4,
     "standard": "at",
     "fixes": [
-     "(b), one-clause edit (recommended; the answer does not change, so no re-blind is needed): '(b) The line through B perpendicular to HC and the line through C perpendicular to HB meet at the point K. Without finding the equation of either line, find the coordinates of K. Explain your answer. [4]'. As written, the setter's own scheme gives full marks for the direct route: form y = -x/2 + 7 and y = x/2 - 3, then solve. That route is a routine two-line intersection, about 3 marks of work paid [4], and a candidate can take all four marks without ever deciding to test AB against HC or seeing that K is A. So the second idea the merge was meant to force is optional. SEAB uses exactly this restriction (GCE 2024 P2 Q7(c): 'Without finding the coordinates of R, explain why ...'). With it, 'Explain your answer.' becomes the natural closing phrase; at present the setter concedes that on the direct route 'the working is the explanation', which makes the phrase idle. Scheme: M1 gradient HC = 2 and gradient AB = -1/2, product -1; B1 the line through B perpendicular to HC is BA; B1 the line through C perpendicular to HB is CA, citing AC perpendicular to HB from the stem; A1 K(10, 2), K is A. Delete the 'Alternative route' paragraph and add: 'A candidate who finds and solves the equations of the two lines earns at most the M1.'",
-     "Skills phrases: phrases 2 ('decide, with no target printed, to test whether AB is perpendicular to HC') and 3 ('... rather than by solving') are false of the question as marked, because solving earns full marks. They become true once the first fix lands. If the session keeps the direct route, reword them to what is actually tested, 'find the meeting point of the perpendiculars from B to HC and from C to HB', and re-mark: (b) loses one mark, [4] to [3], with M1 each line and A1, making the question 9 marks. The first fix is the better repair.",
-     "SESSION (List B item 13, paper shape; not a reason to reject this slot): is the closer the hardest question? Not yet. Q12 [9] chains division, partial fractions, differentiation, a quadratic inequality and an exclusion, about 12 minutes of work. Q11 [8] is an unguided proof. Q13's 10 marks take a strong candidate about 9 to 10 minutes: gradients, negative reciprocals, two lines and two intersections, all with integer results. After the first fix, Q13 carries two forced ideas, which puts it level with or above Q11 and Q12 in thinking: (a) reading the two given perpendiculars backwards to fix the directions of BC and AC, and (b) recognising the lines as BA and CA. It stays lighter than Q12 in execution. That is also the weight of the real closer GCE 2025 P1 Q13 [7, 2], a one-idea coordinate chain plus a short part. If the session wants more execution as well, do NOT hide B on the y-axis (the previous round's option): that gives a line-and-quadratic system with a rejection, which is Q8's skill. Accept the execution weight instead, or move the heavier Q12 earlier."
+     "(b) states the insight it is paying for ('lie on a circle that passes through A and B'), so the 'explain' mark only asks the candidate to name a theorem. A light edit hands more of the decision to the candidate. For example: '(b) Find the equation of the circle that passes through A, B and both positions of C at which angle ACB = 90 degrees. Explain your answer. [2]'. The candidate then has to see that AB is a diameter and not solve for a circle through three points.",
+     "Overlap in this paper: the right angle in a semicircle is already the key fact of Q11(a) (two semicircle right angles give collinearity), and Set 2 P2 Q7 turns on it too. Here it is used in reverse, in coordinates, for 1 mark, so this is not a repeat. But (b) and (c) together lean on the same circle fact a third time in the Set. If the session wants more variety, (c) could instead ask for a fact of the configuration that does not use the circle. One example: the area of the quadrilateral formed by the four positions of C with A and B. Or: show that the two right-angle-at-C positions are equidistant from A and B only for (3, 5), so it lies on the perpendicular bisector of AB. That is optional; (c) as written is clean.",
+     "Mark scheme for (a): make the first method mark explicit for considering all three vertices as the right angle. Give the A1s per case so that a candidate who finds only the right angle at C (the obvious case) gets 3 of 6, not 4. Accept the gradient route (m1 m2 = -1) as fully equivalent to Pythagoras.",
+     "Mark scheme for (c): the M1 needs the reason, that the height is at most the radius 5 (or the perpendicular diameter). Using X(3, 5) with no reason why it gives the greatest height earns B1 only, as the setter's note already says."
     ],
     "too_close_to": null,
     "repeats_set": null,
     "as_good_as_set1": true,
-    "why": "The question is correct, clean and new. (a) reads the two given perpendiculars backwards (AH perpendicular to BC, BH perpendicular to AC) to recover C. That is the same kind of unfamiliar given information as the real closer GCE 2025 P1 Q13(a), the results are integers throughout, (b) needs (a)'s C, and it re-skins no 2024/25 question, no corpus question and no Set 1 question, while asking more of the candidate than Set 1's closer, P1 Q13. It is NOT yet at least as demanding as Q11 (8) and Q12 (9): its 10 marks are about 10 minutes of routine execution around one forced idea, because (b) as marked pays full credit for simply intersecting y = -x/2 + 7 with y = x/2 - 3. With the one-clause 'Without finding the equation of either line' in (b), it carries two forced ideas and matches Q11 and Q12 in thinking, though it stays lighter than Q12 in execution."
+    "why": "The Set 1 P1 Q4 repeat is genuinely gone. The parameter 'with x-coordinate k' and the quadratic inequality to a set of values are removed. What is left is an unsignposted three-case right-angle search, a circle recognised from it, and a greatest area on that circle, none of which Set 1 or Set 2 asks. It is clearly better than the contrived orthocentre old-Q13, with clean integer answers and parts that feed each other ((a)'s (3, 5) is (c)'s extremal point). It sits at the 2024/25 standard for 10 marks: the case decision in (a) and the height-at-most-radius argument in (c) are the ideas. Its only weakness is that (b) is lightly scaffolded."
    },
    "exemplars": [
     {
@@ -2024,7 +2076,11 @@
      "id": "64269ab0-a9e7-4245-b23e-2a04388fae1f",
      "ref": "GCE 2021 P1 Q9"
     }
-   ]
+   ],
+   "swapped": {
+    "at": "2026-10-01",
+    "note": "Adrian: \"we need a better question for this\" -> \"publish this one\"; written 30 Sep 2026 (opus author + blind, fable moderator)"
+   }
   }
  ]
 }

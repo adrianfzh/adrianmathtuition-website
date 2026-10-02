@@ -205,3 +205,14 @@ still on (the claim guard makes a double claim safe), Mac slots off after a few 
 land. ~US$12/month. Deploy: **a push to the bot's `main` touching `worker/**` or `fly.worker.toml`** (GitHub Action
 `fly-worker-deploy.yml`, since 18 Sep 2026 — so a cloud session deploys it with the Mac off);
 `fly deploy -c fly.worker.toml -a adrianmath-worker --remote-only` is the manual fallback.
+
+## Permissions in a cloud session (30 Sep 2026)
+
+Adrian: "cloud sessions always ask me for permissions". This Mac's `.claude/settings.local.json`
+(bypass + ~185 allows) never leaves the Mac, so a cloud session only had the committed
+`.claude/settings.json` — 7 allows in the website repo, none in the bot's. Both repos now commit
+`"defaultMode": "auto"` (a safety check approves routine work, still asks before anything
+outward-facing) and a safe allowlist: read/search tools, edits, git (status/diff/log/add/commit/
+pull/branch — pushes stay under the cloud's own `claude/…` branch rule), tests and type checks,
+read-only `gh`, and `curl -s` to our own two sites. Never commit `bypassPermissions` — the cloud
+agent holds triggers, not power. A local `settings.local.json` still overrides all of it here.

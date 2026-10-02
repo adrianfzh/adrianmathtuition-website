@@ -1,8 +1,9 @@
 // /app/practice for a STUDENT — the to-do list (SPEC-PORTAL-V2 §3).
 //
 // Adrian, 6 Sep 2026: a student's Practice tab is their to-do list and nothing
-// else — (1) work he assigned, (2) Practice Again questions handed back from
-// their own marked papers, (3) questions they found with Find a question. The
+// else — (1) work he assigned, (2) questions they found with Find a question,
+// (3) the sheets written from their photos. Practice Again is NOT listed here
+// since 1 Oct 2026 — its line sits under the paper on Papers (practiceTabSections). The
 // open topic picker and the timed set stay behind his admin cookie
 // (lib/portal-beta practiceAccess); the page swaps this in for a 'list' caller.
 //
@@ -18,9 +19,14 @@ import { portalIdentity, type PortalAccount } from '@/lib/portal-auth';
 import { listStudentAssignments, paperNamesForStudent } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, isOverdue } from '@/lib/assignments';
 import {
-  groupPracticeTodo, sourceRunIds, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
+  groupPracticeTodo, practiceTabSections, sourceRunIds, splitDoneFold, studentMayComplete, todoStateLabel, todoSubtitle, todoTotals, visibleToStudent,
   type TodoState,
 } from '@/lib/practice-todo';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { queuedLabel } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
+import RemoveSheetButton from './remove-sheet-button';
+import DoneButton from './done-button';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
@@ -29,6 +35,7 @@ const CHIP: Record<TodoState, string> = {
   todo: 'bg-[hsl(45,80%,94%)] text-navy',
   done: 'bg-blue-50 text-blue-700',
   marked: 'bg-emerald-50 text-emerald-800',
+  ticked: 'bg-gray-100 text-gray-600',
 };
 
 function sentOn(iso: string): string {
@@ -40,8 +47,14 @@ function summaryLine(t: Record<TodoState, number>): string | null {
   if (t.writing) parts.push(`${t.writing} being written`);
   if (t.todo) parts.push(`${t.todo} to do`);
   if (t.done) parts.push(`${t.done} being marked`);
-  if (t.marked) parts.push(`${t.marked} marked`);
   return parts.length ? parts.join(' · ') : null;
+}
+
+function doneCaption(c: { marked: number; ticked: number }): string {
+  const parts: string[] = [];
+  if (c.marked) parts.push(`${c.marked} marked`);
+  if (c.ticked) parts.push(`${c.ticked} you ticked`);
+  return parts.join(' · ');
 }
 
 export default async function PracticeTodo({ account, top = null }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'>; top?: React.ReactNode }) {
@@ -50,8 +63,24 @@ export default async function PracticeTodo({ account, top = null }: { account: P
   // the query; the subject gate is applied here on the rows that came back.
   const all = await listStudentAssignments(identity).catch(() => []);
   const rows = all.filter(r => visibleToStudent(r, account));
+  // A queued practice sheet (SPEC-PRACTICE-PHOTO §14) waits on its sheet
+  // job's scheduled_for — the chip says the day instead of Writing….
+  const today = sgtTodayISO();
+  const queuedDay = new Map<string, string>();
+  const jobIds = rows.filter(r => r.status === 'writing' && r.source === 'practice-photo' && r.sheet_job_id).map(r => r.sheet_job_id as string);
+  if (jobIds.length) {
+    const { data } = await getSupabaseAdmin().from('sheet_jobs').select('id, scheduled_for').in('id', jobIds);
+    for (const j of (data ?? []) as { id: string; scheduled_for: string | null }[]) {
+      if (j.scheduled_for && j.scheduled_for > today) queuedDay.set(j.id, j.scheduled_for);
+    }
+  }
   const paperNames = await paperNamesForStudent(identity, sourceRunIds(rows));
-  const sections = groupPracticeTodo(rows).filter(s => s.items.length > 0);
+  // Practice Again sheets live with their paper on Papers, not here (Adrian, 1 Oct 2026).
+  // Finished items (marked, or ticked Done by the student) leave their section for
+  // the collapsed Done fold at the bottom (Adrian, 1 Oct 2026); the summary counts
+  // what is still on the list.
+  const fold = splitDoneFold(practiceTabSections(groupPracticeTodo(rows)));
+  const sections = fold.active.filter(s => s.items.length > 0);
   const summary = summaryLine(todoTotals(sections));
 
   return (
@@ -62,15 +91,22 @@ export default async function PracticeTodo({ account, top = null }: { account: P
       </div>
       {top}
 
-      {sections.length === 0 && (
+      {sections.length === 0 && fold.done.length > 0 && (
+        <div className={`${CARD} p-5`}>
+          <p className="text-sm font-semibold text-navy">Nothing left to do.</p>
+          <p className="text-sm text-gray-600 mt-1">Everything on your list is done — it is under Done below.</p>
+        </div>
+      )}
+
+      {sections.length === 0 && fold.done.length === 0 && (
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-sm font-semibold text-navy">Nothing to practise yet.</p>
           <p className="text-sm text-gray-600">
-            This is your to-do list. Work Adrian sends you, your Practice Again sheets,
-            and questions you find all land here.
+            This is your to-do list. Work Adrian sends you, and the sheets written from
+            your photos, land here.
           </p>
           <p className="text-xs text-gray-400">
-            Handed a paper in? Your marked copy and its practice arrive together in <Link href="/app/marking" className="underline">Papers</Link>.
+            Your Practice Again sheets sit with their papers in <Link href="/app/marking" className="underline">Papers</Link>.
           </p>
         </div>
       )}
@@ -87,6 +123,7 @@ export default async function PracticeTodo({ account, top = null }: { account: P
             const due = r.source === 'adrian' || !r.source ? dueLabel(r.due_on) : null;
             const overdue = due ? isOverdue(r) : false;
             const subtitle = todoSubtitle(r, r.source_run_id ? paperNames.get(r.source_run_id) ?? null : null);
+          const queued = r.sheet_job_id ? queuedDay.get(r.sheet_job_id) ?? null : null;
             const body = (
                 <div className="flex items-start gap-3">
                   <span className="text-xl leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
@@ -99,12 +136,28 @@ export default async function PracticeTodo({ account, top = null }: { account: P
                     </div>
                     {r.note && s.key === 'adrian' && <p className="text-sm text-gray-700 mt-2 italic">“{r.note}”</p>}
                   </div>
-                  <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{todoStateLabel(r.state, r)}</span>
+                  <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{queued ? queuedLabel(queued, today) : todoStateLabel(r.state, r)}</span>
                 </div>
             );
             // A Writing… row (a photo's twin on its way, SPEC-PRACTICE-PHOTO) opens nothing yet.
             if (r.state === 'writing') {
-              return <div key={r.id} className={`${CARD} block p-4 opacity-80`} aria-busy>{body}</div>;
+              const photoSheet = r.source === 'practice-photo' && Boolean(r.sheet_job_id);
+              return (
+                <div key={r.id} className={`${CARD} block p-4 ${queued ? '' : 'opacity-80'}`} aria-busy={!queued}>
+                  {body}
+                  {photoSheet && <RemoveSheetButton id={r.id} />}
+                </div>
+              );
+            }
+            // The student's own to-do item carries ✓ Done beside the card (outside
+            // the link, like Remove on a writing row).
+            if (studentMayComplete(r)) {
+              return (
+                <div key={r.id} className={`${CARD} p-4`}>
+                  <Link href={assignmentHref(r)} className="block hover:opacity-90 active:scale-[0.99] transition">{body}</Link>
+                  <DoneButton id={r.id} />
+                </div>
+              );
             }
             return (
               <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-4 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>{body}</Link>
@@ -112,6 +165,32 @@ export default async function PracticeTodo({ account, top = null }: { account: P
           })}
         </section>
       ))}
+
+      {fold.done.length > 0 && (
+        <details className="group">
+          <summary className="flex items-baseline justify-between gap-3 cursor-pointer list-none select-none py-2 border-t border-black/5">
+            <span className="text-sm font-semibold text-gray-500"><span aria-hidden className="inline-block mr-1.5 transition group-open:rotate-90">▸</span>Done ({fold.done.length})</span>
+            <span className="text-[11px] text-gray-400">{doneCaption(fold.doneCounts)}</span>
+          </summary>
+          <div className="space-y-2 mt-2">
+            {fold.done.map(r => {
+              const subtitle = todoSubtitle(r, r.source_run_id ? paperNames.get(r.source_run_id) ?? null : null);
+              return (
+                <Link key={r.id} href={assignmentHref(r)} className={`${CARD} block p-3 opacity-80 hover:opacity-100 transition`}>
+                  <div className="flex items-start gap-3">
+                    <span className="text-lg leading-none mt-0.5" aria-hidden>{r.kind === 'worksheet' ? '📄' : '✏️'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-navy truncate">{r.title}</div>
+                      <div className="text-xs text-gray-500 mt-0.5">{subtitle ? `${subtitle} · ` : ''}{sentOn(r.created_at)}</div>
+                    </div>
+                    <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-1 ${CHIP[r.state]}`}>{todoStateLabel(r.state, r)}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </details>
+      )}
 
       {sections.length > 0 && (
         <p className="text-[11px] text-gray-400">

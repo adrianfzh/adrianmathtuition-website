@@ -31,6 +31,7 @@
 // clip to notebook, where you lost marks, request Practice Again) lives on the
 // paper's own page.
 import Link from 'next/link';
+import { SubjectEdge } from '@/components/PaperSubjectPill';
 import type { ReactNode } from 'react';
 import type { PortalAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -38,6 +39,7 @@ import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from '@/li
 import { allowedSubjects, subjectAllowed, subjectPill, type SubjectTone } from '@/lib/portal-subjects';
 import { subjectStats, isTileSubject } from '@/lib/portal-papers-stats';
 import { coveredRunIds } from '@/lib/sheet-queue';
+import PrintSheet from './OpenInApp';
 import { isPracticeAgainHandin } from '@/lib/desk-state';
 import {
   shelvedGaps, shelfWorthAWave, outsideWindow, NOTE_STALE, NOTE_IN_FLIGHT, NOTE_PRACTICE_AGAIN, type PickPaper,
@@ -52,11 +54,7 @@ import { noteFirstLine } from '@/lib/paper-label';
 import { adminLines, needsLook, type AdminJobRow, type AdminSheetRow } from '@/lib/papers-admin-lines';
 import { unseenLabel } from '@/lib/unseen-handins';
 import { isRecentHandin } from '@/lib/recent-handins';
-import ReviewPicker, { type ReviewPickPaper } from './ReviewPicker';
 import ForecastCard from './ForecastCard';
-import { examReviewBands } from '@/lib/review-cards';
-import { getDashboardData } from '@/lib/portal-dashboard';
-import type { UpcomingExam } from '@/lib/portal-exams';
 import StarPaper from './StarPaper';
 import ArchivePaper from './ArchivePaper';
 import PaperSearch, { type SearchEntry, type RecentEntry } from './PaperSearch';
@@ -152,7 +150,7 @@ export default async function PapersView({ account, sid, admin = false }: {
       .limit(MAX_PAPERS),
     sb
       .from('paper_marking_runs')
-      .select('id, created_at, paper_name, num_photos')
+      .select('id, created_at, paper_name, num_photos, total_max, released_at, queue_status, lease_until, queue:result_json->queue, source:result_json->source, queued_for:result_json->queued_for')
       .eq('student_id', sid)
       .eq('result_json->>portal_submission', 'true')
       .is('released_at', null)
@@ -264,10 +262,8 @@ export default async function PapersView({ account, sid, admin = false }: {
     return { id: p.id, name: p.name, subject: p.subject ?? '', date: p.date, awarded: p.awarded, max: p.max, blocked };
   });
 
-  // 🔁 Review my mistakes (17 Sep 2026): the upcoming exams make the band five
-  // days out. Student mode only, fail-soft (Home's own cached Airtable batch).
-  let exams: UpcomingExam[] = [];
-  if (!admin && account) { try { exams = (await getDashboardData(account)).upcomingExams; } catch { exams = []; } }
+  // 🔁 Review my mistakes lives in My Notebook since 30 Sep 2026 (Adrian: "Papers
+  // are just to see their papers") — the exam band and the picker went with it.
 
   // One panel per subject, in the account's display order, "Other" last. The
   // tiles, streak line and "Work on next" inside a panel are computed over
@@ -320,18 +316,8 @@ export default async function PapersView({ account, sid, admin = false }: {
       if (!ps.some(p => isRecentHandin(rowById.get(p.id), nowMs))) return [];
       return [{ key: entry.kind === 'paper' ? entry.paper.id : entry.sheetId, runIds: ps.map(p => p.id) }];
     }) : [];
-    const reviewable: ReviewPickPaper[] = listed.filter(p => p.dropped.length > 0).map(p => ({ id: p.id, name: p.name, when: whenLine(p, todayISO), lost: p.dropped.reduce((a, q) => a + Math.max(0, q.max - q.awarded), 0) }));
-    const bands = admin ? [] : examReviewBands(exams, listed, subject);
     const content: ReactNode = (
       <div className="space-y-4">
-        {/* The bright band five days before an exam (Adrian: "make sure it can be clearly seen"). */}
-        {bands.map(b => (
-          <Link key={b.exam.id} href={b.paperIds.length ? `/app/marking/review?papers=${b.paperIds.join(',')}` : `/app/marking/review?papers=${reviewable.slice(0, 3).map(p => p.id).join(',')}`}
-            className="block rounded-3xl bg-rose-600 text-white px-4 py-3.5 shadow-[0_8px_24px_-10px_rgba(225,29,72,0.8)]">
-            <p className="font-bold">🔁 {b.exam.label}{b.exam.paper ? ` ${b.exam.paper}` : ''} {b.exam.daysLeft === 0 ? 'is today' : b.exam.daysLeft === 1 ? 'is tomorrow' : `in ${b.exam.daysLeft} days`} — review your mistakes ›</p>
-            <p className="text-[12px] text-white/85 mt-0.5">{b.paperIds.length ? `${b.paperIds.length} paper${b.paperIds.length === 1 ? '' : 's'} with mistakes on the tested topics, ready to scroll.` : 'Scroll the questions you lost marks on before the paper.'}</p>
-          </Link>
-        ))}
         {stats && <SubjectTiles s={stats} />}
         {/* 📈 the forecast — Adrian's tab only (17 Sep 2026); students never see it. */}
         {admin && stats && <ForecastCard sid={sid} subject={subject} />}
@@ -357,7 +343,6 @@ export default async function PapersView({ account, sid, admin = false }: {
               a tab holds enough papers to need it (PaperSearch). */}
           <PaperSearch entries={searchEntries} always={admin} recent={recentEntries} />
         </ChoosePapers>
-        {!admin && <ReviewPicker papers={reviewable} />}
         {archived.length > 0 && (
           <details className={`${CARD} p-4`}>
             <summary className="cursor-pointer text-sm font-semibold text-gray-500 select-none">
@@ -402,11 +387,15 @@ export default async function PapersView({ account, sid, admin = false }: {
                     <span className="text-teal-700/60"> · {p.num_photos} page{p.num_photos === 1 ? '' : 's'}</span>
                   )}
                 </span>
-                <span className="shrink-0 text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
+                <span className="shrink-0 flex items-baseline gap-2">
+                  <span className="text-xs text-teal-700/60">{niceDate(String(p.created_at).slice(0, 10))}</span>
+                </span>
               </li>
             ))}
           </ul>
-          <p className="text-[11px] text-teal-700/70 mt-2">Handed in — it appears below once marked and released.</p>
+          <p className="text-[11px] text-teal-700/70 mt-2">
+            Handed in — it appears below once marked and released.
+          </p>
         </div>
       )}
 
@@ -485,16 +474,25 @@ function SheetLineView({ line, sheet, markedSheet, nextWave, admin = false, shee
         {/* The whole line opens the marked sheet — the old "See your marked sheet ›" was a
             small underlined tail at the end of a wrapped line, easy to miss on an iPad
             (Adrian, 22 Sep 2026: "i can't click on the Practice Again sheet"). */}
+        {/* The text keeps at least 12rem (30 Sep 2026): at phone width the buttons wrap
+            below it — before, it squeezed to one word a line beside Print · Start · Hand in. */}
         {openMarked ? (
-          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="min-w-0 flex-1 -mx-1 -my-1 rounded-xl px-1 py-1 text-[13px] font-semibold active:bg-black/5">
+          <Link href={`/app/marking/${openMarked}`} data-track="marking:open" className="min-w-0 flex-[1_1_12rem] -mx-1 -my-1 rounded-xl px-1 py-1 text-[13px] font-semibold active:bg-black/5">
             <span aria-hidden>{t.mark}</span> {line.text} <span className="whitespace-nowrap underline underline-offset-2">See your marked sheet ›</span>
           </Link>
         ) : (
-          <p className="min-w-0 flex-1 text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
+          <p className="min-w-0 flex-[1_1_12rem] text-[13px] font-semibold"><span aria-hidden>{t.mark}</span> {line.text}</p>
         )}
         {admin && sheetLook?.needsLook && <span className="shrink-0 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold px-2 py-0.5">Not looked at yet</span>}
         {admin && markedSheet && sheetLook && <span className="shrink-0 text-[11.5px]"><LookedAt runId={markedSheet.id} needsLook={sheetLook.needsLook} checkedAt={sheetLook.checkedAt} /></span>}
         {admin && manualLink && sheet?.run_id && <span className="shrink-0 text-[11.5px]"><BelongsTo runId={sheet.run_id} options={[]} linked /></span>}
+        {/* 🖨 Print (28 Sep 2026, Adrian: "there is no option to print") — the sheet's
+            PDF through the share sheet, for one paper or a combined sheet alike, and
+            on Adrian's view too so he can print it for the student. */}
+        {line.actions && sheet?.pdf_url && (
+          <PrintSheet url={fileHref(sheet.pdf_url)} name="Practice Again sheet" label="🖨 Print" title="Print the sheet or save the PDF"
+            className="shrink-0 text-xs font-semibold text-rose-900 border border-rose-300 bg-white rounded-xl px-3 py-1.5 disabled:opacity-60" />
+        )}
         {line.actions && sheet && !admin && (
           <span className="shrink-0 flex items-center gap-1.5">
             {/* Start = do it in the app (17 Sep 2026); the PDF and the photo hand-in stay as the other ways. */}
@@ -534,7 +532,8 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
 }) {
   const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job, { admin });
   return (
-    <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} p-3`}>
+    <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} relative overflow-hidden p-3 pl-4`}>
+      <SubjectEdge subject={paper.subject} />
       {/* Same window in admin mode too (18 Sep 2026): from the installed admin app a
           new tab opens a separate Safari that does not carry the sign-in, so the paper
           asked Adrian to log in. The page's back arrow returns to the profile. */}
@@ -558,14 +557,17 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       {paper.notice && (
         <p className="mt-2 text-[12px] text-sky-900 bg-sky-50 border border-sky-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">{paper.notice.title}.</span> {paper.notice.body}
+          {paper.notice.addPages && !admin && (
+            <>{' '}<a href={`${/^(physics|chemistry|biology|science)/i.test(paper.subject ?? '') ? '/app/science/submit' : '/app/submit'}?addTo=${paper.id}`} className="font-semibold underline underline-offset-2">➕ Add missing pages</a></>
+          )}
         </p>
       )}
 
       {line && <div className="mt-2"><SheetLineView line={line} sheet={sheet} markedSheet={markedSheet} nextWave={nextWave} admin={admin} sheetLook={sheetLook} manualLink={!!(sheet?.note === 'linked by Adrian' && sheet.run_id)} /></div>}
-      {/* Adrian's doors (17 Sep 2026): the desk row for this paper, the paper as the student sees it. */}
+      {/* Adrian's doors (17 Sep 2026): annotate on Mark a paper (the desk retired 30 Sep 2026), the paper as the student sees it. */}
       {admin && (
         <p className="mt-1.5 flex flex-wrap gap-x-3 text-[11.5px]">
-          <a href={`/admin/desk?run=${paper.id}`} className="text-sky-700 underline">desk</a>
+          <a href={`/admin/mark-paper?run=${paper.id}&annotate=1`} className="text-sky-700 underline">✏️ annotate</a>
           <a href={`/app/marking/${paper.id}`} className="text-sky-700 underline">as student ›</a>
           <AdminRename runId={paper.id} name={paper.rawName ?? paper.name} />
           {look && <LookedAt runId={paper.id} needsLook={look.needsLook} checkedAt={look.checkedAt} />}

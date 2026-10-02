@@ -1,6 +1,6 @@
 # Students first — one door for everything about a student
 
-**Status:** agreed in conversation 17 Sep 2026, awaiting Adrian's go on the build order below.
+**Status:** agreed 17 Sep 2026 and **BUILT the same day** (steps 1–6 in §8 — four tabs, the Papers tab as the student's own view, the "…" menu, Review my mistakes; the mirror page redirects). Still open: the redirects of the old marking pages once nothing links to them, the share extension / native app, the score forecast (hidden until the back-test error is under 5 marks), and the open questions in §10.
 **Written in plain words first; the code word follows in brackets so it can be found in the repo.**
 
 ## 1. Why

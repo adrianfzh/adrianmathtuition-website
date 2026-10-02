@@ -121,7 +121,22 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // flips; once open, a student needs 'Physics' in Airtable Students.Subjects
 // (the option doesn't exist yet — add it via typecast when opening). Adrian's
 // admin cookie previews every science level.
+// Opened 1 Oct 2026 (Adrian: "option 2 …" — the Science Practise tab): the gate
+// is the student's own science choice (portal_accounts.prefs.sciences), not an
+// Airtable subject; see lib/practice practiceLevelAllowed. CLOSED AGAIN the same
+// evening before the promote (Adrian: "gate keep science practice first") — Adrian's
+// cookie and the preview student still see it; flip to true to open.
 export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
+// Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
+// 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers
+// straight away"). The practice grader has not been checked against science scheme
+// answers yet, so Structured stays behind Adrian's cookie until the seeded check passes;
+// MCQ is open. Only rows with a solution are served (scienceNext kind).
+export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = false;
+export async function scienceStructuredPracticeOpen(): Promise<boolean> {
+  if (SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS) return true;
+  return !(await viewingAsStudent()) && (await isNotesAuthed());
+}
 
 /** 'preview' = Adrian's admin cookie (every science level), 'open' = flag on (by subject), else 'closed'. */
 export async function sciencePracticeAccess(): Promise<ScienceAccess> {
@@ -219,10 +234,10 @@ export const FIND_OPEN_TO_STUDENTS = true;
 
 // 📷 Practice photo (SPEC-PRACTICE-PHOTO.md, 23 Sep 2026): the Practice tab
 // becomes a photo page — a photographed question is filed under a sub-skill and
-// a bank seed is RE-SKINNED into a new question on the student's list. CLOSED
-// to students until Adrian has read the first 20 on /admin/generated; his
-// admin cookie and the demo student see it meanwhile.
-export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = false;
+// a bank seed is RE-SKINNED into a new question on the student's list. Was
+// closed to students until Adrian had read the first ones on /admin/generated;
+// OPEN since 1 Oct 2026 (Adrian: "we can flip the switch for Practice tab then").
+export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = true;
 export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
 export async function practicePhotoOpen(): Promise<boolean> {
@@ -234,4 +249,47 @@ export async function practicePhotoOpen(): Promise<boolean> {
     if (acct && PRACTICE_PHOTO_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
   } catch { /* closed */ }
   return false;
+}
+
+/**
+ * 🧪 The Chemistry tab's qualitative-analysis flashcards (/app/science/qa and
+ * the door on /app/science): Adrian's cookie only until he opens them
+ * (25 Sep 2026: "for chem qualitative analysis — gate to admin only first").
+ */
+export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;
+
+// ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
+// chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
+// has watched a few — flip this to open the door on every mistake card and on the
+// paper's "Where you lost marks"; the preview student sees it meanwhile.
+export const EXPLAIN_CLIP_OPEN_TO_STUDENTS = false;
+export const EXPLAIN_CLIP_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+export async function explainClipVisible(identity?: string | null): Promise<boolean> {
+  if (EXPLAIN_CLIP_OPEN_TO_STUDENTS) return true;
+  if (identity && EXPLAIN_CLIP_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
+// 🪜 "Stuck? Next step" on a practice question (1 Oct 2026, from a student weak
+// at trig identity proofs): the bank working one line per tap, and "next step
+// from my line" on a photo of their working (lib/proof-ladder). ADMIN-ONLY plus
+// the preview student until Adrian has tried it — flip this to open it for
+// every student. The routes gate with `proofLadderAllowedFor`; the page passes
+// the same answer to the client as a prop, the client never sees the flag.
+export const PROOF_LADDER_OPEN_TO_STUDENTS = true; // Adrian, 1 Oct 2026: "open it to all students"
+export const PROOF_LADDER_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+/** Pure: is this student (by Airtable id) allowed the ladder? Admin callers pass without it. */
+export function proofLadderAllowedFor(identity: string | null | undefined): boolean {
+  if (PROOF_LADDER_OPEN_TO_STUDENTS) return true;
+  return !!identity && PROOF_LADDER_PREVIEW_IDENTITIES.includes(identity);
+}
+export async function proofLadderVisible(identity?: string | null): Promise<boolean> {
+  if (proofLadderAllowedFor(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
 }

@@ -39,41 +39,6 @@ function buildWeekLabel(mondayStr: string): string {
 // hides that card.
 
 /**
- * Papers uploaded to /admin/mark-paper but never (successfully) marked —
- * rows the save-paper phase left with `total_max` null. A row under 4 minutes
- * old may have its original marking still running server-side (same window the
- * mark-paper history list uses before offering ▶ Mark), reported separately as
- * `possiblyMarking`.
- */
-async function fetchPendingPapers(): Promise<{ count: number; possiblyMarking: number } | null> {
-  const botBase = process.env.BOT_BASE_URL;
-  const botSecret = process.env.BOT_INTERNAL_SECRET;
-  if (!botBase || !botSecret) return null;
-  try {
-    const r = await fetch(`${botBase}/api/mark-paper`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ phase: 'stats' }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!r.ok) return null;
-    const data = await r.json();
-    const runs: any[] = Array.isArray(data?.runs) ? data.runs : [];
-    // total_max == null (loose — covers undefined) is the pending signal,
-    // exactly the check the mark-paper history rows key off.
-    const pending = runs.filter(run => run?.total_max == null);
-    const cutoff = Date.now() - 4 * 60 * 1000;
-    const possiblyMarking = pending.filter(run => {
-      const t = new Date(run?.created_at ?? '').getTime();
-      return Number.isFinite(t) && t > cutoff;
-    }).length;
-    return { count: pending.length, possiblyMarking };
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Marked scripts waiting on Adrian at /admin/desk (triage retired 8 Sep 2026): flagged questions he
  * hasn't resolved, plus whole scripts that are clean and just need releasing.
  * Reads Supabase directly (the runs table), not the bot.
@@ -237,13 +202,12 @@ export async function GET(req: NextRequest) {
   );
   const absentFilter = encodeURIComponent(`{Status}='Absent'`);
 
-  const [todayLessons, weekLessons, invoices, absentLessons, pendingPapers, unmarkedLessons, examGaps, triage, lessonsToLog, compulsorySheets] = await Promise.all([
+  const [todayLessons, weekLessons, invoices, absentLessons, unmarkedLessons, examGaps, triage, lessonsToLog, compulsorySheets] = await Promise.all([
     airtableRequestAll('Lessons', `?filterByFormula=${todayFilter}&fields[]=Topics+Covered`),
     airtableRequestAll('Lessons', `?filterByFormula=${weekFilter}&fields[]=Date`),
     airtableRequestAll('Invoices', `?filterByFormula=${invoiceFilter}&fields[]=Final+Amount`),
     airtableRequestAll('Lessons', `?filterByFormula=${absentFilter}&fields[]=Rescheduled+Lesson+ID`),
     // New stats are individually fail-soft (null on failure, never throw).
-    fetchPendingPapers(),
     fetchUnmarkedLessons(today),
     fetchExamGaps(),
     fetchTriage(),
@@ -275,7 +239,6 @@ export async function GET(req: NextRequest) {
       thisWeek: { count: weekLessons.records.length, weekLabel: buildWeekLabel(monday) },
       // Additive fields (2026-08) — each null when its sub-fetch failed
       // (examGaps is also null outside an exam season).
-      pendingPapers,
       unmarkedLessons,
       examGaps,
       triage,

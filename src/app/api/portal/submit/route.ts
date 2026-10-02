@@ -23,10 +23,13 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { isOurBlobUrl } from '@/lib/blob-url';
-import { keyFromUrl } from '@/lib/student-files-url';
+import { ownsHandinUrl } from '@/lib/add-pages';
+import { handinCheckStamp } from '@/lib/handin-check';
 import { DAILY_SUBMIT_CAP, DAILY_SCIENCE_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-limit';
+import { scienceQueuePlacement } from '@/lib/science-queue-store';
+import { dayWord } from '@/lib/daily-queue';
+import { sgtTodayISO } from '@/lib/sgt';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
@@ -37,6 +40,7 @@ import { portalIdentity } from '@/lib/portal-auth';
 import { markSubjectAccess, scienceMarkingOpen } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
 import { resolveHandinSubject, resolveScienceSubject } from '@/lib/mark-subject-for-student';
+import { studentSciences } from '@/lib/portal-prefs';
 import { paperSubjectForMarkSubject, paperSubjectFromName } from '@/lib/portal-subjects';
 import {
   dailyHandinCapForTier,
@@ -47,9 +51,9 @@ import {
 } from '@/lib/portal-passes';
 
 export const runtime = 'nodejs';
-export const maxDuration = 60;
+export const maxDuration = 90;
 
-const MAX_PAGES = 20;
+const MAX_PAGES = 30;   // was 20 — raised 26 Sep 2026 (a student hit it with an A Math paper + its cover page); the bot mirror is lib/handin.js
 
 /** How long a repeat of the same photos counts as a retry rather than a new
  *  hand-in. Long enough to cover a phone that reconnects minutes later, far
@@ -62,7 +66,7 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const { data: account } = await supabase
     .from('portal_accounts')
-    .select('id, airtable_student_id, display_name')
+    .select('id, airtable_student_id, display_name, prefs')
     .eq('id', user.id)
     .single();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -81,7 +85,7 @@ export async function POST(req: Request) {
   if (!access.ok) return NextResponse.json({ error: access.error }, { status: access.status });
   const meteredPass = access.pass; // null for tuition accounts
 
-  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown };
+  let body: { photoUrls?: unknown; paperName?: unknown; assignmentId?: unknown; paperId?: unknown; confirmed?: boolean; subject?: unknown; family?: unknown; schemeUrls?: unknown; handinCheck?: { asked?: unknown; list?: unknown; key?: unknown }; handinAnswer?: unknown };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
   const admin = getSupabaseAdmin();
 
@@ -146,24 +150,8 @@ export async function POST(req: Request) {
   if (photoUrls.length > MAX_PAGES) {
     return NextResponse.json({ error: `That's too many pages for one paper (max ${MAX_PAGES}) — submit the rest as a second paper.` }, { status: 400 });
   }
-  // A URL is this student's own upload when its key sits under their prefix.
-  const ownsUrl = (u: string): boolean => {
-    const key = keyFromUrl(u);
-    if (key) {
-      // Private-store upload (5 Sep 2026): the submit-token route pinned the key
-      // under handins/<identity>/, so the prefix IS the ownership proof.
-      return key.startsWith(`handins/${studentId}/`);
-    }
-    if (isOurBlobUrl(u)) {
-      // decodeURIComponent: a stranger's identity segment (`acct:<uuid>`)
-      // contains a colon, which a URL serializer MAY percent-encode — decode
-      // before comparing so both spellings match the prefix the submit-token
-      // route pinned. Airtable rec ids are alphanumeric, so this is a no-op
-      // for tuition students.
-      try { return decodeURIComponent(new URL(u).pathname).startsWith(`/mark-paper/portal/${studentId}/`); } catch { return false; }
-    }
-    return false;
-  };
+  // A URL is this student's own upload when its key sits under their prefix (lib/add-pages ownsHandinUrl).
+  const ownsUrl = (u: string): boolean => ownsHandinUrl(u, studentId);
   for (const u of photoUrls) {
     if (!ownsUrl(u)) return NextResponse.json({ error: 'A photo upload went wrong — please re-add your photos and try again.' }, { status: 400 });
   }
@@ -236,12 +224,21 @@ export async function POST(req: Request) {
   // is null and nothing below runs for a tuition student. Only a stranger's
   // pass tier still carries a daily ceiling.
   const dailyCap: number | null = science ? DAILY_SCIENCE_SUBMIT_CAP : tuition ? DAILY_SUBMIT_CAP : dailyHandinCapForTier(meteredPass?.tier);
-  const count = (dailyCap === null || assignment || printedPaper) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
-  if (dailyCap !== null && (count ?? 0) >= dailyCap) {
+  const count = (dailyCap === null || assignment || printedPaper || science) ? 0 : await countHandinsToday(admin as unknown as HandinCountingClient, studentId, new Date(), family);
+  // 🧪 The science waiting list (SPEC-PRACTICE-PHOTO §14, 24 Sep 2026): past
+  // today's allowance the paper is not refused — it lands on the first day
+  // with room up to three days ahead (result_json.queued_for) and the
+  // midnight cron `daily-queue` puts it in the 🌙 queue on that day. Beyond
+  // the horizon: a plain refusal. The placement helper is the truth (it
+  // counts queued papers on their day), so countHandinsToday is skipped here.
+  let queuedFor: string | null = null;
+  if (science && dailyCap !== null && !assignment && !printedPaper) {
+    const place = await scienceQueuePlacement(admin, studentId, dailyCap, new Date());
+    if (!place.ok) return NextResponse.json({ error: place.message }, { status: 429 });
+    if (place.waits) queuedFor = place.day;
+  } else if (dailyCap !== null && (count ?? 0) >= dailyCap) {
     return NextResponse.json({
-      error: science
-        ? `You’ve handed in ${dailyCap} science papers today — a fresh allowance opens at midnight. Maths papers are separate.`
-        : dailyCap === 1
+      error: dailyCap === 1
         ? 'Today’s exam-paper hand-in is used — a fresh one opens at midnight. Practice Again sheets and printed papers don’t count, so those can still go in.'
         : `You’ve handed in ${dailyCap} exam papers today — a fresh allowance opens at midnight. Practice Again sheets and printed papers don’t count.`,
     }, { status: 429 });
@@ -279,11 +276,12 @@ export async function POST(req: Request) {
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   if (!botBase || !botSecret) return NextResponse.json({ error: 'Submissions are temporarily unavailable' }, { status: 503 });
-  const bot = async (payload: Record<string, unknown>) => {
+  const bot = async (payload: Record<string, unknown>, timeoutMs?: number) => {
     const r = await fetch(`${botBase}/api/mark-paper`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
+      ...(timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : {}),
     });
     return r.json().catch(() => ({}));
   };
@@ -298,12 +296,29 @@ export async function POST(req: Request) {
   // reading the warning, and it always goes through. A checker that can refuse a
   // hand-in is worse than the gap it catches — the paper gets marked with a
   // missing page either way, but a refused hand-in never arrives at all.
+  let preflightResult: { list?: unknown; key?: unknown; missing?: unknown } | null = null;
   if (!body.confirmed) {
-    const pre = await bot({ phase: 'preflight', source: { photos: photoUrls.map(u => ({ original_url: u })) } });
+    // 40 s at most (29 Sep 2026): the check reads every page (in parallel batches,
+    // ~15 s for 15 pages), and this route has 90 s in all — a slow read must never
+    // cost the student their hand-in, so a timeout is simply "no findings".
+    // meta (29 Sep 2026, SPEC-HANDIN-COMPLETENESS): the paper's name + the student's
+    // name let the bot find the paper's own list of parts in the bank; a printed Set
+    // brings its questions; a worksheet from Adrian / Practice Again is never checked
+    // for missing exam parts.
+    const pre = await bot({
+      phase: 'preflight',
+      source: { photos: photoUrls.map(u => ({ original_url: u })) },
+      meta: {
+        paperName, studentName: account.display_name || '', subject: scienceSubject || 'math',
+        assignment: !!assignment,
+        ...(printedPaper && Array.isArray(printedPaper.question_ids) ? { questionIds: printedPaper.question_ids } : {}),
+      },
+    }, 40_000).catch(() => ({}));
     const findings = Array.isArray(pre?.findings) ? pre.findings : [];
     if (findings.some((f: { blocking?: boolean }) => f?.blocking)) {
-      return NextResponse.json({ needsConfirm: true, findings }, { status: 409 });
+      return NextResponse.json({ needsConfirm: true, findings, list: pre?.list ?? 'none', key: pre?.key ?? null }, { status: 409 });
     }
+    preflightResult = pre && typeof pre === 'object' ? pre : null;
   }
 
   // THE GATE (lib/mark-subject-for-student). The client picker is only UX; the
@@ -364,6 +379,10 @@ export async function POST(req: Request) {
       result_json: {
         ...rj,
         portal_submission: true,
+        ...(queuedFor ? { queued_for: queuedFor } : {}),
+        // The science track (24 Sep 2026): a Combined Science student's paper is
+        // marked to the combined syllabus once the marker reads this stamp.
+        ...(science ? { science_track: studentSciences(account.prefs)?.combined ? 'combined' : 'pure' } : {}),
         // The provenance stamp, belt and braces: the bot's buildRunSource keeps
         // attached_by, but a bot from before that deploy rebuilds scheme_source
         // without it — and without it the student's scheme would be filed as
@@ -376,6 +395,11 @@ export async function POST(req: Request) {
         // the printed sheet, in order — the marker can ground on their stored
         // solutions instead of working out what each question even is.
         ...(printedPaper ? { generated_paper_id: printedPaper.id, generated_question_ids: printedPaper.question_ids } : {}),
+        // What the pre-flight found and what the student answered (lib/handin-check).
+        ...(() => {
+          const stamp = handinCheckStamp({ at: new Date().toISOString(), preflight: body.confirmed ? null : preflightResult, check: body.handinCheck ?? null, answer: body.handinAnswer });
+          return stamp ? { handin_check: stamp } : {};
+        })(),
       },
     }).eq('id', runId);
   } catch (e) {
@@ -417,6 +441,12 @@ export async function POST(req: Request) {
   // marking lands; the queue worker's finished-marking Telegram (student name +
   // 🖼 PDF) stays the doorbell, and nothing here asks him to tap anything.
   const who = account.display_name || 'A student';
+  if (queuedFor) {
+    // Waits for its day: no enqueue now, the midnight cron does it.
+    const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
+    notify_marking(`🕒 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for ${dayWord(queuedFor, sgtTodayISO())} (the midnight queue sends it for marking).`).catch(() => {});
+    return NextResponse.json({ ok: true, runId, queuedFor });
+  }
   let queued = false;
   try {
     const q = await bot({ phase: 'enqueue', id: runId });

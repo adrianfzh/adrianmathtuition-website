@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   resolveActionTimes, firedCountAt, beatAutoMs, boardStateAt, emptyBoard, sceneTargets, sceneNotes,
   targetKeys, tokenShown, tokenWritten, lineOn, elementShown, elementStatic, proseGroup, beatTimeline,
-  sceneTokens, paragraphCount, tokKey, lineKey, FOCUS_HOLD_S,
+  sceneTokens, paragraphCount, tokKey, lineKey, FOCUS_HOLD_S, scenesHaveCharacter, applyAction,
 } from './lesson-beats';
 import { validateLessonScript, sceneStepCount, narrationAt, narrationLayout, lessonHasAudio, sceneNarration, sceneAudio, beatClipPath, hasBeats, type Beat, type BeatAction, type EquationStepsScene, type PlayScene } from './lesson-script';
 
@@ -290,5 +290,77 @@ describe('beats as sub-steps (lesson-script)', () => {
   it('tok / line keys are stable strings', () => {
     expect(tokKey(0, 2)).toBe('tok:0:2');
     expect(lineKey(1)).toBe('line:1');
+  });
+});
+
+// ── The character's pose rides the board state ───────────────────────────────
+
+describe('character pose', () => {
+  const posed = recipe([
+    { say: 'Look here.', do: [W({ text: 'intro' }), { do: 'character', pose: 'point', at: 0.3 }] },
+    { say: 'Hmm.', do: [{ do: 'character', pose: 'think', at: 0.1 }, { do: 'character', pose: 'oops', at: 0.6 }] },
+    { say: 'A beat with no pose keeps the last one.', do: [W({ step: 1 })] },
+    { say: 'Done.', do: [{ do: 'character', pose: 'cheer' }, { do: 'clear', what: 'board', at: 0.9 }] },
+  ]);
+  it('starts idle, follows each fired action, holds across beats and survives a clear', () => {
+    expect(emptyBoard(posed).pose).toBe('idle');
+    expect(boardStateAt(posed, 0, 1).pose).toBe('idle');
+    expect(boardStateAt(posed, 0, 2).pose).toBe('point');
+    expect(boardStateAt(posed, 1, 1).pose).toBe('think');
+    expect(boardStateAt(posed, 1, 2).pose).toBe('oops');
+    expect(boardStateAt(posed, 2, 1).pose).toBe('oops');
+    expect(boardStateAt(posed, 3, 2).pose).toBe('cheer');
+    const b = emptyBoard(posed);
+    applyAction(b, posed, { do: 'character', pose: 'nod' });
+    expect(b.pose).toBe('nod');
+    expect(b.shown.size).toBe(0); // a pose shows nothing on the board itself
+  });
+  it('a pose is not a target: nothing waits for it, and the prose group is unaffected', () => {
+    expect(sceneTargets(posed).targeted.has('text:intro')).toBe(true);
+    expect(proseGroup(posed, 'text:intro')).toEqual({ beat: 0, at: 0 });
+    expect(beatTimeline(posed, 1).map(x => x.at)).toEqual([0.1, 0.6]);
+  });
+  it('scenesHaveCharacter is the player\'s cue; a lesson without poses (the committed ones) has none', () => {
+    expect(scenesHaveCharacter([posed])).toBe(true);
+    expect(scenesHaveCharacter([recipe(RECIPE_BEATS), { type: 'caption', text: 't' }])).toBe(false);
+    expect(scenesHaveCharacter([])).toBe(false);
+  });
+  it('validates as a whole script with character: "student"', () => {
+    const r = validateLessonScript({ slug: 't', title: 'T', level: 'AM', topic: 'Quadratic Functions', minutes: 1, theme: 'chalk', character: 'student', scenes: [posed] });
+    expect(r.ok, JSON.stringify(r)).toBe(true);
+  });
+});
+
+// ── Stickers (1 Oct 2026): a beat's own, gone at the boundary — unlike the pose ──
+
+describe('sticker state', () => {
+  const stuck = recipe([
+    { say: 'Look here.', do: [W({ text: 'intro' }), { do: 'character', pose: 'oops', at: 0.3 }, { do: 'sticker', kind: 'warning', near: 'lhs', at: 0.4 }] },
+    { say: 'No sticker on this beat.', do: [W({ step: 1 })] },
+    { say: 'The corner.', do: [{ do: 'sticker', kind: 'confetti' }, { do: 'clear', what: 'board', at: 0.9 }] },
+  ]);
+  it('is set by its action, null before it fires and null again once the next beat starts', () => {
+    expect(emptyBoard(stuck).sticker).toBeNull();
+    expect(boardStateAt(stuck, 0, 2).sticker).toBeNull();
+    expect(boardStateAt(stuck, 0, 3).sticker).toEqual({ kind: 'warning', near: 'lhs', seq: 2 });
+    expect(boardStateAt(stuck, 1, 0).sticker).toBeNull();
+    expect(boardStateAt(stuck, 1, 1).sticker).toBeNull();
+    // The pose carries across the same boundary — that is the difference.
+    expect(boardStateAt(stuck, 1, 1).pose).toBe('oops');
+    expect(boardStateAt(stuck, 2, 1).sticker).toEqual({ kind: 'confetti', near: null, seq: 4 });
+    // A clear of the board leaves the beat's sticker alone (it goes with the beat, not the pen).
+    expect(boardStateAt(stuck, 2, 2).sticker).toEqual({ kind: 'confetti', near: null, seq: 4 });
+  });
+  it('shows nothing on the board itself and is not a target', () => {
+    const b = emptyBoard(stuck);
+    applyAction(b, stuck, { do: 'sticker', kind: 'star' });
+    expect(b.sticker?.kind).toBe('star');
+    expect(b.shown.size).toBe(0);
+    expect(sceneTargets(stuck).targeted.has('tok:0:0')).toBe(false);
+    expect(beatTimeline(stuck, 0).map(x => x.at)).toEqual([0, 0.3, 0.4]);
+  });
+  it('validates as a whole script', () => {
+    const r = validateLessonScript({ slug: 't', title: 'T', level: 'AM', topic: 'Quadratic Functions', minutes: 1, theme: 'chalk', scenes: [stuck] });
+    expect(r.ok, JSON.stringify(r)).toBe(true);
   });
 });

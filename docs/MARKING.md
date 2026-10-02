@@ -149,6 +149,19 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   - **Receipts:** the queue Telegram says `(💻 plan-billed — marked on the Mac)`;
     `cost_usd` then only carries bot-side extras (fall-through retries, rescue,
     answer-key check). `usage.external` + `externalReads` ride the run row.
+    **Since 26 Sep 2026 the slot also classifies the pages** (runbook "Page classes",
+    prompt served as `external-prompts .classify`, handed back as `page_classes`,
+    parsed by `pagesFromClassification`) — the Sonnet pre-pass over every page was
+    most of the Claude bill on plan-read papers. What still bills on a plan-read
+    paper: the Gemini ink placement (Google, ~$0.03/page = **US$0.50–0.90 a paper,
+    ~US$80 a month** at late-Sep volume; Claude was measured for it on 28 Sep 2026 —
+    80 % same row against Gemini's 96 %, boxes half a line low — so it stays on
+    Gemini, bot CLAUDE.md §vision trial), the attached-paper openings read (rare),
+    and page classes + the add-up re-check on shards/shadows. **The add-up re-check
+    (allocations that don't tally, ~1 paper in 8) runs from the plan slot's own
+    bracket readings since 28 Sep 2026** (`allocation_recheck.source: 'plan'`); only
+    a paper with no readings falls back to the paid Sonnet re-read. The per-paper practice LIST
+    (`phase:'practice'`, Opus) is no longer requested at release — removed that day.
   - **Superseded submits are dropped, never double-delivered**: the result phase
     validates the claim is still the caller's and the run still unmarked; a
     timed-out result POST retried after the bot finished answers
@@ -465,6 +478,40 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   Chromium has no emoji font), one A4 sheet (`scrollHeight` ≤ 1123px is the test).
   The closing "start with Q26 and Q11" line only claims a question "sits under" the top
   theme when that theme's own evidence names it.
+  - **The subject frame (25 Sep 2026).** Adrian: colour-code the cover *"so it's easily
+    recognizable"*. A frame, not a repaint: a 2.4 mm band across the top of the sheet and a
+    small tag beside the brand ("A MATH", "CHEMISTRY" — so a black-and-white print still says
+    the subject) in the paper's tone, the SAME tone as the paper card's edge and the paper
+    page's header band (`SUBJECT_TONE` in `components/PaperSubjectPill.tsx`; the hexes live in
+    `front-page-html.ts coverSubject` because a Puppeteer page cannot read Tailwind classes —
+    change a colour in both). Everything from the score box down keeps the red: that is the
+    marks-lost language. `FrontPageInput.subject` is fed by `front-page-build.ts` from the run's
+    own `paper_subject`, never a caller's guess; Other / untagged → byte-identical to before.
+    The cover's cache key became `runs/<id>/cover-<stamp>-subject.png` (`-subject2` since the
+    palette below), so an old cached cover is rendered once more on its next view and a
+    student's list never mixes the two looks (no batch re-render). Tested in
+    `front-page-html.test.ts` "the subject frame".
+    **The palette — "Set 2" (25 Sep 2026; Adrian, after E Math sky and Physics blue "look
+    almost the same", "for orange, why not the same colour here?", "should be coherent with
+    the overall app", then "Set 2" of the three sets shown):** one colour per subject, and
+    **the card's edge and the tag are that same colour** — A Math royal blue (blue-700
+    `#1D4ED8`), E Math orange (orange-400 `#FB923C`; the tag's text is dark, orange-950,
+    because white fails contrast on it — `coverSubject(...).ink` on the cover,
+    `text-orange-950` in the pill), Physics cyan (cyan-600 `#0891B2`), Chemistry purple
+    (purple-500 `#A855F7`), Biology green (green-600 `#16A34A`). None of the five is one of
+    the app's state colours (slate text, the amber notice, emerald done, rose lost marks).
+    **H2 Math has no tone**: `subjectPill('H2 Math')` is `{ text: 'H2', tone: 'other' }`, so a
+    JC paper shows a plain grey H2 pill and gets no card edge, header wash or cover band;
+    the subject logic (JC accounts hand in under H2 Math, sort, count) is untouched. The
+    desk's `PAPER_SUBJECT_TONE` carries the same five as hexes; the cover's cache key is
+    `-subject5` (`-subject3` was Set 2; `-subject4` the science remark the same day — a science
+    cover's remark box says "concept gaps … read those topics again", never "do the
+    practice", `lib/cover-remark.ts` `family:'science'`; `-subject5` the science FOOTER an hour
+    later — the remark box and the "Your next move" footer are built in two files, and the
+    footer still said "The practice sheet that came with this paper drills exactly that" on
+    the demo Physics cover in prod: `lib/front-page-html.ts closingLine` now says "Work through
+    the corrections on those first, then read the topics behind them" for a science subject),
+    so every cover is drawn once more on its next view.
   - **The sheet's diagnosis drives the cover (2026-09-02).** Adrian: *"the sheet's diagnosis
     should drive the cover, not the cover the sheet."* The self-study worker sends
     `result.diagnosis` with its `done` call (`/api/admin/sheet-jobs`; shape + example in
@@ -814,6 +861,21 @@ and the same grounding as a whole re-mark, and the reading is filed in
 `paper_marking_runs.result_json.shadow_runs[]` (the last 8 kept) beside the
 paper's real marking. Monday's `auto-release-report` prints one line.
 
+**👻 The cheaper-reader shadow (1 Oct 2026, bot `lib/shadow-read.js`).** The same
+invariant, a different question: would Sonnet 5.5, reading against the bank's
+reference solutions, give the marks Opus delivered? Armed on the BOT by
+`MARKING_SHADOW_ARMS=claude-sonnet-5-5+ref:50` (unset = off); after a maths paper
+is delivered, Sonnet re-reads every marked page through the same request the real
+read sent and its per-part marks are filed in `result_json.shadow_read` — nothing
+else changes, its tokens sit on their own CostLog feature. Roll-up: `node
+scripts/shadow-sonnet-report.cjs --diffs` in the bot repo — agreement per level
+against the **noise floor** this weekly shadow gives (the latest consistency read vs
+the delivered marks: 92.7 % of 232 parts on 1 Oct 2026). A level may move to the
+cheaper reader only where it agrees with the delivered marks at least as often as
+the marker agrees with itself, over ≥ 10 papers, and only when Adrian says so after
+adjudicating the listed disagreements. One arm answers two questions at once: the
+reader AND the reference read (`MARKING_READ_AGAINST_REFERENCE`, still off).
+
 **THE INVARIANT:**
 
 > **A shadow read changes nothing a student, a parent or the desk can see.**
@@ -850,6 +912,8 @@ This answers "did the marking move", which is what a consistency measure may
 answer on its own.
 
 ## The marking desk (2 Sep 2026) — `/admin/desk`
+
+> **RETIRED 30 Sep 2026.** `/admin/desk` redirects to `/admin/mark-paper` (`?run=` carried). Mark a paper now holds the auto-release switch, 📤 Release per row, the ticks for a merged Practice Again sheet, and ✏️ Annotate as the only way to change marks (Done re-issues a released paper, rebuilds an unreleased one). Agree/Override, Re-mark this page and Rebuild buttons are gone with the desk UI. What follows is history.
 
 Spec: [`../SPEC-MARKING-DESK.md`](../SPEC-MARKING-DESK.md). Adrian: *"now i have 3
 places to look at for marking — mark paper, triage, and papers … the flow should
@@ -2411,7 +2475,7 @@ obvious … remove the compulsory mark (put done or not done — colour code the
   the sheet's line once at the foot.
 - **✏️ Rename (17 Sep 2026, a student's ask):** the paper page's title carries a "rename" link → `POST /api/portal/marking/label {runId, label}` writes `paper_marking_runs.student_label` on the student's own released run (rule `lib/paper-label.ts`, pure/tested: trimmed, ≤ 60 chars, empty clears). `toPaper` shows the label as `name`; `rawName` / `paper_name` stay Adrian's for files, Dropbox and the desk. The admin mirror shows the label because it uses the same builder. Health-check `marking-label` probes the 401.
 - **⭐ Star (17 Sep 2026):** a star on every row and on the paper page → `POST /api/portal/marking/star {runId, on}` writes `paper_marking_runs.student_starred_at`; starred papers float to the top of their subject tab (`lib/paper-star.ts starredFirst`, pure/tested), newest first inside each group; a merged-sheet frame sits where its first paper lands. Health-check `marking-star` probes the 401.
-- **🔁 Review my mistakes (17 Sep 2026, SPEC-STUDENT-FIRST §7):** `ReviewPicker.tsx` at the foot of each subject tab (tick the papers that lost marks → `/app/marking/review?papers=a,b,c`), and **the band** — five days before an Airtable exam in that subject (`lib/review-cards examReviewBands` over `before-paper examsInWindow/topicMatches`) a rose full-width card at the top of the tab opens the review with the papers that lost marks on the tested topics pre-ticked. The review page builds one card per dropped question (`lib/review-cards buildReviewCards`, newest paper first, biggest loss first; pure/tested) — printed question, marks, SEAB codes, comment, slips, folded annotated solution, Practise link — into `ReviewDeck.tsx` (scroll-snap strip, Back / Next, counter). **"See it on my paper"** = `jumpHref`: `/app/marking/<run>?q=&page=<photo_index>&at=<0..1>#page-N` — `StudentQuestion.photoIndex` / `.region` come from `results[].photo_index` / `.region`, `regionFraction` turns the marker's words ("bottom half of page") into a place, and `JumpToMistake.tsx` on the paper page scrolls that point of the page to mid-screen with a two-second amber band. Where a page carries the marker's editable layer (`annotated_photos[].layer_url` + `layer.totalH`, now on `AnnotatedPage.layerUrl/layerH`), `JumpToMistake` fetches the SVG, measures the question's `g[data-q]` boxes (hidden mount + getBBox, the overlay's own trick) and lands on their centre with a band their height — pixel-exact; a page without a layer falls back to the region words.
+- **🔁 Review my mistakes — RETIRED 1 Oct 2026.** The comparison every Review card showed now sits on every My Notebook card (`app/marking/MistakeCompare.tsx`, CLAUDE.md `app/my-notes`); the deck, its button and the exam band are gone, `jumpHref`/`regionFraction` + `JumpToMistake` stay. **Since the same day `jumpHref` carries `at`+`span` from the marker's own part box (`lib/mistake-snippet regionAt`) whenever the run has one, and `JumpToMistake` uses a `span` in the URL before measuring the layer; the science paper page has `page-N` anchors (with the layer's aspect ratio as a placeholder so lazy images do not collapse the scroll target) and mounts `JumpToMistake` — a science card used to land on the cover.** History follows. **(17 Sep 2026, SPEC-STUDENT-FIRST §7; MOVED to My Notebook 30 Sep 2026 — Adrian: "Papers are just to see their papers. keep it simple"):** in My Notebook, one **Review my mistakes** button per subject tab (the three newest paper groups, `lib/notebook-groups reviewRunIds`) and a **Review ›** beside each paper's heading → `/app/marking/review?papers=a,b,c`; Papers carries no review door. **The band** — five days before an Airtable exam in that subject (`lib/review-cards examReviewBands` over `before-paper examsInWindow/topicMatches`, computed in `lib/notebook-load`) the same button turns navy, names the exam and opens the review with the papers that lost marks on the tested topics pre-ticked. The review page builds one card per dropped question (`lib/review-cards buildReviewCards`, newest paper first, biggest loss first; pure/tested) — printed question, marks, SEAB codes, comment, slips, folded annotated solution, Practise link — into `ReviewDeck.tsx` (scroll-snap strip, Back / Next, counter). **"See it on my paper"** = `jumpHref`: `/app/marking/<run>?q=&page=<photo_index>&at=<0..1>#page-N` — `StudentQuestion.photoIndex` / `.region` come from `results[].photo_index` / `.region`, `regionFraction` turns the marker's words ("bottom half of page") into a place, and `JumpToMistake.tsx` on the paper page scrolls that point of the page to mid-screen with a two-second amber band. Where a page carries the marker's editable layer (`annotated_photos[].layer_url` + `layer.totalH`, now on `AnnotatedPage.layerUrl/layerH`), `JumpToMistake` fetches the SVG, measures the question's `g[data-q]` boxes (hidden mount + getBBox, the overlay's own trick) and lands on their centre with a band their height — pixel-exact; a page without a layer falls back to the region words.
 - **📘 A Practice Again hand-in is never the exam its name mentions (19 Sep 2026 — Kiara 35/86, Denise 40/145):** three name-keyed steps each mistook a sheet for its exam (the library attached the real paper; the allocation audit added the exam's 26 parts as zeros; schemes). The rule now lives where they all start: bot `lib/paper-key.js parsePaperKey` gives a name containing "practice again" **no key** (reason `practice-again-handin`). `lib/practice-again-attach.js`: a library paper on such a hand-in is removed; **a PDF Adrian attached by hand is kept** but the run is still labelled `paper_kind:'practice-again'` and linked (`assignment_id` = the sheet's own `portal_assignments` row, found from the source run — that is what flips and groups the card at release); the attach also runs when a slot CLAIMS (an upload is usually untagged at enqueue). **Detected from the pages too** (`looksLikePracticeAgain`): at hand-back, pages numbered "Practice 2 Q1" — a label only the sheets use — label and link the run whatever it was called, and label it even when no sheet of ours matches. Watch-out **T** (both `release-gates.js` and `lib/mark-triage.ts`): a total over 25 marks a page ("out of 145 over 2 pages"). A re-mark (`enqueue {remark:true}`) repairs an old one.
 - **🔎 The page reader (19 Sep 2026 — Adrian: "worker look at the tick marks, are they correctly placed, arrows pointing correctly, are everything marked, does the comments make sense … clear and understandable for singapore students"):** the bot skill `marking-review` runs daily at 06:15 SGT on the Fly worker. `scripts/marking-review-pull.js` gathers the pages delivered in the last 26 h exactly as the student got them (worst page of every paper first, round-robin, cap 40, a few full-mark pages with comments; $0); the reviewer LOOKS at each image first, then the marker's notes, against a checklist built from `SPEC-RED-PEN.md` + `docs/MARKING-DEFECTS.md`: A placement · B completeness and symbol consistency (a ✓ carrying A0 is a contradiction; "careless" on correct follow-through is a wrong kind) · C the words · D legibility — plus **the comprehension test**: for ≤ 12 comments it must say, as a Sec 4 student, "so what I should do is…", and a comment it cannot act on failed. Findings sort into placement code (fix + prove on the golden bench, after the trial) · wording / pen rule (**escalate only**, proposal branch) · the read (**report only** — accuracy stays Adrian's). Read-only until 22 Sep 2026; forward-only always; never queues a paper. Findings file `~/Library/Logs/adrianmath/marking-review-findings/<day>.md`, `job_runs` `marking-review`, rhythm in `lib/job-health.ts`. Cost: proofreading, not marking — no solving, no handwriting transcription; the stamp records pages read and minutes.
 - **📄 The paper opens on its pages, write-anywhere (18 Sep 2026 — Adrian: "write on my paper is hard to use … a pdf shows up and they are able to annotate on the pdf directly"):** the paper page is two tabs (`marking/PaperTabs.tsx`, both mounted; `?view=marks` opens the second, a `?page=` jump always lands on the first): **My paper** = the marked pages as one continuous scroll, and **Where my marks went** = the cover + every dropped mark (`LostMarks`). Practice Again sits above both. On the pages there is no writing mode and no Save: the Pencil writes wherever it touches, a finger only scrolls, ink saves itself ~1.2 s after the last stroke (and at once on leaving the page), a sticky bar has Pen · Highlight · Erase · Undo · ☝️ Finger writes (one finger writes, two scroll — phones). `StudentInk.tsx` draws each page on a **`<canvas>`, never an `<img>`** (iPadOS Live Text swallows Pencil strokes over an `<img>`'s printed text — the 4 Aug lesson) and keeps only the bitmaps near the viewport; on Apple devices the Pencil is read **only from the stylus TOUCH stream** (`touchType 'stylus'`, `preventDefault` so it does not scroll; Safari drops Pencil pointer events mid-stroke), the pointer stream serves mouse and other pens. Pure pieces + tests: `lib/inline-ink.ts` (screen → page-pixel mapping, tool widths by page size, segment-distance eraser, tap/palm-graze rejection). Same table, same two layers, same routes as below; an inline save clears the full-screen overlay's old local draft so it cannot come back over newer ink. **Full screen ⤢** still opens the overlay (zoom, typed notes, shapes) on the same layer. A native app (PencilKit) is the only way to GoodNotes-grade feel — later, as an unlisted App Store app. **The pen, round two (22 Sep 2026, Adrian from the iPad):** the toolbar pill is pinned to the VISUAL viewport under a pinch zoom (`window.visualViewport` resize/scroll → `lib/inline-ink toolbarPlacement`, inline left/top + `scale(1/scale)` from the bottom-centre — a `position: fixed` element is fixed to the layout viewport and would zoom away with the page); three sizes **S / M / L** per tool (`InkSize`, `SIZE_FACTOR` on `toolWidth`, `ERASER_SCREEN_PX` → `eraserRadius`; `ink-size:<editor>:<tool>` in localStorage; a second tap on the active tool opens the popover — colours + sizes for pen and highlighter, sizes for the eraser); **the eraser is partial** (`eraseAt` cuts every touched freehand stroke with `annotate/stroke-split splitStrokeAtCircle`, a typed note goes whole, one undo step per erase gesture via the `phase:'start'|'move'` on `onErase`); twelve pen and eight highlighter colours; and draw-and-hold snaps a hand CIRCLE to a circle again — the hold cluster at the end, the overshoot past the start and the jitter used to break the ellipse fit, and the rectangle test then accepted the round loop's inscribed square (`shape-fit cleanLoop` trims clusters + cuts the overshoot + smooths, rect and ellipse are contested by `outlineResidual`, `fitRect` merges RDP vertices closer than 8 % of the perimeter into one rounded corner; regression cases in `shape-fit.test.ts` "a held stroke on the iPad"). **Later that day (Adrian: "trace a curve, then the pen stroke snaps to the closest fitted curve, like Notability"):** a held stroke that is no shape snaps anyway — an open stroke on a circle becomes a clean arc (`fitArc`, Kåsa circle, 25°–340°), everything else the smoothed curve the hand meant (`fitCurve` → `lib/annotate/curve-fit.ts`, Schneider's piecewise cubic Bézier fit within 2 % of the stroke's length); both stored as polylines with `snapped: 'arc' | 'curve'`, so the eraser, the lasso, the PDF bake and the student pen (`StudentInk.tsx`) take them unchanged; only a stroke under the minimum length keeps its freehand ink. **Round three (23 Sep 2026, Adrian from the iPad: "the pen toolbar doesn't centre properly when zoomed … colour picker that allows the whole suit of colours … lasso to select and do stuff … pointer as well"):** (1) **the centring bug** — Tailwind v4's `-translate-x-1/2` sets the CSS `translate` property, which survived the pinned inline `transform` and STACKED a second half-width shift, so the pill sat off to the left under every pinch zoom; the class is gone and the centring is inline in both states (this is CSS, not unit-testable — when the pill drifts again, look for a `translate-*` class first). (2) **The whole suit of colours** — `paletteColor` honours ANY hex now (`normalizeHex`), the popover adds a 12 × 6 grid (`COLOR_GRID`: greys, then hues at five lightnesses), the device's own picker (`<input type="color">` — the iPad's wheel, sliders and eyedropper) behind the rainbow dot, and the last eight off-palette picks as swatches (`rememberColor`/`recentColors`, `ink-recent:<editor>`); `validateInkPages` already accepted any `#hex`. (3) **Lasso** (`tool 'lasso'`) — draw a dashed loop; `selectByLasso` (≥ 50 % of a stroke's sampled points inside, `annotate/lasso.ts`) picks the strokes on THAT page; they draw in their own `<g>` inside a dashed box with a chip above it: colour with the pen's colour · duplicate (copies offset 3 % of the page width become the new selection) · delete · Done; a drag inside the box (`inBox`, 2 % pad) slides the group live and files ONE undo step through `change` (`moveSelected`); a tap outside, a tool change, undo or redo drops the selection (`recolorSelected`, `deleteSelected`, `duplicateSelected`, `selectionBox` in `inline-ink.ts`, all tested). (4) **Pointer** (`tool 'pointer'`) — a red laser with a fading tail (`trailAlive`, 550 ms, alpha 1 at the tip → 0, tapering width, a glow under it) drawn by a rAF loop into a `<g>` on the page's live SVG; nothing is filed. Also: the pill's buttons are 40 px on phones (44 px from `sm:`) so five tools + undo/redo + the two switches fit a 375-px screen.
@@ -2430,14 +2494,19 @@ obvious … remove the compulsory mark (put done or not done — colour code the
 
 ### The Science tab — free science marking for students (10 Sep 2026)
 
+> **OPEN since 25 Sep 2026 09:40 SGT** (Adrian: "turn on science now") — the Airtable `Settings`
+> row `science_marking_open` is on; every signed-in student sees the tab. Close it again from
+> the 🧪 card on `/admin/mark-paper` or `POST /api/admin/marking-settings {scienceOpen:false}`.
+
 SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
 
 - **Two families, one shell.** `components/PortalTabs.tsx` `FamilySwitch` (Math | Science, under
   the top bar) + `familyOfPath`: everything under `/app/science` is science and the bottom menu
-  becomes **Home · Hand in · Papers** (`/app/science`, `/app/science/submit`,
+  becomes **Home · Hand in · Papers** (`/app/science`, `/app/science/submit` — the maths shape again since the afternoon of 24 Sep 2026, Adrian: "just follow the math interface";
   `/app/science/papers`; `scienceTabs` in `app/layout.tsx`). Flag: `SCIENCE_MARKING_OPEN_TO_STUDENTS`
   in `lib/portal-beta.ts` (`scienceMarkingOpen()`); off = no switcher, the routes bounce to `/app`.
-- **Hand-in.** `/app/science/submit` renders the SAME `submit-client.tsx` with `family="science"`:
+- **Which sciences (24 Sep 2026).** The first visit to `/app/science` shows the picker (`science-picker.tsx`): a "Science marking is live" card (three lines) and "Which sciences do you take?" — Physics / Chemistry / Biology pills plus a **Combined Science** box (a TRACK, not a fourth subject: O-Level 5086/5087/5088 = two sciences in one lighter syllabus, so the box needs exactly two pills). Saved through `POST /api/portal/settings {prefs:{sciences:[…], combined_science}}` — `lib/portal-prefs.ts` (`PORTAL_PREF_LISTS.sciences`, `readPrefsPatch` refuses an empty list or Combined with ≠ 2, `studentSciences(prefs)` → `{subjects, combined} | null`, `scienceChoiceLabel`; pure/tested). Until chosen, Home IS the picker and Papers redirects to Home; "Change" in the header = `?choose=1`. **Then one tab per science** on Home (three newest + "All n ›") and Papers (all): `science-papers.tsx ScienceTabs` builds a `SubjectPanel` per chosen science ∪ any science a paper or pending row already carries (fixed order physics · chemistry · biology, tones phy/chem/bio, the pending rows of that science on top, an unstamped paper under the first tab) and hands them to the maths `SubjectPanels` with `rememberKey='portal_science_subject'`. The hand-in page's subject list is the student's sciences (`submit/page.tsx` → `subjectChoices`; one science = pre-selected in `submit-client.tsx`), and the route stamps `result_json.science_track = 'combined' | 'pure'` from `prefs` — the brains do not read it yet; the mixed Combined Paper 1 (MCQ across both sciences) is an open question.
+- **Hand-in.** `/app/science/submit` renders the SAME `submit-client.tsx` with `family="science"` (the header "🧪 Hand in a science paper", the two-a-day line; the disclaimer is one line under the title):
   the subject picker is required (physics / chemistry / biology — `SCIENCE_MARK_SUBJECTS`), the
   disclaimer sits above the photos, an optional **mark scheme** (PDF or photos) uploads through
   `submit-token?kind=scheme` and rides `save-paper` as `source.scheme_source` (the admin attach's
@@ -2459,6 +2528,23 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   `migrations/paper_subject_science.sql`). Own daily slot: `countHandinsToday(…, 'science')` =
   runs with `subject <> 'math'` (`DAILY_SCIENCE_SUBMIT_CAP`); the bot's `/handin` count is
   maths-only. A science hand-in never spends a stranger's pass meter.
+- **The waiting list (24 Sep 2026, SPEC-PRACTICE-PHOTO §14 — Adrian: "If they upload more than 2,
+  then the rest will be queued. Allow them to remove the queued items too.").** A third science
+  paper today is not refused: `/api/portal/submit` asks `lib/science-queue-store.ts
+  scienceQueuePlacement` (the runs of the last three days + today, a direct hand-in counted on
+  its created day and a queued one on its `result_json.queued_for` day, removed ones nowhere) and
+  the pure rule `lib/daily-queue.ts placeInQueue` (allowance 2 a day, horizon `QUEUE_HORIZON_DAYS`
+  = 3 beyond today, the first day with room; past the horizon a plain 429 line). A paper that
+  waits is created with `queued_for` and NOT enqueued — Adrian's Telegram line says 🕒 queued for
+  <day>; the midnight cron `/api/cron/daily-queue` (`0 16 * * *` UTC) enqueues every run whose day
+  has come and stamps `queue_released_at`. the hand-in page shows a teal line naming the day
+  before the student uploads (`queueNotice`; blocking only when the horizon is full), the done
+  screen says "Science paper queued", and Science › Papers lists "Waiting for its day" rows with
+  **Remove** (`POST /api/portal/science/queue {action:'remove', runId}` — a hard delete of the
+  run + its files while it still waits, `queue_removed_at` soft-stamp as the fallback, 409 once
+  marking started). `countHandinsToday` is no longer consulted for science (it misses a run
+  created yesterday for today); the maths path is untouched. Health-check `practice-photo` probes
+  the Remove door's 401 and the cron's.
 - **Lists.** `app/science/science-papers.tsx` selects the student's own runs with
   `subject <> 'math'`; the maths Papers list / Home counts filter through `subjectAllowed`, which
   admits no science value, so the two families never mix. Pills: PHY / CHEM / BIO tones in
@@ -2475,17 +2561,101 @@ SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026 is the contract; this is the map.
   one `calibration_results` row (`truth_source 'teacher'`, `truth_label 'student-reported teacher
   total'`, whole-paper only, updated in place on a second entry; `lib/science-truth.ts` pure +
   tested) + one 📏 line to the marking topic. The website WRITES this one row kind; everything
-  else on `calibration_results` still comes from the bot harness.
+  else on `calibration_results` still comes from the bot harness. **The card that fed it is gone
+  since 25 Sep 2026** (§The chemistry study loop, "one notice, nothing repeated") — the route
+  stays, and no student-facing surface calls it until Adrian asks for the card back.
 - **Health check:** `science-tab` (GET /app/science never 404/5xx) and `science-truth` (401 anon).
 - **Bot side** (`lib/paper-subject.js`): `fromHandin`/`fromPaperName`/`fromLevels` know the sciences;
   `logMarkingRun` passes the run's lane as `handinSubject` so the marking write never nulls the
   stamp; the queue's completion Telegram says `🧪 physics`.
+
+#### The chemistry study loop (24 Sep 2026)
+
+Adrian: "Build all three chemistry study ideas". Three pieces, each behind the Science
+tab's own gate, no switch of their own:
+
+1. **The scheme's words beside the student's.** The tenth error kind, `keywords`
+   (SCIENCE ONLY — the bot sets it since `ffd67fb`; `lib/error-kinds.ts` mirrors it,
+   label 'wording', in neither the careless nor the concept bucket): a part that had the
+   right idea in words that miss the scheme's term. The bot writes
+   `scheme_words: {scheme, yours}` on that part (the rule is the "THE WORDS vs THE IDEA"
+   block of the three brains' shared `SCIENCE_COMMON`); `lib/portal-marking.ts
+   schemeWords` reads it into `schemes[].words` (half a pair is nothing) and the paper
+   page's LostMarks shows "Scheme says: … · You wrote: …" under the chips.
+2. **Qualitative-analysis flashcards** — `/app/science/qa`, the door a row above the
+   papers on the Chemistry tab of Science Home (`ScienceTabs panelExtras` + `QaDoor` in
+   `science-papers.tsx`). The SEAB 6092 table as cards: 13 cation cards (NaOH and NH₃
+   for Al³⁺, NH₄⁺, Ca²⁺, Cu²⁺, Fe²⁺, Fe³⁺, Zn²⁺), 5 anions, 6 gases, in the scheme's own
+   words; two directions (ion → what you see; what you see → ion, which folds ions with
+   the same result into one card); ✓ Knew it / ↻ Again (an Again card comes round once
+   more before the round ends); the known set per device in localStorage
+   (`portal_qa_known`, best effort); "Only the n I don't know yet". `lib/qa-cards.ts` =
+   the table + the deck rules (`buildDeck`, seeded `shuffle`, `orderRound`),
+   pure/tested. No server state, no marks. Health-check `portal-science-qa`.
+   **Admin only since 25 Sep 2026** (Adrian: "gate to admin only first"):
+   `QA_FLASHCARDS_OPEN_TO_STUDENTS = false` in `lib/portal-beta.ts` — the door renders
+   and the page opens only on Adrian's cookie (not "viewing as a student"); a student
+   at `/app/science/qa` is sent to `/app/science`. Flip the flag to open it.
+**The science paper page, tidied 25 Sep 2026** (Adrian, from his phone): the list card
+says `60/90 · 67%` (no "est.") and has no icon tile in front; the amber "🧪 X marking —
+feedback first, the total is an estimate" card is GONE ("no need to keep repeating").
+**Later that day (Adrian: "leave the first-visit picker and just put this on at the
+page … and remove these"):** ONE notice, nothing repeated. Science Home carries the
+"Dear students" notice for good — under the header, above Hand in, `ScienceOpenNotice`
+in `science/page.tsx`: a tool to help you prepare for your exams, not a replacement
+for your teacher; consult your teacher or tutor if you have any doubts about a mark
+or a comment; attach the answers or the mark scheme for better results; two papers a
+day. The sentence "The total is an estimate, and explain answers can be marked a
+little differently from how your school words them" is NOT in it (Adrian struck it).
+Static, no day rule (the 24 Sep version showed for one day per device), no ✕. The
+first-visit picker keeps its one estimate bullet. GONE the same day: the quiet
+"Science marks are an estimate…" line under the Papers list (`ScienceEstimateNote`),
+and at the foot of every paper page the "Our estimate" card (the total + one clause
+on what grounded the explain answers), the ✏️ **Your teacher's mark** card and
+**"Was this marking useful?"** — `marking/ScienceTeacherMark.tsx` and
+`marking/ScienceUseful.tsx` are deleted. What STAYS so either door comes back as one
+component: `POST /api/portal/science-truth` and `lib/science-truth.ts` (the
+student-reported teacher total → `calibration_results`; nothing on the app writes it
+now), the `science:feedback` event kind + `lib/science-feedback.ts`, and both
+health-check probes. A science paper page is now the cover, the marked pages and the
+lost marks, one column, no score pill in the header — the total is on the cover and on
+the list card. **A science paper lives at `/app/science/marking/<id>`**
+(`science/marking/[id]/page.tsx` wraps the maths page with `under="science"`): the shell
+reads the family from the path, so at `/app/marking/<id>` a chemistry paper lit the Math
+tab and showed the maths bottom menu; either door redirects a run to the right family,
+so old links, pushes and Telegram lines keep working, and `isActive` lights the science
+Papers tab there.
+
+3. **Science lost marks in My Notebook.** mark-triage's release hook files a science run
+   too (the practice / revise maps further down that hook stay maths-only).
+   `lib/notebook-mistakes.ts scienceReason` folds the kinds into four reasons —
+   concept gap (concept, misread) · careless slip (`CARELESS_KINDS`) · wrong keywords ·
+   incomplete — titled by `scienceTitle` ("Careless slip in Mole concept"); an
+   unstamped part is "Marks lost in X". The Notebook card carries the subject pill
+   (`NotebookMistake.subject`). The three demo science runs released before this were
+   not back-filled.
+
+**One colour per subject (the same day; Adrian: "per subject colour mockups" — a
+mockup, he has not chosen):** `SUBJECT_TONE` in `components/PaperSubjectPill.tsx`
+gained `strip` + `tint`; `<SubjectEdge>` runs the subject's colour down the left of
+every paper card (the maths `PaperRow`, the `SciencePaperCard`, whose icon tile takes
+the colour too), the paper page's header carries a band on top + a wash of the tone,
+and the "being marked" / "waiting" rows show the pill. Score chips and the red pen
+keep their own colours; an Other / untagged paper stays plain.
 
 ## /app/submit — student paper hand-ins (2026-08-12)
 
 The door IN from the student side: photograph the worked paper on a phone →
 auto spread-split + ≤2600px downscale (`lib/spread-split.ts`, same hygiene as
 Adrian's own intake) → straight-to-Blob via client token → one POST files it.
+
+> **Missing pages (29–30 Sep 2026, [`SPEC-HANDIN-COMPLETENESS.md`](../SPEC-HANDIN-COMPLETENESS.md)).**
+> Before sending, the pre-flight names the questions no photo shows ("➕ Add the pages" /
+> "I didn't do these" → `result_json.handin_check`). While the paper waits, **➕ Add pages**
+> (`?addTo=<run>`) appends photos and the bot re-orders the whole paper by question; after
+> release, **➕ Add missing pages** (≤14 days) re-marks only the new pages and re-issues
+> (notice `pages-added`). At release, `missingAfterMarking` stamps a 3-day
+> `missing-questions` notice naming what came back unseen, plus a ⚠️ watch-out.
 
 - **A submission IS a saved run.** `/api/portal/submit` calls the bot's
   `phase:'save-paper'` + `phase:'set-student'`, so it lands as the same
@@ -3932,7 +4102,7 @@ Page image **uploads** are parallelised (independent). Only the Gemini detection
 > restores it on close. Bot side the same day: the printed "Correct solution" keeps only the
 > parts that lost marks (`ai/solution-parts.js`) — Denise's Q7 printed (b) under a 2/2.
 
-Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13). Status: built.
+Full spec + as-built deviations: **`SPEC-ANNOTATE.md`** (repo root, §11–13; **§17 = 1 Oct 2026: live drag, corner resize, smallest-object hit, the "was a/b" marks badge, ten colours, and the `<rect …/ fill>` save bug that failed every Done after a mark change — website + bot twins**). Status: built.
 > ⚠ **Annotate in the AdrianMarker shell app, not Safari** (resolved 2026-08-04):
 > iPadOS **Live Text** system-intercepts Pencil strokes over the printed text in
 > page photos — Safari offers no opt-out, so strokes intermittently vanish there;

@@ -22,6 +22,7 @@ import StudentPicker from '@/components/StudentPicker';
 import type { LayerMeta } from '@/lib/annotate/layer';
 import { fileHref } from '@/lib/student-files';
 import { RUNS_PAGE, refreshLimit, mergeRunsPage, withInMotion } from '@/lib/runs-list';
+import { tickPlan, tickPlanLine } from '@/lib/desk-state';
 const AnnotateOverlay = dynamic(() => import('@/components/AnnotateOverlay'), { ssr: false });
 
 // ── file helpers ────────────────────────────────────────────────────────────
@@ -135,7 +136,7 @@ async function uploadScheme(file: File): Promise<string | null> {
 }
 
 type MarkPart = { label?: string; awarded?: number; max?: number; error_summary?: string | null };
-type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null };
+type Run = { id: string; created_at: string; paper_name?: string | null; total_awarded?: number | null; total_max?: number | null; cost_usd?: number | null; rules_version?: string | null; num_questions?: number | null; pdf_url?: string | null; photos_pdf_url?: string | null; annotated_pdf_url?: string | null; student_id?: string | null; student_name?: string | null; queued_at?: string | null; queue_failed?: string | null; checked_at?: string | null; released_at?: string | null; archived_at?: string | null; marked_by?: string | null; mark_now?: string | null; skip_external?: string | null; claim_at?: string | null; claim_released?: string | null; claim_delivered_at?: string | null; sheet_status?: string | null; sheet_error?: string | null; sheet_at?: string | null; sheet_stage?: string | null; pages_done?: string | null; pages_total?: string | null; paper_subject?: string | null; practice_again?: boolean };
 type Result = {
   question_number: string; working_index: number; match_confidence: string; photo_index?: number | null;
   marking?: { total_awarded?: number; total_max?: number; overall_comment?: string; parts?: MarkPart[] };
@@ -155,7 +156,6 @@ type AnnotatedPhoto = {
 // One practice question per below-max question — QB pick ('db', with its school/year
 // origin) or freshly generated. Built ON REQUEST only (📝 button) and stored on the
 // run, so a reload shows the same list without another model call.
-type PracticeItem = { for: string; source: 'db' | 'generated'; question: string; answer: string; origin?: string | null; topic?: string | null; note?: string };
 // Everything a PDF build needs. Normally read off state, but the automatic build that
 // fires the instant a paper finishes marking runs in the same tick as the setState
 // calls that would fill it — so the marking gets handed over directly instead.
@@ -317,8 +317,6 @@ export default function MarkPaperPage() {
   const [inboxToken, setInboxToken] = useState<string | null>(null);
   const [annotatedBusy, setAnnotatedBusy] = useState(false);
   const [annotateOpen, setAnnotateOpen] = useState(false);
-  const [practiceItems, setPracticeItems] = useState<PracticeItem[] | null>(null);
-  const [practiceBusy, setPracticeBusy] = useState(false);
   const annotatedInputRef = useRef<HTMLInputElement>(null);
   const [generating, setGenerating] = useState(false);
   const [stats, setStats] = useState<{ count: number; totalCost: number; avgCost: number; avgTime: number } | null>(null);
@@ -374,54 +372,20 @@ export default function MarkPaperPage() {
   // 10 Sep 2026): a re-mark keeps its paper's created_at and sat pages down
   // the dated list while it ran. Merged ahead of the window — lib/runs-list.
   const [inMotionRuns, setInMotionRuns] = useState<Run[]>([]);
-  // 🖥 Mac plan only (11 Sep 2026, lib/marking-settings.ts): the queue's spend
-  // switch. ON = nothing goes to the API — the worker marks nothing itself, every
-  // paper waits for a Mac slot (⚡ Mark now / ☁️ Batch now rows included). The
-  // bot reads the same Airtable row each tick, so a flip is live in ~30 s.
-  const [macOnly, setMacOnly] = useState<{ on: boolean; at: string | null } | null>(null);
-  const [macOnlyBusy, setMacOnlyBusy] = useState(false);
+  // 🖥 Mac plan only and ⏻ the per-account switches moved to /admin/switches on 2 Oct 2026
+  // (Adrian: "have a page just for toggles") — their routes are unchanged.
   // 🧪 Science tab for students (11 Sep 2026): the release switch — same row
   // shape, same route; lib/portal-beta scienceMarkingOpen() reads it per request.
   const [scienceOpen, setScienceOpen] = useState<{ on: boolean; at: string | null } | null>(null);
   const [scienceBusy, setScienceBusy] = useState(false);
-  // ⏻ Slots by account (13 Sep 2026, lib/slot-accounts.ts): one switch per Claude
-  // account the slots spend. OFF = the picker never chooses that account (a paper
-  // or sheet in progress finishes). Every worker asks the site before it claims,
-  // so a flip is live within one tick, no deploy. 22 Sep 2026: every slot holds all
-  // three logins and picks the emptiest before each job; the picker posts what it
-  // read, shown here as the 5-hour / 7-day meters.
-  type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null };
-  type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null; usage: SlotUsage | null };
-  const [slotAccounts, setSlotAccounts] = useState<SlotAccountRow[] | null>(null);
-  const [slotBusy, setSlotBusy] = useState<string | null>(null);
   useEffect(() => {
     fetch('/api/admin/marking-settings', { headers: authHeaders }).then(async r => {
       if (!r.ok) return;
       const d = await r.json();
-      if (d?.macOnly) setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
       if (d?.scienceOpen) setScienceOpen({ on: !!d.scienceOpen.on, at: d.scienceOpen.at ?? null });
-    }).catch(() => {});
-    fetch('/api/admin/slot-accounts', { headers: authHeaders }).then(async r => {
-      if (!r.ok) return;
-      const d = await r.json();
-      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  async function flipSlotAccount(email: string, on: boolean) {
-    if (slotBusy) return;
-    setSlotBusy(email);
-    try {
-      const r = await fetch('/api/admin/slot-accounts', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, on }) });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
-    } catch (e) {
-      alert(`Could not change the switch: ${(e as Error).message}`);
-    } finally {
-      setSlotBusy(null);
-    }
-  }
   async function flipScienceOpen() {
     if (!scienceOpen || scienceBusy) return;
     const next = !scienceOpen.on;
@@ -440,24 +404,42 @@ export default function MarkPaperPage() {
       setScienceBusy(false);
     }
   }
-  async function flipMacOnly() {
-    if (!macOnly || macOnlyBusy) return;
-    const next = !macOnly.on;
-    if (!window.confirm(next
-      ? 'Mac plan only: nothing goes to the API until you switch it back — no ⚡ full-price runs, no ☁️ batch, no takeovers. Papers wait for a Mac slot. Turn it on?'
-      : 'Back to the normal split: the Mac gets a head start, the worker takes the rest. Turn Mac-only off?')) return;
-    setMacOnlyBusy(true);
+  // ▶️ Auto-release (8 Sep 2026; moved here from the retired desk 30 Sep 2026):
+  // off = every marked hand-in waits for 📤 Release on its row below.
+  const [autoRelease, setAutoRelease] = useState<{ paused: boolean; at: string | null } | null>(null);
+  const [autoReleaseBusy, setAutoReleaseBusy] = useState(false);
+  useEffect(() => {
+    fetch('/api/admin/auto-release', { headers: authHeaders }).then(async r => {
+      if (!r.ok) return;
+      const d = await r.json();
+      if (typeof d?.paused === 'boolean') setAutoRelease({ paused: d.paused, at: d.at ?? null });
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  async function flipAutoRelease() {
+    if (!autoRelease || autoReleaseBusy) return;
+    const on = !autoRelease.paused;
+    if (!window.confirm(on
+      ? 'Switch auto-release OFF? Every marked hand-in waits for you to tap 📤 Release on its row.'
+      : 'Switch auto-release ON? Tagged papers go to the student as soon as they are marked.')) return;
+    setAutoReleaseBusy(true);
     try {
-      const r = await fetch('/api/admin/marking-settings', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ macOnly: next }) });
+      const r = await fetch('/api/admin/auto-release', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ paused: on }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
+      setAutoRelease({ paused: !!d.paused, at: d.at ?? null });
     } catch (e) {
       alert(`Could not change the switch: ${(e as Error).message}`);
     } finally {
-      setMacOnlyBusy(false);
+      setAutoReleaseBusy(false);
     }
   }
+  // 📘 Ticks for ONE Practice Again sheet over several papers (the desk's, moved
+  // here 30 Sep 2026): one sheet per student per maths, lib/desk-state tickPlan.
+  const [ticked, setTicked] = useState<Set<string>>(new Set());
+  const [tickBusy, setTickBusy] = useState(false);
+  const tickableRun = (run: Run) => run.total_max != null && !!run.student_id && !run.practice_again;
+
   // Server-side paging for the history list. `runsTotal` is an exact count
   // from Supabase, so the summary can say "25 of 118" instead of a constant.
   const [runsTotal, setRunsTotal] = useState(0);
@@ -564,7 +546,6 @@ export default function MarkPaperPage() {
         photos: Object.fromEntries(((rj.source?.photos || []) as Array<{ photo_index: number; original_url?: string }>).filter(x => x && x.original_url).map(x => [x.photo_index, x.original_url as string])),
         rot: Object.fromEntries(((rj.annotation_debug || []) as Array<{ photo_index: number; rot?: number }>).map(x => [x.photo_index, Number(x.rot) || 0])),
       };
-      setPracticeItems(rj.practice?.items?.length ? rj.practice.items : null);
       setUnattempted(rj.unattempted_questions || []);
       // Surface a stored "out of" the same way the name prefills — a re-mark of
       // this run must ground against the same official total.
@@ -777,7 +758,7 @@ export default function MarkPaperPage() {
     // Keep a name Adrian typed before hitting Mark — the box is now above this
     // button, so blanking it back to the filename would throw away the thing he
     // just wrote. Only an untouched box falls back to the working PDF's name.
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setLoadedName(''); setPaperName((p) => p.trim() || workingNameRef.current); setDbxNote(null);
     let pendingId: string | null = null;
     try {
       // PDF is optional — without it, photos are marked standalone (self-contained
@@ -934,7 +915,7 @@ export default function MarkPaperPage() {
   // on a saved-but-unmarked paper, and the tail of remarkPaper above. The bot fills
   // a never-marked row in place, so the ⏳ entry becomes the marked run.
   async function markFromStored(id: string) {
-    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setPracticeItems(null); setDbxNote(null);
+    setError(''); setPhase('marking'); setResults(null); setTotals(null); setReview(null); setMarked([]); setDbxNote(null);
     // A re-mark is a NEW marked copy of the same run, so it earns a fresh filing.
     autoFiledRef.current.delete(id);
     if (historyRef.current) historyRef.current.open = false;
@@ -1196,7 +1177,7 @@ export default function MarkPaperPage() {
   // only covers the paper currently loaded — Adrian wanted it on past rows too,
   // plus a way to delete junk (abandoned ⏳ uploads, duplicate runs). State is
   // keyed by run id so a slow save on one row never freezes another's buttons.
-  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | 'remark' | undefined>>({});
+  const [rowBusy, setRowBusy] = useState<Record<string, 'dbx' | 'del' | 'now' | 'batch' | 'sheet' | 'cancel' | 'remark' | 'release' | undefined>>({});
   const [rowNote, setRowNote] = useState<Record<string, { ok: boolean; text: string } | undefined>>({});
   const [deletedNote, setDeletedNote] = useState<{ id: string; name: string } | null>(null);
   async function undoDelete() {
@@ -1229,6 +1210,48 @@ export default function MarkPaperPage() {
     } finally {
       setRowBusy((p) => ({ ...p, [run.id]: undefined }));
     }
+  }
+
+  // 📤 Release from the row (30 Sep 2026, the desk retired): for a tagged,
+  // marked paper auto-release did not send — the switch was off or it was missed.
+  async function releaseRun(run: Run) {
+    if (rowBusy[run.id]) return;
+    if (!window.confirm(`Release ${run.paper_name || 'this paper'} to ${run.student_name || 'the student'} now?`)) return;
+    setRowBusy((p) => ({ ...p, [run.id]: 'release' })); setRowNote((p) => ({ ...p, [run.id]: undefined }));
+    try {
+      const r = await fetch('/api/admin/mark-triage', { method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'release', runId: run.id }) });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(d.error || `could not release (${r.status})`);
+      const res = Array.isArray(d.results) ? d.results[0] : null;
+      if (!d.released) throw new Error(res?.note || 'not released');
+      setRowNote((p) => ({ ...p, [run.id]: { ok: true, text: `📤 Released to ${run.student_name || 'the student'}.` } }));
+      loadStats();
+    } catch (e) {
+      setRowNote((p) => ({ ...p, [run.id]: { ok: false, text: (e as Error).message } }));
+    } finally {
+      setRowBusy((p) => ({ ...p, [run.id]: undefined }));
+    }
+  }
+
+  async function queueTicked() {
+    const rows = recentRuns.filter((r) => ticked.has(r.id) && tickableRun(r));
+    const plan = tickPlan(rows.map((r) => ({ id: r.id, studentId: r.student_id ?? null, studentName: r.student_name ?? null, paperSubject: r.paper_subject ?? null })));
+    if (plan.kind !== 'ok' || tickBusy) return;
+    if (!window.confirm(`${tickPlanLine(plan)}\n\nOne sheet per student per maths; papers of the same maths are merged. Any sheet still being written for these papers is stopped.`)) return;
+    setTickBusy(true);
+    const done: string[] = []; let failed: string | null = null;
+    for (const g of plan.groups) {
+      try {
+        const r = await fetch('/api/admin/sheet-jobs', { method: 'POST', headers: authHeaders, body: JSON.stringify(g.runIds.length > 1 ? { runIds: g.runIds } : { runId: g.runIds[0] }) });
+        const d = await r.json().catch(() => ({}));
+        if (!r.ok) { failed = `${g.student} ${g.subject}: ${d.error || r.status}`; break; }
+        done.push(`${g.student} ${g.subject}`);
+      } catch (e) { failed = (e as Error).message; break; }
+    }
+    setTickBusy(false);
+    if (failed) alert(`${done.length ? `Queued: ${done.join(', ')}. ` : ''}Stopped at ${failed}`);
+    else setTicked(new Set());
+    loadStats();
   }
 
   // ✕ on the 📘 badge — stop a sheet Adrian didn't mean to start. A queued one
@@ -1629,63 +1652,6 @@ export default function MarkPaperPage() {
     }
   }
 
-  // ⬇ House-style DOCX of the practice list, built server-side (pandoc on the bot).
-  const [docxBusy, setDocxBusy] = useState(false);
-  async function downloadPracticeDocx() {
-    if (!runId || docxBusy) return;
-    setDocxBusy(true); setError('');
-    try {
-      const r = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'practice-docx', id: runId }),
-      });
-      const d = await r.json();
-      if (!r.ok || !d.url) throw new Error(d.error || `docx failed (${r.status})`);
-      const fname = [...[sendStudentName, paperName].filter(Boolean), 'practice'].join(' — ') + '.docx';
-      window.open(downloadHref(d.url, fname, false), '_blank');
-    } catch (e) { setError((e as Error).message); }
-    finally { setDocxBusy(false); }
-  }
-
-  // 📝 Practice questions — OPT-IN (Adrian, 3 Aug 2026: "put it as an option…
-  // do not do this by default"): one QB-or-generated question per below-max
-  // question, built only when the button is pressed. The bot stores the list on
-  // the run, so pressing again (or reloading the run) never pays twice.
-  async function loadPractice() {
-    if (!runId || practiceBusy) return;
-    setPracticeBusy(true); setError('');
-    try {
-      const r = await fetch('/api/admin/mark-paper', {
-        method: 'POST', headers: authHeaders,
-        body: JSON.stringify({ phase: 'practice', id: runId, model: markModel }),
-      });
-      let d: { error?: string; items?: PracticeItem[] } | null = null;
-      try { d = await r.json(); } catch { d = null; }
-      if (d) {
-        if (!r.ok || d.error) throw new Error(d.error || `practice failed (${r.status})`);
-        if (!d.items?.length) { setError('No practice questions came back — try again, or the wrong questions had no usable match.'); return; }
-        setPracticeItems(d.items);
-        return;
-      }
-      // Unparseable response — the Vercel proxy cuts requests at 300s, and a paper
-      // with many wrong questions generates for longer, so the reply dies as a
-      // plain-text error page ("Unexpected token 'A' … is not valid JSON",
-      // 30 Aug 2026 on Alessi's 12-wrong-question run). The bot finishes anyway
-      // and stores the list on the run — poll for it instead of failing.
-      for (let i = 0; i < 36; i++) {
-        await new Promise((res) => setTimeout(res, 10_000));
-        const rr = await fetch('/api/admin/mark-paper', {
-          method: 'POST', headers: authHeaders, body: JSON.stringify({ phase: 'run', id: runId }),
-        });
-        const rd = await rr.json().catch(() => null);
-        const items: PracticeItem[] | undefined = rd?.run?.result_json?.practice?.items;
-        if (items?.length) { setPracticeItems(items); return; }
-      }
-      setError('Practice is still building server-side (it never pays twice) — reload the run in a few minutes to see the list.');
-    } catch (e) { setError((e as Error).message); }
-    finally { setPracticeBusy(false); }
-  }
-  const wrongCount = (results || []).filter((r) => (r.marking?.total_max ?? 0) > 0 && (r.marking?.total_awarded ?? 0) < (r.marking?.total_max ?? 0)).length;
 
   // Auto-refresh the history while a row is still being marked server-side
   // (⏳, not 🌙-queued, under 15 min old): a marking whose browser connection
@@ -1738,10 +1704,8 @@ export default function MarkPaperPage() {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: 20 }}>
-      {/* Back to the hub on the left, the desk as a button on the right (Adrian, 5 Sep 2026). */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginBottom: 8 }}>
         <a href="/admin" style={{ fontSize: 13, color: '#2563eb', textDecoration: 'none' }}>← Admin</a>
-        <a href="/admin/desk" style={{ fontSize: 13, color: '#fff', background: '#111827', textDecoration: 'none', padding: '6px 10px', borderRadius: 8 }}>🖊 Marking desk</a>
       </div>
       <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 4 }}>Mark a paper</h1>
       <p style={{ color: '#6b7280', marginBottom: 20 }}>Upload the student&rsquo;s working (photos, or a scanned PDF) — plus the question paper (PDF) if there is one — then Mark. With a paper, each photo is marked against it; without one, the marker reads the printed questions off the pages themselves (self-contained worksheets).</p>
@@ -1776,96 +1740,17 @@ export default function MarkPaperPage() {
         </div>
       )}
 
-      {/* 🖥 Mac plan only — the queue's spend switch (11 Sep 2026). */}
-      {macOnly && (
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: macOnly.on ? '#ecfeff' : undefined, borderColor: macOnly.on ? '#a5f3fc' : undefined }} data-mac-only={macOnly.on ? 'on' : 'off'}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700 }}>🖥 Mac plan only{macOnly.on ? ' — ON' : ''}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {macOnly.on
-                ? 'Nothing goes to the API: no ⚡ full-price runs, no ☁️ batch, no takeovers of a quiet Mac. Every paper waits for a Mac slot — ⚡ Mark now and ☁️ Batch now rows too.'
-                : 'Off: the normal split — the Mac gets a head start on each paper, the worker takes what it does not pick up.'}
-              {macOnly.at ? ` · since ${new Date(macOnly.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
-          </div>
-          <button
-            type="button" role="switch" aria-checked={macOnly.on} aria-label="Mac plan only" disabled={macOnlyBusy} onClick={flipMacOnly}
-            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: macOnly.on ? '#0e7490' : '#d1d5db', opacity: macOnlyBusy ? 0.5 : 1, flexShrink: 0 }}
-          >
-            <span style={{ position: 'absolute', top: 4, left: macOnly.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-          </button>
-        </div>
-      )}
+      {/* 🎚 The switches (Mac plan only, the plan accounts, the worker's jobs) live on
+          their own page since 2 Oct 2026 — one line here so the old habit still finds them. */}
+      <a href="/admin/switches" style={{ ...card, display: 'block', fontSize: 13, color: '#4b5563', textDecoration: 'none' }} data-switches-link>
+        🎚 <b>Switches</b> — Mac plan only, the plan accounts and the worker&apos;s jobs are on their own page now →
+      </a>
 
-      {/* 🧪 Science tab for students — the release switch (11 Sep 2026). */}
-      {scienceOpen && (
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: scienceOpen.on ? '#f0fdfa' : undefined, borderColor: scienceOpen.on ? '#99f6e4' : undefined }} data-science-open={scienceOpen.on ? 'on' : 'off'}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700 }}>🧪 Science tab for students{scienceOpen.on ? ' — OPEN' : ' — closed'}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {scienceOpen.on
-                ? 'Every signed-in student sees Math | Science and can hand in physics, chemistry and biology papers — free, marks labelled an estimate, feedback first, “Was this useful?” on every paper.'
-                : 'Closed: students see the maths app only. Your admin login previews the Science tab regardless. One tap opens it to everyone, no deploy.'}
-              {scienceOpen.at ? ` · since ${new Date(scienceOpen.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
-          </div>
-          <button
-            type="button" role="switch" aria-checked={scienceOpen.on} aria-label="Science tab for students" disabled={scienceBusy} onClick={flipScienceOpen}
-            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: scienceOpen.on ? '#0d9488' : '#d1d5db', opacity: scienceBusy ? 0.5 : 1, flexShrink: 0 }}
-          >
-            <span style={{ position: 'absolute', top: 4, left: scienceOpen.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-          </button>
-        </div>
-      )}
-
-      {/* ⏻ Slots by account — one switch per Claude account the Mac slots spend (13 Sep 2026). */}
-      {slotAccounts && (
-        <div style={card} data-slot-accounts>
-          <div style={{ fontWeight: 700 }}>⏻ Marking &amp; sheet slots, by account</div>
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, marginBottom: 8 }}>
-            Every slot picks the emptiest account before each job. Off = never picked; whatever a slot is holding finishes. Live within one tick (30 s marking, 2 min sheets).
-          </div>
-          {slotAccounts.map(a => (
-            <div key={a.email} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: '1px solid #f3f4f6' }} data-slot-account={a.key} data-on={a.on ? 'on' : 'off'}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: 13 }}>{a.email}{a.on ? '' : ' — OFF'}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>
-                  {a.label}
-                  {a.at ? ` · ${a.on ? 'on' : 'off'} since ${new Date(a.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-                </div>
-                {a.usage ? (() => {
-                  const u = a.usage;
-                  const stale = Date.now() - Date.parse(u.at) > 6 * 3600_000;
-                  const sgt = (iso: string | null) => iso ? new Date(iso).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', hour: '2-digit', minute: '2-digit' }) : null;
-                  const meter = (v: number | null, label: string, resets: string | null) => (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} title={resets ? `resets ${sgt(resets)}` : undefined}>
-                      <span style={{ width: 64, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden', display: 'inline-block' }}>
-                        <span style={{ display: 'block', height: '100%', width: `${v ?? 0}%`, background: (v ?? 0) >= 90 ? '#dc2626' : (v ?? 0) >= 70 ? '#f59e0b' : '#16a34a' }} />
-                      </span>
-                      {label} {v === null ? '?' : `${Math.round(v)}%`}
-                    </span>
-                  );
-                  return (
-                    <div data-slot-usage style={{ fontSize: 12, color: stale ? '#9ca3af' : '#374151', marginTop: 4, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                      {meter(u.five_hour, '5 h', u.resets_5h)}
-                      {meter(u.seven_day, 'week', u.resets_7d)}
-                      <span style={{ color: '#9ca3af' }}>read {new Date(u.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{u.from ? ` by ${u.from}` : ''}{stale ? ' (old)' : ''}</span>
-                    </div>
-                  );
-                })() : (
-                  <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>no usage reading yet</div>
-                )}
-              </div>
-              <button
-                type="button" role="switch" aria-checked={a.on} aria-label={`Slots on ${a.email}`} disabled={slotBusy !== null} onClick={() => flipSlotAccount(a.email, !a.on)}
-                style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: a.on ? '#4f46e5' : '#d1d5db', opacity: slotBusy === a.email ? 0.5 : 1, flexShrink: 0 }}
-              >
-                <span style={{ position: 'absolute', top: 4, left: a.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+      {/* ▶️ Auto-release and 🧪 Science tab for students: their switch cards sat here
+          until 1 Oct 2026 (Adrian: "we can remove auto release toggle and science tab
+          toggle > they are done"). Both settings still exist and are still read — the
+          desk-state auto-release switch and the Airtable `science_marking_open` row
+          (POST /api/admin/marking-settings {scienceOpen}) — only the cards are gone. */}
 
       {recentRuns.length > 0 && (
         <details ref={historyRef} style={card}>
@@ -1901,6 +1786,12 @@ export default function MarkPaperPage() {
                 (run.queue_failed || (!run.queued_at && Date.now() - new Date(run.created_at).getTime() >= 4 * 60 * 1000));
               return (
               <div key={run.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: '8px 0', borderTop: '1px solid #f3f4f6', fontSize: 13 }}>
+                {tickableRun(run) ? (
+                  <input type="checkbox" checked={ticked.has(run.id)} aria-label="Tick for a Practice Again sheet"
+                    title="Tick papers for one Practice Again sheet: one per student per maths, papers of the same maths merged"
+                    onChange={() => setTicked((prev) => { const next = new Set(prev); if (next.has(run.id)) next.delete(run.id); else next.add(run.id); return next; })}
+                    style={{ width: 16, height: 16, cursor: 'pointer', flexShrink: 0 }} />
+                ) : <span style={{ width: 16, flexShrink: 0 }} />}
                 <span style={{ color: '#6b7280', minWidth: 120, whiteSpace: 'nowrap' }}>{new Date(run.created_at).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
                 <span style={{ flex: 1, minWidth: 120, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 6 }}>
                   {editTagId === run.id ? (
@@ -2127,6 +2018,13 @@ export default function MarkPaperPage() {
                         </button>
                       </>
                     )}
+                    {run.total_max != null && run.student_id && !run.released_at && !run.archived_at && (
+                      <button type="button" disabled={!!rowBusy[run.id]} title="Send this marked paper to the student now"
+                        onClick={() => releaseRun(run)}
+                        style={{ ...btn, background: '#047857', padding: '4px 10px', fontSize: 12, opacity: rowBusy[run.id] ? 0.6 : 1 }}>
+                        {rowBusy[run.id] === 'release' ? '…' : '📤 Release'}
+                      </button>
+                    )}
                     {hasPdfs && (
                       <button type="button" disabled={!!rowBusy[run.id]} title="Save this marked copy into Dropbox → Marked Papers"
                         onClick={() => rowToDropbox(run)}
@@ -2206,6 +2104,25 @@ export default function MarkPaperPage() {
           </div>
         </details>
       )}
+
+      {/* 📘 The tick bar — one Practice Again sheet per student per maths. */}
+      {(() => {
+        const rows = recentRuns.filter((r) => ticked.has(r.id) && tickableRun(r));
+        if (!rows.length) return null;
+        const plan = tickPlan(rows.map((r) => ({ id: r.id, studentId: r.student_id ?? null, studentName: r.student_name ?? null, paperSubject: r.paper_subject ?? null })));
+        const n = plan.kind === 'ok' ? plan.groups.length : 0;
+        return (
+          <div style={{ position: 'sticky', bottom: 12, zIndex: 20, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', background: '#1e3a8a', color: '#fff', borderRadius: 12, padding: '10px 14px', marginBottom: 16, boxShadow: '0 6px 20px rgba(0,0,0,.18)' }}>
+            <span style={{ flex: 1, minWidth: 180, fontSize: 13 }}>📘 {tickPlanLine(plan)}</span>
+            <button type="button" onClick={queueTicked} disabled={tickBusy || !n}
+              style={{ ...btn, background: '#fff', color: '#1e3a8a', padding: '6px 12px', fontSize: 13 }}>
+              {tickBusy ? '…' : n > 1 ? `Queue ${n} sheets` : 'Queue one sheet'}
+            </button>
+            <button type="button" onClick={() => setTicked(new Set())}
+              style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,.4)', borderRadius: 8, padding: '6px 12px', fontSize: 13, cursor: 'pointer' }}>Clear</button>
+          </div>
+        );
+      })()}
 
       {/* Upload */}
       <div style={card}>
@@ -2633,40 +2550,6 @@ export default function MarkPaperPage() {
               )}
             </div>
           )}
-          {/* 📝 Practice questions — opt-in, one per question that dropped marks. */}
-          {runId && wrongCount > 0 && !practiceItems && (
-            <div style={{ marginTop: 14 }}>
-              <button style={{ ...btn, background: '#b45309', opacity: practiceBusy ? 0.6 : 1 }} disabled={practiceBusy} onClick={loadPractice}>
-                {practiceBusy ? 'Finding practice questions…' : `📝 Practice questions (${wrongCount} wrong)`}
-              </button>
-              <span style={{ marginLeft: 10, color: '#6b7280', fontSize: 13 }}>One per wrong question — from the question bank when it has a match, freshly written when it doesn&rsquo;t. Takes ~a minute.</span>
-            </div>
-          )}
-          {practiceItems && (
-            <div style={{ marginTop: 14, padding: 12, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10 }}>
-              <div style={{ fontWeight: 700, marginBottom: 6, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <span>📝 Practice — one question per dropped-marks question</span>
-                <button style={{ ...btn, background: '#374151', fontSize: 12, padding: '5px 10px', opacity: docxBusy ? 0.6 : 1 }} disabled={docxBusy} onClick={downloadPracticeDocx}
-                  title="House-style Word file — typeset equations, working space, orange answers">
-                  {docxBusy ? 'Building…' : '⬇ DOCX'}
-                </button>
-              </div>
-              {practiceItems.map((it, i) => (
-                <div key={i} style={{ padding: '10px 0', borderTop: i ? '1px solid #fef3c7' : 'none' }}>
-                  <div style={{ fontSize: 12, color: '#92400e', fontWeight: 700, marginBottom: 4 }}>
-                    For Q{it.for}
-                    {it.topic ? ` · ${it.topic}` : ''}
-                    {it.origin ? ` · ${it.origin}` : it.source === 'generated' ? ' · written for this error' : ''}
-                  </div>
-                  <div style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}><MathText text={it.question} /></div>
-                  {it.answer && (
-                    <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Ans: <MathText text={it.answer} /></div>
-                  )}
-                  {it.note && <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4, fontStyle: 'italic' }}><MathText text={it.note} /></div>}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 
@@ -2693,8 +2576,8 @@ export default function MarkPaperPage() {
           student={annotateStudent}
           totals={totals}
           initialPage={annotateInitialPage}
-          // A released paper may be re-inked from here too (20 Sep 2026); the desk is
-          // where the re-issue lives, so this page only says the student's copy is old.
+          // A released paper may be re-inked from here too (20 Sep 2026); Done
+          // re-issues the student's copy (30 Sep 2026).
           allowReleased={!!recentRuns.find((r) => r.id === runId)?.released_at}
           onClose={closeAnnotate}
           onDone={({ url, linked, marks }) => {
@@ -2705,8 +2588,26 @@ export default function MarkPaperPage() {
             const wasReleased = !!recentRuns.find((r) => r.id === runId)?.released_at;
             const marksNote = marks ? ` Marks now ${marks.awarded}/${marks.max}.` : '';
             setSendNote(linked
-              ? { ok: true, text: `Annotated PDF attached — Download and Email now use it.${marksNote}${wasReleased ? ' The student still holds the old copy — re-issue it from the desk.' : ''}` }
+              ? { ok: true, text: `Annotated PDF attached — Download and Email now use it.${marksNote}${wasReleased ? ' Re-issuing the student\u2019s copy…' : ''}` }
               : { ok: false, text: 'Annotated PDF built (usable this session), but linking it to the run failed — hit Done again later to relink.' });
+            // ✏️ Annotate is the one way to change marks (30 Sep 2026, the desk
+            // retired): Done carries the change through. A released paper is
+            // re-issued to the student; an unreleased one has its PDFs rebuilt
+            // so pdf_stale clears and the release is not refused.
+            const doneRun = runId;
+            if (linked && doneRun) {
+              const call = wasReleased
+                ? fetch('/api/admin/mark-triage', { method: 'POST', headers: authHeaders, body: JSON.stringify({ action: 'reissue', runId: doneRun }) })
+                : fetch('/api/admin/desk/rebuild', { method: 'POST', headers: authHeaders, body: JSON.stringify({ runId: doneRun }) });
+              call.then(async (r) => {
+                const d = await r.json().catch(() => ({}));
+                if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+                if (wasReleased) setSendNote({ ok: true, text: `Annotated and re-issued: the student now has the new copy${d.max != null ? ` (${d.awarded}/${d.max})` : ''}.` });
+              }).catch((e) => setSendNote({ ok: false, text: wasReleased
+                ? `Annotated, but re-issuing to the student failed: ${(e as Error).message}. Tap Done again to retry.`
+                : `Annotated, but rebuilding the PDFs failed: ${(e as Error).message}.` }))
+                .finally(() => loadStats());
+            }
             loadStats();
           }}
         />

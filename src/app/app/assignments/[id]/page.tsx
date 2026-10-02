@@ -10,6 +10,7 @@ import { assignmentHref, dueLabel, isOverdue, isPage, opensInGrader } from '@/li
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 import { fileHref } from '@/lib/student-files-url';
+import OpenInApp from '../../marking/OpenInApp';
 export const dynamic = 'force-dynamic';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
@@ -24,6 +25,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   const due = dueLabel(a.due_on);
   const overdue = isOverdue(a);
   const page = isPage(a);
+  const photoSheet = a.source === 'practice-photo';
 
   // If it's been marked, find whether the run is released so we can link it.
   let released = false;
@@ -36,12 +38,14 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>
+        {photoSheet
+          ? <Link href="/app/practice" className="text-sm text-gray-500 hover:text-navy">← Practice</Link>
+          : <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>}
       </div>
 
       <div className={`${CARD} p-5 space-y-3`}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{photoSheet ? '📷 Your practice sheet' : page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
           <h1 className="text-lg font-bold text-navy">{a.title}</h1>
           <p className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2">
             {a.topic && <span>{a.topic}</span>}
@@ -80,14 +84,12 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
         )}
         {a.pdf_url && (
           <div className="flex gap-2">
-            <a href={fileHref(a.pdf_url)} target="_blank" rel="noopener noreferrer"
-              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
-              ↗ Open PDF
-            </a>
-            <a href={fileHref(a.pdf_url)} download
-              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5">
-              ⬇ Download to print
-            </a>
+            {/* 🖨 Print = the share sheet (Print, Files, GoodNotes…); Open = a tab, or the share sheet inside the
+                installed app, where a tab has no toolbar and `download` does nothing (28 Sep 2026). */}
+            <OpenInApp url={fileHref(a.pdf_url)} name={a.title || 'Worksheet'} label="🖨 Print" title="Print the worksheet or save the PDF"
+              className="flex-1 text-center text-sm font-semibold text-white bg-navy rounded-xl px-4 py-2.5 hover:opacity-90 disabled:opacity-60" />
+            <OpenInApp url={fileHref(a.pdf_url)} name={a.title || 'Worksheet'} label="↗ Open PDF" mode="tab" title="Open the PDF"
+              className="flex-1 text-center text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-black/10 hover:bg-navy/5 disabled:opacity-60" />
           </div>
         )}
       </div>

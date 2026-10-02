@@ -79,9 +79,17 @@ export async function POST(req: NextRequest) {
       try {
         const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
         const { data: rows } = await getSupabaseAdmin()
-          .from('paper_marking_runs').select('id, checked_at').in('id', ids);
-        const byId = new Map((rows ?? []).map((row) => [row.id as string, row.checked_at as string | null]));
-        for (const run of data.runs) run.checked_at = byId.get(run.id) ?? null;
+          .from('paper_marking_runs').select('id, checked_at, paper_subject, paper_kind:result_json->source->>paper_kind').in('id', ids);
+        type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null };
+        const byId = new Map(((rows ?? []) as R[]).map((row) => [row.id, row]));
+        // paper_subject + practice_again feed the list's ticks for a merged
+        // Practice Again sheet (30 Sep 2026, the desk retired into this page).
+        for (const run of data.runs) {
+          const row = byId.get(run.id);
+          run.checked_at = row?.checked_at ?? null;
+          run.paper_subject = row?.paper_subject ?? null;
+          run.practice_again = row?.paper_kind === 'practice-again' || /^\s*practice again\b/i.test(String(run.paper_name || ''));
+        }
       } catch { /* the list is still useful without the split */ }
       // 📘 Self-study sheet state, merged the same way (31 Aug 2026). Queueing a
       // sheet used to leave no trace on the row: the green confirmation vanished

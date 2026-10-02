@@ -1,3 +1,4 @@
+import { parseSourceFilename } from './extraction-inbox';
 import { describe, it, expect } from 'vitest';
 import {
   chunkRanges, describeParts, parseCoverAnswer, partFileName, planSplit,
@@ -70,6 +71,15 @@ describe('planSplit — where the book is cut', () => {
   });
   it('ignores a cover beyond the last page', () => {
     expect(planSplit([cover(1, 1), cover(99, 2)], 20)).toEqual({ kind: 'single', paper: 1, year: 2025 });
+  });
+});
+
+describe('partFileName — every level reads back as itself (30 Sep 2026)', () => {
+  const LEVELS = ['AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S1_NA', 'S2_NA', 'S1_NT', 'S2_NT', 'S3_EM', 'S3_AM', 'S3_EM_NA', 'S3_EM_NT', 'S3_AM_NA',
+    'JC1', 'JC2', 'JC2_H1', 'BIO', 'CHEM', 'PHYS', 'S3_BIO', 'S3_CHEM', 'S3_PHYS', 'CS_CHEM', 'CS_PHYS', 'CS_BIO', 'CS_CHEM_NA', 'CS_PHYS_NA', 'CS_BIO_NA'];
+  it.each(LEVELS)('%s', (level) => {
+    const name = partFileName({ level, year: 2023, school: 'Dunearn', examType: 'Prelim' }, { paper: 2, year: 2023 });
+    expect(parseSourceFilename(name)).toMatchObject({ ok: true, level, school: 'Dunearn', year: 2023, paper: 'p2' });
   });
 });
 

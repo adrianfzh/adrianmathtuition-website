@@ -130,8 +130,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const scienceTabs = scienceOpen
     ? [
         { href: '/app/science', label: 'Home' },
+        { href: '/app/science/practice', label: 'Practise' },   // 1 Oct 2026 — MCQ by topic, the lost topics first
         { href: '/app/science/submit', label: 'Hand in', fab: true },
         { href: '/app/science/papers', label: 'Papers' },
+        { href: '/app/science/my-notes', label: 'My Notebook' },   // 1 Oct 2026 — the science mistakes, apart from the maths ones
       ]
     : [];
   // ✍️ The Languages family's menu (SPEC-ESSAY-MARKING.md, 12 Sep 2026): Home · Hand in · Essays.

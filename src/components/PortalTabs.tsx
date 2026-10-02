@@ -27,6 +27,8 @@ function isActive(pathname: string, href: string): boolean {
   // The Science tab's Home is only its own page — its Hand in and Papers have their own tabs.
   if (href === '/app/science') return pathname === '/app/science';
   if (href === '/app/languages') return pathname === '/app/languages';
+  // A science paper's page (/app/science/marking/<id>) belongs to the Science Papers tab.
+  if (href === '/app/science/papers') return pathname === href || pathname.startsWith(href + '/') || pathname.startsWith('/app/science/marking/');
   return pathname === href || pathname.startsWith(href + '/');
 }
 

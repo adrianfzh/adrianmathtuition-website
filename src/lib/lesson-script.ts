@@ -142,6 +142,33 @@ export type MarkKind = (typeof MARK_KINDS)[number];
 export const CLEAR_SCOPES = ['pen', 'marks', 'notes', 'focus', 'board'] as const;
 export type ClearScope = (typeof CLEAR_SCOPES)[number];
 
+/** The character's poses (the cartoon TEACHER at the board's corner, 1 Oct 2026):
+ *  `idle` breathes, `point` the pointer toward the board, `think` chin on hand with a "?",
+ *  `oops` a gentle "hmm, careful" (raised brow, a hand up), `nod` a small nod,
+ *  `cheer` a thumbs-up and sparkles. */
+export const CHARACTER_POSES = ['idle', 'point', 'think', 'oops', 'nod', 'cheer'] as const;
+export type CharacterPose = (typeof CHARACTER_POSES)[number];
+
+/** Whether a script has the character at all, and which one. `none` is the
+ *  default, so every committed lesson renders byte-identically; the explain clip
+ *  sets `tutor-picture` (the generated tutor's six PNG cut-outs, 1 Oct 2026).
+ *  `teacher` is the drawn cartoon; `student` stays accepted (older scripts) and
+ *  draws the same teacher. */
+export const LESSON_CHARACTERS = ['teacher', 'student', 'none', 'tutor-picture'] as const;
+export type LessonCharacter = (typeof LESSON_CHARACTERS)[number];
+
+/** Stickers (1 Oct 2026, Adrian: "do the stickers") — small reaction pictures the
+ *  clip drops onto the board at the moment the voice says the thing, gone when the
+ *  next beat starts (the 洋葱学园 / 作业帮 "viral shot"). A FIXED curated set — never
+ *  a live search; the art is app/lesson/[slug]/lesson-stickers.tsx, one inline SVG
+ *  per kind, so a LottieFiles / Tenor asset can replace any one behind its name. */
+export const STICKER_KINDS = [
+  'facepalm', 'lightbulb', 'confetti', 'magnifier', 'warning', 'check', 'question', 'fire', 'sweat', 'star', 'clap', 'eyes',
+  // Ten more (1 Oct 2026, Adrian: "are there more?")
+  'thumbsup', 'hundred', 'clock', 'rocket', 'trophy', 'brain', 'pencil', 'zzz', 'exclaim', 'target',
+] as const;
+export type StickerKind = (typeof STICKER_KINDS)[number];
+
 /**
  * What a write / reveal / focus points at — exactly ONE of these per action.
  * `step` = an equation-steps line, `callout` = an annotate callout, `token` = a
@@ -179,10 +206,14 @@ export type BeatAction =
   /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
   | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
   /** Wipe the pen layer (default) or the whole board. */
-  | ({ do: 'clear'; what?: ClearScope } & Timed);
+  | ({ do: 'clear'; what?: ClearScope } & Timed)
+  /** The character (the teacher) at the board's corner takes this pose (held until the next one; a scene starts `idle`). */
+  | ({ do: 'character'; pose: CharacterPose } & Timed)
+  /** A sticker pops in beside the token `near` (else the board's top-right corner) and is gone when the next beat starts. At most ONE per beat. */
+  | ({ do: 'sticker'; kind: StickerKind; near?: string } & Timed);
 
 export type BeatActionKind = BeatAction['do'];
-export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear'];
+export const BEAT_ACTION_KINDS: readonly BeatActionKind[] = ['write', 'reveal', 'highlight', 'move', 'morph', 'mark', 'note', 'focus', 'clear', 'character', 'sticker'];
 
 export interface Beat {
   /** One spoken idea — plain English, no TeX, ≤ ~40 words (the verifier warns above). */
@@ -246,6 +277,10 @@ export interface LessonScript {
   minutes: number;
   /** The stage's look (default `slide` — the original card, untouched). */
   theme?: LessonTheme;
+  /** The cartoon teacher at the board's corner (default `none`; the player also
+   *  shows it when a board theme's beats carry `character` actions; `student` is
+   *  the older name for the same figure). */
+  character?: LessonCharacter;
   scenes: Scene[];
 }
 
@@ -543,6 +578,19 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
         errors.push(`${where}: what must be one of ${CLEAR_SCOPES.join('/')}`);
       }
       break;
+    case 'character':
+      if (!(CHARACTER_POSES as readonly unknown[]).includes(a.pose)) {
+        errors.push(`${where}: pose must be one of ${CHARACTER_POSES.join('/')} (got "${String(a.pose)}")`);
+      }
+      break;
+    case 'sticker':
+      if (!(STICKER_KINDS as readonly unknown[]).includes(a.kind)) {
+        errors.push(`${where}: kind must be one of ${STICKER_KINDS.join('/')} (got "${String(a.kind)}")`);
+      }
+      if (a.near !== undefined && (!nonEmptyString(a.near) || !scope.tokenIds.has(a.near))) {
+        errors.push(`${where}: near "${String(a.near)}" is not a token id in this scene`);
+      }
+      break;
   }
 }
 
@@ -572,6 +620,7 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
     if (!Array.isArray(b.do)) { errors.push(`${bAt}: do must be an array of actions (empty for a beat that only speaks)`); return; }
     if (scope === null) return; // the scene body failed — references cannot be judged
     let lastAt = -1;
+    let stickers = 0;
     b.do.forEach((action, j) => {
       const aAt = `${bAt}.do[${j}]`;
       validateAction(action, scope, aAt, errors);
@@ -579,6 +628,8 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
         if (action.at < lastAt) errors.push(`${aAt}: at ${action.at} runs backwards — actions fire in listed order, so at must not decrease within a beat`);
         lastAt = Math.max(lastAt, action.at);
       }
+      // One sticker per beat (Adrian's rule): a second one would land on the first.
+      if (isRecord(action) && action.do === 'sticker' && ++stickers === 2) errors.push(`${aAt}: a beat carries at most one sticker`);
     });
   });
 }
@@ -743,6 +794,9 @@ export function validateLessonScript(input: unknown): ValidationResult {
   }
   if (input.theme !== undefined && !(LESSON_THEMES as readonly unknown[]).includes(input.theme)) {
     errors.push(`theme must be one of ${LESSON_THEMES.join('/')} (got "${String(input.theme)}")`);
+  }
+  if (input.character !== undefined && !(LESSON_CHARACTERS as readonly unknown[]).includes(input.character)) {
+    errors.push(`character must be one of ${LESSON_CHARACTERS.join('/')} (got "${String(input.character)}")`);
   }
   if (!Array.isArray(input.scenes) || input.scenes.length === 0) {
     errors.push('scenes must be a non-empty array');

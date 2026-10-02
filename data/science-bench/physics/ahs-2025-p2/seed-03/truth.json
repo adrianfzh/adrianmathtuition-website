@@ -1,0 +1,162 @@
+{
+ "run_id": null,
+ "subject": "physics",
+ "source": "seeded",
+ "label": "seeded · E · seed 3",
+ "questions": [
+  {
+   "question": "1",
+   "label": "(a)",
+   "awarded": 1,
+   "max": 2,
+   "note": "MISS_POINT"
+  },
+  {
+   "question": "1",
+   "label": "(b)(i)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "1",
+   "label": "(b)(ii)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "7",
+   "label": "(a)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_WORD"
+  },
+  {
+   "question": "7",
+   "label": "(b)",
+   "awarded": 0,
+   "max": 2,
+   "note": "BLANK"
+  },
+  {
+   "question": "7",
+   "label": "(d)",
+   "awarded": 1,
+   "max": 2,
+   "note": "MISS_POINT"
+  },
+  {
+   "question": "9",
+   "label": "(a)",
+   "awarded": 1,
+   "max": 1,
+   "note": "CLEAN"
+  },
+  {
+   "question": "9",
+   "label": "(b)",
+   "awarded": 0,
+   "max": 2,
+   "note": "BLANK"
+  },
+  {
+   "question": "9",
+   "label": "(c)",
+   "awarded": 1,
+   "max": 2,
+   "note": "HALF_POINT"
+  },
+  {
+   "question": "11",
+   "label": "(a)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "11",
+   "label": "(b)",
+   "awarded": 0,
+   "max": 1,
+   "note": "BLANK"
+  },
+  {
+   "question": "11",
+   "label": "(c)",
+   "awarded": 0,
+   "max": 1,
+   "note": "EXTRA_WRONG"
+  },
+  {
+   "question": "11",
+   "label": "(d)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "11",
+   "label": "(e)(i)",
+   "awarded": 0,
+   "max": 2,
+   "note": "WRONG_WORD"
+  },
+  {
+   "question": "11",
+   "label": "(e)(ii)",
+   "awarded": 0,
+   "max": 1,
+   "note": "BLANK"
+  },
+  {
+   "question": "11",
+   "label": "(e)(iii)",
+   "awarded": 1,
+   "max": 3,
+   "note": "WRONG_FORMULA"
+  },
+  {
+   "question": "12",
+   "label": "(a)",
+   "awarded": 1,
+   "max": 2,
+   "note": "MISS_POINT"
+  },
+  {
+   "question": "12",
+   "label": "(b)(i)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "12",
+   "label": "(b)(ii)",
+   "awarded": 1,
+   "max": 2,
+   "note": "WRONG_FORMULA"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iii)",
+   "awarded": 0,
+   "max": 1,
+   "note": "WRONG_ANSWER"
+  },
+  {
+   "question": "12",
+   "label": "(b)(iv)",
+   "awarded": 0,
+   "max": 2,
+   "note": "BLANK"
+  },
+  {
+   "question": "12",
+   "label": "(c)",
+   "awarded": 0,
+   "max": 2,
+   "note": "WRONG_WORD"
+  }
+ ]
+}

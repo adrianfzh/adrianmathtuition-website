@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  groupPracticeTodo, todoState, sectionFor, visibleToStudent, todoTotals, todoStateLabel, todoSubtitle, sourceRunIds,
+  groupPracticeTodo, practiceTabSections, splitDoneFold, studentMayComplete, todoState, sectionFor, visibleToStudent, todoTotals, todoStateLabel, todoSubtitle, sourceRunIds,
   TODO_SECTIONS,
 } from './practice-todo';
 import type { AssignmentRow } from './assignments';
@@ -84,9 +84,9 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
     expect(sections[2].items.map(i => i.state)).toEqual(['todo']);
   });
   it('counts per section and in total', () => {
-    expect(sections[0].counts).toEqual({ writing: 0, todo: 2, done: 0, marked: 1 });
-    expect(sections[1].counts).toEqual({ writing: 0, todo: 1, done: 1, marked: 0 });
-    expect(todoTotals(sections)).toEqual({ writing: 0, todo: 4, done: 1, marked: 1 });
+    expect(sections[0].counts).toEqual({ writing: 0, todo: 2, done: 0, marked: 1, ticked: 0 });
+    expect(sections[1].counts).toEqual({ writing: 0, todo: 1, done: 1, marked: 0, ticked: 0 });
+    expect(todoTotals(sections)).toEqual({ writing: 0, todo: 4, done: 1, marked: 1, ticked: 0 });
   });
   it('a practice-photo row still being written lands in its own section, counted as writing, first in its band', () => {
     const g = groupPracticeTodo([
@@ -95,13 +95,13 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
     ]);
     const photo = g.find(s => s.key === 'practice-photo')!;
     expect(photo.items.map(i => i.state)).toEqual(['writing', 'todo']);
-    expect(photo.counts).toEqual({ writing: 1, todo: 1, done: 0, marked: 0 });
+    expect(photo.counts).toEqual({ writing: 1, todo: 1, done: 0, marked: 0, ticked: 0 });
   });
   it('handles no rows at all', () => {
     const empty = groupPracticeTodo([]);
     expect(empty).toHaveLength(4);
     expect(empty.every(s => s.items.length === 0)).toBe(true);
-    expect(todoTotals(empty)).toEqual({ writing: 0, todo: 0, done: 0, marked: 0 });
+    expect(todoTotals(empty)).toEqual({ writing: 0, todo: 0, done: 0, marked: 0, ticked: 0 });
   });
 });
 
@@ -124,5 +124,54 @@ describe('labels', () => {
       { source: 'practice-again', source_run_id: 'r2' }, { source: 'adrian', source_run_id: 'r3' },
       { source: 'practice-again', source_run_id: null },
     ])).toEqual(['r1', 'r2']);
+  });
+});
+
+describe('practiceTabSections — Practice Again is not on the tab (Adrian, 1 Oct 2026)', () => {
+  it('drops the practice-again section and keeps the other three in order', () => {
+    const rows = [
+      row({ id: 'a', source: 'adrian' }),
+      row({ id: 'p', source: 'practice-again', source_run_id: 'run-1' }),
+      row({ id: 'f', source: 'find' }),
+      row({ id: 'g', source: 'practice-photo' }),
+    ];
+    const tab = practiceTabSections(groupPracticeTodo(rows));
+    expect(tab.map(s => s.key)).toEqual(['adrian', 'find', 'practice-photo']);
+    expect(tab.flatMap(s => s.items.map(i => i.id))).toEqual(['a', 'f', 'g']);
+    // the tab's summary counts only what the tab shows
+    expect(todoTotals(tab).todo).toBe(3);
+  });
+  it('the full grouping still carries the section for other readers', () => {
+    const all = groupPracticeTodo([row({ id: 'p', source: 'practice-again' })]);
+    expect(all.find(s => s.key === 'practice-again')?.items.map(i => i.id)).toEqual(['p']);
+  });
+});
+
+describe('the Done fold + the Done button (Adrian, 1 Oct 2026)', () => {
+  it('finished items (marked, or ticked Done) leave their section for the fold, newest finished first', () => {
+    const rows = [
+      row({ id: 't1', source: 'find', status: 'assigned' }),
+      row({ id: 'm1', source: 'find', status: 'marked', score: 3, out_of: 5, marked_at: '2026-09-20T00:00:00Z' }),
+      row({ id: 'c1', source: 'practice-photo', status: 'completed', completed_at: '2026-09-25T00:00:00Z' }),
+      row({ id: 'w1', source: 'practice-photo', status: 'writing' }),
+      row({ id: 'a1', source: 'adrian', status: 'submitted' }),
+    ];
+    const { active, done, doneCounts } = splitDoneFold(groupPracticeTodo(rows));
+    expect(active.flatMap(s => s.items.map(i => i.id))).toEqual(['a1', 't1', 'w1']);
+    expect(done.map(i => i.id)).toEqual(['c1', 'm1']);
+    expect(done.map(i => i.state)).toEqual(['ticked', 'marked']);
+    expect(doneCounts).toEqual({ marked: 1, ticked: 1 });
+    // the active counts no longer include finished work
+    expect(todoTotals(active)).toMatchObject({ todo: 1, done: 1, writing: 1, marked: 0, ticked: 0 });
+    expect(todoStateLabel('ticked', { score: null, out_of: null })).toBe('Done');
+  });
+  it('the student may tick Done only their own to-do items — finds and photos, not Adrian\'s work or Practice Again', () => {
+    expect(studentMayComplete({ status: 'assigned', source: 'find' })).toBe(true);
+    expect(studentMayComplete({ status: 'assigned', source: 'practice-photo' })).toBe(true);
+    expect(studentMayComplete({ status: 'assigned', source: 'adrian' })).toBe(false);
+    expect(studentMayComplete({ status: 'assigned', source: 'practice-again' })).toBe(false);
+    expect(studentMayComplete({ status: 'writing', source: 'practice-photo' })).toBe(false);
+    expect(studentMayComplete({ status: 'marked', source: 'find' })).toBe(false);
+    expect(studentMayComplete({ status: 'completed', source: 'find' })).toBe(false);
   });
 });

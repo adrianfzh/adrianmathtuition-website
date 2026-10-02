@@ -288,6 +288,36 @@ export async function GET(req: NextRequest) {
       if (!q.ok) throw new Error(`columns? HTTP ${q.status}: ${(await q.text()).slice(0, 120)}`);
       return `page ${r.status}`;
     }),
+    // The qualitative-analysis flashcards (24 Sep 2026): the Chemistry tab's
+    // door must not 404. Anonymous → the login redirect, which is fine.
+    // The Science Practise tab (1 Oct 2026): its door must not 404. Anonymous → the login redirect.
+    timed('portal-science-practice', async () => {
+      const r = await fetch(`${base}/app/science/practice`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/practice is missing — the Science Practise door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
+    // ▶ The one-minute explanation (1 Oct 2026): the door on every mistake card; an
+    // anonymous visitor is sent to /login by the /app layout, never a 404 or a 500.
+    timed('portal-explain', async () => {
+      const r = await fetch(`${base}/app/marking/00000000-0000-4000-8000-000000000000/explain/1`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/marking/[id]/explain/[q] is missing — the Explain it door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
+    // 🔊 The explanation's voice (1 Oct 2026): the clip door must refuse anonymous
+    // before it reads a run or spends a TTS call.
+    timed('portal-explain-voice', async () => {
+      const r = await fetch(`${base}/api/portal/explain/voice`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    timed('portal-science-qa', async () => {
+      const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     // Every released paper carries a subject (SPEC-PORTAL-V2 §1): the Papers
     // page pills, the per-subject tiles and the subject gate all key on
     // paper_subject. The bot stamps it at save-paper and /api/portal/submit
@@ -464,6 +494,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // ➕ Add pages to a waiting hand-in (29 Sep 2026): the student's door; anonymous is refused.
+    timed('add-pages', async () => {
+      const r = await fetch(`${base}/api/portal/handin/add-pages`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('practice-again-request', async () => {
       const r = await fetch(`${base}/api/portal/practice-again/request`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
@@ -475,6 +511,13 @@ export async function GET(req: NextRequest) {
     // it claims. Anonymous must be refused; the workers carry the admin token.
     timed('slot-accounts', async () => {
       const r = await fetch(`${base}/api/admin/slot-accounts`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    // 🎚 The worker's job switches (2 Oct 2026): the Fly worker's scheduler reads this
+    // every two minutes. Anonymous must be refused.
+    timed('worker-jobs', async () => {
+      const r = await fetch(`${base}/api/admin/worker-jobs`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
@@ -619,6 +662,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 👯 The flip's one door (SPEC-TWINS §6, 30 Sep 2026) — admin only.
+    timed('serving-policy', async () => {
+      const r = await fetch(`${base}/api/admin/serving-policy`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-activity', async () => {
       const r = await fetch(`${base}/api/admin/portal-activity`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
@@ -643,6 +692,13 @@ export async function GET(req: NextRequest) {
       const r = await fetch(`${base}/api/portal/marking-pdf?run=00000000-0000-4000-8000-000000000000`, { redirect: 'manual', signal: T(10000) });
       if (![301, 302, 303, 307, 308, 401].includes(r.status)) throw new Error(`expected a login redirect or 401, got HTTP ${r.status}`);
       return `gate up (${r.status})`;
+    }),
+    // "Download all my marked papers" (2 Oct 2026) — also the leaver's door on
+    // /app/pass. Anonymous → 401 proves the route exists and its gate is up.
+    timed('portal-marked-papers-zip', async () => {
+      const r = await fetch(`${base}/api/portal/marked-papers-zip`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
     }),
     // The exam library (SPEC-PAPER-MATCH phase 2, 7 Sep 2026): paper_library must
     // resolve and hold rows, or every queued paper silently marks ungrounded.
@@ -715,6 +771,11 @@ export async function GET(req: NextRequest) {
         ['/api/portal/practice/photo/done', 'POST'],
         ['/api/portal/practice/report', 'POST'],
         ['/api/admin/generated', 'GET'],
+        // §14 (24 Sep 2026): the "Write my sheet" door, the science waiting
+        // list's Remove door and the midnight queue cron.
+        ['/api/portal/practice/sheet', 'POST'],
+        ['/api/portal/science/queue', 'POST'],
+        ['/api/cron/daily-queue', 'GET'],
       ];
       for (const [path, method] of probes) {
         const r = await fetch(`${base}${path}`, { method, redirect: 'manual', signal: T(10000), headers: { 'Content-Type': 'application/json' }, body: method === 'POST' ? '{}' : undefined });
@@ -795,21 +856,6 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
-    // "Save to My Notebook" (/app/my-notes + the ✂️ clipper on /app/marking).
-    // Anonymous 401 proves the route is deployed with its auth gate up; the
-    // REST probe proves portal_notes still answers — a dropped table would
-    // otherwise surface only as students' clippings silently vanishing.
-    timed('portal-my-notes', async () => {
-      const r = await fetch(`${base}/api/portal/my-notes`, { redirect: 'manual', signal: T(10000) });
-      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
-      const key = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-      const q = await fetch(
-        `${process.env.SUPABASE_URL}/rest/v1/portal_notes?select=id&limit=1`,
-        { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: T(10000) }
-      );
-      if (!q.ok) throw new Error(`portal_notes? HTTP ${q.status}`);
-      return 'auth gate up';
-    }),
     // Practice topic picker (/app/practice → lib/practice-strands + topic-picker).
     // The question-type route must hold its auth gate, and the two RPCs the
     // picker is built on must still answer with rows for a JC bank AND a Sec 3
@@ -858,6 +904,12 @@ export async function GET(req: NextRequest) {
     // /app/practice. Anonymous GET must be 401, never a method note.
     timed('portal-hint', async () => {
       const r = await fetch(`${base}/api/portal/practice/hint?id=00000000-0000-0000-0000-000000000000`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    // 🪜 Stuck? Next step (1 Oct 2026): the ladder GET sits behind the session.
+    timed('portal-ladder', async () => {
+      const r = await fetch(`${base}/api/portal/practice/ladder?id=00000000-0000-0000-0000-000000000000&n=1`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),

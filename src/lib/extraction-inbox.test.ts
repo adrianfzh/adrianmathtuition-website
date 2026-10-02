@@ -26,6 +26,10 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
     expect(parseSourceFilename('AM (NA) Prelim 2022 Beatty P1.pdf')).toMatchObject({ level: 'AM_NA', school: 'Beatty', paper: 'p1' });
     expect(parseSourceFilename('AM S3 SA2 2021 Pierce.pdf')).toMatchObject({ level: 'S3_AM', examType: 'SA2' });
     expect(parseSourceFilename('EM S2 SA2 2014 Raffles Institution.docx')).toMatchObject({ level: 'S2', school: 'Raffles Institution' });
+    // lower-sec N(A): the Sec 1 G2 papers (28 Sep 2026)
+    expect(parseSourceFilename('EM S1 SA2 (NA) 2023 Ahmad Ibrahim.docx')).toMatchObject({ level: 'S1_NA', year: 2023, examType: 'SA2', school: 'Ahmad Ibrahim' });
+    expect(parseSourceFilename('EM S1 G2 SA2 2025 Chung Cheng High (Yishun) (Set 5).pdf')).toMatchObject({ level: 'S1_NA', year: 2025, school: 'Chung Cheng High (Yishun) (Set 5)' });
+    expect(parseSourceFilename('EM S2 (NA) SA1 2024 Bartley.pdf')).toMatchObject({ level: 'S2_NA', examType: 'SA1', school: 'Bartley' });
   });
   it('picks up a paper number and maps EOY to SA2', () => {
     expect(parseSourceFilename('AM PRELIM 2021 Bukit Panjang Government High P1.pdf')).toMatchObject({ paper: 'p1', school: 'Bukit Panjang Government High' });
@@ -49,6 +53,71 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
     expect(parseSourceFilename('AM PRELIM Bedok South.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('year') });
     expect(parseSourceFilename('AM PRELIM 2025.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('no school') });
     expect(parseSourceFilename('notes.txt')).toMatchObject({ ok: false, ext: null });
+  });
+});
+
+describe('parseSourceFilename — G2 A-Math and H1 (30 Sep 2026)', () => {
+  it('Sec 3 G2 A-Math is S3_AM_NA, never S3 E-Math G2; Sec 4 stays AM_NA', () => {
+    expect(parseSourceFilename('S3 AM SA2 (NA) 2020 Bedok South P1.pdf')).toMatchObject({ ok: true, level: 'S3_AM_NA', school: 'Bedok South', paper: 'p1' });
+    expect(parseSourceFilename('S3 EM SA2 (NA) 2020 Bedok South P1.pdf')).toMatchObject({ ok: true, level: 'S3_EM_NA' });
+    expect(parseSourceFilename('AM PRELIM (NA) 2021 Bedok South P2.pdf')).toMatchObject({ ok: true, level: 'AM_NA', paper: 'p2' });
+  });
+  it('Sec 1–2 G1 is S1_NT / S2_NT; Sec 3 G1 stays S3_EM_NT', () => {
+    expect(parseSourceFilename('S2 SA2 (NT) 2023 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NT', school: 'Bedok View' });
+    expect(parseSourceFilename('S2 G1 SA2 2023 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NT' });
+    expect(parseSourceFilename('S3 SA2 (NT) 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S3_EM_NT' });
+    expect(parseSourceFilename('S2 SA2 (NA) 2018 Bedok View.pdf')).toMatchObject({ ok: true, level: 'S2_NA' });
+  });
+  it('H1 wins over a JC2 token', () => {
+    expect(parseSourceFilename('JC2 H1 PRELIM 2019 ACJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'ACJC', examType: 'Prelim' });
+    expect(parseSourceFilename('H1 PRELIM 2021 TMJC.pdf')).toMatchObject({ ok: true, level: 'JC2_H1', school: 'TMJC' });
+    expect(parseSourceFilename('JC2 PRELIM 2019 ACJC P1.pdf')).toMatchObject({ ok: true, level: 'JC2' });
+  });
+});
+
+describe('parseSourceFilename — the science tokens (26 Sep 2026)', () => {
+  it('a pure science at Sec 4: BIO / CHEM / PHY and their long forms, filed for the science bank', () => {
+    expect(parseSourceFilename('BIO PRELIM 2018 West Spring P1.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', year: 2018, school: 'West Spring', examType: 'Prelim', paper: 'p1' });
+    expect(parseSourceFilename('BIO MYE 2022 SASS P2.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', examType: 'MYE', school: 'SASS', paper: 'p2' });
+    expect(parseSourceFilename('CHEM PRELIM 2023 Bedok View P1.pdf')).toMatchObject({ ok: true, level: 'CHEM', subject: 'chemistry', school: 'Bedok View' });
+    expect(parseSourceFilename('PHY PRELIM 2024 Anderson P2.pdf')).toMatchObject({ ok: true, level: 'PHYS', subject: 'physics', school: 'Anderson', paper: 'p2' });
+    expect(parseSourceFilename('Physics Prelim 2024 Anderson Paper 1.pdf')).toMatchObject({ ok: true, level: 'PHYS', subject: 'physics', school: 'Anderson', paper: 'p1' });
+    expect(parseSourceFilename('PURE BIOLOGY 6093 PRELIM 2022 Anglo-Chinese School (Independent) P1.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', school: 'Anglo-Chinese School (Independent)' });
+  });
+  it('Combined Science (30 Sep 2026): CS / Sci / Comb beside the subject → CS_CHEM / CS_PHYS / CS_BIO, G2 or (NA) → _NA', () => {
+    expect(parseSourceFilename('CS CHEM PRELIM 2024 Bowen P3.pdf')).toMatchObject({ ok: true, level: 'CS_CHEM', subject: 'chemistry', year: 2024, school: 'Bowen', examType: 'Prelim', paper: 'p3' });
+    expect(parseSourceFilename('CS PHY G2 PRELIM 2023 Dunearn P2 MS.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS_NA', subject: 'physics', school: 'Dunearn', paper: 'p2' });
+    expect(parseSourceFilename('CS BIO PRELIM 2024 Mayflower P4.pdf')).toMatchObject({ ok: true, level: 'CS_BIO', school: 'Mayflower', paper: 'p4' });
+    expect(parseSourceFilename('Sci Chem PRELIM 2020 Serangoon P3.docx')).toMatchObject({ ok: true, level: 'CS_CHEM', school: 'Serangoon' });
+    expect(parseSourceFilename('CS PHY (NA) SA2 2018 Kranji P2.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS_NA', school: 'Kranji' });
+  });
+  it('S3 in front of a science is the Sec 3 internal paper', () => {
+    expect(parseSourceFilename('S3 BIO EOY 2020 SJI P1.pdf')).toMatchObject({ ok: true, level: 'S3_BIO', subject: 'biology', examType: 'SA2', school: 'SJI', paper: 'p1' });
+    expect(parseSourceFilename('S3 CHEM SA2 2022 Cedar Girls.pdf')).toMatchObject({ ok: true, level: 'S3_CHEM', subject: 'chemistry', school: 'Cedar Girls' });
+    expect(parseSourceFilename('S3 PHY MYE 2023 Bowen P1.pdf')).toMatchObject({ ok: true, level: 'S3_PHYS', subject: 'physics', school: 'Bowen' });
+  });
+  it('lower-sec general science is S1 / S2 under subject science', () => {
+    expect(parseSourceFilename('S2 SCI SA2 2021 Clementi Town.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'science', examType: 'SA2', school: 'Clementi Town' });
+    expect(parseSourceFilename('S1 Combined Science MYE 2021 Yishun Town.pdf')).toMatchObject({ ok: true, level: 'S1', subject: 'science', school: 'Yishun Town' });
+  });
+  it('refuses what the science bank has no level for: combined science at Sec 3–4, JC science', () => {
+    expect(parseSourceFilename('COMBINED SCIENCE PRELIM 2022 Hua Yi P1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('combined science') });
+    expect(parseSourceFilename('H2 BIO PRELIM 2024 RI P1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('JC science') });
+  });
+  it('a maths paper is still maths — subject math — and a school called Science is a school', () => {
+    expect(parseSourceFilename('AM PRELIM 2025 Bedok South.pdf')).toMatchObject({ ok: true, level: 'AM', subject: 'math' });
+    expect(parseSourceFilename('EM PRELIM 2024 School of Science and Technology P1.pdf')).toMatchObject({ ok: true, level: 'EM', subject: 'math', school: 'School of Science and Technology' });
+    expect(parseSourceFilename('S2 SA2 2021 Clementi Town.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'math' });
+  });
+  it('a scheme parses like its paper — the kind word is not the school — and reads as solutions, so the inbox keeps it for pairing', () => {
+    expect(parseSourceFilename('BIO PRELIM 2018 GMSS MS.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', school: 'GMSS', paper: 'all' });
+    expect(parseSourceFilename('BIO PRELIM 2018 West Spring P1 MS.pdf')).toMatchObject({ ok: true, school: 'West Spring', paper: 'p1' });
+    expect(parseSourceFilename('AM PRELIM 2025 Bedok South ANS.pdf')).toMatchObject({ ok: true, school: 'Bedok South', subject: 'math' });
+    expect(libraryKindOf('BIO PRELIM 2018 GMSS MS.pdf')).toBe('solutions');
+  });
+  it('a science paper is never filed for the maths marker', () => {
+    const parsed = parseSourceFilename('BIO PRELIM 2018 West Spring P1.pdf');
+    expect(libraryRowFor(parsed, 'BIO PRELIM 2018 West Spring P1.pdf')).toMatchObject({ skip: expect.stringContaining('science') });
   });
 });
 
@@ -117,6 +186,9 @@ describe('decideInboxFile — one file, one decision, idempotent', () => {
 });
 
 describe('inboxSummary', () => {
+  it('counts a kept mark scheme', () => {
+    expect(inboxSummary({ queued: 1, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, schemes: 1 })).toBe('1 queued, 1 mark scheme kept for pairing');
+  });
   it('says only what happened', () => {
     expect(inboxSummary({ queued: 2, flagged: 0, duplicate: 1, moved: 0, waiting: 0, failed: 0 })).toBe('2 queued, 1 duplicate');
     expect(inboxSummary({ queued: 0, flagged: 1, duplicate: 0, moved: 1, waiting: 3, failed: 1 })).toBe('0 queued, 1 flagged (bad name), 1 re-moved, 1 failed, 3 still settling');

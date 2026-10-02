@@ -22,6 +22,8 @@ import { del } from '@vercel/blob';
 import { keyFromUrl, removeStudentFilesByPrefix } from '@/lib/student-files';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
+import { sendTelegram } from '@/lib/telegram';
+import { leaverNotice } from '@/lib/leaver-notice';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
   // and the portal identity to purge the identity-keyed tables).
   const { data: account } = await admin
     .from('portal_accounts')
-    .select('id, airtable_student_id')
+    .select('id, airtable_student_id, display_name, email, deactivated_at')
     .eq('id', user.id)
     .maybeSingle();
   const identity = account ? portalIdentity(account) : null;
@@ -129,6 +131,14 @@ export async function POST(req: NextRequest) {
 
   const { error: e3 } = await admin.auth.admin.deleteUser(user.id);
   if (e3) return NextResponse.json({ error: `Could not delete login: ${e3.message}` }, { status: 500 });
+
+  // Tell Adrian (2 Oct 2026). The erasure is done; a failed notice changes nothing.
+  try {
+    await sendTelegram(leaverNotice('delete', {
+      name: account?.display_name ?? null, email: account?.email ?? user.email ?? null,
+      tuition: Boolean(account?.airtable_student_id?.trim()), left: Boolean(account?.deactivated_at),
+    }));
+  } catch (e) { console.error('[delete-account] notice failed:', (e as Error).message); }
 
   return NextResponse.json({ ok: true });
 }

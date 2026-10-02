@@ -1,5 +1,5 @@
 {
-  "_readme": "Golden set transcribed from Adrian's own red-pen marking (scans in ~/Desktop/AdrianMath/marking_calibration/). expected.line_verdicts aligns 1:1 with working_lines (null = don't care). expected.must_mention = case-insensitive substrings the marking JSON must contain somewhere (correction/summary). Grow this set as more scripts are transcribed — especially items where the current prompt disagrees with Adrian.",
+  "_readme": "Golden set transcribed from Adrian's own red-pen marking (scans in ~/Dropbox/AdrianMath Work/marking_calibration/). expected.line_verdicts aligns 1:1 with working_lines (null = don't care). expected.must_mention = case-insensitive substrings the marking JSON must contain somewhere (correction/summary). Grow this set as more scripts are transcribed — especially items where the current prompt disagrees with Adrian.",
   "items": [
     {
       "id": "circle-props-1a-semicircle-reason",

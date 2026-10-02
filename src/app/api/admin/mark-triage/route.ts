@@ -66,13 +66,13 @@ import { releaseHeldPracticeItems } from '@/lib/practice-again-store';
 import { applyRunRelease } from '@/lib/notebook-mistakes-store';
 import { isRemarkInternal } from '@/lib/remark-internal';
 import { reissueLine, parseReissueReason } from '@/lib/reissue-message';
-import { buildPaperNotice, parseNoticeKind } from '@/lib/paper-notice';
+import { activePaperNotice, buildPaperNotice, describeRefs, parseNoticeKind } from '@/lib/paper-notice';
+import { missingAfterMarking } from '@/lib/handin-check';
 import { gapsForRun, gapWatchReason, pageGapAlert } from '@/lib/page-gap-repair';
 
 export const runtime = 'nodejs';
 // Release itself is fast; the ceiling is for the after() enrichment, which
-// makes two model calls per released paper with dropped marks (revise mapping
-// here, practice generation on the bot).
+// makes one model call per released paper with dropped marks (revise mapping).
 export const maxDuration = 300;
 
 const DEFAULT_DAYS = 14;
@@ -311,33 +311,16 @@ function escapeHtml(s: string) {
 }
 
 // ── Post-release enrichment ──────────────────────────────────────────────────
-// Two fire-and-forget jobs per released dropped-marks run, via after():
-// release NEVER waits on either or fails because of them.
+// One fire-and-forget job per released dropped-marks run, via after():
+// release NEVER waits on it or fails because of it.
 //
-//   1. Revise mapping (website-side, lib/revise-map) — one model call maps
-//      each dropped question to a swipe-card sub-group, stored as
-//      `result_json.revise` and rendered as "📚 Revise" links on /app/marking.
-//   2. Practice generation (bot-side) — one follow-up question per dropped
-//      question, stored as `result_json.practice`.
-//
-// Both write result_json with a read-merge-write, so per run they MUST stay
-// sequential — mapping completes its write before the bot is asked to do its
-// own. Both are idempotent: mapping skips when `revise` already exists, and
-// the bot returns a stored practice list without a model call (so Adrian's
-// earlier 📝 press, or a retry, never double-pays). Full-mark papers are
-// skipped before any of this is even queued.
-function queuePostReleaseEnrichment(runIds: string[], practiceIds?: string[]) {
+//   Revise mapping (website-side, lib/revise-map) — one model call maps each
+//   dropped question to a swipe-card sub-group, stored as `result_json.revise`
+//   and rendered as "📚 Revise" links on /app/marking. Idempotent: it skips when
+//   `revise` already exists. Full-mark papers are skipped before it is queued.
+//   (The bot-side practice LIST that ran second here was removed 26 Sep 2026.)
+function queuePostReleaseEnrichment(runIds: string[]) {
   if (!runIds.length) return;
-  // Practice generation (a model call per dropped question) runs only for the
-  // ids in practiceIds — Telegram hand-ins are excluded since 22 Aug 2026: the
-  // student's 📝 button generates on demand, so an untapped paper costs nothing
-  // (Adrian: "if they don't tap the button, there is no need to generate").
-  // Revise mapping still runs for every released run (cheap, powers the portal
-  // chips).
-  const wantPractice = new Set(practiceIds ?? runIds);
-  const botBase = process.env.BOT_BASE_URL;
-  const botSecret = process.env.BOT_INTERNAL_SECRET;
-  const botHeaders = { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' };
 
   after(async () => {
     const supa = getSupabaseAdmin();
@@ -370,28 +353,6 @@ function queuePostReleaseEnrichment(runIds: string[], practiceIds?: string[]) {
       }
     }
 
-    if (!botBase || !botSecret) return;
-    for (const id of runIds) {
-      if (!wantPractice.has(id)) continue;
-      try {
-        const r = await fetch(`${botBase}/api/mark-paper`, {
-          method: 'POST', headers: botHeaders, body: JSON.stringify({ phase: 'practice', id }),
-        });
-        const d = await r.json().catch(() => ({} as { error?: string; items?: unknown[] }));
-        if (!r.ok || d.error) {
-          console.warn(`[mark-triage] practice generation failed for ${id}:`, d.error || r.status);
-          continue;
-        }
-        if (!Array.isArray(d.items) || d.items.length === 0) continue;
-        // House-style Word file of the list — also stored on the run, and also
-        // idempotent (practice.docx_url wins on the bot side).
-        await fetch(`${botBase}/api/mark-paper`, {
-          method: 'POST', headers: botHeaders, body: JSON.stringify({ phase: 'practice-docx', id }),
-        }).catch(() => { /* the on-page list still renders without the file */ });
-      } catch (err) {
-        console.warn(`[mark-triage] practice generation failed for ${id}:`, (err as Error).message);
-      }
-    }
   });
 }
 
@@ -787,7 +748,6 @@ export async function POST(req: NextRequest) {
       via: string;
       note?: string;
     }[] = [];
-    const practiceQueue: string[] = [];
     const enrichQueue: string[] = [];
     /** 🕳 One line per paper going out with a page that has no marked image. */
     const gapAlerts: string[] = [];
@@ -913,6 +873,25 @@ export async function POST(req: NextRequest) {
       // teaching round). A run with no sheet has none. Fail-soft — never undoes
       // the release it rides.
       const heldItems = await releaseHeldPracticeItems(supa, run.id);
+
+      // 🕳 THE BACKSTOP (SPEC-HANDIN-COMPLETENESS ⑥, 30 Sep 2026): the paper came
+      // back without questions nobody said were left undone → a three-day line on
+      // the student's paper naming them, with ➕ Add missing pages under it, and a
+      // watch-out for Adrian. Never a hold; never over another live notice.
+      // Fail-soft: a stamp that fails never undoes the release.
+      const missing = missingAfterMarking(run.result_json);
+      if (missing.length) {
+        watch = [...watch, `${describeRefs(missing.slice(0, 8))}${missing.length > 8 ? '…' : ''} not in the photos — the student is asked to add the pages`];
+        try {
+          const { data: fresh } = await supa.from('paper_marking_runs').select('result_json').eq('id', run.id).single();
+          const frj = (fresh?.result_json && typeof fresh.result_json === 'object' ? fresh.result_json : {}) as Record<string, unknown>;
+          if (!activePaperNotice(frj)) {
+            await supa.from('paper_marking_runs')
+              .update({ result_json: { ...frj, student_notice: buildPaperNotice('missing-questions', { missing }) } })
+              .eq('id', run.id);
+          }
+        } catch (e) { console.warn('[mark-triage] missing-questions notice not stamped:', (e as Error).message); }
+      }
       results.push({
         runId: run.id,
         studentName: run.student_name,
@@ -932,9 +911,11 @@ export async function POST(req: NextRequest) {
       // release-with-sheet button all stamp here — so the hook lives here
       // once. Idempotent per run (the run id is the evidence ref), and
       // fail-soft: a notebook hiccup never undoes or delays a release.
-      // Not for a science paper (10 Sep 2026): the mistakes list files
-      // "<kind> in <topic>" under maths canonical topics.
-      if (run.student_id && !isScienceSubject(run.paper_subject)) {
+      // A science paper files too since 24 Sep 2026 (the chemistry study loop):
+      // under three reasons — concept gap / careless slip / wrong keywords —
+      // rather than the nine maths kinds (lib/notebook-mistakes scienceReason).
+      // The practice / revise maps further down stay maths-only.
+      if (run.student_id) {
         try {
           await applyRunRelease(supa, run.student_id, {
             id: run.id, paper_name: run.paper_name, paper_subject: run.paper_subject, result_json: run.result_json,
@@ -992,6 +973,20 @@ export async function POST(req: NextRequest) {
         }
       }
 
+      // 🔊 The one-minute explanation's voice (1 Oct 2026): make the clips for
+      // the run's first lost-marks questions now (lib/explain-voice-store, ≤ 6
+      // questions), so the first ▶ Explain it tap plays at once. After the
+      // response, regardless of the student-facing switch; a failure leaves
+      // that question silent — never a held or slowed release.
+      try {
+        const voiceRunId = run.id;
+        after(async () => {
+          const { prewarmExplainVoice } = await import('@/lib/explain-voice-store');
+          const r = await prewarmExplainVoice(voiceRunId);
+          if (r.questions) console.log('[explain-voice] prewarm', voiceRunId, r);
+        });
+      } catch (err) { console.warn('[explain-voice] prewarm scheduling failed:', (err as Error).message); }
+
       // Closure tracking (17 Sep 2026): a released Practice Again hand-in scores
       // the sections of the sheet it answers — closed / slip / still failing —
       // into sheet_section_outcomes, one line to the marking topic. After the
@@ -1012,8 +1007,6 @@ export async function POST(req: NextRequest) {
       // practice list are both drawn from the MATHS bank.
       if (totals.max > 0 && totals.awarded < totals.max && !isScienceSubject(run.paper_subject)) {
         enrichQueue.push(run.id);
-        // Telegram hand-ins generate practice on the student's 📝 tap instead.
-        if (!telegramHandinOf(run.result_json)) practiceQueue.push(run.id);
       }
 
       // "From Adrian" worksheet (SPEC-ASSIGN.md): the hand-in stamped its
@@ -1027,7 +1020,7 @@ export async function POST(req: NextRequest) {
     // by the student. Fail-soft: a Telegram hiccup never un-releases a paper.
     for (const line of gapAlerts) await sendTelegram(line, 'marking').catch(() => {});
 
-    queuePostReleaseEnrichment(enrichQueue, practiceQueue);
+    queuePostReleaseEnrichment(enrichQueue);
 
     return NextResponse.json({
       ok: true,

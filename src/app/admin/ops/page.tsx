@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { planShareLow, type MarkingShare } from '@/lib/marking-path';
+import { flipReady, isFlipped, type TopicReadiness } from '@/lib/serving-policy';
 
 type JobRow = { job: string; ranAt: string; ok: boolean; summary: string | null; rhythm: string | null; staleReason: string | null };
 type OpsData = {
@@ -28,6 +29,8 @@ type OpsData = {
   sheets?: { active: { id: string; paper: string; papers: number; stage: string; minutes: number; requestedBy: string }[]; queued: { id: string; paper: string; papers: number; minutes: number; requestedBy: string }[] };
   /** The bot's `/queue-quiet` batch-lane + reachability facts (11 Sep 2026) — null when the fetch itself failed (bot down, field not shipped yet). */
   botQueue?: { batchLaneNote: { text: string; tone: 'amber' | 'grey' } | null; markerUnreachable: string | null } | null;
+  /** 👯 Twins readiness per (level, topic) — the flip (SPEC-TWINS §6). */
+  twins?: TopicReadiness[];
   generatedAt: string;
 };
 
@@ -41,7 +44,7 @@ const JOB_LINKS: Record<string, string> = {
   'progress-digest': '/admin/digests',
   'qb-topup': '/admin/bank-health',
   'file-subgroups': '/admin/bank-health',
-  'plan-marking': '/admin/desk?lane=released',
+  'plan-marking': '/admin/mark-paper',
 };
 
 function ago(iso: string): string {
@@ -78,6 +81,20 @@ export default function OpsPage() {
 
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
+
+  const [flipping, setFlipping] = useState<string | null>(null);
+  async function flip(r: TopicReadiness, schoolRows: boolean) {
+    const verb = schoolRows ? 'Put the school rows back for' : 'Flip';
+    if (!confirm(`${verb} ${r.level} · ${r.topic}? ${schoolRows ? 'School rows are served there again.' : `Only our ${r.verified_twins} verified twin(s) will be served there — ${r.school_rows} school rows leave serving.`}`)) return;
+    setFlipping(`${r.level}|${r.topic}`);
+    try {
+      const res = await fetch('/api/admin/serving-policy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ level: r.level, topic: r.topic, schoolRows }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
+      await load();
+    } catch (e) { setErr((e as Error).message); }
+    finally { setFlipping(null); }
+  }
   // The board is a glance-surface: refresh itself every minute while open.
   // Live while anything is in motion (11 Sep 2026 — Adrian: "this doesn't show
   // me the progress live?"): 20 s when a slot is reading or a sheet is being
@@ -147,7 +164,7 @@ export default function OpsPage() {
                 · {data.queue.rows.filter(r => r.phase === 'reading').length} of {data.slots.marking} marking slots reading
               </span>
             )}
-            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+            <a href="/admin/mark-paper" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">mark a paper →</a>
           </div>
 
           {/* The plan lane is closed: every slot on that account is exiting on a
@@ -227,7 +244,7 @@ export default function OpsPage() {
                 · 7d: {data.sheetCost.sheets} sheet{data.sheetCost.sheets === 1 ? '' : 's'} · avg {data.sheetCost.avgMinutes} min · {data.sheetCost.avgTokens >= 1e6 ? `${(data.sheetCost.avgTokens / 1e6).toFixed(1)}M` : `${Math.round(data.sheetCost.avgTokens / 1e3)}k`} tokens{data.sheetCost.avgCostUsd != null ? ` · $${data.sheetCost.avgCostUsd.toFixed(2)} at API rates` : ''}
               </span>
             )}
-            <a href="/admin/desk" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">desk →</a>
+            <a href="/admin/mark-paper" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700">mark a paper →</a>
           </div>
           {!!data?.sheets && (data.sheets.active.length > 0 || data.sheets.queued.length > 0) && (
             <div className="border-t border-neutral-100 divide-y divide-neutral-100 text-sm">
@@ -283,6 +300,63 @@ export default function OpsPage() {
             </section>
           );
         })()}
+
+        {/* 👯 Twins — the flip (SPEC-TWINS §6): per topic, verified twins vs the
+            school rows drawn in 90 days. Flip is enabled at the threshold; Adrian
+            ticks, nothing flips itself. Empty until the first twin is filed. */}
+        {data && (data.twins?.length ?? 0) > 0 && (
+          <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-x-auto">
+            <div className="px-4 py-3 flex items-center gap-3 text-sm border-b border-neutral-100">
+              <span className="font-medium text-neutral-800">👯 Twins — the flip</span>
+              <span className="text-neutral-500">a topic flips when verified twins ≥ school rows drawn in 90 days; flipped = only ours served there</span>
+              <a href="/admin/generated" className="ml-auto text-xs text-neutral-400 hover:text-neutral-700 whitespace-nowrap">verify twins →</a>
+            </div>
+            <table className="w-full text-sm min-w-[560px]">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-wider text-neutral-400 border-b border-neutral-200">
+                  <th className="px-4 py-2 font-medium">Topic</th>
+                  <th className="px-2 py-2 font-medium text-right">Verified</th>
+                  <th className="px-2 py-2 font-medium text-right">Pending</th>
+                  <th className="px-2 py-2 font-medium text-right whitespace-nowrap">Drawn 90d</th>
+                  <th className="px-2 py-2 font-medium text-right whitespace-nowrap">School rows</th>
+                  <th className="px-4 py-2 font-medium text-right">Serving</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data.twins ?? []).map(r => {
+                  const key = `${r.level}|${r.topic}`;
+                  const flipped = isFlipped(r);
+                  const ready = flipReady(r);
+                  return (
+                    <tr key={key} className="border-b border-neutral-100 last:border-0">
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <span className={`inline-block w-2.5 h-2.5 rounded-full mr-2 align-middle ${flipped ? 'bg-emerald-600' : ready ? 'bg-amber-500' : 'bg-neutral-300'}`} />
+                        <span className="text-neutral-400 text-xs mr-1.5">{r.level}</span>
+                        <span className="text-neutral-800">{r.topic}</span>
+                      </td>
+                      <td className="px-2 py-2 text-right font-mono text-xs">{r.verified_twins}</td>
+                      <td className="px-2 py-2 text-right font-mono text-xs text-neutral-500">{r.pending_twins}</td>
+                      <td className="px-2 py-2 text-right font-mono text-xs">{r.drawn_90d}</td>
+                      <td className="px-2 py-2 text-right font-mono text-xs text-neutral-500">{r.school_rows}</td>
+                      <td className="px-4 py-2 text-right whitespace-nowrap">
+                        {flipped ? (
+                          <span className="text-emerald-700 text-xs">ours only{r.flipped_at ? ` · ${ago(r.flipped_at)}` : ''}
+                            <button disabled={flipping === key} onClick={() => flip(r, true)} className="ml-2 text-neutral-400 hover:text-neutral-700 underline">undo</button>
+                          </span>
+                        ) : (
+                          <button disabled={!ready || flipping === key} onClick={() => flip(r, false)} title={ready ? 'Serve only our twins here' : 'Below the threshold'}
+                            className={`text-xs px-2.5 py-1 rounded-md border ${ready ? 'border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100' : 'border-neutral-200 text-neutral-400 cursor-not-allowed'}`}>
+                            {flipping === key ? 'Flipping…' : 'Flip'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </section>
+        )}
 
         {/* The logbook: newest row per job. Amber rows float to the top (API sorts). */}
         <section className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-x-auto">

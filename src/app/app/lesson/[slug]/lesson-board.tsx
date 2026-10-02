@@ -48,8 +48,11 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { MathMarkdown } from '@/lib/math-markdown';
 import type { BoardState, BoardMark, NoteSlot } from '@/lib/lesson-beats';
+import type { CharacterPose } from '@/lib/lesson-script';
 import { scaleBeat } from '@/lib/lesson-speech';
 import { ChalkWriter, plainTextOf } from './chalk-writer';
+import LessonCharacter, { type CharacterLook } from './lesson-character';
+import LessonSticker from './lesson-stickers';
 
 // useLayoutEffect measures; on the server it must quietly be useEffect.
 export const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
@@ -192,6 +195,10 @@ export interface BoardLayerProps {
   writing?: boolean;
   /** A frozen clip freezes the hand: the tip stops mid-word rather than running on. */
   paused?: boolean;
+  /** The cartoon student at the corner in this pose (lesson-character.tsx); null / undefined = no character. */
+  character?: CharacterPose | null;
+  /** Which drawing / picture set the character is (lesson-character.tsx `look`; default the drawn teacher). */
+  look?: CharacterLook;
   children: React.ReactNode;
 }
 
@@ -244,7 +251,7 @@ export function NoteSlotView({ note, board }: { note: NoteSlot; board: BoardStat
  * Wraps a scene view in beat scenes. `board === null` (no beats) renders the
  * children untouched — the original card, byte for byte.
  */
-export default function BoardLayer({ board, notes, reduced, rate, writing = false, paused = false, children }: BoardLayerProps) {
+export default function BoardLayer({ board, notes, reduced, rate, writing = false, paused = false, character = null, look, children }: BoardLayerProps) {
   const zoomRef = useRef<HTMLDivElement>(null);
   const marksRef = useRef<SVGSVGElement>(null);
   const penRef = useRef<HTMLDivElement>(null);
@@ -460,6 +467,10 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         )}
         <svg ref={marksRef} className="lsn-marks" aria-hidden />
         <div ref={penRef} className="lsn-pen" aria-hidden />
+        {/* The character, under the marks and the pen, at the corner — reacts to board.pose. */}
+        {character && <LessonCharacter pose={character} look={look} />}
+        {/* The beat's sticker (lesson-stickers.tsx): keyed by seq so a new action re-pops it; gone with the beat. */}
+        {board.sticker && <LessonSticker key={board.sticker.seq} kind={board.sticker.kind} near={board.sticker.near} zoomRef={zoomRef} />}
       </div>
     </div>
   );

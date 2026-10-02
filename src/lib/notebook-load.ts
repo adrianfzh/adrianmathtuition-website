@@ -12,11 +12,26 @@ import { createServiceClient } from './supabase-server';
 import type { PortalAccount } from './portal-auth';
 import { loadMistakes, type MistakeRow } from './notebook-mistakes-store';
 import { shownByDefault } from './notebook-mistakes';
-import { groupMistakes, type NotebookGroups } from './notebook-groups';
-import { buildStudentMarking, type MarkingRunRow } from './portal-marking';
-import { subjectAllowed } from './portal-subjects';
+import { attachQuestions, familyOf, familySubjects, groupMistakes, notebookSubject, splitBySubject, type NotebookFamily, type NotebookGroupWithCards, type NotebookGroups } from './notebook-groups';
+import { SCIENCE_SUBJECT_LABEL, studentSciences } from './portal-prefs';
+import { buildStudentMarking, type MarkingRunRow, type StudentPaper } from './portal-marking';
+import { isScienceSubject, subjectAllowed } from './portal-subjects';
+
+/** One subject's tab (30 Sep 2026): its own list and its own weakest topics. */
+export interface NotebookSubjectPanel {
+  subject: string;
+  groups: NotebookGroups;
+  /** The groups with one card per lost-marks question (1 Oct 2026); the page renders each card's comparison. */
+  cardGroups: NotebookGroupWithCards[];
+  /** The subject's released papers, by id — the questions the cards show. */
+  papers: Map<string, StudentPaper>;
+  weakest: { topic: string; pct: number }[];
+}
 
 export interface NotebookLoad {
+  /** One per subject that has a mistake, in tab order; empty when the list is. */
+  subjects: NotebookSubjectPanel[];
+  defaultSubject: string | null;
   groups: NotebookGroups;
   /**
    * Weakest topics across the student's released papers — the "Work on next"
@@ -30,9 +45,14 @@ export interface NotebookLoad {
 /** Papers the weakest-topics line reads — a year is more than the rule needs. */
 const WEAKEST_MAX_PAPERS = 40;
 
-export async function loadNotebook(account: PortalAccount, sid: string): Promise<NotebookLoad> {
+/**
+ * One family's Notebook (1 Oct 2026): 'math' lists the maths subjects with a
+ * mistake; 'science' lists the sciences the student takes (their Science
+ * choice), each a tab even when empty. See notebook-groups familySubjects.
+ */
+export async function loadNotebook(account: PortalAccount, sid: string, family: NotebookFamily = 'math'): Promise<NotebookLoad> {
   const svc = createServiceClient();
-  const [mistakes, weakest] = await Promise.all([
+  const [mistakes, runs] = await Promise.all([
     // The read applies the 14-day "Corrected" → Fixed sweep on the way out.
     loadMistakes(svc, sid).catch((): MistakeRow[] => []),
     // Weakest topics: the same released + subject-gated rows the Papers tab lists.
@@ -42,9 +62,8 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
       .eq('student_id', sid).not('released_at', 'is', null).is('superseded_by', null)
       .order('created_at', { ascending: false }).limit(WEAKEST_MAX_PAPERS)
       .then(r => {
-        const rows = ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject));
-        return buildStudentMarking(rows, { studentName: account.display_name ?? null }).focus.map(t => ({ topic: t.topic, pct: t.pct }));
-      }, () => [] as { topic: string; pct: number }[]),
+        return ((r.data ?? []) as MarkingRunRow[]).filter(x => subjectAllowed(account, x.paper_subject) || isScienceSubject(x.paper_subject));
+      }, () => [] as MarkingRunRow[]),
   ]);
 
   // Removed entries stay in the table and leave every student surface; fixed
@@ -68,5 +87,34 @@ export async function loadNotebook(account: PortalAccount, sid: string): Promise
   const practiceFor = (m: MistakeRow) =>
     m.practice_ids.map(id => practiceById.get(id)).filter((p): p is { id: string; title: string } => !!p);
 
-  return { groups: groupMistakes(shown, practiceFor), weakest };
+  // Weakest topics per subject: an A Math focus line under a Physics tab would send the student the wrong way.
+  const marking = (list: MarkingRunRow[]) => buildStudentMarking(list, { studentName: account.display_name ?? null });
+  const weakestOf = (list: MarkingRunRow[]) => marking(list).focus.map(t => ({ topic: t.topic, pct: t.pct }));
+  const split = splitBySubject(shown);
+  // The choice is stored lowercase ('physics'); the Notebook's subjects are the paper names ('Physics').
+  const chosen = family === 'science' ? (studentSciences(account.prefs)?.subjects.map(x => SCIENCE_SUBJECT_LABEL[x]) ?? null) : null;
+  const tabs = familySubjects(split.subjects.map(x => x.subject), family, chosen);
+  const subjects = tabs.map(subject => {
+    const rows = split.subjects.find(x => x.subject === subject)?.rows ?? [];
+    const list = runs.filter(x => notebookSubject(x.paper_subject) === subject);
+    const { papers, focus } = marking(list);
+    const groups = groupMistakes(rows, practiceFor);
+    return {
+      subject,
+      groups,
+      cardGroups: attachQuestions(groups.groups, papers),
+      papers: new Map(papers.map(p => [p.id, p])),
+      weakest: focus.map(t => ({ topic: t.topic, pct: t.pct })),
+    };
+  });
+
+  // The family's own rows for the flat (no tabs) view, and a default tab inside the family.
+  const familyRows = shown.filter(m => familyOf(notebookSubject(m.subject)) === family);
+  const defaultSubject = split.defaultSubject && tabs.includes(split.defaultSubject) ? split.defaultSubject : (tabs[0] ?? null);
+  return {
+    subjects,
+    defaultSubject,
+    groups: groupMistakes(familyRows, practiceFor),
+    weakest: weakestOf(runs.filter(x => (family === 'science') === isScienceSubject(x.paper_subject))),
+  };
 }

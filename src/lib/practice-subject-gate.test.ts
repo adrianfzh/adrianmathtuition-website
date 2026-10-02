@@ -27,7 +27,7 @@ describe('gateLevelsBySubject — the explicit gate over the level list', () => 
     expect(gateLevelsBySubject(qbLevelsFor(acct.level, acct.subjects), acct).map(l => l.key)).toEqual(['EM']);
     // Even when handed the whole admin list, AM/JC fall away and S1/S2/science stay.
     expect(gateLevelsBySubject(ALL_QB_LEVELS, acct).map(l => l.key))
-      .toEqual(['S1', 'S2', 'S3_EM', 'EM', 'EM_NA', 'PHY', 'CHEM', 'BIO']);
+      .toEqual(['S1', 'S1_NA', 'S2', 'S2_NA', 'S3_EM', 'EM', 'EM_NA', 'PHY', 'CHEM', 'BIO']);
   });
   it('both subjects keep both lists', () => {
     const acct = { subjects: ['E Math', 'A Math'], level: 'Sec 3' };
@@ -37,7 +37,7 @@ describe('gateLevelsBySubject — the explicit gate over the level list', () => 
   it('a JC account is H2 whatever its tokens say', () => {
     const acct = { subjects: ['Math'], level: 'JC1' };
     expect(gateLevelsBySubject(ALL_QB_LEVELS, acct).map(l => l.key))
-      .toEqual(['S1', 'S2', 'JC1', 'JC2', 'PHY', 'CHEM', 'BIO']);
+      .toEqual(['S1', 'S1_NA', 'S2', 'S2_NA', 'JC1', 'JC2', 'PHY', 'CHEM', 'BIO']);
   });
   it('never empties a list by accident — a mis-tagged account keeps its level-only list', () => {
     const acct = { subjects: ['H2 Math'], level: 'Sec 4' };

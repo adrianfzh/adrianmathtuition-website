@@ -15,6 +15,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 from os.path import abspath, basename, dirname, exists, join, splitext
 
@@ -563,19 +564,111 @@ def split_long_math(latex, limit=70):
     first, rest = pieces[0].strip(), [q.strip() for q in pieces[1:]]
     return '\\begin{aligned} ' + first + ' &= ' + ' \\\\ &= '.join(rest) + ' \\end{aligned}'
 
+# What a student reads leaves the marker's material out (CLAUDE.md §Readability,
+# the same rules as lib/solution-readability.ts): a "Mark scheme:" / "Marks:"
+# paragraph is dropped from where it starts to the paragraph's end, and a
+# "[M1 for …]" note goes. The stored JSON keeps both for the marker.
+SCHEME_PARA = re.compile(r'^\s*(?:\*\*)?(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)'
+                         r'(?:\s*[(\[][^:\n]{0,40}|\s+for\s+[^:\n]{1,24})?\s*:', re.I)
+MARK_NOTE = re.compile(r'\[\s*((?:[BMA]\d\s*,?\s*)+)(?:[^\]]*)\]')
+BOLD_LABEL = re.compile(r'^\*\*\s*(\([^)]{1,5}\)(?:\s*\([^)]{1,5}\))?)\s*\*\*\s*')
+ANSWER = re.compile(r'^\**\s*Answers?\s*:\s*\**\s*', re.I)
+
+
+def drop_scheme(sol):
+    out = []
+    for para in re.split(r'\n\s*\n', (sol or '').strip()):
+        lines = para.split('\n')
+        cut = next((i for i, l in enumerate(lines) if SCHEME_PARA.match(l)), None)
+        keep = lines if cut is None else lines[:cut]
+        if any(l.strip() for l in keep):
+            out.append('\n'.join(keep))
+    return '\n\n'.join(out)
+
+
+def strip_mark_notes(line):
+    line = MARK_NOTE.sub('', line)
+    return re.sub(r'[ \t]{2,}', ' ', re.sub(r'[ \t]+([.,;:])', r'\1', line)).rstrip()
+
+
+ALIGN_BRIDGE = join(dirname(abspath(__file__)), 'align-steps.mts')
+
+
+def align_steps(lines):
+    """The ONE readability rule (src/lib/solution-readability.ts) for the Word
+    export: one tsx process per solution, JSON in, JSON out — each line's steps
+    (one step a line), each step with its lead-in and its rows lined up on "=".
+    Any failure means the line stays one sentence, never a broken document."""
+    if not lines:
+        return []
+    try:
+        r = subprocess.run(['npx', 'tsx', ALIGN_BRIDGE], input=json.dumps(lines), capture_output=True,
+                           text=True, timeout=60, cwd=join(dirname(abspath(__file__)), '..', '..'))
+        out = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else None
+        if isinstance(out, list) and len(out) == len(lines):
+            return out
+    except Exception as e:  # noqa: BLE001
+        print(f'   align-steps unavailable ({str(e)[:80]}) — solutions left unaligned', file=sys.stderr)
+    return [[{'text': l}] for l in lines]
+
+
+def aligned_latex(rows):
+    """Rows lined up on "=" → one \\begin{aligned} block (an OMML equation
+    array): the joining word grey-ish as text, a finished case at the LEFT of
+    the row, the "=" column shared, continuation rows with an empty left side,
+    a reason as the box's \\quad\\text{← …} note at the right."""
+    out = []
+    for r in rows:
+        left = ''
+        if r.get('lead'):
+            left += '\\text{' + r['lead'] + '}\\; '
+        if r.get('done'):
+            left += DEG_RE.sub('°', r['done']) + ' \\qquad '
+        left += DEG_RE.sub('°', r.get('lhs') or '')
+        rel = r.get('rel') or ''
+        right = ('{}' + rel + ' ' if rel else '\\; ') + DEG_RE.sub('°', r.get('rhs') or '')
+        if r.get('note'):
+            right += ' \\quad\\text{← ' + r['note'].replace('$', '') + '}'
+        out.append(left + ' &' + right)
+    return '\\begin{aligned} ' + ' \\\\ '.join(out) + ' \\end{aligned}'
+
+
 def solution_rows(sol):
     rows, label, steps, prev_outer = [], None, [], None
+    sol = drop_scheme(sol)
 
     def flush():
         if label is not None or steps:
             rows.append((label or '', steps or [[('text', '')]]))
 
-    for raw in (sol or '').split('\n'):
-        line = raw.strip()
-        if not line:
-            continue
+    cleaned = [BOLD_LABEL.sub(lambda b: b.group(1) + ' ', strip_mark_notes(raw.strip())).strip()
+               for raw in (sol or '').split('\n')]
+    cleaned = [l for l in cleaned if l]
+    # The alignment rule sees each line with its part label stripped (the label
+    # is handled below); a line the rule returns null for stays a sentence.
+    aligned = align_steps([LABEL_RE.sub('', l, count=1).strip() for l in cleaned])
+    pending = []   # consecutive aligned steps → ONE block (as alignView merges runs)
+
+    def add_step(st):
+        _solution_step(steps, pending, flush_aligned, st)
+
+    def flush_aligned():
+        if not pending:
+            return
+        rows = [r for a in pending for r in a['rows']]
+        if len(rows) >= 2 and _memo_omml(aligned_latex(rows), True) is not None:
+            for a in pending:
+                if a.get('sub'):
+                    steps.append(segs(a['sub']))
+            steps.append(aligned_latex(rows))
+        else:
+            for a in pending:   # one row only: the sentence as it was, lead-in and all
+                steps.append(segs((a.get('sub', '') + ' ' + a['line']).strip()))
+        pending.clear()
+
+    for line, its_steps in zip(cleaned, aligned):
         m = LABEL_RE.match(line)
-        if m and (m.end() < len(line) or not steps):
+        if m:
             g1, g2 = m.group(1).lower(), (m.group(2) or '').lower()
             if g1 in ROMAN and prev_outer:
                 new = prev_outer + '(' + g1 + ')'
@@ -583,24 +676,46 @@ def solution_rows(sol):
                 new = '(' + g1 + ')' + (('(' + g2 + ')') if g2 else '')
                 prev_outer = '(' + g1 + ')'
             if new != label:
+                flush_aligned()
                 flush()
                 label, steps = new, []
             line = line[m.end():].strip()
             if not line:
                 continue
-        chk = re.match(r'^\(?\s*Check\s*:\s*(.*?)\)?\s*$', line, re.I | re.S)
-        if chk:
-            steps.append(('check', segs(chk.group(1))))
-            continue
-        disp = whole_math(line)
-        if disp is not None:
-            disp = split_long_math(disp)
-        if disp is not None and _memo_omml(disp, True) is not None:
-            steps.append(disp)
-        else:
-            steps.append(segs(line))
+        for st in (its_steps or [{'text': line}]):
+            add_step(st)
+    flush_aligned()
     flush()
     return rows or [('', [[('text', '(no worked solution recorded)')]])]
+
+
+def _solution_step(steps, pending, flush_aligned, st):
+    """One step of a solution into the box's rows: aligned rows are pooled
+    into one block; anything else is a check, an Answer line, a display line
+    or a sentence."""
+    line = st.get('text') or ''
+    if st.get('rows'):
+        pending.append({**st, 'line': line})
+        return
+    flush_aligned()
+    if not line:
+        return
+    chk = re.match(r'^\(?\s*Check\s*:\s*(.*?)\)?\s*$', line, re.I | re.S)
+    if chk:
+        steps.append(('check', segs(chk.group(1))))
+        return
+    ans = ANSWER.match(line)
+    if ans:
+        # the result stands out: a bold "Answer:" line
+        steps.append([('text', 'Answer: ', {'bold': True})] + segs(line[ans.end():]))
+        return
+    disp = whole_math(line)
+    if disp is not None:
+        disp = split_long_math(disp)
+    if disp is not None and _memo_omml(disp, True) is not None:
+        steps.append(disp)
+    else:
+        steps.append(segs(line))
 
 
 # ------------------------------------------------------------ front page ----
@@ -616,6 +731,26 @@ INSTRUCTIONS = [
     'For $\\pi$, use either your calculator value or 3.142, unless the question requires the answer in terms of $\\pi$.',
     'The number of marks is given in brackets [ ] at the end of each question or part question.',
 ]
+
+# 9758 (H2): the A-Level front page. The List of Formulae (MF26) is a separate booklet
+# the candidate is given, so the paper prints no formula sheet of its own.
+INSTRUCTIONS_JC = [
+    'Answer all the questions.',
+    'Write your answers in the spaces provided.',
+    'Give non-exact numerical answers correct to 3 significant figures, or 1 decimal place in the '
+    'case of angles in degrees, unless a different level of accuracy is specified in the question.',
+    'The use of an approved graphing calculator is expected, where appropriate.',
+    'Unsupported answers from a graphing calculator are allowed unless a question specifically states otherwise.',
+    'Where unsupported answers from a graphing calculator are not allowed in a question, you are required '
+    'to present the mathematical steps using mathematical notations and not calculator commands.',
+    'You are reminded of the need for clear presentation in your answers.',
+    'The number of marks is given in brackets [ ] at the end of each question or part question.',
+]
+
+
+def instructions_for(shape):
+    return INSTRUCTIONS_JC if str(shape.get('code', '')) == '9758' else INSTRUCTIONS
+
 
 FORMULAE_AM = [
     ('1.  ALGEBRA', None),
@@ -656,8 +791,12 @@ FORMULAE_EM = [
 
 
 def formulae_for(shape):
-    """The formula list the real paper of this syllabus prints (4049 → A Math, 4052 → E Math)."""
-    return FORMULAE_EM if str(shape.get('code', '')) == '4052' else FORMULAE_AM
+    """The formula list the real paper of this syllabus prints (4049 → A Math, 4052 → E Math;
+    9758 prints none — MF26 is a separate booklet)."""
+    code = str(shape.get('code', ''))
+    if code == '9758':
+        return []
+    return FORMULAE_EM if code == '4052' else FORMULAE_AM
 
 
 def size_math(doc):
@@ -745,17 +884,21 @@ def front_page(ws, paper, total):
     # front = {note, instructions[], formulae[]}; an empty formulae list prints no sheet.
     front = paper.get('front') or {}
     ws.para([('text', front.get('note') or 'Newly written questions in the GCE format, not a past-year paper.', {'italic': True})])
+    additional = front.get('additional', shape.get('additional'))
+    if additional:
+        ws.para([('text', f'Additional Materials: {additional}', {'italic': True})])
     ws.para([('text', '')])
     ws.para([('text', 'READ THESE INSTRUCTIONS FIRST', {'bold': True})])
-    for line in front.get('instructions') or INSTRUCTIONS:
+    for line in front.get('instructions') or instructions_for(shape):
         ws.para(segs(line))
     ws.para(segs(f'The total number of marks for this paper is {total}.'))
     ws.page_break()
-    if 'formulae' in front and not front['formulae']:
+    formulae = front['formulae'] if 'formulae' in front else formulae_for(shape)
+    if not formulae:
         return
     ws.para([('text', 'Mathematical Formulae', {'bold': True})])
     ws.para([('text', '')])
-    for head, body in (front.get('formulae') or formulae_for(shape)):
+    for head, body in formulae:
         if body is None:
             p = ws.para([('text', head, {'bold': True})])
             p.paragraph_format.space_before = Cm(0.3)
@@ -796,9 +939,15 @@ def main():
     else:
         front_page(ws, paper, total)
     page_per_q = bool(layout.get('page_per_question'))
+    # H2 Paper 2 prints its section headings (generate.mjs brief → plan.json `sections`)
+    sections = paper.get('sections') or {}
     for i, s in enumerate(slots):
         if page_per_q and i:
             ws.page_break()
+        if sections and s['pos'] == 1:
+            ws.section(sections.get('a', 'Section A'))
+        elif sections and s['pos'] == sections.get('boundary'):
+            ws.section(sections.get('b', 'Section B'), new_page=not page_per_q)
         if page_per_q:
             # Every question on its own page. The blank space under each part is at least
             # `a.space` lines per mark (3 by default — Adrian, 20 Sep 2026: "you have to give

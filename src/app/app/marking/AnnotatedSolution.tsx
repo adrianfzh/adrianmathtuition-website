@@ -4,6 +4,7 @@
 // and the ✱ teaching note. Server component; maths typeset via mathHtml
 // (the page already loads the KaTeX stylesheet).
 import { mathHtml } from '@/lib/math-inline';
+import AlignedMath from './AlignedMath';
 
 export interface SchemePart {
   label: string | null;
@@ -44,29 +45,26 @@ function Math({ text, className }: { text: string; className?: string }) {
   return <span className={className} dangerouslySetInnerHTML={{ __html: mathHtml(text) }} />;
 }
 
-export default function AnnotatedSolution({ solution, schemes }: {
+export default function AnnotatedSolution({ solution, schemes, hideLines = false }: {
   solution: string;
   schemes: SchemePart[];
+  /** The lines are already on screen (the Review card's comparison) — show only where the marks live. */
+  hideLines?: boolean;
 }) {
   const lines = solution.split('\n').map(l => l.trim()).filter(Boolean);
   return (
     <div className="mt-2 rounded-xl border border-gray-100 bg-white p-3">
+      {!hideLines && <>
       <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400 mb-2">
         The solution, line by line
       </p>
-      <ol className="list-none m-0 p-0 space-y-1.5">
-        {lines.map((l, i) => (
-          <li key={i} className="flex items-baseline gap-2.5">
-            <span className="shrink-0 text-[11px] font-bold text-gray-300 tabular-nums">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <Math text={l} className="text-[13px] text-gray-800 min-w-0" />
-          </li>
-        ))}
-      </ol>
+      {/* Aligned at the equals sign, the Answer bold, no row numbers (1 Oct 2026, Adrian's readability
+          rule — the 01 02 03 came from the public /solutions page and told a student nothing). */}
+      <AlignedMath lines={lines.map(l => ({ text: l }))} size="text-[13px]" />
+      </>}
 
       {schemes.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-gray-100 space-y-2.5">
+        <div className={hideLines ? 'space-y-2.5' : 'mt-3 pt-3 border-t border-gray-100 space-y-2.5'}>
           <p className="text-[11px] font-bold uppercase tracking-wide text-gray-400">
             Where the marks live — and where yours went
           </p>

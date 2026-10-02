@@ -33,7 +33,7 @@ import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
 import { lassoSelect, strokesBBox } from '@/lib/annotate/lasso';
 import { planFlatten } from '@/lib/annotate/flatten-plan';
 import {
-  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines, addMarkObject, parseScoreText, setScoreAwarded,
+  parseLayer, serializeLayer, strokesToSvg, layerDocument, layerDirty, objectHasText, objectTextLines, addMarkObject, parseScoreText, setScoreAwarded, scoreChange,
   layerSnapshot, layerRestore as restoreLayerSnapshot, addTextObject, markType, swapMark, recordEditsFor,
   type LayerMeta, type LayerObj, type ParsedLayer, type LayerSnapshot,
 } from '@/lib/annotate/layer';
@@ -95,7 +95,25 @@ const PDF_PAGE_W = 595;             // pt — matches lib/marked-pdf-layout PAGE
 // on a 1280px-wide marked photo (Adrian, 2 Aug 2026: "allow for thinner lines").
 const PEN_WIDTHS_PT = [1.2, 2, 3.5, 6];
 const HL_WIDTH_PT = 13;
-const PEN_COLORS = ['#dc2626', '#2563eb', '#111827'];
+// The full palette (Adrian, 1 Oct 2026: "allow for the complete colour palette (instead of
+// just 3 colours)"): red first (the marker's), then the wheel, black last.
+const PEN_COLORS = ['#dc2626', '#ea580c', '#d97706', '#16a34a', '#0d9488', '#2563eb', '#4f46e5', '#7c3aed', '#db2777', '#111827'];
+// Notability-shaped picker (Adrian, 1 Oct 2026: "can the color picker be like how notability
+// is like?"): a short row of FAVOURITES in the toolbar with the current one ringed; tapping the
+// ringed one opens the full grid; holding a favourite replaces it with the current colour.
+// Favourites are remembered per device with the other tool settings (TOOLS_KEY).
+const PEN_FAVOURITES_DEFAULT = ['#dc2626', '#2563eb', '#111827', '#16a34a', '#7c3aed'];
+const HL_FAVOURITES_DEFAULT = ['#facc15', '#4ade80', '#f472b6', '#60a5fa'];
+/** The grid: 12 hues × 3 shades (light / mid / dark) + greys. */
+const PALETTE_GRID: string[][] = [
+  ['#fca5a5', '#fdba74', '#fcd34d', '#bef264', '#86efac', '#5eead4', '#67e8f9', '#93c5fd', '#a5b4fc', '#c4b5fd', '#f0abfc', '#f9a8d4'],
+  ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a', '#0d9488', '#0891b2', '#2563eb', '#4f46e5', '#7c3aed', '#c026d3', '#db2777'],
+  ['#7f1d1d', '#7c2d12', '#78350f', '#365314', '#14532d', '#134e4a', '#164e63', '#1e3a8a', '#312e81', '#4c1d95', '#701a7a', '#831843'],
+  ['#ffffff', '#e5e7eb', '#9ca3af', '#6b7280', '#374151', '#111827', '#5b4636', '#8b5a2b', '#b45309', '#3f6212', '#1d4ed8', '#000000'],
+];
+const isHex = (c: unknown): c is string => typeof c === 'string' && /^#[0-9a-f]{6}$/i.test(c);
+/** A colour held into slot `keep` leaves any other slot it already sat in (never two of one colour). */
+const dedupeFavs = (favs: string[], keep: number) => favs.filter((c, k) => k === keep || c.toLowerCase() !== favs[keep].toLowerCase());
 const HL_COLORS = ['#facc15', '#4ade80'];
 const MAX_ZOOM = 4;
 const DISPLAY_BITMAP_MAX_W = 2600;  // px cap for on-screen page bitmaps (memory)
@@ -236,6 +254,93 @@ function measureLayer(body: string, meta: LayerMeta, fontCss: string): Map<strin
   } finally { host.remove(); }
   return out;
 }
+const SWATCH_BTN: React.CSSProperties = {
+  minWidth: 44, height: 44, borderRadius: 10, border: '1px solid #d1d5db',
+  background: '#fff', fontSize: 18, cursor: 'pointer', padding: '0 10px',
+  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+};
+/** The toolbar's favourites: a short row, the current colour ringed. Tap a favourite to use it;
+ *  tap the ringed one again to open the full grid; HOLD any favourite (500 ms) to replace it
+ *  with the current colour. A current colour that is not a favourite shows as a sixth ring. */
+function FavouriteSwatches({ kind, favs, current, onPick, onOpen, onHold, holdRef }: {
+  kind: 'pen' | 'hl'; favs: string[]; current: string;
+  onPick: (c: string) => void; onOpen: () => void; onHold: (i: number) => void;
+  holdRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>;
+}) {
+  const list = favs.includes(current) ? favs : [...favs, current];
+  const held = useRef(false);
+  return (
+    <div style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }} data-favourites={kind}>
+      {list.map((c, i) => {
+        const on = c === current;
+        return (
+          <button key={`${c}-${i}`} style={{ ...SWATCH_BTN, border: on ? '3px solid #111827' : '1px solid #d1d5db', position: 'relative' }}
+            aria-label={on ? `Colour ${c} — tap again for more colours` : `Colour ${c}`} title={on ? 'More colours' : 'Hold to make this slot the current colour'}
+            onPointerDown={() => { held.current = false; if (i < favs.length) { if (holdRef.current) clearTimeout(holdRef.current); holdRef.current = setTimeout(() => { held.current = true; onHold(i); }, 500); } }}
+            onPointerUp={() => { if (holdRef.current) { clearTimeout(holdRef.current); holdRef.current = null; } }}
+            onPointerLeave={() => { if (holdRef.current) { clearTimeout(holdRef.current); holdRef.current = null; } }}
+            onClick={() => { if (held.current) { held.current = false; return; } if (on) onOpen(); else onPick(c); }}>
+            <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block', boxShadow: c.toLowerCase() === '#ffffff' ? 'inset 0 0 0 1px #d1d5db' : undefined }} />
+            {on && <span style={{ position: 'absolute', right: 2, bottom: 1, fontSize: 9, lineHeight: 1, color: '#374151' }}>▾</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** The palette under the toolbar, Notability's shape (Adrian, 1 Oct 2026, with two screenshots
+ *  of Notability's "Colors" + "Custom Color"): a grid of swatches, the current one ringed, and a
+ *  🎨 wheel that opens the SYSTEM colour picker (iPadOS's own spectrum square, hue slider and hex
+ *  field — `<input type="color">`), so any colour is reachable without us drawing a spectrum.
+ *  Tap picks; "☆ Add to favourites" puts the current colour in the toolbar row. */
+function PalettePopover({ current, favs, onPick, onFavourite, onClose }: {
+  current: string; favs: string[]; onPick: (c: string) => void; onFavourite: (c: string) => void; onClose: () => void;
+}) {
+  const [top, setTop] = useState(66);
+  const customRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const tb = document.querySelector('[data-annotate-toolbar]');
+    if (tb) setTop(Math.round(tb.getBoundingClientRect().bottom) + 6);
+  }, []);
+  return (
+    <div data-palette style={{
+      position: 'fixed', top, left: 12, zIndex: 3100,
+      background: '#fff', border: '1px solid #d1d5db', borderRadius: 14, padding: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+      display: 'flex', flexDirection: 'column', gap: 8,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>Colours</span>
+        <button aria-label="Custom colour" title="Any colour — the spectrum, a hue slider and a hex field" onClick={() => customRef.current?.click()}
+          style={{ width: 34, height: 34, borderRadius: '50%', border: '1px solid #d1d5db', padding: 0, cursor: 'pointer',
+            background: 'conic-gradient(#ef4444, #f59e0b, #facc15, #22c55e, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444)' }}>
+          <span style={{ display: 'block', width: 14, height: 14, margin: '0 auto', borderRadius: '50%', background: current, border: '2px solid #fff' }} />
+        </button>
+        {/* The system picker: visually hidden, opened by the wheel; every drag picks live, the final choice can be starred. */}
+        <input ref={customRef} type="color" value={current} aria-label="Custom colour value"
+          onInput={(e) => onPick((e.target as HTMLInputElement).value)}
+          onChange={(e) => onPick((e.target as HTMLInputElement).value)}
+          style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }} />
+      </div>
+      {PALETTE_GRID.map((row, r) => (
+        <div key={r} style={{ display: 'flex', gap: 6 }}>
+          {row.map((c) => (
+            <button key={c} aria-label={`Colour ${c}`} onClick={() => onPick(c)}
+              style={{ width: 30, height: 30, borderRadius: '50%', background: c, border: c === current ? '3px solid #111827' : '1px solid #d1d5db', padding: 0, cursor: 'pointer' }} />
+          ))}
+        </div>
+      ))}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', paddingTop: 2 }}>
+        <span style={{ fontSize: 12, color: '#6b7280' }}>Hold a favourite in the toolbar to replace it with the current colour.</span>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {!favs.includes(current) && <button style={{ ...SWATCH_BTN, fontSize: 13, height: 32 }} onClick={() => onFavourite(current)}>☆ Add to favourites</button>}
+          <button style={{ ...SWATCH_BTN, fontSize: 13, height: 32 }} onClick={onClose}>Done</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const IconSelect = () => (
   <svg {...iconProps}>
     <path d="M5 3l14 8.5-6.5 1.5L10 20 5 3z" />
@@ -317,6 +422,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   // didn't end them). Triple-tap the page counter to copy it; also persisted to
   // localStorage on every pen lift so a closed overlay still has the trail.
   const inkLogRef = useRef<Record<string, unknown>[]>([]);
+  // Per-stroke timing (1 Oct 2026, Adrian: "a little clunky and lag a little sometimes"):
+  // pointer events taken, frames painted, the longest gap between two paints, all for the
+  // stroke under the pen; logged as one `stroke` line on lift, so "Send the ink log" after a
+  // laggy session carries numbers from the device, not a guess from a Mac.
+  const strokePerfRef = useRef<{ t0: number; events: number; frames: number; lastPaint: number; maxGap: number } | null>(null);
   const inkT0Ref = useRef(Date.now());
   const chipTapsRef = useRef<number[]>([]);
   const cursorRef = useRef<{ x: number; y: number; mode: 'dot' | 'ring' } | null>(null);
@@ -355,6 +465,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const layerImgRef = useRef<(HTMLImageElement | null)[]>(pages.map(() => null));
   const layerBBoxRef = useRef<Map<string, LayerBox>[]>(pages.map(() => new Map()));
   const layerSelRef = useRef<{ pageIdx: number; id: string } | null>(null);
+  // Live drag + resize of the marker's objects (Adrian, 1 Oct 2026: "when i move the annotations,
+  // the annotation does not follow, only upon release"): while an object is selected the page's
+  // layer bitmap is rebuilt WITHOUT it and the object is rasterised on its own, so the render
+  // loop can draw it under the in-flight translate / scale every frame.
+  const layerSelImgRef = useRef<{ id: string; img: HTMLImageElement } | null>(null);
+  const layerResizeRef = useRef<{ startDist: number; scale0: number; anchor: { x: number; y: number }; scale: number } | null>(null);
   const layerMoveRef = useRef<{ startX: number; startY: number; dx: number; dy: number } | null>(null);
   const fontCssRef = useRef<string>('');
   // Marks Adrian swapped (✗⇄✓), per page: id → what it is now. Feeds the desk's ink hints.
@@ -371,6 +487,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [tool, setTool] = useState<ToolSel>('pen');
   const lastInkToolRef = useRef<ToolKind>('pen');
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
+  const [penFavs, setPenFavs] = useState<string[]>(PEN_FAVOURITES_DEFAULT);
+  const [hlFavs, setHlFavs] = useState<string[]>(HL_FAVOURITES_DEFAULT);
+  const [palette, setPalette] = useState<null | 'pen' | 'hl'>(null);
+  const favHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const penColorRef = useRef(penColor);
   penColorRef.current = penColor;
   const [penWidthPt, setPenWidthPt] = useState(PEN_WIDTHS_PT[1]);
@@ -394,6 +514,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     moveSelRef.current = null;
     layerSelRef.current = null;
     layerMoveRef.current = null;
+    layerResizeRef.current = null;
+    if (layerSelImgRef.current) {
+      const img = layerSelImgRef.current.img;
+      layerSelImgRef.current = null;
+      if (img.src.startsWith('blob:')) URL.revokeObjectURL(img.src);
+    }
     resizeSelRef.current = null;
     lassoPathRef.current = null;
     chipPosRef.current = null;
@@ -586,21 +712,59 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           const fl = (DOC_W * k) / dl.w;
           ctx.setTransform(dpr * fl, 0, 0, dpr * fl, dpr * x, dpr * y);
           ctx.drawImage(li, 0, 0, dl.w, dl.h);
+          // "was 3/3" beside every chip whose marks Adrian changed (1 Oct 2026: "put at the side
+          // 0/2, 1/2, 2/2 according to the change, in some other colour badge") — purple, the
+          // re-mark colour the student will see.
+          {
+            const parsed = layerRef.current[i];
+            for (const o of parsed?.objects ?? []) {
+              const ch = !o.deleted ? scoreChange(o) : null;
+              const b = ch ? layerObjBox(i, o, false) : null;
+              if (!ch || !b) continue;
+              const fs = Math.max(11, b.h * 0.7);
+              ctx.font = `700 ${fs}px "Patrick Hand", sans-serif`;
+              const label = `was ${ch.from}`;
+              const tw = ctx.measureText(label).width + fs * 0.9;
+              const bx = b.x + b.w + 6 / fl, by = b.y + (b.h - fs * 1.3) / 2;
+              ctx.fillStyle = '#7c3aed';
+              ctx.beginPath(); ctx.roundRect(bx, by, tw, fs * 1.3, fs * 0.65); ctx.fill();
+              ctx.fillStyle = '#ffffff';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bx + fs * 0.45, by + fs * 0.65);
+              ctx.textBaseline = 'alphabetic';
+            }
+          }
           const ls = layerSelRef.current;
           if (ls && ls.pageIdx === i) {
             const parsed = layerRef.current[i];
             const o = parsed?.objects.find((q) => q.id === ls.id);
-            const b = o && !o.deleted ? layerBBoxRef.current[i].get(o.id) : null;
-            if (o && b) {
-              const mv = layerMoveRef.current;
-              const ox = o.dx + (mv?.dx ?? 0), oy = o.dy + (mv?.dy ?? 0);
+            const b0 = o && !o.deleted ? layerBBoxRef.current[i].get(o.id) : null;
+            const b = o && b0 ? layerObjBox(i, o) : null;
+            if (o && b0 && b) {
+              // The lifted object itself, under the in-flight move / scale.
+              const sel = layerSelImgRef.current;
+              if (sel && sel.id === o.id) {
+                const mv = layerMoveRef.current, rs = layerResizeRef.current;
+                const sc = rs ? rs.scale : (o.scale ?? 1);
+                const a = rs ? rs.anchor : (o.anchor ?? { x: b0.x, y: b0.y });
+                ctx.save();
+                ctx.translate(o.dx + (mv?.dx ?? 0), o.dy + (mv?.dy ?? 0));
+                ctx.translate(a.x, a.y); ctx.scale(sc, sc); ctx.translate(-a.x, -a.y);
+                ctx.drawImage(sel.img, 0, 0, dl.w, dl.h);
+                ctx.restore();
+              }
               const pad = 6 / fl;
               ctx.strokeStyle = '#7c3aed';
               ctx.lineWidth = 1.5 / fl;
               ctx.setLineDash([6 / fl, 4 / fl]);
-              ctx.strokeRect(b.x + ox - pad, b.y + oy - pad, b.w + pad * 2, b.h + pad * 2);
+              ctx.strokeRect(b.x - pad, b.y - pad, b.w + pad * 2, b.h + pad * 2);
               ctx.setLineDash([]);
-              const cssX = x + (b.x + ox - pad) * fl, cssY = y + (b.y + oy - pad) * fl;
+              // The resize handle: bottom-right corner, white square with a purple border.
+              const hs = 10 / fl;
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(b.x + b.w + pad - hs / 2, b.y + b.h + pad - hs / 2, hs, hs);
+              ctx.strokeRect(b.x + b.w + pad - hs / 2, b.y + b.h + pad - hs / 2, hs, hs);
+              const cssX = x + (b.x - pad) * fl, cssY = y + (b.y - pad) * fl;
               const next = { x: Math.max(8, cssX), y: Math.max(58, cssY - 44) };
               const prev = chipPosRef.current;
               if (!prev || Math.abs(prev.x - next.x) > 1 || Math.abs(prev.y - next.y) > 1) {
@@ -691,6 +855,39 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     }
   }, [drawStrokes, ensureBitmaps, n, visibleRange]);
 
+  // The stroke under the pen, drawn CHEAPLY (1 Oct 2026, Adrian: "a little clunky and lag a
+  // little sometimes"): every frame used to throw the live outline away and recompute it —
+  // the zero-phase tremor filter forward and back over every point so far, then
+  // perfect-freehand over them again — so the per-frame cost grew with the stroke and a
+  // long underline, circle or cursive line got heavier until the pen lifted. Now the live
+  // stroke is one round-capped polyline through a one-pass smoothed copy of its points
+  // (flat cost per point); the real outline is computed once, on lift, as before, and
+  // with the near-constant width (ink-outline thinning 0.15) the swap is barely visible.
+  // A snapped shape, a typed note and the highlighter ribbon draw as they always did.
+  const drawLiveStroke = useCallback((ctx: CanvasRenderingContext2D, s: Stroke) => {
+    if (s.text || s.snapped || s.points.length < 2) { drawStrokes(ctx, [s], s.tool === 'highlighter' ? 'hl' : 'pen'); return; }
+    const hl = s.tool === 'highlighter';
+    ctx.globalAlpha = hl ? 0.38 : 1;
+    ctx.globalCompositeOperation = hl ? 'multiply' : 'source-over';
+    ctx.strokeStyle = s.color;
+    // perfect-freehand's filled outline is `size` wide at full pressure and ~0.85 × size at
+    // rest; the live line sits in between so the lift does not visibly fatten or thin it.
+    ctx.lineWidth = hl ? s.width : s.width * 0.92;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    // One forward EMA (α 0.5) — the same strength as the stored filter's forward pass —
+    // with the pen-tip point left raw so the ink always reaches the tip.
+    const pts = s.points;
+    let sx = pts[0].x, sy = pts[0].y;
+    ctx.moveTo(sx, sy);
+    for (let i = 1; i < pts.length - 1; i++) { sx = sx + (pts[i].x - sx) * 0.5; sy = sy + (pts[i].y - sy) * 0.5; ctx.lineTo(sx, sy); }
+    ctx.lineTo(pts[pts.length - 1].x, pts[pts.length - 1].y);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
+  }, [drawStrokes]);
+
   const renderLive = useCallback(() => {
     const canvas = liveRef.current;
     if (!canvas) return;
@@ -707,7 +904,13 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         const f = (DOC_W * k) / d.w;
         const x = viewRef.current.ox, y = viewRef.current.oy + layoutRef.current.tops[cur.pageIdx] * k;
         ctx.setTransform(dpr * f, 0, 0, dpr * f, dpr * x, dpr * y);
-        drawStrokes(ctx, [cur.stroke], cur.stroke.tool === 'highlighter' ? 'hl' : 'pen');
+        drawLiveStroke(ctx, cur.stroke);
+        const perf = strokePerfRef.current;
+        if (perf) {
+          const now = performance.now();
+          if (perf.frames > 0) perf.maxGap = Math.max(perf.maxGap, now - perf.lastPaint);
+          perf.frames += 1; perf.lastPaint = now;
+        }
       }
     }
 
@@ -752,7 +955,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         ctx.fill();
       }
     }
-  }, [drawStrokes, hlColor, penColor, tool]);
+  }, [drawLiveStroke, hlColor, penColor, tool]);
 
   // Every scheduled render RACES a timer against requestAnimationFrame.
   // iPadOS Safari parks the rAF display-link right after Apple Pencil
@@ -849,11 +1052,37 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   }, []);
 
   // ── layer objects: rasterise, snapshot, restore, hit-test ──────────────────
-  const rebuildLayerImage = useCallback((i: number) => {
+  /** Rasterise one object alone, at its stored place with NO move / scale applied — the render loop applies those. */
+  const rasteriseSelObj = useCallback((i: number, id: string, onReady?: () => void) => {
+    const parsed = layerRef.current[i];
+    const meta = pages[i]?.layer;
+    const o = parsed?.objects.find(q => q.id === id);
+    if (!parsed || !meta || !o) return;
+    const bare = { ...o, dx: 0, dy: 0, scale: 1, anchor: undefined };
+    const doc = layerDocument(serializeLayer({ items: [{ type: 'obj', obj: bare }], objects: [bare] }), meta, fontCssRef.current);
+    const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
+    const img = new Image();
+    img.onload = () => {
+      const prev = layerSelImgRef.current;
+      layerSelImgRef.current = { id, img };
+      if (prev && prev.img.src.startsWith('blob:')) URL.revokeObjectURL(prev.img.src);
+      onReady?.();
+      scheduleBase();
+    };
+    img.onerror = () => URL.revokeObjectURL(url);
+    img.src = url;
+  }, [pages, scheduleBase]);
+  const rebuildLayerImage = useCallback((i: number, hideId: string | null = layerSelImgRef.current?.id ?? null, refreshSel = true) => {
     const parsed = layerRef.current[i];
     const meta = pages[i]?.layer;
     if (!parsed || !meta) return;
-    const doc = layerDocument(serializeLayer(parsed), meta, fontCssRef.current);
+    // An edit while an object is lifted (a chip's marks, retyped text, ✓⇄✗) must reach the lifted copy too.
+    if (refreshSel && hideId && layerSelImgRef.current?.id === hideId) rasteriseSelObj(i, hideId);
+    // The selected object is left out of the page bitmap — it is drawn on its own (live drag).
+    const body = hideId
+      ? serializeLayer({ items: parsed.items.map(it => (it.type === 'obj' && it.obj.id === hideId ? { type: 'obj', obj: { ...it.obj, deleted: true } } : it)), objects: parsed.objects })
+      : serializeLayer(parsed);
+    const doc = layerDocument(body, meta, fontCssRef.current);
     const url = URL.createObjectURL(new Blob([doc], { type: 'image/svg+xml' }));
     const img = new Image();
     img.onload = () => {
@@ -864,7 +1093,50 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     };
     img.onerror = () => URL.revokeObjectURL(url);
     img.src = url;
-  }, [pages, scheduleBase]);
+  }, [pages, scheduleBase, rasteriseSelObj]);
+  /** Lift the selected object out of the page: its own bitmap, then the page without it. */
+  const buildSelObjImage = useCallback((i: number, id: string) => {
+    rasteriseSelObj(i, id, () => rebuildLayerImage(i, id, false));
+  }, [rasteriseSelObj, rebuildLayerImage]);
+  /** The object's box on the page as it stands: its measured box, scaled about its anchor, moved. */
+  const layerObjBox = (i: number, o: LayerObj, live = true): LayerBox | null => {
+    const b = layerBBoxRef.current[i].get(o.id);
+    if (!b) return null;
+    const mv = live ? layerMoveRef.current : null;
+    const rs = live ? layerResizeRef.current : null;
+    const s = rs ? rs.scale : (o.scale ?? 1);
+    const a = rs ? rs.anchor : (o.anchor ?? { x: b.x, y: b.y });
+    const dx = o.dx + (mv?.dx ?? 0), dy = o.dy + (mv?.dy ?? 0);
+    return { x: a.x + (b.x - a.x) * s + dx, y: a.y + (b.y - a.y) * s + dy, w: b.w * s, h: b.h * s };
+  };
+  // A headless-check hook (only behind ?mouse=1, the same gate that lets a mouse draw):
+  // layer coords → css, the selection's box, and every object's box on a page. Nothing
+  // in the overlay reads it; the puppeteer check that proves live drag / resize does.
+  useEffect(() => {
+    if (!mouseAllowed || typeof window === 'undefined') return;
+    const toCss = (i: number, lx: number, ly: number) => {
+      const d = dimsRef.current[i]; const { tops } = layoutRef.current; const k = kFactor();
+      if (!d) return null;
+      const sc = d.w / DOC_W;
+      // Pointer maths is relative to the base canvas; a page-level caller wants viewport css.
+      const r = baseRef.current?.getBoundingClientRect();
+      return { x: (r?.left ?? 0) + viewRef.current.ox + (lx / sc) * k, y: (r?.top ?? 0) + viewRef.current.oy + (tops[i] + ly / sc) * k };
+    };
+    const w = window as unknown as { __annotate?: unknown };
+    w.__annotate = {
+      toCss,
+      objects: (i: number) => (layerRef.current[i]?.objects ?? []).filter(o => !o.deleted).map(o => ({ id: o.id, kind: o.kind, q: o.q, text: o.text, box: layerObjBox(i, o, false), scale: o.scale ?? 1 })),
+      sel: () => {
+        const ls = layerSelRef.current; if (!ls) return null;
+        const o = layerRef.current[ls.pageIdx]?.objects.find(q => q.id === ls.id); if (!o) return null;
+        const b = layerObjBox(ls.pageIdx, o, false); if (!b) return null;
+        const tl = toCss(ls.pageIdx, b.x, b.y), br = toCss(ls.pageIdx, b.x + b.w, b.y + b.h);
+        return { pageIdx: ls.pageIdx, id: o.id, kind: o.kind, box: b, scale: o.scale ?? 1, dx: o.dx, dy: o.dy, css: tl && br ? { x: tl.x, y: tl.y, w: br.x - tl.x, h: br.y - tl.y } : null };
+      },
+    };
+    return () => { delete w.__annotate; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mouseAllowed]);
   const layerSnap = (parsed: ParsedLayer): LayerSnapshot => layerSnapshot(parsed);
   const layerRestore = useCallback((i: number, snap: LayerSnapshot) => {
     const parsed = layerRef.current[i];
@@ -878,14 +1150,22 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     const boxes = layerBBoxRef.current[pageIdx];
     const d = dimsRef.current[pageIdx];
     const slack = d ? 10 * (d.w / (kFactor() * DOC_W)) : 8;
+    // The smallest box under the finger wins (1 Oct 2026): a note with its long leader arrow
+    // spans most of a line, and used to swallow the tick drawn beside it — Adrian: "the
+    // annotations is tied together with the ticks … able to separate?"
+    let best: LayerObj | null = null, bestArea = Infinity;
     for (let k = parsed.objects.length - 1; k >= 0; k--) {
       const o = parsed.objects[k];
       if (o.deleted) continue;
-      const b = boxes.get(o.id);
+      if (!boxes.get(o.id)) continue;
+      const b = layerObjBox(pageIdx, o, false);
       if (!b) continue;
-      if (x >= b.x + o.dx - slack && x <= b.x + o.dx + b.w + slack && y >= b.y + o.dy - slack && y <= b.y + o.dy + b.h + slack) return o;
+      if (x >= b.x - slack && x <= b.x + b.w + slack && y >= b.y - slack && y <= b.y + b.h + slack) {
+        const area = (b.w + slack * 2) * (b.h + slack * 2);
+        if (area < bestArea) { best = o; bestArea = area; }
+      }
     }
-    return null;
+    return best;
   };
 
   const undo = useCallback((pageIdx: number) => {
@@ -1164,6 +1444,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const d = dimsRef.current[pt.pageIdx]!;
       const ptPerImg = d.w / PDF_PAGE_W;                  // 1 pt at page scale, in image px
       const widthPt = tool === 'highlighter' ? HL_WIDTH_PT : penWidthPt;
+      strokePerfRef.current = { t0: performance.now(), events: 1, frames: 0, lastPaint: 0, maxGap: 0 };
       currentRef.current = {
         stroke: {
           tool: tool as ToolKind,
@@ -1215,7 +1496,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const cur = currentRef.current;
       if (!cur || cur.snapLocked) return;
       const pt = toImage(x, y, cur.pageIdx);
-      if (pt) cur.stroke.points.push({ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 });
+      if (pt) { cur.stroke.points.push({ x: pt.x, y: pt.y, p: pressure > 0 ? pressure : 0.5 }); if (strokePerfRef.current) strokePerfRef.current.events += 1; }
       pathCache.current.delete(cur.stroke);
       if (Math.hypot(x - cur.lastStable.x, y - cur.lastStable.y) > HOLD_MOVE_PX) {
         cur.lastStable = { x, y };
@@ -1346,15 +1627,37 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           return;
         }
         if (tool === 'select') {
-          // The marker's ink: tap an object to select it, drag to move it.
+          // The marker's ink: tap an object to select it, drag to move it, drag its
+          // bottom-right handle to resize it (1 Oct 2026).
           const pt = toImage(x, y);
           if (!pt) { penDownRef.current = false; return; }
+          const ls = layerSelRef.current;
+          if (ls && ls.pageIdx === pt.pageIdx) {
+            const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+            const b = o ? layerObjBox(ls.pageIdx, o, false) : null;
+            const d = dimsRef.current[ls.pageIdx];
+            const grab = d ? 16 * (d.w / (kFactor() * DOC_W)) : 12;
+            if (o && b && Math.abs(pt.x - (b.x + b.w)) <= grab && Math.abs(pt.y - (b.y + b.h)) <= grab) {
+              const anchor = o.anchor ?? { x: b.x - o.dx, y: b.y - o.dy };
+              const startDist = Math.max(4, Math.hypot(pt.x - (anchor.x + o.dx), pt.y - (anchor.y + o.dy)));
+              layerResizeRef.current = { startDist, scale0: o.scale ?? 1, anchor, scale: o.scale ?? 1 };
+              selDownAtRef.current = performance.now();
+              scheduleBase();
+              return;
+            }
+          }
           const hit = hitLayerObject(pt.pageIdx, pt.x, pt.y);
-          clearSelection();
+          const keep = hit && ls && ls.id === hit.id && ls.pageIdx === pt.pageIdx;
+          if (!keep) {
+            const prevPage = ls?.pageIdx ?? null;
+            clearSelection();
+            if (prevPage != null) rebuildLayerImage(prevPage, null);
+          }
           if (hit) {
             layerSelRef.current = { pageIdx: pt.pageIdx, id: hit.id };
             layerMoveRef.current = { startX: pt.x, startY: pt.y, dx: 0, dy: 0 };
             selDownAtRef.current = performance.now();
+            if (!keep) buildSelObjImage(pt.pageIdx, hit.id);
           }
           scheduleBase();
           return;
@@ -1448,7 +1751,17 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         e.preventDefault();
         if (strokeSrcRef.current === 'pointer') lastPointerAtRef.current = performance.now();
         if (tool === 'select') {
-          const ls = layerSelRef.current, mv = layerMoveRef.current;
+          const ls = layerSelRef.current, mv = layerMoveRef.current, rs = layerResizeRef.current;
+          if (ls && rs) {
+            const o = layerRef.current[ls.pageIdx]?.objects.find((q) => q.id === ls.id);
+            const pt = toImage(x, y, ls.pageIdx);
+            if (pt && o) {
+              const dNow = Math.hypot(pt.x - (rs.anchor.x + o.dx), pt.y - (rs.anchor.y + o.dy));
+              rs.scale = Math.min(6, Math.max(0.2, rs.scale0 * (dNow / rs.startDist)));
+              scheduleBase();
+            }
+            return;
+          }
           if (ls && mv) {
             const pt = toImage(x, y, ls.pageIdx);
             if (pt) { mv.dx = pt.x - mv.startX; mv.dy = pt.y - mv.startY; scheduleBase(); }
@@ -1515,7 +1828,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         for (const ce of events) {
           const p = cssPos(ce);
           const pt = toImage(p.x, p.y, cur.pageIdx);
-          if (pt) cur.stroke.points.push({ x: pt.x, y: pt.y, p: ce.pressure > 0 ? ce.pressure : 0.5 });
+          if (pt) { cur.stroke.points.push({ x: pt.x, y: pt.y, p: ce.pressure > 0 ? ce.pressure : 0.5 }); if (strokePerfRef.current) strokePerfRef.current.events += 1; }
         }
         pathCache.current.delete(cur.stroke);
         // Hold-to-snap bookkeeping (screen-space stillness).
@@ -1569,6 +1882,22 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       touchStrokeIdRef.current = null;
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       if (tool === 'select') {
+        // Commit a resize of the marker's object as one undo step; the selection stays.
+        const rs = layerResizeRef.current;
+        if (rs && layerSelRef.current) {
+          const ls0 = layerSelRef.current;
+          const parsed = layerRef.current[ls0.pageIdx];
+          const o = parsed?.objects.find((q) => q.id === ls0.id);
+          if (parsed && o && Math.abs(rs.scale - (o.scale ?? 1)) > 0.005) {
+            const before = layerSnap(parsed);
+            o.scale = rs.scale; o.anchor = rs.anchor;
+            pushUndo(ls0.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
+            bumpInk();
+          }
+          layerResizeRef.current = null;
+          scheduleBase();
+          return;
+        }
         // Commit a move of the marker's object as one undo step; the selection stays.
         const ls = layerSelRef.current, mv = layerMoveRef.current;
         const moved = !!mv && (Math.abs(mv.dx) > 0.5 || Math.abs(mv.dy) > 0.5);
@@ -1586,7 +1915,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             o.dx += mv.dx; o.dy += mv.dy;
             pushUndo(ls.pageIdx, { t: 'layer', before, after: layerSnap(parsed) });
             bumpInk();
-            rebuildLayerImage(ls.pageIdx);
+            // The object is still drawn on its own while selected — no page rebuild needed.
           }
         }
         layerMoveRef.current = null;
@@ -1697,6 +2026,14 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         logInk('commit', { n: cur.stroke.points.length, page: cur.pageIdx, snapped: cur.stroke.snapped || '' });
         strokesRef.current[cur.pageIdx].push(cur.stroke);
         pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
+        {
+          const perf = strokePerfRef.current;
+          if (perf) {
+            const ms = Math.round(performance.now() - perf.t0);
+            logInk('stroke', { pts: cur.stroke.points.length, ms, ev: perf.events, frames: perf.frames, maxGap: Math.round(perf.maxGap), fps: ms > 0 ? Math.round((perf.frames * 1000) / ms) : null });
+          }
+          strokePerfRef.current = null;
+        }
         baseResetPendingRef.current = true;   // fresh base surface under the commit repaint
         bumpInk();
         // Post-commit pixel probe (missing-strokes hunt, 4 Aug 2026): 120ms
@@ -2193,9 +2530,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       const t = JSON.parse(localStorage.getItem(TOOLS_KEY) || 'null');
       if (t) {
         if (t.tool === 'pen' || t.tool === 'highlighter') { setTool(t.tool); lastInkToolRef.current = t.tool; }
-        if (PEN_COLORS.includes(t.penColor)) setPenColor(t.penColor);
+        if (isHex(t.penColor)) setPenColor(t.penColor);
+        if (Array.isArray(t.penFavs) && t.penFavs.length >= 3 && t.penFavs.every(isHex)) setPenFavs(t.penFavs.slice(0, 6));
+        if (Array.isArray(t.hlFavs) && t.hlFavs.length >= 2 && t.hlFavs.every(isHex)) setHlFavs(t.hlFavs.slice(0, 6));
         if (PEN_WIDTHS_PT.includes(t.penWidthPt)) setPenWidthPt(t.penWidthPt);
-        if (HL_COLORS.includes(t.hlColor)) setHlColor(t.hlColor);
+        if (isHex(t.hlColor)) setHlColor(t.hlColor);
         if (t.eraserMode === 'stroke' || t.eraserMode === 'partial') setEraserMode(t.eraserMode);
       }
     } catch { /* defaults are fine */ }
@@ -2246,10 +2585,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     try {
       localStorage.setItem(TOOLS_KEY, JSON.stringify({
         tool: tool === 'eraser' || tool === 'lasso' || tool === 'select' || tool === 'text' ? lastInkToolRef.current : tool,
-        penColor, penWidthPt, hlColor, eraserMode,
+        penColor, penWidthPt, hlColor, eraserMode, penFavs, hlFavs,
       }));
     } catch { /* best-effort */ }
-  }, [tool, penColor, penWidthPt, hlColor, eraserMode]);
+  }, [tool, penColor, penWidthPt, hlColor, eraserMode, penFavs, hlFavs]);
 
   const hasInk = () => strokesRef.current.some((s) => s.length > 0) || layerRef.current.some((l) => !!l && layerDirty(l));
   const inkedCount = strokesRef.current.filter((s) => s.length > 0).length;
@@ -2572,7 +2911,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       userSelect: 'none', WebkitUserSelect: 'none',
     }}>
       {/* top bar */}
-      <div style={{
+      <div data-annotate-toolbar style={{
         padding: 'calc(env(safe-area-inset-top, 0px) + 8px) 12px 8px',
         background: '#fff', borderBottom: '1px solid #e5e7eb',
         display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
@@ -2633,29 +2972,24 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
                 </button>
               ))}
             </div>
-            <div style={{ display: 'inline-flex', gap: 4 }}>
-              {PEN_COLORS.map((c) => (
-                <button key={c} style={{ ...btn, border: penColor === c ? '3px solid #111827' : '1px solid #d1d5db' }} onClick={() => setPenColor(c)} aria-label={`Colour ${c}`}>
-                  <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block' }} />
-                </button>
-              ))}
-            </div>
+            <FavouriteSwatches kind="pen" favs={penFavs} current={penColor} onPick={setPenColor} onOpen={() => setPalette(p => (p === 'pen' ? null : 'pen'))} onHold={(i) => setPenFavs(f => dedupeFavs(f.map((c, k) => (k === i ? penColor : c)), i))} holdRef={favHoldRef} />
           </>
         )}
         {tool === 'highlighter' && (
-          <div style={{ display: 'inline-flex', gap: 4 }}>
-            {HL_COLORS.map((c) => (
-              <button key={c} style={{ ...btn, border: hlColor === c ? '3px solid #111827' : '1px solid #d1d5db' }} onClick={() => setHlColor(c)} aria-label={`Highlight ${c}`}>
-                <span style={{ width: 20, height: 20, borderRadius: '50%', background: c, display: 'inline-block' }} />
-              </button>
-            ))}
-          </div>
+          <FavouriteSwatches kind="hl" favs={hlFavs} current={hlColor} onPick={setHlColor} onOpen={() => setPalette(p => (p === 'hl' ? null : 'hl'))} onHold={(i) => setHlFavs(f => dedupeFavs(f.map((c, k) => (k === i ? hlColor : c)), i))} holdRef={favHoldRef} />
         )}
 
         <button style={{ ...btn, opacity: canUndo ? 1 : 0.35 }} onClick={() => undo(currentPageIdx)} disabled={!canUndo} aria-label="Undo" title="Undo (2-finger tap)"><IconUndo /></button>
         <button style={{ ...btn, opacity: canRedo ? 1 : 0.35 }} onClick={() => redo(currentPageIdx)} disabled={!canRedo} aria-label="Redo" title="Redo (3-finger tap)"><IconRedo /></button>
 
         <div style={{ flex: 1 }} />
+        {(() => {
+          const changed = layerRef.current.reduce((n, p) => n + (p?.objects.filter(o => !o.deleted && scoreChange(o)).length ?? 0), 0);
+          return changed > 0 ? (
+            <span data-marks-changed style={{ background: '#7c3aed', color: '#fff', borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 700, marginRight: 8, whiteSpace: 'nowrap' }}
+              title="Done writes these marks and repaints the paper">{changed} mark{changed === 1 ? '' : 's'} changed</span>
+          ) : null;
+        })()}
         <button
           style={{
             ...btn, background: (isStudent ? (hasInk() || dirtyRef.current) : hasInk()) && !busy ? '#2563eb' : '#93c5fd', color: '#fff',
@@ -2705,6 +3039,18 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             ✏️ ink on {inkedCount} page{inkedCount > 1 ? 's' : ''}
           </div>
         )}
+        {palette && (
+          <PalettePopover
+            current={palette === 'pen' ? penColor : hlColor}
+            favs={palette === 'pen' ? penFavs : hlFavs}
+            onPick={(c) => { if (palette === 'pen') setPenColor(c); else setHlColor(c); }}
+            onFavourite={(c) => {
+              const set = palette === 'pen' ? setPenFavs : setHlFavs;
+              set(f => (f.includes(c) ? f : [...f.slice(0, 5), c]));
+            }}
+            onClose={() => setPalette(null)}
+          />
+        )}
         {selChip && (
           <div style={{
             position: 'absolute', left: selChip.x, top: selChip.y,
@@ -2728,7 +3074,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
                 })()}
                 {layerSelHasText() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={editLayerText}>✏️ Edit text</button>}
                 {layerSelMark() && <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={swapLayerMark} title="Turn this tick into a cross, or this cross into a tick">{layerSelMark() === 'tick' ? '✓ → ✗' : '✗ → ✓'}</button>}
-                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { const pg = layerSelRef.current?.pageIdx ?? null; clearSelection(); if (pg != null) rebuildLayerImage(pg, null); scheduleBase(); }}>Deselect</button>
               </>
             ) : (
               <>

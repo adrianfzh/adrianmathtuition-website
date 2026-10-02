@@ -103,6 +103,11 @@ describe('routing + transitions', () => {
   });
   it('transitions', () => {
     expect(canTransition('assigned', 'submitted')).toBe(true);
+    // the student's own Done (1 Oct 2026): only from to-do, and it is final for the student
+    expect(canTransition('assigned', 'completed')).toBe(true);
+    expect(canTransition('submitted', 'completed')).toBe(false);
+    expect(canTransition('completed', 'marked')).toBe(false);
+    expect(statusLabel({ status: 'completed', kind: 'question', score: null, out_of: null })).toBe('Done');
     expect(canTransition('assigned', 'marked')).toBe(true);
     expect(canTransition('submitted', 'marked')).toBe(true);
     expect(canTransition('marked', 'marked')).toBe(true);   // re-mark

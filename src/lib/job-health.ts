@@ -23,7 +23,10 @@ export type Rhythm =
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
-  'file-subgroups':    { kind: 'interval', hours: 36, label: 'nightly 4:15am' },
+  // 🗂 The sub-skill filer: on the Fly worker since 2 Oct 2026 (the Mac task had not run since
+  // 9 Sep), maths 04:15 + 16:15, science 10:15 + 22:15 (bot worker/fly/jobs.sh job_file_subgroups).
+  'file-subgroups':    { kind: 'interval', hours: 36, label: '4:15am + 4:15pm' },
+  'file-subgroups-science': { kind: 'interval', hours: 36, label: '10:15am + 10:15pm' },
   // Daily since 18 Sep 2026 (the Fly worker's scheduler, 05:45 after the day-review).
   'bot-review':        { kind: 'interval', hours: 36, label: 'daily 5:45am' },
   // 🔎 The page reader (19 Sep 2026, bot skill marking-review): yesterday's marked pages as the student sees them.
@@ -44,6 +47,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // re-marked on the Mac lane on a Sunday night so Monday can say how far the
   // marking moved. Weekly, so the same 8.5-day grace as the report above.
   'consistency-remark': { kind: 'interval', hours: 204, label: 'Sundays 10pm' },
+  // 👻 The cheaper-reader shadow read back weekly (1 Oct 2026, Thursdays 9am SGT).
+  'shadow-read-report': { kind: 'interval', hours: 204, label: 'Thursdays 9am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },
   // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
   'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },
@@ -61,6 +66,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'paper-library':     { kind: 'interval', hours: 180, label: 'Sundays 4:10am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
+  // 👯 The twins lane on the Fly worker (30 Sep 2026, SPEC-TWINS §10): every 15 min when marking
+  // is quiet by day, always in the 00–06 SGT window; an empty queue still stamps, so absence = dead lane.
+  'twin-batch':        { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
@@ -86,6 +94,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'triage-reminder':   { kind: 'interval', hours: 36, label: 'daily 8am' },
   // Compulsory Practice Again sheets not handed in — day 3, then weekly (8 Sep 2026).
   'practice-again-reminders': { kind: 'interval', hours: 36, label: 'daily 9am' },
+  // Midnight SGT: science hand-ins that waited on the list go into the marking queue (24 Sep 2026).
+  'daily-queue': { kind: 'interval', hours: 36, label: 'daily midnight' },
   // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and
   // a dead cron are told apart here rather than by their absence.
   'question-proposals-nudge': { kind: 'interval', hours: 204, label: 'Mondays 9am' },

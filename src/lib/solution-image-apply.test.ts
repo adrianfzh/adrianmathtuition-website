@@ -80,6 +80,16 @@ describe('replaceSolutionImageRefs', () => {
     expect(r.row.solution).toBe(`Plot the points.\n{{IMG:${NEW}}}\nThen read off $y$.`);
   });
 
+  it('rewrites a markdown image inside a part solution (NJC 2024 P2 Q3)', () => {
+    const row = { parts: [{ label: 'b', solution: `![Graph of y = |f(2 - x)|](${FULL})\n\nThe graph is obtained by…` }] };
+    const r = replaceSolutionImageRefs(row, OLD, NEW);
+    expect(r.replaced).toBe(1);
+    expect(r.fields).toEqual(['parts[0].solution']);
+    expect((r.row.parts as Array<Record<string, unknown>>)[0].solution).toBe(`![Graph of y = |f(2 - x)|](${NEW})\n\nThe graph is obtained by…`);
+    expect(partLabelFor(row, OLD)).toBe('(b)');
+    expect(replaceSolutionImageRefs({ solution: `![x](${FULL.replace(OLD, 'other.png')})` }, OLD, NEW).replaced).toBe(0);
+  });
+
   it('leaves every unrelated field byte-identical', () => {
     const row = {
       parts: [{ label: '(a)', marks: 3, answer: '$h = 2.22$', solution: 'working', solution_image: OLD }],

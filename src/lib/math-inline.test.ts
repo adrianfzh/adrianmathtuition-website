@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, looksLikeMath, mathHtml } from './math-inline';
+import { escapeHtml, looksLikeMath, mathHtml, mathLineHtml } from './math-inline';
 
 describe('looksLikeMath', () => {
   it('TeX commands and structure are math', () => {
@@ -223,5 +223,67 @@ describe('parallel is written // (Adrian, 11 Sep 2026)', () => {
   it('a literal ∥ in prose or maths becomes //', () => {
     expect(mathHtml('PQ ∥ SR')).toBe('PQ // SR');
     expect(mathHtml('$PQ ∥ SR$')).not.toContain('∥');
+  });
+});
+
+describe('a named point', () => {
+  it('renders $H(1, 5)$ and $P(-2, a)$ as maths, keeps prose literal', () => {
+    expect(mathHtml('at the point $H(1, 5)$.')).toContain('katex');
+    expect(mathHtml('$P(-2, a)$')).toContain('katex');
+    expect(mathHtml("$A'(3, 4)$")).toContain('katex');
+    expect(mathHtml('costs $5 (see) and $6')).not.toContain('katex');
+  });
+});
+
+describe('a ratio', () => {
+  it('renders $3 : 1$ and $x : y$, keeps prices and prose literal', () => {
+    expect(mathHtml('the ratio is $3 : 1$.')).toContain('katex');
+    expect(mathHtml('$9 : 4$')).toContain('katex');
+    expect(mathHtml('$x : y : z$')).toContain('katex');
+    expect(mathHtml('Note: it costs $3 and $4 more')).not.toContain('katex');
+  });
+});
+
+describe('segment ratios and a spaced negative', () => {
+  it('renders $PQ : PR$, $AF : FB$ and $- 6$', () => {
+    expect(mathHtml('$PQ : PR$')).toContain('katex');
+    expect(mathHtml('$AF : FB$')).toContain('katex');
+    expect(mathHtml('$- 6$')).toContain('katex');
+    expect(mathHtml('pay $5 - $6 today')).not.toContain('katex');
+  });
+});
+
+describe('mathHtml — display maths', () => {
+  it('renders a $$…$$ line as display maths with no stray dollars (E Math Set 1 P1 Q25)', () => {
+    const html = mathHtml('These are the first four terms of a sequence.\n$$3 \\qquad 7 \\qquad 13 \\qquad 21$$');
+    expect(html).toContain('katex-display');
+    expect(html).not.toContain('$');
+  });
+  it('still leaves two prices as prose', () => {
+    expect(mathHtml('a meal at $96 and the other at $x')).not.toContain('katex');
+  });
+});
+
+describe('mathLineHtml — a line meant as one TeX expression (1 Oct 2026)', () => {
+  it('renders a step the pen left with only its opening $', () => {
+    const html = mathLineHtml('$P(\\text{at most 2 white}) = 3\\left[\\frac{1}{2}\\right] +');
+    expect(html).toContain('katex');
+    expect(html).not.toContain('\\left');
+  });
+  it('turns a prose line the marker wrapped in $\\text{…}$ into prose that wraps, keeping the maths after it', () => {
+    expect(mathLineHtml('$\\text{Sketch: both meters drawn as circles labelled A and V}$')).toBe('Sketch: both meters drawn as circles labelled A and V');
+    const html = mathLineHtml('$\\text{finish at } (12\\text{ V},\\ 0.25\\text{ A})$');
+    expect(html.startsWith('finish at ')).toBe(true);
+    expect(html).toContain('katex');
+    expect(html).not.toContain('\\text');
+  });
+  it('renders a formula the writer wrapped in doubled dollars', () => {
+    const html = mathLineHtml('$$= \\frac{12}{b^2}(4b^2) = 48$');
+    expect(html).toContain('katex');
+    expect(html).not.toContain('$$');
+  });
+  it('leaves a balanced line to mathHtml', () => {
+    expect(mathLineHtml('$= \\frac{7}{8}$')).toBe(mathHtml('$= \\frac{7}{8}$'));
+    expect(mathLineHtml('add the case with no white seeds')).toBe('add the case with no white seeds');
   });
 });

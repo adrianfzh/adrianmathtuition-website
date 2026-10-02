@@ -26,7 +26,7 @@ import { dropboxConfigured, listFolder } from '@/lib/dropbox';
 import { pendingCount, recomputeTotals } from '@/lib/mark-triage';
 import { dropboxWebUrl, paperFolder } from '@/lib/paper-folder';
 import {
-  DESK_LANES, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
+  DESK_LANES, isBenchRun, amendedStatusFor, defaultLane, deskFlags, laneFor, latestLiveJob,
   noSheetOf, pdfStaleOf, sheetStageLabel, revisingOf, type AmendedStatus, type DeskLane, isPracticeAgainHandin, handinOriginOf,
   sheetOutcomeOf, type SheetAssignmentLite, type SheetOutcome, markingProgressOf, type MarkingProgress,
 } from '@/lib/desk-state';
@@ -101,7 +101,8 @@ export async function GET(req: NextRequest) {
 
   // A run with no stored marking is a failed or still-queued attempt — same
   // rule as triage and the papers library; it has nothing to vet yet.
-  const all = (data ?? []) as unknown as RunRow[];
+  // Science-bench scripts never have a student — they stay off the desk.
+  const all = ((data ?? []) as unknown as RunRow[]).filter(r => !isBenchRun(r.paper_name));
   const runs = all.filter(r => Array.isArray((r.result_json as { results?: unknown } | null)?.results));
   const ids = runs.map(r => r.id);
   // 🌙 Papers BEING MARKED (10 Sep 2026, Adrian: "would like marking practice again

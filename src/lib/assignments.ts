@@ -18,7 +18,9 @@ export type AssignmentKind = 'question' | 'worksheet' | 'generated' | 'page';
 // 'writing' (SPEC-PRACTICE-PHOTO, 23 Sep 2026) = a photographed question's twin is
 // being written; the row is visible but opens nothing until the done webhook
 // flips it to 'assigned' (or 'revoked' when nothing passed the gates).
-export type AssignmentStatus = 'writing' | 'held' | 'assigned' | 'submitted' | 'marked' | 'revoked';
+// 'completed' (1 Oct 2026): the STUDENT ticked their own Practice item Done — no
+// attempt, no score (lib/practice-todo studentMayComplete says which rows may).
+export type AssignmentStatus = 'writing' | 'held' | 'assigned' | 'submitted' | 'marked' | 'revoked' | 'completed';
 // Which section of the student's Practice to-do list a row sits in
 // (SPEC-PORTAL-V2 §3): 'adrian' = the Send-work card / release-with-sheet's PDF
 // / remediation drills (every row before this build), 'practice-again' = one
@@ -53,6 +55,7 @@ export type AssignmentRow = {
   submitted_at: string | null;
   marked_at: string | null;
   revoked_at: string | null;
+  completed_at?: string | null;   // the student's own Done (1 Oct 2026)
   // ── SPEC-PORTAL-V2 §3/§7 columns (migration portal_assignments_practice_again) ──
   source: AssignmentSource;
   /** Practice Again: the sheet section heading — the skill this question fixes. */
@@ -299,6 +302,7 @@ export function statusLabel(row: Pick<AssignmentRow, 'status' | 'kind' | 'score'
     case 'marked':
       return row.score != null && row.out_of != null ? `Marked · ${row.score}/${row.out_of}` : 'Marked';
     case 'revoked': return 'Withdrawn';
+    case 'completed': return 'Done';
   }
 }
 
@@ -311,7 +315,7 @@ export function canTransition(from: AssignmentStatus, to: AssignmentStatus): boo
   if (to === 'revoked') return from === 'writing' || from === 'held' || from === 'assigned' || from === 'submitted';
   if (from === 'writing') return to === 'assigned';
   if (from === 'held') return to === 'assigned';
-  if (from === 'assigned') return to === 'submitted' || to === 'marked';
+  if (from === 'assigned') return to === 'submitted' || to === 'marked' || to === 'completed';   // completed = the student's own Done
   if (from === 'submitted') return to === 'marked';
   return false;
 }
