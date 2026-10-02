@@ -906,8 +906,8 @@ export async function POST(req: NextRequest) {
     if ((answerKey || answersOnly) && answerless > 0) warnings.push(`${answerless} question${answerless === 1 ? '' : 's'} with no stored answer — "—" in the key`);
 
     const autoTitle = [
-      `${school} ${year}`, level,
-      paper ? `Paper ${String(paper).replace(/^P/i, '')}` : null, examType,
+      `${school} ${year}`, level, examType,
+      paper ? `Paper ${String(paper).replace(/^P/i, '')}` : null,
     ].filter(Boolean).join(' · ');
     // Adrian can type his own title on the print card; blank falls back to the
     // auto title (which the UI shows as the input's placeholder).

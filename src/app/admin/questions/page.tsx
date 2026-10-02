@@ -490,7 +490,7 @@ export default function QuestionBankPage() {
   const paperKey = (p: PaperRow | PaperMeta) =>
     `${p.school}|${p.year}|${p.level ?? ''}|${p.paper ?? ''}|${p.examType ?? ''}`;
   const paperLabel = (p: PaperRow | PaperMeta) =>
-    [`${p.school} ${p.year}`, p.level, p.paper ? `P${String(p.paper).replace(/^P/i, '')}` : null, p.examType]
+    [`${p.school} ${p.year}`, p.level, p.examType, p.paper ? `P${String(p.paper).replace(/^P/i, '')}` : null]
       .filter(Boolean).join(' · ');
   const togglePick = (p: PaperRow) => setPicked(cur => {
     const next = new Set(cur); const k = paperKey(p);
@@ -1032,8 +1032,8 @@ export default function QuestionBankPage() {
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
             <h2 style={{ fontSize: 16.5, fontWeight: 700 }}>
               {paperView.meta.school} · {paperView.meta.year}
-              {paperView.meta.level ? ` · ${levelLabel(paperView.meta.level)}` : ''}{paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
-              {paperView.meta.examType ? ` · ${paperView.meta.examType}` : ''}
+              {paperView.meta.level ? ` · ${levelLabel(paperView.meta.level)}` : ''}{paperView.meta.examType ? ` · ${paperView.meta.examType}` : ''}
+              {paperView.meta.paper ? ` · P${String(paperView.meta.paper).replace(/^P/i, '')}` : ''}
             </h2>
             <span style={{ color: C.muted, fontSize: 13 }}>
               {paperView.questions.length} questions{paperCoverage ? ` · ${paperCoverage.marks} marks` : ''}
@@ -1338,7 +1338,7 @@ export default function QuestionBankPage() {
             <button onClick={() => openPaper(pp)}
               style={{ display: 'flex', gap: 10, alignItems: 'baseline', flex: 1, minWidth: 0, textAlign: 'left', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <strong style={{ fontSize: 14.5 }}>{pp.school}</strong>
-              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {levelLabel(pp.level)}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}{pp.examType ? ` · ${pp.examType}` : ''}</span>
+              <span style={{ color: C.muted, fontSize: 13 }}>{pp.year} · {levelLabel(pp.level)}{pp.examType ? ` · ${pp.examType}` : ''}{pp.paper ? ` · P${String(pp.paper).replace(/^P/i, '')}` : ''}</span>
               <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
                 <span style={{ color: C.muted, fontSize: 12.5 }}>
                   {pp.count} q{pp.marksTotal != null && pp.marksTotal > 0 ? ` · ${pp.marksTotal} marks` : ''}
