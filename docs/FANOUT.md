@@ -129,6 +129,7 @@ rounds can be compared.
 | a marking RULE whose wording must not collide with the ninety-odd dated rules already in `ai/paper-marker.js`; triage of a round of complaints across several papers; reading a marked page the way Adrian reads it | **Fable** (the orchestrating session) | the cost of a rule that teaches the wrong lesson is a wrong mark on a student's paper; the collision check is judgement over the whole prompt |
 | mechanical builds with a spec (renderers, migrations, backfills, docs sweeps) | **Sonnet** agent | speed; the spec is the judgement |
 | solutions and question authoring for the bank | **the extraction lane on Opus 5.5 at HIGH effort, biology on Opus 5** (bot `worker/fly/extract.sh`, since 26 Sep 2026 — Fable was the fleet's solver until then and is not needed for reading a paper against its key; figure-fitness `figfit.sh` + `jobs.sh plan_run` pinned the same way); **the GCE Set generator writes, blind-solves and repairs on Opus and moderates on Fable** (the `opus` / `fable` aliases, newest of each family) since 23 Sep 2026 (`docs/GCE-PAPER.md`) | accuracy of the maths itself |
+| a paper-PDF tidy-up: strip header and footer, attach the answer key from the bank, merge, compress (2 Oct 2026) | **Haiku 4.5**, low effort | mechanical when the bank already has the key. Three checks make it safe at this tier: rasterise the pages so text hidden under white boxes (school name, site footer, solutions) is truly gone; grep the output text for the school name; LOOK at the answer pages and a few question pages. Go to Sonnet only if pages show stray marks Haiku misses; Opus only when there is no key and the answers must be worked |
 
 Running every fix on the dearest tier is not "safer" — it costs plan usage for no
 gain on work the bench already proves. Running rule wording on the cheapest tier
@@ -175,3 +176,4 @@ re-ink; and re-issue only after Adrian has seen the redrawn pages.
   5.5"): the moderator goes back to Fable, so the judge is a different model from the
   writer and the one that scored the earlier Sets; author, blind solve, repair and
   figures stay on Opus 5.5.
+- 2 Oct 2026 — paper-PDF tidy-up row added (AM Prelim Practice Set 5: header/footer off, answers after each paper). Adrian: "we should just do haiku then" … "put in memory so that other future sessions in other claude plans know".
