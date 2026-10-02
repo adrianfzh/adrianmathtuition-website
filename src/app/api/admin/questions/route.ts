@@ -257,6 +257,14 @@ function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImage
   };
 }
 
+/** The bank levels one level filter reads. H2 Set papers are filed under the
+ *  blueprint family 'JC' (publish.mjs; students reach them through
+ *  PRINT_POOL_SCOPE), so a JC1 / JC2 filter shows them too — Adrian picked JC2
+ *  and could not see H2 Set 1 (3 Oct 2026). */
+function bankLevelsFor(level: string): string[] {
+  return level === 'JC1' || level === 'JC2' ? [level, 'JC'] : [level];
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -295,7 +303,7 @@ export async function GET(req: NextRequest) {
     const level = p.get('level');
     const paper = p.get('paper');
     const examType = p.get('exam_type');
-    if (level) q = q.eq('level', level);
+    if (level) q = q.in('level', bankLevelsFor(level));
     if (paper) q = q.eq('paper', paper);
     if (examType) q = q.eq('exam_type', examType);
     const { data, error } = await q.limit(120);
@@ -324,7 +332,7 @@ export async function GET(req: NextRequest) {
     // view 2026-08-26) ride along, and the index still renders counts-only if
     // the view is ever recreated without them — no column-list error to hit.
     let pq = supa.from('paper_index').select('*');
-    if (level) pq = pq.eq('level', level);
+    if (level) pq = pq.in('level', bankLevelsFor(level));
     if (year) pq = pq.eq('year', Number(year));
     // Word by word (29 Sep 2026, the shared search box): a four-digit word is the year
     // when no year was picked, every other word must appear in the school's name —
@@ -368,7 +376,7 @@ export async function GET(req: NextRequest) {
   // ── search cards ──────────────────────────────────────────────────────────
   let q = supa.from('questions').select(`${LIST_COLUMNS}, parts`).is('deleted_at', null);
   const level = p.get('level');
-  if (level) q = q.eq('level', level);
+  if (level) q = q.in('level', bankLevelsFor(level));
   if (year) q = q.eq('year', Number(year));
   if (school) q = q.ilike('school', `%${school.replace(/[%_]/g, '')}%`);
   const topic = p.get('topic');
@@ -851,7 +859,7 @@ export async function POST(req: NextRequest) {
     const level = typeof body.level === 'string' && body.level ? body.level : null;
     const paper = typeof body.paper === 'string' && body.paper ? body.paper : null;
     const examType = typeof body.examType === 'string' && body.examType ? body.examType : null;
-    if (level) q = q.eq('level', level);
+    if (level) q = q.in('level', bankLevelsFor(level));
     if (paper) q = q.eq('paper', paper);
     if (examType) q = q.eq('exam_type', examType);
     const { data, error } = await q.limit(120);
