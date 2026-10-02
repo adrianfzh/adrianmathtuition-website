@@ -10,7 +10,7 @@
 // Pure data (no React) so the server layout, client components and tests can
 // all import it. Icon names resolve in components/PortalIcon.tsx.
 
-export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask' | 'science' | 'languages';
+export type SurfaceKey = 'home' | 'assignments' | 'plan' | 'practice' | 'submit' | 'marking' | 'notebook' | 'learn' | 'notes' | 'settings' | 'lesson' | 'ask' | 'science' | 'languages' | 'humanities';
 
 export type SurfaceIdentity = {
   key: SurfaceKey;
@@ -89,6 +89,11 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
     key: 'languages', label: 'Languages', icon: 'pencil',
     tile: 'bg-violet-500 text-white', text: 'text-violet-700', tint: 'bg-violet-50', ring: 'ring-violet-400/60',
   },
+  // 📜 The Humanities family (SPEC-HUMANITIES.md, 2 Oct 2026) — source-based answers, a level range.
+  humanities: {
+    key: 'humanities', label: 'Humanities', icon: 'book',
+    tile: 'bg-amber-600 text-white', text: 'text-amber-800', tint: 'bg-amber-50', ring: 'ring-amber-400/60',
+  },
 };
 
 /** Identity for a nav href ('/app/marking' → marking; '/app' → home).
@@ -109,6 +114,11 @@ export function surfaceForHref(href: string): SurfaceIdentity {
   if (href.startsWith('/app/languages/')) {
     const sub = href.slice('/app/languages/'.length).split(/[/?]/)[0];
     return SURFACES[sub === 'submit' ? 'submit' : sub === 'essays' ? 'marking' : 'languages'];
+  }
+  // Humanities: Home is the family's own surface, Answers wears the marked-papers one.
+  if (href.startsWith('/app/humanities/')) {
+    const sub = href.slice('/app/humanities/'.length).split(/[/?]/)[0];
+    return SURFACES[sub === 'answers' ? 'marking' : 'humanities'];
   }
   const seg = href === '/app' ? 'home' : href.replace(/^\/app\//, '').split(/[/?]/)[0];
   const key = seg === 'my-notes' ? 'notebook' : seg;

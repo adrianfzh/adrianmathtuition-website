@@ -11,7 +11,7 @@ import { currentAccount } from '@/lib/portal-auth';
 import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, scienceMarkingOpen, essayMarkingOpen } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
 import { inviteLinkFor } from '@/lib/portal-join';
@@ -118,11 +118,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // below are what its highlight ring measures — keep them on both the desktop
   // links and the mobile tabs, since only one set is on screen at a time.
   // Independent lookups — run them in parallel, not one after the other.
-  const [pendingWork, surfaces, scienceOpen, languagesOpen] = await Promise.all([
+  const [pendingWork, surfaces, scienceOpen, languagesOpen, humanitiesIsOpen] = await Promise.all([
     pendingAssignmentCountForSession(),
     portalSurfaces(),
     scienceMarkingOpen(),
     essayMarkingOpen(),
+    humanitiesOpen(),
   ]);
   // 🧪 The Science family's own bottom menu (SPEC-SCIENCE-MARKING.md, 10 Sep
   // 2026) — marking first, nothing else yet: Home · Hand in · Papers. The tab
@@ -145,6 +146,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ]
     : [];
 
+  // 📜 The Humanities family's menu (SPEC-HUMANITIES.md, 2 Oct 2026): Home · Answers.
+  const humanityTabs = humanitiesIsOpen
+    ? [
+        { href: '/app/humanities', label: 'Home' },
+        { href: '/app/humanities/answers', label: 'Answers' },
+      ]
+    : [];
+
   return (
     // -webkit-tap-highlight-color:transparent — iOS Safari's grey tap flash
     // fights the tabs'/cards' own pressed states (active:scale/tint); scoped
@@ -154,7 +163,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-5">
             <Link href="/app" className="font-display font-bold text-navy tracking-tight">AdrianMath</Link>
-            <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} pendingWork={pendingWork} />
+            <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
           </div>
           <div className="flex items-center gap-4">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
@@ -169,9 +178,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       )}
 
       {/* Math | Science (10 Sep 2026) — one switcher for both families, under the bar. */}
-      {(scienceOpen || languagesOpen) && (
+      {(scienceOpen || languagesOpen || humanitiesIsOpen) && (
         <div className="max-w-4xl mx-auto px-4 pt-3">
-          <FamilySwitch science={scienceOpen} languages={languagesOpen} />
+          <FamilySwitch science={scienceOpen} languages={languagesOpen} humanities={humanitiesIsOpen} />
         </div>
       )}
 
@@ -180,7 +189,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </main>
 
       {/* Mobile bottom tabs (components/PortalTabs.tsx — per-surface colours) */}
-      <MobileTabs items={mobileTabs} scienceItems={scienceTabs} languageItems={languageTabs} pendingWork={pendingWork} />
+      <MobileTabs items={mobileTabs} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
 
       {/* First-login tour — shows itself once per device, on the dashboard only. */}
       <PortalTour surfaces={surfaces} />

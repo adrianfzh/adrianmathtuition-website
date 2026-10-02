@@ -1,0 +1,108 @@
+{
+ "set": "seeded-starter",
+ "rows": [
+  {
+   "which": "clean",
+   "id": "83039b4a-353a-413e-a9a2-bfd7ee7253ff",
+   "status": "marked",
+   "held_reason": null,
+   "marks": [
+    {
+     "start": 1545,
+     "end": 1597,
+     "code": "length",
+     "quote": "Since that day, I have greeted Mr Tan every morning."
+    }
+   ]
+  },
+  {
+   "which": "seeded",
+   "id": "51c59471-a376-4c40-8674-e3cfc84ee109",
+   "status": "marked",
+   "held_reason": null,
+   "marks": [
+    {
+     "start": 81,
+     "end": 95,
+     "code": "tense",
+     "quote": "He never smile"
+    },
+    {
+     "start": 300,
+     "end": 337,
+     "code": "tense",
+     "quote": "the drains along our street overflows"
+    },
+    {
+     "start": 442,
+     "end": 479,
+     "code": "comma_splice",
+     "quote": "The water was rising quickly, the dog"
+    },
+    {
+     "start": 543,
+     "end": 565,
+     "code": "preposition",
+     "quote": "afraid for the current"
+    },
+    {
+     "start": 631,
+     "end": 657,
+     "code": "article",
+     "quote": "carrying long wooden plank"
+    },
+    {
+     "start": 873,
+     "end": 894,
+     "code": "sva",
+     "quote": "his hands was shaking"
+    },
+    {
+     "start": 931,
+     "end": 943,
+     "code": "sva",
+     "quote": "It belong to"
+    },
+    {
+     "start": 1112,
+     "end": 1122,
+     "code": "spelling",
+     "quote": "hesistated"
+    },
+    {
+     "start": 1163,
+     "end": 1178,
+     "code": "word_form",
+     "quote": "I felt shame of"
+    },
+    {
+     "start": 1295,
+     "end": 1303,
+     "code": "spelling",
+     "quote": "suprised"
+    },
+    {
+     "start": 1534,
+     "end": 1580,
+     "code": "fragment",
+     "quote": "Since that day, greeting Mr Tan every morning."
+    },
+    {
+     "start": 1642,
+     "end": 1663,
+     "code": "vague",
+     "quote": "at the end of the day"
+    }
+   ]
+  }
+ ],
+ "verdict": {
+  "pass": true,
+  "reasons": [],
+  "planted": 12,
+  "found": 12,
+  "rightCode": 12,
+  "extra": 0,
+  "cleanMarks": 1
+ }
+}

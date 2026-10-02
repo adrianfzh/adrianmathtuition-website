@@ -225,6 +225,25 @@ export async function essayMarkingOpen(): Promise<boolean> {
   return false;
 }
 
+// 📜 Humanities — instant feedback on a typed source-based answer
+// (SPEC-HUMANITIES.md, H1 built 2 Oct 2026): our own Social Studies source sets,
+// a level RANGE and the one lift, never a mark. CLOSED until the seeded bench
+// passes and Adrian has read the level schemes; the demo student and Adrian's
+// admin cookie see it. Flip to true to open the Humanities tab to every student.
+export const HUMANITIES_OPEN_TO_STUDENTS = false;
+export const HUMANITIES_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+export async function humanitiesOpen(): Promise<boolean> {
+  if (HUMANITIES_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && HUMANITIES_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
+
 // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
 // question → a genuinely similar bank question or a made-for-you one, straight
 // into Practice. It replaced the students' "Request materials" door on Home, so

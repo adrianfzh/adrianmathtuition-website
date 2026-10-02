@@ -1,0 +1,340 @@
+[
+  {
+    "id": "s01",
+    "title": "The plastic bag charge",
+    "issue": "Has charging for plastic bags helped the environment?",
+    "sources": [
+      { "id": "A", "provenance": "A statement by a supermarket chain, one year after it began charging 5 cents for each plastic bag.", "text": "Since the 5-cent bag charge began, our shoppers have taken 60% fewer plastic bags. Most now bring their own. The money collected goes to a fund for environmental projects." },
+      { "id": "B", "provenance": "A resident's post in a neighbourhood online group.", "text": "I now pay for bags at the supermarket, then buy rolls of bin liners because I have nothing to bag my rubbish with. I use just as much plastic as before. Only my bill has changed." },
+      { "id": "C", "provenance": "A leaflet by an environment group, handed out at a market in the month the charge was being reviewed.", "text": "The charge works. Plastic bags are down by more than half. Now extend it to every shop and stall." },
+      { "id": "D", "provenance": "A waste collector, interviewed by a newspaper.", "text": "In the blocks I serve, I see more loose rubbish in the chutes since the charge. Fewer people bag it. But the bins at the supermarket entrance are no longer full of unused bags." }
+    ],
+    "questions": [
+      {
+        "id": "s01-q1", "skill": "comparison", "sources": ["A", "B"],
+        "question": "How different are Sources A and B? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "Source A is from a supermarket and Source B is from a resident. Both are about plastic bags." },
+          { "level": 2, "text": "They differ on whether the charge cuts plastic use. A says shoppers have 'taken 60% fewer plastic bags'. B says 'I use just as much plastic as before'." },
+          { "level": 3, "text": "They differ on whether the charge cuts plastic use. A says shoppers have 'taken 60% fewer plastic bags'. B says 'I use just as much plastic as before'. They are similar in showing that shoppers do pay the charge. A speaks of 'the money collected' and B says 'I now pay for bags'." },
+          { "level": 4, "text": "They differ on whether the charge cuts plastic use. A says shoppers have 'taken 60% fewer plastic bags'. B says 'I use just as much plastic as before'. They are similar in showing that shoppers do pay the charge. A speaks of 'the money collected' and B says 'I now pay for bags'. They also differ in purpose. A wants the public to see the charge as a success and the chain as responsible, so it gives a figure and mentions the fund. B wants neighbours to feel the charge only costs them money, so it points to the bill." }
+        ]
+      },
+      {
+        "id": "s01-q2", "skill": "usefulness", "sources": ["C", "B"],
+        "question": "How useful is Source C in helping you understand whether the bag charge has reduced plastic waste? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is useful because it is from an environment group and it is about plastic bags." },
+          { "level": 2, "text": "It is useful. It shows the charge has cut the number of bags: 'Plastic bags are down by more than half'." },
+          { "level": 3, "text": "It is useful. It shows the charge has cut the number of bags: 'Plastic bags are down by more than half'. It is limited. It counts only the bags taken at shops. It says nothing about other plastic that people buy instead." },
+          { "level": 4, "text": "It is useful. It shows the charge has cut the number of bags: 'Plastic bags are down by more than half'. It is limited. It counts only the bags taken at shops. Source B says she buys 'rolls of bin liners' and uses 'just as much plastic as before'. So C's figure covers bags at the till only. C is also a leaflet handed out while the charge was being reviewed, by a group that wants it extended 'to every shop and stall', so it shows only the good result. It is useful for bags taken at shops, not for plastic waste as a whole." }
+        ]
+      },
+      {
+        "id": "s01-q3", "skill": "how_far", "sources": ["A", "B", "C", "D"],
+        "question": "'The plastic bag charge has been good for the environment.' Using the sources, explain how far you would agree with this statement.",
+        "seeded": [
+          { "level": 1, "text": "I agree because plastic is bad for the environment and people should bring their own bags." },
+          { "level": 2, "text": "I agree. Source A says shoppers have 'taken 60% fewer plastic bags', so less plastic is being given out. Source C also agrees: bags are 'down by more than half', so the charge is working." },
+          { "level": 3, "text": "I agree to some extent. Source A says shoppers have 'taken 60% fewer plastic bags', so less plastic is being given out. Source C also agrees: bags are 'down by more than half'. Source B disagrees. She uses 'just as much plastic as before' because she now buys bin liners. Source D partly disagrees too: there is 'more loose rubbish in the chutes', so the estate is dirtier." },
+          { "level": 4, "text": "Source A says shoppers have 'taken 60% fewer plastic bags', so less plastic is being given out. Source C also agrees: bags are 'down by more than half'. Source B disagrees. She uses 'just as much plastic as before' because she now buys bin liners. Source D partly disagrees too: there is 'more loose rubbish in the chutes'. The sources that agree are weaker. A comes from the supermarket and C from a group that wants the charge extended, and both count only bags at the till. B is one resident, but D sees many blocks and reports both a gain and a loss, so D is the most balanced. So I agree only to some extent: fewer bags are handed out, but part of the waste has moved elsewhere." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "s02",
+    "title": "A workers' dormitory beside the estate",
+    "issue": "Should a dormitory for foreign workers be built next to a housing estate?",
+    "sources": [
+      { "id": "A", "provenance": "A resident's letter to the Member of Parliament, passed round the estate's chat group.", "text": "A dormitory for 2,000 workers beside our playground? Our children will not be safe, and our flat prices will fall. Build it somewhere else." },
+      { "id": "B", "provenance": "A construction worker, interviewed for a volunteer group's newsletter.", "text": "On Sundays we used to sit at the field near the old dormitory. Some residents called the police though we were only eating. Now most of us stay inside on our day off." },
+      { "id": "C", "provenance": "Police figures, quoted in a newspaper report.", "text": "In the three estates that already have dormitories nearby, reported crime did not rise in the two years after the dormitories opened." },
+      { "id": "D", "provenance": "A poster by a volunteer group, put up at the estate's community club in the week before a residents' dialogue on the dormitory.", "text": "[The poster shows a worker in a safety helmet holding up a block of flats on his shoulders.] Caption: 'He built your home. Can he live near it?'" }
+    ],
+    "questions": [
+      {
+        "id": "s02-q1", "skill": "inference", "sources": ["B"],
+        "question": "What does Source B tell you about how residents treated the workers? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "The workers sat at the field on Sundays and some residents called the police." },
+          { "level": 2, "text": "The residents were unwelcoming to the workers." },
+          { "level": 3, "text": "The residents saw the workers as a threat even when they did nothing wrong. They 'called the police though we were only eating'. Calling the police on people having a meal shows the residents were suspicious of the workers themselves, not of anything they did." }
+        ]
+      },
+      {
+        "id": "s02-q2", "skill": "reliability", "sources": ["A", "C"],
+        "question": "How reliable is Source A about the effect a dormitory would have on the estate? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is reliable because it is written by a resident who lives in the estate." },
+          { "level": 2, "text": "It is not reliable because it uses strong words like 'will not be safe' and it wants the dormitory built 'somewhere else'." },
+          { "level": 3, "text": "It is not reliable. A claims children 'will not be safe'. But Source C reports that in three estates with dormitories 'reported crime did not rise' in the two years after they opened. The record from other estates does not support A's fear." },
+          { "level": 4, "text": "It is not reliable. A claims children 'will not be safe'. But Source C reports that in three estates with dormitories 'reported crime did not rise' in the two years after they opened. The record from other estates does not support A's fear. A is also a letter to the MP, passed round the estate chat, by a resident who wants the dormitory built 'somewhere else'. It is written to make the MP and the neighbours oppose the plan, so it states fears as facts and gives no evidence." }
+        ]
+      },
+      {
+        "id": "s02-q3", "skill": "purpose", "sources": ["D"],
+        "question": "Why was Source D put up? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It shows a worker in a helmet carrying a block of flats on his shoulders." },
+          { "level": 2, "text": "It says that residents owe their homes to the workers. The worker is drawn holding up a block of flats and the caption says 'He built your home'." },
+          { "level": 3, "text": "It says that residents owe their homes to the workers. The worker is drawn holding up a block of flats and the caption says 'He built your home'. It is aimed at the residents of the estate. It was put up at their community club and it says 'your home'." },
+          { "level": 4, "text": "It says that residents owe their homes to the workers. The worker is drawn holding up a block of flats and the caption says 'He built your home'. It is aimed at the residents of the estate. It was put up at their community club and it says 'your home'. It went up in the week before the residents' dialogue. The group wants residents to feel it is unfair to turn the workers away, so that they accept the dormitory and do not speak against it at the dialogue." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "s03",
+    "title": "Delivery riders and the app",
+    "issue": "Have delivery platforms been good for the people who depend on them?",
+    "sources": [
+      { "id": "A", "provenance": "A food delivery platform's blog, on its page for people thinking of signing up as riders.", "text": "Our riders choose their own hours. Eight in ten say flexibility is the main reason they ride with us. Riders are their own bosses." },
+      { "id": "B", "provenance": "A delivery rider, interviewed by a student newspaper.", "text": "I can pick my hours, but if I turn down orders the app gives me fewer the next day. Last month I fell off my bike and earned nothing for three weeks." },
+      { "id": "C", "provenance": "A survey report by a riders' association.", "text": "Of 500 riders asked, 71% work more than 44 hours a week on the app and 58% have no savings to cover a month without work." },
+      { "id": "D", "provenance": "A hawker stall owner, quoted in a business magazine.", "text": "Without the riders I could not have kept my stall open. Orders through the app are now half my sales. I do not know what the riders earn." }
+    ],
+    "questions": [
+      {
+        "id": "s03-q1", "skill": "comparison", "sources": ["A", "B"],
+        "question": "How similar are Sources A and B? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "Both sources are about delivery riders. Source A is a blog and Source B is an interview." },
+          { "level": 2, "text": "They are similar in showing that riders decide when to work. A says riders 'choose their own hours'. B says 'I can pick my hours'." },
+          { "level": 3, "text": "They are similar in showing that riders decide when to work. A says riders 'choose their own hours'. B says 'I can pick my hours'. They differ on whether riders are really free. A says riders are 'their own bosses'. B says if he turns down orders 'the app gives me fewer the next day'." },
+          { "level": 4, "text": "They are similar in showing that riders decide when to work. A says riders 'choose their own hours'. B says 'I can pick my hours'. They differ on whether riders are really free. A says riders are 'their own bosses'. B says if he turns down orders 'the app gives me fewer the next day'. They also differ in purpose. A is written by the platform for people who might sign up, so it speaks only of flexibility to make riding look attractive. B wants readers to see the risk riders carry, so he tells of three weeks with no pay." }
+        ]
+      },
+      {
+        "id": "s03-q2", "skill": "usefulness", "sources": ["A", "C"],
+        "question": "How useful is Source A in helping you understand what work is like for delivery riders? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is useful because it is written by the platform that the riders work for." },
+          { "level": 2, "text": "It is useful. It shows that riders value flexible hours: 'Eight in ten say flexibility is the main reason they ride with us'." },
+          { "level": 3, "text": "It is useful. It shows that riders value flexible hours: 'Eight in ten say flexibility is the main reason they ride with us'. It is limited. It tells us only why riders join. It says nothing about their pay, or what happens when a rider cannot work." },
+          { "level": 4, "text": "It is useful. It shows that riders value flexible hours: 'Eight in ten say flexibility is the main reason they ride with us'. It is limited. It tells us only why riders join. Source C found that 71% 'work more than 44 hours a week' and 58% 'have no savings to cover a month without work'. So the flexibility in A sits beside long hours and no safety net, which A leaves out. A is the platform's own blog, written to draw new riders, so it shows only the best side. It is useful for why riders sign up, not for what the work is like." }
+        ]
+      },
+      {
+        "id": "s03-q3", "skill": "how_far", "sources": ["A", "B", "C", "D"],
+        "question": "'Delivery platforms have been good for the people who depend on them.' Using the sources, explain how far you would agree with this statement.",
+        "seeded": [
+          { "level": 1, "text": "I agree because food delivery is very convenient and many people use it every day." },
+          { "level": 2, "text": "I agree. Source A says 'eight in ten' riders give flexibility as the main reason they ride, so riders get work that fits their lives. Source D agrees: orders through the app are 'now half my sales', so the platform kept his stall open." },
+          { "level": 3, "text": "Source A says 'eight in ten' riders give flexibility as the main reason they ride, so riders get work that fits their lives. Source D agrees: orders through the app are 'now half my sales', so the platform kept his stall open. Source B disagrees. He fell off his bike and 'earned nothing for three weeks', so riders are not protected. Source C also disagrees: '58% have no savings to cover a month without work'." },
+          { "level": 4, "text": "Source A says 'eight in ten' riders give flexibility as the main reason they ride, so riders get work that fits their lives. Source D agrees: orders through the app are 'now half my sales', so the platform kept his stall open. Source B disagrees. He fell off his bike and 'earned nothing for three weeks'. Source C also disagrees: '58% have no savings to cover a month without work'. The sources that disagree are stronger on riders. A comes from the platform, which gains from saying so. D can be trusted about his own stall but admits he does 'not know what the riders earn'. C asked 500 riders, and B's story fits its figures. So I agree to some extent: platforms are good for stalls, but the riders carry the risk." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "s04",
+    "title": "An elder-care centre at the void deck",
+    "issue": "Should a day-care centre for the elderly be built at a block's void deck?",
+    "sources": [
+      { "id": "A", "provenance": "A petition notice pinned at the lift lobby by a group of residents.", "text": "The void deck is where our children play and where we hold weddings and wakes. A day-care centre for the elderly will take all of it. We were told, not asked. Sign to say no." },
+      { "id": "B", "provenance": "The agency's letter to residents of the block.", "text": "The centre will use one-third of the void deck. The rest stays open for residents' use. We held two briefing sessions in March; 14 households attended." },
+      { "id": "C", "provenance": "A resident's letter to a newspaper forum.", "text": "My mother has dementia. The nearest centre is 40 minutes away by bus, so I gave up my job to mind her. A centre downstairs would let me work again." },
+      { "id": "D", "provenance": "A cartoon in the estate's community newsletter, published a week before the petition closed.", "text": "[The cartoon shows residents on a void-deck bench holding a sign, 'Not here!'. Beside them the same residents are drawn old, with walking sticks, staring at a notice: 'Centre full. Waiting list: 2 years'.] Caption: 'Not here — until it's you.'" }
+    ],
+    "questions": [
+      {
+        "id": "s04-q1", "skill": "inference", "sources": ["C"],
+        "question": "What does Source C tell you about care for the elderly in this estate? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "The writer's mother has dementia and the nearest centre is 40 minutes away by bus." },
+          { "level": 2, "text": "There is not enough care for the elderly near the estate." },
+          { "level": 3, "text": "Care is too far away for a family to use while holding a job. The nearest centre is '40 minutes away by bus', and the writer 'gave up my job' to mind her mother. When care is that far, the burden falls on the family." }
+        ]
+      },
+      {
+        "id": "s04-q2", "skill": "reliability", "sources": ["A", "B"],
+        "question": "How reliable is Source A about the plan for the centre? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is reliable because the residents wrote it and they know their own void deck best." },
+          { "level": 2, "text": "It is reliable because it explains that the void deck is where children play and where weddings and wakes are held, and the centre will take it away." },
+          { "level": 3, "text": "It is not fully reliable. A says the centre 'will take all of it'. But Source B states the centre 'will use one-third of the void deck' and 'the rest stays open'. A also says residents were 'told, not asked', but B records 'two briefing sessions in March'. B contradicts A on both points." },
+          { "level": 4, "text": "It is not fully reliable. A says the centre 'will take all of it'. But Source B states the centre 'will use one-third of the void deck' and 'the rest stays open'. A also says residents were 'told, not asked', but B records 'two briefing sessions in March'. B contradicts A on both points. A is a petition notice. It is written to get neighbours to 'sign to say no', so it makes the loss sound total and leaves out the briefings." }
+        ]
+      },
+      {
+        "id": "s04-q3", "skill": "purpose", "sources": ["D"],
+        "question": "Why was Source D published? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It shows residents holding a sign and then the same residents when they are old." },
+          { "level": 2, "text": "It says that residents who reject the centre will one day need it themselves. The same residents are drawn old, in front of a 'Centre full' notice." },
+          { "level": 3, "text": "It says that residents who reject the centre will one day need it themselves. The same residents are drawn old, in front of a 'Centre full' notice. It is aimed at the residents of the estate who oppose the centre. It is in their own newsletter, and the caption 'until it's you' speaks to them." },
+          { "level": 4, "text": "It says that residents who reject the centre will one day need it themselves. The same residents are drawn old, in front of a 'Centre full' notice. It is aimed at the residents of the estate who oppose the centre. It is in their own newsletter, and the caption 'until it's you' speaks to them. It was published a week before the petition closed. It wants residents to see their opposition as short-sighted, so that they do not sign the petition." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "s05",
+    "title": "Tourists in the old quarter",
+    "issue": "Has tourism been good for a heritage district?",
+    "sources": [
+      { "id": "A", "provenance": "A tourism board's annual report.", "text": "Visitor numbers to the old quarter doubled in five years. Forty new businesses opened and 600 jobs were created." },
+      { "id": "B", "provenance": "A third-generation spice shop owner, interviewed by a heritage society.", "text": "My rent tripled. The tailor and the coffee shop beside me have gone; a souvenir shop and a bar took their place. The tourists come to see the old quarter, but the old quarter is leaving." },
+      { "id": "C", "provenance": "A travel blogger's post after a one-day visit.", "text": "The shophouses are beautifully restored and the street art is everywhere. I spent a whole day here and it felt like stepping into the past." },
+      { "id": "D", "provenance": "A young resident who works as a tour guide, quoted in a newspaper.", "text": "I earn my living walking visitors through streets my grandmother grew up in. Without the tourists these shophouses would have been pulled down years ago." }
+    ],
+    "questions": [
+      {
+        "id": "s05-q1", "skill": "comparison", "sources": ["A", "B"],
+        "question": "How different are Sources A and B? Explain your answer.",
+        "model": "They differ on whether tourism has helped the businesses of the old quarter. A says 'forty new businesses opened'. B says the old ones are going: 'the tailor and the coffee shop beside me have gone'. They are similar in showing that tourism has brought new shops. A counts 'forty new businesses' and B names 'a souvenir shop and a bar'. They also differ in purpose. A is a tourism board's report, written to show its work as a success, so it counts only what was gained. B speaks to a heritage society and wants readers to see what is being lost."
+      },
+      {
+        "id": "s05-q2", "skill": "usefulness", "sources": ["C", "B"],
+        "question": "How useful is Source C in helping you understand whether tourism has preserved the old quarter's heritage? Explain your answer.",
+        "model": "It is useful. It shows the buildings have been kept: 'the shophouses are beautifully restored'. It is limited. The blogger saw the quarter for one day and judged by how it looks. Source B says the old trades are leaving — 'the tailor and the coffee shop beside me have gone'. So the buildings are preserved while the way of life is not, and C cannot see that. C is useful for the look of the quarter, not for its living heritage."
+      },
+      {
+        "id": "s05-q3", "skill": "how_far", "sources": ["A", "B", "C", "D"],
+        "question": "'Tourism has been good for the old quarter.' Using the sources, explain how far you would agree with this statement.",
+        "model": "Source A agrees: '600 jobs were created'. Source D agrees too: without tourists the shophouses 'would have been pulled down years ago'. Source B disagrees: 'my rent tripled' and the old shops 'have gone'. C seems to agree, but it only shows the buildings look good. A is from the tourism board, which gains from good numbers. D and B both live there, and both can be right: tourism saved the buildings and pushed out the old trades. So I agree to some extent — good for the buildings and for jobs, not for the community that made the quarter worth visiting."
+      }
+    ]
+  },
+  {
+    "id": "s06",
+    "title": "Cats in flats",
+    "issue": "Should residents be allowed to keep cats in public flats?",
+    "sources": [
+      { "id": "A", "provenance": "A resident's feedback to the town council.", "text": "The cat from the next unit walks along the corridor ledge and dirties my shoe rack. I have asked the owner three times. Rules exist for a reason." },
+      { "id": "B", "provenance": "A fact sheet by a cat welfare group that wants the rule changed.", "text": "In our pilot in one estate, 120 cats were registered, sterilised and kept indoors with window mesh. Complaints about cats in that estate fell from 31 a year to 9." },
+      { "id": "C", "provenance": "A town council officer, quoted in a newspaper.", "text": "Most complaints we receive are about a few owners who let their cats roam. We cannot inspect every flat." },
+      { "id": "D", "provenance": "An online poster by the cat welfare group, released on the day the ministry opened a public consultation on the rule.", "text": "[The poster shows a cat behind a window, looking out.] Caption: '34 years in hiding. Tell the ministry it's time. Consultation closes 30 June.'" }
+    ],
+    "questions": [
+      {
+        "id": "s06-q1", "skill": "inference", "sources": ["C"],
+        "question": "What does Source C tell you about the problem with cats in flats? Explain your answer.",
+        "model": "The problem comes from a small number of careless owners, not from cats in general. The officer says most complaints are about 'a few owners who let their cats roam'. So it is the roaming, which the owner controls, that causes trouble."
+      },
+      {
+        "id": "s06-q2", "skill": "reliability", "sources": ["B", "C"],
+        "question": "How reliable is Source B about whether cats can be kept responsibly in flats? Explain your answer.",
+        "model": "It is fairly reliable. B says that when cats were 'kept indoors', complaints 'fell from 31 a year to 9'. Source C supports this: most complaints are about owners 'who let their cats roam'. So keeping cats in does remove the main problem. But B is by a group that wants the rule changed, and it reports a pilot in 'one estate' with owners who chose to register. It is written to persuade, so the figures can be trusted more than the idea that every owner would do the same."
+      },
+      {
+        "id": "s06-q3", "skill": "purpose", "sources": ["D"],
+        "question": "Why was Source D released? Explain your answer.",
+        "model": "It says that cat owners have been forced to hide their pets for too long. The cat is behind a window and the caption says '34 years in hiding'. It is aimed at the public, above all cat owners and those who feel for them. It was released on the day the consultation opened, and it gives the closing date. The group wants people to write in to the ministry in support of changing the rule before 30 June."
+      }
+    ]
+  },
+  {
+    "id": "s07",
+    "title": "Hiring from abroad",
+    "issue": "Has hiring foreign professionals benefited local workers?",
+    "sources": [
+      { "id": "A", "provenance": "The chief executive of a technology firm, speaking at a business forum.", "text": "We hired 40 engineers from abroad because we could not find these skills here. Their projects created 150 more jobs, most of them filled by locals." },
+      { "id": "B", "provenance": "A local graduate's online post.", "text": "I sent 60 applications in a year. At my last interview the whole team had been brought in from overseas. They said I lacked experience. How do I get experience if nobody hires me?" },
+      { "id": "C", "provenance": "A statement by the manpower ministry.", "text": "Firms must advertise openings to locals for 28 days before applying for a foreign work pass. Last year 300 firms were placed on a watchlist for not giving locals fair consideration." },
+      { "id": "D", "provenance": "A local engineer in the same industry, interviewed by a newspaper.", "text": "I learnt cloud systems from a colleague from abroad who sat next to me for two years. I now lead a team of twelve." }
+    ],
+    "questions": [
+      {
+        "id": "s07-q1", "skill": "comparison", "sources": ["A", "D"],
+        "question": "How similar are Sources A and D? Explain your answer.",
+        "model": "They are similar in showing that foreign hires benefit locals. A says their projects 'created 150 more jobs, most of them filled by locals'. D says he learnt from a foreign colleague and 'now lead a team of twelve'. They differ in the kind of benefit. A is about the number of jobs. D is about skills passed on: 'I learnt cloud systems from a colleague from abroad'. They also differ in purpose. A is a chief executive defending his firm's hiring to a business audience, so he gives the numbers that make it look good. D is describing his own career and has nothing to defend."
+      },
+      {
+        "id": "s07-q2", "skill": "usefulness", "sources": ["B", "C"],
+        "question": "How useful is Source B in helping you understand whether locals are treated fairly in hiring? Explain your answer.",
+        "model": "It is useful. It shows some locals feel shut out: after '60 applications' he met a team 'brought in from overseas'. It is limited. It is one person's experience, and we are not told why he was turned down. Source C says '300 firms were placed on a watchlist for not giving locals fair consideration', so B's experience is not a one-off. B is written in frustration, to win sympathy, but its claim fits the official figures. It is useful as an example of a real problem, not for how common the problem is."
+      },
+      {
+        "id": "s07-q3", "skill": "how_far", "sources": ["A", "B", "C", "D"],
+        "question": "'Hiring foreign professionals has benefited local workers.' Using the sources, explain how far you would agree with this statement.",
+        "model": "Source A agrees: the foreign engineers' projects 'created 150 more jobs, most of them filled by locals'. Source D agrees: he learnt from a foreign colleague and now leads 'a team of twelve'. Source B disagrees: after '60 applications' he is still without a job while a whole team came 'from overseas'. Source C partly disagrees: '300 firms' were on a watchlist for unfair hiring. A has a reason to defend his own hiring, but D backs him from a worker's side with nothing to gain. B is one case, though C shows such cases exist. So I agree to a large extent: locals who get in the door benefit, but some firms do not give locals a fair chance to get in."
+      }
+    ]
+  },
+  {
+    "id": "s08",
+    "title": "Community service hours",
+    "issue": "Does compulsory community service in schools make students care?",
+    "sources": [
+      { "id": "A", "provenance": "A student's reflection in a school magazine.", "text": "We were sent to a nursing home for our six hours. Most of us stood at the back and looked at our phones. I signed the form and never went again." },
+      { "id": "B", "provenance": "A school principal's speech to parents at the school's open house.", "text": "Every one of our students completes community service. Our students are caring and committed to serving others." },
+      { "id": "C", "provenance": "A nursing home manager, interviewed by a newspaper.", "text": "School groups come once, for the hours. The residents ask me when the children are coming back, and I have no answer. The four students who come every Saturday on their own are the ones the residents know by name." },
+      { "id": "D", "provenance": "A poster by a school's student council, put up in the week students choose their service projects for the year.", "text": "[The poster shows an old man waiting at a window. Beside him is a calendar with one day ticked and the rest empty.] Caption: 'Six hours is a visit. Come back and it's a friendship. Sign up for the Saturday team.'" }
+    ],
+    "questions": [
+      {
+        "id": "s08-q1", "skill": "inference", "sources": ["A"],
+        "question": "What does Source A tell you about compulsory community service? Explain your answer.",
+        "model": "It can become a task to finish, not a way of helping. The students 'stood at the back and looked at our phones', and the writer 'signed the form and never went again'. They were there for the hours and the form, not for the residents."
+      },
+      {
+        "id": "s08-q2", "skill": "reliability", "sources": ["B", "A", "C"],
+        "question": "How reliable is Source B about students' attitude to community service? Explain your answer.",
+        "model": "It is not reliable about attitude. B says students are 'caring and committed'. But in Source A the students 'looked at our phones' and the writer 'never went again', and in Source C the manager says school groups 'come once, for the hours'. Completing the hours is not the same as caring. B is a principal's speech to parents at an open house. It is meant to make the school look good to families choosing a school, so it turns a rule every student must follow into proof of character."
+      },
+      {
+        "id": "s08-q3", "skill": "purpose", "sources": ["D"],
+        "question": "Why was Source D put up? Explain your answer.",
+        "model": "It says that one visit is not enough for the people being visited. The old man waits at a window beside a calendar with only 'one day ticked'. It is aimed at the school's students. It went up in the week they choose their service projects. The student council wants them to do more than the required hours — to 'sign up for the Saturday team' and keep going back."
+      }
+    ]
+  },
+  {
+    "id": "s09",
+    "title": "Car-free weekends",
+    "issue": "Have car-free weekends improved the town centre?",
+    "sources": [
+      { "id": "A", "provenance": "A notice by the transport agency, announcing that the scheme will become permanent.", "text": "From January, the town centre's main street will be closed to cars on weekends. In the trial, footfall rose 30% and air quality improved." },
+      { "id": "B", "provenance": "A furniture shop owner's letter to the agency.", "text": "My customers buy sofas and cupboards. They cannot carry them to a bus stop. My weekend sales fell by a third in the trial." },
+      { "id": "C", "provenance": "A café owner, writing in a neighbourhood newsletter.", "text": "On car-free Sundays every table is full. Families stay for hours because the children can run about on the street." },
+      { "id": "D", "provenance": "A resident who walks with a frame, quoted in a newspaper.", "text": "The nearest drop-off point is now 300 metres from the clinic. For someone who walks with a frame, that is a long way." }
+    ],
+    "questions": [
+      {
+        "id": "s09-q1", "skill": "comparison", "sources": ["B", "C"],
+        "question": "How different are Sources B and C? Explain your answer.",
+        "model": "They differ on what the car-free weekends did to business. B's 'weekend sales fell by a third'. C says 'every table is full'. They are similar in showing that the scheme changed how customers reach the shops. B's customers 'cannot carry' furniture 'to a bus stop'. C's families 'stay for hours' because the street has no cars. They also differ in purpose. B writes to the agency to get the scheme changed, so he stresses his loss. C writes for neighbours and wants them to enjoy and support the car-free days."
+      },
+      {
+        "id": "s09-q2", "skill": "usefulness", "sources": ["A", "B", "D"],
+        "question": "How useful is Source A in helping you understand the effect of car-free weekends on the town centre? Explain your answer.",
+        "model": "It is useful. It shows more people came: 'footfall rose 30%'. It is limited. It gives one figure for the whole street and says nothing about who lost out. Source B's 'weekend sales fell by a third', and Source D says the drop-off point is now '300 metres from the clinic'. A is the agency's notice announcing its own scheme as permanent, so it reports only the results that support the decision. It is useful for the overall crowd, not for the effect on every shop and resident."
+      },
+      {
+        "id": "s09-q3", "skill": "how_far", "sources": ["A", "B", "C", "D"],
+        "question": "'Car-free weekends have improved the town centre.' Using the sources, explain how far you would agree with this statement.",
+        "model": "Source A agrees: 'footfall rose 30% and air quality improved'. Source C agrees: 'every table is full' and families stay for hours. Source B disagrees: his 'weekend sales fell by a third'. Source D disagrees: the drop-off is now '300 metres from the clinic', a long way with a walking frame. A is the agency defending its own scheme, but C's full café fits its figure, so the gain is real. B and D speak only for themselves, but nothing in A or C answers them. So I agree to a large extent: the centre is livelier and cleaner for most, while shops selling large goods and people who cannot walk far are worse off."
+      }
+    ]
+  },
+  {
+    "id": "s10",
+    "title": "A forwarded message",
+    "issue": "How do false messages online affect harmony between neighbours?",
+    "sources": [
+      { "id": "A", "provenance": "A message forwarded widely in an estate's chat groups one evening. The sender is not known.", "text": "WARNING: a group of foreigners has been seen damaging cars at the Block 12 car park. Keep your children indoors. Forward to everyone." },
+      { "id": "B", "provenance": "A police statement issued the next day.", "text": "Two cars were scratched at Block 12. A 15-year-old resident has been arrested. No group was involved. The message being forwarded is false." },
+      { "id": "C", "provenance": "A resident from abroad who has lived in the block for ten years, interviewed by a newspaper.", "text": "After the message went round, my neighbour of ten years stopped greeting me in the lift. Even after the police statement, it took weeks before she spoke to me again." },
+      { "id": "D", "provenance": "A poster by the estate's residents' committee, issued in the week after the police statement.", "text": "[The poster shows a phone. The 'forward' arrow on its screen turns into a crack that runs down a corridor between two front doors.] Caption: 'One second to forward. Years to rebuild. Check before you share.'" }
+    ],
+    "questions": [
+      {
+        "id": "s10-q1", "skill": "inference", "sources": ["C"],
+        "question": "What does Source C tell you about the effect of the false message? Explain your answer.",
+        "model": "The harm lasted even after the message was shown to be false. The neighbour 'stopped greeting me in the lift', and 'even after the police statement, it took weeks before she spoke to me again'. Trust broke quickly and came back slowly."
+      },
+      {
+        "id": "s10-q2", "skill": "reliability", "sources": ["A", "B"],
+        "question": "How reliable is Source A about what happened at Block 12? Explain your answer.",
+        "model": "It is not reliable. A says 'a group of foreigners' damaged cars. Source B, the police statement, says one '15-year-old resident has been arrested' and 'no group was involved'. Only the damage to cars is true. A has no named sender and tells readers to 'forward to everyone'. It is written to alarm and to spread, not to report, so it names a group to blame without any proof."
+      },
+      {
+        "id": "s10-q3", "skill": "purpose", "sources": ["D"],
+        "question": "Why was Source D issued? Explain your answer.",
+        "model": "It says that forwarding an unchecked message can break trust between neighbours. The forward arrow becomes a crack between two front doors. It is aimed at the residents of the estate, who had passed the false message on. It was issued in the week after the police statement. The committee wants residents to stop and 'check before you share', so that a false message does not divide the estate again."
+      }
+    ]
+  }
+]

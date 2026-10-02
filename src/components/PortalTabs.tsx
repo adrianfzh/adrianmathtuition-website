@@ -27,6 +27,9 @@ function isActive(pathname: string, href: string): boolean {
   // The Science tab's Home is only its own page — its Hand in and Papers have their own tabs.
   if (href === '/app/science') return pathname === '/app/science';
   if (href === '/app/languages') return pathname === '/app/languages';
+  // Humanities Home also owns its question pages; Answers owns a report (/app/humanities/<id>).
+  if (href === '/app/humanities') return pathname === '/app/humanities' || pathname.startsWith('/app/humanities/q/');
+  if (href === '/app/humanities/answers') return pathname.startsWith('/app/humanities/') && !pathname.startsWith('/app/humanities/q/');
   // A science paper's page (/app/science/marking/<id>) belongs to the Science Papers tab.
   if (href === '/app/science/papers') return pathname === href || pathname.startsWith(href + '/') || pathname.startsWith('/app/science/marking/');
   return pathname === href || pathname.startsWith(href + '/');
@@ -39,21 +42,24 @@ function isActive(pathname: string, href: string): boolean {
 // no cookie and no server round trip.
 // ✍️ A third family, Languages (SPEC-ESSAY-MARKING.md, 12 Sep 2026): everything
 // under /app/languages — essays marked for feedback, a band range, never a mark.
-export type SubjectFamily = 'math' | 'science' | 'languages';
+// 📜 A fourth, Humanities (SPEC-HUMANITIES.md, 2 Oct 2026): everything under /app/humanities.
+export type SubjectFamily = 'math' | 'science' | 'languages' | 'humanities';
 export function familyOfPath(pathname: string): SubjectFamily {
   if (pathname === '/app/science' || pathname.startsWith('/app/science/')) return 'science';
   if (pathname === '/app/languages' || pathname.startsWith('/app/languages/')) return 'languages';
+  if (pathname === '/app/humanities' || pathname.startsWith('/app/humanities/')) return 'humanities';
   return 'math';
 }
 
 /** The Math | Science | Languages switcher under the top bar — each family tab only when its door is open. */
-export function FamilySwitch({ science = true, languages = false }: { science?: boolean; languages?: boolean }) {
+export function FamilySwitch({ science = true, languages = false, humanities = false }: { science?: boolean; languages?: boolean; humanities?: boolean }) {
   const pathname = usePathname();
   const family = familyOfPath(pathname);
-  const btn = (on: boolean) => `flex-1 text-center text-sm font-semibold rounded-full px-4 py-1.5 transition select-none active:scale-95 ${
+  const many = [science, languages, humanities].filter(Boolean).length >= 3;
+  const btn = (on: boolean) => `flex-1 text-center ${many ? 'text-[13px] px-2' : 'text-sm px-4'} font-semibold rounded-full py-1.5 transition select-none active:scale-95 ${
     on ? 'bg-navy text-[hsl(45,100%,96%)] shadow-sm' : 'text-gray-600 hover:text-navy'}`;
   return (
-    <div role="tablist" aria-label="Subject" className="flex items-center gap-1 rounded-full bg-navy/5 p-1 max-w-sm mx-auto">
+    <div role="tablist" aria-label="Subject" className={`flex items-center gap-1 rounded-full bg-navy/5 p-1 ${many ? 'max-w-md' : 'max-w-sm'} mx-auto`}>
       <Link href="/app" role="tab" aria-selected={family === 'math'} className={btn(family === 'math')}>Math</Link>
       {science && (
         <Link href="/app/science" role="tab" aria-selected={family === 'science'} className={btn(family === 'science')}>
@@ -64,6 +70,9 @@ export function FamilySwitch({ science = true, languages = false }: { science?: 
         <Link href="/app/languages" role="tab" aria-selected={family === 'languages'} className={btn(family === 'languages')}>
           <span className="inline-flex items-center gap-1.5"><PortalIcon name="pencil" className="w-4 h-4" />Languages</span>
         </Link>
+      )}
+      {humanities && (
+        <Link href="/app/humanities" role="tab" aria-selected={family === 'humanities'} className={btn(family === 'humanities')}>Humanities</Link>
       )}
     </div>
   );
@@ -79,16 +88,17 @@ export function Badge({ n, className = '' }: { n: number; className?: string }) 
   );
 }
 
-function listFor(pathname: string, items: NavItem[], scienceItems?: NavItem[], languageItems?: NavItem[]): NavItem[] {
+function listFor(pathname: string, items: NavItem[], scienceItems?: NavItem[], languageItems?: NavItem[], humanityItems?: NavItem[]): NavItem[] {
   const family = familyOfPath(pathname);
   if (family === 'science' && scienceItems?.length) return scienceItems;
   if (family === 'languages' && languageItems?.length) return languageItems;
+  if (family === 'humanities' && humanityItems?.length) return humanityItems;
   return items;
 }
 
-export function DesktopLinks({ items, scienceItems, languageItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; pendingWork: number }) {
+export function DesktopLinks({ items, scienceItems, languageItems, humanityItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; humanityItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
-  const list = listFor(pathname, items, scienceItems, languageItems);
+  const list = listFor(pathname, items, scienceItems, languageItems, humanityItems);
   return (
     <div className="hidden sm:flex items-center gap-1">
       {list.map(l => {
@@ -108,10 +118,10 @@ export function DesktopLinks({ items, scienceItems, languageItems, pendingWork }
   );
 }
 
-export function MobileTabs({ items, scienceItems, languageItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; pendingWork: number }) {
+export function MobileTabs({ items, scienceItems, languageItems, humanityItems, pendingWork }: { items: NavItem[]; scienceItems?: NavItem[]; languageItems?: NavItem[]; humanityItems?: NavItem[]; pendingWork: number }) {
   const pathname = usePathname();
-  const list = listFor(pathname, items, scienceItems, languageItems);
-  const cols = list.length === 4 ? 'grid-cols-4' : list.length === 5 ? 'grid-cols-5'
+  const list = listFor(pathname, items, scienceItems, languageItems, humanityItems);
+  const cols = list.length === 2 ? 'grid-cols-2' : list.length === 4 ? 'grid-cols-4' : list.length === 5 ? 'grid-cols-5'
     : list.length === 6 ? 'grid-cols-6' : list.length === 7 ? 'grid-cols-7' : 'grid-cols-3';
   return (
     <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/5 pb-[env(safe-area-inset-bottom)]">
