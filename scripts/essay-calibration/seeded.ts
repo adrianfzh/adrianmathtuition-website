@@ -59,6 +59,8 @@ async function refresh(row: Row) {
   row.marks = (e.report?.marks || []).map((m: any) => ({ start: m.start, end: m.end, code: m.code, quote: m.quote }));
 }
 
+// Inside a function: tsx runs this file as CommonJS, which has no top-level await.
+async function main() {
 if (!reportOnly) {
   for (const which of ['clean', 'seeded'] as const) {
     if (results.rows.find(r => r.which === which)) continue;
@@ -95,3 +97,5 @@ for (const m of score.missed) console.log(`  MISSED  [${m.code}] "${m.replace}"`
 for (const w of score.wrongCode) console.log(`  CODE    "${w.plant.replace}" planted ${w.plant.code}, marked ${w.got ?? 'no code'}`);
 console.log(verdict.pass ? '\n  PASS' : `\n  FAIL\n   - ${verdict.reasons.join('\n   - ')}`);
 process.exit(verdict.pass ? 0 : 1);
+}
+main().catch(e => { console.error(e); process.exit(1); });
