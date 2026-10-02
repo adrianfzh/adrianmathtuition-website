@@ -208,6 +208,27 @@ This keeps history linear (`dev` is always at or ahead of `main`). If `--ff-only
 - **Hotfix exception:** if the user says something is broken in prod and wants it fixed *now*, it's fine to commit to `dev` and promote in the same turn — but still say so, don't silently push to `main`.
 - Rollback is `git revert` on `main` + push, or Vercel → Deployments → promote a previous build.
 
+## ⏱ After a push that deploys — do not wait by default (Adrian, 2 Oct 2026)
+
+Adrian: *"is it always good to wait for the production build?"* … *"let's have a more
+efficient way of doing things"*. Applies to BOTH repos (a website promote or `dev` push that
+builds; a bot or worker push to `main`).
+
+1. **Say "deploying" / "promoted" and carry on** with the rest of the turn.
+2. **Check ONCE, at the end of the turn** (bot: `gh run list -R adrianfzh/adrianmath-telegram-bot`;
+   website: the deployment's status). Finished → report it in the recap. Still building → say
+   it is **not confirmed yet**, and check first thing next turn.
+3. **No background watcher just to confirm a green build.** A watcher wakes the session when
+   it ends, and every wake-up is a full turn that re-reads the whole conversation.
+4. **Wait only when the next step needs the new version running**: probing a page, route or
+   cron the push adds; a Fly secret that must land on the new image; a re-mark that needs the
+   fix; a hotfix Adrian is watching. Do other work while waiting.
+5. **A docs-only push builds nothing** — nothing to check, do not wait.
+6. **A red check or a failed build is always reported**, with the failing step — never
+   smoothed over, and never left for "next turn" once seen.
+
+The preview alias still moves after a `dev` build is READY — do it in the end-of-turn check.
+
 ## 📱 File deliverables → Adrian's phone (2026-08-26)
 
 When a turn produces a user-facing FILE (worksheet/prelim/revision `.docx`, marked or assembled PDF, a report) and the session is **headless/remote** — remote-control CLI session, cron/launchd run, or any session WITHOUT the desktop-app panes (heuristic: no `mcp__Claude_Browser__*` tools in context = headless) — ALSO send it to Adrian's Telegram, same chat as health-check alerts:
