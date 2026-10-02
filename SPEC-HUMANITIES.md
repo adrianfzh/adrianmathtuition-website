@@ -91,6 +91,20 @@ No marked scripts are needed.
 Gate to open the switch: seeded answers ≥ 90 % in the right level and none two
 levels off; consistency passes; the truth-free checks pass.
 
+**Runs so far (2 Oct 2026, preview, switch closed):**
+
+| Run | Seeded | Consistency | Truth-free | Cost |
+|---|---|---|---|---|
+| `h1-2026-10-02` — the clean seeded answers | 45/46 | 12/12 | 24/24 | US$3.53 |
+| `h1-hard-2026-10-02` — 90 student-like answers for sets 5–10 (`--hard`) | 89/90, the miss one level off | 23/23 | 31/31 | US$6.56 |
+
+- The one miss: a reliability answer that trusts the source from its content alone,
+  written as Level 2, read as 1–2.
+- Still owed: the repeat reads were the same day. A days-apart repeat is a later run.
+- A caution: the same model family wrote the answers and reads them, so a pass here
+  shows the reader is steady and follows the scheme, not that the scheme matches a
+  school's marking. Real student answers are the next test.
+
 ## 5. What stays out
 
 - No school paper served to a student (docs/CONTENT-POLICY.md).
