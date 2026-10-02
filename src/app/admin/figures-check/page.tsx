@@ -353,6 +353,11 @@ export default function FiguresCheckPage() {
     setLoading(false);
   }, [size]);
   useEffect(() => { if (authed) load(); }, [authed, load]);
+  // A finished batch brings the next one by itself (Adrian, 2 Oct 2026); the button
+  // stays only for a load that came back empty, so this can never loop.
+  useEffect(() => {
+    if (authed && !loading && items.length === 0 && gone > 0 && total - gone > 0) load();
+  }, [authed, loading, items.length, gone, total, load]);
 
   // One at a time: the next three pictures are fetched before they are needed.
   useEffect(() => {
