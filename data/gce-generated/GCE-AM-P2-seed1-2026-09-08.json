@@ -793,37 +793,49 @@
       "target": 9,
       "accepted": true,
       "question": {
-        "stem": "The equation $x^2 - (\\sqrt{3}\\sin\\theta + \\cos\\theta)x + 1 = 0$, where $\\theta$ is a constant, is a quadratic equation in $x$. It is given that $0 \\le \\theta \\le 2\\pi$.",
+        "stem": "It is given that $\\mathrm{f}(\\theta) = p\\sin\\theta + 8\\cos\\theta$, where $p$ is a positive constant.",
         "parts": [
           {
             "label": "(a)",
-            "text": "By expressing $\\sqrt{3}\\sin\\theta + \\cos\\theta$ in the form $R\\sin(\\theta + \\alpha)$, where $R > 0$ and $0 < \\alpha < \\frac{\\pi}{2}$, show that the equation has real roots for exactly two values of $\\theta$. Find these two values of $\\theta$, in terms of $\\pi$, and the root of the equation for each of them.",
-            "marks": 6,
-            "answer": "$\\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$; real roots only when $\\sin\\left(\\theta + \\frac{\\pi}{6}\\right) = \\pm 1$: $\\theta = \\frac{\\pi}{3}$, root $x = 1$ (repeated); $\\theta = \\frac{4\\pi}{3}$, root $x = -1$ (repeated)"
+            "text": "Express $\\mathrm{f}(\\theta)$ in the form $R\\sin(\\theta + \\alpha)$, where $R > 0$ and $0^\\circ < \\alpha < 90^\\circ$, giving $R$ and $\\tan\\alpha$ in terms of $p$.",
+            "marks": 2,
+            "answer": "$R = \\sqrt{p^2 + 64}$, $\\tan\\alpha = \\frac{8}{p}$"
           },
           {
             "label": "(b)",
-            "text": "Show that the equation $x^2 - (\\sqrt{3}\\sin\\theta + \\cos\\theta)x - 1 = 0$ has real and distinct roots for every value of $\\theta$, and find, in exact form, the greatest possible value of its positive root.",
+            "text": "Find the range of values of $p$ for which the equation $\\mathrm{f}(\\theta) = 17$ has at least one solution.",
+            "marks": 2,
+            "answer": "$p \\geqslant 15$"
+          },
+          {
+            "label": "(c)",
+            "text": "Explain why the equation $\\mathrm{f}(\\theta) = p + 9$ has no solution for any positive value of $p$.",
+            "marks": 2,
+            "answer": "$(p + 9)^2 = p^2 + 18k + 81 > p^2 + 64 = R^2$ for $p > 0$, so $p + 9$ is greater than the greatest value $R$ of $\\mathrm{f}(\\theta)$"
+          },
+          {
+            "label": "(d)",
+            "text": "In the case where $p = 15$, solve the equation $\\mathrm{f}(\\theta) = 8.5$ for $0^\\circ < \\theta < 360^\\circ$.",
             "marks": 3,
-            "answer": "Discriminant $= 4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) + 4 > 0$ for all $\\theta$; greatest positive root $= 1 + \\sqrt{2}$ (when $\\theta = \\frac{\\pi}{3}$)"
+            "answer": "$\\theta = 1.9^\\circ$ or $121.9^\\circ$"
           }
         ],
-        "answer": "(a) $\\theta = \\frac{\\pi}{3}$, $x = 1$; $\\theta = \\frac{4\\pi}{3}$, $x = -1$. (b) $1 + \\sqrt{2}$",
+        "answer": "(a) $R = \\sqrt{p^2 + 64}$, $\\tan\\alpha = \\frac{8}{p}$; (b) $p \\geqslant 15$; (c) $p + 9 > \\sqrt{p^2 + 64}$ for every positive $p$, so $\\mathrm{f}(\\theta)$ never reaches $p + 9$; (d) $\\theta = 1.9^\\circ$ or $121.9^\\circ$",
         "total_marks": 9,
         "topics": [
           "Trigonometry (R-Formula)",
-          "Nature of Roots"
+          "Trigonometry (Equations)"
         ],
         "skills": [
-          "discriminant of a quadratic whose coefficient is $a\\sin\\theta + b\\cos\\theta$, written through the R-form as $4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4$",
-          "deducing that $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\ge 1$ forces equality, so real roots occur only at the greatest and least values of the R-form (equal roots)",
-          "greatest value of the positive root $\\frac{s + \\sqrt{s^2 + 4}}{2}$ as $s = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$ varies, by seeing the root increases with $s$"
+          "R-formula with a general constant p: R and tan α in terms of p",
+          "using the greatest value R of a sin θ + b cos θ to decide for which p an equation has a solution",
+          "explaining that an equation has no solution for every positive p by comparing (p + 9)² with R²"
         ],
         "needs_figure": false,
         "figure_description": "",
-        "solution": "(a) $R = \\sqrt{(\\sqrt{3})^2 + 1^2} = 2$, $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$, so $\\alpha = \\frac{\\pi}{6}$.\nSo $\\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$.\nDiscriminant $= (\\sqrt{3}\\sin\\theta + \\cos\\theta)^2 - 4(1)(1) = 4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4$.\nFor real roots, $4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4 \\ge 0$, i.e. $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\ge 1$.\nBut $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\le 1$ for all $\\theta$, so we need $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) = 1$, i.e. $\\sin\\left(\\theta + \\frac{\\pi}{6}\\right) = 1$ or $-1$.\nSince $\\frac{\\pi}{6} \\le \\theta + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$: $\\theta + \\frac{\\pi}{6} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, so $\\theta = \\frac{\\pi}{3}$ or $\\theta = \\frac{4\\pi}{3}$ — exactly two values.\nWhen $\\theta = \\frac{\\pi}{3}$: $\\sqrt{3}\\sin\\theta + \\cos\\theta = 2$, the equation is $x^2 - 2x + 1 = 0$, $(x - 1)^2 = 0$, $x = 1$ (equal roots).\nWhen $\\theta = \\frac{4\\pi}{3}$: $\\sqrt{3}\\sin\\theta + \\cos\\theta = -2$, the equation is $x^2 + 2x + 1 = 0$, $(x + 1)^2 = 0$, $x = -1$ (equal roots).\n(b) Let $s = \\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$, so $-2 \\le s \\le 2$.\nDiscriminant $= s^2 - 4(1)(-1) = s^2 + 4 \\ge 4 > 0$ for every $\\theta$, so the roots are real and distinct for every value of $\\theta$.\n(Product of roots $= -1 < 0$, so there is exactly one positive root.) The positive root is $x = \\frac{s + \\sqrt{s^2 + 4}}{2}$.\nAs $s$ increases from $0$ to $2$ both $s$ and $\\sqrt{s^2 + 4}$ increase, and for $s < 0$ the root is less than its value at $s = 0$ (it equals $\\frac{2}{\\sqrt{s^2+4} - s}$, whose denominator decreases as $s$ increases); so the positive root increases with $s$ and is greatest when $s$ is greatest, $s = 2$ (at $\\theta = \\frac{\\pi}{3}$).\nGreatest positive root $= \\frac{2 + \\sqrt{8}}{2} = 1 + \\sqrt{2}$.",
-        "syllabus_check": "4049: R-formula $a\\sin\\theta + b\\cos\\theta = R\\sin(\\theta + \\alpha)$ and its range; trigonometric equations in radians with a stated domain; nature of roots via the discriminant; exact surd form. No graph of a phase-shifted function is sketched, no calculator needed.",
-        "originality_note": "Not the 'show that a length is $a\\sin\\theta + b\\cos\\theta$ → express → solve/maximum' template of 2021–2024, not the 2025 colliding-objects model, and not Set 2 P2 Q4 (a quadratic in $u = \\cos x - \\sin x$ whose greatest/least values are found). Here the R-form sits inside a DISCRIMINANT: the candidate must see that $\\sin^2 \\ge 1$ can only hold with equality, so real roots exist only at the two extremes of the R-form, and the last part turns the question round — changing the constant term makes the roots real for every $\\theta$, and the extreme of the R-form now gives the greatest positive root, $1 + \\sqrt{2}$. Replaces the Set 1 question (express → solve → sketch $y = \\mathrm{f}(x)$) on the tutor's instruction."
+        "solution": "(a) $p\\sin\\theta + 8\\cos\\theta = R\\sin\\theta\\cos\\alpha + R\\cos\\theta\\sin\\alpha$\n$R\\cos\\alpha = p$\n$R\\sin\\alpha = 8$\n$R = \\sqrt{p^2 + 64}$\n$\\tan\\alpha = \\frac{8}{p}$\n**Answer:** $\\mathrm{f}(\\theta) = \\sqrt{p^2 + 64}\\,\\sin(\\theta + \\alpha)$, where $\\tan\\alpha = \\frac{8}{p}$\n\n(b) The greatest value of $\\mathrm{f}(\\theta)$ is $R$ and the least value is $-R$.\n$\\mathrm{f}(\\theta) = 17$ has at least one solution when $R \\geqslant 17$.\n$\\sqrt{p^2 + 64} \\geqslant 17$\n$p^2 + 64 \\geqslant 289$\n$p^2 \\geqslant 225$\nSince $p > 0$:\n**Answer:** $p \\geqslant 15$\n\n(c) The greatest value of $\\mathrm{f}(\\theta)$ is $R = \\sqrt{p^2 + 64}$.\n$(p + 9)^2 = p^2 + 18k + 81$\nSince $p > 0$, $p^2 + 18k + 81 > p^2 + 64$.\nSo $(p + 9)^2 > R^2$, and both $p + 9$ and $R$ are positive.\nSo $p + 9 > R$.\n**Answer:** $p + 9$ is greater than the greatest value of $\\mathrm{f}(\\theta)$ for every positive $p$, so the equation has no solution.\n\n(d) $p = 15$:\n$R = \\sqrt{15^2 + 64} = 17$\n$\\alpha = \\tan^{-1}\\frac{8}{15} = 28.07^\\circ$\n$17\\sin(\\theta + 28.07^\\circ) = 8.5$\n$\\sin(\\theta + 28.07^\\circ) = 0.5$\n$28.07^\\circ < \\theta + 28.07^\\circ < 388.07^\\circ$\n$\\theta + 28.07^\\circ = 30^\\circ$ or $150^\\circ$\n**Answer:** $\\theta = 1.9^\\circ$ or $121.9^\\circ$",
+        "syllabus_check": "4049 Trigonometry: a sin θ + b cos θ in the form R sin(θ + α), its greatest and least values, and solving the resulting equation in degrees over a stated interval. The conditions in (b) and (c) use only the greatest value R and a comparison of squares of positive numbers. No sketch of a transformed trigonometric graph.",
+        "originality_note": "No diagram and no numbers until the last part: the coefficient is a general positive constant p. (b) asks for which p an equation can be solved at all, (c) asks for an explanation that holds for every positive p, and only (d) is the familiar solve. The real 2021-2025 R-formula questions are all a context with a show-that length, then express, then a maximum or one solve; none carries a constant in the coefficients or asks whether a solution exists."
       },
       "draft": null,
       "gates": {
@@ -831,20 +843,22 @@
         "pass": true,
         "problems": [],
         "novelty": {
-          "nearest": "GCE 2013 P1 Q7",
-          "jaccard": 0.056,
+          "nearest": "GCE 2013 P2 Q4",
+          "jaccard": 0.055,
           "nearest_set": "Set 2 P2 Q4",
-          "jaccard_set": 0.073,
+          "jaccard_set": 0.147,
           "repeated_skills": []
         },
         "marks": 9,
-        "checked_at": "2026-10-02T08:08:43.302Z",
+        "checked_at": "2026-10-02T12:54:34.406Z",
         "rounds": 2
       },
       "blind": {
         "answers": {
-          "(a)": "2sin(θ + π/6); discriminant 4sin²(θ+π/6) − 4 ≥ 0 only when sin(θ+π/6) = ±1 (shown). θ = π/3, root x = 1; θ = 4π/3, root x = −1",
-          "(b)": "discriminant 4sin²(θ+π/6) + 4 > 0 for all θ (shown); greatest positive root = 1 + √2"
+          "(a)": "f(θ) = √(k² + 64) sin(θ + α), R = √(k² + 64), tan α = 8/k",
+          "(b)": "k ≥ 15",
+          "(c)": "shown — needs √(k² + 64) ≥ k + 9, i.e. k² + 64 ≥ k² + 18k + 81, i.e. k ≤ −17/18, impossible for k > 0 (max of f is √(k²+64) < k + 9)",
+          "(d)": "θ = 1.93°, 121.9° (α = 28.07°, θ + α = 30°, 150°)"
         },
         "solvable": true,
         "issues": []
@@ -854,27 +868,39 @@
           {
             "label": "(a)",
             "agree": true,
-            "note": "Both give 2sin(θ+π/6); discriminant 4sin²(θ+π/6) − 4 ≥ 0 with sin² ≤ 1 forces sin(θ+π/6) = ±1; on π/6 ≤ θ+π/6 ≤ 13π/6 that is θ+π/6 = π/2 or 3π/2 only, so θ = π/3 (equation (x−1)² = 0, root 1) and θ = 4π/3 ((x+1)² = 0, root −1). Checked independently: exactly two values, both roots repeated, no end-point case (θ = 0 and θ = 2π give s = 1)."
+            "note": "Both: R = sqrt(k^2 + 64), tan(alpha) = 8/k. Checked: R cos(alpha) = k, R sin(alpha) = 8, alpha acute since k > 0."
           },
           {
             "label": "(b)",
             "agree": true,
-            "note": "Discriminant s² + 4 ≥ 4 > 0 for every θ; product of roots −1 so exactly one positive root, (s + √(s²+4))/2, which increases with s (its derivative ½(1 + s/√(s²+4)) > 0), so greatest at s = 2: (2 + √8)/2 = 1 + √2. Both keys agree and the value is right."
+            "note": "Both: k >= 15. Checked: 17 > 0, so only R >= 17 matters; k^2 >= 225 with k > 0. Equality included (f = 17 at the maximum)."
+          },
+          {
+            "label": "(c)",
+            "agree": true,
+            "note": "Same argument in two presentations: (k + 9)^2 - (k^2 + 64) = 18k + 17 > 0 for k > 0, both sides positive, so k + 9 > R, the greatest value. Sound."
+          },
+          {
+            "label": "(d)",
+            "agree": true,
+            "note": "Both: theta = 1.9 deg, 121.9 deg. Checked: R = 17, alpha = 28.07 deg, sin(theta + alpha) = 0.5, theta + alpha in (28.07, 388.07) gives 30 and 150 only (390 is outside)."
           }
         ],
         "all_agree": true,
-        "key_verdict": "Setter and blind examiner agree on every part and both are right: θ = π/3 (root 1), θ = 4π/3 (root −1); greatest positive root 1 + √2.",
+        "key_verdict": "The setter's key and the blind examiner agree on every part, and my own working confirms all four.",
         "score": 4,
         "standard": "at",
         "fixes": [
-          "Tighten (b) to SEAB's wording: 'Show that the equation x² − (√3 sinθ + cosθ)x − 1 = 0 has real and distinct roots for every value of θ, and find, in exact form, the greatest possible value of its positive root.' — drop 'The constant term of the equation is now changed, so that the equation becomes', which narrates the edit instead of stating the equation.",
-          "Mark scheme for (b): the setter's worked solution proves the positive root is increasing in s (the s < 0 case via 2/(√(s²+4) − s)); 3 marks do not buy that. The scheme should award the A1 for taking s at its greatest, 2sin(θ+π/6) = 2, and substituting — the monotonicity argument is not to be demanded. (If Adrian wants the argument examined, re-mark to [4] with 'Explain why this greatest value occurs when √3 sinθ + cosθ is greatest'; otherwise leave at [3].)",
-          "Paper note for the session, not a reason to reject: with Q2 (Polynomials, Nature of Roots) and Q5 (Differentiation, Nature of Roots) already in this paper, the discriminant now appears in three questions of Set 1 P2. The skill here (an R-form range forcing equality in a discriminant inequality, then the extreme of a root) is different from both, but the session may want to check the tag count at the read-through."
+          "(b) wording: SEAB would write 'has at least one solution' (or 'can be solved'), not 'has a solution'; make the same change of register in (c) if (b) changes.",
+          "Typeset the function as roman f, $\\mathrm{f}(\\theta)$, as every other Set 1 question does.",
+          "(d): add 'giving your answers correct to 1 decimal place' is not needed (rubric covers it), but the answer key should read 'or', and the solution should show alpha to 2 d.p. before rounding (it does).",
+          "(b) and (c) both rest on the one idea 'the greatest value is R'. To make (c) a second idea rather than a second use, either ask it as 'Show that f(theta) < k + 9 for all values of theta' or leave as is; acceptable either way, noted only as the thinnest point of the question.",
+          "Paper-level, for the session (not a reason to reject): Q4, Q5 and Q6 of this paper all carry a constant called k and Q4(b)/Q5(b) both open 'Find the range of values of k for which'. Consider renaming this constant (e.g. a or p) so three consecutive questions do not share the letter."
         ],
         "too_close_to": null,
         "repeats_set": null,
         "as_good_as_set1": true,
-        "why": "Meets Adrian's brief exactly: the R-form is a tool inside Nature of Roots, not the 2021–2024 'show the length is a sinθ + b cosθ → express → solve' template, no phase-shifted sketch, and the last part turns the question round (one sign change makes the roots real for every θ and the extreme of the R-form now gives the greatest root, 1 + √2). The idea — s² ≥ 4 with |s| ≤ 2 can only hold with equality — is a genuine decision, the numbers close exactly (π/3, 4π/3, ±1, 1 + √2), the parts feed each other, and it is cleaner and more demanding than the Set 1 question it replaces; it is not the Set 2 P2 Q4 quadratic-in-u shape (there the trig is the variable of the quadratic, here a coefficient). A light edit to (b)'s wording and a scheme note keep it from 5."
+        "why": "A context-free R-formula question that carries a general constant to unprinted answers (standard §1 item 4) and puts its thinking in two small parts: (b) a non-strict boundary from the greatest value, (c) a reason closed in words; (d) is honest routine that reuses k = 15 from (b) with clean numbers (R = 17, sin = 0.5). Not the 2021 express-solve template, not a re-skin of GCE 2025 P2 Q11 or of Set 2 P2 Q4 (which builds a quadratic in u), and it tests the topic differently from the old express-solve-sketch Q4; a light edit of register makes it a real question."
       },
       "exemplars": [
         {
@@ -898,7 +924,7 @@
           "ref": "GCE 2023 P2 Q8"
         }
       ],
-      "replaced_at": "2026-10-02T08:08:43.370Z"
+      "replaced_at": "2026-10-02T12:56:41.185Z"
     },
     {
       "pos": 5,
@@ -922,12 +948,12 @@
           },
           {
             "label": "(c)",
-            "text": "It is now given that $k = 4$. Hence find $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx$.",
+            "text": "Hence find the exact value of $\\int_0^2 x^2\\mathrm{e}^{-x}\\,dx$.",
             "marks": 2,
-            "answer": "$-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$"
+            "answer": "$2 - \\frac{10}{\\mathrm{e}^2}$"
           }
         ],
-        "answer": "(a) shown; (b) $-2 < k < 2$; (c) $-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$",
+        "answer": "(a) shown; (b) $-2 < k < 2$; (c) $2 - \\frac{10}{\\mathrm{e}^2}$",
         "total_marks": 7,
         "topics": [
           "Differentiation (Techniques)",
@@ -935,9 +961,14 @@
         ],
         "needs_figure": false,
         "figure_description": "",
-        "solution": "(a) By the product rule, with $\\frac{d}{dx}\\left(\\mathrm{e}^{-x}\\right) = -\\mathrm{e}^{-x}$: $\\frac{dy}{dx} = \\mathrm{e}^{-x}(2x + k) + \\left(x^2 + kx + 2\\right)\\left(-\\mathrm{e}^{-x}\\right) = \\mathrm{e}^{-x}\\left(2x + k - x^2 - kx - 2\\right) = -\\mathrm{e}^{-x}\\left(x^2 + kx - 2x - k + 2\\right) = -\\mathrm{e}^{-x}\\left(x^2 + (k - 2)x + 2 - k\\right)$.\n(b) Stationary points occur where $\\frac{dy}{dx} = 0$. Since $\\mathrm{e}^{-x} > 0$ for all $x$, the factor $\\mathrm{e}^{-x}$ never vanishes, so stationary points occur only where $x^2 + (k - 2)x + (2 - k) = 0$. The curve has no stationary points when this quadratic in $x$ has no real roots, i.e. when its discriminant is negative: $(k - 2)^2 - 4(1)(2 - k) < 0$. Expanding, $k^2 - 4k + 4 - 8 + 4k < 0$, so $k^2 - 4 < 0$, i.e. $(k - 2)(k + 2) < 0$. Hence $-2 < k < 2$.\n(c) With $k = 4$, $y = \\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)$ and part (a) gives $\\frac{dy}{dx} = -\\mathrm{e}^{-x}\\left(x^2 + 2x + 2 - 4\\right) = -\\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)$. So $\\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right) = -\\frac{dy}{dx} = \\frac{d}{dx}\\left[-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)\\right]$, and integration as the reverse of differentiation gives $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx = -y + c = -\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$.\n[Check: $\\frac{d}{dx}\\left[-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right)\\right] = \\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) - \\mathrm{e}^{-x}(2x + 4) = \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)$. Also $k = 4$ lies outside $-2 < k < 2$, so this particular curve does have stationary points (where $x^2 + 2x - 2 = 0$); they are not asked for.]\nMarks: (a) M1 product rule with $\\frac{d}{dx}\\left(\\mathrm{e}^{-x}\\right) = -\\mathrm{e}^{-x}$; A1 rearranged to the given form. (b) M1 discriminant of $x^2 + (k - 2)x + (2 - k)$ set $< 0$, with the justification that $\\mathrm{e}^{-x} > 0$ (or $\\ne 0$) so only the quadratic factor can vanish; M1 simplify to $k^2 - 4 < 0$; A1 $-2 < k < 2$. (c) M1 recognise the integrand as $-\\frac{dy}{dx}$ with $k = 4$ (or as the derivative of $-y$); A1 $-\\mathrm{e}^{-x}\\left(x^2 + 4x + 2\\right) + c$, with the arbitrary constant.",
-        "syllabus_check": "4049 Differentiation: product rule with an exponential factor (derivative of $\\mathrm{e}^{-x}$); stationary points from $\\frac{dy}{dx} = 0$ using the fact that $\\mathrm{e}^{-x}$ is never zero. Nature of Roots: discriminant condition for a quadratic to have no real roots, leading to a quadratic inequality in $k$. Integration as the reverse of differentiation, using the given derivative with a specific $k$ — the 4049 route to $\\int \\mathrm{e}^{-x}\\left(x^2 + 2x - 2\\right)\\,dx$; no integration by parts. The closing 2-mark 'hence integrate' shares the reverse-of-differentiation skill with Q3, but Q3 tests it through the quotient rule with $\\ln x$ and a definite integral with exact limits; here the derivative technique is the product rule with $\\mathrm{e}^{-x}$, the integral is indefinite, and the weight of the question sits in the parameter/discriminant argument of part (b), which Q3 has nothing of. No nature of turning points (Q10 owns maxima/minima), no tangent/normal (Paper 1 Q13). No content outside 4049.",
-        "originality_note": "An exponential product carrying a parameter $k$: a 'show that' derivative, then the discriminant of the bracket decides whether stationary points exist at all, then a specific $k$ turns the same derivative round into an integral the syllabus cannot reach any other way. The exemplars are 'find dy/dx then hence integrate' with no parameter (2023 P1 Q4: $x\\mathrm{e}^{-2x}$; 2021 P2 Q3: $x(2x+1)^{-\\frac{1}{2}}$ to a definite integral; 2024 P2 Q4: a rational gradient plus a separate $\\sec^2 x$ antiderivative), a kinematics oscillation (2022 P1 Q12) and indices + the gradient of $5 - \\mathrm{e}^{2x}$ (2022 P2 Q6). None has a parameter, a discriminant argument or $\\mathrm{e}^{-x}$ times a quadratic; the 'hence integrate' close is the SEAB shape for this slot, but here the candidate must first specialise (a) to $k = 4$ to see that the integrand is $-\\frac{dy}{dx}$ — a step none of the exemplars require."
+        "solution": "(a) $y = \\mathrm{e}^{-x}\\left(x^2 + kx + 2\\right)$\n$\\frac{dy}{dx} = \\mathrm{e}^{-x}(2x + k) - \\mathrm{e}^{-x}\\left(x^2 + kx + 2\\right)$\n$\\frac{dy}{dx} = -\\mathrm{e}^{-x}\\left(x^2 + kx - 2x + 2 - k\\right)$\n**Answer:** $\\frac{dy}{dx} = -\\mathrm{e}^{-x}\\left(x^2 + (k - 2)x + 2 - k\\right)$ (shown)\n\n(b) At a stationary point, $\\frac{dy}{dx} = 0$.\nSince $\\mathrm{e}^{-x} > 0$ for all $x$:\n$x^2 + (k - 2)x + 2 - k = 0$\nNo stationary points, so this equation has no real roots.\n$(k - 2)^2 - 4(2 - k) < 0$\n$k^2 - 4k + 4 - 8 + 4k < 0$\n$k^2 - 4 < 0$\n$(k - 2)(k + 2) < 0$\n**Answer:** $-2 < k < 2$\n\n(c) Choose $k$ so that the bracket in (a) is $x^2$: $k = 2$.\nWhen $k = 2$, $y = \\mathrm{e}^{-x}\\left(x^2 + 2x + 2\\right)$ and $\\frac{dy}{dx} = -x^2\\mathrm{e}^{-x}$.\n$\\int_0^2 x^2\\mathrm{e}^{-x}\\,dx = \\left[-\\mathrm{e}^{-x}\\left(x^2 + 2x + 2\\right)\\right]_0^2$\n$= -\\mathrm{e}^{-2}(4 + 4 + 2) + \\mathrm{e}^{0}(2)$\n$= 2 - 10\\mathrm{e}^{-2}$\n**Answer:** $2 - \\frac{10}{\\mathrm{e}^2}$",
+        "syllabus_check": "4049 Differentiation: product rule with an exponential factor (derivative of $\\mathrm{e}^{-x}$); stationary points from $\\frac{dy}{dx} = 0$ using the fact that $\\mathrm{e}^{-x}$ is never zero. Nature of Roots: discriminant condition for a quadratic to have no real roots, leading to a quadratic inequality in $k$. Integration as the reverse of differentiation: the candidate chooses $k = 2$ so that the shown derivative is $-x^2\\mathrm{e}^{-x}$, then evaluates a definite integral exactly; no integration by parts. The closing 2-mark 'hence integrate' shares the reverse-of-differentiation skill with Q3, but Q3 tests it through the quotient rule with $\\ln x$ and a definite integral with exact limits; here the derivative technique is the product rule with $\\mathrm{e}^{-x}$, the candidate must choose $k$ before integrating, and the weight of the question sits in the parameter/discriminant argument of part (b), which Q3 has nothing of. No nature of turning points (Q10 owns maxima/minima), no tangent/normal (Paper 1 Q13). No content outside 4049.",
+        "originality_note": "An exponential product carrying a parameter $k$: a 'show that' derivative, then the discriminant of the bracket decides whether stationary points exist at all, then a specific $k$ turns the same derivative round into an integral the syllabus cannot reach any other way. The exemplars are 'find dy/dx then hence integrate' with no parameter (2023 P1 Q4: $x\\mathrm{e}^{-2x}$; 2021 P2 Q3: $x(2x+1)^{-\\frac{1}{2}}$ to a definite integral; 2024 P2 Q4: a rational gradient plus a separate $\\sec^2 x$ antiderivative), a kinematics oscillation (2022 P1 Q12) and indices + the gradient of $5 - \\mathrm{e}^{2x}$ (2022 P2 Q6). None has a parameter, a discriminant argument or $\\mathrm{e}^{-x}$ times a quadratic; the 'hence integrate' close is the SEAB shape for this slot, but here the candidate must first specialise (a) to $k = 4$ to see that the integrand is $-\\frac{dy}{dx}$ — a step none of the exemplars require.",
+        "skills": [
+          "product rule with e^(−x) and a parameter k, shown to a given form",
+          "discriminant condition in k for a curve to have no stationary points",
+          "choosing the value of k that turns the shown derivative into the integrand, then a definite integral with an exact answer"
+        ]
       },
       "draft": null,
       "gates": {
@@ -1018,7 +1049,8 @@
           "id": "f2d2e5eb-d98d-4637-99fc-4037949bd8c5",
           "ref": "GCE 2022 P2 Q6"
         }
-      ]
+      ],
+      "replaced_at": "2026-10-02T12:56:41.185Z"
     },
     {
       "pos": 6,
@@ -1026,57 +1058,48 @@
       "target": 9,
       "accepted": true,
       "question": {
-        "stem": "The diagram shows a trapezium $ABCD$ in which $AB$ is parallel to $DC$. The points $A$, $B$ and $C$ have coordinates $(-2, 3)$, $(6, 7)$ and $(8, 3)$ respectively, and $D$ lies on the $x$-axis.",
+        "stem": "Solutions to this question by accurate drawing will not be accepted.\nThe line $L$ has equation $y = kx + 4 - 2k$, where $k$ is a negative constant. $L$ meets the $x$-axis at $A$ and the $y$-axis at $B$. $O$ is the origin.",
         "parts": [
           {
             "label": "(a)",
-            "text": "Find the coordinates of $D$.",
-            "marks": 2,
-            "answer": "$D(2, 0)$"
+            "text": "Explain why $L$ passes through the point $P(2, 4)$ for every value of $k$.",
+            "marks": 1,
+            "answer": "When $x = 2$, $y = 2k + 4 - 2k = 4$, whatever the value of $k$"
           },
           {
             "label": "(b)",
-            "text": "Show that angle $BCD$ is a right angle.",
+            "text": "Find the coordinates of $A$ and of $B$ in terms of $k$.",
             "marks": 2,
-            "answer": "Gradient of $BC = -2$, gradient of $DC = \\frac{1}{2}$; product $= -1$, so $BC$ is perpendicular to $DC$"
+            "answer": "$A\\left(2 - \\frac{4}{k}, 0\\right)$, $B(0, 4 - 2k)$"
           },
           {
             "label": "(c)",
-            "text": "Find the area of the trapezium $ABCD$.",
-            "marks": 2,
-            "answer": "$35$ units$^2$"
+            "text": "Find the values of $k$ for which the area of triangle $OAB$ is $18$ units$^2$.",
+            "marks": 3,
+            "answer": "$k = -1$ or $k = -4$"
           },
           {
             "label": "(d)",
-            "text": "The line through $D$ parallel to $BC$ meets $AB$ at the point $F$.",
+            "text": "Show that the area of triangle $OAB$ cannot be less than $16$ units$^2$.",
             "marks": 3,
-            "answer": "(i) $F(0, 4)$; (ii) $DF \\parallel CB$ by construction and $FB \\parallel DC$ since $AB \\parallel DC$, so $DFBC$ is a parallelogram; angle $BCD = 90^\\circ$ from part (b), so $DFBC$ is a rectangle",
-            "subparts": [
-              {
-                "label": "(i)",
-                "text": "Find the coordinates of $F$.",
-                "marks": 2,
-                "answer": "$F(0, 4)$"
-              },
-              {
-                "label": "(ii)",
-                "text": "Explain why $DFBC$ is a rectangle.",
-                "marks": 1,
-                "answer": "$DF \\parallel CB$ by construction and $FB \\parallel DC$ (since $AB \\parallel DC$), so $DFBC$ is a parallelogram; angle $BCD = 90^\\circ$ from part (b), so it is a rectangle"
-              }
-            ]
+            "answer": "Area $- 16 = -\\frac{2(k + 2)^2}{k} \\geqslant 0$ since $k < 0$, so the area is at least $16$ units$^2$"
           }
         ],
-        "answer": "(a) $D(2, 0)$; (b) shown, gradients $-2$ and $\\frac{1}{2}$; (c) $35$ units$^2$; (d)(i) $F(0, 4)$; (d)(ii) $DF \\parallel CB$ and $FB \\parallel DC$, so $DFBC$ is a parallelogram with angle $BCD = 90^\\circ$, hence a rectangle",
+        "answer": "(a) when $x = 2$, $y = 2k + 4 - 2k = 4$ for every $k$; (b) $A\\left(2 - \\frac{4}{k}, 0\\right)$, $B(0, 4 - 2k)$; (c) $k = -1$ or $k = -4$; (d) area $- 16 = -\\frac{2(k + 2)^2}{k} \\geqslant 0$ since $k < 0$",
         "total_marks": 9,
         "topics": [
           "Coordinate Geometry"
         ],
-        "needs_figure": true,
-        "figure_description": "Axes $Ox$, $Oy$. Trapezium $ABCD$ with $A(-2, 3)$, $B(6, 7)$, $C(8, 3)$ labelled with their coordinates and $D$ on the $x$-axis labelled $D$ only; $AB$ and $DC$ parallel; not to scale.",
-        "solution": "(a) Gradient of $AB = \\frac{7 - 3}{6 - (-2)} = \\frac{4}{8} = \\frac{1}{2}$. Since $DC$ is parallel to $AB$, the line $DC$ has gradient $\\frac{1}{2}$ and passes through $C(8, 3)$: $y - 3 = \\frac{1}{2}(x - 8)$, i.e. $y = \\frac{1}{2}x - 1$. [M1] $D$ lies on the $x$-axis, so $0 = \\frac{1}{2}x - 1$, giving $x = 2$. Hence $D$ is $(2, 0)$. [A1]\n(b) Gradient of $BC = \\frac{3 - 7}{8 - 6} = -2$. Gradient of $DC = \\frac{3 - 0}{8 - 2} = \\frac{1}{2}$ (the gradient of $AB$, as $DC \\parallel AB$). [M1] Since $(-2) \\times \\frac{1}{2} = -1$, $BC$ is perpendicular to $DC$, so angle $BCD = 90^\\circ$. [A1]\n(c) $AB = \\sqrt{8^2 + 4^2} = \\sqrt{80} = 4\\sqrt{5}$, $DC = \\sqrt{6^2 + 3^2} = \\sqrt{45} = 3\\sqrt{5}$ and, by part (b), the perpendicular distance between the parallel sides is $BC = \\sqrt{2^2 + 4^2} = \\sqrt{20} = 2\\sqrt{5}$. [M1] Area $= \\frac{1}{2}\\left(4\\sqrt{5} + 3\\sqrt{5}\\right)\\left(2\\sqrt{5}\\right) = \\frac{1}{2} \\times 7\\sqrt{5} \\times 2\\sqrt{5} = 35$ units$^2$. [A1] Alternatively, with the vertices in order $A(-2, 3)$, $B(6, 7)$, $C(8, 3)$, $D(2, 0)$: Area $= \\frac{1}{2}\\left|(-2)(7) + (6)(3) + (8)(0) + (2)(3) - \\left[(3)(6) + (7)(8) + (3)(2) + (0)(-2)\\right]\\right| = \\frac{1}{2}\\left|10 - 80\\right| = 35$ units$^2$.\n(d)(i) The line through $D(2, 0)$ parallel to $BC$ has gradient $-2$: $y - 0 = -2(x - 2)$, i.e. $y = -2x + 4$. The line $AB$ has gradient $\\frac{1}{2}$ and passes through $A(-2, 3)$: $y - 3 = \\frac{1}{2}(x + 2)$, i.e. $y = \\frac{1}{2}x + 4$. [M1] Solving, $\\frac{1}{2}x + 4 = -2x + 4$ gives $\\frac{5}{2}x = 0$, so $x = 0$ and $y = 4$. Hence $F$ is $(0, 4)$. [A1]\n(d)(ii) $DF$ is parallel to $CB$ by construction, and $FB$ lies along $AB$, which is parallel to $DC$; so $DFBC$ has two pairs of parallel sides and is a parallelogram. From part (b), angle $BCD = 90^\\circ$, and a parallelogram with one right angle is a rectangle. [B1] (Check: $\\vec{DF} = (-2, 4)$ and $\\vec{BC} = (2, -4)$ are parallel; $\\vec{FB} = (6, 3) = \\vec{DC}$; $F(0, 4)$ lies between $A$ and $B$ on $AB$.)",
-        "syllabus_check": "4049 Coordinate geometry of straight lines: gradient, condition for parallel lines (to locate $D$, and for the line through $D$), condition for perpendicular lines (the right angle), equation of a straight line, intersection with an axis and with another line, length of a line segment and area of a rectilinear figure (trapezium formula or shoelace); (d)(ii) is a one-line deduction from the parallel/perpendicular conditions already established, using the definition of a parallelogram and of a rectangle. Set with a diagram, as SEAB does for a quadrilateral named by its vertices. No circles (Q9 of this paper) and no perpendicular bisector or reflection (Paper 1 Q10).",
-        "originality_note": "A trapezium drawn in the diagram with its fourth vertex fixed by a parallel condition on the $x$-axis, a right angle proved by gradients, the area, then a parallel-line construction whose meeting point with $AB$ is the $y$-intercept and which closes with a geometric justification that $DFBC$ is a rectangle, so the last part earns a deduction rather than repeating the intersection routine of (a). Not a reflection in a line with a shortest path (Paper 1 Q10), not a point on $y = 2x - 1$ with parameter $k$ (Paper 1 Q4), not a kite with $h + k = 12$ (2021 P1 Q9), not a circle (2024 P2 Q7, 2023 P1 Q10, 2022 P2 Q9), not a curve with a normal (2022 P1 Q13). New integral coordinates chosen so that $AB : DC : BC = 4 : 3 : 2$ in units of $\\sqrt{5}$ and the area is a whole number."
+        "skills": [
+          "a family of lines y = kx + 4 − 2k through a fixed point: showing the point is on every line",
+          "area of the triangle cut off by the axes as an expression in k, leading to a quadratic in k with two valid lines",
+          "showing the area cut off by the axes has a least value for every negative k (a perfect square over k, or the discriminant)"
+        ],
+        "needs_figure": false,
+        "figure_description": "",
+        "solution": "(a) When $x = 2$:\n$y = 2k + 4 - 2k$\n$y = 4$\n**Answer:** The $k$ terms cancel, so $(2, 4)$ lies on $L$ for every value of $k$.\n\n(b) At $A$, $y = 0$:\n$kx + 4 - 2k = 0$\n$x = \\frac{2k - 4}{k}$\n$x = 2 - \\frac{4}{k}$\nAt $B$, $x = 0$:\n$y = 4 - 2k$\n**Answer:** $A\\left(2 - \\frac{4}{k}, 0\\right)$, $B(0, 4 - 2k)$\n\n(c) Since $k < 0$, $2 - \\frac{4}{k} > 0$ and $4 - 2k > 0$.\n$OA = 2 - \\frac{4}{k}$\n$OB = 4 - 2k$\nArea of triangle $OAB = \\frac{1}{2}\\left(2 - \\frac{4}{k}\\right)(4 - 2k)$\n$\\frac{1}{2}\\left(2 - \\frac{4}{k}\\right)(4 - 2k) = 18$\n$8 - 4k - \\frac{16}{k} + 8 = 36$\n$-4k - \\frac{16}{k} = 20$\n$4k^2 + 20k + 16 = 0$\n$k^2 + 5k + 4 = 0$\n$(k + 1)(k + 4) = 0$\nBoth values are negative, so both are accepted.\n**Answer:** $k = -1$ or $k = -4$\n\n(d) Area of triangle $OAB = \\frac{1}{2}\\left(2 - \\frac{4}{k}\\right)(4 - 2k)$\nArea $= 8 - 2k - \\frac{8}{k}$\nArea $- 16 = -2k - 8 - \\frac{8}{k}$\nArea $- 16 = \\frac{-2k^2 - 8k - 8}{k}$\nArea $- 16 = \\frac{-2(k + 2)^2}{k}$\n$(k + 2)^2 \\geqslant 0$ and $k < 0$, so $\\frac{-2(k + 2)^2}{k} \\geqslant 0$.\n**Answer:** Area $- 16 \\geqslant 0$ for every negative $k$, so the area cannot be less than $16$ units$^2$.\n\nAlternative for (d): let the area be $S$.\n$8 - 2k - \\frac{8}{k} = S$\n$2k^2 + (S - 8)k + 8 = 0$\nFor real $k$: $(S - 8)^2 - 64 \\geqslant 0$\n$S \\geqslant 16$ or $S \\leqslant 0$\nAn area is positive, so $S \\geqslant 16$.",
+        "syllabus_check": "4049 coordinate geometry of straight lines: a point on a line, intercepts on the axes, area of a triangle with two sides on the axes; a quadratic equation in k; a perfect square is never negative (or the discriminant of a quadratic in k). No calculus needed, no circles (Q9 of this paper).",
+        "originality_note": "A family of lines through a fixed point, with every coordinate in terms of the constant k and no diagram. The candidate must notice that the k terms cancel at x = 2, form an area equation whose two roots are both valid lines, and then prove that the area has a least value whatever the line. Unlike the rejected trapezium (find a fourth vertex, lengths, area with numbers), unlike GCE 2021 P1 Q9 (a kite with h and k) and GCE 2023 P1 Q13 (a perpendicular bisector with h); the 2021 specimen P1 Q1 has intercepts a and b but fixes them from a gradient and a length."
       },
       "draft": null,
       "gates": {
@@ -1084,19 +1107,22 @@
         "pass": true,
         "problems": [],
         "novelty": {
-          "nearest": "GCE 2009 P1 Q11",
-          "jaccard": 0.135
+          "nearest": "GCE 2015 P2 Q3",
+          "jaccard": 0.101,
+          "nearest_set": "Set 2 P1 Q10",
+          "jaccard_set": 0.081,
+          "repeated_skills": []
         },
         "marks": 9,
-        "checked_at": "2026-09-08T17:58:16.092Z",
+        "checked_at": "2026-10-02T12:54:34.411Z",
         "rounds": 2
       },
       "blind": {
         "answers": {
-          "(a)": "D(2, 0)",
-          "(b)": "shown — gradient of CB = (7-3)/(6-8) = -2, gradient of CD = (0-3)/(2-8) = 1/2; (-2)(1/2) = -1, so BC ⊥ CD and angle BCD = 90°",
-          "(c)": "35 square units",
-          "(d)": "F(0, 4)"
+          "(a)": "y = k(x - 2) + 4; at x = 2, y = 4 for all k, so L passes through P(2, 4)",
+          "(b)": "A(2 - 4/k, 0) = ((2k - 4)/k, 0); B(0, 4 - 2k)",
+          "(c)": "Area = -2(k - 2)^2/k = 18 gives k^2 + 5k + 4 = 0, so k = -1 or k = -4",
+          "(d)": "shown: Area - 16 = -2(k + 2)^2/k >= 0 since k < 0 (minimum 16 at k = -2)"
         },
         "solvable": true,
         "issues": []
@@ -1106,34 +1132,38 @@
           {
             "label": "(a)",
             "agree": true,
-            "note": "Both give D(2, 0). Verified: gradient AB = 4/8 = 1/2; DC through C(8,3) with gradient 1/2 is y = x/2 - 1; y = 0 gives x = 2."
+            "note": "Both substitute x = 2 (the examiner writes y = k(x - 2) + 4): y = 4 for every k."
           },
           {
             "label": "(b)",
             "agree": true,
-            "note": "Both show gradient BC = -2, gradient DC = 1/2, product -1 so BC ⊥ DC. Verified: (3-7)/(8-6) = -2 and (3-0)/(8-2) = 1/2."
+            "note": "A(2 - 4/k, 0), B(0, 4 - 2k); the examiner's (2k - 4)/k is the same x-coordinate."
           },
           {
             "label": "(c)",
             "agree": true,
-            "note": "Both give 35 square units. Verified by shoelace on A(-2,3), B(6,7), C(8,3), D(2,0): ½|(-14+18+0+6) - (18+56+6+0)| = ½|10-80| = 35; cross-checked as ½(4√5 + 3√5)(2√5) = 35 using BC as the height from (b)."
+            "note": "k = -1 or k = -4. Checked: area = 8 - 2k - 8/k = 18 gives k^2 + 5k + 4 = 0; k = -1 gives A(6, 0), B(0, 6) and k = -4 gives A(3, 0), B(0, 12), both of area 18. The examiner's -2(k - 2)^2/k is the same area."
           },
           {
             "label": "(d)",
             "agree": true,
-            "note": "Both give F(0, 4). Verified: line through D(2,0) with gradient -2 is y = -2x + 4; AB is y = x/2 + 4; equal at x = 0, y = 4, and x = 0 lies between x_A = -2 and x_B = 6 so F is on the segment AB."
+            "note": "Shown. Checked: area - 16 = -2k - 8 - 8/k = -2(k + 2)^2/k, which is >= 0 because k < 0; equality at k = -2, so the printed 16 is the true least value. The discriminant route ((S - 8)^2 >= 64 with S > 0) and differentiation in k both reach 16 as well."
           }
         ],
         "all_agree": true,
-        "key_verdict": "Setter and blind examiner agree on every part and the key is correct throughout.",
+        "key_verdict": "The setter's key and the blind examiner agree on every part, and my own working confirms all four, including that 16 is the exact least area.",
         "score": 4,
+        "standard": "at",
         "fixes": [
-          "Supply the diagram. Every GCE question that names a quadrilateral by its vertices ('The diagram shows a kite ABCD…', 2021 P1 Q9) is set with a figure; open with 'The diagram shows a trapezium ABCD in which AB is parallel to DC…' and draw A, B, C, D with D marked on the x-axis (not to scale).",
-          "Part (d) is light at [2] for forming the line through D with gradient -2, forming (or recalling) the line AB, and solving simultaneously — SEAB would normally give [3]. Either weight it [3] and trim (a) to [2] (gradient of AB is a one-liner and the equation of DC is the only real step), or replace (d) with a one-step consequence such as 'Explain why DFBC is a rectangle' [1] + 'find F' [2].",
-          "Consider making (d) earn a geometric idea rather than a repeat of (a): e.g. 'The point E is such that ABED is a parallelogram. Find the coordinates of E' or 'Find the length of the perpendicular from A to DC' would vary the technique instead of intersecting two lines again."
+          "Part (a) feeds nothing: P(2, 4) is never used again, so the part can be deleted without breaking a later one. Light edit, either of: (i) keep it as the 1-mark opener it is (2024 P2 Q7(c) and 2025 P2 Q11(a) are 1-mark 'explain' parts) and accept the loose end; or (ii) make (d) read 'Show that the area of triangle OAB cannot be less than 16 units^2, and state the value of k for which the area is 16 units^2.' [3] so the question closes on the line itself (k = -2). Do not bring the midpoint back; it echoes Set 1 P1 Q13(b).",
+          "Mark scheme for (d): the last mark is the stated reason, (k + 2)^2 >= 0 AND k < 0, not the algebra. A candidate who writes only 'a square is never negative' has not shown the sign of the quotient. Accept the discriminant route only with S <= 0 rejected for a reason, and the calculus route only with the minimum justified.",
+          "Mark scheme for (c): the A1 is for both values kept with 'both are negative' (or OA, OB positive) stated; this is the kept case, not a rejection.",
+          "This paper already uses the discriminant in Q2(b) and Q5(b) and a 'for every positive p' comparison in Q4. Print the perfect-square method as the main route in the solutions (as the setter has) and the discriminant only as the alternative, so the paper does not show the same tool four times."
         ],
         "too_close_to": null,
-        "why": "A correct, cleanly-numbered coordinate-geometry trapezium (all lengths are multiples of √5, area 35) in proper register and fully specified without a figure; the missing diagram and the fact that (a) and (d) both reduce to 'write two lines and intersect' make it a light edit short of a real Q6."
+        "repeats_set": null,
+        "as_good_as_set1": true,
+        "why": "Correct, clean and in SEAB register, abstract in k throughout with no diagram, and it now ends as Set 1's long questions do: (b) feeds (c), (c)'s area expression feeds (d), and (d) is one idea for the candidate to supply (compare the area with 16 and use the sign of k) that turns the question into a fact about every line of the family. About 12 minutes for 9 marks; marks 1, 2, 3, 3 match the work. Only loose end: part (a)'s point P is not used again."
       },
       "exemplars": [
         {
@@ -1156,7 +1186,8 @@
           "id": "f57648c6-4ce1-433b-b20c-78139b8526aa",
           "ref": "GCE 2022 P2 Q9"
         }
-      ]
+      ],
+      "replaced_at": "2026-10-02T12:56:41.185Z"
     },
     {
       "pos": 7,
@@ -1180,12 +1211,12 @@
           },
           {
             "label": "(c)",
-            "text": "The right pedal is always diametrically opposite the left pedal. Find the times during the first revolution of the pedals at which the two pedals are at the same height above the floor, and state this height.",
+            "text": "The person now pedals at a faster steady rate. Starting again from its highest point, the left pedal takes 0.4 s to fall to a height of 20 cm above the floor for the first time. Find the new pedalling rate in revolutions per minute.",
             "marks": 3,
-            "answer": "$t = \\frac{3}{8}$ s and $t = \\frac{9}{8}$ s; height 29 cm"
+            "answer": "50.8 revolutions per minute"
           }
         ],
-        "answer": "(a) $a = 29$, $b = 17$, $k = \\frac{4\\pi}{3}$; (b) $t = 0.508$ s, $0.992$ s; (c) $t = \\frac{3}{8}$ s, $\\frac{9}{8}$ s, height 29 cm",
+        "answer": "(a) $a = 29$, $b = 17$, $k = \\frac{4\\pi}{3}$; (b) $t = 0.508$ s, $0.992$ s; (c) 50.8 revolutions per minute",
         "total_marks": 10,
         "topics": [
           "Trigonometry (Applications)",
@@ -1193,9 +1224,14 @@
         ],
         "needs_figure": false,
         "figure_description": "",
-        "solution": "(a) At the highest point $\\cos kt = 1$, so $a + b = 46$. At the lowest point $\\cos kt = -1$, so $a - b = 12$. Adding, $2a = 58$, $a = 29$ and $b = 17$.\\nThe pedals make 40 revolutions per minute, so one revolution takes $\\frac{60}{40} = 1.5$ s. The period of $\\cos kt$ is $\\frac{2\\pi}{k}$, so $\\frac{2\\pi}{k} = 1.5$ and $k = \\frac{2\\pi}{1.5} = \\frac{4\\pi}{3}$.\\n\\n(b) $h = 20$: $29 + 17\\cos\\frac{4\\pi t}{3} = 20$, so $\\cos\\frac{4\\pi t}{3} = -\\frac{9}{17}$.\\nThe first revolution is $0 \\le t \\le 1.5$, so $0 \\le \\frac{4\\pi t}{3} \\le 2\\pi$.\\nBasic angle $\\alpha = \\cos^{-1}\\frac{9}{17} = 1.0129$ rad. The cosine is negative, so $\\frac{4\\pi t}{3} = \\pi - 1.0129 = 2.1287$ or $\\frac{4\\pi t}{3} = \\pi + 1.0129 = 4.1545$.\\nHence $t = \\frac{3 \\times 2.1287}{4\\pi} = 0.508$ s or $t = \\frac{3 \\times 4.1545}{4\\pi} = 0.992$ s (3 s.f.).\\n\\n(c) The right pedal is half a revolution ahead of the left pedal, so its height is $h_R = 29 + 17\\cos\\left(\\frac{4\\pi t}{3} + \\pi\\right) = 29 - 17\\cos\\frac{4\\pi t}{3}$.\\nThe pedals are at the same height when $29 + 17\\cos\\frac{4\\pi t}{3} = 29 - 17\\cos\\frac{4\\pi t}{3}$, that is $\\cos\\frac{4\\pi t}{3} = 0$.\\nFor $0 \\le \\frac{4\\pi t}{3} \\le 2\\pi$: $\\frac{4\\pi t}{3} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, giving $t = \\frac{3}{8}$ s and $t = \\frac{9}{8}$ s.\\nAt these times $\\cos\\frac{4\\pi t}{3} = 0$, so both pedals are $29$ cm above the floor (the height of the axle).",
-        "syllabus_check": "4049 Trigonometry: a real-world situation modelled by $y = a + b\\cos kt$ — amplitude and vertical shift from the maximum and minimum, the constant $k$ from the period, solving a trigonometric equation over a stated interval using the basic angle and quadrants, and interpreting a phase shift of $\\pi$ as $\\cos(\\theta + \\pi) = -\\cos\\theta$. No R-formula (Q4 owns it), no sketching (Paper 1 Q2), no rates of change (Paper 1 Q11). Answers to 3 s.f. or exact as demanded.",
-        "originality_note": "New situation (exercise-bicycle pedal, vertical circular motion about an axle at 40 rev/min) with a two-pedal closing part that requires the candidate to model the diametrically opposite pedal as $29 - 17\\cos kt$. Not a helicopter, hiker, skier, framework or farmer (the R-formula exemplars) and not the oscillating dot ($x = a\\sin nt$, velocity, acceleration): the constants come from max/min and rev/min rather than being given to explain, the middle part is a cos equation with a negative value (quadrants 2 and 3), and the final part is exact. Paper 1's folding fan and tent are not used."
+        "solution": "(a) Highest point: $a + b = 46$\nLowest point: $a - b = 12$\n$2a = 58$\n$a = 29$, $b = 17$\nTime for one revolution $= \\frac{60}{40} = 1.5$ s\n$\\frac{2\\pi}{k} = 1.5$\n**Answer:** $a = 29$, $b = 17$, $k = \\frac{4\\pi}{3}$\n\n(b) $29 + 17\\cos\\frac{4\\pi t}{3} = 20$\n$\\cos\\frac{4\\pi t}{3} = -\\frac{9}{17}$\nFirst revolution: $0 \\leqslant \\frac{4\\pi t}{3} \\leqslant 2\\pi$\nBasic angle $= \\cos^{-1}\\frac{9}{17} = 1.0129$\n$\\frac{4\\pi t}{3} = \\pi - 1.0129$ or $\\pi + 1.0129$\n$\\frac{4\\pi t}{3} = 2.1287$ or $4.1545$\n**Answer:** $t = 0.508$ s or $t = 0.992$ s\n\n(c) The highest and lowest points are the same, so $h = 29 + 17\\cos kt$ with a new value of $k$.\nWhen $t = 0.4$, $h = 20$:\n$29 + 17\\cos 0.4k = 20$\n$\\cos 0.4k = -\\frac{9}{17}$\nFirst time, so $0.4k$ is the smallest positive angle:\n$0.4k = \\pi - 1.0129 = 2.1287$\n$k = 5.3218$\nTime for one revolution $= \\frac{2\\pi}{5.3218} = 1.1807$ s\nRate $= \\frac{60}{1.1807}$\n**Answer:** $50.8$ revolutions per minute",
+        "syllabus_check": "4049 Trigonometry: a real-world situation modelled by $y = a + b\\cos kt$ — amplitude and vertical shift from the maximum and minimum, the constant $k$ from the period, solving a trigonometric equation over a stated interval using the basic angle and quadrants, and finding $k$ from a given time, then the rate from the period. No R-formula (Q4 owns it), no sketching (Paper 1 Q2), no rates of change (Paper 1 Q11). Answers to 3 s.f. or exact as demanded.",
+        "originality_note": "New situation (exercise-bicycle pedal, vertical circular motion about an axle at 40 rev/min) with a closing part that runs the model backwards: a time is given and the candidate finds the new $k$ and the new pedalling rate. Not a helicopter, hiker, skier, framework or farmer (the R-formula exemplars) and not the oscillating dot ($x = a\\sin nt$, velocity, acceleration): the constants come from max/min and rev/min rather than being given to explain, the middle part is a cos equation with a negative value (quadrants 2 and 3), and the final part reverses the model. Paper 1's folding fan and tent are not used.",
+        "skills": [
+          "constants of h = a + b cos kt from the highest and lowest points and a rate in revolutions per minute",
+          "solving a cosine equation with a negative value over one revolution",
+          "working backwards from a time to a new value of k, then to a rate in revolutions per minute"
+        ]
       },
       "draft": null,
       "gates": {
@@ -1265,7 +1301,8 @@
           "id": "6043a5cd-e80b-4311-83af-1a4afc46acb3",
           "ref": "GCE 2015 P2 Q9"
         }
-      ]
+      ],
+      "replaced_at": "2026-10-02T12:56:41.185Z"
     },
     {
       "pos": 8,
