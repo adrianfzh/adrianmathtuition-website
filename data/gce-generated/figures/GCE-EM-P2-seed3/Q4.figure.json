@@ -1,12 +1,12 @@
 {
   "family": "graph-paper",
   "specVersion": 1,
-  "xAxis": { "min": 6, "max": 20, "step": 2, "label": "x", "majorsPerStep": 2 },
-  "yAxis": { "min": 550, "max": 1000, "step": 50, "label": "C", "majorsPerStep": 2 },
+  "xAxis": { "min": 10, "max": 40, "step": 5, "label": "x", "majorsPerStep": 2 },
+  "yAxis": { "min": 860, "max": 930, "step": 10, "label": "A", "majorsPerStep": 2 },
   "paper": "fine",
   "minorPerMajor": 5,
   "paperColour": "grey",
   "axes": true,
   "origin": "",
-  "points": [ { "x": 12, "y": 700, "marker": "none" } ]
+  "points": [ { "x": 20, "y": 900, "marker": "none" } ]
 }

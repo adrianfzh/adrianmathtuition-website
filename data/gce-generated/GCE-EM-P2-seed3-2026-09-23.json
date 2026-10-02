@@ -863,53 +863,53 @@
    "target": 11,
    "accepted": true,
    "question": {
-    "stem": "An open metal box has a square base of side $x$ cm and no lid.\nThe volume of the box is 1000 cm$^3$.\nThe metal for the base costs 2 cents per square centimetre.\nThe metal for the four sides costs 1 cent per square centimetre.\nThe total cost of the metal for the box is $C$ cents.",
+    "stem": "A poster is printed on a rectangular sheet of paper.\nThe printed part is a rectangle of width $x$ cm and area 600 cm$^2$.\nThere is a blank margin 2 cm wide at each side of the printed part.\nThere is a blank margin 3 cm wide at the top and at the bottom.\nThe area of the whole sheet is $A$ cm$^2$.",
     "parts": [
      {
       "label": "(a)",
       "marks": 3,
-      "text": "Find an expression for $C$ in terms of $x$.",
-      "answer": "$C = 2x^2 + \\dfrac{4000}{x}$"
+      "text": "Find an expression for $A$ in terms of $x$.\nGive your answer without brackets.",
+      "answer": "$A = 624 + 6x + \\dfrac{2400}{x}$"
      },
      {
       "label": "(b)",
       "marks": 1,
-      "text": "The table shows some values of $x$ and $C$.\nValues are given to the nearest whole number.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|} \\hline x & 6 & 8 & 10 & 12 & 14 & 16 & 18 & 20 \\\\ \\hline C & 739 & 628 & 600 & & 678 & 762 & 870 & 1000 \\\\ \\hline \\end{array}$\nUse your expression to complete the table.",
-      "answer": "$621$"
+      "text": "The table shows some values of $x$ and $A$.\nValues are given to the nearest whole number.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|} \\hline x & 10 & 12 & 15 & 20 & 25 & 30 & 35 & 40 \\\\ \\hline A & 924 & 896 & & 864 & 870 & 884 & 903 & 924 \\\\ \\hline \\end{array}$\nUse your expression to complete the table.",
+      "answer": "$874$"
      },
      {
       "label": "(c)",
       "marks": 3,
-      "text": "On the grid, draw the graph of $C$ against $x$ for $6 \\le x \\le 20$.",
-      "answer": "Smooth curve through $(6, 739)$, $(8, 628)$, $(10, 600)$, $(12, 621)$, $(14, 678)$, $(16, 762)$, $(18, 870)$, $(20, 1000)$"
+      "text": "On the grid, draw the graph of $A$ against $x$ for $10 \\le x \\le 40$.",
+      "answer": "Smooth curve through $(10, 924)$, $(12, 896)$, $(15, 874)$, $(20, 864)$, $(25, 870)$, $(30, 884)$, $(35, 903)$, $(40, 924)$"
      },
      {
       "label": "(d)",
       "marks": 2,
-      "text": "Each box is sold at a price of 50 cents for every centimetre of the length of its base.\nA box makes a profit when its selling price is more than the cost of its metal.\nBy drawing a suitable straight line on the grid, find the range of values of $x$, for $6 \\le x \\le 20$, for which a box makes a profit.",
-      "answer": "Line $C = 50x$; $12.8 < x < 20$ (accept 12.5 to 13.1)"
+      "text": "The poster is to use the smallest possible sheet of paper.\nUse your graph to find the width and the height of this sheet.",
+      "answer": "Width 24 cm, height 36 cm (from $x = 20$; accept $x$ from 19 to 21)"
      },
      {
       "label": "(e)",
       "marks": 2,
-      "text": "By drawing a tangent to your curve, find the value of $x$ for which the profit on a box is greatest.\nFind also this greatest profit.",
-      "answer": "$x \\approx 16.3$ (accept 15.5 to 17); about 38 cents (accept 30 to 45)"
+      "text": "The printed part must cover at least two-thirds of the sheet.\nBy drawing a suitable straight line on the grid, find the range of values of $x$ for which this is so.",
+      "answer": "Line $A = 900$; $11.6 < x < 34.4$ (accept 11 to 12 and 34 to 35)"
      }
     ],
-    "answer": "(a) $C = 2x^2 + \\dfrac{4000}{x}$ (b) $621$ (c) curve drawn (d) $12.8 < x < 20$ (e) $x \\approx 16.3$, about 38 cents",
+    "answer": "(a) $A = 624 + 6x + \\dfrac{2400}{x}$ (b) $874$ (c) curve drawn (d) 24 cm by 36 cm (e) $11.6 < x < 34.4$",
     "total_marks": 11,
     "topics": [
      "Algebra (Graph on Graph Paper)",
      "Graphs of Functions"
     ],
     "skills": [
-     "forming the equation of the graph from a solid: the height of an open square-based box eliminated through its fixed volume, with different costs per square centimetre for the base and the sides, $C = 2x^2 + 4000/x$",
-     "forming a selling-price line from the context, drawing it on the same grid and reading the range of x for which the line lies above the cost curve (profit)",
-     "greatest vertical gap between a line and a curve found by drawing the tangent to the curve parallel to the line"
+     "forming the equation of the graph from a rectangle with unequal margins: the printed height eliminated through its fixed area, the sheet dimensions built from both margins, the product expanded to $A = 624 + 6x + 2400/x$",
+     "reading the least value from a graph and turning the x-value back into the dimensions of the whole sheet",
+     "turning a fraction condition (printed part at least two-thirds of the sheet) into a horizontal line on the graph and reading the range of x below it"
     ],
     "needs_figure": true,
-    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed after part (c). Horizontal axis labelled x, from 6 to 20, scale 2 cm to 2 units, labelled every 2. Vertical axis labelled C, from 550 to 1000, scale 2 cm to 50 units, labelled every 50. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid.",
-    "solution": "(a) Let the height of the box be $h$ cm.\nVolume: $x^2 h = 1000$\n$h = \\dfrac{1000}{x^2}$ [M1]\nCost of the base $= 2 \\times x^2 = 2x^2$ cents\nArea of the four sides $= 4xh = 4x \\times \\dfrac{1000}{x^2} = \\dfrac{4000}{x}$ cm$^2$ [M1]\nCost of the sides $= \\dfrac{4000}{x}$ cents\n**Answer:** $C = 2x^2 + \\dfrac{4000}{x}$ [A1]\n(Check with the table: $x = 10$ gives $200 + 400 = 600$; $x = 20$ gives $800 + 200 = 1000$.)\nCommon errors: counting a lid, $C = 4x^2 + \\dfrac{4000}{x}$; leaving $h$ in the answer.\n\n(b) When $x = 12$:\n$C = 2(12)^2 + \\dfrac{4000}{12} = 288 + 333.3 = 621.3$\n**Answer:** $621$ [B1]\n\n(c) Plot the 8 points $(6, 739)$, $(8, 628)$, $(10, 600)$, $(12, 621)$, $(14, 678)$, $(16, 762)$, $(18, 870)$, $(20, 1000)$.\nJoin them with a smooth curve.\nThe curve falls to its lowest point at $x = 10$, then rises more and more steeply.\n**Answer:** curve drawn [P2 for all 8 points plotted correctly (P1 for at least 6), C1 for a smooth curve through them]\n\n(d) Selling price $= 50x$ cents\nDraw the line $C = 50x$, through $(11, 550)$ and $(20, 1000)$. [B1 for the correct line drawn]\nThe line meets the curve at $x \\approx 12.8$ and at $x = 20$.\nA box makes a profit where the line is ABOVE the curve.\n**Answer:** $12.8 < x < 20$ [B1: accept 12.5 to 13.1 for the lower value]\n(Check: $2x^2 + \\dfrac{4000}{x} = 50x$ gives $x^3 - 25x^2 + 2000 = 0$, so $x = 12.8$ or $x = 20$.)\nTempting wrong answer: $x < 12.8$, the boxes that make a loss.\n\n(e) The profit is the vertical distance from the curve up to the line.\nIt is greatest where the tangent to the curve is parallel to the line.\nSlide a ruler parallel to the line $C = 50x$ until it just touches the curve, and draw the tangent. [M1 for a tangent parallel to their line]\nThe tangent touches the curve at $x \\approx 16.3$.\nAt $x = 16.3$: the line is at about $815$ and the curve is at about $777$.\nProfit $\\approx 815 - 777 = 38$ cents\n**Answer:** $x \\approx 16.3$; greatest profit about 38 cents [A1 for both: accept 15.5 to 17 and 30 to 45 cents]\nTempting wrong answer: $x = 10$, the cheapest box — it costs 600 cents but sells for only 500 cents, a loss.",
+    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed after part (c). Horizontal axis labelled x, from 10 to 40, scale 2 cm to 5 units, labelled every 5. Vertical axis labelled A, from 860 to 930, scale 2 cm to 10 units, labelled every 10. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid.",
+    "solution": "(a) Height of the printed part $= \\dfrac{600}{x}$ cm [M1]\nWidth of the sheet $= x + 2 + 2 = x + 4$\nHeight of the sheet $= \\dfrac{600}{x} + 3 + 3 = \\dfrac{600}{x} + 6$\n$A = (x + 4)\\left(\\dfrac{600}{x} + 6\\right)$ [M1]\n$A = 600 + 6x + \\dfrac{2400}{x} + 24$\n**Answer:** $A = 624 + 6x + \\dfrac{2400}{x}$ [A1]\n(Check with the table: $x = 20$ gives $624 + 120 + 120 = 864$.)\nCommon errors: adding only one margin, $(x + 2)\\left(\\dfrac{600}{x} + 3\\right)$; using 600 for the area of the whole sheet.\n\n(b) When $x = 15$:\n$A = 624 + 6(15) + \\dfrac{2400}{15} = 624 + 90 + 160$\n**Answer:** $874$ [B1]\n\n(c) Plot the 8 points $(10, 924)$, $(12, 896)$, $(15, 874)$, $(20, 864)$, $(25, 870)$, $(30, 884)$, $(35, 903)$, $(40, 924)$.\nJoin them with a smooth curve.\nThe curve falls steeply to its lowest point at $x = 20$, then rises slowly.\n**Answer:** curve drawn [P2 for all 8 points plotted correctly (P1 for at least 6), C1 for a smooth curve through them]\n\n(d) The lowest point of the curve is at $x = 20$. [B1: accept 19 to 21]\nWidth of the sheet $= 20 + 4 = 24$ cm\nHeight of the sheet $= \\dfrac{600}{20} + 6 = 36$ cm\n**Answer:** width 24 cm, height 36 cm [B1, follow through from their $x$]\nTempting wrong answer: 20 cm by 30 cm, the printed part and not the sheet.\n\n(e) Printed part $\\ge \\dfrac{2}{3}$ of the sheet:\n$600 \\ge \\dfrac{2}{3}A$\n$A \\le 900$\nDraw the line $A = 900$. [B1 for the correct line drawn]\nThe line meets the curve at $x \\approx 11.6$ and $x \\approx 34.4$.\nThe curve is below the line between these values.\n**Answer:** $11.6 < x < 34.4$ [B1: accept 11 to 12 and 34 to 35]\n(Check: $624 + 6x + \\dfrac{2400}{x} = 900$ gives $x^2 - 46x + 400 = 0$, so $x = 11.6$ or $x = 34.4$.)\nTempting wrong answer: the line $A = 400$, two-thirds of 600 — it is the sheet that is the whole, not the printed part.",
     "syllabus_check": "4052 Functions and graphs: graph of a cubic function drawn from a table of values on a grid, and solving an equation or inequality by drawing a suitable straight line on the same grid (as GCE 2024 P2 Q4 and GCE 2025 P1 Q26). Reading the number of solutions of f(x) = k from where a horizontal line meets the drawn curve uses only the graph; no calculus is needed or expected (the turning values are read from the curve). Transferring the result to x^3 - 6x^2 + 8x = p is a linear rearrangement (algebraic manipulation). Nothing outside 4052.",
     "originality_note": "Set 1 P2 Q3 drew y = x/2 + 6/x (a reciprocal-plus-linear curve), estimated a gradient by a tangent at the point where y = 4.5 and drew a line to solve a quadratic EQUATION; Set 1 P2 Q4 was exponentials. This question uses a positive cubic, asks for no tangent, and replaces 'solve the equation' with a scattered cubic INEQUALITY whose answer is two intervals, then asks how many times a horizontal line meets the curve inside the drawn domain (the end point, not the turning point, fixes the lower bound) and carries that range to a second cubic. It differs from GCE 2024 P2 Q4 (negative cubic, 'explain why only one solution', line solves an equation), GCE 2025 P1 Q26 (pre-drawn negative cubic, inequality only), GCE 2023 P2 Q4 (reciprocal-square curve, find A and B from a drawn line) and GCE 2019 P2 Q4 (read y > 4 directly, show that a line gives a cubic). No earlier Set has asked a number-of-solutions range or an inequality solved by drawing a line."
    },
@@ -1002,7 +1002,7 @@
    ],
    "edited": {
     "at": "2026-10-02",
-    "note": "whole question replaced twice on 2 Oct 2026 (Adrian: students form the equation themselves; then \"slightly more challenging\") — open box, C = 2x^2 + 4000/x; not blind-solved or moderated, checked by hand"
+    "note": "whole question replaced three times on 2 Oct 2026 (Adrian: students form the equation themselves; \"slightly more challenging\"; then \"something different\" from the open box) — poster with margins, A = 624 + 6x + 2400/x; not blind-solved or moderated, checked by hand"
    }
   },
   {
