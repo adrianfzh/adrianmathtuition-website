@@ -1,0 +1,21 @@
+{
+  "name": "seeded-argument",
+  "kind": "continuous_writing",
+  "question": "'Young people today spend too much time on their phones.' How far do you agree?",
+  "level": "Sec 4",
+  "clean": "clean.txt",
+  "plants": [
+    { "find": "Many adults complain", "replace": "Many adults complains", "code": "sva" },
+    { "find": "a phone can waste a great deal of time", "replace": "a phone can waste a great deal of times", "code": "word_form" },
+    { "find": "one video quickly becomes twenty", "replace": "one video quickly became twenty", "code": "tense" },
+    { "find": "Teachers have noticed that tired students make more careless mistakes", "replace": "Teachers have noticed that tired students do more careless mistakes", "code": "collocation" },
+    { "find": "the same phone is also a useful tool", "replace": "the same phone is also useful tool", "code": "article" },
+    { "find": "We could work on it from our own homes, and nobody", "replace": "We could work on it from our own homes, nobody", "code": "comma_splice" },
+    { "find": "to listen to the news", "replace": "to listen the news", "code": "preposition" },
+    { "find": "I disagree with this view.", "replace": "That idea is super dumb, to be honest.", "code": "register" },
+    { "find": "It is better to learn good habits now, while parents and teachers can still guide us.", "replace": "Better to learn good habits now. While parents and teachers can still guide us.", "code": "fragment" },
+    { "find": "ten o'clock at night", "replace": "ten oclock at night", "code": "punctuation" },
+    { "find": "they feel less anxious", "replace": "they feel less anxios", "code": "spelling" },
+    { "find": "use it with care", "replace": "use it with care in this day and age", "code": "vague" }
+  ]
+}

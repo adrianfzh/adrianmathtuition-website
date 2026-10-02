@@ -1,0 +1,21 @@
+{
+  "name": "seeded-email",
+  "kind": "situational_writing",
+  "question": "You are the president of the student council. Write an email to your principal, Mr Lim, proposing a Reading Corner in the school canteen. In your email you should: explain why the corner is needed; describe how it would work; explain how the cost would be kept low; say how the school would benefit. Write in a formal and persuasive tone.",
+  "level": "Sec 4",
+  "clean": "clean.txt",
+  "plants": [
+    { "find": "We believe it would encourage", "replace": "We believe it would encouraged", "code": "tense" },
+    { "find": "many students finish their meals", "replace": "many students finishes their meals", "code": "sva" },
+    { "find": "a few simply wait for the bell", "replace": "a few simply wait the bell", "code": "preposition" },
+    { "find": "The library is on the fourth floor, so very few", "replace": "The library is on the fourth floor, very few", "code": "comma_splice" },
+    { "find": "where there is an unused space", "replace": "where there is unused space that nobody use", "code": "sva" },
+    { "find": "The shelves could hold about two hundred books.", "replace": "The shelves could hold like a ton of books.", "code": "register" },
+    { "find": "keep the corner tidy", "replace": "keep the corner tidyness", "code": "word_form" },
+    { "find": "The cost would be low.", "replace": "The cost would be low, which is nice.", "code": "vague" },
+    { "find": "has agreed to give us", "replace": "has aggreed to give us", "code": "spelling" },
+    { "find": "from a donation drive in March", "replace": "from a donation drive in march", "code": "punctuation" },
+    { "find": "We would therefore only need funds for the two shelves, which cost about three hundred dollars in total.", "replace": "Therefore only funds for the two shelves. About three hundred dollars in total.", "code": "fragment" },
+    { "find": "would see books every day", "replace": "would see the books every days", "code": "word_form" }
+  ]
+}

@@ -1,0 +1,214 @@
+{
+ "set": "seeded-argument",
+ "rows": [
+  {
+   "which": "clean",
+   "id": "50eb8eb4-aaf0-4a86-8b23-3e3f1b99c301",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 20,
+    "max": 24
+   },
+   "marks": [
+    {
+     "start": 546,
+     "end": 625,
+     "code": null,
+     "quote": "Teachers have noticed that tired students make more careless mistakes in class."
+    }
+   ]
+  },
+  {
+   "which": "seeded",
+   "id": "3c07db91-5e8f-4cd2-b827-fe6bc6028cc3",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 20,
+    "max": 24
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 21,
+     "code": "sva",
+     "quote": "Many adults complains"
+    },
+    {
+     "start": 251,
+     "end": 272,
+     "code": "word_form",
+     "quote": "a great deal of times"
+    },
+    {
+     "start": 325,
+     "end": 356,
+     "code": "tense",
+     "quote": "one video quickly became twenty"
+    },
+    {
+     "start": 589,
+     "end": 614,
+     "code": "collocation",
+     "quote": "do more careless mistakes"
+    },
+    {
+     "start": 650,
+     "end": 669,
+     "code": "article",
+     "quote": "is also useful tool"
+    },
+    {
+     "start": 790,
+     "end": 803,
+     "code": "comma_splice",
+     "quote": "homes, nobody"
+    },
+    {
+     "start": 895,
+     "end": 910,
+     "code": "preposition",
+     "quote": "listen the news"
+    },
+    {
+     "start": 1083,
+     "end": 1107,
+     "code": "register",
+     "quote": "super dumb, to be honest"
+    },
+    {
+     "start": 1301,
+     "end": 1319,
+     "code": "fragment",
+     "quote": "now. While parents"
+    },
+    {
+     "start": 1505,
+     "end": 1511,
+     "code": "punctuation",
+     "quote": "oclock"
+    },
+    {
+     "start": 1655,
+     "end": 1661,
+     "code": "spelling",
+     "quote": "anxios"
+    },
+    {
+     "start": 1873,
+     "end": 1892,
+     "code": "vague",
+     "quote": "in this day and age"
+    }
+   ]
+  },
+  {
+   "which": "seeded2",
+   "id": "9fb1d874-3500-4cae-b7db-339a7006ca1c",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 20,
+    "max": 24
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 21,
+     "code": "sva",
+     "quote": "Many adults complains"
+    },
+    {
+     "start": 251,
+     "end": 272,
+     "code": "word_form",
+     "quote": "a great deal of times"
+    },
+    {
+     "start": 325,
+     "end": 356,
+     "code": "tense",
+     "quote": "one video quickly became twenty"
+    },
+    {
+     "start": 589,
+     "end": 614,
+     "code": "collocation",
+     "quote": "do more careless mistakes"
+    },
+    {
+     "start": 650,
+     "end": 669,
+     "code": "article",
+     "quote": "is also useful tool"
+    },
+    {
+     "start": 777,
+     "end": 803,
+     "code": "comma_splice",
+     "quote": "from our own homes, nobody"
+    },
+    {
+     "start": 895,
+     "end": 910,
+     "code": "preposition",
+     "quote": "listen the news"
+    },
+    {
+     "start": 1070,
+     "end": 1108,
+     "code": "register",
+     "quote": "That idea is super dumb, to be honest."
+    },
+    {
+     "start": 1301,
+     "end": 1319,
+     "code": "fragment",
+     "quote": "now. While parents"
+    },
+    {
+     "start": 1505,
+     "end": 1511,
+     "code": "punctuation",
+     "quote": "oclock"
+    },
+    {
+     "start": 1655,
+     "end": 1661,
+     "code": "spelling",
+     "quote": "anxios"
+    },
+    {
+     "start": 1873,
+     "end": 1892,
+     "code": "vague",
+     "quote": "in this day and age"
+    }
+   ]
+  }
+ ],
+ "verdict": {
+  "pass": true,
+  "reasons": [],
+  "planted": 12,
+  "found": 12,
+  "rightCode": 12,
+  "extra": 0,
+  "cleanMarks": 1,
+  "second": {
+   "found": 12,
+   "rightCode": 12,
+   "extra": 0,
+   "bothFound": 12,
+   "range1": {
+    "min": 20,
+    "max": 24
+   },
+   "range2": {
+    "min": 20,
+    "max": 24
+   }
+  }
+ }
+}

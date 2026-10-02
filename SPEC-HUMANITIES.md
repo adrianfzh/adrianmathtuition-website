@@ -9,6 +9,21 @@ level schemes are in [`docs/humanities/social-studies-level-schemes.md`](docs/hu
 - A closed switch (`HUMANITIES_OPEN_TO_STUDENTS`, admin + the demo student only).
 - Launch as **feedback with a level range, never a mark**.
 
+> **H1 BUILT 2 Oct 2026 (preview only, switch closed).** 10 own Social Studies source sets, 30 questions
+> (`data/humanities/social-studies/`), built on the scheme draft's defaults — the four decisions
+> in the schemes doc are still Adrian's to answer.
+> - App: `/app/humanities` (Home · a question page · the report · My answers), behind
+>   `HUMANITIES_OPEN_TO_STUDENTS` (`false`; Adrian's cookie + the demo student see it).
+> - Marker: bot `ai/humanities-marker.js` + `lib/humanities-report.js`, `POST /api/humanities-mark` —
+>   two blind reads, a third when they differ, held when all differ. A level range, never a mark.
+> - Routes: `/api/portal/humanities` (student), `/api/admin/humanities` (list + the bench's hand-in);
+>   table `humanities_runs`; one door `lib/humanities-submit.ts`.
+> - Bench: `npx tsx scripts/humanities-bench/run.ts --base <url>` (rules in `lib/humanities-bench.ts`).
+>   First run 2 Oct 2026, 82 answers, US$3.53: seeded 45/46 at the written level (the other a 1–2
+>   range on a Level 2), none two off · the same answer twice 12/12 · truth-free 24/24. **PASS** —
+>   with two limits: the seeded answers and the marker come from the same model family, and the
+>   repeat reads were minutes apart, not days. Only sets 1–4 carry seeded answers.
+
 ## 1. What the exams are (SEAB 2026 syllabuses, read 2 Oct 2026)
 
 | Subject | Code | Papers | How it is marked |

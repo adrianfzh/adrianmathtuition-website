@@ -1,0 +1,226 @@
+{
+ "set": "seeded-email",
+ "rows": [
+  {
+   "which": "clean",
+   "id": "4a9c42cc-9564-427a-a7d7-51ae63a92351",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 24,
+    "max": 28
+   },
+   "marks": [
+    {
+     "start": 1138,
+     "end": 1165,
+     "code": "tense",
+     "quote": "The benches can be borrowed"
+    }
+   ]
+  },
+  {
+   "which": "seeded",
+   "id": "5239d4b2-7b34-4060-b033-e100b7270e24",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 16,
+    "max": 20
+   },
+   "marks": [
+    {
+     "start": 137,
+     "end": 156,
+     "code": "word_form",
+     "quote": "it would encouraged"
+    },
+    {
+     "start": 224,
+     "end": 246,
+     "code": "sva",
+     "quote": "many students finishes"
+    },
+    {
+     "start": 364,
+     "end": 377,
+     "code": "preposition",
+     "quote": "wait the bell"
+    },
+    {
+     "start": 379,
+     "end": 432,
+     "code": "comma_splice",
+     "quote": "The library is on the fourth floor, very few students"
+    },
+    {
+     "start": 663,
+     "end": 673,
+     "code": "sva",
+     "quote": "nobody use"
+    },
+    {
+     "start": 698,
+     "end": 717,
+     "code": "register",
+     "quote": "like a ton of books"
+    },
+    {
+     "start": 888,
+     "end": 912,
+     "code": "word_form",
+     "quote": "keep the corner tidyness"
+    },
+    {
+     "start": 936,
+     "end": 951,
+     "code": "register",
+     "quote": ", which is nice"
+    },
+    {
+     "start": 989,
+     "end": 996,
+     "code": "spelling",
+     "quote": "aggreed"
+    },
+    {
+     "start": 1103,
+     "end": 1111,
+     "code": "punctuation",
+     "quote": "in march"
+    },
+    {
+     "start": 1243,
+     "end": 1284,
+     "code": "fragment",
+     "quote": "Therefore only funds for the two shelves."
+    },
+    {
+     "start": 1285,
+     "end": 1322,
+     "code": "fragment",
+     "quote": "About three hundred dollars in total."
+    },
+    {
+     "start": 1451,
+     "end": 1461,
+     "code": "word_form",
+     "quote": "every days"
+    }
+   ]
+  },
+  {
+   "which": "seeded2",
+   "id": "2b6839cf-b56a-457c-9e21-c22ca0c37513",
+   "status": "marked",
+   "held_reason": null,
+   "total": {
+    "min": 16,
+    "max": 20
+   },
+   "marks": [
+    {
+     "start": 137,
+     "end": 156,
+     "code": "word_form",
+     "quote": "it would encouraged"
+    },
+    {
+     "start": 224,
+     "end": 246,
+     "code": "sva",
+     "quote": "many students finishes"
+    },
+    {
+     "start": 357,
+     "end": 377,
+     "code": "preposition",
+     "quote": "simply wait the bell"
+    },
+    {
+     "start": 401,
+     "end": 432,
+     "code": "comma_splice",
+     "quote": "fourth floor, very few students"
+    },
+    {
+     "start": 663,
+     "end": 673,
+     "code": "sva",
+     "quote": "nobody use"
+    },
+    {
+     "start": 693,
+     "end": 717,
+     "code": "register",
+     "quote": "hold like a ton of books"
+    },
+    {
+     "start": 888,
+     "end": 912,
+     "code": "word_form",
+     "quote": "keep the corner tidyness"
+    },
+    {
+     "start": 933,
+     "end": 952,
+     "code": "register",
+     "quote": "low, which is nice."
+    },
+    {
+     "start": 989,
+     "end": 996,
+     "code": "spelling",
+     "quote": "aggreed"
+    },
+    {
+     "start": 1103,
+     "end": 1111,
+     "code": "punctuation",
+     "quote": "in march"
+    },
+    {
+     "start": 1243,
+     "end": 1284,
+     "code": "fragment",
+     "quote": "Therefore only funds for the two shelves."
+    },
+    {
+     "start": 1285,
+     "end": 1322,
+     "code": "fragment",
+     "quote": "About three hundred dollars in total."
+    },
+    {
+     "start": 1451,
+     "end": 1461,
+     "code": "word_form",
+     "quote": "every days"
+    }
+   ]
+  }
+ ],
+ "verdict": {
+  "pass": true,
+  "reasons": [],
+  "planted": 12,
+  "found": 12,
+  "rightCode": 10,
+  "extra": 0,
+  "cleanMarks": 1,
+  "second": {
+   "found": 12,
+   "rightCode": 10,
+   "extra": 0,
+   "bothFound": 12,
+   "range1": {
+    "min": 16,
+    "max": 20
+   },
+   "range2": {
+    "min": 16,
+    "max": 20
+   }
+  }
+ }
+}
