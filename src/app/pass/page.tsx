@@ -30,6 +30,7 @@ import {
 import { passCheckoutUrl } from '@/lib/portal-join';
 import { createServiceClient } from '@/lib/supabase-server';
 import SignOutButton from '@/app/app/signout-button';
+import DeleteAccount from './delete-account';
 
 export const dynamic = 'force-dynamic';
 
@@ -124,7 +125,7 @@ export default async function PassPage() {
             routes check the session only, never a pass. */}
         {offboarded && !renewing && (
           <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
-            <p className="font-bold text-navy mb-1">Take your papers with you</p>
+            <p className="font-bold text-navy mb-1">Download your papers</p>
             <p className="text-sm text-gray-600 mb-4">Your marked papers are yours. Download them any time — no pass needed.</p>
             <a
               href="/api/portal/marked-papers-zip"
@@ -135,6 +136,7 @@ export default async function PassPage() {
             <a href="/api/portal/export" className="block text-center text-sm text-navy font-semibold underline underline-offset-2 mt-3">
               Download my other data
             </a>
+            <DeleteAccount />
           </div>
         )}
 

@@ -22,6 +22,8 @@ import { markedPdfFilename, contentDisposition } from '@/lib/marked-pdf-filename
 import { displayPaperName } from '@/lib/paper-display-name';
 import { ZipStoreWriter, uniqueZipName } from '@/lib/zip-store';
 import { sgtTodayISO } from '@/lib/sgt';
+import { sendTelegram } from '@/lib/telegram';
+import { leaverNotice } from '@/lib/leaver-notice';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -49,6 +51,12 @@ export async function GET() {
   const rows = (data ?? []) as Row[];
 
   const name = account.display_name ?? null;
+
+  // Tell Adrian (2 Oct 2026: "send me telegram notifications if students download
+  // their papers or delete their accounts"). Never blocks the download.
+  try {
+    await sendTelegram(leaverNotice('download', { name, email: account.email, papers: rows.length, left: Boolean(account.deactivated_at) }));
+  } catch (e) { console.error('[marked-papers-zip] notice failed:', (e as Error).message); }
   const writer = new ZipStoreWriter();
   const used = new Set<string>();
   const missed: string[] = [];
