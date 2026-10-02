@@ -88,6 +88,7 @@ const STYLES = `
 
   .section-h{text-align:center;font-weight:700;font-size:12.5pt;letter-spacing:.5px;margin:16px 0 12px}
   .q{margin-bottom:14px}
+  .q-keep{break-inside:avoid;page-break-inside:avoid}
   .q-row{display:flex;gap:10px;break-inside:avoid;page-break-inside:avoid} /* keep a question's text, figure and [marks] on one page; the working space below may still break */
   .q-num{font-weight:700;min-width:24px;font-size:12.5pt}
   .q-body{flex:1}
@@ -177,10 +178,13 @@ function questionsHtml(input: PrelimInput): string {
       // at 130 mm, which gave a 4-mark question 36 mm; and a construction question gets
       // one 15 cm+ area (Adrian, 28 Sep 2026: "make sure adequate space is given",
       // "we need space for construction for EM set 1 paper 1").
-      const mm = isConstructionQuestion(q.text, []) ? constructionSpaceMm(q.marks) : workingSpaceMm(q.marks);
+      const construction = isConstructionQuestion(q.text, []);
+      const mm = construction ? constructionSpaceMm(q.marks) : workingSpaceMm(q.marks);
+      // A construction question and its drawing area never split across pages (3 Oct 2026).
+      const keep = construction && input.workingSpace ? ' q-keep' : '';
       const space = input.workingSpace ? `<div class="q-space" style="min-height:${mm}mm"></div>` : '';
       return `
-    ${heading}<div class="q">
+    ${heading}<div class="q${keep}">
       <div class="q-row">
         <div class="q-num">${q.pos}</div>
         <div class="q-body">

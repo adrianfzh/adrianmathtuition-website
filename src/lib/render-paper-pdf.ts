@@ -42,7 +42,7 @@ const ANSWER_ORANGE = '#843C0C';
 // v3 (2026-08-31): "End of Paper" after the last question.
 // v4 (2026-09-05): KaTeX inlined (was jsDelivr CDN 0.16.9, now the installed
 // 0.16.45 package) — cached PDFs must rebuild once to pick up the version bump.
-export const PAPER_PDF_RENDER_VERSION = 16;   // 16: a grid prints after the part that asks for the graph; a table-of-values array prints as a table (29 Sep 2026); 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
+export const PAPER_PDF_RENDER_VERSION = 17;   // 17: a construction question and its drawing area stay on ONE page (3 Oct 2026); 16: a grid prints after the part that asks for the graph; a table-of-values array prints as a table (29 Sep 2026); 15: a question's own figure width (gen_meta.figure.width_mm) (29 Sep 2026); 14: "Mark scheme for (c):" dropped too (29 Sep 2026); 13: a Mark scheme or Alternative line mid-paragraph is handled too (29 Sep 2026); 12: solutions read cleanly — mark notes shrink to codes, no Mark scheme paragraph, Another way boxed (29 Sep 2026); 11: answer key in black, a grid at its true printed width, a construction question gets one 15 cm+ area after its last part instead of strips (28 Sep 2026); 10: **bold** in question text + part figures stored as a JSON list (26 Sep 2026); 9: optional section heading above a question (H2 Paper 2's Section A / B, 26 Sep 2026); 8: no coverage banner on the printed paper or answers (26 Sep 2026); 7: figure caps 80/100 mm wide, 80 mm tall (21 Sep 2026, second pass); 6: figures shrink in proportion and cap at 110/130 mm (21 Sep 2026); 5: marks beside the last line, no parent total over marked sub-parts (13 Sep 2026)
 
 export interface PaperPdfQuestion {
   /** Printed question number (original or resequenced by the caller). */
@@ -230,6 +230,10 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
   const parts = partsForHtml.map((p) => partHtml(p, workingSpace && !construction, q.uncappedFigures === true)).join('');
   const stemSpace = workingSpace && !inParts && !construction ? spacer(q.marks) : '';
   const constructionSpace = construction ? `<div class="pp-space" style="height:${constructionSpaceMm(q.marks)}mm"></div>` : '';
+  // The question and its drawing area are ONE unbreakable unit: a 15 cm block split by a
+  // page break left 4 cm under the question and the rest overleaf, no room for the
+  // triangle (Adrian, 3 Oct 2026, E Math Set 1 P1 Q7). It starts a new page when needed.
+  const keep = construction ? ' pp-keep' : '';
   // Stem first, then figures: stems say "the diagram below shows…". The
   // stem + figures travel as one .pp-intro unit so a page break can never
   // strand a stem on the page before its diagram.
@@ -240,7 +244,7 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
     // break-after:avoid alone let that happen when the question was taller than the
     // space left (26 Sep 2026). The number is positioned inside that first block.
     return `
-    <li class="pp-q">
+    <li class="pp-q${keep}">
       <div class="pp-keep">
         <div class="pp-section">${esc(q.sectionHeading)}</div>
         <div class="pp-q-body pp-q-headed"><span class="pp-qnum">${esc(q.qnum)}</span>${intro}</div>
@@ -249,7 +253,7 @@ function questionHtml(q: PaperPdfQuestion, workingSpace: boolean): string {
     </li>`;
   }
   return `
-    <li class="pp-q">
+    <li class="pp-q${keep}">
       <span class="pp-qnum">${esc(q.qnum)}</span>
       <div class="pp-q-body">${intro}${parts}${stemSpace}${constructionSpace}</div>
     </li>`;
