@@ -372,54 +372,20 @@ export default function MarkPaperPage() {
   // 10 Sep 2026): a re-mark keeps its paper's created_at and sat pages down
   // the dated list while it ran. Merged ahead of the window — lib/runs-list.
   const [inMotionRuns, setInMotionRuns] = useState<Run[]>([]);
-  // 🖥 Mac plan only (11 Sep 2026, lib/marking-settings.ts): the queue's spend
-  // switch. ON = nothing goes to the API — the worker marks nothing itself, every
-  // paper waits for a Mac slot (⚡ Mark now / ☁️ Batch now rows included). The
-  // bot reads the same Airtable row each tick, so a flip is live in ~30 s.
-  const [macOnly, setMacOnly] = useState<{ on: boolean; at: string | null } | null>(null);
-  const [macOnlyBusy, setMacOnlyBusy] = useState(false);
+  // 🖥 Mac plan only and ⏻ the per-account switches moved to /admin/switches on 2 Oct 2026
+  // (Adrian: "have a page just for toggles") — their routes are unchanged.
   // 🧪 Science tab for students (11 Sep 2026): the release switch — same row
   // shape, same route; lib/portal-beta scienceMarkingOpen() reads it per request.
   const [scienceOpen, setScienceOpen] = useState<{ on: boolean; at: string | null } | null>(null);
   const [scienceBusy, setScienceBusy] = useState(false);
-  // ⏻ Slots by account (13 Sep 2026, lib/slot-accounts.ts): one switch per Claude
-  // account the slots spend. OFF = the picker never chooses that account (a paper
-  // or sheet in progress finishes). Every worker asks the site before it claims,
-  // so a flip is live within one tick, no deploy. 22 Sep 2026: every slot holds all
-  // three logins and picks the emptiest before each job; the picker posts what it
-  // read, shown here as the 5-hour / 7-day meters.
-  type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null };
-  type SlotAccountRow = { email: string; key: string; label: string; on: boolean; at: string | null; usage: SlotUsage | null };
-  const [slotAccounts, setSlotAccounts] = useState<SlotAccountRow[] | null>(null);
-  const [slotBusy, setSlotBusy] = useState<string | null>(null);
   useEffect(() => {
     fetch('/api/admin/marking-settings', { headers: authHeaders }).then(async r => {
       if (!r.ok) return;
       const d = await r.json();
-      if (d?.macOnly) setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
       if (d?.scienceOpen) setScienceOpen({ on: !!d.scienceOpen.on, at: d.scienceOpen.at ?? null });
-    }).catch(() => {});
-    fetch('/api/admin/slot-accounts', { headers: authHeaders }).then(async r => {
-      if (!r.ok) return;
-      const d = await r.json();
-      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  async function flipSlotAccount(email: string, on: boolean) {
-    if (slotBusy) return;
-    setSlotBusy(email);
-    try {
-      const r = await fetch('/api/admin/slot-accounts', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, on }) });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      if (Array.isArray(d?.accounts)) setSlotAccounts(d.accounts);
-    } catch (e) {
-      alert(`Could not change the switch: ${(e as Error).message}`);
-    } finally {
-      setSlotBusy(null);
-    }
-  }
   async function flipScienceOpen() {
     if (!scienceOpen || scienceBusy) return;
     const next = !scienceOpen.on;
@@ -436,24 +402,6 @@ export default function MarkPaperPage() {
       alert(`Could not change the switch: ${(e as Error).message}`);
     } finally {
       setScienceBusy(false);
-    }
-  }
-  async function flipMacOnly() {
-    if (!macOnly || macOnlyBusy) return;
-    const next = !macOnly.on;
-    if (!window.confirm(next
-      ? 'Mac plan only: nothing goes to the API until you switch it back — no ⚡ full-price runs, no ☁️ batch, no takeovers. Papers wait for a Mac slot. Turn it on?'
-      : 'Back to the normal split: the Mac gets a head start, the worker takes the rest. Turn Mac-only off?')) return;
-    setMacOnlyBusy(true);
-    try {
-      const r = await fetch('/api/admin/marking-settings', { method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify({ macOnly: next }) });
-      const d = await r.json();
-      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      setMacOnly({ on: !!d.macOnly.on, at: d.macOnly.at ?? null });
-    } catch (e) {
-      alert(`Could not change the switch: ${(e as Error).message}`);
-    } finally {
-      setMacOnlyBusy(false);
     }
   }
   // ▶️ Auto-release (8 Sep 2026; moved here from the retired desk 30 Sep 2026):
@@ -1792,81 +1740,17 @@ export default function MarkPaperPage() {
         </div>
       )}
 
-      {/* 🖥 Mac plan only — the queue's spend switch (11 Sep 2026). */}
-      {macOnly && (
-        <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 12, background: macOnly.on ? '#ecfeff' : undefined, borderColor: macOnly.on ? '#a5f3fc' : undefined }} data-mac-only={macOnly.on ? 'on' : 'off'}>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700 }}>🖥 Mac plan only{macOnly.on ? ' — ON' : ''}</div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {macOnly.on
-                ? 'Nothing goes to the API: no ⚡ full-price runs, no ☁️ batch, no takeovers of a quiet Mac. Every paper waits for a Mac slot — ⚡ Mark now and ☁️ Batch now rows too.'
-                : 'Off: the normal split — the Mac gets a head start on each paper, the worker takes what it does not pick up.'}
-              {macOnly.at ? ` · since ${new Date(macOnly.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-            </div>
-          </div>
-          <button
-            type="button" role="switch" aria-checked={macOnly.on} aria-label="Mac plan only" disabled={macOnlyBusy} onClick={flipMacOnly}
-            style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: macOnly.on ? '#0e7490' : '#d1d5db', opacity: macOnlyBusy ? 0.5 : 1, flexShrink: 0 }}
-          >
-            <span style={{ position: 'absolute', top: 4, left: macOnly.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-          </button>
-        </div>
-      )}
+      {/* 🎚 The switches (Mac plan only, the plan accounts, the worker's jobs) live on
+          their own page since 2 Oct 2026 — one line here so the old habit still finds them. */}
+      <a href="/admin/switches" style={{ ...card, display: 'block', fontSize: 13, color: '#4b5563', textDecoration: 'none' }} data-switches-link>
+        🎚 <b>Switches</b> — Mac plan only, the plan accounts and the worker&apos;s jobs are on their own page now →
+      </a>
 
       {/* ▶️ Auto-release and 🧪 Science tab for students: their switch cards sat here
           until 1 Oct 2026 (Adrian: "we can remove auto release toggle and science tab
           toggle > they are done"). Both settings still exist and are still read — the
           desk-state auto-release switch and the Airtable `science_marking_open` row
           (POST /api/admin/marking-settings {scienceOpen}) — only the cards are gone. */}
-
-      {/* ⏻ Slots by account — one switch per Claude account the Mac slots spend (13 Sep 2026). */}
-      {slotAccounts && (
-        <div style={card} data-slot-accounts>
-          <div style={{ fontWeight: 700 }}>⏻ Marking &amp; sheet slots, by account</div>
-          <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2, marginBottom: 8 }}>
-            Every slot picks the emptiest account before each job. Off = never picked; whatever a slot is holding finishes. Live within one tick (30 s marking, 2 min sheets).
-          </div>
-          {slotAccounts.map(a => (
-            <div key={a.email} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderTop: '1px solid #f3f4f6' }} data-slot-account={a.key} data-on={a.on ? 'on' : 'off'}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: 13 }}>{a.email}{a.on ? '' : ' — OFF'}</div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>
-                  {a.label}
-                  {a.at ? ` · ${a.on ? 'on' : 'off'} since ${new Date(a.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : ''}
-                </div>
-                {a.usage ? (() => {
-                  const u = a.usage;
-                  const stale = Date.now() - Date.parse(u.at) > 6 * 3600_000;
-                  const sgt = (iso: string | null) => iso ? new Date(iso).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', weekday: 'short', hour: '2-digit', minute: '2-digit' }) : null;
-                  const meter = (v: number | null, label: string, resets: string | null) => (
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }} title={resets ? `resets ${sgt(resets)}` : undefined}>
-                      <span style={{ width: 64, height: 6, borderRadius: 3, background: '#e5e7eb', overflow: 'hidden', display: 'inline-block' }}>
-                        <span style={{ display: 'block', height: '100%', width: `${v ?? 0}%`, background: (v ?? 0) >= 90 ? '#dc2626' : (v ?? 0) >= 70 ? '#f59e0b' : '#16a34a' }} />
-                      </span>
-                      {label} {v === null ? '?' : `${Math.round(v)}%`}
-                    </span>
-                  );
-                  return (
-                    <div data-slot-usage style={{ fontSize: 12, color: stale ? '#9ca3af' : '#374151', marginTop: 4, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-                      {meter(u.five_hour, '5 h', u.resets_5h)}
-                      {meter(u.seven_day, 'week', u.resets_7d)}
-                      <span style={{ color: '#9ca3af' }}>read {new Date(u.at).toLocaleString('en-SG', { timeZone: 'Asia/Singapore', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}{u.from ? ` by ${u.from}` : ''}{stale ? ' (old)' : ''}</span>
-                    </div>
-                  );
-                })() : (
-                  <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>no usage reading yet</div>
-                )}
-              </div>
-              <button
-                type="button" role="switch" aria-checked={a.on} aria-label={`Slots on ${a.email}`} disabled={slotBusy !== null} onClick={() => flipSlotAccount(a.email, !a.on)}
-                style={{ position: 'relative', width: 48, height: 28, borderRadius: 999, border: 'none', cursor: 'pointer', background: a.on ? '#4f46e5' : '#d1d5db', opacity: slotBusy === a.email ? 0.5 : 1, flexShrink: 0 }}
-              >
-                <span style={{ position: 'absolute', top: 4, left: a.on ? 24 : 4, width: 20, height: 20, borderRadius: 999, background: '#fff', transition: 'left .15s' }} />
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
 
       {recentRuns.length > 0 && (
         <details ref={historyRef} style={card}>

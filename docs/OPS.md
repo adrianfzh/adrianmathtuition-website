@@ -338,3 +338,31 @@ workers.** A desktop-app session runs as whoever is signed into the app, which m
 differ from the CLI's keychain login; when they differ the two draw on separate
 plan quotas, and a heavy interactive session does not eat the markers' 5-hour
 window. Do not assume they share a plan without checking both.
+
+## Switches — one page, `/admin/switches` (2 Oct 2026)
+
+Adrian: *"can you put toggles for pdf extraction, twins extraction and whatever other worker
+jobs there are together with the toggles for accounts … have a page just for toggles?"*
+
+| Switch | Stored in | Read by | Off means |
+|---|---|---|---|
+| 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
+| Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
+| Worker jobs ×14 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+
+- **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
+  share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `subject-retag`,
+  `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `worksheets`,
+  `proposals`, `flagjudge`. `prune` (disk hygiene) is never switchable.
+- **A switch stops new work only.** A run in flight finishes. A timed job switched back on runs
+  its latest missed slot once (the scheduler's stamp rule).
+- **Fail-safe direction.** No entry = on. The route answers a failed read with 502 and NO `off`
+  list, and the worker keeps the last list it read, so a job Adrian parked never restarts because
+  Airtable blinked. A freshly booted worker that cannot reach the site runs everything.
+- **Not switchable here, on purpose:** marking seats and sheet slots (a stray tap must never
+  park a student's paper), auto-release and the Science tab (settled, their cards were removed
+  1 Oct 2026), and every `*_OPEN_TO_STUDENTS` constant (code, `lib/portal-beta.ts`).
+- **A job that is OFF still goes amber on the board above** once its rhythm lapses — the amber
+  is true (it is not running); the Switches page says why.
+- Adding a worker job: a line in `WORKER_JOBS` + `job_on <key>` at its start site in the bot's
+  `worker/fly/jobs.sh`. Each flip sends one line to the ops topic.

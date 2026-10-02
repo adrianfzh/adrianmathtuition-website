@@ -384,6 +384,7 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
+  { emoji: '🎚', title: 'Switches',      sub: 'Plan accounts · worker jobs · Mac plan only', href: '/admin/switches'   },
   // 🖊 The marking desk retired into Mark a paper on 30 Sep 2026 (Adrian: "do we
   // need the desk?"); /admin/desk redirects there.
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
