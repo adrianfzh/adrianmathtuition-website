@@ -343,3 +343,18 @@ desk's Agree/Override on a HELD essay (Adrian reads both reads and picks, for no
 by hand); a `job_runs` stamp for the bot's essay lane; the switch row
 (`essay_marking_open`) — E1 is code-flag only; the parent-digest line (E4).
 
+
+## Five marker improvements (2 Oct 2026)
+
+1. **Seeded bench.** A clean essay with known slips planted in it — truth by construction.
+   `src/lib/essay-seeding.ts` (pure/tested), `scripts/essay-calibration/seeded.ts`, starter set
+   `scripts/essay-calibration/sets/seeded-starter/` (12 plants). Gate: ≥ 90 % of plants found,
+   ≥ 80 % of those with the right code, few marks elsewhere. Two hand-ins a run (about 70 cents).
+2. **A second read that is not the first read again.** Even reads band FIRST from a whole read,
+   then list slips; odd reads keep the old order. `ESSAY_SECOND_MODEL` (bot, unset = same model)
+   puts the second read on another model.
+3. **A slip written twice is two marks.** The second mark on the same words is looked for after
+   the first; one marked more often than written is dropped.
+4. **Confirmed marks.** Each mark carries `confirmed` — another read marked overlapping words.
+   The read shown is the best-backed one. An unconfirmed mark is a dotted underline, "one to check".
+5. **Best fit.** The "lower band unless…" rule is gone; the prompt uses SEAB best-fit wording.

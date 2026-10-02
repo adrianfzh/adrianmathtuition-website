@@ -58,7 +58,8 @@ export async function GET() {
       try {
         for (const row of rows) {
           const paper = displayPaperName(row.paper_name, name).replace(/\s*·\s*/g, ' ');
-          const filename = markedPdfFilename({ studentName: name, paperName: paper, dateISO: row.created_at, kind: 'marked' });
+          const filename = markedPdfFilename({ studentName: name, paperName: paper, dateISO: row.created_at, kind: 'marked' })
+            .replace(/\s*[—–]\s*/g, ' - ');   // plain hyphens inside the zip: the Mac's command-line unzip refuses an em dash in a name
           const url = row.annotated_pdf_url || row.photos_pdf_url || row.pdf_url;
           let bytes: Uint8Array | null = null;
           if (url && isOurFileUrl(url)) {

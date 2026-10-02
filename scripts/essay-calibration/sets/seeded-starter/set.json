@@ -1,0 +1,21 @@
+{
+  "name": "seeded-starter",
+  "kind": "continuous_writing",
+  "question": "Write about a time when you were wrong about someone.",
+  "level": "Sec 4",
+  "clean": "clean.txt",
+  "plants": [
+    { "find": "He never smiled", "replace": "He never smile", "code": "tense" },
+    { "find": "the drains along our street overflowed", "replace": "the drains along our street overflows", "code": "tense" },
+    { "find": "The water was rising quickly, and", "replace": "The water was rising quickly,", "code": "comma_splice" },
+    { "find": "afraid of the current", "replace": "afraid for the current", "code": "preposition" },
+    { "find": "a long wooden plank", "replace": "long wooden plank", "code": "article" },
+    { "find": "his hands were shaking", "replace": "his hands was shaking", "code": "sva" },
+    { "find": "It belongs to the family", "replace": "It belong to the family", "code": "sva" },
+    { "find": "He had not hesitated", "replace": "He had not hesistated", "code": "spelling" },
+    { "find": "I felt ashamed", "replace": "I felt shame", "code": "word_form" },
+    { "find": "He seemed surprised", "replace": "He seemed suprised", "code": "spelling" },
+    { "find": "Since that day, I have greeted Mr Tan every morning.", "replace": "Since that day, greeting Mr Tan every morning.", "code": "fragment" },
+    { "find": "a stern face does not always mean a cold heart", "replace": "a stern face does not always mean a cold heart at the end of the day", "code": "vague" }
+  ]
+}
