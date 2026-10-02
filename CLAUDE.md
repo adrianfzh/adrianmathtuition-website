@@ -228,6 +228,21 @@ Vars are in `.env.local` (trim quotes/trailing newline before interpolating — 
 
 Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel. The Telegram/WhatsApp bot is a SEPARATE repo (`~/dev/adrianmath-telegram-math-bot`, Fly.io — **a push to its `main` AUTO-DEPLOYS** via `.github/workflows/fly-deploy.yml`: the Checks job (`npm test` + model/content gates) must go green first, and a red check SKIPS the deploy silently, so look at `gh run list -R adrianfzh/adrianmath-telegram-bot` after pushing; `npm run deploy` is only the manual fallback).
 
+## ⏱ Do not keep Adrian waiting (2 Oct 2026)
+
+Adrian: *"do you always have to wait for bot deploy?"* … *"let's have a more efficient way of
+doing things"*. A standing rule for every session, on any account:
+
+- **Never block on something the next step does not need.** Start it, say it is running, carry
+  on, and check it once at the end of the turn.
+- **A bot push:** say "deploying" and carry on. Look once at the end of the turn
+  (`gh run list -R adrianfzh/adrianmath-telegram-bot -L 1`) and report green or failed. No
+  `gh run watch`, no sleep loop. Still look — a red check skips the deploy with no message.
+- **Wait in place only when** the next step needs the new thing running (a re-mark that proves
+  a marking fix, a preview page you must look at) or Adrian asks whether it is live.
+- **A docs-only push builds nothing** (below) — never wait for a deployment after one.
+- **While long work runs, say in a few words what is happening**; do not go silent.
+
 ## Testing & monitoring policy (2026-07-16)
 
 Two layers guard parent/student-facing operations; keep BOTH current as features land:
