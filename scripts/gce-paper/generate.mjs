@@ -653,8 +653,18 @@ function paperShape(ok) {
     reason_units: units.filter((u) => /\b(explain|give a reason|justify|is (he|she|it) correct)\b/i.test(u.text)).length,
     routine: { slots: routine.map((s) => `Q${s.pos}`), marks: routine.reduce((a, s) => a + s.target, 0) },
     last_standard: ok.length ? ok[ok.length - 1].verdict?.standard ?? null : null,
+    // Two whole-paper checks Adrian added after reading A Math Set 2 (24 Sep 2026):
+    // optimisation ("is max/min gradient tested twice?") and undrawn scenes ("there
+    // are no diagrams for Q9 and Q8?"). Both are lists for the read-through, not gates.
+    optimisation: [...new Set(units.filter((u) => OPTIMISATION_RE.test(u.text)).map((u) => `Q${u.pos}`))],
+    undrawn_scenes: ok.filter((s) => !s.question.needs_figure && SCENE_RE.test(String(s.question.stem ?? '')) && !/accurate drawing/i.test(String(s.question.stem ?? ''))).map((s) => `Q${s.pos}`),
   };
 }
+// A part that asks for an extreme or a stationary value. The real 2024/25 papers carry
+// about one calculus optimisation a year; Set 2 had three before the read.
+const OPTIMISATION_RE = /\b(greatest|(?<!at )least|maximum|minimum|stationary)\b/i; // "at least 8 m" is a bound, not an extreme
+// A stem describing a physical scene a SEAB paper would print a diagram for.
+const SCENE_RE = /\b(wall|ladder|rod|beam|frame(work)?|garden|lawn|screen|field|path|rectangle|rectangular|triangle|triangular|sector|cylinder|cone|box|tank|container|pulley|hinge|rope|wire|plot of land|lies on the|perpendicular to the)\b/i;
 
 async function assemble() {
   if (!RUN) throw new Error('--run <dir> required');
@@ -688,6 +698,8 @@ async function assemble() {
   const shape = paperShape(ok);
   writeFileSync(join(dir, 'paper-shape-report.json'), JSON.stringify(shape, null, 1) + '\n');
   log(`paper shape · ${shape.answer_units} answer units · ${shape.unparted} unparted · ${shape.units_6plus} of 6+ marks (largest ${shape.largest_unit}) · ${shape.units_2orless} of ≤2 marks · ${shape.printed_targets} show/prove · ${shape.reason_units} explain · routine slots ${shape.routine.slots.join(', ') || 'none'} (${shape.routine.marks} marks) · last question: ${shape.last_standard ?? '?'}`);
+  if (shape.optimisation.length > 2) log(`⚠ optimisation asked in ${shape.optimisation.length} questions (${shape.optimisation.join(', ')}) — the real papers carry about one a year; check the companion paper too`);
+  if (shape.undrawn_scenes.length) log(`⚠ scene described with no figure: ${shape.undrawn_scenes.join(', ')} — a SEAB paper would print a diagram; add one (figure_description + needs_figure) or confirm the words suffice`);
   const missingMust = planJ.must_appear.filter((t) => !ok.some((s) => s.question.topics.includes(t)));
   if (missingMust.length) log(`⚠ must_appear not covered: ${missingMust.join(', ')}`);
   if (!ok.length) { console.log(JSON.stringify({ json: jsonPath, ok: 0 })); return; }

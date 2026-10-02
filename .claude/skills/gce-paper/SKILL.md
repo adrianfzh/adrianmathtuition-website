@@ -208,6 +208,19 @@ plan against what P1 already carries — the across-the-Set items are met once b
 the two papers. Keep it short: it is a plan for where the shape comes from, not a
 second brief.
 
+**Two more whole-paper rules, from Adrian's read of A Math Set 2 (24 Sep 2026):**
+- **Optimisation at most twice across the Set** — a part asking for a greatest, least,
+  maximum, minimum or stationary value, by calculus or otherwise. The real 2024/25
+  papers carry about one calculus optimisation a year; Set 2 had three on P1 Q9, P2
+  Q8(b) and P2 Q10(b)(c) ("is max/min gradient tested twice?") and Q10 was rewritten.
+  Name in `paper-shape.md` which one or two slots may carry it; `assemble` lists every
+  slot that does and warns past two.
+- **A scene gets a diagram.** A stem describing a physical situation a SEAB paper would
+  draw (a garden and lawn, a screen on a wall, rods and frames, a plot of land) carries
+  `needs_figure` + a `figure_description`, drawn in neither answer's proportions — Set 2
+  P1 Q8 and Q9 went out word-only ("there are no diagrams for Q9 and Q8?"). `assemble`
+  warns on a scene-like stem with no figure; the session decides, the author does not.
+
 ### 2. Per slot — author → check → blind solve → moderate → repair
 
 The prompts are TEMPLATES in [`prompts/`](prompts/) (`author.md`, `blind.md`,
@@ -313,7 +326,9 @@ python3 scripts/gce-paper/export-docx.py "$RUN/<key>-seed<n>.json" --figures "$R
 style ≥ 4/5, no re-skin is named and no earlier Set's question is repeated; the manifest
 lists each slot's skills and its nearest earlier-Set question. Read the skills column
 down the page once: a paper whose skills cluster (three slots all "solve a quadratic")
-is a repair, even when every slot passed on its own; it renders the paper PDF (answer key on) and the
+is a repair, even when every slot passed on its own. Read `assemble`'s two ⚠ lines the
+same way: optimisation in more than two questions, or a scene with no figure, is a
+repair of the paper before Adrian sees it; it renders the paper PDF (answer key on) and the
 solutions booklet through the SAME renderers `/app/print` uses. `export-docx.py` writes
 `<name>.docx` + `<name>-solutions.docx`.
 
