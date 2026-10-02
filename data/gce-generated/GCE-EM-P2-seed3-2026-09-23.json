@@ -863,53 +863,53 @@
    "target": 11,
    "accepted": true,
    "question": {
-    "stem": "A lorry makes a journey of 200 km at a steady speed of $x$ km/h.\nThe driver is paid \\$18 for each hour of the journey.\nAt a speed of $x$ km/h, the fuel costs $\\dfrac{x}{2}$ cents for each kilometre.\nThe total cost of the journey is $\\$C$.",
+    "stem": "An open metal box has a square base of side $x$ cm and no lid.\nThe volume of the box is 1000 cm$^3$.\nThe metal for the base costs 2 cents per square centimetre.\nThe metal for the four sides costs 1 cent per square centimetre.\nThe total cost of the metal for the box is $C$ cents.",
     "parts": [
      {
-      "text": "Find an expression for $C$ in terms of $x$.",
       "label": "(a)",
-      "marks": 2,
-      "answer": "$C = \\dfrac{3600}{x} + x$"
+      "marks": 3,
+      "text": "Find an expression for $C$ in terms of $x$.",
+      "answer": "$C = 2x^2 + \\dfrac{4000}{x}$"
      },
      {
-      "text": "The table shows some values of $x$ and $C$.\nValues are given to 1 decimal place where appropriate.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|} \\hline x & 20 & 30 & 40 & 50 & 60 & 70 & 80 & 90 & 100 \\\\ \\hline C & 200 & 150 & 130 & & 120 & 121.4 & 125 & 130 & 136 \\\\ \\hline \\end{array}$\nUse your expression to complete the table.",
       "label": "(b)",
       "marks": 1,
-      "answer": "$122$"
+      "text": "The table shows some values of $x$ and $C$.\nValues are given to the nearest whole number.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|} \\hline x & 6 & 8 & 10 & 12 & 14 & 16 & 18 & 20 \\\\ \\hline C & 739 & 628 & 600 & & 678 & 762 & 870 & 1000 \\\\ \\hline \\end{array}$\nUse your expression to complete the table.",
+      "answer": "$621$"
      },
      {
-      "text": "On the grid, draw the graph of $C$ against $x$ for $20 \\le x \\le 100$.",
       "label": "(c)",
       "marks": 3,
-      "answer": "Smooth curve through $(20, 200)$, $(30, 150)$, $(40, 130)$, $(50, 122)$, $(60, 120)$, $(70, 121.4)$, $(80, 125)$, $(90, 130)$, $(100, 136)$"
+      "text": "On the grid, draw the graph of $C$ against $x$ for $6 \\le x \\le 20$.",
+      "answer": "Smooth curve through $(6, 739)$, $(8, 628)$, $(10, 600)$, $(12, 621)$, $(14, 678)$, $(16, 762)$, $(18, 870)$, $(20, 1000)$"
      },
      {
-      "text": "An electric van can make the same journey.\nIts driver is paid \\$110 for the whole journey, whatever the speed.\nAt a speed of $x$ km/h, the electricity costs $\\dfrac{x}{8}$ cents for each kilometre.\nBy drawing a suitable straight line on the grid, find the range of speeds for which the lorry costs less than the van.",
       "label": "(d)",
-      "marks": 3,
-      "answer": "Line $C = 110 + \\dfrac{x}{4}$; $49 < x < 97$ (accept 48 to 51 and 96 to 99)"
+      "marks": 2,
+      "text": "Each box is sold at a price of 50 cents for every centimetre of the length of its base.\nA box makes a profit when its selling price is more than the cost of its metal.\nBy drawing a suitable straight line on the grid, find the range of values of $x$, for $6 \\le x \\le 20$, for which a box makes a profit.",
+      "answer": "Line $C = 50x$; $12.8 < x < 20$ (accept 12.5 to 13.1)"
      },
      {
-      "text": "By drawing a tangent to your curve, find the speed at which the lorry saves the most money compared with the van.\nFind also this greatest saving.",
       "label": "(e)",
       "marks": 2,
-      "answer": "About 69 km/h (accept 65 to 74); about \\$6 (accept \\$5 to \\$7)"
+      "text": "By drawing a tangent to your curve, find the value of $x$ for which the profit on a box is greatest.\nFind also this greatest profit.",
+      "answer": "$x \\approx 16.3$ (accept 15.5 to 17); about 38 cents (accept 30 to 45)"
      }
     ],
-    "answer": "(a) $C = \\dfrac{3600}{x} + x$ (b) $122$ (c) curve drawn (d) $49 < x < 97$ (e) about 69 km/h, about \\$6",
+    "answer": "(a) $C = 2x^2 + \\dfrac{4000}{x}$ (b) $621$ (c) curve drawn (d) $12.8 < x < 20$ (e) $x \\approx 16.3$, about 38 cents",
     "total_marks": 11,
     "topics": [
      "Algebra (Graph on Graph Paper)",
      "Graphs of Functions"
     ],
     "skills": [
-     "forming the equation of the graph from a context: a total cost made of a time-based pay (inversely proportional to speed) and a fuel cost per kilometre given in cents, $C = 3600/x + x$",
-     "forming a second (linear) cost from the context, drawing it on the same grid and reading the range of x for which the curve lies below the line",
+     "forming the equation of the graph from a solid: the height of an open square-based box eliminated through its fixed volume, with different costs per square centimetre for the base and the sides, $C = 2x^2 + 4000/x$",
+     "forming a selling-price line from the context, drawing it on the same grid and reading the range of x for which the line lies above the cost curve (profit)",
      "greatest vertical gap between a line and a curve found by drawing the tangent to the curve parallel to the line"
     ],
     "needs_figure": true,
-    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed after part (c). Horizontal axis labelled x, from 20 to 100, scale 2 cm to 10 km/h, labelled every 10. Vertical axis labelled C, from 110 to 200, scale 2 cm to 10 dollars, labelled every 10. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid.",
-    "solution": "(a) Time for the journey $= \\dfrac{200}{x}$ hours\nDriver's pay $= 18 \\times \\dfrac{200}{x} = \\dfrac{3600}{x}$ dollars [M1 for $\\dfrac{200}{x}$ used as the time]\nFuel cost $= 200 \\times \\dfrac{x}{2} = 100x$ cents $= x$ dollars\n**Answer:** $C = \\dfrac{3600}{x} + x$ [A1]\n(Check with the table: $x = 20$ gives $180 + 20 = 200$; $x = 60$ gives $60 + 60 = 120$.)\nCommon error: leaving the fuel cost in cents, $C = \\dfrac{3600}{x} + 100x$.\n\n(b) When $x = 50$:\n$C = \\dfrac{3600}{50} + 50 = 72 + 50$\n**Answer:** $122$ [B1]\n\n(c) Plot the 9 points $(20, 200)$, $(30, 150)$, $(40, 130)$, $(50, 122)$, $(60, 120)$, $(70, 121.4)$, $(80, 125)$, $(90, 130)$, $(100, 136)$.\nJoin them with a smooth curve.\nThe curve falls steeply, is lowest at about $x = 60$, then rises slowly.\n**Answer:** curve drawn [P2 for all 9 points plotted correctly (P1 for at least 7), C1 for a smooth curve through them]\n\n(d) Electricity cost $= 200 \\times \\dfrac{x}{8} = 25x$ cents $= \\dfrac{x}{4}$ dollars\nVan's total cost: $C = 110 + \\dfrac{x}{4}$\nDraw this line, through $(20, 115)$ and $(100, 135)$. [B1 for the correct line drawn]\nThe line meets the curve at $x \\approx 49$ and $x \\approx 97$. [B1 for both values read: accept 48 to 51 and 96 to 99]\nThe lorry costs less where the curve is BELOW the line.\n**Answer:** $49 < x < 97$ [A1]\n(Check: $\\dfrac{3600}{x} + x = 110 + \\dfrac{x}{4}$ gives $3x^2 - 440x + 14\\,400 = 0$, so $x = 49.3$ or $97.4$.)\nTempting wrong answer: $x < 49$ or $x > 97$, the speeds where the van costs less.\n\n(e) The saving is the vertical distance from the curve up to the line.\nIt is greatest where the tangent to the curve is parallel to the line.\nSlide a ruler parallel to the line $C = 110 + \\dfrac{x}{4}$ until it just touches the curve, and draw the tangent. [M1 for a tangent parallel to their line]\nThe tangent touches the curve at $x \\approx 69$.\nAt $x = 69$: the line is at about $127.3$ and the curve is at about $121.2$.\nSaving $\\approx 127.3 - 121.2 \\approx 6$ dollars\n**Answer:** about 69 km/h; greatest saving about \\$6 [A1 for both: accept 65 to 74 km/h and \\$5 to \\$7]\n(The exact values are $x = 69.3$ and \\$6.08.)\nTempting wrong answer: $x = 60$, the lowest point of the curve — there the lorry is cheapest, but the saving is only \\$5.",
+    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed after part (c). Horizontal axis labelled x, from 6 to 20, scale 2 cm to 2 units, labelled every 2. Vertical axis labelled C, from 550 to 1000, scale 2 cm to 50 units, labelled every 50. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid.",
+    "solution": "(a) Let the height of the box be $h$ cm.\nVolume: $x^2 h = 1000$\n$h = \\dfrac{1000}{x^2}$ [M1]\nCost of the base $= 2 \\times x^2 = 2x^2$ cents\nArea of the four sides $= 4xh = 4x \\times \\dfrac{1000}{x^2} = \\dfrac{4000}{x}$ cm$^2$ [M1]\nCost of the sides $= \\dfrac{4000}{x}$ cents\n**Answer:** $C = 2x^2 + \\dfrac{4000}{x}$ [A1]\n(Check with the table: $x = 10$ gives $200 + 400 = 600$; $x = 20$ gives $800 + 200 = 1000$.)\nCommon errors: counting a lid, $C = 4x^2 + \\dfrac{4000}{x}$; leaving $h$ in the answer.\n\n(b) When $x = 12$:\n$C = 2(12)^2 + \\dfrac{4000}{12} = 288 + 333.3 = 621.3$\n**Answer:** $621$ [B1]\n\n(c) Plot the 8 points $(6, 739)$, $(8, 628)$, $(10, 600)$, $(12, 621)$, $(14, 678)$, $(16, 762)$, $(18, 870)$, $(20, 1000)$.\nJoin them with a smooth curve.\nThe curve falls to its lowest point at $x = 10$, then rises more and more steeply.\n**Answer:** curve drawn [P2 for all 8 points plotted correctly (P1 for at least 6), C1 for a smooth curve through them]\n\n(d) Selling price $= 50x$ cents\nDraw the line $C = 50x$, through $(11, 550)$ and $(20, 1000)$. [B1 for the correct line drawn]\nThe line meets the curve at $x \\approx 12.8$ and at $x = 20$.\nA box makes a profit where the line is ABOVE the curve.\n**Answer:** $12.8 < x < 20$ [B1: accept 12.5 to 13.1 for the lower value]\n(Check: $2x^2 + \\dfrac{4000}{x} = 50x$ gives $x^3 - 25x^2 + 2000 = 0$, so $x = 12.8$ or $x = 20$.)\nTempting wrong answer: $x < 12.8$, the boxes that make a loss.\n\n(e) The profit is the vertical distance from the curve up to the line.\nIt is greatest where the tangent to the curve is parallel to the line.\nSlide a ruler parallel to the line $C = 50x$ until it just touches the curve, and draw the tangent. [M1 for a tangent parallel to their line]\nThe tangent touches the curve at $x \\approx 16.3$.\nAt $x = 16.3$: the line is at about $815$ and the curve is at about $777$.\nProfit $\\approx 815 - 777 = 38$ cents\n**Answer:** $x \\approx 16.3$; greatest profit about 38 cents [A1 for both: accept 15.5 to 17 and 30 to 45 cents]\nTempting wrong answer: $x = 10$, the cheapest box — it costs 600 cents but sells for only 500 cents, a loss.",
     "syllabus_check": "4052 Functions and graphs: graph of a cubic function drawn from a table of values on a grid, and solving an equation or inequality by drawing a suitable straight line on the same grid (as GCE 2024 P2 Q4 and GCE 2025 P1 Q26). Reading the number of solutions of f(x) = k from where a horizontal line meets the drawn curve uses only the graph; no calculus is needed or expected (the turning values are read from the curve). Transferring the result to x^3 - 6x^2 + 8x = p is a linear rearrangement (algebraic manipulation). Nothing outside 4052.",
     "originality_note": "Set 1 P2 Q3 drew y = x/2 + 6/x (a reciprocal-plus-linear curve), estimated a gradient by a tangent at the point where y = 4.5 and drew a line to solve a quadratic EQUATION; Set 1 P2 Q4 was exponentials. This question uses a positive cubic, asks for no tangent, and replaces 'solve the equation' with a scattered cubic INEQUALITY whose answer is two intervals, then asks how many times a horizontal line meets the curve inside the drawn domain (the end point, not the turning point, fixes the lower bound) and carries that range to a second cubic. It differs from GCE 2024 P2 Q4 (negative cubic, 'explain why only one solution', line solves an equation), GCE 2025 P1 Q26 (pre-drawn negative cubic, inequality only), GCE 2023 P2 Q4 (reciprocal-square curve, find A and B from a drawn line) and GCE 2019 P2 Q4 (read y > 4 directly, show that a line gives a cubic). No earlier Set has asked a number-of-solutions range or an inequality solved by drawing a line."
    },
@@ -1002,7 +1002,7 @@
    ],
    "edited": {
     "at": "2026-10-02",
-    "note": "whole question replaced (2 Oct 2026, Adrian's read of Set 2 P2: \"too simple and standard … making students come up with the equation of the graph to be drawn themselves\"); not blind-solved or moderated — checked by hand"
+    "note": "whole question replaced twice on 2 Oct 2026 (Adrian: students form the equation themselves; then \"slightly more challenging\") — open box, C = 2x^2 + 4000/x; not blind-solved or moderated, checked by hand"
    }
   },
   {
