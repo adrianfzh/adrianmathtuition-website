@@ -693,6 +693,13 @@ export async function GET(req: NextRequest) {
       if (![301, 302, 303, 307, 308, 401].includes(r.status)) throw new Error(`expected a login redirect or 401, got HTTP ${r.status}`);
       return `gate up (${r.status})`;
     }),
+    // "Download all my marked papers" (2 Oct 2026) — also the leaver's door on
+    // /app/pass. Anonymous → 401 proves the route exists and its gate is up.
+    timed('portal-marked-papers-zip', async () => {
+      const r = await fetch(`${base}/api/portal/marked-papers-zip`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // The exam library (SPEC-PAPER-MATCH phase 2, 7 Sep 2026): paper_library must
     // resolve and hold rows, or every queued paper silently marks ungrounded.
     timed('paper-library', async () => {

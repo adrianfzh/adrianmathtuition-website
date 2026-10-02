@@ -16,6 +16,7 @@ export default async function SettingsPage() {
       level={account.level || ''}
       telegramChatId={account.telegram_chat_id ? String(account.telegram_chat_id) : ''}
       telegramLinked={tg === 'linked'}
+      tuition={Boolean(account.airtable_student_id?.trim())}
     />
   );
 }

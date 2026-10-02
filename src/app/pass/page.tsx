@@ -120,6 +120,24 @@ export default async function PassPage() {
           )}
         </div>
 
+        {/* A student who has left can still take their work (2 Oct 2026). Both
+            routes check the session only, never a pass. */}
+        {offboarded && !renewing && (
+          <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6">
+            <p className="font-bold text-navy mb-1">Take your papers with you</p>
+            <p className="text-sm text-gray-600 mb-4">Your marked papers are yours. Download them any time — no pass needed.</p>
+            <a
+              href="/api/portal/marked-papers-zip"
+              className="block w-full bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 text-center text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              ⬇️ Download all my marked papers
+            </a>
+            <a href="/api/portal/export" className="block text-center text-sm text-navy font-semibold underline underline-offset-2 mt-3">
+              Download my other data
+            </a>
+          </div>
+        )}
+
         {/* Standard — the primary card */}
         <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 border-2 border-navy/80">
           <div className="flex items-baseline justify-between mb-1">
