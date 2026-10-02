@@ -451,31 +451,31 @@
     "stem": "",
     "parts": [
      {
+      "text": "Find the value of $n$ for which $\\dfrac{4^{n} \\times 2^{n+1}}{8} = \\dfrac{1}{\\sqrt{2}}$.",
       "label": "(a)",
-      "text": "Simplify $\\dfrac{3^{2n+1} + 9^{n}}{3^{n+1} - 3^{n}}$.",
       "marks": 2,
-      "answer": "$2 \\times 3^{n}$"
+      "answer": "$n = \\dfrac{1}{2}$"
      },
      {
-      "label": "(b)",
       "text": "$T = \\sqrt{\\dfrac{2p + 5}{p - 3}}$\nRearrange the formula to make $p$ the subject.",
+      "label": "(b)",
       "marks": 3,
       "answer": "$p = \\dfrac{3T^2 + 5}{T^2 - 2}$"
      },
      {
-      "label": "(c)",
       "text": "Find the greatest possible value of $\\dfrac{7}{x^2 - 3x + 4}$.\nShow your working.",
+      "label": "(c)",
       "marks": 3,
       "answer": "$4$"
      },
      {
-      "label": "(d)",
       "text": "Use algebra to explain why the sum of the squares of any three consecutive integers is never a multiple of 3.",
+      "label": "(d)",
       "marks": 3,
       "answer": "With the integers $n - 1$, $n$, $n + 1$, the sum of their squares is $3n^2 + 2$, which is 2 more than the multiple of 3, $3n^2$, so it leaves remainder 2 when divided by 3 and is never a multiple of 3."
      }
     ],
-    "answer": "(a) $2 \\times 3^{n}$; (b) $p = \\dfrac{3T^2 + 5}{T^2 - 2}$; (c) $4$; (d) $(n-1)^2 + n^2 + (n+1)^2 = 3n^2 + 2$, which is 2 more than a multiple of 3, so never a multiple of 3.",
+    "answer": "(a) $n = \\dfrac{1}{2}$; (b) $p = \\dfrac{3T^2 + 5}{T^2 - 2}$; (c) $4$; (d) $(n-1)^2 + n^2 + (n+1)^2 = 3n^2 + 2$, which is 2 more than a multiple of 3, so never a multiple of 3.",
     "total_marks": 11,
     "topics": [
      "Algebra (Quadratic Graphs)",
@@ -484,14 +484,14 @@
      "Algebra (Expansion)"
     ],
     "skills": [
-     "rewriting $9^{n}$ as $3^{2n}$ and taking out the common power factors $3^{2n}$ above and $3^{n}$ below to simplify a quotient of a sum and a difference of powers with a variable index to an expression in $n$",
+     "an index equation with a variable index: every number, including $4^{n}$, 8 and $\\dfrac{1}{\\sqrt{2}}$, written as a power of 2, then the indices equated",
      "making a subject that appears in both the numerator and the denominator of a fraction under a square root",
      "finding the greatest value of a fraction whose denominator is a quadratic with no real roots, by completing the square to find the least value of the positive denominator",
      "proving by expansion, with the unknown introduced by the candidate, that the sum of the squares of three consecutive integers is always 2 more than a multiple of 3"
     ],
     "needs_figure": false,
     "figure_description": "",
-    "solution": "(a) Write every power with base 3: $9^{n} = (3^{2})^{n} = 3^{2n}$, and $3^{2n+1} = 3 \\times 3^{2n}$.\nNumerator: $3^{2n+1} + 9^{n} = 3 \\times 3^{2n} + 3^{2n} = 3^{2n}(3 + 1) = 4 \\times 3^{2n}$\nDenominator: $3^{n+1} - 3^{n} = 3 \\times 3^{n} - 3^{n} = 3^{n}(3 - 1) = 2 \\times 3^{n}$ [M1 for a correct common factor taken out of the numerator or of the denominator]\n$\\dfrac{3^{2n+1} + 9^{n}}{3^{n+1} - 3^{n}} = \\dfrac{4 \\times 3^{2n}}{2 \\times 3^{n}} = 2 \\times 3^{2n - n} = 2 \\times 3^{n}$ [A1 for $2 \\times 3^{n}$ or $2(3^{n})$]\n(Check: $n = 1$ gives $\\dfrac{27 + 9}{9 - 3} = \\dfrac{36}{6} = 6 = 2 \\times 3^{1}$; $n = 2$ gives $\\dfrac{243 + 81}{27 - 9} = \\dfrac{324}{18} = 18 = 2 \\times 3^{2}$.)\nCommon errors: dividing the indices instead of subtracting them, $\\dfrac{3^{2n}}{3^{n}} = 3^{2}$, which gives $18$; cancelling terms rather than factors, $\\dfrac{3^{2n+1}}{3^{n+1}} + \\dfrac{9^{n}}{-3^{n}} = 3^{n} - 3^{n}$, which gives $0$; adding the indices of a sum, $3^{2n+1} + 3^{2n} = 3^{4n+1}$. Substituting a value of $n$ gives only a number (6 when $n = 1$), not the simplified expression, and earns no marks.\n\n(b) Square both sides: $T^2 = \\dfrac{2p + 5}{p - 3}$ [M1]\n$T^2(p - 3) = 2p + 5$\n$pT^2 - 3T^2 = 2p + 5$\nCollect the terms in $p$ on one side: $pT^2 - 2p = 3T^2 + 5$ [M1]\n$p(T^2 - 2) = 3T^2 + 5$\n$p = \\dfrac{3T^2 + 5}{T^2 - 2}$ [A1]\n(Check: $T = 3$ gives $p = \\dfrac{32}{7}$, and $\\dfrac{2p + 5}{p - 3} = \\dfrac{99/7}{11/7} = 9 = 3^2$.)\n\n(c) Complete the square for the denominator:\n$x^2 - 3x + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 - \\dfrac{9}{4} + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 + \\dfrac{7}{4}$ [M1]\nSince $\\left(x - \\dfrac{3}{2}\\right)^2 \\ge 0$ for all $x$, the denominator is always positive and its least value is $\\dfrac{7}{4}$, when $x = \\dfrac{3}{2}$. [M1]\nThe numerator 7 is fixed and the denominator is always positive, so the fraction is greatest when the denominator is least.\nGreatest value $= 7 \\div \\dfrac{7}{4} = 4$ [A1] (when $x = 1.5$)\nCommon error: substituting $x = 0$ to get $\\dfrac{7}{4}$.\n\n(d) Let the three consecutive integers be $n - 1$, $n$ and $n + 1$, where $n$ is an integer. [B1]\nSum of their squares $= (n - 1)^2 + n^2 + (n + 1)^2$\n$= n^2 - 2n + 1 + n^2 + n^2 + 2n + 1$\n$= 3n^2 + 2$ [M1]\n$3n^2$ is a multiple of 3, so $3n^2 + 2$ is 2 more than a multiple of 3: it leaves a remainder of 2 when divided by 3.\nSo the sum of the squares of any three consecutive integers is never a multiple of 3. [A1]\n(Alternative: with $n$, $n + 1$, $n + 2$ the sum is $3n^2 + 6n + 5 = 3(n^2 + 2n + 1) + 2$, the same conclusion.)\nChecking numerical examples only (for example $1^2 + 2^2 + 3^2 = 14$) is not an explanation and earns no marks.",
+    "solution": "(a) Write every number as a power of 2.\n$4^{n} = (2^{2})^{n} = 2^{2n}$\n$8 = 2^{3}$\n$\\dfrac{1}{\\sqrt{2}} = 2^{-\\frac{1}{2}}$\n$\\dfrac{2^{2n} \\times 2^{n+1}}{2^{3}} = 2^{-\\frac{1}{2}}$\n$2^{2n + n + 1 - 3} = 2^{-\\frac{1}{2}}$ [M1 for both sides as single powers of 2]\n$3n - 2 = -\\dfrac{1}{2}$\n$3n = \\dfrac{3}{2}$\n**Answer:** $n = \\dfrac{1}{2}$ [A1]\n(Check: $\\dfrac{4^{0.5} \\times 2^{1.5}}{8} = \\dfrac{2 \\times 2\\sqrt{2}}{8} = \\dfrac{\\sqrt{2}}{2} = \\dfrac{1}{\\sqrt{2}}$.)\nCommon error: writing $\\dfrac{1}{\\sqrt{2}}$ as $2^{\\frac{1}{2}}$, which gives $n = \\dfrac{5}{6}$.\n\n(b) Square both sides: $T^2 = \\dfrac{2p + 5}{p - 3}$ [M1]\n$T^2(p - 3) = 2p + 5$\n$pT^2 - 3T^2 = 2p + 5$\nCollect the terms in $p$ on one side: $pT^2 - 2p = 3T^2 + 5$ [M1]\n$p(T^2 - 2) = 3T^2 + 5$\n$p = \\dfrac{3T^2 + 5}{T^2 - 2}$ [A1]\n(Check: $T = 3$ gives $p = \\dfrac{32}{7}$, and $\\dfrac{2p + 5}{p - 3} = \\dfrac{99/7}{11/7} = 9 = 3^2$.)\n\n(c) Complete the square for the denominator:\n$x^2 - 3x + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 - \\dfrac{9}{4} + 4 = \\left(x - \\dfrac{3}{2}\\right)^2 + \\dfrac{7}{4}$ [M1]\nSince $\\left(x - \\dfrac{3}{2}\\right)^2 \\ge 0$ for all $x$, the denominator is always positive and its least value is $\\dfrac{7}{4}$, when $x = \\dfrac{3}{2}$. [M1]\nThe numerator 7 is fixed and the denominator is always positive, so the fraction is greatest when the denominator is least.\nGreatest value $= 7 \\div \\dfrac{7}{4} = 4$ [A1] (when $x = 1.5$)\nCommon error: substituting $x = 0$ to get $\\dfrac{7}{4}$.\n\n(d) Let the three consecutive integers be $n - 1$, $n$ and $n + 1$, where $n$ is an integer. [B1]\nSum of their squares $= (n - 1)^2 + n^2 + (n + 1)^2$\n$= n^2 - 2n + 1 + n^2 + n^2 + 2n + 1$\n$= 3n^2 + 2$ [M1]\n$3n^2$ is a multiple of 3, so $3n^2 + 2$ is 2 more than a multiple of 3: it leaves a remainder of 2 when divided by 3.\nSo the sum of the squares of any three consecutive integers is never a multiple of 3. [A1]\n(Alternative: with $n$, $n + 1$, $n + 2$ the sum is $3n^2 + 6n + 5 = 3(n^2 + 2n + 1) + 2$, the same conclusion.)\nChecking numerical examples only (for example $1^2 + 2^2 + 3^2 = 14$) is not an explanation and earns no marks.",
     "syllabus_check": "All four parts are inside 4052 and use no A-Math technique. (a) laws of indices with a variable index: a power of a power ($9^{n} = 3^{2n}$), $3^{2n+1} = 3 \\times 3^{2n}$ and the division law $3^{2n} \\div 3^{n} = 3^{n}$, with a common factor taken out of a sum and a difference of powers (Numbers and algebra: indices). (b) changing the subject of a formula in which the subject appears twice and the formula involves a square root and an algebraic fraction (Algebraic expressions and formulae). (c) a quadratic expression written in completed-square form to find its least value (Functions and graphs: quadratic functions in completed-square form); the argument uses only that a square is never negative, not a quadratic inequality, and no calculus. (d) expansion of squared brackets used to prove a property of integers (Algebraic expressions: expansion). No partial fractions, no surds, no simultaneous non-linear equations, no combining of fractions and no fractional equation.",
     "originality_note": "Written as an algebra medley whose parts are all different skills from the earlier Sets. No part combines algebraic fractions or solves a fractional equation (Set 1 P2 Q1(c),(d), Set 2 P1 Q5, Set 1 P1 Q11). (a) is not GCE 2025 P2 Q5(a) (a sum of two equal numeric powers giving a single power of 2): here the index is a variable, a power of 9 must first be rewritten as a power of 3, different common powers are taken out above and below, and the fraction simplifies to an expression in $n$ that no substitution can give; it is also unlike the common-base index equations of Set 1 P2 Q4(b) and Set 1 P1 Q16. (b) differs from Set 1 P1 Q12(b) (expand and cancel the $x^2$ terms) and from GCE 2023 P2 Q2(c)(ii) by the square root over a fraction with the subject in both numerator and denominator. (c) finds the maximum of a reciprocal from the minimum of a quadratic with no real roots; Set 2 P1 Q6 found the maximum of a parabola from its roots. (d) is a divisibility-by-3 proof by expansion with the candidate choosing the variable; Set 1 P1 Q25(b) argued the parity of a given $n^2 + n + 1$, and GCE 2024 P1 Q23(a) the parity of a given $y$."
    },
@@ -580,7 +580,11 @@
      "id": "aa860c94-c851-4e49-b146-6916435524b9",
      "ref": "GCE 2024 P1 Q5"
     }
-   ]
+   ],
+   "edited": {
+    "at": "2026-10-02",
+    "note": "(a) replaced (2 Oct 2026, Adrian's read of Set 2 P2: the old simplification of a sum of powers read as an A Math question)"
+   }
   },
   {
    "pos": 2,
@@ -712,37 +716,35 @@
    "target": 9,
    "accepted": true,
    "question": {
-    "stem": "A lighthouse, $L$, stands on a small island.\nA ship sails in a straight line on a bearing of $038^\\circ$ at a constant speed of 20 km/h.\nAt 10 00 the ship is at $A$ and $L$ is on a bearing of $062^\\circ$ from the ship.\nAt 10 45 the ship is at $B$ and $L$ is due east of the ship.",
+    "stem": "A lighthouse, $L$, stands on a small island.\nA ship sails in a straight line on a bearing of $038^\\circ$ at a constant speed of 20 km/h.\nAt 10 00 the ship is at $A$ and $L$ is on a bearing of $062^\\circ$ from the ship.\nAt 10 45 the ship is at $B$ and $L$ is due east of the ship.\nThe diagram shows $A$, $B$ and $L$.",
     "parts": [
      {
-      "label": "(a)",
       "text": "Calculate the distance between the ship and $L$ at 10 45.",
+      "label": "(a)",
       "marks": 3,
-      "answer": "13.0 km",
-      "subparts": []
+      "answer": "13.0 km"
      },
      {
-      "label": "(b)",
       "text": "The ship continues on the same course at the same speed.\nFind the time at which the ship is closest to $L$.",
+      "label": "(b)",
       "marks": 3,
-      "answer": "11 09",
-      "subparts": []
+      "answer": "11 09"
      },
      {
-      "label": "(c)",
       "text": "At 10 45 a supply boat leaves $L$ and sails in a straight line at a constant speed to meet the ship.\nWhen they meet, the supply boat has sailed the shortest possible distance.",
+      "label": "(c)",
       "marks": 3,
       "answer": "(i) $308^\\circ$ (ii) 25.6 km/h",
       "subparts": [
        {
-        "label": "(i)",
         "text": "Find the bearing on which the supply boat sails.",
+        "label": "(i)",
         "marks": 1,
         "answer": "$308^\\circ$"
        },
        {
-        "label": "(ii)",
         "text": "Calculate the speed of the supply boat.",
+        "label": "(ii)",
         "marks": 2,
         "answer": "25.6 km/h"
        }
@@ -760,8 +762,8 @@
      "closest approach of a moving ship: the foot of the perpendicular from the fixed point to the course, and the clock time it is reached from the distance along the course",
      "shortest route to meet a moving ship: sail perpendicular to its course and choose the speed that arrives at the same moment"
     ],
-    "needs_figure": false,
-    "figure_description": "",
+    "needs_figure": true,
+    "figure_description": "A sketch of the ship's course: A at the bottom left with a north arrow, the course drawn from A through B and continued past B with an arrowhead, L to the right of B with BL horizontal, and the line AL. Only the letters A, B, L and N are printed: no angles, no lengths, no closest point.",
     "solution": "(a) From 10 00 to 10 45 is 45 minutes, so $AB = 20 \\times \\frac{45}{60} = 15$ km.\nAt $A$: angle $LAB = 062^\\circ - 038^\\circ = 24^\\circ$.\nAt $B$: the bearing of $A$ from $B$ is $038^\\circ + 180^\\circ = 218^\\circ$ and $L$ is due east of $B$ (bearing $090^\\circ$), so angle $ABL = 218^\\circ - 90^\\circ = 128^\\circ$.\nAngle $ALB = 180^\\circ - 24^\\circ - 128^\\circ = 28^\\circ$.\nSine rule in triangle $ABL$: $\\frac{BL}{\\sin 24^\\circ} = \\frac{15}{\\sin 28^\\circ}$\n$BL = \\frac{15 \\sin 24^\\circ}{\\sin 28^\\circ} = 12.996 \\ldots = 13.0$ km (3 s.f.)\n(Taking angle $ABL$ as $90^\\circ - 38^\\circ = 52^\\circ$, the angle between the course and $BL$, gives the wrong value $6.29$ km: the angle inside triangle $ABL$ at $B$ is between $BA$ and $BL$.)\n\n(b) The ship is closest to $L$ at the point $X$ on its course where $LX$ is perpendicular to the course.\nAt $B$ the angle between the direction of travel ($038^\\circ$) and $BL$ ($090^\\circ$) is $90^\\circ - 38^\\circ = 52^\\circ$, which is acute, so $X$ lies ahead of $B$ on the course.\nIn the right-angled triangle $BXL$: $BX = BL \\cos 52^\\circ = 12.996 \\times \\cos 52^\\circ = 8.000 \\ldots$ km.\nTime to sail from $B$ to $X$ $= \\frac{8.000}{20} = 0.4000$ h $= 24.0$ minutes.\nThe ship is closest to $L$ at 10 45 + 24 minutes $=$ 11 09.\n\n(c)(i) The shortest distance from $L$ to the ship's course is the perpendicular distance $LX$, so the supply boat sails along $LX$ and meets the ship at $X$ at 11 09.\n$LX$ is perpendicular to the course, so the bearing of $L$ from $X$ is $038^\\circ + 90^\\circ = 128^\\circ$.\nBearing on which the supply boat sails (bearing of $X$ from $L$) $= 128^\\circ + 180^\\circ = 308^\\circ$.\n(Check: the bearing of $B$ from $L$ is $270^\\circ$ and angle $BLX = 90^\\circ - 52^\\circ = 38^\\circ$, so $270^\\circ + 38^\\circ = 308^\\circ$.)\n\n(c)(ii) $LX = BL \\sin 52^\\circ = 12.996 \\times \\sin 52^\\circ = 10.24 \\ldots$ km (or $LX = \\sqrt{BL^2 - BX^2}$).\nThe boat leaves at 10 45 and reaches $X$ at 11 09, so it sails for 24 minutes $= 0.4$ h.\nSpeed $= \\frac{10.24}{0.4} = 25.6$ km/h (3 s.f.)",
     "syllabus_check": "4052 only: three-figure bearings and back bearings, angle sum of a triangle, sine rule for a side opposite a known angle (no ambiguous case), sine and cosine in a right-angled triangle, and speed-distance-time with times in hours and minutes (Rate and speed). No 3-D work, no radians, no calculus.",
     "originality_note": "A running fix: a moving ship sights one fixed point on two bearings at two clock times, then the question asks for its closest approach and for a second boat to intercept it. The real GCE bearings questions (GCE 2024 P2 Q5, GCE 2023 P1 Q23, GCE 2017 P2 Q5, GCE 2009 P2 Q8, GCE 2023 specimen P2 Q7, GCE 2016 specimen P2 Q2) fix static points by given sides and ask for a third side, a bearing and an elevation; none has a moving observer, a closest-approach time or an intercept speed. The perpendicular intercept appears only in GCE 2022 P1 Q9(b), measured on a scale drawing to a fixed point; here it is computed and timed against the moving ship. Set 1 had no bearings question; Set 2 P1 Q2 used the sine rule's ambiguous case, which this question does not, and Set 1 P1 Q23(c) found a shortest distance from a triangle's area, whereas here the along-course distance and its time are the point."
@@ -849,7 +851,11 @@
      "id": "cfef0bfa-8b24-41d9-95f9-6def72828472",
      "ref": "GCE 2025 P2 Q4"
     }
-   ]
+   ],
+   "edited": {
+    "at": "2026-10-02",
+    "note": "diagram added (2 Oct 2026, Adrian's read of Set 2 P2); wording and answers unchanged"
+   }
   },
   {
    "pos": 4,
@@ -857,69 +863,53 @@
    "target": 11,
    "accepted": true,
    "question": {
-    "stem": "",
+    "stem": "A lorry makes a journey of 200 km at a steady speed of $x$ km/h.\nThe driver is paid \\$18 for each hour of the journey.\nAt a speed of $x$ km/h, the fuel costs $\\dfrac{x}{2}$ cents for each kilometre.\nThe total cost of the journey is $\\$C$.",
     "parts": [
      {
+      "text": "Find an expression for $C$ in terms of $x$.",
       "label": "(a)",
-      "text": "",
-      "marks": 4,
-      "answer": "(i) 5.8; (ii) smooth curve through the 11 plotted points",
-      "subparts": [
-       {
-        "label": "(i)",
-        "text": "Complete the table of values for $y = \\frac{x^3}{2} - 3x^2 + 4x + 3$.\nValues are given to 1 decimal place where appropriate.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|c|c|} \\hline x & 0 & 0.5 & 1 & 1.5 & 2 & 2.5 & 3 & 3.5 & 4 & 4.5 & 5 \\\\ \\hline y & 3 & 4.3 & 4.5 & 3.9 & 3 & 2.1 & 1.5 & 1.7 & 3 & & 10.5 \\\\ \\hline \\end{array}$",
-        "marks": 1,
-        "answer": "$5.8$"
-       },
-       {
-        "label": "(ii)",
-        "text": "On the grid, draw the graph of $y = \\frac{x^3}{2} - 3x^2 + 4x + 3$ for $0 \\le x \\le 5$.",
-        "marks": 3,
-        "answer": "Smooth curve through $(0, 3)$, $(0.5, 4.3)$, $(1, 4.5)$, $(1.5, 3.9)$, $(2, 3)$, $(2.5, 2.1)$, $(3, 1.5)$, $(3.5, 1.7)$, $(4, 3)$, $(4.5, 5.8)$, $(5, 10.5)$, with a maximum of about $4.5$ near $x = 0.8$ and a minimum of about $1.5$ near $x = 3.2$"
-       }
-      ]
+      "marks": 2,
+      "answer": "$C = \\dfrac{3600}{x} + x$"
      },
      {
+      "text": "The table shows some values of $x$ and $C$.\nValues are given to 1 decimal place where appropriate.\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|} \\hline x & 20 & 30 & 40 & 50 & 60 & 70 & 80 & 90 & 100 \\\\ \\hline C & 200 & 150 & 130 & & 120 & 121.4 & 125 & 130 & 136 \\\\ \\hline \\end{array}$\nUse your expression to complete the table.",
       "label": "(b)",
-      "text": "By drawing a suitable straight line on the grid, solve the inequality $x^3 + 6x + 4 > 6x^2$ for $0 \\le x \\le 5$.",
-      "marks": 3,
-      "answer": "Line $y = x + 1$; $0 \\le x < 2$ or $4.45 < x \\le 5$ (accept $4.4$ to $4.5$)"
+      "marks": 1,
+      "answer": "$122$"
      },
      {
+      "text": "On the grid, draw the graph of $C$ against $x$ for $20 \\le x \\le 100$.",
       "label": "(c)",
-      "text": "",
-      "marks": 4,
-      "answer": "(i) $3 \\le k < 4.5$; (ii) $0 \\le p < 3.1$",
-      "subparts": [
-       {
-        "label": "(i)",
-        "text": "Use your graph to find the range of values of $k$ for which the equation $\\frac{x^3}{2} - 3x^2 + 4x + 3 = k$ has three solutions for $0 \\le x \\le 5$.",
-        "marks": 2,
-        "answer": "$3 \\le k < 4.5$ (upper bound read from the graph: accept $4.5$ to $4.6$)"
-       },
-       {
-        "label": "(ii)",
-        "text": "Hence find the range of values of $p$ for which the equation $x^3 - 6x^2 + 8x = p$ has three solutions for $0 \\le x \\le 5$.",
-        "marks": 2,
-        "answer": "$0 \\le p < 3.1$ (upper bound $= 2 \\times$ their upper bound in (c)(i) $- 6$: accept $3.0$ to $3.2$)"
-       }
-      ]
+      "marks": 3,
+      "answer": "Smooth curve through $(20, 200)$, $(30, 150)$, $(40, 130)$, $(50, 122)$, $(60, 120)$, $(70, 121.4)$, $(80, 125)$, $(90, 130)$, $(100, 136)$"
+     },
+     {
+      "text": "An electric van can make the same journey.\nIts driver is paid \\$110 for the whole journey, whatever the speed.\nAt a speed of $x$ km/h, the electricity costs $\\dfrac{x}{8}$ cents for each kilometre.\nBy drawing a suitable straight line on the grid, find the range of speeds for which the lorry costs less than the van.",
+      "label": "(d)",
+      "marks": 3,
+      "answer": "Line $C = 110 + \\dfrac{x}{4}$; $49 < x < 97$ (accept 48 to 51 and 96 to 99)"
+     },
+     {
+      "text": "By drawing a tangent to your curve, find the speed at which the lorry saves the most money compared with the van.\nFind also this greatest saving.",
+      "label": "(e)",
+      "marks": 2,
+      "answer": "About 69 km/h (accept 65 to 74); about \\$6 (accept \\$5 to \\$7)"
      }
     ],
-    "answer": "(a)(i) $5.8$ (a)(ii) curve drawn (b) $0 \\le x < 2$ or $4.45 < x \\le 5$ (c)(i) $3 \\le k < 4.5$ (c)(ii) $0 \\le p < 3.1$",
+    "answer": "(a) $C = \\dfrac{3600}{x} + x$ (b) $122$ (c) curve drawn (d) $49 < x < 97$ (e) about 69 km/h, about \\$6",
     "total_marks": 11,
     "topics": [
      "Algebra (Graph on Graph Paper)",
      "Graphs of Functions"
     ],
     "skills": [
-     "solve a cubic inequality graphically by halving it and moving terms so that it reads curve > line ($y = x + 1$), giving a solution set of two separate intervals",
-     "range of k for which a horizontal line meets the drawn cubic three times within the drawn domain, the lower bound fixed by the curve's value at the end point x = 0 rather than by the minimum turning value",
-     "carry that range over to a related cubic equation (x^3 - 6x^2 + 8x = p, so p = 2k - 6)"
+     "forming the equation of the graph from a context: a total cost made of a time-based pay (inversely proportional to speed) and a fuel cost per kilometre given in cents, $C = 3600/x + x$",
+     "forming a second (linear) cost from the context, drawing it on the same grid and reading the range of x for which the curve lies below the line",
+     "greatest vertical gap between a line and a curve found by drawing the tangent to the curve parallel to the line"
     ],
     "needs_figure": true,
-    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed immediately after the text of part (a)(ii) and before part (b). Horizontal axis labelled x, from 0 to 5, scale 2 cm to 1 unit, labelled at 0, 1, 2, 3, 4, 5. Vertical axis labelled y, from 0 to 11, scale 1 cm to 1 unit, labelled at every whole number 0 to 11. Origin at the bottom-left corner of the grid. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid: no curve, no plotted points, no straight lines, no equation, no shading.",
-    "solution": "(a)(i) When $x = 4.5$: $y = \\frac{4.5^3}{2} - 3(4.5)^2 + 4(4.5) + 3 = 45.5625 - 60.75 + 18 + 3 = 5.8125 = 5.8$ (1 d.p.). [B1]\n\n(a)(ii) Plot the 11 points $(0, 3)$, $(0.5, 4.3)$, $(1, 4.5)$, $(1.5, 3.9)$, $(2, 3)$, $(2.5, 2.1)$, $(3, 1.5)$, $(3.5, 1.7)$, $(4, 3)$, $(4.5, 5.8)$, $(5, 10.5)$ using 2 cm to 1 unit on the $x$-axis and 1 cm to 1 unit on the $y$-axis, and join them with a smooth curve. The curve rises to a maximum of about $4.5$ (between $x = 0.5$ and $x = 1$), falls to a minimum of about $1.5$ (just after $x = 3$), then rises steeply to $10.5$ at $x = 5$. [P2 for all 11 points correctly plotted (P1 for at least 9), C1 for a smooth curve through them]\n\n(b) Rearrange so that one side is the curve that has been drawn.\n$x^3 + 6x + 4 > 6x^2$\n$x^3 - 6x^2 + 6x + 4 > 0$\nDivide by 2: $\\frac{x^3}{2} - 3x^2 + 3x + 2 > 0$\nAdd $x + 1$ to both sides: $\\frac{x^3}{2} - 3x^2 + 4x + 3 > x + 1$.\nSo draw the line $y = x + 1$ (through $(0, 1)$, $(2, 3)$ and $(5, 6)$) and find where the curve is ABOVE the line. [B1 for $y = x + 1$]\nThe line meets the curve at $x = 2$ (the point $(2, 3)$) and at $x \\approx 4.45$. [B1 for both $x$-values read, accept $4.4$ to $4.5$]\nAt $x = 0$ the curve ($y = 3$) is above the line ($y = 1$); between $x = 2$ and $x = 4.45$ the curve is below the line (e.g. at $x = 3$: $1.5 < 4$); after $x = 4.45$ it is above again (at $x = 5$: $10.5 > 6$).\nSolution: $0 \\le x < 2$ or $4.45 < x \\le 5$. [A1, both intervals]\n(Check: $x^3 - 6x^2 + 6x + 4 = (x - 2)(x^2 - 4x - 2)$, roots $x = 2$ and $x = 2 \\pm \\sqrt{6}$, i.e. $4.449$ and $-0.449$; the root $-0.449$ is outside $0 \\le x \\le 5$.)\nTempting wrong answers: $2 < x < 4.45$ (the region where the curve is below the line) or $x > 4.45$ only (missing the interval that starts at the end point $x = 0$).\n\n(c)(i) The solutions of $\\frac{x^3}{2} - 3x^2 + 4x + 3 = k$ are the $x$-coordinates of the points where the horizontal line $y = k$ meets the curve, and only the part of the curve for $0 \\le x \\le 5$ counts.\nThe line $y = k$ meets the drawn curve three times only while it cuts all three sections of the curve: the section from $(0, 3)$ up to the maximum, the section from the maximum down to the minimum, and the section from the minimum up to $(5, 10.5)$.\nThe first section only covers $3 \\le y \\le 4.5$, because the curve starts at $y = 3$ when $x = 0$.\nSo $3 \\le k < 4.5$ (maximum read from the graph, accept $4.5$ to $4.6$). [B1 lower bound 3 (condone $<$), B1 upper bound with $<$]\nAt $k = 3$ there are exactly three solutions, $x = 0$, $2$ and $4$; for $k$ just below 3 the line meets the curve only twice, and at $k = 4.5$ (the maximum) only twice.\nTempting wrong answer: $1.5 < k < 4.5$, from the two turning values, ignoring that the curve begins at $y = 3$.\n\n(c)(ii) $x^3 - 6x^2 + 8x = p$\nDivide by 2: $\\frac{x^3}{2} - 3x^2 + 4x = \\frac{p}{2}$\nAdd 3: $\\frac{x^3}{2} - 3x^2 + 4x + 3 = \\frac{p}{2} + 3$.\nSo this is the equation of (c)(i) with $k = \\frac{p}{2} + 3$, i.e. $p = 2k - 6$. [M1]\n$3 \\le k < 4.5$ gives $2(3) - 6 \\le p < 2(4.5) - 6$, so $0 \\le p < 3.1$ (accept $3.0$ to $3.2$ from the maximum read in (c)(i); exact value $3.08$). [A1]\n(Check: $p = 0$ gives $x(x - 2)(x - 4) = 0$, which has exactly the three solutions $0$, $2$ and $4$ in the range.)\nTempting wrong answer: $-3 < p < 3$, from the turning values $1.5$ and $4.5$.",
+    "figure_description": "A BLANK sheet of graph paper for the candidate to draw on, printed after part (c). Horizontal axis labelled x, from 20 to 100, scale 2 cm to 10 km/h, labelled every 10. Vertical axis labelled C, from 110 to 200, scale 2 cm to 10 dollars, labelled every 10. 2 mm minor squares and 1 cm major squares. Nothing else is printed on the grid.",
+    "solution": "(a) Time for the journey $= \\dfrac{200}{x}$ hours\nDriver's pay $= 18 \\times \\dfrac{200}{x} = \\dfrac{3600}{x}$ dollars [M1 for $\\dfrac{200}{x}$ used as the time]\nFuel cost $= 200 \\times \\dfrac{x}{2} = 100x$ cents $= x$ dollars\n**Answer:** $C = \\dfrac{3600}{x} + x$ [A1]\n(Check with the table: $x = 20$ gives $180 + 20 = 200$; $x = 60$ gives $60 + 60 = 120$.)\nCommon error: leaving the fuel cost in cents, $C = \\dfrac{3600}{x} + 100x$.\n\n(b) When $x = 50$:\n$C = \\dfrac{3600}{50} + 50 = 72 + 50$\n**Answer:** $122$ [B1]\n\n(c) Plot the 9 points $(20, 200)$, $(30, 150)$, $(40, 130)$, $(50, 122)$, $(60, 120)$, $(70, 121.4)$, $(80, 125)$, $(90, 130)$, $(100, 136)$.\nJoin them with a smooth curve.\nThe curve falls steeply, is lowest at about $x = 60$, then rises slowly.\n**Answer:** curve drawn [P2 for all 9 points plotted correctly (P1 for at least 7), C1 for a smooth curve through them]\n\n(d) Electricity cost $= 200 \\times \\dfrac{x}{8} = 25x$ cents $= \\dfrac{x}{4}$ dollars\nVan's total cost: $C = 110 + \\dfrac{x}{4}$\nDraw this line, through $(20, 115)$ and $(100, 135)$. [B1 for the correct line drawn]\nThe line meets the curve at $x \\approx 49$ and $x \\approx 97$. [B1 for both values read: accept 48 to 51 and 96 to 99]\nThe lorry costs less where the curve is BELOW the line.\n**Answer:** $49 < x < 97$ [A1]\n(Check: $\\dfrac{3600}{x} + x = 110 + \\dfrac{x}{4}$ gives $3x^2 - 440x + 14\\,400 = 0$, so $x = 49.3$ or $97.4$.)\nTempting wrong answer: $x < 49$ or $x > 97$, the speeds where the van costs less.\n\n(e) The saving is the vertical distance from the curve up to the line.\nIt is greatest where the tangent to the curve is parallel to the line.\nSlide a ruler parallel to the line $C = 110 + \\dfrac{x}{4}$ until it just touches the curve, and draw the tangent. [M1 for a tangent parallel to their line]\nThe tangent touches the curve at $x \\approx 69$.\nAt $x = 69$: the line is at about $127.3$ and the curve is at about $121.2$.\nSaving $\\approx 127.3 - 121.2 \\approx 6$ dollars\n**Answer:** about 69 km/h; greatest saving about \\$6 [A1 for both: accept 65 to 74 km/h and \\$5 to \\$7]\n(The exact values are $x = 69.3$ and \\$6.08.)\nTempting wrong answer: $x = 60$, the lowest point of the curve — there the lorry is cheapest, but the saving is only \\$5.",
     "syllabus_check": "4052 Functions and graphs: graph of a cubic function drawn from a table of values on a grid, and solving an equation or inequality by drawing a suitable straight line on the same grid (as GCE 2024 P2 Q4 and GCE 2025 P1 Q26). Reading the number of solutions of f(x) = k from where a horizontal line meets the drawn curve uses only the graph; no calculus is needed or expected (the turning values are read from the curve). Transferring the result to x^3 - 6x^2 + 8x = p is a linear rearrangement (algebraic manipulation). Nothing outside 4052.",
     "originality_note": "Set 1 P2 Q3 drew y = x/2 + 6/x (a reciprocal-plus-linear curve), estimated a gradient by a tangent at the point where y = 4.5 and drew a line to solve a quadratic EQUATION; Set 1 P2 Q4 was exponentials. This question uses a positive cubic, asks for no tangent, and replaces 'solve the equation' with a scattered cubic INEQUALITY whose answer is two intervals, then asks how many times a horizontal line meets the curve inside the drawn domain (the end point, not the turning point, fixes the lower bound) and carries that range to a second cubic. It differs from GCE 2024 P2 Q4 (negative cubic, 'explain why only one solution', line solves an equation), GCE 2025 P1 Q26 (pre-drawn negative cubic, inequality only), GCE 2023 P2 Q4 (reciprocal-square curve, find A and B from a drawn line) and GCE 2019 P2 Q4 (read y > 4 directly, show that a line gives a cubic). No earlier Set has asked a number-of-solutions range or an inequality solved by drawing a line."
    },
@@ -1009,7 +999,11 @@
      "id": "4b0b299a-7e4f-4aa2-a591-1de8da008951",
      "ref": "GCE 2019 P2 Q4"
     }
-   ]
+   ],
+   "edited": {
+    "at": "2026-10-02",
+    "note": "whole question replaced (2 Oct 2026, Adrian's read of Set 2 P2: \"too simple and standard … making students come up with the equation of the graph to be drawn themselves\"); not blind-solved or moderated — checked by hand"
+   }
   },
   {
    "pos": 5,
@@ -1283,40 +1277,39 @@
     "stem": "A fish farm has two ponds, $P$ and $Q$. A sample of 15 fish is netted from pond $P$ and a sample of 19 fish is netted from pond $Q$. The length of each fish is measured in centimetres.\nThe back-to-back stem-and-leaf diagram shows the results.\n$\\begin{array}{r|c|l} \\text{Pond } P & & \\text{Pond } Q \\\\ 8 & 1 & 1 \\\\ 8\\;\\;7\\;\\;6\\;\\;4\\;\\;3\\;\\;1 & 2 & 7\\;\\;8\\;\\;9\\;\\;9 \\\\ 9\\;\\;7\\;\\;6\\;\\;4\\;\\;3\\;\\;1\\;\\;0 & 3 & 0\\;\\;1\\;\\;1\\;\\;2\\;\\;2\\;\\;3\\;\\;3\\;\\;4\\;\\;4\\;\\;5\\;\\;6\\;\\;6\\;\\;7\\;\\;8 \\\\ 1 & 4 & \\end{array}$\nKey: $4 \\mid 2 \\mid 7$ means a length of 24 cm for pond $P$ and a length of 27 cm for pond $Q$.",
     "parts": [
      {
-      "label": "(a)",
       "text": "",
+      "label": "(a)",
       "marks": 5,
       "answer": "(i) $P$: 12 cm, $Q$: 6 cm; (ii) No: $Q$'s range (27 cm) is large only because of the single 11 cm fish, and its interquartile range (6 cm) is smaller than $P$'s (12 cm); (iii) 31.5 cm",
       "subparts": [
        {
-        "label": "(i)",
         "text": "Find the interquartile range of the lengths of the fish from each pond.",
+        "label": "(i)",
         "marks": 2,
         "answer": "Pond $P$: 12 cm; pond $Q$: 6 cm"
        },
        {
-        "label": "(ii)",
         "text": "Mei says that the lengths of the fish from pond $Q$ are more spread out than those from pond $P$, because the range for pond $Q$ is greater.\nIs she correct? Give a reason, using figures to support your answer.",
+        "label": "(ii)",
         "marks": 1,
         "answer": "No. The range for pond $Q$ ($38 - 11 = 27$ cm, against $41 - 18 = 23$ cm for pond $P$) is large only because of the one extreme value, a fish of length 11 cm; the other 18 fish from pond $Q$ lie between 27 cm and 38 cm. The interquartile range for pond $Q$ (6 cm) is smaller than that for pond $P$ (12 cm), so the middle half of the lengths from pond $Q$ is less spread out."
        },
        {
-        "label": "(iii)",
         "text": "The 34 fish in the two samples are put together.\nFind the median length of these 34 fish.",
+        "label": "(iii)",
         "marks": 2,
         "answer": "31.5 cm"
        }
       ]
      },
      {
+      "text": "A fish is ready for sale if its length is at least 30 cm.\nMore fish are netted from pond $P$. Every one of them is ready for sale, and they are added to the sample of 15.\nThe probability that a fish chosen at random from the enlarged sample is ready for sale is now $\\dfrac{2}{3}$.\nTwo fish are chosen at random, without replacement, from the enlarged sample.\nFind the probability that exactly one of them is ready for sale.",
       "label": "(b)",
-      "text": "A fish is ready for sale if its length is at least 30 cm.\nTwo fish are chosen at random, without replacement, from the sample from pond $P$. One fish is chosen at random from the sample from pond $Q$.\nFind the probability that exactly two of these three fish are ready for sale.",
       "marks": 3,
-      "answer": "$\\frac{44}{95}$",
-      "subparts": []
+      "answer": "$\\dfrac{7}{15}$"
      }
     ],
-    "answer": "(a)(i) 12 cm (pond $P$), 6 cm (pond $Q$); (a)(ii) No: the range for $Q$ is large only because of the one 11 cm fish; its interquartile range (6 cm) is smaller than $P$'s (12 cm), so $Q$ is less spread out; (a)(iii) 31.5 cm; (b) $\\frac{44}{95}$",
+    "answer": "(a)(i) 12 cm (pond $P$), 6 cm (pond $Q$); (a)(ii) No: the range for $Q$ is large only because of the one 11 cm fish; its interquartile range (6 cm) is smaller than $P$'s (12 cm), so $Q$ is less spread out; (a)(iii) 31.5 cm; (b) $\\dfrac{7}{15}$",
     "total_marks": 8,
     "topics": [
      "Statistics",
@@ -1325,11 +1318,11 @@
     "skills": [
      "interquartile ranges read from a back-to-back stem-and-leaf diagram with samples of different sizes (15 and 19), then used to judge a claim about spread that rests on a range inflated by one extreme value",
      "median of two samples combined, found as the 17th and 18th values of the merged back-to-back data rather than the mean of the two separate medians",
-     "probability that exactly two of three items meet a condition when two are drawn without replacement from one sample and one from a different sample: three cases according to which item fails"
+     "a sample enlarged by an unknown number of items until a stated probability is reached (a linear equation from a probability), then exactly one of two drawn without replacement from the enlarged sample"
     ],
     "needs_figure": false,
     "figure_description": "",
-    "solution": "(a)(i) Pond $P$ (15 lengths, in order): 18, 21, 23, 24, 26, 27, 28, 30, 31, 33, 34, 36, 37, 39, 41 (the leaves on the left are read outwards from the stem).\nMedian $=$ 8th value $= 30$. Lower quartile $=$ 4th value $= 24$, upper quartile $=$ 12th value $= 36$.\nInterquartile range for $P = 36 - 24 = 12$ cm. [B1]\nPond $Q$ (19 lengths, in order): 11, 27, 28, 29, 29, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 36, 36, 37, 38.\nMedian $=$ 10th value $= 32$. Lower quartile $=$ 5th value $= 29$, upper quartile $=$ 15th value $= 35$.\nInterquartile range for $Q = 35 - 29 = 6$ cm. [B1]\n(a)(ii) Range for $P = 41 - 18 = 23$ cm; range for $Q = 38 - 11 = 27$ cm, so the range for $Q$ is greater, as Mei says.\nBut Mei is not correct. The range for $Q$ is large only because of one fish of length 11 cm, which is much shorter than every other fish in that sample: the other 18 fish from pond $Q$ lie between 27 cm and 38 cm (a spread of only 11 cm).\nThe interquartile range is not affected by this one extreme value, and it is 6 cm for $Q$ against 12 cm for $P$, so the middle half of the lengths from pond $Q$ is LESS spread out.\n[B1 — No, with a reason supported by a figure: EITHER the one extreme value 11 cm (the other 18 fish lie between 27 cm and 38 cm), OR the interquartile ranges compared, 6 cm for $Q$ < 12 cm for $P$. A reason with no figure, or \"No\" alone, scores 0.]\n(a)(iii) There are 34 lengths, so the median is the mean of the 17th and 18th values of the combined data.\nCombined counts by stem: stem 1: $1 + 1 = 2$ (running total 2); stem 2: $6 + 4 = 10$ (running total 12); so the 17th and 18th values are the 5th and 6th smallest lengths on stem 3.\nStem 3, both ponds together, in order: 30, 30, 31, 31, 31, 32, 32, 33, 33, 33, ... so the 5th is 31 and the 6th is 32. [M1]\nMedian $= \\frac{31 + 32}{2} = 31.5$ cm. [A1]\n(The mean of the two separate medians, $\\frac{30 + 32}{2} = 31$ cm, is NOT the median of the combined data.)\n(b) Ready for sale (at least 30 cm): pond $P$: 30, 31, 33, 34, 36, 37, 39, 41, so 8 of the 15 are ready and 7 are not; pond $Q$: 19 − 5 = 14 are ready (the 5 not ready are 11, 27, 28, 29, 29).\nExactly two ready means exactly one of the three fish is not ready. There are three cases.\nFirst $P$ fish not ready, second $P$ fish ready, $Q$ fish ready: $\\frac{7}{15} \\times \\frac{8}{14} \\times \\frac{14}{19} = \\frac{784}{3990}$\nFirst $P$ fish ready, second $P$ fish not ready, $Q$ fish ready: $\\frac{8}{15} \\times \\frac{7}{14} \\times \\frac{14}{19} = \\frac{784}{3990}$ [M1 for one correct product of three]\nBoth $P$ fish ready, $Q$ fish not ready: $\\frac{8}{15} \\times \\frac{7}{14} \\times \\frac{5}{19} = \\frac{280}{3990}$\nProbability $= \\frac{784 + 784 + 280}{3990} = \\frac{1848}{3990} = \\frac{44}{95}$ (0.463 to 3 s.f.). [M1 for adding all three cases, A1]\n(Counting the two $P$ fish in only one order gives $\\frac{4}{15}$, which is wrong.)",
+    "solution": "(a)(i) Pond $P$ (15 lengths, in order): 18, 21, 23, 24, 26, 27, 28, 30, 31, 33, 34, 36, 37, 39, 41 (the leaves on the left are read outwards from the stem).\nMedian $=$ 8th value $= 30$. Lower quartile $=$ 4th value $= 24$, upper quartile $=$ 12th value $= 36$.\nInterquartile range for $P = 36 - 24 = 12$ cm. [B1]\nPond $Q$ (19 lengths, in order): 11, 27, 28, 29, 29, 30, 31, 31, 32, 32, 33, 33, 34, 34, 35, 36, 36, 37, 38.\nMedian $=$ 10th value $= 32$. Lower quartile $=$ 5th value $= 29$, upper quartile $=$ 15th value $= 35$.\nInterquartile range for $Q = 35 - 29 = 6$ cm. [B1]\n(a)(ii) Range for $P = 41 - 18 = 23$ cm; range for $Q = 38 - 11 = 27$ cm, so the range for $Q$ is greater, as Mei says.\nBut Mei is not correct. The range for $Q$ is large only because of one fish of length 11 cm, which is much shorter than every other fish in that sample: the other 18 fish from pond $Q$ lie between 27 cm and 38 cm (a spread of only 11 cm).\nThe interquartile range is not affected by this one extreme value, and it is 6 cm for $Q$ against 12 cm for $P$, so the middle half of the lengths from pond $Q$ is LESS spread out.\n[B1 — No, with a reason supported by a figure: EITHER the one extreme value 11 cm (the other 18 fish lie between 27 cm and 38 cm), OR the interquartile ranges compared, 6 cm for $Q$ < 12 cm for $P$. A reason with no figure, or \"No\" alone, scores 0.]\n(a)(iii) There are 34 lengths, so the median is the mean of the 17th and 18th values of the combined data.\nCombined counts by stem: stem 1: $1 + 1 = 2$ (running total 2); stem 2: $6 + 4 = 10$ (running total 12); so the 17th and 18th values are the 5th and 6th smallest lengths on stem 3.\nStem 3, both ponds together, in order: 30, 30, 31, 31, 31, 32, 32, 33, 33, 33, ... so the 5th is 31 and the 6th is 32. [M1]\nMedian $= \\frac{31 + 32}{2} = 31.5$ cm. [A1]\n(The mean of the two separate medians, $\\frac{30 + 32}{2} = 31$ cm, is NOT the median of the combined data.)\n(b) Pond $P$, ready for sale (at least 30 cm): 30, 31, 33, 34, 36, 37, 39, 41, so 8 of the 15 are ready and 7 are not.\nLet $n$ be the number of fish added. All $n$ are ready.\n$\\dfrac{8 + n}{15 + n} = \\dfrac{2}{3}$\n$3(8 + n) = 2(15 + n)$\n$24 + 3n = 30 + 2n$\n$n = 6$ [B1]\nEnlarged sample: 21 fish, 14 ready and 7 not ready.\nExactly one ready: ready then not ready, or not ready then ready.\nProbability $= \\dfrac{14}{21} \\times \\dfrac{7}{20} + \\dfrac{7}{21} \\times \\dfrac{14}{20}$ [M1 for one correct product from their 21 fish]\n$= \\dfrac{98}{420} + \\dfrac{98}{420} = \\dfrac{196}{420}$\n**Answer:** $\\dfrac{7}{15}$ [A1]\n(Counting only one order gives $\\dfrac{7}{30}$, which is wrong. Using $\\dfrac{2}{3} \\times \\dfrac{1}{3} \\times 2 = \\dfrac{4}{9}$ ignores that the first fish is not put back.)",
     "syllabus_check": "4052 data handling and analysis: stem-and-leaf diagrams (back-to-back), median, quartiles, interquartile range, range, comparing two distributions in context; probability: combined events, with and without replacement. No grouped data, no calculator statistics mode needed, nothing outside 4052.",
     "originality_note": "New situation (lengths of fish sampled from two ponds, a 30 cm ready-for-sale threshold) and a display no earlier Set has used (a back-to-back stem-and-leaf diagram). Set 1 P2 Q7 took the mean and standard deviation from a grouped cumulative frequency table, explained what the grouped table cannot show and why a smaller mean need not mean fewer refunds, and found P(both of two from one pool); Set 2 P1 Q25 found an unknown frequency from a mean and tested an upper-quartile claim; Set 1 P1 Q4 recovered a missing value from a median; Set 2 P1 Q11 was a two-stage die game. Here the skills are different: judging a claim about spread that rests on the range when one value is extreme (range versus interquartile range), the median of two samples merged (trap: the mean of the two medians, 31), and a three-fish probability drawn from TWO different samples, two without replacement from one (trap: 4/15 when the order within pond P is ignored). Real stem-and-leaf questions (GCE 2019 P2 Q9, GCE 2018 P1 Q19, GCE 2016 P2 Q9, GCE 2010 P1 Q18) ask for medians, ranges, percentages and verbal comparisons, none of these three skills; GCE 2024 P2 Q7(b)(iii) draws three from a single pool."
    },
@@ -1417,7 +1410,11 @@
      "id": "47974111-81c3-42b6-9e91-3ee82dd8e385",
      "ref": "GCE 2023 P2 Q9"
     }
-   ]
+   ],
+   "edited": {
+    "at": "2026-10-02",
+    "note": "(b) replaced (2 Oct 2026, Adrian's read of Set 2 P2: a more creative probability part)"
+   }
   },
   {
    "pos": 8,
