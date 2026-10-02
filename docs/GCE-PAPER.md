@@ -515,7 +515,7 @@ to the H2 prompts (the moderator's verdict carries `template` and `move`). Adria
 of the first draft's Paper 1 questions; Paper 2 was rewritten whole. The first approved Set
 is held to the standard document alone (its §7).
 
-**Where H2 Set 1 lives (30 Sep 2026) — unpublished, awaiting Adrian's read.** The scratchpad
+**Where H2 Set 1 lives (30 Sep 2026) — PUBLISHED 3 Oct 2026 on Adrian's word ("publish set 1"; edit-after, like Set 2 — `publish.mjs` upserts, `--retract` takes it back): 11 + 10 bank rows, `AdrianMath · Set 1`, level JC.** The scratchpad
 run folder was cleared with a session restart and the DOCX/PDF copies went with it, so the
 set was rebuilt from its manifests and filed where every session can find it:
 - Manifests (the questions, solutions, gates, verdicts — the source of truth): COMMITTED as
