@@ -105,7 +105,7 @@ ${katexInlineHead()}
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
   html,body{background:#fff}
-  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:9.5pt;line-height:1.55}
+  body{color:#111;font-family:"Open Sans","Noto Sans","Segoe UI",Helvetica,Arial,sans-serif;font-size:9.5pt;line-height:1.55}
   .katex{font-size:1em}
 
   .sol-header{margin-bottom:9pt}

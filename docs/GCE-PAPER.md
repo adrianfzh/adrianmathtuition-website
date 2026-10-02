@@ -159,6 +159,14 @@ LibreOffice gaps between runs ("F B = 2", "angle F E B"). `join_math_runs()` in
 same). The rest is LibreOffice's. Read a paper in Word or in the app-style PDF from
 `assemble`, and make `lo-pdf.sh` PDFs on the Mac, where LibreOffice finds Cambria Math.
 
+**The draft PDF's look is the 8 Sep one again (2 Oct 2026, Adrian: "i prefer the older
+look").** The title is `AdrianMath · A Math · Set 1 · Paper 2`, the meta line has no
+duration, and `render-paper-pdf.ts` + `render-solutions-pdf.ts` set the body in a sans
+face (Open Sans / Noto Sans / Segoe / Helvetica, whichever the machine has) — the 16 Sep
+switch to the app's `setPaperTitle` form and the serif body are undone for the drafts. The
+JSON's `title` field keeps the `setPaperTitle` form (print-sets reads it), and the app's
+own print (`render-prelim.ts`, Georgia, with the cover) is unchanged.
+
 **Grids print to scale (24 Sep 2026, Adrian: "is the graph to scale?").** A graph-paper
 grid the candidate draws on prints with one major square = 1 cm (small squares 2 mm) in
 all three outputs. Before this, the assemble PDF squeezed a 16-square grid into the

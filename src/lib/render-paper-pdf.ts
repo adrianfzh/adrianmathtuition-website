@@ -204,7 +204,7 @@ ${katexInlineHead()}
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4;margin:15mm 22mm 13mm}
   html,body{background:#fff}
-  body{color:#111;font-family:"Times New Roman",Georgia,serif;font-size:11pt;line-height:1.5}
+  body{color:#111;font-family:"Open Sans","Noto Sans","Segoe UI",Helvetica,Arial,sans-serif;font-size:11pt;line-height:1.5}  /* sans, as the 8 Sep 2026 drafts were — Adrian, 2 Oct 2026: "i prefer the older look" */
   .katex{font-size:1em}
 
   .pp-header{margin-bottom:9pt}

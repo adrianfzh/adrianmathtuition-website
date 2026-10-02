@@ -678,11 +678,15 @@ async function assemble() {
     return { pos: p.pos, topic: p.topic, target: p.target, accepted, question: accepted ? q : null, draft: accepted ? null : q, gates, blind, verdict, exemplars: planJ.exemplars[p.pos] ?? [] };
   });
   const ok = questions.filter((s) => s.accepted);
-  // The same title the app prints once the paper is a Set (lib/print-sets
-  // setPaperTitle): "E Math · Set 1 · Paper 1 · O-Level format".
+  // The draft's own title, as the 8 Sep 2026 drafts carried it: "AdrianMath · A Math ·
+  // Set 1 · Paper 2" (Adrian, 2 Oct 2026: "i prefer the older look" — the 16 Sep switch to
+  // the app's setPaperTitle form with "· O-Level format" is undone). The app's own print
+  // keeps setPaperTitle for the cover; the JSON's `title` field stays in that form for
+  // print-sets.
   const level = String(planJ.shape.level ?? '');
   const subjectShort = level === 'AM' ? 'A Math' : /^JC/.test(level) ? 'H2 Mathematics' : 'E Math';
   const title = `${subjectShort} · Set ${SET} · Paper ${planJ.paperNo} · ${/^JC/.test(level) ? 'A-Level' : 'O-Level'} format`;
+  const draftTitle = `AdrianMath · ${subjectShort} · Set ${SET} · Paper ${planJ.paperNo}`;
   const paper = {
     ...planJ, models: planJ.models ?? MODELS_UNTIL_2026_09_23,
     set: SET, title, assembled_at: new Date().toISOString(), questions,
@@ -725,12 +729,12 @@ async function assemble() {
     return { qnum: String(s.pos), marks: s.target, stem, images: figure && !gridPart ? [figure.uri] : [], uncappedFigures: figure?.tall === true, missingFigure: false, parts, answerLines: answerKeyLines(q.parts, q.answer) };
   });
   const total = ok.reduce((a, s) => a + s.target, 0);
-  const metaLine = `${ok.length} questions · ${total} marks · ${planJ.shape.duration}`;
+  const metaLine = `${ok.length} questions · ${total} marks`;   // no duration on the draft (the 8 Sep look)
   const pdfDir = PDF_DIR ? resolve(PDF_DIR) : OUT_ROOT;
   mkdirSync(pdfDir, { recursive: true });
   const base = `${planJ.key}-seed${planJ.seed}-${stamp}`;
   const paperPdf = join(pdfDir, `${base}.pdf`);
-  writeFileSync(paperPdf, await libs.renderPaperPDF({ title, metaLine, questions: pdfQs, workingSpace: true, answerKey: true, answerKeyColor: '#111', coverageWarning: ok.length < questions.length ? `${questions.length - ok.length} slot(s) did not pass the gates and were left out` : null }));
+  writeFileSync(paperPdf, await libs.renderPaperPDF({ title: draftTitle, metaLine, questions: pdfQs, workingSpace: true, answerKey: true, answerKeyColor: '#111', coverageWarning: ok.length < questions.length ? `${questions.length - ok.length} slot(s) did not pass the gates and were left out` : null }));
   const solPdf = join(pdfDir, `${base}-solutions.pdf`);
   writeFileSync(solPdf, await libs.renderSolutionsPDF({
     title: `${title} · Worked solutions`,
