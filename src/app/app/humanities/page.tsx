@@ -25,6 +25,8 @@ export default async function HumanitiesPage() {
   const runs = await loadHumanitiesFor(sid);
   const answered = new Set(runs.map(r => r.question_id));
   const sets = allSets();
+  // One issue open at a time: the first with a question still to do. Ten open cards was a very long page.
+  const openId = (sets.find(set => set.questions.some(q => !answered.has(q.id))) ?? sets[0])?.id;
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -55,9 +57,16 @@ export default async function HumanitiesPage() {
       )}
 
       {sets.map(set => (
-        <div key={set.id} className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-          <h2 className="text-[15px] font-bold text-navy leading-snug">{set.title}</h2>
-          <p className="text-[12px] text-gray-500 mt-0.5">{set.sources.length} sources · {set.questions.length} questions</p>
+        <details key={set.id} open={set.id === openId} className="group bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+          <summary className="flex items-center gap-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-bold text-navy leading-snug">{set.title}</span>
+              <span className="block text-[12px] text-gray-500 mt-0.5">
+                {set.questions.filter(q => answered.has(q.id)).length} of {set.questions.length} done
+              </span>
+            </span>
+            <span className="shrink-0 text-gray-400 transition group-open:rotate-90">›</span>
+          </summary>
           <ul className="mt-2 divide-y divide-black/5">
             {set.questions.map(q => (
               <li key={q.id}>
@@ -72,7 +81,7 @@ export default async function HumanitiesPage() {
               </li>
             ))}
           </ul>
-        </div>
+        </details>
       ))}
     </div>
   );

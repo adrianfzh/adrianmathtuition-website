@@ -2,7 +2,11 @@
 // The humanities bench (SPEC-HUMANITIES.md §4, 2 Oct 2026) — truth by
 // construction, no marked scripts.
 //
-//   npx tsx scripts/humanities-bench/run.ts [--name h1-YYYY-MM-DD] [--base URL] [--report-only] [--limit N]
+//   npx tsx scripts/humanities-bench/run.ts [--name h1-YYYY-MM-DD] [--base URL] [--report-only] [--limit N] [--hard]
+//
+// --hard reads scripts/humanities-bench/hard-answers.json instead: answers written the way a
+// student writes (slips, drift, copied source text, a right idea with no evidence), several
+// at one level on one question, each tagged with its `flaw`.
 //
 // Three checks, all through the admin door (POST /api/admin/humanities):
 //   1. SEEDED — every seeded answer in data/humanities (written AT a known level) is read once.
@@ -14,7 +18,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { seededAnswers } from '../../src/lib/humanities-questions';
+import { seededAnswers, questionById } from '../../src/lib/humanities-questions';
 import { seededVerdict, consistencyVerdict, truthFreeVerdict, padAnswer, stripEvidence, addSupported, type VariantKind } from '../../src/lib/humanities-bench';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -32,6 +36,7 @@ const base = opt('--base', 'https://www.adrianmathtuition.com').replace(/\/$/, '
 const name = opt('--name', `h1-${new Date().toISOString().slice(0, 10)}`);
 const limit = Number(opt('--limit', '0'));
 const reportOnly = args.includes('--report-only');
+const hard = args.includes('--hard');
 const BATCH = 6;
 const pw = env('ADMIN_PASSWORD');
 if (!pw) { console.error('ADMIN_PASSWORD missing'); process.exit(2); }
@@ -46,9 +51,12 @@ interface Row {
 }
 
 function plan(): Row[] {
-  let seeds = seededAnswers();
+  let seeds: { questionId: string; skill: string; level: number; text: string; flaw?: string }[] = hard
+    ? (JSON.parse(fs.readFileSync(path.join(HERE, 'hard-answers.json'), 'utf8')).answers as { questionId: string; level: number; flaw: string; text: string }[])
+        .map(a => ({ ...a, skill: questionById(a.questionId)?.question.skill ?? 'unknown' }))
+    : seededAnswers();
   if (limit) seeds = seeds.slice(0, limit);
-  const rows: Row[] = seeds.map(s => ({ key: `seed:${s.questionId}:L${s.level}`, kind: 'seeded', questionId: s.questionId, skill: s.skill, text: s.text, truth: s.level }));
+  const rows: Row[] = seeds.map(s => ({ key: `seed:${s.questionId}:L${s.level}${s.flaw ? ':' + s.flaw : ''}`, kind: 'seeded', questionId: s.questionId, skill: s.skill, text: s.text, truth: s.level }));
   const seedRows = [...rows];
   seedRows.forEach((r, i) => {
     if (i % 4 === 0) rows.push({ ...r, key: `repeat:${r.key}`, kind: 'repeat', baseKey: r.key });
