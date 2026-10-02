@@ -366,6 +366,23 @@ The paper JSONs are in `data/gce-generated/`, and the figure specs and PNGs are 
 `publish.mjs`. **Not published yet:** it waits for Adrian's read, and then needs the service
 key (the Mac).
 
+**A Math Set 1 P2 Q4 rewritten (2 Oct 2026, Adrian: "secondary A Math syllabus has no such
+graph sketching (involving sketching y = sin(x + a))" → "change the whole R-formula
+question, try to come up with a non-standard question").** The original (express
+√3 cos 2x − sin 2x in R-form → hence solve → sketch, showing the maximum) is replaced by the
+R-form inside a discriminant: x² − (√3 sin θ + cos θ)x + 1 = 0 has real roots for exactly
+two θ (π/3, root 1; 4π/3, root −1) [6]; with constant term −1 the roots are always real and
+distinct and the greatest positive root is 1 + √2 [3]. Opus author, fresh Opus blind solve
+(agrees), Fable moderator 4/5 at standard, wording fix applied; the run dir was rebuilt
+from the committed paper (the Mac's seed-1 run dir is not on the cloud box) with the other
+nine slots' recorded gates kept. The paper file keeps its 09-08 name and Fable as author;
+`models.note` records the rewrite. **The bank still holds the old Q4 until Set 1 P2 is
+re-published from the Mac** (`publish.mjs --paper data/gce-generated/GCE-AM-P2-seed1-2026-09-08.json
+--figures data/gce-generated/figures/GCE-AM-P2-seed1 --set 1` — updates row Q4 in place
+by `set_item`; the Q6/Q10 figure files are filed beside it). 4049 sketches
+only y = a sin(bx) + c and its cos/tan forms — never a phase-shifted graph; `reference/am-standard-2024-2025.md`
+should say so where it lists graph work.
+
 **E Math Set 2 = seed 3, `--set 2` (23 Sep 2026)** — the same brief, the same Opus 5.5
 agents, written straight after A Math Set 2. `GCE-EM-P1-seed3` (27 Q, 90 marks, figures
 Q13 / Q23 / Q27) + `GCE-EM-P2-seed3` (9 Q, 90 marks, figures Q4 graph paper / Q5 / Q8).

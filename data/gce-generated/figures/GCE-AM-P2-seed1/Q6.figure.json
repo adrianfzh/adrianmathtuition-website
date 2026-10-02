@@ -1,0 +1,3 @@
+{"family":"coordinate-plane","xAxis":{"min":-4,"max":10,"step":100,"label":"x"},"yAxis":{"min":-2,"max":9,"step":100,"label":"y"},"grid":false,
+ "points":[{"id":"A","x":-2,"y":3,"label":"A(−2, 3)"},{"id":"B","x":6,"y":7,"label":"B(6, 7)"},{"id":"C","x":8,"y":3,"label":"C(8, 3)"},{"id":"D","x":2,"y":0,"label":"D"}],
+ "shapes":[{"vertices":["A","B","C","D"],"closed":true}]}

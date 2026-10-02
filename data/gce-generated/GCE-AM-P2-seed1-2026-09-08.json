@@ -1,17 +1,31 @@
 {
  "key": "GCE-AM-P2",
  "seed": 1,
+ "set": 1,
+ "variety": true,
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)",
+  "note": "Q4 rewritten 2 Oct 2026 (Adrian: a non-standard R-formula question; the original sketched y = 2cos(2x + pi/6), which 4049 does not ask) — opus author, opus blind solve, fable moderator"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 2 P1",
+  "Set 2 P2"
+ ],
  "shape": {
   "subject": "Additional Mathematics",
   "code": "4049",
   "level": "AM",
   "cut": 2021,
   "duration": "2 hours 15 minutes",
-  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial."
+  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial.",
+  "register": "REGISTER — how SEAB asks\n- Plain, exact, economical English. Instructions are imperatives: Find, Show that, Hence, Explain why, Determine, Express, Solve, Sketch, State, Calculate, Verify, Use … to …, Given that …\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A single-part question has no labels.\n- Precision demands are explicit: \"giving your answer in the form $a + b\\sqrt{3}$, where $a$ and $b$ are integers\", \"correct to 2 decimal places\", \"in terms of $\\pi$\", \"in exact form\", \"in logarithmic form\".\n- A \"Show that\"/\"Prove that\" part states its target exactly; a later part uses it (\"Hence …\", \"Using your answer to part (a) …\").\n- Contexts are brief and concrete (a coffee machine, a patch of water, a ball thrown upwards), never chatty; units are given; constants are named (\"where $k$ is a constant\"); the model is stated as a formula.\n- \"A calculator must not be used in this question.\" opens a question whose point is exact arithmetic (surds, exact trigonometric values). Otherwise no calculator remark.\n- Function notation $\\mathrm{f}(x)$, $\\mathrm{f}'(x)$, $\\frac{dy}{dx}$, $\\int \\ldots \\,dx$; angles in radians unless degrees are stated; a domain such as $0 \\le x \\le 2\\pi$ or $-\\frac{\\pi}{2} \\le \\theta \\le \\frac{\\pi}{2}$ is always stated for a trigonometric equation.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1–2 marks: state/verify/one-line deduction. 3–4 marks: one standard routine. 5–7 marks: a multi-step argument. A long closing question of 9–12 marks has 3–5 parts that build on one another."
  },
  "paperNo": 2,
  "total": 90,
- "prompt_version": "gce-author-v1",
+ "prompt_version": "gce-author-v2",
  "blueprint_derived_at": "2026-09-08",
  "generated_at": "2026-09-08T17:15:05.123Z",
  "topicList": [
@@ -468,12 +482,8 @@
    ]
   }
  ],
- "models": {
-  "author": "claude-fable-5-1 (Claude Code agent)",
-  "solver": "claude-opus-5 (Claude Code agent)",
-  "moderator": "claude-fable-5-1 (Claude Code agent)"
- },
- "assembled_at": "2026-09-08T18:02:10.470Z",
+ "title": "A Math · Set 1 · Paper 2 · O-Level format",
+ "assembled_at": "2026-10-02T08:08:43.370Z",
  "questions": [
   {
    "pos": 1,
@@ -540,6 +550,10 @@
    },
    "exemplars": [
     {
+     "id": "55babcee-d0c8-4b46-9d1b-f8041a1690f2",
+     "ref": "GCE 2025 P1 Q1"
+    },
+    {
      "id": "3a3206d8-888a-454f-a39c-61a61ead156a",
      "ref": "GCE 2024 P2 Q3"
     },
@@ -554,10 +568,6 @@
     {
      "id": "ceaf5363-6cec-4262-9b33-e828e311d450",
      "ref": "GCE 2022 P2 Q1"
-    },
-    {
-     "id": "1235893c-ff2e-43ae-a8de-5d6f5aceabca",
-     "ref": "GCE 2021 specimen P1 Q5"
     }
    ]
   },
@@ -654,12 +664,12 @@
      "ref": "GCE 2021 specimen P1 Q10"
     },
     {
-     "id": "d5555a6c-17ce-42ba-bab8-a7e565612ac7",
-     "ref": "GCE 2024 P2 Q6"
+     "id": "cc0ccc7b-e0f4-4257-b84a-c8e4f92dffda",
+     "ref": "GCE 2025 P1 Q3"
     },
     {
-     "id": "00be4c94-404b-4d43-ab8b-181c658593a9",
-     "ref": "GCE 2021 P2 Q2"
+     "id": "e3760789-c8bf-4dea-a2b1-8142f18449ad",
+     "ref": "GCE 2025 P2 Q4"
     }
    ]
   },
@@ -792,38 +802,37 @@
    "target": 9,
    "accepted": true,
    "question": {
-    "stem": "It is given that $\\mathrm{f}(x) = \\sqrt{3}\\cos 2x - \\sin 2x$.",
+    "stem": "The equation $x^2 - (\\sqrt{3}\\sin\\theta + \\cos\\theta)x + 1 = 0$, where $\\theta$ is a constant, is a quadratic equation in $x$. It is given that $0 \\le \\theta \\le 2\\pi$.",
     "parts": [
      {
       "label": "(a)",
-      "text": "Express $\\mathrm{f}(x)$ in the form $R\\cos(2x + \\alpha)$, where $R > 0$ and $0 < \\alpha < \\frac{\\pi}{2}$.",
-      "marks": 3,
-      "answer": "$2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$"
+      "text": "By expressing $\\sqrt{3}\\sin\\theta + \\cos\\theta$ in the form $R\\sin(\\theta + \\alpha)$, where $R > 0$ and $0 < \\alpha < \\frac{\\pi}{2}$, show that the equation has real roots for exactly two values of $\\theta$. Find these two values of $\\theta$, in terms of $\\pi$, and the root of the equation for each of them.",
+      "marks": 6,
+      "answer": "$\\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$; real roots only when $\\sin\\left(\\theta + \\frac{\\pi}{6}\\right) = \\pm 1$: $\\theta = \\frac{\\pi}{3}$, root $x = 1$ (repeated); $\\theta = \\frac{4\\pi}{3}$, root $x = -1$ (repeated)"
      },
      {
       "label": "(b)",
-      "text": "Hence solve the equation $\\mathrm{f}(x) = \\sqrt{2}$ for $0 \\le x \\le \\pi$, giving your answers in terms of $\\pi$.",
-      "marks": 4,
-      "answer": "$x = \\frac{\\pi}{24}$ or $x = \\frac{19\\pi}{24}$"
-     },
-     {
-      "label": "(c)",
-      "text": "Sketch the graph of $y = \\mathrm{f}(x)$ for $0 \\le x \\le \\pi$, showing the coordinates of the maximum point.",
-      "marks": 2,
-      "answer": "Sketch of $y = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$: starts at $(0, \\sqrt{3})$, falls through $\\left(\\frac{\\pi}{6}, 0\\right)$ to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, rises through $\\left(\\frac{2\\pi}{3}, 0\\right)$ to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, and ends at $(\\pi, \\sqrt{3})$; maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$"
+      "text": "Show that the equation $x^2 - (\\sqrt{3}\\sin\\theta + \\cos\\theta)x - 1 = 0$ has real and distinct roots for every value of $\\theta$, and find, in exact form, the greatest possible value of its positive root.",
+      "marks": 3,
+      "answer": "Discriminant $= 4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) + 4 > 0$ for all $\\theta$; greatest positive root $= 1 + \\sqrt{2}$ (when $\\theta = \\frac{\\pi}{3}$)"
      }
     ],
-    "answer": "(a) $2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$; (b) $x = \\frac{\\pi}{24}$ or $\\frac{19\\pi}{24}$; (c) sketch of $y = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$ from $(0, \\sqrt{3})$ down to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, up to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, ending at $(\\pi, \\sqrt{3})$; maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$",
+    "answer": "(a) $\\theta = \\frac{\\pi}{3}$, $x = 1$; $\\theta = \\frac{4\\pi}{3}$, $x = -1$. (b) $1 + \\sqrt{2}$",
     "total_marks": 9,
     "topics": [
      "Trigonometry (R-Formula)",
-     "Trigonometry (Equations)"
+     "Nature of Roots"
+    ],
+    "skills": [
+     "discriminant of a quadratic whose coefficient is $a\\sin\\theta + b\\cos\\theta$, written through the R-form as $4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4$",
+     "deducing that $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\ge 1$ forces equality, so real roots occur only at the greatest and least values of the R-form (equal roots)",
+     "greatest value of the positive root $\\frac{s + \\sqrt{s^2 + 4}}{2}$ as $s = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$ varies, by seeing the root increases with $s$"
     ],
     "needs_figure": false,
     "figure_description": "",
-    "solution": "(a) $R = \\sqrt{(\\sqrt{3})^2 + 1^2} = \\sqrt{4} = 2$. Comparing $\\sqrt{3}\\cos 2x - \\sin 2x$ with $R\\cos 2x\\cos\\alpha - R\\sin 2x\\sin\\alpha$: $R\\cos\\alpha = \\sqrt{3}$ and $R\\sin\\alpha = 1$, so $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$ and $\\alpha = \\frac{\\pi}{6}$ (acute). Hence $\\mathrm{f}(x) = \\sqrt{3}\\cos 2x - \\sin 2x = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$.\n(b) $2\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\sqrt{2}$ gives $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\frac{\\sqrt{2}}{2} = \\frac{1}{\\sqrt{2}}$. For $0 \\le x \\le \\pi$, $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$. Basic angle $\\frac{\\pi}{4}$; cosine is positive in the first and fourth quadrants, so $2x + \\frac{\\pi}{6} = \\frac{\\pi}{4}$ or $\\frac{7\\pi}{4}$ (the next value $\\frac{9\\pi}{4}$ exceeds $\\frac{13\\pi}{6}$). Then $2x = \\frac{\\pi}{12}$ or $\\frac{19\\pi}{12}$, so $x = \\frac{\\pi}{24}$ or $x = \\frac{19\\pi}{24}$. Check: $2x = 15^\\circ$: $\\sqrt{3}\\cos 15^\\circ - \\sin 15^\\circ = \\sqrt{2}$; $2x = 285^\\circ$: $\\sqrt{3}\\cos 285^\\circ - \\sin 285^\\circ = \\sqrt{2}$.\n(c) $y = \\mathrm{f}(x) = 2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$ has amplitude $2$ and period $\\frac{2\\pi}{2} = \\pi$, so $0 \\le x \\le \\pi$ covers exactly one period, with $2x + \\frac{\\pi}{6}$ running from $\\frac{\\pi}{6}$ to $\\frac{13\\pi}{6}$.\nEnd values: at $x = 0$, $y = 2\\cos\\frac{\\pi}{6} = \\sqrt{3}$; at $x = \\pi$, $y = 2\\cos\\frac{13\\pi}{6} = 2\\cos\\frac{\\pi}{6} = \\sqrt{3}$.\nMinimum point: $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = -1$ when $2x + \\frac{\\pi}{6} = \\pi$, so $2x = \\frac{5\\pi}{6}$, $x = \\frac{5\\pi}{12}$, giving $\\left(\\frac{5\\pi}{12}, -2\\right)$.\nMaximum point: $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = 1$ when $2x + \\frac{\\pi}{6} = 2\\pi$ (the only such value in $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$), so $2x = \\frac{11\\pi}{6}$, $x = \\frac{11\\pi}{12}$, giving $\\left(\\frac{11\\pi}{12}, 2\\right)$. (At $x = 0$ the value is only $\\sqrt{3}$, so the maximum is not at an endpoint.)\nAxis crossings: $2x + \\frac{\\pi}{6} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, giving $x = \\frac{\\pi}{6}$ and $x = \\frac{2\\pi}{3}$.\nThe sketch starts at $(0, \\sqrt{3})$, falls through $\\left(\\frac{\\pi}{6}, 0\\right)$ to the minimum $\\left(\\frac{5\\pi}{12}, -2\\right)$, rises through $\\left(\\frac{2\\pi}{3}, 0\\right)$ to the maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$, and falls to $(\\pi, \\sqrt{3})$: one full cosine wave between $y = -2$ and $y = 2$, with the maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$ labelled.\nMarks: (a) M1 $R = \\sqrt{3 + 1} = 2$; M1 $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$; A1 $2\\cos\\left(2x + \\frac{\\pi}{6}\\right)$. (b) M1 $\\cos\\left(2x + \\frac{\\pi}{6}\\right) = \\frac{1}{\\sqrt{2}}$; M1 basic angle $\\frac{\\pi}{4}$ with $\\frac{\\pi}{6} \\le 2x + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$; A1 $x = \\frac{\\pi}{24}$; A1 $x = \\frac{19\\pi}{24}$. (c) B1 shape with the correct period and the end values $\\sqrt{3}$ at both ends; B1 maximum point $\\left(\\frac{11\\pi}{12}, 2\\right)$ labelled.",
-    "syllabus_check": "4049 Trigonometry: expression of $a\\cos t + b\\sin t$ as $R\\cos(t + \\alpha)$ (R-formula) with a double-angle argument; exact values of special angles ($R = 2$, $\\alpha = \\frac{\\pi}{6}$); solving a trigonometric equation with a compound argument over a stated domain in radians, answers in terms of $\\pi$, with the domain of $2x + \\frac{\\pi}{6}$ tracked; sketching the graph of $y = R\\cos(2x + \\alpha)$ over a stated domain (amplitude, period, end values, coordinates of the maximum point). A calculator is allowed, as in every SEAB R-formula question; exactness is demanded through 'in terms of $\\pi$'. No inverse trigonometric functions, no identities beyond the addition formula that the R-form rests on.",
-    "originality_note": "Pure R-formula question on a double-angle argument in radians, no context and no figure. The exemplars are all contextual 'show that a length equals $a\\cos t + b\\sin t$' questions in degrees (2024 P1 Q11, 2022 P2 Q7, 2021 specimen P2 Q6, 2023 P2 Q8) or 2020 P2 Q1 ($7\\cos t + 4\\sin t = 6$, then the extremes of $80 - (\\ldots)^{2}$). New coefficients ($\\sqrt{3}$, $1$ giving $R = 2$, $\\alpha = \\frac{\\pi}{6}$ exactly), the $2x$ argument that doubles the working interval and discards $\\frac{9\\pi}{4}$, right-hand side $\\sqrt{2}$, and a closing sketch of $y = \\mathrm{f}(x)$ over $0 \\le x \\le \\pi$ whose maximum $\\left(\\frac{11\\pi}{12}, 2\\right)$ is not at an endpoint and whose end values are both $\\sqrt{3}$, a demand no exemplar makes. Paper 1's trigonometry (graph of $2\\sin 3x + 1$; proving $\\sin(A+B)\\sin(A-B)$; an equation after a binomial expansion) is not repeated: Paper 1's graph is a sine with a vertical shift, this one a phase-shifted cosine obtained from an R-form."
+    "solution": "(a) $R = \\sqrt{(\\sqrt{3})^2 + 1^2} = 2$, $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$, so $\\alpha = \\frac{\\pi}{6}$.\nSo $\\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$.\nDiscriminant $= (\\sqrt{3}\\sin\\theta + \\cos\\theta)^2 - 4(1)(1) = 4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4$.\nFor real roots, $4\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) - 4 \\ge 0$, i.e. $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\ge 1$.\nBut $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) \\le 1$ for all $\\theta$, so we need $\\sin^2\\left(\\theta + \\frac{\\pi}{6}\\right) = 1$, i.e. $\\sin\\left(\\theta + \\frac{\\pi}{6}\\right) = 1$ or $-1$.\nSince $\\frac{\\pi}{6} \\le \\theta + \\frac{\\pi}{6} \\le \\frac{13\\pi}{6}$: $\\theta + \\frac{\\pi}{6} = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$, so $\\theta = \\frac{\\pi}{3}$ or $\\theta = \\frac{4\\pi}{3}$ — exactly two values.\nWhen $\\theta = \\frac{\\pi}{3}$: $\\sqrt{3}\\sin\\theta + \\cos\\theta = 2$, the equation is $x^2 - 2x + 1 = 0$, $(x - 1)^2 = 0$, $x = 1$ (equal roots).\nWhen $\\theta = \\frac{4\\pi}{3}$: $\\sqrt{3}\\sin\\theta + \\cos\\theta = -2$, the equation is $x^2 + 2x + 1 = 0$, $(x + 1)^2 = 0$, $x = -1$ (equal roots).\n(b) Let $s = \\sqrt{3}\\sin\\theta + \\cos\\theta = 2\\sin\\left(\\theta + \\frac{\\pi}{6}\\right)$, so $-2 \\le s \\le 2$.\nDiscriminant $= s^2 - 4(1)(-1) = s^2 + 4 \\ge 4 > 0$ for every $\\theta$, so the roots are real and distinct for every value of $\\theta$.\n(Product of roots $= -1 < 0$, so there is exactly one positive root.) The positive root is $x = \\frac{s + \\sqrt{s^2 + 4}}{2}$.\nAs $s$ increases from $0$ to $2$ both $s$ and $\\sqrt{s^2 + 4}$ increase, and for $s < 0$ the root is less than its value at $s = 0$ (it equals $\\frac{2}{\\sqrt{s^2+4} - s}$, whose denominator decreases as $s$ increases); so the positive root increases with $s$ and is greatest when $s$ is greatest, $s = 2$ (at $\\theta = \\frac{\\pi}{3}$).\nGreatest positive root $= \\frac{2 + \\sqrt{8}}{2} = 1 + \\sqrt{2}$.",
+    "syllabus_check": "4049: R-formula $a\\sin\\theta + b\\cos\\theta = R\\sin(\\theta + \\alpha)$ and its range; trigonometric equations in radians with a stated domain; nature of roots via the discriminant; exact surd form. No graph of a phase-shifted function is sketched, no calculator needed.",
+    "originality_note": "Not the 'show that a length is $a\\sin\\theta + b\\cos\\theta$ → express → solve/maximum' template of 2021–2024, not the 2025 colliding-objects model, and not Set 2 P2 Q4 (a quadratic in $u = \\cos x - \\sin x$ whose greatest/least values are found). Here the R-form sits inside a DISCRIMINANT: the candidate must see that $\\sin^2 \\ge 1$ can only hold with equality, so real roots exist only at the two extremes of the R-form, and the last part turns the question round — changing the constant term makes the roots real for every $\\theta$, and the extreme of the R-form now gives the greatest positive root, $1 + \\sqrt{2}$. Replaces the Set 1 question (express → solve → sketch $y = \\mathrm{f}(x)$) on the tutor's instruction."
    },
    "draft": null,
    "gates": {
@@ -831,18 +840,20 @@
     "pass": true,
     "problems": [],
     "novelty": {
-     "nearest": "GCE 2012 P1 Q8",
-     "jaccard": 0.095
+     "nearest": "GCE 2013 P1 Q7",
+     "jaccard": 0.056,
+     "nearest_set": "Set 2 P2 Q4",
+     "jaccard_set": 0.073,
+     "repeated_skills": []
     },
     "marks": 9,
-    "checked_at": "2026-09-08T17:58:16.086Z",
+    "checked_at": "2026-10-02T08:08:43.302Z",
     "rounds": 2
    },
    "blind": {
     "answers": {
-     "(a)": "2 cos(2x + pi/6)",
-     "(b)": "x = pi/24 or x = 19pi/24",
-     "(c)": "greatest value = 2, occurring at x = 11pi/12"
+     "(a)": "2sin(θ + π/6); discriminant 4sin²(θ+π/6) − 4 ≥ 0 only when sin(θ+π/6) = ±1 (shown). θ = π/3, root x = 1; θ = 4π/3, root x = −1",
+     "(b)": "discriminant 4sin²(θ+π/6) + 4 > 0 for all θ (shown); greatest positive root = 1 + √2"
     },
     "solvable": true,
     "issues": []
@@ -852,28 +863,27 @@
      {
       "label": "(a)",
       "agree": true,
-      "note": "R = sqrt(3 + 1) = 2; R cos(alpha) = sqrt3, R sin(alpha) = 1, tan(alpha) = 1/sqrt3, alpha = pi/6. 2cos(2x + pi/6). Both agree; correct."
+      "note": "Both give 2sin(θ+π/6); discriminant 4sin²(θ+π/6) − 4 ≥ 0 with sin² ≤ 1 forces sin(θ+π/6) = ±1; on π/6 ≤ θ+π/6 ≤ 13π/6 that is θ+π/6 = π/2 or 3π/2 only, so θ = π/3 (equation (x−1)² = 0, root 1) and θ = 4π/3 ((x+1)² = 0, root −1). Checked independently: exactly two values, both roots repeated, no end-point case (θ = 0 and θ = 2π give s = 1)."
      },
      {
       "label": "(b)",
       "agree": true,
-      "note": "cos(2x + pi/6) = 1/sqrt2 with 2x + pi/6 in [pi/6, 13pi/6]: 2x + pi/6 = pi/4 or 7pi/4 (9pi/4 > 13pi/6 is excluded), so x = pi/24 or 19pi/24. Checked: 2x = 15 deg gives 2cos45 deg = sqrt2; 2x = 285 deg gives 2cos315 deg = sqrt2. Both agree; correct."
-     },
-     {
-      "label": "(c)",
-      "agree": true,
-      "note": "Greatest value 2 when cos(2x + pi/6) = 1, i.e. 2x + pi/6 = 2pi within [pi/6, 13pi/6], so x = 11pi/12 (x = -pi/12 is outside the domain; at x = 0 the value is only sqrt3). Both agree; correct."
+      "note": "Discriminant s² + 4 ≥ 4 > 0 for every θ; product of roots −1 so exactly one positive root, (s + √(s²+4))/2, which increases with s (its derivative ½(1 + s/√(s²+4)) > 0), so greatest at s = 2: (2 + √8)/2 = 1 + √2. Both keys agree and the value is right."
      }
     ],
     "all_agree": true,
-    "key_verdict": "Key and blind examiner agree on all three parts; the key is correct.",
+    "key_verdict": "Setter and blind examiner agree on every part and both are right: θ = π/3 (root 1), θ = 4π/3 (root −1); greatest positive root 1 + √2.",
     "score": 4,
+    "standard": "at",
     "fixes": [
-     "The skeleton (express in R-form -> solve on [0, pi] -> greatest value and the x at which it occurs) is the 2020 P2 Q1 skeleton with a double angle; give (c) a demand of its own, e.g. '(c) Sketch the graph of y = sqrt3 cos 2x - sin 2x for 0 <= x <= pi, stating the coordinates of the maximum point. [3]' (total 10) or '(c) State the number of solutions of sqrt3 cos 2x - sin 2x = -1 for 0 <= x <= pi and justify your answer. [2]'.",
-     "SEAB reserves 'A calculator must not be used in this question.' for surd/exact-identity questions (2022 P2 Q5, 2023 P2 Q4); every R-formula question in the corpus allows one. Either drop the line and demand the form instead ('giving your answers in terms of pi' in (b) and (c)), or keep it and make the point explicit with 'exact' in (b)."
+     "Tighten (b) to SEAB's wording: 'Show that the equation x² − (√3 sinθ + cosθ)x − 1 = 0 has real and distinct roots for every value of θ, and find, in exact form, the greatest possible value of its positive root.' — drop 'The constant term of the equation is now changed, so that the equation becomes', which narrates the edit instead of stating the equation.",
+     "Mark scheme for (b): the setter's worked solution proves the positive root is increasing in s (the s < 0 case via 2/(√(s²+4) − s)); 3 marks do not buy that. The scheme should award the A1 for taking s at its greatest, 2sin(θ+π/6) = 2, and substituting — the monotonicity argument is not to be demanded. (If Adrian wants the argument examined, re-mark to [4] with 'Explain why this greatest value occurs when √3 sinθ + cosθ is greatest'; otherwise leave at [3].)",
+     "Paper note for the session, not a reason to reject: with Q2 (Polynomials, Nature of Roots) and Q5 (Differentiation, Nature of Roots) already in this paper, the discriminant now appears in three questions of Set 1 P2. The skill here (an R-form range forcing equality in a discriminant inequality, then the extreme of a root) is different from both, but the session may want to check the tag count at the read-through."
     ],
     "too_close_to": null,
-    "why": "Correct, exam-clean (2, pi/6, pi/24, 19pi/24, 11pi/12) and the double-angle domain check in (b) is a real discriminator; but it is the one non-contextual R-formula exemplar (2020 P2 Q1) re-run with 2x and special angles rather than a fresh structure, and the no-calculator line is an unusual fit for the topic. Not a re-skin - 2020's second part (extremes of 80 - (expr)^2) is a different demand."
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Meets Adrian's brief exactly: the R-form is a tool inside Nature of Roots, not the 2021–2024 'show the length is a sinθ + b cosθ → express → solve' template, no phase-shifted sketch, and the last part turns the question round (one sign change makes the roots real for every θ and the extreme of the R-form now gives the greatest root, 1 + √2). The idea — s² ≥ 4 with |s| ≤ 2 can only hold with equality — is a genuine decision, the numbers close exactly (π/3, 4π/3, ±1, 1 + √2), the parts feed each other, and it is cleaner and more demanding than the Set 1 question it replaces; it is not the Set 2 P2 Q4 quadratic-in-u shape (there the trig is the variable of the quadratic, here a coefficient). A light edit to (b)'s wording and a scheme note keep it from 5."
    },
    "exemplars": [
     {
@@ -889,12 +899,12 @@
      "ref": "GCE 2021 specimen P2 Q6"
     },
     {
-     "id": "892e5c5a-8b85-480a-a177-a35c8f249d7d",
-     "ref": "GCE 2023 P2 Q8"
+     "id": "fe3c3527-4acd-4ba4-bba1-1d824ff0143a",
+     "ref": "GCE 2025 P2 Q11"
     },
     {
-     "id": "d45bd145-3828-4276-a56f-7c7398aaa10c",
-     "ref": "GCE 2020 P2 Q1"
+     "id": "892e5c5a-8b85-480a-a177-a35c8f249d7d",
+     "ref": "GCE 2023 P2 Q8"
     }
    ]
   },
@@ -1005,16 +1015,16 @@
      "ref": "GCE 2023 P1 Q4"
     },
     {
+     "id": "e3e86fbf-1532-4dfd-b59a-78cea2955959",
+     "ref": "GCE 2025 P2 Q5"
+    },
+    {
      "id": "3fd0c2a4-c811-4101-bc71-08c5a4ccddf8",
      "ref": "GCE 2022 P1 Q12"
     },
     {
      "id": "a906d956-d3fc-466d-9cd9-75b9505014e1",
      "ref": "GCE 2021 P2 Q3"
-    },
-    {
-     "id": "f2d2e5eb-d98d-4637-99fc-4037949bd8c5",
-     "ref": "GCE 2022 P2 Q6"
     }
    ]
   },
@@ -1497,12 +1507,12 @@
      "ref": "GCE 2023 P1 Q10"
     },
     {
-     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
-     "ref": "GCE 2024 P2 Q7"
+     "id": "47a911b9-671b-4a1e-ac67-4e2fc06e6974",
+     "ref": "GCE 2025 P1 Q13"
     },
     {
-     "id": "2abd9e0f-c88e-4b73-94b1-c4fb95016a17",
-     "ref": "GCE 2024 P1 Q4"
+     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
+     "ref": "GCE 2024 P2 Q7"
     }
    ]
   },

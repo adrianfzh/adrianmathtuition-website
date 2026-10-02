@@ -112,3 +112,9 @@ A Math Set 1 is the paper Adrian read and approved. A later Set matches its QUAL
 Every question of A Math Set 1 (13 + 10) was rated under §5 with the real 2024/25 questions open. Under the first, literal wording 5 came out "below" (P1 Q1, P1 Q13, P2 Q3, P2 Q4, P2 Q6 — each a clean routine question of a kind the real papers still carry) and 1 "above" (P2 Q9(b), on time alone); the other 17 were at standard. The wording was at fault in 17 places and loose in 3: it asked of one question what only a paper can answer, it had no verdict for the routine question every real paper contains, and it rated parts where it should rate questions. Those clauses are reworded above. Under this wording every Set 1 question is at standard or a routine slot inside the allowance.
 
 As whole papers Set 1 is NOT the 2024/25 shape, and this document does not pretend it is. Set 1 reaches the standard through ideas inside small parts: 68 answer units over the two papers against 51 (2024) and 46 (2025); no part above 5 marks against two and five; one unparted question against eight and seven; 22 printed targets against 9–12; no linear law and no exponential model. "Marks match the work" would re-mark a handful of Set 1 parts (P2 Q3 and P2 Q8(a) are generous; P1 Q12(c),(d), P2 Q2(a), P2 Q9(b) and P1 Q7(c) are short). The published Set 1 is left as Adrian approved it. List B moves later Sets to the near edge of the real shape while §6 holds them to Set 1's question quality. If Adrian prefers Set 1's more guided shape, relax items 3b, 6 and 13 and nothing else.
+
+> **Graph sketching in 4049 (Adrian, 2 Oct 2026):** the syllabus sketches only
+> $y = a\sin(bx) + c$, $y = a\cos(bx) + c$ and $y = a\tan(bx) + c$ (and the modulus,
+> power and exponential/log graphs). It never asks for a phase-shifted graph
+> $y = R\sin(bx \pm \alpha)$ — an R-formula question may not end "sketch $y = \mathrm{f}(x)$"
+> (A Math Set 1 P2 Q4(c) did, and was rewritten).
