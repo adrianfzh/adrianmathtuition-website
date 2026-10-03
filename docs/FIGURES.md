@@ -446,7 +446,7 @@ writes `image_watermark_status`, an image reference or a bucket object), stamps
 `job_runs` slug `figure-fitness` (quiet nights too), and is resumable per
 [`docs/RESUMABLE-JOBS.md`](RESUMABLE-JOBS.md) — its per-item state is the
 `fitness:` stamp in the database, so a killed run loses nothing and re-running is
-a no-op. Strong model only (`claude -p --model claude-opus-5-5 --effort high` in `figfit.sh` — corrected 3 Oct 2026; this line said Fable 5.1). The shape on Fly:
+a no-op. Strong model only. **The judge is Fable 5.1 since 3 Oct 2026** (`JUDGE_MODEL="${FIGFIT_MODEL:-claude-fable-5-1}"`, `--effort high`, bot 2511ecc — Adrian: "switch to fable first, we can switch back to opus 5.5 later (put a note)"; it was Opus 5.5 high before). **To switch back:** set `FIGFIT_MODEL=claude-opus-5-5` for the run, or change the default in `figfit.sh`, and restart the sweeps. The shape on Fly:
 deterministic node/python steps (law → candidates → build → select → fetch →
 measure → calib → units → contact sheets of 6 tiles with the stems beside them)
 build the night's material; ONE `claude -p` run calibrates on 12 tiles with 4
@@ -472,8 +472,10 @@ calibration and law (read from the maths project's law row) over the science pro
   — unlike the maths lane, which stays judge-only. A row with any other verdict gets its
   stamp and a flag and stays hidden. A quarantined row is never set clean.
 - Flags go to the science project's own **`figure_flags`** table (created 3 Oct 2026, RLS
-  on, the maths shape). The `/admin/figures-check` page reads only the maths table — science
-  flags are not on it yet.
+  on, the maths shape). They are on **`/admin/figures-bank?kind=science`** (the 🧪 Science
+  tab, `ScienceLane.tsx`, route `kind=science`): ✓ Figure is fine → the flag `fixed` and the
+  row `clean` when no other live flag holds it and it is not quarantined · 🛠 Repair →
+  recorded, stays held · Keep hidden → `open`. A decided flag carries an "Adrian: …" note.
 - Only rows with an `image_url` are candidates. **4,323 science rows say `has_image` but carry
   no image at all** (mostly physics from 18 May 2026); they stay hidden and need their
   figures, not a check.

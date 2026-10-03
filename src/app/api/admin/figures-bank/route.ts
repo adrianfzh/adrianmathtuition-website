@@ -60,6 +60,7 @@ import { batchKey, isSentBack, sendBackNote, sentBackObject, sgtDayLabel, type C
 import { sgtTodayISO } from '@/lib/sgt';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
@@ -1151,6 +1152,98 @@ async function checkLanePost(supa: SupabaseClient, body: Record<string, unknown>
   return NextResponse.json({ ok: true, status: 'held', note });
 }
 
+// ── The science lane (3 Oct 2026, Adrian: "add the science flags to the Check page") ──
+// The figure sweep over the SCIENCE bank (bot worker/fly/figfit, FIGFIT_BANK=science)
+// files its defects in the science project's own `figure_flags` — 'held' for a
+// cosmetic or blocking defect, 'open' for wrong-figure / answer-leak. A science image
+// question is served only when image_watermark_status='clean', so a flagged row stays
+// hidden until Adrian decides here:
+//   accept → the flag is fixed; the row turns clean when nothing else holds it
+//   hide   → the flag is open; the row stays hidden
+//   repair → the decision is recorded on the note; the flag stays held for the repair
+// A decided flag carries an "Adrian: …" note and leaves the list.
+const SCI_PREFIX = { accept: 'Adrian: figure is fine · ', hide: 'Adrian: hide · ', repair: 'Adrian: repair · ' } as const;
+type SciAction = keyof typeof SCI_PREFIX;
+
+function sciImgSrc(path: string): string {
+  const base = (process.env.SUPABASE_URL_SCIENCE || '').trim().replace(/\/+$/, '');
+  const name = path.replace(/^question_images\//, '');
+  return `${base}/storage/v1/object/public/question_images/${encodeURIComponent(name)}`;
+}
+
+async function scienceLaneGet(sp: URLSearchParams) {
+  if (!scienceConfigured()) return NextResponse.json({ error: 'science bank not configured' }, { status: 503 });
+  const sci = getScienceClient();
+  const view = sp.get('view') === 'open' ? 'open' : 'held';
+  const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+  const size = Math.min(60, Math.max(6, Number(sp.get('pageSize') ?? 24) || 24));
+  const { data: all, error } = await sci.from('figure_flags')
+    .select('path, question_id, status, note, created_at').eq('kind', 'question')
+    .in('status', ['held', 'open']).order('created_at', { ascending: true }).limit(5000);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  const undecided = (all ?? []).filter((f) => !String(f.note ?? '').startsWith('Adrian:'));
+  const totals = {
+    held: undecided.filter((f) => f.status === 'held').length,
+    open: undecided.filter((f) => f.status === 'open').length,
+  };
+  const lane = undecided.filter((f) => f.status === view);
+  const slice = lane.slice(page * size, page * size + size);
+  const qids = [...new Set(slice.map((f) => f.question_id))];
+  const meta: Record<string, Record<string, unknown>> = {};
+  if (qids.length) {
+    const { data: rows } = await sci.from('questions')
+      .select('id, level, subject, school, year, exam_type, paper, question_number, question_text, answer, image_watermark_status, quarantined')
+      .in('id', qids);
+    for (const r of rows ?? []) meta[r.id as string] = r;
+  }
+  const items = slice.map((f) => {
+    // "figure-fitness 2026-10-03 · cosmetic · foreign · reason…"
+    const bits = String(f.note ?? '').split(' · ');
+    const m = meta[f.question_id as string] ?? {};
+    return {
+      path: f.path as string, qid: f.question_id as string, status: f.status as string,
+      severity: bits[1] ?? '', verdict: bits[2] ?? '', reason: bits.slice(3).join(' · '),
+      src: sciImgSrc(f.path as string),
+      subject: (m.subject as string) ?? '', level: (m.level as string) ?? '',
+      source: [m.school, m.year, m.exam_type, m.paper ? `P${m.paper}` : '', m.question_number ? `Q${m.question_number}` : ''].filter(Boolean).join(' · '),
+      text: String(m.question_text ?? '').slice(0, 600), answer: (m.answer as string) ?? '',
+      rowStatus: (m.image_watermark_status as string | null) ?? null, quarantined: !!m.quarantined,
+    };
+  });
+  return NextResponse.json({ items, totals, total: lane.length });
+}
+
+async function scienceLanePost(body: Record<string, unknown>, path: string, questionId: string) {
+  if (!scienceConfigured()) return NextResponse.json({ error: 'science bank not configured' }, { status: 503 });
+  const action = body.action as SciAction;
+  if (!(action in SCI_PREFIX)) return NextResponse.json({ error: 'action must be accept | hide | repair' }, { status: 400 });
+  const sci = getScienceClient();
+  const { data: flag, error: fe } = await sci.from('figure_flags')
+    .select('path, question_id, status, note').eq('path', path).eq('question_id', questionId).maybeSingle();
+  if (fe) return NextResponse.json({ step: 'read flag', error: fe.message }, { status: 500 });
+  if (!flag) return NextResponse.json({ error: 'no science flag at that path' }, { status: 404 });
+  const note = SCI_PREFIX[action] + String(flag.note ?? '');
+  const status = action === 'accept' ? 'fixed' : action === 'hide' ? 'open' : 'held';
+  const { error: ue } = await sci.from('figure_flags').update({ status, note }).eq('path', path).eq('question_id', questionId);
+  if (ue) return NextResponse.json({ step: 'write flag', error: ue.message }, { status: 500 });
+  let released = false;
+  if (action === 'accept') {
+    // Open the row only when nothing else holds it: no other live flag, not
+    // quarantined, and no status of its own already set by someone else.
+    const [{ data: others }, { data: row }] = await Promise.all([
+      sci.from('figure_flags').select('path').eq('question_id', questionId).in('status', ['held', 'open']),
+      sci.from('questions').select('image_watermark_status, quarantined').eq('id', questionId).maybeSingle(),
+    ]);
+    if (row && !(others ?? []).length && !row.quarantined && !row.image_watermark_status) {
+      const { error: re } = await sci.from('questions')
+        .update({ image_watermark_status: 'clean', image_watermark_scanned_at: new Date().toISOString() }).eq('id', questionId);
+      if (re) return NextResponse.json({ step: 'release question', error: re.message }, { status: 500 });
+      released = true;
+    }
+  }
+  return NextResponse.json({ ok: true, status, released });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -1159,6 +1252,7 @@ export async function GET(req: NextRequest) {
   if (sp.get('kind') === 'solution') return solutionLaneGet(supa, sp);
   if (sp.get('kind') === 'fitness') return fitnessLaneGet(supa, sp);
   if (sp.get('kind') === 'check') return checkLaneGet(supa, sp);
+  if (sp.get('kind') === 'science') return scienceLaneGet(sp);
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
@@ -1267,6 +1361,7 @@ export async function POST(req: NextRequest) {
   // and a Solutions-lane tap updated zero rows while reporting ok. Resolve the
   // STORED spelling once here; every lane below then hits the row it was shown.
   if (body.kind === 'check') return checkLanePost(supa, body, rawPath, questionId);
+  if (body.kind === 'science') return scienceLanePost(body, rawPath, questionId);
   const path = await storedFlagPath(supa, rawPath, body.kind === 'solution' ? 'solution' : 'question');
   // The solution vet lane and the fitness lane are separate verb sets on the
   // same table; every question-figure behaviour below is untouched.
