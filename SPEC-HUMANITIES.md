@@ -67,11 +67,22 @@ SEAB skill list and the pattern common to school schemes.
 |---|---|---|
 | H0 | Level schemes per skill for Social Studies source questions; collect prelim schemes as grounding (kept internal, content policy applies) | Adrian reads the seven schemes |
 | H1 | 30 own source sets + questions for Social Studies; the marker (two blind reads, a third on disagreement, held when all differ — the essay marker's rule); the report page behind the closed switch | the bench (§4) |
-| H2 | Social Studies structured response; History source questions (same skills, History content) | bench per subject |
+| H2 | Social Studies structured response; History source questions (same skills, History content) — **built 3 Oct 2026** | bench per subject — passed |
 | H3 | Geography: point-marked parts need a points scheme per question — closer to science marking than to this; the 9-mark question uses SEAB's published level table | bench |
 | H4 | History essays, Literature — on the essay marker | bench |
 
 Social Studies first: every O-Level student takes it, and it is the most skill-driven.
+
+> **H2 BUILT 3 Oct 2026 (preview only, switch closed).**
+> - **History** — 5 own source sets, 15 questions (`data/humanities/history/sets.json`), the six
+>   source schemes unchanged. The sources are written for practice and the page says so; no
+>   invented quotation is put in a real named person's mouth.
+> - **Social Studies structured response** — 5 sets, 10 questions
+>   (`data/humanities/social-studies/structured.json`): "Explain two ways" (`sr_explain`, 3 levels)
+>   and "Do you agree?" (`sr_weigh`, 4 levels), answered from own knowledge, with their own rules
+>   and tags (point · example · link · not explained · weighs).
+> - Humanities Home has a tab per subject (`?s=history`).
+> - Bench per subject: `--subject history` and `--kind structured`. Both passed (§4).
 
 ## 4. The bench — built like the science bench
 
@@ -97,6 +108,8 @@ levels off; consistency passes; the truth-free checks pass.
 |---|---|---|---|---|
 | `h1-2026-10-02` — the clean seeded answers | 45/46 | 12/12 | 24/24 | US$3.53 |
 | `h1-hard-2026-10-02` — 90 student-like answers for sets 5–10 (`--hard`) | 89/90, the miss one level off | 23/23 | 31/31 | US$6.56 |
+| `h2-history-2026-10-03` — History source questions (`--subject history`) | 35/35 | 9/9 | 22/22 | US$3.06 |
+| `h2-structured-2026-10-03` — structured response (`--kind structured`) | 21/21 | 6/6 | 10/10 | US$1.47 |
 
 - The one miss: a reliability answer that trusts the source from its content alone,
   written as Level 2, read as 1–2.

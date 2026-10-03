@@ -18,7 +18,7 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <Link href="/app/humanities" className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>
+      <Link href={ctx.set.subject === 'history' ? '/app/humanities?s=history' : '/app/humanities'} className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>
       <div>
         <p className="text-[12px] font-semibold text-amber-800">{skillLabel(ctx.question.skill)}</p>
         <h1 className="text-xl font-bold text-navy leading-snug">{ctx.set.title}</h1>

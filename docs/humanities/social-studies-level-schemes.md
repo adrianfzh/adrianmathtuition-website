@@ -269,6 +269,11 @@ on the wrong side; a conclusion that only repeats the body.
 Two parts, both written from the student's own knowledge of the syllabus content.
 An extract is given as a starting point only.
 
+> **Built 3 Oct 2026 (H2).** In `schemes.json` these are the skills `sr_explain` (7a) and
+> `sr_weigh` (7b), with their own rules and claim tags under `structured`
+> (point · example · link · not explained · weighs). History source questions use the six
+> source schemes above unchanged — only the content is History.
+
 ### 7(a) — "Explain two ways / two reasons …"
 
 | Level | What the answer does |
