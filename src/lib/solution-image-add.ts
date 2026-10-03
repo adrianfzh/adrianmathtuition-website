@@ -57,3 +57,36 @@ export function addSolutionImageRef(row: Rec, ref: string, partLabel: string | n
   list.push(ref);
   return { patch: { solution_images: list }, field: `solution_images[${list.length - 1}]` };
 }
+
+/** A NEW question figure (3 Oct 2026, Adrian: "just draw it") for a question
+ *  banked without one. Approve appends it to the named part's image_url list,
+ *  or the stem's image_url (a JSON-array string) when no part is named or the
+ *  part is not found. `ref` is the bucket-prefixed path, e.g.
+ *  `question_images/<file>.png`. Never removes an existing figure. */
+export function addQuestionImageRef(row: Rec, ref: string, partLabel: string | null | undefined): AddResult {
+  const want = splitPartLabel(partLabel);
+  const parts = Array.isArray(row.parts) ? (JSON.parse(JSON.stringify(row.parts)) as Rec[]) : null;
+  const push = (slot: Rec) => {
+    const v = slot.image_url;
+    const list = Array.isArray(v) ? [...v] : typeof v === 'string' && v.trim() ? [v] : [];
+    list.push(ref);
+    slot.image_url = list;
+  };
+  if (parts && want.length) {
+    const i = parts.findIndex((p) => p && typeof p === 'object' && norm(p.label) === want[0]);
+    if (i >= 0) {
+      const subs = Array.isArray(parts[i].subparts) ? (parts[i].subparts as Rec[]) : [];
+      const j = want.length > 1 ? subs.findIndex((s) => s && typeof s === 'object' && norm(s.label) === want[1]) : -1;
+      if (j >= 0) { push(subs[j]); return { patch: { parts }, field: `parts[${i}].subparts[${j}].image_url` }; }
+      if (want.length === 1) { push(parts[i]); return { patch: { parts }, field: `parts[${i}].image_url` }; }
+    }
+  }
+  let list: unknown[] = [];
+  const v = row.image_url;
+  if (Array.isArray(v)) list = [...v];
+  else if (typeof v === 'string' && v.trim()) {
+    try { const p = JSON.parse(v); list = Array.isArray(p) ? p : [v]; } catch { list = [v]; }
+  }
+  list.push(ref);
+  return { patch: { image_url: JSON.stringify(list) }, field: `image_url[${list.length - 1}]` };
+}
