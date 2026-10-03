@@ -129,7 +129,10 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // OPEN since 3 Oct 2026 (Adrian: "open practice tab for chemistry calculations and mcq
 // (do not show the source)"): MCQ by topic for the sciences a student takes. The
 // school / year / paper never leave the server (lib/science-bank toPayload: source null).
-export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = true;
+// CLOSED again later on 3 Oct 2026 (Adrian: "close the mcq practice first - we need to
+// check the questions are okay - figures are okay?") until the MCQ rows and their
+// figures have been checked. Adrian's cookie and the preview student still see it.
+export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
 // 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers
 // straight away"). The practice grader has not been checked against science scheme
