@@ -4,6 +4,7 @@ import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-q
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceNext, toPayload } from '@/lib/science-bank';
+import { scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
 
@@ -30,8 +31,11 @@ export async function POST(req: NextRequest) {
   // Science levels: the science bank's twin of practice_next (lib/science-bank).
   if (isScienceLevel(level)) {
     try {
+      // Written-answer questions stay with the admin cookie until the grader check passes:
+      // a student is served MCQ whatever the request says (3 Oct 2026, the tab opened).
+      const structuredOk = await scienceStructuredPracticeOpen();
       const q = await scienceNext({
-        kind: kind === 'mcq' || kind === 'structured' ? kind : null,
+        kind: !structuredOk ? 'mcq' : kind === 'mcq' || kind === 'structured' ? kind : null,
         levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
         tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
       });
