@@ -103,7 +103,7 @@ function Tile({ it, bad, focused, err, onTap, onBad }: {
         <p className="text-[12px] font-semibold text-navy truncate">{title(it)}</p>
         <a href={it.afterUrl} target="_blank" rel="noreferrer" className="shrink-0 text-[11px] text-gray-500 underline">full size</a>
       </div>
-      {it.isNew && <p className="text-[11px] text-violet-700">New solution drawing</p>}
+      {it.isNew && <p className="text-[11px] text-violet-700">{it.lane === 'solution' ? 'New solution drawing' : 'New question drawing'}</p>}
       {it.holdReason && <p className="text-[11px] text-amber-700 line-clamp-2">⚠ {it.holdReason}</p>}
       {bad && (
         <div className="space-y-1.5">
@@ -266,7 +266,7 @@ function One({ it, onDone, onMove, pos, count }: {
       <div className="flex items-baseline justify-between gap-3">
         <p className="font-bold text-navy">{title(it)}</p>
         <span className={`shrink-0 text-[11px] font-semibold rounded-full px-2.5 py-0.5 ${it.lane === 'solution' ? 'bg-violet-50 text-violet-700' : 'bg-sky-50 text-sky-700'}`}>
-          {it.isNew ? 'New solution drawing' : it.lane === 'solution' ? 'Solution figure' : 'Question figure'}{it.level ? ` · ${it.level}` : ''}
+          {it.isNew ? (it.lane === 'solution' ? 'New solution drawing' : 'New question drawing') : it.lane === 'solution' ? 'Solution figure' : 'Question figure'}{it.level ? ` · ${it.level}` : ''}
         </span>
       </div>
 
@@ -275,7 +275,7 @@ function One({ it, onDone, onMove, pos, count }: {
       {it.holdReason && <p className="text-[12px] text-amber-700">⚠ {it.holdReason}</p>}
 
       {it.isNew ? (
-        <p className="text-[12px] text-gray-500">New — this answer had no drawing before.</p>
+        <p className="text-[12px] text-gray-500">New — {it.lane === 'solution' ? 'this answer' : 'this question'} had no drawing before.</p>
       ) : (<>
         <button type="button" onClick={() => setShowBefore(v => !v)} className="text-[12px] font-semibold text-gray-500 underline underline-offset-2">
           {showBefore ? 'Hide the old one' : 'Show the old one'}
