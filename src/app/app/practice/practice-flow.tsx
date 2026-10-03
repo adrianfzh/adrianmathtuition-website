@@ -435,9 +435,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     finally { setPhotoBusy(false); }
   }
 
-  async function submitForMarking() {
+  // `pick` = an MCQ letter tapped just now: one tap checks it, then the
+  // explanation opens by itself (Adrian, 3 Oct 2026: "just one tap").
+  async function submitForMarking(pick?: string) {
     if (!q || grading) return;
-    const lines = working.split('\n');
+    const lines = (pick ?? working).split('\n');
     setGrading(true); setError('');
     try {
       const body = {
@@ -462,6 +464,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       setGradedViaPhoto(!!photo);
       setWeakTags(d.weaknessTags || []);
       if (assignment && d.result) setAssignDone({ score: d.result.score, outOf: d.result.outOf });
+      if (pick && solution === null) void showSolution();
     } catch (e) { setError(portalMessage(e)); }
     finally { setGrading(false); }
   }
@@ -883,9 +886,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {q.mcq ? (
                 /* MCQ (science bank): tap the option — marked instantly, no model. */
                 <>
-                  <p className="text-[11px] text-slate-400 mb-2">Pick the option:</p>
+                  <p className="text-[11px] text-slate-400 mb-2">{grade ? 'Your answer:' : 'Tap your answer:'}</p>
                   <McqChips letters={mcqLettersIn(q.stem || q.markdown)} value={working.trim().toUpperCase()}
-                    onPick={(l) => { setPhoto(null); setWorking(l); }} disabled={grading || solution !== null} />
+                    onPick={(l) => { setPhoto(null); setWorking(l); void submitForMarking(l); }} disabled={grading || grade !== null || solution !== null} />
                 </>
               ) : photo ? (
                 <div className="mb-3">
@@ -926,11 +929,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               )}
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                <button onClick={submitForMarking}
+                {!q.mcq && <button onClick={() => submitForMarking()}
                   disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
-                </button>
+                </button>}
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">

@@ -159,7 +159,7 @@ export function gradeMcq(answer: McqLetter, choice: McqLetter, marks: number | n
       ...(ok ? {} : { fix: answer }),
     }],
     strengths: ok ? ['Correct option chosen.'] : [],
-    nextSteps: ok ? [] : ['Open the solution, then find what in the question rules out the option you picked.'],
+    nextSteps: ok ? [] : ['Read the explanation below, then find what in the question rules out the option you picked.'],
   };
 }
 
