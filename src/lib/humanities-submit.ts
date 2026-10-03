@@ -2,9 +2,9 @@
 // §H1, 2 Oct 2026): the student's POST and the bench's admin POST both come
 // through here. The website owns the question, the sources and the level scheme
 // (data/humanities/…); the bot receives them WITH the answer and knows nothing
-// about Social Studies itself. Server-only.
+// about the subject itself. Server-only.
 import { getSupabaseAdmin } from './supabase';
-import { questionById, levelsMax, SCHEME_RULES, CLAIM_TAGS, SCHEME_VERSION } from './humanities-questions';
+import { questionById, levelsMax, rulesFor, tagsFor, SCHEME_VERSION, SUBJECT_NAME } from './humanities-questions';
 import { wordCount } from './humanities-report';
 
 /** Answers a student may hand in per Singapore day. */
@@ -46,7 +46,7 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
   const { data: row, error } = await sb.from('humanities_runs').insert({
     airtable_student_id: s.identity,
     student_name: s.studentName,
-    subject: 'social-studies',
+    subject: ctx.set.subject,
     skill: ctx.question.skill,
     question_id: ctx.question.id,
     answer_text: answer,
@@ -68,11 +68,11 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
       headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',
-        subject: 'Social Studies', skill: ctx.question.skill,
+        subject: SUBJECT_NAME[ctx.set.subject], kind: ctx.set.kind, skill: ctx.question.skill,
         issue: ctx.set.issue, question: ctx.question.question,
         sources: ctx.sources.map(x => ({ id: x.id, provenance: x.provenance, text: x.text })),
         scheme: { label: ctx.scheme.label, levels: ctx.scheme.levels, note: ctx.scheme.note ?? null, slips: ctx.scheme.slips, lifts: ctx.scheme.lifts },
-        rules: SCHEME_RULES, tags: CLAIM_TAGS,
+        rules: rulesFor(ctx.question.skill), tags: tagsFor(ctx.question.skill),
       }),
       signal: AbortSignal.timeout(15000),
     });

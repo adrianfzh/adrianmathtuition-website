@@ -1,0 +1,179 @@
+[
+  {
+    "id": "r01",
+    "subject": "social-studies",
+    "kind": "structured",
+    "title": "Living with differences",
+    "issue": "How can people of different backgrounds live well together?",
+    "sources": [
+      {
+        "id": "Extract",
+        "provenance": "An extract to start you thinking. Answer from your own knowledge.",
+        "text": "Singapore has people of many races, religions and nationalities. Most live in the same housing estates, attend the same schools and eat at the same hawker centres. Living side by side does not, by itself, mean that people understand one another."
+      }
+    ],
+    "questions": [
+      {
+        "id": "r01-a",
+        "skill": "sr_explain",
+        "sources": ["Extract"],
+        "question": "Explain two ways in which individuals can build understanding between people of different backgrounds.",
+        "seeded": [
+          { "level": 1, "text": "People can talk to their neighbours and join activities. They can also respect other religions. Singapore has many races living in the same estates." },
+          { "level": 2, "text": "One way is to take part in each other's festivals. For example, a family can accept a neighbour's invitation to a Hari Raya open house. They eat together and can ask about the fast and the customs. This replaces guesses about the other group with what they have seen for themselves, so there is more understanding. Another way is to respect other religions." },
+          { "level": 3, "text": "One way is to take part in each other's festivals. For example, a family can accept a neighbour's invitation to a Hari Raya open house. They eat together and can ask about the fast and the customs. This replaces guesses about the other group with what they have seen for themselves, so there is more understanding. A second way is to speak up against stereotypes. For example, when a classmate jokes that one race is lazy, a student can say that it is not true and not funny. This stops a false idea from spreading in the group, so others learn to judge people by what they do and not by their race." }
+        ]
+      },
+      {
+        "id": "r01-b",
+        "skill": "sr_weigh",
+        "sources": ["Extract"],
+        "question": "'Shared experiences do more than government policies to build harmony in a diverse society.' Do you agree? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "I agree because shared experiences are important and people should mix around. Policies are also important in Singapore." },
+          { "level": 2, "text": "Shared experiences build harmony. For example, in a school CCA, students of different races train together for months and depend on each other to win. They come to trust each other as teammates, so race matters less to them and friendships form across groups." },
+          { "level": 3, "text": "Shared experiences build harmony. For example, in a school CCA, students of different races train together for months and depend on each other to win. They come to trust each other as teammates, so race matters less to them and friendships form across groups. Government policies also build harmony. For example, the Ethnic Integration Policy sets a limit for each race in every HDB block. This prevents one-race estates, so people meet neighbours of other races every day in the lifts and corridors and cannot live apart." },
+          { "level": 4, "text": "Shared experiences build harmony. For example, in a school CCA, students of different races train together for months and depend on each other to win. They come to trust each other as teammates, so race matters less to them and friendships form across groups. Government policies also build harmony. For example, the Ethnic Integration Policy sets a limit for each race in every HDB block. This prevents one-race estates, so people meet neighbours of other races every day and cannot live apart. Policies do more, because shared experiences depend on them. Students of different races are in the same CCA, and neighbours meet at the same lift, only because policies put them in the same schools and blocks first. Without the policy, most people would stay with their own group and the shared experiences would not happen. So I disagree: experiences build the friendships, but policy is what makes them possible." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "r02",
+    "subject": "social-studies",
+    "kind": "structured",
+    "title": "Citizens and the needs of society",
+    "issue": "Who should look after the needs of society?",
+    "sources": [
+      {
+        "id": "Extract",
+        "provenance": "An extract to start you thinking. Answer from your own knowledge.",
+        "text": "A government cannot meet every need in society. Citizens can contribute too, as individuals or through organised groups. Some help directly. Others give feedback so that policies fit people's needs better."
+      }
+    ],
+    "questions": [
+      {
+        "id": "r02-a",
+        "skill": "sr_explain",
+        "sources": ["Extract"],
+        "question": "Explain two ways in which citizens can contribute to the needs of society.",
+        "seeded": [
+          { "level": 1, "text": "Citizens can help directly and give feedback so that policies fit people's needs. They can volunteer and donate." },
+          { "level": 2, "text": "One way is to volunteer with a group that serves people in need. For example, volunteers at a food charity pack and deliver rations to elderly people living alone every week. The government gives financial help but cannot visit every home, so the volunteers meet a need that would be missed. Citizens can also give feedback." },
+          { "level": 3, "text": "One way is to volunteer with a group that serves people in need. For example, volunteers at a food charity pack and deliver rations to elderly people living alone every week. The government gives financial help but cannot visit every home, so the volunteers meet a need that would be missed. A second way is to give feedback on policies. For example, citizens can give their views in a public consultation, such as those run by REACH, before a policy is changed. The government learns how the policy affects ordinary people, so it can adjust the policy to fit their needs better." }
+        ]
+      },
+      {
+        "id": "r02-b",
+        "skill": "sr_weigh",
+        "sources": ["Extract"],
+        "question": "'Individuals do more than organised groups to meet the needs of society.' Do you agree? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "I disagree. Organised groups are bigger than individuals so they are better. Individuals can also help." },
+          { "level": 2, "text": "Individuals meet needs quickly. For example, a resident who notices that an elderly neighbour has not been seen for days can knock on the door and call for help. No form or approval is needed, so the need is met at once, before any organisation knows about it." },
+          { "level": 3, "text": "Individuals meet needs quickly. For example, a resident who notices that an elderly neighbour has not been seen for days can knock on the door and call for help. No form or approval is needed, so the need is met at once, before any organisation knows about it. Organised groups also meet needs. For example, a family service centre has trained social workers and funding. It can take on a long case, such as a family in debt, and follow it for months, so needs that take skill and time are met properly." },
+          { "level": 4, "text": "Individuals meet needs quickly. For example, a resident who notices that an elderly neighbour has not been seen for days can knock on the door and call for help. No form or approval is needed, so the need is met at once, before any organisation knows about it. Organised groups also meet needs. For example, a family service centre has trained social workers and funding. It can take on a long case, such as a family in debt, and follow it for months, so needs that take skill and time are met properly. Organised groups do more, judged by how many people they reach and for how long. An individual helps the few people he happens to know, and the help stops when he is busy. A group can serve thousands and carries on when one volunteer leaves. So I disagree: individuals are faster, but organised groups meet more needs and keep meeting them." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "r03",
+    "subject": "social-studies",
+    "kind": "structured",
+    "title": "Living in a globalised world",
+    "issue": "What does globalisation mean for a country and its people?",
+    "sources": [
+      {
+        "id": "Extract",
+        "provenance": "An extract to start you thinking. Answer from your own knowledge.",
+        "text": "Globalisation links countries through trade, travel and technology. Goods, money, people and ideas move across borders faster than before. This brings gains to some and losses to others."
+      }
+    ],
+    "questions": [
+      {
+        "id": "r03-a",
+        "skill": "sr_explain",
+        "sources": ["Extract"],
+        "question": "Explain two ways in which globalisation can affect workers in a country.",
+        "seeded": [
+          { "level": 1, "text": "Globalisation links countries through trade, travel and technology. Workers are affected because goods and people move faster. Some gain and some lose." },
+          { "level": 2, "text": "One way is that workers may lose their jobs. For example, a company can move its factory to a country where wages are lower. The workers in the first country are no longer needed and are retrenched, so they lose their income. Another way is more opportunities." },
+          { "level": 3, "text": "One way is that workers may lose their jobs. For example, a company can move its factory to a country where wages are lower. The workers in the first country are no longer needed and are retrenched, so they lose their income. A second way is that workers get more job opportunities. For example, when foreign technology firms set up regional offices in Singapore, they hire local staff. Workers have more employers to choose from, so those with the right skills can earn higher pay." }
+        ]
+      },
+      {
+        "id": "r03-b",
+        "skill": "sr_weigh",
+        "sources": ["Extract"],
+        "question": "'The economic effects of globalisation matter more to a country than its cultural effects.' Do you agree? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "I agree because money is important to a country. Culture is also changing because of globalisation, like food and music." },
+          { "level": 2, "text": "The economic effects matter. For example, Singapore has few natural resources and earns its living by trading with the world, and foreign companies invest here. This creates jobs and income for its people, so the country can pay for schools and hospitals." },
+          { "level": 3, "text": "The economic effects matter. For example, Singapore has few natural resources and earns its living by trading with the world, and foreign companies invest here. This creates jobs and income for its people, so the country can pay for schools and hospitals. The cultural effects matter too. For example, young people watch foreign shows and follow global brands, and fewer speak dialects or keep traditional customs. Local culture weakens, so people may feel less attached to their own country and its past." },
+          { "level": 4, "text": "The economic effects matter. For example, Singapore has few natural resources and earns its living by trading with the world, and foreign companies invest here. This creates jobs and income for its people, so the country can pay for schools and hospitals. The cultural effects matter too. For example, young people watch foreign shows and follow global brands, and fewer speak dialects or keep traditional customs. Local culture weakens, so people may feel less attached to their own country and its past. The economic effects matter more, because a country's survival rests on them. If trade and investment stop, people lose their jobs at once. Cultural change is slower, and a country can respond to it, for example by teaching heritage in schools. A country with a strong economy also has the money to protect its culture. So I agree: both matter, but the economic effects decide whether the country can do anything else." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "r04",
+    "subject": "social-studies",
+    "kind": "structured",
+    "title": "New arrivals",
+    "issue": "How do newcomers become part of a society?",
+    "sources": [
+      {
+        "id": "Extract",
+        "provenance": "An extract to start you thinking. Answer from your own knowledge.",
+        "text": "Many countries take in immigrants to work and to settle. Newcomers bring skills and new ideas. They also arrive with different habits and languages, and locals do not always welcome them."
+      }
+    ],
+    "questions": [
+      {
+        "id": "r04-a",
+        "skill": "sr_explain",
+        "sources": ["Extract"],
+        "question": "Explain two ways in which immigrants can fit into the society they have joined.",
+        "model": "One way is to learn the common language. For example, a newcomer to Singapore can take English classes so that he can talk with neighbours and colleagues. Once they can speak to each other, small misunderstandings are cleared up, so locals come to see him as a person and not a stranger. A second way is to join in local community life. For example, a new family can help at their residents' committee events or join a neighbourhood sports group. They work beside locals towards the same goal, so trust grows and they are treated as part of the estate."
+      },
+      {
+        "id": "r04-b",
+        "skill": "sr_weigh",
+        "sources": ["Extract"],
+        "question": "'Locals have a bigger part to play than newcomers in making integration work.' Do you agree? Explain your answer.",
+        "model": "Newcomers have a part to play. For example, they can learn English and follow local norms such as queueing and keeping noise down at night. This shows respect for the place they have joined, so locals have less reason to resent them. Locals have a part to play too. For example, they can invite a new neighbour to a block party, or help a new colleague understand how things are done. The newcomer then has a way in, so he does not keep only to people from his own country. Locals have the bigger part, because they are the majority and they set the tone. A newcomer can try hard and still be shut out if locals refuse to mix. When locals are open, even a shy newcomer is drawn in. So I agree: both must act, but the newcomer's effort only works when locals allow it to."
+      }
+    ]
+  },
+  {
+    "id": "r05",
+    "subject": "social-studies",
+    "kind": "structured",
+    "title": "Paying for healthcare",
+    "issue": "How should a society share the cost of healthcare?",
+    "sources": [
+      {
+        "id": "Extract",
+        "provenance": "An extract to start you thinking. Answer from your own knowledge.",
+        "text": "People are living longer, and treatment costs more each year. A government has a limited budget and many other needs to pay for. Whatever it spends on healthcare cannot be spent elsewhere."
+      }
+    ],
+    "questions": [
+      {
+        "id": "r05-a",
+        "skill": "sr_explain",
+        "sources": ["Extract"],
+        "question": "Explain two reasons why a government has to make trade-offs when it decides how much to spend on healthcare.",
+        "model": "One reason is that the budget is limited. For example, money spent on building a new hospital cannot also be spent on schools or defence. The government has to decide which need comes first, so spending more on healthcare means giving up something else. A second reason is that demand for healthcare keeps growing. For example, Singapore's population is ageing, and older people need more treatment for longer. If the government paid for everything, the cost would rise every year, so it has to choose what to subsidise and what people pay for themselves."
+      },
+      {
+        "id": "r05-b",
+        "skill": "sr_weigh",
+        "sources": ["Extract"],
+        "question": "'Keeping people healthy is more the individual's responsibility than the government's.' Do you agree? Explain your answer.",
+        "model": "Individuals are responsible for their health. For example, a person who exercises, eats sensibly and goes for screening is less likely to develop diabetes or heart disease. Many illnesses come from daily habits, so only the person himself can prevent them. The government is responsible too. For example, it subsidises polyclinics and hospital wards and runs schemes such as MediShield Life. Without these, a serious illness would cost too much for many families, however carefully they lived. The individual's part matters more, judged by how much illness each can prevent. The government can only make treatment affordable after people fall sick, and its help is limited by its budget. A person's habits decide whether he falls sick at all. So I agree: the government must provide a safety net, but staying healthy starts with the individual."
+      }
+    ]
+  }
+]

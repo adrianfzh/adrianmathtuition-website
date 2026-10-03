@@ -1,7 +1,7 @@
 {
   "subject": "social_studies",
-  "version": "h0-draft-2026-10-02",
-  "note": "Our own level schemes (SEAB publishes the skills, not the descriptors). The readable copy is docs/humanities/social-studies-level-schemes.md — change both together.",
+  "version": "h2-draft-2026-10-03",
+  "note": "Our own level schemes (SEAB publishes the skills, not the descriptors). The six source skills serve Social Studies and History; sr_explain and sr_weigh are Social Studies structured response and use the `structured` rules and tags. The readable copy is docs/humanities/social-studies-level-schemes.md — change both together.",
   "rules": [
     "The level comes from the best thing the answer does, done properly once. Length does not move it.",
     "A claim counts only when it is supported: a quote or a detail from the source, then a line saying how that detail shows the claim.",
@@ -10,33 +10,76 @@
     "Own knowledge counts only when it is used to check or explain the source. Own knowledge on its own is not a source-based answer."
   ],
   "tags": [
-    { "key": "from_source", "label": "From the source", "meaning": "a claim backed by a quote or detail from the source" },
-    { "key": "not_supported", "label": "Not supported", "meaning": "a claim with no evidence, with evidence that does not fit it, or a wrong reading" },
-    { "key": "uses_context", "label": "Uses context", "meaning": "provenance, the situation at the time, another source, or own knowledge used to check or explain" },
-    { "key": "evaluates", "label": "Evaluates", "meaning": "a judgement: weighs trust, purpose, limits, or which side is stronger" }
+    {
+      "key": "from_source",
+      "label": "From the source",
+      "meaning": "a claim backed by a quote or detail from the source"
+    },
+    {
+      "key": "not_supported",
+      "label": "Not supported",
+      "meaning": "a claim with no evidence, with evidence that does not fit it, or a wrong reading"
+    },
+    {
+      "key": "uses_context",
+      "label": "Uses context",
+      "meaning": "provenance, the situation at the time, another source, or own knowledge used to check or explain"
+    },
+    {
+      "key": "evaluates",
+      "label": "Evaluates",
+      "meaning": "a judgement: weighs trust, purpose, limits, or which side is stronger"
+    }
   ],
   "schemes": {
     "inference": {
       "label": "Inference",
       "asks": "What does the source tell you about …? What is the message?",
       "levels": [
-        { "level": 1, "does": "Copies or describes the source. Says what it shows, not what it means." },
-        { "level": 2, "does": "Makes a valid inference, but gives no evidence — or gives evidence that does not fit it." },
-        { "level": 3, "does": "Makes a valid inference, supports it from the source, and explains the link." }
+        {
+          "level": 1,
+          "does": "Copies or describes the source. Says what it shows, not what it means."
+        },
+        {
+          "level": 2,
+          "does": "Makes a valid inference, but gives no evidence — or gives evidence that does not fit it."
+        },
+        {
+          "level": 3,
+          "does": "Makes a valid inference, supports it from the source, and explains the link."
+        }
       ],
       "note": "A 'message' question needs one more thing at Level 3: who the source is speaking to, or what it wants them to think.",
       "lifts": [
-        { "from": 1, "how": "Stop repeating the source. Say what it shows about the thing the question names." },
-        { "from": 2, "how": "Quote the detail, then add one line on how it proves your point." }
+        {
+          "from": 1,
+          "how": "Stop repeating the source. Say what it shows about the thing the question names."
+        },
+        {
+          "from": 2,
+          "how": "Quote the detail, then add one line on how it proves your point."
+        }
       ],
-      "slips": ["an inference about the wrong thing", "an inference too big for the evidence"],
+      "slips": [
+        "an inference about the wrong thing",
+        "an inference too big for the evidence"
+      ],
       "example": {
         "sources": "A resident's letter to a newspaper forum: 'My block's lift has broken down four times this year. Each time, my neighbour in a wheelchair waited two days to leave her flat. The town council replied to my e-mail after three weeks.'",
         "question": "What does the source tell you about the town council?",
         "answers": [
-          { "level": 1, "text": "The lift broke down four times and the council replied after three weeks." },
-          { "level": 2, "text": "The town council does not care about residents." },
-          { "level": 3, "text": "The town council is slow to respond to residents' needs. It took 'three weeks' to reply to an e-mail about a lift that had failed 'four times this year'. A problem that kept a wheelchair user at home for days was not treated as urgent." }
+          {
+            "level": 1,
+            "text": "The lift broke down four times and the council replied after three weeks."
+          },
+          {
+            "level": 2,
+            "text": "The town council does not care about residents."
+          },
+          {
+            "level": 3,
+            "text": "The town council is slow to respond to residents' needs. It took 'three weeks' to reply to an e-mail about a lift that had failed 'four times this year'. A problem that kept a wheelchair user at home for days was not treated as urgent."
+          }
         ]
       }
     },
@@ -44,26 +87,62 @@
       "label": "Comparison",
       "asks": "How similar are the two sources? How different?",
       "levels": [
-        { "level": 1, "does": "Compares the wrong thing: where the sources come from, or their topic. Or describes each source in turn with no comparison." },
-        { "level": 2, "does": "One valid similarity OR one valid difference in what the sources say, supported from BOTH sources." },
-        { "level": 3, "does": "A similarity AND a difference, each supported from both sources." },
-        { "level": 4, "does": "Level 3, and compares something deeper — the tone, the purpose, or whose side each source takes — supported." }
+        {
+          "level": 1,
+          "does": "Compares the wrong thing: where the sources come from, or their topic. Or describes each source in turn with no comparison."
+        },
+        {
+          "level": 2,
+          "does": "One valid similarity OR one valid difference in what the sources say, supported from BOTH sources."
+        },
+        {
+          "level": 3,
+          "does": "A similarity AND a difference, each supported from both sources."
+        },
+        {
+          "level": 4,
+          "does": "Level 3, and compares something deeper — the tone, the purpose, or whose side each source takes — supported."
+        }
       ],
       "note": "A comparison needs a common point: one thing both sources speak about.",
       "lifts": [
-        { "from": 1, "how": "Name the common point first, then quote both sources on it." },
-        { "from": 2, "how": "Give the other side — a similarity if you gave a difference." },
-        { "from": 3, "how": "Ask why each source was written, and compare that." }
+        {
+          "from": 1,
+          "how": "Name the common point first, then quote both sources on it."
+        },
+        {
+          "from": 2,
+          "how": "Give the other side — a similarity if you gave a difference."
+        },
+        {
+          "from": 3,
+          "how": "Ask why each source was written, and compare that."
+        }
       ],
-      "slips": ["quoting only one source", "a difference that is really two unrelated points"],
+      "slips": [
+        "quoting only one source",
+        "a difference that is really two unrelated points"
+      ],
       "example": {
         "sources": "B, a bus company's press statement: 'Fares will rise by 4 cents. The increase is needed to keep services reliable as fuel and wage costs go up.' C, a commuter's online post: 'Another fare rise, and my bus still comes every 20 minutes. We pay more each year and get nothing back.'",
         "question": "How different are Sources B and C?",
         "answers": [
-          { "level": 1, "text": "Source B is by a company and Source C is by a commuter." },
-          { "level": 2, "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'." },
-          { "level": 3, "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'. They are similar in agreeing that fares are going up. B says fares 'will rise by 4 cents' and C calls it 'another fare rise'." },
-          { "level": 4, "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'. They are similar in agreeing that fares are going up. B says fares 'will rise by 4 cents' and C calls it 'another fare rise'. They differ in purpose. B wants commuters to accept the rise, so it gives reasons. C wants other commuters to feel the rise is unfair, so it points to the long wait." }
+          {
+            "level": 1,
+            "text": "Source B is by a company and Source C is by a commuter."
+          },
+          {
+            "level": 2,
+            "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'."
+          },
+          {
+            "level": 3,
+            "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'. They are similar in agreeing that fares are going up. B says fares 'will rise by 4 cents' and C calls it 'another fare rise'."
+          },
+          {
+            "level": 4,
+            "text": "They differ on whether the fare rise is fair. B says it is 'needed to keep services reliable'. C says commuters 'get nothing back'. They are similar in agreeing that fares are going up. B says fares 'will rise by 4 cents' and C calls it 'another fare rise'. They differ in purpose. B wants commuters to accept the rise, so it gives reasons. C wants other commuters to feel the rise is unfair, so it points to the long wait."
+          }
         ]
       }
     },
@@ -71,26 +150,63 @@
       "label": "Reliability",
       "asks": "How reliable is the source? Can you trust it? Does one source prove another wrong?",
       "levels": [
-        { "level": 1, "does": "Judges by the type of source alone, or simply accepts what it says." },
-        { "level": 2, "does": "Judges by the content alone: explains what the source says and calls it reliable, or points to loaded words with no check." },
-        { "level": 3, "does": "Checks the source: cross-refers to another source in the set, or to own knowledge, that agrees or disagrees. Says what the check shows." },
-        { "level": 4, "does": "Level 3, and weighs the purpose: who made it, for whom, and what they wanted — and how that affects trust." }
+        {
+          "level": 1,
+          "does": "Judges by the type of source alone, or simply accepts what it says."
+        },
+        {
+          "level": 2,
+          "does": "Judges by the content alone: explains what the source says and calls it reliable, or points to loaded words with no check."
+        },
+        {
+          "level": 3,
+          "does": "Checks the source: cross-refers to another source in the set, or to own knowledge, that agrees or disagrees. Says what the check shows."
+        },
+        {
+          "level": 4,
+          "does": "Level 3, and weighs the purpose: who made it, for whom, and what they wanted — and how that affects trust."
+        }
       ],
       "note": "",
       "lifts": [
-        { "from": 1, "how": "Use what the source says, not what kind of source it is." },
-        { "from": 2, "how": "Find another source that agrees or disagrees, and quote it." },
-        { "from": 3, "how": "Say who made it, who it is for, and what they want from that reader." }
+        {
+          "from": 1,
+          "how": "Use what the source says, not what kind of source it is."
+        },
+        {
+          "from": 2,
+          "how": "Find another source that agrees or disagrees, and quote it."
+        },
+        {
+          "from": 3,
+          "how": "Say who made it, who it is for, and what they want from that reader."
+        }
       ],
-      "slips": ["'biased' with no explanation", "a cross-reference with no quote", "calling a source unreliable just because it is one-sided"],
+      "slips": [
+        "'biased' with no explanation",
+        "a cross-reference with no quote",
+        "calling a source unreliable just because it is one-sided"
+      ],
       "example": {
         "sources": "D, a property developer's brochure: 'Residents nearby fully support the new mall. It will bring jobs and convenience to everyone.' E, a survey by a residents' committee: '62% of households said they are worried about traffic and noise from the mall.'",
         "question": "How reliable is Source D about residents' views of the mall?",
         "answers": [
-          { "level": 1, "text": "It is reliable because the developer knows about the mall." },
-          { "level": 2, "text": "It is reliable because it says residents 'fully support' the mall and it will bring jobs." },
-          { "level": 3, "text": "It is not reliable. D claims residents 'fully support' the mall, but Source E's survey found '62% of households' are worried about traffic and noise. The residents' own answers contradict D." },
-          { "level": 4, "text": "It is not reliable. D claims residents 'fully support' the mall, but Source E's survey found '62% of households' are worried about traffic and noise. The residents' own answers contradict D. D is a brochure from the developer, who gains if the mall is approved. It is written to make buyers and planners think there is no opposition, so it leaves the worries out." }
+          {
+            "level": 1,
+            "text": "It is reliable because the developer knows about the mall."
+          },
+          {
+            "level": 2,
+            "text": "It is reliable because it says residents 'fully support' the mall and it will bring jobs."
+          },
+          {
+            "level": 3,
+            "text": "It is not reliable. D claims residents 'fully support' the mall, but Source E's survey found '62% of households' are worried about traffic and noise. The residents' own answers contradict D."
+          },
+          {
+            "level": 4,
+            "text": "It is not reliable. D claims residents 'fully support' the mall, but Source E's survey found '62% of households' are worried about traffic and noise. The residents' own answers contradict D. D is a brochure from the developer, who gains if the mall is approved. It is written to make buyers and planners think there is no opposition, so it leaves the worries out."
+          }
         ]
       }
     },
@@ -98,26 +214,62 @@
       "label": "Usefulness",
       "asks": "How useful is the source in helping you understand …?",
       "levels": [
-        { "level": 1, "does": "Judges by the type of source or the topic." },
-        { "level": 2, "does": "Useful for what it TELLS us: an inference about the issue, supported." },
-        { "level": 3, "does": "Useful AND limited: what it tells us, and what it leaves out that the question needs." },
-        { "level": 4, "does": "Tests whether it can be trusted — by a cross-reference or by its purpose — and uses that to judge how useful it is." }
+        {
+          "level": 1,
+          "does": "Judges by the type of source or the topic."
+        },
+        {
+          "level": 2,
+          "does": "Useful for what it TELLS us: an inference about the issue, supported."
+        },
+        {
+          "level": 3,
+          "does": "Useful AND limited: what it tells us, and what it leaves out that the question needs."
+        },
+        {
+          "level": 4,
+          "does": "Tests whether it can be trusted — by a cross-reference or by its purpose — and uses that to judge how useful it is."
+        }
       ],
       "note": "Usefulness is always 'useful for what'. The answer must stay on the issue in the question.",
       "lifts": [
-        { "from": 1, "how": "Say what the source lets you learn about the issue, with a quote." },
-        { "from": 2, "how": "Ask what the question needs that this source does not give." },
-        { "from": 3, "how": "Check it against another source, or against its purpose." }
+        {
+          "from": 1,
+          "how": "Say what the source lets you learn about the issue, with a quote."
+        },
+        {
+          "from": 2,
+          "how": "Ask what the question needs that this source does not give."
+        },
+        {
+          "from": 3,
+          "how": "Check it against another source, or against its purpose."
+        }
       ],
-      "slips": ["answering reliability only and never saying 'so it is / is not useful for …'", "listing what is missing with no link to the question"],
+      "slips": [
+        "answering reliability only and never saying 'so it is / is not useful for …'",
+        "listing what is missing with no link to the question"
+      ],
       "example": {
         "sources": "F, a ministry poster: 'Three in four seniors who joined our active-ageing centres say they feel less lonely.' A second source, a social worker's interview: 'The seniors who most need company are the ones who never come to the centres.'",
         "question": "How useful is Source F in understanding whether loneliness among seniors is being solved?",
         "answers": [
-          { "level": 1, "text": "It is useful because it is from the ministry and is about seniors." },
-          { "level": 2, "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'." },
-          { "level": 3, "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'. It is limited. It counts only seniors 'who joined'. It says nothing about seniors who stay at home." },
-          { "level": 4, "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'. It is limited. It counts only seniors 'who joined'. The social worker says the seniors who most need company 'never come to the centres'. So F's figure is true but covers the easier group. F is also a poster meant to bring more seniors in, so it shows only the good result. It is useful for the centres' effect on members, not for the whole problem." }
+          {
+            "level": 1,
+            "text": "It is useful because it is from the ministry and is about seniors."
+          },
+          {
+            "level": 2,
+            "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'."
+          },
+          {
+            "level": 3,
+            "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'. It is limited. It counts only seniors 'who joined'. It says nothing about seniors who stay at home."
+          },
+          {
+            "level": 4,
+            "text": "It is useful. It shows the centres help those who join: 'three in four' say they 'feel less lonely'. It is limited. It counts only seniors 'who joined'. The social worker says the seniors who most need company 'never come to the centres'. So F's figure is true but covers the easier group. F is also a poster meant to bring more seniors in, so it shows only the good result. It is useful for the centres' effect on members, not for the whole problem."
+          }
         ]
       }
     },
@@ -125,26 +277,63 @@
       "label": "Purpose",
       "asks": "Why was the source published? Why did the cartoonist draw this?",
       "levels": [
-        { "level": 1, "does": "Describes the source or the event around it." },
-        { "level": 2, "does": "Gives the MESSAGE: what the source wants to say, supported." },
-        { "level": 3, "does": "Gives the purpose in part: the message and the AUDIENCE, or the message and the OUTCOME wanted." },
-        { "level": 4, "does": "The full purpose: message, audience, and the outcome wanted — what the audience should think or DO — supported, and tied to the situation at the time." }
+        {
+          "level": 1,
+          "does": "Describes the source or the event around it."
+        },
+        {
+          "level": 2,
+          "does": "Gives the MESSAGE: what the source wants to say, supported."
+        },
+        {
+          "level": 3,
+          "does": "Gives the purpose in part: the message and the AUDIENCE, or the message and the OUTCOME wanted."
+        },
+        {
+          "level": 4,
+          "does": "The full purpose: message, audience, and the outcome wanted — what the audience should think or DO — supported, and tied to the situation at the time."
+        }
       ],
       "note": "",
       "lifts": [
-        { "from": 1, "how": "Say what the source wants people to believe." },
-        { "from": 2, "how": "Say who it is talking to." },
-        { "from": 3, "how": "Say what it wants those people to do, and why at that moment." }
+        {
+          "from": 1,
+          "how": "Say what the source wants people to believe."
+        },
+        {
+          "from": 2,
+          "how": "Say who it is talking to."
+        },
+        {
+          "from": 3,
+          "how": "Say what it wants those people to do, and why at that moment."
+        }
       ],
-      "slips": ["'to inform people' as the purpose", "an outcome with no audience", "ignoring the date or the provenance line"],
+      "slips": [
+        "'to inform people' as the purpose",
+        "an outcome with no audience",
+        "ignoring the date or the provenance line"
+      ],
       "example": {
         "sources": "G, a poster by a cycling group, published the week a town council was debating a ban on bicycles on footpaths. It shows a child cycling to school beside a busy road with lorries. Caption: 'Where do you want her to ride?'",
         "question": "Why was Source G published?",
         "answers": [
-          { "level": 1, "text": "It shows a child cycling next to lorries." },
-          { "level": 2, "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries." },
-          { "level": 3, "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries. It is aimed at residents and parents — the caption asks 'you' directly." },
-          { "level": 4, "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries. It is aimed at residents and parents — the caption asks 'you' directly. It was published in the week of the council's debate. The group wants residents to feel that a footpath ban would push children onto the road, so that they speak up against the ban before the council decides." }
+          {
+            "level": 1,
+            "text": "It shows a child cycling next to lorries."
+          },
+          {
+            "level": 2,
+            "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries."
+          },
+          {
+            "level": 3,
+            "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries. It is aimed at residents and parents — the caption asks 'you' directly."
+          },
+          {
+            "level": 4,
+            "text": "It says that cycling on the road is dangerous for children. The child is drawn small beside large lorries. It is aimed at residents and parents — the caption asks 'you' directly. It was published in the week of the council's debate. The group wants residents to feel that a footpath ban would push children onto the road, so that they speak up against the ban before the council decides."
+          }
         ]
       }
     },
@@ -152,28 +341,177 @@
       "label": "How far do you agree",
       "asks": "'[A statement.]' Using the sources, explain how far you would agree.",
       "levels": [
-        { "level": 1, "does": "Answers from own opinion, or names sources without using what they say." },
-        { "level": 2, "does": "One side only: sources that agree OR sources that disagree, each used with a quote and an explanation." },
-        { "level": 3, "does": "Both sides: at least one source that agrees and one that disagrees, each used properly." },
-        { "level": 4, "does": "Level 3, and a conclusion that WEIGHS the sources — which side has the more trustworthy or more complete evidence, and why. Not a recount of both sides." }
+        {
+          "level": 1,
+          "does": "Answers from own opinion, or names sources without using what they say."
+        },
+        {
+          "level": 2,
+          "does": "One side only: sources that agree OR sources that disagree, each used with a quote and an explanation."
+        },
+        {
+          "level": 3,
+          "does": "Both sides: at least one source that agrees and one that disagrees, each used properly."
+        },
+        {
+          "level": 4,
+          "does": "Level 3, and a conclusion that WEIGHS the sources — which side has the more trustworthy or more complete evidence, and why. Not a recount of both sides."
+        }
       ],
       "note": "'Used properly' = which source · the quote · how it supports or challenges the statement.",
       "lifts": [
-        { "from": 1, "how": "Use a source. Quote it, then say how it backs the statement." },
-        { "from": 2, "how": "Find a source for the other side." },
-        { "from": 3, "how": "Do not end with 'so there are two sides'. Say which sources you trust more, and why." }
+        {
+          "from": 1,
+          "how": "Use a source. Quote it, then say how it backs the statement."
+        },
+        {
+          "from": 2,
+          "how": "Find a source for the other side."
+        },
+        {
+          "from": 3,
+          "how": "Do not end with 'so there are two sides'. Say which sources you trust more, and why."
+        }
       ],
-      "slips": ["grouping sources with no quotes", "a source placed on the wrong side", "a conclusion that only repeats the body"],
+      "slips": [
+        "grouping sources with no quotes",
+        "a source placed on the wrong side",
+        "a conclusion that only repeats the body"
+      ],
       "example": {
         "sources": "D, a developer's brochure: the mall 'will bring jobs and convenience to everyone'. E, a residents' survey: '62% of households' are worried about traffic and noise. H, a shop owner: 'My sundry shop has lost half its customers since the mall's supermarket opened.'",
         "question": "'The new mall is good for the neighbourhood.' How far do you agree?",
         "answers": [
-          { "level": 1, "text": "I agree because malls are convenient." },
-          { "level": 2, "text": "I agree. Source D says the mall 'will bring jobs and convenience to everyone', so residents gain." },
-          { "level": 3, "text": "I agree. Source D says the mall 'will bring jobs and convenience to everyone', so residents gain. Source E disagrees: '62% of households' are worried about traffic and noise. Source H also disagrees — the shop owner 'lost half' his customers." },
-          { "level": 4, "text": "Source D says the mall 'will bring jobs and convenience to everyone', so residents gain. Source E disagrees: '62% of households' are worried about traffic and noise. Source H also disagrees — the shop owner 'lost half' his customers. The sources against the statement are stronger. D comes from the developer, who gains from saying so. E counts actual households and H describes a loss that has already happened. So I agree only to a small extent: the mall brings convenience, but the people living and working beside it carry the cost." }
+          {
+            "level": 1,
+            "text": "I agree because malls are convenient."
+          },
+          {
+            "level": 2,
+            "text": "I agree. Source D says the mall 'will bring jobs and convenience to everyone', so residents gain."
+          },
+          {
+            "level": 3,
+            "text": "I agree. Source D says the mall 'will bring jobs and convenience to everyone', so residents gain. Source E disagrees: '62% of households' are worried about traffic and noise. Source H also disagrees — the shop owner 'lost half' his customers."
+          },
+          {
+            "level": 4,
+            "text": "Source D says the mall 'will bring jobs and convenience to everyone', so residents gain. Source E disagrees: '62% of households' are worried about traffic and noise. Source H also disagrees — the shop owner 'lost half' his customers. The sources against the statement are stronger. D comes from the developer, who gains from saying so. E counts actual households and H describes a loss that has already happened. So I agree only to a small extent: the mall brings convenience, but the people living and working beside it carry the cost."
+          }
         ]
       }
+    },
+    "sr_explain": {
+      "label": "Explain two ways",
+      "asks": "Explain two ways / two reasons …",
+      "levels": [
+        {
+          "level": 1,
+          "does": "Lists or describes ways without explaining them, or copies the extract."
+        },
+        {
+          "level": 2,
+          "does": "Explains ONE way properly: the point, an example, and how it leads to the result the question names."
+        },
+        {
+          "level": 3,
+          "does": "Explains TWO different ways properly, each with its own example and its own link to the result."
+        }
+      ],
+      "note": "Two ways that are really the same way count as one.",
+      "lifts": [
+        {
+          "from": 1,
+          "how": "Take one way. Give a real example, then say how it leads to the result the question names."
+        },
+        {
+          "from": 2,
+          "how": "Explain a second, different way the same way: point, example, how it leads to the result."
+        }
+      ],
+      "slips": [
+        "two ways that are really one",
+        "an example with no line on how it leads to the result",
+        "rewording the extract as the answer"
+      ]
+    },
+    "sr_weigh": {
+      "label": "Do you agree?",
+      "asks": "\"X does more than Y …\" Do you agree? Explain your answer.",
+      "levels": [
+        {
+          "level": 1,
+          "does": "Gives an opinion or describes the factors without explaining either."
+        },
+        {
+          "level": 2,
+          "does": "Explains ONE side properly: the point, an example, and how it leads to the result."
+        },
+        {
+          "level": 3,
+          "does": "Explains BOTH sides properly, each with an example and its link."
+        },
+        {
+          "level": 4,
+          "does": "Explains both sides, then reaches a conclusion that weighs them on a stated basis."
+        }
+      ],
+      "note": "A conclusion that only repeats one side, or says both are important, stays at Level 3.",
+      "lifts": [
+        {
+          "from": 1,
+          "how": "Take one side. Give a real example and say how it leads to the result."
+        },
+        {
+          "from": 2,
+          "how": "Explain the other side the same way, even if you disagree with it."
+        },
+        {
+          "from": 3,
+          "how": "End by saying which matters more and on what basis — for example, one depends on the other, or one reaches more people."
+        }
+      ],
+      "slips": [
+        "a conclusion that only repeats one side",
+        "\"both are important\" with no basis for choosing",
+        "a second side that is stated but not explained"
+      ]
     }
+  },
+  "structured": {
+    "rules": [
+      "The level comes from the best thing the answer does, done properly once. Length does not move it.",
+      "The answer comes from the student's own knowledge. The extract is only a starting point: copying or rewording it is Level 1.",
+      "A point counts as explained only when it has an example and a line saying how that leads to the result the question names.",
+      "A wrong or off-topic point cannot be lifted by good structure.",
+      "A conclusion counts only when it compares the two sides on a stated basis. Repeating one side, or \"both are important\", is not a conclusion."
+    ],
+    "tags": [
+      {
+        "key": "point",
+        "label": "Point",
+        "meaning": "a way, reason or factor that answers the question"
+      },
+      {
+        "key": "example",
+        "label": "Example",
+        "meaning": "a real, specific example that fits the point"
+      },
+      {
+        "key": "link",
+        "label": "Explains how",
+        "meaning": "a line saying how the point or example leads to the result the question names"
+      },
+      {
+        "key": "not_explained",
+        "label": "Not explained",
+        "meaning": "a point that is only stated or listed, copied from the extract, wrong, or off the question"
+      },
+      {
+        "key": "weighs",
+        "label": "Weighs",
+        "meaning": "a conclusion that compares the two sides on a stated basis"
+      }
+    ]
   }
 }

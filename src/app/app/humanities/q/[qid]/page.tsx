@@ -25,6 +25,12 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
         <p className="text-sm text-gray-600 mt-1">{ctx.set.issue}</p>
       </div>
       <SourceCards sources={ctx.sources} />
+      {ctx.set.subject === 'history' && (
+        <p className="text-[12px] text-gray-500 px-1">These sources are written for practice. They are not real documents.</p>
+      )}
+      {ctx.set.kind === 'structured' && (
+        <p className="text-[12px] text-gray-500 px-1">Answer from what you have learnt. Do not copy the extract.</p>
+      )}
       <div className="bg-amber-50 border border-amber-100 rounded-3xl p-4">
         <p className="text-[12px] font-semibold text-amber-800">Question</p>
         <p className="text-[16px] font-semibold text-navy leading-snug mt-0.5">{ctx.question.question}</p>

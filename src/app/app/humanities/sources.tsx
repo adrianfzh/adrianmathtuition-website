@@ -7,7 +7,7 @@ export function SourceCards({ sources }: { sources: HumanitiesSource[] }) {
     <div className="space-y-3">
       {sources.map(s => (
         <div key={s.id} className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-          <p className="text-sm font-bold text-navy">Source {s.id}</p>
+          <p className="text-sm font-bold text-navy">{/^[A-Z]$/.test(s.id) ? `Source ${s.id}` : s.id}</p>
           <p className="text-[12px] text-gray-500 italic mt-0.5">{s.provenance}</p>
           <p className="text-[15px] text-gray-800 leading-relaxed mt-2 whitespace-pre-line">{s.text}</p>
         </div>

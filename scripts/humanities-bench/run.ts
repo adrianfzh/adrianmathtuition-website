@@ -3,6 +3,9 @@
 // construction, no marked scripts.
 //
 //   npx tsx scripts/humanities-bench/run.ts [--name h1-YYYY-MM-DD] [--base URL] [--report-only] [--limit N] [--hard]
+//                                            [--subject social-studies|history] [--kind source|structured]
+//
+// --subject / --kind narrow the seeded answers to one bench (H2: a bench per subject).
 //
 // --hard reads scripts/humanities-bench/hard-answers.json instead: answers written the way a
 // student writes (slips, drift, copied source text, a right idea with no evidence), several
@@ -18,7 +21,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { seededAnswers, questionById } from '../../src/lib/humanities-questions';
+import { seededAnswers, questionById, type HumanitiesSubject, type HumanitiesKind } from '../../src/lib/humanities-questions';
 import { seededVerdict, consistencyVerdict, truthFreeVerdict, padAnswer, stripEvidence, addSupported, type VariantKind } from '../../src/lib/humanities-bench';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +40,8 @@ const name = opt('--name', `h1-${new Date().toISOString().slice(0, 10)}`);
 const limit = Number(opt('--limit', '0'));
 const reportOnly = args.includes('--report-only');
 const hard = args.includes('--hard');
+const subject = (opt('--subject', '') || undefined) as HumanitiesSubject | undefined;
+const kind = (opt('--kind', '') || undefined) as HumanitiesKind | undefined;
 const BATCH = 6;
 const pw = env('ADMIN_PASSWORD');
 if (!pw) { console.error('ADMIN_PASSWORD missing'); process.exit(2); }
@@ -54,7 +59,7 @@ function plan(): Row[] {
   let seeds: { questionId: string; skill: string; level: number; text: string; flaw?: string }[] = hard
     ? (JSON.parse(fs.readFileSync(path.join(HERE, 'hard-answers.json'), 'utf8')).answers as { questionId: string; level: number; flaw: string; text: string }[])
         .map(a => ({ ...a, skill: questionById(a.questionId)?.question.skill ?? 'unknown' }))
-    : seededAnswers();
+    : seededAnswers({ subject, kind });
   if (limit) seeds = seeds.slice(0, limit);
   const rows: Row[] = seeds.map(s => ({ key: `seed:${s.questionId}:L${s.level}${s.flaw ? ':' + s.flaw : ''}`, kind: 'seeded', questionId: s.questionId, skill: s.skill, text: s.text, truth: s.level }));
   const seedRows = [...rows];

@@ -1,0 +1,306 @@
+[
+  {
+    "id": "h01",
+    "subject": "history",
+    "kind": "source",
+    "title": "Hitler's rise to power",
+    "issue": "Why was Hitler able to come to power in Germany by 1933?",
+    "sources": [
+      {
+        "id": "A",
+        "provenance": "From a Nazi Party election leaflet, 1932.",
+        "text": "Six million Germans have no work. The parties of the Republic have had fourteen years and have given you hunger. Only one movement promises work and bread. Vote for the man who will make Germany strong again."
+      },
+      {
+        "id": "B",
+        "provenance": "A former factory worker from Berlin, interviewed in the 1970s about the year 1932.",
+        "text": "I had been out of work for two years. My children were hungry. I did not care much about politics before. The Nazis ran a soup kitchen on my street and their men looked disciplined. I thought, nobody else is doing anything, so let them try."
+      },
+      {
+        "id": "C",
+        "provenance": "From a school textbook by a British historian, 1990s.",
+        "text": "The Depression gave Hitler his audience, but it did not give him power. In the election of November 1932 the Nazi vote fell. Hitler became Chancellor in January 1933 because a small group of conservative politicians persuaded the President to appoint him. They believed they could control him."
+      },
+      {
+        "id": "D",
+        "provenance": "A Social Democrat member of the German parliament, writing in exile in 1934.",
+        "text": "We and the Communists spent our strength fighting each other in the streets and in parliament. Together we had more seats than the Nazis in November 1932. We never joined hands. The Republic fell because its defenders were divided."
+      }
+    ],
+    "questions": [
+      {
+        "id": "h01-q1",
+        "skill": "comparison",
+        "sources": ["A", "B"],
+        "question": "How similar are Sources A and B? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "Source A is a leaflet and Source B is an interview. Both are about the Nazis in 1932." },
+          { "level": 2, "text": "They are similar in showing that unemployment made people turn to the Nazis. A says 'Six million Germans have no work' and promises 'work and bread'. B says 'I had been out of work for two years' and so he decided to 'let them try'." },
+          { "level": 3, "text": "They are similar in showing that unemployment made people turn to the Nazis. A says 'Six million Germans have no work' and promises 'work and bread'. B says 'I had been out of work for two years' and so he decided to 'let them try'. They differ on how strongly people believed in the Nazis. A says 'only one movement' can help, as if voters were sure. B says 'nobody else is doing anything, so let them try', which shows he chose them with little faith." },
+          { "level": 4, "text": "They are similar in showing that unemployment made people turn to the Nazis. A says 'Six million Germans have no work' and promises 'work and bread'. B says 'I had been out of work for two years' and so he decided to 'let them try'. They differ on how strongly people believed in the Nazis. A says 'only one movement' can help, as if voters were sure. B says 'nobody else is doing anything, so let them try', which shows he chose them with little faith. They also differ in purpose. A was written by the Nazis to win votes before an election, so it blames 'the parties of the Republic' and makes a big promise. B is a worker looking back many years later to explain his own choice. He has nothing to sell, so he admits he 'did not care much about politics'." }
+        ]
+      },
+      {
+        "id": "h01-q2",
+        "skill": "usefulness",
+        "sources": ["C", "D"],
+        "question": "How useful is Source C in helping you understand why Hitler became Chancellor in 1933? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is useful because it is from a historian and it is about Hitler becoming Chancellor." },
+          { "level": 2, "text": "It is useful. It shows that Hitler was given power by other politicians: a small group 'persuaded the President to appoint him'. So he did not simply win it by votes." },
+          { "level": 3, "text": "It is useful. It shows that Hitler was given power by other politicians: a small group 'persuaded the President to appoint him'. So he did not simply win it by votes. It is limited. It tells us only about the conservative politicians. It does not say why Hitler's opponents failed to stop him." },
+          { "level": 4, "text": "It is useful. It shows that Hitler was given power by other politicians: a small group 'persuaded the President to appoint him'. It is limited. It does not say why Hitler's opponents failed to stop him. Source D fills that gap: the Social Democrats and the Communists 'never joined hands'. C can be trusted for what it does say. It is a historian writing sixty years later with no side to defend, and its point that 'the Nazi vote fell' fits D, which says the two parties together 'had more seats than the Nazis'. So C is very useful for the last step, the appointment, but not for the whole story." }
+        ]
+      },
+      {
+        "id": "h01-q3",
+        "skill": "how_far",
+        "sources": ["A", "B", "C", "D"],
+        "question": "'The Great Depression was the main reason Hitler came to power.' Using the sources, explain how far you would agree with this statement.",
+        "seeded": [
+          { "level": 1, "text": "I agree because the Depression made Germans poor and angry, and Hitler was a good speaker." },
+          { "level": 2, "text": "I agree. Source A shows the Nazis used the Depression to win votes: 'Six million Germans have no work' and they promise 'work and bread'. Source B agrees. The worker was 'out of work for two years' and so he decided to 'let them try'." },
+          { "level": 3, "text": "I agree to some extent. Source A shows the Nazis used the Depression to win votes: 'Six million Germans have no work' and they promise 'work and bread'. Source B agrees. The worker was 'out of work for two years' and so he decided to 'let them try'. Source C disagrees. It says the Depression 'did not give him power': a small group 'persuaded the President to appoint him'. Source D also disagrees. It says the Republic fell 'because its defenders were divided'." },
+          { "level": 4, "text": "Source A shows the Nazis used the Depression to win votes: 'Six million Germans have no work' and they promise 'work and bread'. Source B agrees. The worker was 'out of work for two years' and so he decided to 'let them try'. Source C disagrees. It says the Depression 'did not give him power': a small group 'persuaded the President to appoint him'. Source D also disagrees. It says the Republic fell 'because its defenders were divided'. The sources that disagree are stronger. A is a leaflet meant to win votes, and B is one worker. C is a historian with the whole picture and no side to defend, and its point that 'the Nazi vote fell' shows the Depression alone was not enough. D defends his own party, but he admits its mistake, which makes him more believable. So I agree only to some extent: the Depression gave Hitler his support, but the deal that made him Chancellor was the deciding step." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h02",
+    "subject": "history",
+    "kind": "source",
+    "title": "The Munich Agreement",
+    "issue": "Was the policy of appeasement a mistake?",
+    "sources": [
+      {
+        "id": "A",
+        "provenance": "From a British newspaper editorial, 1 October 1938, the day after the Munich Agreement.",
+        "text": "The Prime Minister has come home with peace. A week ago families were fitting gas masks on their children and trenches were being dug in the parks. Today those children can sleep. No one who remembers the last war will say the price was too high."
+      },
+      {
+        "id": "B",
+        "provenance": "A reader's letter to a British newspaper, October 1938.",
+        "text": "We have bought a few months of quiet by handing a small country's land to a dictator, without asking that country. He has broken every promise he has made. He will take this as proof that threats work, and he will ask for more."
+      },
+      {
+        "id": "C",
+        "provenance": "A cartoon published in a Soviet newspaper in October 1938, shortly after the Munich Agreement.",
+        "text": "[The cartoon shows two well-dressed men, labelled 'Britain' and 'France', standing at a signpost. They point a wolf in a German army cap along the road marked 'East'. Behind them lies a torn map of Czechoslovakia.]"
+      },
+      {
+        "id": "D",
+        "provenance": "From a history book written in the 1990s.",
+        "text": "In 1938 Britain's air defences were not ready. Radar stations covered only part of the coast and few modern fighter planes were in service. By September 1939 both had been greatly strengthened. Whatever its other effects, the year gained at Munich was used."
+      }
+    ],
+    "questions": [
+      {
+        "id": "h02-q1",
+        "skill": "inference",
+        "sources": ["A"],
+        "question": "What does Source A tell you about how people in Britain felt about the Munich Agreement? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "Source A says the Prime Minister has come home with peace and the children can sleep." },
+          { "level": 2, "text": "People in Britain felt relieved that there would be no war." },
+          { "level": 3, "text": "People in Britain felt relieved that war had been avoided. The source says that a week before, families were 'fitting gas masks on their children', but now 'those children can sleep'. This shows people had truly expected to be bombed, so the agreement felt like an escape from danger." }
+        ]
+      },
+      {
+        "id": "h02-q2",
+        "skill": "reliability",
+        "sources": ["A", "B"],
+        "question": "How reliable is Source A about what people in Britain thought of the Munich Agreement? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is reliable because it is a newspaper and it was written at the time." },
+          { "level": 2, "text": "It is reliable. It says families were 'fitting gas masks on their children' and now 'those children can sleep', so people were happy with the agreement." },
+          { "level": 3, "text": "It is not fully reliable. A claims 'No one who remembers the last war will say the price was too high'. But Source B, a reader writing in the same month, says Britain 'bought a few months of quiet' by handing over another country's land. So some people in Britain did think the price was too high. A's claim is too sweeping." },
+          { "level": 4, "text": "It is not fully reliable. A claims 'No one who remembers the last war will say the price was too high'. But Source B, a reader writing in the same month, says Britain 'bought a few months of quiet' by handing over another country's land. So some people in Britain did think the price was too high. A is also an editorial printed the day after the agreement. The newspaper wants its readers to support the Prime Minister, so it speaks only of relief and leaves out the country that lost its land. It is reliable for the relief many felt, but not as proof that everyone agreed." }
+        ]
+      },
+      {
+        "id": "h02-q3",
+        "skill": "purpose",
+        "sources": ["C"],
+        "question": "Why was Source C published? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It shows two men labelled Britain and France pointing a wolf down a road, with a torn map behind them." },
+          { "level": 2, "text": "It says that Britain and France are sending Germany to attack in the east. The two men 'point a wolf in a German army cap' along the road marked 'East'." },
+          { "level": 3, "text": "It says that Britain and France are sending Germany to attack in the east. The two men 'point a wolf in a German army cap' along the road marked 'East'. It is aimed at people in the Soviet Union. It was printed in a Soviet newspaper, and the Soviet Union lies to the east, where the wolf is being sent." },
+          { "level": 4, "text": "It says that Britain and France are sending Germany to attack in the east. The two men 'point a wolf in a German army cap' along the road marked 'East'. It is aimed at people in the Soviet Union. It was printed in a Soviet newspaper, and the Soviet Union lies to the east. It came out just after Munich, a meeting the Soviet Union was not invited to. The newspaper wants Soviet readers to believe that Britain and France gave up Czechoslovakia on purpose, to turn Hitler against them. Then they will distrust the Western powers and accept that their country must look after its own safety." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h03",
+    "subject": "history",
+    "kind": "source",
+    "title": "The Cuban Missile Crisis",
+    "issue": "Who gained more from the Cuban Missile Crisis?",
+    "sources": [
+      {
+        "id": "A",
+        "provenance": "From an American news magazine, November 1962.",
+        "text": "The Soviet ships turned back. The missiles are being crated and shipped home under the eyes of American aircraft. The President stood firm, and the other side gave way. It is a clear victory for the United States."
+      },
+      {
+        "id": "B",
+        "provenance": "From a Soviet newspaper, November 1962.",
+        "text": "The Soviet government has saved the peace of the world. Our missiles were sent to protect Cuba from invasion. The United States has now promised not to invade. Cuba is safe, so the missiles are no longer needed there."
+      },
+      {
+        "id": "C",
+        "provenance": "From a history textbook, 2000s.",
+        "text": "Publicly, the Soviet Union removed its missiles from Cuba and the United States promised not to invade the island. Secretly, the United States also agreed to remove its Jupiter missiles from Turkey some months later. This part of the deal was kept from the public for many years."
+      },
+      {
+        "id": "D",
+        "provenance": "A Cuban official, recalling the crisis in an interview in the 1990s.",
+        "text": "We learned from the radio that the missiles were leaving. Nobody in Moscow asked us. The two great powers settled the matter over our heads, and we were left feeling like a piece on their board."
+      }
+    ],
+    "questions": [
+      {
+        "id": "h03-q1",
+        "skill": "comparison",
+        "sources": ["A", "B"],
+        "question": "How different are Sources A and B? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "Source A is from an American magazine and Source B is from a Soviet newspaper. Both are about the Cuban Missile Crisis." },
+          { "level": 2, "text": "They differ on who came out ahead. A calls the result 'a clear victory for the United States'. B says 'The Soviet government has saved the peace of the world' and that 'Cuba is safe'." },
+          { "level": 3, "text": "They differ on who came out ahead. A calls the result 'a clear victory for the United States'. B says 'The Soviet government has saved the peace of the world' and that 'Cuba is safe'. They are similar in showing that the missiles were removed from Cuba. A says they are 'being crated and shipped home' and B says they 'are no longer needed there'." },
+          { "level": 4, "text": "They differ on who came out ahead. A calls the result 'a clear victory for the United States'. B says 'The Soviet government has saved the peace of the world' and that 'Cuba is safe'. They are similar in showing that the missiles were removed from Cuba. A says they are 'being crated and shipped home' and B says they 'are no longer needed there'. They also differ in whose side they take. A was written for American readers and praises the President, who 'stood firm'. B was written for Soviet readers and makes the removal look like a choice, not a retreat. Each wants its own people to believe their leader won." }
+        ]
+      },
+      {
+        "id": "h03-q2",
+        "skill": "usefulness",
+        "sources": ["A", "C"],
+        "question": "How useful is Source A in helping you understand how the Cuban Missile Crisis ended? Explain your answer.",
+        "seeded": [
+          { "level": 1, "text": "It is useful because it was written in 1962 and it is about the crisis." },
+          { "level": 2, "text": "It is useful. It shows that the Soviet Union backed down in public: 'The Soviet ships turned back' and the missiles are 'being crated and shipped home'." },
+          { "level": 3, "text": "It is useful. It shows that the Soviet Union backed down in public: 'The Soviet ships turned back' and the missiles are 'being crated and shipped home'. It is limited. It tells us only what the Soviet Union gave up. It says nothing about what the United States gave in return." },
+          { "level": 4, "text": "It is useful. It shows that the Soviet Union backed down in public: 'The Soviet ships turned back' and the missiles are 'being crated and shipped home'. It is limited. It tells us only what the Soviet Union gave up. Source C shows the United States gave something too: it 'promised not to invade' and 'Secretly' agreed to remove its missiles from Turkey. A's writer could not know this, because that part 'was kept from the public for many years'. A is also an American magazine cheering its own President, so it calls the result 'a clear victory'. It is useful for how the ending looked to Americans in 1962, not for what was really agreed." }
+        ]
+      },
+      {
+        "id": "h03-q3",
+        "skill": "how_far",
+        "sources": ["A", "B", "C", "D"],
+        "question": "'The United States won the Cuban Missile Crisis.' Using the sources, explain how far you would agree with this statement.",
+        "seeded": [
+          { "level": 1, "text": "I agree because the United States was the stronger country and its President was a good leader." },
+          { "level": 2, "text": "I agree. Source A says 'The Soviet ships turned back' and calls it 'a clear victory for the United States'. Source D also supports this. The Cuban official says 'Nobody in Moscow asked us', which shows the Soviet Union gave way without even telling its ally." },
+          { "level": 3, "text": "I agree to some extent. Source A says 'The Soviet ships turned back' and calls it 'a clear victory for the United States'. Source D also supports this. The Cuban official says 'Nobody in Moscow asked us', which shows the Soviet Union gave way without even telling its ally. Source B disagrees. It says the United States 'has now promised not to invade', so 'Cuba is safe', which is what the Soviet Union wanted. Source C also disagrees: the United States 'agreed to remove its Jupiter missiles from Turkey', so it gave something up too." },
+          { "level": 4, "text": "Source A says 'The Soviet ships turned back' and calls it 'a clear victory for the United States'. Source D also supports this. The Cuban official says 'Nobody in Moscow asked us', which shows the Soviet Union gave way without even telling its ally. Source B disagrees. It says the United States 'has now promised not to invade', so 'Cuba is safe'. Source C also disagrees: the United States 'agreed to remove its Jupiter missiles from Turkey'. The sources that disagree are stronger. A and B were each written for their own side in 1962, so each claims a win. C is a textbook written decades later with no side to defend, and it knows about the secret deal that A's writer could not have known. D shows the Soviet Union lost face with Cuba, but that is not the same as the United States winning. So I agree only to some extent: the United States won in public, but in fact both sides gave something up." }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "h04",
+    "subject": "history",
+    "kind": "source",
+    "title": "The Marshall Plan",
+    "issue": "Was the Marshall Plan an act of generosity?",
+    "sources": [
+      {
+        "id": "A",
+        "provenance": "The narration of an American government information film shown in Western Europe, 1949.",
+        "text": "Two years ago this bakery in France had no flour. Today the ovens are lit again. The wheat came by ship, a gift from the American people to free people who wish to stay free."
+      },
+      {
+        "id": "B",
+        "provenance": "From a Soviet newspaper, 1947.",
+        "text": "The dollar is being used as a weapon. Countries that accept this so-called aid must open their markets to American goods and take orders from Washington. It is a plan to buy Europe."
+      },
+      {
+        "id": "C",
+        "provenance": "From a history textbook, 2000s.",
+        "text": "Between 1948 and 1952 the United States gave about 13 billion dollars to sixteen European countries. The Soviet Union refused the aid and made the countries of Eastern Europe refuse it too. Much of the money was spent on American goods."
+      },
+      {
+        "id": "D",
+        "provenance": "A poster printed in Western Europe with Marshall Plan funds, 1950.",
+        "text": "[The poster shows a windmill whose four blades are the flags of European countries, turning in a wind marked 'Co-operation'.] Caption: 'Together we rebuild.'"
+      }
+    ],
+    "questions": [
+      {
+        "id": "h04-q1",
+        "skill": "inference",
+        "sources": ["A"],
+        "question": "What does Source A tell you about how the United States wanted Europeans to see the Marshall Plan? Explain your answer.",
+        "model": "The United States wanted Europeans to see the Plan as generous help with nothing asked in return. The film calls the wheat 'a gift from the American people'. A gift is free, so viewers are led to feel grateful, not suspicious. It also ties the aid to people 'who wish to stay free', so accepting it looks like choosing the American side."
+      },
+      {
+        "id": "h04-q2",
+        "skill": "reliability",
+        "sources": ["B", "C"],
+        "question": "How reliable is Source B about the aims of the Marshall Plan? Explain your answer.",
+        "model": "It is partly reliable. B claims that countries 'must open their markets to American goods'. Source C supports part of this: 'Much of the money was spent on American goods', so the United States did gain. But C gives no support to B's claim that countries would 'take orders from Washington'. B is also a Soviet newspaper in 1947, when the Soviet Union was refusing the aid and making Eastern Europe refuse it. It needed its readers to see the Plan as a trap, so it uses words like 'weapon' and 'buy Europe'. It is reliable for the Soviet view, and only partly for the Plan's aims."
+      },
+      {
+        "id": "h04-q3",
+        "skill": "purpose",
+        "sources": ["D"],
+        "question": "Why was Source D printed? Explain your answer.",
+        "model": "It says European countries will recover only if they work together. The blades are different flags, but they turn as one windmill in a wind marked 'Co-operation', and the caption says 'Together we rebuild'. It is aimed at ordinary people in Western Europe, where it was printed. It was paid for with Marshall Plan funds in 1950, when the United States wanted the countries it was helping to trade with each other and stand together against communism. So it wants viewers to support co-operation between their countries, and to think well of the Plan behind it."
+      }
+    ]
+  },
+  {
+    "id": "h05",
+    "subject": "history",
+    "kind": "source",
+    "title": "The Treaty of Versailles",
+    "issue": "Was the Treaty of Versailles fair to Germany?",
+    "sources": [
+      {
+        "id": "A",
+        "provenance": "From a German newspaper, June 1919.",
+        "text": "The victors have written this treaty without us and now order us to sign. We must give up land, our army and our colonies, and accept the blame for a war that all the powers stumbled into. This is not peace. It is a sentence."
+      },
+      {
+        "id": "B",
+        "provenance": "From a French newspaper, June 1919.",
+        "text": "For four years the war was fought on our soil. Our mines were flooded and our villages are rubble. Germany's own towns were never touched. It is only just that the country which caused the ruin should pay to repair it."
+      },
+      {
+        "id": "C",
+        "provenance": "From a history textbook, 2000s.",
+        "text": "Germany lost about 13 per cent of its land and its army was cut to 100,000 men. Yet Germany itself had forced a far harsher peace on Russia in March 1918. Germany remained the largest economy on the continent after 1919."
+      },
+      {
+        "id": "D",
+        "provenance": "A British soldier stationed in Germany, in a letter home, 1919.",
+        "text": "The people here are thin and the shops are bare. They ask how they can ever pay what is demanded. I fought them for three years, but I do not see how making them hopeless will keep the peace for our children."
+      }
+    ],
+    "questions": [
+      {
+        "id": "h05-q1",
+        "skill": "comparison",
+        "sources": ["A", "B"],
+        "question": "How different are Sources A and B? Explain your answer.",
+        "model": "They differ on whether the treaty was fair. A says 'This is not peace. It is a sentence.' B says it is 'only just' that Germany should pay. They are similar in showing that Germany was made to carry the cost of the war. A says Germany must 'accept the blame' and give up land, and B says Germany 'should pay to repair' the ruin. They also differ in whose side they take. A speaks for Germans, who had no say, so it stresses that the treaty was written 'without us'. B speaks for the French, who suffered the fighting, so it stresses 'our villages are rubble'."
+      },
+      {
+        "id": "h05-q2",
+        "skill": "usefulness",
+        "sources": ["A", "C"],
+        "question": "How useful is Source A in helping you understand whether the Treaty of Versailles was fair? Explain your answer.",
+        "model": "It is useful. It shows why Germans thought the treaty unfair: it was written 'without us' and they had to 'accept the blame' for the war. It is limited. It lists only Germany's losses and does not compare them with anything. Source C shows that Germany 'had forced a far harsher peace on Russia' and 'remained the largest economy on the continent'. A is also a German newspaper in the month of signing, written to share its readers' anger. So it is very useful for how Germans felt, but not for judging whether the terms were in fact unfair."
+      },
+      {
+        "id": "h05-q3",
+        "skill": "how_far",
+        "sources": ["A", "B", "C", "D"],
+        "question": "'The Treaty of Versailles was unfair to Germany.' Using the sources, explain how far you would agree with this statement.",
+        "model": "Source A supports the statement: Germany had to give up 'land, our army and our colonies' and take the blame, with no say. Source D supports it too: the soldier meets people who 'ask how they can ever pay what is demanded'. Source B disagrees. The war was fought on French soil while Germany's towns 'were never touched', so it is 'only just' that Germany pays. Source C also disagrees: Germany 'had forced a far harsher peace on Russia' and was still 'the largest economy on the continent'. The sources that disagree are stronger. A and B each speak for their own country. D is a former enemy with no reason to pity Germans, so his worry is believable, but he judges by what he sees in one place. C is written long after, with the figures, and it measures the treaty against what Germany itself did. So I agree only to a small extent: the treaty was harsh and felt unfair, but by the standards of the time it was not."
+      }
+    ]
+  }
+]

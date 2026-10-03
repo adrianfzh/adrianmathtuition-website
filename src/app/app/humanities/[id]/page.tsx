@@ -8,7 +8,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun } from '@/lib/humanities-runs';
-import { questionById, modelAnswer, CLAIM_TAGS } from '@/lib/humanities-questions';
+import { questionById, modelAnswer, ALL_TAGS, tagsFor } from '@/lib/humanities-questions';
 import { levelLabel, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards } from '../sources';
 import { skillLabel } from '../skills';
@@ -22,8 +22,14 @@ const TAG_STYLE: Record<string, { mark: string; chip: string }> = {
   not_supported: { mark: 'bg-rose-100 decoration-rose-500', chip: 'bg-rose-100 text-rose-800' },
   uses_context: { mark: 'bg-sky-100 decoration-sky-500', chip: 'bg-sky-100 text-sky-800' },
   evaluates: { mark: 'bg-violet-100 decoration-violet-500', chip: 'bg-violet-100 text-violet-800' },
+  // Structured response (answered from own knowledge).
+  point: { mark: 'bg-amber-100 decoration-amber-500', chip: 'bg-amber-100 text-amber-800' },
+  example: { mark: 'bg-sky-100 decoration-sky-500', chip: 'bg-sky-100 text-sky-800' },
+  link: { mark: 'bg-emerald-100 decoration-emerald-500', chip: 'bg-emerald-100 text-emerald-800' },
+  not_explained: { mark: 'bg-rose-100 decoration-rose-500', chip: 'bg-rose-100 text-rose-800' },
+  weighs: { mark: 'bg-violet-100 decoration-violet-500', chip: 'bg-violet-100 text-violet-800' },
 };
-const tagLabel = (k: string) => CLAIM_TAGS.find(t => t.key === k)?.label ?? k;
+const tagLabel = (k: string) => ALL_TAGS.find(t => t.key === k)?.label ?? k;
 
 export default async function HumanitiesRunPage({ params }: { params: Promise<{ id: string }> }) {
   if (!(await humanitiesOpen())) redirect('/app');
@@ -41,7 +47,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const report = run.report;
   const max = run.levels_max ?? ctx.scheme.levels.length;
   const segs = report ? segmentAnswer(run.answer_text, report.claims ?? []) : [{ text: run.answer_text, claim: null }];
-  const usedTags = CLAIM_TAGS.filter(t => report?.claims?.some(c => c.tag === t.key));
+  const usedTags = tagsFor(run.skill).filter(t => report?.claims?.some(c => c.tag === t.key));
   const model = modelAnswer(ctx.question);
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
@@ -134,7 +140,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
       )}
 
       <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-        <summary className="text-sm font-semibold text-navy cursor-pointer">The sources</summary>
+        <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
         <div className="mt-3"><SourceCards sources={ctx.sources} /></div>
       </details>
 
