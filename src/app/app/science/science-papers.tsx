@@ -188,6 +188,37 @@ export function DefinitionsDoor() {
   );
 }
 
+/** One door row: the look QaDoor and DefinitionsDoor share. */
+function StudyDoor({ href, tile, icon, title, sub }: { href: string; tile: string; icon: 'book' | 'flask'; title: string; sub: string }) {
+  return (
+    <Link href={href} className={`${CARD} p-3 flex items-center gap-3 hover:brightness-[0.99] active:scale-[0.99] transition`}>
+      <span className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${tile} text-white`} aria-hidden>
+        <PortalIcon name={icon} className="w-5 h-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-navy">{title}</span>
+        <span className="block text-[12px] text-gray-500">{sub}</span>
+      </span>
+      <span className="shrink-0 text-gray-300 text-lg">›</span>
+    </Link>
+  );
+}
+
+/** The Biology tab's doors (3 Oct 2026): the definitions list and Processes in pictures. */
+export function BiologyDoors({ definitions, processes }: { definitions: boolean; processes: boolean }) {
+  return (
+    <div className="space-y-2">
+      {definitions && <StudyDoor href="/app/science/definitions?s=biology" tile="bg-emerald-600" icon="book" title="Biology definitions" sub="Every definition, by topic · key words marked" />}
+      {processes && <StudyDoor href="/app/science/processes" tile="bg-emerald-600" icon="flask" title="Processes in pictures" sub="Osmosis, enzymes, the heart, blood glucose · step by step" />}
+    </div>
+  );
+}
+
+/** Science Home's door to Command words — for every science (3 Oct 2026). */
+export function CommandWordsDoor() {
+  return <StudyDoor href="/app/science/command-words" tile="bg-slate-700" icon="book" title="Command words" sub="What state, describe and explain each need · describing a graph" />;
+}
+
 export function ScienceTabs({ papers, pending, subjects, limit = 0, allHref = '/app/science/papers', panelExtras }: {
   papers: SciencePaper[]; pending: SciencePending[]; subjects: ScienceSubject[]; limit?: number; allHref?: string;
   /** Something above a science's papers — Home puts the QA flashcards door on Chemistry (24 Sep 2026). */

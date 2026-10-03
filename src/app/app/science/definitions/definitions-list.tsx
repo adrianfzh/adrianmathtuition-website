@@ -5,15 +5,15 @@ import { groupByTopic, searchDefinitions, splitBold, topicAnchor, type Definitio
 
 const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)]';
 
-export default function DefinitionsList({ definitions }: { definitions: readonly Definition[] }) {
+export default function DefinitionsList({ definitions, topics, hint }: { definitions: readonly Definition[]; topics: readonly string[]; hint: string }) {
   const [q, setQ] = useState('');
-  const groups = useMemo(() => groupByTopic(searchDefinitions(q, definitions)), [q, definitions]);
+  const groups = useMemo(() => groupByTopic(searchDefinitions(q, definitions), topics), [q, definitions, topics]);
 
   return (
     <div className="space-y-4">
       <input
         type="search" value={q} onChange={e => setQ(e.target.value)}
-        placeholder="Search — moment, half-life, refraction…" aria-label="Search the definitions"
+        placeholder={hint} aria-label="Search the definitions"
         className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-[15px] text-navy placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-300"
       />
 

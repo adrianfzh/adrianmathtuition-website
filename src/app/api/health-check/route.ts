@@ -318,6 +318,18 @@ export async function GET(req: NextRequest) {
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),
+    timed('portal-science-processes', async () => {
+      const r = await fetch(`${base}/app/science/processes`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/processes is missing — the Biology processes door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
+    timed('portal-science-command-words', async () => {
+      const r = await fetch(`${base}/app/science/command-words`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/command-words is missing — the Command words door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     timed('portal-science-definitions', async () => {
       const r = await fetch(`${base}/app/science/definitions`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/definitions is missing — the Physics definitions door 404s');

@@ -286,6 +286,16 @@ export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;
  */
 export const SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS = false;
 
+/**
+ * 🧬 Biology study pages (3 Oct 2026), each Adrian's cookie only until he has
+ * read it: the Biology definitions list (/app/science/definitions?s=biology),
+ * Processes in pictures (/app/science/processes) and, for every science,
+ * Command words (/app/science/command-words).
+ */
+export const BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS = false;
+export const BIOLOGY_PROCESSES_OPEN_TO_STUDENTS = false;
+export const COMMAND_WORDS_OPEN_TO_STUDENTS = false;
+
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
 // chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
 // has watched a few — flip this to open the door on every mistake card and on the

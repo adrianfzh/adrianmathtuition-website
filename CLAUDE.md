@@ -167,6 +167,9 @@ Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future s
 | `SCIENCE_MARKING_OPEN_TO_STUDENTS` | closed in code — the LIVE switch is the Airtable `Settings` row `science_marking_open` (on since 25 Sep 2026) | the Science tab |
 | `QA_FLASHCARDS_OPEN_TO_STUDENTS` | closed | `/app/science/qa` — the qualitative-analysis page in pictures (3 Oct 2026; was flashcards) |
 | `SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) until Adrian has read the list | `/app/science/definitions` — Physics definitions by topic, door on the Physics tab |
+| `BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) until Adrian has read the list | `/app/science/definitions?s=biology` — Biology (6093) definitions by topic (`lib/biology-definitions.ts`), door on the Biology tab |
+| `BIOLOGY_PROCESSES_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) | `/app/science/processes` — twelve Biology processes as step chains with arrows (`lib/bio-processes.ts`), door on the Biology tab; health-check `portal-science-processes` |
+| `COMMAND_WORDS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) | `/app/science/command-words` — what each command word needs + how to describe a graph (`lib/command-words.ts`), a row on Science Home for all three sciences; health-check `portal-science-command-words` |
 | `ESSAY_MARKING_OPEN_TO_STUDENTS` | closed | the Languages family |
 | `HUMANITIES_OPEN_TO_STUDENTS` | closed (built 2 Oct 2026) | the Humanities family (Social Studies source questions) |
 | `EXAM_PREP_OPEN_TO_STUDENTS` | closed | ⏱ Timed set + the exam card's door |

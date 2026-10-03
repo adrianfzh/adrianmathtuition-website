@@ -21,10 +21,13 @@ export const DEFINITION_TOPICS: readonly string[] = [
   'Electromagnetic induction', 'Radioactivity',
 ];
 
-const d = (topic: string, term: string, text: string, formula?: string): Definition => ({
+/** Builds one definition; the id is the topic and the term, slugged. */
+export const defn = (topic: string, term: string, text: string, formula?: string): Definition => ({
   id: `${topic}:${term}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
   topic, term, text, ...(formula ? { formula } : {}),
 });
+
+const d = defn;
 
 export const DEFINITIONS: readonly Definition[] = [
   d('Measurement', 'Scalar quantity', 'A quantity that has **magnitude only**.'),
@@ -162,8 +165,8 @@ export function searchDefinitions(query: string, list: readonly Definition[] = D
 }
 
 /** Topics in syllabus order, each with its definitions; empty topics dropped. */
-export function groupByTopic(list: readonly Definition[]): { topic: string; items: Definition[] }[] {
-  return DEFINITION_TOPICS
+export function groupByTopic(list: readonly Definition[], topics: readonly string[] = DEFINITION_TOPICS): { topic: string; items: Definition[] }[] {
+  return topics
     .map(topic => ({ topic, items: list.filter(x => x.topic === topic) }))
     .filter(g => g.items.length > 0);
 }
