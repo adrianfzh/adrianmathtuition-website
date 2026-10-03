@@ -17,14 +17,23 @@
 // biology papers (lib/portal-beta.ts scienceMarkingOpen). OFF: the tab is
 // Adrian's admin preview only. A row, not a code flag, so the release is a tap.
 //
-// Both rows live where the auto-release switch lives (lib/auto-release-setting.ts):
+// 🌙 "Gemini Batch for queued papers" (Adrian, 3 Oct 2026: "why don't you just
+// add the toggle in /admin switches"). ON: a QUEUED paper's first vision round
+// (row scan + part regions) goes to Google's Batch API at half price and waits
+// up to an hour for it; ⚡ Mark now never batches. OFF: every vision call is
+// live, full price, today's speed. The bot reads the row each queue tick (bot
+// lib/marking-settings.js visionBatch()); until the row exists the Fly secret
+// VISION_BATCH=1 decides, so the toggle replaces the secret without a deploy.
+//
+// All rows live where the auto-release switch lives (lib/auto-release-setting.ts):
 // one Airtable `Settings` row each, Setting Name = the constant, Value = JSON
-// {on, by, at, note} — the bot reads `marking_mac_only` on every queue tick
-// (bot lib/marking-settings.js, 20 s cache).
+// {on, by, at, note} — the bot reads `marking_mac_only` and `marking_vision_batch`
+// on every queue tick (bot lib/marking-settings.js, 20 s cache).
 import { airtableRequest } from '@/lib/airtable';
 
 export const MAC_ONLY_SETTING = 'marking_mac_only';
 export const SCIENCE_OPEN_SETTING = 'science_marking_open';
+export const VISION_BATCH_SETTING = 'marking_vision_batch';
 const TTL_MS = 30_000;
 
 export type MarkingSwitch = { on: boolean; by: string | null; at: string | null; note: string | null };
@@ -73,7 +82,9 @@ export async function setMarkingSwitch(name: string, on: boolean, by: string, no
   return value;
 }
 
-// ── the two switches, by name ────────────────────────────────────────────────
+// ── the switches, by name ────────────────────────────────────────────────────
+export const getVisionBatchSetting = (fresh = false) => getMarkingSwitch(VISION_BATCH_SETTING, fresh);
+export const setVisionBatch = (on: boolean, by: string, note?: string) => setMarkingSwitch(VISION_BATCH_SETTING, on, by, note);
 export const getMacOnlySetting = (fresh = false) => getMarkingSwitch(MAC_ONLY_SETTING, fresh);
 export const setMacOnly = (on: boolean, by: string, note?: string) => setMarkingSwitch(MAC_ONLY_SETTING, on, by, note);
 export const getScienceOpenSetting = (fresh = false) => getMarkingSwitch(SCIENCE_OPEN_SETTING, fresh);

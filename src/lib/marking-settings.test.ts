@@ -18,6 +18,13 @@ describe('parseMacOnlySetting', () => {
   });
 });
 
+describe('the Gemini Batch switch (3 Oct 2026)', () => {
+  it('names the row the bot reads each queue tick', async () => {
+    const { VISION_BATCH_SETTING } = await import('./marking-settings');
+    expect(VISION_BATCH_SETTING).toBe('marking_vision_batch');
+  });
+});
+
 describe('the science release switch (11 Sep 2026)', () => {
   it('has its own row and parses like the Mac-only one', async () => {
     const { SCIENCE_OPEN_SETTING, parseMarkingSwitch } = await import('./marking-settings');

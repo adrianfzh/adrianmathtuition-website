@@ -2,7 +2,7 @@
 
 // /admin/switches — 🎚 every on/off switch for the machine, on one page (Adrian, 2 Oct
 // 2026: "why not we shift the whole toggle to admin hub? have a page just for toggles?").
-//   · the marking lane      — 🖥 Mac plan only            (/api/admin/marking-settings)
+//   · the marking lane      — 🖥 Mac plan only, 🌙 Gemini Batch (/api/admin/marking-settings)
 //   · the plan accounts     — one switch + meters each     (/api/admin/slot-accounts)
 //   · the worker's jobs     — extraction, twins, filing, the daily reviews, the
 //                             on-request jobs               (/api/admin/worker-jobs)
@@ -49,6 +49,7 @@ export default function SwitchesPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState('');
   const [macOnly, setMacOnly] = useState<Flag | null>(null);
+  const [visionBatch, setVisionBatch] = useState<Flag | null>(null);
   const [accounts, setAccounts] = useState<SlotAccountRow[] | null>(null);
   const [jobs, setJobs] = useState<WorkerJobRow[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -58,6 +59,7 @@ export default function SwitchesPage() {
     const get = async (url: string) => { const r = await fetch(url); const d = await r.json().catch(() => ({})); if (!r.ok && !d.jobs) throw new Error(d.error || `HTTP ${r.status}`); return d; };
     const [m, a, j] = await Promise.allSettled([get('/api/admin/marking-settings'), get('/api/admin/slot-accounts'), get('/api/admin/worker-jobs?fresh=1')]);
     if (m.status === 'fulfilled' && m.value?.macOnly) setMacOnly({ on: !!m.value.macOnly.on, at: m.value.macOnly.at ?? null });
+    if (m.status === 'fulfilled' && m.value?.visionBatch) setVisionBatch({ on: !!m.value.visionBatch.on, at: m.value.visionBatch.at ?? null });
     if (a.status === 'fulfilled' && Array.isArray(a.value?.accounts)) setAccounts(a.value.accounts);
     if (j.status === 'fulfilled' && Array.isArray(j.value?.jobs)) setJobs(j.value.jobs);
     const failed = [m, a, j].filter(x => x.status === 'rejected').map(x => (x as PromiseRejectedResult).reason?.message).filter(Boolean);
@@ -95,6 +97,12 @@ export default function SwitchesPage() {
       ? 'Mac plan only: nothing goes to the API until you switch it back. Papers wait for a plan slot. Turn it on?'
       : 'Back to the normal split: the plan slots get a head start, the API takes the rest. Turn Mac-only off?')) return;
     post('/api/admin/marking-settings', { macOnly: next }, 'macOnly', d => { const v = d.macOnly as Flag | undefined; if (v) setMacOnly({ on: !!v.on, at: v.at ?? null }); });
+  };
+  // 🌙 Gemini Batch (3 Oct 2026): half price, up to an hour a paper; no confirm —
+  // either way every paper still gets marked, only the price and the wait change.
+  const flipVisionBatch = () => {
+    if (!visionBatch) return;
+    post('/api/admin/marking-settings', { visionBatch: !visionBatch.on }, 'visionBatch', d => { const v = d.visionBatch as Flag | undefined; if (v) setVisionBatch({ on: !!v.on, at: v.at ?? null }); });
   };
   const flipAccount = (a: SlotAccountRow) =>
     post('/api/admin/slot-accounts', { email: a.email, on: !a.on }, `acct:${a.email}`, d => { if (Array.isArray(d.accounts)) setAccounts(d.accounts as SlotAccountRow[]); });
@@ -148,6 +156,20 @@ export default function SwitchesPage() {
               <Toggle on={macOnly.on} busy={busy === 'macOnly'} label="Mac plan only" onClick={flipMacOnly} tone="#0e7490" />
             </div>
           ) : <div className="text-sm text-neutral-400">Loading…</div>}
+          {visionBatch && (
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-neutral-100" data-vision-batch={visionBatch.on ? 'on' : 'off'}>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-neutral-900">🌙 Gemini Batch for queued papers{visionBatch.on ? ' — ON' : ''}</div>
+                <div className="text-xs text-neutral-500 mt-0.5">
+                  {visionBatch.on
+                    ? 'Half price for the first vision round. A paper may wait up to an hour; papers behind it wait too. Mark now still goes live.'
+                    : 'Off: every vision call is live — full price, no waiting.'}
+                  {visionBatch.at ? ` · since ${sgt(visionBatch.at)}` : ''}
+                </div>
+              </div>
+              <Toggle on={visionBatch.on} busy={busy === 'visionBatch'} label="Gemini Batch for queued papers" onClick={flipVisionBatch} tone="#4338ca" />
+            </div>
+          )}
           <p className="text-xs text-neutral-400 mt-3">Marking itself has no off switch here on purpose. Auto-release and the Science tab are settled and stay on.</p>
         </section>
 

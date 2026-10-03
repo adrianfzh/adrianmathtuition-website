@@ -347,6 +347,7 @@ jobs there are together with the toggles for accounts … have a page just for t
 | Switch | Stored in | Read by | Off means |
 |---|---|---|---|
 | 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
+| 🌙 Gemini Batch for queued papers (3 Oct 2026) | Airtable `Settings` `marking_vision_batch` | the bot, every queue tick (`lib/marking-settings.js visionBatch()`; no row yet → the Fly secret `VISION_BATCH` decides) | every vision call is live — full price, no waiting. ON = a queued paper's first vision round goes to Google's Batch API at half price and may wait up to an hour; ⚡ Mark now never batches |
 | Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
 | Worker jobs ×14 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
 
@@ -362,6 +363,9 @@ jobs there are together with the toggles for accounts … have a page just for t
 - **Not switchable here, on purpose:** marking seats and sheet slots (a stray tap must never
   park a student's paper), auto-release and the Science tab (settled, their cards were removed
   1 Oct 2026), and every `*_OPEN_TO_STUDENTS` constant (code, `lib/portal-beta.ts`).
+- **When the queue stacks behind a slow paper** the bot sends one ⏳ line to the marking topic
+  (at most one an hour, `lib/queue-wait.js stackedWait`): how many papers wait, how long the
+  oldest has, and — when 🌙 Gemini Batch is on — that switching it off marks at live speed.
 - **A job that is OFF still goes amber on the board above** once its rhythm lapses — the amber
   is true (it is not running); the Switches page says why.
 - Adding a worker job: a line in `WORKER_JOBS` + `job_on <key>` at its start site in the bot's

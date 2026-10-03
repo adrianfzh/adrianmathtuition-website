@@ -1,14 +1,15 @@
 // /api/admin/marking-settings — the marking switches (lib/marking-settings.ts).
-//   GET  → { macOnly, scienceOpen }
+//   GET  → { macOnly, scienceOpen, visionBatch }
 //   POST { macOnly: boolean, note? }      🖥 Mac plan only (11 Sep 2026)
 //   POST { scienceOpen: boolean, note? }  🧪 Science tab open to students (11 Sep 2026)
+//   POST { visionBatch: boolean, note? }  🌙 Gemini Batch for queued papers (3 Oct 2026)
 // Each flip tells the marking topic. The bot reads the Mac-only row on every
 // queue tick and the app reads the science row on every request (30 s cache),
 // so either flip is live within half a minute, no deploy.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { verifyAgentAuth } from '@/lib/agent-auth';
-import { getMacOnlySetting, getScienceOpenSetting, setMacOnly, setScienceOpen } from '@/lib/marking-settings';
+import { getMacOnlySetting, getScienceOpenSetting, getVisionBatchSetting, setMacOnly, setScienceOpen, setVisionBatch } from '@/lib/marking-settings';
 import { sendTelegram } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
@@ -17,8 +18,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'marking-settings' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
-    const [macOnly, scienceOpen] = await Promise.all([getMacOnlySetting(true), getScienceOpenSetting(true)]);
-    return NextResponse.json({ macOnly, scienceOpen });
+    const [macOnly, scienceOpen, visionBatch] = await Promise.all([getMacOnlySetting(true), getScienceOpenSetting(true), getVisionBatchSetting(true)]);
+    return NextResponse.json({ macOnly, scienceOpen, visionBatch });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!(verifyAdminAuth(req) || verifyAgentAuth(req, 'switches', { route: 'marking-settings' }))) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => ({})) as { macOnly?: unknown; scienceOpen?: unknown; note?: unknown };
+  const body = await req.json().catch(() => ({})) as { macOnly?: unknown; scienceOpen?: unknown; visionBatch?: unknown; note?: unknown };
   const note = typeof body.note === 'string' ? body.note.slice(0, 200) : undefined;
   try {
     if (typeof body.macOnly === 'boolean') {
@@ -43,7 +44,14 @@ export async function POST(req: NextRequest) {
         : '🧪 Science tab CLOSED to students from mark-paper — students see the maths app only; your admin preview still has it.', 'marking').catch(() => {});
       return NextResponse.json({ scienceOpen: value });
     }
-    return NextResponse.json({ error: 'macOnly or scienceOpen (boolean) is required' }, { status: 400 });
+    if (typeof body.visionBatch === 'boolean') {
+      const value = await setVisionBatch(body.visionBatch, 'adrian', note);
+      sendTelegram(body.visionBatch
+        ? '🌙 Gemini Batch switched ON from /admin/switches — a queued paper\'s first vision round goes to the Batch API at half price and may wait up to an hour. ⚡ Mark now still goes live.'
+        : '☀️ Gemini Batch switched OFF from /admin/switches — every vision call is live again: full price, no waiting.', 'marking').catch(() => {});
+      return NextResponse.json({ visionBatch: value });
+    }
+    return NextResponse.json({ error: 'macOnly, scienceOpen or visionBatch (boolean) is required' }, { status: 400 });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
