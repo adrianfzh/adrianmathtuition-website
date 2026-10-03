@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { markCurrencyDollars, CURRENCY_MARK as M } from './chat-currency';
-import { formatMessage } from './chat-solver';
+import { formatMessage, renderToElement } from './chat-solver';
+import katex from 'katex';
 
 // The chat renderer's own inline pairing, applied to the scan's output: which
 // spans would KaTeX typeset?
@@ -63,5 +64,61 @@ describe('formatMessage — a restored answer keeps its prices as text', () => {
   it('a price $ becomes its own span, the maths $ pairs intact', () => {
     const html = formatMessage('Alice paid $400 for $x$ packs.');
     expect(html).toBe('Alice paid <span class="cur">$</span>400 for $x$ packs.');
+  });
+});
+
+// The three answers of 3 Oct 2026 (A$-to-euro rate question, two students, same
+// minute). Belle's reply to the first: "i cant see the working properly".
+const BELLE_OPUS = "Reading: 16-oz bottle costs A\\$60, 500 ml bottle, €1 = A\\$1.65, 1 oz = 29.5735 ml, answer to the nearest 10 cents.\n\nYour first step is correct. $\\frac{500}{29.5735} = 16.90703$ oz, so the 500 ml bottle holds 16.90703 oz.\n\nNow use the **same rate** (price per oz), then convert currency.\n\n**Step 2: Price per oz in Australia**\n$$\\frac{60}{16} = 3.75 \\text{ A\\$ per oz}$$\n\n**Step 3: Price of the 500 ml bottle in A\\$**\n$$16.90703 \\times 3.75 = 63.40136 \\text{ A\\$}$$\n\n**Step 4: Convert to euros**\nSince €1 = A\\$1.65, you divide by 1.65 to go from A\\$ to €.\n$$\\frac{63.40136}{1.65} = 38.42506$$\nTo the nearest 10 cents, this is €38.40.\n\n**Answer: €38.40**";
+const ISABELLE_OPUS = "Reading: 16-oz bottle costs A$60; €1 = A$1.65; 1 oz = 29.5735 ml; the price is for a 500 ml bottle, to the nearest 10 cents.\n\nThis is a **unit conversion and rate** problem. Your first line is correct: you converted 500 ml into ounces.\n\n**1. Volume of the French bottle in oz** (your step)\n$$\\frac{500}{29.5735} = 16.90702 \\text{ oz}$$\n\n**2. Price per oz in Australia**\n$$\\frac{\\text{A}\\$60}{16} = \\text{A}\\$3.75 \\text{ per oz}$$\n\n**3. Price of 16.90702 oz in A\\$**\n$$3.75 \\times 16.90702 = \\text{A}\\$63.40135$$\n\n**4. Convert to euros**\nSince €1 = A$1.65, divide by 1.65:\n$$\\frac{63.40135}{1.65} = €38.42506$$\n\n**5. Round to the nearest 10 cents**\n€38.42506 → €38.40\n\n**Answer: €38.40**";
+const BELLE_RESEND = "No problem — here's the full working laid out clearly.\n\n**Given information:**\n- 16-oz bottle costs A\\$60 in Australia\n- Need to price a 500 ml bottle at the same rate, in euros\n- €1 = A\\$1.65\n- 1 oz = 29.5735 ml\n\n**Step 1: Convert 500 ml to oz** (so we can compare like-for-like)\n$$\\frac{500}{29.5735} = 16.907 \\text{ oz (to 3 d.p.)}$$\n\n**Step 2: Find the price per oz in Australia**\n$$\\frac{\\text{A\\$}60}{16 \\text{ oz}} = \\text{A\\$}3.75 \\text{ per oz}$$\n\n**Step 3: Find the price of the 500 ml bottle, in Australian dollars**\n$$16.907 \\times 3.75 = \\text{A\\$}63.40 \\text{ (to 2 d.p.)}$$\n\n**Step 4: Convert from Australian dollars to euros**\nSince €1 = A\\$1.65, to turn A\\$ into € you **divide by 1.65**:\n$$\\frac{63.40}{1.65} = 38.42 \\text{ (to 2 d.p.)}$$\n\n**Step 5: Round to the nearest 10 cents**\n$$38.42 \\rightarrow €38.40$$\n\n**Answer: €38.40**";
+
+describe('an escaped \\$ never breaks a typeset block (3 Oct 2026)', () => {
+  const render = (text: string) => {
+    const g = globalThis as unknown as { window?: unknown };
+    const had = g.window;
+    g.window = { katex };
+    const el = { innerHTML: '' } as unknown as HTMLDivElement;
+    try { renderToElement(el, text); } finally { g.window = had; }
+    return el.innerHTML;
+  };
+  // What the student reads, with the typeset maths taken out.
+  const prose = (html: string) => html.replace(/<span class="katex[\s\S]*?<\/span>(?=<br>|$|[^<]*<br>)/g, '');
+
+  for (const [name, answer, blocks] of [
+    ['Belle, first answer (rec3aWLWv93UgVt3Q)', BELLE_OPUS, 3],
+    ['Isabelle (recK5XXbrlxS338FC)', ISABELLE_OPUS, 4],
+    ['Belle, the re-send (recGsvOfyCCf41z7x)', BELLE_RESEND, 5],
+  ] as const) {
+    it(name + ': every line of working is typeset, nothing shows as raw TeX', () => {
+      const html = render(answer);
+      expect(html).not.toContain('katex-error');
+      expect(html).not.toContain('$$');
+      expect((html.match(/class="katex-display"/g) ?? []).length).toBe(blocks);
+      // No TeX command survives outside the typeset spans' own annotations.
+      const visible = html.replace(/<annotation[\s\S]*?<\/annotation>/g, '');
+      expect(visible).not.toMatch(/\\(?:frac|text|times)/);
+      expect(visible).not.toContain('\\$');
+    });
+  }
+
+  it('prose keeps its prices as plain text ("A$60", "A$1.65", "in A$")', () => {
+    const html = render(BELLE_OPUS);
+    expect(html).toContain('costs A$60, 500 ml bottle, €1 = A$1.65,');
+    expect(html).toContain('bottle in A$</strong>');
+    expect(html).toContain('to go from A$ to €.');
+  });
+
+  it('a restored answer: \\$ stays escaped inside maths, becomes a price span in prose', () => {
+    const html = formatMessage(ISABELLE_OPUS);
+    expect(html).toContain('$$\\frac{\\text{A}\\$60}{16} = \\text{A}\\$3.75 \\text{ per oz}$$');
+    expect(html).toContain('oz in A<span class="cur">$</span></strong>');
+    expect(html).not.toContain('\uE003');
+  });
+
+  it('answers with no escaped dollar are untouched by the mask', () => {
+    const plain = 'Alice paid $400 for $x$ packs.\n$$x^{2} = 4$$';
+    expect(render(plain)).toContain('Alice paid $400 for ');
+    expect((render(plain).match(/class="katex-display"/g) ?? []).length).toBe(1);
   });
 });

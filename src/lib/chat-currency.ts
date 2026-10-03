@@ -77,3 +77,42 @@ export function markCurrencyDollars(text: string): string {
   }
   return out;
 }
+
+// ── Escaped dollars (4 Oct 2026) ──
+//
+// The solver sometimes writes a currency sign as `\$` — in prose ("A\$60") and,
+// worse, inside a typeset block ("$$\frac{\text{A}\$60}{16} = \text{A\$}3.75$$").
+// The renderer's spans are "from a $ to the next $", so a `\$` inside a block ended
+// it early and the whole line of working came out as raw TeX; the old un-escape
+// (`\$60` → `$60`, applied everywhere) did the same from the other side. Belle,
+// 3 Oct 2026, on an A$-to-euro question: "i cant see the working properly" — and
+// the re-send broke the same way. So a `\$` is taken out of the text before any
+// pairing and put back afterwards: `\$` for KaTeX inside maths, a plain $ in prose.
+
+/** Stands in for an escaped `\$` while the chat renderer pairs math spans. */
+export const ESCAPED_DOLLAR = '\uE003';
+
+/** The chat renderer's own math spans: a `$$…$$` block, or a single-`$` pair. */
+const MATH_SPAN = /(\$\$[^$]+?\$\$|(?<!\$)\$[^$]{1,2000}?\$(?!\$))/;
+
+/** Take every `\$` out of the text, so no `$` pairing can see it. */
+export function maskEscapedDollars(text: string): string {
+  return text.replace(/\\\$/g, ESCAPED_DOLLAR);
+}
+
+/** Give a math span its `\$` back, for KaTeX. */
+export function unmaskForKatex(math: string): string {
+  return math.split(ESCAPED_DOLLAR).join('\\$');
+}
+
+/**
+ * Put the masked dollars back in a text that is NOT typeset here (a restored
+ * answer, which auto-render typesets afterwards): `\$` inside a math span,
+ * `prose` (the caller's stand-in for a currency $) outside one.
+ */
+export function settleEscapedDollars(text: string, prose: string): string {
+  return text
+    .split(MATH_SPAN)
+    .map((seg, i) => (i % 2 === 1 ? unmaskForKatex(seg) : seg.split(ESCAPED_DOLLAR).join(prose)))
+    .join('');
+}

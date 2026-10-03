@@ -15,7 +15,7 @@
 // helpers at the top are safe to import in node and are unit-tested in
 // chat-solver.test.ts.
 
-import { markCurrencyDollars, CURRENCY_MARK } from './chat-currency';
+import { markCurrencyDollars, CURRENCY_MARK, ESCAPED_DOLLAR, maskEscapedDollars, unmaskForKatex, settleEscapedDollars } from './chat-currency';
 
 export const BOT_API_BASE = 'https://adrianmath-telegram-math-bot.fly.dev';
 
@@ -101,7 +101,9 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
   // "Alice paid $400 for $x$ packs" typeset "400 for" as maths). Backticks
   // become $…$ BEFORE the scan (they pair too), and the scan runs before the
   // streaming trim, so a price no longer holds back the rest of the line.
-  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
+  // An escaped \$ is masked first (4 Oct 2026): inside a $$…$$ block it used to
+  // end the block early and the working showed as raw TeX.
+  text = markCurrencyDollars(maskEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
   if (streaming) text = trimUnclosedMath(text);
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
@@ -122,8 +124,7 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
     .map((seg, i) => (i % 2 === 1 ? seg : seg.replace(BARE_ENV, (m) => `$$${m}$$`)))
     .join('');
 
-  // Fix 3: escaped dollar signs (\$123) → plain dollar ($123) so currency renders correctly
-  text = text.replace(/\\\$(\d)/g, '$$$1');
+  // Fix 3 (escaped dollar signs) is the mask at the top: a \$ never reaches the pairing.
 
   let html = text
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
@@ -142,11 +143,11 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
   const stash = (rendered: string) => `\uE000${mathChunks.push(rendered) - 1}\uE001`;
   if (typeof window !== 'undefined' && window.katex) {
     html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
-      try { return stash(window.katex.renderToString(math, { displayMode: true, throwOnError: false })); }
+      try { return stash(window.katex.renderToString(unmaskForKatex(math), { displayMode: true, throwOnError: false })); }
       catch { return `$$${math}$$`; }
     });
     html = html.replace(/(?<!\$)\$([^$]{1,2000}?)\$(?!\$)/g, (_, math) => {
-      try { return stash(window.katex.renderToString(math, { displayMode: false, throwOnError: false })); }
+      try { return stash(window.katex.renderToString(unmaskForKatex(math), { displayMode: false, throwOnError: false })); }
       catch { return `$${math}$`; }
     });
   }
@@ -166,6 +167,7 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
   html = html.replace(/\n/g, '<br>');
   html = html.replace(/\uE000(\d+)\uE001/g, (_, i) => mathChunks[+i]);
   html = html.split(CURRENCY_MARK).join('$');
+  html = html.split(ESCAPED_DOLLAR).join('$');
   if (streaming) html += '<span class="stream-caret">▍</span>';
   el.innerHTML = html;
 }
@@ -175,7 +177,8 @@ export function formatMessage(text: string): string {
   // A price's $ goes out as its own <span>: auto-render (appendChatMessage)
   // pairs $ only within one run of text nodes, so the span keeps a price
   // from pairing with the next maths $ on a restored answer.
-  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
+  text = markCurrencyDollars(maskEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
+  text = settleEscapedDollars(text, CURRENCY_MARK);
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
