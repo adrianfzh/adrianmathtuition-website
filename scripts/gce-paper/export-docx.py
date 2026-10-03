@@ -501,6 +501,7 @@ def question(ws, s, figures, with_marks=True):
         if part is after_part or (in_answer_space and with_marks) or part_fig:
             ws.working_space = 0          # a part with its own figure gets its space AFTER the figure
         outer, inner = split_label(part.get('label', ''))
+        first_para = len(ws._block_paras)                   # the part's own paragraphs start here
         subs = part.get('subparts') or []
         marks = part.get('marks') if with_marks else None
         text = part.get('text', '')
@@ -517,7 +518,9 @@ def question(ws, s, figures, with_marks=True):
         if part_fig and not subs:
             # the part's own figure sits right under its text (before the writing space);
             # an answer-space figure IS the space, otherwise the space follows the figure
-            for para in ws._block_paras[-2:]:
+            # glue THIS part's text to its figure — never the previous part's last blank line
+            # (that chained (b)'s space to (c) and Word carried both overleaf, 3 Oct 2026)
+            for para in ws._block_paras[first_para:]:
                 para.paragraph_format.keep_with_next = True
             figure_para(ws, q, s['pos'], figures, raw=part_raw, key=f"{s['pos']}{part_fig}")
             if not part_raw and with_marks and marks and saved_space:
@@ -939,6 +942,12 @@ def main():
     else:
         front_page(ws, paper, total)
     page_per_q = bool(layout.get('page_per_question'))
+    # Adrian, 3 Oct 2026: "a question or part with their working space should not straddle
+    # across pages" — glue every part to ALL of its blank lines, so Word carries the whole
+    # block overleaf rather than cutting it (the page-per-question fill then leaves the
+    # slack at the foot of the previous page, never in the middle of a part).
+    if layout.get('keep_part_with_space'):
+        ws.keep_lines_with_text = 10_000
     # H2 Paper 2 prints its section headings (generate.mjs brief → plan.json `sections`)
     sections = paper.get('sections') or {}
     for i, s in enumerate(slots):
@@ -962,6 +971,16 @@ def main():
             pages = max(1, -(-(used + min_lines * LINE_CM + 0.8) // PAGE_USABLE_CM))
             avail = pages * PAGE_USABLE_CM - 0.8 - used
             ws.working_space = max(a.space, (avail / LINE_CM - bonus) / max(1, s['target']))
+            if layout.get('keep_part_with_space'):
+                # glued parts cannot absorb a stretch: a tall block is pushed overleaf whole and
+                # leaves the page half empty — keep the plain lines-per-mark instead, and when the
+                # question overruns one page by a sliver (a last blank line on a page of its own),
+                # trim the lines so it fits the page
+                need = used + min_lines * LINE_CM + 0.8
+                if PAGE_USABLE_CM < need <= 1.12 * PAGE_USABLE_CM:
+                    ws.working_space = max(2.5, (PAGE_USABLE_CM - 0.8 - used) / LINE_CM - bonus) / max(1, s['target'])
+                else:
+                    ws.working_space = a.space
         q = question(ws, s, a.figures)
         got = sum((p.get('marks') or 0) if not p.get('subparts') else sum(x.get('marks') or 0 for x in p['subparts'])
                   for p in (q.get('parts') or [])) or s['target']
