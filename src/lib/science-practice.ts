@@ -50,6 +50,55 @@ export function topicsForKind(counts: readonly { topic: string; n: number; mcq_c
 }
 
 /** The run: the same PracticeFlow, mounted under the Science family (app/science/practice/run) so the bottom bar stays Science. */
-export function sciencePracticeHref(levelKey: string, topic: string, kind: PracticeKind): string {
-  return `/app/science/practice/run?level=${encodeURIComponent(levelKey)}&topic=${encodeURIComponent(topic)}&mode=${kind}`;
+export function sciencePracticeHref(levelKey: string, topic: string, kind: PracticeKind, skill?: string | null): string {
+  return `/app/science/practice/run?level=${encodeURIComponent(levelKey)}&topic=${encodeURIComponent(topic)}&mode=${kind}${skill ? `&skill=${encodeURIComponent(skill)}` : ''}`;
 }
+
+/**
+ * One skill at a time inside a topic (3 Oct 2026, Adrian: "for stoichiometry >
+ * allow them to choose that particular skill … so students can practice on that
+ * skill"). The science bank's `questions.skill` column holds the slug; a row
+ * that fits none (electrolysis charge, energy per mole) stays null and is only
+ * met under "All skills, mixed". MCQ rows only are filed. The order is the
+ * teaching order.
+ */
+export type TopicSkill = { slug: string; label: string };
+export const TOPIC_SKILLS: Record<string, { topic: string; skills: readonly TopicSkill[] }> = {
+  CHEM: {
+    topic: 'Chemical Calculations',
+    skills: [
+      { slug: 'formula-mass', label: 'Relative formula mass and % by mass' },
+      { slug: 'mass-moles', label: 'Mass ↔ moles' },
+      { slug: 'gas-volume', label: 'Gas volume ↔ moles (24 dm³)' },
+      { slug: 'concentration', label: 'Concentration (mol/dm³ and g/dm³)' },
+      { slug: 'mole-ratio', label: 'Mole ratio from the equation' },
+      { slug: 'limiting-reagent', label: 'Limiting reagent' },
+      { slug: 'yield-purity', label: 'Percentage yield and purity' },
+      { slug: 'empirical-formula', label: 'Empirical and molecular formula' },
+      { slug: 'titration', label: 'Titration calculations' },
+    ],
+  },
+};
+
+/** The skills a topic can be narrowed to — MCQ only; none for any other topic. */
+export function skillsFor(levelKey: string, topic: string, kind: PracticeKind): readonly TopicSkill[] {
+  const t = TOPIC_SKILLS[levelKey];
+  return kind === 'mcq' && t && t.topic === topic ? t.skills : [];
+}
+
+/** A skill slug from a URL or a request body: kept only when the topic really has it. */
+export function parseSkill(levelKey: string, topic: string, v: unknown): string | null {
+  return typeof v === 'string' && skillsFor(levelKey, topic, 'mcq').some(s => s.slug === v) ? v : null;
+}
+
+export function skillLabel(levelKey: string, topic: string, slug: string | null | undefined): string | null {
+  return skillsFor(levelKey, topic, 'mcq').find(s => s.slug === slug)?.label ?? null;
+}
+
+/**
+ * "Don't show the answer immediately" (3 Oct 2026) — the switch at the top of an
+ * MCQ run, kept per device. Off (the default): a tap is checked at once. On: a
+ * tap only picks a letter, and "Check my answer" shows the verdict.
+ */
+export const MCQ_HOLD_KEY = 'portal_mcq_hold_answer';
+export function mcqTapAction(hold: boolean): 'check' | 'select' { return hold ? 'select' : 'check'; }

@@ -154,6 +154,8 @@ export async function scienceNext(opts: {
   levelKey: string; topic: string; exclude?: string[]; tier?: 'Standard' | 'Advanced' | null;
   /** 'mcq' = rows whose answer is a bare letter; 'structured' = the rest; unset = either (1 Oct 2026). */
   kind?: 'mcq' | 'structured' | null;
+  /** one skill inside the topic (`questions.skill`, lib/science-practice TOPIC_SKILLS); unset = the whole topic */
+  skill?: string | null;
 }): Promise<ScienceQuestionRow | null> {
   const lvl = scienceLevel(opts.levelKey);
   if (!lvl) return null;
@@ -167,6 +169,7 @@ export async function scienceNext(opts: {
     // structured = not a lettered answer (most structured rows carry NO answer at all — a
     // plain not.match would drop them), and a scheme on file to mark against.
     else if (opts.kind === 'structured') q = q.or('answer.is.null,answer.not.match.^\\s*[A-Da-d]\\s*$').not('solution', 'is', null).neq('solution', '');
+    if (opts.skill) q = q.eq('skill', opts.skill);
     if (opts.tier === 'Advanced') q = q.in('difficulty', ADVANCED);
     else if (opts.tier === 'Standard') q = q.or(`difficulty.is.null,difficulty.not.in.(${ADVANCED.join(',')})`);
     const excl = (opts.exclude ?? []).filter(id => /^[0-9a-f-]{36}$/i.test(id)).slice(0, 80);

@@ -18,7 +18,7 @@ import { sessionAccount } from '@/lib/portal-auth';
 import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, studentSciences, type ScienceSubject } from '@/lib/portal-prefs';
 import { scienceLevelForSubject } from '@/lib/science-levels';
 import { scienceConfigured, scienceTopicCounts } from '@/lib/science-bank';
-import { parsePracticeKind, sciencePracticeHref, topicsForKind, type PracticeKind } from '@/lib/science-practice';
+import { parsePracticeKind, sciencePracticeHref, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
 import PortalIcon from '@/components/PortalIcon';
 
 export const dynamic = 'force-dynamic';
@@ -79,12 +79,41 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
       <section className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Topics</p>
         {topics.length === 0 && <div className={`${CARD} p-4 text-sm text-gray-600`}>No {kind === 'mcq' ? 'multiple-choice' : 'structured'} questions for {SCIENCE_SUBJECT_LABEL[subject]} yet.</div>}
-        {topics.map(t => (
-          <Link key={t} href={sciencePracticeHref(levelKey, t, kind)} className={`${CARD} flex items-center justify-between gap-3 px-4 py-3 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
-            <span className="text-sm font-semibold text-navy">{t}</span>
-            <span aria-hidden className="text-gray-300">›</span>
-          </Link>
-        ))}
+        {topics.map(t => {
+          const skills = skillsFor(levelKey, t, kind);
+          // A topic with skills opens in place: pick one skill, or all of them mixed.
+          if (skills.length > 0) return (
+            <details key={t} className={`${CARD} group`}>
+              <summary className="flex items-center justify-between gap-3 px-4 py-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-navy">{t}</span>
+                  <span className="block text-xs text-gray-500">Choose one skill, or mix them</span>
+                </span>
+                <span aria-hidden className="text-gray-300 transition group-open:rotate-90">›</span>
+              </summary>
+              <div className="border-t border-black/5 divide-y divide-black/5">
+                {skills.map((s, i) => (
+                  <Link key={s.slug} href={sciencePracticeHref(levelKey, t, kind, s.slug)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[hsl(45,100%,99%)]">
+                    <span aria-hidden className="w-5 text-xs font-semibold text-gray-400 tabular-nums">{i + 1}</span>
+                    <span className="flex-1 text-sm text-navy">{s.label}</span>
+                    <span aria-hidden className="text-gray-300">›</span>
+                  </Link>
+                ))}
+                <Link href={sciencePracticeHref(levelKey, t, kind)} className="flex items-center gap-3 px-4 py-2.5 hover:bg-[hsl(45,100%,99%)]">
+                  <span aria-hidden className="w-5" />
+                  <span className="flex-1 text-sm font-semibold text-navy">All skills, mixed</span>
+                  <span aria-hidden className="text-gray-300">›</span>
+                </Link>
+              </div>
+            </details>
+          );
+          return (
+            <Link key={t} href={sciencePracticeHref(levelKey, t, kind)} className={`${CARD} flex items-center justify-between gap-3 px-4 py-3 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
+              <span className="text-sm font-semibold text-navy">{t}</span>
+              <span aria-hidden className="text-gray-300">›</span>
+            </Link>
+          );
+        })}
       </section>
     </div>
   );

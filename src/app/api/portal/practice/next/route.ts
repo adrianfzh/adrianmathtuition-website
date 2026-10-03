@@ -4,6 +4,7 @@ import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-q
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceNext, toPayload } from '@/lib/science-bank';
+import { parseSkill } from '@/lib/science-practice';
 import { scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
@@ -20,10 +21,12 @@ export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude, tier, subgroupId, kind } = body as {
+  const { level, topic, exclude, tier, subgroupId, kind, skill } = body as {
     level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
     /** science only (1 Oct 2026): 'mcq' | 'structured' — the Science Practise tab's switch */
     kind?: string;
+    /** science only (3 Oct 2026): one skill inside the topic — lib/science-practice TOPIC_SKILLS */
+    skill?: string;
   };
   if (!level || !topic) return NextResponse.json({ error: 'level and topic required' }, { status: 400 });
   if (!(await practiceLevelAllowed(caller, level))) return NextResponse.json({ error: 'Level not available' }, { status: 403 });
@@ -37,6 +40,7 @@ export async function POST(req: NextRequest) {
       const q = await scienceNext({
         kind: !structuredOk ? 'mcq' : kind === 'mcq' || kind === 'structured' ? kind : null,
         levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
+        skill: parseSkill(level, topic, skill),
         tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
       });
       return NextResponse.json({ question: q ? toPayload(q) : null });

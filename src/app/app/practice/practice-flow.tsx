@@ -9,6 +9,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // 2026-09-02, shared with the timed set (/app/practice/timed).
 import { MathText, McqChips, QuestionView, mcqLettersIn, type Question } from './question-view';
 import { isScienceLevel } from '@/lib/science-levels';
+import { MCQ_HOLD_KEY, mcqTapAction, skillLabel } from '@/lib/science-practice';
 import { NETWORK_MESSAGE, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
@@ -184,7 +185,22 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
   // that day: "for structured, they must practice right? then we mark? … no point just
   // giving the answers straight away" — the scheme-only shortcut of that afternoon is gone).
   const [urlMode, setUrlMode] = useState<string | null>(null);
-  useEffect(() => { setUrlMode(new URLSearchParams(window.location.search).get('mode')); }, []);
+  // ?skill= — one skill inside a science topic (3 Oct 2026); the label shows above the question.
+  const [urlSkill, setUrlSkill] = useState<string | null>(null);
+  // "Don't show the answer immediately" (3 Oct 2026): off = one tap checks an MCQ;
+  // on = a tap only picks a letter, "Check my answer" shows the verdict. Per device.
+  const [holdAnswer, setHoldAnswer] = useState(false);
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    setUrlMode(sp.get('mode')); setUrlSkill(sp.get('skill'));
+    try { setHoldAnswer(window.localStorage.getItem(MCQ_HOLD_KEY) === '1'); } catch { /* private window */ }
+  }, []);
+  function toggleHold() {
+    setHoldAnswer(h => {
+      try { window.localStorage.setItem(MCQ_HOLD_KEY, h ? '0' : '1'); } catch { /* private window */ }
+      return !h;
+    });
+  }
   const [solLoading, setSolLoading] = useState(false);
   // 💡 "How to approach it" (23 Sep 2026, was the topic's method templates):
   // three short answer-free lines written for THIS question and cached on the
@@ -343,7 +359,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     try {
       const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
         // ?mode=mcq|structured — the Science Practise tab's switch (1 Oct 2026); ignored by the maths bank.
-        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null },
+        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null,
+          skill: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('skill') : null },
         fallback: 'Couldn’t load a question — try again.',
       });
       if (!d.question) { setExhausted(true); setQ(null); return; }
@@ -832,6 +849,18 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
       {q && !loading && (
         <div className="space-y-4">
+          {q.mcq && (
+            <div className="flex items-center justify-between gap-3 px-1">
+              <span className="text-xs font-semibold text-slate-500 min-w-0 truncate">{skillLabel(level, topic, urlSkill) ?? ''}</span>
+              <button onClick={toggleHold} role="switch" aria-checked={holdAnswer}
+                className="flex items-center gap-2 text-xs font-semibold text-slate-600 shrink-0">
+                Don&apos;t show the answer immediately
+                <span aria-hidden className={`relative inline-block w-9 h-5 rounded-full transition-colors ${holdAnswer ? 'bg-navy' : 'bg-slate-300'}`}>
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${holdAnswer ? 'translate-x-4' : ''}`} />
+                </span>
+              </button>
+            </div>
+          )}
           {/* Question card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-3 gap-3">
@@ -886,9 +915,9 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {q.mcq ? (
                 /* MCQ (science bank): tap the option — marked instantly, no model. */
                 <>
-                  <p className="text-[11px] text-slate-400 mb-2">{grade ? 'Your answer:' : 'Tap your answer:'}</p>
+                  <p className="text-[11px] text-slate-400 mb-2">{grade ? 'Your answer:' : holdAnswer ? 'Pick your answer, then check it:' : 'Tap your answer:'}</p>
                   <McqChips letters={mcqLettersIn(q.stem || q.markdown)} value={working.trim().toUpperCase()}
-                    onPick={(l) => { setPhoto(null); setWorking(l); void submitForMarking(l); }} disabled={grading || grade !== null || solution !== null} />
+                    onPick={(l) => { setPhoto(null); setWorking(l); if (mcqTapAction(holdAnswer) === 'check') void submitForMarking(l); }} disabled={grading || grade !== null || solution !== null} />
                 </>
               ) : photo ? (
                 <div className="mb-3">
@@ -929,10 +958,10 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               )}
 
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                {!q.mcq && <button onClick={() => submitForMarking()}
+                {(!q.mcq || (holdAnswer && !grade)) && <button onClick={() => submitForMarking(q.mcq ? working.trim().toUpperCase() : undefined)}
                   disabled={grading || (!photo && !working.trim()) || solution !== null}
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
-                  {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check answer' : '✅ Get it marked')}
+                  {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check my answer' : '✅ Get it marked')}
                 </button>}
                 {hint === null && !q.mcq && !q.subject && (
                   <button onClick={showHint} disabled={hintLoading}

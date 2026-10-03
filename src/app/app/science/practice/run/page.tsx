@@ -17,7 +17,7 @@ import PracticeFlow from '../../../practice/practice-flow';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SciencePracticeRun({ searchParams }: { searchParams: Promise<{ level?: string; topic?: string; mode?: string }> }) {
+export default async function SciencePracticeRun({ searchParams }: { searchParams: Promise<{ level?: string; topic?: string; mode?: string; skill?: string }> }) {
   if (!(await scienceMarkingOpen())) redirect('/app');
   const sp = await searchParams;
   const jar = await cookies();
@@ -33,6 +33,6 @@ export default async function SciencePracticeRun({ searchParams }: { searchParam
   if (!isAdmin && !(choice?.subjects ?? []).includes(lvl.subject)) redirect('/app/science/practice');
   // Structured runs stay Adrian's until the grader is checked; a student's ?mode=structured falls back to MCQ.
   const kind = (await scienceStructuredPracticeOpen()) ? parsePracticeKind(sp.mode) : 'mcq';
-  if (kind !== parsePracticeKind(sp.mode)) redirect(`/app/science/practice/run?level=${lvl.key}&topic=${encodeURIComponent(topic)}&mode=mcq`);
+  if (kind !== parsePracticeKind(sp.mode)) redirect(`/app/science/practice/run?level=${lvl.key}&topic=${encodeURIComponent(topic)}&mode=mcq${sp.skill ? `&skill=${encodeURIComponent(sp.skill)}` : ''}`);
   return <PracticeFlow initialLevels={[{ key: lvl.key, label: lvl.label }]} initialTarget={{ level: lvl.key, topic }} lockedLevels />;
 }

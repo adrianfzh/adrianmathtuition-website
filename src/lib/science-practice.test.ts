@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { lostTopics, parsePracticeKind, sciencePracticeHref, topicsForKind } from './science-practice';
+import { lostTopics, mcqTapAction, parsePracticeKind, parseSkill, sciencePracticeHref, skillLabel, skillsFor, topicsForKind, TOPIC_SKILLS } from './science-practice';
 
 describe('science practice — the pure rules (1 Oct 2026)', () => {
   it('lostTopics: live mistakes of that science only, most first, capped, matched to the bank names', () => {
@@ -29,5 +29,34 @@ describe('science practice — the pure rules (1 Oct 2026)', () => {
     expect(parsePracticeKind('structured')).toBe('structured');
     expect(parsePracticeKind('anything')).toBe('mcq');
     expect(sciencePracticeHref('PHY', 'Current electricity', 'mcq')).toBe('/app/science/practice/run?level=PHY&topic=Current%20electricity&mode=mcq');
+  });
+});
+
+describe('one skill inside a topic (3 Oct 2026)', () => {
+  it('chemistry calculations carry the nine skills, MCQ only', () => {
+    expect(skillsFor('CHEM', 'Chemical Calculations', 'mcq').map(s => s.slug)).toEqual([
+      'formula-mass', 'mass-moles', 'gas-volume', 'concentration', 'mole-ratio', 'limiting-reagent', 'yield-purity', 'empirical-formula', 'titration',
+    ]);
+    expect(skillsFor('CHEM', 'Chemical Calculations', 'structured')).toEqual([]);
+    expect(skillsFor('CHEM', 'Acids and Bases', 'mcq')).toEqual([]);
+    expect(skillsFor('PHY', 'Chemical Calculations', 'mcq')).toEqual([]);
+    const slugs = TOPIC_SKILLS.CHEM.skills.map(s => s.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+  });
+  it('parseSkill keeps only a slug the topic has', () => {
+    expect(parseSkill('CHEM', 'Chemical Calculations', 'titration')).toBe('titration');
+    expect(parseSkill('CHEM', 'Chemical Calculations', 'nope')).toBeNull();
+    expect(parseSkill('CHEM', 'Energy Changes', 'titration')).toBeNull();
+    expect(parseSkill('CHEM', 'Chemical Calculations', null)).toBeNull();
+    expect(skillLabel('CHEM', 'Chemical Calculations', 'gas-volume')).toBe('Gas volume ↔ moles (24 dm³)');
+    expect(skillLabel('CHEM', 'Chemical Calculations', null)).toBeNull();
+  });
+  it('the run link carries the skill only when there is one', () => {
+    expect(sciencePracticeHref('CHEM', 'Chemical Calculations', 'mcq', 'mass-moles')).toBe('/app/science/practice/run?level=CHEM&topic=Chemical%20Calculations&mode=mcq&skill=mass-moles');
+    expect(sciencePracticeHref('CHEM', 'Chemical Calculations', 'mcq')).not.toContain('skill');
+  });
+  it('the hold switch: a tap checks at once unless the student asked to wait', () => {
+    expect(mcqTapAction(false)).toBe('check');
+    expect(mcqTapAction(true)).toBe('select');
   });
 });
