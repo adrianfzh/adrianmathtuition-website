@@ -652,15 +652,18 @@ async function approveQuestionCandidate(supa: SupabaseClient, path: string, ques
   if (up.error && !/exist|duplicate/i.test(up.error.message)) return step('upload', up.error.message);
 
   // Swap the reference in whatever spelling the row uses (bare, prefixed, full URL).
+  // A flag on another bucket's object (a twin's `storage/v1/object/public/practice-figures/…`)
+  // carries the bucket in its path, so the new reference must carry ours.
+  const repl = bare.startsWith('storage/') ? `storage/v1/object/public/${BUCKET}/${name}` : name;
   const patch: Record<string, unknown> = {};
   let field: string | null = null;
   for (const col of ['image_url', 'figure_url'] as const) {
     const v = q[col];
-    if (typeof v === 'string' && v.includes(bare)) { patch[col] = v.split(bare).join(name); field = col; }
+    if (typeof v === 'string' && v.includes(bare)) { patch[col] = v.split(bare).join(repl); field = col; }
   }
   if (!field && q.parts != null) {
     const s = JSON.stringify(q.parts);
-    if (s.includes(bare)) { patch.parts = JSON.parse(s.split(bare).join(name)); field = 'part'; }
+    if (s.includes(bare)) { patch.parts = JSON.parse(s.split(bare).join(repl)); field = 'part'; }
   }
   if (!field) return step('locate', 'this question does not reference the flagged image (image_url / figure_url / parts) — nothing to replace');
 
