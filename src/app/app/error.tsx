@@ -14,7 +14,7 @@ export default function AppError({ error, reset }: { error: Error & { digest?: s
       <div className="max-w-sm w-full bg-white rounded-2xl shadow-sm border border-black/5 p-6 text-center">
         <p className="text-3xl mb-2" aria-hidden>😬</p>
         <h1 className="text-lg font-bold text-navy">Something went wrong on our side</h1>
-        <p className="text-sm text-gray-600 mt-2">Nothing you did. Adrian has been told. Try again, or come back in a minute.</p>
+        <p className="text-sm text-gray-600 mt-2">Nothing you did. We have been told. Try again, or come back in a minute.</p>
         <div className="mt-5 flex items-center justify-center gap-3">
           <button onClick={reset} className="text-sm font-semibold bg-navy text-white rounded-xl px-4 py-2">Try again</button>
           <Link href="/app" className="text-sm font-semibold text-navy underline underline-offset-2">Home</Link>

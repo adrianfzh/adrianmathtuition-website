@@ -104,7 +104,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'That worksheet isn’t available any more.' }, { status: 404 });
     }
     if (!canTransition(row.status, 'submitted')) {
-      return NextResponse.json({ error: 'You have already sent this worksheet in — it’s with Adrian.' }, { status: 409 });
+      return NextResponse.json({ error: 'You have already sent this worksheet in — it’s being marked.' }, { status: 409 });
     }
     assignment = row;
   }
@@ -124,7 +124,7 @@ export async function POST(req: Request) {
       .maybeSingle();
     if (!p) return NextResponse.json({ error: 'That printed paper isn’t available any more.' }, { status: 404 });
     if (p.status !== 'open') {
-      return NextResponse.json({ error: 'You have already handed this paper in — it’s with Adrian.' }, { status: 409 });
+      return NextResponse.json({ error: 'You have already handed this paper in — it’s being marked.' }, { status: 409 });
     }
     printedPaper = { id: p.id, question_ids: p.question_ids };
   }

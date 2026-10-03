@@ -127,12 +127,12 @@ export async function POST(req: NextRequest) {
       // Already being written: that IS what they asked for — say so, no error.
       if (out.status === 'duplicate') return NextResponse.json({ ok: true, state: 'queued', already: true, jobId: out.jobId ?? null });
       const copy = out.status === 'exists'
-        ? 'A Practice Again sheet for this paper already exists — Adrian is checking it before it comes to you.'
+        ? 'A Practice Again sheet for this paper already exists — your tutor is checking it before it comes to you.'
         : out.status === 'not-released'
           ? 'This paper is not out yet — ask once it is.'
           : out.status === 'follow-up-limit' || out.status === 'practice-again'
             ? out.message
-            : 'This paper can’t have a sheet yet — ask Adrian.';
+            : 'This paper can’t have a sheet yet — ask your tutor.';
       return NextResponse.json({ error: copy }, { status: out.http });
     }
     const jobId = (out.job as { id?: string } | null)?.id ?? null;

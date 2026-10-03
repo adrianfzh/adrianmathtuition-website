@@ -99,8 +99,8 @@ export function studentStatusLine(status: EssayStatus): string {
   switch (status) {
     case 'queued': return 'Your essay is in the queue. This usually takes a minute or two.';
     case 'marking': return 'Your essay is being read now — twice, to be sure. About a minute.';
-    case 'held': return 'The two reads did not agree on the band, so Adrian is looking at it. The feedback will be here when he has.';
-    case 'failed': return 'Something went wrong with this one. Hand it in again, or tell Adrian.';
+    case 'held': return 'The two reads did not agree on the band, so it is being checked. The feedback will be here soon.';
+    case 'failed': return 'Something went wrong with this one. Hand it in again, or tell your tutor.';
     default: return '';
   }
 }

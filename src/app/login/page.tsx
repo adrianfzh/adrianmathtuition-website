@@ -130,7 +130,7 @@ function LoginForm() {
           <Link href="/reset-password" className="block text-sm text-navy underline underline-offset-2">
             Forgot password?
           </Link>
-          <p className="text-xs text-gray-400">Don&apos;t have an account? Ask Adrian for an invite.</p>
+          <p className="text-xs text-gray-400">Don&apos;t have an account? Ask your tutor for an invite.</p>
           <p className="text-xs text-gray-400">
             <Link href="/privacy" className="underline underline-offset-2">Privacy</Link>
             {' · '}

@@ -76,7 +76,7 @@ export default function RescheduleClient() {
       if (d.movedTo) {
         setDone(d.movedTo);
       } else {
-        setNotice('Something went wrong saving that. Please try again, or message Adrian.');
+        setNotice('Something went wrong saving that. Please try again, or message your tutor.');
       }
     } catch (e) {
       // 409 = the session filled or the lesson moved while the page sat open —
@@ -88,7 +88,7 @@ export default function RescheduleClient() {
           : 'That session just filled up or closed — pick another time.');
         await load();
       } else {
-        setNotice('Something went wrong saving that. Please try again, or message Adrian.');
+        setNotice('Something went wrong saving that. Please try again, or message your tutor.');
       }
     } finally {
       setBusy(false);
@@ -109,7 +109,7 @@ export default function RescheduleClient() {
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-2xl" aria-hidden>✅</p>
           <p className="font-semibold text-navy">Your lesson is moved to {done.dateLabel}, {timeOf(done.slotLabel)}.</p>
-          <p className="text-sm text-gray-600">Adrian has been notified — nothing else to do.</p>
+          <p className="text-sm text-gray-600">Your tutor has been notified — nothing else to do.</p>
         </div>
         <Link href="/app" className="block text-center bg-navy text-[hsl(45,100%,96%)] rounded-2xl px-4 py-3.5 font-semibold shadow-sm hover:opacity-90 transition-opacity">Back to Home</Link>
       </div>
@@ -123,7 +123,7 @@ export default function RescheduleClient() {
       {loadError && (
         <div className={`${CARD} p-5 space-y-3`}>
           <p className="text-sm text-gray-600">
-            {loadError} If it keeps happening, message Adrian and he’ll move it for you.
+            {loadError} If it keeps happening, message your tutor to move it.
           </p>
           <button
             type="button"
@@ -139,7 +139,7 @@ export default function RescheduleClient() {
 
       {data && data.lessons.length === 0 && (
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
-          No upcoming lessons in the next {data.weeks} weeks can be moved from here. If something urgent came up (like a lesson starting within the hour), message Adrian directly.
+          No upcoming lessons in the next {data.weeks} weeks can be moved from here. If something urgent came up (like a lesson starting within the hour), message your tutor directly.
         </div>
       )}
 
@@ -168,7 +168,7 @@ export default function RescheduleClient() {
       {lesson && data && (
         groups.length === 0 ? (
           <div className={`${CARD} p-5 text-sm text-gray-600`}>
-            Sorry — no open sessions in the next {data.weeks} weeks. Message Adrian and he’ll sort something out.
+            Sorry — no open sessions in the next {data.weeks} weeks. Message your tutor to sort something out.
           </div>
         ) : (
           <section className="space-y-3">
@@ -210,7 +210,7 @@ export default function RescheduleClient() {
       )}
 
       <p className="text-[11px] text-gray-400">
-        Moves are confirmed instantly and Adrian is notified. You can also reschedule any time through the WhatsApp or Telegram bot.
+        Moves are confirmed instantly and your tutor is notified. You can also reschedule any time through the WhatsApp or Telegram bot.
       </p>
     </div>
   );

@@ -82,7 +82,7 @@ export function reissueLine(input: ReissueLineInput): string {
     return `📄 The pages you added to ${paper} are marked${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
   }
 
-  return `✏️ Adrian checked your marked ${paper} and updated it${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
+  return `✏️ Your tutor checked your marked ${paper} and updated it${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
 }
 
 /** The reason off a request body — anything unrecognised is the desk's. */

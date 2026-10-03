@@ -67,7 +67,7 @@ describe('groupPracticeTodo — three sections, to-do first, newest first within
 
   it('returns every section in display order, empty or not', () => {
     expect(sections.map(s => s.key)).toEqual(TODO_SECTIONS.map(s => s.key));
-    expect(sections.map(s => s.title)).toEqual(['From Adrian', 'Practice Again', 'Found by you', 'From your photos']);
+    expect(sections.map(s => s.title)).toEqual(['From your tutor', 'Practice Again', 'Found by you', 'From your photos']);
   });
   it('drops held and revoked rows', () => {
     const all = sections.flatMap(s => s.items);

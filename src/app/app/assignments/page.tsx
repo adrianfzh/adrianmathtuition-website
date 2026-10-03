@@ -59,13 +59,13 @@ export default async function AssignmentsPage() {
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="flex items-baseline justify-between pt-1">
-        <h1 className="text-xl font-bold text-navy">📬 From Adrian</h1>
+        <h1 className="text-xl font-bold text-navy">📬 From your tutor</h1>
         <Link href="/app" className="text-sm text-gray-500 hover:text-navy">← Home</Link>
       </div>
 
       {all.length === 0 && (
         <div className={`${CARD} p-5 text-sm text-gray-600`}>
-          Nothing here yet. When Adrian sends you a question or a worksheet, it shows up here and on your Home page.
+          Nothing here yet. When your tutor sends you a question or a worksheet, it shows up here and on your Home page.
         </div>
       )}
 

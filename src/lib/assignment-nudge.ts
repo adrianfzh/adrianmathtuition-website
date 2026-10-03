@@ -34,8 +34,8 @@ export function assignmentNudge(a: NudgeSubject, site: string): Nudge {
     const path = a.source_run_id ? `/app/marking/${a.source_run_id}` : '/app/marking';
     if (a.required_at) {
       return {
-        text: `📘 Adrian sent you a Practice Again sheet: <b>${esc(a.title)}</b> — he asked you to do this one. Work through the examples, then hand the practice in.\n\nOpen it: ${site}${path}`,
-        push: { title: '📘 Practice Again from Adrian', body: `${a.title} — Adrian asked you to do this one`, url: path },
+        text: `📘 Your tutor sent you a Practice Again sheet: <b>${esc(a.title)}</b> — please do this one. Work through the examples, then hand the practice in.\n\nOpen it: ${site}${path}`,
+        push: { title: '📘 Practice Again from your tutor', body: `${a.title} — please do this one`, url: path },
       };
     }
     return {
@@ -46,9 +46,9 @@ export function assignmentNudge(a: NudgeSubject, site: string): Nudge {
   const due = dueLabel(a.due_on ?? null);
   const what = a.kind === 'question' ? 'a question' : 'a worksheet';
   return {
-    text: `📬 Adrian sent you ${what}: <b>${esc(a.title)}</b>${due ? ` (${due})` : ''}`
+    text: `📬 Your tutor sent you ${what}: <b>${esc(a.title)}</b>${due ? ` (${due})` : ''}`
       + (a.note ? `\n\n“${esc(a.note)}”` : '')
       + `\n\nOpen it: ${site}/app`,
-    push: { title: '📬 New work from Adrian', body: a.title, url: '/app/assignments' },
+    push: { title: '📬 New work from your tutor', body: a.title, url: '/app/assignments' },
   };
 }

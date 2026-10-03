@@ -67,11 +67,11 @@ export function sheetPath(row: Pick<RequiredSheetRow, 'source_run_id'>): string 
 /** Telegram HTML for the student. Names the sheet, says who asked, says how long, links to the Hand in button. */
 export function nudgeText(row: RequiredSheetRow, now: Date, site: string): string {
   const days = row.required_at ? daysSince(row.required_at, now) : 0;
-  return `📘 Your Practice Again sheet is still waiting: <b>${esc(row.title)}</b>. Adrian asked you to do this one${days > 0 ? ` — it has been ${days} day${days === 1 ? '' : 's'}` : ''}. Work through the examples, then hand the practice in.\n\nOpen it: ${site}${sheetPath(row)}`;
+  return `📘 Your Practice Again sheet is still waiting: <b>${esc(row.title)}</b>. Please do this one${days > 0 ? ` — it has been ${days} day${days === 1 ? '' : 's'}` : ''}. Work through the examples, then hand the practice in.\n\nOpen it: ${site}${sheetPath(row)}`;
 }
 
 export function nudgePush(row: RequiredSheetRow): { title: string; body: string; url: string } {
-  return { title: '📘 Practice Again — still to do', body: `${row.title} — Adrian asked you to do this one`, url: sheetPath(row) };
+  return { title: '📘 Practice Again — still to do', body: `${row.title} — please do this one`, url: sheetPath(row) };
 }
 
 export interface NudgeSent { who: string; title: string; nth: number; channel: 'telegram' | 'push' | 'both' | 'none' }

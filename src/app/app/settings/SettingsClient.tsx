@@ -66,7 +66,7 @@ export default function SettingsClient({
     try {
       await portalFetch('/api/portal/delete-account', {
         json: { confirm: del.confirm },
-        fallback: 'Could not delete — contact Adrian.',
+        fallback: 'Could not delete — contact your tutor.',
       });
       await getSupabaseBrowser().auth.signOut();
       router.replace('/');
@@ -146,7 +146,7 @@ export default function SettingsClient({
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>
         <p className="text-sm text-gray-600 mb-3">
           Download a copy of everything the app stores about you — account details, every practice
-          attempt and its marking, your marked papers, work from Adrian, and your Learn activity — as one
+          attempt and its marking, your marked papers, work from your tutor, and your Learn activity — as one
           JSON file. Or permanently delete the account. Details in the{' '}
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
         </p>
@@ -170,7 +170,7 @@ export default function SettingsClient({
         <p className="text-xs font-semibold uppercase tracking-wide text-red-400 mb-2">Danger zone</p>
         <p className="text-sm text-gray-600 mb-2.5">
           Deleting the account removes the login, all practice attempts, feedback, and the consent
-          record — permanently. Lessons and billing with Adrian are unaffected (those live outside the app).
+          record — permanently. Lessons and billing with your tutor are unaffected (those live outside the app).
         </p>
         <form onSubmit={deleteAccount} className="flex gap-2 items-start">
           <input placeholder='Type DELETE to confirm'

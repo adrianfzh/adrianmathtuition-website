@@ -36,7 +36,7 @@ export default function PaperNote({ runId, note }: { runId: string; note: string
       <div className="flex items-center justify-between gap-2">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">My remark</p>
         <p className="text-[11px] text-gray-400">
-          {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (err || 'Not saved') : text ? 'Adrian can read this too' : ''}
+          {state === 'saving' ? 'Saving…' : state === 'saved' ? 'Saved' : state === 'error' ? (err || 'Not saved') : text ? 'Your tutor can read this too' : ''}
         </p>
       </div>
       <textarea value={text} onChange={e => setText(e.target.value)} onBlur={() => save(text)} maxLength={MAX_NOTE_LENGTH} rows={text ? 3 : 2}

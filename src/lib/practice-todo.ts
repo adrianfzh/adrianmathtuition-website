@@ -18,7 +18,7 @@ export type TodoSectionKey = AssignmentSource;
 
 /** The four sections, in display order. */
 export const TODO_SECTIONS: readonly { key: TodoSectionKey; title: string; icon: string; blurb: string }[] = [
-  { key: 'adrian', title: 'From Adrian', icon: '📬', blurb: 'Work Adrian sent you.' },
+  { key: 'adrian', title: 'From your tutor', icon: '📬', blurb: 'Work your tutor sent you.' },
   { key: 'practice-again', title: 'Practice Again', icon: '🔁', blurb: 'Your Practice Again sheets, one for each marked paper.' },   // grouped, but NOT shown on the tab — see practiceTabSections
   { key: 'find', title: 'Found by you', icon: '🔍', blurb: 'Questions you found with Find a question.' },
   { key: 'practice-photo', title: 'From your photos', icon: '📷', blurb: 'Questions written from the ones you photographed.' },

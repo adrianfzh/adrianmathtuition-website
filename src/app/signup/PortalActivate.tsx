@@ -75,7 +75,7 @@ export default function PortalActivate({ token }: { token: string }) {
           <p className="text-sm text-gray-600 mb-4">{tok.reason}</p>
           <p className="text-sm text-gray-600">
             Already set up? <Link href="/login" className="text-navy underline underline-offset-2">Log in</Link>.
-            Otherwise, message Adrian for a fresh invite.
+            Otherwise, message your tutor for a fresh invite.
           </p>
         </div>
       </main>
@@ -87,7 +87,7 @@ export default function PortalActivate({ token }: { token: string }) {
       <div className={card}>
         <h1 className="text-xl font-bold text-navy mb-2">Welcome, {tok.studentName} — set up your account</h1>
         <p className="text-sm text-gray-600 mb-5">
-          Your portal has your marked papers with Adrian&apos;s feedback, practice questions from real
+          Your portal has your marked papers with your tutor&apos;s feedback, practice questions from real
           school papers with instant marking, and your revision notes — in a private account only
           you can see.
         </p>

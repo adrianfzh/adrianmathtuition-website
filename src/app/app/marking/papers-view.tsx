@@ -375,7 +375,7 @@ export default async function PapersView({ account, sid, admin = false }: {
       {pending.length > 0 && (
         // Teal = the hand-in surface, so papers sitting with Adrian wear it too.
         <div className="bg-teal-50 rounded-3xl p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">With Adrian</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-teal-700/80 mb-1">Being marked</p>
           {/* A status line, not a spinner (Adrian, 7 Sep 2026): what is happening and how long it usually takes. */}
           <p className="text-[13px] text-teal-900/80 mb-2">Being marked — usually back within the hour. You will get a notification when it is ready.</p>
           <ul className="space-y-1.5">
@@ -402,7 +402,7 @@ export default async function PapersView({ account, sid, admin = false }: {
       {papers.length === 0 ? (
         <div className={`${CARD} p-5`}>
           <p className="text-sm text-gray-600">
-            Nothing here yet. When Adrian marks a paper for you it appears here — with the marks,
+            Nothing here yet. When a paper is marked for you it appears here — with the marks,
             what went wrong on each question, and your script with the red pen on it.
           </p>
           <p className="text-sm text-gray-600 mt-2">

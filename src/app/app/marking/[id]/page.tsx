@@ -350,7 +350,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                   {/* Two layers: the student edits theirs and sees "From Adrian"; Adrian edits his and sees theirs (18 Sep 2026). */}
                   {isAdmin
                     ? <AdminMarkingPen runId={paper.id} pages={paper.pages} initial={teacherInk} other={{ pages: ink, label: `${viewerName || 'their'} notes` }} />
-                    : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Adrian's notes" }} />}
+                    : <StudentInk runId={paper.id} pages={paper.pages} initial={ink} other={{ pages: teacherInk, label: "Your tutor's notes" }} />}
                   <Suspense fallback={null}><JumpToMistake pages={paper.pages.map(p => ({ index: p.index, layerUrl: p.layerUrl ?? null, layerH: p.layerH ?? null }))} /></Suspense>
                 </div>
               )}

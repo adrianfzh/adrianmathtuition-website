@@ -102,7 +102,7 @@ export default function RecallChat() {
           <div className="shrink-0 flex items-center justify-between gap-3 px-4 h-14 border-b border-black/5 bg-white/90 backdrop-blur-md">
             <div className="min-w-0">
               <p className="font-semibold text-navy leading-tight">Recall tutor</p>
-              <p className="text-[11px] text-gray-400 leading-tight">Grounded in Adrian&rsquo;s class notes</p>
+              <p className="text-[11px] text-gray-400 leading-tight">Grounded in your class notes</p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               {turns.length > 0 && (
@@ -128,7 +128,7 @@ export default function RecallChat() {
                 <p className="text-navy font-semibold">Forgot how to do something?</p>
                 <p className="text-sm text-gray-500 mt-1">
                   Tell me the topic you&rsquo;re stuck on — e.g. &ldquo;I forgot how to find the remainder&rdquo;.
-                  I&rsquo;ll nudge you first, then walk you through it using Adrian&rsquo;s notes.
+                  I&rsquo;ll nudge you first, then walk you through it using your class notes.
                 </p>
               </div>
             )}

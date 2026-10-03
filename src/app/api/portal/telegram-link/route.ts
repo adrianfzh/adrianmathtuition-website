@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ linked: !!account.telegram_chat_id });
   }
   const secret = botInternalSecret();
-  if (!secret) return NextResponse.json({ error: 'Telegram linking is not set up yet — message Adrian.' }, { status: 503 });
+  if (!secret) return NextResponse.json({ error: 'Telegram linking is not set up yet — message your tutor.' }, { status: 503 });
   const token = signTelegramLinkToken(account.id, secret);
   return NextResponse.json({ url: telegramDeepLink(token), expiresInSec: TELEGRAM_LINK_TTL_SECONDS });
 }

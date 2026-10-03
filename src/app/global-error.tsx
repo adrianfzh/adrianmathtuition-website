@@ -10,7 +10,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     <html lang="en">
       <body style={{ fontFamily: 'system-ui, sans-serif', padding: 24, textAlign: 'center' }}>
         <h1 style={{ fontSize: 18 }}>Something went wrong on our side</h1>
-        <p style={{ color: '#555' }}>Adrian has been told. Try again, or come back in a minute.</p>
+        <p style={{ color: '#555' }}>We have been told. Try again, or come back in a minute.</p>
         <button onClick={reset} style={{ marginTop: 16, padding: '8px 16px', borderRadius: 10, background: '#1e2a4a', color: '#fff', border: 0 }}>Try again</button>
       </body>
     </html>

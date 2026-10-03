@@ -44,7 +44,7 @@ export function sheetJobLine(
   // both the student's list and Adrian's Papers tab.
   const asked = job.requested_by === 'student' ? (opts.admin ? 'Practice Again requested by the student' : 'You asked for Practice Again') : 'Practice Again';
   if (job.status === 'queued' || job.status === 'claimed') return { tone: 'quiet', text: `${asked} · being written`, actions: false };
-  if (job.status === 'done' && !job.noSheet) return { tone: 'quiet', text: `${asked} · written, Adrian is checking it`, actions: false };
+  if (job.status === 'done' && !job.noSheet) return { tone: 'quiet', text: `${asked} · written, your tutor is checking it`, actions: false };
   return null;
 }
 

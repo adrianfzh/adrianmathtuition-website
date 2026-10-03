@@ -159,7 +159,7 @@ export default async function DashboardPage() {
           <Link href="/app/assignments" className="flex items-center justify-between gap-3 px-4 pt-3.5 pb-2 hover:opacity-90 active:opacity-75 transition-opacity">
             <span className="flex items-center gap-2.5 font-semibold">
               <span className={`flex items-center justify-center w-8 h-8 rounded-xl bg-white/10 ${A.tile.split(' ')[1]}`}><PortalIcon name={A.icon} className="w-4.5 h-4.5" /></span>
-              From Adrian
+              From your tutor
             </span>
             <span className="text-[11px] font-bold bg-[hsl(43,90%,60%)] text-navy rounded-full px-2.5 py-1">{workSummary}</span>
           </Link>

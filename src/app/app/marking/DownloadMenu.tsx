@@ -25,7 +25,7 @@ export default function DownloadMenu({ runId, name, hasMine, hasAdrian, mineLabe
   const rows: { label: string; hint: string; href: string; on: boolean; track?: string }[] = [
     { label: 'Marked paper', hint: 'as it was handed back', href: base, on: true, track: 'marking:open' },
     { label: mineLabel, hint: hasMine ? 'the marked paper + what you wrote on it' : 'nothing written on it yet', href: `${base}&notes=mine`, on: hasMine },
-    { label: "With Adrian's notes", hint: hasAdrian ? 'the marked paper + Adrian’s notes on it' : 'no notes from Adrian on this paper', href: `${base}&notes=adrian`, on: hasAdrian },
+    { label: "With your tutor's notes", hint: hasAdrian ? 'the marked paper + your tutor’s notes on it' : 'no notes from your tutor on this paper', href: `${base}&notes=adrian`, on: hasAdrian },
   ];
 
   return (

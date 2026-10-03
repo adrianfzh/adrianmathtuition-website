@@ -46,7 +46,7 @@ export default function PracticeAgainRequest({ runId, state: initial }: { runId:
     return (
       <section id="practice-again" className={CARD}>
         <p className="text-sm font-semibold text-emerald-900">📘 Your Practice Again sheet is written</p>
-        <p className="text-[12px] text-emerald-800/80 mt-0.5">Adrian is checking it before it comes to you. You’ll get a message when it does.</p>
+        <p className="text-[12px] text-emerald-800/80 mt-0.5">Your tutor is checking it before it comes to you. You’ll get a message when it does.</p>
       </section>
     );
   }

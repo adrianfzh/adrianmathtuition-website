@@ -20,7 +20,7 @@
 export const NETWORK_MESSAGE = 'Connection problem — check your internet and try again.';
 export const SIGNED_OUT_MESSAGE = 'You’ve been signed out — log in again to keep going.';
 export const GENERIC_MESSAGE = 'Something went wrong — give it a moment and try again.';
-const FORBIDDEN_MESSAGE = 'That isn’t available for your account — message Adrian if that seems wrong.';
+const FORBIDDEN_MESSAGE = 'That isn’t available for your account — message your tutor if that seems wrong.';
 const NOT_FOUND_MESSAGE = 'Couldn’t find that — refresh the page and try again.';
 const LIMIT_MESSAGE = 'That’s the limit for now — try again later.';
 

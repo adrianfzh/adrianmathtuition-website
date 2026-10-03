@@ -17,7 +17,7 @@ const HOME_CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_
 const BTN = 'inline-flex items-center gap-1.5 text-[13px] font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-2 active:scale-[0.98] transition disabled:opacity-60';
 
 export const PUSH_NUDGE_TITLE = 'Turn on notifications';
-export const PUSH_NUDGE_BODY = 'We’ll tell you when your paper is marked — and when Adrian sends you work.';
+export const PUSH_NUDGE_BODY = 'We’ll tell you when your paper is marked — and when your tutor sends you work.';
 
 function BellIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (

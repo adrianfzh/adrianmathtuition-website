@@ -17,7 +17,7 @@ describe('marking download notes layers', () => {
   });
   it('names the file by the choice', () => {
     expect(notesSuffix('mine')).toBe(' (with my notes)');
-    expect(notesSuffix('adrian')).toBe(" (with Adrian's notes)");
+    expect(notesSuffix('adrian')).toBe(" (with tutor's notes)");
     expect(notesSuffix('none')).toBe('');
   });
 });

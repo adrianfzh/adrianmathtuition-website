@@ -32,7 +32,7 @@ export const SURFACES: Record<SurfaceKey, SurfaceIdentity> = {
     tile: 'bg-navy text-[hsl(45,100%,96%)]', text: 'text-navy', tint: 'bg-navy/5', ring: 'ring-navy/30',
   },
   assignments: {
-    key: 'assignments', label: 'From Adrian', icon: 'inbox',
+    key: 'assignments', label: 'From your tutor', icon: 'inbox',
     tile: 'bg-navy text-[hsl(43,90%,60%)]', text: 'text-navy', tint: 'bg-navy/5', ring: 'ring-navy/30',
   },
   plan: {

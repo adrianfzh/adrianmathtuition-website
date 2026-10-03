@@ -314,7 +314,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       // Retried like the uploads are. Safe to repeat because the route matches
       // a resend against the photos it already holds and returns the paper it
       // made the first time, rather than making a second (see the route).
-      setStage('Sending to Adrian…');
+      setStage('Sending for marking…');
       const body = JSON.stringify({
         photoUrls: urls,
         paperName: paperName.trim(),
@@ -330,7 +330,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; findings?: { kind: string; message: string; blocking?: boolean; missing?: unknown }[]; list?: unknown; key?: unknown } = {};
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
-          if (attempt > 1) setStage(`Sending to Adrian… (try ${attempt} of 3)`);
+          if (attempt > 1) setStage(`Sending for marking… (try ${attempt} of 3)`);
           r = await fetch('/api/portal/submit', {
             method: 'POST', headers: { 'Content-Type': 'application/json' }, body,
           });
@@ -397,14 +397,14 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         <h1 className="text-xl font-bold text-navy pt-1">{assignment ? 'Worksheet sent' : 'Submit a paper'}</h1>
         <div className={`${CARD} p-5 text-center`}>
           <p className="text-4xl">✅</p>
-          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent to Adrian for marking'}</p>
+          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent for marking'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
             When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
             the red pen, and what each lost mark was for.
           </p>
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
             <Link href={assignment ? '/app/assignments' : isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {assignment ? 'Back to From Adrian' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
+              {assignment ? 'Back to your work' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
             </Link>
           </div>
           {/* No daily cap for tuition students since 22 Sep 2026 — the old
@@ -594,7 +594,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         )}
 
         {assignment ? (
-          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — Adrian&apos;s worksheet.</p>
+          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — your tutor&apos;s worksheet.</p>
         ) : paper ? (
           <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{paper.title}</b> — your printed paper.</p>
         ) : (
@@ -614,7 +614,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           {/* A name shaped like the placeholder is what lets ai/paper-totals.js
               ground the run to the official total (e.g. /90) — vague names fall
               back to a counted denominator (Adrian, 2026-08-29). */}
-          {!isScience && <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so Adrian knows what he&apos;s marking, and your score comes back out of the official total (e.g. /90).</p>}
+          {!isScience && <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so we know what we&apos;re marking, and your score comes back out of the official total (e.g. /90).</p>}
         {subjectChoices.length > 1 && (
           <div className="mt-3">
             <label htmlFor="paper-subject" className="block text-sm font-semibold text-navy mb-1">Subject</label>

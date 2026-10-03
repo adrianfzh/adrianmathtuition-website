@@ -29,7 +29,7 @@ async function loadToken(token: string) {
     .maybeSingle();
   if (!data) return { error: 'This link is not valid.' };
   if (data.consumed_at) return { error: 'This link has already been used.' };
-  if (new Date(data.expires_at) < new Date()) return { error: 'This link has expired — ask Adrian for a new one.' };
+  if (new Date(data.expires_at) < new Date()) return { error: 'This link has expired — ask your tutor for a new one.' };
   return { row: data };
 }
 

@@ -40,12 +40,12 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
       <div className="flex items-baseline justify-between pt-1">
         {photoSheet
           ? <Link href="/app/practice" className="text-sm text-gray-500 hover:text-navy">← Practice</Link>
-          : <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From Adrian</Link>}
+          : <Link href="/app/assignments" className="text-sm text-gray-500 hover:text-navy">← From your tutor</Link>}
       </div>
 
       <div className={`${CARD} p-5 space-y-3`}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{photoSheet ? '📷 Your practice sheet' : page ? '📖 A page from Adrian' : '📬 Worksheet from Adrian'}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-1">{photoSheet ? '📷 Your practice sheet' : page ? '📖 A page from your tutor' : '📬 Worksheet from your tutor'}</p>
           <h1 className="text-lg font-bold text-navy">{a.title}</h1>
           <p className="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-2">
             {a.topic && <span>{a.topic}</span>}
@@ -72,7 +72,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
             ✅ Marked{a.score != null && a.out_of != null ? ` — ${a.score}/${a.out_of}` : ''}.{' '}
             {released
               ? <Link href="/app/marking" className="underline font-semibold">See it in Marked papers →</Link>
-              : 'Adrian is checking it before release.'}
+              : 'Your tutor is checking it before release.'}
           </p>
         )}
 
@@ -107,11 +107,11 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
 
       {page ? (
         <p className="text-[11px] text-gray-400">
-          A page Adrian sent to keep — nothing to hand in.
+          A page your tutor sent to keep — nothing to hand in.
         </p>
       ) : (
         <p className="text-[11px] text-gray-400">
-          Do it on paper, then photograph every page and submit. It&apos;s marked by Adrian&apos;s marking pipeline and released to you automatically.
+          Do it on paper, then photograph every page and submit. It&apos;s marked and released to you automatically.
         </p>
       )}
     </div>

@@ -81,7 +81,7 @@ export async function GET() {
         }
         if (missed.length || !rows.length) {
           const text = rows.length
-            ? `These papers could not be added to the zip. Open them in the app, or ask Adrian.\n\n${missed.join('\n')}\n`
+            ? `These papers could not be added to the zip. Open them in the app, or ask your tutor.\n\n${missed.join('\n')}\n`
             : 'No marked papers have been released to this account yet.\n';
           controller.enqueue(writer.entry(rows.length ? 'papers not included.txt' : 'no papers yet.txt', new TextEncoder().encode(text)));
         }

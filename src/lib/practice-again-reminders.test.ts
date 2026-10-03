@@ -44,7 +44,7 @@ describe('the wording', () => {
   it('names the sheet, says Adrian asked, counts the days, links to the paper in the app', () => {
     const t = nudgeText({ ...base, required_at: daysAgo(5) }, NOW, 'https://www.adrianmathtuition.com');
     expect(t).toContain('<b>Practice Again — A Math · GCE 2021 · Paper 1</b>');
-    expect(t).toContain('Adrian asked you to do this one — it has been 5 days');
+    expect(t).toContain('Please do this one — it has been 5 days');
     expect(t).toContain('https://www.adrianmathtuition.com/app/marking/94da9689-ac42-457a-a696-e6cbfb49e67e');
     expect(t).not.toContain('portal');
   });

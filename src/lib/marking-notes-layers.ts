@@ -20,7 +20,7 @@ export function layersFor(choice: NotesChoice): { teacher: boolean; student: boo
 /** The file-name tail for each choice. */
 export function notesSuffix(choice: NotesChoice): string {
   if (choice === 'mine') return ' (with my notes)';
-  if (choice === 'adrian') return " (with Adrian's notes)";
+  if (choice === 'adrian') return " (with tutor's notes)";
   if (choice === 'all') return ' (with notes)';
   return '';
 }

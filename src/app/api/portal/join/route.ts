@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       const studentName = String(((records || []).find((r: { id: string }) => r.id === matchId) || {}).fields?.['Student Name'] || v.name || 'there');
       const { data: linked } = await supabase.from('portal_accounts').select('id').eq('airtable_student_id', matchId).maybeSingle();
       if (linked) {
-        return NextResponse.json({ error: "Good news — you already have an account with Adrian. Head to the login page to sign in; there's a reset link there if the password has slipped your mind." }, { status: 409 });
+        return NextResponse.json({ error: "Good news — you already have an account. Head to the login page to sign in; there's a reset link there if the password has slipped your mind." }, { status: 409 });
       }
       const admin = process.env.ADMIN_PASSWORD || '';
       let sent = false;
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
       } catch (e) { console.warn('[portal-join] matched student, invite call failed:', (e as Error).message); }
       notify_students(matchedSignupTelegramText(studentName, v.email, sent)).catch(() => {});
       if (!sent) {
-        return NextResponse.json({ error: `We recognised you as one of Adrian's students, but the activation email could not be sent just now — ask Adrian for your invite link.` }, { status: 502 });
+        return NextResponse.json({ error: `We recognised you as one of our students, but the activation email could not be sent just now — ask your tutor for your invite link.` }, { status: 502 });
       }
       return NextResponse.json({ ok: true, matched: true, message: matchedStudentMessage(studentName) });
     }

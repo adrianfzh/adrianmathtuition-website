@@ -38,7 +38,7 @@ export default async function AddPagesView({ runId, studentId, backHref }: { run
           <p className="font-bold text-navy mt-2">{row.released_at ? 'Pages can’t be added to this paper now' : 'Marking has started on this paper'}</p>
           <p className="text-sm text-gray-600 mt-1.5">
             {row.released_at
-              ? <>It is more than two weeks old, or it is being updated right now. Hand the missing pages in as a separate paper — name it “{title} (extra pages)” so Adrian can see they belong together.</>
+              ? <>It is more than two weeks old, or it is being updated right now. Hand the missing pages in as a separate paper — name it “{title} (extra pages)” so your tutor can see they belong together.</>
               : <>Pages can be added again once it comes back marked — you&apos;ll find ➕ Add missing pages on the paper.</>}
           </p>
           <div className="mt-4 flex justify-center gap-2">

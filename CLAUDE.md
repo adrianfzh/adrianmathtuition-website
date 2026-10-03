@@ -112,6 +112,15 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   content reads well too. The daily page reader counts a hard-to-read note as a finding (bot
   `.claude/skills/marking-review/SKILL.md` §D).
 
+## 🙊 The app never names Adrian (Adrian, 3 Oct 2026)
+
+Adrian: *"don't mention me in the app. just say something generic"*. Every string a student
+reads — pages under `/app`, login, the activation page, API error messages, push and Telegram
+lines to students, download file names — says **"your tutor"** or **"we"**, never "Adrian"
+("From your tutor", "We have been told", "Sending for marking…"). Admin-only lines, comments,
+identifiers (`fromAdrian`, `notes=adrian`), e-mails he signs and the tuition site's brand name
+are untouched. Older sections of this file still quote the old labels ("From Adrian").
+
 ## 🏢 The company — standing reminders (Adrian, 24 Sep 2026)
 
 Adrian: *"put #5 into memory and remind me when anything about company comes up"* and *"the

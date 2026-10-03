@@ -102,7 +102,7 @@ export default async function PracticeTodo({ account, top = null }: { account: P
         <div className={`${CARD} p-5 space-y-2`}>
           <p className="text-sm font-semibold text-navy">Nothing to practise yet.</p>
           <p className="text-sm text-gray-600">
-            This is your to-do list. Work Adrian sends you, and the sheets written from
+            This is your to-do list. Work your tutor sends you, and the sheets written from
             your photos, land here.
           </p>
           <p className="text-xs text-gray-400">

@@ -112,7 +112,7 @@ export async function GET() {
     practice_attempts: attempts || [],
     marked_papers: {
       released: released.data || [],
-      being_marked: (pending.data || []).map(r => ({ ...(r as object), note: 'Not released yet — marks appear here once Adrian releases the paper.' })),
+      being_marked: (pending.data || []).map(r => ({ ...(r as object), note: 'Not released yet — marks appear here once your tutor releases the paper.' })),
     },
     assignments: assignments.data || [],
     weakness_tags: tags.data || [],

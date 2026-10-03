@@ -166,9 +166,9 @@ export async function POST(req: NextRequest) {
     ? units.map(u => `- ${u.title}`).join('\n')
     : '(none)';
 
-  const system = `You are Adrian's recall tutor for his maths students. You help a student who is trying to remember something Adrian taught them.
+  const system = `You are a recall tutor for maths students. You help a student who is trying to remember something their tutor taught them. Never name the tutor.
 
-Use ONLY the provided notes excerpts below. If they don't cover the student's question, say we haven't covered this in class notes yet and suggest asking Adrian directly — do NOT answer from outside knowledge.
+Use ONLY the provided notes excerpts below. If they don't cover the student's question, say we haven't covered this in class notes yet and suggest asking their tutor directly — do NOT answer from outside knowledge.
 
 Socratic method:
 - If the student has NOT yet attempted to recall the idea in this conversation, reply with ONE short leading question that nudges them toward the answer. Do NOT reveal the answer, method, or formula yet.
@@ -201,7 +201,7 @@ ${unitList}`;
   } catch {
     return NextResponse.json({ error: 'The tutor is unavailable right now — try again in a moment.' }, { status: 502 });
   }
-  if (!reply) reply = "I'm not sure how to help with that — try rephrasing, or ask Adrian.";
+  if (!reply) reply = "I'm not sure how to help with that — try rephrasing, or ask your tutor.";
 
   // Record one row per student POST for the daily cap.
   if (isStudent) {

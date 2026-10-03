@@ -90,7 +90,7 @@ export default function WorkInApp({ assignmentId, title, pdfUrl, initial }: { as
         if (!url) throw new Error(`Page ${p.index + 1} would not upload after three tries — your work is kept, tap Submit again.`);
         urls.push(url);
       }
-      setStage('Sending to Adrian…');
+      setStage('Sending for marking…');
       const d = await portalFetch<{ runId?: string }>('/api/portal/submit', { json: { photoUrls: urls, paperName: title, assignmentId }, fallback: 'send the sheet' });
       try { localStorage.removeItem(`annotate-draft:v1:student:work:${assignmentId}`); } catch { /* ignore */ }
       setStage('Sent ✓');

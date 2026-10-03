@@ -94,7 +94,7 @@ export type InitialAssignment = {
 };
 
 const SOURCE_META: Record<NonNullable<InitialAssignment['source']>, { label: string; back: string; backLabel: string }> = {
-  adrian: { label: '📬 From Adrian', back: '/app/assignments', backLabel: '← From Adrian' },
+  adrian: { label: '📬 From your tutor', back: '/app/assignments', backLabel: '← From your tutor' },
   'practice-again': { label: '🔁 Practice Again', back: '/app/practice', backLabel: '← Practice' },
   find: { label: '🔍 Found by you', back: '/app/practice', backLabel: '← Practice' },
   'practice-photo': { label: '📷 From your photo', back: '/app/practice', backLabel: '← Practice' },
@@ -1101,7 +1101,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   Working on: {weakTags.map(t => <span key={t} className="inline-block bg-slate-100 rounded-full px-2 py-0.5 ml-1">{t}</span>)}
                 </p>
               )}
-              <p className="text-[11px] text-slate-300 mt-3">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with Adrian.</p>
+              <p className="text-[11px] text-slate-300 mt-3">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with your tutor.</p>
             </div>
           )}
 
@@ -1194,7 +1194,7 @@ function ReportQuestion({ assignmentId }: { assignmentId: string }) {
   if (state === 'sent') {
     return (
       <div className="mt-2 text-xs text-gray-600 bg-white rounded-xl border border-black/5 px-3 py-2">
-        Thanks — that one is off your list and Adrian has been told. <Link href="/app/practice" className="underline">Back to Practice</Link>
+        Thanks — that one is off your list and we have been told. <Link href="/app/practice" className="underline">Back to Practice</Link>
       </div>
     );
   }

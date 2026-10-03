@@ -81,7 +81,7 @@ export function FamilySwitch({ science = true, languages = false, humanities = f
 export function Badge({ n, className = '' }: { n: number; className?: string }) {
   if (n <= 0) return null;
   return (
-    <span aria-label={`${n} to do from Adrian`}
+    <span aria-label={`${n} to do from your tutor`}
       className={`absolute min-w-[18px] h-[18px] px-1 rounded-full bg-[hsl(43,90%,55%)] text-navy text-[11px] font-bold leading-[18px] text-center ring-2 ring-white ${className}`}>
       {n > 9 ? '9+' : n}
     </span>
