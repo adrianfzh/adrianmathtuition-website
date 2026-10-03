@@ -6,7 +6,7 @@
 // the writing is done by plan-billed Claude Code agents (the `twin-question`
 // skill), never the API.
 //
-//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 3] [--json]  (only sub-skills short of 3 twins)
+//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 5] [--json]  (only sub-skills short of 5 twins)
 //   node scripts/twins/twin.mjs need    --level EM --subgroup <id>   (prints how many more that sub-skill wants)
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
@@ -156,7 +156,7 @@ const familyOf = (level) => FAMILY[level] ?? [level];
 // (Adrian, 1 Oct 2026: "its twins per skill not by each question right?").
 // twinCounts → how many live twins each sub-skill of a family already has, counted
 // through the source each twin was written from (the source's primary filing).
-const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 3);
+const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 5);
 async function twinCounts(env, level) {
   const lv = familyOf(level).join(',');
   const rows = await restAll(env, `twin_queue?select=source_id,subgroup_id&level=in.(${lv})`);
