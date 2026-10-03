@@ -446,7 +446,7 @@ writes `image_watermark_status`, an image reference or a bucket object), stamps
 `job_runs` slug `figure-fitness` (quiet nights too), and is resumable per
 [`docs/RESUMABLE-JOBS.md`](RESUMABLE-JOBS.md) — its per-item state is the
 `fitness:` stamp in the database, so a killed run loses nothing and re-running is
-a no-op. Strong model only (`claude -p --model claude-fable-5-1`). The shape on Fly:
+a no-op. Strong model only (`claude -p --model claude-opus-5-5 --effort high` in `figfit.sh` — corrected 3 Oct 2026; this line said Fable 5.1). The shape on Fly:
 deterministic node/python steps (law → candidates → build → select → fetch →
 measure → calib → units → contact sheets of 6 tiles with the stems beside them)
 build the night's material; ONE `claude -p` run calibrates on 12 tiles with 4
@@ -460,6 +460,27 @@ run-now subcommand). First run on the worker 25 Sep 2026 21:35 SGT: 3 figures, c
 4/4, 3 rows stamped `ok`, no flags — the only fault was the summary line (an f-string the
 worker's Python 3.11 rejects; the Mac's 3.12 had passed it), fixed the same night. ⚠ The
 worker's `python3` is **3.11**: no backslash inside an f-string expression, Pillow 9.4.
+
+**The science bank lane (3 Oct 2026, Adrian: "yes" to running the check over science).**
+The science serving gate (`lib/science-bank.ts`) shows an image question only when
+`image_watermark_status = 'clean'`; on 3 Oct 2026 3,013 science image rows were clean and
+8,937 had never been checked (Biology 2,554 · Chemistry 2,339 · Physics 1,618 · Science
+2,422), so most science figures were hidden. `FIGFIT_BANK=science` runs the same judge,
+calibration and law (read from the maths project's law row) over the science project
+(`SUPABASE_URL_SCIENCE` / `SUPABASE_SERVICE_KEY_SCIENCE`), with these differences:
+- **An all-`ok` row with no status yet is set `clean`** (plus `image_watermark_scanned_at`)
+  — unlike the maths lane, which stays judge-only. A row with any other verdict gets its
+  stamp and a flag and stays hidden. A quarantined row is never set clean.
+- Flags go to the science project's own **`figure_flags`** table (created 3 Oct 2026, RLS
+  on, the maths shape). The `/admin/figures-check` page reads only the maths table — science
+  flags are not on it yet.
+- Only rows with an `image_url` are candidates. **4,323 science rows say `has_image` but carry
+  no image at all** (mostly physics from 18 May 2026); they stay hidden and need their
+  figures, not a check.
+- No lane B (science has no change logs); its own state dir `~/.adrianmath_figfit_science`
+  and `job_runs` slug `figure-fitness-science`.
+- The sweep: `FIGFIT_BANK=science sh /app/worker/fly/figfit/sweep.sh <i> <n> [stop epoch]`
+  (log `figsweep-sci<i>.log`); the stop file is shared with the maths sweep.
 
 **Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
 exceptions the catch-up may set to `open` itself, because they are correctness
