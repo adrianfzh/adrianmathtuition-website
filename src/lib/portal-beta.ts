@@ -277,6 +277,12 @@ export async function practicePhotoOpen(): Promise<boolean> {
  */
 export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;
 
+/**
+ * 📖 The Physics tab's definitions page (/app/science/definitions and its door
+ * on /app/science): Adrian's cookie only until he has read the list (3 Oct 2026).
+ */
+export const SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS = false;
+
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
 // chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
 // has watched a few — flip this to open the door on every mistake card and on the

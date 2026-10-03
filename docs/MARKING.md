@@ -2582,7 +2582,12 @@ tab's own gate, no switch of their own:
    block of the three brains' shared `SCIENCE_COMMON`); `lib/portal-marking.ts
    schemeWords` reads it into `schemes[].words` (half a pair is nothing) and the paper
    page's LostMarks shows "Scheme says: … · You wrote: …" under the chips.
-2. **Qualitative-analysis flashcards** — `/app/science/qa`, the door a row above the
+2. **Qualitative analysis** — **a page in pictures since 3 Oct 2026** (Adrian: "do a page
+   that helps student remember instead - with diagrams arrows all that stuff"): `qa/qa-visual.tsx`
+   draws the cation finder in three steps, every cation with both reagents, the anions and the
+   gases, over `lib/qa-visual.ts`; the exact exam words are folded at the foot. The flashcard
+   drill described next is GONE (`qa-drill.tsx` deleted; `lib/qa-cards.ts` keeps the wording).
+   History: flashcards at `/app/science/qa`, the door a row above the
    papers on the Chemistry tab of Science Home (`ScienceTabs panelExtras` + `QaDoor` in
    `science-papers.tsx`). The SEAB 6092 table as cards: 13 cation cards (NaOH and NH₃
    for Al³⁺, NH₄⁺, Ca²⁺, Cu²⁺, Fe²⁺, Fe³⁺, Zn²⁺), 5 anions, 6 gases, in the scheme's own

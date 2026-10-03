@@ -164,8 +164,24 @@ export function QaDoor() {
         <PortalIcon name="flask" className="w-5 h-5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-bold text-navy">Qualitative analysis flashcards</span>
-        <span className="block text-[12px] text-gray-500">Cation, anion and gas tests · tap to flip</span>
+        <span className="block text-sm font-bold text-navy">Qualitative analysis</span>
+        <span className="block text-[12px] text-gray-500">Cation, anion and gas tests · in pictures</span>
+      </span>
+      <span className="shrink-0 text-gray-300 text-lg">›</span>
+    </Link>
+  );
+}
+
+/** The door to the Physics definitions page — a row on the Physics tab (3 Oct 2026). */
+export function DefinitionsDoor() {
+  return (
+    <Link href="/app/science/definitions" className={`${CARD} p-3 flex items-center gap-3 hover:brightness-[0.99] active:scale-[0.99] transition`}>
+      <span className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 bg-blue-600 text-white" aria-hidden>
+        <PortalIcon name="book" className="w-5 h-5" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-bold text-navy">Physics definitions</span>
+        <span className="block text-[12px] text-gray-500">Every definition, by topic · key words marked</span>
       </span>
       <span className="shrink-0 text-gray-300 text-lg">›</span>
     </Link>

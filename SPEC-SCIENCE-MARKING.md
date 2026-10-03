@@ -418,7 +418,7 @@ Adrian: "Build all three chemistry study ideas". What shipped (the detail lives 
    + precedent checks — the bench of `SPEC-SCIENCE-BENCH.md` is not built, so a drift in
    how often the marker reaches for `keywords` would show first on the teacher's-mark
    rows, not on a bench.
-2. **`/app/science/qa`** — the SEAB 6092 qualitative-analysis table as flashcards, the
+2. **`/app/science/qa`** — the SEAB 6092 qualitative-analysis table, as flashcards until 3 Oct 2026 and as a page of pictures since (test tubes, arrows, a three-step cation finder), the
    door on the Chemistry tab of Science Home. **Admin only** since 25 Sep 2026
    (`QA_FLASHCARDS_OPEN_TO_STUDENTS`, Adrian: "gate to admin only first").
 3. **Science lost marks filed in My Notebook** under four reasons (concept gap · careless

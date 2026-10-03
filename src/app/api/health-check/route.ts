@@ -314,7 +314,13 @@ export async function GET(req: NextRequest) {
     }),
     timed('portal-science-qa', async () => {
       const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
-      if (r.status === 404) throw new Error('/app/science/qa is missing — the QA flashcards door 404s');
+      if (r.status === 404) throw new Error('/app/science/qa is missing — the qualitative-analysis door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
+    timed('portal-science-definitions', async () => {
+      const r = await fetch(`${base}/app/science/definitions`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/science/definitions is missing — the Physics definitions door 404s');
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),

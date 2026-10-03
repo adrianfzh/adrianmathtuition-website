@@ -16,11 +16,11 @@ import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { QA_FLASHCARDS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { QA_FLASHCARDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { scienceChoiceLabel, studentSciences } from '@/lib/portal-prefs';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { loadSciencePapers, QaDoor, ScienceTabs } from './science-papers';
+import { DefinitionsDoor, loadSciencePapers, QaDoor, ScienceTabs } from './science-papers';
 import SciencePicker from './science-picker';
 
 export const dynamic = 'force-dynamic';
@@ -37,8 +37,9 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
   const sp = await searchParams;
   const choosing = !choice || sp?.choose === '1';
   // The flashcards door is Adrian's alone until QA_FLASHCARDS_OPEN_TO_STUDENTS flips.
-  const qaOpen = QA_FLASHCARDS_OPEN_TO_STUDENTS
-    || (verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent()));
+  const adminView = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
+  const qaOpen = QA_FLASHCARDS_OPEN_TO_STUDENTS || adminView;
+  const defsOpen = SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS || adminView;
   const { papers, pending } = choosing ? { papers: [], pending: [] } : await loadSciencePapers(sid, account?.display_name ?? null);
 
   return (
@@ -77,7 +78,7 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
             <span className="shrink-0 text-white/80 text-lg">›</span>
           </Link>
 
-          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={qaOpen ? { chemistry: <QaDoor /> } : undefined} />
+          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={{ ...(qaOpen ? { chemistry: <QaDoor /> } : {}), ...(defsOpen ? { physics: <DefinitionsDoor /> } : {}) }} />
         </>
       )}
     </div>
