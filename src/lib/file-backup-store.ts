@@ -7,6 +7,8 @@ import {
   type BucketStatus, type FileBackupRun,
 } from '@/lib/file-backup';
 
+const BATCH_MARGIN_MS = 45_000;
+
 interface Pair { project: string; src: SupabaseClient; dest: SupabaseClient; buckets?: string[] }
 
 function pairs(): Pair[] {
@@ -80,12 +82,14 @@ export async function runFileBackup(opts: RunOpts = {}): Promise<FileBackupRun> 
 
     for (const bucket of buckets) {
       const failed = new Set<string>();
-      while (Date.now() < deadline) {
+      while (Date.now() < deadline - BATCH_MARGIN_MS) {
         const { data, error } = await p.src.rpc('file_backup_pending', { p_bucket: bucket, p_limit: 300 });
         if (error) { run.failures.push({ where: `${p.project}/${bucket}`, error: error.message.slice(0, 80) }); break; }
         const todo = ((data || []) as Pending[]).filter((f) => !failed.has(f.name));
         if (!todo.length) break;
-        for (let i = 0; i < todo.length && Date.now() < deadline; i += conc) {
+        // A batch is only started with time to finish it: big past papers (up to
+        // 50 MB) in flight at the deadline pushed a run past Vercel's 300 s (5 Oct 2026).
+        for (let i = 0; i < todo.length && Date.now() < deadline - BATCH_MARGIN_MS; i += conc) {
           await Promise.all(todo.slice(i, i + conc).map(async (f) => {
             try {
               await copyOne(p, bucket, f);
@@ -99,7 +103,7 @@ export async function runFileBackup(opts: RunOpts = {}): Promise<FileBackupRun> 
         }
         opts.log?.(`${p.project}/${bucket}: ${run.copied} copied, ${(run.copiedBytes / 1e9).toFixed(2)} GB, ${run.failures.length} failed`);
       }
-      if (Date.now() >= deadline) { run.outOfTime = true; break; }
+      if (Date.now() >= deadline - BATCH_MARGIN_MS) { run.outOfTime = true; break; }
     }
 
     const { data: st } = await p.src.rpc('file_backup_status');

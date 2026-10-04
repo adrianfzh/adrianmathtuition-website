@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     // ?concurrency=N (≤12) and ?only=student-files,… — for driving the first full copy.
     const conc = Number(req.nextUrl.searchParams.get('concurrency')) || undefined;
     const only = req.nextUrl.searchParams.get('only')?.split(',').filter(Boolean);
-    const r = await runFileBackup({ budgetMs: 240_000, concurrency: conc, only });
+    const r = await runFileBackup({ budgetMs: 210_000, concurrency: conc, only });
     const problems = fileBackupProblems(r, { backfillDone });
     const line = fileBackupLine(r, problems);
     const pending = r.status.flatMap((p) => p.buckets).reduce((s, b) => s + b.pending, 0);
