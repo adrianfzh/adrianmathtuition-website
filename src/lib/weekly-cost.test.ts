@@ -75,7 +75,7 @@ describe('the week', () => {
 describe('the levers — only a passed test is offered, with its switch', () => {
   it('page-trim: passed → one line with the switch and a monthly figure', () => {
     const inp = base({
-      runs: [run({ cw: 205000 }), run(), run({ lane: 'api' })],
+      runs: [run({ cw: 255000 }), run(), run({ lane: 'api' })],
       tests: [{ name: 'page-trim', status: 'passed', saving_per_paper_usd: 0.6, measure: { same: 74, parts: 76, noise_pct: 96.1 } }],
     });
     const { savings } = levers(inp);

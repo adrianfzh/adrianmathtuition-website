@@ -96,6 +96,8 @@ export const HELPER_MIN_PAGES = 50;
 export const CLASSIFY_MIN_PAPERS = 20;
 export const CLASSIFY_BAR = { kind: 97, questions: 95 };
 const WEEKS_PER_MONTH = 30 / 7;
+/** The marker's system prompt + tools, cached for every read (measured 5 Oct 2026). */
+export const SYSTEM_PREFIX_TOKENS = 55_000;
 
 export type Saving = { name: string; line: string; monthly: number };
 export type Testing = { name: string; line: string };
@@ -117,13 +119,14 @@ export function levers(inp: WeeklyCostInput): { savings: Saving[]; testing: Test
     const m = trim.measure || {};
     const perPaper = n(trim.saving_per_paper_usd) || 0;
     // Plan-lane papers still pay a 1-hour write of the whole paper when one page is
-    // retried on the API; that write is what trimming removes (a ~5k-token subset instead).
+    // retried on the API; that write is what trimming removes. The ~55k-token system
+    // prompt is written either way, so only what is above it counts (conservative).
     const retryWrites = papers.filter(r => laneOf(r) === 'plan')
-      .reduce((s, r) => s + Math.max(0, (Number(r.result_json?.usage?.buckets?.cacheWrite) || 0) - 5000) * 8 / 1e6, 0);
+      .reduce((s, r) => s + Math.max(0, (Number(r.result_json?.usage?.buckets?.cacheWrite) || 0) - SYSTEM_PREFIX_TOKENS) * 8 / 1e6, 0);
     const monthly = (apiPapers * perPaper + retryWrites) * WEEKS_PER_MONTH;
     const same = n(m.same), parts = n(m.parts), noise = n(m.noise_pct);
     const proof = parts ? `marks matched on ${same} of ${parts} parts (${pct(same || 0, parts)}%; the marker matches itself ${noise}%)` : 'its test passed';
-    if (trim.status === 'passed') savings.push({ name: 'page-trim', monthly, line: `Sending the marker only the pages it needs: ${proof}. Saves about ${usd(monthly)} a month at this week's papers (${usd(perPaper)} on every paper read by the paid reader). Say "switch page-trim" to turn it on.` });
+    if (trim.status === 'passed') savings.push({ name: 'page-trim', monthly, line: `Sending the marker only the pages it needs: ${proof}. Saves about ${usd(monthly)} a month at this week's papers${perPaper > 0 ? ` (${usd(perPaper)} on every paper read by the paid reader)` : ''}. Say "switch page-trim" to turn it on.` });
     else testing.push({ name: 'page-trim', line: `Sending only the pages it needs: ${trim.status === 'failed' ? 'did not pass' : 'being tested'}${parts ? ` (${pct(same || 0, parts)}% of marks matched; needs ${noise}%)` : ''}.` });
   }
 
