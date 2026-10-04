@@ -534,6 +534,12 @@ export async function GET(req: NextRequest) {
     }),
     // 🎚 The worker's job switches (2 Oct 2026): the Fly worker's scheduler reads this
     // every two minutes. Anonymous must be refused.
+    // 🗂 The extracted-papers index (5 Oct 2026) — /admin/library + scripts/library-index.ts.
+    timed('admin-library', async () => {
+      const r = await fetch(`${base}/api/admin/library`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('worker-jobs', async () => {
       const r = await fetch(`${base}/api/admin/worker-jobs`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

@@ -433,6 +433,47 @@ papers printing 5076–5078 are banked (96 papers would requeue), the cover's sy
 the level, practical papers are Paper 3, no-cover files tagged with another school, a file holding
 another school's paper banked under the cover's school (22 papers would requeue).
 
+## 4c. The index — what is extracted and what is not (5 Oct 2026)
+
+Adrian: *"organize pdfs that were extracted so we know what's being extracted at a
+glance … keep a list or an index?"*, then *"the index for extraction just build for
+your own use - don't have to let me see"*. So it is a tool for sessions and agents:
+**before extracting, staging, re-sending or hunting for a paper, ask the index what
+the banks already have.**
+
+```
+npx tsx scripts/library-index.ts --summary                        # counts per subject
+npx tsx scripts/library-index.ts --subject "E Math" --from 2023   # one line per paper
+npx tsx scripts/library-index.ts --q "bedok south 2024" --notes   # with the workers' notes
+npx tsx scripts/library-index.ts --status decision                # what is stuck
+npx tsx scripts/library-index.ts --subject Physics --json         # for a script
+```
+
+One line per PAPER, grouped Subject → Level → Year: its status in plain words
+(Banked · Banked (older) · In the queue · Being extracted · Needs a decision (flagged
+or failed) · On hold · Skipped, each with a short why), how many questions the bank
+holds for it, where the answers came from (the scheme / worked out from the answer
+key / worked out with no scheme), figures missing, and whether the paper's file and
+its scheme are kept in the `paper-library` bucket. Built from `paper_library`
+(`kind='source'` = the inbox; questions / solutions / combined = the marker's
+library) and `library_bank_papers()` — one row per paper, in BOTH the maths project
+(maths + `humanities_questions`) and the science project (`migrations/library_bank_papers.sql`).
+A bank paper that never came through the inbox is listed as **Banked (older)**, so the
+list is complete. Mark schemes and books the watcher cut into papers are not lines of
+their own (a scheme hangs on its paper). Re-sent versions of one paper merge into one
+line showing the most advanced status.
+
+Matching is on (subject family, level, school with punctuation and case ignored, year,
+paper; exam type only when both sides have one) — so a paper banked under another
+spelling of the school shows as "Banked — no questions found in the bank under this
+name" beside a separate "Banked (older)" line. That is a spelling to fix, not a lost paper.
+
+Pure logic + tests: `src/lib/paper-index.ts`; reads (5-minute cache):
+`src/lib/paper-index-store.ts`. The same list is on `/admin/library` (admin cookie,
+**no hub tile on purpose**; `GET /api/admin/library`, `?notes=<ids>` for one paper's
+notes, health-check `admin-library` probes the 401). There is no Dropbox copy of the
+papers — the bucket is where the files live.
+
 ## 5. Rollback
 
 Nothing here removes anything. The migration is additive (new columns default
