@@ -484,7 +484,8 @@ or automatable, that just logs without me doing anything.. how to do it for phys
   ("Auto log: … — auto (not confirmed)") and `Progress Logged` — **never over a log Adrian
   wrote by hand** (`mayWriteAutoLog`: only an empty row or one whose notes start
   "Auto log:"), and **never touches Status** (attendance stays his; arrears billing reads it).
-  A lesson where nothing was printed or handed in gets no entry and no line.
+  The line goes only when something was printed (or kiosk-printed) for the lesson; maths
+  hand-ins alone are logged quietly; a lesson with nothing gets no entry.
 - **The line:** ONE Telegram message per student to the students topic: *"📒 Eva today: sine
   rule and cosine rule (printed pack), warm-up on bearings. Tap ✓ if right, or reply with what
   you did."* ✓ (`ll:ok:<pack>`) confirms it; a reply TO the line is read (a short Sonnet 5

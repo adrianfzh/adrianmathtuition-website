@@ -48,6 +48,8 @@ export interface AutoLog {
   phrases: string[];
   homework: string | null;
   empty: boolean;
+  /** something was printed / given / kiosk-printed for the lesson — only then does Adrian get the line */
+  inLesson: boolean;
 }
 
 const lcFirst = (s: string) => s.replace(/^([A-Z])([a-z])/, (_, a: string, b: string) => a.toLowerCase() + b);
@@ -74,7 +76,7 @@ export function composeAutoLog(input: { printed: PrintedItem[]; kiosk?: { topic:
   for (const h of input.handins ?? []) {
     addPhrase(`handed in ${h.name}`);
   }
-  return { topics, phrases, homework: null, empty: phrases.length === 0 };
+  return { topics, phrases, homework: null, empty: phrases.length === 0, inLesson: printed.length + (input.kiosk?.length ?? 0) > 0 };
 }
 
 /** "Eva today: sine rule and cosine rule (printed pack), warm-up on bearings." + the ask. */

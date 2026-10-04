@@ -29,6 +29,12 @@ describe('compose', () => {
     const w = composeAutoLog({ printed: [{ title: 'Warm-up', topic: 'Vectors', kind: 'warmup' }] });
     expect(w.topics).toEqual([]);
   });
+  it('hand-ins alone are logged but ask nothing', () => {
+    expect(log.inLesson).toBe(true);
+    const h = composeAutoLog({ printed: [], handins: [{ name: 'EM P1' }] });
+    expect(h.empty).toBe(false);
+    expect(h.inLesson).toBe(false);
+  });
   it('nothing printed says so', () => {
     const e = composeAutoLog({ printed: [] });
     expect(e.empty).toBe(true);

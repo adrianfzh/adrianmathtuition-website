@@ -540,7 +540,7 @@ export async function composeForPack(sb: SupabaseClient, pack: PackRow): Promise
     sb.from('student_materials').select('title, topic, label, kind').eq('airtable_student_id', sid).is('removed_at', null).gte('printed_at', day0).lt('printed_at', day1),
     sb.from('student_materials').select('title, topic, label, kind').eq('airtable_student_id', sid).is('removed_at', null).gte('given_at', day0).lt('given_at', day1).is('printed_at', null),
     sb.from('kiosk_prints').select('topic').eq('student_id', sid).gte('printed_at', day0).lt('printed_at', day1),
-    sb.from('paper_marking_runs').select('paper_name, student_label').eq('student_id', sid).is('superseded_by', null).gte('created_at', day0).lt('created_at', dayN),
+    sb.from('paper_marking_runs').select('paper_name, student_label').eq('student_id', sid).is('superseded_by', null).in('paper_subject', ['A Math', 'E Math', 'H2 Math', 'Math']).gte('created_at', day0).lt('created_at', dayN),
   ]);
   const printed = [...(printedR.data ?? []), ...(givenR.data ?? [])] as { title: string; topic: string | null; label: string | null; kind: string }[];
   return composeAutoLog({

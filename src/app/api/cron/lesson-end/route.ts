@@ -10,8 +10,8 @@
 // log, attendance never touched) and ONE Telegram line to Adrian (students
 // topic): "📒 Eva today: … Tap ✓ if right, or reply with what you did." The ✓
 // and a reply come back through the bot (/api/bot/lesson-log). No reply = the
-// entry stands as "auto (not confirmed)". A lesson where nothing was printed or
-// handed in gets no line and no entry (nothing to confirm).
+// entry stands as "auto (not confirmed)". The line goes only when something was
+// printed for the lesson; hand-ins alone are logged quietly; nothing at all = no entry.
 //
 // The line is a switch: 📒 on /admin/switches (Airtable Settings `lesson_end_line`;
 // no row = on). Off = the log is still written, silently.
@@ -70,11 +70,11 @@ export async function GET(req: NextRequest) {
       const log = await composeForPack(sb, pack);
       const first = student.name.split(/\s+/)[0];
       const line = autoLogLine(first, log);
-      if (dry) { out.push({ student: student.name, end: l.end, empty: log.empty, line: log.empty ? null : line, topics: log.topics }); continue; }
+      if (dry) { out.push({ student: student.name, end: l.end, empty: log.empty, line: log.inLesson ? line : null, topics: log.topics }); continue; }
       const w = await writeAutoLog(sb, pack, log, 'unconfirmed');
       if (w.written) written++;
       let messageId: number | null = null;
-      if (lineOn && !log.empty && !pack.line_sent_at) {
+      if (lineOn && log.inLesson && !pack.line_sent_at) {
         messageId = await sendTelegramButtonsMessage(escapeTelegramHtml(line), [[{ text: '✓ Right', callback_data: okCallback(pack.id) }]], 'students');
         if (messageId !== null) {
           sent++;
