@@ -483,9 +483,12 @@ export async function prepareItems(sb: SupabaseClient, student: StudentRow, pack
     }
   }
 
-  // warm-up: the two topics with the most recent live mistakes, in one subject
-  const w = plan.weak.filter((x) => x.subject === (plan.courses[0]?.subject ?? x.subject)).slice(0, 2);
-  const warm = w.length ? w : plan.weak.slice(0, 1);
+  // warm-up: the two topics with the most recent live mistakes, in one subject — never the
+  // topic the practice sheet is already on
+  const taughtTopic = plan.mode === 'teach' ? plan.courses.find((c) => c.next)?.next?.step.t ?? null : null;
+  const weak = plan.weak.filter((x) => x.topic !== taughtTopic);
+  const w = weak.filter((x) => x.subject === (plan.courses[0]?.subject ?? x.subject)).slice(0, 2);
+  const warm = w.length ? w : weak.slice(0, 1);
   if (warm.length) {
     await sheet('warmup', 'auto', 'Warm-up — recent mistakes', warm.map((x) => x.topic).join(', '), warm.map((x) => x.topic).join(' and '), warm[0].subject,
       { topics: warm.map((x) => x.topic), count: WARMUP_COUNT, title: 'Warm-up' });

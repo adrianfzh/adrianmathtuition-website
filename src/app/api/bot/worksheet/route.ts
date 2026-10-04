@@ -213,7 +213,8 @@ export async function POST(req: NextRequest) {
   let skillsOut: { covered: { name: string; n: number }[]; empty: string[]; skipped: string[]; dropped: string[]; unfiled: number } | null = null;
   // several topics: their skill lists stacked in topic order, links merged
   let filing: Awaited<ReturnType<typeof loadSkillFiling>> | null = null;
-  if (!band) {
+  const narrowing = Array.isArray(body.skipSkills) && body.skipSkills.length > 0;
+  if (!band || narrowing) {
     const ids = pool.items.map((q) => q.id);
     const per = await Promise.all(topics.map((t) => loadSkillFiling(supa, levelKey, t, ids)));
     filing = { skills: [], linksByQuestion: {} };
@@ -224,7 +225,12 @@ export async function POST(req: NextRequest) {
   }
   lap('skills');
   const { kept: skills, dropped } = filing ? dropSkills(filing.skills, body.skipSkills) : { kept: [], dropped: [] };
-  const bySkill = filing && skills.length
+  // A band AND some skills skipped ("harder sine rule", the Next lesson worksheet box,
+  // 5 Oct 2026): the band draws only from questions filed under the kept skills.
+  const bandPool = band && narrowing && filing && skills.length
+    ? pool.items.filter((q) => (filing!.linksByQuestion[q.id] ?? []).some((id) => skills.some((s) => s.id === id)))
+    : pool.items;
+  const bySkill = !band && filing && skills.length
     ? pickBySkill(pool.items.map((q) => ({ ...q, skills: filing.linksByQuestion[q.id] ?? [] })), skills, count, { seed })
     : null;
   if (bySkill && !bySkill.unfiled && bySkill.items.length) {
@@ -238,7 +244,7 @@ export async function POST(req: NextRequest) {
       unfiled: bySkill.unfiledCount,
     };
   } else {
-    ({ items: picked, bandFallback } = applyBand(pool.items, band, count, (items, n) => dailyDraw(items, seed, n)));
+    ({ items: picked, bandFallback } = applyBand(bandPool.length ? bandPool : pool.items, band, count, (items, n) => dailyDraw(items, seed, n)));
   }
   const title = worksheetTitle(cfg.label, topic);
 
