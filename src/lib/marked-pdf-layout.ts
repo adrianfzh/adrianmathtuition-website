@@ -28,8 +28,14 @@ export const stripHeight = (pageWidth: number) => Math.max(34, Math.round(pageWi
 // guess-sum means a topical practice and gets clean pages with no header. The
 // "out of" box doubles as the manual override: type the total to force the strip
 // on anything. Both PDF routes and the ✏️ Annotate flatten share this gate.
+//
+// 5 Oct 2026: the bot now RECOGNISES a paper before it reads the name — its printed
+// syllabus code, or the stored/bank paper its questions matched — and stamps
+// 'identified' (the SEAB total for that paper) or 'bank' (the matched paper's banked
+// marks). Both are exam papers, above the name registry in the bot's order of trust,
+// so they get the strip too. 'cover' stays out, as before (see mark-triage.ts).
 export function shouldStampPaperTotal(maxSource: string | null | undefined): boolean {
-  return maxSource === 'registry' || maxSource === 'override';
+  return maxSource === 'registry' || maxSource === 'override' || maxSource === 'identified' || maxSource === 'bank';
 }
 
 // Paper total, drawn into that strip. It sits on the LEFT and is labelled, because the
