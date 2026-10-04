@@ -76,10 +76,18 @@ describe('planSplit — where the book is cut', () => {
 
 describe('partFileName — every level reads back as itself (30 Sep 2026)', () => {
   const LEVELS = ['AM', 'EM', 'EM_NA', 'AM_NA', 'S1', 'S2', 'S1_NA', 'S2_NA', 'S1_NT', 'S2_NT', 'S3_EM', 'S3_AM', 'S3_EM_NA', 'S3_EM_NT', 'S3_AM_NA',
-    'JC1', 'JC2', 'JC2_H1', 'BIO', 'CHEM', 'PHYS', 'S3_BIO', 'S3_CHEM', 'S3_PHYS', 'CS_CHEM', 'CS_PHYS', 'CS_BIO', 'CS_CHEM_NA', 'CS_PHYS_NA', 'CS_BIO_NA'];
+    'JC1', 'JC2', 'JC2_H1', 'BIO', 'CHEM', 'PHYS', 'S3_BIO', 'S3_CHEM', 'S3_PHYS', 'CS_CHEM', 'CS_PHYS', 'CS_BIO', 'CS_CHEM_NA', 'CS_PHYS_NA', 'CS_BIO_NA',
+    'HIST', 'HIST_E', 'GEOG', 'GEOG_E', 'SS'];
   it.each(LEVELS)('%s', (level) => {
     const name = partFileName({ level, year: 2023, school: 'Dunearn', examType: 'Prelim' }, { paper: 2, year: 2023 });
     expect(parseSourceFilename(name)).toMatchObject({ ok: true, level, school: 'Dunearn', year: 2023, paper: 'p2' });
+  });
+});
+
+describe('partFileName — a humanities national paper reads back (5 Oct 2026)', () => {
+  it.each([['HIST', 'history'], ['HIST_E', 'history'], ['GEOG', 'geography'], ['GEOG_E', 'geography'], ['SS', 'social_studies']])('%s', (level, subject) => {
+    const name = partFileName({ level, year: 2025, school: 'GCE', examType: 'GCE' }, { paper: 2, year: 2025 });
+    expect(parseSourceFilename(name)).toMatchObject({ ok: true, level, subject, school: 'GCE', examType: 'GCE', year: 2025, paper: 'p2' });
   });
 });
 

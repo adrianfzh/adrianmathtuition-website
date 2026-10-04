@@ -18,6 +18,10 @@ question to a student or to the public.
   | national papers — `school = 'GCE'` (GCE, TYS, SEAB specimen) | 1,875 | **grounding-only**: SEAB sells them and licenses the TYS publishers, so they are never served as new material |
   | our own (`ai_generated`, Set papers, twins) | 455 | ours; the long-run serving bank |
 
+- The humanities bank (`humanities_questions` + `humanities_source_sets`, 5 Oct 2026) holds
+  only national History / Geography / Social Studies TYS papers and the publisher's answers:
+  every row is `national = true`, grounding-only, read by the humanities marker as background
+  and never served (`SPEC-HUMANITIES.md` §4b).
 - Singapore's Copyright Act 2021 replaced closed "fair dealing" with open "fair
   use" judged on four factors (purpose and character; nature of the work; amount
   taken; effect on the market). "Research or study" keeps a safe harbour for a

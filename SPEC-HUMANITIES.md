@@ -118,6 +118,57 @@ levels off; consistency passes; the truth-free checks pass.
   shows the reader is steady and follows the scheme, not that the scheme matches a
   school's marking. Real student answers are the next test.
 
+## 4b. The humanities bank — the Ten-Year-Series papers as background (5 Oct 2026)
+
+Adrian: *"why don't bank the questions? we can bank them and still use it for background
+material for the marker … build this"*.
+
+**What is built.** The O-Level History, Geography and Social Studies TYS papers (2016–2025,
+70 papers + their publisher answers, split in `Dropbox/ScanSnap/Humanities TYS by year/`) go
+through the same extraction inbox and Fly lane as maths and science, into two tables in the
+MAIN project:
+
+- `humanities_source_sets` — material several questions share: a case study's Background
+  Information + Sources A–F (`set_key` "Section A"), or Section B's extracts.
+- `humanities_questions` — one row per question: `subject` (`history` · `geography` ·
+  `social_studies`), `level` (`HIST`, `HIST_E`, `GEOG`, `GEOG_E`, `SS`), `school`/`exam_type`
+  `GCE`, `year`, `paper`, `question_number`, `section`, `choice_group` (either/or), `skill`,
+  `topics` (closed list, `humanities_topics`), `question_text`, its own `sources`, `parts`,
+  `total_marks`, and the scheme on every leaf.
+- A source is `{label, kind, text, image, provenance}` — text transcribed; a cartoon, map,
+  photograph or graph cropped into the PRIVATE bucket `humanities_images` with every word in
+  it transcribed into `text`.
+- A scheme is `{marking: levels|points, model_answer, indicative[], skill_note, remark,
+  levels[]?, points[]?}` — the publisher's answer verbatim (`solution_source =
+  'publisher_tys'`, NOT SEAB's), the points it makes one per line, the publisher's
+  Skill/Remark lines. Level descriptors only where the solutions print them; never invented.
+- `national = true` on every row. **Grounding only — nothing here is served to a student**
+  (`docs/CONTENT-POLICY.md`). RLS on, no policies, service key only.
+- Written only through `bank_insert_humanities_paper(payload)` (checks topics, skills, marks
+  adding up, a scheme on every leaf, sources with text or an image — and writes nothing when
+  any check fails) and checked with `verify_humanities_paper(...)`. Migration
+  `migrations/humanities_bank.sql`; the rules are the law's §Humanities papers
+  (`extraction_worker_prompt` `exam-extraction`, v2026-10-05-humanities); the queue side is
+  `docs/EXTRACTION-QUEUE.md` §4b.
+- First paper banked 5 Oct 2026: Social Studies 2025 P1 — 7 questions, 50 marks, 2 source
+  sets (Sources A–F; Extracts 1–3), 2 images.
+
+**How the marker will read it — NOT wired yet (needs Adrian's bench first).** The marker today
+reads only the scheme the website sends with the question (`data/humanities/…`). The plan:
+
+1. For a question of skill S in subject X, the website picks 2–3 banked questions of the same
+   `skill` (same `subject`, newest `year` first) with their source set.
+2. They ride in the payload as `background.examples`: the question, the sources it uses (text
+   only), the publisher's `model_answer` and `remark`, labelled "a published model answer at
+   the top level — how this skill is answered, not this question's answer".
+3. The marker's prompt says what they are for: what a top-level answer to this skill looks
+   like, never a mark scheme for the student's question, never quoted to the student.
+4. Gate: the humanities bench (§4) run twice — without and with `background` — on the same
+   seeded answers. It switches on only if seeded accuracy and consistency do not fall, and
+   Adrian reads the disagreements.
+
+Nothing in `ai/humanities-marker.js` or `lib/humanities-*.ts` changed on 5 Oct 2026.
+
 ## 5. What stays out
 
 - No school paper served to a student (docs/CONTENT-POLICY.md).

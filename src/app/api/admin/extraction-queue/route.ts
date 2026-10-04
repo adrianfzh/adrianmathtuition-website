@@ -5,7 +5,7 @@
 // cloud session — needs only the admin bearer and curl, never the service key
 // or a bucket credential:
 //   GET  ?status=queued|claimed|done|flagged|held|all&limit=50 → the rows
-//   POST {action:'claim',   runner, subject?}                → one row (subject = math|biology|chemistry|physics|science; omitted = any) + a 1-hour signed download URL (204 when the queue is empty)
+//   POST {action:'claim',   runner, subject?}                → one row (subject = math|biology|chemistry|physics|science|history|geography|social_studies; omitted = any) + a 1-hour signed download URL (204 when the queue is empty)
 //   POST {action:'download', id}                             → a fresh signed URL for a row you hold
 //   POST {action:'finish',  id, runner, status, notes?}      → done | skipped | flagged | failed (claimant only)
 //   POST {action:'requeue', id, notes?}                      → back to 'queued', claim cleared (admin)

@@ -163,7 +163,8 @@ queued ──claim──▶ claimed ──finish──▶ done | skipped | flagg
 
 Columns added: `status`, `claimed_by`, `claimed_at`, `finished_at`, `inbox_path`,
 `exam_type`, `notes` — and **`subject`** since 26 Sep 2026 (`math` · `biology` ·
-`chemistry` · `physics` · `science`, parsed from the name's first token). Two functions:
+`chemistry` · `physics` · `science`, and since 5 Oct 2026 `history` · `geography` ·
+`social_studies`, parsed from the name). Two functions:
 
 - `claim_extraction_paper(p_runner text, p_lease_hours int = 3, p_subject text = null)` —
   one queued source, oldest first, `FOR UPDATE SKIP LOCKED`; a `claimed` row whose
@@ -326,6 +327,48 @@ What is NOT built: the automatic hand-off of a student's uploaded scheme from
 has to be dropped in by name. The science bank's `bank_topics` is a view over the live
 rows, so a level with no rows yet (`S3_*`) has no list: the section says to use the
 Sec 4 list for it.
+
+### 4b. Humanities through the one inbox (5 Oct 2026)
+
+Adrian: *"why don't bank the questions? we can bank them and still use it for background
+material for the marker … build this"*. History, Geography and Social Studies take the same
+door, the same queue and the same Fly lane; only the destination differs.
+
+1. **The name** (`parseSourceFilename`, tested). The split Ten-Year-Series files are named
+   right already — drop them in AS THEY ARE:
+   `Social Studies GCE 2025 Paper 1.pdf` → `SS`, `History GCE 2024 Paper 2.pdf` → `HIST`,
+   `History Elective GCE 2016 Paper 3.pdf` → `HIST_E`, `Geography GCE 2019 Paper 1.pdf` →
+   `GEOG`, `Geography Elective GCE 2025 Paper 2.pdf` → `GEOG_E`; subject `social_studies` /
+   `history` / `geography`; school `GCE`, exam `GCE`. The answers file `… Paper 1 Solutions.pdf`
+   (or `… MS.pdf`) is the scheme: kept for pairing, `status='skipped'`, never queued.
+   - A subject word anywhere decides it. The short codes `SS`, `HIST`, `GEOG` (and `HIST E`,
+     `GEOG E`) count only as the FIRST token, so a maths school ending in "SS" stays maths.
+   - Elective = the word Elective, "Combined Humanities", or an elective syllabus code
+     (2204, 2260–2265, 2267, 2272, 2273). Pure codes: 2174 History; 2236 / 2279 Geography.
+   - Refused with the reason: two subjects in one name; a Sec 1–3 humanities name (no level).
+   - A split book's parts are named `History GCE 2025 Paper 1.pdf` etc. (`levelNameTokens`,
+     round-trip tested).
+2. **The lane** (bot `worker/fly/extract.sh`): `history` / `geography` / `social_studies` are
+   claimable subjects; the run keeps the MAIN project's keys (no science swap), and the model
+   rule is unchanged (Sonnet 5.5 when a scheme file covers the paper — every TYS paper has its
+   Solutions file).
+3. **The destination**: `humanities_questions` + `humanities_source_sets` in the MAIN project,
+   images in the private bucket `humanities_images`, written only through
+   `bank_insert_humanities_paper` and checked by `verify_humanities_paper` → `SPEC-HUMANITIES.md`
+   §4b.
+4. **The law**: `exam-extraction` v2026-10-05-humanities (archive `exam-extraction-2026-10-05`)
+   has a pointer under *Claim a file* and a **§Humanities papers** section that replaces the
+   level / duplicate guard / process / images / verify sections for these subjects: what a row
+   is per subject, sources (text transcribed; pictures cropped AND their words transcribed;
+   provenance kept apart), the scheme verbatim as `publisher_tys`, the closed skill and topic
+   lists, either/or counting for the marks total, readability, and the finish line.
+
+**Test, 5 Oct 2026:** Social Studies 2025 P1 + its Solutions were filed by hand in the exact
+shape the watcher writes (the parser change was not on production yet), claimed through the
+production queue route with `subject:social_studies`, banked under the law by hand and
+finished `done`: 7 rows, 50 / 50 marks, 2 source sets (Sources A–F; Extracts 1–3), 2 images,
+`verify_humanities_paper` pass. The other 69 papers wait for the promote: once the parser is
+on production, drop the folders' files into the inbox as they are named.
 
 ## 5. Rollback
 

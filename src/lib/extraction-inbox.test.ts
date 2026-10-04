@@ -75,6 +75,39 @@ describe('parseSourceFilename — G2 A-Math and H1 (30 Sep 2026)', () => {
   });
 });
 
+describe('parseSourceFilename — the humanities (5 Oct 2026)', () => {
+  it('the Ten-Year-Series split names file as the national paper: school GCE, exam GCE', () => {
+    expect(parseSourceFilename('Social Studies GCE 2025 Paper 1.pdf')).toMatchObject({ ok: true, level: 'SS', subject: 'social_studies', year: 2025, school: 'GCE', examType: 'GCE', paper: 'p1' });
+    expect(parseSourceFilename('History GCE 2024 Paper 2.pdf')).toMatchObject({ ok: true, level: 'HIST', subject: 'history', school: 'GCE', paper: 'p2' });
+    expect(parseSourceFilename('History Elective GCE 2016 Paper 3.pdf')).toMatchObject({ ok: true, level: 'HIST_E', subject: 'history', school: 'GCE', paper: 'p3' });
+    expect(parseSourceFilename('Geography GCE 2019 Paper 1.pdf')).toMatchObject({ ok: true, level: 'GEOG', subject: 'geography', school: 'GCE', paper: 'p1' });
+    expect(parseSourceFilename('Geography Elective GCE 2025 Paper 2.pdf')).toMatchObject({ ok: true, level: 'GEOG_E', subject: 'geography', school: 'GCE', paper: 'p2' });
+  });
+  it('the scheme parses like its paper and reads as solutions, so the inbox keeps it for pairing', () => {
+    const name = 'Social Studies GCE 2025 Paper 1 Solutions.pdf';
+    expect(parseSourceFilename(name)).toMatchObject({ ok: true, level: 'SS', subject: 'social_studies', school: 'GCE', paper: 'p1' });
+    expect(libraryKindOf(name)).toBe('solutions');
+    expect(parseSourceFilename('HIST GCE 2025 Paper 1 MS.pdf')).toMatchObject({ ok: true, level: 'HIST', school: 'GCE', paper: 'p1' });
+  });
+  it('the short codes count as the first token only; an elective word or code makes the elective', () => {
+    expect(parseSourceFilename('SS GCE 2023 Paper 1.pdf')).toMatchObject({ ok: true, level: 'SS', school: 'GCE' });
+    expect(parseSourceFilename('HIST E GCE 2020 Paper 2.pdf')).toMatchObject({ ok: true, level: 'HIST_E', school: 'GCE' });
+    expect(parseSourceFilename('GEOG PRELIM 2024 Dunman High P1.pdf')).toMatchObject({ ok: true, level: 'GEOG', school: 'Dunman High', examType: 'Prelim' });
+    expect(parseSourceFilename('Combined Humanities Geography 2260/02 PRELIM 2024 Bedok View.pdf')).toMatchObject({ ok: true, level: 'GEOG_E', school: 'Bedok View' });
+    expect(parseSourceFilename('History 2174 PRELIM 2024 Bedok View P2.pdf')).toMatchObject({ ok: true, level: 'HIST', school: 'Bedok View', paper: 'p2' });
+  });
+  it('a maths or science name is never humanities, and two subjects or a lower-sec level are refused', () => {
+    expect(parseSourceFilename('EM PRELIM 2024 Bukit Merah SS P1.pdf')).toMatchObject({ ok: true, level: 'EM', subject: 'math' });
+    expect(parseSourceFilename('S2 SA2 2021 Clementi Town SS.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'math' });
+    expect(parseSourceFilename('History Geography GCE 2020 Paper 1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('two humanities') });
+    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('O-Level humanities') });
+  });
+  it('a humanities paper is never filed for the maths marker', () => {
+    const name = 'History GCE 2025 Paper 1.pdf';
+    expect(libraryRowFor(parseSourceFilename(name), name)).toMatchObject({ skip: expect.stringContaining('humanities') });
+  });
+});
+
 describe('parseSourceFilename — the science tokens (26 Sep 2026)', () => {
   it('a pure science at Sec 4: BIO / CHEM / PHY and their long forms, filed for the science bank', () => {
     expect(parseSourceFilename('BIO PRELIM 2018 West Spring P1.pdf')).toMatchObject({ ok: true, level: 'BIO', subject: 'biology', year: 2018, school: 'West Spring', examType: 'Prelim', paper: 'p1' });
