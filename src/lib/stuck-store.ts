@@ -7,7 +7,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { airtableRequestAll } from '@/lib/airtable';
 import { A_MATH_EXAM_TOPICS, E_MATH_EXAM_TOPICS, JC_TOPICS } from '@/lib/canonical-topics';
-import { parseAskTopic, subjectKey, type StuckSubject } from '@/lib/stuck-topics';
+import { isMath, isScience, parseAskTopic, subjectKey, type MathSubject, type StuckSubject } from '@/lib/stuck-topics';
 import { BASELINE_WEEKS, WEEK_DAYS, type AskEvent, type LossEvent, type StuckStudent } from '@/lib/stuck-picture';
 
 const DAY = 86_400_000;
@@ -30,12 +30,12 @@ export function isOwnAccount(name: string): boolean {
   return /^adrian\s+fong$/i.test(name.trim());
 }
 
-/** Airtable `Subjects` (multi-select) → subject keys. 'Math' / 'IP Math' at Sec 1–2 are the E Math family. */
-export function studentSubjects(subjects: unknown, level: string | null): StuckSubject[] {
-  const out = new Set<StuckSubject>();
+/** Airtable `Subjects` (multi-select) → subject keys. 'Math' / 'IP Math' at Sec 1–2 are the E Math family. Maths only — the field has no sciences. */
+export function studentSubjects(subjects: unknown, level: string | null): MathSubject[] {
+  const out = new Set<MathSubject>();
   for (const s of Array.isArray(subjects) ? subjects : []) {
     const k = subjectKey(String(s));
-    if (k) out.add(k);
+    if (isMath(k)) out.add(k);
   }
   if (!out.size && level && /^JC/.test(level)) out.add('H2');
   return [...out];
@@ -64,7 +64,8 @@ export function splitLabel(label: string | null | undefined): string[] {
   return parts.length ? parts : [''];
 }
 
-const MISTAKE_SUBJECTS = ['A Math', 'E Math', 'H2 Math'];
+// the sciences since 5 Oct 2026 — a science paper's lost marks file here too
+const MISTAKE_SUBJECTS = ['A Math', 'E Math', 'H2 Math', 'Physics', 'Chemistry', 'Biology'];
 
 export async function loadStuckInput(sb: SupabaseClient, now: Date, windowDays = WEEK_DAYS): Promise<StuckInput> {
   const since = new Date(now.getTime() - (windowDays * (BASELINE_WEEKS + 1) + 1) * DAY).toISOString();
@@ -97,15 +98,18 @@ export async function loadStuckInput(sb: SupabaseClient, now: Date, windowDays =
   try {
     const { data, error } = await sb
       .from('ask_skills')
-      .select('question_airtable_id, airtable_student_id, subject, topic, skill, subgroup_id, asked_at')
+      .select('question_airtable_id, airtable_student_id, subject, topic, skill, subgroup_id, bank, asked_at')
       .gte('asked_at', since)
       .not('airtable_student_id', 'is', null)
       .order('asked_at', { ascending: true })
       .limit(5000);
     if (error) throw new Error(error.message);
     const rows = (data ?? []) as Array<Record<string, unknown>>;
-    // ask_skills has no foreign key to subgroups, so the level is a second read
-    const sgIds = [...new Set(rows.map((r) => r.subgroup_id).filter((x): x is number => typeof x === 'number'))];
+    // ask_skills has no foreign key to subgroups, so the level is a second read.
+    // A science row (bank='science', 5 Oct 2026) points into the SCIENCE
+    // project's tree — its subject is on the row, never looked up here.
+    const isMathRow = (r: Record<string, unknown>) => (r.bank ?? 'math') === 'math';
+    const sgIds = [...new Set(rows.filter(isMathRow).map((r) => r.subgroup_id).filter((x): x is number => typeof x === 'number'))];
     const sgLevel = new Map<number, string>();
     if (sgIds.length) {
       const { data: sgs } = await sb.from('subgroups').select('id, level').in('id', sgIds);
@@ -113,7 +117,7 @@ export async function loadStuckInput(sb: SupabaseClient, now: Date, windowDays =
     }
     for (const r of rows) {
       if (r.question_airtable_id) filedQuestionIds.add(String(r.question_airtable_id));
-      const lv = typeof r.subgroup_id === 'number' ? sgLevel.get(r.subgroup_id) : undefined;
+      const lv = isMathRow(r) && typeof r.subgroup_id === 'number' ? sgLevel.get(r.subgroup_id) : undefined;
       const subject = subjectKey(r.subject as string) ?? subjectKey(lv) ?? null;
       const topic = typeof r.topic === 'string' ? r.topic : '';
       if (!subject || !topic) continue;
@@ -131,8 +135,9 @@ export async function loadStuckInput(sb: SupabaseClient, now: Date, windowDays =
 
   // ── asks the bot logged but did not file (topic only) ──
   try {
-    const formula = `AND(IS_AFTER({Timestamp}, '${since}'), {Topic}!='', {Subject}='Math')`;
-    const q = `?filterByFormula=${encodeURIComponent(formula)}&` + ['Student', 'Topic', 'Timestamp'].map((f, i) => `fields%5B${i}%5D=${encodeURIComponent(f)}`).join('&');
+    // science rows carry "CHEM: Electrolysis" since 5 Oct 2026 (bot lib/ask-science-topic.js)
+    const formula = `AND(IS_AFTER({Timestamp}, '${since}'), {Topic}!='', OR({Subject}='Math', {Subject}='Physics', {Subject}='Chemistry', {Subject}='Biology'))`;
+    const q = `?filterByFormula=${encodeURIComponent(formula)}&` + ['Student', 'Topic', 'Timestamp', 'Subject'].map((f, i) => `fields%5B${i}%5D=${encodeURIComponent(f)}`).join('&');
     const { records } = await airtableRequestAll('Questions', q);
     let unsure = 0;
     for (const r of records as Array<{ id: string; fields: Record<string, unknown> }>) {
@@ -141,6 +146,10 @@ export async function loadStuckInput(sb: SupabaseClient, now: Date, windowDays =
       if (!sid || !byId.has(sid)) continue;
       const parsed = parseAskTopic(r.fields['Topic'] as string);
       if (!parsed) continue;
+      const rowSubject = subjectKey(r.fields['Subject'] as string);
+      const science = !!rowSubject && isScience(rowSubject);
+      // a science row counts only with a science prefix of its own subject; a maths row never takes one
+      if (science ? parsed.subject !== rowSubject : (parsed.subject && isScience(parsed.subject))) continue;
       const subject = parsed.subject ?? askSubjectFor(parsed.topic, byId.get(sid));
       if (!subject) { unsure++; continue; }
       asks.push({ studentId: sid, at: String(r.fields['Timestamp'] ?? ''), subject, topic: parsed.topic, skill: null, subgroupId: null });

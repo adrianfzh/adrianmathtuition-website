@@ -13,7 +13,7 @@
 // stuck-picture.test.ts. The route (/api/cron/stuck-weekly) loads the events,
 // calls this, prepares the material and words the message.
 
-import { areaOf, markerTopics, SUBJECT_LABEL, type StuckSubject } from './stuck-topics';
+import { areaOf, isScience, markerTopics, SUBJECT_LABEL, type StuckSubject } from './stuck-topics';
 
 export const WEEK_DAYS = 7;
 export const BASELINE_WEEKS = 4;
@@ -303,12 +303,18 @@ export function stuckOn(a: Pick<AreaStat, 'askStudents' | 'lossCounts'>): string
   return [...new Set([...a.askStudents, ...lost])].sort();
 }
 
-/** The top gaps (up to MAX_MATERIALS, one per area per group) → what to prepare. */
+/**
+ * The top gaps (up to MAX_MATERIALS, one per area per group) → what to prepare.
+ * Maths only: there is no science sheet path yet (the /ws worksheet route draws
+ * from the maths bank), so a science gap is named in the message as "no science
+ * sheet yet" (scienceGapsWithoutSheet) and nothing is invented for it.
+ */
 export function planMaterials(p: StuckPicture, max = MAX_MATERIALS): MaterialPlan[] {
   const out: MaterialPlan[] = [];
   const groups = new Map(p.groups.map((g) => [g.key, g]));
   for (const gap of p.gaps) {
     if (out.length >= max) break;
+    if (isScience(gap.subject)) continue;
     const g = groups.get(gap.groupKey);
     if (!g) continue;
     const topics = gap.topics.slice(0, 2).filter((t, i) => i === 0 || t.n >= Math.max(2, gap.topics[0].n / 2)).map((t) => t.name);
@@ -322,6 +328,11 @@ export function planMaterials(p: StuckPicture, max = MAX_MATERIALS): MaterialPla
     });
   }
   return out;
+}
+
+/** The week's science gaps — no sheet can be drawn for them yet; the message says so. */
+export function scienceGapsWithoutSheet(p: StuckPicture): StuckPicture['gaps'] {
+  return p.gaps.filter((g) => isScience(g.subject));
 }
 
 // ── the twins lanes' focus ──────────────────────────────────────────────────
@@ -447,6 +458,10 @@ export function stuckMessage(p: StuckPicture, ready: PreparedMaterial[], opts: {
       lines.push(`${m.title ?? m.area} — ${plural(m.count ?? 0, 'question')} from the bank, for ${m.groupLabel}.`);
       lines.push(`Say "send ${m.slug}" for the ${plural(m.stuckStudents.length, 'student')} stuck on it, or "send ${m.slug} to all" for all ${m.groupStudents.length} in ${m.groupLabel}.`);
     }
+  }
+  const sciGaps = scienceGapsWithoutSheet(p);
+  if (sciGaps.length) {
+    lines.push('', `No science sheet yet, so nothing prepared for ${sciGaps.slice(0, 3).map((g) => `${g.groupLabel} ${lc(g.area)}`).join(', ')}.`);
   }
   const failed = ready.filter((m) => !m.ok);
   if (failed.length) lines.push('', `Could not prepare: ${failed.map((m) => `${m.area} (${m.error ?? 'no questions'})`).join('; ')}.`);

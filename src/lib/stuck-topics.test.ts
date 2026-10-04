@@ -9,7 +9,11 @@ describe('subjectKey', () => {
     expect(subjectKey('S2')).toBe('EM');
     expect(subjectKey('H2 Math')).toBe('H2');
     expect(subjectKey('JC2')).toBe('H2');
-    expect(subjectKey('Chemistry')).toBeNull();
+    expect(subjectKey('Chemistry')).toBe('CHEM');
+    expect(subjectKey('Physics')).toBe('PHY');
+    expect(subjectKey('BIO')).toBe('BIO');
+    expect(subjectKey('CS_CHEM')).toBe('CHEM');
+    expect(subjectKey('Science')).toBeNull();
     expect(subjectKey(null)).toBeNull();
   });
 });
@@ -18,6 +22,9 @@ describe('parseAskTopic', () => {
   it('splits the bot\'s "AM: …" prefix', () => {
     expect(parseAskTopic('AM: Trigonometry (Graphs)')).toEqual({ subject: 'AM', topic: 'Trigonometry (Graphs)' });
     expect(parseAskTopic('Vectors')).toEqual({ subject: null, topic: 'Vectors' });
+    // the science label the bot writes since 5 Oct 2026 (lib/ask-science-topic.js)
+    expect(parseAskTopic('CHEM: Electrolysis')).toEqual({ subject: 'CHEM', topic: 'Electrolysis' });
+    expect(parseAskTopic('PHY: D.C. Circuits')).toEqual({ subject: 'PHY', topic: 'D.C. Circuits' });
     expect(parseAskTopic('  ')).toBeNull();
   });
 });
@@ -31,6 +38,11 @@ describe('areaOf', () => {
     expect(areaOf('EM', 'Financial Math (Interest)')).toBe('Money');
     expect(areaOf('H2', 'Distributions (Normal)')).toBe('Distributions');
     expect(areaOf('H2', 'APGP')).toBe('Sequences and Series');
+    expect(areaOf('CHEM', 'Electrolysis')).toBe('Electrolysis');
+    expect(areaOf('CHEM', 'Ionic Bonding')).toBe('Chemical Bonding');
+    expect(areaOf('CHEM', 'Alcohols and Carboxylic Acids')).toBe('Organic Chemistry');
+    expect(areaOf('PHY', 'D.C. Circuits')).toBe('Electricity');
+    expect(areaOf('BIO', 'Sexual Reproduction in Plants')).toBe('Reproduction');
   });
 });
 
@@ -58,6 +70,34 @@ describe('markerTopics — the marker\'s own words', () => {
     ['EM', 'Graphs of cubic functions — solving an inequality by drawing a straight line', ['Graphs of Functions']],
     ['H2', 'Differential equations — substitution and separation of variables', ['Integration (Differential Equations)']],
     ['H2', 'Hypothesis testing: z-test on a mean using the Central Limit Theorem', ['Hypothesis Testing']],
+    // science: the marker's words (real notebook_mistakes topics) → the science bank's tree topics
+    ['CHEM', 'Electrolysis', ['Electrolysis']],
+    ['CHEM', 'Electrochemistry (simple cells)', ['Electrolysis']],
+    ['CHEM', 'Speed of reaction; Acids and bases', ['Rate of Reaction', 'Acids and Bases']],
+    ['CHEM', 'Mole concept / Redox', ['Chemical Calculations', 'Oxidation and Reduction']],
+    ['CHEM', 'Organic chemistry — alcohols and carboxylic acids', ['Alcohols and Carboxylic Acids']],
+    ['CHEM', 'Organic chemistry — fermentation; Mole concept', ['Alcohols and Carboxylic Acids', 'Chemical Calculations']],
+    ['CHEM', 'Air and the atmosphere (carbon cycle)', ['Atmosphere and Environment']],
+    ['CHEM', 'Energy changes — bond energies', ['Energy from Chemicals']],
+    ['CHEM', 'Qualitative analysis / Salts', ['Salts']],
+    ['CHEM', 'Periodic table: Group 1 (alkali metals)', ['The Periodic Table']],
+    ['CHEM', 'Atomic structure / Structure and bonding', ['Atomic Structure', 'Covalent Bonding and Structure']],
+    ['CHEM', 'Separation techniques: paper chromatography', ['Methods of Purification']],
+    ['CHEM', 'Industrial chemistry (Haber process), air and environment', ['Salts', 'Atmosphere and Environment']],
+    ['PHY', 'Electricity', ['Current of Electricity']],
+    ['PHY', 'Light / Electromagnetic spectrum', ['Light', 'Electromagnetic Spectrum']],
+    ['PHY', 'Thermal properties', ['Thermal Properties of Matter']],
+    ['PHY', 'Magnetism', ['Magnetism']],
+    ['PHY', 'Kinematics; Energy', ['Kinematics', 'Energy Work and Power']],
+    ['BIO', 'Inheritance — monohybrid ratios and chance', ['Inheritance']],
+    ['BIO', 'Inheritance (protein synthesis and gene mutation)', ['Inheritance', 'Molecular Genetics']],
+    ['BIO', 'Transport in flowering plants — transpiration and stomata', ['Transport in Plants']],
+    ['BIO', 'Immunity (vaccination, active and passive immunity) and antibiotics', ['Microorganisms and Biotechnology']],
+    ['BIO', 'Excretion — urine composition and concentration', ['Excretion']],
+    ['BIO', 'Respiration and gas exchange — humans vs plants', ['Respiration and Gas Exchange']],
+    ['BIO', 'Enzymes — effect of temperature, pH and specificity', ['Enzymes']],
+    ['BIO', 'Ecology (energy flow and pyramids of biomass)', ['Organisms and their Environment']],
+    ['BIO', 'Human reproduction — reproductive organs, contraception, prostate', ['Sexual Reproduction in Humans']],
   ];
   for (const [s, text, want] of cases) {
     it(`${s}: ${text}`, () => expect(markerTopics(s, text)).toEqual(want));

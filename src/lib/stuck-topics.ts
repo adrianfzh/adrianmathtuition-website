@@ -16,8 +16,26 @@
 // purpose: free, deterministic, and a wrong one is one line to fix. A text no
 // rule knows maps to nothing and is COUNTED (the report says how many), never
 // guessed.
+//
+// SCIENCE since 5 Oct 2026 (Adrian: "yes" to filing science asks under a topic
+// too): the bot now files a science ask under the SCIENCE bank's tree topic
+// (`ask_skills` bank='science', topic = the tree's topic verbatim, e.g.
+// "Electrolysis"; the Questions row's Topic reads "CHEM: Electrolysis"), and the
+// marker's science words ("Speed of reaction; Acids and bases") map to the
+// same tree topics through the PHY / CHEM / BIO rules below.
 
-export type StuckSubject = 'AM' | 'EM' | 'H2';
+export type MathSubject = 'AM' | 'EM' | 'H2';
+export type ScienceSubject = 'PHY' | 'CHEM' | 'BIO';
+export type StuckSubject = MathSubject | ScienceSubject;
+
+export const MATH_SUBJECTS: readonly MathSubject[] = ['AM', 'EM', 'H2'];
+export function isMath(subject: StuckSubject | null | undefined): subject is MathSubject {
+  return !!subject && (MATH_SUBJECTS as readonly string[]).includes(subject);
+}
+export const SCIENCE_SUBJECTS: readonly StuckSubject[] = ['PHY', 'CHEM', 'BIO'];
+export function isScience(subject: StuckSubject): boolean {
+  return SCIENCE_SUBJECTS.includes(subject);
+}
 
 /** 'A Math' / 'AM' / 'S3_AM' / 'E Math' / 'EM' / 'S1' / 'H2 Math' / 'JC2' … → the subject key, or null. */
 export function subjectKey(raw: string | null | undefined): StuckSubject | null {
@@ -26,10 +44,16 @@ export function subjectKey(raw: string | null | undefined): StuckSubject | null 
   if (s === 'AM' || s === 'S3_AM' || s === 'S4_AM' || s === 'A_MATH' || s === 'A_MATHS' || s === 'ADDITIONAL_MATH') return 'AM';
   if (s === 'EM' || s === 'S3_EM' || s === 'S4_EM' || s === 'E_MATH' || s === 'E_MATHS' || s === 'EM_NA' || /^S[12](_NA)?$/.test(s) || s === 'MATH' || s === 'IP_MATH') return 'EM';
   if (s === 'H2' || s === 'H2_MATH' || s === 'JC' || s === 'JC1' || s === 'JC2' || s === 'H1_MATH') return 'H2';
+  // the sciences: the Airtable / Notebook name, the bank's tree level, the Combined Science levels
+  if (s === 'PHYSICS' || s === 'PHY' || s === 'PHYS' || s === 'PURE_PHYSICS' || s === 'CS_PHYS' || s === 'CS_PHY') return 'PHY';
+  if (s === 'CHEMISTRY' || s === 'CHEM' || s === 'PURE_CHEMISTRY' || s === 'CS_CHEM') return 'CHEM';
+  if (s === 'BIOLOGY' || s === 'BIO' || s === 'PURE_BIOLOGY' || s === 'CS_BIO') return 'BIO';
   return null;
 }
 
-export const SUBJECT_LABEL: Record<StuckSubject, string> = { AM: 'A Math', EM: 'E Math', H2: 'H2 Math' };
+export const SUBJECT_LABEL: Record<StuckSubject, string> = {
+  AM: 'A Math', EM: 'E Math', H2: 'H2 Math', PHY: 'Physics', CHEM: 'Chemistry', BIO: 'Biology',
+};
 
 /**
  * An Airtable `Questions.Topic` value → {subject?, topic}. The bot writes
@@ -38,7 +62,7 @@ export const SUBJECT_LABEL: Record<StuckSubject, string> = { AM: 'A Math', EM: '
 export function parseAskTopic(raw: string | null | undefined): { subject: StuckSubject | null; topic: string } | null {
   const s = String(raw ?? '').trim();
   if (!s) return null;
-  const m = s.match(/^(AM|EM|H2|JC|S1|S2|S3_AM|S3_EM)\s*:\s*(.+)$/i);
+  const m = s.match(/^(AM|EM|H2|JC|S1|S2|S3_AM|S3_EM|PHY|CHEM|BIO)\s*:\s*(.+)$/i);
   if (m) return { subject: subjectKey(m[1]), topic: m[2].trim() };
   return { subject: null, topic: s };
 }
@@ -72,6 +96,22 @@ const AREA_MERGE: Record<StuckSubject, Record<string, string>> = {
     'Map Scales': 'Map Scales', 'Geometrical Constructions': 'Constructions and Bearings',
   },
   H2: { 'APGP': 'Sequences and Series', 'Series and Sequences': 'Sequences and Series' },
+  // science: the bank tree's topics, merged where a school teaches them as one chapter
+  PHY: {
+    'Current of Electricity': 'Electricity', 'D.C. Circuits': 'Electricity', 'Practical Electricity': 'Electricity',
+    'Magnetism': 'Magnetism and Electromagnetism', 'Electromagnetism': 'Magnetism and Electromagnetism',
+    'Electromagnetic Induction': 'Magnetism and Electromagnetism',
+  },
+  CHEM: {
+    'Ionic Bonding': 'Chemical Bonding', 'Covalent Bonding and Structure': 'Chemical Bonding',
+    'Hydrocarbons and Fuels': 'Organic Chemistry', 'Alcohols and Carboxylic Acids': 'Organic Chemistry', 'Macromolecules': 'Organic Chemistry',
+    'Acids and Bases': 'Acids, Bases and Salts', 'Salts': 'Acids, Bases and Salts',
+  },
+  BIO: {
+    'Sexual Reproduction in Humans': 'Reproduction', 'Sexual Reproduction in Plants': 'Reproduction',
+    'Coordination and Response (Hormones)': 'Coordination and Response', 'Coordination and Response (Nervous System)': 'Coordination and Response',
+    'The Eye': 'Coordination and Response',
+  },
 };
 
 /** The family prefix that is one area for A Math / H2 ("Trigonometry (Graphs)" → "Trigonometry"). */
@@ -79,6 +119,7 @@ const FAMILY_AREAS: Record<StuckSubject, string[]> = {
   AM: ['Trigonometry', 'Differentiation', 'Integration'],
   EM: [],
   H2: ['Differentiation', 'Integration', 'Distributions'],
+  PHY: [], CHEM: [], BIO: [],
 };
 
 export function areaOf(subject: StuckSubject, topic: string): string {
@@ -209,7 +250,85 @@ const H2_RULES: Rule[] = [
   { re: /systems of linear equations|^equations/, topic: 'Equations' },
 ];
 
-const RULES: Record<StuckSubject, Rule[]> = { AM: AM_RULES, EM: EM_RULES, H2: H2_RULES };
+// ── science: the marker's words → the science bank's tree topics ──
+const PHY_RULES: Rule[] = [
+  { re: /radioactiv|half-life|alpha|beta|gamma|nuclear|isotope/, topic: 'Radioactivity' },
+  { re: /electromagnetic spectrum|e\.?m\.? spectrum|x-rays?|microwaves?|infra-?red|ultraviolet|radio waves/, topic: 'Electromagnetic Spectrum' },
+  { re: /electromagnetic induction|induced (e\.?m\.?f|current)|faraday|lenz|transformer|generator|dynamo/, topic: 'Electromagnetic Induction' },
+  { re: /electromagnet|left-hand rule|motor|force on a (current|conductor)|solenoid/, topic: 'Electromagnetism', unless: /spectrum|induc/ },
+  { re: /magnet/, topic: 'Magnetism', unless: /electromagnet/ },
+  { re: /static|electrostatic|charging by|earthing|electric field/, topic: 'Static Electricity' },
+  { re: /practical electricity|mains|fuse|earth wire|kilowatt-?hour|kwh|cost of electricity|electrical safety|power rating/, topic: 'Practical Electricity' },
+  { re: /circuit|series and parallel|potential divider|thermistor|\bldr\b|resistors? in/, topic: 'D.C. Circuits' },
+  { re: /electric|current|resistance|ohm|voltage|potential difference|e\.?m\.?f/, topic: 'Current of Electricity', generic: true },
+  { re: /lens|refraction|reflection|total internal|critical angle|ray diagram|light/, topic: 'Light' },
+  { re: /sound|echo|ultrasound|pitch|loudness/, topic: 'Sound' },
+  { re: /waves?\b|wavelength|frequency|amplitude|ripple/, topic: 'General Wave Properties' },
+  { re: /kinematic|velocity|acceleration|speed-time|displacement|free fall|terminal velocity/, topic: 'Kinematics' },
+  { re: /moments?\b|turning effect|centre of gravity|stability|lever/, topic: 'Turning Effect of Forces' },
+  { re: /pressure|manometer|barometer|hydraulic/, topic: 'Pressure' },
+  { re: /density|mass and weight|mass, weight|weight|gravitational field strength/, topic: 'Mass Weight and Density' },
+  { re: /work done|energy|power\b|efficiency|kinetic energy|potential energy/, topic: 'Energy Work and Power' },
+  { re: /forces?|newton|friction|resultant|momentum|inertia/, topic: 'Forces' },
+  { re: /kinetic (particle|model)|brownian|gas laws?|boyle/, topic: 'Kinetic Particle Theory' },
+  { re: /thermal|heat|temperature|conduction|convection|radiation|latent|specific heat|melting|boiling|evaporation|cooling curve/, topic: 'Thermal Properties of Matter' },
+  { re: /measurement|vernier|micrometer|precision|scalars?|vectors?|si units?|prefix/, topic: 'Measurement' },
+];
+
+const CHEM_RULES: Rule[] = [
+  { re: /electroly|electrolysis|electrode|electroplat|electrochem|simple cells?|fuel cells?/, topic: 'Electrolysis' },
+  { re: /redox|oxidation|reduction|oxidising|reducing agent|oxidation state/, topic: 'Oxidation and Reduction' },
+  { re: /rates? of reaction|speed of reaction|reaction rate|collision theory|catalys/, topic: 'Rate of Reaction' },
+  { re: /energy (changes?|from chemicals|profile)|energetics|enthalpy|exotherm|endotherm|bond energ/, topic: 'Energy from Chemicals' },
+  { re: /mole concept|moles?\b|stoichiometr|chemical calculations?|reacting mass|limiting|titration|empirical|percentage yield|purity calc|concentration/, topic: 'Chemical Calculations' },
+  { re: /formulae and equations|chemical equations?|ionic equations?|balancing/, topic: 'Chemical Formulae and Equations' },
+  { re: /qualitative analysis|cation|anion|gas tests?|tests? for (ions|gases)|precipitat|haber|ammonia|fertilis|salt preparation|\bsalts?\b|solubility/, topic: 'Salts' },
+  { re: /acids?|bases?\b|alkali|\bph\b|neutralis|oxides/, topic: 'Acids and Bases' },
+  { re: /periodic table|group (1|17|18|i|vii|0)|halogen|alkali metals|noble gas|transition (metal|element)/, topic: 'The Periodic Table' },
+  { re: /metals?\b|reactivity series|extraction|rust|corrosion|alloy/, topic: 'Metals', unless: /alkali metals|transition metals?/ },
+  { re: /ionic bond|ionic compound|ionic lattice/, topic: 'Ionic Bonding' },
+  { re: /covalent|giant (covalent|molecular)|simple molecular|intermolecular|structure and bonding|chemical bonding|bonding/, topic: 'Covalent Bonding and Structure' },
+  { re: /atomic structure|isotope|electronic configuration|protons?|neutrons?|electrons? (shell|arrangement)/, topic: 'Atomic Structure' },
+  { re: /polymer|macromolecul|nylon|terylene|plastic|silicone|condensation polymer|addition polymer/, topic: 'Macromolecules' },
+  { re: /alcohol|ethanol|fermentation|carboxylic|ester/, topic: 'Alcohols and Carboxylic Acids' },
+  { re: /alkanes?|alkenes?|crude oil|cracking|hydrocarbon|fuels?|homologous|isomer|unsaturat/, topic: 'Hydrocarbons and Fuels' },
+  { re: /organic/, topic: 'Hydrocarbons and Fuels', generic: true },
+  { re: /air\b|atmosphere|pollut|carbon cycle|greenhouse|global warming|ozone|acid rain|environment|combustion/, topic: 'Atmosphere and Environment' },
+  { re: /separation|chromatograph|purification|distillation|filtration|crystallis|purity/, topic: 'Methods of Purification' },
+  { re: /kinetic particle|diffusion|states of matter|changes of state/, topic: 'Kinetic Particle Theory' },
+  { re: /elements, compounds|compounds and mixtures|mixtures/, topic: 'Elements, Compounds and Mixtures' },
+  { re: /measurement|apparatus/, topic: 'Measurement' },
+];
+
+const BIO_RULES: Rule[] = [
+  { re: /immun|antibod|vaccin|antibiotic|pathogen|disease|micro-?organism|bacteri|virus|biotechnolog|genetic engineering/, topic: 'Microorganisms and Biotechnology', unless: /coronary heart disease/ },
+  { re: /protein synthesis|\bdna\b|gene mutation|molecular genetics|mutation/, topic: 'Molecular Genetics' },
+  { re: /inheritance|monohybrid|genetic cross|alleles?|genotype|phenotype|pedigree|dominant|recessive/, topic: 'Inheritance' },
+  { re: /variation|natural selection|evolution|selection/, topic: 'Variation and Selection' },
+  { re: /cell division|mitosis|meiosis|asexual/, topic: 'Cell Division' },
+  { re: /human reproduction|reproductive|contracepti|menstrua|pregnan|placenta|prostate|sexual reproduction in humans/, topic: 'Sexual Reproduction in Humans' },
+  { re: /pollinat|plant reproduction|\bflowers?\b|seed dispersal|germination|sexual reproduction in plants/, topic: 'Sexual Reproduction in Plants' },
+  { re: /reproduction/, topic: 'Sexual Reproduction in Humans', generic: true },
+  { re: /\beye\b|retina|pupil|accommodation/, topic: 'The Eye' },
+  { re: /nervous|neuron|reflex|synapse/, topic: 'Coordination and Response (Nervous System)' },
+  { re: /hormon|insulin|glucagon|adrenaline|endocrine/, topic: 'Coordination and Response (Hormones)' },
+  { re: /homeostasis|temperature regulation|blood glucose|negative feedback/, topic: 'Homeostasis' },
+  { re: /excretion|kidney|nephron|urine|dialysis/, topic: 'Excretion' },
+  { re: /respiration|gas exchange|alveol|anaerobic|aerobic|breathing/, topic: 'Respiration and Gas Exchange' },
+  { re: /transpiration|transport in (flowering )?plants|xylem|phloem|stomata|translocation|wilting|plant transport/, topic: 'Transport in Plants' },
+  { re: /transport in humans|heart|blood|circulat|arter|vein|capillar/, topic: 'Transport in Humans' },
+  { re: /\btransport\b/, topic: 'Transport in Humans', unless: /active transport|plant/ },
+  { re: /photosynthesis|nutrition in plants|plant nutrition|leaf (structure|adaptation)|chlorophyll|limiting factor/, topic: 'Nutrition in Plants' },
+  { re: /digestion|nutrition in humans|diet|peristalsis|absorption|alimentary|small intestine|\bnutrition\b/, topic: 'Nutrition in Humans' },
+  { re: /enzyme/, topic: 'Enzymes' },
+  { re: /osmosis|diffusion|active transport|movement of substances|water potential/, topic: 'Movement of Substances' },
+  { re: /biological molecules|food tests?|benedict|biuret|carbohydrate|protein|lipid|fats?\b/, topic: 'Biological Molecules' },
+  { re: /impact of humans|deforestation|conservation|pollution|biomagnification|eutrophication/, topic: 'Impact of Humans on the Environment' },
+  { re: /ecology|ecosystem|food (chain|web)|energy flow|pyramids? of|nitrogen cycle|carbon cycle|environment/, topic: 'Organisms and their Environment' },
+  { re: /cell structure|organelle|specialised cells?|\bcells?\b|tissue|organisation/, topic: 'Cell Structure and Organisation' },
+];
+
+const RULES: Record<StuckSubject, Rule[]> = { AM: AM_RULES, EM: EM_RULES, H2: H2_RULES, PHY: PHY_RULES, CHEM: CHEM_RULES, BIO: BIO_RULES };
 
 /** The most canonical topics one marker text yields (first mentioned first). */
 export const MAX_TOPICS_PER_TEXT = 2;
@@ -240,6 +359,24 @@ function scan(subject: StuckSubject, t: string): { topic: string; generic: boole
   }).map(({ topic, generic }) => ({ topic, generic }));
 }
 
+/** One HEAD — detail piece of a marker text → its canonical topics (uncapped, may repeat an area). */
+function pieceTopics(subject: StuckSubject, t: string): string[] {
+  const cut = t.search(/\s[—–]\s|\s-\s|:\s/);
+  const head = cut > 0 ? t.slice(0, cut) : t;
+  const headHits = scan(subject, head);
+  const all = scan(subject, t);
+  if (!headHits.length) return all.map((h) => h.topic);
+  // a catch-all head is refined by the detail inside the same area
+  // ("differentiation — tangents and normals" → Tangents and Normals); a
+  // specific head stays as it is ("trigonometric equations — double angle")
+  return headHits.map((h) => {
+    if (!h.generic) return h.topic;
+    const area = areaOf(subject, h.topic);
+    const fam = familyOf(h.topic);
+    return all.find((x) => !x.generic && (areaOf(subject, x.topic) === area || (fam && familyOf(x.topic) === fam)))?.topic ?? h.topic;
+  });
+}
+
 /**
  * The marker's free-text topic → canonical topics of that subject, at most
  * MAX_TOPICS_PER_TEXT. [] = no rule knows it (counted as unmapped by the
@@ -256,24 +393,10 @@ function scan(subject: StuckSubject, t: string): { topic: string; generic: boole
 export function markerTopics(subject: StuckSubject, text: string | null | undefined): string[] {
   const t = String(text ?? '').toLowerCase().trim();
   if (!t || t === 'not identified') return [];
-  const cut = t.search(/\s[—–]\s|\s-\s|:\s/);
-  const head = cut > 0 ? t.slice(0, cut) : t;
-  const headHits = scan(subject, head);
-  const all = scan(subject, t);
-  let picked: string[];
-  if (!headHits.length) {
-    picked = all.map((h) => h.topic);
-  } else {
-    // a catch-all head is refined by the detail inside the same area
-    // ("differentiation — tangents and normals" → Tangents and Normals); a
-    // specific head stays as it is ("trigonometric equations — double angle")
-    picked = headHits.map((h) => {
-      if (!h.generic) return h.topic;
-      const area = areaOf(subject, h.topic);
-      const fam = familyOf(h.topic);
-      return all.find((x) => !x.generic && (areaOf(subject, x.topic) === area || (fam && familyOf(x.topic) === fam)))?.topic ?? h.topic;
-    });
-  }
+  // a science text lists its topics with ';' or '/' ("Rate of reaction; Chemical
+  // bonding", "Mole concept / Redox") — each piece is its own HEAD — detail text
+  const pieces = isScience(subject) ? t.split(/\s*(?:;|\/)\s*/).filter(Boolean) : [t];
+  const picked = pieces.flatMap((piece) => pieceTopics(subject, piece));
   const out: string[] = [];
   const areas = new Set<string>();
   for (const p of picked) {

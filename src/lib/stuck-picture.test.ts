@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildStuckPicture, groupLabel, isGap, isRising, materialSlug, planMaterials, stuckMessage, type AskEvent, type LossEvent, type StuckStudent } from './stuck-picture';
+import { buildStuckPicture, groupLabel, scienceGapsWithoutSheet, twinFocusFor, isGap, isRising, materialSlug, planMaterials, stuckMessage, type AskEvent, type LossEvent, type StuckStudent } from './stuck-picture';
 
 const NOW = new Date('2026-10-04T11:00:00Z'); // Sunday 7pm SGT
 const daysAgo = (d: number) => new Date(NOW.getTime() - d * 86_400_000).toISOString();
@@ -149,5 +149,37 @@ describe('buildStuckPicture', () => {
     // no duplicates, and nothing invented for a subject with no filed asks
     expect(new Set(f.map((x) => x.subgroupId)).size).toBe(f.length);
     expect(twinFocusFor(buildStuckPicture({ students, asks: [], losses: [], now: NOW }), [])).toEqual([]);
+  });
+});
+
+describe('science (5 Oct 2026)', () => {
+  const sci: StuckStudent[] = [
+    { id: 'recSCI00000000001', name: 'Mia Koh', level: 'Sec 4', subjects: ['AM'], active: true },
+    { id: 'recSCI00000000002', name: 'Leon Ho', level: 'Sec 4', subjects: ['EM'], active: true },
+  ];
+  const [mia, leon] = sci.map((s) => s.id);
+  const p = buildStuckPicture({
+    students: sci,
+    asks: [ask(mia, 1, 'Electrolysis', 'CHEM', 'Selective discharge', 501), ask(leon, 2, 'Electrolysis', 'CHEM')],
+    losses: [loss(mia, 3, 'Electrolysis; Redox', 'CHEM', 'k1'), loss(leon, 3, 'Electricity', 'PHY', 'k2')],
+    now: NOW,
+  });
+  it('a science ask and a science lost mark meet in one area of a science group', () => {
+    const g = p.groups.find((x) => x.key === 'Sec 4|CHEM')!;
+    expect(g.label).toBe('Sec 4 Chemistry');
+    const a = g.areas.find((x) => x.area === 'Electrolysis')!;
+    expect(a.asks).toBe(2);
+    expect(a.losses).toBe(1);
+    expect(a.gap).toBe(true);
+    expect(p.groups.some((x) => x.label === 'Sec 4 Physics')).toBe(true);
+  });
+  it('no sheet is drawn for science, no science sub-skill reaches the twins, and the message says so', () => {
+    expect(planMaterials(p)).toEqual([]);
+    expect(twinFocusFor(p, []).some((f) => f.subgroupId === 501)).toBe(false);
+    expect(scienceGapsWithoutSheet(p).map((g) => g.area)).toEqual(['Electrolysis']);
+    const msg = stuckMessage(p, []);
+    expect(msg).toContain('Sec 4 Chemistry:');
+    expect(msg).toContain('asked about electrolysis');
+    expect(msg).toContain('No science sheet yet, so nothing prepared for Sec 4 Chemistry electrolysis.');
   });
 });
