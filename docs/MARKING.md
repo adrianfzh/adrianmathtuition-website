@@ -533,6 +533,17 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     classifier exactly as before.
   - **Over-count (3 Sep 2026):** `awarded > max` prints `92 of 90` + a red `needs a check` tag, no `%` — the normal page stays byte-identical; details under the paper-totals note below.
 - **✂️ Two-page spreads split at intake (2026-08-12):** `onPickImages` runs every picked photo (and every PDF-raster page, and every inbox attach — they all funnel through it) through `splitFileIfSpread` (`lib/spread-split.ts`, pure geometry unit-tested): landscape past `w > h·1.15` is cut into left/right halves at FULL resolution (3%-of-width gutter overlap each side) BEFORE the 1280px marking copy and 2600px hi-res original are made. Fixes BOTH spread problems at once: printed size (one wide PDF page fit one A4 sheet → each exam page ~A5; split halves each print full-page) and annotation grounding (a spread shrunk to 1280 gave each page ~640px → measured 10/10 margin-fallback correlation with low-res intake). A green `✂️ Split N…` receipt line shows under the drop zone. The same splitter runs on `/app/submit`, so student hand-ins get the same hygiene.
+- **🔢 Recognise the paper first, then take its SEAB total (5 Oct 2026, bot `ai/seab-totals.js`
+  + `ai/paper-totals.js`, 33e9efc9; website 80a700fc).** Adrian: *"model should be able to
+  recognize the paper and then assign the correct total mark regardless of subject"* — Eva's
+  "olevel 2022 paper 1" is the 80-mark 4048/01 and went out /90. Order of trust now:
+  **override > cover > identified/bank > brackets/counted > registry (the name, last)**.
+  `ai/seab-totals.js` is one table by syllabus code + year + paper (4048 80/100 to 2022, 4052
+  90/90 from 2023, 4047 80/100 2008–2020, 4049 90/90 from 2021, 9740/9758 100/100);
+  "identified" = the code/sitting printed on the pages or the paper the printed questions
+  matched; the bank's own marks answer where the table cannot (school papers). Maths only.
+  `max_source` gains `'identified'` and `'bank'`, and both get the PAPER TOTAL strip like a
+  registry match. The bullet below is the history it builds on.
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
   wrong most of the time on Adrian's compiled sets — a skipped-blank question never enters

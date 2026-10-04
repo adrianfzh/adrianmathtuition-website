@@ -474,6 +474,32 @@ Pure logic + tests: `src/lib/paper-index.ts`; reads (5-minute cache):
 notes, health-check `admin-library` probes the 401). There is no Dropbox copy of the
 papers — the bucket is where the files live.
 
+## 4d. Which model reads a paper, and the figure rule (5 Oct 2026)
+
+All three live in the bot repo's Fly worker (`worker/fly/extract.sh`, `EXTRACT_PROMPT.md`).
+
+- **Opus for a paper with no mark scheme, Sonnet when a scheme covers it** (Adrian: *"switch
+  to opus for those without mark scheme"*; bot e96c9d9f). Before a run the wrapper looks in
+  `paper_library` for a scheme filed for the same level, year and school (MS / Mark Scheme /
+  Answers / Solutions, or a marker `solutions` row). A practical paper (pure science P3,
+  Combined Science P5) counts as covered only by a scheme for THAT paper. A failed look counts
+  as "has a scheme" (Sonnet). `EXTRACT_MODEL` still overrides both. The model and the scheme
+  flag are on the run's START log line.
+- **Every figure is stored before the insert — fix it, do not just flag it** (Adrian: *"why
+  not just fix it rather than flagged?"*; bot d1ea97e5, 1f757d34). The worker lists every
+  figure each question needs and checks each is in a stored crop; a missing one is cropped
+  there and then. A figure absent from the PDF or on a broken page is **redrawn** from what
+  the question states — a table retyped as text, a diagram drawn with the bot's figure library
+  (`verify()` fails closed), the figure engine where no family fits. Never invent a value.
+  Flag only when a figure can neither be cropped nor redrawn (photo, map, cartoon, micrograph,
+  numbers unreadable), and say what would fix it.
+- **The nightly missing-figure sweep** (bot `scripts/missing-figures-sweep.js`, 03:00 SGT,
+  switch `missing-figures`, `job_runs` `missing-figures`; bot 571b8e22). A bank question whose
+  text names a figure it does not store (after a Sonnet look at the stored images) sends its
+  paper back to `queued` with notes starting `COMPLETE PARTIAL: FIGURES ONLY` — the worker then
+  crops or redraws the missing figures and never re-inserts questions. At most 20 papers and 80
+  looks a night. Found on Hua Yi CHEM 2024 P2 and Seng Kang CS CHEM 2024 P4.
+
 ## 5. Rollback
 
 Nothing here removes anything. The migration is additive (new columns default

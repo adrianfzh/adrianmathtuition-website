@@ -7,6 +7,67 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 📅 Shipped 4–5 Oct 2026 — and what is still open for Adrian
+
+A session on any account starts here for what those two days changed. One line each; the
+detail is in the linked doc. Website commits are on `dev`; **`main` stops at the
+learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `main` (deployed).
+
+**Shipped:**
+- 🔧 **Marking fixes its own watch-outs first, then tells Adrian in plain words** (a third reading
+  settles a second-look dispute, the key re-mark, the total from matched brackets; "Fixed:" /
+  "Needs you:") → `docs/MARKING.md` §🔧 Fix first; bot `ai/fix-first.js`, `lib/plain-report.js`.
+- 🔢 **Paper total from RECOGNISING the paper** (printed syllabus code or matched paper → its SEAB
+  total; the name last) → `docs/MARKING.md` §🔢 Recognise the paper first; bot `ai/seab-totals.js`.
+- 🔢 **"Total marks corrected" read-once notice** + the `total-corrected` re-issue (six old 4048
+  papers shown /90) → `docs/MARKING.md` §Read-once notices.
+- 🔁 **The same paper handed in twice is marked once** (Rainie's Chemistry P2) →
+  `docs/MARKING.md` §The same paper twice; `lib/duplicate-handin.ts`.
+- 🎓 **Learn from Adrian's corrections** (`marking_corrections`, daily `/marking-learn` → proposals)
+  and 🤔 **a student's flag reviewed the same day** (`/flag-review`) → `docs/MARKING.md` §🎓; bot
+  CLAUDE.md §The learning loops.
+- 🧭 **Where students are stuck** — Sunday 7pm picture of asks + lost marks, sheets prepared and
+  held, sent only on Adrian's word → `/admin/stuck`, CLAUDE.md row. **Not on prod yet.**
+- 🌙 **The nightly builder** — approved IDEAS rows built overnight on the Fly worker, "ship <slug>"
+  → `docs/NIGHTLY-BUILDER.md` (the table below).
+- 🪞 **Learn from Adrian** — his typed messages read every morning 07:30, rules drafted as
+  proposals → `docs/LEARN-FROM-ADRIAN.md`.
+- 📥 **Extraction:** rules in plain words on `/admin/extraction-rules` + the daily extraction
+  learner (§4b); the extracted-papers index `scripts/library-index.ts` (§4c, for sessions — check
+  it before extracting or hunting a paper); Opus for a paper with no scheme, Sonnet with one;
+  every figure stored or redrawn before the insert; the nightly missing-figure sweep (§4d);
+  papers 5 and 6 read as paper numbers → `docs/EXTRACTION-QUEUE.md`.
+- 📜 **The humanities bank** — History / Geography / Social Studies TYS papers through the same
+  inbox, into `humanities_questions` as background for the marker → `SPEC-HUMANITIES.md` §4b.
+- 🛠 **The Fly worker heals itself** (requeue after a restart, wait for a free login, retry a timed
+  out ship, rerun a failed deploy once, clean the disk) and **every worker job obeys
+  `/admin/switches`** → `docs/OPS.md`; bot CLAUDE.md §Self-fixes, §The switches.
+- 🔒 **Safety checks** — weekly leak test, model-call caps (hints, photo reads, grades), notebook
+  retention, monthly backup check → `docs/OPS.md` §Safety checks, `docs/RETENTION.md`. **Not on prod yet.**
+- 🧹 **The stale-doc sweeper** — Sundays, finds doc lines the code no longer matches →
+  `docs/OPS.md` §🧹. **Not on prod yet.**
+- ✏️ Red pen F63–F65 (a ✓ stops at its own line, an insert never covers her writing, a lone sign
+  is drawn) → `docs/MARKING-DEFECTS.md`.
+- 📝 Ad-hoc worksheets use the regular title + subtitle, not the masthead (4 Oct) →
+  `.claude/skills/create-worksheet/ADRIAN-STYLE.md`.
+- 📐 Decided, not built: tutors' corrections become their own marking rules →
+  `SPEC-MARKING-CALIBRATION.md` §2 "Decided 5 Oct 2026"; preparing worksheets in advance → the
+  Product section below.
+
+**Open — needs Adrian:**
+- **Promote.** `dev` is ahead of `main` by: stuck topics, the library index, the safety checks, the
+  switches docs, the stale-doc sweeper. The Sunday stuck message, the leak test and the backup
+  check only run once promoted.
+- **The five learn-from-Adrian proposals** (first message 6 Oct 07:30): `plain-words-to-adrian`,
+  `say-it-once-write-it-down`, `worksheet-regular-format` (the ADRIAN-STYLE note above already
+  says it — drop or merge over it), `workers-at-a-glance`, `tys-drop-in-inbox`. He answers
+  "apply learn <name>" / "drop learn <name>".
+- **`SUPABASE_ACCESS_TOKEN`** for the backup check to verify Supabase's own nightly backups (a
+  Vercel env var; without it the job checks only our own copy).
+- **Preparing worksheets in advance: B, C or the lesson package?** (below, Product section).
+- **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
+  `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
+
 ## 🌙 Nightly builder — approved to build
 
 The Fly worker builds the rows below overnight (01:30 SGT, at most one a night), each on its own
@@ -48,13 +109,20 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ## Product — student portal
 
+- 📐 **Preparing worksheets in advance** (Adrian, 5 Oct 2026: "for preparing worksheets in advance - put in memory"). Options discussed that day — **his pick between B, C and the lesson package is still open; ask before building any of them, and reuse A's machinery** (the stuck-topics analysis, held sheets, the assign path), not a second pipeline:
+  - **A. Stuck-topics sheets — ✅ BUILT 5 Oct 2026** (`/admin/stuck`, cron `stuck-weekly` Sunday 19:00 SGT; bot `handlers/stuck.js`): the 1–3 biggest gaps each week get a 10-question sheet, held until Adrian says send. Runs once the website is promoted.
+  - **B. Before each exam** (recommended with A, not built): a week before a student's exam (Airtable `Exams`), a revision pack for the tested topics, ready for Adrian to check.
+  - **C. A full library** (not built): a revision sheet for every topic and level that has none, a few each night (the `revision-worksheet` skill), filed to Dropbox Revision/<folder> for vetting.
+  - **D. On request only** — today's default.
+  - **The lesson package** (Adrian's idea): before each lesson, a per-student pack — notes, practice, their recent mistakes — ready to print in class, feeding a progress view on the student profile (work done, mistakes by cause, improvement over time).
+
 - 📐 **The company — two apps across the market segments** — PLANNED 23 Sep 2026 (Adrian: "an edtech company based on subscriptions … science for sec level first … another app selling marking to tutors … pure app/web"), nothing built. Umbrella spec [`SPEC-COMPANY.md`](SPEC-COMPANY.md): the segment table (§3), the student app (§4), the tutor app (§5), science one subject at a time behind its bench (§6), the economics by lane (§7 — API US$2.27 a paper measured; Batch by default; today's S$29 pass is about break-even through a store), orgs + entitlements + brand-by-hostname first (§10), phases with numeric gates (§11), Adrian's decisions (§12). Startable now: measure the Batch cost on 20 papers, the physics seeded bench, the lower-sec science solutions pass.
 
 - ✅ **📷 Practice tab = photo a question → a re-skinned one of ours — BUILT 23–24 Sep 2026, OPEN TO STUDENTS 1 Oct 2026** (`PRACTICE_PHOTO_OPEN_TO_STUDENTS` on; Adrian: "we can flip the switch for Practice tab then"). Agreed 23 Sep ("ok go, write the spec with re-skin as default"). Steps 1–5 + §14 photos-in-one-sheet-a-day-out are live; open: whether `GEN_MODEL` moves to Opus 5, and whether strangers on a pass get it. Spec + build order: [`SPEC-PRACTICE-PHOTO.md`](SPEC-PRACTICE-PHOTO.md). Creates SPEC-TWINS' `twin_of` column and the `/admin/generated` page the twins batch will share.
 
 - **📱 The student app (unlisted App Store app)** — AGREED 18 Sep 2026, not started. PencilKit writing on marked papers (same ink layer as the web), document-scanner hand-in, native push. Step 0 is Adrian's: enrol in the Apple Developer Program (US$99/yr). Spec + build order: [`SPEC-STUDENT-APP.md`](SPEC-STUDENT-APP.md).
 
-- **Humanities instant feedback** — SPEC-HUMANITIES.md. Agreed 2 Oct 2026, nothing built. Next: H0, the seven level schemes for Social Studies source questions, for Adrian to read.
+- **Humanities instant feedback** — SPEC-HUMANITIES.md. Agreed 2 Oct 2026. **H1 built 2 Oct** (Social Studies source questions, `/app/humanities`), **H2 built 3 Oct** (History source questions + Social Studies structured response), **the humanities bank 5 Oct** (TYS papers banked as background, §4b); all behind `HUMANITIES_OPEN_TO_STUDENTS=false`. Next: Adrian reads the reports and decides when to open it.
 - **Essay marking (English + 中文)** — SPEC-ESSAY-MARKING.md. **E1 BUILT 13 Sep 2026** (English continuous + situational writing, typed hand-in, the report, /admin/essays, the calibration harness; preview identity + Adrian only). Next: a real class set through `scripts/essay-calibration` (needs ≥ 8 essays from one teacher on one prompt with their marks), then E2 (photo + transcript confirm, 华文作文), the HELD Agree/Override door, the `essay_marking_open` switch.
 - ✅ **Practice Again on request — BUILT 8 Sep 2026** (Adrian: "only generate when they request … i can generate for them by clicking on desk, and vetting it and asking them to do → that is compulsory, so we should build a mechanism that reminds them it is not done"): no auto-queued sheets anywhere; two doors — the desk's 📘 Queue (compulsory once released: `required_at` + `practice-again-reminders` day 3 / weekly / ×4, hub card) and the app's Request Practice Again button (sent on its own once written and gated; held on the desk otherwise). Unconfirmed: the cadence, unvetted student sheets, Adrian's own scans losing the auto-sheet → `docs/MARKING.md` §Practice Again on request.
 - ✅ **Targeted remediation loop ("fix-it plan") — v1 built 2026-08-30** ([`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md)): classify lost marks (blank/procedure/discipline/concept), one-opus-call plan draft with bank ammo, Adrian activates on /admin/remediation, student clears steps on /app/fixit (drills ride portal_assignments; another-similar = next pre-picked bank qid). v2 leftovers: draft button on the student profile, learn-material auto-attach (revise-map subgroups), stuck-item line on the daily reminder, post-release auto-draft trigger. First diagnostic (Alessi, 2 papers): ~29 marks lost to unwritten first moves vs ~12 to wrong execution.

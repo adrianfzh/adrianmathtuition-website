@@ -799,6 +799,13 @@ own logo. `watermark/book/bookify.py` does the whole job on a `.docx` and writes
 > are you able to come up with design for Sec 1 and Sec 2? same idea, slightly different
 > designs for each of them (so it's easy to distinguish the worksheets)" — Adrian, 17 Sep 2026
 
+> **4 Oct 2026 — ad-hoc worksheets use the REGULAR format, not this masthead.** Adrian, on an
+> E Math Circle Properties practice sheet built with `ws.brand`: "don't want the new format, just
+> give me a regular format worksheet". A worksheet he asks for in chat is `ws.title(...)` +
+> `ws.subtitle(...)` (navy centred title, italic subtitle); the masthead below only when he asks
+> for it. He said it of one ad-hoc sheet — whether it also covers Practice Again or kiosk sheets
+> was not stated, so ask before changing those.
+
 Every sheet opens with the AdrianMath masthead: the triangle-A mark, **Adrian**Math / TUITION, the
 level line with adrianmathtuition.com under it, and a **solid coloured block on the right
 that names the series in big letters**. That block is what tells the sheets apart at a

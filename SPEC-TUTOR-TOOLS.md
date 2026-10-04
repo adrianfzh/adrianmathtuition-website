@@ -160,6 +160,10 @@ This is the honest cost. Every table, route and job assumes one teacher.
   shell: every "Adrian" becomes the tutor's name from their profile.
 - **Marking standard.** Calibration rows per tutor; the auto-release switch and the
   Monday report per tutor; overrides become each tutor's own truth channel.
+  **Decided 5 Oct 2026:** a tutor's corrections become THEIR OWN marking rules (a per-tutor
+  profile the marker reads only for their students), never a change to the shared marker; the
+  learning messages and approvals go to the tutor, not Adrian. Details:
+  [`SPEC-MARKING-CALIBRATION.md`](SPEC-MARKING-CALIBRATION.md) §2, "Decided 5 Oct 2026".
 - **Channels.** One Telegram bot routing by tutor, or one bot per tutor (their own
   token, our code). Web hand-in and the student app are already per-account.
 - **Billing.** Stripe customer per tutor; credits ledger; the per-paper meter.

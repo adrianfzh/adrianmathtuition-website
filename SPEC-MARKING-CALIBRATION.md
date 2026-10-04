@@ -74,6 +74,25 @@ reading a hand-annotated copy (his ink without a record edit, an attached amende
 confirm screen, and a per-tutor profile the prompt reads for that tutor's students only — the
 rows are already keyed for it.
 
+**Decided 5 Oct 2026 — how this works once other tutors have accounts** (Adrian, after the
+corrections loop was built: *"so we need to build tutor accounts? … each tutor's fixes kept as
+their own marking rules, not changes to the shared marker; the messages going to the tutor
+instead of you."*):
+- **Tutor accounts and orgs come first.** Every `marking_corrections` row already carries
+  `corrected_by` + `org_id` (today always Adrian and the tuition business).
+- **A tutor's repeated corrections become rules in THAT tutor's marking profile**, read by the
+  marker only for that tutor's students. They are never a code or prompt change to the shared
+  marker. Adrian's own loop (`/marking-learn`) keeps proposing shared-marker fixes, and only he
+  ships those.
+- **The proposal messages and the Ship / Change / Drop go to the tutor, in the tutor app** — not
+  to Adrian's Telegram.
+- **Still missing for tutors:** reading a tutor's freehand ink and an attached hand-marked copy
+  (phase 2 above), the confirm screen, and correction rows visible only inside their own org.
+- **Why:** "the marking learns your way of marking" is the tutor product's selling point, and one
+  tutor's habits must never change another tutor's (or Adrian's) marking. When building this,
+  apply the company reminders (data belongs to the company from first sign-up, every row carries
+  `org_id`; credits) — `SPEC-COMPANY.md` §14.5 and §7.1.
+
 ### When there are no circled marks (Adrian, 17 Sep 2026: "what if there are no circled marks?")
 
 Teachers mark in different habits. The reader takes the richest thing on the page and
