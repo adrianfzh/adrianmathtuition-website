@@ -34,6 +34,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🎓 Loop 1 (5 Oct 2026, bot skill marking-learn): Adrian's mark/note changes → repeated kinds → proposals.
   // Stamps every morning, even with nothing new, so silence here means the job is dead.
   'marking-learn':     { kind: 'interval', hours: 36, label: 'daily 7:15am' },
+  // 🧹 The stale-doc sweeper (5 Oct 2026, bot skill doc-sweep on the Fly worker, Sundays 7:20am):
+  // docs that no longer match the code or the live system. Weekly → the 8.5-day grace.
+  'doc-sweep':         { kind: 'interval', hours: 204, label: 'Sundays 7:20am' },
   // Nightly plan-billed review of the day's bot questions (bot repo
   // scripts/day-review-nightly.sh, launchd com.adrianmath.day-review, 5 Sept 2026).
   'day-review':        { kind: 'interval', hours: 36, label: 'nightly 5am' },

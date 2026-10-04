@@ -290,6 +290,36 @@ on the Pro's keychain login; stamps `learn-from-adrian` every run (quiet ones in
 `ok=false` on a dead session or a failed Telegram send); rhythm 60 h because a laptop can
 be shut for a day → [`LEARN-FROM-ADRIAN.md`](LEARN-FROM-ADRIAN.md).
 
+## 🧹 The stale-doc sweeper (5 Oct 2026)
+
+Adrian: *"stale-doc sweeper"* — sessions kept following instructions the code had left behind.
+Two halves:
+
+- **The checker — no model.** `node scripts/doc-sweep/check.mjs --web <dir> --bot <dir>
+  [--bank <dir>] [--memory <dir>] [--global ~/.claude/CLAUDE.md] [--json f] [--md f]
+  [--changed-since <date>] [--apply]`. Reads every instruction doc (both CLAUDE.md files,
+  `docs/`, root `*.md`, skills, worker prompts; on the Mac the memory folder) and checks each
+  claim a machine can: file paths (renamed → the new name; deleted → when), function and
+  constant names (gone from the code → the commit), routes and pages, `vercel.json` crons named
+  beside their route, the Fly worker's times vs `WORKER_JOBS` and `JOB_RHYTHMS` labels, the
+  switch table vs `lib/portal-beta.ts`, skill names, model ids, the live Supabase table list
+  (main + science), and the old `~/Desktop/<repo>` paths. Each finding is **sure** or **look**
+  (a plan, an outside name, a file outside the repos). `--apply` rewrites only sure renames and
+  Desktop paths, one line at a time, never in a SPEC / IDEAS / briefing. Pure half
+  `scripts/doc-sweep/claims.mjs`, tested by `claims.test.mjs` (in `npm test`). ~3 min, most of it
+  `git log -S` on the names.
+- **The judgement pass — plan-billed.** Bot skill `/doc-sweep`, **Sundays 07:20 SGT on the Fly
+  worker** (bot `worker/fly/docsweep.sh`, inside the 07:10 marking-learn wake; switch `doc-sweep`
+  on `/admin/switches`): runs the checker in its own clones, reviews what `--apply` did, fixes
+  the other obvious lines, reads the docs changed since last week plus a rotating slice of 12
+  for contradictions / "nothing built" beside built work / rules the code no longer follows.
+  Docs-only fixes are pushed (they build and deploy nothing); a fix in a file that deploys, or
+  one that changes a rule or a decision, is a `proposal/<date>-doc-sweep-<n>` branch with ONE
+  plain Telegram message (ops topic) carrying the Ship buttons — sent only when something was
+  fixed or needs him. Stamps `job_runs` `doc-sweep` (rhythm 204 h).
+- **The memory half** runs on the MacBook Pro (the memory folder lives only there): the Claude
+  scheduled task `doc-sweep-memory`, Sundays 08:00, `/doc-sweep memory` (table below).
+
 ## Claude Code scheduled tasks — per-Mac registry
 
 Claude Code desktop scheduled tasks are **machine-local**: stored under
@@ -314,6 +344,7 @@ Rules:
 | `file-subgroups` + `file-subgroups-science` | maths 04:15 + 16:15 · science 10:15 + 22:15 | the Fly worker (`worker/fly/jobs.sh job_file_subgroups`, since 2 Oct 2026) | ✅ live once deployed | 🗂 the sub-skill filer: 300 topic-tagged questions a run filed under ONE sub-skill each (`question_subgroups`, source `cc_backfill`), Opus 5.5 at medium effort (measured: effort makes no difference to the labels), two-reader rule under 0.75, never the API. The Mac task that ran it had not stamped since 9 Sep 2026 — three weeks of extraction went unfiled (maths 2,547, science 7,100 on 2 Oct). Science = the science project, trees PHY / CHEM / BIO, a Combined Science question filed under its subject's pure tree. The wrapper stamps the backlog before and after. N(A) / N(T) / JC H1 maths and lower-sec science have no tree and are never filed. |
 | `extract` (Fly worker) | every 15 min, the marking queue empty or 00:00–06:59 SGT | **Fly `adrianmath-worker`** (bot `worker/fly/extract.sh`, since 25 Sep 2026) | ✅ live | drains the `paper_library` queue ONE row per run under the live law + the prompt's box overrides; runner `PDF-Pipeline-Fly-<ddHHMM>`; stamps `pdf-extract` on claiming runs → [`EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md) §4. The Mac rows this replaced (`pdf-extraction-worker`, `-b`, `-c`, `s1s2-…`) were deleted from the Pro; `inbox-extract` + `exam-extraction-cc1..3` below are redundant since the same day |
 | `question-mine-daily` | Mon & Thu 7:00am | B (the MacBook Air since 10 Sep 2026) | ✅ live (2026-08-28; daily → twice-weekly same day, Adrian: "daily is too frequent") | student-demand mining per [`docs/QMINE.md`](QMINE.md) — asks → coverage cross-ref → topup enqueues + ≤3 judgment digest (stamps `question-mine`) |
+| `doc-sweep-memory` | Sundays 8:00am | A (MacBook Pro — the memory folder lives there) | ✅ live (5 Oct 2026) | 🧹 the memory half of the stale-doc sweeper: runs `scripts/doc-sweep/check.mjs --memory …`, fixes or removes memory files that name a file, function or flag that no longer exists, keeps `MEMORY.md` in step (bot skill `doc-sweep` §7) |
 | `siteground-vercel-migration-reminder` | one-time 1 Nov 2026 | A (MacBook Pro) | ✅ armed | domain + hosting expiry reminder |
 | `exam-extraction-cc1..6` | ⏸ **superseded 25 Sep 2026** by the Fly `extract` job above (cc4–6 retired 8 Sep; cc1–3 + the Pro's `inbox-extract` task are redundant now — claims are atomic, so leaving them on is harmless; Adrian removes them) | the MacBook Pro | ⏸ redundant | was: the queue-only shims under the fleet law, `PDF-Pipeline-CC<n>` runners |
 | *(extraction fleet)* | — | B (the Air) | ⏸ redundant since 25 Sep 2026 | the `pdf-pipeline-cc-*` shims read the same queue; the Fly lane replaces them |
