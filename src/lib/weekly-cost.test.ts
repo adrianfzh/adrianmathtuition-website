@@ -58,7 +58,7 @@ describe('the week', () => {
   it('averages, splits by the ledger, keeps tests out, counts the month', () => {
     const w = buildWeeklyCost(base({ runs: [...base().runs, run({ paper_name: 'BENCH · chemistry · x', cost: 9 })] }));
     expect(w.papers).toBe(3);                       // the bench paper is a test
-    expect(w.avg).toBe(1);                           // (0.5 + 0.5 + 2) / 3
+    expect(w.avg).toBe(0.65);                        // the bill's three parts (1.95) over 3 papers
     expect(w.split).toEqual({ pen: 0.4, read: 0.2, extra: 0.05 });
     expect(w.lanes.plan).toEqual({ papers: 2, avg: 0.5 });
     expect(w.lanes.api).toEqual({ papers: 1, avg: 2 });
@@ -111,9 +111,9 @@ describe('the levers — only a passed test is offered, with its switch', () => 
 describe('the message', () => {
   it('plain words, no model names, the switch line last', () => {
     const msg = weeklyCostMessage(buildWeeklyCost(base({ tests: [{ name: 'page-trim', status: 'passed', saving_per_paper_usd: 0.6, measure: { same: 74, parts: 76, noise_pct: 96.1 } }] })));
-    expect(msg).toContain('3 papers marked. A paper cost US$1.00 on average');
+    expect(msg).toContain('3 papers marked. A paper cost US$0.65 on average');
     expect(msg).toContain('• placing the red pen: US$0.40');
-    expect(msg).toContain('By lane: plan 2 (US$0.50 each) · paid reader 1 (US$2.00 each) · half-price 0');
+    expect(msg).toContain("By lane (each paper's first marking): plan 2 (US$0.50 each) · paid reader 1 (US$2.00 each) · half-price 0");
     expect(msg).toContain('Tests running cost US$8.00 this week');
     expect(msg).toContain('Ready to save (passed their test):');
     expect(msg).not.toMatch(/sonnet|opus|gemini|flash|claude/i);

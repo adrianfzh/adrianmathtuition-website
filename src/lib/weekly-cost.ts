@@ -240,7 +240,9 @@ export function buildWeeklyCost(inp: WeeklyCostInput): WeeklyCost {
   const { savings, testing } = levers(inp);
   return {
     weekStart: inp.weekStart, weekEnd: inp.weekEnd,
-    papers: papers.length, avg: papers.length ? r2(total / papers.length) : null,
+    // The average is the BILL over the papers (re-marks and redraws included), so the
+    // three parts add up to it; the per-lane figures below are each paper's first marking.
+    papers: papers.length, avg: papers.length ? r2((split ? ledgerPaperTotal : total) / papers.length) : null,
     split, lanes, testsWeek: r2(parts.test),
     month: {
       spent: r2(monthSpent), tests: r2(mParts.test), days, daysInMonth: lastDay,
@@ -264,11 +266,12 @@ export function weeklyCostMessage(w: WeeklyCost): string {
     L.push(`${w.papers} paper${w.papers === 1 ? '' : 's'} marked. A paper cost ${usd(w.avg || 0)} on average:`);
     if (w.split) {
       L.push(`• placing the red pen: ${usd(w.split.pen)}`);
-      L.push(`• reading the pages: ${usd(w.split.read)}${w.lanes.plan.papers ? ` (${w.lanes.plan.papers === w.papers ? 'all' : w.lanes.plan.papers} read on the plan, which is free)` : ''}`);
+      const allPlan = w.lanes.plan.papers === w.papers;
+      L.push(`• reading the pages: ${usd(w.split.read)}${allPlan ? ` (every paper was read on the plan, which is free; this is the few pages read again by the paid reader)` : w.lanes.plan.papers ? ` (${w.lanes.plan.papers} of ${w.papers} read on the plan, which is free)` : ''}`);
       L.push(`• extra checks: ${usd(w.split.extra)}`);
     }
     const lane = (k: Lane, label: string) => `${label} ${w.lanes[k].papers}${w.lanes[k].avg != null ? ` (${usd(w.lanes[k].avg!)} each)` : ''}`;
-    L.push(`By lane: ${lane('plan', 'plan')} · ${lane('api', 'paid reader')} · ${lane('batch', 'half-price')}`);
+    L.push(`By lane (each paper's first marking): ${lane('plan', 'plan')} · ${lane('api', 'paid reader')} · ${lane('batch', 'half-price')}`);
   }
   L.push('');
   const proj = w.month.projected != null ? `; at this rate about ${usd(w.month.projected)} for ${w.month.label}` : '';
