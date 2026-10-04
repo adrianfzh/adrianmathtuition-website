@@ -69,6 +69,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 👯 The twins lane on the Fly worker (30 Sep 2026, SPEC-TWINS §10): every 15 min when marking
   // is quiet by day, always in the 00–06 SGT window; an empty queue still stamps, so absence = dead lane.
   'twin-batch':        { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
+  // 🧹 The Fly worker's disk check (5 Oct 2026, bot worker/fly/jobs.sh disk_check): runs every tick,
+  // stamps once a day — silence = the scheduler is dead. Its cleanups stamp 'disk-clean' (no rhythm).
+  'disk-check':        { kind: 'interval', hours: 36, label: 'the Fly worker, daily' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
