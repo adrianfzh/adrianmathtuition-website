@@ -140,6 +140,8 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   const missingAsk = findings.find(f => f.kind === 'missing-questions') || null;
   const [doneRunId, setDoneRunId] = useState<string | null>(null);
   const [queuedFor, setQueuedFor] = useState<string | null>(null);
+  // 🔁 the same paper sent twice (5 Oct 2026): the server kept the first and says so
+  const [dupNote, setDupNote] = useState<string | null>(null);
   // Pages that already reached Blob, kept across a failed attempt so tapping Send
   // again RESUMES instead of starting from page 1 (1 Sep 2026 — see uploadPage).
   const uploadedRef = useRef<Map<number, string>>(new Map());
@@ -327,7 +329,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         ...(assignment ? { assignmentId: assignment.id } : {}),
         ...(paper ? { paperId: paper.id } : {}),
       });
-      let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; findings?: { kind: string; message: string; blocking?: boolean; missing?: unknown }[]; list?: unknown; key?: unknown } = {};
+      let r: Response | null = null, d: { error?: string; runId?: string; queuedFor?: string; duplicateOf?: string; message?: string; findings?: { kind: string; message: string; blocking?: boolean; missing?: unknown }[]; list?: unknown; key?: unknown } = {};
       for (let attempt = 1; attempt <= 3; attempt++) {
         try {
           if (attempt > 1) setStage(`Sending for marking… (try ${attempt} of 3)`);
@@ -357,6 +359,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         throw new Error(friendlyPortalMessage(r.status, d.error, 'The submission failed — try again.'));
       }
       setQueuedFor(d.queuedFor ?? null);
+      setDupNote(d.duplicateOf && d.message ? d.message : null);
       setDoneRunId(d.runId || 'ok');
       pages.forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
     } catch (e) {
@@ -372,9 +375,11 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       : <>It comes back under <b>Papers</b>, usually within the hour.</>;
     const card = (
       <div className={`${CARD} p-5 text-center`}>
-        <p className="text-4xl">{queuedFor ? '🕒' : '🧪'}</p>
-        <p className="font-bold text-navy mt-2">{queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
-        <p className="text-sm text-gray-600 mt-1.5">{line}</p>
+        <p className="text-4xl">{dupNote ? '🔁' : queuedFor ? '🕒' : '🧪'}</p>
+        <p className="font-bold text-navy mt-2">{dupNote ? 'Already handed in' : queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
+        {dupNote
+          ? <p className="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{dupNote}</p>
+          : <p className="text-sm text-gray-600 mt-1.5">{line}</p>}
         <div className="mt-4 flex justify-center gap-2">
           {/* A plain link, not <Link>: a full load resets the form and refreshes the list under it. */}
           <a href="/app/science/submit" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
@@ -396,12 +401,16 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
       <div className="space-y-4 pb-24 sm:pb-4">
         <h1 className="text-xl font-bold text-navy pt-1">{assignment ? 'Worksheet sent' : 'Submit a paper'}</h1>
         <div className={`${CARD} p-5 text-center`}>
-          <p className="text-4xl">✅</p>
-          <p className="font-bold text-navy mt-2">{assignment ? `“${assignment.title}” sent for marking` : 'Sent for marking'}</p>
-          <p className="text-sm text-gray-600 mt-1.5">
-            When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
-            the red pen, and what each lost mark was for.
-          </p>
+          <p className="text-4xl">{dupNote ? '🔁' : '✅'}</p>
+          <p className="font-bold text-navy mt-2">{dupNote ? 'Already handed in' : assignment ? `“${assignment.title}” sent for marking` : 'Sent for marking'}</p>
+          {dupNote ? (
+            <p className="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{dupNote}</p>
+          ) : (
+            <p className="text-sm text-gray-600 mt-1.5">
+              When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
+              the red pen, and what each lost mark was for.
+            </p>
+          )}
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
             <Link href={assignment ? '/app/assignments' : isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
               {assignment ? 'Back to your work' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
@@ -679,8 +688,14 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 space-y-2">
             <p className="font-bold text-amber-900">Before you send — check this</p>
             <ul className="space-y-1.5 text-amber-900">
-              {findings.map((f, i) => <li key={i} className="leading-snug">• {f.message}</li>)}
+              {findings.map((f, i) => <li key={i} className="leading-snug whitespace-pre-line">• {f.message}</li>)}
             </ul>
+            {findings.some(f => f.kind === 'duplicate') && (
+              <Link href={isScience ? '/app/science/papers' : '/app/marking'}
+                className="block text-center text-sm font-semibold text-navy bg-white border border-amber-300 rounded-xl py-2.5">
+                It&apos;s the same paper — don&apos;t send it again
+              </Link>
+            )}
             <p className="text-[11px] text-amber-700">
               Your photos are already uploaded — adding a page won&apos;t re-send them.
             </p>

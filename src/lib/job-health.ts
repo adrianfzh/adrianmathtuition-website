@@ -66,6 +66,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'paper-library':     { kind: 'interval', hours: 180, label: 'Sundays 4:10am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
+  // 🖼 The missing-figure sweep (5 Oct 2026): bot scripts/missing-figures-sweep.js on the Fly
+  // worker, 03:00 SGT — questions that name a figure but store none → FIGURES ONLY re-runs.
+  'missing-figures':   { kind: 'interval', hours: 36, label: 'nightly 3:00am' },
   // 👯 The twins lane on the Fly worker (30 Sep 2026, SPEC-TWINS §10): every 15 min when marking
   // is quiet by day, always in the 00–06 SGT window; an empty queue still stamps, so absence = dead lane.
   'twin-batch':        { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },

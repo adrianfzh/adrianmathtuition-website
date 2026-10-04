@@ -38,6 +38,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'twins', group: 'lanes', label: '👯 Twins', what: 'Writes our own twin of school questions, per sub-skill.', when: 'every 15 min · up to 8 lanes' },
   { key: 'file-subgroups', group: 'filing', label: '🗂 Sub-skill filing · maths', what: 'Files topic-tagged maths questions under a sub-skill.', when: '04:15 and 16:15' },
   { key: 'file-subgroups-science', group: 'filing', label: '🧪 Sub-skill filing · science', what: 'Files physics, chemistry and biology questions under a sub-skill.', when: '10:15 and 22:15' },
+  { key: 'missing-figures', group: 'reviews', label: '🖼 Missing-figure sweep', what: 'Finds bank questions whose figure was never stored and sends their paper back to have it cropped or redrawn.', when: '03:00 · up to 20 papers' },
   { key: 'figure-fitness', group: 'reviews', label: '🖼 Figure check', what: 'Judges newly added question figures before they are shown.', when: '03:10' },
   { key: 'subject-retag', group: 'reviews', label: '🏷 Subject retag', what: 'Fixes the subject label on the last two days of bot questions.', when: '04:10' },
   { key: 'day-review', group: 'reviews', label: '🌅 Day review', what: 'Reads yesterday\'s bot answers and sends you the digest.', when: '05:00' },

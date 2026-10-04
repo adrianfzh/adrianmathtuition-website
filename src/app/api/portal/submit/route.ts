@@ -30,6 +30,8 @@ import type { HandinCountingClient, HandinFamily } from '@/lib/portal-submit-lim
 import { scienceQueuePlacement } from '@/lib/science-queue-store';
 import { dayWord } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
+import { findDuplicate, duplicateMessage, type DuplicateMatch } from '@/lib/duplicate-handin';
+import { handinFingerprints, earlierHandins, fingerprintOf, logDuplicateHandin } from '@/lib/duplicate-handin-store';
 import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
@@ -286,6 +288,46 @@ export async function POST(req: Request) {
     return r.json().catch(() => ({}));
   };
 
+  // ── the same paper, handed in twice ────────────────────────────────────────
+  // Rainie, 4 Oct 2026: Queenstown Chemistry P2 at 12:25, again at 22:28 — the same
+  // 24 photos (the first sat ten hours in a full queue) — and it was marked twice.
+  // lib/duplicate-handin: the SAME PHOTOS (storage fingerprints) within three days →
+  // nothing is asked: pages the earlier hand-in lacks are added to it, and it is marked
+  // once; the copy is logged (portal_event_log 'submit:duplicate', its photos kept).
+  // Only the same NAME → the student is asked below, beside the pre-flight's findings.
+  // Never for a worksheet or a printed paper (one hand-in each is already the rule).
+  let dupAsk: DuplicateMatch | null = null;
+  if (!assignment && !printedPaper) {
+    const prints = await handinFingerprints(admin, studentId);
+    const earlier = await earlierHandins(admin, studentId, prints);
+    const dup = earlier.length
+      ? findDuplicate({ paperName, subject: scienceSubject || 'math', fingerprints: photoUrls.map((u) => fingerprintOf(prints, u)) }, earlier)
+      : null;
+    if (dup?.kind === 'photos') {
+      const fresh = dup.newPageIndexes.map((i) => photoUrls[i]);
+      let added = 0;
+      let refused: string | null = null;
+      if (fresh.length) {
+        const d = await bot({ phase: 'add-pages', id: dup.run.id, photos: fresh.map((u) => ({ original_url: u })) }, 75_000).catch(() => ({ ok: false, message: 'the marker did not answer' }));
+        if (d?.ok === false || d?.error) refused = String(d?.message || d?.error || 'refused');
+        else added = fresh.length;
+      }
+      if (!refused) {
+        const message = duplicateMessage(dup, { added });
+        await logDuplicateHandin(admin, studentId, { of: dup.run.id, match: 'photos', paper_name: paperName, photo_urls: photoUrls, shared: dup.shared, added });
+        const who = account.display_name || 'A student';
+        notify_marking(`🔁 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” again — the same pages as “${escapeTelegramHtml(dup.run.paper_name || 'the earlier one')}”.\n${added ? `${added} new page${added === 1 ? '' : 's'} added to it; ` : ''}it is marked once.`).catch(() => {});
+        return NextResponse.json({ ok: true, runId: dup.run.id, duplicateOf: dup.run.id, message, ...(added ? { added } : {}) });
+      }
+      // The new pages could not be added (marking already under way): file it as its own
+      // hand-in, the old way, so nothing the student sent is lost.
+      console.warn('[portal-submit] duplicate with new pages, add refused:', refused);
+      await logDuplicateHandin(admin, studentId, { of: dup.run.id, match: 'photos', paper_name: paperName, photo_urls: photoUrls, shared: dup.shared, added: 0, refused });
+    } else if (dup?.kind === 'name' && !body.confirmed) {
+      dupAsk = dup;
+    }
+  }
+
   // ── look at the hand-in before filing it ───────────────────────────────────
   // Adrian, 1 Sep 2026. The one problem nobody can fix after marking is a page
   // that was never photographed: Q7 with no page produces no row, scores zero,
@@ -315,6 +357,7 @@ export async function POST(req: Request) {
       },
     }, 40_000).catch(() => ({}));
     const findings = Array.isArray(pre?.findings) ? pre.findings : [];
+    if (dupAsk) findings.unshift({ kind: 'duplicate', blocking: true, message: duplicateMessage(dupAsk), runId: dupAsk.run.id });
     if (findings.some((f: { blocking?: boolean }) => f?.blocking)) {
       return NextResponse.json({ needsConfirm: true, findings, list: pre?.list ?? 'none', key: pre?.key ?? null }, { status: 409 });
     }

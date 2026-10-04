@@ -2687,6 +2687,22 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
 > release, **➕ Add missing pages** (≤14 days) re-marks only the new pages and re-issues
 > (notice `pages-added`). At release, `missingAfterMarking` stamps a 3-day
 > `missing-questions` notice naming what came back unseen, plus a ⚠️ watch-out.
+>
+> **The same paper twice (5 Oct 2026, Adrian: "do the self fixes").** Rainie sent Queenstown
+> Chemistry P2 at 12:25 and again at 22:28 (the first sat ten hours in a full queue) — the same
+> 24 photos — and it was marked twice. Now the submit route checks the student's own hand-ins
+> of the last 3 days in the same family (`lib/duplicate-handin.ts`, pure/tested, Rainie's runs
+> as the regression; I/O `lib/duplicate-handin-store.ts`). **Same photos** (the storage eTag of
+> each page, from one folder listing — nothing downloaded; half the pages or three shared) →
+> nothing is asked: pages the earlier hand-in lacks go to it through the bot's `add-pages`,
+> the student reads "We already have this paper … it will be marked once", Adrian gets one 🔁
+> line, and the copy is logged in `portal_event_log` kind `submit:duplicate` (its photo URLs
+> kept — nothing deleted). If the bot refuses the pages (marking under way), the hand-in is
+> filed as its own run, the old way. **Same name only** (school words, paper number; no clash
+> of year or exam) and the earlier one not marked yet → a `duplicate` finding beside the
+> pre-flight's: "If this is the same paper, you don't need to send it again … If it is a
+> different paper, tap Send anyway", with an "It's the same paper — don't send it" door. The
+> bot's Telegram `/handin` does not check (it has its own one-a-day rule).
 
 - **A submission IS a saved run.** `/api/portal/submit` calls the bot's
   `phase:'save-paper'` + `phase:'set-student'`, so it lands as the same
