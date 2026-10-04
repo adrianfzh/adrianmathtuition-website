@@ -238,6 +238,36 @@ returns three views of the same money, from three sources:
 Pure pieces + tests: `lib/costs.ts` (`costEntries`, `costByDay`, `costByPath`,
 `monthTotal`, `costByPart`, `foldCostReport`, `foldCostLines`).
 
+## 💰 The Monday cost check + the cost levers (5 Oct 2026)
+
+Adrian, 5 Oct 2026: *"do page-trimming and weekly cost check and cheaper helper steps"*.
+Standing rule: every lever is PROVEN (A/B, shadow or trial) before it touches a student —
+never a quality drop.
+
+**`weekly-cost`** — Mondays 08:30 SGT (`30 0 * * 1` UTC), `/api/cron/weekly-cost`
+(`?dry=1` returns the message without sending). ONE Telegram message to the money topic:
+what a marked paper cost on average last week (Mon–Sun SGT), split into **placing the red
+pen** (Gemini placement) · **reading the pages** · **extra checks**, by lane (plan · paid
+reader · half-price), the month so far with a projection, the tests' own cost kept apart,
+and ONLY the savings whose test has passed — one line each ending *say "switch <name>" to
+turn it on*. Per-paper costs come from the runs (`result_json.usage`); the split and the
+month from the bot's ledger (Airtable `CostLog`); the bars from Supabase
+**`cost_lever_tests`** (one row per lever: `status` running | passed | failed | on,
+`measure`, `saving_per_paper_usd`). Pure `lib/weekly-cost.ts` (+ test), loader
+`lib/weekly-cost-store.ts`. Stamps `job_runs` `weekly-cost`.
+
+**The switches** — when Adrian says "switch <name>", the session sets the flag on the BOT
+app (`flyctl secrets set … -a adrianmath-telegram-math-bot`, which restarts it — do it when
+the marking queue is idle), then sets that lever's `cost_lever_tests.status = 'on'` so the
+Monday message stops offering it:
+
+| Say | Flag on the bot | What it does | Its test |
+|---|---|---|---|
+| `switch page-trim` | `MARKING_PAGE_TRIM=1` | a page read on the API carries only the paper pages with that page's questions (and their solutions), not the whole PDF; a read that strays is read again on the whole paper | `scripts/page-trim-ab.cjs` (bot) — marks part by part vs today's read, against the consistency noise floor |
+| `switch helper-flash` | `VISION_HELPER_TIER=flash` (shadow first: `=shadow`) | the red pen's part-region and token-ring asks go to the cheaper vision model; the row scan (the ticks) never does | live shadow `result_json.helper_shadow` ≥ 50 pages at the Pro-vs-Pro agreement of the trial (`cost_lever_tests.helper-flash.measure.noise_pct`) |
+| `switch classify-flash` | `CLASSIFY_ON_FLASH=1` (shadow first: `CLASSIFY_SHADOW=1`) | the page sorter on the cheaper vision model (only paid on paper the API reads) | `result_json.classify_shadow` ≥ 20 papers, page kind ≥ 97 %, printed questions ≥ 95 % |
+| `switch reader-<level>` | none yet — a code change per level | the cheaper reader for one level | the 👻 shadow read (`shadow-read-report`) per level |
+
 ## Adding a job
 
 1. Pick a kebab slug. 2. Stamp your success path (`logJobRun` / SKILL.md insert /
@@ -355,6 +385,7 @@ Rules:
 
 - `auto-release-report` — Mondays 8am SGT (`0 0 * * 1` UTC): the auto-release number — hand-ins released without Adrian in the last 7 days, how many he changed afterwards, and the auto-pause rule (≥5 released and >10 % changed → `auto_release_paused` set, Telegram). Route `/api/cron/auto-release-report`, pure `lib/auto-release-report.ts`.
 - `consistency-remark` — **Sundays 10pm SGT** (`0 14 * * 0` UTC): 📏 the weekly marking-consistency measure (17 Sep 2026, Adrian: *"we need consistency in marking … how can we measure the effectiveness of all these changes?"*). Every active paper in `consistency_set` is asked to be read again in **SHADOW** — the bot queues it on the Mac lane, a slot reads it with the same prompt and grounding as a whole re-mark, and the reading is filed in `paper_marking_runs.result_json.shadow_runs[]` beside the paper's real marking. **Nothing is delivered**: no student, no parent and no desk lane can see a shadow (bot `lib/shadow-run.js`, proved by `test/shadow-invariant.test.js`). Monday's `auto-release-report` then prints the 📏 Consistency line from `lib/shadow-diff.ts`. Route `/api/cron/consistency-remark`; the set is `lib/consistency-set.ts` + `/api/admin/consistency-set`; the numbers are `/api/admin/consistency`. **It costs plan time, never money** — about 8 × 16 min of Mac plan on a Sunday night, and there is deliberately no API-lane path, so a shadow that finds no slot waits for next Sunday. 22:00 is after the evening's hand-ins have been marked and released, so a measurement never sits in front of a student.
+- `weekly-cost` — **Mondays 8:30am SGT** (`30 0 * * 1` UTC): 💰 the Monday cost check — a paper's average cost, its three parts, the lanes, the month, and only the savings that passed their test (see §The Monday cost check). Route `/api/cron/weekly-cost`, pure `lib/weekly-cost.ts`.
 - `shadow-read-report` — **Thursdays 9am SGT** (`0 1 * * 4` UTC): 👻 the cheaper-reader shadow read back (1 Oct 2026, Adrian: "wire the three"). Every delivered maths paper the bot shadowed (`result_json.shadow_read`, bot `lib/shadow-read.js`, `MARKING_SHADOW_ARMS=claude-sonnet-5-5+ref:50`) rolled up per arm and per level against the noise floor from `consistency-remark`'s re-reads; ONE Telegram message to the marking topic with the verdict per level (≥ 10 papers and agreement at or above the marker's own) and the first disagreeing parts with their `/admin/mark-paper?run=` doors; silent while nothing is shadowed, stamped either way. Monday's `auto-release-report` prints the same measure as one 👻 line. The bot pings the topic once more when an arm's cap is reached. Pure `lib/shadow-read-report.ts` (the twin of the bot's summariser). Nothing flips itself.
 
 ## Plan-marking attribution — which Mac, and which Claude account (9 Sep 2026)

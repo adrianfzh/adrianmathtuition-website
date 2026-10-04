@@ -57,6 +57,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'consistency-remark': { kind: 'interval', hours: 204, label: 'Sundays 10pm' },
   // 👻 The cheaper-reader shadow read back weekly (1 Oct 2026, Thursdays 9am SGT).
   'shadow-read-report': { kind: 'interval', hours: 204, label: 'Thursdays 9am' },
+  // 💰 The Monday cost check (5 Oct 2026, Mondays 8:30am SGT): a paper's cost, its parts, the lanes, savings that passed.
+  'weekly-cost':        { kind: 'interval', hours: 204, label: 'Mondays 8:30am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },
   // The extraction inbox watcher: Dropbox /Extraction Inbox → paper-library bucket + queue (Vercel cron every 10 min, 8 Sep 2026).
   'extraction-inbox':   { kind: 'interval', hours: 1, label: 'every 10 min' },

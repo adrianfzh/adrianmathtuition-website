@@ -184,6 +184,10 @@
       "schedule": "0 1 * * 4"
     },
     {
+      "path": "/api/cron/weekly-cost",
+      "schedule": "30 0 * * 1"
+    },
+    {
       "path": "/api/cron/daily-queue",
       "schedule": "0 16 * * *"
     },
