@@ -6,7 +6,7 @@
 // the writing is done by plan-billed Claude Code agents (the `twin-question`
 // skill), never the API.
 //
-//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 5] [--json]  (only sub-skills short of 5 twins)
+//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 5] [--json] [--focus-only]  (only sub-skills short of 5 twins; --focus-only = the stuck report's)
 //   node scripts/twins/twin.mjs need    --level EM --subgroup <id>   (prints how many more that sub-skill wants)
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
@@ -198,6 +198,9 @@ async function queue() {
   // sub-skills the week's stuck report named first, then the ones students meet (drawn in
   // 90 days), then the emptiest, then the biggest
   const focus = await stuckFocus(env);
+  // --focus-only: just the stuck report's sub-skills (twins.sh writes those first in
+  // BOTH the E Math and the A Math lane, before the level-by-level targets — 5 Oct 2026)
+  if (has('--focus-only')) for (const k of [...buckets.keys()]) if (!focus.has(k)) buckets.delete(k);
   const order = [...buckets.entries()].sort(([ka, a], [kb, b]) => (Number(focus.has(kb)) - Number(focus.has(ka))) || (b.draws - a.draws) || (b.need - a.need) || (b.rows.length - a.rows.length) || String(ka).localeCompare(String(kb)));
   // one source per sub-skill per round — every row a sub-skill offers stays listed, so a
   // lane that finds the first one parked can take the next; twins.sh takes ONE per sub-skill a run

@@ -130,4 +130,24 @@ describe('buildStuckPicture', () => {
     const r = buildStuckPicture({ students, asks: [ask(eva, 1, 'Vectors', 'EM'), ask(chloe, 2, 'Vectors', 'EM'), ask(chloe, 3, 'Vectors', 'EM')], losses: [], now: NOW });
     expect(r.rising.map((x) => [x.area, x.isNew])).toEqual([['Vectors', true]]);
   });
+
+  it('twin focus covers A Math AND E Math even when every sheet is A Math', async () => {
+    const { twinFocusFor } = await import('./stuck-picture');
+    const r = buildStuckPicture({
+      students,
+      asks: [
+        ask(eva, 1, 'Trigonometry (Identities)', 'AM', 'Proofs', 11), ask(chloe, 2, 'Trigonometry (Identities)', 'AM', 'Proofs', 11),
+        ask(eva, 2, 'Vectors', 'EM', 'Column vectors', 21), ask(chloe, 3, 'Vectors', 'EM', 'Parallel vectors', 22),
+      ],
+      losses: [loss(eva, 1, 'Trigonometry (Identities)', 'AM', 'k1'), loss(eva, 2, 'Trigonometry (Identities)', 'AM', 'k2')],
+      now: NOW,
+    });
+    const plan = planMaterials(r).filter((m) => m.subject === 'AM');
+    const f = twinFocusFor(r, plan);
+    expect(f.filter((x) => x.subject === 'AM').map((x) => x.subgroupId)).toEqual([11]);
+    expect(f.filter((x) => x.subject === 'EM').map((x) => x.subgroupId).sort()).toEqual([21, 22]);
+    // no duplicates, and nothing invented for a subject with no filed asks
+    expect(new Set(f.map((x) => x.subgroupId)).size).toBe(f.length);
+    expect(twinFocusFor(buildStuckPicture({ students, asks: [], losses: [], now: NOW }), [])).toEqual([]);
+  });
 });

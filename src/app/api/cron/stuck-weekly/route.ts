@@ -27,7 +27,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegramButtonsTo } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { loadStuckInput } from '@/lib/stuck-store';
-import { buildStuckPicture, planMaterials, stuckMessage, SHEET_COUNT, WEEK_DAYS, type MaterialPlan, type PreparedMaterial } from '@/lib/stuck-picture';
+import { buildStuckPicture, planMaterials, stuckMessage, twinFocusFor, SHEET_COUNT, WEEK_DAYS, type MaterialPlan, type PreparedMaterial } from '@/lib/stuck-picture';
 import { sendCallback, worksheetLevel } from '@/lib/stuck-send';
 
 export const dynamic = 'force-dynamic';
@@ -86,7 +86,8 @@ export async function GET(req: NextRequest) {
     const materials: PreparedMaterial[] = [];
     for (const p of plans) materials.push(doPrepare ? await prepare(p) : { ...p, ok: false, error: 'not prepared (prepare=0)' });
 
-    const twinFocus = materials.flatMap((m) => m.subgroupIds.map((id) => ({ subgroupId: id, subject: m.subject, area: m.area })));
+    // the sheets' sub-skills, then A Math AND E Math both topped up (twinFocusFor)
+    const twinFocus = twinFocusFor(picture, materials);
     const message = stuckMessage(picture, materials);
 
     const { data: row, error } = await sb.from('stuck_reports').insert({

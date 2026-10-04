@@ -324,6 +324,41 @@ export function planMaterials(p: StuckPicture, max = MAX_MATERIALS): MaterialPla
   return out;
 }
 
+// ── the twins lanes' focus ──────────────────────────────────────────────────
+
+export interface TwinFocus { subgroupId: number; subject: StuckSubject; area: string }
+
+/** Sub-skills per subject topped up from the week's picture when no sheet named one. */
+export const FOCUS_PER_SUBJECT = 4;
+
+/**
+ * The sub-skills the twins lanes write first (`stuck_reports.twin_focus`, read by
+ * scripts/twins/twin.mjs). The sheets' own sub-skills first; then BOTH A Math and
+ * E Math get some (Adrian, 5 Oct 2026: "both A Math and E Math needs to be
+ * written") — a subject the sheets did not name takes the sub-skills of its
+ * highest-ranked area that has any (gaps first, then the rest by score).
+ */
+export function twinFocusFor(p: StuckPicture, materials: Pick<MaterialPlan, 'subgroupIds' | 'subject' | 'area'>[]): TwinFocus[] {
+  const out: TwinFocus[] = [];
+  const seen = new Set<number>();
+  const add = (id: number, subject: StuckSubject, area: string) => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    out.push({ subgroupId: id, subject, area });
+  };
+  for (const m of materials) for (const id of m.subgroupIds) add(id, m.subject, m.area);
+  for (const subject of ['AM', 'EM'] as StuckSubject[]) {
+    if (out.some((f) => f.subject === subject)) continue;
+    const areas = p.groups.filter((g) => g.subject === subject).flatMap((g) => g.areas)
+      .filter((a) => a.skills.some((s) => typeof s.subgroupId === 'number'))
+      .sort((x, y) => (Number(y.gap) - Number(x.gap)) || (y.score - x.score) || x.area.localeCompare(y.area));
+    const top = areas[0];
+    if (!top) continue;
+    for (const s of top.skills.slice(0, FOCUS_PER_SUBJECT)) if (typeof s.subgroupId === 'number') add(s.subgroupId, subject, top.area);
+  }
+  return out;
+}
+
 // ── the message ─────────────────────────────────────────────────────────────
 
 export interface PreparedMaterial extends MaterialPlan {
