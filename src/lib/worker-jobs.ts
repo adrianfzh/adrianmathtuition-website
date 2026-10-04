@@ -38,6 +38,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'twins', group: 'lanes', label: '👯 Twins', what: 'Writes our own twin of school questions, per sub-skill.', when: 'every 15 min · up to 8 lanes' },
   { key: 'file-subgroups', group: 'filing', label: '🗂 Sub-skill filing · maths', what: 'Files topic-tagged maths questions under a sub-skill.', when: '04:15 and 16:15' },
   { key: 'file-subgroups-science', group: 'filing', label: '🧪 Sub-skill filing · science', what: 'Files physics, chemistry and biology questions under a sub-skill.', when: '10:15 and 22:15' },
+  { key: 'nightly-builder', group: 'reviews', label: '🌙 Nightly builder', what: 'Builds one idea you approved in the build list on its own copy, runs every test, and asks you in the morning whether to ship it.', when: '01:30 · message 07:30' },
   { key: 'missing-figures', group: 'reviews', label: '🖼 Missing-figure sweep', what: 'Finds bank questions whose figure was never stored and sends their paper back to have it cropped or redrawn.', when: '03:00 · up to 20 papers' },
   { key: 'extraction-learn', group: 'reviews', label: '📜 Extraction learner', what: 'Reads the extraction notes, applies safe rules, asks you about filing rules.', when: '06:50' },
   { key: 'figure-fitness', group: 'reviews', label: '🖼 Figure check', what: 'Judges newly added question figures before they are shown.', when: '03:10' },

@@ -7,6 +7,18 @@
 >
 > **Standing working agreement (Adrian):** fan out with agents where it makes work faster — no need to ask. Auto commit+push to dev each turn; promote to prod freely once verified (his 2026-08-29 cadence); alias adrianmath-dev after preview builds; ALWAYS check the marking queue (paper_marking_runs result_json null count = 0) before any bot push.
 
+## 🌙 Nightly builder — approved to build
+
+The Fly worker builds the rows below overnight (01:30 SGT, at most one a night), each on its own
+branch with every test run, and messages Adrian at 07:30: "Built X. Preview: … Ship?" Only a row
+with an approval date and **Adrian** in `approved` and status exactly `approved` is ever built.
+A session adds a row ONLY on Adrian's word ("approve X for the builder") — never on its own.
+`allow` names a guarded area the item may touch (billing · parents · switches · deletion · marking),
+else `—`. The builder writes the status. How it works: [`docs/NIGHTLY-BUILDER.md`](docs/NIGHTLY-BUILDER.md).
+
+| slug | repo | what to build | approved | allow | status |
+|---|---|---|---|---|---|
+
 ## 🧪 Science marking + the marking queue — the 10 Sep 2026 evening queue (Adrian: "remind me of what we wanted to fix")
 
 Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_TO_STUDENTS=false`), the teacher's-mark calibration box, the second-look re-mark fix (bot 9543b41), the desk's "being marked" rows, `MARK_QUEUE_BATCH=0` on Fly, six Cambridge-booklet calibration rows (SPEC-SCIENCE-MARKING §First numbers). Adrian is sourcing real marked science papers.

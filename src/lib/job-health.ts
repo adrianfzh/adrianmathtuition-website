@@ -79,6 +79,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🧹 The Fly worker's disk check (5 Oct 2026, bot worker/fly/jobs.sh disk_check): runs every tick,
   // stamps once a day — silence = the scheduler is dead. Its cleanups stamp 'disk-clean' (no rhythm).
   'disk-check':        { kind: 'interval', hours: 36, label: 'the Fly worker, daily' },
+  // 🌙 The nightly builder (5 Oct 2026, docs/NIGHTLY-BUILDER.md): bot scripts/nightly-builder.js on the
+  // Fly worker, 01:30 SGT — stamps every night, also with nothing approved, so silence = dead builder.
+  'nightly-builder':   { kind: 'interval', hours: 36, label: 'the Fly worker, nightly 1:30am' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
