@@ -64,7 +64,7 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
   "apply learn <name>" / "drop learn <name>".
 - **`SUPABASE_ACCESS_TOKEN`** for the backup check to verify Supabase's own nightly backups (a
   Vercel env var; without it the job checks only our own copy).
-- **Preparing worksheets in advance: B, C or the lesson package?** (below, Product section).
+- **Preparing worksheets in advance** — decided 5 Oct 2026: the lesson package is BUILT (📌 Next lesson), B is NOT built (Adrian: "don't build option B"), C open (below, Product section).
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
@@ -109,12 +109,12 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ## Product — student portal
 
-- 📐 **Preparing worksheets in advance** (Adrian, 5 Oct 2026: "for preparing worksheets in advance - put in memory"). Options discussed that day — **his pick between B, C and the lesson package is still open; ask before building any of them, and reuse A's machinery** (the stuck-topics analysis, held sheets, the assign path), not a second pipeline:
+- 📐 **Preparing worksheets in advance** (Adrian, 5 Oct 2026: "for preparing worksheets in advance - put in memory"). Options discussed that day — **the lesson package is built and B was declined (5 Oct 2026); C is still open — ask before building it, and reuse A's machinery** (the stuck-topics analysis, held sheets, the assign path), not a second pipeline:
   - **A. Stuck-topics sheets — ✅ BUILT 5 Oct 2026** (`/admin/stuck`, cron `stuck-weekly` Sunday 19:00 SGT; bot `handlers/stuck.js`): the 1–3 biggest gaps each week get a 10-question sheet, held until Adrian says send. Runs once the website is promoted.
-  - **B. Before each exam** (recommended with A, not built): a week before a student's exam (Airtable `Exams`), a revision pack for the tested topics, ready for Adrian to check.
+  - **B. Before each exam** — ❌ NOT BUILT, Adrian 5 Oct 2026: "don't build option B". (Exam season still changes the Next lesson suggestion — the tested topics + the next Set papers on the card — but there is no separate pack and no message.)
   - **C. A full library** (not built): a revision sheet for every topic and level that has none, a few each night (the `revision-worksheet` skill), filed to Dropbox Revision/<folder> for vetting.
   - **D. On request only** — today's default.
-  - **The lesson package** (Adrian's idea): before each lesson, a per-student pack — notes, practice, their recent mistakes — ready to print in class, feeding a progress view on the student profile (work done, mistakes by cause, improvement over time).
+  - **The lesson package — ✅ BUILT 5 Oct 2026 as 📌 Next lesson** (Adrian: "build the lesson package"): the card at the top of the profile's Overview + the print page `/admin/students/<id>/next`; what's next per subject from `data/teaching-order.json` (he edits it), the PDFs made the night before (cron `next-lesson` 20:00 SGT), the worksheet box ("Make something for <name>", stored in `student_materials`), the lesson log that fills itself from what was printed (cron `lesson-end`, one 📒 Telegram line, ✓ or a reply), and the 📝 progress note (the Fly worker's `/progress-note` at 17:05, numbers from computed facts) → `SPEC-STUDENT-FIRST.md` §15, `docs/SCHEDULE.md` §The lesson log that fills itself. Next if wanted: a kiosk "For you today" link to the pack's PDFs; the worksheet box drawing NEW questions through the sheet worker when the bank is thin.
 
 - 📐 **The company — two apps across the market segments** — PLANNED 23 Sep 2026 (Adrian: "an edtech company based on subscriptions … science for sec level first … another app selling marking to tutors … pure app/web"), nothing built. Umbrella spec [`SPEC-COMPANY.md`](SPEC-COMPANY.md): the segment table (§3), the student app (§4), the tutor app (§5), science one subject at a time behind its bench (§6), the economics by lane (§7 — API US$2.27 a paper measured; Batch by default; today's S$29 pass is about break-even through a store), orgs + entitlements + brand-by-hostname first (§10), phases with numeric gates (§11), Adrian's decisions (§12). Startable now: measure the Batch cost on 20 papers, the physics seeded bench, the lower-sec science solutions pass.
 

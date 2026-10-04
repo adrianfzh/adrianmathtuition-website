@@ -134,3 +134,41 @@ Adrian, 17 Sep 2026: *"mainly students should be able to do work on the app, and
 ## 14. Score forecast (17 Sep 2026, Adrian's Papers tab only)
 
 Built the same day: `lib/score-forecast.ts` + `-store.ts` + `ForecastCard.tsx` (see `docs/MARKING.md` §Score forecast). Adrian: "only show the prediction to me internally (in students under papers tab)". Students see nothing until the back-test error is under 5 marks for both subjects and the improvement trend is modelled.
+
+## 15. 📌 Next lesson — the card on Overview (built 5 Oct 2026)
+
+Adrian: *"where can i see this? student profile or something? best if i can just go to a student
+relevant tool then print what i need or the system is smart enough to suggest what's next"*.
+
+- **Where:** the first thing on the Overview tab (compact), and the print page
+  `/admin/students/<id>/next` (full: the worksheet box, the last lesson's log, everything made
+  before, earlier progress notes). Phone first; every PDF opens in the phone's viewer to print.
+- **What's next:** per subject, the next step in `data/teaching-order.json` (Adrian edits it; a
+  step is a canonical topic, optionally narrowed to some of its bank sub-skills — E Math
+  trigonometric ratios → sine rule and cosine rule → area → bearings). `lib/teaching-order.ts
+  chooseNext` (tested): after the last thing taught (the lesson log, or a sheet printed or given
+  from this card), skipping what is covered; with no teaching record, after how far the school's
+  own tests got this year (past Exams' tested topics); else their weakest recent topic; else the
+  first step of their year. A last lesson rated Slow keeps the same step. One line says why.
+- **Exam season:** an exam in Airtable `Exams` within three weeks of the lesson turns the card to
+  that exam: the tested topics (in teaching order) and the next Set papers not yet given
+  (`lib/print-sets.ts`, Set 1 then Set 2…; H2 has none while its Sets await Adrian's pick).
+  No separate exam pack and no message — option B was declined (5 Oct 2026).
+- **Ready to print** (made the night before by cron `next-lesson`, 20:00 SGT, or **Prepare now**):
+  a practice sheet on the step (bank questions through the `/ws` worksheet route, answers at the
+  back); in exam season a revision sheet on the tested topics + the Set papers (rendered on demand
+  by `lib/render-ref-paper.ts`, the students' Print-a-paper renderer); a warm-up on recent mistakes;
+  an unfinished Practice Again sheet. **Print** opens the PDF and stamps it printed — that stamp is
+  what the lesson log reads (`docs/SCHEDULE.md` §The lesson log that fills itself).
+- **Make something for <name>:** a typed request ("10 questions on sine rule, harder ones") → a
+  short Sonnet 5 read checked against the course's topic list (`lib/worksheet-chat.ts`) → a bank
+  sheet → stored on the student. Everything made for a student (night-before items, the box, stuck
+  sheets sent) is one table, `student_materials`, so the next suggestion knows what they got.
+- **📝 Progress note** (under the card): How they are doing · Why · Next steps for you · a
+  parent-report draft (copy, never sent). Facts computed by `lib/progress-note.ts` (marks lost by
+  topic by month, the Notebook's causes, practice, asks, what was taught, Practice Again outcomes,
+  exams); the Fly worker's `/progress-note` (bot repo, 17:05 daily, only students with new work —
+  weekly, or before a lesson) writes the words; `POST /api/admin/progress-notes` recomputes the
+  facts and refuses a number they do not contain. History kept (`student_progress_notes`).
+- Routes: `api/admin/next-lesson` (GET card · POST prepare), `api/admin/student-materials` (+ `/pdf`),
+  `api/admin/worksheet-chat`, `api/admin/progress-notes`; health-check `admin-next-lesson`.

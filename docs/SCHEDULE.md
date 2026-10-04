@@ -467,6 +467,39 @@ That backlog is exactly what makes a monthly parent report expensive, since
 - Marking a lesson **Absent removes the row** (nothing to write up); anything else
   patches status to `Completed`.
 
+## The lesson log that fills itself (5 Oct 2026)
+
+Adrian: *"i hardly use lesson log even after so many iterations, need something more helpful
+or automatable, that just logs without me doing anything.. how to do it for physical lessons"*.
+`/admin/log` stays; this writes the same Lessons fields without him.
+
+- **What counts as "done in the lesson":** an item printed (or marked Given) from the
+  student's 📌 Next lesson page on the lesson day (`student_materials.printed_at`), a sheet
+  the kiosk printed for them that day (`kiosk_prints`), and work they handed in from the
+  lesson day to two days after (`paper_marking_runs`). Pure rules `lib/lesson-autolog.ts`
+  (tested); the reads `lib/next-lesson-store.ts composeForPack`.
+- **When:** cron `/api/cron/lesson-end` (`10 3-13 * * *` UTC = every hour at :10, 11:10–21:10
+  SGT) takes every lesson TODAY whose slot has ended (slot `Time` → end, `slotEndHHMM`),
+  Scheduled or Completed. It writes `Topics Covered` (comma string), `Lesson Notes`
+  ("Auto log: … — auto (not confirmed)") and `Progress Logged` — **never over a log Adrian
+  wrote by hand** (`mayWriteAutoLog`: only an empty row or one whose notes start
+  "Auto log:"), and **never touches Status** (attendance stays his; arrears billing reads it).
+  A lesson where nothing was printed or handed in gets no entry and no line.
+- **The line:** ONE Telegram message per student to the students topic: *"📒 Eva today: sine
+  rule and cosine rule (printed pack), warm-up on bearings. Tap ✓ if right, or reply with what
+  you did."* ✓ (`ll:ok:<pack>`) confirms it; a reply TO the line is read (a short Sonnet 5
+  call, topics checked against the course's list; `parseReplyPlain` without it) into topics +
+  homework, his topics replacing the auto ones. Both go through the bot (`lib/lesson-log.js`,
+  `handlers/lesson-log.js`) to `POST /api/bot/lesson-log` (Bearer `BOT_INTERNAL_SECRET`).
+  No reply = the entry stands as "auto (not confirmed)".
+- **Switch:** 📒 End-of-lesson line on `/admin/switches` (Airtable `Settings` row
+  `lesson_end_line`; **no row = on**). Off = the log is still written, silently. This is a
+  cron message, not an admin-UI action, so the "admin web UI is silent" rule above is untouched.
+- **Later hand-ins:** the nightly `next-lesson` cron re-composes the last three days'
+  unconfirmed logs, so a paper handed in the day after joins its lesson.
+- Rows: `lesson_packs` (one per Airtable lesson: the night-before plan, `auto_log`,
+  `line_message_id` so a reply finds its lesson, `confirmed_at`). job_runs `lesson-end`.
+
 ## June 2026 Revision Sprint
 
 `/admin/revision-signups` has two tabs: **Sign-ups** (manage sign-ups) and **Attendance**.
