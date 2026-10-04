@@ -74,6 +74,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'next-lesson':        { kind: 'interval', hours: 36, label: 'nightly 8pm' },
   // 📒 The lesson log that fills itself (5 Oct 2026, /api/cron/lesson-end, hourly :10 from 11:10 to 21:10 SGT).
   'lesson-end':         { kind: 'interval', hours: 16, label: 'hourly 11am–9pm' },
+  // 📝 The progress note on the student card (5 Oct 2026, Fly worker /progress-note, 17:05 SGT daily; stamps even when nobody is due).
+  'progress-notes':     { kind: 'interval', hours: 36, label: 'daily 5:05pm' },
   // The monitor + self-fix for a marked page whose image never uploaded: redraws
   // what the student has not seen, reports what they already hold (Vercel cron
   // every 6h at :30, 14 Sep 2026 — lib/page-gap-repair).

@@ -173,7 +173,7 @@ export async function nextLessonFor(student: StudentRow, today = sgtTodayISO()):
   return { id: r.id, date: String(r.fields['Date']), time, end: slotEndHHMM(time), status: String(r.fields['Status']), type: (r.fields['Type'] as string) ?? null };
 }
 
-async function examsFor(student: StudentRow): Promise<ExamRecordLike[]> {
+export async function examsFor(student: StudentRow): Promise<ExamRecordLike[]> {
   const since = addDaysISO(sgtTodayISO(), -320);
   const formula = narrowToStudent(`IS_AFTER({Exam Date}, '${since}')`, student.name);
   const { records } = await airtableRequestAll('Exams', `?filterByFormula=${encodeURIComponent(formula)}&${qs(['Student', 'Exam Type', 'Custom Name', 'Subject', 'Exam Date', 'Tested Topics', 'Exam Notes', 'No Exam'])}`);
@@ -191,7 +191,7 @@ async function examsFor(student: StudentRow): Promise<ExamRecordLike[]> {
     }));
 }
 
-async function loggedLessons(student: StudentRow): Promise<{ date: string; topics: string[]; mastery: string | null }[]> {
+export async function loggedLessons(student: StudentRow): Promise<{ date: string; topics: string[]; mastery: string | null }[]> {
   const since = addDaysISO(sgtTodayISO(), -300);
   const formula = narrowToStudent(`AND({Date}>='${since}',{Progress Logged})`, student.name);
   const { records } = await airtableRequestAll('Lessons', `?filterByFormula=${encodeURIComponent(formula)}&${qs(['Student', 'Date', 'Topics Covered', 'Topics Free Text', 'Mastery'])}`);

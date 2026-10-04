@@ -9,7 +9,8 @@
 // inside three weeks of an exam, the exam's topics and the next Set papers),
 // and READY TO PRINT — the PDFs the night job made (lib/next-lesson-store). Print
 // opens the PDF and stamps the item printed, which is what the lesson's auto log
-// reads. The full page adds the worksheet box ("Make something for …"),
+// reads. Under it, the 📝 progress note (the worker's weekly words around computed
+// facts, /api/admin/progress-notes). The full page adds the worksheet box ("Make something for …"),
 // everything made for the student, and what the last lesson logged itself as.
 import { useCallback, useEffect, useState } from 'react';
 import type { MaterialRow, NextLessonPlan, PackRow, LessonRow } from '@/lib/next-lesson-store';
@@ -58,6 +59,53 @@ function Item({ m, onChanged }: { m: MaterialRow; onChanged: () => void }) {
       {m.status === 'ready' && <button style={btn(!m.printed_at)} onClick={print}>🖨 Print</button>}
       {m.status === 'ready' && !m.printed_at && !m.given_at && <button style={btn()} title="Handed over without printing here" onClick={() => act('given')}>Given</button>}
       {(m.printed_at || m.given_at) && <button style={{ ...btn(), color: C.faint }} title="Clear printed/given" onClick={() => act('unmark')}>↺</button>}
+    </div>
+  );
+}
+
+type Note = { id: string; written_at: string; facts_text: string; note: { doing: string[]; why: string[]; next: string[]; parent: string | null } };
+
+/** 📝 The progress note (5 Oct 2026): written by the worker from computed facts; the facts fold under it. */
+function ProgressNotes({ studentId, first, full }: { studentId: string; first: string; full: boolean }) {
+  const [notes, setNotes] = useState<Note[] | null>(null);
+  useEffect(() => {
+    fetch(`/api/admin/progress-notes?student=${encodeURIComponent(studentId)}`).then((r) => r.json()).then((j) => setNotes(j.notes ?? [])).catch(() => setNotes([]));
+  }, [studentId]);
+  if (!notes) return null;
+  const head: React.CSSProperties = { fontSize: 12, fontWeight: 700, color: C.faint, letterSpacing: '0.04em', margin: '10px 0 3px' };
+  const list = (xs: string[]) => <ul style={{ margin: 0, paddingLeft: 18 }}>{xs.map((x, i) => <li key={i} style={{ fontSize: 14, color: C.ink, lineHeight: 1.45, marginBottom: 2 }}>{x}</li>)}</ul>;
+  if (!notes.length) {
+    return full ? <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${C.line}`, fontSize: 13, color: C.faint }}>📝 No progress note yet — one is written once a week when there is new work, and before a lesson.</div> : null;
+  }
+  const n = notes[0];
+  return (
+    <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${C.line}` }} data-progress-note>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#475569' }}>📝 Progress note <span style={{ fontWeight: 400, color: C.faint }}>· {stamp(n.written_at)}</span></div>
+      <div style={head}>HOW {first.toUpperCase()} IS DOING</div>{list(n.note.doing)}
+      {n.note.why.length > 0 && <><div style={head}>WHY</div>{list(n.note.why)}</>}
+      <div style={head}>NEXT STEPS FOR YOU</div>{list(n.note.next)}
+      <details style={{ marginTop: 8 }}>
+        <summary style={{ fontSize: 12.5, color: C.soft, cursor: 'pointer' }}>The numbers it was written from</summary>
+        <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12, color: '#334155', background: '#f8fafc', padding: 10, borderRadius: 8, margin: '6px 0 0' }}>{n.facts_text}</pre>
+      </details>
+      {n.note.parent && (
+        <details style={{ marginTop: 6 }}>
+          <summary style={{ fontSize: 12.5, color: C.soft, cursor: 'pointer' }}>Draft for the parent report (edit before using — never sent by itself)</summary>
+          <p style={{ fontSize: 13.5, color: C.ink, lineHeight: 1.5, margin: '6px 0' }}>{n.note.parent}</p>
+          <button style={btn()} onClick={() => navigator.clipboard?.writeText(n.note.parent ?? '')}>Copy</button>
+        </details>
+      )}
+      {full && notes.length > 1 && (
+        <details style={{ marginTop: 8 }}>
+          <summary style={{ fontSize: 12.5, color: C.soft, cursor: 'pointer' }}>Earlier notes ({notes.length - 1})</summary>
+          {notes.slice(1).map((o) => (
+            <div key={o.id} style={{ borderTop: `1px solid ${C.line}`, paddingTop: 6, marginTop: 6 }}>
+              <div style={{ fontSize: 12, color: C.faint }}>{stamp(o.written_at)}</div>
+              {list([...o.note.doing, ...o.note.why])}
+            </div>
+          ))}
+        </details>
+      )}
     </div>
   );
 }
@@ -164,6 +212,8 @@ export default function NextLessonCard({ studentId, full = false }: { studentId:
         )}
         {ready.map((m) => <Item key={m.id} m={m} onChanged={load} />)}
       </div>
+
+      <ProgressNotes studentId={studentId} first={first} full={full} />
 
       {full && (
         <>

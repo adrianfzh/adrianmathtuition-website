@@ -558,12 +558,13 @@ export async function GET(req: NextRequest) {
         ['/api/admin/student-materials', { method: 'POST' }],
         ['/api/admin/worksheet-chat', { method: 'POST' }],
         ['/api/bot/lesson-log', { method: 'POST' }],
+        ['/api/admin/progress-notes?due=1', {}],
       ];
       for (const [path, init] of probes) {
         const r = await fetch(`${base}${path}`, { ...init, redirect: 'manual', signal: T(10000) });
         if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
       }
-      return 'auth gates up (4)';
+      return 'auth gates up (5)';
     }),
     // 📜 Humanities feedback (2 Oct 2026): the student's hand-in and the bench's door.
     timed('portal-humanities', async () => {
