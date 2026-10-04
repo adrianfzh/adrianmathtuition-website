@@ -13,6 +13,8 @@ import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
+import { readOnceToStamp } from '@/lib/paper-notice';
+import { stampNoticesSeen } from '@/lib/paper-notice-store';
 import { fileHref } from '@/lib/student-files-url';
 import PaperSubjectPill, { subjectTone } from '@/components/PaperSubjectPill';
 import PaperTabs from '../PaperTabs';
@@ -58,7 +60,8 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   // identity everywhere below (sheets, siblings, the student's ink).
   // Adrian's cookie, unless he is "viewing as a student" — then the page is the student's
   // (no Edit marking, no Their paper) so he sees exactly what they see (22 Sep 2026).
-  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
+  const adminCookie = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  const isAdmin = adminCookie && !(await viewingAsStudent());
   const account: Awaited<ReturnType<typeof currentAccount>> | null = isAdmin ? null : await currentAccount();
   const sb = getSupabaseAdmin();
   let q = sb.from('paper_marking_runs').select(COLUMNS + ', student_id, queue_status').eq('id', id).not('released_at', 'is', null);
@@ -78,6 +81,10 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const { papers } = buildStudentMarking([row as unknown as MarkingRunRow], { studentName: viewerName });
   const paper = papers[0];
   if (!paper) notFound();
+  // 🔢 A read-once notice (lib/paper-notice READ_ONCE_KINDS): this render shows
+  // it; the stamp makes it the last. Only the student's own look counts — never
+  // Adrian's cookie, "view as student" included.
+  await stampNoticesSeen(readOnceToStamp([paper], adminCookie ? 'admin' : 'student'), sid);
 
   // 🧪 A science paper (SPEC-SCIENCE-MARKING.md §Decision 10 Sep 2026): the cover,
   // the marked pages and the lost marks, one column — and no Practice Again (that

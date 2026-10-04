@@ -32,7 +32,9 @@ export type ReissueReason =
   /** The paper's total was corrected; the marks earned did not change. */
   | 'marks-recalibrated'
   /** The student added pages after marking; only those pages were marked. */
-  | 'pages-added';
+  | 'pages-added'
+  /** The paper's "out of" was wrong and is fixed (5 Oct 2026); the marks did not move. App channel by design. */
+  | 'total-corrected';
 
 export type ReissueLineInput = {
   reason: ReissueReason;
@@ -78,6 +80,10 @@ export function reissueLine(input: ReissueLineInput): string {
     return `📄 Your marks for ${paper} have been recalibrated${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
   }
 
+  if (input.reason === 'total-corrected') {
+    return `📄 The total for ${paper} was shown wrongly and is corrected${score ? ` — it is ${score}` : ''}. Your marks did not change.\n\n${link}`;
+  }
+
   if (input.reason === 'pages-added') {
     return `📄 The pages you added to ${paper} are marked${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
   }
@@ -91,5 +97,6 @@ export function parseReissueReason(v: unknown): ReissueReason {
   if (v === 'marks-realigned') return 'marks-realigned';
   if (v === 'marks-recalibrated') return 'marks-recalibrated';
   if (v === 'pages-added') return 'pages-added';
+  if (v === 'total-corrected') return 'total-corrected';
   return 'checked';
 }

@@ -42,7 +42,7 @@ export function overCount(p: { awarded: number; max: number }): boolean {
  * `68 / 90` reads as a score when it is not one.
  *
  * All three conditions matter. Nothing grounded the marking; the denominator
- * came from somewhere other than counting (registry, cover, override); and the
+ * came from a guess rather than counting or a person (registry, cover); and the
  * marker located FEWER marks than that denominator. A grounded run, a counted
  * run, or one whose questions add up to the full paper is untouched — those
  * totals are honest.
@@ -57,7 +57,11 @@ export function isUngroundedTotal(p: {
   max?: number | null;
 }): boolean {
   if (p.groundingSource) return false;
-  if (!p.maxSource || p.maxSource === 'counted' || p.maxSource === 'brackets') return false;
+  // 'override' is a person stating the paper's official total (the admin page's
+  // "out of ___", or a corrected total — 5 Oct 2026, six E Math papers fixed
+  // from /90 to /80 and /100). That total IS confirmed, so "not the official
+  // total" would be false on it; the marks seen still print on the review.
+  if (!p.maxSource || p.maxSource === 'counted' || p.maxSource === 'brackets' || p.maxSource === 'override') return false;
   const counted = Number(p.countedMax), max = Number(p.max);
   if (!Number.isFinite(counted) || !Number.isFinite(max)) return false;
   return counted > 0 && max > 0 && counted < max;

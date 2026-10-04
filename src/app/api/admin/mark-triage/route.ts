@@ -414,6 +414,8 @@ export async function POST(req: NextRequest) {
     subject?: unknown;
     /** action 'reissue' only: why the copy changed — lib/reissue-message.ts. */
     reason?: unknown;
+    /** action 'reissue', reason 'total-corrected' only: the wrong "out of" the student was shown. */
+    fromMax?: unknown;
     /**
      * action 'reissue' only: where the student is told. 'telegram' (default) is
      * the line in Adrian's name; 'app' leaves a three-day notice on the paper's
@@ -651,7 +653,10 @@ export async function POST(req: NextRequest) {
     let via: 'telegram' | 'app' | 'none' = 'none';
     if (noticeKind) {
       // Vetted at the top of the block; the card carries the reason it was given.
-      rj.student_notice = buildPaperNotice(noticeKind);
+      // 🔢 'total-corrected' carries both totals so the line can name them, and
+      // reads once (lib/paper-notice READ_ONCE_KINDS) — `fromMax` is what the
+      // student was shown, the new max is the one this re-issue just built.
+      rj.student_notice = buildPaperNotice(noticeKind, noticeKind === 'total-corrected' ? { fromMax: Number(body.fromMax), toMax: max } : {});
       await supa.from('paper_marking_runs').update({ result_json: rj }).eq('id', runId);
       via = 'app';
     } else {

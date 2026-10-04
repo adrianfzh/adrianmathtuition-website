@@ -67,6 +67,10 @@ import SubjectTiles from './SubjectTiles';
 import SubjectPanels, { type SubjectPanel } from './SubjectPanels';
 import { fileHref } from '@/lib/student-files-url';
 import { sgtTodayISO } from '@/lib/sgt';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { readOnceToStamp } from '@/lib/paper-notice';
+import { stampNoticesSeen } from '@/lib/paper-notice-store';
 
 // A year of papers is more than any student will scroll, and keeps the payload
 // bounded for someone on a phone in a corridor.
@@ -228,6 +232,12 @@ export default async function PapersView({ account, sid, admin = false }: {
   // top-level PDF (Adrian, 8 Sep 2026): its marking run leaves the list and is
   // opened from the paper's Practice Again row. `top` is what the student sees.
   const { top, markedSheetByParent } = groupPracticeAgain(papers, sheetRowsAll);
+  // 🔢 A read-once notice (lib/paper-notice READ_ONCE_KINDS) shown on a card in
+  // THIS render (`top` — the cards the student sees) is stamped seen, so the next view of the list or the paper has
+  // no line. Never on Adrian's tab, and never under his cookie ("view as
+  // student" included) — his look is not the student's.
+  const adminCookie = admin || verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  await stampNoticesSeen(readOnceToStamp(top, adminCookie ? 'admin' : 'student'), sid);
   // The sheet jobs behind every listed paper — for papers with NO sheet, where
   // the sheet is (being written · with Adrian · nothing worth practising); for
   // papers WITH one, whether it kept gaps back for a next wave (11 Sep 2026)

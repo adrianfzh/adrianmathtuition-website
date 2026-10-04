@@ -55,6 +55,11 @@ describe('isUngroundedTotal — was this marked with no paper to check it agains
     expect(isUngroundedTotal({ ...isabelle, maxSource: 'brackets' })).toBe(false);
   });
 
+  it('never fires on a total a person stated — an override is the official total (5 Oct 2026)', () => {
+    // Eva's E Math 2022 P2: no paper attached, 97 marks located, corrected to /100.
+    expect(isUngroundedTotal({ groundingSource: null, maxSource: 'override', countedMax: 97, max: 100 })).toBe(false);
+  });
+
   it('never fires when the questions add up to the whole paper', () => {
     expect(isUngroundedTotal({ ...isabelle, countedMax: 90 })).toBe(false);
     expect(isUngroundedTotal({ ...isabelle, countedMax: 92 })).toBe(false);

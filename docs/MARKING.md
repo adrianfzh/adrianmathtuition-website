@@ -3068,6 +3068,22 @@ time … your mark hasn't changed"), and it disappears by itself after `NOTICE_D
 Expiry is a stored INSTANT, not a "days since", so a notice can be cut short or extended by
 writing the row and a paper repaired twice does not stack two banners.
 
+**🔢 Read-once notices (5 Oct 2026, Adrian: "put a small note that disappears upon first
+read … do not mention adrian").** Kind `total-corrected` — a paper's "out of" was wrong
+(six old-syllabus E Math 4048 papers shown /90; Paper 1 is /80, Paper 2 /100). The stamp
+carries `fromMax`/`toMax` and reads *"Total marks corrected. This paper's total was shown as
+out of 90 by mistake. It is now out of 80. Your marks did not change."* It is in
+`READ_ONCE_KINDS`: instead of expiring after three days it stands until the STUDENT first
+renders it — the Papers list (`papers-view.tsx`, top-level cards) or the paper page — and that
+render, which already shows the line, stamps `student_notice.seen_at` through the atomic
+`stamp_paper_notice_seen` function (`migrations/paper_notice_seen.sql`,
+`lib/paper-notice-store.ts`); every later render shows nothing. Adrian's cookie never stamps,
+"view as student" included. `until` = 30 days is only the safety net. The door:
+`mark-triage {action:'reissue', reason:'total-corrected', channel:'app', fromMax}` after the
+run's total is set with `max_source:'override'` + `total_max_override` (so a re-mark keeps
+it). An `override` total no longer counts as "not the official total" on the cover/strip
+(`isUngroundedTotal`) — a person stated it.
+
 The door is `mark-triage {action:'reissue', reason:'pages-recovered', channel:'app'}` →
 `{ok:true, via:'app'}`: it rebuilds both PDFs, refiles the Dropbox copy and flips the
 assignment's score exactly as the Telegram re-issue does, then stamps the notice and sends

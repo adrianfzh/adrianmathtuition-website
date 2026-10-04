@@ -36,7 +36,7 @@
  * on the card the student cannot check against anything else, so the reason has
  * to be the reason: a new kind, not the nearest existing one.
  */
-export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated' | 'pages-added' | 'missing-questions';
+export type PaperNoticeKind = 'pages-recovered' | 'marks-realigned' | 'marks-recalibrated' | 'pages-added' | 'missing-questions' | 'total-corrected';
 
 export type PaperNotice = {
   kind: PaperNoticeKind;
@@ -46,6 +46,15 @@ export type PaperNotice = {
   until: string;
   /** 'missing-questions' only: what the paper came back without. */
   missing?: { q: number; part?: string }[];
+  /** 'total-corrected' only: what the paper was wrongly out of, and what it is out of now. */
+  fromMax?: number;
+  toMax?: number;
+  /**
+   * A read-once notice (`total-corrected`): when the STUDENT first saw it — ISO.
+   * Absent = not seen yet. Once stamped the line is never shown again; `until`
+   * is only the safety net for a student who never opens the app.
+   */
+  seen_at?: string;
 };
 
 /** What the student reads. */
@@ -57,6 +66,23 @@ export type PaperNoticeText = {
 
 /** How long a notice stands. Adrian, 14 Sep 2026. */
 export const NOTICE_DAYS = 3;
+
+/**
+ * Notices that go away once the student has READ them, not after a fixed few
+ * days (Adrian, 5 Oct 2026, on six E Math papers shown out of 90: "put a small
+ * note that disappears upon first read"). The news is one fact about one paper
+ * — the total was wrong, it is right now — so the first look is the whole job;
+ * leaving it up for days only makes a corrected paper look like a problem one.
+ * `until` still applies, as a safety expiry, so a stamp nobody sees cannot
+ * stand forever.
+ */
+export const READ_ONCE_KINDS: readonly PaperNoticeKind[] = ['total-corrected'];
+/** The safety expiry of a read-once notice. */
+export const READ_ONCE_DAYS = 30;
+
+export function isReadOnce(kind: PaperNoticeKind): boolean {
+  return READ_ONCE_KINDS.includes(kind);
+}
 
 const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
   // Not "redrawn", not "re-marked", no new score — none of that happened
@@ -108,22 +134,42 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
     body: "If you did them, add those pages.",
     addPages: true,
   },
+  // 🔢 The paper's "out of" was wrong (5 Oct 2026: six old-syllabus E Math
+  // papers — Paper 1 is out of 80 and Paper 2 out of 100 — shown out of 90).
+  // Adrian: "saying total marks were incorrect, now amended to correct total
+  // marks something like that - do not mention adrian". The body is built from
+  // the stamp's numbers in activePaperNotice; this is the fallback. No name, no
+  // "checked", no "re-marked": the marks earned did not move, and the last
+  // sentence says so.
+  'total-corrected': {
+    kind: 'total-corrected',
+    title: 'Total marks corrected',
+    body: "This paper's total was shown wrongly. It is correct now. Your marks did not change.",
+  },
 };
 
 function isKind(v: unknown): v is PaperNoticeKind {
-  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated' || v === 'pages-added' || v === 'missing-questions';
+  return v === 'pages-recovered' || v === 'marks-realigned' || v === 'marks-recalibrated' || v === 'pages-added' || v === 'missing-questions' || v === 'total-corrected';
 }
 
 /** The stamp to write on `result_json.student_notice`. */
 export function buildPaperNotice(
   kind: PaperNoticeKind,
-  opts: { at?: string | Date; days?: number; missing?: { q: number; part?: string }[] } = {},
+  opts: { at?: string | Date; days?: number; missing?: { q: number; part?: string }[]; fromMax?: number; toMax?: number } = {},
 ): PaperNotice {
   const at = opts.at ? new Date(opts.at) : new Date();
-  const days = Number.isFinite(opts.days) ? Number(opts.days) : NOTICE_DAYS;
+  const days = Number.isFinite(opts.days) ? Number(opts.days) : isReadOnce(kind) ? READ_ONCE_DAYS : NOTICE_DAYS;
   const until = new Date(at.getTime() + days * 86_400_000);
   const missing = kind === 'missing-questions' ? cleanRefs(opts.missing) : [];
-  return { kind, at: at.toISOString(), until: until.toISOString(), ...(missing.length ? { missing } : {}) };
+  const totals = kind === 'total-corrected' ? cleanTotals(opts.fromMax, opts.toMax) : {};
+  return { kind, at: at.toISOString(), until: until.toISOString(), ...(missing.length ? { missing } : {}), ...totals };
+}
+
+/** Both totals, or neither — a half-told correction falls back to the plain wording. */
+function cleanTotals(from: unknown, to: unknown): { fromMax?: number; toMax?: number } {
+  const f = Number(from), t = Number(to);
+  const ok = (n: number) => Number.isInteger(n) && n > 0 && n <= 500;
+  return ok(f) && ok(t) && f !== t ? { fromMax: f, toMax: t } : {};
 }
 
 function cleanRefs(x: unknown): { q: number; part?: string }[] {
@@ -152,7 +198,9 @@ export function parsePaperNotice(raw: unknown): PaperNotice | null {
   const until = typeof r.until === 'string' ? r.until : '';
   if (!until || Number.isNaN(Date.parse(until))) return null;
   const missing = r.kind === 'missing-questions' ? cleanRefs(r.missing) : [];
-  return { kind: r.kind, at, until, ...(missing.length ? { missing } : {}) };
+  const totals = r.kind === 'total-corrected' ? cleanTotals(r.fromMax, r.toMax) : {};
+  const seen = typeof r.seen_at === 'string' && !Number.isNaN(Date.parse(r.seen_at)) ? { seen_at: r.seen_at } : {};
+  return { kind: r.kind, at, until, ...(missing.length ? { missing } : {}), ...totals, ...seen };
 }
 
 /**
@@ -167,6 +215,15 @@ export function activePaperNotice(resultJson: unknown, now: Date = new Date()): 
   const notice = parsePaperNotice(rj?.student_notice);
   if (!notice) return null;
   if (Date.parse(notice.until) <= now.getTime()) return null;
+  // Read once: the render that stamps `seen_at` already has this text in hand
+  // (noticeView reads before it stamps), so every render after it shows nothing.
+  if (isReadOnce(notice.kind) && notice.seen_at) return null;
+  if (notice.kind === 'total-corrected' && notice.fromMax && notice.toMax) {
+    return {
+      ...TEXT['total-corrected'],
+      body: `This paper's total was shown as out of ${notice.fromMax} by mistake. It is now out of ${notice.toMax}. Your marks did not change.`,
+    };
+  }
   if (notice.kind === 'missing-questions' && notice.missing?.length) {
     const n = notice.missing.length;
     return {
@@ -178,7 +235,46 @@ export function activePaperNotice(resultJson: unknown, now: Date = new Date()): 
   return TEXT[notice.kind];
 }
 
+/**
+ * Who is looking at a paper — decides whether a read-once notice counts as read.
+ * `admin` covers Adrian's cookie in every form, "view as student" included: he
+ * may see the line (so he can check it), but his look is not the student's.
+ */
+export type NoticeViewer = 'student' | 'admin';
+
+/**
+ * The line to show for one run AND whether this render is the student's first
+ * read of a read-once notice (so the caller stamps `seen_at`). Pure.
+ *
+ *   unseen, student → shown, stamp
+ *   unseen, admin   → shown, no stamp
+ *   seen            → not shown, no stamp
+ *   past `until`    → not shown, no stamp
+ *   a timed kind    → as activePaperNotice, never a stamp
+ */
+export function noticeView(
+  resultJson: unknown,
+  opts: { viewer: NoticeViewer; now?: Date },
+): { text: PaperNoticeText | null; stampSeen: boolean } {
+  const text = activePaperNotice(resultJson, opts.now ?? new Date());
+  if (!text) return { text: null, stampSeen: false };
+  return { text, stampSeen: opts.viewer === 'student' && isReadOnce(text.kind) };
+}
+
 /** The reading of a `notice` field off a request body. Unrecognised = no notice. */
 export function parseNoticeKind(v: unknown): PaperNoticeKind | null {
   return isKind(v) ? v : null;
+}
+
+/**
+ * The runs whose read-once notice this render shows to the STUDENT for the
+ * first time — the ones the caller stamps `seen_at` on, after building the
+ * page with the line in it. Pure; takes what the page already built.
+ */
+export function readOnceToStamp(
+  papers: { id: string; notice?: PaperNoticeText | null }[],
+  viewer: NoticeViewer,
+): string[] {
+  if (viewer !== 'student') return [];
+  return papers.filter(p => p.notice && isReadOnce(p.notice.kind)).map(p => p.id);
 }

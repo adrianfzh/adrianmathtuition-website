@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildPaperNotice, parsePaperNotice, activePaperNotice, parseNoticeKind, NOTICE_DAYS,
+  READ_ONCE_DAYS, isReadOnce, noticeView, readOnceToStamp,
 } from './paper-notice';
 
 const AT = '2026-09-14T06:00:00.000Z';
@@ -89,5 +90,68 @@ describe('missing-questions notice', () => {
     expect(t?.title).toBe("We can't see Q4 and Q7(b) in your photos");
     expect(t?.addPages).toBe(true);
     expect(activePaperNotice({ student_notice: n }, new Date('2026-10-04T00:00:00Z'))).toBeNull();
+  });
+});
+
+// 🔢 Six E Math papers shown out of 90 (5 Oct 2026). Adrian: "put a small note
+// that disappears upon first read … do not mention adrian".
+describe('total-corrected — a read-once notice', () => {
+  const at = '2026-10-05T04:00:00.000Z';
+  const fresh = { student_notice: buildPaperNotice('total-corrected', { at, fromMax: 90, toMax: 80 }) };
+  const seen = { student_notice: { ...fresh.student_notice, seen_at: '2026-10-05T09:00:00.000Z' } };
+  const now = new Date('2026-10-06T00:00:00Z');
+
+  it('names both totals, says the marks stand, and names nobody', () => {
+    const t = activePaperNotice(fresh, now)!;
+    expect(t.kind).toBe('total-corrected');
+    expect(t.title).toBe('Total marks corrected');
+    expect(t.body).toBe("This paper's total was shown as out of 90 by mistake. It is now out of 80. Your marks did not change.");
+    expect(`${t.title} ${t.body}`).not.toMatch(/adrian|tutor|re-?mark|checked/i);
+  });
+
+  it('stands for a 30-day safety net, not three days', () => {
+    expect(fresh.student_notice.until).toBe('2026-11-04T04:00:00.000Z');
+    expect(READ_ONCE_DAYS).toBe(30);
+    expect(isReadOnce('total-corrected')).toBe(true);
+    expect(isReadOnce('pages-recovered')).toBe(false);
+  });
+
+  it('unseen + the student → shown, and this render stamps it', () => {
+    const v = noticeView(fresh, { viewer: 'student', now });
+    expect(v.text?.kind).toBe('total-corrected');
+    expect(v.stampSeen).toBe(true);
+    expect(readOnceToStamp([{ id: 'r1', notice: v.text }], 'student')).toEqual(['r1']);
+  });
+
+  it('seen → gone, and nothing to stamp', () => {
+    expect(activePaperNotice(seen, now)).toBeNull();
+    expect(noticeView(seen, { viewer: 'student', now })).toEqual({ text: null, stampSeen: false });
+    // The record stays on the run.
+    expect(parsePaperNotice(seen.student_notice)?.seen_at).toBe('2026-10-05T09:00:00.000Z');
+  });
+
+  it("Adrian's view (his cookie, view-as included) shows it but never counts as the read", () => {
+    const v = noticeView(fresh, { viewer: 'admin', now });
+    expect(v.text?.kind).toBe('total-corrected');
+    expect(v.stampSeen).toBe(false);
+    expect(readOnceToStamp([{ id: 'r1', notice: v.text }], 'admin')).toEqual([]);
+  });
+
+  it('past the safety expiry → gone even unseen', () => {
+    expect(noticeView(fresh, { viewer: 'student', now: new Date('2026-11-04T04:00:00Z') })).toEqual({ text: null, stampSeen: false });
+  });
+
+  it('the timed kinds are untouched: a seen_at does not hide them, and they are never stamped', () => {
+    const p = { student_notice: { ...buildPaperNotice('pages-recovered', { at }), seen_at: at } };
+    const v = noticeView(p, { viewer: 'student', now });
+    expect(v.text?.kind).toBe('pages-recovered');
+    expect(v.stampSeen).toBe(false);
+    expect(readOnceToStamp([{ id: 'r1', notice: v.text }], 'student')).toEqual([]);
+  });
+
+  it('without both totals it falls back to the plain line', () => {
+    const t = activePaperNotice({ student_notice: buildPaperNotice('total-corrected', { at, fromMax: 90 }) }, now)!;
+    expect(t.body).toBe("This paper's total was shown wrongly. It is correct now. Your marks did not change.");
+    expect(parseNoticeKind('total-corrected')).toBe('total-corrected');
   });
 });
