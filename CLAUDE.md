@@ -113,6 +113,23 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   content reads well too. The daily page reader counts a hard-to-read note as a finding (bot
   `.claude/skills/marking-review/SKILL.md` §D).
 
+## 🗣 Talking to Adrian — plain words in every reply (Adrian, 11 Sep → 5 Oct 2026)
+
+Adrian, 5 Oct 2026: *"the message has to explain the background clearly and simply and what
+the fix is. leave our jargon, leave out code speak - speak simply and clearly"*. He asked on
+11 Sep, 17 Sep and 29 Sep too, and still typed "explain simply and clearly" or "what do you
+mean?" about 25 times between 30 Sep and 5 Oct. Why: every reply he has to decode costs him
+a second round trip, between lessons.
+
+- **Background first**, then what happened or what you propose, then what he must do (if anything).
+- **No internal names in the sentence** — lane, shard, shadow, flag, gate, harness, cap, tick,
+  slot, branch, refspec, seed. Say what the thing is; the name may follow in brackets.
+- **Every offer you end with says what changes for him or a student if he says yes.** "Say the
+  word and I'll lower the watcher's cap" got "what do you mean?" — eight times like that.
+- **"What do you mean?" or "show me" → answer with a picture** (a screenshot or a labelled
+  mockup), not more words.
+- One idea per line. Before sending, read it as a parent would.
+
 ## 🙊 The app never names Adrian (Adrian, 3 Oct 2026)
 
 Adrian: *"don't mention me in the app. just say something generic"*. Every string a student
