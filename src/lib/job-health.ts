@@ -59,6 +59,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // the last 7 days, grouped, checked against paper_library + the bank, one
   // Telegram line (Vercel cron Mondays 8am SGT, 11 Sep 2026).
   'missing-papers':     { kind: 'interval', hours: 204, label: 'Mondays 8am' },
+  // 🧭 Where students are stuck (5 Oct 2026): the week's asks to the bot + marks lost,
+  // gaps, sheets prepared, ONE Telegram message (Vercel cron Sundays 7pm SGT). Stamps
+  // every week, quiet ones included.
+  'stuck-weekly':       { kind: 'interval', hours: 204, label: 'Sundays 7pm' },
   // The monitor + self-fix for a marked page whose image never uploaded: redraws
   // what the student has not seen, reports what they already hold (Vercel cron
   // every 6h at :30, 14 Sep 2026 — lib/page-gap-repair).

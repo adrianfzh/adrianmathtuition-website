@@ -204,3 +204,35 @@ export async function sendTelegramWithButtons(
   }
 }
 
+
+/**
+ * Buttons under a message in a notification topic (the category's forum thread,
+ * else the DM) — `sendTelegramWithButtons` always goes to the DM. Returns false on
+ * any failure. The callbacks are handled by the BOT (e.g. `st:` → handlers/stuck.js).
+ */
+export async function sendTelegramButtonsTo(
+  text: string,
+  buttons: { text: string; url?: string; callback_data?: string }[][],
+  category?: NotifyCategory,
+): Promise<boolean> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const routed = await resolveTopic(category);
+  const chatId = routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
+  if (!token || !chatId) return false;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true,
+        ...(routed?.threadId ? { message_thread_id: routed.threadId } : {}),
+        ...(buttons.length ? { reply_markup: { inline_keyboard: buttons } } : {}),
+      }),
+    });
+    if (!res.ok) { console.error('[telegram] sendTelegramButtonsTo failed:', await res.text()); return false; }
+    return true;
+  } catch (err) {
+    console.error('[telegram] sendTelegramButtonsTo threw:', (err as Error).message);
+    return false;
+  }
+}

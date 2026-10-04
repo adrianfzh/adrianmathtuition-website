@@ -166,6 +166,16 @@ async function twinCounts(env, level) {
   for (const t of twins) { const sg = sgOf.get(t.twin_of); if (sg) have.set(sg, (have.get(sg) ?? 0) + 1); }
   return { rows, have };
 }
+// 🧭 The weekly stuck report (5 Oct 2026, /api/cron/stuck-weekly) names the bank
+// sub-skills students asked about AND lost marks on; those go first, for two weeks.
+// Fail-soft: no report, an old one or an unreadable table = the usual order.
+async function stuckFocus(env) {
+  try {
+    const since = new Date(Date.now() - 14 * 86_400_000).toISOString();
+    const rows = await rest(env, `stuck_reports?select=twin_focus&dry=is.false&created_at=gte.${since}&order=created_at.desc&limit=1`);
+    return new Set(((rows[0] && rows[0].twin_focus) || []).map((f) => f.subgroupId).filter((x) => Number.isInteger(x)));
+  } catch { return new Set(); }
+}
 async function queue() {
   const env = loadEnv();
   const level = argOf('--level', 'EM');
@@ -185,8 +195,10 @@ async function queue() {
   }
   const inBucket = (a, b) => (b.draws_90d - a.draws_90d) || ((a.level === level ? 0 : 1) - (b.level === level ? 0 : 1)) || String(a.source_id).localeCompare(String(b.source_id));
   for (const b of buckets.values()) b.rows.sort(inBucket);
-  // sub-skills students meet (drawn in 90 days) first, then the emptiest, then the biggest
-  const order = [...buckets.entries()].sort(([ka, a], [kb, b]) => (b.draws - a.draws) || (b.need - a.need) || (b.rows.length - a.rows.length) || String(ka).localeCompare(String(kb)));
+  // sub-skills the week's stuck report named first, then the ones students meet (drawn in
+  // 90 days), then the emptiest, then the biggest
+  const focus = await stuckFocus(env);
+  const order = [...buckets.entries()].sort(([ka, a], [kb, b]) => (Number(focus.has(kb)) - Number(focus.has(ka))) || (b.draws - a.draws) || (b.need - a.need) || (b.rows.length - a.rows.length) || String(ka).localeCompare(String(kb)));
   // one source per sub-skill per round — every row a sub-skill offers stays listed, so a
   // lane that finds the first one parked can take the next; twins.sh takes ONE per sub-skill a run
   const spread = [];

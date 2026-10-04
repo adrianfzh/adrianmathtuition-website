@@ -37,6 +37,11 @@ Writers:
   is set when Adrian releases a sheet he queued himself; day 3, then weekly,
   four nudges at most, Telegram + web push, one summary line to Adrian; stamps
   even on quiet days, skips the stamp only in `?dry=1` mode),
+  `stuck-weekly` (Sundays 7pm SGT, `0 11 * * 0` UTC — 🧭 the week's asks to the bot +
+  marks lost → gaps, up to three sheets prepared, ONE Telegram message with Send buttons
+  to the students topic; nothing is assigned until Adrian sends it; stamps every
+  non-dry run, quiet weeks included, `ok=false` when the Telegram send failed →
+  CLAUDE.md row "Where students are stuck"),
   `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
   their paper, grouped and checked against `paper_library` + the bank,
   `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
