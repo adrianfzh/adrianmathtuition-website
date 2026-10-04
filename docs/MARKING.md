@@ -3332,7 +3332,7 @@ field** — a new surface strips the one that exists.
   `flattenBranches` (bot `ai/solution-entry.js`, tested). `repairMarkingLatex`
   repairs all four branch fields. Related prompt rules (same day): trig solutions
   state the sign→quadrant step with ASTC lettering and keep `x = a or x = b` on one
-  line; a new **`astc` margin-diagram kind #9** (bot `ai/margin-diagram.js`,
+  line; a new **`astc` margin-diagram kind #9** (bot `lib/figures/margin-kit.js`,
   `validateAstc` tested) draws the quadrant cross with ticks — quadrants are DERIVED
   from the `{ratio, sign}` conditions, and a contradicting claim kills the figure,
   same philosophy as the other eight kinds.
@@ -3916,7 +3916,7 @@ figure" (a `console.warn` with the reason, nothing on the page).
 - **Cost:** the spec rides the existing marking call (no extra model call); the
   DIAGRAM RULES live inside `MARK_JSON_SPEC`, which both `DIRECT_MARK_SYSTEM`
   and `STANDALONE_MARK_SYSTEM` share, so the cache-warm invariant holds.
-- **Files (bot repo):** `ai/margin-diagram.js`, `test/margin-diagram.test.js`;
+- **Files (bot repo):** `lib/figures/margin-kit.js`, `test/margin-diagram.test.js`;
   wiring in `ai/paper-marker.js` (spec + per-attempt collection),
   `ai/photo-overlay.js` (pass-through), `ai/annotate.js` (build + place +
   footer fallback).

@@ -413,12 +413,12 @@ jobs there are together with the toggles for accounts … have a page just for t
 | 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
 | 🌙 Gemini Batch for queued papers (3 Oct 2026) | Airtable `Settings` `marking_vision_batch` | the bot, every queue tick (`lib/marking-settings.js visionBatch()`; no row yet → the Fly secret `VISION_BATCH` decides) | every vision call is live — full price, no waiting. ON = a queued paper's first vision round goes to Google's Batch API at half price and may wait up to an hour; ⚡ Mark now never batches |
 | Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
-| Worker jobs ×19 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+| Worker jobs ×20 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
 
 - **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
   `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
-  `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `worksheets`, `proposals`,
+  `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `worksheets`, `proposals`,
   `flagjudge`, `flag-review`. `prune`, the disk check and the after-restart recovery are never
   switchable (they keep the worker alive).
 - **Every one obeys since 5 Oct 2026** (Adrian: "fix switches page so it stops every job"). The

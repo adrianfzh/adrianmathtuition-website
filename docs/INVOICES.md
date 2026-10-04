@@ -150,6 +150,9 @@ national Maths paper, from the SEAB timetables (`EXAM_CUTOFFS`, one row per year
 
 Everything is SGT. Vercel fires crons up to ~20 min late.
 
+> The three **arrears** rows (1st / 1st / 2nd, Dec–Jan) are DORMANT since 15 Sep 2026 — they are
+> no longer in `vercel.json` (the banner at the top of this section). Kept for the day they return.
+
 | When | Cron (UTC in `vercel.json`) | Whom | What it does |
 |---|---|---|---|
 | 14th 7am | `0 23 13 * *` `/api/generate-invoices` | Lane A (+ all students Feb–Sep) | Drafts next month, clamped at the exam cut-off. Lane B students for Oct/Nov/Dec/Jan are skipped and listed. |

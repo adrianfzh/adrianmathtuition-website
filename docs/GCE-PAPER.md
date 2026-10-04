@@ -525,8 +525,8 @@ is held to the standard document alone (its §7).
 run folder was cleared with a session restart and the DOCX/PDF copies went with it, so the
 set was rebuilt from its manifests and filed where every session can find it:
 - Manifests (the questions, solutions, gates, verdicts — the source of truth): COMMITTED as
-  `data/gce-generated/GCE-JC-P1-seed1-2026-09-26.json` (11 questions, Paper 1) and
-  `data/gce-generated/GCE-JC-P2-seed4-2026-09-27.json` (10 questions, Paper 2, the rewrite).
+  `data/gce-generated/rejected-h2-set1/GCE-JC-P1-seed1-2026-09-26.json` (11 questions, Paper 1) and
+  `data/gce-generated/rejected-h2-set1/GCE-JC-P2-seed4-2026-09-27.json` (10 questions, Paper 2, the rewrite).
 - Figures: `data/gce-generated/h2-set1/p1/Q6.figure.cjs` (the graph of f′(x) with regions 2, 8, 9)
   and `data/gce-generated/h2-set1/p2/Q4.figure.cjs` (the vase cross-section), committed with
   their PNGs; `node scripts/gce-paper/figure.mjs --run data/gce-generated/h2-set1/p1 --slots 6`
