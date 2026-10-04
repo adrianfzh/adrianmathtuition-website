@@ -69,6 +69,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'paper-library':     { kind: 'interval', hours: 180, label: 'Sundays 4:10am' },
   'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
+  'extraction-learn':  { kind: 'interval', hours: 36, label: 'daily 6:50am (Fly worker)' },
   // 🖼 The missing-figure sweep (5 Oct 2026): bot scripts/missing-figures-sweep.js on the Fly
   // worker, 03:00 SGT — questions that name a figure but store none → FIGURES ONLY re-runs.
   'missing-figures':   { kind: 'interval', hours: 36, label: 'nightly 3:00am' },

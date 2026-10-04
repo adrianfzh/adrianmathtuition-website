@@ -141,6 +141,11 @@ topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
 
 **👯 Twins — the flip** (the board's own section, SPEC-TWINS §6 phase 2, 30 Sep 2026): one row per (tree level, topic) from the `twin_readiness` view — verified twins, pending twins, school rows drawn in 90 days, school rows filed — and a **Flip** button enabled only when verified twins ≥ drawn and ≥ 1. Flip = `POST /api/admin/serving-policy {level, topic, schoolRows:false}` → a `serving_policy` row; `serving_school_rows(level, topic)` is read inside the four serving RPCs (`practice_next`, `practice_pool`, `practice_candidates`, `kiosk_pool`), so a flipped topic serves only `AdrianMath` / `AI Generated` rows from the next call (`lib/serving-policy.ts flipReady`, `practiceEligibility {schoolRowsRetired}` mirrors it). The route 409s below the threshold; nothing flips itself; undo puts the school rows back. Health-check `serving-policy` probes the 401.
 
+**`extraction-learn`** (daily 6:50am SGT on the Fly worker since 5 Oct 2026 — the extraction learner:
+reads the extraction lanes' finish notes and FLAG files, applies safe rules, proposes filing rules
+to Adrian; `docs/EXTRACTION-QUEUE.md` §4b). `'extraction-learn': { kind: 'interval', hours: 36, label: 'daily 6:50am (Fly worker)' }`.
+Switch `extraction-learn` on `/admin/switches` (the script checks it itself).
+
 **`figure-fitness`** (nightly 3:10am SGT on the Fly worker since 25 Sep 2026 — the ingestion figure-fitness catch-up,
 [`FIGURES.md`](FIGURES.md) §4) keeps the nightly shape it had as a Mac
 task: `'figure-fitness': { kind: 'interval', hours: 36, label: 'nightly 3:10am' }`

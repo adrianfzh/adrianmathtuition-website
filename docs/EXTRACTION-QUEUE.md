@@ -370,6 +370,69 @@ finished `done`: 7 rows, 50 / 50 marks, 2 source sets (Sources A–F; Extracts 1
 `verify_humanities_paper` pass. The other 69 papers wait for the promote: once the parser is
 on production, drop the folders' files into the inbox as they are named.
 
+## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
+
+Adrian, 5 Oct 2026: *"do extraction learning from its own flags too"*, then *"are standing rules
+fixed?"* → *"yes do that"*.
+
+**Two copies of the rules, one job each.**
+- **The law** — `extraction_worker_prompt` id `exam-extraction` — is what every worker READS, in
+  full, each run. It stays the source of truth for the worker.
+- **The table** — `extraction_rules` (main project, service key only) — is the READABLE INDEX: one
+  row per rule a person cares about, in plain words (`plain_words`), with `why`, `added_at`,
+  `source` (`existing` · `adrian-ruling` · `learned`), `kind` (`filing` = changes how a paper is
+  filed · `safe` = helps the worker), `status` (`proposed` · `active` · `redraft` · `retired` ·
+  `dropped`) and `law_text` = the exact text in the law (or the Fly brief,
+  bot `worker/fly/EXTRACT_PROMPT.md`, where `law_section` says so).
+- **`/admin/extraction-rules`** (hub tile 📜) lists them: waiting-for-you on top, then *How papers
+  are filed*, *What the worker does*, *Known spellings of a school*, retired/dropped folded.
+  "Change this" copies `Change rule <slug>: ` for Adrian to finish and hand to a session.
+  Pure grouping/words in `src/lib/extraction-rules.ts` (tested). Server-rendered, no API route.
+
+**Keeping them in step.** Whoever changes the law changes the row in the same sitting:
+- the learner and Adrian's Ship do it themselves (below);
+- a SESSION editing the law by hand: archive first (a new dated id, `exam-extraction-YYYY-MM-DD`,
+  then `b`, `c` …), edit the law, then insert / update the `extraction_rules` row (a replaced rule →
+  `status='retired'`, `replaced_by=<new slug>`). A rule only in the law is invisible to Adrian; a
+  row whose `law_text` is no longer in the law is wrong. The 26 rows seeded on 5 Oct 2026 took
+  their `law_text` verbatim from the law of that day.
+
+**The learner** (bot `scripts/extraction-learn.js` + `lib/extraction-learn.js` (pure, tested) +
+`lib/extraction-rules-store.js`; Fly worker daily **06:50 SGT** via `worker/fly/extraction-learn.sh`;
+switch `extraction-learn` on `/admin/switches`; `job_runs` `extraction-learn`, rhythm 36 h):
+1. reads the finish notes of the papers finished in the last 26 h, the new `papers/FLAG_*.md` files
+   and `papers/SCHOOL_ALIASES.md` on the worker, and groups the notes by kind (old 5076–5078 code,
+   cover names another school, cover code vs level, inner tags, practical paper, bank short,
+   duplicate under another spelling, damaged source …);
+2. **spellings** — folds the workers' "same school, other spelling" findings into families, keeps
+   out pairs that must never join (RI / Raffles Girls, ACS Barker Road / ACS Independent …) and
+   files that held another school's paper, checks a name is in the bank, and adds each family as
+   an active `type='alias'` row. Safe: the law's §Learned from the flags tells the worker to read
+   them as candidates and still confirm with one stem; the stored school never changes;
+3. **rules** — a kind that recurs (≥ 2) or blocked a paper, a general ruling of Adrian's found in
+   the notes, or a proposal he asked to change → one plan-billed `claude -p` (Opus) drafts rules.
+   Code decides safe vs filing (`ruleKind`: only alias / key-location / known-broken-source /
+   procedure / complete-partial are safe, and filing words in the law text make it filing).
+   **Safe** → appended to the law's **§Learned from the flags** (archived first), row `active`,
+   the papers it unblocks requeued. **Filing** → row `proposed`, one plain Telegram message to
+   the ops topic with ✅ Ship / ✏️ Change / 🗑 Drop;
+4. one summary message, one `job_runs` stamp.
+
+**Adrian's answer** rides the proposals door (bot docs/PROPOSALS.md): the buttons or
+`ship|drop proposal xr-<slug>` / `change proposal xr-<slug>: <note>` → `proposal_requests` → the
+worker's `scripts/proposal-ship.js`, which hands `xr-` slugs to `extraction-rules-store decide()`:
+Ship = archive + append to the law + requeue + `active`; Change = `redraft` with his note (the next
+morning's run rewrites it and asks again); Drop = `dropped`.
+
+**First run (5 Oct 2026, a session, two weeks of notes):** 798 finished papers, 208 with something
+to learn, 277 FLAG files. Applied (safe): 17 spelling families; `xr-short-duplicate-completes`
+(a paper banked short of its printed total is completed, not skipped) — law archived as
+`exam-extraction-2026-10-05b`, AM Juying 2024 P2 requeued as `COMPLETE PARTIAL` (85 of 90).
+Proposed (waiting for Adrian, not sent by Telegram — the session reported them): school science
+papers printing 5076–5078 are banked (96 papers would requeue), the cover's syllabus code decides
+the level, practical papers are Paper 3, no-cover files tagged with another school, a file holding
+another school's paper banked under the cover's school (22 papers would requeue).
+
 ## 5. Rollback
 
 Nothing here removes anything. The migration is additive (new columns default
