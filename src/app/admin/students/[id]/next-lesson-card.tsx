@@ -25,7 +25,7 @@ function dayWords(iso: string): string {
 function stamp(iso: string | null): string {
   return iso ? new Date(iso).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', timeZone: 'Asia/Singapore' }) : '';
 }
-const KIND_WORD: Record<string, string> = { practice: 'Practice', warmup: 'Warm-up', set: 'Set paper', 'practice-again': 'Practice Again', chat: 'Made on request' };
+const KIND_WORD: Record<string, string> = { practice: 'Practice', warmup: 'Warm-up on recent mistakes', set: 'Set paper', 'practice-again': 'Practice Again — not handed in yet', chat: 'Made on request' };
 
 function btn(primary = false): React.CSSProperties {
   return {
@@ -47,7 +47,7 @@ function Item({ m, onChanged }: { m: MaterialRow; onChanged: () => void }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '9px 0', borderTop: `1px solid ${C.line}` }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>{m.label || m.title}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>{m.kind === 'practice-again' ? m.title.replace(/^Practice Again — /, '') : (m.label || m.title)}</div>
         <div style={{ fontSize: 12, color: C.soft }}>
           {KIND_WORD[m.kind] ?? m.kind}
           {m.meta?.count ? ` · ${m.meta.count as number} questions` : ''}
@@ -157,7 +157,9 @@ export default function NextLessonCard({ studentId, full = false }: { studentId:
   const packItems = pack ? data.materials.filter((m) => m.pack_id === pack.id) : [];
   const others = data.materials.filter((m) => !pack || m.pack_id !== pack.id);
   const recentChat = others.filter((m) => m.source === 'chat' && Date.now() - Date.parse(m.made_at) < 14 * 86_400_000 && !m.printed_at);
-  const ready = [...packItems, ...recentChat];
+  // the lesson's order: today's sheet (or the exam's), the Set papers, the warm-up, then old work
+  const RANK: Record<string, number> = { practice: 0, chat: 1, set: 2, warmup: 3, 'practice-again': 4 };
+  const ready = [...packItems, ...recentChat].sort((a, b) => (RANK[a.kind] ?? 9) - (RANK[b.kind] ?? 9));
 
   return (
     <div style={box} data-next-lesson>
