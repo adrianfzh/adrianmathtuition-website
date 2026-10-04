@@ -63,6 +63,23 @@ and claude.ai account — there is nothing per-account to install. Read the inde
 before reaching for a worksheet/paper skill: five of them are paper-shaped and
 differ by *what they start from*. Add a row there whenever you add a skill.
 
+## 📝 Say it once — write it where every session reads it (Adrian, 21 Sep → 2 Oct 2026)
+
+Adrian, 2 Oct 2026: *"can you save as memory so that other claude sessions from other claude
+accounts also follow?"* — after *"make sure my preferences, the changes i asked for are saved
+for future use"* (21 Sep), *"can other sessions in other claude accounts know about this?"*
+(1 Oct) and a dozen more like them. Why: a memory file reaches one account on one Mac; cloud
+sessions and his other accounts never see it, so he ends up saying it again.
+
+- **He states a preference, a rule or a product decision → write it down in the same turn,
+  without being asked**, in the repo: a short bullet here for how sessions work; the area's
+  doc, spec or skill for one area. It goes out with the turn's push (docs-only builds nothing).
+- **A build lands or changes state → update its row** (the table above, the area doc) in the
+  same commit. He should not have to say "update CLAUDE.md".
+- **A memory file is extra, never the only copy.**
+- **End with one plain line:** "Saved for every session: <where>".
+- Not sure it is standing? Ask in one line: "Keep this as a rule for next time?"
+
 ## 🏗 Building doctrine (Adrian, 2026-08-27) — LIVING, expected to change
 
 Apply this whenever designing a NEW feature, process, or automation — it's the shape every build should take, not a checklist to paste into code.
