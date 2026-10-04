@@ -35,22 +35,25 @@ describe('latestActivityIso / isExpired', () => {
 
 import { notebookExpired } from './retention';
 describe('notebookExpired (5 Oct 2026)', () => {
+  it('never clears a bench / calibration identity (calib:…), only students', () => {
+    expect(notebookExpired({ identity: 'calib:h1-01', currentTuition: false, lastNotebook: '2020-01-01T00:00:00.000Z' }, '2025-10-05T00:00:00.000Z')).toBe(false);
+  });
   const cutoff = '2025-10-05T00:00:00.000Z';
   const old = '2025-01-01T00:00:00.000Z';
   const recent = '2026-09-01T00:00:00.000Z';
   it('never clears a current tuition student, however quiet', () => {
-    expect(notebookExpired({ identity: 'recA', currentTuition: true, lastLogin: old, lastNotebook: old }, cutoff)).toBe(false);
+    expect(notebookExpired({ identity: 'recAAAAAAAAAAAAAA', currentTuition: true, lastLogin: old, lastNotebook: old }, cutoff)).toBe(false);
   });
   it('clears an identity quiet on every count for over 12 months', () => {
-    expect(notebookExpired({ identity: 'acct:x', currentTuition: false, lastLogin: old, lastAttempt: old, lastHandIn: old, lastNotebook: old }, cutoff)).toBe(true);
+    expect(notebookExpired({ identity: 'acct:00000000-0000-0000-0000-000000000000', currentTuition: false, lastLogin: old, lastAttempt: old, lastHandIn: old, lastNotebook: old }, cutoff)).toBe(true);
   });
   it('a recent hand-in (Telegram-only student) keeps it', () => {
-    expect(notebookExpired({ identity: 'recB', currentTuition: false, lastLogin: null, lastHandIn: recent, lastNotebook: old }, cutoff)).toBe(false);
+    expect(notebookExpired({ identity: 'recBBBBBBBBBBBBBB', currentTuition: false, lastLogin: null, lastHandIn: recent, lastNotebook: old }, cutoff)).toBe(false);
   });
   it('recent notebook use keeps it', () => {
-    expect(notebookExpired({ identity: 'recB', currentTuition: false, lastLogin: old, lastNotebook: recent }, cutoff)).toBe(false);
+    expect(notebookExpired({ identity: 'recBBBBBBBBBBBBBB', currentTuition: false, lastLogin: old, lastNotebook: recent }, cutoff)).toBe(false);
   });
   it('no datable activity at all keeps it (a failed lookup must not delete)', () => {
-    expect(notebookExpired({ identity: 'recC', currentTuition: false }, cutoff)).toBe(false);
+    expect(notebookExpired({ identity: 'recCCCCCCCCCCCCCC', currentTuition: false }, cutoff)).toBe(false);
   });
 });

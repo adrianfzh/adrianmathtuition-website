@@ -23,6 +23,9 @@
 //   push_subscriptions endpoints of their own subscribed devices
 //   (the last seven widened 2026-08-28 Phase G audit — features built after
 //    the original list; Settings says "all stored data", so it must be true)
+//   essays, humanities_answers, worksheet_ink, ink_on_marked_papers,
+//   app_usage, asks_by_skill, practice_sheet_requests   (5 Oct 2026 — what
+//    lib/erasure.ts erases is exported too, plus the ink kept with the papers)
 //
 // The account + attempts reads go through the user-scoped client so RLS
 // guarantees own-rows-only; the rest are service-role reads filtered by the
@@ -106,6 +109,21 @@ export async function GET() {
       : empty,
   ]);
 
+  // 5 Oct 2026: the rest of what the app keeps (lib/erasure.ts + the ink kept with marked papers).
+  const byCol = (table: string, column: string) =>
+    studentId ? admin.from(table).select('*').eq(column, studentId) : empty;
+  const [essays, humanities, workInk, paperInk, usage, asks, photoSheets] = await Promise.all([
+    byCol('essay_runs', 'airtable_student_id'),
+    byCol('humanities_runs', 'airtable_student_id'),
+    byCol('student_work_ink', 'identity'),
+    byCol('student_ink', 'identity'),
+    byCol('portal_event_log', 'identity'),
+    byCol('ask_skills', 'airtable_student_id'),
+    studentId
+      ? admin.from('sheet_jobs').select('id, created_at, status, scheduled_for, photos').eq('airtable_student_id', studentId).eq('kind', 'photo-sheet')
+      : empty,
+  ]);
+
   const payload = {
     exported_at: new Date().toISOString(),
     account,
@@ -128,6 +146,13 @@ export async function GET() {
     finder_log: finderLog.data || [],
     passes: passes.data || [],
     push_subscriptions: pushSubs.data || [],
+    essays: essays.data || [],
+    humanities_answers: humanities.data || [],
+    worksheet_ink: workInk.data || [],
+    ink_on_marked_papers: paperInk.data || [],
+    app_usage: usage.data || [],
+    asks_by_skill: asks.data || [],
+    practice_sheet_requests: photoSheets.data || [],
   };
 
   return new NextResponse(JSON.stringify(payload, null, 2), {

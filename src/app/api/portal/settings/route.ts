@@ -13,11 +13,14 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const fields: Record<string, unknown> = {};
 
+  // Telegram: Unlink only. Linking goes through the signed /start link
+  // (/api/portal/telegram-link), which the bot binds to the chat that sent it.
+  // A typed chat number was never checked, so a student's notices could be sent
+  // to anyone's Telegram (5 Oct 2026, the leak audit) — no longer accepted.
   if ('telegram_chat_id' in body) {
     const raw = body.telegram_chat_id;
     if (raw === null || raw === '') fields.telegram_chat_id = null;
-    else if (/^\d{5,15}$/.test(String(raw))) fields.telegram_chat_id = Number(raw);
-    else return NextResponse.json({ error: 'telegram_chat_id must be a numeric chat ID' }, { status: 400 });
+    else return NextResponse.json({ error: 'Link Telegram with the Link button — a typed chat number is not accepted any more.' }, { status: 400 });
   }
   if (typeof body.display_name === 'string' && body.display_name.trim()) {
     fields.display_name = body.display_name.trim().slice(0, 80);

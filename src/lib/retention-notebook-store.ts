@@ -1,4 +1,5 @@
-// The notebook + clippings half of the monthly retention sweep (5 Oct 2026).
+// The quiet-account half of the monthly retention sweep (5 Oct 2026): notebook,
+// clippings, Ask questions, essays, humanities answers, the app-use log.
 // Rules: lib/retention.ts notebookExpired (pure, tested). Run from
 // /api/cron/retention after the practice-attempt sweep; `dry` counts only.
 //
@@ -8,15 +9,8 @@ import { del } from '@vercel/blob';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { keyFromUrl, removeStudentFilesByPrefix } from '@/lib/student-files';
 import { isOurBlobUrl } from '@/lib/blob-url';
-import { NOTEBOOK_TABLES, latestActivityIso, notebookExpired, type IdentityActivity } from '@/lib/retention';
+import { QUIET_ACCOUNT_TABLES, latestActivityIso, notebookExpired, type IdentityActivity } from '@/lib/retention';
 
-const STAMP: Record<(typeof NOTEBOOK_TABLES)[number], string> = {
-  notebook_entries: 'updated_at',
-  notebook_mistakes: 'updated_at',
-  notebook_saves: 'created_at',
-  notebook_private_notes: 'updated_at',
-  portal_notes: 'created_at',
-};
 
 async function allRows<T>(admin: SupabaseClient, table: string, cols: string): Promise<T[]> {
   const out: T[] = [];
@@ -39,14 +33,14 @@ export interface NotebookSweep {
 export async function sweepNotebooks(admin: SupabaseClient, cutoffIso: string, dry: boolean): Promise<NotebookSweep> {
   // Who has notebook rows, how many, and when they last changed.
   const per = new Map<string, { counts: Record<string, number>; last: string | null }>();
-  for (const table of NOTEBOOK_TABLES) {
-    const rows = await allRows<Record<string, string | null>>(admin, table, `airtable_student_id, ${STAMP[table]}`);
+  for (const { table, column, stamp } of QUIET_ACCOUNT_TABLES) {
+    const rows = await allRows<Record<string, string | null>>(admin, table, `${column}, ${stamp}`);
     for (const r of rows) {
-      const id = r.airtable_student_id;
+      const id = r[column];
       if (!id) continue;
       const e = per.get(id) || { counts: {}, last: null };
       e.counts[table] = (e.counts[table] || 0) + 1;
-      e.last = latestActivityIso(e.last, r[STAMP[table]]);
+      e.last = latestActivityIso(e.last, r[stamp]);
       per.set(id, e);
     }
   }
@@ -103,9 +97,9 @@ export async function sweepNotebooks(admin: SupabaseClient, cutoffIso: string, d
     }
     if (!filesOk) continue;
 
-    for (const table of NOTEBOOK_TABLES) {
+    for (const { table, column } of QUIET_ACCOUNT_TABLES) {
       if (!e.counts[table]) continue;
-      const { error } = await admin.from(table).delete().eq('airtable_student_id', identity);
+      const { error } = await admin.from(table).delete().eq(column, identity);
       if (error) throw new Error(`${table}: ${error.message}`);
       out.rows[table] = (out.rows[table] || 0) + e.counts[table];
     }

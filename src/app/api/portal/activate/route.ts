@@ -14,6 +14,7 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { POLICY_VERSION } from '@/lib/portal-consent';
 import { deriveIsIp } from '@/lib/portal-ip';
 import { sendTelegram } from '@/lib/telegram';
+import { claimInvite, releaseInvite, finishInvite } from '@/lib/invite-claim';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 
@@ -88,6 +89,12 @@ export async function POST(req: NextRequest) {
 
   const supabase = createServiceClient();
 
+  // Claim the link FIRST, atomically (lib/invite-claim.ts, 5 Oct 2026): of two
+  // people pressing Create at the same moment, only the first gets past here.
+  const claimedAt = new Date().toISOString();
+  const claimed = await claimInvite(supabase, token, claimedAt).catch(() => null);
+  if (!claimed) return NextResponse.json({ error: 'This link has already been used.' }, { status: 400 });
+
   // Create the Auth user. email_confirm: the invite link went to the student's
   // inbox and is single-use — that's our verification anchor (deviation from
   // "verify student email first" noted in PLAN-PORTAL-SOLO.md; keeps the flow
@@ -98,6 +105,7 @@ export async function POST(req: NextRequest) {
     email_confirm: true,
   });
   if (userErr || !created?.user) {
+    await releaseInvite(supabase, token, claimedAt).catch(() => {});
     const msg = userErr?.message || 'Could not create the account';
     const status = /already|registered|exists/i.test(msg) ? 409 : 500;
     return NextResponse.json(
@@ -124,13 +132,11 @@ export async function POST(req: NextRequest) {
   if (acctErr) {
     // Roll back the orphan Auth user so the token can be retried cleanly.
     await supabase.auth.admin.deleteUser(created.user.id).catch(() => {});
+    await releaseInvite(supabase, token, claimedAt).catch(() => {});
     return NextResponse.json({ error: `Could not create the account: ${acctErr.message}` }, { status: 500 });
   }
 
-  await supabase
-    .from('portal_invite_tokens')
-    .update({ consumed_at: new Date().toISOString(), consumed_by_user_id: created.user.id })
-    .eq('token', token);
+  await finishInvite(supabase, token, created.user.id);
 
   // Tell Adrian the invite landed (30 Aug 2026 — self-serve signups via
   // /api/portal/join have always pinged him; his OWN invited students

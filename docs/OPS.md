@@ -503,7 +503,25 @@ First run 5 Oct 2026: 3,502 rows from 18 tables and 4,686 Airtable records from
 |---|---|---|
 | Main + science databases | Supabase Pro: a nightly backup kept 7 days (no point-in-time restore — a paid add-on) | Nobody had ever checked one; needs `SUPABASE_ACCESS_TOKEN` for the job to check it |
 | Student tables + Airtable | **Our own monthly copy since 5 Oct 2026**, 3 months kept, read back each month | Monthly, so up to a month can be lost if both Supabase's copy and the live data go |
-| Files — `student-files` (≈9 GB), `question_images` (≈3 GB), `paper-library` (≈10 GB) | **None.** Supabase's backups hold the database only, never the files. A deleted file is gone | The cheapest fix is an incremental copy of new files into the `backups` bucket (fits inside the Pro plan's included storage) — Adrian's call |
+| Files — every bucket of the main project (`student-files` ≈9 GB, `paper-library` ≈10 GB, `question_images` ≈3 GB, `kb-images`, `question-images`, `practice-figures`, `practice_worksheets`, `science_diagrams`, `humanities_images`, `kb-sources`, `syllabus_docs`, `notes-figures`) + the science project's `question_images` (≈3 GB) | **Copied since 5 Oct 2026** (Adrian: "backup the files") — see 🗄 `file-backup` below. Supabase's own backups never held files | ≈26 GB of copies; with the live files the organisation holds ≈52 GB, inside the Pro plan's 100 GB included storage |
 | Airtable | Airtable's own snapshots (plan-dependent) + our monthly copy above | — |
 | Dropbox | Dropbox's version history | — |
 | Both repos | GitHub + the Macs' clones + the Fly worker's clone | — |
+
+### 🗄 `file-backup` — nightly 02:30 SGT (`30 18 * * *` UTC), 5 Oct 2026
+
+Route `/api/cron/file-backup`; rules `lib/file-backup.ts` (pure, tested); copying
+`lib/file-backup-store.ts`; SQL `migrations/file_backup_ledger.sql` (applied to BOTH
+projects). Every file in every bucket of the main project is copied to the
+adrianscience project's private `backups` bucket under `files/<bucket>/<name>`; the
+science project's `question_images` goes the other way, to the main project's
+private `backups` bucket. Each source project keeps `file_backup_ledger` (what was
+copied, with its eTag), so `file_backup_pending` lists what is new or changed. The
+first full copy and the nightly top-up are the same job: oldest first until its
+4 minutes run out, the next run carries on — it is resumable by construction. A file
+deleted at the source is deleted from the backup 30 days later (`file_backup_mark_gone`
+/ `file_backup_expired`). Stamps `job_runs` every run (`meta.caughtUp` once nothing
+is waiting); one line to the ops topic only when a copy failed, or — once the first
+full copy has finished — when files have waited over two days. The monthly
+`backup-check` also downloads six random copies FROM the backup and checks them.
+

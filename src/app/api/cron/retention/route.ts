@@ -150,7 +150,7 @@ export async function GET(req: NextRequest) {
     const nbRows = Object.values(nb.rows).reduce((a, b) => a + b, 0);
     if (!dry && (nb.expired > 0 || nb.fileFailures > 0)) {
       notify_ops(
-        `🗑 Retention sweep: cleared the notebook + clippings of ${nb.expired} former student${nb.expired === 1 ? '' : 's'} ` +
+        `🗑 Retention sweep: cleared the notebook, clippings, asks, essays, answers and app-use log of ${nb.expired} former student${nb.expired === 1 ? '' : 's'} ` +
         `quiet over ${RETENTION_MONTHS} months (${nbRows} rows${nb.files ? `, ${nb.files} files` : ''})` +
         (nb.fileFailures ? `. ⚠ ${nb.fileFailures} file deletes failed — kept for next month.` : '.'),
       ).catch(() => {});

@@ -1,8 +1,10 @@
 'use client';
 // In-app Telegram linking (Adrian, 8 Sep 2026): one tap opens Telegram on the
 // bot with a signed /start payload; the bot binds the chat; this card polls
-// and disappears. No chat IDs to paste (that form survives under a fold on
-// Settings, for a phone where the t.me link cannot open).
+// and disappears. No chat IDs to paste: on a phone where the t.me link cannot
+// open, the fold on Settings shows the same signed `/start tg_…` message to send
+// to the bot by hand (5 Oct 2026 — the old typed chat number was unverified, so a
+// student's marking notices could be pointed at any stranger's Telegram).
 //
 //   · variant="home"      a slim nudge near the top of /app, students only,
 //                         rendered only when the server says 'unlinked', no
@@ -41,7 +43,7 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
   const [waiting, setWaiting] = useState(false);
-  const [manual, setManual] = useState('');
+  const [copied, setCopied] = useState(false);
   const pollRef = useRef<number | null>(null);
   const snap = useInstallStore();
   const homeSlot = variant === 'home' && !adminViewer && !linked && snap.ready
@@ -89,15 +91,15 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
     setBusy(false);
   }
 
-  async function saveManual(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true); setMsg('');
-    try {
-      await portalFetch('/api/portal/settings', { json: { telegram_chat_id: manual.trim() } });
-      setMsg('✓ Saved.');
-      router.refresh();
-    } catch { setMsg('Could not save — check the ID.'); }
-    setBusy(false);
+  // The same signed payload the Link button carries, to type by hand.
+  const startCommand = (() => {
+    try { const p = url ? new URL(url).searchParams.get('start') : null; return p ? `/start ${p}` : null; }
+    catch { return null; }
+  })();
+  async function copyCommand() {
+    if (!startCommand) return;
+    try { await navigator.clipboard.writeText(startCommand); setCopied(true); } catch { /* the text is on screen to copy by hand */ }
+    startPolling();
   }
 
   if (variant === 'home') {
@@ -151,13 +153,16 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
           {waiting && <p className="text-xs text-gray-500 mt-2">Waiting for Telegram… tap Start in the chat, then come back here.</p>}
           {msg && <p className={`text-sm mt-2 ${msg.startsWith('✓') ? 'text-green-700' : 'text-red-600'}`}>{msg}</p>}
           <details className="mt-3">
-            <summary className="cursor-pointer text-xs text-gray-400 select-none">Link won’t open? Paste your chat ID instead</summary>
-            <p className="text-xs text-gray-500 mt-1.5 mb-2">Send <code className="bg-gray-100 px-1.5 py-0.5 rounded">/start</code> to @AdrianMathBot and it replies with your chat ID.</p>
-            <form onSubmit={saveManual} className="flex gap-2">
-              <input inputMode="numeric" placeholder="Telegram chat ID" value={manual} onChange={e => setManual(e.target.value)}
-                className="w-full border border-gray-300 rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30" />
-              <button className="bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold disabled:opacity-50" disabled={busy || !manual.trim()}>{busy ? '…' : 'Save'}</button>
-            </form>
+            <summary className="cursor-pointer text-xs text-gray-400 select-none">Link won’t open?</summary>
+            <p className="text-xs text-gray-500 mt-1.5 mb-2">Open @AdrianMathBot in Telegram and send it this message. It works for the next hour.</p>
+            {startCommand ? (
+              <div className="flex gap-2 items-center">
+                <code className="flex-1 min-w-0 break-all bg-gray-100 rounded-lg px-2.5 py-1.5 text-[11px] text-gray-700 select-all">{startCommand}</code>
+                <button type="button" onClick={copyCommand} className="bg-navy text-[hsl(45,100%,96%)] rounded-xl px-3.5 py-1.5 text-sm font-semibold shrink-0">{copied ? 'Copied' : 'Copy'}</button>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400">Getting your message ready…</p>
+            )}
           </details>
         </>
       )}

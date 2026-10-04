@@ -4,6 +4,8 @@ import { practiceAuth } from '@/lib/practice';
 import { isScienceSubject } from '@/lib/science-levels';
 import { proofLadderAllowedFor } from '@/lib/portal-beta';
 import { ladderSteps, ladderSlice, ladderMarkdown } from '@/lib/proof-ladder';
+import { isNationalRow } from '@/lib/serve-gate';
+import { GATE_COLUMNS, studentRefusal } from '@/lib/serve-gate-store';
 
 export const runtime = 'nodejs';
 
@@ -25,13 +27,20 @@ export async function GET(req: NextRequest) {
   if (isScienceSubject(url.searchParams.get('subject'))) return NextResponse.json({ markdown: '', revealed: 0, total: 0, done: true });
   const n = Number(url.searchParams.get('n') || 1);
 
-  const { data: q, error } = await getSupabaseAdmin()
+  const admin = getSupabaseAdmin();
+  const { data: q, error } = await admin
     .from('questions')
-    .select('id, solution, answer, parts')
+    .select(`id, solution, answer, parts, ${GATE_COLUMNS}`)
     .eq('id', id)
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  // Only what the practice RPCs would serve this student; never a national row
+  // (grounding-only, docs/CONTENT-POLICY.md) — lib/serve-gate.ts, 5 Oct 2026.
+  if (isNationalRow(q)) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  if (caller.kind === 'student' && await studentRefusal(admin, caller.account, id, q)) {
+    return NextResponse.json({ error: 'not found' }, { status: 404 });
+  }
 
   const slice = ladderSlice(ladderSteps(q), n);
   return NextResponse.json({ markdown: ladderMarkdown(slice.steps), revealed: slice.revealed, total: slice.total, done: slice.done });

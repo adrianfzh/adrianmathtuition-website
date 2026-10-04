@@ -5,6 +5,7 @@ import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { practiceAuth } from '@/lib/practice';
 import { isScienceSubject } from '@/lib/science-levels';
 import { scienceQuestion } from '@/lib/science-bank';
+import { isNationalRow } from '@/lib/serve-gate';
 
 export const runtime = 'nodejs';
 
@@ -39,5 +40,11 @@ export async function GET(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const q = data?.[0];
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  // National rows are grounding-only (docs/CONTENT-POLICY.md): a student never
+  // opens their worked solution by id (5 Oct 2026, lib/serve-gate.ts).
+  if (caller.kind === 'student') {
+    const { data: row } = await getSupabaseAdmin().from('questions').select('national, school').eq('id', id).maybeSingle();
+    if (row && isNationalRow(row)) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  }
   return NextResponse.json({ markdown: solutionMarkdown(q, gate) });
 }

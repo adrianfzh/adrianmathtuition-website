@@ -81,6 +81,18 @@ reports, production only) · Apple / Google push services (notifications).
 
 Retention as enforced today: practice data + clippings + notebook purged 12 months after
 inactivity (`/api/cron/retention`; the notebook + clippings part was only built 5 Oct 2026 —
-before that this line was ahead of the code); marking runs and hand-in photos have NO automatic
+before that this line was ahead of the code; since 5 Oct 2026 also Ask questions, essays,
+humanities answers and the app-use log, never a current tuition student's); marking runs and hand-in photos have NO automatic
 expiry yet (docs/RETENTION.md classes 1–2 await Adrian's decision); Dropbox copy removed
 30 days after release. The short page's wording is true under today's behaviour.
+
+Delete my account (5 Oct 2026, Adrian: "delete them, except what's on marked papers"):
+erases everything the app keeps — notebook, clippings, private notes, Ask log, essays,
+humanities answers, pen marks on worksheets and practice, the app-use log, the photos
+sent for practice sheets, practice answers, assignments, passes' account link, the login —
+and KEEPS the marked papers with what is on them (the hand-in photos, the marking, and
+the student's own writing on the marked paper), Adrian's teaching record. The list is
+`src/lib/erasure.ts`. Backups: our copies follow within about three months (file copies
+30 days after the source file goes, monthly database copies kept 3 months). The short
+public page stays true as written.
+

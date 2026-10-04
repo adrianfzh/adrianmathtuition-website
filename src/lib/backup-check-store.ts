@@ -9,6 +9,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
 import { airtableRequestAll } from '@/lib/airtable';
+import { sampleBackupCopies } from '@/lib/file-backup-store';
 import {
   AIRTABLE_SNAPSHOT_TABLES, DB_SNAPSHOT_TABLES, SAMPLED_BUCKETS, foldersToPrune, snapshotMonth,
   snapshotPath, sniffFile, managedBackupProblem,
@@ -164,6 +165,20 @@ export async function runBackupCheck(opts: RunOptions = {}): Promise<BackupCheck
   }
 
   for (const b of SAMPLED_BUCKETS) result.files.push(...(await sampleFiles(src, b, opts.filesPerBucket ?? 4)));
+  // The file backup's own copies (5 Oct 2026): a random handful downloaded FROM
+  // THE BACKUP and checked the same way — a copy that will not open is no backup.
+  if (scienceConfigured()) {
+    try {
+      for (const c of await sampleBackupCopies(6)) {
+        result.files.push({
+          bucket: c.bucket, name: c.name, expectedSize: c.expectedSize,
+          gotSize: c.bytes ? c.bytes.length : null, kind: c.bytes ? sniffFile(c.bytes) : 'unknown', error: c.error,
+        });
+      }
+    } catch (e) {
+      result.files.push({ bucket: 'backup copies', name: '(sample)', expectedSize: null, gotSize: null, kind: 'unknown', error: (e as Error).message.slice(0, 80) });
+    }
+  }
 
   const hasToken = !!(process.env.SUPABASE_ACCESS_TOKEN || '').trim();
   for (const [project, ref] of [['main', MAIN_REF], ['science', SCIENCE_REF]] as const) {

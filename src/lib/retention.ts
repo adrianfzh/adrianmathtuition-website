@@ -46,14 +46,25 @@ export function isExpired(lastActivityIso: string | null, cutoffIso: string): bo
 // part of that 12-month purge. Marked papers are NOT touched (Adrian's teaching
 // record — the privacy page says so).
 
-/** The identity-keyed tables the notebook sweep clears, children before parents. */
-export const NOTEBOOK_TABLES = [
-  'notebook_entries',
-  'notebook_mistakes',
-  'notebook_saves',
-  'notebook_private_notes',
-  'portal_notes',
-] as const;
+/**
+ * The identity-keyed tables the quiet-account sweep clears: `column` holds the
+ * identity, `stamp` dates the row (its newest stamp is "use" — activity).
+ * 5 Oct 2026, Adrian ("yes"): Ask questions (ask_skills), essays, humanities
+ * answers and the app-use log follow the same rule as the notebook.
+ */
+export const QUIET_ACCOUNT_TABLES: readonly { table: string; column: string; stamp: string }[] = [
+  { table: 'notebook_entries', column: 'airtable_student_id', stamp: 'updated_at' },
+  { table: 'notebook_mistakes', column: 'airtable_student_id', stamp: 'updated_at' },
+  { table: 'notebook_saves', column: 'airtable_student_id', stamp: 'created_at' },
+  { table: 'notebook_private_notes', column: 'airtable_student_id', stamp: 'updated_at' },
+  { table: 'portal_notes', column: 'airtable_student_id', stamp: 'created_at' },
+  { table: 'ask_skills', column: 'airtable_student_id', stamp: 'created_at' },
+  { table: 'essay_runs', column: 'airtable_student_id', stamp: 'created_at' },
+  { table: 'humanities_runs', column: 'airtable_student_id', stamp: 'created_at' },
+  { table: 'portal_event_log', column: 'identity', stamp: 'created_at' },
+];
+/** @deprecated name kept for readers of older notes — the list is QUIET_ACCOUNT_TABLES. */
+export const NOTEBOOK_TABLES = QUIET_ACCOUNT_TABLES.map((t) => t.table);
 
 export interface IdentityActivity {
   identity: string;
@@ -75,7 +86,13 @@ export interface IdentityActivity {
  * themselves carry dates, so "no activity found" means we failed to look, not that
  * the student vanished.
  */
+/** A student's identity (an Airtable record or a self-serve account) — never a bench / calibration key like `calib:…`. */
+export function isStudentIdentity(identity: string): boolean {
+  return /^rec[A-Za-z0-9]{14}$/.test(identity) || /^acct:[0-9a-f-]{36}$/i.test(identity);
+}
+
 export function notebookExpired(a: IdentityActivity, cutoffIso: string): boolean {
+  if (!isStudentIdentity(a.identity)) return false; // bench essays / answers are Adrian's, not a student's
   if (a.currentTuition) return false;
   const last = latestActivityIso(a.lastLogin, a.lastAttempt, a.lastHandIn, a.lastNotebook);
   if (!last) return false;

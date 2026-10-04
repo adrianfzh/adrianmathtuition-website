@@ -5,7 +5,13 @@
 // (incl. consent record), and the Auth user. Airtable (lessons/billing) is
 // untouched — that's Adrian's tutoring bookkeeping, outside the portal's scope.
 //
+// Widened again 5 Oct 2026 (Adrian: "delete them, except what's on marked
+// papers"): essays, humanities answers, their pen marks on worksheets/practice,
+// the app-use log and the photos sent for practice sheets. The list lives in
+// lib/erasure.ts (tested) and the export reads the same list.
+//
 // Deliberately RETAINED (documented in docs/RETENTION.md):
+//   - student_ink: the student's own writing ON a marked paper stays with it.
 //   - paper_marking_runs + the mark-paper/portal/* photo blobs: the marking
 //     Adrian performed is his business/teaching record (and the evidence base
 //     for a paid-marking dispute). The retention cron ages them out instead.
@@ -24,6 +30,8 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { portalIdentity } from '@/lib/portal-auth';
 import { sendTelegram } from '@/lib/telegram';
 import { leaverNotice } from '@/lib/leaver-notice';
+import { ERASE_BY_IDENTITY, PHOTO_SHEET_KIND, photoSheetKeys } from '@/lib/erasure';
+import { removeStudentFiles } from '@/lib/student-files';
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -87,23 +95,23 @@ export async function POST(req: NextRequest) {
       catch (e) { console.error('[delete-account] student-files cleanup failed for', prefix, (e as Error).message); }
     }
 
-    // The identity-keyed portal tables (rec… / acct:<uuid> — same key the
-    // features write). Each is fatal-on-error so the user can retry.
-    for (const table of [
-      'portal_notes',
-      'notebook_entries',
-      // My Notebook v2 (11 Sep 2026): private notes (§8 — deleted with the
-      // account, by promise), saved answers, the mistakes list, the asks the
-      // bot filed by skill.
-      'notebook_private_notes',
-      'notebook_saves',
-      'notebook_mistakes',
-      'ask_skills',
-      'portal_requests',
-      'portal_generated_papers',
-      'portal_generation_log',
-    ] as const) {
-      const { error } = await admin.from(table).delete().eq('airtable_student_id', identity);
+    // Photos sent for practice sheets ("Write my sheet"): the files listed on
+    // their photo-sheet jobs, then the jobs. Never the handins/ folder as a whole
+    // — the photos of their MARKED papers live there too and stay.
+    const { data: photoJobs } = await admin.from('sheet_jobs').select('kind, photos')
+      .eq('airtable_student_id', identity).eq('kind', PHOTO_SHEET_KIND);
+    const photoKeys = photoSheetKeys((photoJobs ?? []) as { kind: string; photos: unknown }[]);
+    if (photoKeys.length) {
+      try { await removeStudentFiles(photoKeys); }
+      catch (e) { console.error('[delete-account] practice-sheet photo cleanup failed:', (e as Error).message); }
+    }
+    const { error: eJobs } = await admin.from('sheet_jobs').delete().eq('airtable_student_id', identity).eq('kind', PHOTO_SHEET_KIND);
+    if (eJobs) return NextResponse.json({ error: `Could not delete practice-sheet requests: ${eJobs.message}` }, { status: 500 });
+
+    // The identity-keyed tables (rec… / acct:<uuid> — same key the features
+    // write), lib/erasure.ts. Each is fatal-on-error so the user can retry.
+    for (const { table, column } of ERASE_BY_IDENTITY) {
+      const { error } = await admin.from(table).delete().eq(column, identity);
       if (error) return NextResponse.json({ error: `Could not delete ${table}: ${error.message}` }, { status: 500 });
     }
   }
