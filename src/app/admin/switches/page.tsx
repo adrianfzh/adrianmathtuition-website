@@ -50,6 +50,7 @@ export default function SwitchesPage() {
   const [pw, setPw] = useState('');
   const [macOnly, setMacOnly] = useState<Flag | null>(null);
   const [visionBatch, setVisionBatch] = useState<Flag | null>(null);
+  const [lessonLine, setLessonLine] = useState<Flag | null>(null);
   const [accounts, setAccounts] = useState<SlotAccountRow[] | null>(null);
   const [jobs, setJobs] = useState<WorkerJobRow[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export default function SwitchesPage() {
     const [m, a, j] = await Promise.allSettled([get('/api/admin/marking-settings'), get('/api/admin/slot-accounts'), get('/api/admin/worker-jobs?fresh=1')]);
     if (m.status === 'fulfilled' && m.value?.macOnly) setMacOnly({ on: !!m.value.macOnly.on, at: m.value.macOnly.at ?? null });
     if (m.status === 'fulfilled' && m.value?.visionBatch) setVisionBatch({ on: !!m.value.visionBatch.on, at: m.value.visionBatch.at ?? null });
+    if (m.status === 'fulfilled' && m.value?.lessonLine) setLessonLine({ on: !!m.value.lessonLine.on, at: m.value.lessonLine.at ?? null });
     if (a.status === 'fulfilled' && Array.isArray(a.value?.accounts)) setAccounts(a.value.accounts);
     if (j.status === 'fulfilled' && Array.isArray(j.value?.jobs)) setJobs(j.value.jobs);
     const failed = [m, a, j].filter(x => x.status === 'rejected').map(x => (x as PromiseRejectedResult).reason?.message).filter(Boolean);
@@ -103,6 +105,11 @@ export default function SwitchesPage() {
   const flipVisionBatch = () => {
     if (!visionBatch) return;
     post('/api/admin/marking-settings', { visionBatch: !visionBatch.on }, 'visionBatch', d => { const v = d.visionBatch as Flag | undefined; if (v) setVisionBatch({ on: !!v.on, at: v.at ?? null }); });
+  };
+  // 📒 The end-of-lesson line (5 Oct 2026): off = the lesson log still fills itself, silently.
+  const flipLessonLine = () => {
+    if (!lessonLine) return;
+    post('/api/admin/marking-settings', { lessonLine: !lessonLine.on }, 'lessonLine', d => { const v = d.lessonLine as Flag | undefined; if (v) setLessonLine({ on: !!v.on, at: v.at ?? null }); });
   };
   const flipAccount = (a: SlotAccountRow) =>
     post('/api/admin/slot-accounts', { email: a.email, on: !a.on }, `acct:${a.email}`, d => { if (Array.isArray(d.accounts)) setAccounts(d.accounts as SlotAccountRow[]); });
@@ -168,6 +175,20 @@ export default function SwitchesPage() {
                 </div>
               </div>
               <Toggle on={visionBatch.on} busy={busy === 'visionBatch'} label="Gemini Batch for queued papers" onClick={flipVisionBatch} tone="#4338ca" />
+            </div>
+          )}
+          {lessonLine && (
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-neutral-100" data-lesson-line={lessonLine.on ? 'on' : 'off'}>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-sm text-neutral-900">📒 End-of-lesson line{lessonLine.on ? ' — ON' : ''}</div>
+                <div className="text-xs text-neutral-500 mt-0.5">
+                  {lessonLine.on
+                    ? 'After each lesson, one Telegram line per student: what was printed and handed in. Tap ✓ or reply with what you did.'
+                    : 'Off: the lesson log still fills itself from what was printed, with no message.'}
+                  {lessonLine.at ? ` · since ${sgt(lessonLine.at)}` : ''}
+                </div>
+              </div>
+              <Toggle on={lessonLine.on} busy={busy === 'lessonLine'} label="End-of-lesson line" onClick={flipLessonLine} tone="#166534" />
             </div>
           )}
           <p className="text-xs text-neutral-400 mt-3">Marking itself has no off switch here on purpose. Auto-release and the Science tab are settled and stay on.</p>

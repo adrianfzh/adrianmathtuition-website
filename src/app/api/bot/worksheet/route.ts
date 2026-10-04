@@ -150,7 +150,10 @@ export async function POST(req: NextRequest) {
     }
     if (!topics.includes(m)) topics.push(m);
   }
-  const topic = topics.length > 1 ? (String(body.title ?? '').trim() || topics.join(' & ')) : topics[0];
+  // A `title` names the sheet: several topics (a chapter), or one topic narrowed
+  // by skipSkills to some of its skills ("Sine rule and cosine rule" — the Next
+  // lesson card, 5 Oct 2026). It also seeds the day's draw, so it is its own sheet.
+  const topic = String(body.title ?? '').trim().slice(0, 80) || (topics.length > 1 ? topics.join(' & ') : topics[0]);
 
   const pools = await Promise.all(topics.map((t) => fetchWorksheetPool(supa, {
     seedLevels: SEED_LEVELS[levelKey] ?? cfg.questionLevels,

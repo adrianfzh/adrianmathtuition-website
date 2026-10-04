@@ -94,6 +94,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (done.length) {
+    // kept on each student's list of things made for them (the Next lesson card, 5 Oct 2026)
+    await sb.from('student_materials').insert(done.map((sid) => ({
+      airtable_student_id: sid, title: m.title || `${m.area} practice`, topic: m.topics[0] ?? m.area, label: m.area,
+      level: m.subject, kind: 'practice', source: 'stuck', file_url: m.pdfUrl, question_ids: m.questionIds ?? [],
+      status: 'ready', given_at: new Date().toISOString(), meta: { subject: m.subject, topics: m.topics, count: m.count ?? 0, reportId: report!.id },
+    }))).then(({ error }) => { if (error) console.error('[stuck] student_materials:', error.message); });
     const materials = [...report.materials];
     materials[found.index] = { ...m, sent: [...(m.sent ?? []), { at: new Date().toISOString(), target, studentIds: done, by }] };
     await sb.from('stuck_reports').update({ materials }).eq('id', report.id);

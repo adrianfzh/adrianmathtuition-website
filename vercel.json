@@ -45,6 +45,22 @@
       "maxDuration": 60,
       "memory": 3008
     },
+    "src/app/api/cron/next-lesson/route.ts": {
+      "maxDuration": 300,
+      "memory": 3008
+    },
+    "src/app/api/admin/next-lesson/route.ts": {
+      "maxDuration": 120,
+      "memory": 3008
+    },
+    "src/app/api/admin/worksheet-chat/route.ts": {
+      "maxDuration": 90,
+      "memory": 3008
+    },
+    "src/app/api/admin/student-materials/pdf/route.ts": {
+      "maxDuration": 60,
+      "memory": 3008
+    },
     "src/app/api/cron/backup-check/route.ts": {
       "maxDuration": 300,
       "memory": 3008
@@ -194,6 +210,14 @@
     {
       "path": "/api/cron/stuck-weekly",
       "schedule": "0 11 * * 0"
+    },
+    {
+      "path": "/api/cron/next-lesson",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/lesson-end",
+      "schedule": "10 3-13 * * *"
     }
   ]
 }

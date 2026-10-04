@@ -15,46 +15,14 @@
 // exam). Never worked solutions (kiosk invariant D7): those arrive via marking
 // or /solutions.
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'node:fs';
-import path from 'node:path';
 import { currentStudent, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
-import {
-  answerMarkdown,
-  blueprintKeyFor,
-  mockCover,
-  mockCoverInstructions,
-  questionMarkdown,
-  sectionHeadings,
-  shapeFromTitle,
-  storageUrl,
-  toPaperShape,
-  type PaperShape,
-  type QbPrintRow,
-  figureWidthMm,
-  type PrintQuestionRef,
-} from '@/lib/print-paper';
-import type { PaperDef } from '@/lib/prelim-builder';
-import { setNumberFromTitle } from '@/lib/print-sets';
+import { shapeFromTitle, toPaperShape, type PaperShape, type PrintQuestionRef } from '@/lib/print-paper';
+import { paperFilename, renderRefPaperPdf } from '@/lib/render-ref-paper';
 
 export const dynamic = 'force-dynamic';
 // Puppeteer cold start + KaTeX fonts can push past the 10s default.
 export const maxDuration = 60;
-
-/** The stored blueprint entry for a mock row — the H2 P2 render reads its
- * section_boundary to draw the Section A/B headings. Null for levels/papers
- * without a blueprint (topics sheets never look here). */
-function blueprintPaperFor(level: string, paper: string, shape: PaperShape): PaperDef | null {
-  try {
-    const file = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), 'data', 'paper-blueprints.json'), 'utf8'),
-    ) as { papers: Record<string, PaperDef> };
-    return file.papers[blueprintKeyFor(level, paper, shape)] ?? null;
-  } catch {
-    return null; // a missing/unreadable blueprint only costs the headings
-  }
-}
 
 export async function GET(req: NextRequest) {
   const { account } = await currentStudent(); // no session → redirect to /login
@@ -75,61 +43,22 @@ export async function GET(req: NextRequest) {
   const refs = (row.question_ids ?? []) as PrintQuestionRef[];
   if (!refs.length) return NextResponse.json({ error: 'empty paper' }, { status: 404 });
 
-  const { data: qRows, error } = await sb
-    .from('questions')
-    .select('id, question_text, total_marks, parts, answer, has_image, image_url, figure_url, print_width_mm:gen_meta->figure->>print_width_mm')
-    .in('id', refs.map(r => r.id));
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const byId = new Map((qRows as QbPrintRow[]).map(q => [q.id, q]));
-
-  const questions: PrelimQuestion[] = [];
-  for (const ref of refs) {
-    const q = byId.get(ref.id);
-    if (!q) continue; // a question deleted since generation — skip, keep order
-    questions.push({
-      pos: ref.pos,
-      marks: q.total_marks,
-      text: questionMarkdown(q),
-      // A redrawn/authored figure (figure_url — a public Storage URL, the
-      // Set papers' figures live there) wins over the scanned crop.
-      imageUrl: q.figure_url || (q.has_image ? storageUrl(q.image_url) : null),
-      // A Set paper's graph-paper grid prints at its true size (1 cm squares).
-      imageWidthMm: q.figure_url ? figureWidthMm(q.print_width_mm) : null,
-      answer: answerMarkdown(q),
-    });
-  }
-  if (!questions.length) return NextResponse.json({ error: 'no questions left on this paper' }, { status: 404 });
-
   const printed = new Date(row.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
-  const isMock = (row.preset === 'mock' || row.preset === 'set') && (row.paper === 'P1' || row.paper === 'P2');
-  const setNo = row.preset === 'set' ? setNumberFromTitle(row.title) : null;
   // Which SHAPE this paper was built to. The row has no column for it (no
   // request-details jsonb on portal_generated_papers), so the stored title is
   // the carrier — ?shape= is only an override for a caller that knows better.
   const shape: PaperShape = req.nextUrl.searchParams.has('shape')
     ? toPaperShape(req.nextUrl.searchParams.get('shape'))
     : shapeFromTitle(row.title);
-  const pdf = await renderPrelimPDF({
-    title: row.title.toUpperCase(),
-    subtitle: `Printed for ${account.display_name || 'you'} · ${printed} · AdrianMath`,
-    questions,
-    workingSpace: true,
-    ...(isMock
-      ? {
-          cover: mockCover(row.level, row.paper as string, {
-            printedFor: account.display_name,
-            printedOn: printed,
-            shape,
-            ...(setNo ? { examLabel: `MOCK EXAMINATION · SET ${setNo}` } : {}),
-          }),
-          instructions: mockCoverInstructions(row.level),
-          // H2 P2 carries section_boundary → Section A/B headings; [] elsewhere.
-          sections: sectionHeadings(blueprintPaperFor(row.level, row.paper as string, shape)),
-        }
-      : {}),
+  // The render itself lives in lib/render-ref-paper (shared with the Next lesson card, 5 Oct 2026).
+  const out = await renderRefPaperPdf(sb, {
+    preset: row.preset, level: row.level, paper: row.paper, title: row.title, refs,
+    printedFor: account.display_name, printedOn: printed, shape,
   });
+  if ('error' in out) return NextResponse.json({ error: out.error }, { status: out.status });
+  const { pdf } = out;
 
-  const filename = `${row.title.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'paper'}.pdf`;
+  const filename = paperFilename(row.title);
   return new NextResponse(new Uint8Array(pdf), {
     headers: {
       'Content-Type': 'application/pdf',

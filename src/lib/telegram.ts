@@ -215,10 +215,19 @@ export async function sendTelegramButtonsTo(
   buttons: { text: string; url?: string; callback_data?: string }[][],
   category?: NotifyCategory,
 ): Promise<boolean> {
+  return (await sendTelegramButtonsMessage(text, buttons, category)) !== null;
+}
+
+/** sendTelegramButtonsTo that hands back the sent message's id (a reply to it can then find its row); null = not sent. */
+export async function sendTelegramButtonsMessage(
+  text: string,
+  buttons: { text: string; url?: string; callback_data?: string }[][],
+  category?: NotifyCategory,
+): Promise<number | null> {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const routed = await resolveTopic(category);
   const chatId = routed?.chatId ?? process.env.TELEGRAM_CHAT_ID;
-  if (!token || !chatId) return false;
+  if (!token || !chatId) return null;
   try {
     const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
@@ -229,10 +238,11 @@ export async function sendTelegramButtonsTo(
         ...(buttons.length ? { reply_markup: { inline_keyboard: buttons } } : {}),
       }),
     });
-    if (!res.ok) { console.error('[telegram] sendTelegramButtonsTo failed:', await res.text()); return false; }
-    return true;
+    if (!res.ok) { console.error('[telegram] sendTelegramButtonsTo failed:', await res.text()); return null; }
+    const j = await res.json().catch(() => null) as { result?: { message_id?: number } } | null;
+    return j?.result?.message_id ?? 0;
   } catch (err) {
     console.error('[telegram] sendTelegramButtonsTo threw:', (err as Error).message);
-    return false;
+    return null;
   }
 }

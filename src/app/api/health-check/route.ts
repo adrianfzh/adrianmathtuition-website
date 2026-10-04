@@ -551,6 +551,20 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📌 Next lesson (5 Oct 2026): the card, its items, the worksheet box, and the bot's door for the end-of-lesson line.
+    timed('admin-next-lesson', async () => {
+      const probes: [string, RequestInit][] = [
+        ['/api/admin/next-lesson?student=rec00000000000000', {}],
+        ['/api/admin/student-materials', { method: 'POST' }],
+        ['/api/admin/worksheet-chat', { method: 'POST' }],
+        ['/api/bot/lesson-log', { method: 'POST' }],
+      ];
+      for (const [path, init] of probes) {
+        const r = await fetch(`${base}${path}`, { ...init, redirect: 'manual', signal: T(10000) });
+        if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
+      }
+      return 'auth gates up (4)';
+    }),
     // 📜 Humanities feedback (2 Oct 2026): the student's hand-in and the bench's door.
     timed('portal-humanities', async () => {
       const r = await fetch(`${base}/api/portal/humanities`, { method: 'POST', redirect: 'manual', signal: T(10000) });

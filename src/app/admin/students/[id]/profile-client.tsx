@@ -5,6 +5,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import SendWorkCard from './send-work';
 import ShelfSection from './shelf-section';
+import NextLessonCard from './next-lesson-card';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { resolveActiveExamType } from '@/lib/exam-season';
@@ -824,6 +825,9 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                 </button>
               ))}
             </div>
+
+            {/* 📌 Next lesson (5 Oct 2026): what's next + the PDFs made the night before; full page at ./next */}
+            {tab === 'overview' && <NextLessonCard studentId={studentId} />}
 
             {/* ── Overview: at a glance ── */}
             <AtAGlanceSection glance={glance} show={tab === 'overview'} />
