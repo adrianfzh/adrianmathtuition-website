@@ -382,19 +382,27 @@ jobs there are together with the toggles for accounts … have a page just for t
 | 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
 | 🌙 Gemini Batch for queued papers (3 Oct 2026) | Airtable `Settings` `marking_vision_batch` | the bot, every queue tick (`lib/marking-settings.js visionBatch()`; no row yet → the Fly secret `VISION_BATCH` decides) | every vision call is live — full price, no waiting. ON = a queued paper's first vision round goes to Google's Batch API at half price and may wait up to an hour; ⚡ Mark now never batches |
 | Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
-| Worker jobs ×17 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+| Worker jobs ×19 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
 
 - **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
   `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
-  `worksheets`, `proposals`, `flagjudge`, `flag-review`. `prune` (disk hygiene) is never switchable.
-  `marking-learn` and `flag-review` (5 Oct 2026, bot `worker/fly/learn.sh`) read their own entry
-  (`scripts/*-learn-pull.js --switched-off`, fail open).
+  `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `worksheets`, `proposals`,
+  `flagjudge`, `flag-review`. `prune`, the disk check and the after-restart recovery are never
+  switchable (they keep the worker alive).
+- **Every one obeys since 5 Oct 2026** (Adrian: "fix switches page so it stops every job"). The
+  scheduler gate written on 2 Oct sat on an unmerged bot branch, so until then only the jobs that
+  read their own entry obeyed. Now bot `worker/fly/jobs.sh` reads the list every 2 min
+  (`refresh_jobs_off`) and checks `job_on <name>` before EVERY start (`run_job` checks again;
+  `learn.sh` and `builder.sh` the same); a skipped start is logged once in the worker log as
+  `🎚 <job> is OFF on /admin/switches — not started`. Scripts that can also be run by hand ask
+  through one reader, bot `lib/worker-switch.js`. Bot CLAUDE.md §The switches.
 - **A switch stops new work only.** A run in flight finishes. A timed job switched back on runs
   its latest missed slot once (the scheduler's stamp rule).
 - **Fail-safe direction.** No entry = on. The route answers a failed read with 502 and NO `off`
   list, and the worker keeps the last list it read, so a job Adrian parked never restarts because
-  Airtable blinked. A freshly booted worker that cannot reach the site runs everything.
+  Airtable blinked. The last good list is saved on the worker's volume (`jobs-off`), so a restart
+  while the site is down still remembers it; only a worker that has never read the list runs everything.
 - **Not switchable here, on purpose:** marking seats and sheet slots (a stray tap must never
   park a student's paper), auto-release and the Science tab (settled, their cards were removed
   1 Oct 2026), and every `*_OPEN_TO_STUDENTS` constant (code, `lib/portal-beta.ts`).
@@ -403,8 +411,9 @@ jobs there are together with the toggles for accounts … have a page just for t
   oldest has, and — when 🌙 Gemini Batch is on — that switching it off marks at live speed.
 - **A job that is OFF still goes amber on the board above** once its rhythm lapses — the amber
   is true (it is not running); the Switches page says why.
-- Adding a worker job: a line in `WORKER_JOBS` + `job_on <key>` at its start site in the bot's
-  `worker/fly/jobs.sh`. Each flip sends one line to the ops topic.
+- Adding a worker job: a line in `WORKER_JOBS`, the same key in bot `lib/worker-switch.js
+  SCHEDULER_SWITCHES`, and `job_on <key>` at its start site in the bot's `worker/fly/jobs.sh`
+  (bot `test/worker-switches.test.js` catches a started job with no switch). Each flip sends one line to the ops topic.
 
 ## Safety checks — the leak test and the backup check (5 Oct 2026)
 
