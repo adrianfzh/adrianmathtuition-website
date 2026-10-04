@@ -511,7 +511,10 @@ curl -s -X POST "$SHEETS_API_BASE/api/admin/sheet-jobs" \
    item on that part. List it under `shelved` as "disputed by second look —
    check on the desk" so Adrian sees it, and pick the wave from the agreed
    parts. A part with no `second_look` at all (the pass was off or failed) is
-   treated as agreed.
+   treated as agreed. Since 5 Oct 2026 a third reading settles most disputes
+   before delivery (bot `ai/fix-first.js`): a settled part carries
+   `agree: true` plus `tiebreak: { awarded, outcome }` and may be taught; only
+   a part still `agree:false` is shelved.
 
    **`questions` is how the sheet's practice reaches the portal** (SPEC-PORTAL-V2
    §7, 6 Sep 2026). Until now the portal knew a FILE existed and nothing about

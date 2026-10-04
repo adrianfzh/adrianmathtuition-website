@@ -642,6 +642,32 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   note on the run, and the sheet worker / self-study skill SHELVE `agree:false` parts instead of
   teaching them ("disputed by second look — check on the desk"). Adrian's ask: the sheet must not
   teach a misread. Not a re-mark — a full second marking was ruled out on cost.
+- **🔧 Fix first, then tell Adrian — in plain words (5 Oct 2026, bot `ai/fix-first.js` +
+  `lib/plain-report.js`; switch `MARKING_FIX_FIRST=0` on Fly, default ON).** Adrian: "yes fix
+  first, then just inform me … explain simply and clearly … leave our jargon, leave out code
+  speak". Three watch-outs now settle themselves before the delivery, and every change is a row in
+  `result_json.auto_fixes` (kind, readings, before → after, why):
+  - **Second look disagreed** → one more reading of just that part (same model, the page + "mark
+    Q7(b) only, out of 3", never the earlier marks). Two of three settle it; if the second reading
+    wins, **the mark moves** and the page's score chip is redrawn (a page that cannot be redrawn
+    keeps the old mark and goes to Adrian). All three differ, or a blank part later readings found
+    working on → Adrian. A settled part carries `second_look.agree:true` + `second_look.tiebreak`,
+    and the run's `second_look.parts[]` row `agree:true, settled_by:'third-reading'` — so the desk
+    card and the sheet worker stop treating it as disputed.
+  - **Scanned-in answer key disagrees** → the part is re-marked against the key, but only after the
+    reading checks the key against the printed question: most September disagreements were the
+    KEY's own slips on generated practice sets. Key holds → applied; key wrong → Adrian, with why.
+  - **The paper does not add up** → the bracket re-read (below) now also decides: every bracket
+    re-read and matched + no question missing + the sum is a real paper total (40…100 in tens) +
+    only the paper's NAME disagrees → the paper is out of what its brackets add up to
+    (Queenstown P2, 80 not 90). Otherwise Adrian gets both possibilities named.
+  - **The message**: the ⚠️ Check list became **Fixed:** / **Needs you:**, each line saying what
+    happened, what was done and whether he must act; "Nothing for you to do." when only fixes; no
+    block at all when there is neither (the ✅ Released line as before). Cover/answer-key pages,
+    redraw receipts and explained blanks never appear. Banned words (allocation, reconciliation,
+    second look, verdict, grounding, registry, override, triage, run, model names) are pinned by
+    the bot's `test/plain-report.test.js`. What stays Adrian's: a genuine disagreement between the
+    marking and the scheme.
 - **📚 The exam library in Supabase (SPEC-PAPER-MATCH phase 2, 7 Sep 2026):** private bucket
   `paper-library` + table `paper_library` keyed like `lib/paper-key bankFilterFor` — (school, year,
   level, paper) + kind (questions | solutions | answers | combined). `scripts/paper-library/index.mjs`
