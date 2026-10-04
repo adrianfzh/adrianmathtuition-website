@@ -7,7 +7,7 @@
 //
 // Reads .env.local (SUPABASE_URL + SUPABASE_SECRET_KEY) — never prints them.
 // Counts only (PostgREST `Prefer: count=exact`), no rows. The "twins left" numbers
-// come from scripts/twins/twin.mjs and are slow, so they are cached for 15 minutes.
+// come from scripts/twins/twin.mjs and are slow, so they are cached for an hour.
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { dirname, join } from 'node:path';
@@ -57,7 +57,7 @@ let left = null;
 try {
   if (existsSync(cacheFile)) {
     const c = JSON.parse(readFileSync(cacheFile, 'utf8'));
-    if (Date.now() - c.at < 15 * 60_000) left = c.left;
+    if (Date.now() - c.at < 60 * 60_000) left = c.left;
   }
 } catch { /* stale cache = recompute */ }
 if (!left) {
