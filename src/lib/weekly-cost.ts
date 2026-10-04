@@ -126,7 +126,8 @@ export function levers(inp: WeeklyCostInput): { savings: Saving[]; testing: Test
     const monthly = (apiPapers * perPaper + retryWrites) * WEEKS_PER_MONTH;
     const same = n(m.same), parts = n(m.parts), noise = n(m.noise_pct);
     const proof = parts ? `marks matched on ${same} of ${parts} parts (${pct(same || 0, parts)}%; the marker matches itself ${noise}%)` : 'its test passed';
-    if (trim.status === 'passed') savings.push({ name: 'page-trim', monthly, line: `Sending the marker only the pages it needs: ${proof}. Saves about ${usd(monthly)} a month at this week's papers${perPaper > 0 ? ` (${usd(perPaper)} on every paper read by the paid reader)` : ''}. Say "switch page-trim" to turn it on.` });
+    if (trim.status === 'passed' && monthly < 1) testing.push({ name: 'page-trim', line: 'Sending only the pages it needs: passed, but saves under US$1 a month at this week\'s papers.' });
+    else if (trim.status === 'passed') savings.push({ name: 'page-trim', monthly, line: `Sending the marker only the pages it needs: ${proof}. Saves about ${usd(monthly)} a month at this week's papers${perPaper > 0 ? ` (${usd(perPaper)} on every paper read by the paid reader)` : ''}. Say "switch page-trim" to turn it on.` });
     else testing.push({ name: 'page-trim', line: `Sending only the pages it needs: ${trim.status === 'failed' ? 'did not pass' : 'being tested'}${parts ? ` (${pct(same || 0, parts)}% of marks matched; needs ${noise}%)` : ''}.` });
   }
 
