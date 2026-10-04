@@ -14,6 +14,7 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_students = (text: string) => sendTelegram(text, 'students');
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
+import { gradeLimit } from '@/lib/grade-limit';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
@@ -191,10 +192,9 @@ export async function POST(req: NextRequest) {
     assignment = row;
   }
 
-  // Daily cap — Adrian-initiated work is exempt (D3: the Send-work card, a
-  // Practice Again item he released). A question the STUDENT found (source
-  // 'find') is not: that is student-initiated volume, exactly what the cap brakes.
-  const capExempt = !!assignment && assignment.source !== 'find';
+  // Daily caps (lib/grade-limit.ts, re-done 5 Oct 2026): Adrian-sent work not yet
+  // marked is exempt from the 20 a day; self-made practice (find, practice-photo)
+  // and re-grades are not; nothing passes the hard ceiling of 60 a day.
   const dayStart = new Date(); dayStart.setUTCHours(dayStart.getUTCHours() - 24);
   const { count } = await admin
     .from('student_attempts')
@@ -202,9 +202,8 @@ export async function POST(req: NextRequest) {
     .eq('user_id', account.id)
     .eq('attempted_via', 'portal')
     .gte('attempted_at', dayStart.toISOString());
-  if (!capExempt && (count || 0) >= DAILY_GRADE_CAP) {
-    return NextResponse.json({ error: `Daily limit reached (${DAILY_GRADE_CAP} graded attempts). Back tomorrow!` }, { status: 429 });
-  }
+  const limit = gradeLimit({ assignment, countToday: count || 0 });
+  if (!limit.ok) return NextResponse.json({ error: limit.message }, { status: 429 });
 
   // Question WITH mark scheme (service role; never sent to the client)
   type GradeQuestion = {

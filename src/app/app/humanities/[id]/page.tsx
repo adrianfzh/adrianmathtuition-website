@@ -38,7 +38,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const admin = (await isNotesAuthed()) && !(await viewingAsStudent());
   const account = await currentAccount();
   const sid = portalIdentity(account);
-  const run = await loadHumanitiesRun(id, admin ? null : sid);
+  const run = await loadHumanitiesRun(id, admin ? { admin: true } : sid);
   if (!run) notFound();
   const ctx = questionById(run.question_id);
   if (!ctx) notFound();

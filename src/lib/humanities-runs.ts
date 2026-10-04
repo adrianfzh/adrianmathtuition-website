@@ -45,11 +45,16 @@ export async function loadHumanitiesFor(identity: string, limit = 30): Promise<H
   return (data ?? []) as unknown as HumanitiesListRow[];
 }
 
-/** One answer with its text and report. `identity` scopes it to the student; null = Adrian's admin view. */
-export async function loadHumanitiesRun(id: string, identity: string | null): Promise<HumanitiesRunRow | null> {
+/**
+ * One answer with its text and report. A student identity scopes it to that
+ * student; `{ admin: true }` = Adrian's admin view. A missing scope opens nothing
+ * (5 Oct 2026 leak audit — see loadEssay).
+ */
+export async function loadHumanitiesRun(id: string, scope: string | { admin: true } | null): Promise<HumanitiesRunRow | null> {
+  if (!scope) return null;
   const sb = getSupabaseAdmin();
   let q = sb.from('humanities_runs').select('*').eq('id', id);
-  if (identity) q = q.eq('airtable_student_id', identity);
+  if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);
   const { data, error } = await q.maybeSingle();
   if (error) throw new Error(error.message);
   return (data as HumanitiesRunRow | null) ?? null;

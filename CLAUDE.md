@@ -4,7 +4,7 @@
 
 Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Tailwind CSS.
 
-> **🚧 Student Portal v1 — largely built, pre-beta.** Specs: [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) (root of repo). Read them before touching anything under `/app/*`, `/login`, `/signup`, or `/api/portal/*`. The original `// TODO PORTAL` scaffolding markers are all consumed (none remain as of 2026-07-15); remaining work is the grading calibration gate and Phase G hardening (leak-test/RLS audit, grade rate-limit, retention cron), not scaffolding.
+> **🚧 Student Portal v1 — largely built, pre-beta.** Specs: [`PORTAL.md`](PORTAL.md) + [`PLAN-PORTAL-SOLO.md`](PLAN-PORTAL-SOLO.md) (root of repo). Read them before touching anything under `/app/*`, `/login`, `/signup`, or `/api/portal/*`. The original `// TODO PORTAL` scaffolding markers are all consumed (none remain as of 2026-07-15); remaining work is the grading calibration gate, not scaffolding. Phase G hardening is DONE and automatic since 5 Oct 2026: the weekly leak test (`/api/cron/leak-test`), the grade/hint/photo-read caps (`lib/grade-limit.ts`), the retention sweep incl. the notebook, and the monthly backup check (`/api/cron/backup-check`) → `docs/OPS.md` §Safety checks.
 
 ## 📚 Detailed docs — MANDATORY reads by area
 

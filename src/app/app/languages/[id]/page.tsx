@@ -22,7 +22,7 @@ export default async function EssayPage({ params }: { params: Promise<{ id: stri
   const admin = (await isNotesAuthed()) && !(await viewingAsStudent());
   const account = await currentAccount().catch(() => null);
   const sid = account ? portalIdentity(account) : null;
-  const row = await loadEssay(id, admin ? null : sid);
+  const row = await loadEssay(id, admin ? { admin: true } : sid);
   if (!row) notFound();
 
   const rubric = essayRubricFor(row.subject, row.essay_kind);

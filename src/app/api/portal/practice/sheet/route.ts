@@ -20,6 +20,10 @@
 // requireActiveAccess. Sizes: the body must stay under Vercel's 4.5 MB — the
 // client downscales to 1400 px and lib/practice-sheet refuses a photo over
 // MAX_PHOTO_DATA_URL_CHARS. Health-check probes the 401.
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { photoReadsAllowed, PHOTO_READ_LIMIT_MESSAGE } from '@/lib/grade-limit';
+import { countEventsToday, recordEvents } from '@/lib/model-call-ledger';
+import { escapeHtml } from '@/lib/optout-notice';
 import { NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { resolveFindLevel } from '@/lib/portal-find';
@@ -103,6 +107,12 @@ export async function POST(req: Request) {
   const place = placeInQueue({ allowance, today, usedByDay: used, noun: 'sheet' });
   if (!place.ok) return NextResponse.json({ error: place.message }, { status: 429 });
 
+  // Every photo read counts against the day, whatever comes back (lib/grade-limit.ts, 5 Oct 2026).
+  if (!photoReadsAllowed(await countEventsToday(admin as unknown as SupabaseClient, identity, 'photo:read'), ask.photos.length)) {
+    return NextResponse.json({ error: PHOTO_READ_LIMIT_MESSAGE }, { status: 429 });
+  }
+  await recordEvents(admin as unknown as SupabaseClient, identity, 'photo:read', ask.photos.length, { route: 'practice-sheet' });
+
   // Read every photo (in parallel — the bot's classify is ~10 s each).
   const { data: last } = await admin.from('generation_requests').select('source_question_id')
     .eq('portal_account_id', account.id).order('created_at', { ascending: false }).limit(1)
@@ -174,7 +184,7 @@ export async function POST(req: Request) {
     });
   }
 
-  const who = account.display_name || identity;
+  const who = escapeHtml(account.display_name || identity);
   const when = place.waits ? `queued for ${dayWord(place.day, today)}` : 'writing now';
   sendTelegram(
     `📷 <b>${who}</b> sent ${photos.length} photo${photos.length === 1 ? '' : 's'} for a practice sheet — ${when}` +

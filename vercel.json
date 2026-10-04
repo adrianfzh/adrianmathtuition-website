@@ -44,6 +44,14 @@
     "src/app/api/bot/worksheet/route.ts": {
       "maxDuration": 60,
       "memory": 3008
+    },
+    "src/app/api/cron/backup-check/route.ts": {
+      "maxDuration": 300,
+      "memory": 3008
+    },
+    "src/app/api/cron/leak-test/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
     }
   },
   "crons": [
@@ -102,6 +110,14 @@
     {
       "path": "/api/cron/deactivate-inactive",
       "schedule": "30 19 2 * *"
+    },
+    {
+      "path": "/api/cron/backup-check",
+      "schedule": "0 19 3 * *"
+    },
+    {
+      "path": "/api/cron/leak-test",
+      "schedule": "0 20 * * 0"
     },
     {
       "path": "/api/cron/end-enrollments",

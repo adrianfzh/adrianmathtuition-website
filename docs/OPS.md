@@ -405,3 +405,65 @@ jobs there are together with the toggles for accounts … have a page just for t
   is true (it is not running); the Switches page says why.
 - Adding a worker job: a line in `WORKER_JOBS` + `job_on <key>` at its start site in the bot's
   `worker/fly/jobs.sh`. Each flip sends one line to the ops topic.
+
+## Safety checks — the leak test and the backup check (5 Oct 2026)
+
+Adrian, 5 Oct 2026: *"unfinished safety work … backup checks"*. Two jobs, both
+quiet when fine, both one plain Telegram line when not, both stamped in `job_runs`
+with a `JOB_RHYTHMS` line, and both shown on Monday's `auto-release-report` as one
+line each (🔒 / 🗄).
+
+### 🔒 `leak-test` — Mondays 04:00 SGT (`0 20 * * 0` UTC)
+
+Route `/api/cron/leak-test`; rules `lib/leak-test.ts` (pure, tested); requests
+`lib/leak-test-store.ts`. Runs as the demo student (`portal-teste@example.com`,
+session minted server-side with the service key — a magic link generated and
+verified in memory, never e-mailed). It:
+
+1. reads **every table and view the database's API exposes** (taken from its own
+   OpenAPI listing, so a new table is covered the day it ships) once signed out
+   and once as the test student — any row that is not public content
+   (`PUBLIC_READ`) and not the test student's own fails;
+2. asks the app's doors for **another student's** marked paper (PDF, cover, ink,
+   Practice Again PDF, paper page, science page, explanation page), stored file,
+   assignment, essay, humanities answer and printed paper — signed in, signed
+   out, and for pages also as an in-app navigation (`RSC: 1`, which skips the
+   `/app` layout's sign-in check). GET only, so a leak it finds changes nothing;
+3. **controls** — the test student must read their own account and open their own
+   marked paper, or the run fails as "blind".
+
+A failure goes to Adrian's main chat (not a topic). `?base=<origin>` points the
+door checks at another deployment. First run 5 Oct 2026 against www: 173 tables,
+36 doors, nothing came back, controls passed.
+
+### 🗄 `backup-check` — the 4th, 03:00 SGT (`0 19 3 * *` UTC)
+
+Route `/api/cron/backup-check` (`?files=1` = quick probe, no copy, no stamp);
+rules `lib/backup-check.ts`; I/O `lib/backup-check-store.ts`.
+
+1. **Our own monthly copy, read back.** The student tables of the main database
+   (`DB_SNAPSHOT_TABLES`) and the key Airtable tables (`AIRTABLE_SNAPSHOT_TABLES`)
+   are written as gzipped JSON to the PRIVATE bucket `backups` in the
+   **adrianscience** project (`db/<YYYY-MM>/…`, `airtable/<YYYY-MM>/…`), then
+   downloaded, unzipped and counted against what was written and against live.
+   Three months are kept; older folders are deleted by the job.
+2. **Files open.** Four random files each from `student-files`, `question_images`
+   and `paper-library` (SQL `backup_sample_objects`, service role only) are
+   downloaded: right size, and really a PDF / image as the name says.
+3. **Supabase's own nightly backups** — listed through the Management API when
+   `SUPABASE_ACCESS_TOKEN` is set (newest finished backup < 36 h, both projects).
+   Without the token the line says "not checked"; it never pretends.
+
+First run 5 Oct 2026: 3,502 rows from 18 tables and 4,686 Airtable records from
+11 tables copied and read back whole; 12 sample files opened.
+
+### What is backed up (5 Oct 2026)
+
+| Thing | Backup today | Gap |
+|---|---|---|
+| Main + science databases | Supabase Pro: a nightly backup kept 7 days (no point-in-time restore — a paid add-on) | Nobody had ever checked one; needs `SUPABASE_ACCESS_TOKEN` for the job to check it |
+| Student tables + Airtable | **Our own monthly copy since 5 Oct 2026**, 3 months kept, read back each month | Monthly, so up to a month can be lost if both Supabase's copy and the live data go |
+| Files — `student-files` (≈9 GB), `question_images` (≈3 GB), `paper-library` (≈10 GB) | **None.** Supabase's backups hold the database only, never the files. A deleted file is gone | The cheapest fix is an incremental copy of new files into the `backups` bucket (fits inside the Pro plan's included storage) — Adrian's call |
+| Airtable | Airtable's own snapshots (plan-dependent) + our monthly copy above | — |
+| Dropbox | Dropbox's version history | — |
+| Both repos | GitHub + the Macs' clones + the Fly worker's clone | — |

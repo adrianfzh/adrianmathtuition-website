@@ -46,6 +46,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'auto-release-sweep': { kind: 'interval', hours: 1, label: 'every 10 min' },
   // The weekly auto-release number (8 Sep 2026): released on their own, changed after, auto-pause rule.
   'auto-release-report': { kind: 'interval', hours: 204, label: 'Mondays 8am' },
+  // 🔒 The weekly leak test (5 Oct 2026) — vercel.json "0 20 * * 0" UTC = Mondays 4am SGT.
+  'leak-test':         { kind: 'interval', hours: 204, label: 'Mondays 4am' },
   // 📏 The weekly shadow read of the consistency set (17 Sep 2026): the papers
   // re-marked on the Mac lane on a Sunday night so Monday can say how far the
   // marking moved. Weekly, so the same 8.5-day grace as the report above.
@@ -107,6 +109,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'retention':         { kind: 'monthly', day: 2,  graceDays: 1, label: '2nd 3am' },
   // Portal auto-offboarding sweep — vercel.json "30 19 2 * *" UTC = 3rd 3:30am SGT.
   'deactivate-inactive': { kind: 'monthly', day: 3, graceDays: 1, label: '3rd 3:30am' },
+  // 🗄 The monthly backup check (5 Oct 2026) — vercel.json "0 19 3 * *" UTC = 4th 3am SGT.
+  // Copies + reads back the student tables and Airtable, opens sample files.
+  'backup-check':      { kind: 'monthly', day: 4, graceDays: 1, label: '4th 3am' },
   // Closes an enrollment the morning after its End Date passes, and drops the
   // student to Inactive when it was their last one. Runs (and stamps) every day,
   // most days with nothing due — so silence here means the job is dead, not quiet.

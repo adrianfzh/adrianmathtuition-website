@@ -11,6 +11,9 @@
 //
 // The done webhook (./done) flips the row when the worker has written the
 // question. An unreadable or unfiled photo spends nothing.
+import type { SupabaseClient } from '@supabase/supabase-js';
+import { photoReadsAllowed, PHOTO_READ_LIMIT_MESSAGE } from '@/lib/grade-limit';
+import { countEventsToday, recordEvents } from '@/lib/model-call-ledger';
 import { NextResponse } from 'next/server';
 import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server';
 import { parseSimilarBody, resolveFindLevel, practiceEligibility, NOT_AVAILABLE_MESSAGE } from '@/lib/portal-find';
@@ -105,6 +108,12 @@ export async function POST(req: Request) {
   const botBase = process.env.BOT_BASE_URL;
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   if (!botBase || !botSecret) return NextResponse.json({ error: NOT_AVAILABLE_MESSAGE }, { status: 503 });
+
+  // Every read counts, whatever comes back (lib/grade-limit.ts, 5 Oct 2026).
+  if (!photoReadsAllowed(await countEventsToday(admin as unknown as SupabaseClient, identity, 'photo:read'))) {
+    return NextResponse.json({ error: PHOTO_READ_LIMIT_MESSAGE }, { status: 429 });
+  }
+  await recordEvents(admin as unknown as SupabaseClient, identity, 'photo:read', 1, { route: 'practice-photo' });
 
   let raw: unknown;
   try {

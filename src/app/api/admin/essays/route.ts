@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (id) {
     if (!UUID.test(id)) return NextResponse.json({ error: 'bad id' }, { status: 400 });
-    const essay = await loadEssay(id, null);
+    const essay = await loadEssay(id, { admin: true });
     if (!essay) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ essay });
   }

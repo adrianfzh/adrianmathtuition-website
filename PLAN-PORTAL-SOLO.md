@@ -231,6 +231,17 @@ calibration gate met and recorded.
    attempt OR portal login — §7 Q4 answered with the 12-month default). Blobs delete before
    rows so a blob failure keeps the rows for next month's retry; `?dry=1` previews; Telegram
    summary only when something was purged. Pure date logic + tests in `lib/retention.ts`.
+   > **Re-done 5 Oct 2026** (Adrian: "unfinished safety work … backup checks"): the
+   > audit is now a WEEKLY automatic job (`/api/cron/leak-test`, docs/OPS.md §Safety
+   > checks) — every exposed table signed out + as the demo student, and the app's
+   > doors asked for another student's work; first run clean. Fixed in the same pass:
+   > the twin views were anon-readable (bank metadata, no student data), the
+   > `explanations` listing showed a Telegram chat id to anon (1 row), the essay /
+   > humanities page loaders returned any run when the session was missing (latent —
+   > both switches closed), the grade cap was skippable via a self-made practice-photo
+   > row or a re-grade, new hints and photo reads had no daily cap. Retention now also
+   > clears the notebook + clippings (above). Backups: monthly copy + read-back
+   > (`/api/cron/backup-check`).
 4. Late-September: review beta usage + grade-accuracy spot-checks → flip
    `NEXT_PUBLIC_PORTAL_ENABLED=true` or iterate.
 

@@ -7,6 +7,12 @@
 // archive (paper_marking_runs) is deliberately OUT of scope: that is his
 // teaching record, not idle personal data.
 //
+// Since 5 Oct 2026 the same run also clears the NOTEBOOK + CLIPPINGS of anyone
+// quiet for 12 months who is no longer a tuition student (lib/retention.ts
+// notebookExpired; lib/retention-notebook-store.ts) — the privacy page's
+// "up to 12 months after the account goes quiet", which the notebook had
+// never been held to.
+//
 // Blob files are deleted BEFORE their rows: if a blob delete fails, the rows
 // stay and next month's run retries — nothing is ever orphaned unreachable.
 // ?dry=1 reports what WOULD be purged without deleting anything.
@@ -19,6 +25,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { isOurBlobUrl } from '@/lib/blob-url';
 import { collectFileKeys, removeStudentFiles } from '@/lib/student-files';
 import { RETENTION_MONTHS, retentionCutoffIso, latestActivityIso, isExpired } from '@/lib/retention';
+import { sweepNotebooks } from '@/lib/retention-notebook-store';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_ops = (text: string) => sendTelegram(text, 'ops');
@@ -58,9 +65,6 @@ export async function GET(req: NextRequest) {
     type AttemptKey = { airtable_student_id: string | null; user_id: string | null; attempted_at: string | null };
     const attempts = await allRows<AttemptKey>((from, to) =>
       admin.from('student_attempts').select('airtable_student_id, user_id, attempted_at').range(from, to));
-    if (!attempts.length) {
-      return NextResponse.json({ ok: true, dry, cutoff, students: 0, purgedStudents: 0, purgedAttempts: 0 });
-    }
 
     // Newest attempt per student. Rows missing the airtable id (shouldn't
     // happen, but retention must not skip them) group under their user_id.
@@ -142,6 +146,16 @@ export async function GET(req: NextRequest) {
       purgedAttempts += rows.length;
     }
 
+    const nb = await sweepNotebooks(admin, cutoff, dry);
+    const nbRows = Object.values(nb.rows).reduce((a, b) => a + b, 0);
+    if (!dry && (nb.expired > 0 || nb.fileFailures > 0)) {
+      notify_ops(
+        `🗑 Retention sweep: cleared the notebook + clippings of ${nb.expired} former student${nb.expired === 1 ? '' : 's'} ` +
+        `quiet over ${RETENTION_MONTHS} months (${nbRows} rows${nb.files ? `, ${nb.files} files` : ''})` +
+        (nb.fileFailures ? `. ⚠ ${nb.fileFailures} file deletes failed — kept for next month.` : '.'),
+      ).catch(() => {});
+    }
+
     if (!dry && (purgedStudents > 0 || blobFailures > 0)) {
       notify_ops(
         `🗑 Retention sweep: purged ${purgedAttempts} practice attempt${purgedAttempts === 1 ? '' : 's'} ` +
@@ -151,11 +165,14 @@ export async function GET(req: NextRequest) {
       ).catch(() => {});
     }
 
-    if (!dry) await logJobRun('retention', true, `swept ${byKey.size} departed students, purged ${purgedStudents}`);
+    if (!dry) await logJobRun('retention', true, `practice: ${byKey.size} students looked at, ${purgedStudents} purged; notebook: ${nb.identities} looked at, ${nb.expired} cleared (${nbRows} rows)`);
     return NextResponse.json({
       ok: true, dry, cutoff,
       students: byKey.size,
       ...(dry ? { wouldPurgeStudents: wouldPurge.length } : { purgedStudents, purgedAttempts, deletedBlobs, blobFailures }),
+      notebook: dry
+        ? { identities: nb.identities, wouldClear: nb.expired, wouldDeleteRows: nb.rows }
+        : { identities: nb.identities, cleared: nb.expired, deletedRows: nb.rows, files: nb.files, fileFailures: nb.fileFailures },
     });
   } catch (err) {
     const msg = (err as Error).message;

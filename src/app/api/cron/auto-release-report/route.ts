@@ -109,6 +109,17 @@ export async function GET(req: NextRequest) {
     const line = unheldLine(unheldPapers((wk ?? []) as RunForHeld[]));
     if (line) measure += '\n' + line;
   } catch (e) { console.warn('[auto-release-report] unheld line skipped:', (e as Error).message); }
+  // 🗄 / 🔒 Safety lines (5 Oct 2026): the monthly backup check shows here the week
+  // after it ran ("Backups checked: ok"), and this morning's leak test every week.
+  // A failure of either was already sent the moment it happened.
+  try {
+    const { data: safety } = await sb.from('job_runs').select('job, ok, summary, ran_at')
+      .in('job', ['backup-check', 'leak-test']).gte('ran_at', since).order('ran_at', { ascending: false }).limit(10);
+    for (const job of ['backup-check', 'leak-test']) {
+      const row = (safety ?? []).find((r) => r.job === job);
+      if (row) measure += `\n${job === 'backup-check' ? '🗄' : '🔒'} ${row.ok ? (job === 'backup-check' ? 'Backups checked: ok' : 'Leak test: ok — no student could see another\'s work') : String(row.summary || 'FAILED').slice(0, 160)}`;
+    }
+  } catch (e) { console.warn('[auto-release-report] safety lines skipped:', (e as Error).message); }
   await sendTelegram(report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : ''), 'marking').catch(() => {});
   await logJobRun('auto-release-report', true, `${report.released} auto-released, ${report.changed} changed after${paused ? ' — PAUSED' : ''}`).catch(() => {});
   return NextResponse.json({ ok: true, ...report, paused });

@@ -38,3 +38,46 @@ export function isExpired(lastActivityIso: string | null, cutoffIso: string): bo
   if (!lastActivityIso) return true;
   return Date.parse(lastActivityIso) < Date.parse(cutoffIso);
 }
+
+// ── The notebook + clippings sweep (5 Oct 2026) ─────────────────────────────
+// The privacy page promises "while your child is a student with Adrian, and for
+// up to 12 months after the account goes quiet"; docs/PRIVACY-DRAFT-2026-09.md
+// and docs/RETENTION.md (classes 3 + 7) name the notebook and the clippings as
+// part of that 12-month purge. Marked papers are NOT touched (Adrian's teaching
+// record — the privacy page says so).
+
+/** The identity-keyed tables the notebook sweep clears, children before parents. */
+export const NOTEBOOK_TABLES = [
+  'notebook_entries',
+  'notebook_mistakes',
+  'notebook_saves',
+  'notebook_private_notes',
+  'portal_notes',
+] as const;
+
+export interface IdentityActivity {
+  identity: string;
+  /** A portal account on this identity that is a current tuition student (rec… and not offboarded). */
+  currentTuition: boolean;
+  lastLogin?: string | null;
+  lastAttempt?: string | null;
+  /** Newest paper handed in (paper_marking_runs.created_at) — a Telegram-only student is active too. */
+  lastHandIn?: string | null;
+  /** Newest change to any of their notebook rows — the student using it is activity. */
+  lastNotebook?: string | null;
+}
+
+/**
+ * True when this identity's notebook + clippings are past retention. Never for a
+ * current tuition student ("while your child is a student with Adrian"); otherwise
+ * the newest of login, practice, hand-in and notebook use must be older than the cutoff.
+ * Unlike isExpired, an identity with NO datable activity is KEPT here — the rows
+ * themselves carry dates, so "no activity found" means we failed to look, not that
+ * the student vanished.
+ */
+export function notebookExpired(a: IdentityActivity, cutoffIso: string): boolean {
+  if (a.currentTuition) return false;
+  const last = latestActivityIso(a.lastLogin, a.lastAttempt, a.lastHandIn, a.lastNotebook);
+  if (!last) return false;
+  return Date.parse(last) < Date.parse(cutoffIso);
+}

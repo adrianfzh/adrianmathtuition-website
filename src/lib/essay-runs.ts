@@ -43,14 +43,20 @@ export async function loadEssaysFor(identity: string, limit = 50): Promise<Essay
   return (data ?? []) as unknown as EssayListRow[];
 }
 
+/** Who may open a run: one student's identity, or Adrian's admin view (any run). */
+export type RunScope = string | { admin: true };
+
 /**
- * One essay with its text and report. `identity` scopes it to the student;
- * pass null for Adrian's admin view, which may open any essay.
+ * One essay with its text and report. A student identity scopes it to that
+ * student; `{ admin: true }` is Adrian's view, which may open any essay.
+ * A missing scope (null / '') opens NOTHING — 5 Oct 2026 leak audit: a page
+ * that lost its session used to pass null and got any essay by id.
  */
-export async function loadEssay(id: string, identity: string | null): Promise<EssayRunRow | null> {
+export async function loadEssay(id: string, scope: RunScope | null): Promise<EssayRunRow | null> {
+  if (!scope) return null;
   const sb = getSupabaseAdmin();
   let q = sb.from('essay_runs').select('*').eq('id', id);
-  if (identity) q = q.eq('airtable_student_id', identity);
+  if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);
   const { data, error } = await q.maybeSingle();
   if (error) throw new Error(error.message);
   return (data as EssayRunRow | null) ?? null;

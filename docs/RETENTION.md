@@ -11,6 +11,7 @@
 |---|---|---|
 | Monthly retention cron (2nd, 03:00 SGT) | `/api/cron/retention` + `lib/retention.ts` | Per-student purge after **12 months of inactivity** (latest attempt OR portal login): `student_attempts` rows + their `answer_image_url` / `marking_pdf_url` blobs, `weakness_tags`. Blobs delete before rows; `?dry=1` previews; Telegram only when something purged. |
 | Daily pg_cron `pdpa_retention_purge` (20:15 SGT, in-DB) | `migrations/pdpa_retention_purge.sql` | `conversation_history` 12m, `student_question_requests` 12m, `student_attempts` 24m hard cap, `portal_invite_tokens` 3m after consumed/expired, `weakness_tags` 12m fade. |
+| **Notebook + clippings sweep (5 Oct 2026)** — same monthly run | `/api/cron/retention` → `lib/retention-notebook-store.ts`, rule `lib/retention.ts notebookExpired` | Classes 3 + 7 below: `notebook_entries`, `notebook_mistakes`, `notebook_saves`, `notebook_private_notes`, `portal_notes` (+ clipping files) of an identity quiet for 12 months on EVERY count (login, practice, hand-in, notebook use) who is not a current tuition student. Never a current tuition account; an identity with no datable activity is kept. First dry run 5 Oct 2026: 31 identities, 0 due. |
 | PDPA erasure (user-initiated) | `/api/portal/delete-account` | Everything portal-owned for that account, at once (widened 2026-08-28 — see the route header for the list and for what is deliberately retained). |
 
 ## What accumulates with NO expiry today

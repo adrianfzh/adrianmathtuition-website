@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get('id');
   if (id) {
     if (!UUID.test(id)) return NextResponse.json({ error: 'bad id' }, { status: 400 });
-    const run = await loadHumanitiesRun(id, null);
+    const run = await loadHumanitiesRun(id, { admin: true });
     if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ run });
   }

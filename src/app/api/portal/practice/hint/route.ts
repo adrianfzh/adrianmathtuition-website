@@ -5,6 +5,8 @@ import { practiceAuth } from '@/lib/practice';
 import { isScienceSubject } from '@/lib/science-levels';
 import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
 import { HINT_MODEL, buildHintPrompt, normaliseHint, hintMarkdown } from '@/lib/practice-hint';
+import { hintWriteAllowed, HINT_LIMIT_MARKDOWN } from '@/lib/grade-limit';
+import { portalIdentity } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -40,6 +42,17 @@ export async function GET(req: NextRequest) {
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   if (typeof q.hint === 'string') return NextResponse.json({ markdown: hintMarkdown(q.hint), cached: true });
+
+  // A NEW hint is a model call — a student may cause DAILY_HINT_WRITE_CAP a day
+  // (lib/grade-limit.ts, 5 Oct 2026). Cached hints above are always free.
+  if (caller.kind === 'student') {
+    const identity = portalIdentity(caller.account);
+    const since = new Date(Date.now() - 24 * 3600_000).toISOString();
+    const { count } = await admin.from('portal_event_log').select('id', { count: 'exact', head: true })
+      .eq('identity', identity).eq('kind', 'hint:write').gte('created_at', since);
+    if (!hintWriteAllowed(count || 0)) return NextResponse.json({ markdown: HINT_LIMIT_MARKDOWN, limited: true });
+    await admin.from('portal_event_log').insert({ identity, kind: 'hint:write', detail: { questionId: q.id } }).then(() => {}, () => {});
+  }
 
   const hint = await writeHint(admin, q as HintRow);
   return NextResponse.json({ markdown: hintMarkdown(hint), cached: false });

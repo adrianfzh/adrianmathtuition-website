@@ -80,6 +80,7 @@ sheets, `dropbox-tray` cron) · Stripe / HitPay (self-serve passes only) · Sent
 reports, production only) · Apple / Google push services (notifications).
 
 Retention as enforced today: practice data + clippings + notebook purged 12 months after
-inactivity (`/api/cron/retention`); marking runs and hand-in photos have NO automatic
+inactivity (`/api/cron/retention`; the notebook + clippings part was only built 5 Oct 2026 —
+before that this line was ahead of the code); marking runs and hand-in photos have NO automatic
 expiry yet (docs/RETENTION.md classes 1–2 await Adrian's decision); Dropbox copy removed
 30 days after release. The short page's wording is true under today's behaviour.
