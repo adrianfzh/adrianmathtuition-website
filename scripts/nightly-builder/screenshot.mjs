@@ -3,8 +3,10 @@
 // builder's morning message (docs/NIGHTLY-BUILDER.md §3 step 9). Readability rule: Adrian
 // judges the rendered page, not the code, so the message carries what the page looks like.
 //
-//   node scripts/nightly-builder/screenshot.mjs --base https://…vercel.app --path /notes --out /tmp/a.png [--admin]
+//   node scripts/nightly-builder/screenshot.mjs --base https://…vercel.app --path /notes --out /tmp/a.png [--admin] [--tap Search]
 //
+// --tap clicks the first button / link / labelled control whose visible words (or aria-label)
+// match, then waits — for a change that only shows inside a menu, a search panel or a fold.
 // --admin signs in first (POST /api/admin/session with ADMIN_PASSWORD, or MARKER_API_TOKEN on
 // the Fly worker — the same value) and carries the cookie. Chromium: @sparticuz/chromium on
 // Linux (the Fly worker), the local Chrome on a Mac (CHROME_PATH to override).
@@ -17,6 +19,7 @@ const base = String(arg('--base') || '').replace(/\/$/, '');
 const pathname = arg('--path', '/');
 const out = arg('--out');
 const admin = process.argv.includes('--admin');
+const tap = arg('--tap');
 const width = Number(arg('--width', 390));
 const height = Number(arg('--height', 844));
 if (!/^https:\/\//.test(base) || !out) { console.error('usage: --base https://… --path /x --out file.png [--admin]'); process.exit(2); }
@@ -52,6 +55,19 @@ try {
   }
   const res = await page.goto(base + pathname, { waitUntil: 'networkidle2', timeout: 60000 });
   await new Promise((r) => setTimeout(r, 1500));              // streamed islands and KaTeX settle
+  if (tap) {
+    const hit = await page.evaluate((words) => {
+      const want = words.trim().toLowerCase();
+      const els = [...document.querySelectorAll('button, a, [role="button"], summary, label, input[type="search"]')];
+      const el = els.find((e) => (e.innerText || '').trim().toLowerCase() === want)
+        || els.find((e) => (e.getAttribute('aria-label') || '').toLowerCase().includes(want))
+        || els.find((e) => (e.innerText || '').trim().toLowerCase().includes(want));
+      if (!el) return false;
+      el.scrollIntoView({ block: 'center' }); el.click(); return true;
+    }, tap);
+    if (!hit) console.error(`nothing to tap called "${tap}" — the picture shows the page as it opens`);
+    await new Promise((r) => setTimeout(r, 1200));
+  }
   await page.screenshot({ path: out, fullPage: false });
   fs.statSync(out);
   console.log(`${out} (HTTP ${res ? res.status() : '?'})`);
