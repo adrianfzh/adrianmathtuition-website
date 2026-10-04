@@ -278,6 +278,13 @@ stamp whose `meta.slot` is a Mac after that date means an `install.sh` was
 re-run — a Mac slot never uses the picker (no `pool-here`), so it would spend
 that Mac's keychain login again.
 
+**The one exception (5 Oct 2026): 🪞 `learn-from-adrian`** runs on the MacBook Pro
+because what it reads lives there — the Claude Code transcripts. launchd
+`com.adrianmath.learnfromadrian`, 07:30 SGT + login catch-up, one plan-billed `claude -p`
+on the Pro's keychain login; stamps `learn-from-adrian` every run (quiet ones included,
+`ok=false` on a dead session or a failed Telegram send); rhythm 60 h because a laptop can
+be shut for a day → [`LEARN-FROM-ADRIAN.md`](LEARN-FROM-ADRIAN.md).
+
 ## Claude Code scheduled tasks — per-Mac registry
 
 Claude Code desktop scheduled tasks are **machine-local**: stored under

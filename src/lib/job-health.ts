@@ -82,6 +82,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 🌙 The nightly builder (5 Oct 2026, docs/NIGHTLY-BUILDER.md): bot scripts/nightly-builder.js on the
   // Fly worker, 01:30 SGT — stamps every night, also with nothing approved, so silence = dead builder.
   'nightly-builder':   { kind: 'interval', hours: 36, label: 'the Fly worker, nightly 1:30am' },
+  // 🪞 Learn from Adrian (5 Oct 2026, docs/LEARN-FROM-ADRIAN.md): launchd on the MacBook Pro at 07:30 SGT
+  // reads his typed messages in the Claude transcripts → repeated asks → drafted rules. A laptop can be
+  // shut for a day, hence 60h; it stamps every run, quiet ones included.
+  'learn-from-adrian': { kind: 'interval', hours: 60, label: 'daily 7:30am (MacBook Pro)' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },
