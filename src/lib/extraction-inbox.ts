@@ -179,14 +179,16 @@ export function parseSourceFilename(name: string): ParsedSourceName {
   const year = Number(yearMatch[0]);
   let { examType } = detectExam(stem);
   const { token } = detectExam(stem);
-  const paperMatch = stem.match(/\bP(?:aper)?\s?([1-4])\b/i);
+  // Papers 1–6 (5 Oct 2026): a Combined Science practical is "Paper 5" (5086–5088/05), and
+  // "Paper 5" used to fall through as the school, filed as school "5".
+  const paperMatch = stem.match(/\bP(?:aper)?\s?([1-6])\b/i);
   const paper = paperMatch ? `p${paperMatch[1]}` : 'all';
 
   let school = stem
     .replace(yearMatch[0], ' ')
     .replace(/\b(S[1-4]|JC[12]|H[12]|AM|EM|Sec\s?[1-4])\b/gi, ' ')
     .replace(/\((NA|NT)\)|\bG[123]\b|\b(4045|4046|4047|4048|9758)\b/gi, ' ')
-    .replace(/\bP(?:aper)?\s?[1-4]\b/gi, ' ')
+    .replace(/\bP(?:aper)?\s?[1-6]\b/gi, ' ')
     .replace(/\bPaper\b/gi, ' ')
     // A kind word is never a school either (26 Sep 2026): "West Spring P1 MS" is
     // West Spring's scheme, and the queue pairs a scheme with its paper by the

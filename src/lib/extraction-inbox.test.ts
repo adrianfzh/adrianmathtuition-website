@@ -91,6 +91,12 @@ describe('parseSourceFilename — the science tokens (26 Sep 2026)', () => {
     expect(parseSourceFilename('Sci Chem PRELIM 2020 Serangoon P3.docx')).toMatchObject({ ok: true, level: 'CS_CHEM', school: 'Serangoon' });
     expect(parseSourceFilename('CS PHY (NA) SA2 2018 Kranji P2.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS_NA', school: 'Kranji' });
   });
+
+  it('a practical "Paper 5" is paper 5, never the school (5 Oct 2026)', () => {
+    expect(parseSourceFilename('CS BIO GCE 2025 Paper 5.pdf')).toMatchObject({ ok: true, level: 'CS_BIO', school: 'GCE', examType: 'GCE', paper: 'p5' });
+    expect(parseSourceFilename('CS PHY PRELIM 2024 Bowen P5.pdf')).toMatchObject({ ok: true, level: 'CS_PHYS', school: 'Bowen', paper: 'p5' });
+    expect(parseSourceFilename('PHY GCE 2016 Paper 3.pdf')).toMatchObject({ ok: true, level: 'PHYS', school: 'GCE', paper: 'p3' });
+  });
   it('S3 in front of a science is the Sec 3 internal paper', () => {
     expect(parseSourceFilename('S3 BIO EOY 2020 SJI P1.pdf')).toMatchObject({ ok: true, level: 'S3_BIO', subject: 'biology', examType: 'SA2', school: 'SJI', paper: 'p1' });
     expect(parseSourceFilename('S3 CHEM SA2 2022 Cedar Girls.pdf')).toMatchObject({ ok: true, level: 'S3_CHEM', subject: 'chemistry', school: 'Cedar Girls' });
