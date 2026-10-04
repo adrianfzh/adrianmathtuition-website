@@ -20,7 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { filterTree, treeFolders, type TreeFolder, type TreeRoot } from '@/lib/notes-tree';
-import { entryMatches, normalize } from '@/lib/notes-search';
+import { entryMatches, normalize, NOTES_SEARCH_PLACEHOLDER } from '@/lib/notes-search';
 import type { SearchEntry } from '@/lib/notes-data';
 
 export interface ShellLevel {
@@ -243,7 +243,7 @@ function BrowsePanel({
               type="search"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search topics & examples…"
+              placeholder={NOTES_SEARCH_PLACEHOLDER}
               aria-label="Search notes by topic, section or worked-example name"
               autoFocus
               className="w-full rounded-xl border border-black/10 bg-white py-2.5 pl-9 pr-10 text-[15px] text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-navy/40 focus:outline-none focus:ring-2 focus:ring-navy/15 [&::-webkit-search-cancel-button]:hidden"

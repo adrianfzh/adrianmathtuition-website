@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { normalize, entryMatches, SYNONYMS } from './notes-search';
+import { normalize, entryMatches, SYNONYMS, NOTES_SEARCH_EXAMPLE, NOTES_SEARCH_PLACEHOLDER } from './notes-search';
 
 // Mirrors what NotesShell does: normalize label+context once into a haystack,
 // normalize+split the query into words, then run entryMatches — so these
@@ -143,5 +143,16 @@ describe('SYNONYMS — curation hygiene', () => {
         expect(target).toBe(normalize(target));
       }
     }
+  });
+});
+
+describe('the search box copy', () => {
+  it('says what it can find, with an example', () => {
+    expect(NOTES_SEARCH_PLACEHOLDER).toBe("Search notes — try 'complete the square'");
+    expect(NOTES_SEARCH_PLACEHOLDER).toContain(NOTES_SEARCH_EXAMPLE);
+  });
+
+  it('the example really finds the key-concept heading', () => {
+    expect(matchEntry('How do I complete the square?', 'Quadratic Functions', NOTES_SEARCH_EXAMPLE)).toBe(true);
   });
 });

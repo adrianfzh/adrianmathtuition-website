@@ -23,6 +23,17 @@
 // A word matches if ANY stage passes; an ENTRY matches if EVERY query word
 // matches — the same AND-across-words contract the old inline `matches` had.
 
+// ── the box's own copy ────────────────────────────────────────────────────
+
+/**
+ * The search box says what it can find (IDEAS.md, Notes reader content: the
+ * pill under-advertised itself). The example must stay a query that really
+ * hits something — the test pins it against the key-concept heading
+ * "How do I complete the square?".
+ */
+export const NOTES_SEARCH_EXAMPLE = 'complete the square';
+export const NOTES_SEARCH_PLACEHOLDER = `Search notes — try '${NOTES_SEARCH_EXAMPLE}'`;
+
 // ── normalize ─────────────────────────────────────────────────────────────
 
 const SUPERSCRIPT_DIGITS: Record<string, string> = {
