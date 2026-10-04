@@ -563,3 +563,10 @@ is waiting); one line to the ops topic only when a copy failed, or — once the 
 full copy has finished — when files have waited over two days. The monthly
 `backup-check` also downloads six random copies FROM the backup and checks them.
 
+**First full copy, 5 Oct 2026:** 87,859 files, 27.1 GB (main 68,9xx files incl. student-files
+19,100 / 9.2 GB first; science question_images 18,8xx), no failed copy, driven run after run
+from this session; the stamp then carries `meta.caughtUp: true`, which turns on the
+two-day stall alarm. The organisation now stores about 54 GB (live + copies) against the
+Pro plan's 100 GB included. A run started with large past papers in flight once ran into
+Vercel's 300 s limit — a batch now starts only with 45 s to spare.
+
