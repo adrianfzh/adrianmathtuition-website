@@ -66,7 +66,7 @@ Writers:
   → [`MARKING.md`](MARKING.md) §🕳 When the paper is missing),
   and `health-check` itself.
 - **Mac plan-billed workers** stamp as the last step of their SKILL.md
-  (`qb-topup`, `file-subgroups`, `bot-review` — DAILY since 18 Sep 2026, run by the Fly worker's scheduler —, `marking-review` — 🔎 the page reader, 19 Sep 2026: yesterday's marked pages looked at as the student sees them, daily 06:15 on the Fly worker, read-only until 22 Sep —, `question-mine`,
+  (`qb-topup`, `file-subgroups`, `bot-review` — DAILY since 18 Sep 2026, run by the Fly worker's scheduler —, `marking-review` — 🔎 the page reader, 19 Sep 2026: yesterday's marked pages looked at as the student sees them, daily 06:15 on the Fly worker, read-only until 22 Sep —, `marking-learn` — 🎓 Loop 1, 5 Oct 2026: Adrian's mark/note changes (`marking_corrections`) read daily 07:15 on the Fly worker, a repeated kind → a proposal; stamps every morning even with nothing new (JOB_RHYTHMS 36 h) —, `flag-review` — 🚩 Loop 2, 5 Oct 2026: a student flag the bot closed wrong/unsure, reviewed the same day; on demand, so no rhythm —, `question-mine`,
   `figure-fitness` — the nightly question-figure fitness catch-up, which stamps
   every run including quiet ones (`queue empty`) and `ok=false` when it exits on
   a weak model or a failed calibration → [`FIGURES.md`](FIGURES.md) §4,
@@ -365,12 +365,14 @@ jobs there are together with the toggles for accounts … have a page just for t
 | 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
 | 🌙 Gemini Batch for queued papers (3 Oct 2026) | Airtable `Settings` `marking_vision_batch` | the bot, every queue tick (`lib/marking-settings.js visionBatch()`; no row yet → the Fly secret `VISION_BATCH` decides) | every vision call is live — full price, no waiting. ON = a queued paper's first vision round goes to Google's Batch API at half price and may wait up to an hour; ⚡ Mark now never batches |
 | Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
-| Worker jobs ×15 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+| Worker jobs ×17 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
 
 - **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
-  `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `worksheets`,
-  `proposals`, `flagjudge`. `prune` (disk hygiene) is never switchable.
+  `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
+  `worksheets`, `proposals`, `flagjudge`, `flag-review`. `prune` (disk hygiene) is never switchable.
+  `marking-learn` and `flag-review` (5 Oct 2026, bot `worker/fly/learn.sh`) read their own entry
+  (`scripts/*-learn-pull.js --switched-off`, fail open).
 - **A switch stops new work only.** A run in flight finishes. A timed job switched back on runs
   its latest missed slot once (the scheduler's stamp rule).
 - **Fail-safe direction.** No entry = on. The route answers a failed read with 502 and NO `off`

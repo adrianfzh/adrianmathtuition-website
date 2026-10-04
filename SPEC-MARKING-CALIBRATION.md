@@ -64,6 +64,16 @@ silently. The profile is read by the marker's prompt for that tutor's students o
 That is what turns "measured" into "marks like me". Today overrides are a record, not
 a dial; the profile is the dial, and it is the one piece still to build.
 
+**Status, 5 Oct 2026 — the loop started for Adrian (Adrian: "do learn from your corrections
+loop").** Every mark, note and verdict he changes through the desk or ✏️ Annotate is now a row in
+`marking_corrections` (before → after, his reason and kind, `corrected_by` + `org_id`), and the
+bot's daily `/marking-learn` groups them and turns a cause that repeats on two papers into a
+proposal he ships with one word (docs/MARKING.md §🎓). That is the "reasons → candidate rules →
+the tutor approves" half, with the marker's shared rules as the dial for now. Still to build:
+reading a hand-annotated copy (his ink without a record edit, an attached amended PDF), the
+confirm screen, and a per-tutor profile the prompt reads for that tutor's students only — the
+rows are already keyed for it.
+
 ### When there are no circled marks (Adrian, 17 Sep 2026: "what if there are no circled marks?")
 
 Teachers mark in different habits. The reader takes the richest thing on the page and
@@ -118,6 +128,7 @@ marks make ±2 meaningless; for marks they are the second look, not the first.
 | Overrides as the truth channel after release (the desk), the science "Your teacher's mark" box, the essay harness (`scripts/essay-calibration/`) | built |
 | Reading a marked copy the tutor annotated, with the original marking as context; the confirm screen | designed (§2.1 of the tutor spec), not built |
 | **Reading circled marks off a hand-marked scan, with the sum check and the part allocation** (Phase 1 steps 1–3) | not built — the first thing to build when the tutor product starts |
+| Every tutor correction (desk override, ✏️ Annotate marks + notes) recorded per tutor/org (`marking_corrections`), learned daily into proposals (`/marking-learn`) | **built 5 Oct 2026** for Adrian |
 | The per-tutor **marking profile** read by the prompt (the dial) | not built |
 | Per-tutor rows and gate on their own desk (the multi-tenant delta) | not built |
 

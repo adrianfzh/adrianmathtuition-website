@@ -871,6 +871,40 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
+## 🎓 Learning from Adrian's corrections — Loop 1 (5 Oct 2026)
+
+Adrian: *"do learn from your corrections loop."* Every mark or note he changes on a marked
+paper is a labelled example of where the marker and he disagree. It is now recorded, and
+read every morning.
+
+- **Captured.** `marking_corrections` (Supabase, append-only — an UPDATE is refused by trigger):
+  one row per part per field that changed — `marks` (before → after, of max), `note` (the
+  marker's `error_summary` before and his text after, or null when he deleted it), `verdict`
+  (the verdict line). Each row carries the run, student, paper, level, topic, scheme, the
+  marker's error kind, his kind and his reason (the desk override note), the question text,
+  **`corrected_by` and `org_id`** (today `adrian` / `tuition`; the tutor product passes its own —
+  SPEC-COMPANY §14.5, SPEC-TUTOR-TOOLS).
+- **The doors.** `lib/marking-corrections.ts diffCorrections(before, after)` (pure, tested) diffs
+  the run's `result_json` around the write; `lib/marking-corrections-store.ts` inserts fail-soft
+  (a row that does not land never fails his change; once-only by run+question+part+field+time).
+  Wired in `mark-triage {action:'override'}` (source `desk`) and
+  `/api/admin/mark-paper-compose-page` (source `annotate` — ✏️ Annotate Done and the profile's
+  Edit marking, the same overlay: score chips AND the note/verdict edits the bot's compose writes).
+  Plain ink with no record edit files nothing. **Backfill:** the five desk overrides already on runs
+  (`results[].triage_override`, whole-question, part `''`), migration `marking_corrections.sql`.
+- **Learned.** The bot's `/marking-learn` (Fly worker, 07:15 SGT, plan-billed; `$0` on a morning
+  with nothing new) groups by tutor · which way the marker was wrong · error kind
+  (`lib/correction-patterns.js`), splits each group by the real cause, and when the same cause
+  shows on two papers (or three times) opens a proposal branch: the marker rule + a golden-bench
+  case from the corrected page with his marks as the truth. One correction is a record, never a
+  proposal. State: `marking_correction_patterns`.
+- **Told.** One message in the Ops topic, only when there is a proposal, in plain words —
+  "You changed the marking on 3 papers this week where the marker took a mark off for … Proposed
+  fix: … → ✅ Ship". Nothing ships without his "ship proposal <slug>" (bot `docs/PROPOSALS.md`).
+- **Not captured yet:** his freehand ink with no record edit (a red "−1" written on the page),
+  and the hand-marked copies he attaches (`attach-amended`). Those are Phase 2's
+  "read the annotated copy" step (SPEC-MARKING-CALIBRATION §2), still to build.
+
 ## 📏 The consistency measure — the weekly shadow read (17 Sep 2026)
 
 Adrian: *"we need consistency in marking … how can we measure the effectiveness

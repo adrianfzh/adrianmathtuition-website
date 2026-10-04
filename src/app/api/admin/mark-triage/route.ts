@@ -37,6 +37,7 @@ import { after } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { verifyAgentAuth } from '@/lib/agent-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { recordCorrections, contextFromRun, RUN_COLUMNS_FOR_CORRECTIONS } from '@/lib/marking-corrections-store';
 import { resolveRecipient } from '@/lib/student-recipient';
 import { sendTelegram, sendTelegramTo, sendTelegramDocumentTo } from '@/lib/telegram';
 import { pickSuperseded } from '@/lib/marking-supersede';
@@ -441,7 +442,7 @@ export async function POST(req: NextRequest) {
 
     const { data: run, error: readErr } = await supa
       .from('paper_marking_runs')
-      .select('id, result_json, released_at')
+      .select(RUN_COLUMNS_FOR_CORRECTIONS)
       .eq('id', runId)
       .single();
     if (readErr || !run) return NextResponse.json({ error: readErr?.message || 'run not found' }, { status: 404 });
@@ -492,6 +493,11 @@ export async function POST(req: NextRequest) {
       .update({ result_json: staleJson, total_awarded: totals.awarded, total_max: totals.max })
       .eq('id', runId);
     if (writeErr) return NextResponse.json({ error: writeErr.message }, { status: 500 });
+    // 🔁 Loop 1 (5 Oct 2026): every mark Adrian changes here is a labelled example for the
+    // marker to learn from — one marking_corrections row per changed part (fail-soft).
+    if (body.action === 'override') {
+      await recordCorrections(supa, run.result_json, nextJson, contextFromRun(run, 'desk', now));
+    }
 
     return NextResponse.json({
       ok: true,

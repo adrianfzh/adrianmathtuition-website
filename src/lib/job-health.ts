@@ -31,6 +31,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'bot-review':        { kind: 'interval', hours: 36, label: 'daily 5:45am' },
   // 🔎 The page reader (19 Sep 2026, bot skill marking-review): yesterday's marked pages as the student sees them.
   'marking-review':    { kind: 'interval', hours: 36, label: 'daily 6:15am' },
+  // 🎓 Loop 1 (5 Oct 2026, bot skill marking-learn): Adrian's mark/note changes → repeated kinds → proposals.
+  // Stamps every morning, even with nothing new, so silence here means the job is dead.
+  'marking-learn':     { kind: 'interval', hours: 36, label: 'daily 7:15am' },
   // Nightly plan-billed review of the day's bot questions (bot repo
   // scripts/day-review-nightly.sh, launchd com.adrianmath.day-review, 5 Sept 2026).
   'day-review':        { kind: 'interval', hours: 36, label: 'nightly 5am' },

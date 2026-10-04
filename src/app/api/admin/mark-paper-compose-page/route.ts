@@ -12,6 +12,7 @@ import { composeForwardBody } from '@/lib/annotate/compose-forward';
 import { scoreEdits, scoreEditsToOverrides } from '@/lib/annotate/score-edits';
 import { applyOverride, recomputeTotals } from '@/lib/mark-triage';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { recordCorrections, contextFromRun, RUN_COLUMNS_FOR_CORRECTIONS } from '@/lib/marking-corrections-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 180;
@@ -38,8 +39,18 @@ export async function POST(req: NextRequest) {
   // re-reads the run before it persists, sees the new marks and repaints the chip.
   let marks: { awarded: number; max: number; questions: number; unmatched: number } | null = null;
   const scores = scoreEdits(recordEdits);
+  // 🔁 Loop 1 (5 Oct 2026): the run as it stood BEFORE this Done — diffed against the run
+  // after the bot's compose (which writes Adrian's note/verdict edits) so every mark and
+  // every note he changed is filed in marking_corrections. Read only when Done edits the
+  // record; plain ink changes nothing the marker could learn from.
+  const editsRecord = Array.isArray(recordEdits) && recordEdits.length > 0;
+  const supa = getSupabaseAdmin();
+  let before: { id: string; result_json: unknown; released_at: string | null; student_id?: string | null; paper_name?: string | null; paper_subject?: string | null; subject?: string | null } | null = null;
+  if (editsRecord) {
+    const { data } = await supa.from('paper_marking_runs').select(RUN_COLUMNS_FOR_CORRECTIONS).eq('id', runId).maybeSingle();
+    before = data;
+  }
   if (scores.length) {
-    const supa = getSupabaseAdmin();
     const { data: run, error } = await supa.from('paper_marking_runs').select('id, result_json, released_at').eq('id', runId).single();
     if (error || !run) return NextResponse.json({ error: error?.message || 'run not found' }, { status: 404 });
     if (run.released_at && !allowReleased) return NextResponse.json({ error: 'already released — the student has that copy' }, { status: 409 });
@@ -70,6 +81,10 @@ export async function POST(req: NextRequest) {
       signal: AbortSignal.timeout(170_000),
     });
     const out = await r.json().catch(() => ({}));
+    if (before && (r.ok || marks)) {
+      const { data: afterRun } = await supa.from('paper_marking_runs').select('result_json').eq('id', runId).maybeSingle();
+      if (afterRun) await recordCorrections(supa, before.result_json, afterRun.result_json, contextFromRun(before, 'annotate', new Date().toISOString()));
+    }
     return NextResponse.json(marks ? { ...out, marks } : out, { status: r.ok ? 200 : (r.status || 502) });
   } catch (e) {
     return NextResponse.json({ error: `bot unreachable: ${(e as Error).message}` }, { status: 502 });

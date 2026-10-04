@@ -46,9 +46,11 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'bot-review', group: 'reviews', label: '🤖 Bot review', what: 'Turns the day review\'s findings into fixes and proposals.', when: '05:45' },
   { key: 'marking-review', group: 'reviews', label: '🔎 Marked-page reader', what: 'Looks at yesterday\'s marked pages as the student saw them.', when: '06:15' },
   { key: 'marking-fix', group: 'reviews', label: '🛠 Marking fixer', what: 'Fixes what the page reader found, on the bench.', when: '06:45' },
+  { key: 'marking-learn', group: 'reviews', label: '🎓 Learn from my corrections', what: 'Reads the marks and notes you changed; a mistake you fixed twice or more becomes a proposed fix for you to ship.', when: '07:15' },
   { key: 'worksheets', group: 'requests', label: '📝 Telegram worksheets', what: 'Builds the worksheets asked for with /ws.', when: 'checks every 10 min' },
   { key: 'proposals', group: 'requests', label: '🚢 Ship or drop a proposal', what: 'Acts on "ship proposal …" sent from Telegram.', when: 'checks every minute' },
   { key: 'flagjudge', group: 'requests', label: '🤔 Flag judge', what: 'Settles a student\'s flag the first check could not.', when: 'checks every minute' },
+  { key: 'flag-review', group: 'requests', label: '🚩 Same-day flag review', what: 'When a student\'s flag shows the bot was wrong, finds why the same day and proposes the fix.', when: 'checks every 10 min' },
 ];
 
 export interface WorkerJobState { on: boolean; at: string | null; by: string | null }
