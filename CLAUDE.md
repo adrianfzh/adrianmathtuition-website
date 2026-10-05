@@ -176,7 +176,7 @@ Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future s
 
 | Switch | State (1 Oct 2026) | What it opens |
 |---|---|---|
-| `SCIENCE_PRACTICE_OPEN_TO_STUDENTS` | **closed** again since 3 Oct 2026 evening (Adrian: "close the mcq practice first - we need to check the questions are okay - figures are okay?"; it had been opened that morning) until the MCQ rows and their figures are checked | the Science Practise tab (MCQ by topic, every science the student takes; the question's school / year / paper is never sent) |
+| `SCIENCE_PRACTICE_OPEN_TO_STUDENTS` | **open, topic by topic** since 5 Oct 2026 (Adrian: "we can open up topics one by one" … "a model does the checking — just make sure it is good") — a student sees ONLY the topics on `SCIENCE_PRACTICE_OPEN_TOPICS` (same file); a topic goes on after its MCQs pass the blind-solve check (≥ 98 % agree with the stored key after fixes, ≥ 30 servable). Open: Chemistry › Chemical Calculations · Physics › Kinematics · Biology › Cell Structure and Organisation, Movement of Substances | the Science Practise tab (MCQ by topic, every science the student takes; the question's school / year / paper is never sent; national `GCE` rows and `practice_hidden` rows never served) |
 | `SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS` | **closed** until the seeded grader check passes | structured science practice (write, get marked, then the scheme) |
 | `EXPLAIN_CLIP_OPEN_TO_STUDENTS` | **closed** until Adrian has watched a few | ▶ Explain it · 1 min on the paper page + Notebook cards (`docs/LESSONS.md`) |
 | `SCIENCE_MARKING_OPEN_TO_STUDENTS` | closed in code — the LIVE switch is the Airtable `Settings` row `science_marking_open` (on since 25 Sep 2026) | the Science tab |

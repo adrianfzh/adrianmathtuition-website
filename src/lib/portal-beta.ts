@@ -132,7 +132,9 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // CLOSED again later on 3 Oct 2026 (Adrian: "close the mcq practice first - we need to
 // check the questions are okay - figures are okay?") until the MCQ rows and their
 // figures have been checked. Adrian's cookie and the preview student still see it.
-export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
+// OPEN AGAIN 5 Oct 2026 — TOPIC BY TOPIC (below): the tab shows a student only the topics on
+// SCIENCE_PRACTICE_OPEN_TOPICS, each opened after its MCQs passed the blind-solve check.
+export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = true;
 // TOPIC BY TOPIC (5 Oct 2026, Adrian: "our priority will be mcqs … we can open up topics one
 // by one" and "i don't have to see it, a model does the checking — just make sure it is good").
 // A student is shown and served ONLY the topics listed here, by the practice level key
@@ -143,9 +145,17 @@ export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
 // scienceTopicOpen; the gate is lib/practice scienceTopicGate). MCQ only: Structured has its
 // own switch above.
 export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly string[]>> = {
-  PHY: [],
-  CHEM: [],
-  BIO: [],
+  // Each line: opened 5 Oct 2026 after the check — checked / passed first time / after fixes.
+  PHY: [
+    'Kinematics',                        // 131 checked, 128 first time; 2 stems repaired, 1 hidden (option graphs missing), 2 near-copies hidden
+  ],
+  CHEM: [
+    'Chemical Calculations',             // 150 of 448 checked (sample), 150 passed
+  ],
+  BIO: [
+    'Cell Structure and Organisation',   // 69 checked, 69 passed; 3 near-copies hidden
+    'Movement of Substances',            // 82 checked, 79 first time; 3 hidden (no correct option / ambiguous key), 5 near-copies hidden
+  ],
 };
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
 // 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers
