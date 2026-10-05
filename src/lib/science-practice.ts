@@ -123,3 +123,26 @@ export function scienceRowOpen(open: OpenTopics | null, levelKey: string, topics
 export function serveTopicKey(levelKey: string, combined: boolean): string {
   return combined ? `CS_${levelKey}` : levelKey;
 }
+
+/**
+ * Which pool serves this topic (5 Oct 2026). A Combined Science student is served the
+ * Combined Science bank for a topic once THAT topic is open under its CS_ key; until then
+ * the pure bank's checked rows of the same topic stand in (when the pure topic is open), so
+ * a Combined student never loses a topic while the CS side waits for its check.
+ * `open` null = Adrian's preview: every topic open, in the pool he asked for.
+ */
+export function resolveTopicPool(open: OpenTopics | null, levelKey: string, topic: string | null | undefined, wantsCombined: boolean): { open: boolean; combined: boolean } {
+  if (!open) return { open: true, combined: wantsCombined };
+  if (wantsCombined && scienceTopicOpen(open, serveTopicKey(levelKey, true), topic)) return { open: true, combined: true };
+  if (scienceTopicOpen(open, levelKey, topic)) return { open: true, combined: false };
+  return { open: false, combined: wantsCombined };
+}
+
+/** May a row (by its level + topics) be shown / marked for this caller? Mirrors the picker. */
+export function scienceRowServable(open: OpenTopics | null, levelKey: string, row: { level?: string | null; topics?: readonly string[] | null }, wantsCombined: boolean, poolLevels: (combined: boolean) => string[]): boolean {
+  if (!open) return true;
+  return (row.topics ?? []).some(t => {
+    const r = resolveTopicPool(open, levelKey, t, wantsCombined);
+    return r.open && poolLevels(r.combined).includes(row.level ?? '');
+  });
+}

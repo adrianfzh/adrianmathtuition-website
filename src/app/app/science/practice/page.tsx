@@ -17,8 +17,8 @@ import { scienceMarkingOpen, sciencePracticeAccess, scienceStructuredPracticeOpe
 import { sessionAccount } from '@/lib/portal-auth';
 import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, studentSciences, type ScienceSubject } from '@/lib/portal-prefs';
 import { scienceLevelForSubject } from '@/lib/science-levels';
-import { scienceConfigured, scienceTopicCounts } from '@/lib/science-bank';
-import { parsePracticeKind, sciencePracticeHref, scienceTopicOpen, serveTopicKey, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
+import { scienceConfigured, scienceServedTopicCounts } from '@/lib/science-bank';
+import { parsePracticeKind, sciencePracticeHref, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
 import { SCIENCE_PRACTICE_OPEN_TOPICS } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 
@@ -52,11 +52,10 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
   // a pure-science student the pure one; students see only rows that passed the check.
   const preview = access === 'preview';
   const combined = !!choice?.combined && !isAdmin;
-  const pool = { combined, checkedOnly: !preview };
-  const counts = scienceConfigured() ? await scienceTopicCounts(levelKey, pool).catch(() => []) : [];
+  const serve = { open: preview ? null : SCIENCE_PRACTICE_OPEN_TOPICS, combined, checkedOnly: !preview };
+  const counts = scienceConfigured() ? await scienceServedTopicCounts(levelKey, serve).catch(() => []) : [];
   // Topic by topic (5 Oct 2026): a student sees only the open topics; Adrian's cookie sees all.
-  const gate = preview ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
-  const topics = topicsForKind(counts, kind).filter(t => scienceTopicOpen(gate, serveTopicKey(levelKey, combined), t));
+  const topics = topicsForKind(counts, kind);
   const href = (s: ScienceSubject, k: PracticeKind) => `/app/science/practice?s=${s}${k === 'structured' ? '&mode=structured' : ''}`;
 
   return (

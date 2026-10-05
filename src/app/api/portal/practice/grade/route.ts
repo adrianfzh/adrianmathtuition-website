@@ -24,7 +24,8 @@ import { gradeMcq, isScienceSubject, mcqKey, normaliseMcqChoice, scienceLevelFor
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
 import { scienceLevelOpenFor, scienceServeFor } from '@/lib/practice';
-import { scienceRowOpen, serveTopicKey } from '@/lib/science-practice';
+import { scienceRowServable } from '@/lib/science-practice';
+import { sciencePoolLevels } from '@/lib/science-levels';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
 
@@ -105,9 +106,8 @@ export async function POST(req: NextRequest) {
     catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 502 }); }
     // Topic by topic + checked rows of the student's own pool only (5 Oct 2026).
     const serve = await scienceServeFor(caller);
-    const poolGate = serve.open ? { ...serve, levelKey: sciLevel.key } : undefined;
-    if (!sq || !scienceEligible(sq, poolGate)) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
-    if (!scienceRowOpen(serve.open, serveTopicKey(sciLevel.key, serve.combined), sq.topics)) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    if (!sq || !scienceEligible(sq, { checkedOnly: serve.checkedOnly })) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    if (!scienceRowServable(serve.open, sciLevel.key, sq, serve.combined, c => sciencePoolLevels(sciLevel.key, c))) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     const topics = Array.isArray(sq.topics) ? sq.topics : [];
     const scienceMeta = { subject: scienceSubject, questionId: sq.id };
 

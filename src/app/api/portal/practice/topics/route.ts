@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience, scienceServeFor } from '@/lib/practice';
-import { scienceTopicOpen, serveTopicKey } from '@/lib/science-practice';
 import { isScienceLevel } from '@/lib/science-levels';
-import { scienceTopicCounts } from '@/lib/science-bank';
+import { scienceServedTopicCounts } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -26,7 +25,7 @@ export async function GET(req: NextRequest) {
   if (isScienceLevel(level)) {
     try {
       const serve = await scienceServeFor(caller, url.searchParams.get('pool'));
-      const topics = (await scienceTopicCounts(level, serve)).filter(t => scienceTopicOpen(serve.open, serveTopicKey(level, serve.combined), t.topic));
+      const topics = await scienceServedTopicCounts(level, serve);
       return NextResponse.json({ topics, level, ...(levels ? { levels } : {}) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message, topics: [] }, { status: 500 });

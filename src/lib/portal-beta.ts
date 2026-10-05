@@ -156,6 +156,7 @@ export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly stri
     'Chemical Calculations',             // 150 of 448 checked (sample), 150 passed
     'Salts',                             // 150 of 371 checked, 147 first time; 1 key corrected (two blind solves + its own worked solution), 2 hidden (ambiguous)
     'The Periodic Table',                // 150 of 345 checked, 146 first time; 3 hidden (contested key, wrong period in stem, garbled formula)
+    'Acids and Bases',                   // all 307 checked (two runs), 297 first time; 9 hidden (missing figure, two correct options, ambiguous)
   ],
   BIO: [
     'Cell Structure and Organisation',   // 69 checked, 69 passed; 3 near-copies hidden

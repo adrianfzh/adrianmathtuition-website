@@ -3,8 +3,8 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { solutionMarkdown } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { practiceAuth, scienceServeFor } from '@/lib/practice';
-import { scienceRowOpen, serveTopicKey } from '@/lib/science-practice';
-import { isScienceSubject, scienceLevelForSubject } from '@/lib/science-levels';
+import { scienceRowServable } from '@/lib/science-practice';
+import { isScienceSubject, scienceLevelForSubject, sciencePoolLevels } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
 
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       // and from an open topic (5 Oct 2026).
       const serve = await scienceServeFor(caller);
       const lk = scienceLevelForSubject(subject)?.key ?? '';
-      if (serve.open && (!scienceEligible(sq, { ...serve, levelKey: lk }) || !scienceRowOpen(serve.open, serveTopicKey(lk, serve.combined), sq.topics))) {
+      if (serve.open && (!scienceEligible(sq, { checkedOnly: serve.checkedOnly }) || !scienceRowServable(serve.open, lk, sq, serve.combined, c => sciencePoolLevels(lk, c)))) {
         return NextResponse.json({ error: 'not found' }, { status: 404 });
       }
       return NextResponse.json({ markdown: solutionMarkdown(sq, gate) });

@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience , scienceServeFor } from '@/lib/practice';
-import { scienceTopicOpen, serveTopicKey } from '@/lib/science-practice';
 import { isScienceLevel, scienceSubjectOf } from '@/lib/science-levels';
-import { scienceMasteryFor, scienceTopicCounts } from '@/lib/science-bank';
+import { scienceMasteryFor, scienceServedTopicCounts } from '@/lib/science-bank';
 
 export const runtime = 'nodejs';
 
@@ -49,7 +48,7 @@ export async function GET(req: NextRequest) {
   if (isScienceLevel(activeLevel)) {
     try {
       const serve = await scienceServeFor(caller, url.searchParams.get('pool'));
-      const counts = (await scienceTopicCounts(activeLevel, serve)).filter(t => scienceTopicOpen(serve.open, serveTopicKey(activeLevel, serve.combined), t.topic));
+      const counts = await scienceServedTopicCounts(activeLevel, serve);
       const subject = scienceSubjectOf(activeLevel)!;
       const mastery = isStudent ? await scienceMasteryFor(caller.account.id, subject) : new Map();
       const topics: TopicRow[] = counts.map(t => {

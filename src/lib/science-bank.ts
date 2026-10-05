@@ -17,6 +17,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import { scienceImageBase, withScienceImageUrls } from './science-images';
+import { resolveTopicPool } from './science-practice';
 import {
   computeScienceMastery, sciencePoolLevels, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
@@ -135,6 +136,24 @@ export async function scienceTopicCounts(levelKey: string, pool: SciencePoolOpts
   const rows = [...acc.values()].sort((a, b) => a.topic.localeCompare(b.topic));
   topicCache.set(cacheKey, { at: Date.now(), rows });
   return rows;
+}
+
+/**
+ * The topics a caller may practise, with counts (5 Oct 2026): the open topics of their pool;
+ * for a Combined Science student, each topic from the CS bank once its CS side is open, else
+ * from the pure bank (lib/science-practice resolveTopicPool). `open` null = Adrian: the
+ * pool he asked for, every topic.
+ */
+export async function scienceServedTopicCounts(levelKey: string, serve: SciencePoolOpts & { open: Readonly<Record<string, readonly string[]>> | null }): Promise<ScienceTopicCount[]> {
+  if (!serve.open) return scienceTopicCounts(levelKey, serve);
+  const open = serve.open;
+  const wants = !!serve.combined;
+  const pure = (await scienceTopicCounts(levelKey, { checkedOnly: serve.checkedOnly }))
+    .filter(t => { const r = resolveTopicPool(open, levelKey, t.topic, wants); return r.open && !r.combined; });
+  if (!wants) return pure;
+  const cs = (await scienceTopicCounts(levelKey, { combined: true, checkedOnly: serve.checkedOnly }))
+    .filter(t => resolveTopicPool(open, levelKey, t.topic, true).combined);
+  return [...cs, ...pure.filter(p => !cs.some(c => c.topic === p.topic))].sort((a, b) => a.topic.localeCompare(b.topic));
 }
 
 /** The practice payload shape (matches the math `next` route + `mcq`/`subject`). */

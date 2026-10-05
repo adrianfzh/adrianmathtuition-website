@@ -96,3 +96,30 @@ describe('science pools (5 Oct 2026)', () => {
     expect(serveTopicKey('BIO', true)).toBe('CS_BIO');
   });
 });
+
+import { resolveTopicPool, scienceRowServable } from './science-practice';
+describe('Combined Science falls back to the pure pool until its CS topic is open (5 Oct 2026)', () => {
+  const open = { PHY: ['Kinematics', 'Pressure'], CHEM: ['Salts'], BIO: [], CS_PHY: ['Pressure'], CS_CHEM: [], CS_BIO: [] };
+  const pool = (lk: string) => (c: boolean) => (c ? [`CS_${lk === 'PHY' ? 'PHYS' : lk}`, `CS_${lk === 'PHY' ? 'PHYS' : lk}_NA`] : [lk === 'PHY' ? 'PHYS' : lk]);
+  it('pure student: the pure pool, open topics only', () => {
+    expect(resolveTopicPool(open, 'PHY', 'Kinematics', false)).toEqual({ open: true, combined: false });
+    expect(resolveTopicPool(open, 'PHY', 'Forces', false).open).toBe(false);
+  });
+  it('combined student: the CS pool where its CS topic is open, else the pure pool of an open topic', () => {
+    expect(resolveTopicPool(open, 'PHY', 'Pressure', true)).toEqual({ open: true, combined: true });
+    expect(resolveTopicPool(open, 'PHY', 'Kinematics', true)).toEqual({ open: true, combined: false });
+    expect(resolveTopicPool(open, 'CHEM', 'Salts', true)).toEqual({ open: true, combined: false });
+    expect(resolveTopicPool(open, 'PHY', 'Forces', true).open).toBe(false);
+  });
+  it('Adrian (no gate): every topic, the pool he asked for', () => {
+    expect(resolveTopicPool(null, 'BIO', 'Enzymes', true)).toEqual({ open: true, combined: true });
+  });
+  it('a row is servable only from the pool its topic resolves to', () => {
+    expect(scienceRowServable(open, 'PHY', { level: 'PHYS', topics: ['Kinematics'] }, true, pool('PHY'))).toBe(true);
+    expect(scienceRowServable(open, 'PHY', { level: 'CS_PHYS', topics: ['Kinematics'] }, true, pool('PHY'))).toBe(false);
+    expect(scienceRowServable(open, 'PHY', { level: 'CS_PHYS_NA', topics: ['Pressure'] }, true, pool('PHY'))).toBe(true);
+    expect(scienceRowServable(open, 'PHY', { level: 'PHYS', topics: ['Pressure'] }, true, pool('PHY'))).toBe(false);
+    expect(scienceRowServable(open, 'PHY', { level: 'PHYS', topics: ['Pressure'] }, false, pool('PHY'))).toBe(true);
+    expect(scienceRowServable(open, 'PHY', { level: 'PHYS', topics: ['Forces'] }, false, pool('PHY'))).toBe(false);
+  });
+});
