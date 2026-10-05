@@ -148,13 +148,21 @@ export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly stri
   // Each line: opened 5 Oct 2026 after the check — checked / passed first time / after fixes.
   PHY: [
     'Kinematics',                        // 131 checked, 128 first time; 2 stems repaired, 1 hidden (option graphs missing), 2 near-copies hidden
+    'Forces',                            // 150 of 152 checked, 145 first time; 1 stem repaired, 2 hidden (missing figure, two correct options)
+    'Turning Effect of Forces',          // 41 checked, 40 first time; 1 hidden (key depends on wording)
+    'Pressure',                          // 80 checked, 79 first time; 1 hidden (needs a figure that is not stored)
   ],
   CHEM: [
     'Chemical Calculations',             // 150 of 448 checked (sample), 150 passed
+    'Salts',                             // 150 of 371 checked, 147 first time; 1 key corrected (two blind solves + its own worked solution), 2 hidden (ambiguous)
+    'The Periodic Table',                // 150 of 345 checked, 146 first time; 3 hidden (contested key, wrong period in stem, garbled formula)
   ],
   BIO: [
     'Cell Structure and Organisation',   // 69 checked, 69 passed; 3 near-copies hidden
     'Movement of Substances',            // 82 checked, 79 first time; 3 hidden (no correct option / ambiguous key), 5 near-copies hidden
+    'Enzymes',                           // 60 checked, 57 first time; 3 hidden (garbled statement, two plausible answers)
+    'Nutrition in Humans',               // 77 checked, 77 passed
+    'Nutrition in Plants',               // 43 checked, 40 first time; 3 hidden (option figures missing, ambiguous stem)
   ],
 };
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
