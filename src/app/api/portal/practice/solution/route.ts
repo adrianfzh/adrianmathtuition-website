@@ -41,7 +41,10 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'not found' }, { status: 404 });
       }
       // formulae as chemistry (I₂, 2 × 127) — the readability rule, 5 Oct 2026
-      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(sq, gate)) });
+      // A rewritten MCQ solution carries its own bold "Answer: X" line after the working
+      // (5 Oct 2026, the readable solutions) — then the stored answer is not printed on top too.
+      const own = /\*\*Answer:\s*[A-D]\*\*/.test(sq.solution || '');
+      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(own ? { ...sq, answer: null } : sq, gate)) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }
