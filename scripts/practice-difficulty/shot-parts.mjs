@@ -1,0 +1,10 @@
+import puppeteer from 'puppeteer-core'; import path from 'path';
+const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out');
+const b = await puppeteer.launch({ headless: true, executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+const p = await b.newPage(); await p.setViewport({ width: 390, height: 844, deviceScaleFactor: 1 });
+await p.goto('file://' + path.join(OUT, 'sample.html'), { waitUntil: 'networkidle0', timeout: 60000 });
+const ys = await p.evaluate(() => [...document.querySelectorAll('h2')].map(h => [h.textContent, h.getBoundingClientRect().top + scrollY]));
+console.log(ys);
+let i = 0;
+for (const [t, y] of ys.filter(([t]) => /of 90/.test(t))) await p.screenshot({ path: path.join(OUT, `part-${i++}.png`), clip: { x: 0, y, width: 390, height: 1400 }, captureBeyondViewport: true });
+await b.close();
