@@ -156,9 +156,9 @@ async function stampRun(sb: SB, runId: string, stamp: Record<string, unknown>): 
   if (!data || data.queue_status === 'queued' || data.queue_status === 'claimed') return;
   const rj = obj(data.result_json);
   const prev = obj(rj.extraction_handoff);
-  // A reading costs a model call, and an ask to Adrian is history — both survive every later stamp.
+  // A reading costs a model call; an ask to Adrian, his answer and his override are history — all survive every later stamp.
   const keep: Record<string, unknown> = prev.reading && !stamp.reading ? { reading: prev.reading } : {};
-  for (const k of ['asked_school', 'asked_at', 'answered_school', 'answered_at']) if (prev[k] !== undefined && stamp[k] === undefined) keep[k] = prev[k];
+  for (const k of ['asked_school', 'asked_at', 'answered_school', 'answered_at', 'override', 'override_by']) if (prev[k] !== undefined && stamp[k] === undefined) keep[k] = prev[k];
   await sb.from('paper_marking_runs').update({ result_json: { ...rj, extraction_handoff: { ...keep, ...stamp } } }).eq('id', runId);
 }
 

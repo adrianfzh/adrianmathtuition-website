@@ -198,7 +198,7 @@ no index line holds is a second door into the queue — same row shape,
   (`"NVSS" = "North Vista Secondary School"`), marks the asked runs `answered_school`, and the
   next tick re-reads them however old they are. The website loads every active alias row as a
   family of spellings before each sweep (`setLearnedFamilies`).
-- **Backfill (5 Oct 2026), all 399 runs:** **15 papers queued — 14 private student-work sources
+- **Backfill (5 Oct 2026), all 399 runs:** **15 papers queued (16 with NVSS) — 14 private student-work sources
   (deleted after extraction) and 1 attached question-paper PDF**, plus 4 student schemes beside
   them as `… MS.pdf`: CHEM PRELIM 2026 Queenstown P2 · CS CHEM PRELIM 2026 Gan Eng Seng P3 ·
   CS CHEM PRELIM 2026 Paya Lebar Methodist Girls P3 · CS BIO PRELIM 2026 Swiss Cottage P4 ·
@@ -207,11 +207,11 @@ no index line holds is a second door into the queue — same row shape,
   AM PRELIM 2025 CHIJ St Theresa Convent P1 + P2. Of the 89 the first pass could not name, 46 are
   named now, 9 were our own "O REV" sheets and 34 are still unknown (no school, year or exam
   printed or typed — "A Math 2025 P1", "Handed in 22 Aug"); 93 printed-page reads in all.
-  **NVSS** (Chloe's AM P2, 13 Aug): Adrian answered North Vista; the photos print no year, and
-  its questions are not in the bank (not North Vista 2022) — it waits for the year.
-  **SCSS:** the cover of "scss prelim 2026 pp4" prints Swiss Cottage Secondary School, not
-  Singapore Chinese Girls' — print beat the short form; the alias `scss` → SCGS is kept as Adrian
-  gave it, to be confirmed.
+  **NVSS** (Chloe's AM P2, 13 Aug): Adrian answered North Vista 2025 — set as the run's
+  `extraction_handoff.override` (his word beats the print and the typed name) and queued:
+  `AM PRELIM 2025 North Vista Paper 2.pdf`, 17 printed pages with working, private. 16 papers in
+  all. **SCSS = Swiss Cottage** (Adrian, 5 Oct 2026; Singapore Chinese Girls' is SCGS) — fixed in
+  both short-form tables; the printed cover had already filed it as Swiss Cottage.
 
 ## 2. The queue — `paper_library`, `kind='source'`
 

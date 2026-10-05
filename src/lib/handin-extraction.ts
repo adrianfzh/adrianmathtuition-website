@@ -211,7 +211,8 @@ export const SCHOOL_ALIASES: Record<string, string> = {
   sjc: 'CHIJ St Joseph', 'chij sjc': 'CHIJ St Joseph', 'chij st joseph': 'CHIJ St Joseph', 'chij st josephs': 'CHIJ St Joseph',
   sji: 'St Josephs Institution', 'st josephs institution': 'St Josephs Institution', 'st joseph institution': 'St Josephs Institution',
   plmgs: 'Paya Lebar Methodist Girls', 'paya lebar methodist girls': 'Paya Lebar Methodist Girls', 'paya lebar mgs': 'Paya Lebar Methodist Girls',
-  scss: 'Singapore Chinese Girls School', scgs: 'Singapore Chinese Girls School', 'singapore chinese girls': 'Singapore Chinese Girls School',
+  // SCSS = Swiss Cottage; Singapore Chinese Girls' is SCGS (Adrian, 5 Oct 2026).
+  scss: 'Swiss Cottage', 'swiss cottage': 'Swiss Cottage', scgs: 'Singapore Chinese Girls School', 'singapore chinese girls': 'Singapore Chinese Girls School',
   ri: 'RI', rjc: 'RI', hci: 'HCI', njc: 'NJC', nyjc: 'NYJC', tjc: 'TJC', vjc: 'VJC', acjc: 'ACJC',
   cjc: 'CJC', sajc: 'SAJC', ejc: 'EJC', ajc: 'AJC', mjc: 'MJC', pjc: 'PJC', yjc: 'YJC', jjc: 'JJC',
   srjc: 'SRJC', tmjc: 'TMJC', yijc: 'YIJC', asrjc: 'ASRJC', rvhs: 'RVHS', dhs: 'DHS',
@@ -229,6 +230,7 @@ const FAMILIES: Array<{ math: string; science: string; also: string[] }> = [
   { math: 'Paya Lebar Methodist Girls', science: 'Paya Lebar Methodist Girls', also: ['Paya Lebar Methodist Girls School', "Paya Lebar Methodist Girls' School (Secondary)", 'Paya Lebar MGS'] },
   { math: 'Singapore Chinese Girls School', science: 'Singapore Chinese Girls School', also: ["Singapore Chinese Girls' School", 'SCGS (IP)'] },
   { math: 'Queenstown', science: 'Queenstown', also: ['Queenstown Secondary School', 'Queenstown Secondary'] },
+  { math: 'Swiss Cottage', science: 'Swiss Cottage Secondary School', also: ['Swiss Cottage Secondary'] },
 ];
 const squash = (s: string) => norm(s).replace(/\s+/g, '');
 const FAMILY_OF = new Map<string, number>();
@@ -444,7 +446,10 @@ export type IdentityResult =
  */
 export type SchoolList = string[] | ((family: 'maths' | 'science') => string[]);
 
-export function paperIdentity(run: HandinRun, ctx: { schools?: SchoolList; reading?: PaperReading | null } = {}): IdentityResult {
+/** What Adrian told us about a run's paper (`extraction_handoff.override`) — beats everything. */
+export type PaperOverride = { year?: number; exam?: string; school?: string; level?: string; paper?: number };
+
+export function paperIdentity(run: HandinRun, ctx: { schools?: SchoolList; reading?: PaperReading | null; override?: PaperOverride | null } = {}): IdentityResult {
   const name = String(run.paper_name || '');
   if (OWN_CONTENT.test(name)) return { ok: false, reason: 'own-sheet', detail: 'our own sheet, not a school paper' };
   const rj = obj(run.result_json);
@@ -494,6 +499,13 @@ export function paperIdentity(run: HandinRun, ctx: { schools?: SchoolList; readi
     const school = printed.school ?? typed.school;
     f = { level: pick('level'), year: pick('year'), paper: pick('paper'), exam: pick('exam'), school, short: school ? undefined : (printed.short ?? typed.short) };
     if (printed.year || printed.exam || printed.school || printed.paper) from = 'print';
+  }
+  // Adrian's word on this run beats the print and the typed name.
+  const o = ctx.override;
+  if (o) {
+    const exam = o.exam ? (EXAM_TOKENS[norm(o.exam)] ?? o.exam) : null;
+    f = { level: o.level ?? f.level, year: o.year ?? f.year, paper: o.paper ?? f.paper, exam: exam ?? f.exam,
+      school: o.school ? (resolveSchool(o.school, schools, true).school ?? o.school) : f.school, short: o.school ? undefined : f.short };
   }
   if (f.exam === 'GCE' || f.exam === 'Specimen') f = { ...f, school: 'GCE', short: undefined };
 
@@ -676,14 +688,15 @@ export function chooseSource(resultJson: unknown, reading?: PaperReading | null)
  */
 export function decideHandoff(
   run: HandinRun,
-  ctx: { lines: LineLike[]; seen: Set<string>; isOurs: (u: string) => boolean; schools?: SchoolList; reading?: PaperReading | null },
+  ctx: { lines: LineLike[]; seen: Set<string>; isOurs: (u: string) => boolean; schools?: SchoolList; reading?: PaperReading | null; override?: PaperOverride | null },
 ): HandoffDecision {
   if (run.superseded_by) return { action: 'skip', reason: 'superseded', detail: 'a later marking of the same hand-in exists' };
   const rj = obj(run.result_json);
   if (run.queue_status === 'queued' || run.queue_status === 'claimed' || !arr(rj.results).length) {
     return { action: 'skip', reason: 'not-marked', detail: 'not marked yet' };
   }
-  const who = paperIdentity(run, { schools: ctx.schools, reading: ctx.reading });
+  const override = ctx.override ?? (obj(obj(rj.extraction_handoff).override) as PaperOverride);
+  const who = paperIdentity(run, { schools: ctx.schools, reading: ctx.reading, override: Object.keys(override ?? {}).length ? override : null });
   if (!who.ok) {
     if (who.reason === 'unknown-paper' && matchedBankAtMarking(rj)) return { action: 'skip', reason: 'in-bank', detail: 'the marking matched its printed questions to the bank' };
     return { action: 'skip', reason: who.reason, detail: who.detail, short: who.short, readable: who.readable };

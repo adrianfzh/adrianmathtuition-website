@@ -210,7 +210,7 @@ describe('schools — Adrian\'s short forms, the families, the initials guesser'
     expect(resolveSchool('xms', bank).school).toBe('Xinmin');
     expect(resolveSchool('ges', bank).school).toBe('Gan Eng Seng');
     expect(resolveSchool('plmgs', bank).school).toBe('Paya Lebar Methodist Girls');
-    expect(resolveSchool('scss', bank).school).toBe('Singapore Chinese Girls School');
+    expect(resolveSchool('scss', bank).school).toBe('Swiss Cottage');   // Adrian: SCSS = Swiss Cottage, SCGS = Singapore Chinese Girls'
     expect(resolveSchool('scgs', bank).school).toBe('Singapore Chinese Girls School');
   });
   it('each bank files under its own spelling', () => {
@@ -318,5 +318,13 @@ describe('a run marked before the page pre-pass', () => {
     const reading = { pages: [{ photo: 0, kind: 'cover' }, { photo: 1, kind: 'mixed' }, { photo: 2, kind: 'question_paper' }, { photo: 3, kind: 'mixed' }, { photo: 4, kind: 'working' }] };
     expect(chooseSource(rj, reading)).toMatchObject({ ok: true, source: { pages: [1, 2, 3], studentWork: true } });
     expect(chooseSource(rj, null)).toMatchObject({ ok: false, reason: 'no-printed-pages' });
+  });
+});
+
+describe("Adrian's word on a run (extraction_handoff.override)", () => {
+  it('fills what neither the name nor the print says — Chloe NVSS P2 = North Vista 2025', () => {
+    const run: HandinRun = { id: 'n', paper_name: 'Chloe NVSS P2 AM', student_name: 'Chloe Zhang', subject: 'math', queue_status: 'done',
+      result_json: { results: [{}], extraction_handoff: { override: { year: 2025, exam: 'Prelim', school: 'North Vista' } } } };
+    expect(decideHandoff(run, { lines: [], seen: new Set(), isOurs })).toMatchObject({ id: { level: 'AM', year: 2025, school: 'North Vista', examType: 'Prelim', paper: 2 } });
   });
 });
