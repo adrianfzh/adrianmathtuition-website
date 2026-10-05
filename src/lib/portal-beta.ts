@@ -174,9 +174,22 @@ export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly stri
 // Science bank (CS_PHYS / CS_CHEM / CS_BIO + _NA) and ONLY the topics listed here — never the
 // pure pool. Empty = the tab tells them practice for Combined Science is coming soon. A topic
 // goes on after ITS Combined Science MCQs pass the same check as the pure ones.
+// Opened 5 Oct 2026 after the check (every servable Combined Science MCQ of the topic blind-solved
+// by Opus, figures looked at, copies hidden): checked · served now.
 export const SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS: Readonly<Record<string, readonly string[]>> = {
-  PHY: [],
-  CHEM: [],
+  PHY: [
+    'Kinematics',                // 78 checked, 75 first time · 73 served
+    'Forces',                    // 84 checked, 80 first time · 77 served
+    'Turning Effect of Forces',  // 49 checked, 44 first time · 40 served
+    'Pressure',                  // 37 checked, 37 first time · 37 served
+  ],
+  CHEM: [
+    'Chemical Calculations',     // 72 checked, 69 first time · 69 served
+    'Acids and Bases',           // 146 checked, 143 first time · 139 served
+    'Salts',                     // 99 checked, 97 first time · 97 served
+    'The Periodic Table',        // 131 checked, 128 first time · 128 served
+  ],
+  // Biology: every Combined Science topic has fewer than 30 servable MCQs (14–22) — not open.
   BIO: [],
 };
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
