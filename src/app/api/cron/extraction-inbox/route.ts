@@ -45,7 +45,7 @@ import {
 import { splitBook, type BookRead } from '@/lib/paper-book-split-io';
 import { describeParts, partFileName } from '@/lib/paper-book-split';
 import { sendTelegram } from '@/lib/telegram';
-import { sweepHandoffs } from '@/lib/handin-extraction-store';
+import { sweepHandoffs, deleteFinishedStudentWorkSources } from '@/lib/handin-extraction-store';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -408,11 +408,14 @@ export async function GET(req: NextRequest) {
   // A marked hand-in of a paper the bank does not hold sends its PRINTED-only
   // pages (never the student's working) as one PDF named by the paper key —
   // lib/handin-extraction.ts decides, -store does it. After marking, never in
-  // its way; at most two papers a tick; no Telegram (the tick's summary counts).
+  // its way; at most two papers a tick and three printed-page reads; the only
+  // Telegram is the batched "which schools are these?" line (once per short form).
   let handoff: { summary: string; items: unknown[] } | null = null;
   try {
-    const h = await sweepHandoffs({ sinceDays: 7, maxQueue: 2, stampSkips: true, dry });
-    handoff = { summary: h.summary, items: h.items.filter(i => i.action === 'queued' || i.action === 'failed') };
+    const h = await sweepHandoffs({ sinceDays: 7, maxQueue: 2, maxReads: 3, stampSkips: true, askAdrian: true, dry });
+    // A source that held a student's working is deleted once its paper is finished.
+    const del = await deleteFinishedStudentWorkSources(dry);
+    handoff = { summary: h.summary + (del.deleted ? ` · ${del.deleted} student-work source${del.deleted === 1 ? '' : 's'} deleted` : ''), items: h.items.filter(i => i.action === 'queued' || i.action === 'failed') };
   } catch (e) {
     handoff = { summary: `hand-in sweep failed: ${((e as Error).message || String(e)).slice(0, 120)}`, items: [] };
   }

@@ -152,33 +152,66 @@ whole; the next drop tries again.
 ## 1d. Papers students hand in (5 Oct 2026)
 
 Adrian: *"build that. and start to extract papers previously uploaded that we don't already
-have in the question bank too"*. A marked hand-in of a paper no index line holds is a second
-door into the queue — same row shape, `source_folder='hand-in'`, no Dropbox file.
+have in the question bank too"*, then *"do the safer middle way"*. A marked hand-in of a paper
+no index line holds is a second door into the queue — same row shape,
+`source_folder='hand-in'`, no Dropbox file.
 
-- **What goes:** ONLY printed pages with nothing of the student's — the pre-pass said
-  `question_paper` and the page's own marking read agreed (`non_work_pages`, no marked
-  answer). Never `mixed` / `working` / `cover` / an answer page. ≥ 3 such pages and ≥ half the
-  printed pages, or nothing. An attached question-paper PDF goes whole. Never the student's
-  name: the file is named by the paper key (`CHEM PRELIM 2026 Queenstown Paper 2.pdf`), a
-  school is taken only from the alias table, and the name must read back through
-  `parseSourceFilename`.
-- **When:** the extraction-inbox tick, after its inbox work: runs created in the last 7 days,
-  at most 2 papers a tick, every run stamped `result_json.extraction_handoff` so it is looked at
-  once. The tick's summary ends "· n from hand-ins".
-- **Duplicates:** the library index decides (banked, queued, held, being extracted or skipped =
-  known); a second hand-in of the same paper is not sent; same name or same bytes already in
-  `paper_library` → not filed. A student's attached scheme → its own `… MS.pdf` row, `skipped`.
-- **Rows:** notes `from a student hand-in, printed pages only (photos 12, 13, 15), run <id>`,
-  plus `PARTIAL: …` when printed pages were left out — the worker banks what is there and a
-  full copy later completes it (`xr-short-duplicate-completes`).
+- **What goes.** Clean printed pages when there are enough (pre-pass `question_paper` AND the
+  page's own read agreed; ≥ 3 and ≥ half the printed pages). Otherwise — students write on the
+  paper — **the safer middle way**: every printed question page (`question_paper` + `mixed`,
+  the student's working included, ≥ 3 pages) as a PRIVATE source, column
+  `contains_student_work = true` and notes beginning `CONTAINS STUDENT WORK`. Never a cover
+  (a written name), never a page of plain working or an answer page. An attached
+  question-paper PDF goes whole.
+- **The law for those rows** (`exam-extraction` §Hand-in sources that contain student work,
+  archive `exam-extraction-2026-10-05h`, rule `xr-handin-student-work`): transcribe ONLY the
+  printed question text; never crop a figure — redraw it, or bank the question without it,
+  flagged; store no page image; keep no copy.
+- **Deleted when finished.** The extraction-inbox tick deletes a student-work source from the
+  bucket once its row is `done` / `skipped` / `flagged`, blanks `storage_path` (`''`) and notes
+  "source deleted (contained student work)" (`deleteFinishedStudentWorkSources`) — the website
+  does it, so it never depends on a worker remembering. A `failed` row keeps its file for the retry.
+- **Which paper.** Typed name first (maths: the bot's `paper_match.parsed`; gaps from the name or
+  `paper_subject`). When it lacks something, ONE model read of the cover + first printed pages
+  (`readPrintedPages`, `claude-sonnet-5`, headers/footers/syllabus code, handwriting ignored);
+  print beats a clashing typed value, the name fills gaps. Schools: the alias table (Adrian's
+  short forms SJC = CHIJ St Joseph's Convent, SJI, TKGS, XMS, GES, PLMGS, SCSS/SCGS — in the bot's
+  `lib/paper-key.js` too), the families of spellings (each bank's own spelling for new rows),
+  then the initials guesser — an unknown short form is the ONE bank school whose initials fit,
+  else Adrian gets one batched Telegram line ("🏫 Which schools are these?"), once per short form
+  (`extraction_handoff.asked_school`). A typed word is never Title-Cased into a school, so a
+  student's name can never become a file name; the name must read back through
+  `parseSourceFilename`. A run whose printed questions the marking already matched to the bank is
+  held, whatever its name.
+- **When:** the extraction-inbox tick: runs created in the last 7 days, ≤ 2 papers and ≤ 3 reads
+  a tick; every run stamped `result_json.extraction_handoff` (the reading kept in it).
 - **Code:** `src/lib/handin-extraction.ts` (pure, tested) · `src/lib/handin-extraction-store.ts`
-  · backfill `npx tsx scripts/handin-extraction-backfill.ts [--go] [--stamp] [--json]`.
-- **First backfill (5 Oct 2026):** 399 runs, **0 queued** — 134 in the bank already, 6 queued,
-  156 our own sheets, 89 not nameable (no exam word, no year, or an acronym the alias table
-  lacks: SJC, SJI, TKGS, XMS, GES, PLMGS, SCSS), 3 with too few clean printed pages, 11
-  unmarked/superseded. Students write on the paper (3,700 printed pages with working, 94
-  without), so a hand-in only yields a paper when a clean copy is photographed or the question
-  PDF is attached. → SPEC-PAPER-MATCH.md §⑤
+  · backfill `npx tsx scripts/handin-extraction-backfill.ts [--go] [--stamp] [--json]` (readings
+  cached in the OS temp folder between a dry run and `--go`).
+- **Runs marked before the page pre-pass** (no `page_classification`, mid-August and older):
+  ONE read of ALL the photos says which are printed question pages (and names the paper from any
+  page); those always go as private student-work sources.
+- **Adrian's answer to 🏫** (bot `lib/school-asks.js` + `handlers/school-asks.js`): a reply to the
+  line, OR a plain message within 6 hours that names a school (its initials fit the open short
+  form, or it carries a school word — an ordinary message is never swallowed); several open →
+  "NVSS = North Vista; XYZ: …". The bot writes an active `extraction_rules` alias row
+  (`"NVSS" = "North Vista Secondary School"`), marks the asked runs `answered_school`, and the
+  next tick re-reads them however old they are. The website loads every active alias row as a
+  family of spellings before each sweep (`setLearnedFamilies`).
+- **Backfill (5 Oct 2026), all 399 runs:** **15 papers queued — 14 private student-work sources
+  (deleted after extraction) and 1 attached question-paper PDF**, plus 4 student schemes beside
+  them as `… MS.pdf`: CHEM PRELIM 2026 Queenstown P2 · CS CHEM PRELIM 2026 Gan Eng Seng P3 ·
+  CS CHEM PRELIM 2026 Paya Lebar Methodist Girls P3 · CS BIO PRELIM 2026 Swiss Cottage P4 ·
+  EM PRELIM 2025 Zhonghua P2 · EM (NA) PRELIM 2025 St Gabriel P1 + P2 · AM PRELIM 2024 / 2025 CHIJ
+  St Joseph P1 · EM PRELIM 2023 / 2024 / 2025 CHIJ St Joseph P1 · AM PRELIM 2025 North Vista P1 ·
+  AM PRELIM 2025 CHIJ St Theresa Convent P1 + P2. Of the 89 the first pass could not name, 46 are
+  named now, 9 were our own "O REV" sheets and 34 are still unknown (no school, year or exam
+  printed or typed — "A Math 2025 P1", "Handed in 22 Aug"); 93 printed-page reads in all.
+  **NVSS** (Chloe's AM P2, 13 Aug): Adrian answered North Vista; the photos print no year, and
+  its questions are not in the bank (not North Vista 2022) — it waits for the year.
+  **SCSS:** the cover of "scss prelim 2026 pp4" prints Swiss Cottage Secondary School, not
+  Singapore Chinese Girls' — print beat the short form; the alias `scss` → SCGS is kept as Adrian
+  gave it, to be confirmed.
 
 ## 2. The queue — `paper_library`, `kind='source'`
 

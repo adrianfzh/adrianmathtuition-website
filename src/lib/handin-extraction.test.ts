@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   cleanPrintedPages, enoughPages, paperIdentity, handoffFileName, schemeFileName, heldLine, sameSchool,
-  decideHandoff, handoffNote, namesStudent, attachedScheme, attachedPaperPdf, backfillOrder, identityKey,
+  decideHandoff, handoffNote, namesStudent, chooseSource, guessSchool, schoolInitials, resolveSchool, spellingFor, matchedBankAtMarking, unknownSchoolsLine, readingPages, STUDENT_WORK_TAG, setLearnedFamilies, namesInAliasRow, attachedScheme, attachedPaperPdf, backfillOrder, identityKey,
   type HandinRun, type PaperIdentity,
 } from './handin-extraction';
 
@@ -32,13 +32,13 @@ describe('cleanPrintedPages — which pages may leave the student\'s files', () 
 
 describe('enoughPages', () => {
   it('refuses a paper whose printed pages carry the working', () => {
-    expect(enoughPages({ clean: [], printed: 20, disputed: [] })).toMatchObject({ ok: false, reason: 'no-printed-pages' });
-    expect(enoughPages({ clean: [3], printed: 20, disputed: [] })).toMatchObject({ ok: false, reason: 'too-few-printed-pages' });
-    expect(enoughPages({ clean: [1, 2, 3, 4, 5], printed: 15, disputed: [] })).toMatchObject({ ok: false });
+    expect(enoughPages({ clean: [], printed: 20 })).toMatchObject({ ok: false, reason: 'no-printed-pages' });
+    expect(enoughPages({ clean: [3], printed: 20 })).toMatchObject({ ok: false, reason: 'too-few-printed-pages' });
+    expect(enoughPages({ clean: [1, 2, 3, 4, 5], printed: 15 })).toMatchObject({ ok: false });
   });
   it('takes a mostly clean paper, partial when some pages were left out', () => {
-    expect(enoughPages({ clean: [2, 3, 4, 5, 6, 7, 8, 9, 10], printed: 9, disputed: [] })).toEqual({ ok: true, partial: false });
-    expect(enoughPages({ clean: [1, 2, 3], printed: 5, disputed: [] })).toEqual({ ok: true, partial: true });
+    expect(enoughPages({ clean: [2, 3, 4, 5, 6, 7, 8, 9, 10], printed: 9 })).toEqual({ ok: true, partial: false });
+    expect(enoughPages({ clean: [1, 2, 3], printed: 5 })).toEqual({ ok: true, partial: true });
   });
 });
 
@@ -50,7 +50,7 @@ const mathRun = (paper_name: string, parsed: Record<string, unknown>, extra: Rec
 describe('paperIdentity', () => {
   it('maths reads the bot\'s parsed key; TYS is the GCE paper', () => {
     const r = paperIdentity(mathRun('chloe zhang em tys 2016 p2', { exam: 'GCE', year: 2016, level: 'EM', paper: 2, school: null }));
-    expect(r).toEqual({ ok: true, id: { subject: 'math', level: 'EM', year: 2016, school: 'GCE', examType: 'GCE', paper: 2 } });
+    expect(r).toEqual({ ok: true, from: 'name', id: { subject: 'math', level: 'EM', year: 2016, school: 'GCE', examType: 'GCE', paper: 2 } });
   });
   it('maths: H2 → JC2, a school prelim keeps its school', () => {
     const r = paperIdentity(mathRun('lakshanya h2 math prelim vjc 2024 p2', { exam: 'PRELIM', year: 2024, level: 'H2', paper: 2, school: 'VJC' }));
@@ -59,9 +59,9 @@ describe('paperIdentity', () => {
   it('never guesses: no school, no exam, an unknown acronym, a WA', () => {
     expect(paperIdentity(mathRun('2026 em prelim p1', { exam: 'PRELIM', year: 2026, level: 'EM', paper: 1, school: null }))).toMatchObject({ ok: false, reason: 'unknown-paper' });
     expect(paperIdentity(mathRun('St Gabriel 2025 EM paper 2', { exam: null, year: 2025, level: 'EM', paper: 2, school: 'St Gabriel' }))).toMatchObject({ ok: false });
-    const acr = mathRun('rainie am prelim sjc 2024 p1', { exam: 'PRELIM', year: 2024, level: 'AM', paper: 1, school: 'Sjc' });
+    const acr = mathRun('rainie am prelim zzq 2024 p1', { exam: 'PRELIM', year: 2024, level: 'AM', paper: 1, school: 'Zzq' });
     (acr.result_json as { paper_match: { reasons: string[] } }).paper_match.reasons = ['school-unverified'];
-    expect(paperIdentity(acr)).toMatchObject({ ok: false, reason: 'unknown-paper' });
+    expect(paperIdentity(acr)).toMatchObject({ ok: false, reason: 'unknown-paper', short: 'ZZQ' });
     expect(paperIdentity(mathRun('hua yi wa2 2026 em p1', { exam: 'WA2', year: 2026, level: 'EM', paper: 1, school: 'Hua Yi' }))).toMatchObject({ ok: false });
   });
   it('a run with no paper key reads the typed name; the level can come from paper_subject', () => {
@@ -76,7 +76,7 @@ describe('paperIdentity', () => {
     expect(paperIdentity(r)).toMatchObject({ ok: false, reason: 'unknown-paper' });
     const tk = mathRun('tanjong katong girls sch em paper 1 prelim 2025', { exam: 'PRELIM', year: 2025, level: 'EM', paper: 1, school: 'Tanjong Katong' });
     (tk.result_json as { paper_match: { reasons: string[] } }).paper_match.reasons = ['school-from-token'];
-    expect(paperIdentity(tk)).toMatchObject({ ok: false, reason: 'unknown-paper' });   // TK Girls' is not Tanjong Katong
+    expect(paperIdentity(tk)).toMatchObject({ ok: true, id: { school: 'Tanjong Katong Girls' } });   // TK Girls' is not Tanjong Katong
     expect(namesStudent('AM PRELIM 2024 Hua Yi Paper 1.pdf', 'Rainie Lim')).toBe(false);
     expect(namesStudent('AM PRELIM 2024 Rainie Paper 1.pdf', 'Rainie Lim')).toBe(true);
   });
@@ -87,12 +87,12 @@ describe('paperIdentity', () => {
   });
   it('science reads the typed name', () => {
     const run: HandinRun = { id: 's', paper_name: 'Queenstown Secondary School Prelim Paper 2 Year 2026', subject: 'chemistry', result_json: {} };
-    expect(paperIdentity(run)).toEqual({ ok: true, id: { subject: 'chemistry', level: 'CHEM', year: 2026, school: 'Queenstown', examType: 'Prelim', paper: 2 } });
+    expect(paperIdentity(run)).toEqual({ ok: true, from: 'name', id: { subject: 'chemistry', level: 'CHEM', year: 2026, school: 'Queenstown', examType: 'Prelim', paper: 2 } });
     const cs: HandinRun = { id: 's', paper_name: 'Hua Yi prelim 2025 p3', subject: 'physics', result_json: { science_track: 'combined' } };
     expect(paperIdentity(cs)).toMatchObject({ ok: true, id: { level: 'CS_PHYS', school: 'Hua Yi', paper: 3 } });
   });
   it('science: no year, no paper, an unknown acronym → unknown', () => {
-    for (const n of ['Queenstown Paper 2', 'ges prelim 2026 paper', 'plmgs 2026 prelim', 'scss prelim 2026 pp4']) {
+    for (const n of ['Queenstown Paper 2', 'ges prelim 2026 paper', 'plmgs 2026 prelim', 'zzq prelim 2026 pp4']) {
       expect(paperIdentity({ id: 's', paper_name: n, subject: 'chemistry', result_json: {} })).toMatchObject({ ok: false, reason: 'unknown-paper' });
     }
   });
@@ -176,8 +176,15 @@ describe('attached scheme / paper', () => {
 });
 
 describe('notes + order', () => {
+  it('a student-work source says so, and what the worker must not do', () => {
+    const n = handoffNote('run-2', { kind: 'pages', pages: [1, 2, 3], partial: false, printed: 3, studentWork: true }, '2026-10-05');
+    expect(n.startsWith(STUDENT_WORK_TAG)).toBe(true);
+    expect(n).toMatch(/ONLY the printed question text/);
+    expect(n).toMatch(/Never crop a figure/);
+    expect(n).toMatch(/deleted when this paper is finished/);
+  });
   it('the note names the run and the photos, never a student', () => {
-    const n = handoffNote('run-1', { kind: 'pages', pages: [2, 3, 4], partial: true, printed: 5 }, '2026-10-05');
+    const n = handoffNote('run-1', { kind: 'pages', pages: [2, 3, 4], partial: true, printed: 5, studentWork: false }, '2026-10-05');
     expect(n).toContain('run run-1');
     expect(n).toContain('photos 3, 4, 5');
     expect(n).toContain('PARTIAL');
@@ -191,5 +198,125 @@ describe('notes + order', () => {
   it('identityKey folds "Secondary"', () => {
     const a: PaperIdentity = { subject: 'chemistry', level: 'CHEM', year: 2026, school: 'Queenstown', examType: 'Prelim', paper: 2 };
     expect(identityKey(a)).toBe(identityKey({ ...a, school: 'Queenstown Secondary' }));
+  });
+});
+
+describe('schools — Adrian\'s short forms, the families, the initials guesser', () => {
+  const bank = ['Gan Eng Seng', 'Gan Eng Seng School', 'Paya Lebar Methodist Girls', 'Tanjong Katong Girls', 'Tanjong Katong', 'Anglo Chinese School (Barker Road)', 'Anglo Chinese School (Independent)', 'Bedok South', 'Bukit Panjang'];
+  it('the short forms Adrian gave', () => {
+    expect(resolveSchool('sjc', bank).school).toBe('CHIJ St Joseph');
+    expect(resolveSchool('sji', bank).school).toBe('St Josephs Institution');
+    expect(resolveSchool('tkgs', bank).school).toBe('Tanjong Katong Girls');
+    expect(resolveSchool('xms', bank).school).toBe('Xinmin');
+    expect(resolveSchool('ges', bank).school).toBe('Gan Eng Seng');
+    expect(resolveSchool('plmgs', bank).school).toBe('Paya Lebar Methodist Girls');
+    expect(resolveSchool('scss', bank).school).toBe('Singapore Chinese Girls School');
+    expect(resolveSchool('scgs', bank).school).toBe('Singapore Chinese Girls School');
+  });
+  it('each bank files under its own spelling', () => {
+    expect(spellingFor('CHIJ St Joseph', 'chemistry')).toBe('CHIJ St Josephs Convent');
+    expect(spellingFor('St Josephs Institution', 'physics')).toBe("St Joseph's Institution");
+    expect(spellingFor('Tanjong Katong Girls', 'math')).toBe('Tanjong Katong Girls');
+  });
+  it('initials: one school fits → that school; two or none → nobody', () => {
+    expect(schoolInitials('Gan Eng Seng School')).toBe('ges');
+    expect(guessSchool('bss', bank)).toBe('Bedok South');           // B S + S
+    expect(guessSchool('bp', bank)).toBe('Bukit Panjang');
+    expect(guessSchool('acs', bank)).toBeNull();                     // Barker Road AND Independent fit
+    expect(guessSchool('qqq', bank)).toBeNull();
+    expect(guessSchool('ges', [...bank, 'Greendale East Sec'])).toBeNull();  // two schools fit
+  });
+  it('an unknown short form is handed back to ask about; a typed full name never becomes a school', () => {
+    expect(resolveSchool('zzq', bank)).toEqual({ school: null, short: 'ZZQ' });
+    expect(resolveSchool('rainie lim', bank).school).toBeNull();
+    expect(resolveSchool('Rosyth Secondary School', bank, true).school).toBe('Rosyth');   // printed on the cover: fine
+    expect(resolveSchool("CHIJ ST. THERESA'S CONVENT", ['CHIJ St Theresa Convent'], true).school).toBe('CHIJ St Theresa Convent');
+    expect(resolveSchool('SGSS', bank, true)).toEqual({ school: null, short: 'SGSS' });  // a printed short form is not a name
+  });
+  it('Adrian\'s question is one batched line', () => {
+    expect(unknownSchoolsLine([{ short: 'zzq', paper: 'zzq prelim 2025 p1' }, { short: 'ZZQ', paper: 'zzq p2' }, { short: 'abc', paper: null }]))
+      .toBe('🏫 Which schools are these? Students typed: ZZQ ("zzq prelim 2025 p1", "zzq p2"); ABC. Reply with the full names and I\'ll add them, so these papers can be banked.');
+    expect(unknownSchoolsLine([])).toBeNull();
+  });
+});
+
+describe('the printed pages name the paper when the typed name cannot', () => {
+  const run: HandinRun = { id: 'q', paper_name: 'Queenstown Paper 2', subject: 'chemistry', result_json: { results: [{}] } };
+  it('without a reading the run is unknown but readable', () => {
+    expect(paperIdentity(run)).toMatchObject({ ok: false, readable: true, missing: ['year', 'exam type'] });
+  });
+  it('the reading fills the gaps; print beats a clashing typed value', () => {
+    const r = paperIdentity(run, { reading: { subject: 'Chemistry', syllabus_code: '6092/02', exam: 'Preliminary Examination', school: 'Queenstown Secondary School', year: 2026, paper: 2, confidence: 0.9 } });
+    expect(r).toMatchObject({ ok: true, from: 'print', id: { level: 'CHEM', year: 2026, school: 'Queenstown', examType: 'Prelim', paper: 2 } });
+    const clash = paperIdentity({ ...run, paper_name: 'Queenstown 2025 prelim paper 1' }, { reading: { exam: 'Prelim', year: 2026, paper: 2, confidence: 0.9 } });
+    expect(clash).toMatchObject({ ok: true, id: { year: 2026, paper: 2 } });
+  });
+  it('a combined-science code makes it the combined paper; a SEAB code names a maths level', () => {
+    expect(paperIdentity({ ...run, paper_name: 'x' }, { reading: { syllabus_code: '5076/03', exam: 'Prelim', school: 'Queenstown', year: 2025, paper: 3, confidence: 0.8 } }))
+      .toMatchObject({ ok: true, id: { level: 'CS_CHEM' } });
+    const m: HandinRun = { id: 'm', paper_name: 'olevel 2022 paper 1', subject: 'math', result_json: { results: [{}], paper_match: { key: '', parsed: { exam: 'GCE', year: 2022, level: null, paper: 1 } } } };
+    expect(paperIdentity(m, { reading: { syllabus_code: '4048/01', exam: 'GCE', year: 2022, paper: 1, confidence: 0.9 } })).toMatchObject({ ok: true, id: { level: 'EM', school: 'GCE' } });
+  });
+  it('a printed short form never replaces the typed school', () => {
+    const sg: HandinRun = { id: 'g', paper_name: 'St Gabriel 2025 EM paper 2', subject: 'math', result_json: { results: [{}] } };
+    expect(paperIdentity(sg, { reading: { school: 'SGSS', exam: 'Prelim', year: 2025, paper: 2, confidence: 0.9 } })).toMatchObject({ ok: true, id: { school: 'St Gabriel', examType: 'Prelim', level: 'EM' } });
+    // …and a printed N(A) code makes it the N(A) paper
+    expect(paperIdentity(sg, { reading: { subject: 'E Math', syllabus_code: '4ES N4NA', school: 'SGSS', exam: 'Prelim', year: 2025, paper: 2, confidence: 0.7 } })).toMatchObject({ ok: true, id: { level: 'EM_NA' } });
+  });
+  it('a fuller printed school beats a typed short form', () => {
+    const acs: HandinRun = { id: 'a', paper_name: 'ACS EM P1 sophie', student_name: 'Sophie Tan', subject: 'math', result_json: { results: [{}] } };
+    expect(paperIdentity(acs, { schools: ['ACS School', 'Anglo Chinese School (Barker Road)'], reading: { school: 'Anglo-Chinese School (Barker Road)', exam: 'Prelim', year: 2025, paper: 1, confidence: 0.95 } }))
+      .toMatchObject({ ok: true, id: { school: 'Anglo Chinese School (Barker Road)' } });
+  });
+  it('a low-confidence reading is ignored', () => {
+    expect(paperIdentity(run, { reading: { exam: 'Prelim', year: 2026, confidence: 0.3 } })).toMatchObject({ ok: false });
+  });
+  it('reads the covers first, then the first printed pages', () => {
+    const rj = { page_classification: pc(['mixed', 'cover', 'question_paper', 'mixed', 'working']), source: { photos: photos(5) } };
+    expect(readingPages(rj)).toEqual([1, 0, 2]);
+  });
+});
+
+describe('chooseSource — the safer middle way', () => {
+  it('clean pages when there are enough; otherwise every printed page, flagged as student work; never a cover or plain working', () => {
+    const clean = { page_classification: pc(['cover', 'question_paper', 'question_paper', 'question_paper', 'working']),
+      non_work_pages: [1, 2, 3].map(i => ({ kind: 'question_paper', photo_index: i })), results: [{ photo_index: 4 }], source: { photos: photos(5) } };
+    expect(chooseSource(clean)).toMatchObject({ ok: true, source: { pages: [1, 2, 3], studentWork: false } });
+    const worked = { page_classification: pc(['cover', 'mixed', 'mixed', 'question_paper', 'mixed', 'working']),
+      non_work_pages: [{ kind: 'cover', photo_index: 0 }], results: [1, 2, 3, 4, 5].map(i => ({ photo_index: i })), source: { photos: photos(6) } };
+    expect(chooseSource(worked)).toMatchObject({ ok: true, source: { pages: [1, 2, 3, 4], studentWork: true } });
+    expect(chooseSource({ page_classification: pc(['cover', 'mixed', 'working']), source: { photos: photos(3) } })).toMatchObject({ ok: false, reason: 'too-few-printed-pages' });
+  });
+});
+
+describe('matchedBankAtMarking', () => {
+  it('a trusted bank match, a bank allocation, or a science bank grounding', () => {
+    expect(matchedBankAtMarking({ paper_match: { trusted: true, source: 'bank' } })).toBe(true);
+    expect(matchedBankAtMarking({ paper_match: { source: 'none' }, bank_allocation: { key: 'gce 2025 am p1' } })).toBe(true);
+    expect(matchedBankAtMarking({ subject: 'chemistry', grounding: { source: 'bank' } })).toBe(true);
+    expect(matchedBankAtMarking({ subject: 'chemistry', grounding: { source: 'attached' } })).toBe(false);
+    expect(matchedBankAtMarking({ paper_match: { trusted: false, source: 'bank' } })).toBe(false);
+  });
+});
+
+describe('spellings Adrian teaches by Telegram (extraction_rules alias rows)', () => {
+  it('a learned short form names the school, as the bank spells it', () => {
+    setLearnedFamilies([namesInAliasRow('Known spellings of ONE school (lookup only — store as staged): "QQSS" = "Quux Quay Secondary School".')]);
+    expect(resolveSchool('qqss', ['Quux Quay']).school).toBe('Quux Quay');
+    expect(resolveSchool('chloe qqss', []).school).toBe('Quux Quay');
+    setLearnedFamilies([]);
+    expect(resolveSchool('qqss', []).school).toBeNull();
+  });
+  it('NVSS is North Vista (Adrian, 5 Oct 2026)', () => {
+    expect(resolveSchool('nvss', ['North Vista', 'North View']).school).toBe('North Vista');
+  });
+});
+
+describe('a run marked before the page pre-pass', () => {
+  it('takes its printed pages from a reading of all its photos, always as a private student-work source', () => {
+    const rj = { results: [{}], source: { photos: photos(6) } };
+    const reading = { pages: [{ photo: 0, kind: 'cover' }, { photo: 1, kind: 'mixed' }, { photo: 2, kind: 'question_paper' }, { photo: 3, kind: 'mixed' }, { photo: 4, kind: 'working' }] };
+    expect(chooseSource(rj, reading)).toMatchObject({ ok: true, source: { pages: [1, 2, 3], studentWork: true } });
+    expect(chooseSource(rj, null)).toMatchObject({ ok: false, reason: 'no-printed-pages' });
   });
 });
