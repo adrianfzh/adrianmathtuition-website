@@ -308,8 +308,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         // One-shot deep-link: open the linked topic's sheet if this level has it.
         const target = targetRef.current;
         if (target && (d.topics || []).some((t: TopicCard) => t.topic === target.topic)) {
-          setSheetTopic(target.topic);
           targetRef.current = null;
+          // Science: no Standard / Advanced (5 Oct 2026 — the tags were never checked); one
+          // mixed stream, easier first, so the run starts straight away.
+          if (isScienceLevel(level)) startFromSheet(target.topic, 'Standard', null);
+          else setSheetTopic(target.topic);
         }
         if (!lockedLevels && Array.isArray(d.levels) && d.levels.length) {
           setLevels(d.levels);
@@ -359,7 +362,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     try {
       const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
         // ?mode=mcq|structured — the Science Practise tab's switch (1 Oct 2026); ignored by the maths bank.
-        json: { level, topic: useTopic, exclude: excludeIds, tier: tierArg ?? tier, subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null,
+        json: { level, topic: useTopic, exclude: excludeIds, tier: isScienceLevel(level) ? null : (tierArg ?? tier), subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null,
           skill: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('skill') : null },
         fallback: 'Couldn’t load a question — try again.',
       });
@@ -864,7 +867,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           {/* Question card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5">
             <div className="flex justify-between items-center mb-3 gap-3">
-              {assignment || fixedQ ? (
+              {assignment || fixedQ || isScienceLevel(level) ? (
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Question</span>
               ) : (
               <div className="inline-flex gap-1 bg-slate-100 rounded-lg p-0.5" role="radiogroup" aria-label="Question difficulty">
@@ -999,9 +1002,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                     {fixedQ.topic ? 'More of this topic →' : 'Practise more →'}
                   </a>
                 )}
-                {solution !== null && (
-                  <span className="text-xs text-slate-400">Marking is off once you&apos;ve seen the solution.</span>
-                )}
+                {/* No disclaimers where a student practises (Adrian, 5 Oct 2026: "do not say things like
+                    these"): once the solution is shown the answer buttons are simply greyed out. */}
               </div>
             </div>
           )}
@@ -1133,8 +1135,6 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   Working on: {weakTags.map(t => <span key={t} className="inline-block bg-slate-100 rounded-full px-2 py-0.5 ml-1">{t}</span>)}
                 </p>
               )}
-              {/* An MCQ is marked by comparing letters, not by a model (5 Oct 2026). */}
-              {!q?.mcq && <p className="text-[11px] text-slate-300 mt-3">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with your tutor.</p>}
             </div>
           )}
 

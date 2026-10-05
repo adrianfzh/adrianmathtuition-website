@@ -73,6 +73,18 @@ function withFigures<T extends ScienceQuestionRow>(q: T): T {
   return withScienceImageUrls(q as unknown as Record<string, unknown>, scienceImageBase(process.env.SUPABASE_URL_SCIENCE)) as unknown as T;
 }
 const ADVANCED = ['Advanced', 'Challenging'];
+const EASY_FIRST = 4;
+/** One random row of the build's pool that is NOT tagged Advanced / Challenging (null when none). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function nextEasy(build: (select: string, head: boolean) => any): Promise<ScienceQuestionRow | null> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const narrow = (q: any) => q.or(`difficulty.is.null,difficulty.not.in.(${ADVANCED.join(',')})`);
+  const { count, error } = await narrow(build('id', true));
+  if (error || !count) return null;
+  const offset = Math.floor(Math.random() * count);
+  const { data } = await narrow(build(ROW_COLUMNS, false)).order('id').range(offset, offset);
+  return ((data ?? []) as ScienceQuestionRow[])[0] ?? null;
+}
 
 // The eligibility bars, as one reusable filter chain (supabase-js PostgREST).
 // Typed loosely on purpose: threading the builder's generic through here made
@@ -226,6 +238,13 @@ export async function scienceNext(opts: {
     if (excl.length) q = q.not('id', 'in', `(${excl.join(',')})`);
     return q;
   };
+  // Easier first (5 Oct 2026 — science has no Standard / Advanced switch: the tags were set at
+  // extraction and never checked): the first EASY_FIRST questions of a run avoid rows tagged
+  // Advanced / Challenging when the topic has others; after that, everything is in the draw.
+  if (!opts.tier && (opts.exclude ?? []).length < EASY_FIRST) {
+    const easy = await nextEasy(build);
+    if (easy) return easy;
+  }
   const { count, error: cErr } = await build('id', true);
   if (cErr) throw new Error(`science next (count): ${cErr.message}`);
   if (!count) return null;

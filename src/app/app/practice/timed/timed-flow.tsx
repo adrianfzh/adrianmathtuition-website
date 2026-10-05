@@ -622,7 +622,6 @@ export default function TimedFlow({ levels, initialLevel, initialTopics }: {
           ⏱ Another set
         </button>
         <Link href="/app/practice" className="block text-center text-sm text-slate-500 py-2">← Back to Practise</Link>
-        <p className="text-[11px] text-slate-300 text-center">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with your tutor.</p>
       </div>
     );
   }
