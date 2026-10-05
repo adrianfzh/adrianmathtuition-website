@@ -192,12 +192,12 @@ export const SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS: Readonly<Record<string, read
   // Biology: every Combined Science topic has fewer than 30 servable MCQs (14–22) — not open.
   BIO: [],
 };
-// 🎚 Core · Exam · Challenge · Mixed on a science MCQ run (5 Oct 2026, Adrian left the science
-// call to the sessions: "for sciences you will have to decide"). Mixed is the default; a level
-// shows only when the topic has ≥ 30 questions at it (lib/science-practice levelsOffered); the
-// levels come from practice_difficulty (lib/practice-difficulty). Adrian's cookie and the
-// preview student always see it.
-export const SCIENCE_LEVELS_OPEN_TO_STUDENTS = false;
+// 🎚 Science MCQ levels used SILENTLY (5 Oct 2026, Adrian left the science call to the sessions:
+// "for sciences you will have to decide"). No buttons: a run starts at Core, climbs to Exam after
+// 3 right in a row and to Challenge after 3 more, drops a level after 2 wrong in a row
+// (lib/science-practice stepAdaptive); levels from practice_difficulty (lib/practice-difficulty).
+// ON since 5 Oct 2026 (sessions' call; live for students at the next promote).
+export const SCIENCE_LEVELS_OPEN_TO_STUDENTS = true;
 export function scienceLevelsAllowedFor(identity: string | null | undefined): boolean {
   if (SCIENCE_LEVELS_OPEN_TO_STUDENTS) return true;
   return !!identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity);
