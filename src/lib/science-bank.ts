@@ -16,6 +16,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
+import { scienceImageBase, withScienceImageUrls } from './science-images';
 import {
   computeScienceMastery, isMcqAnswer, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
@@ -45,9 +46,23 @@ export type ScienceQuestionRow = BankQuestion & {
   total_marks: number | null;
   has_image: boolean | null;
   quarantined: boolean | null;
+  ai_generated?: boolean | null;
+  verified?: boolean | null;
+  image_watermark_status?: string | null;
+  not_in_syllabus?: boolean | null;
 };
 
-const ROW_COLUMNS = 'id, subject, level, question_text, parts, answer, solution, topics, difficulty, total_marks, has_image, image_url, images, quarantined';
+// The gate columns (ai_generated, verified, image_watermark_status, not_in_syllabus)
+// ride along so scienceEligible() sees what it checks — until 5 Oct 2026 they were
+// missing, so every figure question the picker served came back "Question not found"
+// from the grade route (image_watermark_status read as undefined ≠ 'clean').
+// solution_images too, so a scheme's diagram reaches "Show solution".
+const ROW_COLUMNS = 'id, subject, level, question_text, parts, answer, solution, solution_images, topics, difficulty, total_marks, has_image, image_url, images, quarantined, ai_generated, verified, image_watermark_status, not_in_syllabus';
+
+/** A row with its figures pointed at the SCIENCE bucket (lib/science-images — the maths bucket 400s). */
+function withFigures<T extends ScienceQuestionRow>(q: T): T {
+  return withScienceImageUrls(q as unknown as Record<string, unknown>, scienceImageBase(process.env.SUPABASE_URL_SCIENCE)) as unknown as T;
+}
 const ADVANCED = ['Advanced', 'Challenging'];
 
 // The eligibility bars, as one reusable filter chain (supabase-js PostgREST).
@@ -61,6 +76,7 @@ function eligible<T = any>(q: any, subject: ScienceSubject): T { // eslint-disab
     .or('ai_generated.is.null,ai_generated.eq.false,verified.eq.true')
     .or('has_image.is.null,has_image.eq.false,image_watermark_status.eq.clean')
     .or('solution.neq.,answer.neq.')
+    .or('not_in_syllabus.is.null,not_in_syllabus.eq.false')
     .not('question_text', 'is', null)
     .neq('question_text', '');
 }
@@ -121,7 +137,8 @@ export interface ScienceQuestionPayload {
   mcq: boolean;
 }
 
-export function toPayload(q: ScienceQuestionRow): ScienceQuestionPayload {
+export function toPayload(raw: ScienceQuestionRow): ScienceQuestionPayload {
+  const q = withFigures(raw);
   const mcq = isMcqAnswer(q.answer);
   // Tab-separated tables become pipe tables; MCQ options each get their own
   // paragraph (single newlines fold in markdown).
@@ -190,12 +207,14 @@ export async function scienceQuestion(subject: ScienceSubject, id: string): Prom
   if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
   const { data, error } = await getScienceClient().from('questions').select(ROW_COLUMNS).eq('id', id).eq('subject', subject).maybeSingle();
   if (error) throw new Error(`science question: ${error.message}`);
-  return (data as unknown as ScienceQuestionRow | null) ?? null;
+  const row = (data as unknown as ScienceQuestionRow | null) ?? null;
+  return row ? withFigures(row) : null;
 }
 
 /** True when a row passes the same bars the picker applies (a deep link must never open what the picker would refuse). */
-export function scienceEligible(q: ScienceQuestionRow & { ai_generated?: boolean | null; verified?: boolean | null; image_watermark_status?: string | null }): boolean {
+export function scienceEligible(q: ScienceQuestionRow): boolean {
   if (q.quarantined) return false;
+  if (q.not_in_syllabus === true) return false;
   if (q.ai_generated === true && q.verified !== true) return false;
   if (q.has_image && q.image_watermark_status !== 'clean') return false;
   if (!(q.solution && q.solution.trim()) && !(q.answer && q.answer.trim())) return false;
