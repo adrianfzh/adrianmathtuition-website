@@ -20,7 +20,7 @@ import { requireActiveAccess } from '@/lib/portal-passes';
 import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
 import { parseTimedMeta } from '@/lib/timed-set';
 import { parseLadderMeta, ladderAssisted } from '@/lib/proof-ladder';
-import { gradeMcq, isMcqAnswer, isScienceSubject, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
+import { gradeMcq, isScienceSubject, mcqKey, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
 import { scienceLevelOpenFor } from '@/lib/practice';
@@ -106,12 +106,13 @@ export async function POST(req: NextRequest) {
     const topics = Array.isArray(sq.topics) ? sq.topics : [];
     const scienceMeta = { subject: scienceSubject, questionId: sq.id };
 
-    // MCQ: a bare-letter answer, marked deterministically — no model, no cap.
-    if (isMcqAnswer(sq.answer)) {
+    // MCQ: a bare-letter or "**B** — …" key (mcqKey), marked deterministically — no model, no cap.
+    const key = mcqKey(sq.answer);
+    if (key) {
       if (attemptImage) return NextResponse.json({ error: 'Pick an option (A–D) for this question' }, { status: 400 });
       const choice = normaliseMcqChoice((cleanLines || []).find(l => l.trim()));
       if (!choice) return NextResponse.json({ error: 'Answer with the option letter — A, B, C or D' }, { status: 400 });
-      const result = gradeMcq(sq.answer.trim().toUpperCase() as 'A' | 'B' | 'C' | 'D', choice, sq.total_marks);
+      const result = gradeMcq(key, choice, sq.total_marks);
       const { data: ins, error: insErr } = await admin
         .from('student_attempts')
         .insert({

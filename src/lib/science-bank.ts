@@ -18,7 +18,7 @@ import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import { scienceImageBase, withScienceImageUrls } from './science-images';
 import {
-  computeScienceMastery, isMcqAnswer, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
+  computeScienceMastery, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
 
 let _client: SupabaseClient | null = null;
@@ -113,7 +113,7 @@ export async function scienceTopicCounts(levelKey: string): Promise<ScienceTopic
     if (!topic) continue;
     const cur = acc.get(topic) ?? { topic, n: 0, advanced_count: 0, mcq_count: 0 };
     cur.n++;
-    if (isMcqAnswer(r.answer)) cur.mcq_count++;   // the MCQ | Structured switch (1 Oct 2026)
+    if (mcqKey(r.answer)) cur.mcq_count++;   // the MCQ | Structured switch (1 Oct 2026)
     if (r.difficulty && ADVANCED.includes(r.difficulty)) cur.advanced_count++;
     acc.set(topic, cur);
   }
@@ -139,7 +139,7 @@ export interface ScienceQuestionPayload {
 
 export function toPayload(raw: ScienceQuestionRow): ScienceQuestionPayload {
   const q = withFigures(raw);
-  const mcq = isMcqAnswer(q.answer);
+  const mcq = mcqKey(q.answer) !== null;
   // Tab-separated tables become pipe tables; MCQ options each get their own
   // paragraph (single newlines fold in markdown).
   const text = tsvBlocksToTables(q.question_text);
@@ -182,10 +182,11 @@ export async function scienceNext(opts: {
     let q = eligible<any>(sb.from('questions').select(select, head ? { count: 'exact', head: true } : undefined), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
       .eq('level', lvl.bankLevel)
       .contains('topics', [opts.topic]);
-    if (opts.kind === 'mcq') q = q.filter('answer', 'match', '^\\s*[A-Da-d]\\s*$');
+    // MCQ = a bare letter OR the "**B** — …" form (lib/science-levels mcqKey).
+    if (opts.kind === 'mcq') q = q.filter('answer', 'match', MCQ_ANSWER_RE);
     // structured = not a lettered answer (most structured rows carry NO answer at all — a
     // plain not.match would drop them), and a scheme on file to mark against.
-    else if (opts.kind === 'structured') q = q.or('answer.is.null,answer.not.match.^\\s*[A-Da-d]\\s*$').not('solution', 'is', null).neq('solution', '');
+    else if (opts.kind === 'structured') q = q.or('answer.is.null,answer.not.match.^\\s*[A-Da-d]\\s*$').or(`answer.is.null,answer.not.match.${MCQ_BOLD_RE}`).not('solution', 'is', null).neq('solution', '');
     if (opts.skill) q = q.eq('skill', opts.skill);
     if (opts.tier === 'Advanced') q = q.in('difficulty', ADVANCED);
     else if (opts.tier === 'Standard') q = q.or(`difficulty.is.null,difficulty.not.in.(${ADVANCED.join(',')})`);

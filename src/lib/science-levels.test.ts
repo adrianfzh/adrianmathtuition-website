@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  computeScienceMastery, gradeMcq, isMcqAnswer, isScienceLevel, mcqOptionsIn, mcqStemParagraphs, normaliseMcqChoice,
+  computeScienceMastery, gradeMcq, isMcqAnswer, mcqKey, MCQ_ANSWER_RE, MCQ_BOLD_RE, isScienceLevel, mcqOptionsIn, mcqStemParagraphs, normaliseMcqChoice,
   scienceImageUrl, scienceLevelForSubject, scienceLevelsFor, scienceSubjectOf, tsvBlocksToTables,
 } from './science-levels';
 
@@ -102,5 +102,29 @@ describe('scienceImageUrl', () => {
     expect(scienceImageUrl('https://x.supabase.co', 'https://cdn/img.png')).toBe('https://cdn/img.png');
     expect(scienceImageUrl('https://x.supabase.co', '[]')).toBeNull();
     expect(scienceImageUrl('https://x.supabase.co', null)).toBeNull();
+  });
+});
+
+describe('mcqKey (5 Oct 2026 — the "**B** — why" form was read as structured)', () => {
+  it('reads a bare letter and the bold-key form', () => {
+    expect(mcqKey('B')).toBe('B');
+    expect(mcqKey(' c ')).toBe('C');
+    expect(mcqKey('**D** — Zn$^{2+}$. Why: Zn$^{2+}$ gives a white precipitate')).toBe('D');
+    expect(mcqKey('**(A)** — trachea')).toBe('A');
+    expect(mcqKey('**D**. Why: diffusion')).toBe('D');
+  });
+  it('refuses a structured answer', () => {
+    expect(mcqKey('- I = Q/t = 120 A [1]')).toBeNull();
+    expect(mcqKey('**Fe2+** forms')).toBeNull();
+    expect(mcqKey('330 m/s')).toBeNull();
+    expect(mcqKey(null)).toBeNull();
+  });
+  it('the SQL regexes agree with mcqKey on the same strings', () => {
+    const all = new RegExp(MCQ_ANSWER_RE), bold = new RegExp(MCQ_BOLD_RE);
+    for (const s of ['B', ' c ', '**D** — x', '**(A)** — y', '- I = Q/t', '**Fe2+** forms', '330 m/s']) {
+      expect(all.test(s)).toBe(mcqKey(s) !== null);
+    }
+    expect(bold.test('**D** — x')).toBe(true);
+    expect(bold.test('B')).toBe(false);
   });
 });

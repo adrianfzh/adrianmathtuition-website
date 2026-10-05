@@ -73,6 +73,26 @@ export function isMcqAnswer(answer: unknown): answer is McqLetter {
   return typeof answer === 'string' && /^[A-D]$/.test(answer.trim().toUpperCase()) && answer.trim().length === 1;
 }
 
+/**
+ * The KEY of an MCQ row, whichever way it is stored (5 Oct 2026): a bare letter
+ * ("B"), or the newer extractions' "**B** — the option. Why: …" (2,440 pure-science
+ * MCQs — 760 physics, 880 chemistry, 800 biology — and every Combined Science
+ * Paper 1). Until this, the bold form read as STRUCTURED, so those MCQs never
+ * reached the MCQ tab. null = not an MCQ. The SQL twin is MCQ_ANSWER_RE.
+ */
+export function mcqKey(answer: unknown): McqLetter | null {
+  if (typeof answer !== 'string') return null;
+  if (isMcqAnswer(answer)) return answer.trim().toUpperCase() as McqLetter;
+  const m = /^\s*\*\*\(?([A-D])\)?\*\*/.exec(answer);
+  return m ? (m[1] as McqLetter) : null;
+}
+/** Postgres regex (PostgREST `match`) for the same two forms — keep in step with mcqKey. */
+export const MCQ_ANSWER_RE = '^\\s*([A-Da-d]\\s*$|[*][*][(]?[A-D][)]?[*][*])';
+/** Postgres regex for "starts like a bold key" — the structured filter excludes it. No
+ *  parentheses: it sits inside a PostgREST or(), where ( ) are syntax (the bank has no
+ *  "**(B)**" rows; mcqKey still reads that form). */
+export const MCQ_BOLD_RE = '^\\s*[*][*][A-D][*][*]';
+
 /** The option letters actually present in the stem, in order; null when the
  *  text carries no recognisable "A) …" / "A. …" / "(A) …" option lines. */
 export function mcqOptionsIn(text: string | null | undefined): McqLetter[] | null {
