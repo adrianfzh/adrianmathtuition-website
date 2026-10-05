@@ -1,9 +1,11 @@
-// GET /api/agent/twins/queue?bank=maths|science&level=&n=&pool=&focus_only=1&text_only=1
+// GET /api/agent/twins/queue?bank=maths|science&level=&n=&pool=&focus_only=1&text_only=1&skip=<id,id,…>
 // Cloud twins (5 Oct 2026, docs/CLOUD.md §Cloud twins): the next seeds to twin, each a full
 // packet — the seed question, its key and solution, its sub-skill, the twins that sub-skill
 // already has, the nearest bank questions, and the author brief — so a claude.ai cloud
 // session can author → blind-solve → check with NO database key. Same selection as
 // scripts/twins/twin.mjs queue (maths) and scripts/science-twins/sci-twin.mjs queue (science).
+// skip = seeds this session already parked (no figure family fits, an inconsistent seed), so
+// they stop filling the window and the next sub-skill's seeds come forward (maths only).
 // No student data. AGENT_TOKEN_TWINS or admin; rate-limited per hour (lib/twins-door.ts).
 import { NextRequest, NextResponse } from 'next/server';
 import { twinsDoor, stampTwins } from '@/lib/twins-door';
@@ -24,7 +26,8 @@ export async function GET(req: NextRequest) {
       const level = String(sp.get('level') || '').toUpperCase();
       if (!MATH_LEVELS.includes(level)) return NextResponse.json({ error: `level must be one of ${MATH_LEVELS.join(', ')}` }, { status: 400 });
       const n = Math.min(Math.max(Number(sp.get('n')) || 5, 1), 10);
-      const out = await mathQueue(level, n, { focusOnly: sp.get('focus_only') === '1' });
+      const skip = String(sp.get('skip') || '').split(',').map((x) => x.trim()).filter((x) => /^[0-9a-f-]{36}$/i.test(x)).slice(0, 300);
+      const out = await mathQueue(level, n, { focusOnly: sp.get('focus_only') === '1', skip });
       return NextResponse.json(out);
     }
     const n = Math.min(Math.max(Number(sp.get('n')) || 5, 1), 10);

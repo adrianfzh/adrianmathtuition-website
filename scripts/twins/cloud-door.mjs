@@ -5,7 +5,8 @@
 // Run dirs look exactly like the local scripts' (author-brief.md → Q1.json → Q1.solve.md /
 // Q1.check.md → Q1.blind.json → Q1.verdict.json), so the same agent prompts work.
 //
-//   node scripts/twins/cloud-door.mjs queue  --bank maths --level EM [--n 5] [--focus-only] --out <dir>
+//   node scripts/twins/cloud-door.mjs queue  --bank maths --level EM [--n 5] [--focus-only] [--skip id,id | --skip-file <file>] --out <dir>
+//        (--skip: seeds you parked, so the next ones come forward; a file = one id per line)
 //   node scripts/twins/cloud-door.mjs queue  --bank science [--n 5] [--pool PHY] [--text-only] --out <dir>
 //        → <dir>/<seed>/author-brief.md + packet.json, one folder per seed; prints the folders
 //   node scripts/twins/cloud-door.mjs figure [--doc <family>]               the library's families / one spec doc
@@ -66,6 +67,8 @@ const modes = {
     if (argOf('--pool')) qs.set('pool', argOf('--pool'));
     if (has('--text-only')) qs.set('text_only', '1');
     if (has('--focus-only')) qs.set('focus_only', '1');
+    const skip = [...(argOf('--skip', '') || '').split(','), ...(argOf('--skip-file') && existsSync(argOf('--skip-file')) ? readFileSync(argOf('--skip-file'), 'utf8').split(/\s+/) : [])].map((x) => x.trim()).filter(Boolean);
+    if (skip.length) qs.set('skip', skip.join(','));
     const { status, json } = await call('GET', `/api/agent/twins/queue?${qs}`);
     if (status !== 200) { console.error(`queue: HTTP ${status} ${JSON.stringify(json)}`); process.exit(1); }
     mkdirSync(out, { recursive: true });
