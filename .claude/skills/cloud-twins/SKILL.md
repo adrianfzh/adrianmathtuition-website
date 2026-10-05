@@ -51,7 +51,11 @@ For each folder RUN (up to four at once, each role a FRESH agent):
    author reads `node scripts/twins/cloud-door.mjs figure` (families) and
    `… figure --doc <family>` (the spec language), writes `RUN/Q1.figure.json` as ONE flat
    `{"family": …, …fields}` object, renders it with `… render --run RUN` and LOOKS at
-   `RUN/Q1.figure.png`. **Figures only from the library**; no family fits → park the seed.
+   `RUN/Q1.figure.png`. **Figures only from the library**; no family fits → park the seed AND
+   record the picture it needed: the author writes `RUN/Q1.figure-need.json`
+   `{"what": "<one plain line>", "shape": "<kebab-case kind, e.g. u-tube-manometer>"}`, then
+   `node scripts/twins/cloud-door.mjs figure-need --run RUN` (→ the "Figures we need" list;
+   Adrian gets it every Sunday, a shape needed 3 times is ready to build).
 2. **Automatic gates** — `node scripts/twins/cloud-door.mjs check --run RUN`. The SERVER runs
    structure, marks, topics, novelty against the bank AND our other twins, number-swap, house
    style, forbidden words, syllabus scope, and draws the figure. A pass writes `Q1.solve.md`

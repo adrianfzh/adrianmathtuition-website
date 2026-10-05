@@ -876,3 +876,27 @@ tokens that `figureServable()` cannot see, and why a keyword regex must never st
 for reading the question): **[`FIGURES-HANDOFF-2026-09-07.md`](FIGURES-HANDOFF-2026-09-07.md)**.
 
 Self-contained — hand it to a fresh session or another account as its first message.
+
+
+## 🖼 Figures we need (5 Oct 2026)
+
+Adrian: whenever a twin seed is parked because no figure-library family fits, record the figure it
+needed, group them, tell him weekly; a shape needed by 3 seeds is ready to build.
+
+- **Table** `figure_needs` (maths project, `migrations/figure_needs.sql`): bank, seed id, subject /
+  level / topic, `what` (one plain line), `shape` (a normalised kebab-case key), `source`, `status`
+  (open / built / dropped). One row per (bank, seed, shape). It replaces the "3-candidate gate" that
+  lived only as prose in CLAUDE.md — `venn-probability` (2) and `riemann-rectangles` (1) were seeded
+  as `source='legacy'`.
+- **Who writes it:** the maths twins lane (bot `worker/fly/twins.sh` — the figure author writes
+  `Q1.figure-need.json {what, shape}` when neither a family nor the engine draws it, else the twin's
+  `figure_description` stands in), the science twins lane (`worker/fly/science-twins.sh` — the author
+  writes `figure_need {what, shape}` in `Q1.json`), both through `scripts/figure-needs/record.mjs`;
+  and cloud sessions through `POST /api/agent/twins/figure-need` (`cloud-door.mjs figure-need`).
+- **Grouping:** `lib/figure-needs.ts normShape` folds the author's shape key (lower case, stop words
+  and plurals dropped, four words at most); `groupNeeds` counts distinct seeds per shape, `READY_AT = 3`.
+- **Where:** `/admin/generated` → **🖼 Figures we need** (Built — name the family — or Drop closes a
+  shape); the Sunday 18:00 SGT Telegram (`/api/cron/figure-needs-weekly`, `job_runs`
+  `figure-needs-weekly`, rhythm 204 h), plain words, top shapes with counts, "build them?".
+- Building a family stays the figure-library rules above (verify fails closed, Adrian's look at the
+  first figure); mark the shape **Built** with the family's name when it ships.

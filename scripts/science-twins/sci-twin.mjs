@@ -352,6 +352,10 @@ ${siblings.length ? `\n## Other questions of the same sub-skill (the range of th
   \`node ${ROOT}/scripts/gce-paper/figure.mjs --doc <family>\`, then write \`${dir}/Q1.figure.json\`
   as \`{"family": "...", "spec": {...}}\` (exactly the shape --doc shows). Never copy or describe the
   seed's figure. The stem must still read correctly with the figure beside it.
+- **No family can draw it?** Then do NOT invent one and do NOT copy the seed's: set
+  "needs_figure": true, leave Q1.figure.json out, and add
+  "figure_need": {"what": "one plain line: the picture the question needs", "shape": "a short kebab-case name for that kind of picture, e.g. u-tube-manometer"}.
+  The seed is set aside and the picture goes on the list of figure families to build.
 - Never name a school, a year, an exam paper, a source, or any computer program in anything a
   student reads.
 

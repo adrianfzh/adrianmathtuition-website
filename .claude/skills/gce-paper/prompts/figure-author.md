@@ -15,6 +15,10 @@ OUTPUT: write the spec into RUN as ONE of
 - `QN.figure.json` — a registry-family spec as ONE FLAT object: `{"family": "<name>", …the family's own fields beside it…}` exactly as the `--doc` example shows (the whole object is passed to verify(); do NOT nest the fields under a "spec" key — that fails with a misleading "spec needs a points array" error), or
 - `QN.figure.cjs` — a hand construction on the drawing engine when no family fits.
 Never write both.
+If NEITHER a family NOR the engine can draw it correctly, write neither: write
+`QN.figure-need.json` = `{"what": "one plain line: the picture the question needs", "shape": "a
+short kebab-case name for that kind of picture, e.g. venn-probability"}` and stop. (The twins
+lanes park the seed and put the picture on the "Figures we need" list — website figure_needs.)
 
 TOOLS (Bash, from ROOT):
 - `node scripts/gce-paper/figure.mjs --families` — every registry family, one line each.

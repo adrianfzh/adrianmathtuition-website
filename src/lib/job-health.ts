@@ -70,6 +70,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // gaps, sheets prepared, ONE Telegram message (Vercel cron Sundays 7pm SGT). Stamps
   // every week, quiet ones included.
   'stuck-weekly':       { kind: 'interval', hours: 204, label: 'Sundays 7pm' },
+  // 🖼 Figures we need (5 Oct 2026): the Sunday message of figures twins needed that no family draws.
+  'figure-needs-weekly': { kind: 'interval', hours: 204, label: 'Sundays 6pm' },
   // 📌 Next lesson packs, the night before each lesson (5 Oct 2026, /api/cron/next-lesson, 8pm SGT).
   'next-lesson':        { kind: 'interval', hours: 36, label: 'nightly 8pm' },
   // 📒 The lesson log that fills itself (5 Oct 2026, /api/cron/lesson-end, hourly :10 from 11:10 to 21:10 SGT).

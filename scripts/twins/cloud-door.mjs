@@ -15,6 +15,8 @@
 //   node scripts/twins/cloud-door.mjs submit --run <dir>                     Q1.json + Q1.blind.json + Q1.verdict.json
 //        (+ Q1.figure.json) → the server re-checks everything and files it → published.json
 //   node scripts/twins/cloud-door.mjs retire --bank maths --id <uuid> --reason "…"   take back a twin a cloud session filed
+//   node scripts/twins/cloud-door.mjs figure-need --run <dir>                 a seed parked because no figure family draws it:
+//        RUN/Q1.figure-need.json {what, shape} (or Q1.json figure_need) → the "Figures we need" list (5 Oct 2026)
 //
 // Env: AGENT_TOKEN_TWINS (required, never printed); TWINS_BASE (default https://www.adrianmathtuition.com).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -120,6 +122,17 @@ const modes = {
       console.log(`✗ refused [${json.gate ?? status}]\n- ${(json.problems ?? [json.error]).join('\n- ')}`);
       process.exit(1);
     }
+  },
+  async ['figure-need']() {
+    const dir = resolve(argOf('--run', '.'));
+    const packet = readIf(join(dir, 'packet.json')) ?? {};
+    const q = readIf(join(dir, 'Q1.json')) ?? {};
+    const need = readIf(join(dir, 'Q1.figure-need.json')) ?? q.figure_need ?? {};
+    const what = need.what || q.figure_description;
+    if (!what) { console.error('figure-need: write RUN/Q1.figure-need.json {"what": "…", "shape": "…"} first'); process.exit(1); }
+    const { status, json } = await call('POST', '/api/agent/twins/figure-need', { bank: packet.bank, seed_id: packet.seed_id, what, shape: need.shape ?? null, subject: packet.bank === 'maths' ? 'maths' : (packet.pool ?? null), level: packet.level ?? packet.pool ?? null, topic: packet.topic ?? null });
+    console.log(status === 200 && json.ok ? `✓ recorded as "${json.shape}"` : `✗ ${json.error ?? status}`);
+    if (status !== 200) process.exit(1);
   },
   async retire() {
     const { status, json } = await call('POST', '/api/agent/twins/retire', { bank: argOf('--bank'), id: argOf('--id'), reason: argOf('--reason', 'retired by the session') });

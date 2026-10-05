@@ -133,11 +133,24 @@ export default function GeneratedPage() {
   const [loading, setLoading] = useState(false);
   const [reportedOnly, setReportedOnly] = useState(false);
   // Maths | Science (5 Oct 2026): the science bank's twins live in the science project
-  const [bank, setBank] = useState<'math' | 'science'>(() => (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bank') === 'science' ? 'science' : 'math'));
+  const [bank, setBank] = useState<'math' | 'science' | 'figures'>(() => {
+    if (typeof window === 'undefined') return 'math';
+    const sp = new URLSearchParams(window.location.search);
+    return sp.get('tab') === 'figures' ? 'figures' : sp.get('bank') === 'science' ? 'science' : 'math';
+  });
+  // 🖼 Figures we need (5 Oct 2026): what twins needed that no figure family draws, by shape
+  type NeedGroup = { shape: string; count: number; ready: boolean; banks: string[]; subjects: string[]; topics: string[]; examples: string[]; newThisWeek: number };
+  const [needs, setNeeds] = useState<{ ready_at: number; groups: NeedGroup[] } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
+      if (bank === 'figures') {
+        const f = await fetch('/api/admin/figure-needs');
+        const fd = await f.json();
+        if (!f.ok) throw new Error(fd.error || `HTTP ${f.status}`);
+        setNeeds(fd); setRows([]); return;
+      }
       const qs = bank === 'science' ? '?bank=science' : reportedOnly ? '?reported=1' : '';
       const r = await fetch(`/api/admin/generated${qs}`);
       const d = await r.json();
@@ -184,10 +197,10 @@ export default function GeneratedPage() {
           A student’s report stops a question being served or used as a seed; <b>Restore</b> clears it, <b>Retire</b> removes it for good.
         </p>
         <div className="flex gap-2 px-1">
-          {(['math', 'science'] as const).map(b => (
+          {(['math', 'science', 'figures'] as const).map(b => (
             <button key={b} onClick={() => setBank(b)}
               className={`text-sm rounded-full px-3 py-1 border ${bank === b ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-700 border-neutral-300'}`}>
-              {b === 'math' ? 'Maths' : '🧪 Science twins'}
+              {b === 'math' ? 'Maths' : b === 'science' ? '🧪 Science twins' : '🖼 Figures we need'}
             </button>
           ))}
         </div>
@@ -211,6 +224,28 @@ export default function GeneratedPage() {
                 </table>
               </div>
             )}
+          </div>
+        )}
+        {bank === 'figures' && (
+          <div className="space-y-2 px-1">
+            <p className="text-sm text-neutral-600">Pictures our twins needed that no figure family can draw yet — the seed was set aside each time. A shape needed by {needs?.ready_at ?? 3} or more questions is ready to build. You get this list every Sunday.</p>
+            {!loading && needs && !needs.groups.length && <div className="text-sm text-neutral-500">Nothing waiting.</div>}
+            {needs?.groups.map(g => (
+              <div key={g.shape} className={`rounded-lg border bg-white p-3 ${g.ready ? 'border-emerald-300' : 'border-neutral-200'}`}>
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <b>{g.shape.replace(/-/g, ' ')}</b>
+                  <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-xs">{g.count} question{g.count === 1 ? '' : 's'}</span>
+                  {g.ready && <span className="rounded-full bg-emerald-600 text-white px-2 py-0.5 text-xs">ready to build</span>}
+                  {g.newThisWeek > 0 && <span className="text-xs text-neutral-500">{g.newThisWeek} new this week</span>}
+                  <span className="text-xs text-neutral-500">{[...g.subjects, ...g.topics.slice(0, 3)].join(' · ')}</span>
+                  <span className="ml-auto flex gap-2">
+                    <button className="text-xs rounded-lg border border-emerald-300 text-emerald-700 px-2 py-0.5" onClick={async () => { const fam = prompt('Built — which family draws it now?') ?? ''; await fetch('/api/admin/figure-needs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shape: g.shape, status: 'built', family: fam || null }) }); load(); }}>Built</button>
+                    <button className="text-xs rounded-lg border border-neutral-300 text-neutral-600 px-2 py-0.5" onClick={async () => { if (!confirm('Drop this shape? It will not be suggested again.')) return; await fetch('/api/admin/figure-needs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ shape: g.shape, status: 'dropped' }) }); load(); }}>Drop</button>
+                  </span>
+                </div>
+                <ul className="mt-1 list-disc pl-5 text-xs text-neutral-600">{g.examples.map(e => <li key={e}>{e}</li>)}</ul>
+              </div>
+            ))}
           </div>
         )}
         <label className="flex items-center gap-2 text-sm text-neutral-700 px-1">
