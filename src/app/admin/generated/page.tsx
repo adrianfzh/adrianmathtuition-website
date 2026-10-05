@@ -25,6 +25,7 @@ function sourceChip(meta: Record<string, unknown>, twinOf: string | null): strin
   if (kind === 'gce-set') return `📚 Set ${meta.set ?? '?'} · ${meta.key ?? ''}${meta.slot != null ? ` slot ${meta.slot}` : ''}`;
   if (kind === 'practice-photo') return '📷 Practice photo';
   if (kind === 'find') return '🔍 Find a question';
+  if (kind === 'science-twin') return '🧪 Science twin · Challenge';
   if (kind) return kind;
   return twinOf ? '🌙 top-up twin' : 'generated';
 }
@@ -129,22 +130,25 @@ export default function GeneratedPage() {
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   const [reportedOnly, setReportedOnly] = useState(false);
+  // Maths | Science (5 Oct 2026): the science bank's twins live in the science project
+  const [bank, setBank] = useState<'math' | 'science'>(() => (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('bank') === 'science' ? 'science' : 'math'));
 
   const load = useCallback(async () => {
     setLoading(true); setErr('');
     try {
-      const r = await fetch(`/api/admin/generated${reportedOnly ? '?reported=1' : ''}`);
+      const qs = bank === 'science' ? '?bank=science' : reportedOnly ? '?reported=1' : '';
+      const r = await fetch(`/api/admin/generated${qs}`);
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       setRows(d.rows ?? []);
     } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
-  }, [reportedOnly]);
+  }, [reportedOnly, bank]);
 
   useEffect(() => { ensureAdminSession().then(ok => { if (ok) setAuthed(true); }); }, []);
   useEffect(() => { if (authed) load(); }, [authed, load]);
 
   async function onAction(id: string, action: 'restore' | 'retire' | 'verify') {
-    const r = await fetch('/api/admin/generated', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });
+    const r = await fetch('/api/admin/generated', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, bank }) });
     if (!r.ok) { setErr(`${action} failed: HTTP ${r.status}`); return; }
     await load();
   }
@@ -176,6 +180,17 @@ export default function GeneratedPage() {
           Newest first. Read the first 20 before the Practice photo page opens to students (SPEC-PRACTICE-PHOTO §12).
           A student’s report stops a question being served or used as a seed; <b>Restore</b> clears it, <b>Retire</b> removes it for good.
         </p>
+        <div className="flex gap-2 px-1">
+          {(['math', 'science'] as const).map(b => (
+            <button key={b} onClick={() => setBank(b)}
+              className={`text-sm rounded-full px-3 py-1 border ${bank === b ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-neutral-700 border-neutral-300'}`}>
+              {b === 'math' ? 'Maths' : '🧪 Science twins'}
+            </button>
+          ))}
+        </div>
+        {bank === 'science' && (
+          <p className="text-sm text-neutral-600 px-1">Our own Challenge MCQs from the worker&apos;s science-twins lane. Each passed every check, so it is already in practice at Challenge; <b>Retire</b> takes one out.</p>
+        )}
         <label className="flex items-center gap-2 text-sm text-neutral-700 px-1">
           <input type="checkbox" checked={reportedOnly} onChange={e => setReportedOnly(e.target.checked)} /> Reported only{reportedCount && !reportedOnly ? ` (${reportedCount} in this list)` : ''}
         </label>

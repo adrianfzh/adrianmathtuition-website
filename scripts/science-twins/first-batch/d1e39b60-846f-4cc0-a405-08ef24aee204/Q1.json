@@ -1,0 +1,19 @@
+{
+  "stem": "A camping stove burns propane, C₃H₈.\nThe propane burns completely in oxygen to form carbon dioxide and water.\nA student burns 2.2 g of propane in the stove.\nThe products are allowed to cool to room temperature and pressure.\n\nWhat is the total volume of gas produced?\n\n[Aᵣ: C = 12, H = 1; one mole of any gas occupies 24 dm³ at r.t.p.]",
+  "options": {
+    "A": "1.2 dm³",
+    "B": "3.6 dm³",
+    "C": "6.0 dm³",
+    "D": "8.4 dm³"
+  },
+  "answer": "B",
+  "solution": "**Key idea:** Balance the equation first; at r.t.p. water is a liquid, so only CO₂ counts as gas produced.\nC₃H₈ + 5 O₂ → 3 CO₂ + 4 H₂O\n$M_r$ of C₃H₈ = 3 × 12 + 8 × 1 = 44\nMoles of C₃H₈ = 2.2 ÷ 44 = 0.05 mol\nC₃H₈ : CO₂ = 1 : 3\nMoles of CO₂ = 0.05 × 3 = 0.15 mol\nVolume of CO₂ = 0.15 × 24 = 3.6 dm³\n**Answer: B**\n**Why not the others**\n- **A:** uses a 1 : 1 ratio: 0.05 × 24 = 1.2 dm³.\n- **C:** this is the volume of oxygen used up (0.05 × 5 × 24), not a product.\n- **D:** counts the water as a gas: (0.15 + 0.20) × 24 = 8.4 dm³.",
+  "distractors": {
+    "A": "takes moles of CO₂ equal to moles of propane (1 : 1 ratio, equation not balanced): 0.05 × 24 = 1.2 dm³",
+    "C": "uses the C₃H₈ : O₂ ratio of 1 : 5 and reports the oxygen used: 0.25 × 24 = 6.0 dm³",
+    "D": "treats the water as a gas at r.t.p.: (0.15 + 0.20) × 24 = 8.4 dm³"
+  },
+  "why_challenge": "Three ideas joined: convert a mass to moles, balance the combustion equation yourself (no equation given), and remember water is liquid at r.t.p. so only CO₂ counts. Each skipped step gives a listed option.",
+  "originality_note": "New fuel (propane, not ethane), a camping-stove setting, the amount given as a mass so Mr must be worked out, and no equation supplied so the student must balance it; new numbers and answer.",
+  "needs_figure": false
+}

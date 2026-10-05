@@ -1,0 +1,19 @@
+{
+  "stem": "A bean plant is grown with its roots in a solution of nitrate ions. The nitrogen atoms in these nitrate ions are labelled so that they can be traced.\n\nA week later, four substances are taken from the plant.\n\n1  enzymes inside the chloroplasts of a leaf\n2  cellulose in the cell walls of a leaf\n3  fat stored in a developing seed\n4  amino acids carried in the phloem\n\nWhich substances will contain the labelled nitrogen?",
+  "options": {
+    "A": "4 only",
+    "B": "1 and 4",
+    "C": "3 and 4",
+    "D": "1, 3 and 4"
+  },
+  "answer": "B",
+  "solution": "**Key idea:** Only amino acids and the proteins built from them contain nitrogen; carbohydrates and fats contain only carbon, hydrogen and oxygen.\nThe plant combines sugars with absorbed nitrate ions to make amino acids, so the labelled nitrogen goes into amino acids (4).\nAmino acids carried in the phloem are joined into proteins in the cells.\nEnzymes are proteins, so the enzymes in the chloroplasts also contain the labelled nitrogen (1).\nCellulose is a carbohydrate: carbon, hydrogen and oxygen only (2 has no nitrogen).\nFat is made of glycerol and fatty acids: carbon, hydrogen and oxygen only (3 has no nitrogen).\n**Answer: B**\n**Why not the others**\n- **A:** It misses the enzymes. Enzymes are proteins, and proteins are made from amino acids, so they carry the nitrogen too.\n- **C:** Fats contain only carbon, hydrogen and oxygen, so the stored fat has no nitrogen; it also misses the enzymes.\n- **D:** The enzymes and amino acids are right, but fats contain no nitrogen.",
+  "distractors": {
+    "A": "Forgetting that enzymes are proteins, so only the amino acids are counted",
+    "C": "Thinking fats contain nitrogen (mixing up fats with proteins) and forgetting that enzymes are proteins",
+    "D": "Correctly linking enzymes to proteins but wrongly thinking fats contain nitrogen"
+  },
+  "why_challenge": "Two ideas must be joined: nitrate is used only to make amino acids, and enzymes are proteins built from those amino acids. Students who list elements by molecule name alone miss the enzymes or wrongly add fats.",
+  "originality_note": "The seed asks which stage of a reaction chain uses nitrate; this asks where traced nitrogen ends up across four named substances in different parts of a bean plant (chloroplast enzymes, cell walls, seed store, phloem), with a tracing setting and no reaction chain.",
+  "needs_figure": false
+}

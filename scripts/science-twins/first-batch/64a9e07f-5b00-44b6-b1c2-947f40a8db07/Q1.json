@@ -1,0 +1,14 @@
+{
+  "stem": "A uniform plank is 3.0 m long and weighs 120 N. It rests horizontally on two supports. Support X is at the left end of the plank. Support Y is 1.0 m from the right end. A box of weight 30 N sits on the right end of the plank, beyond Y. The plank is in equilibrium. What is the upward force that support X exerts on the plank?",
+  "options": { "A": "10 N", "B": "15 N", "C": "45 N", "D": "135 N" },
+  "answer": "B",
+  "solution": "**Key idea:** Take moments about Y — the plank's weight and the box sit on opposite sides of Y, so they turn in opposite directions.\nThe plank's weight acts at its centre, 1.5 m from X, so 0.5 m to the left of Y.\nThe box is 1.0 m to the right of Y.\nThe force from X is 2.0 m to the left of Y.\nAnticlockwise moment about Y: $120 \\times 0.5 = 60$ N m (plank's weight).\nClockwise moments about Y: $F_X \\times 2.0$ + $30 \\times 1.0 = 30$ N m.\nPrinciple of moments: $2.0\\,F_X + 30 = 60$\n$F_X = 30 \\div 2.0 = 15$ N\n**Answer: B**\n**Why not the others**\n- **A:** This uses 3.0 m (the whole plank) as the arm of $F_X$; the arm is the distance from X to Y, 2.0 m: $30 \\div 3.0 = 10$ N.\n- **C:** This adds the box's moment to the plank's moment, as if both turned the same way: $(60 + 30) \\div 2.0 = 45$ N. The box is on the other side of Y.\n- **D:** This is the force from support Y, not X: $150 - 15 = 135$ N.",
+  "distractors": {
+    "A": "uses the full plank length 3.0 m as the arm of the force at X instead of the X–Y distance 2.0 m: (60 − 30)/3.0 = 10 N",
+    "C": "treats the box's moment about Y as acting in the same sense as the plank's weight: (60 + 30)/2.0 = 45 N",
+    "D": "finds the force at support Y instead of X: 120 + 30 − 15 = 135 N"
+  },
+  "why_challenge": "Two ideas joined: the plank's weight acts at its centre (a step often skipped), and the overhanging load is on the opposite side of the pivot, so its moment opposes the plank's — careless students add all the downward moments.",
+  "originality_note": "The seed is a conceptual statement question about three equal parallel forces; this is a numerical plank-on-two-supports problem with an overhanging load, new quantities, and the trap is the sense of moments about a support, not the equal-magnitude idea.",
+  "needs_figure": false
+}

@@ -1,0 +1,19 @@
+{
+  "stem": "A student wrote four statements about how some specialised cells are adapted to their functions.\n\n1  A red blood cell has no nucleus, so there is more space inside it for haemoglobin.\n2  A red blood cell is biconcave, which increases its volume so that it can carry more oxygen.\n3  A root hair cell has a long, narrow extension that increases its surface area for absorbing water by active transport.\n4  A muscle cell contains many mitochondria, which release energy for contraction.\n\nWhich statements are correct?",
+  "options": {
+    "A": "1 and 4 only",
+    "B": "1, 2 and 4 only",
+    "C": "1, 3 and 4 only",
+    "D": "1, 2, 3 and 4"
+  },
+  "answer": "A",
+  "solution": "**Key idea:** Check both the feature AND the reason in each statement — a true feature with a wrong reason makes the statement wrong.\nStatement 1: no nucleus leaves more room for haemoglobin — correct.\nStatement 2: the biconcave shape increases the surface area to volume ratio, not the volume — wrong.\nA larger surface area to volume ratio lets oxygen diffuse in and out faster.\nStatement 3: the long extension does increase surface area, but water enters by osmosis, not active transport — wrong.\nMineral ions, not water, are taken in by active transport.\nStatement 4: many mitochondria release energy by aerobic respiration for contraction — correct.\n**Answer: A**\n**Why not the others**\n- **B:** statement 2 gives the wrong reason — the biconcave shape increases the surface area to volume ratio, not the volume.\n- **C:** statement 3 gives the wrong process — water enters a root hair cell by osmosis.\n- **D:** statements 2 and 3 each pair a true feature with a wrong reason.",
+  "distractors": {
+    "B": "accepts statement 2 because the biconcave shape is a real feature, without checking the reason (volume instead of surface area to volume ratio)",
+    "C": "accepts statement 3 because the long extension and larger surface area are right, missing that water is absorbed by osmosis, not active transport",
+    "D": "accepts every statement because each names a real feature of the cell, checking no reasons"
+  },
+  "why_challenge": "Every statement names a true feature, so a reader who checks only the feature picks D. Two traps must be caught: the biconcave shape is about surface area to volume ratio, and water enters a root hair cell by osmosis (mineral ions by active transport).",
+  "originality_note": "The seed is a yes/no table checking three unrelated cells (bacterium, sperm, xylem vessel) for movement, DNA, cytoplasm and mitochondria. This question uses numbered statements about red blood cells, root hair cells and muscle cells, and tests whether each structure is linked to the right reason and process.",
+  "needs_figure": false
+}

@@ -93,6 +93,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // 👯 The twins lane on the Fly worker (30 Sep 2026, SPEC-TWINS §10): every 15 min when marking
   // is quiet by day, always in the 00–06 SGT window; an empty queue still stamps, so absence = dead lane.
   'twin-batch':        { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
+  // 🧪 The SCIENCE twins lane (5 Oct 2026, SPEC-TWINS §11, bot worker/fly/science-twins.sh): every 15 min
+  // when lane_room says there is room; stamps every run that looked, so absence = a dead lane.
+  'science-twins':     { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
   // 🧹 The Fly worker's disk check (5 Oct 2026, bot worker/fly/jobs.sh disk_check): runs every tick,
   // stamps once a day — silence = the scheduler is dead. Its cleanups stamp 'disk-clean' (no rhythm).
   'disk-check':        { kind: 'interval', hours: 36, label: 'the Fly worker, daily' },

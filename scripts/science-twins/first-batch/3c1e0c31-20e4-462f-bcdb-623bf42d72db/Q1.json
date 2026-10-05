@@ -1,0 +1,14 @@
+{
+  "stem": "A train leaves a station from rest. It speeds up with uniform acceleration for $40$ s. It then travels at a constant speed for a further $60$ s.\n\nOver the whole $100$ s, the average speed of the train is $16$ m/s.\n\nWhat is the acceleration of the train during the first $40$ s?",
+  "options": { "A": "$0.16$ m/s²", "B": "$0.40$ m/s²", "C": "$0.50$ m/s²", "D": "$0.80$ m/s²" },
+  "answer": "C",
+  "solution": "**Key idea:** Total distance = area under the speed–time graph = average speed × total time; solve for the top speed, then a = Δv/t.\nTotal distance = 16 m/s × 100 s = 1600 m\nLet the top speed be v.\nDistance while speeding up = ½ × 40 s × v = 20v\nDistance at constant speed = 60 s × v = 60v\n20v + 60v = 1600, so v = 20 m/s\nAcceleration = Δv ÷ t = (20 − 0) m/s ÷ 40 s = 0.50 m/s²\n**Answer: C**\n**Why not the others**\n- **A:** 16 ÷ 100 — divides the average speed by the whole time, as if the train sped up for all 100 s.\n- **B:** 16 ÷ 40 — takes the average speed as the top speed; the train is slower than 16 m/s for part of the trip, so its top speed must be higher.\n- **D:** 32 ÷ 40 — assumes the average speed is half the top speed, which is only true while it is speeding up, not over the constant-speed part.",
+  "distractors": {
+    "A": "average speed ÷ total time (16 ÷ 100 = 0.16)",
+    "B": "treats the average speed 16 m/s as the top speed (16 ÷ 40 = 0.40)",
+    "D": "uses average = half of top speed for the whole trip, so top speed 32 m/s (32 ÷ 40 = 0.80)"
+  },
+  "why_challenge": "Joins three ideas: average speed gives total distance, the area under a speed–time graph splits it into a triangle and a rectangle with an unknown top speed, then a = Δv/t. The tempting shortcuts (average = top speed, or average = half of top speed) each give a clean wrong option.",
+  "originality_note": "Seed: a car's distance in one second, found by the 1:3:5:7 pattern. Here: a train with two stages, working backwards from a given whole-trip average speed to the acceleration. Different object, numbers, unknown and order of reasoning.",
+  "needs_figure": false
+}

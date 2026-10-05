@@ -63,3 +63,11 @@ describe('estimate', () => {
     expect(estimateLevel(5, 'right')).toBe('challenge');
   });
 });
+
+describe('SERVED_DIFFICULTY_SOURCES', () => {
+  it('serves results, estimates and science twins — never the sample', async () => {
+    const { SERVED_DIFFICULTY_SOURCES } = await import('./practice-difficulty');
+    expect([...SERVED_DIFFICULTY_SOURCES].sort()).toEqual(['estimate', 'results', 'twin']);
+    expect(SERVED_DIFFICULTY_SOURCES).not.toContain('estimate-sample');
+  });
+});

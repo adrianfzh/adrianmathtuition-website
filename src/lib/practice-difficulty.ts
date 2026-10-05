@@ -10,10 +10,12 @@
 // yet — Adrian decides on level chips after the sample.
 
 export type DifficultyLevel = 'core' | 'exam' | 'challenge';
-export type DifficultySource = 'results' | 'estimate' | 'estimate-sample';
+export type DifficultySource = 'results' | 'estimate' | 'estimate-sample' | 'twin';
 
-/** The sources a student's level choice draws from — the sample rows never serve. */
-export const SERVED_DIFFICULTY_SOURCES: readonly DifficultySource[] = ['results', 'estimate'];
+/** The sources a student's level choice draws from — the sample rows never serve. 'twin' = our own
+ *  science twin, written AT a level and filed there once every check passed (SPEC-TWINS §11,
+ *  scripts/science-twins/); students' results replace it once 20 have tried it, like an estimate. */
+export const SERVED_DIFFICULTY_SOURCES: readonly DifficultySource[] = ['results', 'estimate', 'twin'];
 
 export const DIFFICULTY_LABEL: Record<DifficultyLevel, string> = { core: 'Core', exam: 'Exam', challenge: 'Challenge' };
 

@@ -1,0 +1,19 @@
+{
+  "stem": "A crate of mass 40 kg rests on the floor of a lift. The lift is moving upwards and its speed is increasing at a steady rate. The acceleration of the lift and the crate is 0.5 m/s² upwards. Take g = 10 N/kg.\n\nWhich statement is correct?",
+  "options": {
+    "A": "The floor pushes up on the crate with 400 N. This force and the weight of the crate are an action-reaction pair.",
+    "B": "The floor pushes up on the crate with 420 N. The reaction to this force is the weight of the crate, 400 N.",
+    "C": "The floor pushes up on the crate with 420 N. The crate pushes down on the floor with 420 N, and these two forces are an action-reaction pair.",
+    "D": "The floor pushes up on the crate with 420 N. The crate pushes down on the floor with 400 N, and the 20 N difference makes the crate accelerate."
+  },
+  "answer": "C",
+  "solution": "**Key idea:** The crate accelerates, so the forces ON the crate are unbalanced; the action-reaction pair acts on two different objects and is always equal.\nWeight of crate $= mg = 40 \\times 10 = 400$ N downwards.\nResultant force on crate $= ma = 40 \\times 0.5 = 20$ N upwards.\nSo the floor's upward push on the crate $= 400 + 20 = 420$ N.\nBy Newton's Third Law, the crate pushes down on the floor with an equal 420 N.\nThis pair acts on two different objects: one on the crate, one on the floor.\n**Answer: C**\n**Why not the others**\n- **A:** 400 N is the push only when the crate is not accelerating. Also, the weight and the floor's push both act on the crate, so they cannot be an action-reaction pair.\n- **B:** The 420 N is right, but its reaction is the crate's push on the floor. The weight's reaction is the crate's pull on the Earth.\n- **D:** An action-reaction pair is always equal in size. The 20 N resultant comes from forces on the crate only: 420 N up and 400 N weight down.",
+  "distractors": {
+    "A": "Treats the crate as in equilibrium (push = weight = 400 N) and pairs weight with the normal force as action-reaction",
+    "B": "Gets the 420 N push right but names the weight as its third-law reaction (forces on the same object)",
+    "D": "Thinks the action-reaction forces are unequal when there is acceleration, mixing forces on two objects to get the resultant"
+  },
+  "why_challenge": "Joins Newton's second law (unbalanced forces, 420 N vs 400 N) with the third law (the pair is equal and acts on different objects); each wrong option gets one of the two ideas right.",
+  "originality_note": "Seed is a person standing still on the ground with no numbers; this is a crate in an accelerating lift with calculated forces, and the options test which forces pair up rather than why a person stays at rest.",
+  "needs_figure": false
+}

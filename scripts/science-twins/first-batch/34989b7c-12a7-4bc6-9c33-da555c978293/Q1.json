@@ -1,0 +1,19 @@
+{
+  "stem": "A builder has two identical bricks. Each brick measures 5.0 cm × 12 cm × 20 cm and has a mass of 3.0 kg. Take g = 10 N/kg.\n\nThe builder places both bricks on a flat floor in one of the four ways below. In each way, the whole weight of both bricks is held up by the floor.\n\nWhich arrangement exerts the **greatest** pressure on the floor?",
+  "options": {
+    "A": "Both bricks stand side by side, each on its 5.0 cm × 12 cm face.",
+    "B": "One brick lies on its 12 cm × 20 cm face; the other stands on top of it on its 5.0 cm × 12 cm face.",
+    "C": "One brick lies on its 5.0 cm × 20 cm face; the other lies exactly on top of it on the same size face.",
+    "D": "Both bricks lie side by side, each on its 12 cm × 20 cm face."
+  },
+  "answer": "C",
+  "solution": "**Key idea:** Pressure on the floor = total weight ÷ area touching the floor.\nIn every arrangement the floor holds both bricks.\nTotal weight = 2 × 3.0 kg × 10 N/kg = 60 N.\nOnly the area touching the FLOOR counts, not the face between the bricks.\nA: area = 2 × (5.0 × 12) = 120 cm² = 0.0120 m², so p = 60 ÷ 0.0120 = 5000 Pa.\nB: area = 12 × 20 = 240 cm² = 0.0240 m², so p = 60 ÷ 0.0240 = 2500 Pa.\nC: area = 5.0 × 20 = 100 cm² = 0.0100 m², so p = 60 ÷ 0.0100 = 6000 Pa.\nD: area = 2 × (12 × 20) = 480 cm² = 0.0480 m², so p = 60 ÷ 0.0480 = 1250 Pa.\nC has the smallest area under the full 60 N, so it gives the greatest pressure.\n**Answer: C**\n**Why not the others**\n- **A:** Each brick stands on its smallest face, but side by side the two faces add to 120 cm², more than the 100 cm² in C. The pressure is only 5000 Pa.\n- **B:** The top brick's small face presses on the bottom brick, not on the floor. The floor feels 60 N over 240 cm², only 2500 Pa.\n- **D:** The largest contact area gives the smallest pressure, 1250 Pa.",
+  "distractors": {
+    "A": "Picks the smallest face of a brick without noticing that two bricks side by side double the contact area (120 cm² > 100 cm²).",
+    "B": "Uses the top brick's small face instead of the area actually touching the floor.",
+    "D": "Reverses the idea: thinks a larger contact area gives a larger pressure."
+  },
+  "why_challenge": "Joins two ideas: the floor carries the total weight in every case, and only the area touching the floor counts. The trap is choosing the brick's smallest face (A) without adding the two areas, or being drawn to the small face between the bricks (B).",
+  "originality_note": "The seed compares one box on its three faces. This uses two bricks arranged side by side or stacked, new dimensions and mass, a calculation in pascals with g = 10 N/kg, and the winning arrangement is NOT the brick's smallest face.",
+  "needs_figure": false
+}

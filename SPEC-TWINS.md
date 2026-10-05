@@ -219,3 +219,51 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
 Plan-billed throughout, so the API cost is nil; on the API it would be roughly
 S$0.10–0.30 a twin. Adrian's time: the 20-twin read in phase 0 and one tick per
 topic in phase 2.
+
+## 11. Science twins — our own Challenge MCQs (5 Oct 2026)
+
+Adrian, 5 Oct 2026: *"yes > start with Challenge"*, then *"do the twins for science like for
+math — twins jobs run all day whenever marking is quiet"*.
+
+**Goal.** Every OPEN science practice topic (`SCIENCE_PRACTICE_OPEN_TOPICS` + the Combined list
+in `src/lib/portal-beta.ts`) reaches **30 servable Challenge MCQs**. A topic stops at 30. The gap
+on 5 Oct 2026 was 362 (pure Chemistry already full; Biology, Physics and the Combined topics short).
+`node scripts/science-twins/sci-twin.mjs gap` prints it from the same filters the app serves with.
+
+**What a science twin is.** A NEW MCQ modelled on a real Challenge (else Exam) row of the same
+sub-skill (`question_subgroups`): a new situation and new numbers, harder reasoning, four options
+whose wrong ones are real student mistakes, ONLY 6091 / 6092 / 6093 / Combined Science content
+(physics: no equations of motion, no momentum, no circular motion). Figures only from the bot's
+figure library (`lib/figures`, verify fails closed), never copied. The solution is the house shape:
+**Key idea:**, one step a line, **Answer: X**, **Why not the others** (naming a mistake only when it
+reproduces that option exactly). Nothing names a school, a year or a model.
+
+**The gates** (`scripts/science-twins/`, every role a plan-billed `claude -p`, never the API):
+1. **Author** (Opus) — `sci-twin.mjs brief` → `author-brief.md` → `Q1.json`.
+2. **Automatic checks** — `sci-twin.mjs check`: format, house style, scope words, forbidden words,
+   originality (trigram Jaccard ≤ 0.4 vs the seed AND every bank row of the topic, number-swap,
+   ≥ 3 of the seed's options reused), the figure renders.
+3. **Blind solve** (a fresh Opus) — sees only `Q1.solve.md`, never the key.
+4. **Checker** (a fresh Opus) — key right, blind agrees, one defensible answer, in syllabus,
+   original, same skill, genuinely Challenge (work score ≥ 4 on the estimator's scale), real
+   distractors, house style, honest "why not" lines, student-safe.
+One rewrite from the problems or the checker's fixes; a second failure drops it (`parked`, logged).
+
+**Filed as ours** (`sci-twin.mjs publish`, science project): `school='AdrianMath'`,
+`exam_type='Twin'`, `twin_of` = the seed, `gen_meta` (gates, blind answer, verdict, source_ref),
+`verified=true` + `practice_checked_at` (passing every check IS the verify — Adrian, 30 Sep 2026),
+the seed's sub-skill filing, and `practice_difficulty` `level='challenge'`, `source='twin'`
+(`SERVED_DIFFICULTY_SOURCES` includes `'twin'`; students' results replace it after 20 first tries).
+A figured twin waits for the science figure check (bot figfit, `FIGFIT_BANK=science`) to stamp
+`clean`. Columns from `migrations/science_twins.sql` (science project).
+
+**Where Adrian sees them:** `/admin/generated` → **🧪 Science twins** (seed folded under each,
+Retire = `practice_hidden` + `verified=false`).
+
+**The lane:** bot `worker/fly/science-twins.sh`, started by `jobs.sh` every 15 min when
+`lane_room` has room (CPU, memory, lanes, no ship) and, by day, only when the marking queue is
+empty — ≤ 3 twins a run, biggest gap first, one sub-skill at a time. Switch `science-twins` on
+`/admin/switches`; ON once `/data/science-twins/.on` exists on the worker (`SCI_TWINS_LANE=0`
+parks it). Run dirs `/data/science-twins/<seed>/`. Stamps `job_runs` `science-twins` (rhythm 30 h).
+The ten drafts written by hand on 5 Oct 2026 (`scripts/science-twins/first-batch/`) were the lane's
+first batch.

@@ -36,6 +36,7 @@ export const WORKER_JOB_GROUPS: readonly { key: WorkerJobGroup; title: string; h
 export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'extract', group: 'lanes', label: '📄 PDF extraction', what: 'Papers in the Extraction Inbox become questions in the bank.', when: 'every 15 min while papers wait · up to 8 lanes' },
   { key: 'twins', group: 'lanes', label: '👯 Twins', what: 'Writes our own twin of school questions, per sub-skill.', when: 'every 15 min · up to 8 lanes' },
+  { key: 'science-twins', group: 'lanes', label: '🧪 Science twins', what: 'Writes our own Challenge science MCQs for the open practice topics short of 30; each one that passes every check goes into practice.', when: 'every 15 min when marking is quiet · up to 3 a run' },
   { key: 'file-subgroups', group: 'filing', label: '🗂 Sub-skill filing · maths', what: 'Files topic-tagged maths questions under a sub-skill.', when: '04:15 and 16:15' },
   { key: 'file-subgroups-science', group: 'filing', label: '🧪 Sub-skill filing · science', what: 'Files physics, chemistry and biology questions under a sub-skill.', when: '10:15 and 22:15' },
   { key: 'nightly-builder', group: 'reviews', label: '🌙 Nightly builder', what: 'Builds one idea you approved in the build list on its own copy, runs every test, and asks you in the morning whether to ship it.', when: '01:30 · message 07:30' },

@@ -1,0 +1,1 @@
+You are an independent examiner. Read ONLY the file RUN/Q1.solve.md (and the figure it names, if any) — do not open any other file in RUN: no Q1.json, no source, no brief, no check file; that would break a blind check. Solve the question yourself, then write RUN/Q1.blind.json in exactly the JSON shape the file asks for. Then stop.

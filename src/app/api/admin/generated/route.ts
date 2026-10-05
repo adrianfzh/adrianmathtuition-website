@@ -7,13 +7,18 @@
 //   first, each with its seed (id, school, year, question_text head), the
 //   report (reported_at/by/reason) and the student it was written for (the
 //   generation_requests row via gen_meta.request_id, if stamped).
-// POST { id, action: 'restore' | 'retire' | 'verify' }
+// ?bank=science (5 Oct 2026) → the SCIENCE bank's twins (school AdrianMath, exam_type Twin,
+//   written by the Fly worker's science-twins lane, SPEC-TWINS §11). Same row shape; a science
+//   row has no report/retire columns, so Retire there = practice_hidden + verified=false.
+// POST { id, action: 'restore' | 'retire' | 'verify', bank? }
 //   verify  = Adrian's read of a twin: verified=true (SPEC-TWINS §7 — the serving doors refuse an unverified ai_generated row)
 //   restore = clear the report so it can be served/seeded again
 //   retire  = set deleted_at (never served, never a seed; the row stays for the ledger)
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getScienceClient } from '@/lib/science-bank';
+import { scienceImageBase, withScienceImageUrls } from '@/lib/science-images';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -30,8 +35,44 @@ export type GeneratedRow = {
   student?: string | null;
 };
 
+const SCIENCE_COLUMNS = 'id, created_at, level, topics, question_text, solution, answer, total_marks, difficulty, has_image, image_url, images, parts, twin_of, verified, gen_meta, practice_hidden, practice_hidden_reason, practice_checked_at';
+
+async function scienceRows(limit: number) {
+  const sb = getScienceClient();
+  const { data, error } = await sb.from('questions').select(SCIENCE_COLUMNS).eq('school', 'AdrianMath').eq('exam_type', 'Twin')
+    .order('created_at', { ascending: false }).limit(limit);
+  if (error) throw new Error(error.message);
+  const base = scienceImageBase(process.env.SUPABASE_URL_SCIENCE);
+  const raw = (data ?? []) as unknown as Record<string, unknown>[];
+  const seedIds = Array.from(new Set(raw.map(r => r.twin_of).filter((x): x is string => typeof x === 'string')));
+  const seeds = new Map<string, GeneratedRow['seed']>();
+  if (seedIds.length) {
+    const { data: s } = await sb.from('questions').select('id, school, year, paper, question_text, total_marks').in('id', seedIds);
+    for (const row of (s ?? []) as NonNullable<GeneratedRow['seed']>[]) seeds.set(row.id, row);
+  }
+  return raw.map(r0 => {
+    const r = withScienceImageUrls(r0, base) as Record<string, unknown>;
+    const meta = (r.gen_meta ?? {}) as Record<string, unknown>;
+    return {
+      ...(r as unknown as GeneratedRow),
+      figure_url: null, question_image_url: null,
+      reported_at: null, reported_by: null, report_reason: null, flagged_count: null,
+      deleted_at: r.practice_hidden ? String(r.practice_hidden_reason ?? 'hidden') : null,
+      gen_meta: { ...meta, kind: 'science-twin' },
+      seed: typeof r.twin_of === 'string' ? seeds.get(r.twin_of) ?? null : null,
+      student: null,
+    } as GeneratedRow;
+  });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  if (req.nextUrl.searchParams.get('bank') === 'science') {
+    try {
+      const rows = await scienceRows(Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 100)));
+      return NextResponse.json({ rows, generatedAt: new Date().toISOString() });
+    } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
+  }
   const reportedOnly = req.nextUrl.searchParams.get('reported') === '1';
   const limit = Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 60));
   const sb = getSupabaseAdmin();
@@ -70,10 +111,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  const body = await req.json().catch(() => null) as { id?: string; action?: string } | null;
+  const body = await req.json().catch(() => null) as { id?: string; action?: string; bank?: string } | null;
   const id = typeof body?.id === 'string' ? body.id : '';
   const action = body?.action;
   if (!id || (action !== 'restore' && action !== 'retire' && action !== 'verify')) return NextResponse.json({ error: 'id + action (restore|retire|verify) required' }, { status: 400 });
+  if (body?.bank === 'science') {
+    const patch = action === 'retire' ? { practice_hidden: true, practice_hidden_reason: 'retired on /admin/generated', verified: false }
+      : action === 'restore' ? { practice_hidden: false, practice_hidden_reason: null, verified: true }
+      : { verified: true };
+    const { error } = await getScienceClient().from('questions').update(patch).eq('id', id).eq('school', 'AdrianMath').eq('exam_type', 'Twin');
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true, id, action, bank: 'science' });
+  }
   const sb = getSupabaseAdmin();
   const patch = action === 'restore'
     ? { reported_at: null, reported_by: null, report_reason: null, deleted_at: null }

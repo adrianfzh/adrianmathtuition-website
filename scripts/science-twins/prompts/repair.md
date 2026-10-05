@@ -1,0 +1,1 @@
+REPAIR ROUND. Your draft RUN/Q1.json did not pass. Read RUN/author-brief.md again, then fix every problem listed below by rewriting RUN/Q1.json (a new situation is fine if the problem is closeness to a bank question). Keep everything the problems do not mention. Then stop.

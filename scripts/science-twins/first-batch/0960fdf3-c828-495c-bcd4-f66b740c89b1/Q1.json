@@ -1,0 +1,19 @@
+{
+  "stem": "The table shows the concentrations of four mineral ions in the soil water and in the cell sap of a plant's root hair cells.\n\nion | concentration in soil water (arbitrary units) | concentration in root hair cell sap (arbitrary units)\nnitrate | 2 | 20\nmagnesium | 6 | 2\nphosphate | 1 | 6\npotassium | 9 | 3\n\nAfter heavy rain, the soil stays waterlogged for several days. The air spaces between the soil particles fill with water, so very little oxygen reaches the root hair cells.\n\nThe uptake of which ions would decrease?",
+  "options": {
+    "A": "nitrate only",
+    "B": "nitrate and phosphate only",
+    "C": "magnesium and potassium only",
+    "D": "all four ions"
+  },
+  "answer": "B",
+  "solution": "**Key idea:** Only ions taken in against their concentration gradient need active transport, and active transport needs energy from respiration.\nWaterlogged soil means little oxygen, so the root hair cells carry out less aerobic respiration.\nLess respiration releases less energy for active transport.\nNitrate: 2 outside, 20 inside, so it is taken in against its gradient by active transport.\nPhosphate: 1 outside, 6 inside, so it is also taken in by active transport.\nMagnesium (6 outside, 2 inside) and potassium (9 outside, 3 inside) move in down their gradients by diffusion, which needs no energy from respiration.\n**Answer: B**\n**Why not the others**\n- **A:** phosphate is also more concentrated inside the cell, so it also needs active transport, even though its gradient is smaller.\n- **C:** these two ions are more concentrated in the soil water, so they diffuse in without energy; this reads the table the wrong way round.\n- **D:** not every ion is taken in by active transport; magnesium and potassium here move down their gradients by diffusion.",
+  "distractors": {
+    "A": "Only picks the ion with the steepest gradient and overlooks the smaller gradient of phosphate, which still needs active transport.",
+    "C": "Reverses the direction of the gradient: thinks ions more concentrated outside the cell need energy to be absorbed.",
+    "D": "Overgeneralises 'root hair cells absorb mineral ions by active transport' to every ion, ignoring the concentration data."
+  },
+  "why_challenge": "Joins three ideas: waterlogging cuts oxygen, so aerobic respiration and energy fall; only ions moving against their gradient depend on that energy; and every ion must be checked for direction, not just the steepest one.",
+  "originality_note": "The seed compares four cells for one substance and asks which needs the most energy. This question uses one root hair cell with four named ions, adds an environmental cause (waterlogged soil, low oxygen) that must be linked to respiration, and asks for every ion whose uptake falls, with numbers and setting all new.",
+  "needs_figure": false
+}

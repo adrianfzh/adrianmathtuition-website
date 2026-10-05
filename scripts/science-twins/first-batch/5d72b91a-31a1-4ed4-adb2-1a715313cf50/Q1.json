@@ -1,0 +1,10 @@
+{
+  "stem": "A tank contains water to a depth of 1.20 m.\n\nA layer of oil 0.50 m thick floats on top of the water.\n\nThe density of the oil is 800 kg/m³. The density of the water is 1000 kg/m³.\n\nA second tank contains water only.\n\nWhat depth of water in the second tank gives the same pressure due to the liquid at the base as in the first tank? Take g = 10 N/kg.",
+  "options": { "A": "1.20 m", "B": "1.60 m", "C": "1.70 m", "D": "1.83 m" },
+  "answer": "B",
+  "solution": "**Key idea:** The pressures from the two layers add, and oil gives less pressure than the same height of water.\nPressure from the oil = $0.50 \\times 800 \\times 10$ = 4000 Pa\nPressure from the water = $1.20 \\times 1000 \\times 10$ = 12 000 Pa\nPressure due to the liquid at the base = 4000 + 12 000 = 16 000 Pa\nDepth of water alone = $\\frac{16\\,000}{1000 \\times 10}$ = 1.60 m\n**Answer: B**\n**Why not the others**\n- **A:** 1.20 m leaves out the oil layer, which also presses on the water below it.\n- **C:** 1.70 m treats the 0.50 m of oil as if it were water. Oil is less dense, so it gives less pressure.\n- **D:** 1.83 m comes from dividing 0.50 m by 0.8 instead of multiplying. The oil layer is worth less water, not more.",
+  "distractors": { "A": "ignores the oil layer: only the 1.20 m of water counted", "C": "adds the depths 1.20 + 0.50 as if the oil were water", "D": "converts the oil wrongly: 1.20 + 0.50/0.8 = 1.825 m ≈ 1.83 m" },
+  "why_challenge": "Two ideas joined: pressures from stacked layers add, and each layer must be converted by its density ratio in the right direction. Students skip the oil, add raw depths, or invert the ratio.",
+  "originality_note": "Seed compares one sea-water depth with one fresh-water depth. This uses a two-layer tank (oil on water), absolute densities, and asks for an equivalent single-liquid depth; new numbers and order of ideas.",
+  "needs_figure": false
+}

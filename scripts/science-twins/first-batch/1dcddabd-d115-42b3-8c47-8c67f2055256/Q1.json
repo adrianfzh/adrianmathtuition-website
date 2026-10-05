@@ -1,0 +1,19 @@
+{
+  "stem": "A test tube contains a mixture of starch suspension and vegetable oil.\nLipase solution is added, and the tube is kept at 37 °C for two hours.\nBy then, all of the oil has been digested.\nFour samples of the mixture are then tested: with iodine solution, with Benedict's solution (heated), with biuret reagent, and by the ethanol emulsion test.\n\nWhich row shows the expected results?\n\n     iodine solution | Benedict's solution | biuret reagent | ethanol emulsion test",
+  "options": {
+    "A": "brown | brick-red precipitate | purple | stays clear",
+    "B": "blue-black | stays blue | stays blue | stays clear",
+    "C": "blue-black | stays blue | purple | stays clear",
+    "D": "blue-black | stays blue | purple | white emulsion"
+  },
+  "answer": "C",
+  "solution": "**Key idea:** Lipase acts only on fats, and lipase is itself a protein.\nLipase is specific: it digests fats only, so the starch is untouched.\nStarch is still present, so iodine turns blue-black.\nLipase makes fatty acids and glycerol, not reducing sugars.\nNo reducing sugar is present, so Benedict's solution stays blue.\nLipase is an enzyme, and enzymes are proteins.\nThe lipase is still in the mixture, so biuret reagent turns purple.\nAll the oil has been digested, so no fat is left.\nThe ethanol emulsion test stays clear.\n**Answer: C**\n**Why not the others**\n- **A:** Lipase cannot digest starch, because its active site fits only fat molecules. The starch stays, and no reducing sugar forms.\n- **B:** No food protein was added, but the lipase itself is a protein, so biuret turns purple.\n- **D:** A white emulsion shows fat. All the oil has been digested, so the test stays clear.",
+  "distractors": {
+    "A": "Thinks any digestive enzyme breaks down starch into reducing sugar (ignores enzyme specificity).",
+    "B": "Looks only at the food substances added and forgets that the enzyme lipase is a protein.",
+    "D": "Tests for the oil that was put in, ignoring that it has all been digested into fatty acids and glycerol."
+  },
+  "why_challenge": "Joins three ideas across four tests: specificity (starch untouched, no sugar made), the enzyme itself being a protein, and the substrate being used up. Each wrong row skips exactly one of them.",
+  "originality_note": "Seed: amylase on starch after a short time, three tests, trap is partial reaction. This: lipase on a starch-and-oil mixture after the reaction is complete, four tests including the ethanol emulsion test; the turning points are specificity and a finished reaction, not a short reaction time.",
+  "needs_figure": false
+}
