@@ -198,7 +198,12 @@ builds; a bot or worker push to `main`).
 
 The preview alias still moves after a `dev` build is READY — do it in the end-of-turn check.
 
-While long work runs, say in a few words what is happening; never block on something the next step does not need (`docs/DEPLOY.md` §Do not keep Adrian waiting).
+Never block on something the next step does not need (`docs/DEPLOY.md` §Do not keep Adrian waiting).
+
+**"Still running" — end every reply with it while anything runs (Adrian, 2 → 6 Oct 2026).** Adrian, 5 Oct: *"why are there so many background tasks?"*; 6 Oct: *"then why is retire the adrianmath repo still running?"* — about 13 asks in two days after the 2 Oct rule. Why: he cannot see the task list, and asking costs him a turn.
+- **Anything still running (a background command, an agent, a training run, a cloud session you started) → the reply ends with a "Still running:" line per task**: what it is in plain words, what it is for, about how long is left. Paused → "paused, resume with …". Nothing running → no line.
+- **A long job he cares about** (a model training, a big extraction) gets its progress number in that line ("round 6 of 10, about 40 min left") until it finishes.
+- **More than three at once → say how many and why** before starting them.
 
 ## 📱 File deliverables → Adrian's phone (2026-08-26)
 
