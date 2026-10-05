@@ -1133,7 +1133,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   Working on: {weakTags.map(t => <span key={t} className="inline-block bg-slate-100 rounded-full px-2 py-0.5 ml-1">{t}</span>)}
                 </p>
               )}
-              <p className="text-[11px] text-slate-300 mt-3">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with your tutor.</p>
+              {/* An MCQ is marked by comparing letters, not by a model (5 Oct 2026). */}
+              {!q?.mcq && <p className="text-[11px] text-slate-300 mt-3">AI-marked — not always perfect. If a mark looks wrong, trust your working and check with your tutor.</p>}
             </div>
           )}
 

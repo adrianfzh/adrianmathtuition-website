@@ -148,12 +148,8 @@ export async function scienceServedTopicCounts(levelKey: string, serve: ScienceP
   if (!serve.open) return scienceTopicCounts(levelKey, serve);
   const open = serve.open;
   const wants = !!serve.combined;
-  const pure = (await scienceTopicCounts(levelKey, { checkedOnly: serve.checkedOnly }))
-    .filter(t => { const r = resolveTopicPool(open, levelKey, t.topic, wants); return r.open && !r.combined; });
-  if (!wants) return pure;
-  const cs = (await scienceTopicCounts(levelKey, { combined: true, checkedOnly: serve.checkedOnly }))
-    .filter(t => resolveTopicPool(open, levelKey, t.topic, true).combined);
-  return [...cs, ...pure.filter(p => !cs.some(c => c.topic === p.topic))].sort((a, b) => a.topic.localeCompare(b.topic));
+  return (await scienceTopicCounts(levelKey, { combined: wants, checkedOnly: serve.checkedOnly }))
+    .filter(t => resolveTopicPool(open, levelKey, t.topic, wants).open);
 }
 
 /** The practice payload shape (matches the math `next` route + `mcq`/`subject`). */

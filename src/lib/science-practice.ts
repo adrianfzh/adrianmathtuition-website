@@ -125,17 +125,22 @@ export function serveTopicKey(levelKey: string, combined: boolean): string {
 }
 
 /**
- * Which pool serves this topic (5 Oct 2026). A Combined Science student is served the
- * Combined Science bank for a topic once THAT topic is open under its CS_ key; until then
- * the pure bank's checked rows of the same topic stand in (when the pure topic is open), so
- * a Combined student never loses a topic while the CS side waits for its check.
- * `open` null = Adrian's preview: every topic open, in the pool he asked for.
+ * Which pool serves this topic (5 Oct 2026). A Combined Science student is served ONLY the
+ * Combined Science bank, and only a topic open under its CS_ key (Adrian: switch Combined
+ * students off until their own questions pass the check — no pure-pool stand-in). A pure
+ * student: the pure bank, open topics. `open` null = Adrian's preview: every topic open, in
+ * the pool he asked for.
  */
 export function resolveTopicPool(open: OpenTopics | null, levelKey: string, topic: string | null | undefined, wantsCombined: boolean): { open: boolean; combined: boolean } {
   if (!open) return { open: true, combined: wantsCombined };
-  if (wantsCombined && scienceTopicOpen(open, serveTopicKey(levelKey, true), topic)) return { open: true, combined: true };
-  if (scienceTopicOpen(open, levelKey, topic)) return { open: true, combined: false };
-  return { open: false, combined: wantsCombined };
+  return { open: scienceTopicOpen(open, serveTopicKey(levelKey, wantsCombined), topic), combined: wantsCombined };
+}
+
+/** The merged allow-list a student is gated by: pure topics under PHY/CHEM/BIO, Combined Science under CS_PHY/CS_CHEM/CS_BIO. */
+export function mergedOpenTopics(pure: OpenTopics, combined: OpenTopics): OpenTopics {
+  const out: Record<string, readonly string[]> = { ...pure };
+  for (const [k, v] of Object.entries(combined)) out[serveTopicKey(k, true)] = v;
+  return out;
 }
 
 /** May a row (by its level + topics) be shown / marked for this caller? Mirrors the picker. */

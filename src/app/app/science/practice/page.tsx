@@ -19,7 +19,8 @@ import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, studentSciences, type ScienceS
 import { scienceLevelForSubject } from '@/lib/science-levels';
 import { scienceConfigured, scienceServedTopicCounts } from '@/lib/science-bank';
 import { parsePracticeKind, sciencePracticeHref, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
-import { SCIENCE_PRACTICE_OPEN_TOPICS } from '@/lib/portal-beta';
+import { SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS } from '@/lib/portal-beta';
+import { mergedOpenTopics } from '@/lib/science-practice';
 import PortalIcon from '@/components/PortalIcon';
 
 export const dynamic = 'force-dynamic';
@@ -52,7 +53,7 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
   // a pure-science student the pure one; students see only rows that passed the check.
   const preview = access === 'preview';
   const combined = !!choice?.combined && !isAdmin;
-  const serve = { open: preview ? null : SCIENCE_PRACTICE_OPEN_TOPICS, combined, checkedOnly: !preview };
+  const serve = { open: preview ? null : mergedOpenTopics(SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS), combined, checkedOnly: !preview };
   const counts = scienceConfigured() ? await scienceServedTopicCounts(levelKey, serve).catch(() => []) : [];
   // Topic by topic (5 Oct 2026): a student sees only the open topics; Adrian's cookie sees all.
   const topics = topicsForKind(counts, kind);
@@ -85,7 +86,10 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
 
       <section className="space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Topics</p>
-        {topics.length === 0 && <div className={`${CARD} p-4 text-sm text-gray-600`}>No {kind === 'mcq' ? 'multiple-choice' : 'structured'} questions for {SCIENCE_SUBJECT_LABEL[subject]} yet.</div>}
+        {topics.length === 0 && (combined
+          // Combined Science has its own switch (5 Oct 2026): until its questions pass the check, say so plainly.
+          ? <div className={`${CARD} p-4 text-sm text-gray-600`}>Practice for Combined Science is coming soon. We are checking the questions first.</div>
+          : <div className={`${CARD} p-4 text-sm text-gray-600`}>No {kind === 'mcq' ? 'multiple-choice' : 'structured'} questions for {SCIENCE_SUBJECT_LABEL[subject]} yet.</div>)}
         {topics.map(t => {
           const skills = skillsFor(levelKey, t, kind);
           // A topic with skills opens in place: pick one skill, or all of them mixed.

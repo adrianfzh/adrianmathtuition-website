@@ -79,7 +79,8 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
 // previews it — so the science checks are async where the math ones are pure.
 import { studentSciences } from './portal-prefs';
 import { scienceSubjectOf, scienceLevelForSubject, isScienceLevel, scienceLevelsFor, type ScienceAccess } from './science-levels';
-import { sciencePracticeAccess, SCIENCE_PRACTICE_OPEN_TOPICS } from './portal-beta';
+import { sciencePracticeAccess, SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS } from './portal-beta';
+import { mergedOpenTopics } from './science-practice';
 import type { OpenTopics } from './science-practice';
 
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
@@ -115,7 +116,7 @@ export function scienceLevelOpenFor(account: Pick<PortalAccount, 'subjects' | 'p
  */
 export async function scienceTopicGate(caller: PracticeCaller): Promise<OpenTopics | null> {
   if (!caller || caller.kind === 'admin') return null;
-  return (await sciencePracticeAccess()) === 'preview' ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
+  return (await sciencePracticeAccess()) === 'preview' ? null : mergedOpenTopics(SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS);
 }
 
 /**

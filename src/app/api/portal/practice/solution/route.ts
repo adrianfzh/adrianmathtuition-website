@@ -7,6 +7,7 @@ import { scienceRowServable } from '@/lib/science-practice';
 import { isScienceSubject, scienceLevelForSubject, sciencePoolLevels } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
+import { tidyChemText } from '@/lib/chem-text';
 
 export const runtime = 'nodejs';
 
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest) {
       if (serve.open && (!scienceEligible(sq, { checkedOnly: serve.checkedOnly }) || !scienceRowServable(serve.open, lk, sq, serve.combined, c => sciencePoolLevels(lk, c)))) {
         return NextResponse.json({ error: 'not found' }, { status: 404 });
       }
-      return NextResponse.json({ markdown: solutionMarkdown(sq, gate) });
+      // formulae as chemistry (I₂, 2 × 127) — the readability rule, 5 Oct 2026
+      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(sq, gate)) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }
