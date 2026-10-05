@@ -135,6 +135,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'practice-again-reminders': { kind: 'interval', hours: 36, label: 'daily 9am' },
   // Midnight SGT: science hand-ins that waited on the list go into the marking queue (24 Sep 2026).
   'daily-queue': { kind: 'interval', hours: 36, label: 'daily midnight' },
+  // 🎚 Science practice Core / Exam / Challenge from students' first tries (5 Oct 2026); stamps every night.
+  'practice-difficulty': { kind: 'interval', hours: 36, label: 'daily 3:30am' },
   // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and
   // a dead cron are told apart here rather than by their absence.
   'question-proposals-nudge': { kind: 'interval', hours: 204, label: 'Mondays 9am' },
