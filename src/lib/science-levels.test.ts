@@ -77,7 +77,8 @@ describe('MCQ', () => {
     const wrong = gradeMcq('B', 'D', null);
     expect(wrong).toMatchObject({ verdict: 'wrong', score: 0, outOf: 1 });
     expect(wrong.lineComments[0].fix).toBe('B');
-    expect(wrong.nextSteps).toHaveLength(1);
+    expect(wrong.nextSteps).toHaveLength(0);   // one line only (5 Oct 2026)
+    expect(wrong.lineComments[0].comment).toBe('The answer is B.');
   });
 });
 
