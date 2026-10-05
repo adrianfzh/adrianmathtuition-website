@@ -1,811 +1,275 @@
 'use client';
 
+// /admin — the dashboard "at a glance" (5 Oct 2026, Adrian: "admin hub seems
+// cluttered > why not have a dashboard?" … "make the dashboard 'at a glance' -
+// like a monitoring dashboard"). One read (GET /api/admin/glance, counts only,
+// cached 60 s server-side), refreshed every minute while the page is open.
+// Tiles: a big number, a colour with its plain word, a tiny 7-day trend. Every
+// other page sits in the Tools menu. The old launcher grid is /admin/classic.
+
 import Link from 'next/link';
-import { useState, useEffect, useRef, type ReactNode, type RefObject } from 'react';
-import {
-  DndContext, closestCenter, useSensor, useSensors,
-  PointerSensor, TouchSensor, type DragEndEvent,
-} from '@dnd-kit/core';
-import {
-  SortableContext, rectSortingStrategy, arrayMove, useSortable,
-} from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
-import type { ActivitySummary } from '@/lib/portal-activity';
+import { overallTone, type Glance, type Tile, type Tone } from '@/lib/glance';
 
-// Mini calculator icon for the launcher (replaces the abacus emoji).
-const CalcIcon = (
-  <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="4" y="2" width="16" height="20" rx="2.6" fill="#f4f4f1" stroke="#c9c9c4" strokeWidth="0.8" />
-    <rect x="6.2" y="4" width="11.6" height="5.4" rx="1" fill="#16241a" />
-    <circle cx="7.8" cy="13" r="1.05" fill="#2f6cab" />
-    <circle cx="12" cy="13" r="1.05" fill="#3a3a3d" />
-    <circle cx="16.2" cy="13" r="1.05" fill="#47993d" />
-    <circle cx="7.8" cy="16.4" r="1.05" fill="#3a3a3d" />
-    <circle cx="12" cy="16.4" r="1.05" fill="#3a3a3d" />
-    <circle cx="16.2" cy="16.4" r="1.05" fill="#3a3a3d" />
-    <circle cx="7.8" cy="19.8" r="1.05" fill="#3a3a3d" />
-    <circle cx="12" cy="19.8" r="1.05" fill="#3a3a3d" />
-    <circle cx="16.2" cy="19.8" r="1.05" fill="#c79a2e" />
-  </svg>
-);
+const REFRESH_MS = 60_000;
 
-// Black Casio fx-97SG X style icon for the Casio launcher tile.
-const CasioIcon = (
-  <svg width="36" height="36" viewBox="0 0 24 24" aria-hidden="true">
-    <rect x="4" y="2" width="16" height="20" rx="2.6" fill="#1b1c1e" stroke="#000" strokeWidth="0.7" />
-    <rect x="6.1" y="3.9" width="11.8" height="5.2" rx="0.8" fill="#c4d2bb" />
-    <circle cx="7.7" cy="12.3" r="1.05" fill="#e8942f" />
-    <circle cx="12" cy="12.3" r="1.05" fill="#9aa0a8" />
-    <circle cx="16.3" cy="12.3" r="1.05" fill="#9aa0a8" />
-    <circle cx="7.7" cy="15.7" r="1.05" fill="#9aa0a8" />
-    <circle cx="12" cy="15.7" r="1.05" fill="#9aa0a8" />
-    <circle cx="16.3" cy="15.7" r="1.05" fill="#d8b24e" />
-    <circle cx="7.7" cy="19.1" r="1.05" fill="#9aa0a8" />
-    <circle cx="12" cy="19.1" r="1.05" fill="#9aa0a8" />
-    <circle cx="16.3" cy="19.1" r="1.05" fill="#9aa0a8" />
-  </svg>
-);
+const TONE_COLOUR: Record<Tone, string> = { green: '#0ca30c', amber: '#e79e00', red: '#d03b3b', grey: '#9ca3af' };
+const OVERALL_WORD: Record<Tone, string> = { green: 'All fine', amber: 'Some things to look at', red: 'Something needs you now', grey: 'No reading yet' };
 
-function shortModelName(raw: string): string {
-  const isFollowUp = /follow.?up/i.test(raw);
-  const base = raw
-    .replace(/\s*\(.*?\)\s*/g, '')   // strip parenthetical e.g. "(image follow-up)"
-    .replace(/claude-[\w.-]+/gi, '')  // strip API slug e.g. "claude-sonnet-4-6"
-    .replace(/Claude\s+/i, '')        // strip "Claude "
-    .replace(/\s*4\.?\d*\s*/g, '')    // strip version numbers "4.6" / "4"
-    .replace(/Gemini[\s\d.]+Flash.*/i, 'Gemini')
-    .trim() || raw.slice(0, 8);
-  return isFollowUp ? `${base} (img)` : base;
-}
+type ToolLink = { label: string; href: string };
+const TOOLS: { group: string; links: ToolLink[] }[] = [
+  { group: 'Teaching', links: [
+    { label: 'Schedule', href: '/admin/schedule' }, { label: 'Log lessons', href: '/admin/log' }, { label: 'Lesson prep', href: '/admin/prep' },
+    { label: 'Students', href: '/admin/students' }, { label: 'Exams', href: '/admin/exams' }, { label: 'Follow-ups', href: '/admin/followups' },
+    { label: 'Parent digests', href: '/admin/digests' }, { label: 'Waitlist', href: '/admin/waitlist' },
+  ] },
+  { group: 'Marking', links: [
+    { label: 'Mark a paper', href: '/admin/mark-paper' }, { label: 'Marked papers', href: '/admin/papers' }, { label: 'Mark schemes', href: '/admin/schemes' },
+    { label: 'Calibration', href: '/admin/calibration' }, { label: 'Stuck', href: '/admin/stuck' }, { label: 'Practice checks', href: '/admin/practice-checks' },
+    { label: 'Generated', href: '/admin/generated' }, { label: 'Game plans', href: '/admin/remediation' },
+  ] },
+  { group: 'The machine', links: [
+    { label: 'Ops logbook', href: '/admin/ops' }, { label: 'Switches', href: '/admin/switches' }, { label: 'Costs', href: '/admin/costs' },
+    { label: 'Extraction rules', href: '/admin/extraction-rules' }, { label: 'Library', href: '/admin/library' }, { label: 'Bot', href: '/admin/bot' },
+  ] },
+  { group: 'Bank + materials', links: [
+    { label: 'Question bank', href: '/admin/questions' }, { label: 'Question proposals', href: '/admin/question-proposals' }, { label: 'Bank health', href: '/admin/bank-health' },
+    { label: 'Bank figures', href: '/admin/figures-bank' }, { label: 'Figure review', href: '/admin/figures' }, { label: 'Trap review', href: '/admin/pitfalls' },
+    { label: 'Topic cards', href: '/admin/topic-cards' }, { label: 'Notes', href: '/admin/notes' }, { label: 'Prelim builder', href: '/admin/prelim-builder' },
+    { label: 'Print a paper', href: '/app/print' }, { label: 'Rubrics', href: '/admin/rubrics' }, { label: 'Teaching decks', href: '/admin/lessons' },
+    { label: 'Curriculum', href: '/admin/curriculum' },
+  ] },
+  { group: 'Money', links: [
+    { label: 'Invoices', href: '/admin/invoices' }, { label: 'Email log', href: '/admin/emails' },
+  ] },
+  { group: 'Other', links: [
+    { label: 'My to-dos', href: '/admin/my-todos' }, { label: 'Loop tasks', href: '/admin/todo' }, { label: 'Kiosk control', href: '/admin/kiosk' },
+    { label: 'Math tools', href: '/tools' }, { label: 'Marketing calendar', href: '/admin/calendar-marketing-post' },
+    { label: 'Old hub (tiles)', href: '/admin/classic' },
+  ] },
+];
 
-// ── Types ──────────────────────────────────────────────────────────────────────
-
-interface Stats {
-  today: { total: number; logged: number };
-  invoices: { count: number; totalOwed: number };
-  makeups: { count: number };
-  thisWeek: { count: number; weekLabel: string };
-  // Attention counts (each null when its sub-fetch failed server-side;
-  // examGaps is also null outside an exam season) — cards hide on 0/null.
-  unmarkedLessons?: number | null;
-  lessonsToLog?: number | null;
-  examGaps?: { examType: string; count: number } | null;
-  triage?: { flagged: number; readyToRelease: number } | null;
-  /** Compulsory Practice Again sheets (Adrian queued + released) still not handed in — 8 Sep 2026. */
-  compulsorySheets?: { count: number; oldestDays: number; names: string[] } | null;
-}
-
-interface BotStats {
-  totalQuestions: number;
-  totalCost: number;
-  modelStats: { model: string; count: number; cost: number }[];
-}
-
-// ── Hub page ───────────────────────────────────────────────────────────────────
-
-export default function AdminHub() {
+export default function AdminDashboard() {
+  const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState('');
-  const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [authLoading, setAuthLoading] = useState(false);
+  const [data, setData] = useState<Glance | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [, tick] = useState(0);
+  const busy = useRef(false);
 
-  // Drag-to-arrange launcher order (persisted per device).
-  const [order, setOrder] = useState<string[]>(loadHubOrder);
-  // Set true when a real drag occurs so the trailing click doesn't navigate.
-  const suppressClickRef = useRef(false);
-  // iOS-home-screen arrange mode. On iPhone the plain long-press-drag never worked:
-  // tiles carry touchAction 'manipulation' so the page can scroll, and Safari computes
-  // touch-action at GESTURE START — by the time the 500ms TouchSensor hold elapses,
-  // moving the finger scrolls the page and kills the drag. The reliable pattern is
-  // Apple's own: long-press ENTERS a jiggle mode (this gesture just arms it), the NEXT
-  // touch starts on tiles whose touchAction is already 'none', and dragging works.
-  const [arrangeMode, setArrangeMode] = useState(false);
-  const enterArrange = () => { setArrangeMode(true); try { navigator.vibrate?.(30); } catch { /* no haptics */ } };
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
-    // In arrange mode the hold is a token 150ms — taps don't navigate there anyway, so
-    // drag can start almost immediately, like wiggling home-screen icons.
-    useSensor(TouchSensor, { activationConstraint: arrangeMode ? { delay: 150, tolerance: 8 } : { delay: 500, tolerance: 8 } }),
-  );
+  useEffect(() => { ensureAdminSession().then(ok => setAuthed(ok)); }, []);
 
-  const launcherByHref = new Map(LAUNCHERS.map(l => [l.href, l]));
-  const orderedLaunchers = order.map(h => launcherByHref.get(h)).filter(Boolean) as Launcher[];
-
-  function handleDragEnd(e: DragEndEvent) {
-    // A drag just completed → cancel the synthetic click that follows drop.
-    suppressClickRef.current = true;
-    const { active, over } = e;
-    if (!over || active.id === over.id) return;
-    setOrder(prev => {
-      const from = prev.indexOf(String(active.id));
-      const to = prev.indexOf(String(over.id));
-      if (from < 0 || to < 0) return prev;
-      const next = arrayMove(prev, from, to);
-      saveHubOrder(next);
-      return next;
-    });
-  }
-
-  function resetHubOrder() {
-    const defaults = LAUNCHERS.map(l => l.href);
-    setOrder(defaults);
-    saveHubOrder(defaults);
-  }
-
-  useEffect(() => {
-    // Preferred: signed httpOnly session (lib/admin-session.ts). The helper
-    // bootstrap-upgrades a legacy raw-password cookie to a session and expires
-    // the plaintext cookie (it held the actual admin password — see the
-    // 2026-07-06 security audit).
-    ensureAdminSession().then(ok => { if (ok) setAuthed(true); });
+  const load = useCallback(async (fresh = false) => {
+    if (busy.current) return;
+    busy.current = true; setLoading(true);
+    try {
+      const r = await fetch(`/api/admin/glance${fresh ? '?fresh=1' : ''}`, { cache: 'no-store' });
+      if (r.status === 401) { setAuthed(false); return; }
+      const d = await r.json();
+      if (!r.ok) throw new Error(d?.error || `HTTP ${r.status}`);
+      setData(d); setError('');
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      busy.current = false; setLoading(false);
+    }
   }, []);
 
-  // Attention cards (papers to mark · unmarked lessons · exam info gaps).
-  // Best-effort: a failed fetch just leaves the strip hidden — the launcher
-  // grid must never wait on (or break with) the stats endpoint. The session
-  // cookie rides same-origin fetches, so no Authorization header is needed.
-  const [stats, setStats] = useState<Stats | null>(null);
+  // Refresh every minute while the page is in view, and at once when it comes back.
   useEffect(() => {
     if (!authed) return;
-    let cancelled = false;
-    fetch('/api/admin-stats')
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => { if (!cancelled && d) setStats(d); })
-      .catch(() => { /* strip stays hidden */ });
-    return () => { cancelled = true; };
-  }, [authed]);
-
-  // Portal activity visibility (2026-09-03, lib/portal-activity.ts) — same
-  // fail-soft shape as the stats fetch above: a failed call just leaves the
-  // card hidden, never blocks the grid.
-  const [portalActivity, setPortalActivity] = useState<ActivitySummary | null>(null);
-  useEffect(() => {
-    if (!authed) return;
-    let cancelled = false;
-    fetch('/api/admin/portal-activity')
-      .then(r => (r.ok ? r.json() : null))
-      .then(d => { if (!cancelled && d) setPortalActivity(d); })
-      .catch(() => { /* card stays hidden */ });
-    return () => { cancelled = true; };
-  }, [authed]);
+    load();
+    const id = setInterval(() => { if (document.visibilityState === 'visible') load(); tick(n => n + 1); }, REFRESH_MS);
+    const onVis = () => { if (document.visibilityState === 'visible') load(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => { clearInterval(id); document.removeEventListener('visibilitychange', onVis); };
+  }, [authed, load]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
-    setAuthError('');
-    setAuthLoading(true);
     const ok = await loginAdminSession(password);
-    setAuthLoading(false);
-    if (ok) setAuthed(true);
-    else setAuthError('Incorrect password');
+    if (ok) setAuthed(true); else setAuthError('Incorrect password');
   }
 
-
-  // ── Auth screen ──────────────────────────────────────────────────────────────
-  if (!authed) {
+  if (authed === false) {
     return (
-      <>
-        <style>{loginCSS}</style>
-        <div className="hub-login-wrap">
-          <div className="hub-login-card">
-            <div className="hub-login-icon">🎓</div>
-            <h1>Admin Hub</h1>
-            <p>Adrian&apos;s Math Tuition</p>
-            <form onSubmit={handleLogin}>
-              <PasswordInput
-                className="hub-pw-input"
-                placeholder="Admin password"
-                value={password}
-                onChange={v => { setPassword(v); setAuthError(''); }}
-                autoFocus
-                disabled={authLoading}
-              />
-              {authError && <div className="hub-pw-error">{authError}</div>}
-              <button type="submit" className="hub-pw-btn" disabled={authLoading || !password}>
-                {authLoading ? 'Checking…' : 'Enter'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </>
+      <div className="gl-login">
+        <style>{CSS}</style>
+        <form className="gl-login-card" onSubmit={handleLogin}>
+          <h1>Admin</h1>
+          <PasswordInput className="gl-pw" placeholder="Admin password" value={password} onChange={v => { setPassword(v); setAuthError(''); }} autoFocus />
+          {authError && <div className="gl-pw-err">{authError}</div>}
+          <button type="submit" className="gl-pw-btn" disabled={!password}>Enter</button>
+        </form>
+      </div>
     );
   }
 
-  // ── Hub ──────────────────────────────────────────────────────────────────────
-  // Attention cards — shown only when the count is non-zero (a clean day keeps
-  // the hub as bare as before). Same .stat-card markup/classes as the original
-  // status strip (2×2 grid, whole card is the tap target).
-  const unmarkedCard = typeof stats?.unmarkedLessons === 'number' && stats.unmarkedLessons > 0 ? stats.unmarkedLessons : null;
-  const logCard = typeof stats?.lessonsToLog === 'number' && stats.lessonsToLog > 0 ? stats.lessonsToLog : null;
-  const examGapsCard = stats?.examGaps && stats.examGaps.count > 0 ? stats.examGaps : null;
-  const triageCard = stats?.triage && (stats.triage.flagged > 0 || stats.triage.readyToRelease > 0) ? stats.triage : null;
-  // Sheets Adrian set as compulsory that the student has not handed in (the reminder cron nags them; this shows him).
-  const compulsoryCard = stats?.compulsorySheets && stats.compulsorySheets.count > 0 ? stats.compulsorySheets : null;
-  const portalCard = portalActivity && portalActivity.totals.accounts > 0 ? portalActivity.totals : null;
-  // Hand-ins that failed on a student's phone in the last 24 h (lib/submit-failure.ts, 7 Sep 2026) — red, first.
-  const failedCard = portalActivity?.failedHandins?.length ? portalActivity.failedHandins : null;
-  const hasAttentionCards = !!(unmarkedCard || examGapsCard || triageCard || logCard || portalCard || failedCard || compulsoryCard);
+  const tone = data ? overallTone(data) : 'grey';
+  const ago = data ? Math.max(0, Math.round((Date.now() - Date.parse(data.generatedAt)) / 1000)) : null;
 
   return (
-    <>
-      <style>{hubCSS}</style>
-      <div className="hub-wrap">
-
-        {/* Header */}
-        <div className="hub-header">
-          <div className="hub-header-inner">
-            <span className="hub-title">Admin</span>
-            <button className="hub-reset" onClick={resetHubOrder} title="Reset tile order">
-              ↺ Reset order
+    <div className="gl-wrap">
+      <style>{CSS}</style>
+      <header className="gl-head">
+        <div className="gl-head-in">
+          <div className="gl-head-left">
+            <span className="gl-title">Admin</span>
+            <span className="gl-overall"><i style={{ background: TONE_COLOUR[tone] }} />{OVERALL_WORD[tone]}</span>
+          </div>
+          <div className="gl-head-right">
+            <button className="gl-btn" onClick={() => load(true)} disabled={loading} aria-label="Refresh now">
+              {loading ? '…' : '↻'}
+            </button>
+            <button className={`gl-btn gl-tools-btn${toolsOpen ? ' on' : ''}`} onClick={() => setToolsOpen(o => !o)} aria-expanded={toolsOpen}>
+              Tools ▾
             </button>
           </div>
         </div>
-
-        <div className="hub-body">
-
-          {/* Status strip — live attention counts */}
-          {hasAttentionCards && (
-            <div className="status-grid">
-              {failedCard && (
-                <Link href="/admin/students" className="stat-card" style={{ borderLeftColor: '#dc2626' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{failedCard.length}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">⚠️ Hand-in{failedCard.length === 1 ? '' : 's'} failed on a phone (24h)</div>
-                  <div className="stat-label">
-                    {failedCard.slice(0, 3).map(f => `${(f.displayName || 'A student').split(' ')[0]}: ${f.reason} (${f.uploaded}/${f.pages} pages)`).join(' · ')}
-                  </div>
-                </Link>
-              )}
-              {triageCard && (
-                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#7c3aed' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{triageCard.flagged || triageCard.readyToRelease}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">
-                    {triageCard.flagged > 0 ? '🔍 Questions to check' : '📤 Scripts ready to release'}
-                  </div>
-                  {triageCard.flagged > 0 && triageCard.readyToRelease > 0 && (
-                    <div className="stat-label">+{triageCard.readyToRelease} ready to release</div>
-                  )}
-                </a>
-              )}
-              {compulsoryCard && (
-                <a href="/admin/mark-paper" className="stat-card" style={{ borderLeftColor: '#047857' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{compulsoryCard.count}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">📘 Practice Again sheet{compulsoryCard.count === 1 ? '' : 's'} you set, not handed in</div>
-                  <div className="stat-label">
-                    {compulsoryCard.names.slice(0, 4).join(' · ')}{compulsoryCard.oldestDays >= 3 ? ` · oldest ${compulsoryCard.oldestDays}d` : ''}
-                  </div>
-                </a>
-              )}
-              {logCard !== null && (
-                <a href="/admin/log" className="stat-card" style={{ borderLeftColor: '#0f766e' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{logCard}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">✏️ Lessons to log</div>
-                </a>
-              )}
-              {unmarkedCard !== null && (
-                <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: '#b45309' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{unmarkedCard}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">❓ Unmarked lessons</div>
-                </a>
-              )}
-              {examGapsCard && (
-                <a href="/admin/schedule" className="stat-card" style={{ borderLeftColor: '#d97706' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{examGapsCard.count}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">⚠ {examGapsCard.examType} info gaps</div>
-                </a>
-              )}
-              {portalCard && (
-                <Link href="/admin/students" className="stat-card" style={{ borderLeftColor: '#0891b2' }}>
-                  <div className="stat-top">
-                    <span className="stat-num">{portalCard.active7d}</span>
-                    <span className="stat-arrow">›</span>
-                  </div>
-                  <div className="stat-label">📱 active on the portal this week</div>
-                  {portalCard.neverSignedIn > 0 && (
-                    <div className="stat-label">{portalCard.neverSignedIn} never signed in</div>
-                  )}
-                </Link>
-              )}
-            </div>
-          )}
-
-          <div className="hub-hint">
-            {arrangeMode ? (
-              <>Drag tiles into place · <button className="hub-arrange-done" onClick={() => setArrangeMode(false)}>✓ Done</button></>
-            ) : 'Drag tiles to rearrange (long-press on phone) · tap to open'}
-          </div>
-          {/* Home-screen jiggle while arranging. Inline keyframes: the hub's styles are
-              global CSS and this animation belongs to this one feature. */}
-          <style>{`
-            @keyframes hubJiggle { from { transform: rotate(-1.1deg); } to { transform: rotate(1.1deg); } }
-            .hub-arrange-done { border: none; background: #16a34a; color: white; border-radius: 999px; padding: 4px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
-          `}</style>
-
-          {/* Launcher grid — drag to rearrange (order saved on this device) */}
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={order} strategy={rectSortingStrategy}>
-              {/* Every fresh press clears the suppress flag, so a drag that emits
-                  no trailing click can never block the next genuine tap. */}
-              <div className="launcher-grid" onPointerDownCapture={() => { suppressClickRef.current = false; }}>
-                {orderedLaunchers.map((launcher, i) => (
-                  <SortableLauncherCard
-                    key={launcher.href}
-                    launcher={launcher}
-                    suppressClickRef={suppressClickRef}
-                    index={i}
-                    arrangeMode={arrangeMode}
-                    onLongPress={enterArrange}
-                  />
-                ))}
+        {toolsOpen && (
+          <nav className="gl-tools" aria-label="Tools">
+            {TOOLS.map(g => (
+              <div key={g.group} className="gl-tools-group">
+                <div className="gl-tools-h">{g.group}</div>
+                {g.links.map(l => <Link key={l.href} href={l.href} className="gl-tools-a">{l.label}</Link>)}
               </div>
-            </SortableContext>
-          </DndContext>
+            ))}
+          </nav>
+        )}
+      </header>
 
-        </div>
+      <main className="gl-body">
+        {error && <div className="gl-error">Could not refresh: {error}</div>}
+        {!data && !error && <div className="gl-wait">Reading the machine…</div>}
+
+        {data?.sections.map(s => (
+          <section key={s.id} className={`gl-sec gl-sec-${s.id}`}>
+            <h2 className="gl-h2">{s.title}</h2>
+            <div className="gl-grid">
+              {s.tiles.map(t => <TileCard key={t.id} t={t} />)}
+            </div>
+            {s.id === 'today' && data.lessons && data.lessons.length > 0 && (
+              <details className="gl-lessons-fold">
+                <summary>Next lesson pages · {data.lessons.length} today</summary>
+                <div className="gl-lessons">
+                  {data.lessons.map(l => (
+                    <Link key={l.lessonId} href={l.href} className="gl-lesson">
+                      <span className="gl-lesson-t">{l.time || '—'}</span>
+                      <span className="gl-lesson-n">{l.name}</span>
+                      <span className="gl-lesson-go">Next lesson ›</span>
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            )}
+          </section>
+        ))}
+
+        {data && (
+          <div className="gl-foot">
+            Updated {ago != null && ago < 90 ? `${ago} s` : `${Math.round((ago ?? 0) / 60)} min`} ago · refreshes every minute · <Link href="/admin/classic">old hub</Link>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+function TileCard({ t }: { t: Tile }) {
+  const body = (
+    <>
+      <div className="gl-tile-label">{t.label}</div>
+      <div className="gl-tile-mid">
+        <span className="gl-tile-val">{t.value}</span>
+        {t.trend && t.trend.length > 1 && <Spark values={t.trend} />}
       </div>
+      {t.sub && <div className="gl-tile-sub">{t.sub}</div>}
+      <div className="gl-tile-status"><i style={{ background: TONE_COLOUR[t.tone] }} />{t.status}</div>
     </>
   );
+  const style = { borderTopColor: TONE_COLOUR[t.tone] };
+  return t.href
+    ? <Link href={t.href} className="gl-tile" style={style}>{body}</Link>
+    : <div className="gl-tile" style={style}>{body}</div>;
 }
 
-// ── Data ───────────────────────────────────────────────────────────────────────
-
-type Launcher = { emoji: string; title: string; sub: string; href: string; icon?: ReactNode };
-
-const LAUNCHERS: Launcher[] = [
-  { emoji: '📅', title: 'Schedule',  sub: 'Weekly lessons · drag to reschedule', href: '/admin/schedule'  },
-  { emoji: '📚', title: 'Question Bank', sub: 'Search 26k questions · whole papers · solutions', href: '/admin/questions' },
-  { emoji: '🖼', title: 'Bank Figures', sub: 'Eyeball every bank scan · flag ones to fix', href: '/admin/figures-bank' },
-  { emoji: '🤖', title: 'Bot',           sub: 'Metrics · analytics · API usage',     href: '/admin/bot'          },
-  { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
-  { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
-  { emoji: '✏️', title: 'Log lessons',   sub: 'Write up the day in one tap each',      href: '/admin/log'          },
-  { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
-  { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
-  { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
-  { emoji: '🎚', title: 'Switches',      sub: 'Plan accounts · worker jobs · Mac plan only', href: '/admin/switches'   },
-  { emoji: '📜', title: 'Extraction rules', sub: 'Every rule the bank workers follow · plain words', href: '/admin/extraction-rules' },
-  { emoji: '🧭', title: 'Stuck',         sub: 'What students ask + where they lose marks', href: '/admin/stuck'   },
-  // 🖊 The marking desk retired into Mark a paper on 30 Sep 2026 (Adrian: "do we
-  // need the desk?"); /admin/desk redirects there.
-  { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
-  { emoji: '✍️', title: 'Mark a paper',   sub: 'Mark · release · annotate · Practice Again sheets', href: '/admin/mark-paper'  },
-  { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
-  { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
-  { emoji: '🎯', title: 'Trap review',     sub: 'Approve the traps students get told about', href: '/admin/pitfalls' },
-  { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
-  { emoji: '📝', title: 'Print a paper', sub: 'Student self-serve mock / topic / weak-spot papers', href: '/app/print' },
-  { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
-  { emoji: '🖥️', title: 'Kiosk control', sub: 'Open / close the centre kiosk', href: '/admin/kiosk' },
-  { emoji: '🧾', title: 'Kiosk (student view)', sub: 'QR sign-in · print worksheets & notes', href: '/kiosk' },
-  { emoji: '🗒️', title: 'Topic Cards', sub: 'Worksheet notes · edit & approve', href: '/admin/topic-cards' },
-  { emoji: '🖼️', title: 'Figure review', sub: 'Flag figures to regenerate', href: '/admin/figures' },
-  { emoji: '👤', title: 'Students', sub: 'Profiles · attendance · slots', href: '/admin/students' },
-  { emoji: '📊', title: 'Exams', sub: 'Dates · topics · results', href: '/admin/exams' },
-  { emoji: '📌', title: 'Follow-ups',      sub: 'Parent promises · daily 8am digest', href: '/admin/followups' },
-  { emoji: '🖊️', title: 'Red Pen Playbook', sub: 'Positioning · ready-to-send marketing kit', href: 'https://claude.ai/code/artifact/c1d32aba-b358-4163-91ff-9f74af679468' },
-  { emoji: '⏳', title: 'Waitlist',        sub: 'Prospects · auto-alert on slot opening', href: '/admin/waitlist' },
-  { emoji: '📥', title: 'Question Proposals', sub: 'Questions the sheets wrote — vet before the bank', href: '/admin/question-proposals' },
-  { emoji: '📝', title: 'My To-Dos',       sub: 'Personal — things I need to do',       href: '/admin/my-todos' },
-  { emoji: '🔁', title: 'Loop Tasks',      sub: 'Build-test-fix /loop queue for Claude', href: '/admin/todo' },
-  { emoji: '📏', title: 'Grading Rubrics', sub: 'The standard Solo marks against',       href: '/admin/rubrics' },
-  { emoji: '📐', title: 'Math Tools',      sub: 'Interactive visualisers · graphs · drills', href: '/tools' },
-  { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator?real=1', icon: CalcIcon },
-  { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
-  { emoji: '🎓', title: 'Teaching decks',  sub: 'Multi-topic teaching decks · PDF',    href: '/admin/lessons'       },
-  // Tiles removed 2026-08-26 (Adrian's cull; pages stay URL-reachable, revive
-  // by re-adding the entry): Flashcard decks (/admin/cards-preview — Revision
-  // Decks is the kept door), Worksheet Builder (QB basket + skills cover it),
-  // Learn Review + Learn student view (hidden until the full-portal switch),
-  // Revision Sign-ups + June Revision (seasonal — restore next April), and
-  // At a glance /admin/status (the hub's own cards superseded it).
-  { emoji: '📣', title: 'Marketing Calendar', sub: 'Post ideas vs SG exam calendar', href: '/admin/calendar-marketing-post' },
-  { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
-  { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },
-  // Last on purpose (2026-09-02): a saved tile order appends unknown hrefs at the
-  // end, so a new tile lands at the bottom on every device either way.
-  { emoji: '⚖️', title: 'Calibration', sub: 'AI marks vs the human standard · gate per subject', href: '/admin/calibration' },
-  { emoji: '📘', title: 'Mark schemes', sub: 'schemes you attached, kept for the next hand-in of that paper', href: '/admin/schemes' },
-  { emoji: '📷', title: 'Generated', sub: 'questions written from students’ photos · reports', href: '/admin/generated' },
-];
-
-// ── Custom launcher order (drag-to-arrange, per-device) ─────────────────────────
-// Single admin, no server-side profile store, so the arrangement lives in
-// localStorage — same approach as the schedule view-mode preference. `href` is
-// the stable id (every launcher's is unique). The saved list is reconciled
-// against the live LAUNCHERS on every load so tiles added/removed in code still
-// appear (new ones append to the end) and stale hrefs drop out.
-const HUB_ORDER_KEY = 'admin_hub_order_v1';
-
-function loadHubOrder(): string[] {
-  const allHrefs = LAUNCHERS.map(l => l.href);
-  if (typeof window === 'undefined') return allHrefs;
-  try {
-    const saved = JSON.parse(localStorage.getItem(HUB_ORDER_KEY) || '[]');
-    if (!Array.isArray(saved)) return allHrefs;
-    const known = new Set(allHrefs);
-    const valid = saved.filter((h: unknown): h is string => typeof h === 'string' && known.has(h));
-    const missing = allHrefs.filter(h => !valid.includes(h)); // new launchers → append
-    return [...valid, ...missing];
-  } catch {
-    return allHrefs;
-  }
-}
-
-function saveHubOrder(order: string[]): void {
-  if (typeof window === 'undefined') return;
-  try { localStorage.setItem(HUB_ORDER_KEY, JSON.stringify(order)); } catch { /* best-effort */ }
-}
-
-// One draggable launcher tile. Module-level (not inline) so its useSortable hook
-// keeps a stable identity across the parent's re-renders. A plain tap still
-// navigates: the sensors only start a drag past an 8px move (mouse) or a 500ms
-// hold (touch); when a real drag happened, `suppressClickRef` cancels the
-// trailing synthetic click so we don't navigate on drop.
-function SortableLauncherCard({ launcher, suppressClickRef, index, arrangeMode, onLongPress }: {
-  launcher: Launcher;
-  suppressClickRef: RefObject<boolean>;
-  index: number;
-  arrangeMode: boolean;
-  onLongPress: () => void;
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: launcher.href });
-  // Long-press-to-enter-arrange detection, on POINTER events with pointerType 'touch'
-  // (iOS Safari 13+ fires them; a mouse never enters jiggle mode — desktop drags
-  // directly). Runs only OUTSIDE arrange mode; a move of more than ~10px (a scroll) or
-  // lifting the finger cancels it. The press that arms the mode cannot itself drag
-  // (Safari fixed touch-action at gesture start) — the user lifts and drags on the
-  // next touch, exactly like home-screen icons. COMPOSED with dnd-kit's own
-  // onPointerDown rather than spread over it: overriding it would kill mouse drag.
-  const lpTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lpStart = useRef<{ x: number; y: number } | null>(null);
-  const cancelLp = () => { if (lpTimer.current) clearTimeout(lpTimer.current); lpTimer.current = null; lpStart.current = null; };
-  const dndPointerDown = (listeners as Record<string, (e: React.PointerEvent) => void> | undefined)?.onPointerDown;
-  const pressProps = {
-    onPointerDown: (e: React.PointerEvent) => {
-      dndPointerDown?.(e);
-      if (arrangeMode || e.pointerType !== 'touch') return;
-      cancelLp();
-      lpStart.current = { x: e.clientX, y: e.clientY };
-      lpTimer.current = setTimeout(() => { lpTimer.current = null; onLongPress(); }, 500);
-    },
-    onPointerMove: (e: React.PointerEvent) => {
-      const s = lpStart.current;
-      if (s && Math.hypot(e.clientX - s.x, e.clientY - s.y) > 10) cancelLp();
-    },
-    onPointerUp: cancelLp,
-    onPointerCancel: cancelLp,
-  };
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.45 : 1,
-    zIndex: isDragging ? 20 : undefined,
-    // Arrange mode owns the gesture outright; otherwise the page must stay scrollable.
-    touchAction: arrangeMode ? 'none' : 'manipulation',
-    ...(arrangeMode && !isDragging ? { animation: `hubJiggle 0.32s ease-in-out ${(index % 3) * 0.09}s infinite alternate` } : {}),
-  };
+/** Seven thin bars, today darkest. Hover (or long-press) a bar for its value. */
+function Spark({ values }: { values: number[] }) {
+  const max = Math.max(...values, 0);
+  const W = 64, H = 22, gap = 2;
+  const bw = (W - gap * (values.length - 1)) / values.length;
+  const days = values.map((_, i) => (i === values.length - 1 ? 'today' : `${values.length - 1 - i}d ago`));
   return (
-    <a
-      ref={setNodeRef}
-      style={style}
-      href={launcher.href}
-      className={`launcher-card${isDragging ? ' dragging' : ''}`}
-      onClick={e => {
-        // In arrange mode tiles never navigate — tap Done to leave.
-        if (arrangeMode || suppressClickRef.current) { e.preventDefault(); suppressClickRef.current = false; }
-      }}
-      {...attributes}
-      {...listeners}
-      {...pressProps}
-    >
-      <div className="launcher-emoji">{launcher.icon ?? launcher.emoji}</div>
-      <div className="launcher-title">{launcher.title}</div>
-      <div className="launcher-sub">{launcher.sub}</div>
-    </a>
+    <svg className="gl-spark" width={W} height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`last ${values.length} days: ${values.join(', ')}`}>
+      {values.map((v, i) => {
+        const h = max > 0 ? Math.max(v > 0 ? 2 : 1, (v / max) * H) : 1;
+        return (
+          <rect key={i} x={i * (bw + gap)} y={H - h} width={bw} height={h} rx={1.5}
+            fill={i === values.length - 1 ? '#475569' : '#cbd5e1'}>
+            <title>{`${days[i]}: ${v}`}</title>
+          </rect>
+        );
+      })}
+    </svg>
   );
 }
 
-// ── CSS ────────────────────────────────────────────────────────────────────────
-
-const loginCSS = `
-.hub-login-wrap {
-  min-height: 100vh;
-  background: #f3f4f6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.hub-login-card {
-  width: 100%;
-  max-width: 360px;
-  background: #fff;
-  border-radius: 20px;
-  border: 1px solid #e5e7eb;
-  padding: 32px 28px;
-  text-align: center;
-}
-.hub-login-icon { font-size: 40px; margin-bottom: 12px; }
-.hub-login-card h1 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 4px;
-}
-.hub-login-card p {
-  font-size: 13px;
-  color: #9ca3af;
-  margin: 0 0 24px;
-}
-.hub-pw-input {
-  width: 100%;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 12px 16px;
-  font-size: 15px;
-  outline: none;
-  box-sizing: border-box;
-  margin-bottom: 10px;
-  color: #111;
-}
-.hub-pw-input:focus { border-color: #1e3a5f; }
-.hub-pw-error { font-size: 13px; color: #ef4444; margin-bottom: 10px; }
-.hub-pw-btn {
-  width: 100%;
-  background: #1e3a5f;
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 13px 0;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-.hub-pw-btn:disabled { opacity: 0.45; cursor: default; }
-`;
-
-const hubCSS = `
-.hub-wrap {
-  min-height: 100vh;
-  background: #f3f4f6;
-  padding-bottom: 32px;
-}
-.hub-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
-}
-.hub-header-inner {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 14px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.hub-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #111827;
-}
-.hub-reset {
-  background: none;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 12px;
-  color: #6b7280;
-  cursor: pointer;
-  transition: background 0.1s;
-}
-.hub-reset:hover { background: #f3f4f6; color: #374151; }
-.hub-hint {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-bottom: 10px;
-  padding-left: 2px;
-}
-.hub-refresh {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  color: #9ca3af;
-  display: flex;
-  align-items: center;
-  border-radius: 8px;
-}
-.hub-refresh:hover { background: #f3f4f6; color: #374151; }
-.hub-refresh:disabled { opacity: 0.4; cursor: default; }
-.hub-refresh-icon {
-  width: 18px;
-  height: 18px;
-  transition: transform 0.3s;
-}
-.hub-refresh-icon.spinning {
-  animation: spin 0.8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.hub-body {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 16px;
-}
-
-/* Status strip */
-.status-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.stat-card {
-  display: block;
-  text-decoration: none;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-left: 4px solid #9ca3af;
-  border-radius: 12px;
-  padding: 14px 14px 12px;
-  transition: background 0.1s;
-}
-.stat-card:active { background: #f9fafb; }
-@media (hover: hover) { .stat-card:hover { background: #f9fafb; } }
-.stat-top {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-.stat-num {
-  font-size: 30px;
-  font-weight: 800;
-  color: #111827;
-  letter-spacing: -0.5px;
-  line-height: 1;
-}
-.stat-arrow {
-  font-size: 18px;
-  color: #d1d5db;
-  line-height: 1;
-}
-.stat-label {
-  font-size: 12px;
-  color: #6b7280;
-  line-height: 1.3;
-}
-
-.stats-error {
-  font-size: 13px;
-  color: #ef4444;
-  text-align: center;
-  margin-bottom: 12px;
-}
-.stats-retry {
-  background: none;
-  border: none;
-  color: #ef4444;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 13px;
-  padding: 0;
-}
-
-/* Analytics strip */
-.analytics-strip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 11px 14px;
-  text-decoration: none;
-  color: inherit;
-  margin-bottom: 10px;
-}
-.analytics-strip:hover { background: #f9fafb; }
-.analytics-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #9ca3af;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-.analytics-pills {
-  display: flex;
-  gap: 8px;
-  flex: 1;
-  flex-wrap: wrap;
-}
-.analytics-pill {
-  display: flex;
-  align-items: baseline;
-  gap: 3px;
-  background: #f3f4f6;
-  border-radius: 8px;
-  padding: 3px 8px;
-}
-.analytics-pill-val {
-  font-size: 14px;
-  font-weight: 700;
-  color: #1e3a5f;
-}
-.analytics-pill-lbl {
-  font-size: 11px;
-  color: #6b7280;
-}
-.analytics-arrow {
-  font-size: 18px;
-  color: #9ca3af;
-  margin-left: auto;
-}
-
-/* Launcher grid */
-.launcher-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-.launcher-card {
-  display: block;
-  text-decoration: none;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
-  padding: 22px 18px 20px;
-  transition: background 0.1s;
-}
-.launcher-card:active { background: #f9fafb; }
-@media (hover: hover) { .launcher-card:hover { background: #f9fafb; } }
-.launcher-card { cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
-.launcher-card.dragging {
-  cursor: grabbing;
-  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.16);
-  border-color: #cbd5e1;
-}
-.launcher-emoji {
-  font-size: 36px;
-  margin-bottom: 12px;
-  line-height: 1;
-}
-.launcher-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 4px;
-}
-.launcher-sub {
-  font-size: 12px;
-  color: #9ca3af;
-  line-height: 1.4;
-}
+const CSS = `
+.gl-wrap { min-height: 100vh; background: #f3f4f6; color: #111827; padding-bottom: 32px; }
+.gl-head { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 1px solid #e5e7eb; }
+.gl-head-in { max-width: 1120px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.gl-head-left { display: flex; align-items: baseline; gap: 12px; min-width: 0; flex-wrap: wrap; }
+.gl-title { font-size: 18px; font-weight: 700; }
+.gl-overall { font-size: 13px; color: #374151; display: inline-flex; align-items: center; gap: 6px; }
+.gl-overall i, .gl-tile-status i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.gl-head-right { display: flex; gap: 8px; flex: none; }
+.gl-btn { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 6px 12px; font-size: 14px; color: #374151; cursor: pointer; }
+.gl-btn:disabled { opacity: .5; }
+.gl-tools-btn.on { background: #111827; color: #fff; border-color: #111827; }
+.gl-tools { max-width: 1120px; margin: 0 auto; padding: 4px 16px 16px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 20px; max-height: 70vh; overflow-y: auto; }
+@media (min-width: 760px) { .gl-tools { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1000px) { .gl-tools { grid-template-columns: repeat(6, 1fr); } }
+.gl-tools-h { font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .05em; margin: 6px 0 4px; }
+.gl-tools-a { display: block; font-size: 14px; color: #111827; text-decoration: none; padding: 5px 0; }
+.gl-tools-a:hover { color: #1d4ed8; }
+.gl-body { max-width: 1120px; margin: 0 auto; padding: 8px 16px; }
+.gl-error { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
+.gl-wait { color: #6b7280; font-size: 14px; padding: 40px 0; text-align: center; }
+.gl-sec { margin-top: 14px; }
+.gl-h2 { font-size: 12px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px 2px; }
+.gl-sec-needs .gl-h2 { color: #b45309; }
+.gl-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 760px) { .gl-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1000px) { .gl-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.gl-tile { display: flex; flex-direction: column; gap: 4px; background: #fff; border: 1px solid #e5e7eb; border-top: 4px solid #9ca3af; border-radius: 12px; padding: 10px 12px 10px; text-decoration: none; color: inherit; min-width: 0; }
+a.gl-tile:hover { background: #f9fafb; }
+.gl-tile-label { font-size: 12px; color: #6b7280; line-height: 1.25; }
+.gl-tile-mid { display: flex; align-items: flex-end; justify-content: space-between; gap: 6px; }
+.gl-tile-val { font-size: 28px; font-weight: 800; letter-spacing: -.5px; line-height: 1.05; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.gl-spark { flex: none; margin-bottom: 3px; }
+.gl-tile-sub { font-size: 12px; color: #4b5563; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.gl-tile-status { margin-top: auto; padding-top: 2px; font-size: 12px; font-weight: 600; color: #374151; display: flex; align-items: center; gap: 6px; }
+.gl-lessons-fold { margin-top: 10px; }
+.gl-lessons-fold summary { cursor: pointer; font-size: 13px; font-weight: 600; color: #1d4ed8; padding: 6px 2px; list-style-position: inside; }
+.gl-lessons { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+@media (min-width: 760px) { .gl-lessons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.gl-lesson { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 12px; text-decoration: none; color: #111827; font-size: 14px; min-width: 0; }
+.gl-lesson:hover { background: #f9fafb; }
+.gl-lesson-t { color: #6b7280; font-size: 12px; width: 62px; flex: none; }
+.gl-lesson-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.gl-lesson-go { color: #1d4ed8; font-size: 12px; flex: none; }
+.gl-foot { margin-top: 18px; font-size: 12px; color: #9ca3af; text-align: center; }
+.gl-foot a { color: #6b7280; }
+.gl-login { min-height: 100vh; background: #f3f4f6; display: flex; align-items: center; justify-content: center; padding: 16px; }
+.gl-login-card { width: 100%; max-width: 340px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 28px 24px; text-align: center; }
+.gl-login-card h1 { font-size: 20px; margin: 0 0 16px; }
+.gl-pw { width: 100%; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 15px; box-sizing: border-box; margin-bottom: 10px; color: #111; }
+.gl-pw-err { font-size: 13px; color: #ef4444; margin-bottom: 10px; }
+.gl-pw-btn { width: 100%; background: #1e3a5f; color: #fff; border: none; border-radius: 10px; padding: 12px 0; font-size: 15px; font-weight: 600; cursor: pointer; }
+.gl-pw-btn:disabled { opacity: .45; }
 `;

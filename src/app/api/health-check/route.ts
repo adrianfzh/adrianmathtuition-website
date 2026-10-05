@@ -548,6 +548,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📊 The admin dashboard at a glance (5 Oct 2026) — the one read the hub page polls.
+    timed('admin-glance', async () => {
+      const r = await fetch(`${base}/api/admin/glance`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('worker-jobs', async () => {
       const r = await fetch(`${base}/api/admin/worker-jobs`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
