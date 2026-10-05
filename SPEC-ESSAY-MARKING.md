@@ -372,3 +372,23 @@ is no disclaimers on student screens (memory `no-disclaimers-student-facing`), s
 - `essay-report-view.tsx` — "The two reads did not agree on the band, so it is being checked. The
   feedback above stands."
 - `languages/submit/essay-form.tsx` — "It is read twice, to be sure, …"
+
+## The language bank — English papers (6 Oct 2026)
+
+Adrian, 6 Oct 2026: *"copy the secondary humanities and languages and yes queue humanities and
+languages — priority social studies and english"*. A bank of real English papers, for the
+essay marker's background and later practice — nothing served, nothing student-facing.
+
+- Tables (MAIN project, RLS on, no policies): `language_texts` (passages, visual texts, a
+  situational-writing stimulus — every word, pictures cropped into the private bucket
+  `language_images` with their words typed out) and `language_items` (one row per question or
+  writing task: `section_kind` editing · language_use · situational_writing · composition ·
+  visual_text · comprehension · summary · vocabulary · oral · listening; `text_id` to its passage;
+  `answer` only from the paper's OWN scheme, `answer_source` `mark_scheme` | `none`; `national`
+  true only for school `GCE`). Levels: `EL`, `EL_NA`, `EL_NT`, `S1_EL`, `S2_EL`, `S3_EL`, `S3_EL_NA`.
+- Written only through `bank_insert_language_paper(payload)` (refuses an answer when no
+  `scheme_file`, parts that do not add up, a text with neither words nor image, any subject but
+  English) and checked by `verify_language_paper`. Migration `migrations/language_bank.sql`.
+- The extraction law's §Language papers (v2026-10-06); the Fly lane claims `english` rows on the
+  MAIN keys (bot `worker/fly/extract.sh`). Chinese / Higher Chinese / Malay / Tamil: copied into
+  the library only, no rules yet — the proposal is in `docs/EXTRACTION-QUEUE.md` §4e.

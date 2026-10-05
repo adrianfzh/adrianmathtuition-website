@@ -19,9 +19,14 @@ question to a student or to the public.
   | our own (`ai_generated`, Set papers, twins) | 455 | ours; the long-run serving bank |
 
 - The humanities bank (`humanities_questions` + `humanities_source_sets`, 5 Oct 2026) holds
-  only national History / Geography / Social Studies TYS papers and the publisher's answers:
-  every row is `national = true`, grounding-only, read by the humanities marker as background
-  and never served (`SPEC-HUMANITIES.md` §4b).
+  the national History / Geography / Social Studies TYS papers (`national = true`) and, since
+  6 Oct 2026, school prelims / EOY / WA papers with their own schemes (`national = false`). Both
+  are grounding-only: RLS on, no policies, no page reads them; the humanities marker may read
+  them as background (`SPEC-HUMANITIES.md` §4b). Serving a school humanities question to a
+  student would need the same rules as a maths school row — not built.
+- The language bank (`language_items` + `language_texts`, 6 Oct 2026) — English papers, the
+  same posture: grounding-only, RLS with no policies, nothing served; answers only from the
+  paper's own scheme (`SPEC-ESSAY-MARKING.md` §The language bank).
 - Singapore's Copyright Act 2021 replaced closed "fair dealing" with open "fair
   use" judged on four factors (purpose and character; nature of the work; amount
   taken; effect on the market). "Research or study" keeps a safe harbour for a

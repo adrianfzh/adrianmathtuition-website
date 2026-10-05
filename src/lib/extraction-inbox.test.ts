@@ -100,11 +100,34 @@ describe('parseSourceFilename — the humanities (5 Oct 2026)', () => {
     expect(parseSourceFilename('EM PRELIM 2024 Bukit Merah SS P1.pdf')).toMatchObject({ ok: true, level: 'EM', subject: 'math' });
     expect(parseSourceFilename('S2 SA2 2021 Clementi Town SS.pdf')).toMatchObject({ ok: true, level: 'S2', subject: 'math' });
     expect(parseSourceFilename('History Geography GCE 2020 Paper 1.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('two humanities') });
-    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('O-Level humanities') });
+    expect(parseSourceFilename('S2 History SA2 2023 Hua Yi.pdf')).toMatchObject({ ok: false, reason: expect.stringContaining('upper-sec humanities') });
   });
   it('a humanities paper is never filed for the maths marker', () => {
     const name = 'History GCE 2025 Paper 1.pdf';
     expect(libraryRowFor(parseSourceFilename(name), name)).toMatchObject({ skip: expect.stringContaining('humanities') });
+  });
+});
+
+describe('parseSourceFilename — school humanities + English (6 Oct 2026)', () => {
+  it('N(A) Social Studies is SS_NA, and a Sec 3 paper keeps its upper-sec level', () => {
+    expect(parseSourceFilename('Social Studies NA PRELIM 2019 Fuchun P1.pdf')).toMatchObject({ ok: true, level: 'SS_NA', subject: 'social_studies', school: 'Fuchun', examType: 'Prelim', paper: 'p1' });
+    expect(parseSourceFilename('Social Studies (NA) PRELIM 2024 Woodlands P1.pdf')).toMatchObject({ ok: true, level: 'SS_NA', school: 'Woodlands' });
+    expect(parseSourceFilename('Social Studies S3 EOY 2022 Nan Chiau High P1.pdf')).toMatchObject({ ok: true, level: 'SS', school: 'Nan Chiau High', examType: 'SA2' });
+    expect(parseSourceFilename("Geography Elective PRELIM 2025 CHIJ St Nicholas Girls' P2 (with scheme).pdf")).toMatchObject({ ok: true, level: 'GEOG_E', school: "CHIJ St Nicholas Girls'", paper: 'p2' });
+    expect(parseSourceFilename('Social Studies PRELIM 2024 Bedok View P1 MS.pdf')).toMatchObject({ ok: true, level: 'SS', school: 'Bedok View' });
+  });
+  it('English is the first word: EL / EL_NA / EL_NT / S3_EL_NA; a school named English stays maths', () => {
+    expect(parseSourceFilename('English GCE 2024 Paper 1.pdf')).toMatchObject({ ok: true, level: 'EL', subject: 'english', school: 'GCE', paper: 'p1' });
+    expect(parseSourceFilename('English NA PRELIM 2024 CHIJ Katong Convent P2.pdf')).toMatchObject({ ok: true, level: 'EL_NA', school: 'CHIJ Katong Convent', paper: 'p2' });
+    expect(parseSourceFilename('English 1190/02 PRELIM 2025 Orchid Park NA.pdf')).toMatchObject({ ok: true, level: 'EL_NA', school: 'Orchid Park' });
+    expect(parseSourceFilename('English NT MYE 2023 Northland.pdf')).toMatchObject({ ok: true, level: 'EL_NT', school: 'Northland' });
+    expect(parseSourceFilename('English S3 NA EOY 2022 Kranji.pdf')).toMatchObject({ ok: true, level: 'S3_EL_NA', school: 'Kranji' });
+    expect(parseSourceFilename('AM PRELIM 2024 Assumption English P1.pdf')).toMatchObject({ ok: true, level: 'AM', subject: 'math', school: 'Assumption English' });
+    expect(parseSourceFilename('SS PRELIM 2019 Assumption English P1.pdf')).toMatchObject({ ok: true, level: 'SS', school: 'Assumption English' });
+  });
+  it('an English paper is never filed for the maths marker', () => {
+    const name = 'English GCE 2024 Paper 2.pdf';
+    expect(libraryRowFor(parseSourceFilename(name), name)).toMatchObject({ skip: expect.stringContaining('language') });
   });
 });
 

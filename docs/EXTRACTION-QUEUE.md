@@ -457,6 +457,49 @@ finished `done`: 7 rows, 50 / 50 marks, 2 source sets (Sources A–F; Extracts 1
 `verify_humanities_paper` pass. The other 69 papers wait for the promote: once the parser is
 on production, drop the folders' files into the inbox as they are named.
 
+### 4e. The Grail humanities + languages copy (6 Oct 2026)
+
+Adrian, 6 Oct 2026: *"copy the secondary humanities and languages and yes queue humanities and
+languages — priority social studies and english"*. The one-off copy of the retired
+`~/Desktop/AdrianMath/grail-harvest` (read-only; nothing there was changed): O-Level Social Studies,
+Pure / Elective History and Geography, Literature, English, Chinese, Higher Chinese, Chinese
+Literature, Malay, Tamil; N-Level Social Studies and English; IP English / Geography / History;
+Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or science.
+
+- **The copy** — `scripts/paper-library/import-grail-humanities.ts` (the archive-bank-folder recipe,
+  driven by a plan built from `manifest.jsonl` + each file's name and cover text): 1,011 files,
+  **1,078 objects uploaded** (originals + merged QP+Insert copies + the three >45 MB compilations cut by
+  page range), 7 already in the library by sha256, 6 same-bytes duplicates in the copy skipped.
+  Every row is `kind='source'`, notes `COPIED 6 Oct 2026 from …grail-harvest/<folder>/ (Grail #id "name")`.
+  - a paper to extract is named by the fleet rule (`Social Studies PRELIM 2025 Nan Hua High P1.pdf`,
+    `History Elective PRELIM 2024 Deyi P2.pdf`, `English NA PRELIM 2024 CHIJ Katong Convent P2.pdf`);
+    `(with scheme)` = the school's scheme is inside the same file; a separate Insert is MERGED in after
+    the question pages (the original QP kept as `… (question paper only).pdf`);
+  - its scheme = `… MS.pdf`, `status='skipped'` (pairing); an Insert alone, another copy of the same
+    paper, a paper with no scheme anywhere, and every note / guide / compilation = `status='library'`
+    with the reason in `notes` (notes rows: `exam_type='Notes'`, `level` null).
+- **Queued** (humanities only with a scheme; the claim takes the oldest `indexed_at` first, the
+  peek picks the subject the same way): **the front** (`indexed_at` 2000-12-31 / 2001-01-01, ahead of
+  everything — Adrian's order: O-Level English 2025, 2024, then O-Level Social Studies 2025 with a
+  scheme): the two English test sets (the 2024 "1184 compre B" set + answers, school unknown →
+  `Unattributed`; Nan Chiau High's 2021 comprehension practice + answer scheme — there are NO
+  O-Level English school exam papers in the copy, only these and notes), then 14 Social Studies 2025
+  prelims. Then, behind the maths / science already queued, one block each (`indexed_at`
+  2026-10-06 + order × 1,000 s): Social Studies 116 · Social Studies N(A) 46 · English (held — below) ·
+  History 27 · History Elective 47 · Geography 36 · Geography Elective 46. Sec 3 papers last in
+  each block, newest year first.
+- **Held, not queued:** humanities papers with no scheme in the file or beside it (22 SS, 2 SS N(A),
+  5 HIST_E, 4 GEOG, 9 GEOG_E — the reason in `notes`); English papers until the test runs pass, and
+  English papers with no scheme (Adrian, 6 Oct: "papers without a scheme: copy, don't queue yet");
+  Literature (no exam papers in the copy — notes only); Chinese / Higher Chinese / Chinese Literature
+  / Malay / Tamil (notes only, and no rules yet).
+- **The proposal for Chinese** (not built, Adrian's word needed): the same language tables with
+  `subject='chinese'|'higher_chinese'`; characters exactly as printed (simplified, full-width
+  punctuation 「，。」 kept, never converted); `section_kind` adds 语文应用 (词语 / 成语 fill-ins),
+  阅读理解 (passage in `language_texts`, questions with the scheme's answers verbatim), 作文 / 实用文
+  tasks; a 成语 list from a scheme kept as `answer.points`; OCR of scans checked character by character
+  against the page.
+
 ## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
 
 Adrian, 5 Oct 2026: *"do extraction learning from its own flags too"*, then *"are standing rules

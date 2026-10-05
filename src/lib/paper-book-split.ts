@@ -180,6 +180,9 @@ const LEVEL_NAME: Record<string, string> = {
   CS_CHEM: 'CS CHEM', CS_PHYS: 'CS PHY', CS_BIO: 'CS BIO', CS_CHEM_NA: 'CS CHEM G2', CS_PHYS_NA: 'CS PHY G2', CS_BIO_NA: 'CS BIO G2',
   // Humanities (5 Oct 2026): the subject in words, the way the Ten-Year-Series files are named.
   HIST: 'History', HIST_E: 'History Elective', GEOG: 'Geography', GEOG_E: 'Geography Elective', SS: 'Social Studies',
+  // School humanities + English (6 Oct 2026).
+  SS_NA: 'Social Studies NA', EL: 'English', EL_NA: 'English NA', EL_NT: 'English NT', S3_EL_NA: 'English S3 NA',
+  S1_EL: 'English S1', S2_EL: 'English S2', S3_EL: 'English S3',
 };
 export function levelNameTokens(level: string): string {
   return LEVEL_NAME[level] ?? level;

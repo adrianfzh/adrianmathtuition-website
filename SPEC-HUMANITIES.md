@@ -169,6 +169,17 @@ reads only the scheme the website sends with the question (`data/humanities/…`
 
 Nothing in `ai/humanities-marker.js` or `lib/humanities-*.ts` changed on 5 Oct 2026.
 
+**School papers join (6 Oct 2026, Adrian: "copy the secondary humanities and languages and yes
+queue humanities and languages — priority social studies and english").** The Grail copy's school
+prelims / EOY / MYE / WA papers go into the same two tables under the school's name:
+`national = false` (the function sets it — true only for school `GCE`), `solution_source =
+'mark_scheme'` (the school's own scheme, inside the file or its `… MS.pdf` beside it; no scheme →
+not banked; `publisher_tys` refused for a school), a new level **`SS_NA`** (N(A) Social Studies),
+Sec 3 papers under the same upper-sec level. Migration `migrations/humanities_school_papers.sql`;
+the law's §Humanities papers → *School papers* (v2026-10-06, archive `exam-extraction-2026-10-06`).
+Still grounding-only — nothing reads them but the marker's future background step. The queue side
+and the counts are in `docs/EXTRACTION-QUEUE.md` §4e.
+
 ## 5. What stays out
 
 - No school paper served to a student (docs/CONTENT-POLICY.md).

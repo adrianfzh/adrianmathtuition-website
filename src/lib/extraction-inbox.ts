@@ -30,7 +30,7 @@ export interface InboxEntry { name: string; path: string; size?: number | null; 
 /** Which bank a source belongs to: 'math' is the math project's `questions`, the sciences the
  *  science project (26 Sep 2026), the humanities the math project's `humanities_questions`
  *  (5 Oct 2026 — banked for the humanities marker's background, never served). */
-export type SourceSubject = 'math' | 'biology' | 'chemistry' | 'physics' | 'science' | 'history' | 'geography' | 'social_studies';
+export type SourceSubject = 'math' | 'biology' | 'chemistry' | 'physics' | 'science' | 'history' | 'geography' | 'social_studies' | 'english';
 
 /** The humanities subjects — banked in `humanities_questions`, never in `questions`. */
 export const HUMANITIES_SUBJECTS: ReadonlySet<SourceSubject> = new Set<SourceSubject>(['history', 'geography', 'social_studies']);
@@ -175,17 +175,38 @@ const HUMANITIES_RULES: Array<[RegExp, string, SourceSubject]> = [
 ];
 const HUMANITIES_ELECTIVE = /\bELECT(?:IVE)?\b|\bCOMBINED\s+HUMANITIES\b|^(?:HIST|GEOG)\s?E\b|\b(?:2204|2260|2261|2262|2263|2264|2265|2267|2272|2273)\b/i;
 /** The words and syllabus codes that name a humanities subject; never part of a school. */
-const HUMANITIES_WORDS = /^(?:HIST|GEOG)\s?E\b|\b(?:SOCIAL\s+STUDIES|HISTORY|GEOGRAPHY|ELECTIVE|ELECT|COMBINED|HUMANITIES|PURE)\b|^(?:SS|HIST|GEOG)\b/gi;
+const HUMANITIES_WORDS = /^(?:HIST|GEOG)\s?E\b|\b(?:SOCIAL\s+STUDIES|HISTORY|GEOGRAPHY|ELECTIVE|ELECT|COMBINED|HUMANITIES|PURE|NA|4NA)\b|\(NA\)|^(?:SS|HIST|GEOG)\b/gi;
+
+// ── English (6 Oct 2026, the language bank) ────────────────────────────────────────────────
+// "English GCE 2024 Paper 1.pdf" → EL; "English NA PRELIM 2024 Deyi P2.pdf" → EL_NA; NT → EL_NT;
+// "English S3 NA EOY 2022 Kranji.pdf" → S3_EL_NA; "English S1 SA2 2023 X" → S1_EL. ENGLISH must be
+// the FIRST word, so "AM PRELIM 2024 Assumption English" stays a maths paper of that school.
+const ENGLISH_FIRST = /^ENGLISH\b/i;
+const ENGLISH_WORDS = /^ENGLISH\b|\b(?:NA|NT|4NA|EL)\b|\((?:NA|NT)\)/gi;
+function detectEnglish(stem: string): { level: string; subject: SourceSubject } | null {
+  if (!ENGLISH_FIRST.test(stem)) return null;
+  const na = /\bNA\b|\(NA\)|\b4NA\b|\bG2\b/i.test(stem), nt = /\bNT\b|\(NT\)|\bG1\b/i.test(stem);
+  const lower = stem.match(/\bS([1-3])\b/i);
+  if (lower) return { level: `S${lower[1]}_EL${na ? '_NA' : ''}`, subject: 'english' };
+  return { level: nt ? 'EL_NT' : na ? 'EL_NA' : 'EL', subject: 'english' };
+}
 const HUMANITIES_CODES = /\b(?:2174|2236|2279|2204|2260|2261|2262|2263|2264|2265|2267|2272|2273)(?:\s?\/\s?0\d)?\b/g;
 
+// School papers (6 Oct 2026, Adrian: "copy the secondary humanities and languages and yes queue
+// humanities"): a subject WORD beats a maths level token ("Social Studies (NA) PRELIM 2019 X" is
+// N(A) Social Studies, SS_NA); NA / (NA) / 4NA beside Social Studies is the N(A) paper; S3 is the
+// same upper-sec syllabus, filed under the same level. Sec 1–2 still has no humanities level.
+const HUMANITIES_SUBJECT_WORD = /\bSOCIAL\s+STUDIES\b|\bHISTORY\b|\bGEOGRAPHY\b/i;
+const HUMANITIES_NA = /\bNA\b|\(NA\)|\b4NA\b|N\(A\)/i;
+
 function detectHumanities(stem: string): { level: string; subject: SourceSubject } | { refuse: string } | null {
-  if (MATH_LEVEL_TOKEN.test(stem)) return null;
+  if (MATH_LEVEL_TOKEN.test(stem) && !HUMANITIES_SUBJECT_WORD.test(stem)) return null;
   const hits = HUMANITIES_RULES.filter(([re]) => re.test(stem));
   if (!hits.length) return null;
   if (hits.length > 1) return { refuse: `the name names two humanities subjects (${hits.map(h => h[1]).join(' + ')}) — one paper per file` };
-  if (/\bS[1-3]\b/i.test(stem)) return { refuse: 'only O-Level humanities have a level (HIST / HIST_E / GEOG / GEOG_E / SS) — no lower-sec humanities level yet' };
+  if (/\bS[12]\b/i.test(stem)) return { refuse: 'only upper-sec humanities have a level (HIST / HIST_E / GEOG / GEOG_E / SS / SS_NA) — no lower-sec humanities level yet' };
   const [, base, subject] = hits[0];
-  if (base === 'SS') return { level: 'SS', subject };
+  if (base === 'SS') return { level: HUMANITIES_NA.test(stem) ? 'SS_NA' : 'SS', subject };
   return { level: HUMANITIES_ELECTIVE.test(stem) ? `${base}_E` : base, subject };
 }
 
@@ -210,9 +231,10 @@ export function parseSourceFilename(name: string): ParsedSourceName {
 
   const sci = detectScience(stem);
   if (sci && 'refuse' in sci) return { ok: false, reason: sci.refuse, stem, ext };
-  const hum = sci ? null : detectHumanities(stem);
+  const eng = sci ? null : detectEnglish(stem);
+  const hum = sci || eng ? null : detectHumanities(stem);
   if (hum && 'refuse' in hum) return { ok: false, reason: hum.refuse, stem, ext };
-  const tagged = sci || hum;
+  const tagged = sci || eng || hum;
   const level = tagged ? tagged.level : detectLevel(stem);
   const subject: SourceSubject = tagged ? tagged.subject : 'math';
   if (!level) return { ok: false, reason: 'no level token (AM/EM/S1–S3/JC1/JC2/BIO/CHEM/PHY/History/Geography/Social Studies)', stem, ext };
@@ -237,6 +259,7 @@ export function parseSourceFilename(name: string): ParsedSourceName {
     // school column — until then the source row said school "West Spring MS".
     .replace(KIND_PARENS, ' ').replace(KIND_WORDS, ' ');
   if (HUMANITIES_SUBJECTS.has(subject)) school = school.replace(HUMANITIES_CODES, ' ').replace(HUMANITIES_WORDS, ' ');
+  else if (subject === 'english') school = school.replace(ENGLISH_WORDS, ' ').replace(/\b(?:1184|1128|1190|1195)(?:\s?\/\s?0\d)?\b/g, ' ');
   else if (subject !== 'math') school = school.replace(SCIENCE_WORDS, ' ').replace(SCIENCE_CODES, ' ');
   if (token) school = school.replace(new RegExp(token.source, 'gi'), ' ');
   school = school.replace(/\s+/g, ' ').replace(/^[\s\-–_,.]+|[\s\-–_,.]+$/g, '').trim();
@@ -374,7 +397,7 @@ export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: Li
   // The marker library is the MATHS marker's (26 Sep 2026): a science source
   // goes to the science bank through the queue, and its scheme is paired there
   // by level, year and school — never keyed for the maths marker's lookup.
-  if (parsed.subject !== 'math') return { skip: `a ${HUMANITIES_SUBJECTS.has(parsed.subject) ? 'humanities' : 'science'} paper — the queue pairs its scheme by level, year and school; the marker library is the maths marker's` };
+  if (parsed.subject !== 'math') return { skip: `a ${HUMANITIES_SUBJECTS.has(parsed.subject) ? 'humanities' : parsed.subject === 'english' ? 'language' : 'science'} paper — the queue pairs its scheme by level, year and school; the marker library is the maths marker's` };
   if (parsed.paper === 'all') {
     return { skip: 'the name says no paper number and no cover page said either, so the marker cannot look it up — split the book into one file per paper, named like `AM GCE 2025 Paper 1.pdf`' };
   }
@@ -398,7 +421,8 @@ export function libraryRowFor(parsed: ParsedSourceName, name: string): { row: Li
 // PARENTHESES ARE NOT NOISE. Real schools carry them — "Chung Cheng High
 // (Yishun)", "Anglo Chinese School (Barker Road)" — and the bank spells them
 // that way, so only a bracket whose whole content is a kind word comes off.
-const KIND_PARENS = /\(\s*(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp)\s*\)/gi;
+// "(with scheme)" (6 Oct 2026): a school paper whose scheme is inside the same file — a paper, not a scheme.
+const KIND_PARENS = /\(\s*(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp|with\s+scheme)\s*\)/gi;
 const KIND_WORDS = /\b(?:solutions?|answers?|ans|marking\s*schemes?|mark\s*schemes?|ms|questions?|qns?|qp)\b/gi;
 
 /** The `questions.school` value this file belongs under, or ''. Pure. */
