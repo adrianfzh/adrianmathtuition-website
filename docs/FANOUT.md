@@ -190,6 +190,20 @@ test-gated in both repos, reported by the Sunday doc-sweep), and these rules sta
   line ranges it needs.
 - **(f) CLAUDE.md stays lean.** Detail goes into the topical doc in `docs/` or a
   `SPEC-*.md`; CLAUDE.md gets at most one routing line.
+- **(g) Say the price before you spend** (Adrian, 5–6 Oct 2026). He asked about ten times
+  in two days: *"what models are doing the check/blind solve?"*, *"what is the cheaper
+  weaker model you are planning to use?"*, *"for the check, what model? and how much credit
+  do you think it ill take?"*, *"why were there so many tokens (plan usage) used in the past
+  few hours?"*, *"how do i know if the cloud session has finished using credits or are using
+  plan usage now?"*. Why: he decides whether a job is worth it, and cannot without the price.
+  Before any job that spends more than a few minutes of plan usage, or any credit or API
+  money, say in one line:
+  - which model does which part (writer, checker, blind solver);
+  - who pays: this session's plan, the workers' plan account, the cloud credit, or the API;
+  - roughly how much (a share of the plan, or dollars of credit) and how long — a range is
+    fine, say how you got it;
+  - for a cloud session or a worker: what happens when the money runs out (it stops, or it
+    moves onto the plan) and where he can see it.
 
 **Dated log**
 - 17 Sep 2026 — written after the F2/F7/F9 strip regression (docs/MARKING-DEFECTS.md

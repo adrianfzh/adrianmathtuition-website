@@ -15,6 +15,7 @@ Every session and subagent loads this file on start, so its size and our habits 
 - **(c) Model per agent.** Haiku/Sonnet for search, counting, formatting, screenshot checks; Opus for writing, checking, marking rules and judgement. Medium effort by default.
 - **(d) Bulk jobs off the interactive session** — the Fly worker lanes or the cloud credit.
 - **(e) Don't re-read big files** — use the library index (`scripts/library-index.ts`), `grep`, and targeted line ranges.
+- **(g) Say the price before you spend** (Adrian, 6 Oct 2026: *"for the check, what model? and how much credit do you think it ill take?"*). Before a job that spends plan usage or credit (agents, a cloud session, a training run, a bulk check), one line: which model does which part, who pays (this plan, the workers' plan, the cloud credit, the API), roughly how much and how long.
 - **Keep CLAUDE.md lean** — detail goes to `docs/`, never back here.
 
 ## 📚 Touching X → read Y FIRST (mandatory)
