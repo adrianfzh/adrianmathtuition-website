@@ -22,6 +22,8 @@ import {
   computeScienceMastery, sciencePoolLevels, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
 
+import { SERVED_DIFFICULTY_SOURCES, type DifficultyLevel } from './practice-difficulty';
+
 let _client: SupabaseClient | null = null;
 
 export function scienceConfigured(): boolean {
@@ -215,15 +217,19 @@ export async function scienceNext(opts: {
   kind?: 'mcq' | 'structured' | null;
   /** one skill inside the topic (`questions.skill`, lib/science-practice TOPIC_SKILLS); unset = the whole topic */
   skill?: string | null;
+  /** Core / Exam / Challenge (practice_difficulty, 5 Oct 2026); unset = Mixed — every row, levelled or not */
+  difficultyLevel?: DifficultyLevel | null;
 } & SciencePoolOpts): Promise<ScienceQuestionRow | null> {
   const lvl = scienceLevel(opts.levelKey);
   if (!lvl) return null;
   const sb = getScienceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const build = (select: string, head: boolean): any => {
-    let q = eligible<any>(sb.from('questions').select(select, head ? { count: 'exact', head: true } : undefined), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const sel = opts.difficultyLevel ? `${select}, practice_difficulty!inner(level, source)` : select;
+    let q = eligible<any>(sb.from('questions').select(sel, head ? { count: 'exact', head: true } : undefined), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
       .in('level', sciencePoolLevels(opts.levelKey, !!opts.combined))
       .contains('topics', [opts.topic]);
+    if (opts.difficultyLevel) q = q.eq('practice_difficulty.level', opts.difficultyLevel).in('practice_difficulty.source', SERVED_DIFFICULTY_SOURCES as unknown as string[]);
     // students: only rows that passed the blind-solve check (5 Oct 2026, questions.practice_checked_at)
     if (opts.checkedOnly) q = q.not('practice_checked_at', 'is', null);
     // MCQ = a bare letter OR the "**B** — …" form (lib/science-levels mcqKey).
@@ -241,7 +247,7 @@ export async function scienceNext(opts: {
   // Easier first (5 Oct 2026 — science has no Standard / Advanced switch: the tags were set at
   // extraction and never checked): the first EASY_FIRST questions of a run avoid rows tagged
   // Advanced / Challenging when the topic has others; after that, everything is in the draw.
-  if (!opts.tier && (opts.exclude ?? []).length < EASY_FIRST) {
+  if (!opts.tier && !opts.difficultyLevel && (opts.exclude ?? []).length < EASY_FIRST) {
     const easy = await nextEasy(build);
     if (easy) return easy;
   }
@@ -252,6 +258,36 @@ export async function scienceNext(opts: {
   const { data, error } = await build(ROW_COLUMNS, false).order('id').range(offset, offset);
   if (error) throw new Error(`science next: ${error.message}`);
   return ((data ?? []) as unknown as ScienceQuestionRow[])[0] ?? null;
+}
+
+/**
+ * 🎚 How many servable MCQs of a topic sit at each level (practice_difficulty, results or
+ * estimate — never the sample), for the Core · Exam · Challenge · Mixed choice. Three head
+ * counts, cached ten minutes per pool + topic.
+ */
+const levelCountCache = new Map<string, { at: number; counts: Record<DifficultyLevel, number> }>();
+export async function scienceLevelCounts(levelKey: string, topic: string, pool: SciencePoolOpts = {}): Promise<Record<DifficultyLevel, number>> {
+  const lvl = scienceLevel(levelKey);
+  const zero = { core: 0, exam: 0, challenge: 0 };
+  if (!lvl) return zero;
+  const key = `${levelKey}|${pool.combined ? 'cs' : 'pure'}|${pool.checkedOnly ? 'checked' : 'all'}|${topic}`;
+  const hit = levelCountCache.get(key);
+  if (hit && Date.now() - hit.at < TOPIC_CACHE_MS) return hit.counts;
+  const counts = { ...zero };
+  await Promise.all((['core', 'exam', 'challenge'] as const).map(async l => {
+    let q = eligible<any>(getScienceClient().from('questions').select('id, practice_difficulty!inner(level, source)', { count: 'exact', head: true }), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .in('level', sciencePoolLevels(levelKey, !!pool.combined))
+      .contains('topics', [topic])
+      .filter('answer', 'match', MCQ_ANSWER_RE)
+      .eq('practice_difficulty.level', l)
+      .in('practice_difficulty.source', SERVED_DIFFICULTY_SOURCES as unknown as string[]);
+    if (pool.checkedOnly) q = q.not('practice_checked_at', 'is', null);
+    const { count, error } = await q;
+    if (error) throw new Error(`science level counts: ${error.message}`);
+    counts[l] = count ?? 0;
+  }));
+  levelCountCache.set(key, { at: Date.now(), counts });
+  return counts;
 }
 
 /** One question by id (answer + solution included — server-side use only). */

@@ -151,3 +151,28 @@ export function scienceRowServable(open: OpenTopics | null, levelKey: string, ro
     return r.open && poolLevels(r.combined).includes(row.level ?? '');
   });
 }
+
+/**
+ * 🎚 Core · Exam · Challenge · Mixed (5 Oct 2026) — the level choice on a science MCQ run.
+ * A question's level is `practice_difficulty.level` (lib/practice-difficulty: from students'
+ * first tries once there are 20, else the estimate). Mixed = every question of the topic,
+ * including those with no level yet; it is the default. A level is offered only when the
+ * topic has at least LEVEL_MIN_QUESTIONS servable questions at it — a thinner level would
+ * repeat itself within a sitting. Remembered per device (SCIENCE_LEVEL_KEY).
+ */
+export type ScienceLevelChoice = 'mixed' | 'core' | 'exam' | 'challenge';
+export const SCIENCE_LEVEL_CHOICES: readonly ScienceLevelChoice[] = ['core', 'exam', 'challenge', 'mixed'];
+export const SCIENCE_LEVEL_LABEL: Record<ScienceLevelChoice, string> = { core: 'Core', exam: 'Exam', challenge: 'Challenge', mixed: 'Mixed' };
+export const SCIENCE_LEVEL_KEY = 'portal_science_level';
+export const LEVEL_MIN_QUESTIONS = 30;
+export function parseLevelChoice(v: unknown): ScienceLevelChoice {
+  return v === 'core' || v === 'exam' || v === 'challenge' ? v : 'mixed';
+}
+/** The levels a topic can offer, in order: those with ≥ LEVEL_MIN_QUESTIONS questions. */
+export function levelsOffered(counts: Partial<Record<'core' | 'exam' | 'challenge', number>>, min = LEVEL_MIN_QUESTIONS): ('core' | 'exam' | 'challenge')[] {
+  return (['core', 'exam', 'challenge'] as const).filter(l => (counts[l] ?? 0) >= min);
+}
+/** The level a run actually draws from: the choice when the topic offers it, else Mixed. */
+export function servedLevel(choice: ScienceLevelChoice, offered: readonly string[]): ScienceLevelChoice {
+  return choice !== 'mixed' && offered.includes(choice) ? choice : 'mixed';
+}

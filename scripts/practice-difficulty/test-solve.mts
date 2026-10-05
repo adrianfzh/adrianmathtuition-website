@@ -9,7 +9,12 @@ const botEnv = dotenv.parse(fs.readFileSync(path.join(process.env.HOME!, 'dev/ad
 const client = new Anthropic({ apiKey: (botEnv.ANTHROPIC_API_KEY || '').trim() });
 const MODEL = 'claude-haiku-4-5-20251001';
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out');
-const sample: any[] = JSON.parse(fs.readFileSync(path.join(OUT, 'sample.json'), 'utf8'));
+// --in <file> --out <file> (defaults: the sample). Questions already in --reuse <file> are not asked again.
+const arg = (k: string, d: string) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
+const IN = arg('--in', 'sample.json'), OUTF = arg('--out', 'test-solve.json'), REUSE = arg('--reuse', '');
+const reused: any[] = REUSE ? JSON.parse(fs.readFileSync(path.join(OUT, REUSE), 'utf8')).results : [];
+const reusedIds = new Set(reused.map(r => r.id));
+const sample: any[] = JSON.parse(fs.readFileSync(path.join(OUT, IN), 'utf8')).filter((q: any) => !reusedIds.has(q.id));
 const TRIES = 2;
 
 function content(q: any): Anthropic.ContentBlockParam[] {
@@ -22,7 +27,7 @@ function content(q: any): Anthropic.ContentBlockParam[] {
 }
 
 (async () => {
-  const results: any[] = []; let inTok = 0, outTok = 0;
+  const results: any[] = [...reused]; let inTok = 0, outTok = 0;
   const queue = [...sample];
   async function worker() {
     for (let q = queue.shift(); q; q = queue.shift()) {
@@ -39,8 +44,8 @@ function content(q: any): Anthropic.ContentBlockParam[] {
       results.push({ id: q.id, key: q.key, letters, tries });
     }
   }
-  await Promise.all(Array.from({ length: 6 }, worker));
-  fs.writeFileSync(path.join(OUT, 'test-solve.json'), JSON.stringify({ model: MODEL, inTok, outTok, results }, null, 1));
+  await Promise.all(Array.from({ length: 8 }, worker));
+  fs.writeFileSync(path.join(OUT, OUTF), JSON.stringify({ model: MODEL, inTok, outTok, results }, null, 1));
   const right = results.filter(r => r.tries.every((x: any) => x === true)).length;
   const wrong = results.filter(r => r.tries.every((x: any) => x === false)).length;
   console.log(`done ${results.length}: both right ${right}, both wrong ${wrong}, split ${results.length - right - wrong}; tokens in ${inTok} out ${outTok}`);

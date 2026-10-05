@@ -3,9 +3,10 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceServeFor } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
-import { scienceNext, toPayload } from '@/lib/science-bank';
-import { parseSkill, resolveTopicPool } from '@/lib/science-practice';
-import { scienceStructuredPracticeOpen } from '@/lib/portal-beta';
+import { scienceLevelCounts, scienceNext, toPayload } from '@/lib/science-bank';
+import { levelsOffered, parseLevelChoice, parseSkill, resolveTopicPool, servedLevel } from '@/lib/science-practice';
+import { scienceLevelsAllowedFor, scienceStructuredPracticeOpen } from '@/lib/portal-beta';
+import { portalIdentity } from '@/lib/portal-auth';
 
 export const runtime = 'nodejs';
 
@@ -21,7 +22,9 @@ export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude, tier, subgroupId, kind, skill, pool } = body as {
+  const { level, topic, exclude, tier, subgroupId, kind, skill, pool, difficulty } = body as {
+    /** science MCQ only (5 Oct 2026): 'core' | 'exam' | 'challenge' | 'mixed' — the level choice */
+    difficulty?: string;
     /** science only (5 Oct 2026): 'pure' | 'combined' — honoured for Adrian only; a student's own choice decides */
     pool?: string;
     level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
@@ -43,14 +46,25 @@ export async function POST(req: NextRequest) {
       // Written-answer questions stay with the admin cookie until the grader check passes:
       // a student is served MCQ whatever the request says (3 Oct 2026, the tab opened).
       const structuredOk = await scienceStructuredPracticeOpen();
+      const useKind = !structuredOk ? 'mcq' : kind === 'mcq' || kind === 'structured' ? kind : null;
+      const useSkill = parseSkill(level, topic, skill);
+      // 🎚 Core · Exam · Challenge · Mixed (5 Oct 2026): MCQ runs of the whole topic only, behind
+      // SCIENCE_LEVELS_OPEN_TO_STUDENTS; a level is offered only with ≥ 30 questions at it.
+      const levelsOn = useKind === 'mcq' && !useSkill
+        && (caller.kind === 'admin' || scienceLevelsAllowedFor(portalIdentity(caller.account)));
+      const offered = levelsOn
+        ? levelsOffered(await scienceLevelCounts(level, topic, { combined: pick.combined, checkedOnly: serve.checkedOnly }).catch(() => ({})))
+        : [];
+      const chosen = servedLevel(parseLevelChoice(difficulty), offered);
       const q = await scienceNext({
-        kind: !structuredOk ? 'mcq' : kind === 'mcq' || kind === 'structured' ? kind : null,
+        kind: useKind,
+        difficultyLevel: chosen === 'mixed' ? null : chosen,
         levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
-        skill: parseSkill(level, topic, skill),
+        skill: useSkill,
         tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
         combined: pick.combined, checkedOnly: serve.checkedOnly,
       });
-      return NextResponse.json({ question: q ? toPayload(q) : null });
+      return NextResponse.json({ question: q ? toPayload(q) : null, ...(levelsOn ? { levels: offered, levelServed: chosen } : {}) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }

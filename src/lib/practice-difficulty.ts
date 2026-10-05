@@ -12,6 +12,9 @@
 export type DifficultyLevel = 'core' | 'exam' | 'challenge';
 export type DifficultySource = 'results' | 'estimate' | 'estimate-sample';
 
+/** The sources a student's level choice draws from — the sample rows never serve. */
+export const SERVED_DIFFICULTY_SOURCES: readonly DifficultySource[] = ['results', 'estimate'];
+
 export const DIFFICULTY_LABEL: Record<DifficultyLevel, string> = { core: 'Core', exam: 'Exam', challenge: 'Challenge' };
 
 /** A question is sorted by its results once this many students have tried it. */
@@ -122,14 +125,18 @@ export function testSolveOf(tries: readonly (boolean | null)[]): TestSolve {
 /**
  * Work score + test solve → a level.
  *   1–2 → Core, 3 → Exam, 4–5 → Challenge, then the test solve moves it:
- *   wrong both times → one step harder; right both times on a 4 → back to Exam
- *   (a 5 stays Challenge — a long question a model can do is still long for a student).
+ *   wrong both times → one step harder, but ONLY when the work score is 3 or more (5 Oct
+ *   2026, after the sample: a fast model answering a short calculation with no working gets
+ *   it wrong for reasons a student would not — chemistry calculations were over-sorted);
+ *   right both times on a 4 → back to Exam (a 5 stays Challenge — a long question a model
+ *   can do is still long for a student).
  */
+/** A wrong test solve moves a question up only from this work score. */
+export const SOLVE_BUMP_MIN_WORK = 3;
 export function estimateLevel(workScore: number, solve: TestSolve): DifficultyLevel {
   const w = Math.max(1, Math.min(5, Math.round(workScore)));
   let lvl: DifficultyLevel = w <= 2 ? 'core' : w === 3 ? 'exam' : 'challenge';
-  if (solve === 'wrong') lvl = lvl === 'core' ? 'exam' : 'challenge';
-  else if (solve === 'split' && lvl === 'core' && w === 2) lvl = 'exam';
+  if (solve === 'wrong' && w >= SOLVE_BUMP_MIN_WORK) lvl = 'challenge';
   else if (solve === 'right' && w === 4) lvl = 'exam';
   return lvl;
 }

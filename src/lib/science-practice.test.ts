@@ -128,3 +128,21 @@ describe('Combined Science has its own switch — no pure-pool stand-in (5 Oct 2
     expect(scienceRowServable(open, 'PHY', { level: 'PHYS', topics: ['Forces'] }, false, pool('PHY'))).toBe(false);
   });
 });
+
+import { levelsOffered, parseLevelChoice, servedLevel, LEVEL_MIN_QUESTIONS } from './science-practice';
+describe('Core · Exam · Challenge · Mixed (5 Oct 2026)', () => {
+  it('parses a choice, Mixed by default', () => {
+    expect(parseLevelChoice('core')).toBe('core');
+    expect(parseLevelChoice('Advanced')).toBe('mixed');
+    expect(parseLevelChoice(undefined)).toBe('mixed');
+  });
+  it('offers a level only with enough questions at it', () => {
+    expect(levelsOffered({ core: LEVEL_MIN_QUESTIONS, exam: 120, challenge: LEVEL_MIN_QUESTIONS - 1 })).toEqual(['core', 'exam']);
+    expect(levelsOffered({})).toEqual([]);
+  });
+  it('a level the topic does not offer falls back to Mixed', () => {
+    expect(servedLevel('challenge', ['core', 'exam'])).toBe('mixed');
+    expect(servedLevel('exam', ['core', 'exam'])).toBe('exam');
+    expect(servedLevel('mixed', ['core'])).toBe('mixed');
+  });
+});

@@ -52,8 +52,10 @@ describe('estimate', () => {
   });
   it('work score sets the level, the test solve moves it', () => {
     expect(estimateLevel(1, 'right')).toBe('core');
-    expect(estimateLevel(2, 'split')).toBe('exam');
-    expect(estimateLevel(1, 'wrong')).toBe('exam');
+    expect(estimateLevel(2, 'split')).toBe('core');
+    // a wrong test solve moves a question up only from work 3 (5 Oct 2026)
+    expect(estimateLevel(1, 'wrong')).toBe('core');
+    expect(estimateLevel(2, 'wrong')).toBe('core');
     expect(estimateLevel(3, 'right')).toBe('exam');
     expect(estimateLevel(3, 'wrong')).toBe('challenge');
     expect(estimateLevel(4, 'right')).toBe('exam');
