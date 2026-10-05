@@ -5,7 +5,7 @@
 // Run dirs look exactly like the local scripts' (author-brief.md → Q1.json → Q1.solve.md /
 // Q1.check.md → Q1.blind.json → Q1.verdict.json), so the same agent prompts work.
 //
-//   node scripts/twins/cloud-door.mjs queue  --bank maths --level EM [--n 5] [--focus-only] [--skip id,id | --skip-file <file>] --out <dir>
+//   node scripts/twins/cloud-door.mjs queue  --bank maths --level EM [--n 5] [--focus-only] [--skip id,id | --skip-file <file>] [--per-skill 3|5] --out <dir>
 //        (--skip: seeds you parked, so the next ones come forward; a file = one id per line)
 //   node scripts/twins/cloud-door.mjs queue  --bank science [--n 5] [--pool PHY] [--text-only] --out <dir>
 //        → <dir>/<seed>/author-brief.md + packet.json, one folder per seed; prints the folders
@@ -69,6 +69,7 @@ const modes = {
     if (argOf('--pool')) qs.set('pool', argOf('--pool'));
     if (has('--text-only')) qs.set('text_only', '1');
     if (has('--focus-only')) qs.set('focus_only', '1');
+    if (argOf('--per-skill')) qs.set('per_skill', argOf('--per-skill'));
     const skip = [...(argOf('--skip', '') || '').split(','), ...(argOf('--skip-file') && existsSync(argOf('--skip-file')) ? readFileSync(argOf('--skip-file'), 'utf8').split(/\s+/) : [])].map((x) => x.trim()).filter(Boolean);
     if (skip.length) qs.set('skip', skip.join(','));
     const { status, json } = await call('GET', `/api/agent/twins/queue?${qs}`);
@@ -83,7 +84,7 @@ const modes = {
       writeFileSync(join(dir, 'packet.json'), JSON.stringify(packet, null, 1));
       console.log(`${dir}  ${it.bank === 'maths' ? `${it.level} · ${it.subskill?.name ?? '-'} (${it.subskill_has}/${it.subskill_has + it.subskill_wants})` : `${it.pool} · ${it.topic} · ${it.subskill?.name ?? '-'} (${it.subskill_twins}/${it.subskill_twins + it.subskill_need}, ${it.level})`}${it.seed?.has_figure ? ' · FIGURE' : ''}  blind=${it.models?.blind}`);
     }
-    console.error(bank === 'maths' ? `${json.subskills_short} sub-skills short of ${json.per_skill}; ${json.twins_to_write} twins to write` : `${json.gap?.short + json.gap?.no_seed} sub-skills short of ${json.per_skill}; ${json.gap?.need} twins to write (${json.gap?.open_need} on open practice topics)`);
+    console.error(bank === 'maths' ? `${json.family?.join('+') ?? json.level}: ${json.subskills_short} sub-skills short of ${json.per_skill}; ${json.twins_to_write} twins to write${json.gap?.blocked_subskills ? ` (${json.gap.blocked_subskills} sub-skills can't reach ${json.per_skill}: too few seeds left)` : ''}` : `${json.gap?.short + json.gap?.no_seed} sub-skills short of ${json.per_skill}; ${json.gap?.need} twins to write (${json.gap?.open_need} on open practice topics)`);
   },
   async figure() {
     const fam = argOf('--doc');

@@ -27,7 +27,7 @@ Work in a run folder OUTSIDE the repo checkout, e.g. `~/twins/<date>/` — never
 | He says | You run |
 |---|---|
 | "write 30 science twins" | `queue --bank science --n 10` three times (3 twins per sub-skill, open practice topics first, fewest twins first — the server picks; each item names its pool, sub-skill and level) |
-| "write 40 Sec 2 twins" | `queue --bank maths --level S2 --n 10` four times |
+| "write 40 Sec 2 twins" | `queue --bank maths --level S2 --n 10` four times (sub-skills short of 3 verified twins; `--per-skill 5` once a level is at 3 everywhere) |
 | "20 A Math twins" / "E Math" / "JC" | `--level AM` (draws AM + S3_AM) / `EM` / `JC1`·`JC2` |
 | "twins for the stuck topics" | `queue --bank maths --level EM --focus-only` (and AM) |
 | "only physics" | `queue --bank science --pool PHY` (or `CS_PHY` for Combined) |

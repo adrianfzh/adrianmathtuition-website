@@ -126,30 +126,6 @@ export function etaLabel(hours: number | null): string | null {
   return `about ${Math.round(hours / 24)} days`;
 }
 
-/**
- * Twins still to write per level (the rule of scripts/twins/twin.mjs `queue`):
- * every sub-skill with a school question that has no twin yet wants `per`
- * twins; what it already has counts against that.
- */
-export function twinsLeft(
-  open: { level: string; subgroupId: number | null }[],
-  haveBySubgroup: Map<number, number>,
-  per: number,
-): Record<string, number> {
-  const need = new Map<string, Map<number, number>>();
-  for (const r of open) {
-    if (r.subgroupId == null) continue;
-    const n = per - (haveBySubgroup.get(r.subgroupId) ?? 0);
-    if (n <= 0) continue;
-    const m = need.get(r.level) ?? new Map<number, number>();
-    m.set(r.subgroupId, n);
-    need.set(r.level, m);
-  }
-  const out: Record<string, number> = {};
-  for (const [level, m] of need) out[level] = [...m.values()].reduce((a, b) => a + b, 0);
-  return out;
-}
-
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const firstName = (s: string) => (s || '').trim().split(/\s+/)[0] || s;
 const money = (n: number) => `$${n < 10 ? n.toFixed(2) : Math.round(n).toLocaleString('en-US')}`;

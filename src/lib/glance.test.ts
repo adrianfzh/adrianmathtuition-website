@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ageLabel, buildGlance, etaLabel, extractionEtaHours, overallTone, perDay, sumPerDay, twinsLeft, type GlanceFacts } from './glance';
+import { ageLabel, buildGlance, etaLabel, extractionEtaHours, overallTone, perDay, sumPerDay, type GlanceFacts } from './glance';
 
 // 5 Oct 2026, 10:00 SGT
 const NOW = Date.parse('2026-10-05T02:00:00Z');
@@ -55,18 +55,6 @@ describe('small words', () => {
   });
 });
 
-describe('twinsLeft — the twin.mjs queue rule', () => {
-  it('each open sub-skill wants `per` less what it has; counted once per sub-skill', () => {
-    const open = [
-      { level: 'S1', subgroupId: 1 }, { level: 'S1', subgroupId: 1 }, // two questions, one sub-skill
-      { level: 'S1', subgroupId: 2 },
-      { level: 'S2', subgroupId: 3 },
-      { level: 'S2', subgroupId: null },
-    ];
-    const have = new Map([[1, 1], [3, 5]]);
-    expect(twinsLeft(open, have, 3)).toEqual({ S1: 2 + 3 });
-  });
-});
 
 describe('buildGlance', () => {
   it('a clean day has no Needs-you row and reads green', () => {

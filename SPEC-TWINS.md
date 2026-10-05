@@ -197,6 +197,17 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   ~520 sub-skills, not the 36,000 school rows. Sum-and-product-of-roots (sub-skill
   1522, out of the syllabus since 2021) was stamped `legacy_syllabus` the same day
   so the queue skips it.
+- **The maths gap is ONE function (6 Oct 2026)** — `math_twin_units(levels, per_skill)` in the
+  maths project (`migrations/math_twin_units.sql`): one row per sub-skill of a level family with
+  its live VERIFIED twins ('AdrianMath' / 'Twin' — never a Practice-photo row), need, free seeds
+  and `writable = least(need, free seeds)`. `twin.mjs queue / need` (the Fly lane), the cloud door
+  (`lib/twin-store.ts mathUnits`) and the dashboard's twins tile all read it, and report
+  `to_write` = the sum of `writable` (`lib/twin-gates.ts mathGapSummary`). The target is staged
+  (`TWIN_STAGES` = 3, then 5 — Adrian, 3 Oct 2026); the door and twin.mjs default to 3. Before
+  this the door counted to 5 and twin.mjs paged `twin_queue` unordered, so they disagreed
+  (Sec 1 206 vs 4). On 6 Oct 2026 at 3 a sub-skill: **Sec 1 4 to write, Sec 2 480, A Math 0,
+  E Math 4** (at 5: 196 / 738 / 223 / 429); sub-skills that cannot reach 3 from the seeds they
+  have: Sec 1 20, Sec 2 43, A Math 23, E Math 43.
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic

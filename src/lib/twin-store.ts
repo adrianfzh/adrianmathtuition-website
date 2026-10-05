@@ -9,7 +9,8 @@
 //                                 through the bot's figure library, insert EXACTLY like
 //                                 scripts/twins/twin.mjs publish / sci-twin.mjs publish
 //
-// The selection is the scripts' own: maths = twin.mjs queue (sub-skills short of 5 twins,
+// The selection is the scripts' own: maths = twin.mjs queue (sub-skills short of the stage —
+// 3 verified twins, later 5 — counted by the maths project's math_twin_units(),
 // the stuck report's sub-skills first, most-drawn first, one per sub-skill per round);
 // science = sci-twin.mjs gap/queue: the science project's science_twin_units() (3 verified twins
 // per (pool, sub-skill) at the seed's level, open practice topics first, fewest twins first, the
@@ -21,7 +22,7 @@ import { loadTeachingKnowledge } from './teaching-knowledge';
 import { botInternalSecret } from './bot-secret';
 import { SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS } from './portal-beta';
 import {
-  TWINS_PER_SKILL, SCI_PER_SKILL, TWIN_SCHOOL, TWIN_EXAM_TYPE, orderMathQueue,
+  TWINS_PER_SKILL, TWIN_STAGES, SCI_PER_SKILL, haveFromUnits, mathGapSummary, type MathTwinUnit, TWIN_SCHOOL, TWIN_EXAM_TYPE, orderMathQueue,
   mathQuestionText, structureOf, sumMarks, flatParts, gateMathTwin, mathVerdictOk, mathVerdictFailures, mathBlindAgrees,
   gateScienceTwin, scienceVerdictOk, scienceVerdictFailures, sciQuestionText, keyOf, closest, flatFigureSpec, LETTERS,
   levelFromWork, sciTwinItem, scienceQueueFromUnits, type SciUnit,
@@ -81,15 +82,12 @@ const FAMILY: Record<string, string[]> = { AM: ['AM', 'S3_AM'], S3_AM: ['AM', 'S
 export const familyOf = (level: string) => FAMILY[level] ?? [level];
 export const MATH_LEVELS = ['EM', 'AM', 'S3_EM', 'S3_AM', 'S1', 'S2', 'JC1', 'JC2'];
 
-async function twinCounts(level: string): Promise<{ sgOf: Map<string, number>; have: Map<number, number> }> {
-  const sb = getSupabaseAdmin();
-  const lv = familyOf(level);
-  const rows = await pageAll((a, b) => sb.from('twin_queue').select('source_id, subgroup_id').in('level', lv).order('source_id').range(a, b));
-  const sgOf = new Map<string, number>(rows.filter((r) => r.subgroup_id != null).map((r) => [r.source_id, Number(r.subgroup_id)]));
-  const twins = await pageAll((a, b) => sb.from('questions').select('twin_of').in('level', lv).not('twin_of', 'is', null).is('deleted_at', null).order('id').range(a, b));
-  const have = new Map<number, number>();
-  for (const t of twins) { const sg = sgOf.get(t.twin_of); if (sg != null) have.set(sg, (have.get(sg) ?? 0) + 1); }
-  return { sgOf, have };
+/** THE maths gap: math_twin_units over the level's family (migrations/math_twin_units.sql) —
+ *  the same function twin.mjs (the Fly lane) and the dashboard read, so the numbers agree. */
+export async function mathUnits(level: string, per: number = TWINS_PER_SKILL): Promise<MathTwinUnit[]> {
+  const { data, error } = await getSupabaseAdmin().rpc('math_twin_units', { p_levels: familyOf(level), p_per_skill: per });
+  if (error) throw new Error(`math_twin_units: ${error.message}`);
+  return ((data ?? []) as any[]).map((u) => ({ ...u, subgroup_id: Number(u.subgroup_id) }));
 }
 
 async function stuckFocus(): Promise<Set<number>> {
@@ -163,17 +161,22 @@ async function mathPacket(row: TwinQueueRow & { need: number; have: number; focu
   };
 }
 
-export async function mathQueue(level: string, n: number, opts: { focusOnly?: boolean; skip?: string[] } = {}) {
+export async function mathQueue(level: string, n: number, opts: { focusOnly?: boolean; skip?: string[]; per?: number } = {}) {
   const sb = getSupabaseAdmin();
   const lv = familyOf(level);
-  const { have } = await twinCounts(level);
+  const per = opts.per ?? TWINS_PER_SKILL;
+  const units = await mathUnits(level, per);
+  const have = haveFromUnits(units);
   const rows = await pageAll((a, b) => sb.from('twin_queue').select('source_id, level, subgroup_id, subgroup, topic, draws_90d, total_marks, has_image')
     .in('level', lv).gt('text_len', 40).eq('has_any_twin', false).not('subgroup_id', 'is', null).order('draws_90d', { ascending: false }).order('source_id').range(a, b));
   const focus = await stuckFocus();
   const skip = new Set(opts.skip ?? []);
-  const { picked, subskills, toWrite } = orderMathQueue(rows.filter((r) => !skip.has(String(r.source_id))).map((r) => ({ ...r, subgroup_id: Number(r.subgroup_id), draws_90d: Number(r.draws_90d) || 0 })), have, { per: TWINS_PER_SKILL, focus, level, limit: n, focusOnly: opts.focusOnly });
+  const { picked } = orderMathQueue(rows.filter((r) => !skip.has(String(r.source_id))).map((r) => ({ ...r, subgroup_id: Number(r.subgroup_id), draws_90d: Number(r.draws_90d) || 0 })), have, { per, focus, level, limit: n, focusOnly: opts.focusOnly });
+  const gap = mathGapSummary(units, per);
   const items = (await Promise.all(picked.map((r) => mathPacket(r).catch((e) => ({ error: (e as Error).message, seed_id: r.source_id }))))).filter(Boolean);
-  return { bank: 'maths', level, family: lv, subskills_short: subskills, twins_to_write: toWrite, per_skill: TWINS_PER_SKILL, items };
+  // subskills_short / twins_to_write = the whole family's gap at `per` (math_twin_units — what
+  // twin.mjs queue prints too), not just this window; blocked = short sub-skills with too few seeds left
+  return { bank: 'maths', level, family: lv, per_skill: per, stages: TWIN_STAGES, subskills_short: gap.short, twins_to_write: gap.to_write, gap, items };
 }
 
 /** A LIVE twin of this seed (a retired one — maths deleted_at, science practice_hidden — does not block). */
@@ -205,9 +208,11 @@ export async function submitMath(body: SubmitBody): Promise<SubmitOutcome> {
   // need: the sub-skill must still be short of its target (two sessions never overshoot)
   const primary = plan.subgroups.find((s) => s.is_primary) ?? plan.subgroups[0];
   if (!primary) return fail('need', ['the seed has no sub-skill filing — twins are written per sub-skill'], 400);
-  const { have } = await twinCounts(plan.level);
+  // (the overshoot guard is the LAST stage: a queue asked with per_skill=5 may fill past 3)
+  const top = TWIN_STAGES[TWIN_STAGES.length - 1];
+  const have = haveFromUnits(await mathUnits(plan.level, top));
   const has = plan.subgroups.reduce((m, s) => Math.max(m, have.get(s.id) ?? 0), 0);
-  if (has >= TWINS_PER_SKILL) return fail('need', [`sub-skill "${primary.name}" already has ${has} twins (target ${TWINS_PER_SKILL}) — take the next seed`], 409);
+  if (has >= top) return fail('need', [`sub-skill "${primary.name}" already has ${has} twins (target ${top}) — take the next seed`], 409);
   // automatic gates (the corpus = the 60 bank rows nearest the TWIN's own text, twins included)
   const twinText = mathQuestionText(q);
   const corpus = await neighbours(familyOf(plan.level), twinText, 60);

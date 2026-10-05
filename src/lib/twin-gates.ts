@@ -15,7 +15,11 @@
 // SPEC-TWINS.md §4 (maths) and §11 (science) are the law; docs/CLOUD.md §Cloud twins the doors.
 
 export const NOVELTY_MAX = 0.4;            // word-trigram Jaccard above this = a disguised copy (gce-paper's bar)
-export const TWINS_PER_SKILL = 5;          // maths: twins per sub-skill (Adrian, 3 Oct 2026)
+// maths: verified twins per sub-skill, in two STAGES (Adrian, 3 Oct 2026: "finish sec 1 and sec 2
+// first (5 per subskill is for future)") — every level to 3 first, then 5. The Fly lane's
+// TWINS_TARGETS="3 5" is the same list. TWINS_PER_SKILL is the stage counted by default.
+export const TWIN_STAGES = [3, 5] as const;
+export const TWINS_PER_SKILL = TWIN_STAGES[0];
 export const SCI_PER_SKILL = 3;            // science: verified twins per (pool, sub-skill) at the seed's level (SPEC-TWINS §11, 5 Oct 2026)
 export const TWIN_SCHOOL = 'AdrianMath';
 export const TWIN_EXAM_TYPE = 'Twin';
@@ -387,7 +391,30 @@ export function orderMathQueue(rows: TwinQueueRow[], have: Map<number, number>, 
   const order = [...buckets.entries()].sort(([ka, a], [kb, b]) => (Number(focus.has(kb)) - Number(focus.has(ka))) || (b.draws - a.draws) || (b.need - a.need) || (b.rows.length - a.rows.length) || String(ka).localeCompare(String(kb)));
   const spread: (TwinQueueRow & { need: number; have: number; focus: boolean })[] = [];
   for (let round = 0; ; round++) { let any = false; for (const [k, b] of order) if (b.rows[round]) { spread.push({ ...b.rows[round], focus: focus.has(k) }); any = true; } if (!any) break; }
-  return { picked: spread.slice(0, opts.limit), subskills: buckets.size, toWrite: [...buckets.values()].reduce((n, b) => n + b.need, 0) };
+  // a sub-skill can take no more twins than it has seeds left (one twin per seed)
+  return { picked: spread.slice(0, opts.limit), subskills: buckets.size, toWrite: [...buckets.values()].reduce((n, b) => n + Math.min(b.need, b.rows.length), 0) };
+}
+
+/** One row of the maths project's math_twin_units(levels, per_skill) — THE gap (migrations/math_twin_units.sql). */
+export type MathTwinUnit = { subgroup_id: number; subgroup: string | null; topic: string | null; twins: number; need: number; free_seeds: number; writable: number; draws_90d: number };
+/** Sub-skill → live verified twins, from the units (the `have` map orderMathQueue takes). */
+export function haveFromUnits(units: MathTwinUnit[]): Map<number, number> {
+  return new Map(units.map((u) => [Number(u.subgroup_id), Number(u.twins) || 0]));
+}
+/** The one summary every surface reports (door, twin.mjs, dashboard). Pure. */
+export function mathGapSummary(units: MathTwinUnit[], per: number) {
+  const short = units.filter((u) => Number(u.need) > 0);
+  const blocked = short.filter((u) => Number(u.free_seeds) < Number(u.need));
+  return {
+    per_skill: per,
+    subskills: units.length,
+    full: units.length - short.length,
+    short: short.length,
+    to_write: short.reduce((n, u) => n + Number(u.writable), 0),
+    // sub-skills that cannot reach `per` from the seeds left (every seed twinned, or too few seeds)
+    blocked_subskills: blocked.length,
+    blocked_twins: blocked.reduce((n, u) => n + Number(u.need) - Number(u.writable), 0),
+  };
 }
 
 /** One seed per sub-skill per round (sci-twin.mjs queue's spread inside a topic). */

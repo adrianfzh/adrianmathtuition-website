@@ -6,7 +6,7 @@
 // the writing is done by plan-billed Claude Code agents (the `twin-question`
 // skill), never the API.
 //
-//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 5] [--json] [--focus-only]  (only sub-skills short of 5 twins; --focus-only = the stuck report's)
+//   node scripts/twins/twin.mjs queue   --level EM [--limit 20] [--per-skill 3|5] [--json] [--focus-only]  (only sub-skills short of the stage, 3 by default; --focus-only = the stuck report's)
 //   node scripts/twins/twin.mjs need    --level EM --subgroup <id>   (prints how many more that sub-skill wants)
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
@@ -153,18 +153,22 @@ const FAMILY = { AM: ['AM', 'S3_AM'], S3_AM: ['AM', 'S3_AM'], EM: ['EM', 'S3_EM'
 const familyOf = (level) => FAMILY[level] ?? [level];
 
 // The goal is TWINS_PER_SKILL twins per sub-skill, not one per school question
-// (Adrian, 1 Oct 2026: "its twins per skill not by each question right?").
-// twinCounts → how many live twins each sub-skill of a family already has, counted
-// through the source each twin was written from (the source's primary filing).
-const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 5);
-async function twinCounts(env, level) {
-  const lv = familyOf(level).join(',');
-  const rows = await restAll(env, `twin_queue?select=source_id,subgroup_id&level=in.(${lv})`);
-  const sgOf = new Map(rows.map((r) => [r.source_id, r.subgroup_id]));
-  const twins = await restAll(env, `questions?select=twin_of&level=in.(${lv})&twin_of=not.is.null&deleted_at=is.null&order=id.asc`);
-  const have = new Map();
-  for (const t of twins) { const sg = sgOf.get(t.twin_of); if (sg) have.set(sg, (have.get(sg) ?? 0) + 1); }
-  return { rows, have };
+// (Adrian, 1 Oct 2026: "its twins per skill not by each question right?"), in two stages
+// (3 Oct 2026: "finish sec 1 and sec 2 first (5 per subskill is for future)") — 3, then 5;
+// the Fly lane passes --per-skill from TWINS_TARGETS="3 5". The default here is the first stage.
+// twinCounts → THE gap: the maths project's math_twin_units(levels, per) (migrations/
+// math_twin_units.sql), the same function the cloud door (lib/twin-store.ts) and the dashboard
+// read — live VERIFIED twins ('AdrianMath' / 'Twin'), counted through the seed's primary filing.
+// (6 Oct 2026: this used to page twin_queue with no ORDER BY, which dropped rows between pages,
+// and counted Practice-photo rows as twins — its numbers did not match the door's.)
+const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 3);
+async function twinCounts(env, level, per = PER_SKILL) {
+  const r = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/math_twin_units`, { method: 'POST', headers: { apikey: env.SUPABASE_SECRET_KEY, Authorization: `Bearer ${env.SUPABASE_SECRET_KEY}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ p_levels: familyOf(level), p_per_skill: per }) });
+  if (!r.ok) throw new Error(`math_twin_units: ${r.status} ${await r.text()}`);
+  const units = await r.json();
+  const have = new Map(units.map((u) => [Number(u.subgroup_id), Number(u.twins) || 0]));
+  return { units, have };
 }
 // 🧭 The weekly stuck report (5 Oct 2026, /api/cron/stuck-weekly) names the bank
 // sub-skills students asked about AND lost marks on; those go first, for two weeks.
@@ -182,7 +186,7 @@ async function queue() {
   const limit = Number(argOf('--limit', '20'));
   const per = Number(argOf('--per-skill', String(PER_SKILL)));
   const levels = familyOf(level);
-  const { have } = await twinCounts(env, level);
+  const { units, have } = await twinCounts(env, level, per);
   const rows = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&has_any_twin=is.false&subgroup_id=not.is.null&order=draws_90d.desc,source_id.asc`);
   // only sub-skills still short of `per`; inside one, the most-drawn sources first,
   // the lane's own level before the other year
@@ -209,7 +213,10 @@ async function queue() {
   const picked = spread.slice(0, limit);
   if (has('--json')) { console.log(JSON.stringify(picked, null, 1)); return; }
   for (const r of picked) console.log(`${r.source_id}  ${r.level.padEnd(5)} have ${r.have}/${per}  draws ${String(r.draws_90d).padStart(2)}  ${String(r.total_marks).padStart(2)}m  ${r.has_image ? 'fig' : '   '}  ${r.school} ${r.year}  · ${r.topic} › ${r.subgroup}`);
-  log(`${levels.join('+')}: ${buckets.size} sub-skills short of ${per} twins (${[...buckets.values()].reduce((n, b) => n + b.need, 0)} twins to write); listed ${picked.length}`);
+  // the summary is the WHOLE family's gap from math_twin_units (= the door's twins_to_write)
+  const short = units.filter((u) => u.need > 0);
+  const blocked = short.filter((u) => u.free_seeds < u.need);
+  log(`${levels.join('+')}: ${short.length} sub-skills short of ${per} twins (${short.reduce((n, u) => n + u.writable, 0)} twins to write${blocked.length ? `; ${blocked.length} sub-skills can't reach ${per} — too few seeds left` : ''}); listed ${picked.length}`);
 }
 // need — how many more twins one sub-skill wants (twins.sh asks just before it writes,
 // so two lanes, or a stale list, never push a sub-skill past the target)
@@ -218,7 +225,7 @@ async function need() {
   const level = argOf('--level', 'EM'); const sg = argOf('--subgroup', null);
   const per = Number(argOf('--per-skill', String(PER_SKILL)));
   if (sg == null) throw new Error('--subgroup <id>');
-  const { have } = await twinCounts(env, level);
+  const { have } = await twinCounts(env, level, per);
   console.log(Math.max(0, per - (have.get(Number(sg)) ?? have.get(sg) ?? 0)));
 }
 

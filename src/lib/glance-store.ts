@@ -18,12 +18,12 @@ import { costEntries, type CostRunRow } from '@/lib/costs';
 import { addDaysISO, sgtDayStartISO, sgtTodayISO, sgtDaysAgoISO } from '@/lib/sgt';
 import { localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 import { isScience, type StuckSubject } from '@/lib/stuck-topics';
-import { perDay, sumPerDay, twinsLeft, type GlanceFacts, type JobLine, type LessonLink } from '@/lib/glance';
+import { TWINS_PER_SKILL, mathGapSummary, type MathTwinUnit } from '@/lib/twin-gates';
+import { perDay, sumPerDay, type GlanceFacts, type JobLine, type LessonLink } from '@/lib/glance';
 
 const BOT_HEALTH_URL = 'https://adrianmath-telegram-math-bot.fly.dev/health';
 /** The levels the twins lanes write for (as scripts/ops-status.mjs counts them). */
 const TWIN_LEVELS = ['S1', 'S2'];
-const TWINS_PER_SKILL = 3;
 const TREND_DAYS = 7;
 /** The worker's self-fix stamps (docs/OPS.md §The worker's self-fixes). */
 const SELF_FIX_JOBS = ['worker-recover', 'login-pool', 'disk-clean'];
@@ -137,16 +137,12 @@ async function extraction(sb: Sb, midnight: string, now: number) {
 let twinsLeftCache: { at: number; left: Record<string, number | null> } | null = null;
 async function twinsLeftNow(sb: Sb): Promise<Record<string, number | null>> {
   if (twinsLeftCache && Date.now() - twinsLeftCache.at < 3600_000) return twinsLeftCache.left;
-  type Q = { source_id: string; level: string; subgroup_id: number | null; has_any_twin: boolean; text_len: number | null };
-  const rows = await all<Q>((a, b) => sb.from('twin_queue').select('source_id, level, subgroup_id, has_any_twin, text_len').in('level', TWIN_LEVELS).order('source_id').range(a, b));
-  const twins = await all<{ twin_of: string }>((a, b) => sb.from('questions').select('twin_of').in('level', TWIN_LEVELS).not('twin_of', 'is', null).is('deleted_at', null).order('id').range(a, b));
-  const sgOf = new Map(rows.map((r) => [r.source_id, r.subgroup_id]));
-  const have = new Map<number, number>();
-  for (const t of twins) { const sg = sgOf.get(t.twin_of); if (sg != null) have.set(sg, (have.get(sg) ?? 0) + 1); }
-  const open = rows.filter((r) => !r.has_any_twin && (r.text_len ?? 0) > 40).map((r) => ({ level: r.level, subgroupId: r.subgroup_id }));
-  const got = twinsLeft(open, have, TWINS_PER_SKILL);
+  // THE gap — math_twin_units, the function twin.mjs (the Fly lane) and the cloud door read
   const left: Record<string, number | null> = {};
-  for (const lv of TWIN_LEVELS) left[lv] = got[lv] ?? 0;
+  for (const lv of TWIN_LEVELS) {
+    const { data, error } = await sb.rpc('math_twin_units', { p_levels: [lv], p_per_skill: TWINS_PER_SKILL });
+    left[lv] = error ? null : mathGapSummary((data ?? []) as MathTwinUnit[], TWINS_PER_SKILL).to_write;
+  }
   twinsLeftCache = { at: Date.now(), left };
   return left;
 }

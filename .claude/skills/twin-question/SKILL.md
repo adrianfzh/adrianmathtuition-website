@@ -11,7 +11,10 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
 ## Steps
 
 1. **Pick sources** — `node scripts/twins/twin.mjs queue --level EM --limit 20`
-   lists only sub-skills still short of **5 twins** (Adrian, 3 Oct 2026: "a goal will be 5 twins per sub-skill"; was 3) (`--per-skill`, env `TWINS_PER_SKILL`;
+   lists only sub-skills still short of the STAGE — **3 verified twins first, then 5** (Adrian,
+   3 Oct 2026: "finish sec 1 and sec 2 first (5 per subskill is for future)"; default 3,
+   `--per-skill 5` for the later stage, env `TWINS_PER_SKILL`; the count is the maths project's
+   `math_twin_units()`, the same function the cloud door and the dashboard read;
    Adrian, 1 Oct 2026: the goal is twins per sub-skill, not one per school question),
    one row per sub-skill per round, most-drawn first. `twin.mjs need --level EM
    --subgroup <id>` says how many that sub-skill still wants — ask it right before

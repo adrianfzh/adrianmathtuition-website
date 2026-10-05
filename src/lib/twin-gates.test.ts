@@ -1,8 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, it, expect } from 'vitest';
 import {
   gateMathTwin, mathVerdictOk, mathBlindAgrees, mathVerdictFailures, flatParts, structureOf, plainNumber,
   gateScienceTwin, scienceVerdictOk, scienceVerdictFailures, splitMcq, keyOf, sciQuestionText,
-  parseSubmit, flatFigureSpec, rateDecision, orderMathQueue, spreadBySubgroup, interleaveTopics, closest,
+  parseSubmit, flatFigureSpec, rateDecision, orderMathQueue, mathGapSummary, haveFromUnits, TWINS_PER_SKILL, TWIN_STAGES, spreadBySubgroup, interleaveTopics, closest,
   type MathPlan, type MathTwinDraft, type SciTwinDraft,
 } from './twin-gates';
 
@@ -196,5 +198,31 @@ describe('rate + queue order', () => {
   it('closest ranks by trigram overlap', () => {
     const c = closest('the cat sat on the mat today', [{ id: '1', ref: 'x', text: 'a dog ran' }, { id: '2', ref: 'y', text: 'the cat sat on the mat' }], 1);
     expect(c[0].id).toBe('2');
+  });
+});
+
+describe('the maths twins gap — ONE definition (math_twin_units)', () => {
+  const u = (subgroup_id: number, twins: number, free_seeds: number, per = 3) => {
+    const need = Math.max(0, per - twins);
+    return { subgroup_id, subgroup: null, topic: null, twins, need, free_seeds, writable: Math.min(need, free_seeds), draws_90d: 0 };
+  };
+  it('the stages: 3 first, then 5 (Adrian, 3 Oct 2026)', () => {
+    expect(TWIN_STAGES).toEqual([3, 5]);
+    expect(TWINS_PER_SKILL).toBe(3);
+  });
+  it('to_write = what the seeds left can still give; a sub-skill short of seeds is "blocked", not counted twice', () => {
+    const units = [u(1, 3, 9), u(2, 0, 9), u(3, 1, 1), u(4, 2, 0)];
+    expect(mathGapSummary(units, 3)).toEqual({ per_skill: 3, subskills: 4, full: 1, short: 3, to_write: 3 + 1, blocked_subskills: 2, blocked_twins: 1 + 1 });
+    expect(haveFromUnits(units).get(3)).toBe(1);
+  });
+  it('orderMathQueue counts a sub-skill no higher than the seeds it has left', () => {
+    const rows = [{ source_id: 'a', level: 'S1', subgroup_id: 1, draws_90d: 0 }];
+    expect(orderMathQueue(rows, new Map(), { level: 'S1', limit: 5, per: 3 }).toWrite).toBe(1);
+  });
+  it('twin.mjs (the Fly lane), the cloud door and the dashboard all read math_twin_units', () => {
+    const read = (f: string) => readFileSync(join(process.cwd(), f), 'utf8');
+    for (const f of ['scripts/twins/twin.mjs', 'src/lib/twin-store.ts', 'src/lib/glance-store.ts']) expect(read(f)).toContain("math_twin_units");
+    expect(read('scripts/twins/twin.mjs')).not.toMatch(/twin_queue\?select=source_id,subgroup_id/);
+    expect(read('src/lib/twin-store.ts')).not.toMatch(/async function twinCounts/);
   });
 });
