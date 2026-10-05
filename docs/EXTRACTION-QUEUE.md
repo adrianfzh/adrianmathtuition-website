@@ -483,14 +483,19 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   everything — Adrian's order: O-Level English 2025, 2024, then O-Level Social Studies 2025 with a
   scheme): the two English test sets (the 2024 "1184 compre B" set + answers, school unknown →
   `Unattributed`; Nan Chiau High's 2021 comprehension practice + answer scheme — there are NO
-  O-Level English school exam papers in the copy, only these and notes), then 14 Social Studies 2025
-  prelims. Then, behind the maths / science already queued, one block each (`indexed_at`
-  2026-10-06 + order × 1,000 s): Social Studies 116 · Social Studies N(A) 46 · English (held — below) ·
-  History 27 · History Elective 47 · Geography 36 · Geography Elective 46. Sec 3 papers last in
-  each block, newest year first.
+  O-Level English school exam papers in the copy, only these and notes) — **both banked 6 Oct 2026 by a
+  session** (the Fly `extract` switch was OFF): 11 rows / 19 marks and 8 rows / 22 marks, every answer
+  from the paired scheme, `verify_language_paper` pass, and the no-scheme refusal tested — then the
+  three N(A) English 2024 prelims with a scheme (Fairfield Methodist, CHIJ Katong Convent, Geylang
+  Methodist — all Paper 2), then 14 Social Studies 2025 prelims with a scheme (Bartley, Maris Stella
+  High, ACS (Independent), Ahmad Ibrahim, Anderson, Catholic High, Chung Cheng High (Main), Cedar Girls',
+  Crescent Girls', Nan Chiau High, Nan Hua High, Singapore Chinese Girls', CHIJ St Nicholas Girls',
+  Zhenghua). Then, behind the maths / science already queued, one block each (`indexed_at`
+  2026-10-06 + order × 1,000 s): Social Studies 116 · Social Studies N(A) 46 · English 1 (Northland
+  2022 MYE, its answers inside) · History 27 · History Elective 47 · Geography 36 · Geography
+  Elective 46. Sec 3 papers last in each block, newest year first.
 - **Held, not queued:** humanities papers with no scheme in the file or beside it (22 SS, 2 SS N(A),
-  5 HIST_E, 4 GEOG, 9 GEOG_E — the reason in `notes`); English papers until the test runs pass, and
-  English papers with no scheme (Adrian, 6 Oct: "papers without a scheme: copy, don't queue yet");
+  5 HIST_E, 4 GEOG, 9 GEOG_E — the reason in `notes`); English papers with no scheme (all the 2023 and 2025 N(A) prelims) (Adrian, 6 Oct: "papers without a scheme: copy, don't queue yet");
   Literature (no exam papers in the copy — notes only); Chinese / Higher Chinese / Chinese Literature
   / Malay / Tamil (notes only, and no rules yet).
 - **The proposal for Chinese** (not built, Adrian's word needed): the same language tables with
