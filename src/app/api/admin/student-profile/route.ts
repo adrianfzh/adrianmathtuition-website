@@ -13,7 +13,8 @@ import { computePerMonthPayments } from '@/lib/invoice-payments';
 import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { SLOT_WINDOWS_SETTING, parseSlotWindows } from '@/lib/slot-windows';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { summariseActivity, type ActivityAccount, type ActivityEvent, type ActivityAttempt, type ActivityHandin } from '@/lib/portal-activity';
+import { TAB_VIEW_KIND } from '@/lib/portal-tabs';
+import { lastOpenedTabs, type LastOpenedTab, summariseActivity, type ActivityAccount, type ActivityEvent, type ActivityAttempt, type ActivityHandin } from '@/lib/portal-activity';
 
 export const runtime = 'nodejs';
 
@@ -34,6 +35,8 @@ function slotLabel(f: any): string {
 type PortalBlock = {
   hasAccount: boolean; lastSeenAt: string | null; lastHandinAt: string | null;
   lastAttemptAt: string | null; lastMarkingViewAt: string | null; status: 'active' | 'quiet' | 'never';
+  /** Which app tabs they opened, newest first (6 Oct 2026, 'tab:view' rows). */
+  lastTabs: LastOpenedTab[];
 };
 async function readPortalActivity(id: string): Promise<PortalBlock | null> {
   try {
@@ -45,9 +48,9 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
       .limit(1);
     const account = (acctRows ?? [])[0] as ActivityAccount | undefined;
     if (!account) {
-      return { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never' };
+      return { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never', lastTabs: [] };
     }
-    const [eventsRes, attemptsRes, handinsRes] = await Promise.all([
+    const [eventsRes, attemptsRes, handinsRes, tabsRes] = await Promise.all([
       sb.from('portal_event_log').select('identity, kind, created_at')
         .eq('identity', id).in('kind', ['marking:view', 'marking:open'])
         .order('created_at', { ascending: false }).limit(1),
@@ -57,6 +60,10 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
       sb.from('paper_marking_runs').select('student_id, created_at')
         .eq('student_id', id).not('result_json->portal_submission', 'is', null)
         .order('created_at', { ascending: false }).limit(1),
+      // the last 300 tab opens are plenty to find each tab's latest
+      sb.from('portal_event_log').select('identity, kind, created_at, detail')
+        .eq('identity', id).eq('kind', TAB_VIEW_KIND)
+        .order('created_at', { ascending: false }).limit(300),
     ]);
     const summary = summariseActivity({
       accounts: [account],
@@ -69,6 +76,7 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
     return {
       hasAccount: true, lastSeenAt: row.lastSeenAt, lastHandinAt: row.lastHandinAt,
       lastAttemptAt: row.lastAttemptAt, lastMarkingViewAt: row.lastMarkingViewAt, status: row.status,
+      lastTabs: lastOpenedTabs((tabsRes.data ?? []) as ActivityEvent[], 5),
     };
   } catch (e) {
     console.error('[student-profile] portal activity read failed:', (e as Error).message);

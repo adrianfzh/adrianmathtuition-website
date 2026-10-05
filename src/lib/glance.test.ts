@@ -19,6 +19,7 @@ function facts(over: Partial<GlanceFacts> = {}): GlanceFacts {
     backups: { fileBackup: { ok: true, at: ago(6), summary: null }, backupCheck: { ok: true, at: ago(6), summary: null }, leakTest: { ok: true, at: ago(6), summary: null } },
     stuck: { at: ago(8), students: [], scienceGaps: [] },
     cost: { perPaper7d: 1.4, papers7d: 12, monthToDate: 20, month: 'Oct', perDay: [1, 2, 3, 4, 5, 6, 7] },
+    tabs: { students: 4, top: [{ label: 'Practise', students: 3, opens: 9 }, { label: 'Papers', students: 2, opens: 4 }] },
     ...over,
   };
 }
@@ -149,5 +150,26 @@ describe('buildGlance', () => {
   it('lessons today: amber while lessons wait to be logged', () => {
     const t = tile(buildGlance(facts({ lessonsToLog: 2, lessonsToday: [{ lessonId: 'l', studentId: 's', name: 'Chloe Zhang', time: '3-5pm', href: '/admin/students/s/next' }] }), NOW), 'lessons');
     expect(t).toMatchObject({ value: '1', tone: 'amber', status: '2 to log', href: '/admin/log', sub: 'Chloe' });
+  });
+});
+
+describe('Tabs opened this week (6 Oct 2026)', () => {
+  it('sits in This week: unique students, top tabs with their students', () => {
+    const g = buildGlance(facts(), NOW);
+    const week = g.sections.find((s) => s.id === 'week')!;
+    const t = week.tiles.find((x) => x.id === 'tabs')!;
+    expect(t.value).toBe('4');
+    expect(t.sub).toBe('Practise 3 · Papers 2');
+    expect(t.tone).toBe('green');
+  });
+  it('nobody this week is amber; an unreadable fact is grey "No reading", never a zero', () => {
+    expect(tile(buildGlance(facts({ tabs: { students: 0, top: [] } }), NOW), 'tabs').tone).toBe('amber');
+    const t = tile(buildGlance(facts({ tabs: null }), NOW), 'tabs');
+    expect(t.tone).toBe('grey');
+    expect(t.value).toBe('—');
+  });
+  it('shows at most five tabs', () => {
+    const top = Array.from({ length: 8 }, (_, i) => ({ label: `T${i}`, students: 8 - i, opens: 8 - i }));
+    expect(tile(buildGlance(facts({ tabs: { students: 9, top } }), NOW), 'tabs').sub!.split(' · ')).toHaveLength(5);
   });
 });

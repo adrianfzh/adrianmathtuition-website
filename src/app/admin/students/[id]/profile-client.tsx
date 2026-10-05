@@ -81,6 +81,8 @@ interface PortalActivity {
   lastAttemptAt: string | null;
   lastMarkingViewAt: string | null;
   status: 'active' | 'quiet' | 'never';
+  /** Which app tabs they opened, newest first (6 Oct 2026). */
+  lastTabs?: { tab: string; label: string; at: string }[];
 }
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
@@ -877,6 +879,12 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                     {' · '}<span style={{ color: '#9ca3af' }}>last hand-in</span> {relativeDay(data.portal.lastHandinAt, new Date())}
                     {' · '}<span style={{ color: '#9ca3af' }}>last practice</span> {relativeDay(data.portal.lastAttemptAt, new Date())}
                     {' · '}<span style={{ color: '#9ca3af' }}>last opened a marked paper</span> {relativeDay(data.portal.lastMarkingViewAt, new Date())}
+                    {data.portal.lastTabs && data.portal.lastTabs.length > 0 && (
+                      <div style={{ marginTop: 4 }}>
+                        <span style={{ color: '#9ca3af' }}>Last opened ·</span>{' '}
+                        {data.portal.lastTabs.map((t) => `${t.label} ${relativeDay(t.at, new Date())}`).join(' · ')}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <span style={{ color: '#9ca3af' }}>Portal · no account yet</span>

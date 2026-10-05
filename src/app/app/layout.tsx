@@ -7,11 +7,12 @@ import { APP_STARTUP_IMAGES } from '@/lib/app-splash';
 import Link from 'next/link';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { currentAccount } from '@/lib/portal-auth';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import TabBeacon from '@/components/TabBeacon';
 import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
 import { inviteLinkFor } from '@/lib/portal-join';
@@ -45,6 +46,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // portal account, so no button.
   let inviteRef: string | null = null;
   let inviteTuition = false;
+  // Which tabs students open (6 Oct 2026) — a real student only: not the admin cookie, not the demo student.
+  let tabBeacon = false;
   if (!isAdmin) {
   // Auth + paywall gate. currentAccount() bounces anonymous (and
     // account-less) sessions to /login; it costs nothing extra — the same
@@ -60,6 +63,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     if (!(await portalAccessAllowed(account))) redirect('/app/pass');
     inviteRef = account.id;
     inviteTuition = Boolean(account.airtable_student_id?.trim());
+    tabBeacon = !SCIENCE_PREVIEW_IDENTITIES.includes(portalIdentity(account));
   }
 
   // Marking-only beta (lib/portal-beta.ts, Adrian 2026-08-21): students see
@@ -193,6 +197,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
       {/* First-login tour — shows itself once per device, on the dashboard only. */}
       <PortalTour surfaces={surfaces} />
+
+      {tabBeacon && <TabBeacon />}
     </div>
   );
 }

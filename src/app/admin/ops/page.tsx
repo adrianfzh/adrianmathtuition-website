@@ -9,6 +9,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { planShareLow, type MarkingShare } from '@/lib/marking-path';
+import TabsOpened from './tabs-opened';
 import { flipReady, isFlipped, type TopicReadiness } from '@/lib/serving-policy';
 
 type JobRow = { job: string; ranAt: string; ok: boolean; summary: string | null; rhythm: string | null; staleReason: string | null };
@@ -398,6 +399,8 @@ export default function OpsPage() {
             {data.neverStamped.map(n => `${n.job} (${n.rhythm})`).join(' · ')}
           </section>
         )}
+
+        <TabsOpened />
 
         <footer className="text-xs text-neutral-400 px-1">
           Alarms come from the 6-hourly health check reading this same logbook — a missed slot Telegrams you.

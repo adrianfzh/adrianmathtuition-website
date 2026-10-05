@@ -10,6 +10,9 @@
 //   - paper_marking_runs where result_json.portal_submission is set —
 //     student-initiated hand-ins (same predicate mark-triage uses to find
 //     portal submissions)
+//   - portal_event_log kind 'tab:view' (6 Oct 2026, components/TabBeacon.tsx)
+//     — which app tabs students open → summary.tabs, read page by page
+//     (PostgREST stops at 1000 rows a request)
 //
 // Service-role reads (this table has no admin-readable RLS policy), admin-
 // auth gated. Read-only — writes nothing. Consumed by the hub's attention
@@ -17,6 +20,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { TAB_VIEW_KIND } from '@/lib/portal-tabs';
 import { summariseActivity, type ActivityAccount, type ActivityEvent, type ActivityAttempt, type ActivityHandin } from '@/lib/portal-activity';
 
 export const runtime = 'nodejs';
@@ -24,6 +28,23 @@ export const dynamic = 'force-dynamic';
 
 const WINDOW_DAYS = 30;
 const windowStartIso = () => new Date(Date.now() - WINDOW_DAYS * 86400_000).toISOString();
+const PAGE = 1000;
+const TAB_ROWS_MAX = 50_000;
+
+/** Every 'tab:view' row since `since`, page by page. Fail-soft: what was read before an error. */
+async function tabViews(sb: ReturnType<typeof getSupabaseAdmin>, since: string): Promise<ActivityEvent[]> {
+  const out: ActivityEvent[] = [];
+  for (let from = 0; from < TAB_ROWS_MAX; from += PAGE) {
+    const { data, error } = await sb.from('portal_event_log')
+      .select('identity, kind, created_at, detail')
+      .eq('kind', TAB_VIEW_KIND).gte('created_at', since)
+      .order('created_at', { ascending: true }).range(from, from + PAGE - 1);
+    if (error) { console.warn('[portal-activity] tab:view read failed:', error.message); break; }
+    out.push(...((data ?? []) as ActivityEvent[]));
+    if (!data || data.length < PAGE) break;
+  }
+  return out;
+}
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -31,7 +52,7 @@ export async function GET(req: NextRequest) {
   const sb = getSupabaseAdmin();
   const since = windowStartIso();
 
-  const [accountsRes, eventsRes, attemptsRes, handinsRes] = await Promise.all([
+  const [accountsRes, eventsRes, attemptsRes, handinsRes, tabs] = await Promise.all([
     sb.from('portal_accounts')
       .select('id, airtable_student_id, display_name, level, created_at, last_seen_at, deactivated_at'),
     sb.from('portal_event_log')
@@ -45,6 +66,7 @@ export async function GET(req: NextRequest) {
       .select('student_id, created_at')
       .gte('created_at', since)
       .not('result_json->portal_submission', 'is', null),
+    tabViews(sb, since),
   ]);
 
   if (accountsRes.error) return NextResponse.json({ error: accountsRes.error.message }, { status: 500 });
@@ -56,7 +78,7 @@ export async function GET(req: NextRequest) {
 
   const summary = summariseActivity({
     accounts: (accountsRes.data ?? []) as ActivityAccount[],
-    events: (eventsRes.data ?? []) as ActivityEvent[],
+    events: [...((eventsRes.data ?? []) as ActivityEvent[]), ...tabs],
     attempts: (attemptsRes.data ?? []) as ActivityAttempt[],
     handins: (handinsRes.data ?? []) as ActivityHandin[],
     now: new Date(),

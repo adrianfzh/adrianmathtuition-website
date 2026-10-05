@@ -61,6 +61,8 @@ export interface GlanceFacts {
   // This week
   stuck: { at: string; students: { area: string; names: string[]; groupLabel: string }[]; scienceGaps: string[] } | null;
   cost: { perPaper7d: number | null; papers7d: number; monthToDate: number | null; month: string; perDay: number[] } | null;
+  /** Which app tabs students opened in the last 7 days (6 Oct 2026, 'tab:view'): unique students, busiest tabs first. */
+  tabs?: { students: number; top: { label: string; students: number; opens: number }[] } | null;
 }
 
 export interface Glance { sections: Section[]; lessons: LessonLink[] | null; generatedAt: string }
@@ -332,6 +334,16 @@ function weekTiles(f: GlanceFacts, now: number): Tile[] {
       sub: f.stuck.scienceGaps.length ? f.stuck.scienceGaps.slice(0, 3).join(' · ') : `from the ${ageLabel(now - Date.parse(f.stuck.at))}-old report`,
       tone: f.stuck.scienceGaps.length ? 'amber' : 'green', status: f.stuck.scienceGaps.length ? 'No sheet yet' : 'None',
       href: '/admin/stuck',
+    });
+  }
+  if (!f.tabs) out.push(NO_READING('tabs', 'Tabs opened this week', '/admin/ops#tabs'));
+  else {
+    const top = f.tabs.top.slice(0, 5);
+    out.push({
+      id: 'tabs', label: 'Tabs opened this week', value: String(f.tabs.students),
+      sub: top.length ? top.map((t) => `${t.label} ${t.students}`).join(' · ') : 'No student opened the app',
+      tone: f.tabs.students ? 'green' : 'amber', status: f.tabs.students ? `${plural(f.tabs.students, 'student')}` : 'Nobody in',
+      href: '/admin/ops#tabs',
     });
   }
   if (!f.cost) out.push(NO_READING('cost', 'Cost per paper', '/admin/costs'));

@@ -286,6 +286,19 @@ and one compact line on `/admin/students/[id]` (last seen / hand-in / practice
 / marked-paper-opened, above "Marked papers"). Data route:
 `GET /api/admin/portal-activity`.
 
+**Which tabs students open (6 Oct 2026, Adrian: "yes — record which app tabs
+students open").** `components/TabBeacon.tsx`, mounted once in the app shell for
+real students only (not the admin cookie, not the demo student — the route skips
+both again), names the tab from the path (`lib/portal-tabs.ts tabForPath`, a fixed
+short name, unknown → `other`) and posts `{kind:'tab:view', detail:<name>}` at most
+once per tab per device per 30 minutes. The route accepts only a name on
+`TAB_LABELS` — never a URL. Counted by `lib/portal-activity.ts`
+(`summariseTabViews` per tab: unique students + opens over 7 and 30 days;
+`lastOpenedTabs` per student; tested) and shown as the "Tabs students open" table
+on `/admin/ops#tabs`, the dashboard's "Tabs opened this week" tile (This week),
+and a "Last opened · Practise 3 days ago · …" line on the student profile. No new
+personal data: the same `portal_event_log` rows, the same retention and erasure.
+
 ## Hand-in — "we don't have this paper" (10 Sep 2026)
 
 Adrian: *"students should drop their question paper if required, app should hint

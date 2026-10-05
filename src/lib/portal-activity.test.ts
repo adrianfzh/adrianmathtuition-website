@@ -195,3 +195,40 @@ describe('failed hand-ins on students\' phones (submit:failed)', () => {
     expect(failedHandins).toEqual([{ identity: 'x', displayName: null, at: NOW.toISOString(), stage: 'unknown', reason: 'unknown', pages: 0, uploaded: 0, paperName: null }]);
   });
 });
+
+describe('tab views (6 Oct 2026)', () => {
+  const at = (days: number) => new Date(NOW.getTime() - days * DAY_MS).toISOString();
+  const tv = (identity: string, tab: unknown, days: number) => ({ identity, kind: 'tab:view', created_at: at(days), detail: tab });
+
+  it('summariseTabViews: unique students and opens over 7 and 30 days, busiest first', async () => {
+    const { summariseTabViews } = await import('./portal-activity');
+    const rows = summariseTabViews([
+      tv('recA', 'practice', 1), tv('recA', 'practice', 2), tv('recB', 'practice', 3),
+      tv('recA', 'papers', 1), tv('recC', 'papers', 10),
+      tv('recA', 'ask', 40),                 // outside 30 days
+      tv('recA', '/app/practice', 1),        // not a tab name → ignored
+      { identity: 'recA', kind: 'marking:view', created_at: at(1) },
+      tv('recB', { tab: 'find' }, 1),        // object detail read too
+    ], NOW);
+    expect(rows.map(r => r.tab)).toEqual(['practice', 'papers', 'find']);
+    expect(rows[0]).toMatchObject({ label: 'Practise', students7d: 2, opens7d: 3, students30d: 2, opens30d: 3 });
+    expect(rows[1]).toMatchObject({ students7d: 1, opens7d: 1, students30d: 2, opens30d: 2 });
+  });
+
+  it('summariseActivity carries tabs; tabStudents7d counts anyone who opened a tab this week', async () => {
+    const { tabStudents7d } = await import('./portal-activity');
+    const events = [tv('recA', 'home', 1), tv('recB', 'home', 8), tv('recA', 'ask', 2)];
+    expect(summariseActivity(baseInput({ events })).tabs.map(t => t.tab)).toEqual(['home', 'ask']);
+    expect(tabStudents7d(events, NOW)).toBe(1);
+  });
+
+  it('lastOpenedTabs: each tab once with its latest open, newest first', async () => {
+    const { lastOpenedTabs } = await import('./portal-activity');
+    const out = lastOpenedTabs([tv('recA', 'practice', 3), tv('recA', 'papers', 1), tv('recA', 'practice', 2), tv('recA', 'nope', 0)], 5);
+    expect(out).toEqual([
+      { tab: 'papers', label: 'Papers', at: at(1) },
+      { tab: 'practice', label: 'Practise', at: at(2) },
+    ]);
+    expect(relativeDay(out[1].at, NOW)).toBe('2 days ago');
+  });
+});

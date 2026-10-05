@@ -7,6 +7,11 @@
 //   • lib/install-prompt.ts PORTAL_CLIENT_EVENT_KINDS (install:shown /
 //     accepted / dismissed / ios-shown, push:nudge-*) — the Home install card
 //     and the push nudge ("how many iPhones saw the card vs Android installs").
+//   • 'tab:view' (6 Oct 2026) — components/TabBeacon.tsx, mounted once in the
+//     app shell: which tab a student opened. `detail` MUST be a name from
+//     lib/portal-tabs.ts TAB_LABELS (never a URL); at most one per tab per
+//     device per 30 minutes. Adrian's admin cookie and the demo student are
+//     skipped here too, so testing never counts.
 //
 // Rows land in portal_event_log (identity, kind, created_at — no migration;
 // the same ledger ask-log / lesson-event / timed-set write). Auth + identity +
@@ -24,6 +29,9 @@ import { PORTAL_CLIENT_EVENT_KINDS, isPortalClientEventKind } from '@/lib/instal
 import { sgtDayStart } from '@/lib/sgt';
 import { SUBMIT_FAILED_KIND, sanitizeSubmitFailure, shouldNotifySubmitFailure, submitFailureLine } from '@/lib/submit-failure';
 import { sendTelegram } from '@/lib/telegram';
+import { TAB_VIEW_KIND, isTabName } from '@/lib/portal-tabs';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { SCIENCE_PREVIEW_IDENTITIES } from '@/lib/portal-beta';
 import { SCIENCE_FEEDBACK_DAILY_CAP, SCIENCE_FEEDBACK_KIND, sanitizeScienceFeedback, scienceFeedbackLine } from '@/lib/science-feedback';
 
 // A hand-in that failed on the phone after every retry (lib/submit-failure.ts,
@@ -39,6 +47,8 @@ const MARKING_KINDS = ['marking:view', 'marking:open'] as const;
 const MARKING_DAILY_CAP = 500;
 // A real device emits a handful of install/push events per day at most.
 const CLIENT_DAILY_CAP = 100;
+// ~40 tab names, each at most once per 30 min per device — a busy day is far below this.
+const TAB_DAILY_CAP = 300;
 
 export async function POST(req: NextRequest) {
   const supabase = await createSupabaseServer();
@@ -58,6 +68,7 @@ export async function POST(req: NextRequest) {
     ? 'marking'
     : kind === SUBMIT_FAILED_KIND ? 'submit'
     : kind === SCIENCE_FEEDBACK_KIND ? 'science'
+    : kind === TAB_VIEW_KIND ? 'tab'
     : isPortalClientEventKind(kind) ? 'client' : null;
   if (!family) return NextResponse.json({ error: 'Unknown kind' }, { status: 400 });
   const failure = family === 'submit' ? sanitizeSubmitFailure(body.detail) : null;
@@ -67,11 +78,17 @@ export async function POST(req: NextRequest) {
   const feedback = family === 'science' ? sanitizeScienceFeedback(body.detail) : null;
   if (family === 'science' && !feedback) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
 
+  if (family === 'tab' && !isTabName(body.detail)) return NextResponse.json({ error: 'Bad detail' }, { status: 400 });
+
   const identity = portalIdentity(account);
+  // Testing never counts as a student opening a tab: Adrian's admin cookie, the demo student.
+  if (family === 'tab' && (SCIENCE_PREVIEW_IDENTITIES.includes(identity) || verifyAdminSession(req.cookies.get(ADMIN_SESSION_COOKIE)?.value))) {
+    return NextResponse.json({ ok: true, skipped: true });
+  }
   try {
     const svc = createServiceClient();
-    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : family === 'science' ? [SCIENCE_FEEDBACK_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
-    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : family === 'science' ? SCIENCE_FEEDBACK_DAILY_CAP : CLIENT_DAILY_CAP;
+    const familyKinds = family === 'marking' ? [...MARKING_KINDS] : family === 'submit' ? [SUBMIT_FAILED_KIND] : family === 'science' ? [SCIENCE_FEEDBACK_KIND] : family === 'tab' ? [TAB_VIEW_KIND] : [...PORTAL_CLIENT_EVENT_KINDS];
+    const cap = family === 'marking' ? MARKING_DAILY_CAP : family === 'submit' ? SUBMIT_DAILY_CAP : family === 'science' ? SCIENCE_FEEDBACK_DAILY_CAP : family === 'tab' ? TAB_DAILY_CAP : CLIENT_DAILY_CAP;
     const { count } = await svc
       .from('portal_event_log')
       .select('id', { count: 'exact', head: true })
@@ -96,6 +113,8 @@ export async function POST(req: NextRequest) {
       if (!run) return NextResponse.json({ error: 'Not found' }, { status: 404 });
       await svc.from('portal_event_log').insert({ identity, kind, detail: feedback });
       await sendTelegram(scienceFeedbackLine(account.display_name, run.paper_name, feedback), 'marking').catch(() => {});
+    } else if (family === 'tab') {
+      await svc.from('portal_event_log').insert({ identity, kind, detail: body.detail });
     } else {
       await svc.from('portal_event_log').insert({ identity, kind });
     }

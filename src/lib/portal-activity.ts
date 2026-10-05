@@ -22,6 +22,7 @@
 import { latestActivityIso } from './retention';
 import { sgtDateISO } from './sgt';
 import { SUBMIT_FAILED_KIND, sanitizeSubmitFailure } from './submit-failure';
+import { TAB_VIEW_KIND, isTabName, tabLabel } from './portal-tabs';
 
 const DAY_MS = 86_400_000;
 
@@ -98,6 +99,8 @@ export interface ActivitySummary {
   rows: PortalActivityRow[];
   /** Newest first, last 24 hours — the hub's red card and the student profile read it. */
   failedHandins: FailedHandin[];
+  /** Which app tabs students open (6 Oct 2026) — busiest first; empty when no 'tab:view' rows were passed in. */
+  tabs: TabSummaryRow[];
 }
 
 /** The last 24 hours of 'submit:failed' events, newest first, named where the identity has an account. Pure. */
@@ -190,7 +193,7 @@ export function summariseActivity(input: ActivityInput): ActivitySummary {
     neverSignedIn: live.filter(a => !a.last_seen_at).length,
   };
 
-  return { totals, rows, failedHandins: failedHandinsFrom(events, accounts, now) };
+  return { totals, rows, failedHandins: failedHandinsFrom(events, accounts, now), tabs: summariseTabViews(events, now) };
 }
 
 /**
@@ -210,4 +213,68 @@ export function relativeDay(iso: string | null, now: Date): string {
   if (diffDays <= 0) return 'today'; // guard: a future/clock-skew timestamp never reads as past
   if (diffDays === 1) return 'yesterday';
   return `${diffDays} days ago`;
+}
+
+// ── Which tabs students open (6 Oct 2026) ───────────────────────────────────
+// 'tab:view' rows (lib/portal-tabs.ts): the beacon sends at most one per tab
+// per device per 30 minutes, so "opens" = visits, not page loads.
+
+/** The tab name a 'tab:view' row carries — the route stores the bare name; an object `{tab}` is read too. */
+export function tabOfEvent(e: Pick<ActivityEvent, 'kind' | 'detail'>): string | null {
+  if (e.kind !== TAB_VIEW_KIND) return null;
+  const d = e.detail;
+  const name = typeof d === 'string' ? d : d && typeof d === 'object' ? (d as { tab?: unknown }).tab : null;
+  return isTabName(name) ? name : null;
+}
+
+export interface TabSummaryRow {
+  tab: string;
+  label: string;
+  students7d: number;
+  opens7d: number;
+  students30d: number;
+  opens30d: number;
+}
+
+/** Per tab: unique students and opens over 7 and 30 days. Busiest first (students this week, then opens, then 30 days). Pure. */
+export function summariseTabViews(events: ActivityEvent[], now: Date): TabSummaryRow[] {
+  const t7 = now.getTime() - 7 * DAY_MS;
+  const t30 = now.getTime() - 30 * DAY_MS;
+  const acc = new Map<string, { s7: Set<string>; o7: number; s30: Set<string>; o30: number }>();
+  for (const e of events) {
+    const tab = tabOfEvent(e);
+    if (!tab) continue;
+    const at = Date.parse(e.created_at);
+    if (!Number.isFinite(at) || at < t30 || at > now.getTime() + 60_000) continue;
+    let a = acc.get(tab);
+    if (!a) acc.set(tab, (a = { s7: new Set(), o7: 0, s30: new Set(), o30: 0 }));
+    a.s30.add(e.identity); a.o30++;
+    if (at >= t7) { a.s7.add(e.identity); a.o7++; }
+  }
+  return [...acc.entries()]
+    .map(([tab, a]) => ({ tab, label: tabLabel(tab), students7d: a.s7.size, opens7d: a.o7, students30d: a.s30.size, opens30d: a.o30 }))
+    .sort((x, y) => y.students7d - x.students7d || y.opens7d - x.opens7d || y.students30d - x.students30d || x.tab.localeCompare(y.tab));
+}
+
+/** Unique students who opened any tab in the last 7 days. Pure. */
+export function tabStudents7d(events: ActivityEvent[], now: Date): number {
+  const t7 = now.getTime() - 7 * DAY_MS;
+  return new Set(events.filter(e => tabOfEvent(e) && Date.parse(e.created_at) >= t7).map(e => e.identity)).size;
+}
+
+export interface LastOpenedTab { tab: string; label: string; at: string }
+
+/** One student's tabs, each with its latest open, newest first. Pure. */
+export function lastOpenedTabs(events: ActivityEvent[], limit = 5): LastOpenedTab[] {
+  const latest = new Map<string, string>();
+  for (const e of events) {
+    const tab = tabOfEvent(e);
+    if (!tab || !Number.isFinite(Date.parse(e.created_at))) continue;
+    const prev = latest.get(tab);
+    if (!prev || Date.parse(e.created_at) > Date.parse(prev)) latest.set(tab, e.created_at);
+  }
+  return [...latest.entries()]
+    .sort((a, b) => Date.parse(b[1]) - Date.parse(a[1]))
+    .slice(0, limit)
+    .map(([tab, at]) => ({ tab, label: tabLabel(tab), at }));
 }

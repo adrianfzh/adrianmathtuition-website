@@ -12,6 +12,8 @@ import { extractFlagged } from '@/lib/mark-triage';
 import { lessonsBetween } from '@/lib/next-lesson-store';
 import { getSlotAccounts, getSlotUsage } from '@/lib/slot-accounts-store';
 import { slotAccountRows } from '@/lib/slot-accounts';
+import { summariseTabViews, tabStudents7d, type ActivityEvent } from '@/lib/portal-activity';
+import { TAB_VIEW_KIND } from '@/lib/portal-tabs';
 import { costEntries, type CostRunRow } from '@/lib/costs';
 import { addDaysISO, sgtDayStartISO, sgtTodayISO, sgtDaysAgoISO } from '@/lib/sgt';
 import { localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
@@ -235,6 +237,17 @@ async function cost(sb: Sb, now: number) {
 
 // ── All of it ───────────────────────────────────────────────────────────────
 
+// Which app tabs students opened this week (6 Oct 2026, 'tab:view' rows from components/TabBeacon.tsx).
+async function tabsWeek(sb: Sb, now: number) {
+  const since = new Date(now - 7 * 86400_000).toISOString();
+  const rows = await all<ActivityEvent>((a, b) => sb.from('portal_event_log').select('identity, kind, created_at, detail').eq('kind', TAB_VIEW_KIND).gte('created_at', since).order('created_at').range(a, b), 20_000);
+  const at = new Date(now);
+  return {
+    students: tabStudents7d(rows, at),
+    top: summariseTabViews(rows, at).slice(0, 5).map((t) => ({ label: t.label, students: t.students7d, opens: t.opens7d })),
+  };
+}
+
 export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const sb = getSupabaseAdmin();
   const midnight = sgtDayStartISO(now);
@@ -245,7 +258,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
     lessons, toLog, marked, practice,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
-    st, cs,
+    st, cs, tb,
   ] = await Promise.all([
     safe(() => count(sb.from('authored_question_proposals').select('id', { count: 'exact', head: true }).eq('status', 'pending'))),
     safe(() => count(sb.from('extraction_rules').select('id', { count: 'exact', head: true }).eq('status', 'proposed'))),
@@ -280,6 +293,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     job('file-backup'), job('backup-check'), job('leak-test'),
     safe(() => stuck(sb)),
     safe(() => cost(sb, now)),
+    safe(() => tabsWeek(sb, now)),
   ]);
 
   const line = (j: (JobLine & { meta?: unknown }) | null): JobLine | null => (j ? { ok: j.ok, at: j.at, summary: j.summary } : null);
@@ -292,6 +306,6 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
       bot,
     },
     backups: { fileBackup: line(fileBackup), backupCheck: line(backupCheck), leakTest: line(leakTest) },
-    stuck: st, cost: cs,
+    stuck: st, cost: cs, tabs: tb,
   };
 }
