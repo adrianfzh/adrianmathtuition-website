@@ -358,3 +358,17 @@ by hand); a `job_runs` stamp for the bot's essay lane; the switch row
 4. **Confirmed marks.** Each mark carries `confirmed` — another read marked overlapping words.
    The read shown is the best-backed one. An unconfirmed mark is a dotted underline, "one to check".
 5. **Best fit.** The "lower band unless…" rule is gone; the prompt uses SEAB best-fit wording.
+
+## Open before essays open — the hedge lines (5 Oct 2026)
+
+Adrian, 5 Oct 2026 (the student-copy audit): leave these as they are for now — **he wants to see
+them on the page before the Humanities / Languages switches open**, then decide. The standing rule
+is no disclaimers on student screens (memory `no-disclaimers-student-facing`), so expect most to go.
+
+- `languages/[id]/essay-report-view.tsx` and `languages/essay-cards.tsx` — "An examiner-style read
+  against the SEAB band descriptors — not your teacher's mark. Two teachers can differ by a band…"
+  (the same sentence twice, on the report and on the card)
+- `essay-report-view.tsx` — "A dotted underline is one to check. Only one of our two reads flagged it."
+- `essay-report-view.tsx` — "The two reads did not agree on the band, so it is being checked. The
+  feedback above stands."
+- `languages/submit/essay-form.tsx` — "It is read twice, to be sure, …"

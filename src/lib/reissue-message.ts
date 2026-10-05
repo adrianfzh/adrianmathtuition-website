@@ -77,7 +77,7 @@ export function reissueLine(input: ReissueLineInput): string {
   }
 
   if (input.reason === 'marks-recalibrated') {
-    return `📄 Your marks for ${paper} have been recalibrated${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
+    return `📄 Your marks for ${paper} have been updated${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
   }
 
   if (input.reason === 'total-corrected') {

@@ -174,3 +174,12 @@ Nothing in `ai/humanities-marker.js` or `lib/humanities-*.ts` changed on 5 Oct 2
 - No school paper served to a student (docs/CONTENT-POLICY.md).
 - No mark out of 35 or 50.
 - No handwriting in H1 — typed only. Pure History is typed in the exam itself.
+
+## Open before Humanities opens — the hedge lines (5 Oct 2026)
+
+Adrian, 5 Oct 2026 (the student-copy audit): leave these lines as they are for now — **he wants
+to read them on the page before the Humanities switch opens**, then decide. Do not change them
+without his word; do not open `HUMANITIES_OPEN_TO_STUDENTS` until he has.
+
+- `src/app/app/humanities/page.tsx` — "This is feedback, not a mark. Ask your teacher about any doubt."
+- The essay lines below (SPEC-ESSAY-MARKING.md, same date) — the Languages family shares the shape.

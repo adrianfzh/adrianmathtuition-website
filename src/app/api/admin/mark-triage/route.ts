@@ -231,11 +231,11 @@ async function deliver(run: {
       const docUrl = run.photos_pdf_url || run.annotated_pdf_url;
       if (docUrl) {
         const ok = await sendTelegramDocumentTo(tg.chat_id, docUrl,
-          `🎉 Your paper "${tgName}" has been marked${plainScore}! Here's your marked copy — the red ink is where the learning is. 💪`);
+          `🎉 Your paper "${tgName}" has been marked${plainScore}! Here's your marked copy. The mistakes you made are exactly where the learning happens.`);
         if (ok) return { delivered: true, via: 'telegram' };
       }
       const ok = await sendTelegramTo(tg.chat_id,
-        `📄 Your marked <b>${escapeHtml(tgName)}</b> is ready${tgMax > 0 ? ` — <b>${tgAwarded}/${tgMax}</b>` : ''}. Adrian will send the copy here shortly.`);
+        `📄 Your marked <b>${escapeHtml(tgName)}</b> is ready${tgMax > 0 ? ` — <b>${tgAwarded}/${tgMax}</b>` : ''}. It is in the app under Papers.\n\n${SITE}/app/marking`);
       return { delivered: ok, via: 'telegram' };
     }
   }
@@ -278,7 +278,7 @@ async function deliver(run: {
   }
   const ok = await sendTelegramTo(
     recipient.chatId,
-    `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}. Adrian will pass it to you in class.${sheetLine}`
+    `📄 Your marked <b>${escapeHtml(name)}</b> is ready${score}. You get the marked copy at your next lesson.${sheetLine}`
   );
   return { delivered: ok, via: 'telegram' };
 }

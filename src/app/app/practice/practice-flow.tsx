@@ -533,9 +533,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         <div className="w-full max-w-sm bg-white border border-slate-200 rounded-2xl p-7 text-center">
           <div className="text-3xl mb-2">🔒</div>
           <h1 className="text-lg font-bold text-slate-800">Practice</h1>
-          <p className="text-xs text-slate-400 mb-5">Log in to the app to practise — or enter the admin password (testing).</p>
+          <p className="text-xs text-slate-400 mb-5">Log in to the app to practise.</p>
           <a href="/login" className="block w-full bg-navy text-[hsl(45,100%,96%)] rounded-lg py-2.5 text-sm font-semibold mb-4">Log in</a>
-          <form onSubmit={(e) => { e.preventDefault(); setAuthError(''); verifyAdmin(password); }}>
+          {/* Adrian's testing door, folded out of a student's sight (5 Oct 2026). */}
+          <details className="text-left">
+          <summary className="text-[11px] text-slate-300 cursor-pointer select-none">Admin</summary>
+          <form className="mt-2" onSubmit={(e) => { e.preventDefault(); setAuthError(''); verifyAdmin(password); }}>
             <input type="password" value={password} onChange={(e) => { setPassword(e.target.value); setAuthError(''); }} placeholder="Admin password"
               className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-sm mb-2" />
             {authError && <p className="text-xs text-red-500 mb-2">{authError}</p>}
@@ -544,6 +547,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               {authLoading ? 'Checking…' : 'Enter (admin)'}
             </button>
           </form>
+          </details>
         </div>
       </div>
     );
@@ -1227,7 +1231,7 @@ function ReportQuestion({ assignmentId }: { assignmentId: string }) {
   if (state === 'sent') {
     return (
       <div className="mt-2 text-xs text-gray-600 bg-white rounded-xl border border-black/5 px-3 py-2">
-        Thanks — that one is off your list and we have been told. <Link href="/app/practice" className="underline">Back to Practice</Link>
+        Thanks — that question is off your list. We&apos;ll check it. <Link href="/app/practice" className="underline">Back to Practice</Link>
       </div>
     );
   }

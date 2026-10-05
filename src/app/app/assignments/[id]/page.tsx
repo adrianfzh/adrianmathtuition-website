@@ -72,7 +72,7 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
             ✅ Marked{a.score != null && a.out_of != null ? ` — ${a.score}/${a.out_of}` : ''}.{' '}
             {released
               ? <Link href="/app/marking" className="underline font-semibold">See it in Papers →</Link>
-              : 'Your tutor is checking it before release.'}
+              : 'It will be in Papers shortly.'}
           </p>
         )}
 

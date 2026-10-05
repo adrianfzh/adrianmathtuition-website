@@ -115,7 +115,8 @@ const TEXT: Record<PaperNoticeKind, PaperNoticeText> = {
   // not move, only what the paper is out of.
   'marks-recalibrated': {
     kind: 'marks-recalibrated',
-    title: 'Your marks have been recalibrated',
+    // 5 Oct 2026, Adrian: "recalibrated" → "updated" (a plainer word for a Sec 1 student).
+    title: 'Your marks have been updated',
     body: "The total for this paper has been corrected. Your updated copy is here.",
   },
   // ➕ The student added pages after the paper came back (29 Sep 2026, SPEC-HANDIN-
