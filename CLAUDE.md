@@ -113,6 +113,18 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   content reads well too. The daily page reader counts a hard-to-read note as a finding (bot
   `.claude/skills/marking-review/SKILL.md` §D).
 
+## 🗣 Talking to Adrian — plain words in every reply (Adrian, 11 Sep → 6 Oct 2026)
+
+Adrian, 5 Oct 2026: *"leave our jargon, leave out code speak - speak simply and clearly"*. He
+still typed "explain clearly and simply" or "what do you mean?" about 40 times from 30 Sep to
+6 Oct. Why: every reply he has to decode costs him another round trip.
+- **Background first**, then what happened or what you propose, then what he must do.
+- **Name nothing he has not seen** (lane, shard, flag, gate, harness, cap, seed, "the first
+  model", "option B") without first saying what it is.
+- **Every offer you end with says what changes for him or a student** if he says yes.
+- **"What do you mean?" or "show me" → a picture** (screenshot or labelled mockup), not more words.
+- **Fewer words** — one idea per line (5 Oct: *"be less verbose"*).
+
 ## 🚫 No disclaimers, no model names on student screens (Adrian, 5 Oct 2026)
 
 - **No disclaimers or plumbing notes** on student-facing screens ("AI-marked — not always perfect", "marking is off once you've seen the solution"). If behaviour needs explaining, make it just work (grey out, hide). The one exception is the Science Home "Dear students" notice.
