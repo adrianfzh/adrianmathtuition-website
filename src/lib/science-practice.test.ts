@@ -146,3 +146,32 @@ describe('Core · Exam · Challenge · Mixed (5 Oct 2026)', () => {
     expect(servedLevel('mixed', ['core'])).toBe('mixed');
   });
 });
+
+import { adaptiveFallbacks, serveUnlevelled, startAdaptive, stepAdaptive, type AdaptiveState } from './science-practice';
+describe('the silent level stream (5 Oct 2026)', () => {
+  const run = (answers: boolean[]) => answers.reduce<AdaptiveState>((s, a) => stepAdaptive(s, a), startAdaptive());
+  it('starts at Core and steps up after 3 right in a row, again after 3 more', () => {
+    expect(startAdaptive().level).toBe('core');
+    expect(run([true, true]).level).toBe('core');
+    expect(run([true, true, true]).level).toBe('exam');
+    expect(run([true, true, true, true, true, true]).level).toBe('challenge');
+    expect(run(Array(9).fill(true)).level).toBe('challenge');
+  });
+  it('a wrong answer resets the run of rights', () => {
+    expect(run([true, true, false, true]).level).toBe('core');
+  });
+  it('steps down one level after 2 wrong in a row, never below Core', () => {
+    expect(run([true, true, true, false, false]).level).toBe('core');
+    expect(run([true, true, true, false, true, false]).level).toBe('exam');
+    expect(run([false, false, false]).level).toBe('core');
+  });
+  it('falls back to the next level up, then down', () => {
+    expect(adaptiveFallbacks('core')).toEqual(['core', 'exam', 'challenge']);
+    expect(adaptiveFallbacks('challenge')).toEqual(['challenge', 'exam', 'core']);
+  });
+  it('mixes in unlevelled questions by their share', () => {
+    expect(serveUnlevelled(0, 100, 0)).toBe(false);
+    expect(serveUnlevelled(25, 75, 0.2)).toBe(true);
+    expect(serveUnlevelled(25, 75, 0.3)).toBe(false);
+  });
+});

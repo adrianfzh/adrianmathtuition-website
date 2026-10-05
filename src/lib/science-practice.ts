@@ -176,3 +176,41 @@ export function levelsOffered(counts: Partial<Record<'core' | 'exam' | 'challeng
 export function servedLevel(choice: ScienceLevelChoice, offered: readonly string[]): ScienceLevelChoice {
   return choice !== 'mixed' && offered.includes(choice) ? choice : 'mixed';
 }
+
+/**
+ * 🎚 The levels used SILENTLY (5 Oct 2026 — buttons dropped: a row that read "Exam + Mixed" with
+ * no Core would confuse students). One stream per topic: it starts at Core, steps up after
+ * ADAPT_UP_AFTER right in a row, steps down one level after ADAPT_DOWN_AFTER wrong in a row.
+ * Each question's FIRST check counts once. The run keeps the state; the server serves from
+ * `level` (lib/science-bank scienceNext difficultyLevel), falling back along adaptiveFallbacks
+ * when a level runs out, and mixes in questions that have no level yet (serveUnlevelled).
+ */
+export type AdaptiveLevel = 'core' | 'exam' | 'challenge';
+export type AdaptiveState = { level: AdaptiveLevel; right: number; wrong: number };
+export const ADAPT_UP_AFTER = 3;
+export const ADAPT_DOWN_AFTER = 2;
+const LADDER: readonly AdaptiveLevel[] = ['core', 'exam', 'challenge'];
+export function startAdaptive(): AdaptiveState { return { level: 'core', right: 0, wrong: 0 }; }
+export function stepAdaptive(s: AdaptiveState, correct: boolean): AdaptiveState {
+  const i = LADDER.indexOf(s.level);
+  if (correct) {
+    const right = s.right + 1;
+    if (right >= ADAPT_UP_AFTER && i < LADDER.length - 1) return { level: LADDER[i + 1], right: 0, wrong: 0 };
+    return { level: s.level, right, wrong: 0 };
+  }
+  const wrong = s.wrong + 1;
+  if (wrong >= ADAPT_DOWN_AFTER && i > 0) return { level: LADDER[i - 1], right: 0, wrong: 0 };
+  return { level: s.level, right: 0, wrong };
+}
+/** Where to look when a level has run out: the next level up first, then down. */
+export function adaptiveFallbacks(level: AdaptiveLevel): AdaptiveLevel[] {
+  return level === 'core' ? ['core', 'exam', 'challenge'] : level === 'exam' ? ['exam', 'challenge', 'core'] : ['challenge', 'exam', 'core'];
+}
+/** Questions with no level yet join the stream in proportion to how many there are. */
+export function serveUnlevelled(unlevelled: number, levelled: number, rand: number): boolean {
+  const total = unlevelled + levelled;
+  return total > 0 && unlevelled > 0 && rand < unlevelled / total;
+}
+export function parseAdaptiveLevel(v: unknown): AdaptiveLevel | null {
+  return v === 'core' || v === 'exam' || v === 'challenge' ? v : null;
+}

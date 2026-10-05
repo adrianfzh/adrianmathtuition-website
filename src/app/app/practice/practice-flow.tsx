@@ -10,7 +10,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 // 2026-09-02, shared with the timed set (/app/practice/timed).
 import { MathText, McqChips, QuestionView, mcqLettersIn, type Question } from './question-view';
 import { isScienceLevel } from '@/lib/science-levels';
-import { MCQ_HOLD_KEY, mcqTapAction, parseLevelChoice, skillLabel, SCIENCE_LEVEL_KEY, SCIENCE_LEVEL_LABEL, type ScienceLevelChoice } from '@/lib/science-practice';
+import { MCQ_HOLD_KEY, mcqTapAction, skillLabel, startAdaptive, stepAdaptive, type AdaptiveState } from '@/lib/science-practice';
 import { NETWORK_MESSAGE, portalFetch, portalMessage } from '@/lib/portal-fetch';
 
 // Retrieval-first practice (PORTAL.md + tiered-router spec) + the Phase E
@@ -196,18 +196,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     setUrlMode(sp.get('mode')); setUrlSkill(sp.get('skill'));
     try { setHoldAnswer(window.localStorage.getItem(MCQ_HOLD_KEY) === '1'); } catch { /* private window */ }
   }, []);
-  // 🎚 Core · Exam · Challenge · Mixed (5 Oct 2026): a science MCQ run's level, per device;
-  // Mixed by default. The server says which levels this topic offers (≥ 30 questions each)
-  // and which one it served; nothing shows when it offers none.
-  const [levelChoice, setLevelChoice] = useState<ScienceLevelChoice>('mixed');
-  const levelChoiceRef = useRef<ScienceLevelChoice>('mixed');
-  const [levelsOffered, setLevelsOffered] = useState<string[] | null>(null);
-  useEffect(() => {
-    try {
-      const v = parseLevelChoice(window.localStorage.getItem(SCIENCE_LEVEL_KEY));
-      levelChoiceRef.current = v; setLevelChoice(v);
-    } catch { /* private window */ }
-  }, []);
+  // 🎚 The silent level stream (5 Oct 2026): a science MCQ run starts at Core, steps up after
+  // 3 right in a row, down after 2 wrong (lib/science-practice stepAdaptive). No buttons; the
+  // server serves from the level only when SCIENCE_LEVELS_OPEN_TO_STUDENTS lets it (it ignores
+  // the field otherwise). Each question's first check counts once; a new topic starts again.
+  const adaptiveRef = useRef<AdaptiveState>(startAdaptive());
+  const adaptiveCounted = useRef<Set<string>>(new Set());
   function toggleHold() {
     setHoldAnswer(h => {
       try { window.localStorage.setItem(MCQ_HOLD_KEY, h ? '0' : '1'); } catch { /* private window */ }
@@ -375,14 +369,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     const sg = sgArg === undefined ? subgroup : sgArg;
     setLoading(true); setError(''); setExhausted(false); resetAttempt();
     try {
-      const d = await portalFetch<{ question?: Question; levels?: string[] }>('/api/portal/practice/next', {
+      const d = await portalFetch<{ question?: Question }>('/api/portal/practice/next', {
         // ?mode=mcq|structured — the Science Practise tab's switch (1 Oct 2026); ignored by the maths bank.
         json: { level, topic: useTopic, exclude: excludeIds, tier: isScienceLevel(level) ? null : (tierArg ?? tier), subgroupId: sg?.id ?? null, kind: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('mode') : null,
           skill: typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('skill') : null,
-          difficulty: isScienceLevel(level) ? levelChoiceRef.current : null },
+          difficulty: isScienceLevel(level) ? adaptiveRef.current.level : null },
         fallback: 'Couldn’t load a question — try again.',
       });
-      setLevelsOffered(Array.isArray(d.levels) ? d.levels : null);
       if (!d.question) { setExhausted(true); setQ(null); return; }
       setQ(d.question);
     } catch (e) { setError(portalMessage(e)); }
@@ -391,17 +384,12 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
   // Clicking a topic card / recommendation selects it and asks for the tier;
   // the question only loads once Standard / Advanced is chosen.
-  function pickLevel(v: ScienceLevelChoice) {
-    if (v === levelChoiceRef.current) return;
-    levelChoiceRef.current = v; setLevelChoice(v);
-    try { window.localStorage.setItem(SCIENCE_LEVEL_KEY, v); } catch { /* private window */ }
-    setSeen([]); setExhausted(false);
-    fetchNext([]);
-  }
   function changeTopic() {
+    adaptiveRef.current = startAdaptive(); adaptiveCounted.current.clear();
     setTopic(''); setSubgroup(null); setQ(null); setSeen([]); setExhausted(false); setError(''); resetAttempt(); setTierPicked(false);
   }
   function startTopic(t: string) {
+    adaptiveRef.current = startAdaptive(); adaptiveCounted.current.clear();
     setTopic(t); setSubgroup(null); setSeen([]); setQ(null); setExhausted(false); setError(''); resetAttempt();
     setTierPicked(false);
   }
@@ -501,6 +489,11 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
       });
       if (grade) setPrevScore(grade.score);
       setGrade(d.result);
+      // the silent level stream: an MCQ's first check moves the run's level (science only)
+      if (q.mcq && q.subject && d.result && !adaptiveCounted.current.has(q.id)) {
+        adaptiveCounted.current.add(q.id);
+        adaptiveRef.current = stepAdaptive(adaptiveRef.current, d.result.verdict === 'correct');
+      }
       // Typed path: the grader echoes the lines back as LaTeX. Use them only
       // when the count matches, so lineComments' numbering stays valid.
       const tl: string[] | undefined = d.result?.transcribedLines;
@@ -875,18 +868,6 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               </div>
             </button>
           </div>
-        </div>
-      )}
-
-      {isScienceLevel(level) && levelsOffered && levelsOffered.length > 0 && (
-        <div className="flex items-center gap-2 px-1 mb-3" role="radiogroup" aria-label="Level">
-          {(['core', 'exam', 'challenge', 'mixed'] as ScienceLevelChoice[]).filter(l => l === 'mixed' || levelsOffered.includes(l)).map(l => (
-            <button key={l} onClick={() => pickLevel(l)} role="radio" aria-checked={levelChoice === l} disabled={loading}
-              className={`text-xs font-semibold rounded-full px-3 py-1.5 border transition-colors ${
-                levelChoice === l ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-slate-600 border-slate-200 hover:border-navy'}`}>
-              {SCIENCE_LEVEL_LABEL[l]}
-            </button>
-          ))}
         </div>
       )}
 
