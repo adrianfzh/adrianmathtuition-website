@@ -1,0 +1,3048 @@
+{
+ "056cee89-1826-4ee3-b06c-53d5880ed132": {
+  "kind": "graph",
+  "qid": "056cee89-1826-4ee3-b06c-53d5880ed132",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "5.0\\ \\text{km}",
+  "heading": "Car speeds up from 30 to 70 km/h in 6 minutes",
+  "xLabel": "t / h",
+  "yLabel": "v / (km/h)",
+  "points": [
+   [
+    0,
+    30
+   ],
+   [
+    0.1,
+    70
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$5.0$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "With constant acceleration the speed rises steadily from 30 to 70 kilometres per hour.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "So the average speed is 30 plus 70, over 2: 50 kilometres per hour.",
+    "line": {
+     "tex": "\\bar v = \\tfrac{30 + 70}{2} = 50\\ \\text{km/h}",
+     "check": [
+      {
+       "expr": "(30+70)/2",
+       "value": 50
+      }
+     ]
+    }
+   },
+   {
+    "say": "The time is 6 minutes, which is 6 over 60, or 0.10 hours.",
+    "line": {
+     "tex": "t = \\tfrac{6}{60} = 0.10\\ \\text{h}",
+     "check": [
+      {
+       "expr": "6/60",
+       "value": 0.1
+      }
+     ]
+    }
+   },
+   {
+    "say": "Distance is average speed times time: 50 times 0.10 is 5.0 kilometres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "d = 50 \\times 0.10 = 5.0\\ \\text{km}",
+     "why": "distance = average speed × time",
+     "check": [
+      {
+       "expr": "50*0.10",
+       "value": 5
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "1ce2afbb-71f0-4744-91a9-94026334af89": {
+  "kind": "graph",
+  "qid": "1ce2afbb-71f0-4744-91a9-94026334af89",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "50\\ \\text{m}",
+  "heading": "Distance from 0 to 6 s under the graph",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    2,
+    10
+   ],
+   [
+    6,
+    10
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 2
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$10$ m"
+   },
+   {
+    "kind": "area",
+    "from": 1,
+    "to": 2,
+    "label": "$40$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "Distance is the area under the speed-time graph.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "From 0 to 2 seconds it is a triangle: a half, times 2, times 10, is 10 metres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "\\tfrac{1}{2} \\times 2 \\times 10 = 10\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*2*10",
+       "value": 10
+      }
+     ]
+    }
+   },
+   {
+    "say": "From 2 to 6 seconds it is a rectangle: 4 times 10 is 40 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "4 \\times 10 = 40\\ \\text{m}",
+     "check": [
+      {
+       "expr": "4*10",
+       "value": 40
+      }
+     ]
+    }
+   },
+   {
+    "say": "Add them: 10 plus 40 is 50 metres.",
+    "line": {
+     "tex": "10 + 40 = 50\\ \\text{m}",
+     "check": [
+      {
+       "expr": "10+40",
+       "value": 50
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "2609a9a3-5866-4989-9d99-08bfaefae4a7": {
+  "kind": "graph",
+  "qid": "2609a9a3-5866-4989-9d99-08bfaefae4a7",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "125\\ \\text{m}",
+  "heading": "Free fall for 5.0 s — how tall is the building?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    5,
+    50
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "gradient $= 10$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$50$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$125$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "In free fall the speed-time graph is a straight line from rest.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Its gradient is the acceleration, 10 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "After 5.0 seconds the speed is 10 times 5.0, which is 50 metres per second.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "v = 10 \\times 5.0 = 50\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "10*5.0",
+       "value": 50
+      }
+     ]
+    }
+   },
+   {
+    "say": "The height is the area under the graph: a half, times 50, times 5.0, is 125 metres.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "h = \\tfrac{1}{2}(50)(5.0) = 125\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*50*5.0",
+       "value": 125
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "26c2c7f7-4c20-471c-87cc-776af94e65cc": {
+  "kind": "graph",
+  "qid": "26c2c7f7-4c20-471c-87cc-776af94e65cc",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "2.0\\ \\text{m/s}",
+  "heading": "Reading a distance-time graph",
+  "xLabel": "t / s",
+  "yLabel": "s / m",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    2
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$2.0$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The gradient of a distance-time graph is the speed.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Here it is 2 metres in 1 second: 2.0 metres per second.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "\\text{speed} = \\dfrac{2\\ \\text{m}}{1\\ \\text{s}} = 2.0\\ \\text{m/s}",
+     "why": "speed = gradient",
+     "check": [
+      {
+       "expr": "2/1",
+       "value": 2
+      }
+     ]
+    }
+   },
+   {
+    "say": "The line is straight, so the speed is constant. A distance graph shows no direction, and the acceleration is 0.",
+    "line": {
+     "tex": "a = 0"
+    }
+   }
+  ]
+ },
+ "28cbacc2-66ec-45f6-8c01-48db6b4513d8": {
+  "kind": "graph",
+  "qid": "28cbacc2-66ec-45f6-8c01-48db6b4513d8",
+  "topic": "Kinematics",
+  "answer": "A",
+  "answerText": "0\\ \\text{m/s}^2",
+  "heading": "A straight distance-time line",
+  "xLabel": "t / s",
+  "yLabel": "s / m",
+  "points": [
+   [
+    0,
+    10
+   ],
+   [
+    5,
+    50
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$8$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The distance-time graph is a straight line, so the speed is constant and the acceleration is 0.",
+    "piece": [
+     0
+    ],
+    "line": {
+     "tex": "a = 0\\ \\text{m/s}^2"
+    }
+   },
+   {
+    "say": "The speed is the gradient: 50 minus 10, over 5, is 8 metres per second.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "v = \\dfrac{50 - 10}{5} = 8\\ \\text{m/s}",
+     "why": "speed = gradient",
+     "check": [
+      {
+       "expr": "(50-10)/5",
+       "value": 8
+      }
+     ]
+    }
+   },
+   {
+    "say": "The distance travelled is 50 minus 10, which is 40 metres.",
+    "line": {
+     "tex": "d = 50 - 10 = 40\\ \\text{m}",
+     "check": [
+      {
+       "expr": "50-10",
+       "value": 40
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "4271ed7b-5a44-4bdb-8aa1-2ff9c360993a": {
+  "kind": "graph",
+  "qid": "4271ed7b-5a44-4bdb-8aa1-2ff9c360993a",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "\\text{not } 12\\ \\text{m in } 2\\ \\text{s}",
+  "heading": "Which statement about the car is incorrect?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    3
+   ],
+   [
+    2,
+    6
+   ],
+   [
+    3,
+    9
+   ],
+   [
+    4,
+    12
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 4
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 4,
+    "label": "$a = 3$ m/s$^2$"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 2,
+    "label": "$6$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises by 3 metres per second every second, so the speed-time graph is a straight line from the origin.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "So the acceleration is uniform at 3 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "In 2 seconds the average speed is 0 plus 6, over 2, which is 3 metres per second.",
+    "line": {
+     "tex": "\\bar v = \\tfrac{0 + 6}{2} = 3\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "(0+6)/2",
+       "value": 3
+      }
+     ]
+    }
+   },
+   {
+    "say": "So the distance is 3 times 2, which is 6 metres, not 12 metres. Statement B is the incorrect one.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "d = 3 \\times 2 = 6\\ \\text{m}",
+     "check": [
+      {
+       "expr": "3*2",
+       "value": 6
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "45a39f29-e728-4957-b1d8-c103ef4ef144": {
+  "kind": "graph",
+  "qid": "45a39f29-e728-4957-b1d8-c103ef4ef144",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "50\\,000\\ \\text{km}",
+  "heading": "Maximum height of the spacecraft",
+  "xLabel": "t / h",
+  "yLabel": "v / (km/h)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    5000
+   ],
+   [
+    20,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 2
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$v = 0$"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 2,
+    "label": "$50\\,000$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The spacecraft rises while its velocity is positive.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "It reaches its highest point when the velocity is 0, at 20 hours.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "The height is the area of the triangle: a half, times 20, times 5000, is 50000 kilometres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "\\tfrac{1}{2} \\times 20 \\times 5000 = 50\\,000\\ \\text{km}",
+     "why": "height = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*20*5000",
+       "value": 50000
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "473c3a4c-45f8-45cc-9579-8a5c5590f23c": {
+  "kind": "graph",
+  "qid": "473c3a4c-45f8-45cc-9579-8a5c5590f23c",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "1.6\\ \\text{m/s}^2",
+  "heading": "Average acceleration from 2.0 s to 3.0 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    1.7
+   ],
+   [
+    2,
+    4.1
+   ],
+   [
+    3,
+    5.7
+   ],
+   [
+    4,
+    6.5
+   ],
+   [
+    5,
+    6.8
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 5
+   },
+   {
+    "kind": "slope",
+    "from": 2,
+    "to": 3,
+    "label": "$1.6$ m/s$^2$"
+   }
+  ],
+  "beats": [
+   {
+    "say": "Here is the athlete's speed from the table, second by second.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Average acceleration is the change in speed divided by the time.",
+    "line": {
+     "tex": "a = \\dfrac{5.7 - 4.1}{3.0 - 2.0}"
+    }
+   },
+   {
+    "say": "5.7 minus 4.1 is 1.6, over 1.0 second: 1.6 metres per second squared.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "a = \\dfrac{1.6}{1.0} = 1.6\\ \\text{m/s}^2",
+     "check": [
+      {
+       "expr": "(5.7-4.1)/(3.0-2.0)",
+       "value": 1.6
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "4951c305-76f3-4fa6-994a-188acedc445e": {
+  "kind": "graph",
+  "qid": "4951c305-76f3-4fa6-994a-188acedc445e",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "40\\ \\text{km/h}",
+  "heading": "Average speed over two stages",
+  "xLabel": "t / min",
+  "yLabel": "s / km",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    8
+   ],
+   [
+    15,
+    10
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$10$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "First the main road: 8.0 kilometres in 10 minutes.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Then the side road: 2.0 kilometres in 5.0 minutes.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "Total distance: 8.0 plus 2.0 is 10 kilometres, in 15 minutes.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "8.0 + 2.0 = 10\\ \\text{km}",
+     "check": [
+      {
+       "expr": "8.0+2.0",
+       "value": 10
+      }
+     ]
+    }
+   },
+   {
+    "say": "15 minutes is 0.25 hours.",
+    "line": {
+     "tex": "t = \\tfrac{15}{60} = 0.25\\ \\text{h}",
+     "check": [
+      {
+       "expr": "15/60",
+       "value": 0.25
+      }
+     ]
+    }
+   },
+   {
+    "say": "Average speed is total distance over total time: 10 over 0.25 is 40 kilometres per hour.",
+    "line": {
+     "tex": "\\bar v = \\dfrac{10}{0.25} = 40\\ \\text{km/h}",
+     "check": [
+      {
+       "expr": "10/0.25",
+       "value": 40
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "4d59cebb-074a-4f71-9d4d-2e7196a6e5f6": {
+  "kind": "graph",
+  "qid": "4d59cebb-074a-4f71-9d4d-2e7196a6e5f6",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "4.0\\ \\text{m/s}",
+  "heading": "Average speed while slowing down",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "figure": [
+   8,
+   10,
+   16,
+   22
+  ],
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    8
+   ],
+   [
+    16,
+    8
+   ],
+   [
+    22,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 2
+   },
+   {
+    "kind": "segment",
+    "from": 2,
+    "to": 3
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$8.0$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The toy car speeds up, then moves at a steady 8.0 metres per second.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "In the constant-deceleration section the speed falls steadily from 8.0 metres per second to 0.",
+    "piece": [
+     1,
+     2
+    ]
+   },
+   {
+    "say": "So the average speed is 8.0 plus 0, over 2, which is 4.0 metres per second.",
+    "line": {
+     "tex": "\\bar v = \\dfrac{8.0 + 0}{2} = 4.0\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "(8.0+0)/2",
+       "value": 4
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "70792cb2-dedc-4fb8-ab0e-b232779a94f7": {
+  "kind": "graph",
+  "qid": "70792cb2-dedc-4fb8-ab0e-b232779a94f7",
+  "topic": "Kinematics",
+  "answer": "A",
+  "answerText": "\\text{The car accelerates at a constant rate}",
+  "heading": "Speed-time graph: 0 to 14 m/s in 24 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    24,
+    14
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a \\approx 0.58$ m/s$^2$"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$168$ m"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$14$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The graph is a straight sloping line, so the acceleration is constant.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Its gradient is 14 over 24, about 0.58 metres per second squared.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "a = \\dfrac{14}{24} \\approx 0.58\\ \\text{m/s}^2",
+     "why": "constant acceleration = straight sloping line",
+     "check": [
+      {
+       "expr": "14/24",
+       "value": 0.58
+      }
+     ]
+    }
+   },
+   {
+    "say": "The distance is the area under the graph: a half, times 24, times 14, is 168 metres, not 336. So C is wrong.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2} \\times 24 \\times 14 = 168\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*24*14",
+       "value": 168
+      }
+     ]
+    }
+   },
+   {
+    "say": "At 24 seconds the speed is 14 metres per second, so B is wrong. The speed changes, so D is wrong.",
+    "piece": [
+     3
+    ]
+   }
+  ]
+ },
+ "8ac3d5df-0614-4ed7-b2b4-ba30a517e87f": {
+  "kind": "graph",
+  "qid": "8ac3d5df-0614-4ed7-b2b4-ba30a517e87f",
+  "topic": "Kinematics",
+  "answer": "D",
+  "answerText": "50\\ \\text{km/h}",
+  "heading": "Average speed over 100 km, with a rest",
+  "xLabel": "t / min",
+  "yLabel": "s / km",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    45,
+    40
+   ],
+   [
+    60,
+    40
+   ],
+   [
+    120,
+    100
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "segment",
+    "from": 2,
+    "to": 3
+   },
+   {
+    "kind": "value",
+    "from": 3,
+    "label": "$100$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "First 40 kilometres in 45 minutes.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Then a rest of 15 minutes.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "Then the last 60 kilometres in 1 hour, which is 60 minutes.",
+    "piece": [
+     2
+    ]
+   },
+   {
+    "say": "Total time: 45 plus 15 plus 60 is 120 minutes, which is 2 hours.",
+    "line": {
+     "tex": "t = 45 + 15 + 60 = 120\\ \\text{min} = 2\\ \\text{h}",
+     "check": [
+      {
+       "expr": "45+15+60",
+       "value": 120
+      },
+      {
+       "expr": "120/60",
+       "value": 2
+      }
+     ]
+    }
+   },
+   {
+    "say": "Average speed is total distance over total time: 100 kilometres over 2 hours is 50 kilometres per hour.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{100}{2} = 50\\ \\text{km/h}",
+     "why": "total distance ÷ total time, rest included",
+     "check": [
+      {
+       "expr": "100/2",
+       "value": 50
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "8e4ffc70-8d02-40b5-8e1f-a11e261f6ce7": {
+  "kind": "graph",
+  "qid": "8e4ffc70-8d02-40b5-8e1f-a11e261f6ce7",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "5.00\\ \\text{s}",
+  "heading": "Dropped from 125 m: how long to fall?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    5,
+    50
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "gradient $= 10$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$50$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$125$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed-time graph rises in a straight line from rest.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Its gradient is the acceleration, 10 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "It rises to 50 metres per second in 5 seconds.",
+    "piece": [
+     2
+    ]
+   },
+   {
+    "say": "The displacement is the area: a half, times 5, times 50, is 125 metres, the height of the building. So the time is 5 seconds.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2} \\times 5 \\times 50 = 125\\ \\text{m}",
+     "why": "displacement = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*5*50",
+       "value": 125
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "959655b4-46ea-4a3c-8a87-ec0080d33fee": {
+  "kind": "graph",
+  "qid": "959655b4-46ea-4a3c-8a87-ec0080d33fee",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "25\\ \\text{s}",
+  "heading": "2000 m race: speed up for 10 s, then steady",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    100
+   ],
+   [
+    25,
+    100
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$100$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$500$ m"
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "area",
+    "from": 1,
+    "to": 2,
+    "label": "$1500$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "From rest he accelerates at 10.0 metres per second squared for 10 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "After 10 seconds his speed is 10 times 10, which is 100 metres per second.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "v = 10 \\times 10 = 100\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "10*10",
+       "value": 100
+      }
+     ]
+    }
+   },
+   {
+    "say": "He has covered a half, times 10, times 10 squared, which is 500 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2}(10)(10^2) = 500\\ \\text{m}",
+     "check": [
+      {
+       "expr": "0.5*10*10^2",
+       "value": 500
+      }
+     ]
+    }
+   },
+   {
+    "say": "The remaining 1500 metres at 100 metres per second takes 15 seconds.",
+    "piece": [
+     3,
+     4
+    ],
+    "line": {
+     "tex": "t = \\dfrac{1500}{100} = 15\\ \\text{s}",
+     "check": [
+      {
+       "expr": "1500/100",
+       "value": 15
+      }
+     ]
+    }
+   },
+   {
+    "say": "The whole race takes 10 plus 15, which is 25 seconds.",
+    "line": {
+     "tex": "10 + 15 = 25\\ \\text{s}",
+     "check": [
+      {
+       "expr": "10+15",
+       "value": 25
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "96f1241a-016a-41a0-b551-ebb14906d6ce": {
+  "kind": "graph",
+  "qid": "96f1241a-016a-41a0-b551-ebb14906d6ce",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "35\\ \\text{s}",
+  "heading": "Speed up to 40 m/s, then steady to 1.0 km",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    20,
+    40
+   ],
+   [
+    35,
+    40
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$40$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$400$ m"
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "area",
+    "from": 1,
+    "to": 2,
+    "label": "$600$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "From rest he accelerates at 2.0 metres per second squared up to 40 metres per second.",
+    "piece": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "That takes 40 over 2.0, which is 20 seconds.",
+    "line": {
+     "tex": "t = \\dfrac{40}{2.0} = 20\\ \\text{s}",
+     "check": [
+      {
+       "expr": "40/2.0",
+       "value": 20
+      }
+     ]
+    }
+   },
+   {
+    "say": "In that time he covers a half, times 2.0, times 20 squared, which is 400 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2} \\times 2.0 \\times 20^2 = 400\\ \\text{m}",
+     "check": [
+      {
+       "expr": "0.5*2.0*20^2",
+       "value": 400
+      }
+     ]
+    }
+   },
+   {
+    "say": "The last 600 metres at 40 metres per second takes 15 seconds.",
+    "piece": [
+     3,
+     4
+    ],
+    "line": {
+     "tex": "t = \\dfrac{600}{40} = 15\\ \\text{s}",
+     "check": [
+      {
+       "expr": "600/40",
+       "value": 15
+      }
+     ]
+    }
+   },
+   {
+    "say": "Total time: 20 plus 15 is 35 seconds.",
+    "line": {
+     "tex": "20 + 15 = 35\\ \\text{s}",
+     "check": [
+      {
+       "expr": "20+15",
+       "value": 35
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "9f9425b0-75e5-4eeb-8c1d-d41470b467bb": {
+  "kind": "graph",
+  "qid": "9f9425b0-75e5-4eeb-8c1d-d41470b467bb",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "250\\ \\text{m}",
+  "heading": "Truck: how far between 0 and 10 s?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    50
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$50$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$250$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises steadily from 0 to 50 metres per second in 10 seconds.",
+    "piece": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "Distance is the area under the speed-time graph, a triangle: a half, times 10, times 50, is 250 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2} \\times 10 \\times 50 = 250\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*10*50",
+       "value": 250
+      }
+     ]
+    }
+   },
+   {
+    "say": "500 metres is base times height: it forgets the half for a triangle."
+   }
+  ]
+ },
+ "a47a27cd-1d19-44e2-96ae-5af6bafeff3b": {
+  "kind": "graph",
+  "qid": "a47a27cd-1d19-44e2-96ae-5af6bafeff3b",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "4000\\ \\text{m}",
+  "heading": "Distance travelled in 400 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    400,
+    20
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$20$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$4000$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The graph is a straight line from the origin to 400 seconds and 20 metres per second.",
+    "piece": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "So the area under it is a triangle: a half, times 400, times 20, is 4000 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "s = \\tfrac{1}{2} \\times 400 \\times 20 = 4000\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*400*20",
+       "value": 4000
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "aa12e474-ad17-40ea-aa54-4ea81dd4e8c6": {
+  "kind": "graph",
+  "qid": "aa12e474-ad17-40ea-aa54-4ea81dd4e8c6",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "4.0\\ \\text{s}",
+  "heading": "Decelerating car — how much longer to stop?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    6
+   ],
+   [
+    2,
+    4
+   ],
+   [
+    6,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$10$ m"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$v = 4.0$ m/s"
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 1.0$ m/s$^2$"
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   }
+  ],
+  "beats": [
+   {
+    "say": "The car slows steadily from 6.0 metres per second to v over 2.0 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "It covers 10 metres: average velocity times time, a half of 6.0 plus v, times 2.0.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "\\tfrac{1}{2}(6.0 + v)(2.0) = 10",
+     "why": "distance = average velocity × time"
+    }
+   },
+   {
+    "say": "So v is 4.0 metres per second.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "v = 4.0\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "2*10/2.0-6.0",
+       "value": 4
+      }
+     ]
+    }
+   },
+   {
+    "say": "The deceleration is the drop in speed over the time: 6.0 minus 4.0, over 2.0, is 1.0 metres per second squared.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "a = \\dfrac{6.0 - 4.0}{2.0} = 1.0\\ \\text{m/s}^2",
+     "check": [
+      {
+       "expr": "(6.0-4.0)/2.0",
+       "value": 1
+      }
+     ]
+    }
+   },
+   {
+    "say": "At the same rate, from 4.0 metres per second it needs 4.0 over 1.0, which is 4.0 more seconds.",
+    "piece": [
+     4
+    ],
+    "line": {
+     "tex": "t = \\dfrac{4.0}{1.0} = 4.0\\ \\text{s}",
+     "check": [
+      {
+       "expr": "4.0/1.0",
+       "value": 4
+      }
+     ]
+    }
+   }
+  ],
+  "derived": [
+   {
+    "expr": "2.0+4.0",
+    "value": 6
+   }
+  ]
+ },
+ "ab88b705-ba28-4f0d-9481-2a89b17c51c8": {
+  "kind": "graph",
+  "qid": "ab88b705-ba28-4f0d-9481-2a89b17c51c8",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "3.40\\ \\text{m/s}",
+  "heading": "Average speed over two stages",
+  "xLabel": "t / s",
+  "yLabel": "d / m",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    30,
+    90
+   ],
+   [
+    50,
+    170
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$170$ m at $50$ s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "First stage: 90 metres in 30 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Second stage: a further 80 metres in another 20 seconds.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "Average speed is total distance over total time.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{90 + 80}{30 + 20}",
+     "check": [
+      {
+       "expr": "90+80",
+       "value": 170
+      },
+      {
+       "expr": "30+20",
+       "value": 50
+      }
+     ]
+    }
+   },
+   {
+    "say": "That is 170 over 50, which is 3.40 metres per second.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{170}{50} = 3.40\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "170/50",
+       "value": 3.4
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "acc03c47-b2ab-4d59-9409-7c13bfcc4170": {
+  "kind": "graph",
+  "qid": "acc03c47-b2ab-4d59-9409-7c13bfcc4170",
+  "topic": "Kinematics",
+  "answer": "D",
+  "answerText": "50\\ \\text{m/s}",
+  "heading": "Stone dropped for 5.0 s — speed at the water",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    5,
+    50
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 10$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$50$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "Dropped, so it starts from rest: the speed-time line starts at 0.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "With no air resistance, the acceleration is g, 10 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "v equals u plus a t: 0 plus 10 times 5.0, which is 50 metres per second.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "v = 0 + 10 \\times 5.0 = 50\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "0+10*5.0",
+       "value": 50
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "b8b498ac-60b7-4232-8d64-6111330a2277": {
+  "kind": "graph",
+  "qid": "b8b498ac-60b7-4232-8d64-6111330a2277",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "1.2\\ \\text{s}",
+  "heading": "Cyclist stops in 3.0 m from 5.0 m/s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    5
+   ],
+   [
+    1.2,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$3.0$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed falls steadily from 5.0 metres per second to 0.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "The distance, 3.0 metres, is the area under the speed-time graph: a half, times 5, times t.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "\\tfrac{1}{2}(5)(t) = 3.0",
+     "why": "distance = area under the graph"
+    }
+   },
+   {
+    "say": "So t is 1.2 seconds.",
+    "line": {
+     "tex": "t = 1.2\\ \\text{s}",
+     "check": [
+      {
+       "expr": "2*3.0/5",
+       "value": 1.2
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "be653ae7-352f-4461-8847-b36926cf9740": {
+  "kind": "graph",
+  "qid": "be653ae7-352f-4461-8847-b36926cf9740",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "200\\ \\text{m}",
+  "heading": "Distance at constant speed",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    20,
+    10
+   ],
+   [
+    40,
+    10
+   ],
+   [
+    50,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 3
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$10$ m/s"
+   },
+   {
+    "kind": "area",
+    "from": 1,
+    "to": 2,
+    "label": "$200$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "Here is the speed-time graph of the car.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "The flat part is the constant speed: 10 metres per second, from 20 seconds to 40 seconds.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "40 - 20 = 20\\ \\text{s}",
+     "check": [
+      {
+       "expr": "40-20",
+       "value": 20
+      }
+     ]
+    }
+   },
+   {
+    "say": "Distance is speed times time, the area under the flat part: 10 times 20 is 200 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "d = 10 \\times 20 = 200\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "10*20",
+       "value": 200
+      }
+     ]
+    }
+   }
+  ],
+  "figure": [
+   50
+  ]
+ },
+ "c17bd487-9485-417e-993c-d9f299ff1603": {
+  "kind": "graph",
+  "qid": "c17bd487-9485-417e-993c-d9f299ff1603",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "7.5\\ \\text{m/s}^2",
+  "heading": "Thrown down at 5 m/s, 20 m/s after 2 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    5
+   ],
+   [
+    2,
+    20
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 7.5$ m/s$^2$"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises from 5 metres per second to 20 metres per second in 2 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Acceleration is the change in speed over the time: 20 minus 5, over 2, is 7.5 metres per second squared.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "a = \\dfrac{20 - 5}{2} = 7.5\\ \\text{m/s}^2",
+     "why": "acceleration = gradient",
+     "check": [
+      {
+       "expr": "(20-5)/2",
+       "value": 7.5
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "c4946a75-c83c-473d-97f9-9f7e1ab62c58": {
+  "kind": "graph",
+  "qid": "c4946a75-c83c-473d-97f9-9f7e1ab62c58",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "18\\ \\text{m}",
+  "heading": "Model car — distance in 3 seconds",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    3,
+    12
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$18$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises from 0 to 12 metres per second in 3 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Distance is the area under the graph, a triangle: a half, times 3, times 12, is 18 metres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "d = \\tfrac{1}{2} \\times 3 \\times 12 = 18\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*3*12",
+       "value": 18
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "d0b2f427-bc79-4d81-a2fd-e9531144581b": {
+  "kind": "graph",
+  "qid": "d0b2f427-bc79-4d81-a2fd-e9531144581b",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "80\\ \\text{km/h}",
+  "heading": "Average speed: main road then side road",
+  "xLabel": "t / h",
+  "yLabel": "d / km",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    1,
+    100
+   ],
+   [
+    1.5,
+    120
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$120$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The main road: 100 kilometres in 60 minutes.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Then the side road: 20 kilometres in 30 minutes.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "Total distance: 100 plus 20 is 120 kilometres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "d = 100 + 20 = 120\\ \\text{km}",
+     "check": [
+      {
+       "expr": "100+20",
+       "value": 120
+      }
+     ]
+    }
+   },
+   {
+    "say": "Total time: 60 plus 30 is 90 minutes, which is 1.5 hours.",
+    "line": {
+     "tex": "t = 60 + 30 = 90\\ \\text{min} = 1.5\\ \\text{h}",
+     "check": [
+      {
+       "expr": "60+30",
+       "value": 90
+      },
+      {
+       "expr": "90/60",
+       "value": 1.5
+      }
+     ]
+    }
+   },
+   {
+    "say": "Average speed: 120 over 1.5 is 80 kilometres per hour.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{120}{1.5} = 80\\ \\text{km/h}",
+     "check": [
+      {
+       "expr": "120/1.5",
+       "value": 80
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "d106f2bc-bf22-44eb-84f7-be883bf9d67e": {
+  "kind": "graph",
+  "qid": "d106f2bc-bf22-44eb-84f7-be883bf9d67e",
+  "topic": "Kinematics",
+  "answer": "A",
+  "answerText": "\\text{north, decreasing speed}",
+  "heading": "Train at t = 15.0 s — which way, faster or slower?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    20
+   ],
+   [
+    5,
+    20
+   ],
+   [
+    15,
+    5
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "slope",
+    "from": 1,
+    "to": 2,
+    "label": "$a = -1.5$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$5$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "North at a constant 20 metres per second until t equals 5.0 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Then the acceleration is minus 1.5 metres per second squared.",
+    "piece": [
+     1,
+     2
+    ]
+   },
+   {
+    "say": "It acts for 15.0 minus 5.0, which is 10.0 seconds.",
+    "line": {
+     "tex": "15.0 - 5.0 = 10.0\\ \\text{s}",
+     "check": [
+      {
+       "expr": "15.0-5.0",
+       "value": 10
+      }
+     ]
+    }
+   },
+   {
+    "say": "v equals 20 plus minus 1.5 times 10.0, which is 5 metres per second.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "v = 20 + (-1.5)(10.0) = 5\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "20-1.5*10.0",
+       "value": 5
+      }
+     ]
+    }
+   },
+   {
+    "say": "The velocity is still positive, so the train is still going north, but slowing down."
+   }
+  ]
+ },
+ "d3935321-d8eb-4842-8e30-739940279a0f": {
+  "kind": "graph",
+  "qid": "d3935321-d8eb-4842-8e30-739940279a0f",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "70\\ \\text{m/s}",
+  "heading": "Helicopter: 50 m/s, then 2 m/s² for 10 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    50
+   ],
+   [
+    10,
+    70
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 2$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$70$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The helicopter starts at 50 metres per second.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "It speeds up uniformly at 2 metres per second squared for 10 seconds.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "v equals u plus a t: 50 plus 2 times 10, which is 70 metres per second.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "v = 50 + (2)(10) = 70\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "50+2*10",
+       "value": 70
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "d7b3e402-cc54-4853-b18c-99088c0d653a": {
+  "kind": "graph",
+  "qid": "d7b3e402-cc54-4853-b18c-99088c0d653a",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "5000\\ \\text{m}",
+  "heading": "Rocket from 500 to 1500 m/s in 5.0 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    500
+   ],
+   [
+    5,
+    1500
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$5000$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises uniformly from 500 to 1500 metres per second in 5.0 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Uniform acceleration, so the average speed is halfway: 500 plus 1500, over 2, is 1000 metres per second.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{500 + 1500}{2} = 1000\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "(500+1500)/2",
+       "value": 1000
+      }
+     ]
+    }
+   },
+   {
+    "say": "Distance is the average speed times the time: 1000 times 5.0 is 5000 metres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "s = 1000 \\times 5.0 = 5000\\ \\text{m}",
+     "check": [
+      {
+       "expr": "1000*5.0",
+       "value": 5000
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "db9e10d7-54b7-4e13-813d-519e5e262fa6": {
+  "kind": "graph",
+  "qid": "db9e10d7-54b7-4e13-813d-519e5e262fa6",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "\\text{north, decreasing speed}",
+  "heading": "Bus at t = 15.0 s — which way, faster or slower?",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    25
+   ],
+   [
+    5,
+    25
+   ],
+   [
+    15,
+    5
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "slope",
+    "from": 1,
+    "to": 2,
+    "label": "$a = -2.0$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$5$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "North at 25 metres per second until t equals 5.0 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Then the acceleration is minus 2.0 metres per second squared, for 10 seconds up to t equals 15.",
+    "piece": [
+     1,
+     2
+    ]
+   },
+   {
+    "say": "v equals 25 plus minus 2.0 times 10, which is plus 5 metres per second.",
+    "piece": [
+     3
+    ],
+    "line": {
+     "tex": "v = 25 + (-2.0)(10) = +5\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "25-2.0*10",
+       "value": 5
+      }
+     ]
+    }
+   },
+   {
+    "say": "Still positive, so the bus is still going north, but slowing down."
+   }
+  ]
+ },
+ "dd9163d3-fb2c-4b59-8711-86c9683da174": {
+  "kind": "graph",
+  "qid": "dd9163d3-fb2c-4b59-8711-86c9683da174",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "0.58\\ \\text{m/s}",
+  "heading": "Toy cart — average speed over 12 s",
+  "xLabel": "t / s",
+  "yLabel": "d / m",
+  "points": [
+   [
+    0,
+    2
+   ],
+   [
+    5,
+    2
+   ],
+   [
+    9,
+    3
+   ],
+   [
+    12,
+    9
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 3
+   },
+   {
+    "kind": "value",
+    "from": 0,
+    "label": "$2$ m"
+   },
+   {
+    "kind": "value",
+    "from": 3,
+    "label": "$9$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The cart's distance-time graph runs from 0 to 12 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "It starts at d equals 2 metres, not 0.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "It ends at 9 metres, so it travels 9 minus 2, which is 7 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "d = 9 - 2 = 7\\ \\text{m}",
+     "check": [
+      {
+       "expr": "9-2",
+       "value": 7
+      }
+     ]
+    }
+   },
+   {
+    "say": "The total time is 12 seconds.",
+    "line": {
+     "tex": "t = 12\\ \\text{s}"
+    }
+   },
+   {
+    "say": "Average speed: 7 over 12 is 0.583, about 0.58 metres per second.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{7}{12} \\approx 0.58\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "7/12",
+       "value": 0.5833333
+      }
+     ]
+    }
+   }
+  ],
+  "figure": [
+   5,
+   9,
+   3
+  ]
+ },
+ "e3e4dccc-0358-44b6-b81c-0dd684ef7397": {
+  "kind": "graph",
+  "qid": "e3e4dccc-0358-44b6-b81c-0dd684ef7397",
+  "topic": "Kinematics",
+  "answer": "A",
+  "answerText": "3.0\\ \\text{km}",
+  "heading": "Car from 40 to 80 km/h in 3 minutes",
+  "xLabel": "t / h",
+  "yLabel": "v / (km/h)",
+  "points": [
+   [
+    0,
+    40
+   ],
+   [
+    0.05,
+    80
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$3.0$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The speed rises steadily from 40 to 80 kilometres per hour in 3 minutes.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Constant acceleration, so the average speed is 40 plus 80, over 2: 60 kilometres per hour.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{40 + 80}{2} = 60\\ \\text{km/h}",
+     "check": [
+      {
+       "expr": "(40+80)/2",
+       "value": 60
+      }
+     ]
+    }
+   },
+   {
+    "say": "3 minutes is 3 over 60 of an hour. Distance: 60 times 3 over 60 is 3.0 kilometres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "d = 60 \\times \\dfrac{3}{60} = 3.0\\ \\text{km}",
+     "check": [
+      {
+       "expr": "60*3/60",
+       "value": 3
+      }
+     ]
+    }
+   }
+  ],
+  "derived": [
+   {
+    "expr": "3/60",
+    "value": 0.05
+   }
+  ]
+ },
+ "e4084ee0-1baf-46b6-ac1b-011c4d4db8d1": {
+  "kind": "graph",
+  "qid": "e4084ee0-1baf-46b6-ac1b-011c4d4db8d1",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "29\\ \\text{m}",
+  "heading": "Race car stops in 1.7 s at 20 m/s²",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    34
+   ],
+   [
+    1.7,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$20$ m/s$^2$"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The car slows at 20 metres per second squared and stops after 1.7 seconds.",
+    "piece": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "So its initial speed is a times t: 20 times 1.7, which is 34 metres per second.",
+    "line": {
+     "tex": "u = 20 \\times 1.7 = 34\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "20*1.7",
+       "value": 34
+      }
+     ]
+    }
+   },
+   {
+    "say": "Then s equals u squared over 2a: 34 squared over 2 times 20, about 29 metres.",
+    "line": {
+     "tex": "s = \\dfrac{34^2}{2 \\times 20} \\approx 29\\ \\text{m}",
+     "check": [
+      {
+       "expr": "34^2/(2*20)",
+       "value": 28.9
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "eb7d86df-f811-4b3d-a199-35eb9ff1b962": {
+  "kind": "graph",
+  "qid": "eb7d86df-f811-4b3d-a199-35eb9ff1b962",
+  "topic": "Kinematics",
+  "answer": "D",
+  "answerText": "25\\ \\text{m/s}",
+  "heading": "Round trip: average speed in m/s",
+  "xLabel": "t / min",
+  "yLabel": "d / km",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    100,
+    120
+   ],
+   [
+    160,
+    240
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "segment",
+    "from": 1,
+    "to": 2
+   },
+   {
+    "kind": "value",
+    "from": 2,
+    "label": "$240$ km"
+   }
+  ],
+  "beats": [
+   {
+    "say": "Out: 120 kilometres in 100 minutes.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Back: another 120 kilometres in 1 hour, 60 minutes.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "Total distance: 120 plus 120 is 240 kilometres, which is 240 000 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "d = 240\\ \\text{km} = 240\\,000\\ \\text{m}",
+     "check": [
+      {
+       "expr": "120+120",
+       "value": 240
+      },
+      {
+       "expr": "240*1000",
+       "value": 240000
+      }
+     ]
+    }
+   },
+   {
+    "say": "Total time: 100 plus 60 is 160 minutes, which is 9600 seconds.",
+    "line": {
+     "tex": "t = 160\\ \\text{min} = 9600\\ \\text{s}",
+     "check": [
+      {
+       "expr": "100+60",
+       "value": 160
+      },
+      {
+       "expr": "160*60",
+       "value": 9600
+      }
+     ]
+    }
+   },
+   {
+    "say": "Average speed: 240 000 over 9600 is 25 metres per second.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{240\\,000}{9600} = 25\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "240000/9600",
+       "value": 25
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "ef01e22a-50e0-46a8-ad8c-a9cebb3667f6": {
+  "kind": "graph",
+  "qid": "ef01e22a-50e0-46a8-ad8c-a9cebb3667f6",
+  "topic": "Kinematics",
+  "answer": "D",
+  "answerText": "32\\ \\text{m/s}",
+  "heading": "2.0 m/s, then 0.20 m/s² for 2.5 minutes",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    2
+   ],
+   [
+    150,
+    32
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 0.20$ m/s$^2$"
+   },
+   {
+    "kind": "value",
+    "from": 1,
+    "label": "$32$ m/s"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The car starts at 2.0 metres per second.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "It accelerates at 0.20 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "For 2.5 minutes, which is 2.5 times 60, 150 seconds.",
+    "line": {
+     "tex": "t = 2.5 \\times 60 = 150\\ \\text{s}",
+     "check": [
+      {
+       "expr": "2.5*60",
+       "value": 150
+      }
+     ]
+    }
+   },
+   {
+    "say": "v equals u plus a t: 2.0 plus 0.20 times 150.",
+    "line": {
+     "tex": "v = 2.0 + 0.20 \\times 150",
+     "check": [
+      {
+       "expr": "0.20*150",
+       "value": 30
+      }
+     ]
+    }
+   },
+   {
+    "say": "That is 2.0 plus 30, which is 32 metres per second.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "v = 2.0 + 30 = 32\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "2.0+30",
+       "value": 32
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "f2140fae-b68a-45c4-a241-d2bd6a05b2aa": {
+  "kind": "graph",
+  "qid": "f2140fae-b68a-45c4-a241-d2bd6a05b2aa",
+  "topic": "Kinematics",
+  "answer": "B",
+  "answerText": "1\\ \\text{m/s}^2",
+  "heading": "From rest to 10 m/s in 10 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    10,
+    10
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$a = 1$ m/s$^2$"
+   }
+  ],
+  "beats": [
+   {
+    "say": "From rest, the speed rises uniformly to 10 metres per second in 10 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Acceleration is the change in speed over the time: 10 minus 0, over 10, is 1 metre per second squared.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "a = \\dfrac{10 - 0}{10} = 1\\ \\text{m/s}^2",
+     "check": [
+      {
+       "expr": "(10-0)/10",
+       "value": 1
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "f9796e34-cb78-4e67-8d99-51667b97b731": {
+  "kind": "graph",
+  "qid": "f9796e34-cb78-4e67-8d99-51667b97b731",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "4.0\\ \\text{s}",
+  "heading": "Car stopping in sand at 2.5 m/s²",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    10
+   ],
+   [
+    4,
+    0
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 1
+   },
+   {
+    "kind": "slope",
+    "from": 0,
+    "to": 1,
+    "label": "$2.5$ m/s$^2$"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The car enters the sand at 10 metres per second and slows uniformly to 0.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "The deceleration is 2.5 metres per second squared.",
+    "piece": [
+     1
+    ]
+   },
+   {
+    "say": "a equals v minus u over t, so t is 0 minus 10, over minus 2.5: 4.0 seconds.",
+    "line": {
+     "tex": "t = \\dfrac{0 - 10}{-2.5} = 4.0\\ \\text{s}",
+     "check": [
+      {
+       "expr": "10/2.5",
+       "value": 4
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "f9e3380d-f8c1-4ef0-adcd-0ae69d1d4562": {
+  "kind": "graph",
+  "qid": "f9e3380d-f8c1-4ef0-adcd-0ae69d1d4562",
+  "topic": "Kinematics",
+  "answer": "C",
+  "answerText": "16\\ \\text{m/s}",
+  "heading": "Average speed over 50 s",
+  "xLabel": "t / s",
+  "yLabel": "v / (m/s)",
+  "points": [
+   [
+    0,
+    0
+   ],
+   [
+    20,
+    20
+   ],
+   [
+    50,
+    20
+   ]
+  ],
+  "pieces": [
+   {
+    "kind": "segment",
+    "from": 0,
+    "to": 2
+   },
+   {
+    "kind": "area",
+    "from": 0,
+    "to": 1,
+    "label": "$200$ m"
+   },
+   {
+    "kind": "area",
+    "from": 1,
+    "to": 2,
+    "label": "$600$ m"
+   }
+  ],
+  "beats": [
+   {
+    "say": "The object speeds up to 20 metres per second in 20 seconds, then holds that speed to 50 seconds.",
+    "piece": [
+     0
+    ]
+   },
+   {
+    "say": "Distance in the first 20 seconds is the triangle: a half, times 20, times 20, is 200 metres.",
+    "piece": [
+     1
+    ],
+    "line": {
+     "tex": "\\tfrac{1}{2} \\times 20 \\times 20 = 200\\ \\text{m}",
+     "why": "distance = area under the graph",
+     "check": [
+      {
+       "expr": "0.5*20*20",
+       "value": 200
+      }
+     ]
+    }
+   },
+   {
+    "say": "In the last 30 seconds, the rectangle: 20 times 30 is 600 metres.",
+    "piece": [
+     2
+    ],
+    "line": {
+     "tex": "20 \\times 30 = 600\\ \\text{m}",
+     "check": [
+      {
+       "expr": "20*30",
+       "value": 600
+      }
+     ]
+    }
+   },
+   {
+    "say": "Total distance: 200 plus 600 is 800 metres.",
+    "line": {
+     "tex": "200 + 600 = 800\\ \\text{m}",
+     "check": [
+      {
+       "expr": "200+600",
+       "value": 800
+      }
+     ]
+    }
+   },
+   {
+    "say": "Average speed is total distance over total time: 800 over 50 is 16 metres per second.",
+    "line": {
+     "tex": "\\bar{v} = \\dfrac{800}{50} = 16\\ \\text{m/s}",
+     "check": [
+      {
+       "expr": "800/50",
+       "value": 16
+      }
+     ]
+    }
+   }
+  ]
+ }
+}

@@ -320,6 +320,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // ▶ Watch it (5 Oct 2026): the animated solution under a science MCQ — the route is the door.
+    timed('portal-watch-it', async () => {
+      const r = await fetch(`${base}/api/portal/science/watch?id=00000000-0000-0000-0000-000000000000`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('portal-science-qa', async () => {
       const r = await fetch(`${base}/app/science/qa`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/qa is missing — the qualitative-analysis door 404s');

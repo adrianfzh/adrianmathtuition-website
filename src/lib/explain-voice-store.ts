@@ -86,17 +86,26 @@ export interface EnsureVoiceResult {
  * Never throws: a bucket or TTS failure leaves beats null.
  */
 export async function ensureVoice(runId: string, questionNumber: string, script: Pick<LessonScript, 'scenes'>): Promise<EnsureVoiceResult> {
+  return ensureBeatVoice(voiceFolder(runId, questionNumber), (k, say) => voiceKey(runId, questionNumber, k, say), script, `${runId} ${questionNumber}`);
+}
+
+/**
+ * The same, for any clip whose beats live under one bucket folder — ▶ Watch it
+ * (5 Oct 2026) keeps a science question's clips under `pages/watch-it/<qid>/`
+ * (Adrian's material, readable by any logged-in student, like a sent page).
+ */
+export async function ensureBeatVoice(folder: string, keyFor: (beat: number, say: string) => string, script: Pick<LessonScript, 'scenes'>, tag = folder): Promise<EnsureVoiceResult> {
   const says = beatSays(script.scenes);
-  const keys = says.map((say, k) => voiceKey(runId, questionNumber, k, say));
+  const keys = says.map((say, k) => keyFor(k, say));
   const urls: (string | null)[] = keys.map(() => null);
   const failed: EnsureVoiceResult['failed'] = [];
   if (!keys.length) return { urls, made: 0, failed };
 
   let have = new Set<string>();
   try {
-    have = new Set((await listStudentFiles(voiceFolder(runId, questionNumber))).filter(f => f.size > 44).map(f => f.key));
+    have = new Set((await listStudentFiles(folder)).filter(f => f.size > 44).map(f => f.key));
   } catch (e) {
-    console.warn('[explain-voice] list failed', runId, questionNumber, (e as Error).message);
+    console.warn('[explain-voice] list failed', tag, (e as Error).message);
   }
   keys.forEach((key, k) => { if (have.has(key)) urls[k] = fileUrl(key); });
 
@@ -125,7 +134,7 @@ export async function ensureVoice(runId: string, questionNumber: string, script:
         const msg = (e as Error).message || String(e);
         if (/daily quota/i.test(msg)) quotaHit = true;
         failed.push({ beat: k, error: msg });
-        console.warn('[explain-voice] beat failed', runId, questionNumber, k, msg);
+        console.warn('[explain-voice] beat failed', tag, k, msg);
       }
     }
   };

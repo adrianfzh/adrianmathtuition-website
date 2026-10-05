@@ -79,6 +79,26 @@ export interface GraphWindow {
   xMin: number; xMax: number; yMin: number; yMax: number;
 }
 
+/**
+ * One piece of a motion graph (▶ Watch it, 5 Oct 2026) — shown by a beat's
+ * write/reveal with `piece: k`. Indices are into the scene's `points`.
+ *   segment — the line from points[from] to points[to] (drawn on)
+ *   area    — the region under points[from‥to] down to the time axis, filled, with its label inside
+ *   slope   — the rise/run triangle under points[from]→points[to], with its label beside
+ *   value   — dashed guides from points[from] to both axes (reading a value off the graph)
+ */
+export const GRAPH_PIECE_KINDS = ['segment', 'area', 'slope', 'value'] as const;
+export type GraphPieceKind = (typeof GRAPH_PIECE_KINDS)[number];
+export interface GraphPiece {
+  kind: GraphPieceKind;
+  from: number;
+  /** segment / area / slope: the last point (> from). `value` ignores it. */
+  to?: number;
+  /** Inline `$…$` allowed — the area's value, the gradient, the reading. */
+  label?: string;
+  tone?: LessonTone;
+}
+
 export interface Callout {
   /** `id` of the token this callout points at. */
   target: string;
@@ -177,6 +197,8 @@ export type StickerKind = (typeof STICKER_KINDS)[number];
  */
 export interface BeatTarget {
   step?: number;
+  /** motion-graph: a graph piece (segment / area / slope / value). */
+  piece?: number;
   callout?: number;
   token?: string;
   text?: ProseField;
@@ -238,6 +260,15 @@ export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
   states: GraphState[]; window: GraphWindow; xLabel?: string; yLabel?: string;
 };
+/** A piecewise-straight motion graph (speed–time, distance–time …) that draws
+ *  itself piece by piece, with the working written under it (▶ Watch it). */
+export type MotionGraphScene = NarrationFields & BeatFields & {
+  type: 'motion-graph'; heading?: string; caption?: string;
+  points: [number, number][]; xLabel?: string; yLabel?: string;
+  pieces: GraphPiece[];
+  /** Working lines under the graph — addressed like equation-steps (step / token). */
+  steps?: EquationStep[];
+};
 export type AnnotateScene = NarrationFields & BeatFields & {
   type: 'annotate'; heading?: string; intro?: string;
   tokens: StepToken[]; callouts: Callout[];
@@ -260,6 +291,7 @@ export type Scene =
   | CaptionScene
   | EquationStepsScene
   | GraphMorphScene
+  | MotionGraphScene
   | AnnotateScene
   | CheckScene;
 
@@ -312,6 +344,7 @@ export type PlayScene =
   | CaptionScene
   | EquationStepsScene
   | GraphMorphScene
+  | MotionGraphScene
   | AnnotateScene
   | ResolvedCheckScene
   | SkippedCheckScene;
@@ -469,6 +502,8 @@ interface BeatScope {
   callouts: number;
   /** graph-morph: state count. */
   states: number;
+  /** motion-graph: piece count. */
+  pieces: number;
   /** Token ids (equation-steps / annotate). */
   tokenIds: Set<string>;
   /** `from` ids some later token flies from (equation-steps). */
@@ -494,15 +529,19 @@ function tokenList(v: unknown): string[] | null {
 
 /** One target (write / reveal / focus): exactly one field, resolvable in this scene. */
 function validateTarget(a: Record<string, unknown>, scope: BeatScope, where: string, errors: string[]): void {
-  const fields = (['step', 'callout', 'token', 'text'] as const).filter(k => a[k] !== undefined);
+  const fields = (['step', 'callout', 'token', 'text', 'piece'] as const).filter(k => a[k] !== undefined);
   if (fields.length !== 1) {
-    errors.push(`${where}: needs exactly one of step / callout / token / text (got ${fields.length ? fields.join(', ') : 'none'})`);
+    errors.push(`${where}: needs exactly one of step / callout / token / text / piece (got ${fields.length ? fields.join(', ') : 'none'})`);
     return;
   }
   if (a.para !== undefined && a.text !== 'text') errors.push(`${where}: para only narrows text: "text"`);
   switch (fields[0]) {
+    case 'piece':
+      if (scope.type !== 'motion-graph') errors.push(`${where}: piece targets only exist on motion-graph scenes`);
+      else if (!integerIn(a.piece, scope.pieces)) errors.push(`${where}: piece must be an integer in 0…${scope.pieces - 1} (got ${String(a.piece)})`);
+      break;
     case 'step':
-      if (scope.type !== 'equation-steps') errors.push(`${where}: step targets only exist on equation-steps scenes`);
+      if (scope.type !== 'equation-steps' && scope.type !== 'motion-graph') errors.push(`${where}: step targets only exist on equation-steps / motion-graph scenes`);
       else if (!integerIn(a.step, scope.steps)) errors.push(`${where}: step must be an integer in 0…${scope.steps - 1} (got ${String(a.step)})`);
       break;
     case 'callout':
@@ -643,7 +682,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
   let steps: number | null = 1;
   // What this scene's beats may address; null once the body is broken.
   const scope: BeatScope = {
-    type: String(type), steps: 0, callouts: 0, states: 0,
+    type: String(type), steps: 0, callouts: 0, states: 0, pieces: 0,
     tokenIds: new Set(), fromIds: new Set(), prose: new Set(), paragraphs: 0,
   };
   if (nonEmptyString(scene.heading)) scope.prose.add('heading');
@@ -724,6 +763,55 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         if (w.xMin >= w.xMax) errors.push(`${at}: window xMin must be < xMax`);
         if (w.yMin >= w.yMax) errors.push(`${at}: window yMin must be < yMax`);
       }
+      break;
+    }
+    case 'motion-graph': {
+      if (!optionalString(scene.heading)) errors.push(`${at}: bad heading`);
+      if (!optionalString(scene.caption)) errors.push(`${at}: bad caption`);
+      if (nonEmptyString(scene.caption)) scope.prose.add('caption');
+      const pts = scene.points;
+      const okPts = Array.isArray(pts) && pts.length >= 2 && pts.every(p => Array.isArray(p) && p.length === 2 && finiteNumber(p[0]) && finiteNumber(p[1]));
+      if (!okPts) errors.push(`${at} (motion-graph): points must be at least two [x, y] pairs of finite numbers`);
+      else for (let k = 1; k < (pts as number[][]).length; k++) {
+        if ((pts as number[][])[k][0] < (pts as number[][])[k - 1][0]) errors.push(`${at} (motion-graph): points must run left to right (x never decreases)`);
+      }
+      const n = okPts ? (pts as unknown[]).length : 0;
+      const pieces = scene.pieces;
+      if (!Array.isArray(pieces) || pieces.length === 0) {
+        errors.push(`${at} (motion-graph): needs at least one piece`);
+        steps = null;
+        break;
+      }
+      scope.pieces = pieces.length;
+      pieces.forEach((pc, pi) => {
+        const pAt = `${at}.pieces[${pi}]`;
+        if (!isRecord(pc)) { errors.push(`${pAt}: piece must be an object`); return; }
+        if (!(GRAPH_PIECE_KINDS as readonly unknown[]).includes(pc.kind)) errors.push(`${pAt}: kind must be one of ${GRAPH_PIECE_KINDS.join('/')}`);
+        if (!integerIn(pc.from, Math.max(1, n))) errors.push(`${pAt}: from must be a point index`);
+        if (pc.kind !== 'value' && (!integerIn(pc.to, Math.max(1, n)) || (integerIn(pc.from, n) && (pc.to as number) <= (pc.from as number)))) {
+          errors.push(`${pAt}: to must be a point index after from`);
+        }
+        if (pc.label !== undefined && !nonEmptyString(pc.label)) errors.push(`${pAt}: label must be a non-empty string when present`);
+        if (pc.tone !== undefined && !isTone(pc.tone)) errors.push(`${pAt}: tone must be one of ${LESSON_TONES.join('/')}`);
+      });
+      const ids = new Set<string>();
+      const earlier = new Set<string>();
+      const stArr = scene.steps;
+      if (stArr !== undefined) {
+        if (!Array.isArray(stArr)) errors.push(`${at}: steps must be an array when present`);
+        else {
+          scope.steps = stArr.length;
+          stArr.forEach((step, si) => {
+            const sAt = `${at}.steps[${si}]`;
+            if (!isRecord(step) || !Array.isArray(step.tokens) || step.tokens.length === 0) { errors.push(`${sAt}: needs at least one token`); return; }
+            step.tokens.forEach((t, ti) => validateToken(t, `${sAt}.tokens[${ti}]`, errors, ids, earlier));
+            for (const t of step.tokens) if (isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
+            if (step.note !== undefined && !nonEmptyString(step.note)) errors.push(`${sAt}: note must be a non-empty string when present`);
+          });
+        }
+      }
+      scope.tokenIds = ids;
+      steps = pieces.length + (Array.isArray(stArr) ? stArr.length : 0);
       break;
     }
     case 'annotate': {
@@ -822,6 +910,7 @@ export function sceneStepCount(scene: PlayScene): number {
   switch (scene.type) {
     case 'equation-steps': return scene.steps.length;
     case 'graph-morph': return scene.states.length;
+    case 'motion-graph': return scene.pieces.length + (scene.steps?.length ?? 0);
     case 'annotate': return scene.callouts.length + 1; // expression first, then callouts
     default: return 1;
   }

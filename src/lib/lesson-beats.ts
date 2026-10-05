@@ -57,8 +57,9 @@ export interface TokenRef { line: number; index: number; id?: string; from?: str
 
 /** Every token of a scene in writing order (equation-steps lines / annotate's one row). */
 export function sceneTokens(scene: Scene | PlayScene): TokenRef[] {
-  if (scene.type === 'equation-steps') {
-    return scene.steps.flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from })));
+  if (scene.type === 'equation-steps' || scene.type === 'motion-graph') {
+    if (scene.type === 'motion-graph' && !scene.steps) return [];
+    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from })));
   }
   if (scene.type === 'annotate') return scene.tokens.map((t, index) => ({ line: 0, index, id: t.id, from: t.from }));
   return [];
@@ -66,6 +67,8 @@ export function sceneTokens(scene: Scene | PlayScene): TokenRef[] {
 
 export const tokKey = (line: number, index: number): ElementKey => `tok:${line}:${index}`;
 export const lineKey = (line: number): ElementKey => `line:${line}`;
+/** A motion-graph piece (segment / area / slope / value). */
+export const pieceKey = (piece: number): ElementKey => `piece:${piece}`;
 
 /** How many paragraphs a caption's text has (its `para` targets). */
 export function paragraphCount(scene: Scene | PlayScene): number {
@@ -78,6 +81,7 @@ export function paragraphCount(scene: Scene | PlayScene): number {
  */
 export function targetKeys(scene: Scene | PlayScene, t: BeatTarget): ElementKey[] {
   if (t.step !== undefined) return [lineKey(t.step)];
+  if (t.piece !== undefined) return [pieceKey(t.piece)];
   if (t.callout !== undefined) return [`callout:${t.callout}`];
   if (t.token !== undefined) {
     const ref = sceneTokens(scene).find(r => r.id === t.token);
@@ -369,13 +373,13 @@ export function tokenWritten(board: BoardState, line: number, index: number): bo
  */
 export function elementShown(board: BoardState, key: ElementKey): boolean {
   if (board.shown.has(key)) return true;
-  if (key.startsWith('line:') || key.startsWith('tok:') || key.startsWith('callout:') || key.startsWith('note:')) return false;
+  if (key.startsWith('line:') || key.startsWith('tok:') || key.startsWith('callout:') || key.startsWith('note:') || key.startsWith('piece:')) return false;
   return !board.targeted.has(key);
 }
 
 /** Is this element static in the scene (no action ever targets it)? */
 export function elementStatic(board: BoardState, key: ElementKey): boolean {
-  if (key.startsWith('line:') || key.startsWith('tok:') || key.startsWith('callout:') || key.startsWith('note:')) return false;
+  if (key.startsWith('line:') || key.startsWith('tok:') || key.startsWith('callout:') || key.startsWith('note:') || key.startsWith('piece:')) return false;
   return !board.targeted.has(key);
 }
 

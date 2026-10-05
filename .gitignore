@@ -68,3 +68,6 @@ scripts/.sweep-log.json
 # session scratch (never committed)
 scratchpad/
 _backups/**/snapshot-all.json
+
+# ▶ Watch it authoring scratch (scripts/watch-it/candidates.ts)
+scripts/watch-it/work/

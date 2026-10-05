@@ -402,6 +402,21 @@ export async function explainClipVisible(identity?: string | null): Promise<bool
   return admin && !(await viewingAsStudent());
 }
 
+// ▶ Watch it — an animated worked solution under a science MCQ's solution
+// (5 Oct 2026, Adrian: "build the watch it animations for kinematics and
+// chemical calculations … gate keep it to me, then show me the results").
+// ADMIN ONLY — unlike the explain clip, the preview student does NOT see it
+// until Adrian says so. The route (/api/portal/science/watch) and the button
+// both ask watchItVisible(); flip this to open it for every student.
+export const WATCH_IT_OPEN_TO_STUDENTS = false;
+export async function watchItVisible(): Promise<boolean> {
+  if (WATCH_IT_OPEN_TO_STUDENTS) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // 🪜 "Stuck? Next step" on a practice question (1 Oct 2026, from a student weak
 // at trig identity proofs): the bank working one line per tap, and "next step
 // from my line" on a photo of their working (lib/proof-ladder). ADMIN-ONLY plus

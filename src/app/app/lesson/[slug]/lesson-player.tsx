@@ -75,7 +75,7 @@ import { checkTypedAnswer } from '@/lib/notebook';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
-  type GraphMorphScene, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
+  type GraphMorphScene, type GraphPiece, type MotionGraphScene, type LessonCharacter, type LessonTheme, type LessonTone, type PlayScene,
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
 import {
@@ -84,7 +84,7 @@ import {
   type PlaybackRate, type SpeechTrack, type SpeechState, type Window as SpeechWindow,
 } from '@/lib/lesson-speech';
 import {
-  beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, proseGroup, sceneNotes, scenesHaveCharacter,
+  beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, pieceKey, proseGroup, sceneNotes, scenesHaveCharacter,
   tokKey, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
@@ -583,6 +583,153 @@ function GraphMorphView({ scene, step, reduced, board }: {
   );
 }
 
+// ── Scene: motion-graph (▶ Watch it, 5 Oct 2026) ─────────────────────────────
+// A piecewise-straight graph from the question's own numbers (speed–time,
+// distance–time …) that draws itself piece by piece — segments drawn on, areas
+// filled with their value inside, the gradient's rise/run triangle, dashed
+// readings to the axes — with the working written under it (the same lines as
+// an equation-steps scene, addressed by the same beats). Only the values the
+// points carry are labelled on the axes: the reading is exact, not eyeballed.
+
+const PIECE_TONE: Record<GraphPiece['kind'], LessonTone> = { segment: 'sky', area: 'amber', slope: 'rose', value: 'sky' };
+const fmtTick = (v: number) => String(Number(v.toPrecision(6)));
+
+function MotionGraphView({ scene, step, reduced, timed, board }: {
+  scene: MotionGraphScene; step: number; reduced: boolean; timed: boolean; board: BoardState | null;
+}) {
+  const W = 360, H = 230, L = 46, R = 16, T = 14, B = 30;
+  const plotW = W - L - R, plotH = H - T - B;
+  const pts = scene.points;
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const xMin = Math.min(0, ...xs), xMax = Math.max(...xs) || 1;
+  const yMin = Math.min(0, ...ys), yMax = Math.max(...ys) || 1;
+  const px = (x: number) => L + ((x - xMin) / (xMax - xMin)) * plotW;
+  const py = (y: number) => T + 8 + ((yMax - y) / (yMax - yMin)) * (plotH - 8);
+  const y0 = py(0), x0 = px(Math.max(0, xMin));
+  // Without beats (never the case for a Watch it clip) pieces arrive one per tap.
+  const pieceOn = (k: number) => (board ? elementShown(board, pieceKey(k)) : k <= step);
+  const xTicks = [...new Set(xs.filter(v => v !== 0))].sort((a, b) => a - b);
+  const yTicks = [...new Set(ys.filter(v => v !== 0))].sort((a, b) => a - b);
+  // Which ticks are labelled: a value once a piece that uses it is on (the axes fill in with the drawing).
+  const usedOn = (axis: 0 | 1, v: number) => scene.pieces.some((pc, k) => {
+    if (!pieceOn(k)) return false;
+    const idx = pc.kind === 'value' ? [pc.from] : Array.from({ length: (pc.to ?? pc.from) - pc.from + 1 }, (_, i) => pc.from + i);
+    return idx.some(i => pts[i]?.[axis] === v);
+  });
+  const stroke = (pc: GraphPiece) => TONE[pc.tone ?? PIECE_TONE[pc.kind]].stroke;
+  const fade = (on: boolean, ms = 450) => ({ opacity: on ? 1 : 0, transition: reduced ? 'none' : `opacity ${ms}ms ${EASE}` });
+
+  // Labels sit in the empty space: a slope's above its line (left of it when the line rises), a
+  // reading's above its point — and on the inner side near the right edge, so nothing leaves the board.
+  type Anchor = 'c' | 'l' | 'r';
+  const labels: { k: number; x: number; y: number; text: string; color: string; anchor: Anchor }[] = [];
+  const side = (x: number, prefer: Anchor): Anchor => (prefer === 'l' && x > W * 0.6 ? 'r' : prefer === 'r' && x < W * 0.4 ? 'l' : prefer);
+  scene.pieces.forEach((pc, k) => {
+    if (!pc.label) return;
+    const a = pts[pc.from], b = pts[pc.to ?? pc.from];
+    if (pc.kind === 'area') {
+      const seg = pts.slice(pc.from, (pc.to ?? pc.from) + 1);
+      const cx = (seg[0][0] + seg[seg.length - 1][0]) / 2;
+      // under the line at the middle of the region, a third of the way up from the axis
+      const yTop = seg.reduce((m, p) => Math.min(m, py(p[1])), y0);
+      const yMid = Math.max(yTop, (() => { // the line's height at cx
+        for (let i = 0; i + 1 < seg.length; i++) if (seg[i][0] <= cx && cx <= seg[i + 1][0]) {
+          const f = seg[i + 1][0] === seg[i][0] ? 0 : (cx - seg[i][0]) / (seg[i + 1][0] - seg[i][0]);
+          return py(seg[i][1] + f * (seg[i + 1][1] - seg[i][1]));
+        }
+        return yTop;
+      })());
+      labels.push({ k, x: px(cx), y: y0 - (y0 - yMid) * 0.38, text: pc.label, color: stroke(pc), anchor: 'c' });
+    } else if (pc.kind === 'slope') {
+      const mx = (px(a[0]) + px(b[0])) / 2, my = (py(a[1]) + py(b[1])) / 2;
+      const rising = b[1] > a[1], flat = b[1] === a[1];
+      labels.push({ k, x: flat ? mx : rising ? mx - 10 : mx + 10, y: my - 16, text: pc.label, color: stroke(pc), anchor: flat ? 'c' : rising ? 'r' : 'l' });
+    } else if (pc.kind === 'value') {
+      const x = px(a[0]);
+      labels.push({ k, x: x > W * 0.6 ? x - 8 : x + 8, y: Math.max(T + 6, py(a[1]) - 13), text: pc.label, color: stroke(pc), anchor: side(x, 'l') });
+    } else {
+      labels.push({ k, x: (px(a[0]) + px(b[0])) / 2, y: (py(a[1]) + py(b[1])) / 2 - 14, text: pc.label, color: stroke(pc), anchor: 'c' });
+    }
+  });
+  const shift: Record<Anchor, string> = { c: 'translate(-50%, -50%)', l: 'translate(0, -50%)', r: 'translate(-100%, -50%)' };
+
+  const working = useMemo<EquationStepsScene | null>(
+    () => (scene.steps?.length ? { type: 'equation-steps', steps: scene.steps, beats: scene.beats } : null),
+    [scene.steps, scene.beats],
+  );
+  const caption = bitsOf(board, 'text:caption');
+
+  return (
+    <div className="lsn-body lsn-body-graph flex-1 px-1 py-2">
+      {scene.heading && (
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-2">{scene.heading}</p>
+      )}
+      <div className="relative" data-motion-graph>
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none" role="img" aria-label={scene.heading || 'Graph'}>
+          {/* areas first — under everything */}
+          {scene.pieces.map((pc, k) => {
+            if (pc.kind !== 'area') return null;
+            const seg = pts.slice(pc.from, (pc.to ?? pc.from) + 1);
+            const poly = [[seg[0][0], 0], ...seg, [seg[seg.length - 1][0], 0]].map(p => `${px(p[0]).toFixed(1)},${py(p[1]).toFixed(1)}`).join(' ');
+            return <polygon key={k} data-key={board ? pieceKey(k) : undefined} points={poly} fill={stroke(pc)} fillOpacity={0.26}
+              stroke={stroke(pc)} strokeOpacity={0.5} strokeWidth={1} style={fade(pieceOn(k), 600)} />;
+          })}
+          {xTicks.map(v => <line key={`gx${v}`} x1={px(v)} y1={T} x2={px(v)} y2={T + plotH} stroke="#e2e8f0" strokeWidth="1" className="lsn-grid" style={fade(usedOn(0, v))} />)}
+          {yTicks.map(v => <line key={`gy${v}`} x1={L} y1={py(v)} x2={L + plotW} y2={py(v)} stroke="#e2e8f0" strokeWidth="1" className="lsn-grid" style={fade(usedOn(1, v))} />)}
+          <line x1={L} y1={y0} x2={L + plotW} y2={y0} stroke="#94a3b8" strokeWidth="1.4" className="lsn-axis" />
+          <line x1={x0} y1={T} x2={x0} y2={T + plotH} stroke="#94a3b8" strokeWidth="1.4" className="lsn-axis" />
+          <text x={x0 - 5} y={y0 + 13} fontSize="10" fill="#94a3b8" textAnchor="end" className="lsn-tick">0</text>
+          {xTicks.map(v => <text key={`tx${v}`} x={px(v)} y={y0 + 14} fontSize="10.5" fill="#94a3b8" textAnchor="middle" className="lsn-tick" style={fade(usedOn(0, v))}>{fmtTick(v)}</text>)}
+          {yTicks.map(v => <text key={`ty${v}`} x={x0 - 5} y={py(v) + 3.5} fontSize="10.5" fill="#94a3b8" textAnchor="end" className="lsn-tick" style={fade(usedOn(1, v))}>{fmtTick(v)}</text>)}
+          {scene.xLabel && <text x={L + plotW} y={y0 + 26} fontSize="11" fill="#64748b" textAnchor="end" fontStyle="italic" className="lsn-axis-label">{scene.xLabel}</text>}
+          {scene.yLabel && <text x={x0 + 6} y={T + 2} fontSize="11" fill="#64748b" fontStyle="italic" className="lsn-axis-label">{scene.yLabel}</text>}
+          {/* readings and gradient triangles (dashed), then the graph itself on top */}
+          {scene.pieces.map((pc, k) => {
+            const on = pieceOn(k);
+            const a = pts[pc.from], b = pts[pc.to ?? pc.from];
+            if (pc.kind === 'value') return (
+              <g key={k} data-key={board ? pieceKey(k) : undefined} style={fade(on)}>
+                <polyline points={`${x0},${py(a[1])} ${px(a[0])},${py(a[1])} ${px(a[0])},${y0}`} fill="none" stroke={stroke(pc)} strokeWidth="1.4" strokeDasharray="4 3" />
+                <circle cx={px(a[0])} cy={py(a[1])} r="3.2" fill={stroke(pc)} />
+              </g>
+            );
+            if (pc.kind === 'slope') return (
+              <g key={k} data-key={board ? pieceKey(k) : undefined} style={fade(on)}>
+                <polyline points={`${px(a[0])},${py(a[1])} ${px(b[0])},${py(a[1])} ${px(b[0])},${py(b[1])}`} fill="none" stroke={stroke(pc)} strokeWidth="1.6" strokeDasharray="5 3" />
+              </g>
+            );
+            return null;
+          })}
+          {scene.pieces.map((pc, k) => {
+            if (pc.kind !== 'segment') return null;
+            const seg = pts.slice(pc.from, (pc.to ?? pc.from) + 1);
+            const d = seg.map((p, i) => `${i ? 'L' : 'M'}${px(p[0]).toFixed(1)} ${py(p[1]).toFixed(1)}`).join('');
+            const on = pieceOn(k);
+            return <path key={k} data-key={board ? pieceKey(k) : undefined} d={d} fill="none" stroke="hsl(220, 60%, 20%)" strokeWidth="2.6"
+              strokeLinecap="round" strokeLinejoin="round" className="lsn-curve" pathLength={1} strokeDasharray="1"
+              style={{ strokeDashoffset: on ? 0 : 1, transition: reduced ? 'none' : `stroke-dashoffset 900ms ${EASE}` }} />;
+          })}
+        </svg>
+        {/* Labels as HTML over the SVG (KaTeX does not live inside SVG text). */}
+        {labels.map(l => (
+          <div key={l.k} aria-hidden={!pieceOn(l.k)} className="lsn-graph-label absolute pointer-events-none whitespace-nowrap text-[12.5px] font-semibold lsn-hand"
+            style={{ left: `${(l.x / W) * 100}%`, top: `${(l.y / H) * 100}%`, transform: shift[l.anchor], color: l.color, ...fade(pieceOn(l.k), 500) }}>
+            <MathText text={l.text} />
+          </div>
+        ))}
+      </div>
+      {working && (
+        <div className="mt-1">
+          <EquationStepsView scene={working} step={Math.max(0, step - scene.pieces.length)} reduced={reduced} timed={timed} board={board} />
+        </div>
+      )}
+      {scene.caption && (
+        <p data-key={caption?.key} data-prose={board ? '1' : undefined} data-fit className={`mt-3 text-[13px] text-slate-500 lsn-muted-2 lsn-hand leading-snug ${elCls(caption)}`}><MathText text={scene.caption} /></p>
+      )}
+    </div>
+  );
+}
+
 // ── Scene: annotate ──────────────────────────────────────────────────────────
 
 type ConnLine = { x1: number; y1: number; x2: number; y2: number; tone: LessonTone };
@@ -825,6 +972,7 @@ function beatDuration(scene: PlayScene, step: number): number | null {
       return 2400 + (s?.note ? Math.min(2400, s.note.length * 22) : 0);
     }
     case 'graph-morph': return 2600;
+    case 'motion-graph': return 2600;
     case 'annotate': return step === 0 ? 2200 : 2600;
     case 'check': return null;         // interactive — autoplay waits
     case 'check-skipped': return 2000;
@@ -1172,7 +1320,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, onClose }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1194,6 +1342,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   doneText?: string;
   /** Start in ▶ Auto — a clip plays like a video from the first frame (the one-minute explanation). */
   startAuto?: boolean;
+  /** Played inside an overlay (▶ Watch it): ‹ and the closer call this instead of following a link. */
+  onClose?: () => void;
 }) {
   const theme = normalizeTheme(themeProp);
   const [sceneIdx, setSceneIdx] = useState(0);
@@ -1506,10 +1656,17 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           row keeps its shape whichever mode is on. Long labels are for ≥ sm;
           a phone gets icons + the fill colour (measured: one row at 390 px). */}
       <div className="flex items-center gap-2.5 pt-1 mb-3">
-        <Link href={backHref} aria-label="Back"
-          className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
-          <span className="text-lg leading-none" aria-hidden>‹</span>
-        </Link>
+        {onClose ? (
+          <button type="button" onClick={onClose} aria-label="Back"
+            className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
+            <span className="text-lg leading-none" aria-hidden>‹</span>
+          </button>
+        ) : (
+          <Link href={backHref} aria-label="Back"
+            className="shrink-0 w-9 h-9 rounded-xl bg-white shadow-[0_1px_2px_rgba(15,23,42,0.06)] text-navy inline-flex items-center justify-center hover:bg-slate-50 active:scale-95 motion-safe:transition-transform">
+            <span className="text-lg leading-none" aria-hidden>‹</span>
+          </Link>
+        )}
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">▶ {kicker} · {minutes} min</p>
           <h1 className="font-bold text-navy text-sm truncate">{title}</h1>
@@ -1568,11 +1725,19 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           <p className="mt-2 max-w-xs text-sm text-slate-600 lsn-ink-2 lsn-rise" style={{ animationDelay: '240ms' }}>
             {doneText}
           </p>
-          <Link href={practiceHref}
-            className="block text-center mt-6 w-full max-w-xs bg-amber-400 text-navy rounded-2xl px-4 py-3.5 font-bold text-[15px] shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:bg-amber-300 active:scale-[0.98] motion-safe:transition lsn-rise"
-            style={{ animationDelay: '360ms' }}>
-            {practiceLabel ?? `✏️ Practise ${topic} →`}
-          </Link>
+          {onClose ? (
+            <button type="button" onClick={onClose}
+              className="block text-center mt-6 w-full max-w-xs bg-amber-400 text-navy rounded-2xl px-4 py-3.5 font-bold text-[15px] shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:bg-amber-300 active:scale-[0.98] motion-safe:transition lsn-rise"
+              style={{ animationDelay: '360ms' }}>
+              {practiceLabel ?? '‹ Back to the question'}
+            </button>
+          ) : (
+            <Link href={practiceHref}
+              className="block text-center mt-6 w-full max-w-xs bg-amber-400 text-navy rounded-2xl px-4 py-3.5 font-bold text-[15px] shadow-[0_8px_24px_-10px_rgba(245,158,11,0.8)] hover:bg-amber-300 active:scale-[0.98] motion-safe:transition lsn-rise"
+              style={{ animationDelay: '360ms' }}>
+              {practiceLabel ?? `✏️ Practise ${topic} →`}
+            </Link>
+          )}
           <button type="button" onClick={restart}
             className="mt-3 text-sm font-semibold text-slate-500 lsn-muted hover:text-navy">
             ↺ Watch again
@@ -1590,6 +1755,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
             {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
             {scene.type === 'graph-morph' && <GraphMorphView scene={scene} step={step} reduced={reduced} board={board} />}
+            {scene.type === 'motion-graph' && <MotionGraphView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
             {scene.type === 'annotate' && <AnnotateView scene={scene} step={step} timed={timed} board={board} />}
             {scene.type === 'check' && (
               <CheckView scene={scene} slug={slug} timed={timed} board={board}
@@ -1865,6 +2031,7 @@ const PLAYER_CSS = `
 [data-lsn-themed] .lsn-axis { stroke: var(--lsn-axis); }
 [data-lsn-themed] .lsn-tick, [data-lsn-themed] .lsn-axis-label { fill: var(--lsn-muted); }
 [data-lsn-themed] .lsn-curve { stroke: var(--lsn-curve); }
+[data-lsn-themed] .lsn-graph-label { text-shadow: 0 0 5px rgba(15,23,42,0.95), 0 0 2px rgba(15,23,42,0.95); }
 [data-lsn-themed] .lsn-ghost { stroke: var(--lsn-ghost); }
 [data-lsn-themed] .lsn-poster { background: rgba(8, 12, 10, 0.42); }
 [data-lsn-themed] .lsn-ribbon { background-color: var(--lsn-board); background-image: var(--lsn-texture); background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend); border-radius: 14px; padding: 8px 12px; box-shadow: inset 0 0 0 1px var(--lsn-edge); }

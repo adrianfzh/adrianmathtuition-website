@@ -338,7 +338,7 @@ describe('beat validation', () => {
       { do: 'write' }, { do: 'write', step: 0, token: 'lhs' }, { do: 'focus', text: 'intro', para: 1 },
     ] }]);
     const msg = errorsOf(r);
-    expect(msg).toMatch(/do\[0\]: needs exactly one of step \/ callout \/ token \/ text \(got none\)/);
+    expect(msg).toMatch(/do\[0\]: needs exactly one of step \/ callout \/ token \/ text \/ piece \(got none\)/);
     expect(msg).toMatch(/do\[1\]: needs exactly one .* \(got step, token\)/);
     expect(msg).toMatch(/do\[2\]: para only narrows text: "text"/);
     const cap = withBeats([{ say: 'Paragraph three of two.', do: [{ do: 'write', text: 'text', para: 2 }] }], { type: 'caption', text: 'One.\n\nTwo.' });

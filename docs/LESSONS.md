@@ -110,6 +110,49 @@ page is the video.**
   shows on a phone. The topic lessons above stay the long form, reached from a card —
   never a Lessons tab.
 
+## ▶ Watch it (5 Oct 2026) — an animated worked solution under a science MCQ
+
+Adrian: *"build the watch it animations for kinematics and chemical calculations …
+gate keep it to me, then show me the results"*. The same player, chalk board, tutor and
+MiniMax voice as the one-minute explanation, for ONE practice question: a **▶ Watch it**
+button under the worked solution (`app/practice/watch-it.tsx`, inside `practice-flow.tsx`'s
+solution card, science MCQs only) opens the clip full screen over the practice page; ‹ and
+the closer return to the same question (`LessonPlayer`'s new `onClose` prop).
+
+- **What plays.** Kinematics: the speed–time / distance–time graph drawing itself from the
+  question's own numbers — the new `motion-graph` scene type (`lib/lesson-script.ts`:
+  `points`, `pieces` = segment / slope / area / value, each shown by a beat's
+  `{do:'write', piece:k}`; working lines under it addressed like equation-steps; the axes
+  label only the values the points carry). Chemical calculations: the equation with the two
+  species of the mole ratio boxed and "2 : 1" beside them, a road map along the top
+  (mass →÷Mr→ moles →ratio→ moles →×Mr→ mass) lighting up stop by stop, the working one
+  line a beat, then **Answer: B 30.3 g**.
+- **Where a clip comes from.** A small spec per question in `data/watch-it/kinematics.json`
+  and `data/watch-it/chemical-calculations.json` (keyed by the science bank's question id),
+  turned into a LessonScript at request time by `lib/watch-it.ts buildWatchScript` (pure,
+  tested). Specs were written once by plan-billed agents (`scripts/watch-it/AUTHOR.md` is
+  the brief; `candidates.ts` pulls the practice pool and drops solutions with no arithmetic;
+  `check.ts` gates every spec; `merge.ts` writes the data files). The decision per question
+  (a clip or a skip with the reason) is the agents', against the brief's yes/no list.
+- **Never says what the solution doesn't.** `checkWatchSpec` refuses a spec whose answer
+  letter is not the bank's, whose answer value is not that option's number, or that shows or
+  says a number (board line, spoken line, label, graph point) that is not in the question or
+  the solution and not the result of arithmetic the spec declares — which it re-does
+  (`evalArith`). A graph is drawn only where the solution's own method is the graph's
+  (area, gradient, average speed).
+- **The switch.** `WATCH_IT_OPEN_TO_STUDENTS` (`lib/portal-beta.ts watchItVisible`):
+  Adrian's admin cookie ONLY — the demo student does not see it either. Route
+  `GET|POST /api/portal/science/watch` (GET = the clip's scenes, POST = the voice), 401
+  anonymous (health-check `portal-watch-it`), 403 while shut. **`/admin/watch-it`** lists
+  every clip by topic with the question, the solution folded and the same button — the page
+  for Adrian to look through them.
+- **Voice.** Off until the 🔊 pill is tapped; the clips are made on the first open and
+  cached under `pages/watch-it/<qid>/` (`ensureBeatVoice` in `lib/explain-voice-store.ts`,
+  the explain clip's MiniMax voice) — `pages/` is readable by any signed-in student.
+- **Adding a topic.** Add it to `TOPICS` in `scripts/watch-it/candidates.ts`, a data file +
+  an import in `lib/watch-it-store.ts` and `admin/watch-it/page.tsx`, a spec kind if the
+  animation is new, then run the agents on the batches.
+
 ## The character (1 Oct 2026) — a cartoon teacher at the corner of the board
 
 Adrian, on the one-minute explanation: *"there should be an animated person so it's more
