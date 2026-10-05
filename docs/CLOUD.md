@@ -193,7 +193,7 @@ token, counted from `agent_actions`; health-check `agent-twins` probes the four 
 | Door | What |
 |---|---|
 | `GET /api/agent/twins/queue?bank=maths&level=EM&n=5[&focus_only=1]` | the next seeds as full packets — seed, key, solution, sub-skill, the twins it already has, the nearest bank questions, the author brief. Selection = `twin.mjs queue` (sub-skills short of 5, stuck focus first) |
-| `GET /api/agent/twins/queue?bank=science&n=5[&pool=PHY&text_only=1]` | same, selection = `sci-twin.mjs gap/queue` (open topics short of 30 Challenge MCQs) |
+| `GET /api/agent/twins/queue?bank=science&n=5[&pool=PHY&text_only=1]` | same, selection = `science_twin_units()` (3 twins per pool × sub-skill at the seed's level, open practice topics first — the Fly lane reads the same) |
 | `POST /api/agent/twins/submit` | `{bank, seed_id, question, figure_spec?, gate_record:{blind_answer, blind, checker, notes}, dry?}` — the server re-fetches the seed, re-runs EVERY gate (`lib/twin-gates.ts`, pure/tested), refuses a full sub-skill/topic or a seed with a live twin (409), draws the figure, files exactly like the local `publish`. `dry:true` = gates + figure only, and returns the blind and checker briefs |
 | `GET/POST /api/agent/twins/figure` | the figure library (families, `?doc=`, render a spec to PNG) — proxied to the bot's `POST /api/figure-render` (bot `lib/figure-service.js`; typed specs only, never the code engine) |
 | `POST /api/agent/twins/retire` | take back a twin a cloud session filed (`gen_meta.written_by='cloud-session'`), nothing else |
@@ -212,7 +212,7 @@ changed in `twin.mjs` / `sci-twin.mjs` is changed in `twin-gates.ts` / `twin-bri
    variables → add the line `AGENT_TOKEN_TWINS=<the value>`. New sessions pick it up.
    `www.adrianmathtuition.com` is already on the allowlist; nothing else is needed (the figure
    library is reached through the website, not the Fly host).
-Then in a new cloud session: *"write 30 science Challenge twins"* (or *"write 40 Sec 2 twins"*).
+Then in a new cloud session: *"write 30 science twins"* (or *"write 40 Sec 2 twins"*).
 
 Tested end to end on 5 Oct 2026 against a local server with a test token: 3 maths twins (one with
 a library figure) and 2 science twins filed through the doors, one science draft refused at the

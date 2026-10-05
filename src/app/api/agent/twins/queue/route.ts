@@ -3,7 +3,8 @@
 // packet — the seed question, its key and solution, its sub-skill, the twins that sub-skill
 // already has, the nearest bank questions, and the author brief — so a claude.ai cloud
 // session can author → blind-solve → check with NO database key. Same selection as
-// scripts/twins/twin.mjs queue (maths) and scripts/science-twins/sci-twin.mjs queue (science).
+// scripts/twins/twin.mjs queue (maths) and scripts/science-twins/sci-twin.mjs queue (science —
+// science_twin_units: 3 twins per (pool, sub-skill), open topics first, fewest twins first).
 // No student data. AGENT_TOKEN_TWINS or admin; rate-limited per hour (lib/twins-door.ts).
 import { NextRequest, NextResponse } from 'next/server';
 import { twinsDoor, stampTwins } from '@/lib/twins-door';

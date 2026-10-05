@@ -16,7 +16,7 @@
 
 export const NOVELTY_MAX = 0.4;            // word-trigram Jaccard above this = a disguised copy (gce-paper's bar)
 export const TWINS_PER_SKILL = 5;          // maths: twins per sub-skill (Adrian, 3 Oct 2026)
-export const SCI_TARGET = 30;              // science: servable Challenge MCQs per open topic (SPEC-TWINS §11)
+export const SCI_PER_SKILL = 3;            // science: verified twins per (pool, sub-skill) at the seed's level (SPEC-TWINS §11, 5 Oct 2026)
 export const TWIN_SCHOOL = 'AdrianMath';
 export const TWIN_EXAM_TYPE = 'Twin';
 
@@ -193,7 +193,7 @@ export const LETTERS = ['A', 'B', 'C', 'D'] as const;
 export type SciKey = 'PHY' | 'CHEM' | 'BIO';
 export type SciTwinDraft = {
   stem?: string; options?: Partial<Record<'A' | 'B' | 'C' | 'D', string>>; answer?: string; solution?: string;
-  distractors?: Record<string, string>; why_challenge?: string; originality_note?: string; needs_figure?: boolean;
+  distractors?: Record<string, string>; why_level?: string; why_challenge?: string; originality_note?: string; needs_figure?: boolean;
 };
 
 // Things the O-Level syllabi do not ask (Adrian, 5 Oct 2026: "physics: no suvat equations,
@@ -269,7 +269,7 @@ export function gateScienceTwin(q: SciTwinDraft, ctx: { srcText: string; corpus:
 
 export type SciVerdict = {
   key_correct?: boolean; blind_agrees?: boolean; one_defensible_answer?: boolean; in_syllabus?: boolean; original?: boolean;
-  reads_as_source?: boolean; same_skill?: boolean; work_score?: number; is_challenge?: boolean; distractors_real?: boolean;
+  reads_as_source?: boolean; same_skill?: boolean; work_score?: number; level_ok?: boolean; is_challenge?: boolean; distractors_real?: boolean;
   house_style?: boolean; why_not_honest?: boolean; student_safe?: boolean; score?: number; why?: string; fixes?: string[];
 };
 /** sci-twin.mjs verdictOk: the blind LETTER equals the key and every checker point is true. */
@@ -279,7 +279,7 @@ export function scienceVerdictOk(v: SciVerdict | null | undefined, blindLetter: 
   return !!letter && letter === String(key ?? '').trim().toUpperCase()
     && v.key_correct === true && v.blind_agrees === true && v.one_defensible_answer === true
     && v.in_syllabus === true && v.original === true && v.reads_as_source !== true && v.same_skill === true
-    && Number(v.work_score) >= 4 && v.is_challenge === true && v.distractors_real === true
+    && Number(v.work_score) >= 1 && Number(v.work_score) <= 5 && (v.level_ok === true || v.is_challenge === true) && v.distractors_real === true
     && v.house_style === true && v.why_not_honest === true && v.student_safe === true && Number(v.score) >= 4;
 }
 /** The checker points that failed, in words, for the door's refusal. */
@@ -289,9 +289,10 @@ export function scienceVerdictFailures(v: SciVerdict | null | undefined, blindLe
   const letter = String(blindLetter ?? '').trim().toUpperCase();
   if (!letter) out.push('no blind answer');
   else if (letter !== String(key ?? '').trim().toUpperCase()) out.push(`blind solver chose ${letter}, the key is ${key}`);
-  for (const k of ['key_correct', 'blind_agrees', 'one_defensible_answer', 'in_syllabus', 'original', 'same_skill', 'is_challenge', 'distractors_real', 'house_style', 'why_not_honest', 'student_safe'] as const) if (v[k] !== true) out.push(`checker: ${k} is not true`);
+  for (const k of ['key_correct', 'blind_agrees', 'one_defensible_answer', 'in_syllabus', 'original', 'same_skill', 'distractors_real', 'house_style', 'why_not_honest', 'student_safe'] as const) if (v[k] !== true) out.push(`checker: ${k} is not true`);
+  if (v.level_ok !== true && v.is_challenge !== true) out.push('checker: level_ok is not true (not at the seed\'s level)');
   if (v.reads_as_source === true) out.push('checker: reads_as_source');
-  if (!(Number(v.work_score) >= 4)) out.push(`checker: work_score ${v.work_score ?? '?'} < 4 (not Challenge)`);
+  if (!(Number(v.work_score) >= 1 && Number(v.work_score) <= 5)) out.push(`checker: work_score ${v.work_score ?? '?'} is not 1–5`);
   if (!(Number(v.score) >= 4)) out.push(`checker: score ${v.score ?? '?'} < 4`);
   return out;
 }
@@ -390,6 +391,34 @@ export function orderMathQueue(rows: TwinQueueRow[], have: Map<number, number>, 
 }
 
 /** One seed per sub-skill per round (sci-twin.mjs queue's spread inside a topic). */
+/** The level a twin with no seed level is filed at, from the checker's work score (the estimator's bands). */
+export function levelFromWork(w: unknown): 'core' | 'exam' | 'challenge' {
+  const n = Math.round(Number(w) || 3);
+  return n <= 2 ? 'core' : n === 3 ? 'exam' : 'challenge';
+}
+/** One science twin per seed PER POOL: a pure twin keeps the old key, a Combined one carries its pool (= sci-twin.mjs twinItem). */
+export function sciTwinItem(pool: string, seed: string): string {
+  return String(pool).startsWith('CS_') ? `sci-twin-${pool}-${seed}` : `sci-twin-${seed}`;
+}
+export type SciUnit = { pool: string; sci_key: string; combined: boolean; subject: string; bank_level: string; topic: string; subgroup_id: number; subgroup: string; is_open: boolean; twins: number; need: number; seed_count: number; seeds: string[]; rnk: number };
+/** The queue from science_twin_units rows (already in gap order): one seed per sub-skill a round, a sub-skill never past its need. Pure; = sci-twin.mjs queue. */
+export function scienceQueueFromUnits(units: SciUnit[], limit: number, pool?: string | null): { source_id: string; pool: string; topic: string; subgroup_id: number; subgroup: string; is_open: boolean; twins: number; need: number }[] {
+  const rows = units.filter((u) => u.need > 0 && (u.seeds ?? []).length && (!pool || u.pool === pool));
+  const out: ReturnType<typeof scienceQueueFromUnits> = []; const used = new Set<string>();
+  for (let round = 0; out.length < limit; round++) {
+    let left = 0;
+    for (const u of rows) {
+      if (round >= u.need) continue;
+      const sid = (u.seeds ?? [])[round];
+      if (!sid) continue;
+      left++;
+      const k = `${u.pool}|${sid}`;
+      if (out.length < limit && !used.has(k)) { out.push({ source_id: sid, pool: u.pool, topic: u.topic, subgroup_id: Number(u.subgroup_id), subgroup: u.subgroup, is_open: u.is_open, twins: u.twins, need: u.need }); used.add(k); }
+    }
+    if (!left) break;
+  }
+  return out;
+}
 export function spreadBySubgroup<T extends { subgroup_id: number | null; source_id: string }>(seeds: T[]): T[] {
   const bySg = new Map<string, T[]>();
   for (const s of seeds) { const k = s.subgroup_id != null ? String(s.subgroup_id) : `none-${s.source_id}`; if (!bySg.has(k)) bySg.set(k, []); bySg.get(k)!.push(s); }

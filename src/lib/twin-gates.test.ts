@@ -119,11 +119,29 @@ describe('gateScienceTwin', () => {
     expect(sciQuestionText(SCI)).toMatch(/\nD\) 8.3 m\/s²$/);
   });
   it('the blind letter must equal the key, every checker point true', () => {
-    const v = { key_correct: true, blind_agrees: true, one_defensible_answer: true, in_syllabus: true, original: true, reads_as_source: false, same_skill: true, work_score: 4, is_challenge: true, distractors_real: true, house_style: true, why_not_honest: true, student_safe: true, score: 4 };
-    expect(scienceVerdictOk(v, 'b', 'B')).toBe(true);
+    const v = { key_correct: true, blind_agrees: true, one_defensible_answer: true, in_syllabus: true, original: true, reads_as_source: false, same_skill: true, work_score: 2, level_ok: true, distractors_real: true, house_style: true, why_not_honest: true, student_safe: true, score: 4 };
+    expect(scienceVerdictOk(v, 'b', 'B')).toBe(true);       // a Core twin passes (5 Oct 2026: every level, not only Challenge)
     expect(scienceVerdictOk(v, 'C', 'B')).toBe(false);
-    expect(scienceVerdictOk({ ...v, work_score: 3 }, 'B', 'B')).toBe(false);
+    expect(scienceVerdictOk({ ...v, level_ok: false }, 'B', 'B')).toBe(false);
+    expect(scienceVerdictOk({ ...v, work_score: 7 }, 'B', 'B')).toBe(false);
     expect(scienceVerdictFailures({ ...v, house_style: false }, 'C', 'B')).toEqual(['blind solver chose C, the key is B', 'checker: house_style is not true']);
+  });
+});
+
+describe('science sub-skill queue', () => {
+  it('levelFromWork follows the estimator bands; sciTwinItem keys a Combined twin by pool', async () => {
+    const { levelFromWork, sciTwinItem } = await import('./twin-gates');
+    expect([1, 2, 3, 4, 5].map(levelFromWork)).toEqual(['core', 'core', 'exam', 'challenge', 'challenge']);
+    expect(sciTwinItem('PHY', 'x')).toBe('sci-twin-x');
+    expect(sciTwinItem('CS_PHY', 'x')).toBe('sci-twin-CS_PHY-x');
+  });
+  it('scienceQueueFromUnits: one seed per sub-skill a round, never past its need, pool filter', async () => {
+    const { scienceQueueFromUnits } = await import('./twin-gates');
+    const u = (pool: string, sg: number, need: number, seeds: string[]) => ({ pool, sci_key: 'PHY', combined: pool.startsWith('CS_'), subject: 'physics', bank_level: 'PHYS', topic: 'T', subgroup_id: sg, subgroup: `s${sg}`, is_open: true, twins: 3 - need, need, seed_count: seeds.length, seeds, rnk: sg });
+    const units = [u('PHY', 1, 2, ['a', 'b', 'c']), u('PHY', 2, 0, ['d']), u('CS_PHY', 1, 3, ['a', 'e']), u('BIO', 3, 3, [])];
+    expect(scienceQueueFromUnits(units, 10).map((r) => `${r.pool}:${r.source_id}`)).toEqual(['PHY:a', 'CS_PHY:a', 'PHY:b', 'CS_PHY:e']);
+    expect(scienceQueueFromUnits(units, 1).map((r) => r.source_id)).toEqual(['a']);
+    expect(scienceQueueFromUnits(units, 10, 'CS_PHY').map((r) => r.source_id)).toEqual(['a', 'e']);
   });
 });
 

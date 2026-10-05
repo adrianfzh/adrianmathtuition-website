@@ -47,7 +47,7 @@ function bodyFor(dir, dry) {
   const packet = JSON.parse(readFileSync(join(dir, 'packet.json'), 'utf8'));
   const q = readJsonLoose(join(dir, 'Q1.json'));
   const fig = readIf(join(dir, 'Q1.figure.json'));
-  const body = { bank: packet.bank, seed_id: packet.seed_id, topic: packet.topic ?? undefined, pool: packet.pool ?? undefined, question: q, figure_spec: q.needs_figure ? fig : undefined, dry };
+  const body = { bank: packet.bank, seed_id: packet.seed_id, topic: packet.topic ?? undefined, pool: packet.pool ?? undefined, subgroup_id: packet.subgroup_id ?? undefined, question: q, figure_spec: q.needs_figure ? fig : undefined, dry };
   if (!dry) {
     const blind = readIf(join(dir, 'Q1.blind.json'));
     const verdict = readIf(join(dir, 'Q1.verdict.json'));
@@ -71,14 +71,14 @@ const modes = {
     mkdirSync(out, { recursive: true });
     for (const it of json.items ?? []) {
       if (it.error) { console.error(`skip ${it.seed_id}: ${it.error}`); continue; }
-      const dir = join(out, it.seed_id);
+      const dir = join(out, it.bank === 'science' ? `${it.pool}-${it.seed_id}` : it.seed_id);   // science: one seed can serve a pure AND a Combined sub-skill
       mkdirSync(dir, { recursive: true });
       writeFileSync(join(dir, 'author-brief.md'), it.author_brief);
       const { author_brief: _b, ...packet } = it;
       writeFileSync(join(dir, 'packet.json'), JSON.stringify(packet, null, 1));
-      console.log(`${dir}  ${it.bank === 'maths' ? `${it.level} · ${it.subskill?.name ?? '-'} (${it.subskill_has}/${it.subskill_has + it.subskill_wants})` : `${it.pool} · ${it.topic} · ${it.subskill?.name ?? '-'} (gap ${it.topic_gap})`}${it.seed?.has_figure ? ' · FIGURE' : ''}  blind=${it.models?.blind}`);
+      console.log(`${dir}  ${it.bank === 'maths' ? `${it.level} · ${it.subskill?.name ?? '-'} (${it.subskill_has}/${it.subskill_has + it.subskill_wants})` : `${it.pool} · ${it.topic} · ${it.subskill?.name ?? '-'} (${it.subskill_twins}/${it.subskill_twins + it.subskill_need}, ${it.level})`}${it.seed?.has_figure ? ' · FIGURE' : ''}  blind=${it.models?.blind}`);
     }
-    console.error(bank === 'maths' ? `${json.subskills_short} sub-skills short of ${json.per_skill}; ${json.twins_to_write} twins to write` : `total gap ${json.total_gap} (target ${json.target} Challenge MCQs per open topic)`);
+    console.error(bank === 'maths' ? `${json.subskills_short} sub-skills short of ${json.per_skill}; ${json.twins_to_write} twins to write` : `${json.gap?.short + json.gap?.no_seed} sub-skills short of ${json.per_skill}; ${json.gap?.need} twins to write (${json.gap?.open_need} on open practice topics)`);
   },
   async figure() {
     const fam = argOf('--doc');

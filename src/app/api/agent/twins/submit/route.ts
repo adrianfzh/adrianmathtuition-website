@@ -1,11 +1,13 @@
 // POST /api/agent/twins/submit — a cloud session's twin, checked and filed by the SERVER
 // (5 Oct 2026, docs/CLOUD.md §Cloud twins). Body:
 //   {bank: 'maths'|'science', seed_id, question, options?, answer, solution, figure_spec?,
-//    gate_record: {blind_answer, blind?, checker, notes?}, topic?, pool?, dry?}
+//    gate_record: {blind_answer, blind?, checker, notes?}, topic?, pool?, subgroup_id?, dry?}
+// Science (5 Oct 2026): pool + subgroup_id are the queue item's — the twin serves THAT sub-skill
+// in THAT pool (a Combined twin is modelled on a pure seed), at the seed's level.
 // The server re-fetches the seed and re-runs EVERY deterministic gate itself (structure,
 // marks, topics, novelty vs the bank incl. our other twins, number-swap, house style,
 // forbidden words, syllabus scope for science, the blind answer against the key, every
-// checker point), refuses when the sub-skill (maths) or topic (science) is already full or
+// checker point), refuses when the sub-skill (maths, or science pool × sub-skill) is already full or
 // the seed already has a twin, draws any figure through the bot's figure library, then
 // inserts exactly like twin.mjs / sci-twin.mjs publish. dry:true = the automatic gates +
 // the figure only, and it returns the blind-solve and checker briefs to run next.
@@ -30,7 +32,7 @@ export async function POST(req: NextRequest) {
   try {
     const out = body.bank === 'maths'
       ? await submitMath(body)
-      : await submitScience(body, { topic: typeof r0.topic === 'string' ? r0.topic : null, pool: typeof r0.pool === 'string' ? r0.pool : null });
+      : await submitScience(body, { topic: typeof r0.topic === 'string' ? r0.topic : null, pool: typeof r0.pool === 'string' ? r0.pool : null, subgroup_id: Number(r0.subgroup_id) || null });
     if (!body.dry) {
       void stampTwins(out.ok, out.ok
         ? `${body.bank} twin of ${body.seed_id.slice(0, 8)} filed → ${out.id}`

@@ -220,61 +220,71 @@ Plan-billed throughout, so the API cost is nil; on the API it would be roughly
 S$0.10–0.30 a twin. Adrian's time: the 20-twin read in phase 0 and one tick per
 topic in phase 2.
 
-## 11. Science twins — our own Challenge MCQs (5 Oct 2026)
+## 11. Science twins — our own MCQ for every sub-skill (5 Oct 2026)
 
 Adrian, 5 Oct 2026: *"yes > start with Challenge"*, then *"do the twins for science like for
-math — twins jobs run all day whenever marking is quiet"*.
+math — twins jobs run all day whenever marking is quiet"*, then the same afternoon: *"for science
+twins, we don't need challenge questions most pressingly, we need twins questions of all
+subskills like math — if we are to sell subscriptions on the app."* The Challenge-only target
+(30 per open topic) lasted one batch; the goal is now coverage per SUB-SKILL.
 
-**Goal.** Every OPEN science practice topic (`SCIENCE_PRACTICE_OPEN_TOPICS` + the Combined list
-in `src/lib/portal-beta.ts`) reaches **30 servable Challenge MCQs**. A topic stops at 30. The gap
-on 5 Oct 2026 was 362 (pure Chemistry already full; Biology, Physics and the Combined topics short).
-`node scripts/science-twins/sci-twin.mjs gap` prints it from the same filters the app serves with.
+**Goal.** **3 verified twins for every (pool, sub-skill)** — pools PHY / CHEM / BIO (pure, the
+science bank's `subgroups`) and CS_PHY / CS_CHEM / CS_BIO (Combined: the same sub-skills, for the
+topics the Combined bank has). Order: the open practice topics first (`SCIENCE_PRACTICE_OPEN_TOPICS`
++ the Combined list), then every other topic; inside, fewest twins first, the six pools and the
+topics taking turns. MCQ first; structured twins are a later phase (structured practice is
+still closed to students). Each twin is written **at its seed's level** (Core / Exam /
+Challenge — `practice_difficulty`, results or the estimate); a seed with no level gets the level
+of the checker's work score.
 
-**What a science twin is.** A NEW MCQ modelled on a real Challenge (else Exam) row of the same
-sub-skill (`question_subgroups`): a new situation and new numbers, harder reasoning, four options
-whose wrong ones are real student mistakes, ONLY 6091 / 6092 / 6093 / Combined Science content
-(physics: no equations of motion, no momentum, no circular motion). Figures only from the bot's
-figure library (`lib/figures`, verify fails closed), never copied. The solution is the house shape:
-**Key idea:**, one step a line, **Answer: X**, **Why not the others** (naming a mistake only when it
-reproduces that option exactly). Nothing names a school, a year or a model.
+**The gap is ONE function** — `science_twin_units(open_topics, per_skill)` in the science project
+(`migrations/science_twin_units.sql`): one row per (pool, sub-skill) with its twins, need, MCQ
+seed count, up to five seeds and its rank. The Fly lane (`sci-twin.mjs gap / queue / need`) and
+the cloud door (`/api/agent/twins/queue?bank=science`, `lib/twin-store.ts scienceUnits`) both read
+it, so they never disagree. On 5 Oct 2026: **612 sub-skill units, 1 at 3, 605 short, 6 with no MCQ
+seed — 1,792 twins to write, 292 of them on the open practice topics.**
 
-**The gates** (`scripts/science-twins/`, every role a plan-billed `claude -p`, never the API):
-1. **Author** (Opus) — `sci-twin.mjs brief` → `author-brief.md` → `Q1.json`.
+**What a science twin is.** A NEW MCQ modelled on a real school row filed under the sub-skill: a
+new situation and new numbers, the seed's demand (never easier), four options whose wrong ones are
+real student mistakes, ONLY 6091 / 6092 / 6093 / Combined Science content (physics: no equations
+of motion, no momentum, no circular motion). A Combined twin is modelled on a filed PURE seed (the
+Combined rows are not filed) and written inside the Combined syllabus. Figures only from the bot's
+figure library (`lib/figures`, verify fails closed), never copied. The solution is the house
+shape: **Key idea:**, one step a line, **Answer: X**, **Why not the others** (naming a mistake only
+when it reproduces that option exactly). Nothing names a school, a year or a model.
+
+**The gates** (`scripts/science-twins/`, every role a plan-billed `claude -p` or Claude Code
+agent, never the API):
+1. **Author** (Opus) — `sci-twin.mjs brief --pool P --subgroup S` → `author-brief.md` → `Q1.json`.
 2. **Automatic checks** — `sci-twin.mjs check`: format, house style, scope words, forbidden words,
-   originality (trigram Jaccard ≤ 0.4 vs the seed AND every bank row of the topic, number-swap,
-   ≥ 3 of the seed's options reused), the figure renders.
+   originality (trigram Jaccard ≤ 0.4 vs the seed AND every bank row of the topic incl. our twins,
+   number-swap, ≥ 3 of the seed's options reused), the figure renders.
 3. **Blind solve** (a fresh Opus) — sees only `Q1.solve.md`, never the key.
 4. **Checker** (a fresh Opus) — key right, blind agrees, one defensible answer, in syllabus,
-   original, same skill, genuinely Challenge (work score ≥ 4 on the estimator's scale), real
-   distractors, house style, honest "why not" lines, student-safe.
-One rewrite from the problems or the checker's fixes; a second failure drops it (`parked`, logged).
+   original, same sub-skill, `level_ok` (work score in the seed level's band — Core 1–2, Exam 3,
+   Challenge 4–5 — or one above, never below), real distractors, house style, honest "why not"
+   lines, student-safe.
+One rewrite from the problems or the checker's fixes; a second failure drops the seed (`parked`,
+logged). The lane skips a sub-skill after 3 dropped seeds, and a Combined sub-skill at once when
+the checker finds it outside the Combined syllabus (`/data/science-twins/skip/`).
 
-**Filed as ours** (`sci-twin.mjs publish`, science project): `school='AdrianMath'`,
-`exam_type='Twin'`, `twin_of` = the seed, `gen_meta` (gates, blind answer, verdict, source_ref),
-`verified=true` + `practice_checked_at` (passing every check IS the verify — Adrian, 30 Sep 2026),
-the seed's sub-skill filing, and `practice_difficulty` `level='challenge'`, `source='twin'`
-(`SERVED_DIFFICULTY_SOURCES` includes `'twin'`; students' results replace it after 20 first tries).
-A figured twin waits for the science figure check (bot figfit, `FIGFIT_BANK=science`) to stamp
-`clean`. Columns from `migrations/science_twins.sql` (science project).
+**Filed as ours** (`sci-twin.mjs publish` / the door, science project): `school='AdrianMath'`,
+`exam_type='Twin'`, level = the pool's bank level (PHYS… or CS_PHYS…), `twin_of` = the seed,
+`gen_meta` (`twin_item` = `sci-twin-<seed>` pure, `sci-twin-<pool>-<seed>` Combined; gates, blind
+answer, verdict, `level_written`, `subskill`), `verified=true` + `practice_checked_at` (passing
+every check IS the verify — Adrian, 30 Sep 2026), the sub-skill filing, and `practice_difficulty`
+at the level written, `source='twin'` (`SERVED_DIFFICULTY_SOURCES` includes `'twin'`; students'
+results replace it after 20 first tries). A figured twin waits for the science figure check (bot
+figfit, `FIGFIT_BANK=science`) to stamp `clean`. Columns from `migrations/science_twins.sql`.
 
-**Where Adrian sees them:** `/admin/generated` → **🧪 Science twins** (seed folded under each,
-Retire = `practice_hidden` + `verified=false`).
+**Where Adrian sees them:** `/admin/generated` → **🧪 Science twins**: the coverage table (per
+science: sub-skills, done, short, twins to write) and every twin with its seed folded under it;
+Retire = `practice_hidden` + `verified=false`.
 
 **The lane:** bot `worker/fly/science-twins.sh`, started by `jobs.sh` every 15 min when
 `lane_room` has room (CPU, memory, lanes, no ship) and, by day, only when the marking queue is
-empty — ≤ 3 twins a run, biggest gap first, one sub-skill at a time. Switch `science-twins` on
-`/admin/switches`; ON once `/data/science-twins/.on` exists on the worker (`SCI_TWINS_LANE=0`
-parks it). Run dirs `/data/science-twins/<seed>/`. Stamps `job_runs` `science-twins` (rhythm 30 h).
-The ten drafts written by hand on 5 Oct 2026 (`scripts/science-twins/first-batch/`) were the lane's
-first batch.
-
-## 12. Cloud sessions write twins too (5 Oct 2026)
-
-Adrian: *yes* — claude.ai cloud sessions write twins, maths and science, with no database key.
-Same gates, same filing; the server re-runs every deterministic check (`lib/twin-gates.ts`) and
-files the row (`gen_meta.written_by='cloud-session'`). Doors, token and setup: `docs/CLOUD.md`
-§Cloud twins; the playbook: `.claude/skills/cloud-twins/SKILL.md`. Stricter than the local
-scripts in three places: maths novelty also against our other twins and the whole family's
-nearest rows, the number-swap test against the bank (not only the seed), and a maths solution
-must carry the bold **Answer** line.
-
+empty — ≤ 3 twins a run, one per sub-skill. Switch `science-twins` on `/admin/switches`; ON while
+`/data/science-twins/.on` exists on the worker (since 5 Oct 2026 15:39; `SCI_TWINS_LANE=0` parks
+it). Run dirs `/data/science-twins/<pool>-<seed>/`. Stamps `job_runs` `science-twins` (rhythm 30 h).
+The first batch (the ten Challenge drafts of the morning, `scripts/science-twins/first-batch/`)
+went through on the worker: 7 published, 3 dropped by the checker.

@@ -11,17 +11,20 @@
 //
 // The selection is the scripts' own: maths = twin.mjs queue (sub-skills short of 5 twins,
 // the stuck report's sub-skills first, most-drawn first, one per sub-skill per round);
-// science = sci-twin.mjs gap/queue (open topics short of 30 servable Challenge MCQs, biggest
-// gap first, Challenge seeds before Exam, text-only before figured, one sub-skill a round).
+// science = sci-twin.mjs gap/queue: the science project's science_twin_units() (3 verified twins
+// per (pool, sub-skill) at the seed's level, open practice topics first, fewest twins first, the
+// six pools taking turns) — the ONE gap the Fly lane and this door both read (5 Oct 2026, Adrian:
+// "we need twins questions of all subskills like math").
 import { getSupabaseAdmin } from './supabase';
 import { getScienceClient } from './science-bank';
 import { loadTeachingKnowledge } from './teaching-knowledge';
 import { botInternalSecret } from './bot-secret';
 import { SCIENCE_PRACTICE_OPEN_TOPICS, SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS } from './portal-beta';
 import {
-  TWINS_PER_SKILL, SCI_TARGET, TWIN_SCHOOL, TWIN_EXAM_TYPE, orderMathQueue, spreadBySubgroup, interleaveTopics,
+  TWINS_PER_SKILL, SCI_PER_SKILL, TWIN_SCHOOL, TWIN_EXAM_TYPE, orderMathQueue,
   mathQuestionText, structureOf, sumMarks, flatParts, gateMathTwin, mathVerdictOk, mathVerdictFailures, mathBlindAgrees,
   gateScienceTwin, scienceVerdictOk, scienceVerdictFailures, sciQuestionText, keyOf, closest, flatFigureSpec, LETTERS,
+  levelFromWork, sciTwinItem, scienceQueueFromUnits, type SciUnit,
   type MathPlan, type CorpusRow, type SubmitBody, type SciKey, type MathVerdict, type SciVerdict, type TwinQueueRow, type MathPart,
 } from './twin-gates';
 import {
@@ -279,7 +282,6 @@ const SCI: Record<SciKey, { bank: string; subject: string; cs: string }> = {
   CHEM: { bank: 'CHEM', subject: 'chemistry', cs: 'CS_CHEM' },
   BIO: { bank: 'BIO', subject: 'biology', cs: 'CS_BIO' },
 };
-const poolLevels = (key: SciKey, combined: boolean) => (combined ? [SCI[key].cs, `${SCI[key].cs}_NA`] : [SCI[key].bank]);
 const poolName = (key: SciKey, combined: boolean) => (combined ? `CS_${key}` : key);
 export function parsePool(p: unknown): { key: SciKey; combined: boolean } | null {
   const m = /^(CS_)?(PHY|CHEM|BIO)$/.exec(String(p ?? ''));
@@ -294,65 +296,39 @@ export function openTopics(): OpenPool[] {
   return out;
 }
 
-/** sci-twin.mjs eligible(): the student-side serving filters (checked rows only). */
-function eligible(q: any, subject: string) {
-  return q.eq('subject', subject)
-    .or('quarantined.is.null,quarantined.eq.false')
-    .or('ai_generated.is.null,ai_generated.eq.false,verified.eq.true')
-    .or('has_image.is.null,has_image.eq.false,image_watermark_status.eq.clean')
-    .or('solution.neq.,answer.neq.')
-    .or('not_in_syllabus.is.null,not_in_syllabus.eq.false')
-    .not('school', 'ilike', 'gce')
-    .eq('practice_hidden', false)
-    .not('question_text', 'is', null)
-    .neq('question_text', '')
-    .not('practice_checked_at', 'is', null)
-    .filter('answer', 'match', '^\\s*([A-Da-d]\\s*$|[*][*][(]?[A-D][)]?[*][*])');
-}
-
-async function challengeCount(p: { key: SciKey; combined: boolean; topic: string }): Promise<number> {
-  const s = SCI[p.key];
-  const { count, error } = await eligible(getScienceClient().from('questions').select('id, practice_difficulty!inner(level, source)', { count: 'exact', head: true }), s.subject)
-    .in('level', poolLevels(p.key, p.combined)).contains('topics', [p.topic])
-    .eq('practice_difficulty.level', 'challenge').in('practice_difficulty.source', ['results', 'estimate', 'twin']);
-  if (error) throw new Error(error.message);
-  return count ?? 0;
-}
-
-export async function scienceGap() {
-  const pools = openTopics();
-  const out = await Promise.all(pools.map(async (p) => { const n = await challengeCount(p); return { ...p, challenge: n, gap: Math.max(0, SCI_TARGET - n) }; }));
+/** The open practice topics as {pool: [topic…]} — science_twin_units puts them first. */
+export function openTopicsJson(): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const p of openTopics()) (out[p.pool] ||= []).push(p.topic);
   return out;
 }
-
-type SciSeedRow = { source_id: string; pool: string; key: SciKey; combined: boolean; topic: string; bank_level: string; subgroup_id: number | null; has_image: boolean; seed_level: 'challenge' | 'exam'; skill: string | null; gap: number };
-
-async function seedsFor(p: OpenPool & { gap: number }): Promise<SciSeedRow[]> {
-  const s = SCI[p.key];
-  const sb = getScienceClient();
-  const rows = await pageAll((a, b) => eligible(sb.from('questions').select('id, level, school, has_image, skill, question_text, practice_difficulty!inner(level, source)'), s.subject)
-    .in('level', poolLevels(p.key, p.combined)).contains('topics', [p.topic])
-    .in('practice_difficulty.level', ['challenge', 'exam']).in('practice_difficulty.source', ['results', 'estimate'])
-    .neq('school', TWIN_SCHOOL).order('id').range(a, b));
-  if (!rows.length) return [];
-  const ids = rows.map((r) => r.id as string);
-  const twinned = new Set<string>(); const filing = new Map<string, number>();
-  for (let i = 0; i < ids.length; i += 200) {
-    const chunk = ids.slice(i, i + 200);
-    const { data: t } = await sb.from('questions').select('twin_of').in('twin_of', chunk);
-    for (const r of (t ?? []) as any[]) twinned.add(r.twin_of);
-    const { data: f } = await sb.from('question_subgroups').select('question_id, subgroup_id, is_primary').in('question_id', chunk);
-    for (const r of (f ?? []) as any[]) if (r.is_primary || !filing.has(r.question_id)) filing.set(r.question_id, Number(r.subgroup_id));
+/** Every (pool, sub-skill) with its twins, need and seeds, in the gap's order (science_twin_units, science project). */
+export async function scienceUnits(): Promise<SciUnit[]> {
+  const { data, error } = await getScienceClient().rpc('science_twin_units', { open_topics: openTopicsJson(), per_skill: SCI_PER_SKILL });
+  if (error) throw new Error(`science_twin_units: ${error.message}`);
+  return ((data ?? []) as SciUnit[]).map((u) => ({ ...u, subgroup_id: Number(u.subgroup_id) }));
+}
+/** The gap in numbers, per pool and in total (the admin tab and the queue's header). */
+export function scienceGapSummary(units: SciUnit[]) {
+  const pools = new Map<string, { pool: string; subskills: number; covered: number; short: number; no_seed: number; need: number; open_need: number }>();
+  for (const u of units) {
+    const g = pools.get(u.pool) ?? { pool: u.pool, subskills: 0, covered: 0, short: 0, no_seed: 0, need: 0, open_need: 0 };
+    g.subskills++;
+    if (u.need === 0) g.covered++; else if (!u.seed_count) g.no_seed++; else g.short++;
+    if (u.seed_count) { g.need += u.need; if (u.is_open) g.open_need += u.need; }
+    pools.set(u.pool, g);
   }
-  const lvl = (r: any): 'challenge' | 'exam' => ((r.practice_difficulty?.level ?? r.practice_difficulty?.[0]?.level) === 'challenge' ? 'challenge' : 'exam');
-  const list: SciSeedRow[] = rows
-    .filter((r) => !twinned.has(r.id) && String(r.question_text ?? '').length > 40)
-    .map((r) => ({ source_id: r.id, pool: p.pool, key: p.key, combined: p.combined, topic: p.topic, bank_level: r.level, subgroup_id: filing.get(r.id) ?? null, has_image: !!r.has_image, seed_level: lvl(r), skill: r.skill ?? null, gap: p.gap }))
-    .sort((a, b) => (a.seed_level === b.seed_level ? 0 : a.seed_level === 'challenge' ? -1 : 1) || (Number(a.has_image) - Number(b.has_image)) || a.source_id.localeCompare(b.source_id));
-  return spreadBySubgroup(list).slice(0, p.gap);
+  const list = [...pools.values()];
+  const total = list.reduce((a, g) => ({ subskills: a.subskills + g.subskills, covered: a.covered + g.covered, short: a.short + g.short, no_seed: a.no_seed + g.no_seed, need: a.need + g.need, open_need: a.open_need + g.open_need }), { subskills: 0, covered: 0, short: 0, no_seed: 0, need: 0, open_need: 0 });
+  return { per_skill: SCI_PER_SKILL, pools: list, total };
+}
+export async function scienceGap() {
+  return scienceGapSummary(await scienceUnits());
 }
 
-async function sciSeedAndPlan(id: string, topicHint: string | null, poolHint: string | null) {
+type SciSeedRow = { source_id: string; pool: string; topic: string; subgroup_id: number; subgroup: string; is_open: boolean; twins: number; need: number };
+
+async function sciSeedAndPlan(id: string, topicHint: string | null, poolHint: string | null, subgroupHint: number | null = null) {
   const sb = getScienceClient();
   const { data: src, error } = await sb.from('questions').select('id, level, subject, school, year, exam_type, paper, question_number, question_text, answer, solution, topics, skill, has_image, image_url, difficulty, ai_generated, twin_of').eq('id', id).maybeSingle();
   if (error) throw new Error(error.message);
@@ -364,13 +340,17 @@ async function sciSeedAndPlan(id: string, topicHint: string | null, poolHint: st
   const open = openTopics().filter((o) => o.key === pp.key && o.combined === pp.combined).map((o) => o.topic);
   const topic = (topicHint && (src.topics ?? []).includes(topicHint) ? topicHint : null) ?? (src.topics ?? []).find((t: string) => open.includes(t)) ?? (src.topics ?? [])[0];
   const { data: pd } = await sb.from('practice_difficulty').select('level, source, reason').eq('question_id', id).maybeSingle();
-  const { data: f } = await sb.from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', id);
-  const sgIds = (f ?? []).map((r: any) => Number(r.subgroup_id));
+  // the unit's sub-skill (the queue hands it out) is THE sub-skill the twin serves; else the seed's own filing
+  const { data: f0 } = await sb.from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', id);
+  const f = subgroupHint && (f0 ?? []).some((r: any) => Number(r.subgroup_id) === subgroupHint) ? [{ subgroup_id: subgroupHint, is_primary: true }] : (f0 ?? []);
+  const sgIds = f.map((r: any) => Number(r.subgroup_id));
   const { data: sgs } = sgIds.length ? await sb.from('subgroups').select('id, name, description').in('id', sgIds) : { data: [] as any[] };
   const subgroups = (sgs ?? []).map((s: any) => ({ id: Number(s.id), name: s.name ?? null, description: s.description ?? null, is_primary: !!(f ?? []).find((r: any) => Number(r.subgroup_id) === Number(s.id))?.is_primary }));
   const plan: SciPlan & { pool: string; bank_level: string; subject: string; open: boolean } = {
-    key: pp.key, combined: pp.combined, topic, skill: src.skill ?? null, subgroups, seed_level: (pd as any)?.level ?? null, seed_reason: (pd as any)?.reason ?? null,
-    seed_has_image: !!src.has_image, pool: poolName(pp.key, pp.combined), bank_level: src.level, subject: src.subject, open: open.includes(topic),
+    key: pp.key, combined: pp.combined, topic, skill: src.skill ?? null, subgroups,
+    // the level the twin is written at: the seed's own (results or the estimate); none → the checker's work score sets it
+    seed_level: ['results', 'estimate'].includes((pd as any)?.source) ? (pd as any).level : null, seed_reason: (pd as any)?.reason ?? null,
+    seed_has_image: !!src.has_image, pool: poolName(pp.key, pp.combined), bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, subject: src.subject, open: open.includes(topic),
   };
   return { src: src as any, plan, sgIds };
 }
@@ -382,7 +362,7 @@ async function sciCorpus(subject: string, topic: string, excludeId: string): Pro
 }
 
 async function sciPacket(row: SciSeedRow) {
-  const sp = await sciSeedAndPlan(row.source_id, row.topic, row.pool);
+  const sp = await sciSeedAndPlan(row.source_id, row.topic, row.pool, row.subgroup_id);
   if (!sp) return null;
   const { src, plan, sgIds } = sp;
   const sb = getScienceClient();
@@ -391,8 +371,8 @@ async function sciPacket(row: SciSeedRow) {
     const { data: fs } = await sb.from('question_subgroups').select('question_id').in('subgroup_id', sgIds).neq('question_id', src.id).limit(40);
     const sids = (fs ?? []).map((r: any) => r.question_id);
     if (sids.length) {
-      const { data: sr } = await sb.from('questions').select('id, question_text, school, practice_difficulty(level)').in('id', sids).in('level', poolLevels(plan.key, plan.combined)).limit(40);
-      siblings = ((sr ?? []) as any[]).filter((r) => r.school !== TWIN_SCHOOL && (r.practice_difficulty?.level === 'challenge' || r.practice_difficulty?.[0]?.level === 'challenge')).slice(0, 3);
+      const { data: sr } = await sb.from('questions').select('id, question_text, school').in('id', sids).eq('level', SCI[plan.key].bank).neq('school', TWIN_SCHOOL).limit(40);
+      siblings = ((sr ?? []) as any[]).slice(0, 3);
     }
   }
   const corpus = await sciCorpus(plan.subject, plan.topic, src.id);
@@ -404,7 +384,7 @@ async function sciPacket(row: SciSeedRow) {
   const primary = plan.subgroups.find((s) => (s as any).is_primary) ?? plan.subgroups[0];
   return {
     bank: 'science' as const,
-    seed_id: src.id, pool: plan.pool, topic: plan.topic, topic_gap: row.gap,
+    seed_id: src.id, pool: plan.pool, topic: plan.topic, subgroup_id: row.subgroup_id, level: plan.seed_level ?? 'from the checker\'s work score', subskill_twins: row.twins, subskill_need: row.need,
     subskill: primary ? { id: primary.id, name: primary.name, description: primary.description ?? null } : (plan.skill ? { id: null, name: plan.skill, description: null } : null),
     seed: { question_text: src.question_text, answer: keyOf(src.answer) ?? src.answer, solution: src.solution, level: plan.seed_level, has_figure: !!src.has_image },
     earlier_twins: avoid.filter((a) => a.ref === 'our earlier twin'),
@@ -415,35 +395,30 @@ async function sciPacket(row: SciSeedRow) {
 }
 
 export async function scienceQueue(n: number, opts: { pool?: string | null; textOnly?: boolean } = {}) {
-  const gaps = (await scienceGap()).filter((g) => g.gap > 0 && (!opts.pool || g.pool === opts.pool)).sort((a, b) => b.gap - a.gap);
-  const lists: SciSeedRow[][] = [];
-  for (const g of gaps) {
-    let s = await seedsFor(g);
-    if (opts.textOnly) s = s.filter((x) => !x.has_image);
-    lists.push(s);
-    // enough to interleave (one topic per seed where the gaps allow); a lambda need not walk every topic
-    if (lists.filter((l) => l.length).length >= n && lists.reduce((a, l) => a + l.length, 0) >= n) break;
-  }
-  const picked = interleaveTopics(lists, n);
+  const units = await scienceUnits();
+  const picked = scienceQueueFromUnits(units, n, opts.pool ?? null);
   const items = (await Promise.all(picked.map((r) => sciPacket(r).catch((e) => ({ error: (e as Error).message, seed_id: r.source_id }))))).filter(Boolean);
-  return { bank: 'science', target: SCI_TARGET, gaps: gaps.map((g) => ({ pool: g.pool, topic: g.topic, challenge: g.challenge, gap: g.gap })), total_gap: gaps.reduce((a, g) => a + g.gap, 0), items };
+  const gap = scienceGapSummary(units);
+  return { bank: 'science', per_skill: SCI_PER_SKILL, gap: gap.total, pools: gap.pools, items };
 }
 
-export async function submitScience(body: SubmitBody, hints: { topic?: string | null; pool?: string | null } = {}): Promise<SubmitOutcome> {
+export async function submitScience(body: SubmitBody, hints: { topic?: string | null; pool?: string | null; subgroup_id?: number | null } = {}): Promise<SubmitOutcome> {
   const q = { ...body.sci! };
   if (q.answer) q.answer = String(q.answer).trim().toUpperCase();
-  const sp = await sciSeedAndPlan(body.seed_id, hints.topic ?? null, hints.pool ?? null);
+  const sp = await sciSeedAndPlan(body.seed_id, hints.topic ?? null, hints.pool ?? null, hints.subgroup_id ?? null);
   if (!sp) return fail('seed', ['no question with that seed_id in the science bank'], 404);
   const { src, plan } = sp;
   // (11k science rows from real papers carry ai_generated=true for their written solutions — not ours)
   if (src.twin_of || src.school === TWIN_SCHOOL || src.exam_type === TWIN_EXAM_TYPE) return fail('seed', ['the seed must be a school question, not one of ours'], 400);
-  if (!plan.open) return fail('seed', [`topic "${plan.topic}" is not an open practice topic in ${plan.pool} — twins are written only for open topics`], 400);
-  const item = `sci-twin-${src.id}`;
+  const primary = plan.subgroups[0];
+  if (!primary) return fail('seed', ['the seed is not filed under a sub-skill — take a seed from the queue'], 400);
+  const item = sciTwinItem(plan.pool, src.id);
   const sb = getScienceClient();
   const dup = await existingTwin(sb, src.id, item, 'science');
   if (dup) return fail('duplicate', [`this seed already has a twin (${dup}) — take the next seed from the queue`], 409);
-  const n = await challengeCount({ key: plan.key, combined: plan.combined, topic: plan.topic });
-  if (n >= SCI_TARGET) return fail('need', [`${plan.pool} · ${plan.topic} already has ${n} servable Challenge MCQs (target ${SCI_TARGET}) — take the next seed`], 409);
+  const unit = (await scienceUnits()).find((u) => u.pool === plan.pool && u.subgroup_id === primary.id);
+  if (!unit) return fail('seed', [`sub-skill ${primary.id} is not a ${plan.pool} sub-skill (a Combined pool takes only the topics the Combined bank has)`], 400);
+  if (unit.need <= 0) return fail('need', [`${plan.pool} · ${unit.topic} › ${unit.subgroup} already has ${unit.twins} twins (target ${SCI_PER_SKILL}) — take the next seed`], 409);
   const corpus = await sciCorpus(plan.subject, plan.topic, src.id);
   const gates = gateScienceTwin(q, { srcText: String(src.question_text ?? ''), corpus, key: plan.key });
   if (!gates.pass) return fail('automatic', gates.problems, 422, gates);
@@ -463,7 +438,9 @@ export async function submitScience(body: SubmitBody, hints: { topic?: string | 
   const verdict = body.gate.checker as SciVerdict;
   if (!scienceVerdictOk(verdict, letter, q.answer)) return fail(String(letter ?? '').trim().toUpperCase() === q.answer ? 'checker' : 'blind', scienceVerdictFailures(verdict, letter, q.answer), 422, gates);
   // insert, exactly as sci-twin.mjs publish
-  const imagePath = fig ? `twins/${src.id}.png` : null;
+  const imagePath = fig ? `twins/${item}.png` : null;
+  const level = (plan.seed_level as 'core' | 'exam' | 'challenge' | null) ?? levelFromWork(verdict.work_score);
+  const label = { core: 'Core', exam: 'Exam', challenge: 'Challenge' }[level];
   if (fig && imagePath) {
     const { error } = await sb.storage.from(SCI_FIG_BUCKET).upload(imagePath, fig.png, { contentType: 'image/png', upsert: true });
     if (error) return fail('figure', [`figure upload: ${error.message}`], 500, gates);
@@ -473,7 +450,7 @@ export async function submitScience(body: SubmitBody, hints: { topic?: string | 
     level: plan.bank_level, subject: plan.subject, school: TWIN_SCHOOL, year: new Date().getFullYear(), exam_type: TWIN_EXAM_TYPE,
     paper: null, question_number: null,
     question_text: sciQuestionText(q), parts: null, answer: q.answer, solution: q.solution, solution_source: 'opus_session',
-    topics: [plan.topic], skill: plan.skill ?? null, difficulty: 'Challenging', total_marks: 1,
+    topics: [plan.topic], skill: plan.skill ?? null, difficulty: level === 'challenge' ? 'Challenging' : 'Standard', total_marks: 1,
     has_image: !!imagePath, image_url: imagePath, images: [], image_size: 'md',
     // a drawn figure still waits for the science figure check (bot figfit, FIGFIT_BANK=science) to stamp 'clean'
     image_watermark_status: null,
@@ -481,13 +458,13 @@ export async function submitScience(body: SubmitBody, hints: { topic?: string | 
     quarantined: false, not_in_syllabus: false, practice_hidden: false,
     practice_checked_at: now, practice_check_note: 'twin: every check passed (gates, blind solve, checker) — cloud session',
     gen_meta: {
-      kind: 'science-twin', twin_item: item, twin_of: src.id, prompt_version: SCI_PROMPT, written_by: 'cloud-session', pool: plan.pool, level_written: 'challenge',
+      kind: 'science-twin', twin_item: item, twin_of: src.id, prompt_version: SCI_PROMPT, written_by: 'cloud-session', pool: plan.pool, level_written: level, subskill: primary.id,
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       models: { author: 'opus (cloud Claude Code agent)', blind: 'opus (fresh cloud agent)', checker: 'opus (fresh cloud agent)' },
       gates: { novelty: gates.novelty, rounds: 1, server_checked: true },
       blind: { answer: String(letter).trim().toUpperCase(), confidence: (blind as any).confidence ?? null, other_defensible: (blind as any).other_defensible ?? [] },
       verdict: { work_score: verdict.work_score, score: verdict.score, why: verdict.why ?? null },
-      distractors: q.distractors ?? null, why_challenge: q.why_challenge ?? null, originality_note: q.originality_note ?? null, notes: body.gate.notes,
+      distractors: q.distractors ?? null, why_level: q.why_level ?? q.why_challenge ?? null, originality_note: q.originality_note ?? null, notes: body.gate.notes,
       figure: fig ? { family: fig.family, spec: fig.spec } : null,
       subgroups: plan.subgroups.map((s) => s.id), generated_at: now, verified_by: 'checks',
     },
@@ -498,8 +475,8 @@ export async function submitScience(body: SubmitBody, hints: { topic?: string | 
   const filing = plan.subgroups.map((s) => ({ question_id: qid, subgroup_id: s.id, is_primary: !!(s as any).is_primary, confidence: 1, source: 'twin', reason: `science twin of ${src.id}` }));
   if (filing.length) { const { error: fe } = await sb.from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id' }); if (fe) console.warn('[twins-cloud] filing warning:', fe.message); }
   const { error: pdErr } = await sb.from('practice_difficulty').upsert({
-    question_id: qid, level: 'challenge', source: 'twin', attempts: 0, wrong: 0, wrong_share: null,
-    work_score: verdict.work_score, test_solve: null, reason: `Our own Challenge question; ${String(q.why_challenge ?? verdict.why ?? '').slice(0, 200)}`,
+    question_id: qid, level, source: 'twin', attempts: 0, wrong: 0, wrong_share: null,
+    work_score: verdict.work_score, test_solve: null, reason: `Our own ${label} question; ${String(q.why_level ?? q.why_challenge ?? verdict.why ?? '').slice(0, 200)}`,
     detail: { twin_of: src.id, checker_score: verdict.score }, updated_at: now,
   }, { onConflict: 'question_id' });
   if (pdErr) return fail('insert', [`practice_difficulty: ${pdErr.message} (the row ${qid} was inserted — retire it or retry)`], 500, gates);

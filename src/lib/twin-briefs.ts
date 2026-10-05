@@ -132,8 +132,9 @@ export function scienceAuthorBrief(src: SciSeed, plan: SciPlan, siblings: { ques
   const skillLine = plan.subgroups.length ? plan.subgroups.map((s) => `${s.name}${s.description ? ` — ${s.description}` : ''}`).join('; ') : (plan.skill ?? '(no sub-skill filed — use the seed itself)');
   return `# Science twin — author brief
 
-You write ONE new multiple-choice question for Singapore students: OUR OWN question, at the
-**Challenge** level, modelled on the seed below. Write Q1.json in your run folder and stop.
+You write ONE new multiple-choice question for Singapore students: OUR OWN question for the
+sub-skill below, modelled on the seed, at the seed's level (${plan.seed_level ? `**${plan.seed_level[0].toUpperCase()}${plan.seed_level.slice(1)}**` : 'the same demand as the seed'}).${plan.combined ? ' It is for **Combined Science** students: write it inside the Combined Science syllabus, even though the seed is from a pure-science paper.' : ''}
+Write Q1.json in your run folder and stop.
 
 ## The seed (a school's question — never copy it)
 - Syllabus: ${syl}
@@ -147,11 +148,11 @@ ${src.question_text ?? ''}
 \`\`\`
 Key: ${keyOf(src.answer) ?? src.answer ?? ''}
 ${src.solution ? `Its solution:\n\`\`\`\n${String(src.solution).slice(0, 1500)}\n\`\`\`` : ''}
-${siblings.length ? `\n## Other Challenge questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text ?? '').slice(0, 600)}`).join('\n\n')}\n` : ''}${avoid.length ? `\n## Already in the bank — do not read like these (our earlier twins and the nearest questions)\n${avoid.map((a, i) => `${i + 1}. [${a.ref}] ${a.text.slice(0, 500)}`).join('\n\n')}\n` : ''}
+${siblings.length ? `\n## Other questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text ?? '').slice(0, 600)}`).join('\n\n')}\n` : ''}${avoid.length ? `\n## Already in the bank — do not read like these (our earlier twins and the nearest questions)\n${avoid.map((a, i) => `${i + 1}. [${a.ref}] ${a.text.slice(0, 500)}`).join('\n\n')}\n` : ''}
 ## What to write
-- **Same sub-skill as the seed, harder reasoning.** Challenge = more than half of students miss it
-  first time: two or three ideas joined, a step most students skip, or a trap a careless reader
-  falls into. Not harder by obscure facts, long arithmetic or trick wording.
+- **Same sub-skill, same demand as the seed.** Core = one idea, most students get it; Exam = a
+  typical exam step or two; Challenge = two or three ideas joined, a step most skip, or a trap.
+  Match the seed's level — never easier. Not harder by obscure facts, long arithmetic or trick wording.
 - **A NEW situation and new numbers.** A teacher holding both must NOT say "that is the seed with
   the numbers changed". Different object, setting, quantities, sentences and order of ideas.
   Syllabus phrasing that belongs to everyone ("Which statement is correct?") is fine.
@@ -195,7 +196,7 @@ the option exactly (check the arithmetic). Otherwise just say why it is wrong.
   "answer": "B",
   "solution": "**Key idea:** …\\n…\\n**Answer: B**\\n**Why not the others**\\n- **A:** …\\n- **C:** …\\n- **D:** …",
   "distractors": { "A": "the mistake that gives A", "C": "…", "D": "…" },
-  "why_challenge": "the ideas joined / the trap, in one or two lines",
+  "why_level": "what makes it the level it is (the ideas joined, the step, the trap), one or two lines",
   "originality_note": "how it differs from the seed: situation, numbers, order of ideas",
   "needs_figure": false
 }
@@ -226,7 +227,7 @@ export function scienceCheckBrief(plan: SciPlan, q: SciTwinDraft, src: SciSeed, 
   const syl = syllabusOf(plan.key, plan.combined);
   return `# Checker — one science twin
 
-You are a senior ${syl} examiner checking OUR OWN Challenge-level MCQ before any student
+You are a senior ${syl} examiner checking OUR OWN practice MCQ (target level: ${plan.seed_level ?? "the seed's demand"}) before any student
 sees it. Read this file, then the blind solver's answer in Q1.blind.json${q.needs_figure ? ' and the figure Q1.figure.png' : ''} (run folder).
 Work the question yourself first. Then write Q1.verdict.json and stop.
 
@@ -239,7 +240,7 @@ Setter's solution:
 \`\`\`
 ${q.solution ?? ''}
 \`\`\`
-Setter's notes — distractors: ${JSON.stringify(q.distractors ?? {})}; why Challenge: ${q.why_challenge ?? '-'}
+Setter's notes — distractors: ${JSON.stringify(q.distractors ?? {})}; why this level: ${q.why_level ?? q.why_challenge ?? '-'}
 
 ## What it is modelled on (the seed, a school's question)
 Topic ${plan.topic} · sub-skill ${plan.subgroups.map((s) => s.name).join(', ') || plan.skill || '-'}
@@ -259,7 +260,7 @@ ${nearest ? nearest.text.slice(0, 1200) : '(none)'}
 3. in_syllabus — everything needed is in ${syl}.${plan.key === 'PHY' ? ' No equations of motion, no momentum, no circular motion.' : ''}
 4. original — not the seed (or the nearest question) with numbers or nouns swapped: a new situation, new numbers, new sentences. reads_as_source = true if a teacher holding both would call it the same question.
 5. same_skill — it exercises the seed's sub-skill.
-6. challenge — rate the work as the estimator does: steps, ideas that must be joined, traps; work_score 1–5 (1–2 Core, 3 Exam, 4–5 Challenge). is_challenge = work_score ≥ 4 AND it is hard for a good reason (not obscure, not trick wording, not long arithmetic).
+6. level — rate the work as the estimator does: steps, ideas that must be joined, traps; work_score 1–5 (1–2 Core, 3 Exam, 4–5 Challenge). level_ok = ${plan.seed_level ? `its work score sits in the ${plan.seed_level} band (Core 1–2, Exam 3, Challenge 4–5) — or one band above, never below —` : 'it is at least as demanding as the seed'} AND any difficulty is for a good reason (not obscure, not trick wording, not long arithmetic).
 7. distractors_real — each wrong option is a real student mistake.
 8. house_style — **Key idea:**, one step a line, units kept, bold **Answer: X**, then **Why not the others** with one line per wrong option; plain short words.
 9. why_not_honest — wherever "why not the others" says an option comes from a particular mistake, that mistake reproduces the option EXACTLY (check the arithmetic). A line that just says why it is wrong is fine.
@@ -268,7 +269,7 @@ ${nearest ? nearest.text.slice(0, 1200) : '(none)'}
 \`\`\`json
 { "key_correct": true, "blind_agrees": true, "one_defensible_answer": true, "in_syllabus": true,
   "original": true, "reads_as_source": false, "same_skill": true,
-  "work_score": 4, "is_challenge": true, "distractors_real": true, "house_style": true,
+  "work_score": 3, "level_ok": true, "distractors_real": true, "house_style": true,
   "why_not_honest": true, "student_safe": true,
   "score": 1-5, "why": "one or two lines", "fixes": ["a concrete fix per failed point — or empty"] }
 \`\`\`

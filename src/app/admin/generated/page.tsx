@@ -25,7 +25,7 @@ function sourceChip(meta: Record<string, unknown>, twinOf: string | null): strin
   if (kind === 'gce-set') return `📚 Set ${meta.set ?? '?'} · ${meta.key ?? ''}${meta.slot != null ? ` slot ${meta.slot}` : ''}`;
   if (kind === 'practice-photo') return '📷 Practice photo';
   if (kind === 'find') return '🔍 Find a question';
-  if (kind === 'science-twin') return '🧪 Science twin · Challenge';
+  if (kind === 'science-twin') return `🧪 Science twin${typeof meta.level_written === 'string' ? ` · ${meta.level_written[0].toUpperCase()}${meta.level_written.slice(1)}` : ''}${typeof meta.pool === 'string' && meta.pool.startsWith('CS_') ? ' · Combined' : ''}`;
   if (kind) return kind;
   return twinOf ? '🌙 top-up twin' : 'generated';
 }
@@ -127,6 +127,8 @@ export default function GeneratedPage() {
   const [authed, setAuthed] = useState(false);
   const [pw, setPw] = useState('');
   const [rows, setRows] = useState<GeneratedRow[]>([]);
+  type GapPool = { pool: string; subskills: number; covered: number; short: number; no_seed: number; need: number; open_need: number };
+  const [gap, setGap] = useState<{ per_skill: number; pools: GapPool[]; total: Omit<GapPool, 'pool'> } | null>(null);
   const [err, setErr] = useState('');
   const [loading, setLoading] = useState(false);
   const [reportedOnly, setReportedOnly] = useState(false);
@@ -141,6 +143,7 @@ export default function GeneratedPage() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       setRows(d.rows ?? []);
+      setGap(d.gap ?? null);
     } catch (e) { setErr((e as Error).message); } finally { setLoading(false); }
   }, [reportedOnly, bank]);
 
@@ -189,7 +192,26 @@ export default function GeneratedPage() {
           ))}
         </div>
         {bank === 'science' && (
-          <p className="text-sm text-neutral-600 px-1">Our own Challenge MCQs from the worker&apos;s science-twins lane. Each passed every check, so it is already in practice at Challenge; <b>Retire</b> takes one out.</p>
+          <div className="space-y-2 px-1">
+            <p className="text-sm text-neutral-600">Our own MCQs, {gap?.per_skill ?? 3} for every sub-skill, each at its seed&apos;s level (Core, Exam or Challenge), written by the worker&apos;s science-twins lane and cloud sessions. Each passed every check, so it is already in practice; <b>Retire</b> takes one out.</p>
+            {gap && (
+              <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+                <table className="w-full text-xs">
+                  <thead className="text-neutral-500"><tr><th className="text-left px-2 py-1">Science</th><th className="px-2 py-1">Sub-skills</th><th className="px-2 py-1">Done</th><th className="px-2 py-1">Short</th><th className="px-2 py-1">Twins to write</th></tr></thead>
+                  <tbody>
+                    {gap.pools.map(g => (
+                      <tr key={g.pool} className="border-t border-neutral-100">
+                        <td className="px-2 py-1">{({ PHY: 'Physics', CHEM: 'Chemistry', BIO: 'Biology', CS_PHY: 'Combined · Physics', CS_CHEM: 'Combined · Chemistry', CS_BIO: 'Combined · Biology' } as Record<string, string>)[g.pool] ?? g.pool}</td>
+                        <td className="px-2 py-1 text-center">{g.subskills}</td><td className="px-2 py-1 text-center">{g.covered}</td><td className="px-2 py-1 text-center">{g.short + g.no_seed}</td>
+                        <td className="px-2 py-1 text-center">{g.need}{g.open_need ? <span className="text-neutral-400"> ({g.open_need} open topics)</span> : null}</td>
+                      </tr>
+                    ))}
+                    <tr className="border-t border-neutral-200 font-semibold"><td className="px-2 py-1">All</td><td className="px-2 py-1 text-center">{gap.total.subskills}</td><td className="px-2 py-1 text-center">{gap.total.covered}</td><td className="px-2 py-1 text-center">{gap.total.short + gap.total.no_seed}</td><td className="px-2 py-1 text-center">{gap.total.need}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
         <label className="flex items-center gap-2 text-sm text-neutral-700 px-1">
           <input type="checkbox" checked={reportedOnly} onChange={e => setReportedOnly(e.target.checked)} /> Reported only{reportedCount && !reportedOnly ? ` (${reportedCount} in this list)` : ''}

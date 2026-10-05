@@ -19,6 +19,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getScienceClient } from '@/lib/science-bank';
 import { scienceImageBase, withScienceImageUrls } from '@/lib/science-images';
+import { scienceGap } from '@/lib/twin-store';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -69,8 +70,11 @@ export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   if (req.nextUrl.searchParams.get('bank') === 'science') {
     try {
-      const rows = await scienceRows(Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 100)));
-      return NextResponse.json({ rows, generatedAt: new Date().toISOString() });
+      const [rows, gap] = await Promise.all([
+        scienceRows(Math.min(200, Math.max(1, Number(req.nextUrl.searchParams.get('limit')) || 100))),
+        scienceGap().catch(() => null),   // the sub-skill coverage (science_twin_units) — the tab's counts
+      ]);
+      return NextResponse.json({ rows, gap, generatedAt: new Date().toISOString() });
     } catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
   }
   const reportedOnly = req.nextUrl.searchParams.get('reported') === '1';

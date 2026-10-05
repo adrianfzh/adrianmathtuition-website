@@ -1,26 +1,28 @@
 #!/usr/bin/env node
 // scripts/science-twins/sci-twin.mjs — the deterministic half of SCIENCE twins
-// (SPEC-TWINS §11, 5 Oct 2026, Adrian: "yes > start with Challenge").
+// (SPEC-TWINS §11). 5 Oct 2026, Adrian: "we need twins questions of all subskills like math —
+// if we are to sell subscriptions on the app" (it began that morning as Challenge-only).
 //
-// A science twin is OUR OWN MCQ, written at the Challenge level, modelled on a real
-// Challenge (or Exam) row of the same sub-skill: a new situation and new numbers,
-// harder reasoning, four options whose wrong ones are real mistakes. The writing is
+// A science twin is OUR OWN MCQ for one SUB-SKILL, modelled on a real school row filed under
+// it, at that seed's level (Core / Exam / Challenge): a new situation and new numbers, the same
+// demand, four options whose wrong ones are real mistakes. The goal is PER_SKILL (3) verified
+// twins per (pool, sub-skill) — pure PHY/CHEM/BIO and Combined CS_PHY/CS_CHEM/CS_BIO — open
+// practice topics first, then every other topic. The writing is
 // agents (author → blind solve → checker, plan-billed, never the API); this file does
 // everything that is not judgement:
 //
-//   gap      the open practice topics (src/lib/portal-beta.ts, pure + Combined) and how
-//            many servable Challenge MCQs each has → the gap to TARGET (30)
+//   gap      every (pool, sub-skill) and how many twins it has → twins needed to reach PER_SKILL
+//            (science_twin_units() in the science project — the ONE gap the cloud door reads too)
 //   need     --pool CS_PHY --topic "Pressure" → how many that topic still wants (0 = full)
-//   queue    seeds for the topics short of TARGET, one sub-skill at a time, Challenge
-//            seeds first, then Exam; text-only seeds before figured ones   [--limit N --json]
-//   brief    --source <uuid> --run <dir> [--pool PHY|CS_PHY…]  → source.json, corpus.json,
+//   queue    seeds in the gap's order, one per sub-skill a round   [--limit N --pool P --json]
+//   brief    --source <uuid> --run <dir> --pool PHY|CS_PHY… --subgroup <id>  → source.json, corpus.json,
 //            plan.json, author-brief.md
 //   check    --run <dir>  → Q1.gates.json (format, house style, scope words, novelty vs the
 //            seed and the whole topic, number-swap, same options, figure renders); a pass
 //            writes Q1.solve.md (blind solver) and Q1.check.md (checker)
 //   publish  --run <dir> [--dry]  → the row (school AdrianMath, exam_type Twin, twin_of,
 //            verified, practice_checked_at) + its sub-skill filing + practice_difficulty
-//            (challenge, source 'twin'). Refuses unless the gates, the blind solve and the
+//            (the target level, source 'twin'). Refuses unless the gates, the blind solve and the
 //            checker all passed.
 //   review   --runs <dir…> --out <file.html>  → a phone-width page of the twins for Adrian
 //
@@ -41,7 +43,7 @@ const argOf = (k, d) => { const i = argv.indexOf(k); return i >= 0 ? argv[i + 1]
 const has = (k) => argv.includes(k);
 const log = (s) => console.error(s);
 
-export const TARGET = Number(process.env.SCI_TWINS_TARGET || 30);
+export const PER_SKILL = Number(process.env.SCI_TWINS_PER_SKILL || 3);   // verified twins per (pool, sub-skill)
 const NOVELTY_MAX = 0.4;
 const TWIN_SCHOOL = 'AdrianMath';
 const TWIN_EXAM_TYPE = 'Twin';
@@ -147,91 +149,74 @@ export function openTopics(src = readFileSync(join(ROOT, 'src/lib/portal-beta.ts
   return pools;
 }
 
-async function challengeCount(p) {
-  const s = SCI[p.key];
-  const { count, error } = await eligible(sb().from('questions').select('id, practice_difficulty!inner(level, source)', { count: 'exact', head: true }), s.subject)
-    .in('level', poolLevels(p.key, p.combined)).contains('topics', [p.topic])
-    .eq('practice_difficulty.level', 'challenge').in('practice_difficulty.source', SERVED);
-  if (error) throw new Error(error.message);
-  return count ?? 0;
+// ---------------------------------------------------- the sub-skill gap ----
+// (5 Oct 2026, Adrian: "we need twins questions of all subskills like math — if we are to sell
+// subscriptions on the app"). The gap and its order live in ONE place, the science project's
+// science_twin_units() (migrations/science_twin_units.sql) — read by this lane and by the
+// cloud door (lib/twin-store.ts), so the two never disagree.
+export function openTopicsJson() {
+  const out = {};
+  for (const p of openTopics()) (out[p.pool] ||= []).push(p.topic);
+  return out;
+}
+export async function units() {
+  const { data, error } = await sb().rpc('science_twin_units', { open_topics: openTopicsJson(), per_skill: PER_SKILL });
+  if (error) throw new Error(`science_twin_units: ${error.message}`);
+  return data ?? [];
+}
+export function gapSummary(rows) {
+  const by = new Map();
+  for (const r of rows) {
+    const k = `${r.pool}`;
+    const g = by.get(k) ?? { pool: r.pool, subskills: 0, covered: 0, uncovered: 0, no_seed: 0, need: 0, open_need: 0 };
+    g.subskills++;
+    if (r.need === 0) g.covered++; else if (!r.seed_count) g.no_seed++; else g.uncovered++;
+    if (r.seed_count) { g.need += r.need; if (r.is_open) g.open_need += r.need; }
+    by.set(k, g);
+  }
+  const list = [...by.values()];
+  const tot = list.reduce((a, g) => ({ subskills: a.subskills + g.subskills, covered: a.covered + g.covered, uncovered: a.uncovered + g.uncovered, no_seed: a.no_seed + g.no_seed, need: a.need + g.need, open_need: a.open_need + g.open_need }), { subskills: 0, covered: 0, uncovered: 0, no_seed: 0, need: 0, open_need: 0 });
+  return { per_skill: PER_SKILL, pools: list, total: tot };
 }
 
 async function gap() {
-  const pools = openTopics();
-  const out = [];
-  for (const p of pools) { const n = await challengeCount(p); out.push({ ...p, challenge: n, gap: Math.max(0, TARGET - n) }); }
-  if (has('--json')) { console.log(JSON.stringify(out)); return; }
-  for (const r of out) console.log(`${r.pool.padEnd(8)} ${r.topic.padEnd(34)} challenge ${String(r.challenge).padStart(3)}  gap ${r.gap}`);
-  console.log(`total gap ${out.reduce((a, r) => a + r.gap, 0)} (target ${TARGET} Challenge MCQs per open topic)`);
+  const rows = await units();
+  const sum = gapSummary(rows);
+  if (has('--json')) { console.log(JSON.stringify(has('--units') ? { ...sum, units: rows } : sum)); return; }
+  for (const g of sum.pools) console.log(`${g.pool.padEnd(8)} sub-skills ${String(g.subskills).padStart(3)} · at ${PER_SKILL}+ ${String(g.covered).padStart(3)} · short ${String(g.uncovered).padStart(3)} · no MCQ seed ${String(g.no_seed).padStart(2)} · twins needed ${String(g.need).padStart(4)} (open topics ${g.open_need})`);
+  const t = sum.total;
+  console.log(`total: ${t.subskills} sub-skills, ${t.covered} at ${PER_SKILL}+ twins, ${t.uncovered} short, ${t.no_seed} with no MCQ seed · ${t.need} twins needed (${t.open_need} on open practice topics)`);
 }
 
-// how many Challenge MCQs one open topic still wants (0 = full) — asked right before writing one
+// how many twins one (pool, sub-skill) still wants (0 = full) — asked right before writing one
 async function need() {
-  const pp = parsePool(argOf('--pool'));
-  const topic = argOf('--topic');
-  if (!pp || !topic) throw new Error('--pool PHY|CHEM|BIO|CS_… --topic "<topic>" required');
-  const n = await challengeCount({ ...pp, topic });
-  console.log(Math.max(0, TARGET - n));
+  const pool = argOf('--pool'); const sg = Number(argOf('--subgroup'));
+  if (!parsePool(pool) || !sg) throw new Error('--pool PHY|CHEM|BIO|CS_… --subgroup <id> required');
+  const r = (await units()).find((u) => u.pool === pool && Number(u.subgroup_id) === sg);
+  console.log(r ? r.need : 0);
 }
 
 // --------------------------------------------------------------- queue ----
-async function seedsFor(p) {
-  const s = SCI[p.key];
-  const rows = await all(() => eligible(sb().from('questions').select('id, level, school, has_image, skill, question_text, practice_difficulty!inner(level, source)'), s.subject)
-    .in('level', poolLevels(p.key, p.combined)).contains('topics', [p.topic])
-    .in('practice_difficulty.level', ['challenge', 'exam']).in('practice_difficulty.source', ['results', 'estimate'])
-    .neq('school', TWIN_SCHOOL).order('id'));
-  if (!rows.length) return [];
-  const ids = rows.map((r) => r.id);
-  const twinned = new Set();
-  const filing = new Map();
-  for (let i = 0; i < ids.length; i += 200) {
-    const chunk = ids.slice(i, i + 200);
-    const { data: t } = await sb().from('questions').select('twin_of').in('twin_of', chunk);
-    for (const r of t ?? []) twinned.add(r.twin_of);
-    const { data: f } = await sb().from('question_subgroups').select('question_id, subgroup_id, is_primary').in('question_id', chunk);
-    for (const r of f ?? []) if (r.is_primary || !filing.has(r.question_id)) filing.set(r.question_id, r.subgroup_id);
-  }
-  const lvlRank = (r) => (r.practice_difficulty?.level ?? r.practice_difficulty?.[0]?.level) === 'challenge' ? 0 : 1;
-  return rows
-    .filter((r) => !twinned.has(r.id) && String(r.question_text ?? '').length > 40)
-    .map((r) => ({ source_id: r.id, pool: p.pool, key: p.key, combined: p.combined, topic: p.topic, bank_level: r.level, subgroup_id: filing.get(r.id) ?? null, has_image: !!r.has_image, seed_level: lvlRank(r) === 0 ? 'challenge' : 'exam', skill: r.skill ?? null }))
-    .sort((a, b) => (a.seed_level === b.seed_level ? 0 : a.seed_level === 'challenge' ? -1 : 1) || (a.has_image - b.has_image) || a.source_id.localeCompare(b.source_id));
-}
-
+// the units in science_twin_units order (open topics first, fewest twins first), one seed per unit a round
 async function queue() {
   const limit = Number(argOf('--limit', 10));
   const onlyPool = argOf('--pool', null);
-  const textOnly = has('--text-only');
-  const pools = openTopics().filter((p) => !onlyPool || p.pool === onlyPool);
-  const want = [];
-  for (const p of pools) { const n = await challengeCount(p); if (n < TARGET) want.push({ ...p, gap: TARGET - n }); }
-  want.sort((a, b) => b.gap - a.gap);
-  const lists = [];
-  for (const p of want) {
-    let seeds = await seedsFor(p);
-    if (textOnly) seeds = seeds.filter((s) => !s.has_image);
-    // one seed per sub-skill per round, so a topic's twins spread over its skills
-    const bySg = new Map();
-    for (const s of seeds) { const k = s.subgroup_id ?? `none-${s.source_id}`; if (!bySg.has(k)) bySg.set(k, []); bySg.get(k).push(s); }
-    const spread = [];
-    for (let round = 0; spread.length < seeds.length; round++) { let added = 0; for (const l of bySg.values()) if (l[round]) { spread.push(l[round]); added++; } if (!added) break; }
-    lists.push({ p, seeds: spread.slice(0, p.gap).map((s) => ({ ...s, gap: p.gap })) });
-  }
-  const out = []; const used = new Set();   // a seed filed under two topics is used once
-  for (let i = 0; out.length < limit; i++) {
+  const rows = (await units()).filter((u) => u.need > 0 && (u.seeds ?? []).length && (!onlyPool || u.pool === onlyPool));
+  const out = []; const used = new Set();
+  for (let round = 0; out.length < limit; round++) {
     let left = 0;
-    for (const l of lists) {
-      const s = l.seeds[i];
-      if (!s) continue;
+    for (const u of rows) {
+      if (round >= u.need) continue;
+      const sid = (u.seeds ?? [])[round];
+      if (!sid) continue;
       left++;
-      if (out.length < limit && !used.has(s.source_id)) { out.push(s); used.add(s.source_id); }
+      if (out.length < limit && !used.has(`${u.pool}|${sid}`)) { out.push({ source_id: sid, pool: u.pool, topic: u.topic, subgroup_id: Number(u.subgroup_id), subgroup: u.subgroup, is_open: u.is_open, twins: u.twins, need: u.need }); used.add(`${u.pool}|${sid}`); }
     }
     if (!left) break;
   }
   if (has('--json')) { console.log(JSON.stringify(out)); return; }
-  for (const r of out) console.log(`${r.source_id}  ${r.pool.padEnd(8)} ${r.topic.padEnd(32)} sg ${String(r.subgroup_id ?? '-').padEnd(6)} ${r.seed_level}${r.has_image ? ' (figure)' : ''}  gap ${r.gap}`);
-  log(`${out.length} seeds over ${want.length} topics short of ${TARGET}`);
+  for (const r of out) console.log(`${r.source_id}  ${r.pool.padEnd(8)} ${String(r.subgroup_id).padEnd(5)} ${r.topic} › ${r.subgroup}${r.is_open ? '' : ' (topic not open yet)'}  has ${r.twins}, wants ${r.need}`);
+  log(`${out.length} seeds over ${rows.length} sub-skills short of ${PER_SKILL}`);
 }
 
 // ------------------------------------------------------------- helpers ----
@@ -271,6 +256,10 @@ export function splitMcq(text) {
   }
   return { stem: stem.join('\n').trim(), options: opts };
 }
+/** The level a twin with no seed level is filed at, from the checker's work score (the estimator's bands). */
+export const levelFromWork = (w) => { const n = Math.round(Number(w) || 3); return n <= 2 ? 'core' : n === 3 ? 'exam' : 'challenge'; };
+/** One twin per seed PER POOL: a pure twin keeps the old key, a Combined one carries its pool. */
+export const twinItem = (pool, seed) => (String(pool).startsWith('CS_') ? `sci-twin-${pool}-${seed}` : `sci-twin-${seed}`);
 export const keyOf = (answer) => { const m = /([A-D])/.exec(String(answer ?? '').replace(/^\s*\*\*\(?/, '')); return m ? m[1] : null; };
 export function questionText(q) {
   return `${String(q.stem ?? '').trim()}\n\n${LETTERS.map((l) => `${l}) ${String(q.options?.[l] ?? '').trim()}`).join('\n')}`;
@@ -288,10 +277,14 @@ async function brief() {
   const combined = String(src.level).startsWith('CS_');
   const pool = argOf('--pool', poolName(key, combined));
   const pp = parsePool(pool);
-  const topic = argOf('--topic', null) ?? (src.topics ?? [])[0];
   const { data: pd } = await sb().from('practice_difficulty').select('level, source, reason, detail').eq('question_id', id).maybeSingle();
-  const { data: f } = await sb().from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', id);
-  const sgIds = (f ?? []).map((r) => r.subgroup_id);
+  const { data: f0 } = await sb().from('question_subgroups').select('subgroup_id, is_primary').eq('question_id', id);
+  // the unit's sub-skill (--subgroup) is THE sub-skill this twin serves; else the seed's own filing
+  const want = Number(argOf('--subgroup', 0)) || null;
+  const f = want ? [{ subgroup_id: want, is_primary: true }] : (f0 ?? []);
+  const sgIds = f.map((r) => r.subgroup_id);
+  const { data: sgTopic } = sgIds.length ? await sb().from('subgroups').select('topic').eq('id', sgIds[0]).maybeSingle() : { data: null };
+  const topic = argOf('--topic', null) ?? sgTopic?.topic ?? (src.topics ?? [])[0];
   const { data: sgs } = sgIds.length ? await sb().from('subgroups').select('id, name, description, topic').in('id', sgIds) : { data: [] };
   const subgroups = (sgs ?? []).map((s) => ({ id: s.id, name: s.name, description: s.description, is_primary: !!(f ?? []).find((r) => r.subgroup_id === s.id)?.is_primary }));
   // the novelty corpus: every row of the topic in the subject, pure and Combined, any source
@@ -302,13 +295,15 @@ async function brief() {
     const { data: fs } = await sb().from('question_subgroups').select('question_id').in('subgroup_id', sgIds).neq('question_id', id).limit(40);
     const sids = (fs ?? []).map((r) => r.question_id);
     if (sids.length) {
-      const { data: sr } = await sb().from('questions').select('id, question_text, answer, practice_difficulty(level)').in('id', sids).in('level', poolLevels(pp.key, pp.combined)).limit(40);
-      siblings = (sr ?? []).filter((r) => r.practice_difficulty?.level === 'challenge' || r.practice_difficulty?.[0]?.level === 'challenge').slice(0, 3);
+      const { data: sr } = await sb().from('questions').select('id, question_text, answer, school').in('id', sids).in('level', [SCI[pp.key].bank]).neq('school', TWIN_SCHOOL).limit(40);
+      siblings = (sr ?? []).slice(0, 3);
     }
   }
   const plan = {
-    source: id, pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: src.level, topic,
-    skill: src.skill ?? null, subgroups, seed_level: pd?.level ?? null, seed_reason: pd?.reason ?? null,
+    source: id, pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, topic,
+    skill: src.skill ?? null, subgroups,
+    // the level the twin is written at: the seed's own (students' results or the estimate); none → set by the checker's work score
+    seed_level: ['results', 'estimate'].includes(pd?.source) ? pd.level : null, seed_reason: pd?.reason ?? null,
     syllabus: syllabusOf(pp.key, pp.combined), seed_has_image: !!src.has_image, prompt_version: PROMPT_VERSION,
     models: { author: 'opus (Claude Code agent)', blind: 'opus (fresh Claude Code agent)', checker: 'opus (fresh Claude Code agent)' },
   };
@@ -319,8 +314,9 @@ async function brief() {
   const skillLine = subgroups.length ? subgroups.map((s) => `${s.name}${s.description ? ` — ${s.description}` : ''}`).join('; ') : (src.skill ?? '(no sub-skill filed — use the seed itself)');
   const md = `# Science twin — author brief
 
-You write ONE new multiple-choice question for Singapore students: OUR OWN question, at the
-**Challenge** level, modelled on the seed below. Write the file \`${dir}/Q1.json\` and stop.
+You write ONE new multiple-choice question for Singapore students: OUR OWN question for the
+sub-skill below, modelled on the seed, at the seed's level (${plan.seed_level ? `**${plan.seed_level[0].toUpperCase()}${plan.seed_level.slice(1)}**` : 'the same demand as the seed'}).${pp.combined ? ' It is for **Combined Science** students: write it inside the Combined Science syllabus, even though the seed is from a pure-science paper.' : ''}
+Write the file \`${dir}/Q1.json\` and stop.
 
 ## The seed (a school's question — never copy it)
 - Syllabus: ${plan.syllabus}
@@ -334,11 +330,11 @@ ${src.question_text}
 \`\`\`
 Key: ${keyOf(src.answer) ?? src.answer}
 ${src.solution ? `Its solution:\n\`\`\`\n${String(src.solution).slice(0, 1500)}\n\`\`\`` : ''}
-${siblings.length ? `\n## Other Challenge questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text).slice(0, 600)}`).join('\n\n')}\n` : ''}
+${siblings.length ? `\n## Other questions of the same sub-skill (the range of the skill — do not copy these either)\n${siblings.map((s, i) => `${i + 1}. ${String(s.question_text).slice(0, 600)}`).join('\n\n')}\n` : ''}
 ## What to write
-- **Same sub-skill as the seed, harder reasoning.** Challenge = more than half of students miss it
-  first time: two or three ideas joined, a step most students skip, or a trap a careless reader
-  falls into. Not harder by obscure facts, long arithmetic or trick wording.
+- **Same sub-skill, same demand as the seed.** Core = one idea, most students get it; Exam = a
+  typical exam step or two; Challenge = two or three ideas joined, a step most skip, or a trap.
+  Match the seed's level — never easier. Not harder by obscure facts, long arithmetic or trick wording.
 - **A NEW situation and new numbers.** A teacher holding both must NOT say "that is the seed with
   the numbers changed". Different object, setting, quantities, sentences and order of ideas.
   Syllabus phrasing that belongs to everyone ("Which statement is correct?") is fine.
@@ -381,7 +377,7 @@ the option exactly (check the arithmetic). Otherwise just say why it is wrong.
   "answer": "B",
   "solution": "**Key idea:** …\\n…\\n**Answer: B**\\n**Why not the others**\\n- **A:** …\\n- **C:** …\\n- **D:** …",
   "distractors": { "A": "the mistake that gives A", "C": "…", "D": "…" },
-  "why_challenge": "the ideas joined / the trap, in one or two lines",
+  "why_level": "what makes it the level it is (the ideas joined, the step, the trap), one or two lines",
   "originality_note": "how it differs from the seed: situation, numbers, order of ideas",
   "needs_figure": false
 }
@@ -479,7 +475,7 @@ ${questionText(q)}
     const blindPath = join(dir, 'Q1.blind.json');
     writeFileSync(join(dir, 'Q1.check.md'), `# Checker — one science twin
 
-You are a senior ${plan.syllabus} examiner checking OUR OWN Challenge-level MCQ before any student
+You are a senior ${plan.syllabus} examiner checking OUR OWN practice MCQ (target level: ${plan.seed_level ?? 'the seed\'s demand'}) before any student
 sees it. Read this file, then the blind solver's answer in \`${blindPath}\`${q.needs_figure ? ` and the figure \`${dir}/Q1.figure.png\`` : ''}.
 Work the question yourself first. Then write \`${dir}/Q1.verdict.json\` and stop.
 
@@ -492,7 +488,7 @@ Setter's solution:
 \`\`\`
 ${q.solution}
 \`\`\`
-Setter's notes — distractors: ${JSON.stringify(q.distractors ?? {})}; why Challenge: ${q.why_challenge ?? '-'}
+Setter's notes — distractors: ${JSON.stringify(q.distractors ?? {})}; why this level: ${q.why_level ?? q.why_challenge ?? '-'}
 
 ## What it is modelled on (the seed, a school's question)
 Topic ${plan.topic} · sub-skill ${plan.subgroups.map((s) => s.name).join(', ') || plan.skill || '-'}
@@ -512,7 +508,7 @@ ${near ? String(near.text).slice(0, 1200) : '(none)'}
 3. in_syllabus — everything needed is in ${plan.syllabus}.${plan.key === 'PHY' ? ' No equations of motion, no momentum, no circular motion.' : ''}
 4. original — not the seed (or the nearest question) with numbers or nouns swapped: a new situation, new numbers, new sentences. reads_as_source = true if a teacher holding both would call it the same question.
 5. same_skill — it exercises the seed's sub-skill.
-6. challenge — rate the work as the estimator does: steps, ideas that must be joined, traps; work_score 1–5 (1–2 Core, 3 Exam, 4–5 Challenge). is_challenge = work_score ≥ 4 AND it is hard for a good reason (not obscure, not trick wording, not long arithmetic).
+6. level — rate the work as the estimator does: steps, ideas that must be joined, traps; work_score 1–5 (1–2 Core, 3 Exam, 4–5 Challenge). level_ok = ${plan.seed_level ? `its work score sits in the ${plan.seed_level} band (Core 1–2, Exam 3, Challenge 4–5) — or one band above, never below —` : 'it is at least as demanding as the seed'} AND any difficulty is for a good reason (not obscure, not trick wording, not long arithmetic).
 7. distractors_real — each wrong option is a real student mistake.
 8. house_style — **Key idea:**, one step a line, units kept, bold **Answer: X**, then **Why not the others** with one line per wrong option; plain short words.
 9. why_not_honest — wherever "why not the others" says an option comes from a particular mistake, that mistake reproduces the option EXACTLY (check the arithmetic). A line that just says why it is wrong is fine.
@@ -521,7 +517,7 @@ ${near ? String(near.text).slice(0, 1200) : '(none)'}
 \`\`\`json
 { "key_correct": true, "blind_agrees": true, "one_defensible_answer": true, "in_syllabus": true,
   "original": true, "reads_as_source": false, "same_skill": true,
-  "work_score": 4, "is_challenge": true, "distractors_real": true, "house_style": true,
+  "work_score": 3, "level_ok": true, "distractors_real": true, "house_style": true,
   "why_not_honest": true, "student_safe": true,
   "score": 1-5, "why": "one or two lines", "fixes": ["a concrete fix per failed point — or empty"] }
 \`\`\`
@@ -537,7 +533,7 @@ export function verdictOk(v, blind, key) {
   return letter === String(key).toUpperCase()
     && v.key_correct === true && v.blind_agrees === true && v.one_defensible_answer === true
     && v.in_syllabus === true && v.original === true && v.reads_as_source !== true && v.same_skill === true
-    && Number(v.work_score) >= 4 && v.is_challenge === true && v.distractors_real === true
+    && Number(v.work_score) >= 1 && Number(v.work_score) <= 5 && (v.level_ok === true || v.is_challenge === true) && v.distractors_real === true
     && v.house_style === true && v.why_not_honest === true && v.student_safe === true && Number(v.score) >= 4;
 }
 
@@ -555,15 +551,17 @@ async function publish() {
   if (!verdictOk(verdict, blind, q.answer)) throw new Error(`refused: blind ${blind?.answer} vs key ${q.answer}; verdict ${JSON.stringify(verdict ?? null).slice(0, 400)}`);
   const png = join(dir, 'Q1.figure.png');
   if (q.needs_figure && !existsSync(png)) throw new Error('needs_figure but Q1.figure.png is not rendered');
-  const item = `sci-twin-${plan.source}`;
-  const imagePath = q.needs_figure ? `twins/${plan.source}.png` : null;
+  const item = twinItem(plan.pool, plan.source);
+  const level = plan.seed_level ?? levelFromWork(verdict.work_score);
+  const label = { core: 'Core', exam: 'Exam', challenge: 'Challenge' }[level];
+  const imagePath = q.needs_figure ? `twins/${item}.png` : null;
   const figSpec = existsSync(join(dir, 'Q1.figure.json')) ? JSON.parse(readFileSync(join(dir, 'Q1.figure.json'), 'utf8')) : null;
   const now = new Date().toISOString();
   const row = {
     level: plan.bank_level, subject: plan.subject, school: TWIN_SCHOOL, year: new Date().getFullYear(), exam_type: TWIN_EXAM_TYPE,
     paper: null, question_number: null,
     question_text: questionText(q), parts: null, answer: String(q.answer).trim().toUpperCase(), solution: q.solution, solution_source: 'opus_session',
-    topics: [plan.topic], skill: plan.skill ?? null, difficulty: 'Challenging', total_marks: 1,
+    topics: [plan.topic], skill: plan.skill ?? null, difficulty: level === 'challenge' ? 'Challenging' : 'Standard', total_marks: 1,
     has_image: !!imagePath, image_url: imagePath, images: [], image_size: 'md',
     // a drawn figure still waits for the science figure check (bot figfit, FIGFIT_BANK=science) to stamp 'clean'
     image_watermark_status: null,
@@ -571,12 +569,12 @@ async function publish() {
     quarantined: false, not_in_syllabus: false, practice_hidden: false,
     practice_checked_at: now, practice_check_note: 'twin: every check passed (gates, blind solve, checker)',
     gen_meta: {
-      kind: 'science-twin', twin_item: item, twin_of: plan.source, prompt_version: PROMPT_VERSION, pool: plan.pool, level_written: 'challenge',
+      kind: 'science-twin', twin_item: item, twin_of: plan.source, prompt_version: PROMPT_VERSION, pool: plan.pool, level_written: level, subskill: (plan.subgroups ?? [])[0]?.id ?? null,
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       models: plan.models, gates: { novelty: gates.novelty, rounds: gates.rounds },
       blind: { answer: blind.answer, confidence: blind.confidence ?? null, other_defensible: blind.other_defensible ?? [] },
       verdict: { work_score: verdict.work_score, score: verdict.score, why: verdict.why },
-      distractors: q.distractors ?? null, why_challenge: q.why_challenge ?? null, originality_note: q.originality_note ?? null,
+      distractors: q.distractors ?? null, why_level: q.why_level ?? q.why_challenge ?? null, originality_note: q.originality_note ?? null,
       figure: imagePath ? { family: figSpec?.family ?? null, spec: figSpec?.spec ?? figSpec } : null,
       subgroups: (plan.subgroups ?? []).map((s) => s.id), generated_at: now, verified_by: 'checks',
     },
@@ -600,13 +598,13 @@ async function publish() {
   const filing = (plan.subgroups ?? []).map((s) => ({ question_id: qid, subgroup_id: s.id, is_primary: !!s.is_primary, confidence: 1, source: 'twin', reason: `science twin of ${plan.source}` }));
   if (filing.length) { const { error } = await sb().from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id' }); if (error) log(`filing warning: ${error.message}`); }
   const { error: pdErr } = await sb().from('practice_difficulty').upsert({
-    question_id: qid, level: 'challenge', source: 'twin', attempts: 0, wrong: 0, wrong_share: null,
-    work_score: verdict.work_score, test_solve: null, reason: `Our own Challenge question; ${String(q.why_challenge ?? verdict.why ?? '').slice(0, 200)}`,
+    question_id: qid, level, source: 'twin', attempts: 0, wrong: 0, wrong_share: null,
+    work_score: verdict.work_score, test_solve: null, reason: `Our own ${label} question; ${String(q.why_level ?? q.why_challenge ?? verdict.why ?? '').slice(0, 200)}`,
     detail: { twin_of: plan.source, checker_score: verdict.score }, updated_at: now,
   }, { onConflict: 'question_id' });
   if (pdErr) throw new Error(`practice_difficulty: ${pdErr.message}`);
   writeFileSync(join(dir, 'published.json'), JSON.stringify({ id: qid, item, at: now }, null, 1));
-  console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (science twin of ${plan.source}, Challenge)`);
+  console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (science twin of ${plan.source}, ${plan.pool}, ${label})`);
 }
 
 // -------------------------------------------------------------- review ----
@@ -627,7 +625,7 @@ function review() {
     const fig = q.needs_figure && existsSync(join(dir, 'Q1.figure.png')) ? `<img class="fig" src="data:image/png;base64,${readFileSync(join(dir, 'Q1.figure.png')).toString('base64')}">` : '';
     const subj = { physics: 'Physics', chemistry: 'Chemistry', biology: 'Biology' }[plan.subject];
     return `<section class="card ${ok ? 'ok' : 'no'}">
-<div class="meta"><span class="pill ${plan.subject}">${plan.combined ? 'Combined · ' : ''}${subj}</span> <span>${esc(plan.topic)}</span> <span class="lvl">Challenge</span></div>
+<div class="meta"><span class="pill ${plan.subject}">${plan.combined ? 'Combined · ' : ''}${subj}</span> <span>${esc(plan.topic)}</span> <span class="lvl">${esc(plan.seed_level ?? '')}</span></div>
 <div class="n">${n + 1}</div>
 <div class="q">${mdLite(q.stem)}</div>${fig}
 <ol class="opts">${LETTERS.map((l) => `<li class="${l === q.answer ? 'key' : ''}"><b>${l}</b> ${mdLite(q.options[l])}</li>`).join('')}</ol>
@@ -658,7 +656,7 @@ h1{font-size:20px;margin:8px 0 4px}.sub{color:var(--mute);font-size:14px;margin:
 details{margin:6px 0}summary{cursor:pointer;color:var(--mute);font-size:14px}.sol{margin-top:6px;font-size:15px}
 .checks{font-size:12px;color:var(--mute);margin-top:8px}.seed .q{font-size:14px;color:var(--mute)}
 </style></head><body><main><h1>Science twins — first ${dirs.length}</h1>
-<p class="sub">Our own Challenge questions, each modelled on a school question of the same skill. The right option is shaded. Nothing here is live yet.</p>
+<p class="sub">Our own questions, one sub-skill at a time, each modelled on a school question of that skill. The right option is shaded. Nothing here is live yet.</p>
 ${cards}</main></body></html>`;
   writeFileSync(out, html);
   console.log(`review → ${out}`);

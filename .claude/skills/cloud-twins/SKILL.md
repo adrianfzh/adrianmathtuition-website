@@ -1,6 +1,6 @@
 ---
 name: cloud-twins
-description: Write twins (our own questions, maths or science) from a claude.ai CLOUD session with NO database key — through the AGENT_TOKEN_TWINS doors (/api/agent/twins/*). The session authors (Opus) → the server's automatic gates → blind solve (a fresh agent that sees only the question) → checker (Opus) → submit; the server re-checks everything and files the twin. Use when Adrian says "write 30 science Challenge twins", "write 40 Sec 2 twins", "twins for A Math", "cloud twins". On the Mac with the keys, the local twin-question skill / sci-twin.mjs do the same job.
+description: Write twins (our own questions, maths or science) from a claude.ai CLOUD session with NO database key — through the AGENT_TOKEN_TWINS doors (/api/agent/twins/*). The session authors (Opus) → the server's automatic gates → blind solve (a fresh agent that sees only the question) → checker (Opus) → submit; the server re-checks everything and files the twin. Use when Adrian says "write 30 science twins", "write 40 Sec 2 twins", "twins for A Math", "cloud twins". On the Mac with the keys, the local twin-question skill / sci-twin.mjs do the same job.
 ---
 
 # Cloud twins — the playbook
@@ -26,7 +26,7 @@ Work in a run folder OUTSIDE the repo checkout, e.g. `~/twins/<date>/` — never
 
 | He says | You run |
 |---|---|
-| "write 30 science Challenge twins" | `queue --bank science --n 10` three times (biggest topic gaps first, the server picks) |
+| "write 30 science twins" | `queue --bank science --n 10` three times (3 twins per sub-skill, open practice topics first, fewest twins first — the server picks; each item names its pool, sub-skill and level) |
 | "write 40 Sec 2 twins" | `queue --bank maths --level S2 --n 10` four times |
 | "20 A Math twins" / "E Math" / "JC" | `--level AM` (draws AM + S3_AM) / `EM` / `JC1`·`JC2` |
 | "twins for the stuck topics" | `queue --bank maths --level EM --focus-only` (and AM) |
@@ -34,7 +34,7 @@ Work in a run folder OUTSIDE the repo checkout, e.g. `~/twins/<date>/` — never
 
 Batches of ≤10 per queue call. Take the next batch only when the last one is done, so two
 sessions never twin the same seed (the server refuses a seed that already has a live twin, and
-a sub-skill / topic that is already full — 409: just take the next seed).
+a sub-skill that is already full — 409: just take the next seed).
 
 ## 2. One seed, end to end
 
@@ -67,8 +67,8 @@ For each folder RUN (up to four at once, each role a FRESH agent):
    gate, compares the blind answer with the key itself (science: the letter; maths: each part,
    plain numbers to 3 s.f., and the checker must have agreed every part), then files the twin
    (`school='AdrianMath'`, `exam_type='Twin'`, `twin_of`, `verified=true` — passing every check
-   IS the verify — the sub-skill filing; science also `practice_checked_at` and Challenge
-   difficulty). `published.json` = filed; `refused.json` = the gate and the problems.
+   IS the verify — the sub-skill filing; science also `practice_checked_at` and the seed's level
+   (Core / Exam / Challenge; set by the checker's work score when the seed has none)). `published.json` = filed; `refused.json` = the gate and the problems.
 
 **Retry once.** A refusal at the gates or by the checker → ONE repair round: the author gets
 `scripts/science-twins/prompts/repair.md` (science) or `author.md` §Repair (maths) plus the
@@ -84,8 +84,10 @@ verdict or a blind answer to get past the door — that is the one thing this pl
 - **Syllabus scope.** The level's syllabus only. Physics: no equations of motion, no momentum, no
   circular motion; g = 10. Combined Science: only the Combined syllabus.
 - **Maths:** the same sub-skill, method, part labels, marks per part and total as the seed.
-- **Science Challenge is really harder** — two or three ideas joined, a trap; work score ≥ 4. An
-  Exam-level twin is refused, not "close enough".
+- **Science: the seed's sub-skill at the seed's level** (5 Oct 2026, Adrian: "we need twins
+  questions of all subskills like math"). A twin easier than its seed is refused (`level_ok`).
+  A Combined item (pool `CS_…`) is modelled on a pure seed but written inside the Combined
+  syllabus — a sub-skill the Combined syllabus does not cover is a refusal, not a stretch.
 - **Honest "why not" lines** — name a mistake only when it reproduces that option exactly.
 - **Figures only from the figure library** (typed specs; no hand-drawn SVG, no code engine).
 - **Never mention a model, a school, a year or a paper** in anything a student reads.
