@@ -217,7 +217,7 @@
     },
     {
       "path": "/api/cron/lesson-end",
-      "schedule": "10 3-13 * * *"
+      "schedule": "2,32 3-13 * * *"
     }
   ]
 }

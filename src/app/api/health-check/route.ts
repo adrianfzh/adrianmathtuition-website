@@ -566,6 +566,15 @@ export async function GET(req: NextRequest) {
       }
       return 'auth gates up (5)';
     }),
+    // 🎤 The end-of-lesson voice note (5 Oct 2026): the ping's cron and the bot's door the
+    // voice note / typed reply / ✓ come through. Both must refuse a stranger.
+    timed('lesson-voice', async () => {
+      for (const [path, init] of [['/api/cron/lesson-end', {}], ['/api/bot/lesson-log', { method: 'POST' }]] as [string, RequestInit][]) {
+        const r = await fetch(`${base}${path}`, { ...init, redirect: 'manual', signal: T(10000) });
+        if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
+      }
+      return 'auth gates up (2)';
+    }),
     // 📜 Humanities feedback (2 Oct 2026): the student's hand-in and the bench's door.
     timed('portal-humanities', async () => {
       const r = await fetch(`${base}/api/portal/humanities`, { method: 'POST', redirect: 'manual', signal: T(10000) });

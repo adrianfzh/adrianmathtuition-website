@@ -180,15 +180,15 @@ export default function SwitchesPage() {
           {lessonLine && (
             <div className="flex items-center gap-3 mt-3 pt-3 border-t border-neutral-100" data-lesson-line={lessonLine.on ? 'on' : 'off'}>
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-neutral-900">📒 End-of-lesson line{lessonLine.on ? ' — ON' : ''}</div>
+                <div className="font-semibold text-sm text-neutral-900">📒 End-of-lesson ping{lessonLine.on ? ' — ON' : ''}</div>
                 <div className="text-xs text-neutral-500 mt-0.5">
                   {lessonLine.on
-                    ? 'After each lesson, one Telegram line per student: what was printed and handed in. Tap ✓ or reply with what you did.'
+                    ? 'Two minutes after each lesson, one Telegram message (a group lesson names everyone). Hold 🎤 and talk, type a reply, or tap ✓. No answer is fine — nothing nags.'
                     : 'Off: the lesson log still fills itself from what was printed, with no message.'}
                   {lessonLine.at ? ` · since ${sgt(lessonLine.at)}` : ''}
                 </div>
               </div>
-              <Toggle on={lessonLine.on} busy={busy === 'lessonLine'} label="End-of-lesson line" onClick={flipLessonLine} tone="#166534" />
+              <Toggle on={lessonLine.on} busy={busy === 'lessonLine'} label="End-of-lesson ping" onClick={flipLessonLine} tone="#166534" />
             </div>
           )}
           <p className="text-xs text-neutral-400 mt-3">Marking itself has no off switch here on purpose. Auto-release and the Science tab are settled and stay on.</p>

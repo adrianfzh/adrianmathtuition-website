@@ -478,28 +478,66 @@ or automatable, that just logs without me doing anything.. how to do it for phys
   the kiosk printed for them that day (`kiosk_prints`), and work they handed in from the
   lesson day to two days after (`paper_marking_runs`). Pure rules `lib/lesson-autolog.ts`
   (tested); the reads `lib/next-lesson-store.ts composeForPack`.
-- **When:** cron `/api/cron/lesson-end` (`10 3-13 * * *` UTC = every hour at :10, 11:10–21:10
-  SGT) takes every lesson TODAY whose slot has ended (slot `Time` → end, `slotEndHHMM`),
-  Scheduled or Completed. It writes `Topics Covered` (comma string), `Lesson Notes`
-  ("Auto log: … — auto (not confirmed)") and `Progress Logged` — **never over a log Adrian
-  wrote by hand** (`mayWriteAutoLog`: only an empty row or one whose notes start
-  "Auto log:"), and **never touches Status** (attendance stays his; arrears billing reads it).
-  The line goes only when something was printed (or kiosk-printed) for the lesson; maths
-  hand-ins alone are logged quietly; a lesson with nothing gets no entry.
-- **The line:** ONE Telegram message per student to the students topic: *"📒 Eva today: sine
-  rule and cosine rule (printed pack), warm-up on bearings. Tap ✓ if right, or reply with what
-  you did."* ✓ (`ll:ok:<pack>`) confirms it; a reply TO the line is read (a short Sonnet 5
-  call, topics checked against the course's list; `parseReplyPlain` without it) into topics +
-  homework, his topics replacing the auto ones. Both go through the bot (`lib/lesson-log.js`,
-  `handlers/lesson-log.js`) to `POST /api/bot/lesson-log` (Bearer `BOT_INTERNAL_SECRET`).
-  No reply = the entry stands as "auto (not confirmed)".
-- **Switch:** 📒 End-of-lesson line on `/admin/switches` (Airtable `Settings` row
+- **When:** cron `/api/cron/lesson-end` (`2,32 3-13 * * *` UTC = 11:02–21:32 SGT, so a lesson
+  ending on the hour is caught two minutes later) takes every lesson TODAY whose slot has ended
+  (slot `Time` → end, `slotEndHHMM`), Scheduled or Completed (Absent / Cancelled get nothing).
+  It writes `Topics Covered` (comma string), `Lesson Notes` ("Auto log: … — auto (not
+  confirmed)") and `Progress Logged` — **never over a log Adrian wrote by hand**
+  (`mayWriteAutoLog`: only an empty row or one whose notes start "Auto log:"), and **never
+  touches Status** (attendance stays his; arrears billing reads it). A lesson with nothing
+  printed or handed in gets no Airtable entry from the auto log.
+- **The ping (🎤 the end-of-lesson voice note, 5 Oct 2026 — Adrian: "build end-of-lesson voice
+  note"):** ALWAYS sent now, one Telegram message per LESSON to the students topic — a group
+  lesson (same date + slot time) is one message naming everyone (`lib/lesson-voice.ts
+  pingText`): *"📒 Eva's lesson just ended — how did it go? / Printed: sine rule practice
+  (printed pack). / Hold 🎤 and talk, or tap ✓ if the plan was followed."* With nothing printed
+  it shows "Plan was: <the night-before step>". Not sent when it would land more than two hours
+  late (`pingDue`, a missed tick). **No reminders, ever** — an unanswered ping leaves the auto
+  log standing as "auto (not confirmed)".
+- **What comes back** (all through the bot → `POST /api/bot/lesson-log`, Bearer
+  `BOT_INTERNAL_SECRET`):
+  - **✓ As planned** (`ll:ok:<pack>`) — confirms every student of the lesson; with nothing
+    printed, the night-before plan's step becomes the log ("sine rule and cosine rule (as
+    planned)", `planLog`).
+  - **A voice note replying to the ping** — the bot downloads it and transcribes it with Gemini
+    Flash (bot `lib/lesson-log.js transcribe`, `TRANSCRIBE_MODEL` = `gemini-3.6-flash`,
+    `GOOGLE_API_KEY`; the ping's text is the spelling hint for names).
+  - **A typed reply** — the same reader as the voice note.
+  - **A voice note sent WITHOUT replying** — counts for a lesson today that ended up to two hours
+    before it (or 15 min after it) AND whose student it names (`matchLoose`: first name or full
+    name as a whole word, "Junwei" = "Jun Wei"). No name → nothing logged and the bot says what
+    it heard; never a guess.
+  - **ONE reader** for all of them: `buildNotePrompt` → a short Sonnet 5 call →
+    `parseNoteModel` (topics only from the course's canonical list; a group note splits per
+    student by first name), `parseNotePlain` when the call fails. It reads topics, what the
+    student **struggled** with, **homework**, **next** time, **attendance** words ("20 min late"
+    — words only, Status untouched) and **mastery** only when said plainly.
+  - **Written to the Lessons row** (`voiceFields`): `Topics Covered` (his topics win, the
+    printed ones stand when he named none), `Homework Assigned`, `Next Lesson Plan`, `Mastery`
+    (so "lost, do it again" keeps the same step on the 📌 card — `chooseNext`), `Lesson Notes`
+    = "Voice note: struggled with …; late … Printed/handed in: … — from your voice note",
+    `Progress Logged`. Never over a hand-written log (`mayWriteVoice`: empty, "Auto log:" or an
+    earlier "Voice note:"). Stored on `lesson_packs.voice_note` (+ `voice_at`, the transcript).
+  - **The bot answers with ONE line** — *"📒 Got it — Eva: Trigonometry (Applications);
+    struggled with which angle goes with which side; homework exercise 5. Reply to this to
+    change anything."* — and tells the website that message's id (`{action:'ack'}` →
+    `lesson_packs.ack_message_id`). **A reply (voice or typed) to the "Got it" is a
+    correction**: the reader gets the earlier note, and `mergeCorrection` keeps whatever the
+    correction leaves out ("Fixed — …").
+- **Where he sees it:** the next morning on the student's 📌 Next lesson card — "🎤 Mon 5 Oct ·
+  Last time: struggled with … Homework: … You said for next time: …" (`lastTimeLine`); the full
+  page shows the transcript. The 📝 progress note's facts carry "Adrian's notes after lessons
+  (his own words)" and his topics as what was taught.
+- **Switch:** 📒 End-of-lesson ping on `/admin/switches` (Airtable `Settings` row
   `lesson_end_line`; **no row = on**). Off = the log is still written, silently. This is a
   cron message, not an admin-UI action, so the "admin web UI is silent" rule above is untouched.
 - **Later hand-ins:** the nightly `next-lesson` cron re-composes the last three days'
-  unconfirmed logs, so a paper handed in the day after joins its lesson.
+  unconfirmed logs, so a paper handed in the day after joins its lesson (a voice note confirms
+  the pack, so it is never re-composed over).
 - Rows: `lesson_packs` (one per Airtable lesson: the night-before plan, `auto_log`,
-  `line_message_id` so a reply finds its lesson, `confirmed_at`). job_runs `lesson-end`.
+  `line_message_id` (shared by a group lesson's packs) so a reply finds its lesson,
+  `ack_message_id`, `voice_note`, `confirmed_at`, `confirm_kind` ok | reply | voice).
+  job_runs `lesson-end`. Health-check `lesson-voice` (+ `admin-next-lesson`).
 
 ## June 2026 Revision Sprint
 

@@ -7,8 +7,8 @@
 //   - an item printed from the student's Next lesson page that day (or given)
 //   - a sheet the kiosk printed for them that day
 //   - work they handed in from the lesson day up to two days after
-// At the lesson's end ONE Telegram line asks Adrian to confirm (✓) or reply
-// in plain words; no reply = the entry stands as "auto (not confirmed)".
+// At the lesson's end ONE Telegram ping asks how it went (lib/lesson-voice.ts:
+// a voice note, a typed reply or ✓); no reply = the entry stands as "auto (not confirmed)".
 // Pure pieces here (tested in lesson-autolog.test.ts); the I/O lives in
 // lib/next-lesson-store.ts and the two crons.
 
@@ -79,12 +79,6 @@ export function composeAutoLog(input: { printed: PrintedItem[]; kiosk?: { topic:
   return { topics, phrases, homework: null, empty: phrases.length === 0, inLesson: printed.length + (input.kiosk?.length ?? 0) > 0 };
 }
 
-/** "Eva today: sine rule and cosine rule (printed pack), warm-up on bearings." + the ask. */
-export function autoLogLine(firstName: string, log: AutoLog): string {
-  const body = log.empty ? 'nothing was printed or handed in.' : `${log.phrases.join(', ')}.`;
-  return `${LINE_MARK} ${firstName} today: ${body}\nTap ✓ if right, or reply with what you did.`;
-}
-
 /** The Lesson Notes text of an auto entry. */
 export function autoNotes(log: AutoLog, state: 'unconfirmed' | 'confirmed', extra?: string | null): string {
   const what = log.empty ? 'nothing recorded' : log.phrases.join(', ');
@@ -124,38 +118,5 @@ export function parseReplyPlain(text: string, canonical: string[]): { topics: st
   return { topics, homework: hw ? hw[1].trim().slice(0, 300) || null : null, note: t.slice(0, 500) };
 }
 
-export interface ReplyRead { topics: string[]; homework: string | null; note: string }
-
-/** The model's prompt for Adrian's plain-words reply to the end-of-lesson line. */
-export function buildReplyPrompt(reply: string, line: string, canonical: string[]): string {
-  return `A tutor replied to an automatic lesson log. Read the reply into JSON.
-
-The automatic log said: """${line.slice(0, 400)}"""
-The tutor replied: """${reply.slice(0, 800)}"""
-
-Topic names you may use (exact spelling): ${canonical.join('; ')}
-
-Reply with ONE JSON object and nothing else:
-{"topics": [the topics the lesson actually covered, from the list; [] if the reply names none], "homework": "what was set as homework, in the tutor's words" or null, "note": "anything else worth keeping, one short sentence" or null}`;
-}
-
-/** The model's JSON → a checked read (topics only from the list); null when unreadable. */
-export function parseReplyModel(text: string, canonical: string[]): ReplyRead | null {
-  const m = /\{[\s\S]*\}/.exec(text ?? '');
-  if (!m) return null;
-  try {
-    const o = JSON.parse(m[0]) as Record<string, unknown>;
-    const by = new Map(canonical.map((c) => [c.toLowerCase().replace(/[^a-z0-9]+/g, ''), c]));
-    const topics = [...new Set((Array.isArray(o.topics) ? o.topics : []).map((t) => by.get(String(t).toLowerCase().replace(/[^a-z0-9]+/g, ''))).filter((t): t is string => !!t))];
-    const hw = typeof o.homework === 'string' && o.homework.trim() ? o.homework.trim().slice(0, 300) : null;
-    const note = typeof o.note === 'string' && o.note.trim() ? o.note.trim().slice(0, 300) : '';
-    return { topics, homework: hw, note };
-  } catch {
-    return null;
-  }
-}
-
-/** The log after Adrian's reply: his topics win when he named any; his homework rides along. */
-export function applyReply(log: AutoLog, read: ReplyRead): AutoLog {
-  return { ...log, topics: read.topics.length ? read.topics : log.topics, homework: read.homework ?? log.homework, empty: false };
-}
+// A reply to the ping (voice or typed) is read by lib/lesson-voice.ts (buildNotePrompt /
+// parseNoteModel, parseNotePlain on top of parseReplyPlain) — ONE reader since 5 Oct 2026.

@@ -6,6 +6,11 @@ const q = (topic: string, awarded: number, max: number) => ({ marking_output: { 
 const paper = (date: string, results: unknown[], awarded = 50, max = 80): NotePaper => ({ date, name: `P ${date}`, subject: 'A Math', awarded, max, resultJson: { results } });
 
 describe('facts', () => {
+  it("Adrian's voice notes reach the facts, his words only", () => {
+    expect(f.lessonNotes).toEqual([{ date: '2026-09-29', struggled: 'which identity to start from', homework: 'exercise 5', next: null }]);
+    expect(renderProgressFacts(f)).toContain("- 2026-09-29: struggled with which identity to start from; homework exercise 5");
+  });
+
   const f = buildProgressFacts({
     now: NOW,
     papers: [
@@ -21,6 +26,7 @@ describe('facts', () => {
     attempts: [{ at: '2026-09-15T00:00:00Z', verdict: 'correct', topics: ['Logarithms'] }, { at: '2026-09-16T00:00:00Z', verdict: 'wrong', topics: ['Logarithms'] }],
     asks: [{ at: '2026-10-01T00:00:00Z', topic: 'Trigonometry (Identities)' }],
     taught: [{ date: '2026-09-30', topics: ['Kinematics'], how: 'auto' }],
+    lessonNotes: [{ date: '2026-09-29', struggled: 'which identity to start from', homework: 'exercise 5', next: null }, { date: '2026-10-01', struggled: null, homework: null, next: null }],
     sheets: [],
     exams: [{ date: '2026-10-20', label: 'EOY', subject: 'A Math', daysLeft: 15 }],
   });

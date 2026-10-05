@@ -24,6 +24,7 @@ import {
 } from '@/lib/teaching-order';
 import { HANDIN_DAYS, autoLogFields, composeAutoLog, mayWriteAutoLog, slotEndHHMM, type AutoLog } from '@/lib/lesson-autolog';
 import { getMarkingSwitch } from '@/lib/marking-settings';
+import type { StoredNote } from '@/lib/lesson-voice';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -107,6 +108,10 @@ export interface PackRow {
   confirmed_at: string | null;
   confirm_kind: string | null;
   reply_text: string | null;
+  /** the end-of-lesson voice note (or typed reply), read — lib/lesson-voice StoredNote */
+  voice_note?: StoredNote | null;
+  voice_at?: string | null;
+  ack_message_id?: number | null;
 }
 
 const qs = (fields: string[]) => fields.map((f) => `fields%5B%5D=${encodeURIComponent(f)}`).join('&');

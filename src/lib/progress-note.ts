@@ -24,6 +24,8 @@ export interface NoteMistake { subject: string; topic: string | null; errorKind:
 export interface NoteAttempt { at: string; verdict: string | null; topics: string[] }
 export interface NoteAsk { at: string; topic: string }
 export interface NoteTaught { date: string; topics: string[]; how: 'log' | 'auto' }
+/** What Adrian said after a lesson (the end-of-lesson voice note, lib/lesson-voice). */
+export interface NoteLessonNote { date: string; struggled: string | null; homework: string | null; next: string | null }
 export interface NoteSheet { at: string; closed: boolean; section: string }
 export interface NoteExam { date: string; label: string; subject: string; daysLeft: number }
 
@@ -42,6 +44,8 @@ export interface ProgressFacts {
   practice: { attempts: number; correct: number; topics: { topic: string; n: number; correct: number }[] };
   asks: { n: number; topics: { topic: string; n: number }[] };
   taught: NoteTaught[];
+  /** Adrian's own words after recent lessons, newest last (at most 4) */
+  lessonNotes: NoteLessonNote[];
   sheets: { closed: number; open: number };
   exams: NoteExam[];
   lastDataAt: string | null;
@@ -93,6 +97,7 @@ export function buildProgressFacts(input: {
   attempts: NoteAttempt[];
   asks: NoteAsk[];
   taught: NoteTaught[];
+  lessonNotes?: NoteLessonNote[];
   sheets: NoteSheet[];
   exams: NoteExam[];
 }): ProgressFacts {
@@ -175,6 +180,8 @@ export function buildProgressFacts(input: {
 
   const taught = input.taught.filter((t) => inWin(t.date) && t.topics.length).sort((a, b) => a.date.localeCompare(b.date)).slice(-8);
   for (const t of taught) seen(t.date);
+  const lessonNotes = (input.lessonNotes ?? []).filter((n) => inWin(n.date) && (n.struggled || n.homework || n.next)).sort((a, b) => a.date.localeCompare(b.date)).slice(-4);
+  for (const n of lessonNotes) seen(n.date);
   let closed = 0, open = 0;
   for (const s of input.sheets) { if (!inWin(s.at)) continue; seen(s.at); if (s.closed) closed++; else open++; }
 
@@ -183,6 +190,7 @@ export function buildProgressFacts(input: {
     practice: { attempts, correct, topics: [...pt.entries()].map(([topic, x]) => ({ topic, ...x })).sort((a, b) => b.n - a.n).slice(0, 5) },
     asks: { n: asks, topics: [...at.entries()].map(([topic, n]) => ({ topic, n })).sort((a, b) => b.n - a.n).slice(0, 5) },
     taught,
+    lessonNotes,
     sheets: { closed, open },
     exams: input.exams.filter((e) => e.daysLeft >= 0).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 3),
     lastDataAt: last ? new Date(last).toISOString() : null,
@@ -213,6 +221,10 @@ export function renderProgressFacts(f: ProgressFacts): string {
     : 'Practice in the app: none.');
   L.push(f.asks.n ? `Asked the bot: ${f.asks.n} questions — ${f.asks.topics.map((t) => `${t.topic} (${t.n})`).join(', ')}.` : 'Asked the bot: none.');
   if (f.taught.length) L.push(`Taught in lessons: ${f.taught.map((t) => `${t.date} ${t.topics.join(', ')}${t.how === 'auto' ? ' (auto log)' : ''}`).join('; ')}.`);
+  if (f.lessonNotes?.length) {
+    L.push("Adrian's notes after lessons (his own words):");
+    for (const n of f.lessonNotes) L.push(`- ${n.date}: ${[n.struggled ? `struggled with ${n.struggled}` : null, n.homework ? `homework ${n.homework}` : null, n.next ? `next time ${n.next}` : null].filter(Boolean).join('; ')}`);
+  }
   if (f.sheets.closed + f.sheets.open) L.push(`Practice Again sections: ${f.sheets.closed} fixed on the next paper, ${f.sheets.open} not yet.`);
   if (f.exams.length) L.push(`Coming exams: ${f.exams.map((e) => `${e.subject} ${e.label} ${e.date} (${e.daysLeft} days)`).join('; ')}.`);
   return L.join('\n');

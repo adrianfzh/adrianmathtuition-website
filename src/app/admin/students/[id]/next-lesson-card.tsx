@@ -12,8 +12,12 @@
 // reads. Under it, the 📝 progress note (the worker's weekly words around computed
 // facts, /api/admin/progress-notes). The full page adds the worksheet box ("Make something for …"),
 // everything made for the student, and what the last lesson logged itself as.
+// "Last time: …" at the top = the last lesson's end-of-lesson voice note (or typed
+// reply), read by lib/lesson-voice — what Adrian said the student struggled with,
+// the homework, what he wanted next.
 import { useCallback, useEffect, useState } from 'react';
 import type { MaterialRow, NextLessonPlan, PackRow, LessonRow } from '@/lib/next-lesson-store';
+import { lastTimeLine } from '@/lib/lesson-voice';
 
 type Data = { student: { id: string; name: string; level: string | null }; lesson: LessonRow | null; pack: PackRow | null; plan: NextLessonPlan; materials: MaterialRow[]; lastLog: PackRow | null };
 
@@ -170,6 +174,17 @@ export default function NextLessonCard({ studentId, full = false }: { studentId:
         {!full && <a href={`/admin/students/${studentId}/next`} style={{ fontSize: 13, color: C.blue, textDecoration: 'none', fontWeight: 600 }}>Print page →</a>}
       </div>
 
+      {/* the last lesson's voice note: what Adrian said after it */}
+      {(() => {
+        const line = lastTimeLine(data.lastLog?.voice_note);
+        if (!line || !data.lastLog) return null;
+        return (
+          <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '8px 12px', marginBottom: 10, fontSize: 14, color: '#0c4a6e' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#0369a1' }}>🎤 {dayWords(data.lastLog.lesson_date)} · </span>{line}
+          </div>
+        );
+      })()}
+
       {!lesson && <div style={{ fontSize: 13.5, color: C.soft, marginBottom: 8 }}>No lesson booked in the next 45 days.</div>}
 
       {/* exam season: the exam replaces "what's next" */}
@@ -240,7 +255,9 @@ export default function NextLessonCard({ studentId, full = false }: { studentId:
                 {data.lastLog.auto_log.empty ? 'Nothing printed or handed in.' : data.lastLog.auto_log.phrases.join(', ')}
               </div>
               <div style={{ fontSize: 12, color: data.lastLog.confirmed_at ? C.green : C.soft }}>
-                {data.lastLog.confirmed_at ? `Confirmed${data.lastLog.reply_text ? `: "${data.lastLog.reply_text.slice(0, 120)}"` : ''}` : 'Logged by itself — not confirmed'}
+                {data.lastLog.voice_note
+                  ? `${data.lastLog.voice_note.source === 'voice' ? '🎤 Your voice note' : 'Your note'}: "${data.lastLog.voice_note.transcript.slice(0, 200)}"`
+                  : data.lastLog.confirmed_at ? `Confirmed${data.lastLog.reply_text ? `: "${data.lastLog.reply_text.slice(0, 120)}"` : ''}` : 'Logged by itself — not confirmed'}
               </div>
             </div>
           )}

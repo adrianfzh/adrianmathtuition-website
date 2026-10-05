@@ -170,5 +170,12 @@ relevant tool then print what i need or the system is smart enough to suggest wh
   exams); the Fly worker's `/progress-note` (bot repo, 17:05 daily, only students with new work —
   weekly, or before a lesson) writes the words; `POST /api/admin/progress-notes` recomputes the
   facts and refuses a number they do not contain. History kept (`student_progress_notes`).
+- **🎤 Last time** (5 Oct 2026, the end-of-lesson voice note): two minutes after each lesson the
+  bot pings Adrian once ("📒 Eva's lesson just ended — how did it go?"); he holds the mic for ten
+  seconds or taps ✓, and the note becomes the lesson log (topics, homework, next plan, Mastery).
+  The card shows it first, in a blue strip: "🎤 Mon 5 Oct · Last time: struggled with which angle
+  goes where. Homework: ex 5." A note that says the student was lost sets Mastery Slow, so the
+  next step stays the same. No answer = nothing nags; the printed-pack auto log stands.
+  → `docs/SCHEDULE.md` §The lesson log that fills itself.
 - Routes: `api/admin/next-lesson` (GET card · POST prepare), `api/admin/student-materials` (+ `/pdf`),
   `api/admin/worksheet-chat`, `api/admin/progress-notes`; health-check `admin-next-lesson`.

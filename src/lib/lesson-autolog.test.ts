@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoLogFields, autoLogLine, autoNotes, composeAutoLog, mayWriteAutoLog, parseReplyPlain, slotEndHHMM } from './lesson-autolog';
+import { autoLogFields, autoNotes, composeAutoLog, mayWriteAutoLog, parseReplyPlain, slotEndHHMM } from './lesson-autolog';
 
 describe('slot end', () => {
   it('reads every slot time', () => {
@@ -21,8 +21,8 @@ describe('compose', () => {
     ],
     handins: [{ name: 'Practice Again (EM 2022 P1)' }],
   });
-  it("Adrian's line", () => {
-    expect(autoLogLine('Eva', log)).toBe('📒 Eva today: sine rule and cosine rule (printed pack), warm-up on bearings, handed in Practice Again (EM 2022 P1).\nTap ✓ if right, or reply with what you did.');
+  it('phrases in lesson order', () => {
+    expect(log.phrases).toEqual(['sine rule and cosine rule (printed pack)', 'warm-up on bearings', 'handed in Practice Again (EM 2022 P1)']);
   });
   it('topics: what was taught, not the warm-up', () => {
     expect(log.topics).toEqual(['Trigonometry']);
@@ -38,7 +38,6 @@ describe('compose', () => {
   it('nothing printed says so', () => {
     const e = composeAutoLog({ printed: [] });
     expect(e.empty).toBe(true);
-    expect(autoLogLine('Ryan', e)).toMatch(/^📒 Ryan today: nothing was printed or handed in\./);
   });
   it('notes and fields', () => {
     expect(autoNotes(log, 'unconfirmed')).toMatch(/^Auto log: sine rule .* — auto \(not confirmed\)$/);
@@ -65,17 +64,5 @@ describe('plain reply', () => {
     const r2 = parseReplyPlain('Trigonometry (Identities) then vectors, homework 10 questions', canon);
     expect(r2.topics).toEqual(['Trigonometry (Identities)', 'Vectors']);
     expect(r2.homework).toBe('10 questions');
-  });
-});
-
-describe('reply read by the model', () => {
-  it('keeps only real topics; his topics win', async () => {
-    const { parseReplyModel, applyReply, composeAutoLog } = await import('./lesson-autolog');
-    const r = parseReplyModel('{"topics":["circular measure","Calculus"],"homework":"ex 5b","note":null}', ['Circular Measure', 'Trigonometry'])!;
-    expect(r).toEqual({ topics: ['Circular Measure'], homework: 'ex 5b', note: '' });
-    const log = composeAutoLog({ printed: [{ title: 't', topic: 'Trigonometry', kind: 'practice' }] });
-    expect(applyReply(log, r)).toMatchObject({ topics: ['Circular Measure'], homework: 'ex 5b' });
-    expect(applyReply(log, { topics: [], homework: null, note: 'x' }).topics).toEqual(['Trigonometry']);
-    expect(parseReplyModel('nope', [])).toBeNull();
   });
 });

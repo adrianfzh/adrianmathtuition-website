@@ -7,7 +7,7 @@ import { addDaysISO, sgtTodayISO } from '@/lib/sgt';
 import { shapeUpcomingExams } from '@/lib/portal-exams';
 import { examsFor, lessonsBetween, loggedLessons, type StudentRow } from '@/lib/next-lesson-store';
 import { studentSubjects } from '@/lib/stuck-store';
-import { NOTE_WINDOW_DAYS, noteDue, type NoteAsk, type NoteAttempt, type NoteExam, type NoteMistake, type NotePaper, type NoteSheet, type NoteTaught } from '@/lib/progress-note';
+import { NOTE_WINDOW_DAYS, noteDue, type NoteAsk, type NoteAttempt, type NoteExam, type NoteLessonNote, type NoteMistake, type NotePaper, type NoteSheet, type NoteTaught } from '@/lib/progress-note';
 
 const DAY = 86_400_000;
 const MATH_SUBJECTS = ['A Math', 'E Math', 'H2 Math', 'Math'];
@@ -21,7 +21,7 @@ export async function loadNoteInputs(sb: SupabaseClient, student: StudentRow, no
     sb.from('notebook_mistakes').select('subject, topic, error_kind, evidence').eq('airtable_student_id', sid).in('subject', MATH_SUBJECTS).gte('last_seen_at', since).limit(1000),
     sb.from('student_attempts').select('attempted_at, marking_verdict, marking_json').eq('airtable_student_id', sid).gte('attempted_at', since).limit(1000),
     sb.from('ask_skills').select('asked_at, topic, bank').eq('airtable_student_id', sid).gte('asked_at', since).limit(1000),
-    sb.from('lesson_packs').select('lesson_date, auto_log').eq('airtable_student_id', sid).gte('lesson_date', since.slice(0, 10)).not('auto_log', 'is', null),
+    sb.from('lesson_packs').select('lesson_date, auto_log, voice_note').eq('airtable_student_id', sid).gte('lesson_date', since.slice(0, 10)).not('auto_log', 'is', null),
     sb.from('sheet_section_outcomes').select('created_at, outcome, section:sheet_sections(title)').eq('student_id', sid).gte('created_at', since).neq('outcome', 'unknown').limit(500),
   ]);
   const papers: NotePaper[] = ((runs.data ?? []) as Record<string, unknown>[]).map((r) => ({
@@ -37,8 +37,12 @@ export async function loadNoteInputs(sb: SupabaseClient, student: StudentRow, no
     .map((a) => ({ at: String(a.attempted_at), verdict: (a.marking_verdict as string) ?? null, topics: Array.isArray((a.marking_json as Record<string, unknown> | null)?.topics) ? ((a.marking_json as { topics: string[] }).topics) : [] }));
   const ask: NoteAsk[] = ((asks.data ?? []) as Record<string, unknown>[]).filter((a) => !a.bank || a.bank === 'math').filter((a) => a.topic).map((a) => ({ at: String(a.asked_at), topic: String(a.topic) }));
   const taught: NoteTaught[] = [];
-  for (const p of (packs.data ?? []) as { lesson_date: string; auto_log: { topics?: string[] } | null }[]) {
-    if (p.auto_log?.topics?.length) taught.push({ date: p.lesson_date, topics: p.auto_log.topics, how: 'auto' });
+  const lessonNotes: NoteLessonNote[] = [];
+  for (const p of (packs.data ?? []) as { lesson_date: string; auto_log: { topics?: string[] } | null; voice_note: { topics?: string[]; struggled?: string | null; homework?: string | null; next?: string | null } | null }[]) {
+    // his voice note's topics are what was taught; the auto log's otherwise
+    if (p.voice_note?.topics?.length) taught.push({ date: p.lesson_date, topics: p.voice_note.topics, how: 'log' });
+    else if (p.auto_log?.topics?.length) taught.push({ date: p.lesson_date, topics: p.auto_log.topics, how: 'auto' });
+    if (p.voice_note) lessonNotes.push({ date: p.lesson_date, struggled: p.voice_note.struggled ?? null, homework: p.voice_note.homework ?? null, next: p.voice_note.next ?? null });
   }
   try {
     for (const l of await loggedLessons(student)) if (l.topics.length && !taught.some((t) => t.date === l.date)) taught.push({ date: l.date, topics: l.topics, how: 'log' });
@@ -51,7 +55,7 @@ export async function loadNoteInputs(sb: SupabaseClient, student: StudentRow, no
     exams = shapeUpcomingExams(await examsFor(student), sgtTodayISO(now), student.level, { max: 3, horizonDays: 60 })
       .map((e) => ({ date: e.date, label: e.label, subject: e.subject, daysLeft: e.daysLeft }));
   } catch { /* fail-soft */ }
-  return { now, papers, mistakes: mist, attempts: att, asks: ask, taught, sheets: sh, exams };
+  return { now, papers, mistakes: mist, attempts: att, asks: ask, taught, lessonNotes, sheets: sh, exams };
 }
 
 /** Paged read of one timestamp column for everyone since `since` → newest per student. */
