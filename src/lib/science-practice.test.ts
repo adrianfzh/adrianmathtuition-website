@@ -60,3 +60,25 @@ describe('one skill inside a topic (3 Oct 2026)', () => {
     expect(mcqTapAction(true)).toBe('select');
   });
 });
+
+import { scienceTopicOpen, scienceRowOpen } from './science-practice';
+describe('the per-topic science switch (5 Oct 2026)', () => {
+  const open = { PHY: ['Kinematics'], CHEM: ['Chemical Calculations'], BIO: [] };
+  it('opens only listed topics, exact names, per level', () => {
+    expect(scienceTopicOpen(open, 'CHEM', 'Chemical Calculations')).toBe(true);
+    expect(scienceTopicOpen(open, 'CHEM', 'chemical calculations')).toBe(false);
+    expect(scienceTopicOpen(open, 'PHY', 'Chemical Calculations')).toBe(false);
+    expect(scienceTopicOpen(open, 'BIO', 'Enzymes')).toBe(false);
+    expect(scienceTopicOpen(open, 'XX', 'Kinematics')).toBe(false);
+    expect(scienceTopicOpen(open, 'PHY', null)).toBe(false);
+  });
+  it('null = Adrian\'s preview: everything open', () => {
+    expect(scienceTopicOpen(null, 'BIO', 'Enzymes')).toBe(true);
+    expect(scienceRowOpen(null, 'BIO', [])).toBe(true);
+  });
+  it('a row is open when any of its topics is', () => {
+    expect(scienceRowOpen(open, 'PHY', ['Forces', 'Kinematics'])).toBe(true);
+    expect(scienceRowOpen(open, 'PHY', ['Forces'])).toBe(false);
+    expect(scienceRowOpen(open, 'PHY', null)).toBe(false);
+  });
+});

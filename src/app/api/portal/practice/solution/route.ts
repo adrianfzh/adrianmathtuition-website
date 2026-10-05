@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { solutionMarkdown } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
-import { practiceAuth } from '@/lib/practice';
-import { isScienceSubject } from '@/lib/science-levels';
-import { scienceQuestion } from '@/lib/science-bank';
+import { practiceAuth, scienceTopicGate } from '@/lib/practice';
+import { scienceRowOpen } from '@/lib/science-practice';
+import { isScienceSubject, scienceLevelForSubject } from '@/lib/science-levels';
+import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
 
 export const runtime = 'nodejs';
@@ -31,6 +32,12 @@ export async function GET(req: NextRequest) {
     try {
       const sq = await scienceQuestion(subject, id);
       if (!sq) return NextResponse.json({ error: 'not found' }, { status: 404 });
+      // A student opens only what the picker would serve: eligible (not national, figure checked …)
+      // and from an open topic (5 Oct 2026).
+      const topicGate = await scienceTopicGate(caller);
+      if (topicGate && (!scienceEligible(sq) || !scienceRowOpen(topicGate, scienceLevelForSubject(subject)?.key ?? '', sq.topics))) {
+        return NextResponse.json({ error: 'not found' }, { status: 404 });
+      }
       return NextResponse.json({ markdown: solutionMarkdown(sq, gate) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });

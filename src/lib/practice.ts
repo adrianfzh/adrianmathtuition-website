@@ -79,7 +79,8 @@ export function levelAllowed(caller: PracticeCaller, level: string): boolean {
 // previews it — so the science checks are async where the math ones are pure.
 import { studentSciences } from './portal-prefs';
 import { scienceSubjectOf, scienceLevelForSubject, isScienceLevel, scienceLevelsFor, type ScienceAccess } from './science-levels';
-import { sciencePracticeAccess } from './portal-beta';
+import { sciencePracticeAccess, SCIENCE_PRACTICE_OPEN_TOPICS } from './portal-beta';
+import type { OpenTopics } from './science-practice';
 
 /** The caller's full level list: math (pure) + whichever science levels they may see. */
 export async function practiceLevelsFor(caller: NonNullable<PracticeCaller>): Promise<{ key: string; label: string }[]> {
@@ -105,6 +106,16 @@ export function scienceLevelOpenFor(account: Pick<PortalAccount, 'subjects' | 'p
   const subject = scienceSubjectOf(levelKey);
   if (chosen && subject && chosen.subjects.includes(subject)) return true;
   return scienceLevelsFor(account.subjects, access).some(l => l.key === levelKey);
+}
+
+/**
+ * The per-topic science switch for this caller (5 Oct 2026): the open-topic list for a
+ * student, null (no gate) for Adrian — his Bearer, or his admin cookie when not viewing
+ * as a student. Use with lib/science-practice scienceTopicOpen / scienceRowOpen.
+ */
+export async function scienceTopicGate(caller: PracticeCaller): Promise<OpenTopics | null> {
+  if (!caller || caller.kind === 'admin') return null;
+  return (await sciencePracticeAccess()) === 'preview' ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
 }
 
 export async function practiceLevelAllowed(caller: PracticeCaller, level: string): Promise<boolean> {

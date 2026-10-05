@@ -23,7 +23,8 @@ import { parseLadderMeta, ladderAssisted } from '@/lib/proof-ladder';
 import { gradeMcq, isScienceSubject, mcqKey, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { sciencePracticeAccess } from '@/lib/portal-beta';
-import { scienceLevelOpenFor } from '@/lib/practice';
+import { scienceLevelOpenFor, scienceTopicGate } from '@/lib/practice';
+import { scienceRowOpen } from '@/lib/science-practice';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
 
@@ -103,6 +104,8 @@ export async function POST(req: NextRequest) {
     try { sq = await scienceQuestion(scienceSubject, questionId); }
     catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 502 }); }
     if (!sq || !scienceEligible(sq)) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    // Topic by topic (5 Oct 2026): a student marks only a question from an open topic.
+    if (!scienceRowOpen(await scienceTopicGate(caller), sciLevel.key, sq.topics)) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     const topics = Array.isArray(sq.topics) ? sq.topics : [];
     const scienceMeta = { subject: scienceSubject, questionId: sq.id };
 

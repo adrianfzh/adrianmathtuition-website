@@ -50,6 +50,8 @@ export type ScienceQuestionRow = BankQuestion & {
   verified?: boolean | null;
   image_watermark_status?: string | null;
   not_in_syllabus?: boolean | null;
+  /** server-side only — the gate reads it; toPayload never passes it on (source: null) */
+  school?: string | null;
 };
 
 // The gate columns (ai_generated, verified, image_watermark_status, not_in_syllabus)
@@ -57,7 +59,7 @@ export type ScienceQuestionRow = BankQuestion & {
 // missing, so every figure question the picker served came back "Question not found"
 // from the grade route (image_watermark_status read as undefined ≠ 'clean').
 // solution_images too, so a scheme's diagram reaches "Show solution".
-const ROW_COLUMNS = 'id, subject, level, question_text, parts, answer, solution, solution_images, topics, difficulty, total_marks, has_image, image_url, images, quarantined, ai_generated, verified, image_watermark_status, not_in_syllabus';
+const ROW_COLUMNS = 'id, subject, level, school, question_text, parts, answer, solution, solution_images, topics, difficulty, total_marks, has_image, image_url, images, quarantined, ai_generated, verified, image_watermark_status, not_in_syllabus';
 
 /** A row with its figures pointed at the SCIENCE bucket (lib/science-images — the maths bucket 400s). */
 function withFigures<T extends ScienceQuestionRow>(q: T): T {
@@ -77,6 +79,9 @@ function eligible<T = any>(q: any, subject: ScienceSubject): T { // eslint-disab
     .or('has_image.is.null,has_image.eq.false,image_watermark_status.eq.clean')
     .or('solution.neq.,answer.neq.')
     .or('not_in_syllabus.is.null,not_in_syllabus.eq.false')
+    // national papers (school 'GCE' — GCE, TYS, specimen) are grounding-only, never served
+    // (docs/CONTENT-POLICY.md; 1,129 MCQs were in the pool until 5 Oct 2026)
+    .not('school', 'ilike', 'gce')
     .not('question_text', 'is', null)
     .neq('question_text', '');
 }
@@ -216,6 +221,7 @@ export async function scienceQuestion(subject: ScienceSubject, id: string): Prom
 export function scienceEligible(q: ScienceQuestionRow): boolean {
   if (q.quarantined) return false;
   if (q.not_in_syllabus === true) return false;
+  if ((q.school || '').trim().toUpperCase() === 'GCE') return false;   // national = grounding-only
   if (q.ai_generated === true && q.verified !== true) return false;
   if (q.has_image && q.image_watermark_status !== 'clean') return false;
   if (!(q.solution && q.solution.trim()) && !(q.answer && q.answer.trim())) return false;

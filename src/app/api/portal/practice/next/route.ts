@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceTopicGate } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceNext, toPayload } from '@/lib/science-bank';
-import { parseSkill } from '@/lib/science-practice';
+import { parseSkill, scienceTopicOpen } from '@/lib/science-practice';
 import { scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
 
   // Science levels: the science bank's twin of practice_next (lib/science-bank).
   if (isScienceLevel(level)) {
+    // Topic by topic (5 Oct 2026): a student is served only an open topic.
+    if (!scienceTopicOpen(await scienceTopicGate(caller), level, topic)) return NextResponse.json({ error: 'Topic not available yet' }, { status: 403 });
     try {
       // Written-answer questions stay with the admin cookie until the grader check passes:
       // a student is served MCQ whatever the request says (3 Oct 2026, the tab opened).

@@ -102,3 +102,19 @@ export function skillLabel(levelKey: string, topic: string, slug: string | null 
  */
 export const MCQ_HOLD_KEY = 'portal_mcq_hold_answer';
 export function mcqTapAction(hold: boolean): 'check' | 'select' { return hold ? 'select' : 'check'; }
+
+/**
+ * The per-topic switch (5 Oct 2026): is this topic open to students? `open` is
+ * lib/portal-beta SCIENCE_PRACTICE_OPEN_TOPICS; null = no gate (Adrian's preview).
+ * Exact names — a topic spelt differently is closed.
+ */
+export type OpenTopics = Readonly<Record<string, readonly string[]>>;
+export function scienceTopicOpen(open: OpenTopics | null, levelKey: string, topic: string | null | undefined): boolean {
+  if (!open) return true;
+  return !!topic && (open[levelKey] ?? []).includes(topic);
+}
+/** A row may be marked / shown by id when ANY of its topics is open (the picker serves by `topics @> [topic]`). */
+export function scienceRowOpen(open: OpenTopics | null, levelKey: string, topics: readonly string[] | null | undefined): boolean {
+  if (!open) return true;
+  return (topics ?? []).some(t => scienceTopicOpen(open, levelKey, t));
+}

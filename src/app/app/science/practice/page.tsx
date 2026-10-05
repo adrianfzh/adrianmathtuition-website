@@ -18,7 +18,8 @@ import { sessionAccount } from '@/lib/portal-auth';
 import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, studentSciences, type ScienceSubject } from '@/lib/portal-prefs';
 import { scienceLevelForSubject } from '@/lib/science-levels';
 import { scienceConfigured, scienceTopicCounts } from '@/lib/science-bank';
-import { parsePracticeKind, sciencePracticeHref, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
+import { parsePracticeKind, sciencePracticeHref, scienceTopicOpen, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
+import { SCIENCE_PRACTICE_OPEN_TOPICS } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 
 export const dynamic = 'force-dynamic';
@@ -48,7 +49,9 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
 
   // The bank's topics for this science, and the student's live mistakes in it.
   const counts = scienceConfigured() ? await scienceTopicCounts(levelKey).catch(() => []) : [];
-  const topics = topicsForKind(counts, kind);
+  // Topic by topic (5 Oct 2026): a student sees only the open topics; Adrian's cookie sees all.
+  const gate = access === 'preview' ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
+  const topics = topicsForKind(counts, kind).filter(t => scienceTopicOpen(gate, levelKey, t));
   const href = (s: ScienceSubject, k: PracticeKind) => `/app/science/practice?s=${s}${k === 'structured' ? '&mode=structured' : ''}`;
 
   return (

@@ -133,6 +133,20 @@ export const LAST_LESSON_OPEN_TO_STUDENTS = false;
 // check the questions are okay - figures are okay?") until the MCQ rows and their
 // figures have been checked. Adrian's cookie and the preview student still see it.
 export const SCIENCE_PRACTICE_OPEN_TO_STUDENTS = false;
+// TOPIC BY TOPIC (5 Oct 2026, Adrian: "our priority will be mcqs … we can open up topics one
+// by one" and "i don't have to see it, a model does the checking — just make sure it is good").
+// A student is shown and served ONLY the topics listed here, by the practice level key
+// (PHY / CHEM / BIO) and the bank's topic name exactly as `questions.topics` spells it.
+// A topic goes on the list only after its MCQs passed the blind-solve check (≥ 98 % of the
+// servable MCQs agree with the stored key after fixes, and ≥ 30 servable) — docs/MARKING.md
+// §The Science tab. Adrian's admin cookie still sees every topic (lib/science-practice
+// scienceTopicOpen; the gate is lib/practice scienceTopicGate). MCQ only: Structured has its
+// own switch above.
+export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly string[]>> = {
+  PHY: [],
+  CHEM: [],
+  BIO: [],
+};
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
 // 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers
 // straight away"). The practice grader has not been checked against science scheme

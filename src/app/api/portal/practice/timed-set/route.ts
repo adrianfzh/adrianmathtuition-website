@@ -27,7 +27,8 @@ import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
-import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience, type PracticeCaller } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience, scienceTopicGate, type PracticeCaller } from '@/lib/practice';
+import { scienceTopicOpen } from '@/lib/science-practice';
 import { isScienceLevel, scienceSubjectOf } from '@/lib/science-levels';
 import { scienceNext, scienceTopicCounts, toPayload } from '@/lib/science-bank';
 import { portalIdentity } from '@/lib/portal-auth';
@@ -122,6 +123,8 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
       topics = ((data || []) as { topic: string }[]).map(r => r.topic).filter(Boolean);
     }
   }
+  // Science topic by topic (5 Oct 2026): a student's set draws only from open topics.
+  if (science) { const gate = await scienceTopicGate(caller); topics = topics.filter(t => scienceTopicOpen(gate, level, t)); }
   if (!topics.length) return NextResponse.json({ error: 'No questions available for that level yet' }, { status: 409 });
 
   // Science levels: same slot plan, the science bank's picker per slot.
