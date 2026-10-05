@@ -11,7 +11,7 @@ export default function RemoveQueuedScience({ runId }: { runId: string }) {
   const [err, setErr] = useState<string | null>(null);
   async function remove() {
     if (busy) return;
-    if (!window.confirm('Remove this paper from the queue? Its photos are deleted.')) return;
+    if (!window.confirm('Remove this paper? Its photos are deleted.')) return;
     setBusy(true); setErr(null);
     try {
       await portalFetch('/api/portal/science/queue', { json: { action: 'remove', runId }, fallback: 'Could not remove it — try again.' });

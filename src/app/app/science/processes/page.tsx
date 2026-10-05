@@ -85,7 +85,7 @@ export default async function BiologyProcessesPage() {
       </nav>
       {BIO_PROCESSES.map(p => <ProcessCard key={p.id} p={p} />)}
       <p className="text-[12px] text-gray-400">
-        For O-Level Biology (6093). Your school&apos;s wording may differ slightly. <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
+        For O-Level Biology (6093). <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
       </p>
     </div>
   );

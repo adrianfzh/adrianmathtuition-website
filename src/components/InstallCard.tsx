@@ -154,7 +154,7 @@ export function InstallSteps({ snap, onInstalled }: { snap: InstallSnapshot; onI
     <p className="text-sm text-gray-600 mt-1">
       On your phone, open this site — iPhone: Safari → <span className="font-semibold">Share</span> →{' '}
       <span className="font-semibold">Add to Home Screen</span>. Android: Chrome → ⋮ →{' '}
-      <span className="font-semibold">Add to Home screen</span>. The portal then opens like a normal app.
+      <span className="font-semibold">Add to Home screen</span>. AdrianMath then opens like a normal app.
     </p>
   );
 }

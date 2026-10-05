@@ -64,14 +64,14 @@ export default async function AssignmentPage({ params }: { params: Promise<{ id:
         )}
         {a.status === 'submitted' && (
           <p className="text-sm bg-blue-50 text-blue-800 rounded-xl px-3 py-2.5">
-            ⏳ Sent for marking — it&apos;ll appear in <Link href="/app/marking" className="underline font-semibold">Marked papers</Link> when it&apos;s done.
+            ⏳ Sent for marking — it&apos;ll appear in <Link href="/app/marking" className="underline font-semibold">Papers</Link> when it&apos;s done.
           </p>
         )}
         {a.status === 'marked' && (
           <p className="text-sm bg-emerald-50 text-emerald-800 rounded-xl px-3 py-2.5">
             ✅ Marked{a.score != null && a.out_of != null ? ` — ${a.score}/${a.out_of}` : ''}.{' '}
             {released
-              ? <Link href="/app/marking" className="underline font-semibold">See it in Marked papers →</Link>
+              ? <Link href="/app/marking" className="underline font-semibold">See it in Papers →</Link>
               : 'Your tutor is checking it before release.'}
           </p>
         )}

@@ -39,7 +39,7 @@ export default async function ScienceDefinitionsPage({ searchParams }: { searchP
       </div>
       <DefinitionsList definitions={L.list} topics={L.topics} hint={L.hint} />
       <p className="text-[12px] text-gray-400">
-        For {L.code}. Your school&apos;s wording may differ slightly. <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
+        For {L.code}. <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
       </p>
     </div>
   );

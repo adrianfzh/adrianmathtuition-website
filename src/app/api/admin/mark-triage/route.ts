@@ -272,7 +272,7 @@ async function deliver(run: {
     const ok = await sendTelegramDocumentTo(
       recipient.chatId,
       run.annotated_pdf_url,
-      `📄 Your marked ${name}${max > 0 ? ` — ${awarded}/${max}` : ''}${sheet ? `\n\n📘 Practice to go with it: ${sheet.title} — in the app under From Adrian.` : ''}`
+      `📄 Your marked ${name}${max > 0 ? ` — ${awarded}/${max}` : ''}${sheet ? `\n\n📘 Practice to go with it: ${sheet.title} — in the app under From your tutor.` : ''}`
     );
     if (ok) return { delivered: true, via: 'telegram' };
   }

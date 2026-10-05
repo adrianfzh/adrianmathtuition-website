@@ -407,13 +407,13 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             <p className="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{dupNote}</p>
           ) : (
             <p className="text-sm text-gray-600 mt-1.5">
-              When it&apos;s marked and released, it appears in <b>Marked papers</b> — with your script,
+              When it&apos;s marked and released, it appears in <b>Papers</b> — with your script,
               the red pen, and what each lost mark was for.
             </p>
           )}
           <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
             <Link href={assignment ? '/app/assignments' : isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {assignment ? 'Back to your work' : isScience ? 'Go to Papers' : 'Go to Marked papers'}
+              {assignment ? 'Back to your work' : 'Go to Papers'}
             </Link>
           </div>
           {/* No daily cap for tuition students since 22 Sep 2026 — the old
@@ -436,7 +436,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     const card = (
       <div className={`${CARD} p-5 text-center`}>
         <p className="text-4xl">🎟️</p>
-        <p className="font-bold text-navy mt-2">The science queue is full</p>
+        <p className="font-bold text-navy mt-2">No room for another science paper yet</p>
         <p className="text-sm text-gray-600 mt-1.5">{queueNotice.text}</p>
       </div>
     );
@@ -463,7 +463,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           </p>
           <div className="mt-4 flex justify-center">
             <Link href={isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {isScience ? 'Go to Papers' : 'Go to Marked papers'}
+              Go to Papers
             </Link>
           </div>
         </div>
@@ -516,7 +516,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
             </p>
             <p className="text-sm text-gray-600">
               Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
-              or upload a <b>PDF scan</b>. It comes back marked in <b>Marked papers</b>.
+              or upload a <b>PDF scan</b>. It comes back marked in <b>Papers</b>.
             </p>
           </>
         )}
@@ -673,7 +673,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
           )}
           {/* Adrian's line, verbatim (24 Sep 2026: "we should state that"). */}
           <p className="text-[11px] text-gray-500 mt-1">Attach only answers or a scheme you were given for your own study. We use it only to mark your paper.</p>
-          {!isScience && <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones. Without them, marking may be less accurate.</p>}
+          {!isScience && <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones.</p>}
         </div>
         </div>
         )}

@@ -235,7 +235,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     <>
       {qidBlocked === 'answer' && (
         <div className="mb-4 bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-800">
-          That one can&apos;t be practised here — it doesn&apos;t have a marked answer on file yet.
+          That question isn&apos;t ready to practise yet.
           Pick a topic below instead, or snap the question to find one like it.
         </div>
       )}

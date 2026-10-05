@@ -54,7 +54,7 @@ export default function PushToggle() {
     } else if (r.reason === 'denied') {
       setMsg('Notifications are blocked for this site — allow them in your browser settings, then try again.');
     } else if (r.reason === 'default') {
-      setMsg('Notification permission was not granted.');
+      setMsg('Notifications were not turned on — tap again and choose Allow.');
     } else {
       setMsg('Could not turn notifications on — try again.');
     }

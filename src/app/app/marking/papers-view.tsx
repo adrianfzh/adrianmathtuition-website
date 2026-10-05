@@ -404,7 +404,7 @@ export default async function PapersView({ account, sid, admin = false }: {
             ))}
           </ul>
           <p className="text-[11px] text-teal-700/70 mt-2">
-            Handed in — it appears below once marked and released.
+            Handed in — it appears below once it is marked.
           </p>
         </div>
       )}
@@ -420,7 +420,7 @@ export default async function PapersView({ account, sid, admin = false }: {
             it comes back marked, right here.
           </p>
           <Link href="/app" className="inline-block mt-3 text-sm font-semibold text-navy hover:underline">
-            ‹ Back to dashboard
+            ‹ Back to Home
           </Link>
         </div>
       ) : (

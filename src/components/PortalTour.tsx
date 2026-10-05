@@ -103,7 +103,7 @@ export default function PortalTour({ surfaces }: { surfaces: PortalSurfaces }) {
   const identity = step.key in SURFACES ? SURFACES[step.key as SurfaceKey] : null;
 
   return (
-    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Portal tour">
+    <div className="fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="App tour">
       {/* Backdrop — tapping outside the card leaves the tour, same as Skip. */}
       <button
         type="button"

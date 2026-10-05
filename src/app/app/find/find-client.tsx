@@ -38,7 +38,7 @@ type Result = { tier: 'similar' | 'made-for-you'; label: string; href: string; l
 // The single generate request runs 1–3 min; these stages advance on a timer so
 // the wait reads as work happening, not a hang. Seconds are cumulative.
 const GEN_STAGES: { at: number; label: string }[] = [
-  { at: 0, label: 'Nothing that close in the bank — writing one for you…' },
+  { at: 0, label: 'Nothing close enough — writing one for you…' },
   { at: 12, label: 'Writing a fresh question…' },
   { at: 45, label: 'Checking it solves correctly…' },
   { at: 120, label: 'Still checking — a careful check takes a while…' },
@@ -112,7 +112,7 @@ export default function FindClient({ levels }: { levels: FindLevelOption[] }) {
         return;
       }
       if (!d.generate.allowed) {
-        setNotice(d.generate.message || 'Nothing like it in the bank today — try another question.');
+        setNotice(d.generate.message || 'Nothing like it yet — try another question.');
         return;
       }
       setFinding(null);

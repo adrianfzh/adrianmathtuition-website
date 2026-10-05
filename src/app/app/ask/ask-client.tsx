@@ -118,7 +118,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
   useEffect(() => { extraFilesRef.current = extraFiles; }, [extraFiles]);
 
   const setImage = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) { showError('Please upload an image file.'); return; }
+    if (!file.type.startsWith('image/')) { showError('That isn’t a photo — choose an image.'); return; }
     if (selectedFileRef.current) {
       if (extraFilesRef.current.length >= 3) { showError('Up to 4 photos per question.'); return; }
       const rd = new FileReader();
@@ -346,7 +346,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       scrollToBottom();
     } catch {
       removeTypingIndicator();
-      showError('Network error. Please check your connection.');
+      showError('No connection — check your signal and try again.');
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();

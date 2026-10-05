@@ -88,13 +88,13 @@ export default async function AssignmentsPage() {
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Found by you</p>
           {found.map(r => <Row key={r.id} r={r} />)}
           <p className="text-[11px] text-gray-400">
-            Questions you found with <Link href="/app/find" className="underline">Find a question</Link> — similar ones from the bank, or written for you.
+            Questions you found with <Link href="/app/find" className="underline">Find a question</Link> — ones like yours, or written for you.
           </p>
         </section>
       )}
 
       <p className="text-[11px] text-gray-400">
-        Questions are marked line by line right away. Worksheets come back in <Link href="/app/marking" className="underline">Marked papers</Link> once marked.
+        Questions are marked line by line right away. Worksheets come back in <Link href="/app/marking" className="underline">Papers</Link> once marked.
       </p>
     </div>
   );
