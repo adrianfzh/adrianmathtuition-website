@@ -149,11 +149,19 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
     }
     th.marks += p.lost;
     th.occasions += 1;
-    if (!th.gap && typeof p.gap === 'string' && p.gap.trim()) th.gap = p.gap.trim().slice(0, 160);
-    if (p.paperId === latestPaperId) { th.live = true; th.latestMarks += p.lost; }
-    if (th.examples.length < 3 && p.why) {
-      th.examples.push({ paperName: p.paperName, question: `Q${p.question}${p.label || ''}`, why: p.why });
+    const example = p.why ? { paperName: p.paperName, question: `Q${p.question}${p.label || ''}`, why: p.why } : null;
+    if (!th.gap && typeof p.gap === 'string' && p.gap.trim()) {
+      th.gap = p.gap.trim().slice(0, 160);
+      // THE GAP AND ITS QUESTION TRAVEL TOGETHER (Adrian, 5 Oct 2026, Denise's
+      // A Math 2024 P2 cover: "Q4(a)(i) derivative of 4x is 4…" printed above
+      // "Gap: integrating 1/g(x) by integrating g(x)…" — Q4(a)(i)'s slip with
+      // Q4(b)'s gap). The cover prints examples[0] beside the gap, so the part
+      // the gap came from leads the examples.
+      if (example) { th.examples.unshift(example); th.examples = th.examples.slice(0, 3); }
+    } else if (th.examples.length < 3 && example) {
+      th.examples.push(example);
     }
+    if (p.paperId === latestPaperId) { th.live = true; th.latestMarks += p.lost; }
   }
 
   for (const th of byKey.values()) {

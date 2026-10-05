@@ -31,6 +31,16 @@ describe('classify', () => {
 });
 
 describe('analyse — the newest paper decides what is live', () => {
+  it('the example printed beside a gap is the part the gap came from (Denise, 5 Oct 2026)', () => {
+    const t = analyse([
+      part({ question: '4', label: '(a)(i)', lost: 1, why: 'derivative of 4x is 4, not 5', topic: 'Differentiation' }),
+      part({ question: '4', label: '(b)', lost: 3, why: 'integral of 1/(cos 2x + 1) is not the reciprocal', topic: 'Differentiation', gap: 'integrating 1/g(x) by integrating g(x) then taking the reciprocal' }),
+    ], NEW)[0];
+    expect(t.gap).toMatch(/integrating 1\/g\(x\)/);
+    expect(t.examples[0].question).toBe('Q4(b)');
+    expect(t.examples.map(e => e.question)).toEqual(['Q4(b)', 'Q4(a)(i)']);
+  });
+
   it('a theme still in the newest paper outranks a bigger one that has stopped', () => {
     // Eva exactly: blanks are bigger in total but gone from the latest paper;
     // shape is smaller but still happening. Shape must come first.
