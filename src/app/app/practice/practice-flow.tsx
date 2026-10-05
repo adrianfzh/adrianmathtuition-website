@@ -1082,8 +1082,14 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
             </div>
           )}
 
+          {/* MCQ feedback = ONE line (Adrian, 5 Oct 2026: "be less verbose"). */}
+          {isStudent && grade && q?.mcq && (
+            <div className={`rounded-2xl px-5 py-3 text-sm font-semibold ${grade.verdict === 'correct' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'}`}>
+              {grade.verdict === 'correct' ? '✓ Correct.' : `✗ The answer is ${grade.lineComments[0]?.fix ?? ''}.`}
+            </div>
+          )}
           {/* Feedback panel */}
-          {isStudent && grade && (
+          {isStudent && grade && !q?.mcq && (
             <div className="bg-white border border-slate-200 rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Feedback</p>

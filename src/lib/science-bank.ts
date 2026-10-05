@@ -18,6 +18,7 @@ import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import { scienceImageBase, withScienceImageUrls } from './science-images';
 import { resolveTopicPool } from './science-practice';
+import { tidyChemText } from './chem-text';
 import {
   computeScienceMastery, sciencePoolLevels, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
@@ -186,8 +187,10 @@ export function toPayload(raw: ScienceQuestionRow): ScienceQuestionPayload {
   const mcq = mcqKey(q.answer) !== null;
   // Tab-separated tables become pipe tables; MCQ options each get their own
   // paragraph (single newlines fold in markdown).
-  const text = tsvBlocksToTables(q.question_text);
-  const row = { ...q, question_text: mcq ? mcqStemParagraphs(text) : text };
+  // Formulae, ions, units and powers read as science (CuFeS₂, Fe²⁺, cm³ — 5 Oct 2026), at display.
+  const text = tsvBlocksToTables(tidyChemText(q.question_text ?? ''));
+  const tidyParts = (ps: unknown): unknown => Array.isArray(ps) ? ps.map(p => p && typeof p === 'object' ? { ...p, text: typeof (p as { text?: unknown }).text === 'string' ? tidyChemText((p as { text: string }).text) : (p as { text?: unknown }).text, subparts: tidyParts((p as { subparts?: unknown }).subparts) } : p) : ps;
+  const row = { ...q, question_text: mcq ? mcqStemParagraphs(text) : text, parts: tidyParts(q.parts) as ScienceQuestionRow['parts'] };
   const { stem, parts } = questionStructured(row);
   return {
     id: q.id,

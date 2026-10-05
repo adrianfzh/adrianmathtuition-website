@@ -188,11 +188,11 @@ export function gradeMcq(answer: McqLetter, choice: McqLetter, marks: number | n
     partBreakdown: [],
     lineComments: [{
       line: 1, ok,
-      comment: ok ? `${choice} is correct.` : `${choice} is not the answer — the correct option is ${answer}.`,
+      comment: ok ? 'Correct.' : `The answer is ${answer}.`,
       ...(ok ? {} : { fix: answer }),
     }],
-    strengths: ok ? ['Correct option chosen.'] : [],
-    nextSteps: ok ? [] : ['Read the explanation below, then find what in the question rules out the option you picked.'],
+    strengths: [],
+    nextSteps: [],
   };
 }
 
