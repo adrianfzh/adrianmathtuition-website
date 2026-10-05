@@ -494,6 +494,16 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   2026-10-06 + order × 1,000 s): Social Studies 116 · Social Studies N(A) 46 · English 1 (Northland
   2022 MYE, its answers inside) · History 27 · History Elective 47 · Geography 36 · Geography
   Elective 46. Sec 3 papers last in each block, newest year first.
+- **The 2025 G3 English prelims (6 Oct 2026, a second job):** Adrian's KiasuExamPaper compilation
+  (`~/Downloads/2025 Sec 4E G3 English Prelim(KiasuExamPaper)-9s upd1.pdf`, 389 pages, 9 schools) cut by
+  page range into `English PRELIM 2025 <School> Paper 1|Paper 2|Answers.pdf` (Paper 2 carries its
+  Insert first; the Answers file is the school's scanned scheme for both papers), filed in Dropbox
+  `AdrianMath Work/Papers/English/2025 Prelims/` and the bucket (`sources/EL/2025/…`). All 16 papers have
+  a scheme and are queued at the VERY front (`indexed_at` 2000-12-30, ahead of the English 2024 and
+  Social Studies 2025 front): Joint Madrasah, Kranji, Manjusri, St Hilda's, Temasek, Xinmin, Yishun Town
+  (P1 + P2); Methodist Girls', St Margaret's (P1 only — the compilation has no P2). Every page carries
+  the vendor watermark: text is transcribed, any picture carrying it is withheld (law rule
+  `xr-vendor-stamp-withheld`, archive `exam-extraction-2026-10-06b`).
 - **Held, not queued:** humanities papers with no scheme in the file or beside it (22 SS, 2 SS N(A),
   5 HIST_E, 4 GEOG, 9 GEOG_E — the reason in `notes`); English papers with no scheme (all the 2023 and 2025 N(A) prelims) (Adrian, 6 Oct: "papers without a scheme: copy, don't queue yet");
   Literature (no exam papers in the copy — notes only); Chinese / Higher Chinese / Chinese Literature
