@@ -606,6 +606,20 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📈 the graph-sketch checker (SPEC-SKETCH-CHECK.md): the student route's auth gate,
+    // and the bot's route alive behind its secret (an empty body must be refused 400).
+    timed('portal-sketch-check', async () => {
+      const r = await fetch(`${base}/api/portal/sketch-check`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    timed('bot-sketch-check', async () => {
+      const bot = (process.env.BOT_BASE_URL || '').trim(), secret = (process.env.BOT_INTERNAL_SECRET || '').trim();
+      if (!bot || !secret) return 'bot not configured here';
+      const r = await fetch(`${bot}/api/sketch-check`, { method: 'POST', headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' }, body: '{}', signal: T(10000) });
+      if (r.status !== 400) throw new Error(`expected 400 (route up, empty body refused), got HTTP ${r.status}`);
+      return 'route up';
+    }),
     timed('admin-humanities', async () => {
       const r = await fetch(`${base}/api/admin/humanities`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

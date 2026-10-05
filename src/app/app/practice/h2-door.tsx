@@ -5,8 +5,8 @@ import Link from 'next/link';
 
 const CARD = 'bg-white rounded-2xl border border-black/5 shadow-sm';
 
-export default function H2Door({ methods, stats }: { methods: boolean; stats: boolean }) {
-  if (!methods && !stats) return null;
+export default function H2Door({ methods, stats, sketch = false }: { methods: boolean; stats: boolean; sketch?: boolean }) {
+  if (!methods && !stats && !sketch) return null;
   return (
     <section className="space-y-2">
       <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">H2 Math · JC drills</p>
@@ -26,6 +26,16 @@ export default function H2Door({ methods, stats }: { methods: boolean; stats: bo
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-semibold text-navy">Statistics write-ups</span>
             <span className="block text-xs text-gray-500">Hypotheses, conclusions, assumptions. Checked point by point.</span>
+          </span>
+          <span aria-hidden className="text-gray-300">›</span>
+        </Link>
+      )}
+      {sketch && (
+        <Link href="/app/practice/sketch" className={`${CARD} flex items-center gap-3 px-4 py-3 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
+          <span aria-hidden className="text-xl leading-none">📈</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-semibold text-navy">Check my sketch</span>
+            <span className="block text-xs text-gray-500">Photograph a graph sketch. Every label is checked.</span>
           </span>
           <span aria-hidden className="text-gray-300">›</span>
         </Link>

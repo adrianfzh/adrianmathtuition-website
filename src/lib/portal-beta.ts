@@ -316,16 +316,23 @@ export async function humanitiesOpen(): Promise<boolean> {
 // drills" section on the Practice tab, /app/practice/methods and /app/practice/stats.
 export const H2_METHOD_DRILLS_OPEN_TO_STUDENTS = false;
 export const H2_STATS_TRAINER_OPEN_TO_STUDENTS = false;
+// 📈 The graph-sketch checker (5 Oct 2026, Adrian: "build … the graph sketch checker";
+// SPEC-SKETCH-CHECK.md): photograph a sketch, the red pen checks every asymptote,
+// intercept and turning point is drawn and labelled and the shape is right, with the
+// correct sketch beside it. CLOSED: Adrian's cookie and the demo student see it; flip
+// to open it to every JC1/JC2 student. Doors: a row in the Practice tab's "JC drills"
+// section, /app/practice/sketch, /api/portal/sketch-check.
+export const H2_SKETCH_CHECK_OPEN_TO_STUDENTS = false;
 export const H2_TOOLS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 /** May the current viewer use this H2 tool? `account` = the student session, when there is one. */
-export async function h2ToolOpen(tool: 'methods' | 'stats', account?: { id: string; airtable_student_id?: string | null; level?: string | null } | null): Promise<boolean> {
+export async function h2ToolOpen(tool: 'methods' | 'stats' | 'sketch', account?: { id: string; airtable_student_id?: string | null; level?: string | null } | null): Promise<boolean> {
   const { h2ToolVisible } = await import('./h2-tools');
   // Adrian's admin cookie always passes — also while "View as student" is on, so he can try
   // the tools from his student view whatever level that account is (5 Oct 2026).
   const isAdmin = await isNotesAuthed();
   const { portalIdentity } = await import('./portal-auth');
   return h2ToolVisible({
-    open: tool === 'methods' ? H2_METHOD_DRILLS_OPEN_TO_STUDENTS : H2_STATS_TRAINER_OPEN_TO_STUDENTS,
+    open: tool === 'methods' ? H2_METHOD_DRILLS_OPEN_TO_STUDENTS : tool === 'stats' ? H2_STATS_TRAINER_OPEN_TO_STUDENTS : H2_SKETCH_CHECK_OPEN_TO_STUDENTS,
     isAdmin, identity: account ? portalIdentity(account) : null, level: account?.level ?? null,
     previewIdentities: H2_TOOLS_PREVIEW_IDENTITIES,
   });

@@ -115,8 +115,8 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     // list, behind PRACTICE_PHOTO_OPEN_TO_STUDENTS until Adrian has read the first 20.
     const photo = await practicePhotoOpen();
     // 🧭 ✍️ The JC drills (SPEC-H2-TOOLS.md): closed switches → Adrian + the demo student.
-    const [h2m, h2s] = await Promise.all([h2ToolOpen('methods', account), h2ToolOpen('stats', account)]);
-    return <PracticeTodo account={account} top={photo ? <PracticePhotoPage account={account} /> : null} extra={<H2Door methods={h2m} stats={h2s} />} />;
+    const [h2m, h2s, h2k] = await Promise.all([h2ToolOpen('methods', account), h2ToolOpen('stats', account), h2ToolOpen('sketch', account)]);
+    return <PracticeTodo account={account} top={photo ? <PracticePhotoPage account={account} /> : null} extra={<H2Door methods={h2m} stats={h2s} sketch={h2k} />} />;
   }
 
   let initialAssignment: InitialAssignment | null = null;
@@ -248,7 +248,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           Pick a topic below instead, or snap a question to find one like it.
         </div>
       )}
-      {!assignmentId && !qid && <div className="mb-4"><H2Door methods={await h2ToolOpen('methods', account)} stats={await h2ToolOpen('stats', account)} /></div>}
+      {!assignmentId && !qid && <div className="mb-4"><H2Door methods={await h2ToolOpen('methods', account)} stats={await h2ToolOpen('stats', account)} sketch={await h2ToolOpen('sketch', account)} /></div>}
       <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} ladderVisible={ladderVisible} />
     </>
   );
