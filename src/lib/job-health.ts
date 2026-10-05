@@ -106,6 +106,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // reads his typed messages in the Claude transcripts → repeated asks → drafted rules. A laptop can be
   // shut for a day, hence 60h; it stamps every run, quiet ones included.
   'learn-from-adrian': { kind: 'interval', hours: 60, label: 'daily 7:30am (MacBook Pro)' },
+  // 🔍 The red pen's second opinion (5 Oct 2026, Adrian agreed): launchd on the MacBook Pro at 23:40 SGT —
+  // the day's marked maths pages through PaddleOCR + our own line matcher, recording only where it
+  // confidently disagrees with Gemini's line placement. Record-only; stamps every run, quiet ones included.
+  'red-pen-second-opinion': { kind: 'interval', hours: 60, label: 'nightly 11:40pm (MacBook Pro)' },
   'generate-invoices': { kind: 'monthly', day: 14, graceDays: 1, label: '14th 7am' },
   'send-invoices':     { kind: 'monthly', day: 15, graceDays: 1, label: '15th 10am' },
   'payment-reminder':  { kind: 'monthly', day: 14, graceDays: 1, label: '14th 8pm' },

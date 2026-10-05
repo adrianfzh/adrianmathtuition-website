@@ -330,6 +330,17 @@ on the Pro's keychain login; stamps `learn-from-adrian` every run (quiet ones in
 `ok=false` on a dead session or a failed Telegram send); rhythm 60 h because a laptop can
 be shut for a day → [`LEARN-FROM-ADRIAN.md`](LEARN-FROM-ADRIAN.md).
 
+**The second (5 Oct 2026): 🔍 `red-pen-second-opinion`** — the red pen's own line placer, run on
+the MacBook Pro because the model and the page images stay there (private, local). launchd
+`com.adrianmath.redpen-second-opinion`, 23:40 SGT + login catch-up, once a day; code and results
+in `~/paused-work-2026-10-05/linedet/second-opinion/` (README there). It takes the day's newly
+marked maths pages, runs PaddleOCR + our matcher (TrOCR-small start, no paid calls) and RECORDS only
+the lines where it confidently disagrees with Gemini's placement (`results/<date>/`). **Record-only for
+the first week (to ~12 Oct 2026):** nothing goes to the page fixer and no student page changes; then a
+session checks a sample of the disagreements on the pages, and only then proposes feeding flags to the
+fixer. Skips itself when a training or OCR job is running; stamps every run (rhythm 60 h). Memory
+note `own-red-pen-model`.
+
 ## 🧹 The stale-doc sweeper (5 Oct 2026)
 
 Adrian: *"stale-doc sweeper"* — sessions kept following instructions the code had left behind.
