@@ -28,6 +28,7 @@ export default function Footer() {
           <a href="/o-level-a-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">O-Level A Math Tuition</a>
           <a href="/jc-h2-math-tuition" className="text-[#d1d5db] hover:text-white no-underline">JC H2 Math Tuition</a>
           <Link href="/solutions" className="text-[#d1d5db] hover:text-white no-underline">Model Solutions</Link>
+          <Link href="/formulas" className="text-[#d1d5db] hover:text-white no-underline">Formula Sheets</Link>
           <a href="/terms" className="text-[#d1d5db] hover:text-white no-underline">Terms</a>
           <a href="/privacy" className="text-[#d1d5db] hover:text-white no-underline">Privacy</a>
         </nav>

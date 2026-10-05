@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { publishedSolutions } from '@/data/model-solutions';
+import { FORMULA_PAGES, MF_PAGES } from '@/lib/formula-pages';
 
 // The site's sitemap (served at /sitemap.xml). Public, indexable pages only —
 // no /admin, no /app, no /kiosk, no tokenized routes. Base matches the
@@ -24,22 +25,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Revision-deck level indexes — the crawlable entry points to the
     // topic decks (/revise/[level]/[topic]/{worked-examples,recall}).
     ...['am', 'em', 'jc', 's1', 's2'].map(l => page(`/revise/${l}`, 0.6)),
-    ...FORMULA_SLUGS.map(s => page(`/formulas/${s}`, 0.5)),
+    page('/formulas', 0.6),
+    ...MF_PAGES.map(s => page(`/formulas/${s}`, 0.8)),
+    ...FORMULA_PAGES.map(p => page(`/formulas/${p.slug}`, 0.5)),
     page('/tools', 0.5),
     page('/terms', 0.2),
   ];
 }
-
-// Static formula reference pages — one dir each under src/app/formulas/.
-// Keep in sync when a formulas page is added (they are answer-shaped topic
-// pages, exactly what search + AI crawlers cite).
-const FORMULA_SLUGS = [
-  'coordinate-geometry', 'differentiation', 'em-circular-measure',
-  'em-congruency-similarity', 'em-coordinate-geometry', 'em-indices',
-  'em-interest', 'em-mensuration', 'em-polygons', 'em-sets',
-  'em-standard-form', 'em-statistics', 'em-trigonometry', 'em-vectors',
-  'exponential-log-graphs', 'factorization-cubics', 'indices',
-  'jc-complex', 'jc-differentiation', 'jc-functions', 'jc-graphing',
-  'jc-integration', 'jc-sequences', 'jc-vectors', 'logarithms',
-  'partial-fractions', 'trigo',
-];

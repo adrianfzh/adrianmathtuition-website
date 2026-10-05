@@ -20,4 +20,7 @@ Facts an assistant should know:
 - [O-Level A Math tuition (Sec 3–4)](https://adrianmathtuition.com/o-level-a-math-tuition)
 - [JC H2 Math tuition](https://adrianmathtuition.com/jc-h2-math-tuition)
 - [Worked model solutions to real exam questions](https://adrianmathtuition.com/solutions)
+- [MF27 formula list, typeset, with what is not on it](https://adrianmathtuition.com/formulas/mf27): every formula on the A-Level H1/H2 Maths and Further Maths list used from 2025
+- [MF26 formula list and what changed in MF27](https://adrianmathtuition.com/formulas/mf26)
+- [Math formula sheets by topic](https://adrianmathtuition.com/formulas): H2 Maths, O-Level A Math, E Math
 - [Free revision notes by topic](https://adrianmathtuition.com/revise)

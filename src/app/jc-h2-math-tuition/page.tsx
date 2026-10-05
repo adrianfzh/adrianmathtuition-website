@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import Footer from '@/components/Footer';
 import {
   LandingNav,
@@ -127,6 +128,16 @@ export default function JCH2MathPage() {
             <SP>
               <strong>All materials included.</strong> Notes, practice papers, past-year worked
               solutions — everything you need, at no extra cost.
+            </SP>
+          </Section>
+
+          <Section title="Free H2 Maths formula sheets">
+            <SP>
+              The <Link href="/formulas/mf27" className="font-semibold text-navy underline">MF27 formula list</Link>{' '}
+              (the list you get in the A-Level exam from 2025) typeset in full, with the formulas it does
+              not give you that you must memorise. Sitting an older paper? Here is{' '}
+              <Link href="/formulas/mf26" className="font-semibold text-navy underline">MF26 and what changed</Link>.
+              More by topic on the <Link href="/formulas" className="font-semibold text-navy underline">formula sheets page</Link>.
             </SP>
           </Section>
 
