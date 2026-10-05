@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { areaUnder, buildWatchScript, checkWatchSpec, evalArith, numbersIn, optionText, roadStops, sameNumber, type GraphWatch, type MolesWatch } from './watch-it';
+import { subscriptFormulas, areaUnder, buildWatchScript, checkWatchSpec, evalArith, numbersIn, optionText, roadStops, sameNumber, type GraphWatch, type MolesWatch } from './watch-it';
 import { validateLessonScript } from './lesson-script';
 import kinematics from '../../data/watch-it/kinematics.json';
 import chemicalCalculations from '../../data/watch-it/chemical-calculations.json';
@@ -113,4 +113,10 @@ it('every committed clip builds a script the player accepts', () => {
     const v = validateLessonScript(buildWatchScript(spec));
     expect(v.ok ? [] : v.errors).toEqual([]);
   }
+});
+
+it('a heading writes formula counts as subscripts and leaves numbers alone', () => {
+  expect(subscriptFormulas('Total gas after 90 cm³ NH3 meets 60 cm³ Cl2')).toBe('Total gas after 90 cm³ NH₃ meets 60 cm³ Cl₂');
+  expect(subscriptFormulas('Purity of (NH4)2SO4 from 3.4 g, CFC 12')).toBe('Purity of (NH₄)₂SO₄ from 3.4 g, CFC 12');
+  expect(subscriptFormulas('Moles of Y in 7.8 g, from the oxide Y2O')).toBe('Moles of Y in 7.8 g, from the oxide Y₂O');
 });

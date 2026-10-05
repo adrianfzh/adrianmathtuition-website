@@ -20181,6 +20181,1482 @@
    }
   ]
  },
+ "e0693976-b451-459f-a060-cca2abeb2fa7": {
+  "kind": "moles",
+  "qid": "e0693976-b451-459f-a060-cca2abeb2fa7",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "21.6\\ \\text{g}",
+  "heading": "Residue from heating 0.2 mol of silver nitrate",
+  "start": "moles",
+  "beats": [
+   {
+    "say": "Only the silver stays behind. The nitrogen dioxide and oxygen both escape as gases."
+   },
+   {
+    "say": "The equation gives 2 moles of silver for 2 moles of silver nitrate, a 1 to 1 ratio, so 0.2 moles of silver.",
+    "line": {
+     "tex": "n(\\text{Ag}) = 0.2\\ \\text{mol}",
+     "stage": "ratio"
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "Moles times 108 gives the mass: 0.2 times 108 is 21.6 grams.",
+    "line": {
+     "tex": "m = 0.2 \\times 108 = 21.6\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "0.2*108",
+       "value": 21.6
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{AgNO}_3"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{Ag}"
+    },
+    {
+     "coef": 2,
+     "tex": "\\text{NO}_2"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{O}_2"
+    }
+   ]
+  }
+ },
+ "e095f5c2-4819-42c0-bf40-92ea4f2311c4": {
+  "kind": "moles",
+  "qid": "e095f5c2-4819-42c0-bf40-92ea4f2311c4",
+  "topic": "Chemical Calculations",
+  "answer": "D",
+  "answerText": "\\text{Ti}^{4+}",
+  "heading": "Charge on a titanium ion from 24 g and 2 mol e⁻",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "First the moles of titanium deposited: 24 divided by 48 is 0.50 moles.",
+    "line": {
+     "tex": "n(\\text{Ti}) = \\dfrac{24}{48} = 0.50\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "24/48",
+       "value": 0.5
+      }
+     ]
+    }
+   },
+   {
+    "say": "That 0.50 moles was deposited by 2 moles of electrons, so each titanium atom took 2 over 0.50, which is 4 electrons.",
+    "line": {
+     "tex": "\\text{e}^- \\text{ per Ti} = \\dfrac{2}{0.50} = 4",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "2/0.50",
+       "value": 4
+      }
+     ]
+    }
+   },
+   {
+    "say": "Each ion gained 4 electrons, so it carried a 4 plus charge."
+   }
+  ]
+ },
+ "e2171f89-6d05-42f9-8e33-22d444551410": {
+  "kind": "moles",
+  "qid": "e2171f89-6d05-42f9-8e33-22d444551410",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "201",
+  "heading": "Relative atomic mass of X in XCl₂",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Moles of sodium hydroxide: 20.0 over 1000, times 0.500, is 0.0100 moles.",
+    "line": {
+     "tex": "n(\\text{NaOH}) = \\dfrac{20.0}{1000} \\times 0.500",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "20.0/1000*0.500",
+       "value": 0.01
+      }
+     ]
+    }
+   },
+   {
+    "say": "That is 0.0100 moles.",
+    "line": {
+     "tex": "n(\\text{NaOH}) = 0.0100\\ \\text{mol}",
+     "stage": "moles"
+    }
+   },
+   {
+    "say": "Forming X(OH)2 needs two hydroxides per X, so 0.00500 moles of XCl2 reacted.",
+    "line": {
+     "tex": "n(\\text{XCl}_2) = \\dfrac{0.0100}{2} = 0.00500\\ \\text{mol}",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "0.0100/2",
+       "value": 0.005
+      }
+     ]
+    }
+   },
+   {
+    "say": "Its Mr is the mass over the moles: 1.36 over 0.00500 is 272.",
+    "line": {
+     "tex": "M_r = \\dfrac{1.36}{0.00500} = 272",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "1.36/0.00500",
+       "value": 272
+      }
+     ]
+    }
+   },
+   {
+    "say": "Take away the two chlorines, 71, and X is 201.",
+    "line": {
+     "tex": "A_r(\\text{X}) = 272 - 71 = 201",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "272-71",
+       "value": 201
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "e2d7268c-3b4d-44d9-b0e5-7d6eaabac242": {
+  "kind": "moles",
+  "qid": "e2d7268c-3b4d-44d9-b0e5-7d6eaabac242",
+  "topic": "Chemical Calculations",
+  "answer": "A",
+  "answerText": "12.5\\ \\text{cm}^3",
+  "heading": "Volume of 2.0 mol/dm³ HCl for 25.0 cm³ of LiOH",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Moles of lithium hydroxide: 1.0 times 25.0 over 1000 is 0.0250 moles.",
+    "line": {
+     "tex": "n(\\text{LiOH}) = 1.0 \\times \\dfrac{25.0}{1000} = 0.0250",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "1.0*25.0/1000",
+       "value": 0.025
+      }
+     ]
+    }
+   },
+   {
+    "say": "The equation is 1 to 1, so moles of hydrochloric acid are also 0.0250.",
+    "line": {
+     "tex": "n(\\text{HCl}) = 0.0250\\ \\text{mol}",
+     "stage": "ratio"
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "Volume is moles over concentration: 0.0250 divided by 2.0 is 0.0125 cubic decimetres.",
+    "line": {
+     "tex": "V = \\dfrac{0.0250}{2.0} = 0.0125\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "0.0250/2.0",
+       "value": 0.0125
+      }
+     ]
+    }
+   },
+   {
+    "say": "In cubic centimetres that is 12.5.",
+    "line": {
+     "tex": "V = 12.5\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "0.0125*1000",
+       "value": 12.5
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{HCl}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{LiOH}"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{LiCl}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{H}_2\\text{O}"
+    }
+   ]
+  }
+ },
+ "e301271c-65fe-42f4-bb3d-9d57f417d042": {
+  "kind": "moles",
+  "qid": "e301271c-65fe-42f4-bb3d-9d57f417d042",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "30.0\\ \\%",
+  "heading": "Percentage of calcium in bone from 42.0 g CaO",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "All the calcium ends up in the calcium oxide, so find what fraction of it is calcium. Its Mr is 40 plus 16, which is 56.",
+    "line": {
+     "tex": "M_r(\\text{CaO}) = 40 + 16 = 56",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "40+16",
+       "value": 56
+      }
+     ]
+    }
+   },
+   {
+    "say": "The calcium in 42.0 grams of oxide is 42.0 times 40 over 56, which is 30.0 grams.",
+    "line": {
+     "tex": "m(\\text{Ca}) = 42.0 \\times \\dfrac{40}{56} = 30.0\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "42.0*40/56",
+       "value": 30
+      }
+     ]
+    }
+   },
+   {
+    "say": "That came from 100 grams of bone, so the percentage is 30.0 percent. 42.0 percent is the oxide, which is the trap.",
+    "line": {
+     "tex": "\\dfrac{30.0}{100} \\times 100 = 30.0\\ \\%",
+     "stage": "percent",
+     "check": [
+      {
+       "expr": "30.0/100*100",
+       "value": 30
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "e33aa574-3f66-4757-bd09-f0bd213962e9": {
+  "kind": "moles",
+  "qid": "e33aa574-3f66-4757-bd09-f0bd213962e9",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "2.42\\ \\text{mol/dm}^3",
+  "heading": "Concentration after mixing two HCl solutions",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Moles of acid in each: 0.250 times 3.00 is 0.750, and 0.350 times 2.00 is 0.700.",
+    "line": {
+     "tex": "n = 0.250(3.00) + 0.350(2.00)",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "0.250*3.00",
+       "value": 0.75
+      },
+      {
+       "expr": "0.350*2.00",
+       "value": 0.7
+      }
+     ]
+    }
+   },
+   {
+    "say": "Together that is 1.450 moles.",
+    "line": {
+     "tex": "n = 0.750 + 0.700 = 1.450\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "0.750+0.700",
+       "value": 1.45
+      }
+     ]
+    }
+   },
+   {
+    "say": "The total volume is 250 plus 350, which is 600 cubic centimetres, or 0.600 cubic decimetres.",
+    "line": {
+     "tex": "V = 250 + 350 = 600\\ \\text{cm}^3 = 0.600\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "250+350",
+       "value": 600
+      }
+     ]
+    }
+   },
+   {
+    "say": "Concentration is moles over volume: 1.450 over 0.600 is 2.42. Averaging gives 2.50, which ignores the volumes.",
+    "line": {
+     "tex": "c = \\dfrac{1.450}{0.600} = 2.42\\ \\text{mol/dm}^3",
+     "stage": "concentration",
+     "check": [
+      {
+       "expr": "1.450/0.600",
+       "value": 2.4167
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "e35e96f8-b092-47c6-b712-974de99ce9e5": {
+  "kind": "moles",
+  "qid": "e35e96f8-b092-47c6-b712-974de99ce9e5",
+  "topic": "Chemical Calculations",
+  "answer": "D",
+  "answerText": "2.50\\ \\text{dm}^3",
+  "heading": "HCl to react with the residue from 105 g NaHCO₃",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "The residue is the sodium carbonate. First the Mr of sodium hydrogen carbonate: 84.",
+    "line": {
+     "tex": "M_r(\\text{NaHCO}_3) = 23 + 1 + 12 + 48 = 84",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "23+1+12+48",
+       "value": 84
+      }
+     ]
+    }
+   },
+   {
+    "say": "Moles: 105 over 84 is 1.25 moles.",
+    "line": {
+     "tex": "n(\\text{NaHCO}_3) = \\dfrac{105}{84} = 1.25\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "105/84",
+       "value": 1.25
+      }
+     ]
+    }
+   },
+   {
+    "say": "2 moles of it give 1 mole of sodium carbonate, so halve it: 0.625 moles.",
+    "line": {
+     "tex": "n(\\text{Na}_2\\text{CO}_3) = \\dfrac{1.25}{2} = 0.625",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "1.25/2",
+       "value": 0.625
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "The residue reacts with 2 moles of hydrochloric acid per mole, so 2 times 0.625 is 1.25 moles of acid.",
+    "line": {
+     "tex": "n(\\text{HCl}) = 2 \\times 0.625 = 1.25\\ \\text{mol}",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "2*0.625",
+       "value": 1.25
+      }
+     ]
+    }
+   },
+   {
+    "say": "Volume is moles over concentration: 1.25 over 0.50 is 2.50 cubic decimetres.",
+    "line": {
+     "tex": "V = \\dfrac{1.25}{0.50} = 2.50\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "1.25/0.50",
+       "value": 2.5
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{NaHCO}_3"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{Na}_2\\text{CO}_3"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{H}_2\\text{O}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{CO}_2"
+    }
+   ]
+  }
+ },
+ "e4090b03-9439-4fa7-9567-c22fd30c4ed8": {
+  "kind": "moles",
+  "qid": "e4090b03-9439-4fa7-9567-c22fd30c4ed8",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "2.4\\ \\text{dm}^3",
+  "heading": "Hydrogen from 200 cm³ of 1.0 mol/dm³ HCl",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Magnesium is in excess, so the acid decides. Moles of acid: 0.200 times 1.0 is 0.20 moles.",
+    "line": {
+     "tex": "n(\\text{HCl}) = 0.200 \\times 1.0 = 0.20\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "0.200*1.0",
+       "value": 0.2
+      }
+     ]
+    }
+   },
+   {
+    "say": "2 moles of acid give 1 mole of hydrogen, so 0.20 divided by 2 is 0.10 moles.",
+    "line": {
+     "tex": "n(\\text{H}_2) = \\dfrac{0.20}{2} = 0.10\\ \\text{mol}",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "0.20/2",
+       "value": 0.1
+      }
+     ]
+    },
+    "ratio": [
+     1,
+     3
+    ]
+   },
+   {
+    "say": "1 mole of gas takes 24 cubic decimetres at room conditions: 0.10 times 24 is 2.4.",
+    "line": {
+     "tex": "V = 0.10 \\times 24 = 2.4\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "0.10*24",
+       "value": 2.4
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{Mg}"
+    },
+    {
+     "coef": 2,
+     "tex": "\\text{HCl}"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{MgCl}_2"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{H}_2"
+    }
+   ]
+  }
+ },
+ "e4808461-5e93-4a57-a302-ef202054e32d": {
+  "kind": "moles",
+  "qid": "e4808461-5e93-4a57-a302-ef202054e32d",
+  "topic": "Chemical Calculations",
+  "answer": "A",
+  "answerText": "12\\ \\text{dm}^3",
+  "heading": "Hydrogen from 32.5 g of zinc and steam",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "Moles of zinc: 32.5 divided by 65 is 0.5 moles.",
+    "line": {
+     "tex": "n(\\text{Zn}) = \\dfrac{32.5}{65} = 0.5\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "32.5/65",
+       "value": 0.5
+      }
+     ]
+    }
+   },
+   {
+    "say": "Zinc to hydrogen is 1 to 1, so 0.5 moles of hydrogen.",
+    "line": {
+     "tex": "n(\\text{H}_2) = 0.5\\ \\text{mol}",
+     "stage": "ratio"
+    },
+    "ratio": [
+     0,
+     3
+    ]
+   },
+   {
+    "say": "At room conditions, 0.5 times 24 is 12 cubic decimetres.",
+    "line": {
+     "tex": "V = 0.5 \\times 24 = 12\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "0.5*24",
+       "value": 12
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{Zn}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{H}_2\\text{O}"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{ZnO}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{H}_2"
+    }
+   ]
+  }
+ },
+ "e4c6ddb4-2748-4c9b-958c-b137426384ee": {
+  "kind": "moles",
+  "qid": "e4c6ddb4-2748-4c9b-958c-b137426384ee",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "\\text{N}_2\\ 10,\\ \\text{H}_2\\ 0,\\ \\text{NH}_3\\ 40\\ \\text{cm}^3",
+  "heading": "30 cm³ N₂ with 60 cm³ H₂ — what is left?",
+  "start": "volume",
+  "beats": [
+   {
+    "say": "Gas volumes react in the ratio 1 to 3 to 2. 30 of nitrogen would need 90 of hydrogen, but only 60 is there, so hydrogen runs out.",
+    "line": {
+     "tex": "30 \\times 3 = 90 > 60",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "30*3",
+       "value": 90
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "60 of hydrogen reacts with 60 over 3, which is 20 cubic centimetres of nitrogen.",
+    "line": {
+     "tex": "V(\\text{N}_2) = \\dfrac{60}{3} = 20\\ \\text{cm}^3",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "60/3",
+       "value": 20
+      }
+     ]
+    }
+   },
+   {
+    "say": "It makes 2 times 20, which is 40 cubic centimetres of ammonia.",
+    "line": {
+     "tex": "V(\\text{NH}_3) = 2 \\times 20 = 40\\ \\text{cm}^3",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "2*20",
+       "value": 40
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     2
+    ]
+   },
+   {
+    "say": "Nitrogen left is 30 minus 20, which is 10. No hydrogen is left.",
+    "line": {
+     "tex": "\\text{N}_2 \\text{ left} = 30 - 20 = 10\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "30-20",
+       "value": 10
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{N}_2"
+    },
+    {
+     "coef": 3,
+     "tex": "\\text{H}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{NH}_3"
+    }
+   ]
+  }
+ },
+ "e54b8a04-43c1-4461-b299-165eaafa028b": {
+  "kind": "moles",
+  "qid": "e54b8a04-43c1-4461-b299-165eaafa028b",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "n = 3",
+  "heading": "2.5 mol O₂ weighs the same as 1.0 mol SOn",
+  "start": "moles",
+  "beats": [
+   {
+    "say": "The mass of 2.5 moles of oxygen: 2.5 times 32 is 80 grams.",
+    "line": {
+     "tex": "m(\\text{O}_2) = 2.5 \\times 32 = 80\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "2.5*32",
+       "value": 80
+      }
+     ]
+    }
+   },
+   {
+    "say": "1.0 mole of SOn has that same mass, so its Mr is 80: 32 plus 16 n equals 80.",
+    "line": {
+     "tex": "M_r = 32 + 16n = 80",
+     "stage": "mr"
+    }
+   },
+   {
+    "say": "So 16 n is 48, and n is 3.",
+    "line": {
+     "tex": "16n = 48,\\ n = 3",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "80-32",
+       "value": 48
+      },
+      {
+       "expr": "48/16",
+       "value": 3
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "e57dd99f-b5d3-4d0e-8c26-6d7e5687b9de": {
+  "kind": "moles",
+  "qid": "e57dd99f-b5d3-4d0e-8c26-6d7e5687b9de",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "92.0\\%",
+  "heading": "Percentage yield of barium sulfate",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Moles of sodium sulfate: 25.0 over 1000, times 1.00, is 0.0250 moles.",
+    "line": {
+     "tex": "n(\\text{Na}_2\\text{SO}_4) = \\dfrac{25.0}{1000} \\times 1.00 = 0.0250",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "25.0/1000*1.00",
+       "value": 0.025
+      }
+     ]
+    }
+   },
+   {
+    "say": "The equation is 1 to 1, so the theoretical yield is 0.0250 moles of barium sulfate.",
+    "line": {
+     "tex": "n(\\text{BaSO}_4) = 0.0250\\ \\text{mol}",
+     "stage": "ratio"
+    },
+    "ratio": [
+     0,
+     2
+    ]
+   },
+   {
+    "say": "Its mass: 0.0250 times 233 is 5.825 grams.",
+    "line": {
+     "tex": "m = 0.0250 \\times 233 = 5.825\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "0.0250*233",
+       "value": 5.825
+      }
+     ]
+    }
+   },
+   {
+    "say": "Percentage yield: 5.36 over 5.825, times 100, is 92.0 percent.",
+    "line": {
+     "tex": "\\dfrac{5.36}{5.825} \\times 100\\% = 92.0\\%",
+     "stage": "percent",
+     "check": [
+      {
+       "expr": "5.36/5.825*100",
+       "value": 92
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{Na}_2\\text{SO}_4"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{BaCl}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{BaSO}_4"
+    },
+    {
+     "coef": 2,
+     "tex": "\\text{NaCl}"
+    }
+   ]
+  }
+ },
+ "e772fad8-2725-458e-9f12-1f3e180ab224": {
+  "kind": "moles",
+  "qid": "e772fad8-2725-458e-9f12-1f3e180ab224",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "2.70\\ \\text{g}",
+  "heading": "Mass of C₄H₆ that takes up 0.10 mol of H₂",
+  "start": "moles",
+  "beats": [
+   {
+    "say": "C4H6 needs two molecules of hydrogen to become the alkane C4H10."
+   },
+   {
+    "say": "So the moles of C4H6 are 0.10 divided by 2, which is 0.050 moles.",
+    "line": {
+     "tex": "n(\\text{C}_4\\text{H}_6) = \\dfrac{0.10}{2} = 0.050\\ \\text{mol}",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "0.10/2",
+       "value": 0.05
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "Its Mr: 4 carbons at 12 and 6 hydrogens at 1 is 54.",
+    "line": {
+     "tex": "M_r = 4(12) + 6(1) = 54",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "4*12+6*1",
+       "value": 54
+      }
+     ]
+    }
+   },
+   {
+    "say": "Mass is 0.050 times 54, which is 2.70 grams.",
+    "line": {
+     "tex": "m = 0.050 \\times 54 = 2.70\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "0.050*54",
+       "value": 2.7
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{C}_4\\text{H}_6"
+    },
+    {
+     "coef": 2,
+     "tex": "\\text{H}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{C}_4\\text{H}_{10}"
+    }
+   ]
+  }
+ },
+ "e86b61cf-608a-4442-9089-0de93e30058e": {
+  "kind": "moles",
+  "qid": "e86b61cf-608a-4442-9089-0de93e30058e",
+  "topic": "Chemical Calculations",
+  "answer": "D",
+  "answerText": "x = 2,\\ y = 4",
+  "heading": "Which oxide of nitrogen: 0.46 g in 120 cm³",
+  "start": "volume",
+  "beats": [
+   {
+    "say": "Moles of gas: 120 over 24000 is 0.0050 moles.",
+    "line": {
+     "tex": "n = \\dfrac{120}{24000} = 0.0050\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "120/24000",
+       "value": 0.005
+      }
+     ]
+    }
+   },
+   {
+    "say": "Mr is mass over moles: 0.46 over 0.0050 is 92.",
+    "line": {
+     "tex": "M_r = \\dfrac{0.46}{0.0050} = 92",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "0.46/0.0050",
+       "value": 92
+      }
+     ]
+    }
+   },
+   {
+    "say": "Try N2O4: 2 nitrogens at 14 and 4 oxygens at 16 is 92. It fits.",
+    "line": {
+     "tex": "M_r(\\text{N}_2\\text{O}_4) = 2(14) + 4(16) = 92",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "2*14+4*16",
+       "value": 92
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "e9be2a65-7b7f-44fc-bc61-b18e4a43c01b": {
+  "kind": "moles",
+  "qid": "e9be2a65-7b7f-44fc-bc61-b18e4a43c01b",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "87.5\\ \\%",
+  "heading": "Percentage yield of ammonia from 12 g of H₂",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "12 grams of hydrogen is 6 moles.",
+    "line": {
+     "tex": "n(\\text{H}_2) = \\dfrac{12}{2} = 6\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "12/2",
+       "value": 6
+      }
+     ]
+    }
+   },
+   {
+    "say": "3 moles of hydrogen give 2 moles of ammonia, so 6 moles give a theoretical 4 moles.",
+    "line": {
+     "tex": "n(\\text{NH}_3) = 6 \\times \\dfrac{2}{3} = 4\\ \\text{mol}",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "6*2/3",
+       "value": 4
+      }
+     ]
+    },
+    "ratio": [
+     1,
+     2
+    ]
+   },
+   {
+    "say": "At room conditions, 4 times 24 is 96 cubic decimetres.",
+    "line": {
+     "tex": "V = 4 \\times 24 = 96\\ \\text{dm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "4*24",
+       "value": 96
+      }
+     ]
+    }
+   },
+   {
+    "say": "Percentage yield: 84 over 96, times 100, is 87.5 percent.",
+    "line": {
+     "tex": "\\dfrac{84}{96} \\times 100\\% = 87.5\\%",
+     "stage": "percent",
+     "check": [
+      {
+       "expr": "84/96*100",
+       "value": 87.5
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{N}_2"
+    },
+    {
+     "coef": 3,
+     "tex": "\\text{H}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{NH}_3"
+    }
+   ]
+  }
+ },
+ "ebcfbcd1-fe06-48a5-b9ce-b41bd04e9884": {
+  "kind": "moles",
+  "qid": "ebcfbcd1-fe06-48a5-b9ce-b41bd04e9884",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "50\\ \\text{cm}^3",
+  "heading": "Gas left after 10 cm³ propane burns in 70 cm³ O₂",
+  "start": "volume",
+  "beats": [
+   {
+    "say": "10 cubic centimetres of propane needs 5 times as much oxygen, 50.",
+    "line": {
+     "tex": "V(\\text{O}_2) = 5 \\times 10 = 50\\ \\text{cm}^3",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "5*10",
+       "value": 50
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     1
+    ]
+   },
+   {
+    "say": "So 70 minus 50, which is 20 cubic centimetres of oxygen, is left over.",
+    "line": {
+     "tex": "\\text{O}_2 \\text{ left} = 70 - 50 = 20\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "70-50",
+       "value": 20
+      }
+     ]
+    }
+   },
+   {
+    "say": "The carbon dioxide formed is 3 times 10, which is 30 cubic centimetres.",
+    "line": {
+     "tex": "V(\\text{CO}_2) = 3 \\times 10 = 30\\ \\text{cm}^3",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "3*10",
+       "value": 30
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     2
+    ]
+   },
+   {
+    "say": "The water is a liquid at room conditions, so it adds no gas. Total gas is 30 plus 20, which is 50.",
+    "line": {
+     "tex": "V = 30 + 20 = 50\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "30+20",
+       "value": 50
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 1,
+     "tex": "\\text{C}_3\\text{H}_8"
+    },
+    {
+     "coef": 5,
+     "tex": "\\text{O}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 3,
+     "tex": "\\text{CO}_2"
+    },
+    {
+     "coef": 4,
+     "tex": "\\text{H}_2\\text{O}"
+    }
+   ]
+  }
+ },
+ "ec13325b-60c1-41c8-9742-e42d85fc34b9": {
+  "kind": "moles",
+  "qid": "ec13325b-60c1-41c8-9742-e42d85fc34b9",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "0.154\\ \\text{mol/dm}^3",
+  "heading": "Concentration of 0.9% saline in mol/dm³",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "0.9 grams in 100 cubic centimetres is 9 grams in every 1000.",
+    "line": {
+     "tex": "\\dfrac{0.9}{100} \\times 1000 = 9\\ \\text{g/dm}^3",
+     "stage": "concentration",
+     "check": [
+      {
+       "expr": "0.9/100*1000",
+       "value": 9
+      }
+     ]
+    }
+   },
+   {
+    "say": "Divide by the relative formula mass of sodium chloride, 58.5: 9 over 58.5 is 0.154.",
+    "line": {
+     "tex": "c = \\dfrac{9}{58.5} = 0.154\\ \\text{mol/dm}^3",
+     "stage": "concentration",
+     "check": [
+      {
+       "expr": "9/58.5",
+       "value": 0.15385
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "ec2098de-9e7d-46a5-8e6a-c9ef79f9658d": {
+  "kind": "moles",
+  "qid": "ec2098de-9e7d-46a5-8e6a-c9ef79f9658d",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "42.3\\%",
+  "heading": "Purity of H₂O₂ from 3.7 dm³ of oxygen",
+  "start": "volume",
+  "beats": [
+   {
+    "say": "Moles of oxygen: 3.7 over 24 is 0.1542 moles.",
+    "line": {
+     "tex": "n(\\text{O}_2) = \\dfrac{3.7}{24} = 0.1542\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "3.7/24",
+       "value": 0.15417
+      }
+     ]
+    }
+   },
+   {
+    "say": "2 moles of hydrogen peroxide give 1 mole of oxygen, so double it: 0.3083 moles.",
+    "line": {
+     "tex": "n(\\text{H}_2\\text{O}_2) = 2 \\times 0.1542 = 0.3083",
+     "stage": "ratio",
+     "check": [
+      {
+       "expr": "2*0.1542",
+       "value": 0.3084
+      }
+     ]
+    },
+    "ratio": [
+     0,
+     2
+    ]
+   },
+   {
+    "say": "Mr of hydrogen peroxide is 34, so the pure mass is 0.3083 times 34, which is 10.5 grams.",
+    "line": {
+     "tex": "m = 0.3083 \\times 34 = 10.5\\ \\text{g}",
+     "stage": "mass",
+     "check": [
+      {
+       "expr": "0.3083*34",
+       "value": 10.48
+      }
+     ]
+    }
+   },
+   {
+    "say": "Percentage purity: 10.5 over 24.8, times 100, is 42.3 percent.",
+    "line": {
+     "tex": "\\dfrac{10.5}{24.8} \\times 100 = 42.3\\%",
+     "stage": "percent",
+     "check": [
+      {
+       "expr": "10.5/24.8*100",
+       "value": 42.34
+      }
+     ]
+    }
+   }
+  ],
+  "equation": {
+   "lhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{H}_2\\text{O}_2"
+    }
+   ],
+   "rhs": [
+    {
+     "coef": 2,
+     "tex": "\\text{H}_2\\text{O}"
+    },
+    {
+     "coef": 1,
+     "tex": "\\text{O}_2"
+    }
+   ]
+  }
+ },
+ "ed4f074a-20cf-4b1b-bf50-9f775e14dc23": {
+  "kind": "moles",
+  "qid": "ed4f074a-20cf-4b1b-bf50-9f775e14dc23",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "\\text{P}_4",
+  "heading": "Formula of phosphorus from equal gas volumes",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "Equal volumes at the same temperature and pressure hold equal moles. 71 grams of chlorine, Mr 71, is 1.00 mole.",
+    "line": {
+     "tex": "n(\\text{Cl}_2) = \\dfrac{71}{71} = 1.00\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "71/71",
+       "value": 1
+      }
+     ]
+    }
+   },
+   {
+    "say": "So 124 grams of phosphorus vapour is also 1.00 mole, and its Mr is 124.",
+    "line": {
+     "tex": "M_r = \\dfrac{124}{1.00} = 124",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "124/1.00",
+       "value": 124
+      }
+     ]
+    }
+   },
+   {
+    "say": "Each phosphorus atom is 31, so 124 over 31 is 4 atoms in a molecule.",
+    "line": {
+     "tex": "\\dfrac{124}{31} = 4",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "124/31",
+       "value": 4
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "ed889ef5-0cd8-461f-becf-68500bf3862e": {
+  "kind": "moles",
+  "qid": "ed889ef5-0cd8-461f-becf-68500bf3862e",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "300\\ \\text{cm}^3",
+  "heading": "Water to dilute 8.0 mol/dm³ HCl to 2.0",
+  "start": "concentration",
+  "beats": [
+   {
+    "say": "Moles of acid: 100 over 1000, times 8.0, is 0.80 moles. Diluting does not change it.",
+    "line": {
+     "tex": "n = \\dfrac{100}{1000} \\times 8.0 = 0.80\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "100/1000*8.0",
+       "value": 0.8
+      }
+     ]
+    }
+   },
+   {
+    "say": "At 2.0 moles per cubic decimetre, the final volume is 0.80 over 2.0, which is 0.40, or 400 cubic centimetres.",
+    "line": {
+     "tex": "V = \\dfrac{0.80}{2.0} = 0.40\\ \\text{dm}^3 = 400\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "0.80/2.0",
+       "value": 0.4
+      }
+     ]
+    }
+   },
+   {
+    "say": "So 400 minus 100, which is 300 cubic centimetres of water, is added.",
+    "line": {
+     "tex": "400 - 100 = 300\\ \\text{cm}^3",
+     "stage": "volume",
+     "check": [
+      {
+       "expr": "400-100",
+       "value": 300
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "edd5f5eb-26d8-4ba2-bbe8-e9d4b0aeb896": {
+  "kind": "moles",
+  "qid": "edd5f5eb-26d8-4ba2-bbe8-e9d4b0aeb896",
+  "topic": "Chemical Calculations",
+  "answer": "C",
+  "answerText": "0.05\\ \\text{mol in } 250\\ \\text{cm}^3",
+  "heading": "Which solution matches 4.0 g NaOH in 500 cm³?",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "Moles of sodium hydroxide: 4.0 over 40 is 0.100 moles.",
+    "line": {
+     "tex": "n(\\text{NaOH}) = \\dfrac{4.0}{40} = 0.100\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "4.0/40",
+       "value": 0.1
+      }
+     ]
+    }
+   },
+   {
+    "say": "In 0.500 cubic decimetres, that is 0.200 moles per cubic decimetre.",
+    "line": {
+     "tex": "c = \\dfrac{0.100}{0.500} = 0.200\\ \\text{mol/dm}^3",
+     "stage": "concentration",
+     "check": [
+      {
+       "expr": "0.100/0.500",
+       "value": 0.2
+      }
+     ]
+    }
+   },
+   {
+    "say": "Option C: 0.05 over 0.250 is also 0.200. The others come to 0.8, 2.0 and 0.1.",
+    "line": {
+     "tex": "\\dfrac{0.05}{0.250} = 0.200\\ \\text{mol/dm}^3",
+     "stage": "concentration",
+     "check": [
+      {
+       "expr": "0.05/0.250",
+       "value": 0.2
+      }
+     ]
+    }
+   }
+  ]
+ },
+ "edd7dedb-012a-4a1e-a4d5-d39842be8ae9": {
+  "kind": "moles",
+  "qid": "edd7dedb-012a-4a1e-a4d5-d39842be8ae9",
+  "topic": "Chemical Calculations",
+  "answer": "B",
+  "answerText": "1.8 \\times 10^{23}",
+  "heading": "Number of ions in 13.6 g of zinc chloride",
+  "start": "mass",
+  "beats": [
+   {
+    "say": "The Mr of zinc chloride is 65 plus 2 times 35.5, which is 136.",
+    "line": {
+     "tex": "M_r(\\text{ZnCl}_2) = 65 + 2(35.5) = 136",
+     "stage": "mr",
+     "check": [
+      {
+       "expr": "65+2*35.5",
+       "value": 136
+      }
+     ]
+    }
+   },
+   {
+    "say": "Moles: 13.6 over 136 is 0.100 moles.",
+    "line": {
+     "tex": "n = \\dfrac{13.6}{136} = 0.100\\ \\text{mol}",
+     "stage": "moles",
+     "check": [
+      {
+       "expr": "13.6/136",
+       "value": 0.1
+      }
+     ]
+    }
+   },
+   {
+    "say": "Each formula unit gives 1 zinc ion and 2 chloride ions, 3 ions, so 0.300 moles of ions.",
+    "line": {
+     "tex": "n(\\text{ions}) = 3 \\times 0.100 = 0.300\\ \\text{mol}",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "3*0.100",
+       "value": 0.3
+      }
+     ]
+    }
+   },
+   {
+    "say": "Times the Avogadro constant, 6.02 times ten to the twenty-three, gives 1.8 times ten to the twenty-three ions.",
+    "line": {
+     "tex": "0.300 \\times 6.02 \\times 10^{23} = 1.8 \\times 10^{23}",
+     "stage": "other",
+     "check": [
+      {
+       "expr": "0.300*6.02",
+       "value": 1.806
+      }
+     ]
+    }
+   }
+  ]
+ },
  "ef322e9f-88c3-458e-90c1-20c6d312346a": {
   "kind": "moles",
   "qid": "ef322e9f-88c3-458e-90c1-20c6d312346a",

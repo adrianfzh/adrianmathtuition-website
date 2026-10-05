@@ -298,6 +298,16 @@ export function checkWatchSpec(spec: WatchSpec, src: WatchSource): string[] {
 
 // ── The script ───────────────────────────────────────────────────────────────
 
+const SUB = '₀₁₂₃₄₅₆₇₈₉';
+/** A heading is plain text in the hand font (no KaTeX): a formula's atom counts become
+ *  subscript digits — "NH3" → "NH₃", "(NH4)2SO4" → "(NH₄)₂SO₄". Only inside a formula-shaped
+ *  word (starts with a capital or "(", has a digit after a letter or ")"): "10 g", "CFC 12"
+ *  and "3.4" are left alone. */
+export function subscriptFormulas(text: string): string {
+  return String(text ?? '').replace(/(?<![\w.])[A-Z(][A-Za-z()]*\d[A-Za-z()\d]*(?![\w.])/g,
+    w => /^[A-Z]\d+$/.test(w) ? w : w.replace(/([A-Za-z)])(\d+)/g, (_, a: string, d: string) => a + [...d].map(c => SUB[Number(c)]).join('')));
+}
+
 const pose = (p: CharacterPose, at: number): BeatAction => ({ do: 'character', pose: p, at });
 
 const line = (tex: string, id: string, note?: string, hl?: StepToken['hl']): EquationStep => {
@@ -350,7 +360,7 @@ export function roadStops(spec: MolesWatch): WatchStage[] {
 
 const STOP_TEX: Record<WatchStage, string> = {
   mass: '\\text{mass}', mr: 'M_r', moles: '\\text{moles}', ratio: '\\text{ratio}', volume: '\\text{volume}',
-  concentration: '\\text{concentration}', percent: '\\text{percentage}', other: '\\text{…}',
+  concentration: '\\text{conc.}', percent: '\\text{percentage}', other: '\\text{…}',
 };
 /** The arrow between two stops, with what it does on it. */
 function arrowTex(a: WatchStage, b: WatchStage): string {
@@ -439,7 +449,7 @@ function molesScene(spec: MolesWatch): EquationStepsScene {
   });
   steps.push(line(answerLine(spec), 'ans', undefined, 'emerald'));
   beats.push({ say: `So the answer is ${spec.answer.toUpperCase()}.`, do: [pose('cheer', 0.05), { do: 'write', step: firstLine + lines, at: 0.15 }, { do: 'sticker', kind: 'confetti', at: 0.3 }] });
-  return { type: 'equation-steps', heading: spec.heading, steps, beats };
+  return { type: 'equation-steps', heading: subscriptFormulas(spec.heading), steps, beats };
 }
 
 /** The clip for one spec — a one-scene chalk lesson the player plays like the explain clip. */
