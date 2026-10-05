@@ -344,6 +344,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     const want = new URLSearchParams(window.location.search).get('topic')?.trim();
     if (!want) return;
     const exact = topics.find(t => t.topic.toLowerCase() === want.toLowerCase());
+    // Science: the run has already started on the topic (no Standard / Advanced sheet, 5 Oct 2026).
+    if (exact && isScienceLevel(level)) return;
     if (exact) { if (mode === 'student') setSheetTopic(exact.topic); else startTopic(exact.topic); }
     else setSearch(want);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -662,7 +664,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           </button>
           {/* Tapping the name reopens the sheet — change the question type or
               difficulty without going back to the list. */}
-          <button onClick={() => setSheetTopic(selected.topic)} aria-label="Change question type or difficulty"
+          <button onClick={() => { if (!isScienceLevel(level)) setSheetTopic(selected.topic); }} aria-label="Change question type or difficulty"
             className="min-w-0 flex-1 flex items-center gap-2.5 text-left rounded-xl px-1 py-0.5 hover:bg-white/60">
             <MasteryRing pct={selected.mastery} size="sm" />
             <div className="min-w-0">
