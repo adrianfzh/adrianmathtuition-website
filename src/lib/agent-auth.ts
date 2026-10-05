@@ -10,6 +10,7 @@
 //   AGENT_TOKEN_SWITCHES  marking-settings + slot-accounts
 //   AGENT_TOKEN_PAPERS    papers (tag / rename / looked-at) + desk/rebuild
 //   AGENT_TOKEN_ASSIGN    assignments (Send work)
+//   AGENT_TOKEN_TWINS     /api/agent/twins/* — cloud sessions write twins, maths + science (5 Oct 2026)
 //
 // The admin password and the cookie keep working everywhere; this is an
 // additional door, closed when its env var is unset. Pure check + a fail-soft
@@ -18,16 +19,17 @@ import type { NextRequest } from 'next/server';
 import { safeEqual } from './safe-equal';
 import { getSupabaseAdmin } from './supabase';
 
-export type AgentScope = 'release' | 'sheets' | 'reinstate' | 'switches' | 'papers' | 'assign';
+export type AgentScope = 'release' | 'sheets' | 'reinstate' | 'switches' | 'papers' | 'assign' | 'twins';
 
 const ENV: Record<AgentScope, string> = {
   release: 'AGENT_TOKEN_RELEASE', sheets: 'AGENT_TOKEN_SHEETS', reinstate: 'AGENT_TOKEN_REINSTATE',
   switches: 'AGENT_TOKEN_SWITCHES', papers: 'AGENT_TOKEN_PAPERS', assign: 'AGENT_TOKEN_ASSIGN',
+  twins: 'AGENT_TOKEN_TWINS',
 };
 
 /** Pure: does this bearer match the scope's token? Unset token → never. */
 export function bearerMatchesScope(authorization: string | null | undefined, scope: AgentScope, env: NodeJS.ProcessEnv = process.env): boolean {
-  const token = env[ENV[scope]];
+  const token = env[ENV[scope]]?.trim();
   if (!token || token.length < 24) return false;
   return safeEqual(authorization ?? '', `Bearer ${token}`);
 }

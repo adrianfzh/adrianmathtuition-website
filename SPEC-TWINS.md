@@ -267,3 +267,14 @@ empty — ≤ 3 twins a run, biggest gap first, one sub-skill at a time. Switch 
 parks it). Run dirs `/data/science-twins/<seed>/`. Stamps `job_runs` `science-twins` (rhythm 30 h).
 The ten drafts written by hand on 5 Oct 2026 (`scripts/science-twins/first-batch/`) were the lane's
 first batch.
+
+## 12. Cloud sessions write twins too (5 Oct 2026)
+
+Adrian: *yes* — claude.ai cloud sessions write twins, maths and science, with no database key.
+Same gates, same filing; the server re-runs every deterministic check (`lib/twin-gates.ts`) and
+files the row (`gen_meta.written_by='cloud-session'`). Doors, token and setup: `docs/CLOUD.md`
+§Cloud twins; the playbook: `.claude/skills/cloud-twins/SKILL.md`. Stricter than the local
+scripts in three places: maths novelty also against our other twins and the whole family's
+nearest rows, the number-swap test against the bank (not only the seed), and a maths solution
+must carry the bold **Answer** line.
+

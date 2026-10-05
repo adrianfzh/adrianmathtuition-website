@@ -566,6 +566,20 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 👯 Cloud twins (5 Oct 2026): the four AGENT_TOKEN_TWINS doors stay shut to strangers.
+    timed('agent-twins', async () => {
+      const probes: [string, RequestInit][] = [
+        ['/api/agent/twins/queue?bank=maths&level=EM', {}],
+        ['/api/agent/twins/submit', { method: 'POST' }],
+        ['/api/agent/twins/figure', {}],
+        ['/api/agent/twins/retire', { method: 'POST' }],
+      ];
+      for (const [path, init] of probes) {
+        const r = await fetch(`${base}${path}`, { ...init, redirect: 'manual', signal: T(10000) });
+        if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
+      }
+      return '4 doors gated';
+    }),
     timed('worker-jobs', async () => {
       const r = await fetch(`${base}/api/admin/worker-jobs`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

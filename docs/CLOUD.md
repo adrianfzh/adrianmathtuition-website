@@ -29,7 +29,7 @@ repeated; Adrian holds the values, no session ever sees one):
   work from a cloud session.
 - `VERCEL_TOKEN` (project-scoped to the website, 90 days from 17 Sep 2026) → `vercel ls`
   and re-pointing `adrianmath-dev.vercel.app` work from a cloud session.
-- All six `AGENT_TOKEN_*` families set in Vercel (Production + Preview) and in the cloud
+- All six `AGENT_TOKEN_*` families set in Vercel (a seventh, `AGENT_TOKEN_TWINS`, added 5 Oct 2026 — §Cloud twins; Adrian adds it) (Production + Preview) and in the cloud
   environment; each probed from a cloud session on 17 Sep 2026 (papers 400 · sheets 200 ·
   assign 400 · switches 200 · reinstate 400 · release 200 via mark-triage), fourteen
   `agent_actions` rows confirm the logging.
@@ -172,12 +172,52 @@ the admin cookie/password (`lib/agent-auth.ts`), every use logged to Supabase
 | `AGENT_TOKEN_SWITCHES` | `/api/admin/marking-settings`, `/api/admin/slot-accounts` | Mac plan only · Science tab · slot accounts (+ the pickers' `{usage}` posts, 22 Sep 2026) |
 | `AGENT_TOKEN_PAPERS` | `/api/admin/papers`, `/api/admin/desk/rebuild` | tag · rename · looked-at · rebuild the copy |
 | `AGENT_TOKEN_ASSIGN` | `/api/admin/assignments` | Send work |
+| `AGENT_TOKEN_TWINS` | `/api/agent/twins/*` | read seeds, submit twins (server-gated), figure library, retire own twins — §Cloud twins |
 
 Mint each as 32+ random characters (`openssl rand -hex 24`), set it in Vercel (Production
 + Preview), and give the cloud environment only the ones it needs. A token you have not
 set opens nothing (the check fails closed under 24 chars). Rotate one family without
 touching the others. The admin password never leaves this Mac and the bot.
 Reading what agents did: `select * from agent_actions order by created_at desc`.
+
+## Cloud twins — writing our own questions from a cloud session (5 Oct 2026)
+
+Adrian, 5 Oct 2026: *yes* — cloud sessions (his claude.ai cloud-session credit, to 5 Nov 2026)
+write twins, maths and science, **without the database master key ever reaching the cloud**.
+The playbook is the `cloud-twins` skill; the session's side is `scripts/twins/cloud-door.mjs`.
+
+**The doors** (`AGENT_TOKEN_TWINS` or the admin password; every call → `agent_actions`, every
+submit / refusal / retire → `job_runs` `twins-cloud`; ≤ 600 calls and ≤ 120 submits an hour per
+token, counted from `agent_actions`; health-check `agent-twins` probes the four 401s):
+
+| Door | What |
+|---|---|
+| `GET /api/agent/twins/queue?bank=maths&level=EM&n=5[&focus_only=1]` | the next seeds as full packets — seed, key, solution, sub-skill, the twins it already has, the nearest bank questions, the author brief. Selection = `twin.mjs queue` (sub-skills short of 5, stuck focus first) |
+| `GET /api/agent/twins/queue?bank=science&n=5[&pool=PHY&text_only=1]` | same, selection = `sci-twin.mjs gap/queue` (open topics short of 30 Challenge MCQs) |
+| `POST /api/agent/twins/submit` | `{bank, seed_id, question, figure_spec?, gate_record:{blind_answer, blind, checker, notes}, dry?}` — the server re-fetches the seed, re-runs EVERY gate (`lib/twin-gates.ts`, pure/tested), refuses a full sub-skill/topic or a seed with a live twin (409), draws the figure, files exactly like the local `publish`. `dry:true` = gates + figure only, and returns the blind and checker briefs |
+| `GET/POST /api/agent/twins/figure` | the figure library (families, `?doc=`, render a spec to PNG) — proxied to the bot's `POST /api/figure-render` (bot `lib/figure-service.js`; typed specs only, never the code engine) |
+| `POST /api/agent/twins/retire` | take back a twin a cloud session filed (`gen_meta.written_by='cloud-session'`), nothing else |
+
+Code: `src/app/api/agent/twins/*`, `lib/twins-door.ts` (auth + rate), `lib/twin-store.ts` (reads,
+inserts), `lib/twin-briefs.ts` (the briefs, worded as the local scripts'), `lib/twin-gates.ts`
+(the rules), migration `twin_neighbours.sql` (the originality shortlist, math project). A rule
+changed in `twin.mjs` / `sci-twin.mjs` is changed in `twin-gates.ts` / `twin-briefs.ts` too.
+
+**Adrian's one-time setup (two places, ~3 min):**
+1. Mint the value on the Mac: `openssl rand -hex 24` (keep it in your password manager).
+2. Vercel → adrianmathtuition-website → Settings → Environment Variables → add
+   `AGENT_TOKEN_TWINS` = that value, **Production and Preview**, then redeploy (the next promote
+   does it).
+3. claude.ai/code → the cloud icon above the message box → the environment → gear → Environment
+   variables → add the line `AGENT_TOKEN_TWINS=<the value>`. New sessions pick it up.
+   `www.adrianmathtuition.com` is already on the allowlist; nothing else is needed (the figure
+   library is reached through the website, not the Fly host).
+Then in a new cloud session: *"write 30 science Challenge twins"* (or *"write 40 Sec 2 twins"*).
+
+Tested end to end on 5 Oct 2026 against a local server with a test token: 3 maths twins (one with
+a library figure) and 2 science twins filed through the doors, one science draft refused at the
+checker (not Challenge) and filed after one repair round, a duplicate refused (409), then all five
+retired through the retire door.
 
 ## Step 3 — the plan loops off the Mac: the Fly worker (18 Sep 2026, built, awaiting first deploy)
 

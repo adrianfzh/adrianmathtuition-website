@@ -12,4 +12,10 @@ describe('bearerMatchesScope', () => {
     expect(bearerMatchesScope(null, 'release', env)).toBe(false);
     expect(bearerMatchesScope(T, 'release', env)).toBe(false);
   });
+
+  it('the twins token opens only the twins scope, and a stored trailing newline is trimmed', () => {
+    const env = { AGENT_TOKEN_TWINS: `${T}\n` } as unknown as NodeJS.ProcessEnv;
+    expect(bearerMatchesScope(`Bearer ${T}`, 'twins', env)).toBe(true);
+    expect(bearerMatchesScope(`Bearer ${T}`, 'release', env)).toBe(false);
+  });
 });
