@@ -7,7 +7,7 @@ const ago = (h: number) => new Date(NOW - h * 3600_000).toISOString();
 
 function facts(over: Partial<GlanceFacts> = {}): GlanceFacts {
   return {
-    questionProposals: 0, rulesProposed: 0, shipsFailed: 0, papersToCheck: { papers: 0, parts: 0 }, extractionFlagged: 0, failedHandins: 0,
+    questionProposals: 0, rulesProposed: 0, shipsFailed: 0, papersToCheck: { papers: 0, parts: 0 }, extractionFlagged: 0, failedHandins: 0, suggestionsNew: 0,
     lessonsToday: [], lessonsToLog: 0, marked: { today: 2, perDay: [1, 0, 3, 2, 0, 1, 2] }, practice: { students: 1, questions: 4, perDay: [0, 0, 0, 0, 0, 0, 4] },
     queue: { waiting: 0, marking: 0, oldestMinutes: null },
     extraction: { waiting: 10, working: 1, held: 5, doneToday: 3, done24h: 24, perDay: [0, 0, 0, 0, 0, 0, 3] },
@@ -81,6 +81,12 @@ describe('buildGlance', () => {
     expect(needs.tiles.map((t) => t.id)).toEqual(['papers-to-check', 'question-proposals']);
     expect(needs.tiles.every((t) => t.href)).toBe(true);
     expect(tile(g, 'papers-to-check').sub).toBe('5 parts to look at');
+  });
+
+  it('new suggestions show a tile to /admin/suggestions, only when non-zero', () => {
+    expect(buildGlance(facts({ suggestionsNew: 0 }), NOW).sections[0].id).toBe('today');
+    expect(tile(buildGlance(facts({ suggestionsNew: 2 }), NOW), 'suggestions')).toMatchObject({ value: '2', label: 'Suggestions (new)', href: '/admin/suggestions', tone: 'amber' });
+    expect(buildGlance(facts({ suggestionsNew: null }), NOW).sections[0].id).toBe('today');
   });
 
   it('an unreadable fact is a grey "No reading", never a zero', () => {

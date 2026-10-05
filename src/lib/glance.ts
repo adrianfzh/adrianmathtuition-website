@@ -42,6 +42,8 @@ export interface GlanceFacts {
   papersToCheck: { papers: number; parts: number } | null;
   extractionFlagged: number | null;
   failedHandins: number | null;
+  /** 💡 Students' suggestions not yet looked at (status 'new'). */
+  suggestionsNew: number | null;
   // Today
   lessonsToday: LessonLink[] | null;
   lessonsToLog: number | null;
@@ -163,6 +165,7 @@ function needsTiles(f: GlanceFacts): Tile[] {
   add(f.rulesProposed, { id: 'rules', label: 'Extraction rules to decide', href: '/admin/extraction-rules' });
   add(f.shipsFailed, { id: 'ships-failed', label: 'Proposals that did not ship', sub: 'last 7 days · ask a session', tone: 'red' });
   add(f.extractionFlagged, { id: 'extraction-flagged', label: 'Extraction papers flagged', href: '/admin/library' });
+  add(f.suggestionsNew, { id: 'suggestions', label: 'Suggestions (new)', sub: 'from students', href: '/admin/suggestions' });
   add(f.questionProposals, { id: 'question-proposals', label: 'Questions to vet', sub: 'written by the sheets', href: '/admin/question-proposals' });
   return out;
 }

@@ -242,7 +242,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const job = (j: string) => safe(() => lastJob(sb, j));
 
   const [
-    questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins,
+    questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
     lessons, toLog, marked, practice,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
     st, cs,
@@ -253,6 +253,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     safe(() => papersToCheck(sb)),
     safe(() => count(sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source').in('status', ['flagged', 'failed']))),
     safe(() => count(sb.from('portal_event_log').select('id', { count: 'exact', head: true }).eq('kind', 'submit:failed').gte('created_at', new Date(now - 86400_000).toISOString()))),
+    safe(() => count(sb.from('portal_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
     safe(() => lessonsToday()),
     safe(() => lessonsToLog()),
     safe(async () => {
@@ -283,7 +284,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
 
   const line = (j: (JobLine & { meta?: unknown }) | null): JobLine | null => (j ? { ok: j.ok, at: j.at, summary: j.summary } : null);
   return {
-    questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins,
+    questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew,
     lessonsToday: lessons, lessonsToLog: toLog, marked, practice,
     queue: q, extraction: ext, twins: tw, jobs: jb, logins: lg, disk,
     deploys: {

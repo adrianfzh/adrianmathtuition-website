@@ -8,7 +8,9 @@ import { getDashboardData } from '@/lib/portal-dashboard';
 import { getTodayCards } from '@/lib/portal-today';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { EXAM_PREP_OPEN_TO_STUDENTS, LAST_LESSON_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { EXAM_PREP_OPEN_TO_STUDENTS, LAST_LESSON_OPEN_TO_STUDENTS, NOTES_OPEN_TO_STUDENTS, fullPortalVisible, suggestionsOpen, viewingAsStudent } from '@/lib/portal-beta';
+import SuggestCard from '@/components/SuggestCard';
+import { suggestionSubjects } from '@/lib/suggestions';
 import { listStudentAssignments } from '@/lib/portal-assignments';
 import { assignmentHref, dueLabel, fromAdrian, homeCardSummary, isPending } from '@/lib/assignments';
 import { homeCounts } from '@/lib/portal-home-counts';
@@ -50,6 +52,8 @@ export default async function DashboardPage() {
   // week-stats and recent-practice cards only render for the full portal
   // (Adrian's admin cookie, unless he is "viewing as student").
   const fullPortal = await fullPortalVisible();
+  // 💡 Suggest something (5 Oct 2026) — closed switch, lib/portal-beta suggestionsOpen.
+  const suggestVisible = await suggestionsOpen().catch(() => false);
   // Adrian's admin cookie, not flipped to "view as student" — the install /
   // push nudges below are for students only (he sees them by viewing as one).
   const adminViewer = (await isNotesAuthed()) && !(await viewingAsStudent());
@@ -342,6 +346,9 @@ export default async function DashboardPage() {
       <Suspense fallback={null}>
         <LessonRecap account={account} fullPortal={fullPortal} card={card} caption={caption} />
       </Suspense>
+
+      {/* 💡 Suggest something — a quiet row at the foot of Home, opens a short form. */}
+      {suggestVisible && <SuggestCard subjects={suggestionSubjects(account)} />}
     </div>
   );
 }

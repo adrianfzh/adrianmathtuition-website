@@ -23,7 +23,7 @@ const TOOLS: { group: string; links: ToolLink[] }[] = [
   { group: 'Teaching', links: [
     { label: 'Schedule', href: '/admin/schedule' }, { label: 'Log lessons', href: '/admin/log' },
     { label: 'Students', href: '/admin/students' }, { label: 'Exams', href: '/admin/exams' }, { label: 'Follow-ups', href: '/admin/followups' },
-    { label: 'Parent digests', href: '/admin/digests' }, { label: 'Waitlist', href: '/admin/waitlist' },
+    { label: 'Parent digests', href: '/admin/digests' }, { label: 'Waitlist', href: '/admin/waitlist' }, { label: 'Suggestions', href: '/admin/suggestions' },
   ] },
   { group: 'Marking', links: [
     { label: 'Mark a paper', href: '/admin/mark-paper' }, { label: 'Marked papers', href: '/admin/papers' }, { label: 'Mark schemes', href: '/admin/schemes' },

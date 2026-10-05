@@ -626,6 +626,17 @@ export async function GET(req: NextRequest) {
       if (r.status !== 400) throw new Error(`expected 400 (route up, empty body refused), got HTTP ${r.status}`);
       return 'route up';
     }),
+    // 💡 Suggest something (5 Oct 2026): the student's door and Adrian's list, both behind a login.
+    timed('portal-suggestions', async () => {
+      const r = await fetch(`${base}/api/portal/suggestions`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    timed('admin-suggestions', async () => {
+      const r = await fetch(`${base}/api/admin/suggestions`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('admin-humanities', async () => {
       const r = await fetch(`${base}/api/admin/humanities`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

@@ -7,6 +7,9 @@ describe('Delete my account — what goes and what stays', () => {
   it('erases essays, humanities answers, worksheet pen marks and the app-use log (5 Oct 2026)', () => {
     for (const t of ['essay_runs', 'humanities_runs', 'student_work_ink', 'portal_event_log']) expect(erased).toContain(t);
   });
+  it('erases their suggestions (5 Oct 2026)', () => {
+    expect(erased).toContain('portal_suggestions');
+  });
   it('still erases the notebook, clippings, asks and the rest', () => {
     for (const t of ['notebook_mistakes', 'notebook_private_notes', 'portal_notes', 'ask_skills']) expect(erased).toContain(t);
   });

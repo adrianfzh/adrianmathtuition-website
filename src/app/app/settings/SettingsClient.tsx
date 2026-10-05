@@ -8,17 +8,20 @@ import { portalFetch, portalMessage } from '@/lib/portal-fetch';
 import PushToggle from './PushToggle';
 import InstallCard from '@/components/InstallCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
+import SuggestCard from '@/components/SuggestCard';
 
 const card = 'bg-white rounded-2xl border border-black/5 shadow-sm p-5';
 const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/30';
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, tuition = false,
+  email, displayName, level, telegramChatId, telegramLinked, tuition = false, suggestSubjects = null,
 }: {
   email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
   /** A tuition student (linked to Adrian's roster) — sees the "When your lessons end" note. */
   tuition?: boolean;
+  /** 💡 Suggest something — the student's subject chips, or null when the switch is closed for them. */
+  suggestSubjects?: string[] | null;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -141,6 +144,8 @@ export default function SettingsClient({
           instructions as the Home card and PushToggle's install-first line;
           says ✓ once the portal is running as an installed app. */}
       <InstallCard variant="settings" />
+
+      {suggestSubjects && <SuggestCard variant="settings" subjects={suggestSubjects} />}
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>

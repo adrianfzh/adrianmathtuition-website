@@ -319,6 +319,25 @@ export async function humanitiesOpen(): Promise<boolean> {
   return false;
 }
 
+// 💡 Suggest something (5 Oct 2026, Adrian: "a suggestion button … students can
+// suggest what they need for their exams, if reasonable and helpful - i will try to
+// add it"). A quiet row on Home + Settings opens a short form (lib/suggestions.ts,
+// POST /api/portal/suggestions, /admin/suggestions). CLOSED: Adrian's cookie and the
+// demo student see it. Flip to true to show it to every student.
+export const SUGGESTIONS_OPEN_TO_STUDENTS = false;
+export const SUGGESTIONS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+export async function suggestionsOpen(): Promise<boolean> {
+  if (SUGGESTIONS_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && SUGGESTIONS_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
+
 // 🧭 "Which method?" drills + ✍️ the statistics write-up trainer for JC H2 students
 // (5 Oct 2026, Adrian: "build the which method drills and stats trainer";
 // SPEC-H2-TOOLS.md). CLOSED: Adrian's cookie and the demo student see them; flip one

@@ -112,7 +112,7 @@ export async function GET() {
   // 5 Oct 2026: the rest of what the app keeps (lib/erasure.ts + the ink kept with marked papers).
   const byCol = (table: string, column: string) =>
     studentId ? admin.from(table).select('*').eq(column, studentId) : empty;
-  const [essays, humanities, workInk, paperInk, usage, asks, photoSheets] = await Promise.all([
+  const [essays, humanities, workInk, paperInk, usage, asks, photoSheets, suggestions] = await Promise.all([
     byCol('essay_runs', 'airtable_student_id'),
     byCol('humanities_runs', 'airtable_student_id'),
     byCol('student_work_ink', 'identity'),
@@ -121,6 +121,10 @@ export async function GET() {
     byCol('ask_skills', 'airtable_student_id'),
     studentId
       ? admin.from('sheet_jobs').select('id, created_at, status, scheduled_for, photos').eq('airtable_student_id', studentId).eq('kind', 'photo-sheet')
+      : empty,
+    // 💡 Their suggestions (5 Oct 2026) — what they wrote and where it stands; the tutor's own note stays out.
+    studentId
+      ? admin.from('portal_suggestions').select('id, created_at, subject, text, status').eq('airtable_student_id', studentId)
       : empty,
   ]);
 
@@ -153,6 +157,7 @@ export async function GET() {
     app_usage: usage.data || [],
     asks_by_skill: asks.data || [],
     practice_sheet_requests: photoSheets.data || [],
+    suggestions: suggestions.data || [],
   };
 
   return new NextResponse(JSON.stringify(payload, null, 2), {

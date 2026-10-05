@@ -3,12 +3,14 @@
 import { currentAccount } from '@/lib/portal-auth';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import SettingsClient from './SettingsClient';
+import { suggestionsOpen } from '@/lib/portal-beta';
+import { suggestionSubjects } from '@/lib/suggestions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
   const account = await currentAccount();
-  const tg = await ensureTelegramLinked(account);
+  const [tg, suggest] = await Promise.all([ensureTelegramLinked(account), suggestionsOpen().catch(() => false)]);
   return (
     <SettingsClient
       email={account.email}
@@ -17,6 +19,7 @@ export default async function SettingsPage() {
       telegramChatId={account.telegram_chat_id ? String(account.telegram_chat_id) : ''}
       telegramLinked={tg === 'linked'}
       tuition={Boolean(account.airtable_student_id?.trim())}
+      suggestSubjects={suggest ? suggestionSubjects(account) : null}
     />
   );
 }
