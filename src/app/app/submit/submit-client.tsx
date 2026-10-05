@@ -9,7 +9,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { subjectLabel } from '@/lib/mark-subjects';
 import Link from 'next/link';
 import {
-  PAPER_MISSING_TITLE, PAPER_MISSING_WHY, looksLikeNamedPaper, paperMissingNotice, shapePaperCheck,
+  looksLikeNamedPaper, shapePaperCheck,
   type PaperCheck,
 } from '@/lib/paper-check';
 import { uploadStudentFile } from '@/lib/student-files-client';
@@ -17,7 +17,7 @@ import { pdfToPageImages } from '@/lib/pdf-pages';
 import { friendlyPortalMessage } from '@/lib/portal-fetch';
 import { splitFileIfSpread, resizeToJpeg } from '@/lib/spread-split';
 import { SUBMIT_FAILED_KIND, type SubmitFailure } from '@/lib/submit-failure';
-import { dayWord } from '@/lib/daily-queue';
+import { startsPhrase } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
 
 // Tell Adrian a hand-in failed after every retry (7 Sep 2026: "monitor failures
@@ -161,7 +161,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
   // questions, and a science paper takes its own mark scheme, so neither asks.
   const nameLocked = !!assignment || !!paper;
   const [paperCheck, setPaperCheck] = useState<PaperCheck | null>(null);
-  const [whyOpen, setWhyOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const checkSeq = useRef(0);
   const runPaperCheck = useCallback(async (name: string) => {
     if (!looksLikeNamedPaper(name)) { setPaperCheck(null); return; }
@@ -233,7 +233,7 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         // Idempotent side effects (safe under StrictMode double-invoke): revoking
         // an already-revoked URL is a no-op, and the note text is deterministic.
         merged.slice(MAX_PAGES).forEach(p => { if (p.preview) URL.revokeObjectURL(p.preview); });
-        setCapNote(`⚠️ A submission holds at most ${MAX_PAGES} pages — the last ${dropped === 1 ? 'page' : `${dropped} pages`} didn't fit. Submit ${dropped === 1 ? 'it' : 'them'} as a second paper.`);
+        setCapNote(`⚠️ ${MAX_PAGES} pages at most — the last ${dropped === 1 ? 'page' : `${dropped} pages`} didn't fit. Send ${dropped === 1 ? 'it' : 'them'} as a second paper.`);
       } else {
         setCapNote('');
       }
@@ -369,61 +369,42 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     }
   }
 
-  if (doneRunId && isScience) {
-    const line = queuedFor
-      ? <>Marking starts at midnight on {dayWord(queuedFor, sgtTodayISO())}. Until then you can remove it under <b>Papers</b>.</>
-      : <>It comes back under <b>Papers</b>, usually within the hour.</>;
+  // ✅ Sent / 🕒 queued / 🔁 already handed in — one short card, both families
+  // (the shorter hand-in page, 5 Oct 2026: "build the shorter hand in page").
+  if (doneRunId) {
+    const papersHref = isScience ? '/app/science/papers' : '/app/marking';
+    const again = isScience ? '/app/science/submit' : '/app/submit';
+    const title = dupNote ? 'Already handed in'
+      : queuedFor ? 'Queued'
+      : assignment ? `“${assignment.title}” sent`
+      : 'Sent';
     const card = (
       <div className={`${CARD} p-5 text-center`}>
-        <p className="text-4xl">{dupNote ? '🔁' : queuedFor ? '🕒' : '🧪'}</p>
-        <p className="font-bold text-navy mt-2">{dupNote ? 'Already handed in' : queuedFor ? 'Queued for marking' : 'Sent for marking'}</p>
-        {dupNote
-          ? <p className="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{dupNote}</p>
-          : <p className="text-sm text-gray-600 mt-1.5">{line}</p>}
+        <p className="text-4xl">{dupNote ? '🔁' : queuedFor ? '🕒' : '✅'}</p>
+        <p className="font-bold text-navy mt-2">{title}</p>
+        <p className="text-sm text-gray-600 mt-1 whitespace-pre-line">
+          {dupNote ? dupNote
+            : queuedFor ? <>Marking starts {startsPhrase(queuedFor, sgtTodayISO())}. Remove it in <b>Papers</b> until then.</>
+            : <>It comes back marked in <b>Papers</b>.</>}
+        </p>
         <div className="mt-4 flex justify-center gap-2">
-          {/* A plain link, not <Link>: a full load resets the form and refreshes the list under it. */}
-          <a href="/app/science/submit" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
-          <Link href="/app/science/papers" className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-gray-200 bg-white">Papers</Link>
+          {assignment ? (
+            <Link href="/app/assignments" className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Back to your work</Link>
+          ) : (
+            <>
+              {/* A plain link, not <Link>: a full load resets the form. */}
+              <a href={again} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">Hand in another</a>
+              <Link href={papersHref} className="text-sm font-semibold text-navy rounded-xl px-4 py-2.5 border border-gray-200 bg-white">Papers</Link>
+            </>
+          )}
         </div>
       </div>
     );
     if (embedded) return card;
     return (
       <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">{queuedFor ? 'Science paper queued' : 'Science paper sent'}</h1>
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
         {card}
-      </div>
-    );
-  }
-
-  if (doneRunId) {
-    return (
-      <div className="space-y-4 pb-24 sm:pb-4">
-        <h1 className="text-xl font-bold text-navy pt-1">{assignment ? 'Worksheet sent' : 'Submit a paper'}</h1>
-        <div className={`${CARD} p-5 text-center`}>
-          <p className="text-4xl">{dupNote ? '🔁' : '✅'}</p>
-          <p className="font-bold text-navy mt-2">{dupNote ? 'Already handed in' : assignment ? `“${assignment.title}” sent for marking` : 'Sent for marking'}</p>
-          {dupNote ? (
-            <p className="text-sm text-gray-600 mt-1.5 whitespace-pre-line">{dupNote}</p>
-          ) : (
-            <p className="text-sm text-gray-600 mt-1.5">
-              When it&apos;s marked and released, it appears in <b>Papers</b> — with your script,
-              the red pen, and what each lost mark was for.
-            </p>
-          )}
-          <div className="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
-            <Link href={assignment ? '/app/assignments' : isScience ? '/app/science/papers' : '/app/marking'} className="text-sm font-semibold bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2.5">
-              {assignment ? 'Back to your work' : 'Go to Papers'}
-            </Link>
-          </div>
-          {/* No daily cap for tuition students since 22 Sep 2026 — the old
-              "a fresh one opens at midnight" line was stale (Adrian, 24 Sep). */}
-          {!assignment && !paper && !isScience && (
-            <p className="text-[13px] text-gray-500 mt-3">
-              Another paper? Hand it in as soon as it&apos;s done — Practice Again sheets and printed papers go in here too.
-            </p>
-          )}
-        </div>
       </div>
     );
   }
@@ -471,260 +452,236 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
     );
   }
 
+  // The shorter hand-in page (Adrian, 5 Oct 2026: "can you show me the page
+  // where students submit their pdfs? i thought it was very wordy/verbose" →
+  // "build the shorter hand in page"): three numbered steps, one line each.
+  // The photo / PDF / iPad tips sit behind the "?" beside step 1; the ink line
+  // stays visible under it (his 10 Sep 2026 rule — said BEFORE the photos go
+  // up); the scheme's note shows only once something is attached.
+  const nameDone = nameLocked || !!paperName.trim();
+  const subjectDone = !isScience || !!subject;
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       {assignment ? (
         <div className="pt-1">
           <Link href={`/app/assignments/${assignment.id}`} className="text-sm text-gray-500 hover:text-navy">← Back to the worksheet</Link>
-          <h1 className="text-xl font-bold text-navy mt-1">📬 Submit: {assignment.title}</h1>
+          <h1 className="text-xl font-bold text-navy mt-1">Submit: {assignment.title}</h1>
         </div>
       ) : paper ? (
         <div className="pt-1">
           <Link href="/app/print" className="text-sm text-gray-500 hover:text-navy">← Back to your papers</Link>
-          <h1 className="text-xl font-bold text-navy mt-1">📬 Hand in: {paper.title}</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">Marking already knows every question on this sheet.</p>
+          <h1 className="text-xl font-bold text-navy mt-1">Hand in: {paper.title}</h1>
         </div>
-      ) : isScience && embedded ? null : isScience ? (
-        <div className="pt-1">
-          <Link href="/app/science" className="text-sm text-gray-500 hover:text-navy">← Science</Link>
-          <h1 className="text-xl font-bold text-navy mt-1">🧪 Hand in a science paper</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">🎟️ Two science papers a day, free — separate from your maths papers.</p>
-        </div>
-      ) : (
-        <div className="pt-1">
-          <h1 className="text-xl font-bold text-navy">Submit a paper</h1>
-          <p className="text-[13px] text-gray-500 mt-0.5">Exam papers, Practice Again sheets and printed papers all go in here — hand in each one as soon as it&apos;s done.</p>
-        </div>
+      ) : isScience && embedded ? null : (
+        <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
       )}
 
-      {/* The science disclaimer is ONE line under the Science Home's title now (Adrian, 24 Sep 2026: "so many words it's scary … keep it simple"); the queue line below is the only notice the form carries. */}
       {isScience && queueNotice && !queueNotice.blocking && (
         <div className="rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3 text-[13px] text-teal-900" role="status">
           🕒 {queueNotice.text}
         </div>
       )}
 
-      <div className={`${CARD} p-4 space-y-3`}>
-        {/* Two labelled slots on both forms (Adrian, 24 Sep 2026: "(b) yes"):
-            this one is the paper — the questions and the working; the answers
-            or scheme have their own slot further down. */}
-        {/* Science says none of this (Adrian, 24 Sep 2026: "keep it simple"): the dropzone is the whole instruction. */}
-        {!isScience && (
-          <>
-            <p className="text-sm font-semibold text-navy">
-              {assignment ? 'Your worksheet: the questions and your working' : 'Your paper: the questions and your working'}
-            </p>
-            <p className="text-sm text-gray-600">
-              Photograph your worked {assignment ? 'worksheet' : 'paper'} — <b>one page per photo</b>, straight on, in good light —
-              or upload a <b>PDF scan</b>. It comes back marked in <b>Papers</b>.
-            </p>
-          </>
-        )}
-
-        {/* Free-form hand-ins only — mocks and assigned worksheets already carry their
-            questions. The marker anchors each attempt on the student's own question
-            labels, and printed question pages are classified and skipped harmlessly,
-            so asking for both rescues the working-on-foolscap case at no cost
-            (Adrian, 2026-08-28, ahead of Alessi's plain-paper TYS hand-in). */}
-        {!assignment && !paper && !isScience && (
-          <p className="text-[13px] text-gray-500">
-            ✍️ Worked on your own paper instead of the question sheet? Add photos of the{' '}
-            <b>question pages</b> too, and write each <b>question number</b> clearly beside
-            your working — everything goes in this one submission.
-          </p>
-        )}
-
-        {/* We don't hold this paper. Sits directly above the add-photos button —
-            the notice asks for two more photographs and the button that takes
-            them is the next thing under it. Amber, like the pre-flight findings:
-            nothing is wrong, the hand-in goes through either way. */}
-        {paperMissing && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[13px] text-amber-900 space-y-1.5">
-            <p className="font-bold">📄 {PAPER_MISSING_TITLE}</p>
-            <p className="leading-snug">{paperMissingNotice(paperCheck?.label ?? null)}</p>
+      <div className={`${CARD} p-4 space-y-4`}>
+        {/* ── 1 Photograph your pages ─────────────────────────────── */}
+        <div className="space-y-2.5">
+          <div className="flex items-center gap-2">
+            <StepDot n={1} done={pages.length > 0} />
+            <p className="text-sm font-semibold text-navy flex-1">{assignment ? 'Photograph your worksheet' : 'Photograph your pages'}</p>
             <button
-              type="button" onClick={() => setWhyOpen(v => !v)}
-              aria-expanded={whyOpen}
-              className="text-[12px] font-semibold text-amber-800 underline underline-offset-2"
-            >
-              {whyOpen ? 'Hide' : 'Why?'}
-            </button>
-            {whyOpen && <p className="text-[12px] leading-snug text-amber-800">{PAPER_MISSING_WHY}</p>}
+              type="button" onClick={() => setHelpOpen(v => !v)} aria-expanded={helpOpen} aria-label="Tips for the photos"
+              className={`w-6 h-6 rounded-full border text-[12px] font-bold leading-none flex-none ${helpOpen ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-gray-500 border-gray-300'}`}
+            >?</button>
           </div>
-        )}
+          {helpOpen && (
+            <ul className="text-[12px] text-gray-600 space-y-1 bg-[hsl(45,100%,98%)] rounded-xl px-3 py-2.5 pl-7 list-disc">
+              <li>One page per photo, straight on, good light. A wide photo of an open booklet is split for you.</li>
+              {/* Free-form hand-ins only — the marker anchors on the student's own
+                  question labels, and printed question pages are skipped harmlessly
+                  (Adrian, 2026-08-28, Alessi's plain-paper TYS hand-in). */}
+              {!nameLocked && !isScience && <li>Worked on your own paper? Add the question pages too, and write each question number.</li>}
+              <li>A PDF works too. Wrote on it with a Pencil in Preview on an iPad? Save to Files, then choose it here — your ink comes with it.</li>
+              {!nameLocked && !isScience && <li>Exam papers, Practice Again sheets and printed papers all go in here.</li>}
+            </ul>
+          )}
+          {/* Green ink is the correction pen (Adrian, 10 Sep 2026) — always visible, one line. */}
+          {!isScience && <p className="text-[12px] text-gray-500">Blue or black ink. Green, red or purple counts as a correction.</p>}
 
-        <button
-          onClick={() => inputRef.current?.click()}
-          disabled={busy}
-          className="w-full rounded-2xl border-2 border-dashed border-gray-300 bg-[hsl(45,100%,98%)] py-8 text-center active:bg-amber-50"
-        >
-          <span className="block text-3xl mb-1">📷</span>
-          <span className="text-sm font-semibold text-navy">
-            {converting
-              ? converting
-              : pages.length ? `${pages.length} page${pages.length > 1 ? 's' : ''} added — tap to add more` : 'Take photos or choose a PDF'}
-          </span>
-        </button>
-        <input
-          ref={inputRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
-          onChange={(e) => onPick(e.target.files)}
-        />
-        {/* Green ink is the correction pen (Adrian, 10 Sep 2026: "tell them when they
-            are submitting papers in the app that working in green pen will not count
-            towards the marks — they will be treated as corrections"). Said BEFORE the
-            photos go up, in one line, so a corrected paper is never a surprise. */}
-        {!isScience && (
-          <p className="text-[12px] text-gray-500">
-            Write your attempt in blue or black. Green, red or purple ink is read as a later correction and earns no marks.
-          </p>
-        )}
+          {/* We don't hold this paper (Adrian, 10 Sep 2026: "just say no questions
+              detected — better if students upload the question paper"). Advice only. */}
+          {paperMissing && (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900">
+              <b>No questions detected.</b> Add photos of the question paper too.
+            </p>
+          )}
 
-        {capNote && <p className="text-[13px] font-semibold text-amber-700">{capNote}</p>}
-        {splitNote && pages.length > 0 && <p className="text-[13px] text-emerald-700">{splitNote}</p>}
-
-        {pages.length > 0 && (
-          <div className="grid grid-cols-4 gap-2">
-            {pages.map((p, i) => (
-              <div key={i} className="relative aspect-[3/4]">
-                {p.preview
-                  // eslint-disable-next-line @next/next/no-img-element
-                  ? <img src={p.preview} alt={`page ${i + 1}`} className="w-full h-full object-cover rounded-lg border border-gray-200" />
-                  : <div className="w-full h-full rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-xl">🖼️</div>}
-                <span className="absolute bottom-1 left-1 text-[10px] font-bold bg-black/60 text-white rounded px-1">{i + 1}</span>
-                {!busy && (
-                  <button
-                    onClick={() => removePage(i)} aria-label={`Remove page ${i + 1}`}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-900 text-white text-xs leading-none border-2 border-white"
-                  >×</button>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {assignment ? (
-          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{assignment.title}</b> — your tutor&apos;s worksheet.</p>
-        ) : paper ? (
-          <p className="text-[13px] text-gray-600">Filed as <b className="text-navy">{paper.title}</b> — your printed paper.</p>
-        ) : (
-        <div>
-          <label htmlFor="paper-name" className="block text-[13px] font-semibold text-gray-700 mb-1">
-            What paper is this?
-          </label>
-          <input
-            id="paper-name" type="text" value={paperName} maxLength={80} required
-            onChange={(e) => setPaperName(e.target.value)}
-            // Leaving the field is the moment the name is finished — ask then
-            // rather than waiting out the debounce (lib/paper-check).
-            onBlur={(e) => { void runPaperCheck(e.target.value.trim()); }}
-            placeholder={isScience ? "e.g. Cedar 2025 Chemistry Prelim P2" : "e.g. Xinmin 2021 AM Prelim P2"}
-            className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
-          />
-          {/* A name shaped like the placeholder is what lets ai/paper-totals.js
-              ground the run to the official total (e.g. /90) — vague names fall
-              back to a counted denominator (Adrian, 2026-08-29). */}
-          {!isScience && <p className="text-[11px] text-gray-400 mt-1">School, year and paper — so we know what we&apos;re marking, and your score comes back out of the official total (e.g. /90).</p>}
-        {subjectChoices.length > 1 && (
-          <div className="mt-3">
-            <label htmlFor="paper-subject" className="block text-sm font-semibold text-navy mb-1">Subject</label>
-            <select
-              id="paper-subject"
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full text-sm border border-gray-300 rounded-xl px-3 py-2 bg-white"
-            >
-              {isScience && <option value="">Choose the subject…</option>}
-              {subjectChoices.map((sub) => (
-                <option key={sub} value={sub}>{subjectLabel(sub)}</option>
-              ))}
-            </select>
-            {!isScience && <p className="text-[11px] text-gray-400 mt-1">Pick the subject of this paper so it is marked the right way.</p>}
-          </div>
-        )}
-        {/* The answers or mark scheme, optional, on BOTH forms (Adrian, 24 Sep
-            2026: "(b) yes"): a PDF or photos. It grounds THIS paper's marking
-            only — a student's attachment is never filed as the paper's shared
-            scheme (the route stamps attached_by:'student'; the bot's remarkRun
-            skips saveScheme for it, and the paper library's own solutions
-            outrank it), and the marking never shows, quotes or names it. */}
-        <div className="mt-3">
-          <p className="block text-sm font-semibold text-navy mb-1">Answers or mark scheme <span className="font-normal text-gray-400">(optional)</span></p>
           <button
-            type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
-            className="w-full rounded-xl border border-dashed border-gray-300 bg-white py-3 text-[13px] text-gray-600 active:bg-amber-50"
+            onClick={() => inputRef.current?.click()}
+            disabled={busy}
+            className={`w-full rounded-2xl border-2 border-dashed border-gray-300 bg-[hsl(45,100%,98%)] ${pages.length ? 'py-4' : 'py-7'} text-center active:bg-amber-50`}
           >
-            {schemeFiles.length
-              ? `📎 ${schemeFiles.length} file${schemeFiles.length === 1 ? '' : 's'} attached — tap to add more`
-              : '📎 Attach the answers or your school’s mark scheme — a PDF or photos'}
+            {!pages.length && !converting && <span className="block text-3xl mb-1">📷</span>}
+            <span className="text-sm font-semibold text-navy">
+              {converting
+                ? converting
+                : pages.length ? `${pages.length} page${pages.length > 1 ? 's' : ''} · add more` : 'Take photos or choose a PDF'}
+            </span>
           </button>
           <input
-            ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
-            onChange={(e) => {
-              const list = Array.from(e.target.files ?? []).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name));
-              schemeUploadedRef.current.clear();
-              setSchemeFiles(prev => [...prev, ...list].slice(0, 12));
-              if (schemeRef.current) schemeRef.current.value = '';
-            }}
+            ref={inputRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
+            onChange={(e) => onPick(e.target.files)}
           />
-          {schemeFiles.length > 0 && !busy && (
-            <button type="button" onClick={() => { setSchemeFiles([]); schemeUploadedRef.current.clear(); }} className="mt-1 text-[11px] text-gray-500 underline underline-offset-2">
-              Remove the mark scheme
-            </button>
+
+          {capNote && <p className="text-[13px] font-semibold text-amber-700">{capNote}</p>}
+          {splitNote && pages.length > 0 && <p className="text-[13px] text-emerald-700">{splitNote}</p>}
+
+          {pages.length > 0 && (
+            <div className="grid grid-cols-4 gap-2">
+              {pages.map((p, i) => (
+                <div key={i} className="relative aspect-[3/4]">
+                  {p.preview
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={p.preview} alt={`page ${i + 1}`} className="w-full h-full object-cover rounded-lg border border-gray-200" />
+                    : <div className="w-full h-full rounded-lg border border-gray-200 bg-gray-50 flex items-center justify-center text-xl">🖼️</div>}
+                  <span className="absolute bottom-1 left-1 text-[10px] font-bold bg-black/60 text-white rounded px-1">{i + 1}</span>
+                  {!busy && (
+                    <button
+                      onClick={() => removePage(i)} aria-label={`Remove page ${i + 1}`}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-900 text-white text-xs leading-none border-2 border-white"
+                    >×</button>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
-          {/* Adrian's line, verbatim (24 Sep 2026: "we should state that"). */}
-          <p className="text-[11px] text-gray-500 mt-1">Attach only answers or a scheme you were given for your own study. We use it only to mark your paper.</p>
-          {!isScience && <p className="text-[11px] text-gray-400 mt-1">With the answers or scheme, marking follows your school&apos;s points, not the standard ones.</p>}
         </div>
+
+        {/* ── 2 Name the paper ────────────────────────────────────── */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <StepDot n={2} done={nameDone && subjectDone} />
+            {nameLocked
+              ? <p className="text-sm text-gray-600 flex-1">Filed as <b className="text-navy">{assignment?.title ?? paper?.title}</b></p>
+              : <label htmlFor="paper-name" className="text-sm font-semibold text-navy flex-1">Name the paper</label>}
+          </div>
+          {!nameLocked && (
+            <>
+              {/* A name shaped like the placeholder lets the marker ground the run
+                  to the official total (e.g. /90) — Adrian, 2026-08-29. */}
+              <input
+                id="paper-name" type="text" value={paperName} maxLength={80} required
+                onChange={(e) => setPaperName(e.target.value)}
+                // Leaving the field is the moment the name is finished — ask then
+                // rather than waiting out the debounce (lib/paper-check).
+                onBlur={(e) => { void runPaperCheck(e.target.value.trim()); }}
+                placeholder={isScience ? 'School, year, paper — e.g. Cedar 2025 Chem P2' : 'School, year, paper — e.g. Xinmin 2021 AM P2'}
+                className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-navy/20"
+              />
+              {subjectChoices.length > 1 && (
+                <div role="radiogroup" aria-label="Subject" className="flex flex-wrap gap-2">
+                  {subjectChoices.map((sub) => (
+                    <button
+                      key={sub} type="button" role="radio" aria-checked={subject === sub}
+                      onClick={() => setSubject(sub)} disabled={busy}
+                      className={`flex-1 min-w-[6rem] text-sm font-semibold rounded-xl py-2 border ${subject === sub ? 'bg-navy text-[hsl(45,100%,96%)] border-navy' : 'bg-white text-navy border-gray-200'}`}
+                    >{subjectLabel(sub)}</button>
+                  ))}
+                </div>
+              )}
+              {/* The answers or mark scheme, optional, on BOTH forms (Adrian, 24 Sep
+                  2026). It grounds THIS paper's marking only — the route stamps
+                  attached_by:'student', never filed as the paper's shared scheme. */}
+              {schemeFiles.length ? (
+                <div className="rounded-xl border border-gray-200 px-3 py-2.5 text-[13px] text-gray-700 space-y-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <button type="button" onClick={() => schemeRef.current?.click()} disabled={busy} className="text-left">
+                      📎 Mark scheme · {schemeFiles.length} file{schemeFiles.length === 1 ? '' : 's'} <span className="text-gray-400">· add more</span>
+                    </button>
+                    {!busy && (
+                      <button type="button" onClick={() => { setSchemeFiles([]); schemeUploadedRef.current.clear(); }} className="text-[12px] text-gray-500 underline underline-offset-2">
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {/* Adrian's line (24 Sep 2026: "we should state that"), shortened. */}
+                  <p className="text-[11px] text-gray-500">Marking follows your school&apos;s points. Attach only answers you were given for your own study.</p>
+                </div>
+              ) : (
+                <button
+                  type="button" onClick={() => schemeRef.current?.click()} disabled={busy}
+                  className="text-[13px] font-semibold text-navy underline underline-offset-2 text-left"
+                >
+                  + Add the answers or mark scheme <span className="font-normal text-gray-400">(optional)</span>
+                </button>
+              )}
+              <input
+                ref={schemeRef} type="file" accept="image/*,application/pdf" multiple className="hidden"
+                onChange={(e) => {
+                  const list = Array.from(e.target.files ?? []).filter(f => f.type === 'application/pdf' || f.type.startsWith('image/') || /\.(pdf|jpe?g|png|webp|heic|heif)$/i.test(f.name));
+                  schemeUploadedRef.current.clear();
+                  setSchemeFiles(prev => [...prev, ...list].slice(0, 12));
+                  if (schemeRef.current) schemeRef.current.value = '';
+                }}
+              />
+            </>
+          )}
         </div>
-        )}
 
         {error && <p className="text-sm text-rose-700 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2">{error}</p>}
 
-        {/* What the pre-flight found. Amber, not red: nothing here is an error —
-            the pages are uploaded and the hand-in will go through either way.
-            The point is to ask the one question only the student can answer,
-            while the paper is still in front of them. */}
+        {/* What the pre-flight found. Amber, not red: the pages are uploaded and
+            the hand-in goes through either way — it asks the one question only
+            the student can answer while the paper is still in front of them. */}
         {findings.length > 0 && (
-          <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 space-y-2">
-            <p className="font-bold text-amber-900">Before you send — check this</p>
-            <ul className="space-y-1.5 text-amber-900">
-              {findings.map((f, i) => <li key={i} className="leading-snug whitespace-pre-line">• {f.message}</li>)}
-            </ul>
+          <div className="text-sm bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 space-y-2.5">
+            {findings.map((f, i) => (
+              <p key={i} className={`leading-snug whitespace-pre-line text-amber-900 ${f.kind === 'missing-questions' ? 'font-bold' : ''}`}>{f.message}</p>
+            ))}
             {findings.some(f => f.kind === 'duplicate') && (
               <Link href={isScience ? '/app/science/papers' : '/app/marking'}
                 className="block text-center text-sm font-semibold text-navy bg-white border border-amber-300 rounded-xl py-2.5">
-                It&apos;s the same paper — don&apos;t send it again
+                It&apos;s the same paper — don&apos;t send it
               </Link>
             )}
-            <p className="text-[11px] text-amber-700">
-              Your photos are already uploaded — adding a page won&apos;t re-send them.
-            </p>
             {missingAsk && (
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
+              <div className="flex gap-2">
                 <button type="button" onClick={() => inputRef.current?.click()} disabled={busy}
-                  className="flex-1 text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-2.5 disabled:opacity-40">➕ Add the pages</button>
+                  className="flex-1 text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-2.5 disabled:opacity-40">Add pages</button>
                 <button type="button" onClick={() => submit(true, 'not-done')} disabled={busy}
-                  className="flex-1 text-sm font-semibold text-navy bg-white border border-amber-300 rounded-xl py-2.5 disabled:opacity-40">I didn&apos;t do these — send</button>
+                  className="flex-1 text-sm font-semibold text-navy bg-white border border-amber-300 rounded-xl py-2.5 disabled:opacity-40">Didn&apos;t do them — send</button>
               </div>
             )}
           </div>
         )}
 
-        {!missingAsk && <button
-          onClick={() => submit(findings.length > 0, findings.length > 0 ? 'sent-anyway' : null)}
-          disabled={!pages.length || !paperName.trim() || busy || (isScience && !subject)}
-          className="w-full text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
-        >
-          {busy ? stage
-            : findings.length > 0 ? '📤 Send anyway'
-            : pages.length ? `📤 Send ${pages.length} page${pages.length === 1 ? '' : 's'} for marking` : '📤 Send for marking'}
-        </button>}
-        {missingAsk && busy && <p className="text-center text-sm text-gray-500">{stage}</p>}
-        <p className="text-[11px] text-gray-400">
-          Wide photos of an open booklet are split into single pages automatically. PDFs are converted to pages on your phone before uploading.
-          Wrote on a PDF with your Pencil in Preview on an iPad? Share → Save to Files, then choose it here — your ink comes with it.
-        </p>
+        {/* ── 3 Send ──────────────────────────────────────────────── */}
+        {missingAsk ? (
+          busy && <p className="text-center text-sm text-gray-500">{stage}</p>
+        ) : (
+          <div className="flex items-center gap-2">
+            <StepDot n={3} done={false} />
+            <button
+              onClick={() => submit(findings.length > 0, findings.length > 0 ? 'sent-anyway' : null)}
+              disabled={!pages.length || !paperName.trim() || busy || !subjectDone}
+              className="flex-1 text-sm font-bold bg-navy text-[hsl(45,100%,96%)] rounded-xl py-3 disabled:opacity-40"
+            >
+              {busy ? stage
+                : findings.length > 0 ? 'Send anyway'
+                : pages.length ? `Send ${pages.length} page${pages.length === 1 ? '' : 's'}` : 'Send'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+/** The numbered dot before each step; a green tick once the step is done. */
+function StepDot({ n, done }: { n: number; done: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`w-[22px] h-[22px] rounded-full text-[12px] font-bold leading-[22px] text-center flex-none ${done ? 'bg-emerald-600 text-white' : 'bg-navy text-[hsl(45,100%,96%)]'}`}
+    >{done ? '✓' : n}</span>
   );
 }

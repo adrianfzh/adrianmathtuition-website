@@ -11,7 +11,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { scienceMarkingOpen } from '@/lib/portal-beta';
 import { DAILY_SCIENCE_SUBMIT_CAP } from '@/lib/portal-submit-limit';
 import { scienceQueuePlacement } from '@/lib/science-queue-store';
-import { dayWord } from '@/lib/daily-queue';
+import { startsPhrase } from '@/lib/daily-queue';
 import { sgtTodayISO } from '@/lib/sgt';
 import { SCIENCE_MARK_SUBJECTS } from '@/lib/mark-subject-for-student';
 import { studentSciences } from '@/lib/portal-prefs';
@@ -39,7 +39,7 @@ export default async function ScienceSubmitPage({ searchParams }: { searchParams
     try {
       const place = await scienceQueuePlacement(getSupabaseAdmin(), sid, DAILY_SCIENCE_SUBMIT_CAP, new Date());
       if (!place.ok) queueNotice = { blocking: true, text: place.message };
-      else if (place.waits) queueNotice = { blocking: false, text: `Today’s science hand-ins are used — this paper will be queued for ${dayWord(place.day, sgtTodayISO())} and go for marking at midnight. You can remove it from Science › Papers until then.` };
+      else if (place.waits) queueNotice = { blocking: false, text: `Today’s science papers are used. This one is marked ${startsPhrase(place.day, sgtTodayISO())}.` };
     } catch { /* never block the page on a read — the route checks again */ }
   }
   return <SubmitClient family="science" queueNotice={queueNotice} subjectChoices={choice ? [...choice.subjects] : [...SCIENCE_MARK_SUBJECTS]} />;

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { placeInQueue, countByDay, usedByDay, dayWord, queuedLabel, QUEUE_HORIZON_DAYS } from './daily-queue';
+import { placeInQueue, countByDay, usedByDay, dayWord, queuedLabel, startsPhrase, QUEUE_HORIZON_DAYS } from './daily-queue';
 
 const today = '2026-09-24'; // a Thursday
 
@@ -50,5 +50,13 @@ describe('dayWord / queuedLabel', () => {
     expect(dayWord('2026-10-03', today)).toBe('3 Oct');
     expect(queuedLabel('2026-09-26', today)).toBe('Queued · Saturday');
     expect(queuedLabel('2026-09-25', today)).toBe('Queued · Tomorrow');
+  });
+});
+
+describe('startsPhrase', () => {
+  it('never says "on tomorrow"', () => {
+    expect(startsPhrase('2026-10-06', '2026-10-05')).toBe('tonight at midnight');
+    expect(startsPhrase('2026-10-07', '2026-10-05')).toBe('on Wednesday');
+    expect(startsPhrase('2026-10-05', '2026-10-05')).toBe('soon');
   });
 });

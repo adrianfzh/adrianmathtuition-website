@@ -2721,6 +2721,19 @@ keep their own colours; an Other / untagged paper stays plain.
 
 ## /app/submit — student paper hand-ins (2026-08-12)
 
+> **The shorter page (5 Oct 2026, Adrian: "i thought it was very wordy/verbose" → "build the
+> shorter hand in page").** Both `/app/submit` and `/app/science/submit` are three numbered
+> steps — **1 Photograph your pages** (the photo / PDF / iPad-ink / own-paper tips behind a
+> "?" beside it; the ink line "Blue or black ink. Green, red or purple counts as a correction."
+> ALWAYS visible under it, maths only — his 10 Sep rule), **2 Name the paper** (the hint is the
+> placeholder; science picks the subject by buttons; "+ Add the answers or mark scheme" is a
+> link, its note shows only once a file is attached), **3 Send**. "No questions detected. Add
+> photos of the question paper too." (no Why?), the missing-pages line is the bot's one
+> sentence "We can't see Q5(b), Q7, Q8(a)." with **Add pages** / **Didn't do them — send**, and
+> the sent card is "Sent · It comes back marked in Papers." with Hand in another + Papers
+> (queued: "Marking starts tonight at midnight", `lib/daily-queue.ts startsPhrase` — it said
+> "at midnight on tomorrow"). Words on the empty maths page: 243 → about 30.
+
 The door IN from the student side: photograph the worked paper on a phone →
 auto spread-split + ≤2600px downscale (`lib/spread-split.ts`, same hygiene as
 Adrian's own intake) → straight-to-Blob via client token → one POST files it.

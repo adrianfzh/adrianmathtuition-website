@@ -67,6 +67,18 @@ export function dayWord(day: string, today: string): string {
   return `${at.getUTCDate()} ${MONTH[at.getUTCMonth()]}`;
 }
 
+/**
+ * When a queued item starts, as words that read after "Marking starts …".
+ * Queued for tomorrow = the midnight that ends today ("tonight at midnight");
+ * the card used to say "at midnight on tomorrow" (fixed 5 Oct 2026).
+ */
+export function startsPhrase(day: string, today: string): string {
+  const w = dayWord(day, today);
+  if (w === 'today') return 'soon';
+  if (w === 'tomorrow') return 'tonight at midnight';
+  return `on ${w}`;
+}
+
 function capitalise(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

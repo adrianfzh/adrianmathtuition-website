@@ -62,7 +62,7 @@ shows the line in small text, and that is all.
 | Piece | Where | What it does |
 |---|---|---|
 | The pre-flight call | site `api/portal/submit` (when `!body.confirmed`) → bot `{phase:'preflight'}` | a `blocking` finding → 409 `{needsConfirm, findings}` |
-| The student's warning | site `app/submit/submit-client.tsx` | amber "Before you send — check this" box; the button turns into "📤 Send anyway" → resend with `confirmed:true` |
+| The student's warning | site `app/submit/submit-client.tsx` | amber box (no heading since 5 Oct 2026); the button turns into "Send anyway" → resend with `confirmed:true` |
 | The page reader | bot `ai/paper-marker.js classifyPagesForContext` (Sonnet, `PAGE_CLASSIFY_SYSTEM`) | per page: printed question labels + verbatim openings |
 | The checker | bot `ai/handin-check.js` (pure, tested) | whole-question gaps in the middle, duplicates, order, unreadable, orientation |
 | The paper's identity | bot `lib/paper-key` `parsePaperKey`, `lib/bank-grounding.js` (`pickRowsForPaper`, `rowOpenings`, `sameOpening`), `lib/scheme-store.js isMatch` | name → key → bank rows, confirmed by the fingerprint (≥3 shared, ≥50 %) |
@@ -144,10 +144,13 @@ read Joey's 15 pages as Q1–Q9.
 A new finding kind, `missing-questions`, with `blocking:true`. The existing amber box
 shows:
 
-> **We can't see Q1(a), Q1(d) and Q2 in your photos.**
-> If you did them, add those pages. If you didn't, tell us so they're marked as not done.
+> **We can't see Q1(a), Q1(d), Q2.**
 >
-> [ ➕ Add the pages ]  [ I didn't do these — send ]
+> [ Add pages ]  [ Didn't do them — send ]
+
+(Shortened 5 Oct 2026 with the shorter hand-in page — Adrian: "build the shorter hand in
+page". It was "We can't see … in your photos. If you did them, add those pages. If you
+didn't, tell us so they're marked as not done." with ➕ Add the pages / I didn't do these.)
 
 - **➕ Add the pages** goes back to the photo picker with the photos kept. Sending again
   runs the check again.
