@@ -4,7 +4,7 @@ import { solutionMarkdown } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { practiceAuth, scienceServeFor } from '@/lib/practice';
 import { scienceRowServable } from '@/lib/science-practice';
-import { isScienceSubject, scienceLevelForSubject, sciencePoolLevels } from '@/lib/science-levels';
+import { isScienceSubject, mcqKey, scienceLevelForSubject, sciencePoolLevels } from '@/lib/science-levels';
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
 import { tidyChemText } from '@/lib/chem-text';
@@ -44,7 +44,10 @@ export async function GET(req: NextRequest) {
       // A rewritten MCQ solution carries its own bold "Answer: X" line after the working
       // (5 Oct 2026, the readable solutions) — then the stored answer is not printed on top too.
       const own = /\*\*Answer:\s*[A-D]\*\*/.test(sq.solution || '');
-      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(own ? { ...sq, answer: null } : sq, gate)) });
+      // An MCQ's stored answer may carry its whole explanation ("**D** — … Why: …", 805 served rows):
+      // print just the letter — the explanation is the solution below.
+      const key = mcqKey(sq.answer);
+      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(own ? { ...sq, answer: null } : key ? { ...sq, answer: key } : sq, gate)) });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }
