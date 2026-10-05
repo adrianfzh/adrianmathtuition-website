@@ -82,7 +82,7 @@ Migration `migrations/h2_practice_tools.sql`.
 | `H2_METHOD_DRILLS_OPEN_TO_STUDENTS` | closed | 🧭 Which method? for every JC1/JC2 student |
 | `H2_STATS_TRAINER_OPEN_TO_STUDENTS` | closed | ✍️ Statistics write-ups for every JC1/JC2 student |
 
-`h2ToolOpen(tool, account)` → `lib/h2-tools h2ToolVisible`: Adrian's admin cookie and the
+`h2ToolOpen(tool, account)` → `lib/h2-tools h2ToolVisible`: Adrian's admin cookie (also with "View as student" on) and the
 demo student (`H2_TOOLS_PREVIEW_IDENTITIES`) always; others only when the switch is open AND
 their level is JC. Routes: `GET|POST /api/portal/h2/methods`, `GET|POST /api/portal/h2/stats`
 (401 anonymous — health-check `portal-h2-methods`, `portal-h2-stats`).

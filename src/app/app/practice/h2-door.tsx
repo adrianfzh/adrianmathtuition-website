@@ -9,7 +9,7 @@ export default function H2Door({ methods, stats }: { methods: boolean; stats: bo
   if (!methods && !stats) return null;
   return (
     <section className="space-y-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">JC drills</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">H2 Math · JC drills</p>
       {methods && (
         <Link href="/app/practice/methods" className={`${CARD} flex items-center gap-3 px-4 py-3 hover:bg-[hsl(45,100%,99%)] active:scale-[0.99] transition`}>
           <span aria-hidden className="text-xl leading-none">🧭</span>

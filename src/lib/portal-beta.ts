@@ -320,7 +320,9 @@ export const H2_TOOLS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_ID
 /** May the current viewer use this H2 tool? `account` = the student session, when there is one. */
 export async function h2ToolOpen(tool: 'methods' | 'stats', account?: { id: string; airtable_student_id?: string | null; level?: string | null } | null): Promise<boolean> {
   const { h2ToolVisible } = await import('./h2-tools');
-  const isAdmin = !(await viewingAsStudent()) && (await isNotesAuthed());
+  // Adrian's admin cookie always passes — also while "View as student" is on, so he can try
+  // the tools from his student view whatever level that account is (5 Oct 2026).
+  const isAdmin = await isNotesAuthed();
   const { portalIdentity } = await import('./portal-auth');
   return h2ToolVisible({
     open: tool === 'methods' ? H2_METHOD_DRILLS_OPEN_TO_STUDENTS : H2_STATS_TRAINER_OPEN_TO_STUDENTS,

@@ -89,8 +89,8 @@ export default async function PracticeTodo({ account, top = null, extra = null }
         <h1 className="text-xl font-bold text-navy">Practice</h1>
         {summary && <p className="text-xs text-gray-500">{summary}</p>}
       </div>
-      {top}
       {extra}
+      {top}
 
       {sections.length === 0 && fold.done.length > 0 && (
         <div className={`${CARD} p-5`}>
