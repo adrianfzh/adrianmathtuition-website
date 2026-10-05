@@ -26,6 +26,8 @@ import {
 import { displayPaperName } from '@/lib/paper-display-name';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { sendTelegram } from '@/lib/telegram';
+import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
+import { lostTopics, pickTopics, cleanNote } from '@/lib/practice-again-topics';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,13 +35,13 @@ const UUID = /^[0-9a-f-]{36}$/i;
 
 /** The guard's per-paper columns without the heavy `result_json` — only the two keys it reads. */
 const RUN_COLUMNS =
-  'id, paper_name, student_name, student_id, released_at, created_at, paper_subject, subject, total_awarded, total_max, totals:result_json->totals, marking_source:result_json->source';
+  'id, paper_name, student_name, student_id, released_at, created_at, paper_subject, subject, total_awarded, total_max, totals:result_json->totals, marking_source:result_json->source, tutor_marked:result_json->tutor_marked';
 
 type RunRow = {
   id: string; paper_name: string | null; student_name: string | null; student_id: string | null;
   released_at: string | null; created_at: string | null; paper_subject: string | null; subject: string | null;
   total_awarded: number | null; total_max: number | null;
-  totals: unknown; marking_source: unknown;
+  totals: unknown; marking_source: unknown; tutor_marked?: unknown;
 };
 
 /** The shape lib/student-batch reads — result_json rebuilt from the two keys the guard uses. */
@@ -113,15 +115,32 @@ export async function POST(req: NextRequest) {
     .select(RUN_COLUMNS)
     .in('id', runIds).eq('student_id', sid).not('released_at', 'is', null);
   const byId = new Map(((rows ?? []) as unknown as RunRow[]).map(r => [r.id, toBatchRun(r)]));
+  // A paper the tutor marked on paper (5 Oct 2026) has no marking here to build a sheet from.
+  if (((rows ?? []) as unknown as RunRow[]).some(r => r.tutor_marked)) {
+    return NextResponse.json({ error: 'Your tutor marked that paper on paper, so there is nothing here to build a sheet from.' }, { status: 409 });
+  }
 
   // ── One paper ─────────────────────────────────────────────────────────────
   if (runIds.length === 1) {
     const run = byId.get(runIds[0]);
     if (!run) return NextResponse.json({ error: 'That paper is not one of yours, or is not out yet.' }, { status: 404 });
+    // 🎯 The topics they ticked (5 Oct 2026, lib/practice-again-topics): checked
+    // against the topics THIS paper lost marks on, recomputed here from the marking.
+    let topics: string[] = [];
+    const note = cleanNote((body as { note?: unknown }).note);
+    const asked = (body as { topics?: unknown }).topics;
+    if (wave < 2 && Array.isArray(asked) && asked.length) {
+      const { data: full } = await sb.from('paper_marking_runs')
+        .select('id, created_at, paper_name, total_awarded, total_max, released_at, result_json')
+        .eq('id', runIds[0]).eq('student_id', sid).maybeSingle();
+      const paper = full ? buildStudentMarking([full as unknown as MarkingRunRow]).papers[0] : null;
+      topics = pickTopics(asked, lostTopics(paper?.dropped ?? []));
+      if (!topics.length) return NextResponse.json({ error: 'Pick at least one topic from the list.' }, { status: 400 });
+    }
     const out = await queueSheetJob(runIds[0], {
       requestedBy: 'student',
       wave,
-      focus: wave >= 2 ? { wave, shelved } : undefined,
+      focus: wave >= 2 ? { wave, shelved } : topics.length ? { topics, note } : undefined,
     });
     if (!out.ok) {
       // Already being written: that IS what they asked for — say so, no error.
@@ -136,8 +155,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: copy }, { status: out.http });
     }
     const jobId = (out.job as { id?: string } | null)?.id ?? null;
-    await log(sb, sid, { runIds, jobId, wave });
-    tell(account.display_name || run.student_name, [run], undefined, wave);
+    await log(sb, sid, { runIds, jobId, wave, ...(topics.length ? { topics, note: note || undefined } : {}) });
+    tell(account.display_name || run.student_name, [run], undefined, wave, topics, note);
     return NextResponse.json({ ok: true, state: 'queued', jobId, runIds });
   }
 
@@ -177,7 +196,7 @@ async function log(
 }
 
 /** One line to the marking topic. Best-effort — the job is queued either way. */
-function tell(who: string | null | undefined, papers: StudentBatchRun[], subject: string | undefined, wave: number): void {
+function tell(who: string | null | undefined, papers: StudentBatchRun[], subject: string | undefined, wave: number, topics: string[] = [], note = ''): void {
   const names = papers.map(p => escapeTelegramHtml(shortPaperName(displayPaperName(p.paper_name, p.student_name))));
   sendTelegram(
     practiceAgainRequestLine({
@@ -185,6 +204,8 @@ function tell(who: string | null | undefined, papers: StudentBatchRun[], subject
       papers: names,
       subject: subject ? escapeTelegramHtml(subject) : undefined,
       wave,
+      topics: topics.map(escapeTelegramHtml),
+      note: note ? escapeTelegramHtml(note) : undefined,
     }),
     'marking',
   ).catch(() => {});

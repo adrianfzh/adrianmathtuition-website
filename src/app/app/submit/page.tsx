@@ -18,7 +18,7 @@ import { DAILY_SUBMIT_CAP, countHandinsToday } from '@/lib/portal-submit-limit';
 import type { HandinCountingClient } from '@/lib/portal-submit-limit';
 import SubmitClient from './submit-client';
 import AddPagesView from './add-pages-view';
-import { markSubjectAccess } from '@/lib/portal-beta';
+import { markSubjectAccess, tutorMarkedUploadOpen } from '@/lib/portal-beta';
 import { enrolledMarkSubjects } from '@/lib/student-mark-subjects';
 import { pickableSubjects } from '@/lib/mark-subject-for-student';
 
@@ -92,5 +92,6 @@ export default async function SubmitPage({ searchParams }: { searchParams: Promi
     ? []
     : pickableSubjects({ enrolled: await enrolledMarkSubjects(account.airtable_student_id), access });
 
-  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} subjectChoices={subjectChoices} />;
+  const tutorMarkedDoor = !assignment && !paper && (await tutorMarkedUploadOpen());
+  return <SubmitClient assignment={assignment} paper={paper} slotUsed={slotUsed} subjectChoices={subjectChoices} tutorMarkedDoor={tutorMarkedDoor} />;
 }

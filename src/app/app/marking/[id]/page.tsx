@@ -38,6 +38,8 @@ import JumpToMistake from '../JumpToMistake';
 import { Suspense } from 'react';
 import type { InkPages } from '@/lib/student-ink';
 import { sheetLine } from '@/lib/practice-again-line';
+import { TUTOR_MARKED_TAG } from '@/lib/tutor-marked';
+import { lostTopics, readTopicFocus } from '@/lib/practice-again-topics';
 
 const COLUMNS = 'id, created_at, paper_name, total_awarded, total_max, annotated_pdf_url, photos_pdf_url, pdf_url, released_at, result_json, student_label, student_starred_at, student_archived_at, student_note, paper_subject, superseded_by, subject';
 
@@ -126,12 +128,13 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   // is read either way now — the state below, or the shelf.
   let requestState: PracticeAgainState = 'none';
   let nextWave: { count: number; runIds: string[] } | null = null;
+  let askedTopics: string[] | null = null;
   if (!isScience) {
-    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result')
+    const { data: jobRows } = await sb.from('sheet_jobs').select('run_id, run_ids, status, result, focus')
       .or(`run_id.eq.${id},run_ids.cs.{${id}}`).order('created_at', { ascending: false }).limit(1);
-    const job = (jobRows ?? [])[0] as { run_id: string; run_ids: string[] | null; status: string; result: unknown } | undefined;
+    const job = (jobRows ?? [])[0] as { run_id: string; run_ids: string[] | null; status: string; result: unknown; focus: string | null } | undefined;
     if (!sheet) {
-      if (job?.status === 'queued' || job?.status === 'claimed') requestState = 'queued';
+      if (job?.status === 'queued' || job?.status === 'claimed') { requestState = 'queued'; askedTopics = readTopicFocus(job.focus)?.topics ?? null; }
       else if (job?.status === 'done') requestState = readNoSheet(job.result).noSheet ? 'nothing' : 'checking';
       // failed / cancelled: they may ask again
     }
@@ -171,14 +174,20 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
   return (
     <div className="space-y-4 pb-8">
-      {isAdmin ? (
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <Link href={`/admin/students/${sid}?tab=papers`} className="inline-block text-sm font-semibold text-navy hover:underline">← {viewerName || 'Student'}&apos;s papers</Link>
-          <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees · <a href={`/admin/mark-paper?run=${paper.id}`} className="underline text-sky-700">open in Mark a paper ›</a></p>
-        </div>
-      ) : (
-        <Link href={isScience ? '/app/science' : '/app/marking'} className="inline-block text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
-      )}
+      {/* ← back, STUCK under the top menu (5 Oct 2026, Adrian: "the arrow back to [student]
+          papers, make it stick? so that i don't have to scroll all the way up"): a slim
+          translucent bar, 36 px, the full width of the column, on phone and iPad alike. */}
+      <div className="sticky top-14 z-30 -mx-4 -mt-5 mb-1 px-4 h-9 flex items-center justify-between gap-2 bg-[hsl(45,100%,98%)]/85 backdrop-blur-md border-b border-black/5">
+        {isAdmin ? (
+          <>
+            <Link href={`/admin/students/${sid}?tab=papers`} className="min-w-0 truncate text-sm font-semibold text-navy hover:underline">← {viewerName || 'Student'}&apos;s papers</Link>
+            <a href={`/admin/mark-paper?run=${paper.id}`} className="shrink-0 text-[12px] underline text-sky-700">Mark a paper ›</a>
+          </>
+        ) : (
+          <Link href={isScience ? '/app/science' : '/app/marking'} className="text-sm font-semibold text-navy hover:underline">{isScience ? '← Science' : '← Papers'}</Link>
+        )}
+      </div>
+      {isAdmin && <p className="text-[12px] text-gray-500">Read-only — exactly what {viewerName || 'the student'} sees.</p>}
 
       <header className={`relative overflow-hidden rounded-3xl p-4 pt-5 border shadow-sm ${tone ? tone.tint : 'bg-white border-black/5'}`}>
         {tone && <span aria-hidden className={`absolute inset-x-0 top-0 h-1.5 ${tone.strip}`} />}
@@ -188,10 +197,11 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
             {isAdmin ? <h1 className="text-lg font-bold text-navy leading-snug">{paper.name}</h1>
               : <RenamePaper runId={paper.id} name={paper.name} defaultName={displayPaperName(paper.rawName ?? null, viewerName)} />}
             {!isScience && !isAdmin && <ArchivePaper runId={paper.id} archived={!!paper.archived} className="block mt-1" />}
+            {paper.tutorMarked && <span className="inline-block mt-1 rounded-full bg-violet-100 text-violet-800 text-[11px] font-semibold px-2 py-0.5">📝 {TUTOR_MARKED_TAG}</span>}
             <p className="text-xs text-gray-500 mt-1 flex items-center gap-1.5">
               <PaperSubjectPill subject={paper.subject} />
               <span>
-                {paper.markedDate && paper.markedDate !== (paper.handedInDate ?? paper.date)
+                {paper.tutorMarked ? `Added ${niceDate(paper.handedInDate ?? paper.date)}` : paper.markedDate && paper.markedDate !== (paper.handedInDate ?? paper.date)
                   ? `Handed in ${niceDate(paper.handedInDate ?? paper.date)} · marked ${niceDate(paper.markedDate)}`
                   : `Handed in and marked ${niceDate(paper.handedInDate ?? paper.date)}`}
               </span>
@@ -239,7 +249,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
         <p className="text-xs text-teal-900 bg-teal-50 border border-teal-200 rounded-2xl px-3 py-2">
           <span className="font-semibold">➕ Your added pages are being marked.</span> Your paper updates here when they&apos;re done — usually within the hour.
         </p>
-      ) : !isAdmin && !paper.notice?.addPages && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
+      ) : !isAdmin && !paper.tutorMarked && !paper.notice?.addPages && canAddPagesAfterMarking(row as unknown as MarkedRow) ? (
         <p className="text-xs text-gray-600">
           Missing a page?{' '}
           <a href={`${isScience ? '/app/science/submit' : '/app/submit'}?addTo=${id}`} className="font-semibold text-navy underline underline-offset-2">➕ Add missing pages</a>
@@ -290,7 +300,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
         </section>
       )}
 
-      {!isScience && !isAdmin && !sheet && !supersededBy && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} />}
+      {!isScience && !isAdmin && !sheet && !supersededBy && !paper.tutorMarked && followUpDepth <= 1 && <PracticeAgainRequest runId={paper.id} state={requestState} topics={lostTopics(paper.dropped)} askedTopics={askedTopics} />}
 
       {/* ⬇ The PDF first (Adrian, 22 Sep 2026: "put the download pdf at the top"). */}
       {paper.pdfUrl && (

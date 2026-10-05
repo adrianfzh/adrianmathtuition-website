@@ -218,6 +218,8 @@ export interface StudentPaper {
   notice?: PaperNoticeText | null;
   /** Follow-up practice, one item per dropped-marks question. Often empty. */
   practice: StudentPracticeItem[];
+  /** 📝 Marked by the tutor on paper and filed by the student (5 Oct 2026, lib/tutor-marked) — no marking here, only the total. */
+  tutorMarked?: boolean;
   /**
    * House-style Word file of the practice list, if the bot built one. The UI
    * no longer links it (students download /api/portal/practice-pdf instead,
@@ -623,6 +625,7 @@ function toPaper(row: MarkingRunRow, studentName?: string | null): StudentPaper 
     notice: activePaperNotice(row.result_json),
     practice,
     practiceDocxUrl: str(practiceRec?.docx_url) || null,
+    ...(rj?.tutor_marked ? { tutorMarked: true } : {}),
   };
 }
 

@@ -32,6 +32,7 @@
 // paper's own page.
 import Link from 'next/link';
 import { SubjectEdge } from '@/components/PaperSubjectPill';
+import { TUTOR_MARKED_TAG } from '@/lib/tutor-marked';
 import type { ReactNode } from 'react';
 import type { PortalAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -113,6 +114,7 @@ function niceDate(d: string): string {
 function whenLine(paper: StudentPaper, todayISO: string): string {
   const handedIn = paper.handedInDate ?? paper.date;
   const handed = shortDate(handedIn, todayISO);
+  if (paper.tutorMarked) return `Added ${handed}`;
   if (!paper.markedDate) return `Handed in ${handed}`;
   if (paper.markedDate === handedIn) return `Handed in and marked ${handed}`;
   return `Handed in ${handed} · marked ${shortDate(paper.markedDate, todayISO)}`;
@@ -268,6 +270,7 @@ export default async function PapersView({ account, sid, admin = false }: {
       outsideWindow(rowById.get(p.id)?.created_at, Date.now()) ? NOTE_STALE
       : job && (job.status === 'queued' || job.status === 'claimed') ? NOTE_IN_FLIGHT
       : isPracticeAgainHandin(rowById.get(p.id)) ? NOTE_PRACTICE_AGAIN
+      : p.tutorMarked ? 'marked by your tutor on paper'
       : null;
     return { id: p.id, name: p.name, subject: p.subject ?? '', date: p.date, awarded: p.awarded, max: p.max, blocked };
   });
@@ -540,7 +543,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
   /** Inside a Bundle the sheet's line is drawn once, at the foot. */
   inBundle?: boolean;
 }) {
-  const line = inBundle ? null : sheet ? sheetLine(sheet) : sheetJobLine(job, { admin });
+  const line = inBundle || paper.tutorMarked ? null : sheet ? sheetLine(sheet) : sheetJobLine(job, { admin });
   return (
     <div className={`${inBundle ? 'bg-white rounded-2xl' : CARD} relative overflow-hidden p-3 pl-4`}>
       <SubjectEdge subject={paper.subject} />
@@ -550,6 +553,7 @@ function PaperRow({ paper, todayISO, sheet, job, markedSheet, nextWave, inBundle
       <Link href={`/app/marking/${paper.id}`} data-track={admin ? undefined : 'marking:open'} className="flex items-center gap-3 group">
         <div className="min-w-0 flex-1">
           <p className="font-bold text-navy leading-snug break-words group-hover:underline">{paper.name}</p>
+          {paper.tutorMarked && <span className="inline-block mt-0.5 rounded-full bg-violet-100 text-violet-800 text-[11px] font-semibold px-2 py-0.5">📝 {TUTOR_MARKED_TAG}</span>}
           <p className="text-[12px] text-gray-500 mt-0.5">{whenLine(paper, todayISO)}</p>
           {!admin && noteFirstLine(paper.note) && <p className="text-[12px] text-gray-400 mt-0.5 italic truncate">{noteFirstLine(paper.note)}</p>}
         </div>

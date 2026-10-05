@@ -107,6 +107,18 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
       `focus.wave === 2` teaches EXACTLY `focus.shelved`, nothing else, reusing the first sheet's title block and the same folder name with
       " (wave 2)"; it skips the strong-batch and recency rules (it is a
       continuation).
+    - **The student's topics (5 Oct 2026, Adrian: "allow them to say the topic
+      they want, instead of generating all topics for the entire pdf").** When
+      `job.focus` parses as JSON with a `topics` array, the student ticked those
+      topics on the Request button (they are the marker's own `topic` names from
+      this paper). Diagnose and teach ONLY the gaps on questions whose topic is
+      one of `focus.topics`; every other lost mark is left out — not a section
+      and NOT in `gaps.shelved` (a shelved gap offers the student a next wave).
+      List them instead under `gaps.unpicked` (same entry shape) so every gap
+      still has a home and the sheet still verifies. `focus.note`, when present, is
+      the student's own line — read it, honour it where it fits the topics, never
+      quote it on the sheet. Practice items are drawn from those topics only.
+      The strong-paper rule still applies to the picked topics' marks.
     - **Strong batch (11 Sep 2026).** Fewer than 10 marks lost across the batch:
       the site refuses the request before you see it. If one reaches you anyway,
       write no sheet — `done` with `noSheet:true` and the reason "strong — under

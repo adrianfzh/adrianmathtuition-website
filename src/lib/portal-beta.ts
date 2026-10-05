@@ -338,6 +338,26 @@ export async function suggestionsOpen(): Promise<boolean> {
   return false;
 }
 
+// 📝 A paper the tutor marked on paper (5 Oct 2026, Adrian: "allow students to upload
+// physically marked copies of exam papers - so they have one place they can keep track").
+// The Hand in page's "A paper my tutor marked on paper" door → /app/submit/tutor-marked
+// (lib/tutor-marked, POST /api/portal/tutor-marked): filed in Papers with a "Marked by
+// your tutor" tag, no computer marking, only the total read. CLOSED until Adrian has
+// seen it: his cookie and the demo student see it. Flip to true to open it to everyone.
+export const TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS = false;
+export const TUTOR_MARKED_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+export async function tutorMarkedUploadOpen(): Promise<boolean> {
+  if (TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && TUTOR_MARKED_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
+
 // 🧭 "Which method?" drills + ✍️ the statistics write-up trainer for JC H2 students
 // (5 Oct 2026, Adrian: "build the which method drills and stats trainer";
 // SPEC-H2-TOOLS.md). CLOSED: Adrian's cookie and the demo student see them; flip one

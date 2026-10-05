@@ -1402,6 +1402,25 @@ with its own accuracy gates (`computeAutoHold`).
 
 ### Practice Again on request (8 Sep 2026)
 
+> **The student picks the topics (5 Oct 2026, Adrian: "allow them to say the topic they
+> want, instead of generating all topics for the entire pdf").** The Request button on a
+> paper lists the topics it lost marks on (the marker's per-question `topic`, most marks
+> first, the top one ticked; `lib/practice-again-topics.ts` pure/tested) plus an optional
+> one-line note. `POST /api/portal/practice-again/request {runId, topics, note}` re-derives
+> the list from the marking, keeps only real ones, and stores `{topics, note, instruction}`
+> as JSON in `sheet_jobs.focus` (`focusText` renders it); the worker teaches ONLY those
+> topics and lists the rest under `gaps.unpicked`, never `gaps.shelved`
+> (`scripts/sheet-worker/WORKER_PROMPT.md`). A paper whose marking named no topic keeps the
+> plain button. A tutor-marked paper (below) refuses a sheet (409).
+>
+> **📝 Papers the tutor marked on paper (5 Oct 2026).** `/app/submit/tutor-marked` files a
+> hand-marked copy as a released `paper_marking_runs` row (`source='tutor-marked'`,
+> `result_json.tutor_marked`, `results: []`, the photos as `annotated_photos`, totals from one
+> read of the written total — `lib/tutor-marked-reader.ts` — or typed by the student when the
+> read is unsure). Never `portal_submission`, never queued, no Practice Again, no add-pages;
+> the card and the page wear "Marked by your tutor". No limit on uploads (Adrian: "2-a-week
+> limit is papers i actually mark"). Switch `TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS`.
+
 > **The sheet as a spec (11 Sep 2026, built behind `SHEET_RENDER=spec`, not switched
 > on).** The writer emits the sheet as one JSON file and `scripts/sheet-worker/render_sheet.py`
 > builds the DOCX and the PDF — same `worksheet_lib`, same `repair-sheet.py`, same Word

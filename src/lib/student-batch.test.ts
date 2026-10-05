@@ -243,6 +243,11 @@ describe("what Adrian's Telegram says", () => {
     expect(line).toContain('asked for Practice Again on GCE 2025 · Paper 1');
     expect(line).not.toContain('papers (');
   });
+  it('names the topics the student picked and their note (5 Oct 2026)', () => {
+    const line = practiceAgainRequestLine({ who: 'Isabelle', papers: ['GCE 2025 · Paper 1'], topics: ['Quadratics', 'Indices'], note: 'the discriminant' });
+    expect(line).toContain('GCE 2025 · Paper 1 — only Quadratics, Indices from the app');
+    expect(line).toContain('Their note: “the discriminant”');
+  });
   it('says so when it is the next wave', () => {
     expect(practiceAgainRequestLine({ who: 'Isabelle', subject: 'E Math', papers: ['a', 'b'], wave: 2 }))
       .toContain('asked for the next wave of their Practice Again sheet for 2 papers');

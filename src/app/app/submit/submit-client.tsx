@@ -97,7 +97,9 @@ export async function uploadPage(file: File, onNote: (s: string) => void): Promi
   throw err;
 }
 
-export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math', embedded = false }: {
+export default function SubmitClient({ assignment = null, paper = null, slotUsed = false, queueNotice = null, subjectChoices = [], family = 'math', embedded = false, tutorMarkedDoor = false }: {
+  /** 📝 The door to filing a paper the tutor marked on paper (5 Oct 2026, behind TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS). */
+  tutorMarkedDoor?: boolean;
   assignment?: { id: string; title: string } | null;
   paper?: { id: string; title: string } | null;
   slotUsed?: boolean;
@@ -474,6 +476,16 @@ export default function SubmitClient({ assignment = null, paper = null, slotUsed
         </div>
       ) : isScience && embedded ? null : (
         <h1 className="text-xl font-bold text-navy pt-1">{isScience ? 'Hand in a science paper' : 'Submit a paper'}</h1>
+      )}
+
+      {tutorMarkedDoor && !assignment && !paper && !isScience && (
+        <Link href="/app/submit/tutor-marked" className="flex items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-violet-50/60 px-4 py-2.5 hover:bg-violet-50">
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-violet-900">📝 A paper my tutor marked on paper</span>
+            <span className="block text-[12px] text-violet-800/80">Keep it with your other papers — no marking needed.</span>
+          </span>
+          <span className="shrink-0 text-violet-700 text-lg" aria-hidden>›</span>
+        </Link>
       )}
 
       {isScience && queueNotice && !queueNotice.blocking && (

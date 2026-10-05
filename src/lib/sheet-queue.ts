@@ -13,6 +13,7 @@
 // path left is `requeueSheetAfterRemark`: a paper marked AGAIN that already
 // had a sheet gets a fresh one on the same terms (same requester) — a sheet
 // built on marking that no longer stands is worse than none.
+import { topicFocus } from './practice-again-topics';
 import { isPracticeAgainHandin } from './desk-state';
 import { getSupabaseAdmin } from './supabase';
 import { deleteHeldPracticeItems } from './practice-again-store';
@@ -204,8 +205,10 @@ export function focusText(focus: unknown): string | null {
   if (!focus) return null;
   if (typeof focus === 'string') return focus.trim().slice(0, 300) || null;
   if (typeof focus === 'object') {
-    const f = focus as { wave?: unknown; shelved?: unknown };
+    const f = focus as { wave?: unknown; shelved?: unknown; topics?: unknown; note?: unknown };
     if (Number(f.wave) >= 2) return waveTwoFocus(Array.isArray(f.shelved) ? f.shelved.map(String) : [], Number(f.wave));
+    // The student's own topic choice (5 Oct 2026, lib/practice-again-topics).
+    if (Array.isArray(f.topics) && f.topics.length) return topicFocus({ topics: f.topics.map(String), note: typeof f.note === 'string' ? f.note : null });
   }
   return String(focus).slice(0, 300);
 }

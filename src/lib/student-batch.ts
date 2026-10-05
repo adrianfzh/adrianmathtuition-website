@@ -350,14 +350,20 @@ export function practiceAgainRequestLine(o: {
   /** 'A Math' | 'E Math' | … — named only on a batch. */
   subject?: string;
   wave?: number;
+  /** The topics the student ticked (5 Oct 2026) — the sheet covers only these. */
+  topics?: readonly string[];
+  /** Their optional note with the request. */
+  note?: string;
 }): string {
   const wave = Number(o.wave || 1);
+  const only = o.topics?.length ? ` — only ${o.topics.join(', ')}` : '';
+  const said = o.note ? `\nTheir note: “${o.note}”` : '';
   const tail = wave >= 2
     ? 'It teaches what the last sheet shelved and goes out on its own once written and checked.'
     : 'It goes out on its own once written and checked; a gate failure holds it on the desk for you.';
   const asked = wave >= 2 ? 'asked for the next wave of their Practice Again sheet' : 'asked for Practice Again';
   if (o.papers.length <= 1) {
-    return `📘 <b>${o.who}</b> ${asked} on ${o.papers[0] || 'a marked paper'} from the app — queued for the Mac. ${tail}`;
+    return `📘 <b>${o.who}</b> ${asked} on ${o.papers[0] || 'a marked paper'}${only} from the app — queued for the Mac. ${tail}${said}`;
   }
   const what = wave >= 2 ? 'the next wave of their Practice Again sheet' : 'ONE Practice Again sheet';
   const inside = [o.subject, o.papers.join(', ')].filter(Boolean).join(' · ');
