@@ -57,7 +57,7 @@ function doneCaption(c: { marked: number; ticked: number }): string {
   return parts.join(' · ');
 }
 
-export default async function PracticeTodo({ account, top = null }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'>; top?: React.ReactNode }) {
+export default async function PracticeTodo({ account, top = null, extra = null }: { account: Pick<PortalAccount, 'id' | 'airtable_student_id' | 'level' | 'subjects'>; top?: React.ReactNode; extra?: React.ReactNode }) {
   const identity = portalIdentity(account);
   // rec… for tuition, acct:<uuid> for strangers — the identity predicate rides
   // the query; the subject gate is applied here on the rows that came back.
@@ -90,6 +90,7 @@ export default async function PracticeTodo({ account, top = null }: { account: P
         {summary && <p className="text-xs text-gray-500">{summary}</p>}
       </div>
       {top}
+      {extra}
 
       {sections.length === 0 && fold.done.length > 0 && (
         <div className={`${CARD} p-5`}>

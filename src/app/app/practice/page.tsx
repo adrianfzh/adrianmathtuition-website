@@ -44,7 +44,8 @@ import { getStudentAssignment, paperNamesForStudent } from '@/lib/portal-assignm
 import { dueLabel, opensInGrader } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { examPrepVisible, sciencePracticeAccess, proofLadderVisible } from '@/lib/portal-beta';
+import { examPrepVisible, sciencePracticeAccess, proofLadderVisible, h2ToolOpen } from '@/lib/portal-beta';
+import H2Door from './h2-door';
 import { scienceLevelsFor } from '@/lib/science-levels';
 import { bankScope } from '@/lib/qb-levels';
 import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
@@ -113,7 +114,9 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     // 📷 The photo page (SPEC-PRACTICE-PHOTO, 23 Sep 2026): the camera above the
     // list, behind PRACTICE_PHOTO_OPEN_TO_STUDENTS until Adrian has read the first 20.
     const photo = await practicePhotoOpen();
-    return <PracticeTodo account={account} top={photo ? <PracticePhotoPage account={account} /> : null} />;
+    // 🧭 ✍️ The JC drills (SPEC-H2-TOOLS.md): closed switches → Adrian + the demo student.
+    const [h2m, h2s] = await Promise.all([h2ToolOpen('methods', account), h2ToolOpen('stats', account)]);
+    return <PracticeTodo account={account} top={photo ? <PracticePhotoPage account={account} /> : null} extra={<H2Door methods={h2m} stats={h2s} />} />;
   }
 
   let initialAssignment: InitialAssignment | null = null;
@@ -245,6 +248,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           Pick a topic below instead, or snap a question to find one like it.
         </div>
       )}
+      {!assignmentId && !qid && <div className="mb-4"><H2Door methods={await h2ToolOpen('methods', account)} stats={await h2ToolOpen('stats', account)} /></div>}
       <PracticeFlow initialLevels={initialLevels} initialAssignment={initialAssignment} initialTarget={initialTarget} initialQuestion={initialQuestion} timedEntry={timedEntry} lessonsVisible={lessonsVisible} ladderVisible={ladderVisible} />
     </>
   );

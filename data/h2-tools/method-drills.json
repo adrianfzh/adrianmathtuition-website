@@ -1,0 +1,2596 @@
+[
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int_0^1 \\frac{x^5}{(2+x^3)^2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Substitution $u = 2+x^3$",
+      "Recognise $f'(x)[f(x)]^{-2}$ directly",
+      "Partial fractions",
+      "By parts with $u = x^5$"
+    ],
+    "answer": 0,
+    "why": "Write $x^5 = x^3\\cdot x^2$: the $x^2$ goes into $du$ and $x^3 = u-2$.",
+    "trap": 1,
+    "trap_why": "$f'(x) = 3x^2$, but the top is $x^5$: the extra $x^3$ spoils it.",
+    "source_question_id": "213bd030-f8cd-4b6c-bb3f-46412a52fff0",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — u=2+x^3 gives (1/3)∫(u-2)/u^2 du. 'Recognise f'f^-2 directly' fails: x^5 is not a multiple of 3x^2 (by parts with u=x^3 would work, but the option offered is u=x^5).",
+    "id": "161c795a-bb3a-4906-b9a5-275e196fef01"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int_0^9 \\frac{1}{2+\\sqrt{x}}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Standard form: $\\ln|2+\\sqrt{x}|$",
+      "Substitution $u = \\sqrt{x}$",
+      "Partial fractions",
+      "By parts with $\\frac{dv}{dx} = 1$"
+    ],
+    "answer": 1,
+    "why": "The root is the trouble; $u=\\sqrt{x}$ turns it into $\\frac{2u}{2+u}$, a simple fraction.",
+    "trap": 0,
+    "trap_why": "A ln needs the derivative of $2+\\sqrt{x}$ on top, and it is not there.",
+    "source_question_id": "2c427185-6d64-4076-b6d0-3b9931613172",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "446b2d34-9089-4bb9-86b8-f9d3aa492577"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int \\frac{1}{x+3\\sqrt{x}}\\,dx$, where $x>0$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$: $\\ln|x+3\\sqrt{x}|$",
+      "Partial fractions in $x$",
+      "Substitution $u = \\sqrt{x}$",
+      "Integration by parts"
+    ],
+    "answer": 2,
+    "why": "With $x = u^2$ it becomes $\\frac{2}{u+3}$, a plain log.",
+    "trap": 0,
+    "trap_why": "The derivative of $x+3\\sqrt{x}$ is $1+\\frac{3}{2\\sqrt{x}}$, not 1.",
+    "source_question_id": "afe27053-9b97-45b2-aad0-f0708d52e517",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Option 0 names the wrong f: d/dx(x+3√x) ≠ 1. Correct answer 2ln(√x+3), via u=√x.",
+    "id": "4e63c54b-8ca2-4f34-944a-1d02796c8679"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "A volume is $\\pi\\displaystyle\\int_9^{16}\\frac{1}{(\\sqrt{x}-2)^2}\\,dx$. Find it exactly.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Power rule: $\\frac{(\\sqrt{x}-2)^{-1}}{-1}$",
+      "Expand the square first",
+      "MF26 $\\tan^{-1}$ form",
+      "Substitution $t = \\sqrt{x}$"
+    ],
+    "answer": 3,
+    "why": "With $dx = 2t\\,dt$ it becomes $\\frac{2t}{(t-2)^2}$, which splits easily.",
+    "trap": 0,
+    "trap_why": "The inside is not linear; the power rule would need $\\frac{1}{2\\sqrt{x}}$ on top.",
+    "source_question_id": "f1678ec6-b1bf-4ed3-bad8-cf24b4bfa8fc",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "56b8417c-9bd6-40a7-9480-4f6bf703dccb"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int_0^{3}\\sqrt{9-x^2}\\,dx$ by integration, not by the circle's area.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Substitution $x = 3\\sin\\theta$",
+      "MF26 form: $\\sin^{-1}\\frac{x}{3}$",
+      "Power rule: $\\frac{(9-x^2)^{3/2}}{3/2}$",
+      "Partial fractions"
+    ],
+    "answer": 0,
+    "why": "$9-9\\sin^2\\theta = 9\\cos^2\\theta$ clears the root; then use the double-angle formula.",
+    "trap": 1,
+    "trap_why": "That is the integral of $\\frac{1}{\\sqrt{9-x^2}}$; here the root is on top.",
+    "source_question_id": "e0a1e069-5ff0-4e23-aa02-b23126c9a6da",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d35c50fc-19f0-4a0f-8473-73cf9e650ed1"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int \\frac{1}{\\sqrt{x}\\,(4-9x)}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions in $x$",
+      "Substitution $u = \\sqrt{x}$, then an MF26 form",
+      "By parts with $u = \\frac{1}{\\sqrt{x}}$",
+      "Recognise $\\frac{f'(x)}{f(x)}$"
+    ],
+    "answer": 1,
+    "why": "$dx = 2u\\,du$ cancels the $\\sqrt{x}$, leaving $\\frac{2}{4-9u^2}$, a standard form.",
+    "trap": 0,
+    "trap_why": "$\\sqrt{x}$ is not a polynomial factor, so partial fractions do not apply.",
+    "source_question_id": "71cc81ae-cb42-46e1-842e-6e0fc91cd251",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "86fe8e76-da49-4cd4-b8e8-5bbaaed528c6"
+  },
+  {
+    "area": "integration",
+    "skill": "substitution",
+    "stem": "Find $\\displaystyle\\int \\frac{e^{x}}{e^{2x}+4}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$: $\\ln(e^{2x}+4)$",
+      "Integration by parts",
+      "Substitution $u = e^{x}$",
+      "Partial fractions"
+    ],
+    "answer": 2,
+    "why": "$du = e^x\\,dx$ is on top, leaving $\\frac{1}{u^2+4}$: an MF26 $\\tan^{-1}$ form.",
+    "trap": 0,
+    "trap_why": "The derivative of $e^{2x}+4$ is $2e^{2x}$, not $e^x$.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Option 0 is wrong (derivative of e^{2x}+4 is 2e^{2x}); u=e^x gives a tan^-1.",
+    "id": "e62e8b08-0301-4177-a973-8ed6614d96b9"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int \\ln(3x+1)\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "A standard integral from MF26",
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Partial fractions",
+      "By parts: $u = \\ln(3x+1)$, $\\frac{dv}{dx} = 1$"
+    ],
+    "answer": 3,
+    "why": "Only one factor, so take the other as 1; ln differentiates to a fraction.",
+    "trap": 0,
+    "trap_why": "MF26 lists $\\int\\frac{1}{x}\\,dx = \\ln|x|$; it has no integral of ln.",
+    "source_question_id": "e6f17c16-4918-4007-bda4-839d471ecb9d",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "c7e2bfb2-514f-4e7a-bf00-8d8400c018c0"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int e^{2x}\\sin 3x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts twice, then solve for the integral",
+      "Factor formula first",
+      "Substitution $u = e^{2x}$",
+      "By parts once"
+    ],
+    "answer": 0,
+    "why": "Each round swaps sin and cos; after two the integral comes back, so solve for it.",
+    "trap": 1,
+    "trap_why": "Factor formulae join two trig functions; $e^{2x}$ is not one.",
+    "source_question_id": "0418347b-a9e9-47fe-af4d-da6da5d321c7",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "90278aa7-0b28-42c1-bf55-dd74b3a5fb7f"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int x\\tan^{-1}(2x)\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts with $u = x$",
+      "By parts with $u = \\tan^{-1}(2x)$",
+      "Substitution $u = 2x$",
+      "MF26 $\\tan^{-1}$ standard form"
+    ],
+    "answer": 1,
+    "why": "$\\tan^{-1}$ differentiates to a fraction, and $x$ integrates easily.",
+    "trap": 0,
+    "trap_why": "Then you must integrate $\\tan^{-1}(2x)$ first, itself a by-parts job.",
+    "source_question_id": "89eae0a3-9f09-4a7a-8720-c0f4a4024cdf",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "9e3d3076-db44-429d-b683-478ea4e44e90"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int_0^{\\pi} x^2\\cos 2x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Double-angle formula on $\\cos 2x$ first",
+      "Substitution $u = x^2$",
+      "By parts twice, with $u = x^2$ first",
+      "By parts with $u = \\cos 2x$"
+    ],
+    "answer": 2,
+    "why": "Each round lowers the power of $x$; two rounds remove it.",
+    "trap": 0,
+    "trap_why": "Expanding $\\cos 2x$ leaves the $x^2$ there; you still need by parts.",
+    "source_question_id": "7ead3a8c-f1bf-4cbf-aa12-3933d464837f",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5e1276f6-4f27-439f-ae93-8355fe0e2e7f"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int x^3 e^{x^2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts: $u = x^3$, $\\frac{dv}{dx} = e^{x^2}$",
+      "Recognise $f'(x)e^{f(x)}$ directly",
+      "Partial fractions",
+      "By parts: $u = x^2$, $\\frac{dv}{dx} = xe^{x^2}$"
+    ],
+    "answer": 3,
+    "why": "$xe^{x^2}$ integrates to $\\frac12 e^{x^2}$, and the $x^2$ differentiates away.",
+    "trap": 0,
+    "trap_why": "$e^{x^2}$ has no integral you can write down, so $v$ cannot be found.",
+    "source_question_id": "ca439c16-7ced-47de-ad76-47570e59f7fa",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — 'Recognise f'e^f directly' fails as x^3 is not a multiple of 2x.",
+    "id": "2971ba3e-80be-402b-a136-93ae1983de75"
+  },
+  {
+    "area": "integration",
+    "skill": "by-parts",
+    "stem": "Find $\\displaystyle\\int_1^{e}\\frac{\\ln x}{x^2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts: $u = \\ln x$, $\\frac{dv}{dx} = x^{-2}$",
+      "Recognise $f'(x)f(x)$ with $f = \\ln x$",
+      "A standard integral from MF26",
+      "Partial fractions"
+    ],
+    "answer": 0,
+    "why": "$\\ln x$ differentiates to $\\frac{1}{x}$, and $x^{-2}$ integrates easily.",
+    "trap": 1,
+    "trap_why": "That needs $\\frac{1}{x}$ beside $\\ln x$; here it is $\\frac{1}{x^2}$.",
+    "source_question_id": "cb31be85-218a-44d3-aaaa-859b337287b0",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f9eeeaee-9c88-484a-88af-bf1e0f58f984"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int\\frac{5x^2+x+4}{(x+1)(x^2+3)}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Long division first",
+      "Partial fractions: $\\frac{A}{x+1}+\\frac{Bx+C}{x^2+3}$",
+      "Substitution $u = x^2+3$",
+      "Recognise $\\frac{f'(x)}{f(x)}$"
+    ],
+    "answer": 1,
+    "why": "The top's degree is below the bottom's: split it, then ln and $\\tan^{-1}$.",
+    "trap": 0,
+    "trap_why": "Degree 2 over degree 3 is already proper; there is nothing to divide.",
+    "source_question_id": "624d0d3c-5707-416f-aa0e-7a838d60e012",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5f2be1d6-95f6-431d-8acc-c86148cecf54"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int\\frac{13}{(x-2)(x^2+9)}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "MF26 $\\tan^{-1}$ form for $\\frac{1}{x^2+9}$",
+      "Long division first",
+      "Partial fractions: $\\frac{A}{x-2}+\\frac{Bx+C}{x^2+9}$",
+      "Integration by parts"
+    ],
+    "answer": 2,
+    "why": "Two factors below: split first, then each part is a ln or a $\\tan^{-1}$.",
+    "trap": 0,
+    "trap_why": "The extra $(x-2)$ factor means it is not $\\frac{1}{x^2+a^2}$ yet.",
+    "source_question_id": "93ea1646-6163-4f8e-86cf-475ccac31b7b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "67fe8f75-5584-407c-8e92-c54667b13901"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int\\frac{2x^2}{(x+1)(x^2+x+1)}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$ for the whole bottom",
+      "Long division first",
+      "Substitution $u = x+1$",
+      "Partial fractions with a quadratic factor"
+    ],
+    "answer": 3,
+    "why": "Proper fraction with two factors below: split into $\\frac{A}{x+1}+\\frac{Bx+C}{x^2+x+1}$.",
+    "trap": 0,
+    "trap_why": "The bottom is $x^3+2x^2+2x+1$; its derivative is not $2x^2$.",
+    "source_question_id": "143a445e-9fd6-4f15-a0c4-793398f06ce6",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "38bfd742-837f-4cae-bf05-5fcd2f024b34"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int_0^1\\frac{6}{(x^2+1)(x^2+4)}\\,dx$ exactly.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions: $\\frac{A}{x^2+1}+\\frac{B}{x^2+4}$",
+      "Substitution $x = \\tan\\theta$",
+      "Complete the square",
+      "Integration by parts"
+    ],
+    "answer": 0,
+    "why": "Both pieces are then MF26 $\\tan^{-1}$ forms.",
+    "trap": 1,
+    "trap_why": "It clears only $x^2+1$; you are left with $\\frac{1}{\\tan^2\\theta+4}$.",
+    "source_question_id": "3ece997c-3a09-443b-a142-30df9e0ac3b9",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5e306c55-66aa-4058-8435-94aaeea5a599"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int\\frac{x+4}{x^2(x+2)}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions: $\\frac{A}{x^2}+\\frac{B}{x+2}$",
+      "Partial fractions: $\\frac{A}{x}+\\frac{B}{x^2}+\\frac{C}{x+2}$",
+      "Long division first",
+      "By parts with $u = x+4$"
+    ],
+    "answer": 1,
+    "why": "A repeated factor $x^2$ needs both $\\frac{A}{x}$ and $\\frac{B}{x^2}$.",
+    "trap": 0,
+    "trap_why": "Without the $\\frac{A}{x}$ term the constants cannot match the top.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "369e54b7-57fa-4369-97ab-1109b0a625c8"
+  },
+  {
+    "area": "integration",
+    "skill": "partial-fractions",
+    "stem": "Find $\\displaystyle\\int\\frac{x+7}{x^2+x-6}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Complete the square for a $\\tan^{-1}$",
+      "Partial fractions: $\\frac{A}{x-2}+\\frac{B}{x+3}$",
+      "Integration by parts"
+    ],
+    "answer": 2,
+    "why": "The bottom factorises as $(x-2)(x+3)$: split, then two logs.",
+    "trap": 0,
+    "trap_why": "The bottom's derivative is $2x+1$; $x+7$ is not a multiple of it.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "fc7bab17-d6f2-4546-8363-b780bb1be159"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int\\frac{3x}{x^2+5}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions",
+      "MF26 $\\tan^{-1}$ form",
+      "Integration by parts",
+      "Recognise $\\frac{f'(x)}{f(x)}$"
+    ],
+    "answer": 3,
+    "why": "$3x = \\frac32(2x)$, a multiple of the bottom's derivative, so the answer is a ln.",
+    "trap": 0,
+    "trap_why": "$x^2+5$ does not factorise, so there is nothing to split.",
+    "source_question_id": "370707b8-8043-4284-8799-88f6a90ff220",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "08515781-695d-4e76-bc23-804182fc1bd6"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int\\frac{x-2}{4x-x^2+1}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Partial fractions",
+      "Complete the square for an MF26 form",
+      "Integration by parts"
+    ],
+    "answer": 0,
+    "why": "The bottom's derivative is $4-2x = -2(x-2)$: the top is a multiple of it.",
+    "trap": 1,
+    "trap_why": "The bottom has no neat factors, and the top is already $-\\frac12$ of its derivative.",
+    "source_question_id": "ad955d39-6236-48f0-94ad-3648409dc487",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "78e225d3-7de4-442a-aa21-bf9adf8dbdf3"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int\\sec^2 x\\,(2+\\tan x)^3\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Use $\\sec^2 x = 1+\\tan^2 x$ first",
+      "Recognise $f'(x)[f(x)]^n$ with $f = 2+\\tan x$",
+      "By parts with $u = (2+\\tan x)^3$",
+      "Partial fractions"
+    ],
+    "answer": 1,
+    "why": "$\\sec^2 x$ is the derivative of $2+\\tan x$, so it is a power rule.",
+    "trap": 0,
+    "trap_why": "That destroys the $f'(x)$ you need; leave $\\sec^2 x$ alone.",
+    "source_question_id": "c3e43d55-dfd6-4349-b284-84de5fc46982",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f6af261a-05b7-4ee7-8983-e1b2994fe6f8"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int\\frac{e^{3\\tan^{-1}x}}{1+x^2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts with $u = e^{3\\tan^{-1}x}$",
+      "MF26 $\\tan^{-1}$ form",
+      "Recognise $f'(x)e^{f(x)}$ with $f = 3\\tan^{-1}x$",
+      "Partial fractions"
+    ],
+    "answer": 2,
+    "why": "$\\frac{1}{1+x^2}$ is the derivative of $\\tan^{-1}x$; the answer is $\\frac13 e^{3\\tan^{-1}x}$.",
+    "trap": 0,
+    "trap_why": "It gives $\\tan^{-1}x$ times the same kind of integral: harder, not easier.",
+    "source_question_id": "d08e5f20-fa8b-44af-8274-799252b38f74",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f97aec33-683f-4163-b4f3-cf1b175b4e71"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int_{e}^{e^2}\\frac{1}{x\\ln x}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts: $u = \\frac{1}{\\ln x}$, $\\frac{dv}{dx} = \\frac{1}{x}$",
+      "Partial fractions",
+      "MF26 form $\\ln|x|$",
+      "Recognise $\\frac{f'(x)}{f(x)}$ with $f = \\ln x$"
+    ],
+    "answer": 3,
+    "why": "$\\frac{1}{x}$ is the derivative of $\\ln x$, so the answer is $\\ln|\\ln x|$.",
+    "trap": 0,
+    "trap_why": "It hands back $1 + \\int\\frac{1}{x\\ln x}\\,dx$: you go in a circle.",
+    "source_question_id": "6b5e1409-a876-4b1a-9f72-c1bd6daed951",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "37f0b784-962d-485c-9761-51336784725c"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int_0^{\\pi/2}\\frac{\\cos x}{(2+\\sin x)^2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $f'(x)[f(x)]^{-2}$ with $f = 2+\\sin x$",
+      "Recognise $\\frac{f'(x)}{f(x)}$: a ln",
+      "Use $\\cos^2 x+\\sin^2 x = 1$ first",
+      "Integration by parts"
+    ],
+    "answer": 0,
+    "why": "$\\cos x$ is the derivative of $2+\\sin x$: the power rule gives $-\\frac{1}{2+\\sin x}$.",
+    "trap": 1,
+    "trap_why": "The bottom is squared, so it is $f'f^{-2}$, not $\\frac{f'}{f}$: no ln.",
+    "source_question_id": "6bf4ff99-342c-4b77-be34-e4813d3aeb38",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "de462e98-24af-47d4-90d4-9d608766f5fe"
+  },
+  {
+    "area": "integration",
+    "skill": "recognise-derivative",
+    "stem": "Find $\\displaystyle\\int\\frac{1}{e^{3x}\\sqrt{1+e^{-3x}}}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "MF26 $\\sin^{-1}$ form",
+      "Rewrite as $e^{-3x}(1+e^{-3x})^{-\\frac12}$; then $f'(x)[f(x)]^n$",
+      "Integration by parts",
+      "Partial fractions"
+    ],
+    "answer": 1,
+    "why": "$e^{-3x}$ is $-\\frac13$ times the derivative of $1+e^{-3x}$.",
+    "trap": 0,
+    "trap_why": "There is no $a^2-x^2$ under the root; it is $1+e^{-3x}$.",
+    "source_question_id": "f7a1545b-5b0d-4da2-b959-9ed462614062",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "b9c90b85-faf6-4240-ac64-7ef979b8bec4"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\cos^2 3x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Power rule: $\\frac{\\cos^3 3x}{9}$",
+      "Substitution $u = \\cos 3x$",
+      "Double angle: $\\cos^2 3x = \\frac{1+\\cos 6x}{2}$"
+    ],
+    "answer": 2,
+    "why": "A squared cos has no direct integral; the identity removes the square.",
+    "trap": 0,
+    "trap_why": "The power rule needs the derivative $-3\\sin 3x$ beside it; there is none.",
+    "source_question_id": "9f5119bc-8ead-47c6-bf3f-b6ad675474d2",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f0be2d6c-bb27-4280-9c12-82bd8fa82865"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\sin 5x\\cos 2x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Substitution $u = \\sin 5x$",
+      "Partial fractions",
+      "Double angle on $\\cos 2x$",
+      "Factor formula: $\\frac12(\\sin 7x+\\sin 3x)$"
+    ],
+    "answer": 3,
+    "why": "A product of two trig functions becomes a sum you integrate term by term.",
+    "trap": 0,
+    "trap_why": "$du = 5\\cos 5x\\,dx$, but the factor here is $\\cos 2x$.",
+    "source_question_id": "342ec8a2-f6df-4603-a9db-f33ba617e0c8",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "16b1c636-28a0-4fcc-897f-87502474f5a4"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\sin^3 x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Write $\\sin^3 x = \\sin x(1-\\cos^2 x)$",
+      "Power rule: $\\frac{\\sin^4 x}{4}$",
+      "Partial fractions",
+      "Substitution $u = \\sin x$"
+    ],
+    "answer": 0,
+    "why": "Then $\\sin x\\cos^2 x$ is $f'(x)[f(x)]^2$ with $f = \\cos x$, up to sign.",
+    "trap": 1,
+    "trap_why": "That needs $\\cos x$ beside $\\sin^3 x$; there is none.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5fb18593-19f2-4999-99e5-3e4d93112fb0"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\tan^2 2x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Power rule: $\\frac{\\tan^3 2x}{6}$",
+      "MF26 form for $\\int\\tan x\\,dx$",
+      "Use $\\tan^2 2x = \\sec^2 2x - 1$"
+    ],
+    "answer": 2,
+    "why": "$\\sec^2$ integrates straight to $\\tan$; nothing integrates $\\tan^2$ directly.",
+    "trap": 0,
+    "trap_why": "That needs $\\sec^2 2x$ beside it as the derivative; there is none.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "e607cef8-fb51-408c-9c81-cc0aa56c16bc"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\frac{1}{1+\\cos 2x}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$: $\\ln|1+\\cos 2x|$",
+      "Substitution $u = \\cos 2x$",
+      "Double angle: $1+\\cos 2x = 2\\cos^2 x$",
+      "Partial fractions"
+    ],
+    "answer": 2,
+    "why": "Then it is $\\frac12\\sec^2 x$, which integrates to $\\frac12\\tan x$.",
+    "trap": 0,
+    "trap_why": "The top would need to be $-2\\sin 2x$; here it is 1.",
+    "source_question_id": "968d2366-74ed-463b-ac32-5e5b57aea12e",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "4e29656b-0a98-4e74-9523-1f68392ece3d"
+  },
+  {
+    "area": "integration",
+    "skill": "trig-identity",
+    "stem": "Find $\\displaystyle\\int\\sin 2x\\cos^3 x\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "By parts with $u = \\cos^3 x$",
+      "Substitution $u = \\sin 2x$",
+      "Partial fractions",
+      "Write $\\sin 2x = 2\\sin x\\cos x$ first"
+    ],
+    "answer": 3,
+    "why": "Then it is $2\\sin x\\cos^4 x$, a power rule since $-\\sin x$ is the derivative of $\\cos x$.",
+    "trap": 0,
+    "trap_why": "It brings in $\\cos 2x$ and more cos powers: messier, not simpler.",
+    "source_question_id": "946b497d-79d5-4038-9980-ecd6409afc57",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8ea141a5-2c75-43d4-9e5e-fe5a23ff4d28"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int\\frac{1}{x^2+4x+8}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Complete the square: $(x+2)^2+4$",
+      "Partial fractions",
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Substitution $u = x^2+4x+8$"
+    ],
+    "answer": 0,
+    "why": "It does not factorise; the square gives the MF26 $\\tan^{-1}$ form.",
+    "trap": 1,
+    "trap_why": "$x^2+4x+8$ has no real roots, so it cannot be split.",
+    "source_question_id": "ad6c8c91-f00a-4df8-ab47-cb750ae0dfa8",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "9b73e394-d97c-4287-a773-d70443824cef"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int\\frac{x+1}{\\sqrt{8+2x-x^2}}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $f'(x)[f(x)]^{-\\frac12}$ directly",
+      "Split off the derivative, then complete the square",
+      "Partial fractions",
+      "MF26 $\\sin^{-1}$ form directly"
+    ],
+    "answer": 1,
+    "why": "One part is $f'f^{-\\frac12}$; the rest is $\\frac{2}{\\sqrt{9-(x-1)^2}}$, an MF26 $\\sin^{-1}$.",
+    "trap": 0,
+    "trap_why": "The derivative of $8+2x-x^2$ is $2-2x$; $x+1$ is not a multiple of it.",
+    "source_question_id": "e613e15a-f74d-42a2-a8dd-810f23ad7052",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f9b7b447-8cd4-4336-b222-f8bb720a83b6"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int\\frac{x}{x^2-6x+13}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$ straight away",
+      "Partial fractions",
+      "Write $x = \\frac12(2x-6)+3$; complete the square",
+      "Integration by parts"
+    ],
+    "answer": 2,
+    "why": "The first part is a ln; $\\frac{3}{(x-3)^2+4}$ is a $\\tan^{-1}$ form.",
+    "trap": 0,
+    "trap_why": "The bottom's derivative is $2x-6$, so $x$ alone leaves a constant over.",
+    "source_question_id": "55870bd6-714d-47e3-a70b-b904cbcd7fac",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "66f0b4c8-84f5-42ad-a748-c65a3d207429"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int_{-1}^{1}\\frac{3-x}{x^2-2x+5}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions",
+      "MF26 $\\tan^{-1}$ form directly",
+      "Long division first",
+      "Write top as $A(2x-2)+B$; complete the square"
+    ],
+    "answer": 3,
+    "why": "$3-x = -\\frac12(2x-2)+2$, and $\\frac{2}{(x-1)^2+4}$ is a $\\tan^{-1}$ form.",
+    "trap": 0,
+    "trap_why": "$x^2-2x+5$ has no real roots, so it cannot be split.",
+    "source_question_id": "3bc35365-8687-4152-be31-77168dadf596",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "cd8dc725-f8a8-4dd8-bc08-52bbba91cd40"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int_0^1\\frac{1}{4x^2+4x+5}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Complete the square: $(2x+1)^2+4$",
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Partial fractions",
+      "Substitution $u = 4x^2+4x+5$"
+    ],
+    "answer": 0,
+    "why": "No real roots; it becomes $\\frac{1}{(2x+1)^2+2^2}$, an MF26 $\\tan^{-1}$.",
+    "trap": 1,
+    "trap_why": "The top would need to be $8x+4$; it is just 1.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "cce694e9-afbc-45fe-9f69-f92a44615632"
+  },
+  {
+    "area": "integration",
+    "skill": "complete-square",
+    "stem": "Find $\\displaystyle\\int\\frac{1}{\\sqrt{5-4x-x^2}}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $f'(x)[f(x)]^{-\\frac12}$",
+      "Complete the square: $9-(x+2)^2$",
+      "Partial fractions",
+      "Integration by parts"
+    ],
+    "answer": 1,
+    "why": "Then it is the MF26 form $\\frac{1}{\\sqrt{a^2-u^2}}$, giving $\\sin^{-1}\\frac{x+2}{3}$.",
+    "trap": 0,
+    "trap_why": "That needs $-4-2x$ on top; the top is 1.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "179d02d6-7d61-44e2-b91c-34435b7860f2"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{x^2}{x^2+4x+13}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Complete the square straight away",
+      "Partial fractions",
+      "Divide first: $1-\\frac{4x+13}{x^2+4x+13}$",
+      "Integration by parts"
+    ],
+    "answer": 2,
+    "why": "Top and bottom have the same degree; divide, then ln and $\\tan^{-1}$.",
+    "trap": 0,
+    "trap_why": "The $x^2$ on top is still there, so it is not an MF26 form yet.",
+    "source_question_id": "70337a13-176c-4c99-8afe-d34c71958f34",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "62876460-83a4-4ba0-8f71-7f7a9af931b0"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{x^3+x^2+2x+5}{x^2+1}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Substitution $u = x^2+1$",
+      "Partial fractions",
+      "MF26 $\\tan^{-1}$ form",
+      "Long division first"
+    ],
+    "answer": 3,
+    "why": "Degree 3 over degree 2: dividing gives $x+1+\\frac{x+4}{x^2+1}$.",
+    "trap": 0,
+    "trap_why": "$du = 2x\\,dx$, but the top is not $x$ times a function of $x^2$.",
+    "source_question_id": "7b7341af-c514-4e77-b6fb-872a413530b0",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "226f3fc8-5401-414d-b652-526fb63327be"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{x^2+3}{x^2-1}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Divide first: $1+\\frac{4}{x^2-1}$",
+      "Partial fractions: $\\frac{A}{x-1}+\\frac{B}{x+1}$",
+      "Recognise $\\frac{f'(x)}{f(x)}$",
+      "Substitution $x = \\sec\\theta$"
+    ],
+    "answer": 0,
+    "why": "Same degree top and bottom: divide before anything else, then split.",
+    "trap": 1,
+    "trap_why": "That form only fits a proper fraction; here the degrees are equal.",
+    "source_question_id": "da6f5566-220e-4bc0-b2eb-83165b605c25",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — After dividing, 4/(x^2-1) by MF26 or partial fractions; PF directly on the improper fraction is the wrong form.",
+    "id": "0473b6db-7cf7-43c1-b8d0-736907aca700"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{6x}{3x+1}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Recognise $\\frac{f'(x)}{f(x)}$: $\\ln|3x+1|$",
+      "Divide: $2-\\frac{2}{3x+1}$",
+      "By parts with $u = 6x$",
+      "MF26 $\\tan^{-1}$ form"
+    ],
+    "answer": 1,
+    "why": "The top's degree equals the bottom's; dividing leaves a constant and a log.",
+    "trap": 0,
+    "trap_why": "The derivative of $3x+1$ is 3; the top is $6x$, not a constant.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f296ba11-c3b7-4905-ae68-6e33a0286e8d"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{x^3}{x+2}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "Partial fractions: $\\frac{A}{x+2}$",
+      "By parts with $u = x^3$",
+      "Long division first",
+      "Recognise $\\frac{f'(x)}{f(x)}$"
+    ],
+    "answer": 2,
+    "why": "Degree 3 over degree 1: divide to get a quadratic plus $\\frac{-8}{x+2}$.",
+    "trap": 0,
+    "trap_why": "Improper fraction: one $\\frac{A}{x+2}$ cannot give $x^3$ on top.",
+    "source_question_id": "f3e64892-fa5f-459e-9d7e-1e101f56aa35",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "76a48813-df2e-404d-92eb-b7daf69c75cd"
+  },
+  {
+    "area": "integration",
+    "skill": "divide-first",
+    "stem": "Find $\\displaystyle\\int\\frac{x^4}{x^2+4}\\,dx$.",
+    "ask": "Which method gets you started?",
+    "options": [
+      "MF26 $\\tan^{-1}$ form",
+      "Partial fractions",
+      "Recognise $f'(x)[f(x)]^n$",
+      "Long division first"
+    ],
+    "answer": 3,
+    "why": "Dividing gives $x^2-4+\\frac{16}{x^2+4}$: powers and a $\\tan^{-1}$.",
+    "trap": 0,
+    "trap_why": "That needs a constant on top; $x^4$ must be divided out first.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5201aeee-4d4b-48f5-b365-1120dfe15a6e"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-line",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}3\\\\2\\\\1\\end{pmatrix} + \\lambda \\begin{pmatrix}-1\\\\1\\\\1\\end{pmatrix}$. Point $A(2, 1, 0)$. Find the foot $N$ of the perpendicular from $A$ to $l$.",
+    "options": [
+      "$N$ on $l$, then $\\overrightarrow{AN}\\cdot\\mathbf d = 0$",
+      "$N$ on $l$, then $\\overrightarrow{ON}\\cdot\\mathbf d = 0$",
+      "$\\overrightarrow{AN}\\times\\mathbf d = \\mathbf 0$",
+      "Line through $A$ along $\\mathbf d$, meet $l$"
+    ],
+    "answer": 0,
+    "why": "$N$ is on $l$ and $AN$ is perpendicular to $l$; the dot product fixes $\\lambda$.",
+    "trap": 1,
+    "trap_why": "That makes $ON$ perpendicular to $l$, not $AN$. The vector must start at $A$.",
+    "source_question_id": "4fff8a1e-8864-43fd-86c7-9dd915c37f4b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5028c851-b454-444a-84bf-a473b46ee75f"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-line",
+    "stem": "Line $l$: $\\mathbf r = \\mathbf i + 3\\mathbf j + \\mathbf k + \\lambda(\\mathbf i + \\mathbf j)$. Point $A(4, -1, 2)$. Find the foot $F$ of the perpendicular from $A$ to $l$.",
+    "options": [
+      "Set $\\overrightarrow{AF}$ parallel to $\\mathbf i+\\mathbf j$",
+      "Find $|\\overrightarrow{AP}\\times\\hat{\\mathbf d}|$ first",
+      "$F$ on $l$, then $\\overrightarrow{AF}\\cdot(\\mathbf i+\\mathbf j) = 0$",
+      "Substitute $l$ into $\\mathbf r\\cdot(\\mathbf i+\\mathbf j) = 0$"
+    ],
+    "answer": 2,
+    "why": "The foot is the point on $l$ where $AF$ meets $l$ at right angles.",
+    "trap": 0,
+    "trap_why": "$AF$ parallel to $l$ never reaches $l$ from $A$; it must be perpendicular.",
+    "source_question_id": "8e6cc637-9037-4b44-819a-1c4450dffec4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d3700d70-bc3a-4a78-a29b-f55499dc4c9e"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-line",
+    "stem": "Line $l_1$: $\\mathbf r = \\begin{pmatrix}1\\\\0\\\\-1\\end{pmatrix} + \\lambda \\begin{pmatrix}2\\\\3\\\\-1\\end{pmatrix}$. Point $P(1, 4, -3)$. Find the foot $F$ of the perpendicular from $P$ to $l_1$.",
+    "options": [
+      "Line through $P$ along $\\begin{pmatrix}2\\\\3\\\\-1\\end{pmatrix}$, meet $l_1$",
+      "$F$ on $l_1$, then $\\overrightarrow{PF}\\cdot\\begin{pmatrix}2\\\\3\\\\-1\\end{pmatrix} = 0$",
+      "Plane through $P$ with normal $\\overrightarrow{OP}$, meet $l_1$",
+      "Take $F = $ the point $(1, 0, -1)$"
+    ],
+    "answer": 1,
+    "why": "$PF$ must be at right angles to $l_1$, so dot it with $l_1$'s direction.",
+    "trap": 0,
+    "trap_why": "A line through $P$ along $l_1$'s direction is parallel to $l_1$; it never meets it.",
+    "source_question_id": "d665a155-c46a-4ce1-8e98-4dc9d75203f4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8914bbde-62cb-4ce6-979c-c302ec268f71"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-plane",
+    "stem": "Point $P(2, 0, 1)$. Plane $\\pi$: $\\mathbf r\\cdot\\begin{pmatrix}1\\\\-1\\\\0\\end{pmatrix} = 4$. Find the foot $F$ of the perpendicular from $P$ to $\\pi$.",
+    "options": [
+      "$F$ in $\\pi$, then $\\overrightarrow{PF}\\cdot\\begin{pmatrix}1\\\\-1\\\\0\\end{pmatrix} = 0$",
+      "$F = \\overrightarrow{OP}\\times\\begin{pmatrix}1\\\\-1\\\\0\\end{pmatrix}$",
+      "Line through $P$ along $\\overrightarrow{OP}$, meet $\\pi$",
+      "Line through $P$ along $\\begin{pmatrix}1\\\\-1\\\\0\\end{pmatrix}$, meet $\\pi$"
+    ],
+    "answer": 3,
+    "why": "$PF$ runs along the normal, so the line from $P$ along $\\mathbf n$ hits $\\pi$ at $F$.",
+    "trap": 0,
+    "trap_why": "$PF$ is parallel to $\\mathbf n$, not perpendicular to it; that test is for a line.",
+    "source_question_id": "b0a2bfb1-32c2-4288-9fee-9e936983a227",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "09f7df03-cd7e-4eb0-b2dd-d87d564f0184"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-plane",
+    "stem": "Plane $\\pi$: $\\mathbf r\\cdot\\begin{pmatrix}2\\\\-1\\\\2\\end{pmatrix} = 0$ contains the directions $-\\mathbf i + \\mathbf k$ and $\\mathbf i + 2\\mathbf j$. Point $P(4, 1, 3)$. Find the foot $N$ of the perpendicular from $P$ to $\\pi$.",
+    "options": [
+      "Line through $P$ along $-\\mathbf i + \\mathbf k$, meet $\\pi$",
+      "$\\overrightarrow{PN}\\cdot(\\mathbf i + 2\\mathbf j) = 0$ only",
+      "$N = P$ minus $\\begin{pmatrix}2\\\\-1\\\\2\\end{pmatrix}$",
+      "Line through $P$ along $\\begin{pmatrix}2\\\\-1\\\\2\\end{pmatrix}$, meet $\\pi$"
+    ],
+    "answer": 3,
+    "why": "The shortest path to a plane runs along its normal $(2, -1, 2)$.",
+    "trap": 0,
+    "trap_why": "$-\\mathbf i + \\mathbf k$ lies along the plane; you need the normal to drop straight down.",
+    "source_question_id": "372ddb24-c01b-40cf-b5fc-228cdd5594b4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "ba707357-c25f-45c3-8e81-ff47573cb892"
+  },
+  {
+    "area": "vectors",
+    "skill": "foot-perpendicular-plane",
+    "stem": "A drone at $A(2, 2, 3)$ flies straight to the nearest point $B$ of the plane $x - y + 2z = -6$. Find $B$.",
+    "options": [
+      "Work out $|\\overrightarrow{AP}\\cdot\\hat{\\mathbf n}|$ for a point $P$ on the plane",
+      "Line through $A$ along $\\begin{pmatrix}1\\\\-1\\\\2\\end{pmatrix}$, meet the plane",
+      "Line through $A$ along $\\overrightarrow{OA}$, meet the plane",
+      "Put $x = 2,\\ y = 2$ into the plane, solve for $z$"
+    ],
+    "answer": 1,
+    "why": "The nearest point is the foot: go from $A$ along the normal until you hit the plane.",
+    "trap": 0,
+    "trap_why": "That gives the distance $AB$, not the point $B$.",
+    "source_question_id": "de6cbbfe-8ebf-4b10-a034-e63bf3f9a092",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "99a597f1-e98b-49cf-9eb4-c63101bb85b2"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-plane",
+    "stem": "Plane $\\pi$: $2x + 5y + z = -9$. Find the perpendicular distance from the origin to $\\pi$.",
+    "options": [
+      "$|\\overrightarrow{OA}\\cdot\\hat{\\mathbf n}|$, $A$ any point on $\\pi$",
+      "$|\\overrightarrow{OA}\\times\\hat{\\mathbf n}|$, $A$ any point on $\\pi$",
+      "$|\\overrightarrow{OA}|$, $A$ any point on $\\pi$",
+      "$|\\mathbf n|$ with $\\mathbf n = \\begin{pmatrix}2\\\\5\\\\1\\end{pmatrix}$"
+    ],
+    "answer": 0,
+    "why": "Distance to a plane is the part of $\\overrightarrow{OA}$ along the unit normal: here $9/\\sqrt{30}$.",
+    "trap": 1,
+    "trap_why": "The cross product gives the part along the plane, not the distance to it.",
+    "source_question_id": "4c0240f4-c70d-4df7-8670-cdf8b84bf88e",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "969583db-0c58-4d1a-93b5-08c42e2c2f21"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-plane",
+    "stem": "Plane $p$: $\\mathbf r\\cdot\\begin{pmatrix}-10\\\\9\\\\-5\\end{pmatrix} = 47$ passes through $A(-3, 3, 2)$. Point $B(-13, 12, -3)$. Find the distance from $B$ to $p$.",
+    "options": [
+      "$|\\overrightarrow{AB}\\times\\hat{\\mathbf n}|$",
+      "$|\\overrightarrow{AB}|$",
+      "$|\\overrightarrow{AB}\\cdot\\hat{\\mathbf n}|$",
+      "$|\\overrightarrow{OB}\\cdot\\mathbf n|$ without dividing"
+    ],
+    "answer": 2,
+    "why": "Project $\\overrightarrow{AB}$ onto the unit normal; that is the straight-down distance.",
+    "trap": 0,
+    "trap_why": "A cross product with $\\hat{\\mathbf n}$ measures sideways along the plane, not to it.",
+    "source_question_id": "4a0b839d-0978-4a93-8f1b-8c3811d33598",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Checked: A lies on p (30+27-10=47).",
+    "id": "74855770-025f-432e-8337-9df77ccce8e4"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-plane",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}6\\\\-4\\\\1\\end{pmatrix} + \\mu\\begin{pmatrix}2\\\\-1\\\\-3\\end{pmatrix}$ never meets the plane $x - y + z = 14$. Find the distance between $l$ and the plane.",
+    "options": [
+      "Point $(6, -4, 1)$ on $l$; use $|\\overrightarrow{AP}\\cdot\\hat{\\mathbf n}|$",
+      "Point $(6, -4, 1)$ on $l$; use $|\\overrightarrow{AP}\\times\\hat{\\mathbf d}|$",
+      "Substitute $l$ into the plane, solve for $\\mu$",
+      "Angle between $l$ and the plane, then sine"
+    ],
+    "answer": 0,
+    "why": "$l$ is parallel to the plane, so any point of $l$ gives the distance to the plane.",
+    "trap": 1,
+    "trap_why": "$|\\overrightarrow{AP}\\times\\hat{\\mathbf d}|$ is a distance to a line, not to a plane.",
+    "source_question_id": "c2d0c568-63e3-44b9-ba33-34a365e7f768",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Option 0 uses A without saying A is a point on the plane; d.n=0 and (6,-4,1) gives 11 not 14, so the stem is consistent.",
+    "id": "16d2b2db-3206-411a-96e0-fd1c8f90f914"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-plane",
+    "stem": "Plane $p$: $\\mathbf r\\cdot\\begin{pmatrix}2\\\\-1\\\\-2\\end{pmatrix} = 4$. Find the planes parallel to $p$ that are 3 units from it.",
+    "options": [
+      "Use $\\mathbf r\\cdot\\begin{pmatrix}2\\\\-1\\\\-2\\end{pmatrix} = 4 \\pm 3$",
+      "Add 3 to each part of the normal",
+      "Write $p$ as $\\mathbf r\\cdot\\hat{\\mathbf n} = \\tfrac43$; use $\\tfrac43 \\pm 3$",
+      "Cross the normal with a point on $p$"
+    ],
+    "answer": 2,
+    "why": "With a unit normal, the right side is the signed distance from $O$; shift it by 3.",
+    "trap": 0,
+    "trap_why": "$|\\mathbf n| = 3$, so changing $D$ by 3 only moves the plane 1 unit.",
+    "source_question_id": "69b5d1e8-27cd-479b-ad72-465528ec9d3f",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — |n|=3, so the planes are r.n = 13 and r.n = -5; option 0 (4 ± 3) is the trap.",
+    "id": "926ceec3-a2c6-4ace-914c-980f7327be05"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-line",
+    "stem": "Line $OA$ passes through $O$ and $A(2, 1, -2)$. Point $B(3, 0, 4)$. Find the perpendicular distance from $B$ to line $OA$.",
+    "options": [
+      "$|\\overrightarrow{OB}\\cdot\\hat{\\mathbf a}|$",
+      "$|\\overrightarrow{OB}\\times\\hat{\\mathbf a}|$",
+      "$|\\overrightarrow{OB}|\\,|\\hat{\\mathbf a}|$",
+      "$|\\overrightarrow{AB}|$"
+    ],
+    "answer": 1,
+    "why": "The cross product with the unit direction gives the part of $\\overrightarrow{OB}$ at right angles to the line.",
+    "trap": 0,
+    "trap_why": "The dot product gives the length along the line (the projection), not the gap to it.",
+    "source_question_id": "ea0b6086-f346-437a-82ba-42264addb2af",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d9d3dc61-765c-4838-ae44-734bdf80cf51"
+  },
+  {
+    "area": "vectors",
+    "skill": "distance-point-line",
+    "stem": "$\\overrightarrow{OA} = 4\\mathbf i$ and $\\overrightarrow{OC} = 3\\mathbf i - 5\\mathbf j$. Find the shortest distance from $A$ to the line $OC$.",
+    "options": [
+      "$\\dfrac{|\\overrightarrow{OA}\\cdot\\mathbf c|}{|\\mathbf c|}$",
+      "$|\\overrightarrow{AC}|$",
+      "$\\tfrac12|\\overrightarrow{OA}\\times\\overrightarrow{OC}|$",
+      "$|\\overrightarrow{OA}\\times\\hat{\\mathbf c}|$"
+    ],
+    "answer": 3,
+    "why": "Distance from a point to a line: cross with the line's unit direction.",
+    "trap": 0,
+    "trap_why": "That is the length of projection along $OC$, not the perpendicular distance.",
+    "source_question_id": "b2d1cd89-a5eb-4318-bbad-4db0ab539aa2",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "684a67c9-0d1f-487f-bfd3-54bd4d1f035d"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-line-plane",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}2\\\\2\\\\3\\end{pmatrix} + \\lambda\\begin{pmatrix}0\\\\1\\\\1\\end{pmatrix}$. Plane $\\pi$: $x + 2y - z = 4$. Find the acute angle between $l$ and $\\pi$.",
+    "options": [
+      "$\\cos\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf n|}{|\\mathbf d||\\mathbf n|}$",
+      "$\\cos\\theta$ with $\\mathbf d$ and $\\begin{pmatrix}2\\\\2\\\\3\\end{pmatrix}$",
+      "$\\sin\\theta = \\dfrac{|\\mathbf d\\times\\mathbf n|}{|\\mathbf d||\\mathbf n|}$",
+      "$\\sin\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf n|}{|\\mathbf d||\\mathbf n|}$"
+    ],
+    "answer": 3,
+    "why": "The normal is at $90^\\circ$ to the plane, so the angle with the plane uses sine.",
+    "trap": 0,
+    "trap_why": "Cosine gives the angle between $l$ and the normal, not the plane.",
+    "source_question_id": "55bc744f-26e6-464e-9fa0-d5f73ca8d056",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d0f1383b-2f32-43be-90f2-7725b07d0e3b"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-line-plane",
+    "stem": "Line $l$ through $(1, 3, 4)$ is parallel to $2\\mathbf j + \\mathbf k$. Plane $p$: $\\mathbf r\\cdot\\begin{pmatrix}2\\\\-1\\\\-1\\end{pmatrix} = 4$. Find the acute angle between $l$ and $p$.",
+    "options": [
+      "Angle between $\\mathbf d$ and $\\mathbf n$ is the answer",
+      "Angle between $\\mathbf d$ and $\\mathbf n$, then $90^\\circ$ minus it",
+      "Angle between $\\mathbf d$ and $(1, 3, 4)$",
+      "Angle between $\\mathbf n$ and $(1, 3, 4)$"
+    ],
+    "answer": 1,
+    "why": "The normal stands at $90^\\circ$ to $p$, so take the angle with $\\mathbf n$ away from $90^\\circ$.",
+    "trap": 0,
+    "trap_why": "That is the angle to the normal; the plane is $90^\\circ$ away from it.",
+    "source_question_id": "56cfb836-59d1-4448-94d9-900d65bac786",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — d.n = -3, so the angle between d and n is obtuse; option 1 works only if the student takes |d.n| first.",
+    "id": "2f678dab-2f1f-4774-bb5f-472afe6a20cd"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-line-plane",
+    "stem": "A light ray leaves $(-6, 5, 8)$ in the direction $\\begin{pmatrix}2\\\\-1\\\\-1\\end{pmatrix}$ and hits the ground, the $xy$-plane. Find the acute angle between the ray and the ground.",
+    "options": [
+      "$\\sin\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf k|}{|\\mathbf d|}$",
+      "$\\cos\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf k|}{|\\mathbf d|}$",
+      "$\\cos\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf i|}{|\\mathbf d|}$",
+      "$\\tan\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf k|}{|\\mathbf d|}$"
+    ],
+    "answer": 0,
+    "why": "The ground's normal is $\\mathbf k$; a line-to-plane angle with the normal uses sine.",
+    "trap": 1,
+    "trap_why": "Cosine gives the angle between the ray and the vertical $\\mathbf k$, not the ground.",
+    "source_question_id": "7f04dd4b-fbfd-47b1-9139-096dacef1a50",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "cedab5b3-a061-4679-bd2d-8c87a2b1dbdc"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-line-plane",
+    "stem": "Line $l$: $\\dfrac{x + 2}{3} = \\dfrac{1 - y}{5},\\ z = 1$. Plane $\\pi_1$: $x - z = 2$. Find the acute angle between $l$ and $\\pi_1$.",
+    "options": [
+      "$\\mathbf d = \\begin{pmatrix}3\\\\5\\\\1\\end{pmatrix}$, then $\\sin\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf n|}{|\\mathbf d||\\mathbf n|}$",
+      "$\\mathbf d = \\begin{pmatrix}3\\\\-5\\\\0\\end{pmatrix}$, then $\\cos\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf n|}{|\\mathbf d||\\mathbf n|}$",
+      "$\\mathbf d = \\begin{pmatrix}3\\\\-5\\\\0\\end{pmatrix}$, then $\\sin\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf n|}{|\\mathbf d||\\mathbf n|}$",
+      "$\\mathbf d = \\begin{pmatrix}-2\\\\1\\\\1\\end{pmatrix}$, then $\\sin\\theta$ formula"
+    ],
+    "answer": 2,
+    "why": "Read $\\mathbf d$ carefully, then line and plane means sine with the normal.",
+    "trap": 0,
+    "trap_why": "$z = 1$ is fixed, so $\\mathbf d$ has $z$-part 0; and $1 - y$ flips the $y$ sign.",
+    "source_question_id": "55512577-21ff-4151-9193-bf1790ba6b11",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "e7c3a156-6a50-4ea2-8f41-6b202ae40314"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-planes",
+    "stem": "Planes $p$: $\\mathbf r\\cdot\\begin{pmatrix}-6\\\\5\\\\7\\end{pmatrix} = 1$ and $q$: $\\mathbf r\\cdot\\begin{pmatrix}-1\\\\0\\\\2\\end{pmatrix} = 1$. Find the acute angle between $p$ and $q$.",
+    "options": [
+      "$\\cos\\theta = \\dfrac{|\\mathbf n_1\\cdot\\mathbf n_2|}{|\\mathbf n_1||\\mathbf n_2|}$",
+      "$\\sin\\theta = \\dfrac{|\\mathbf n_1\\cdot\\mathbf n_2|}{|\\mathbf n_1||\\mathbf n_2|}$",
+      "$\\cos\\theta$ with $\\mathbf n_1$ and $\\mathbf n_1\\times\\mathbf n_2$",
+      "$\\cos\\theta = \\dfrac{|1 - 1|}{|\\mathbf n_1||\\mathbf n_2|}$"
+    ],
+    "answer": 0,
+    "why": "The angle between two planes equals the angle between their normals: cosine.",
+    "trap": 1,
+    "trap_why": "Sine is for a line and a plane; two planes compare normal with normal.",
+    "source_question_id": "00d824fe-d9d9-47b9-8820-ee763f23b31e",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "50d101b4-f126-4bff-b12b-496ff033ef54"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-planes",
+    "stem": "Planes $p_1$: $2x + y - 2z = 3$ and $p_2$: $x + 2y - z = 1$. Find the acute angle between $p_1$ and $p_2$.",
+    "options": [
+      "Sine with $\\begin{pmatrix}2\\\\1\\\\-2\\end{pmatrix}$ and $\\begin{pmatrix}1\\\\2\\\\-1\\end{pmatrix}$",
+      "Cosine with $\\mathbf n_1$ and the line of intersection",
+      "Cosine with $\\begin{pmatrix}2\\\\1\\\\-2\\end{pmatrix}$ and $\\begin{pmatrix}1\\\\2\\\\-1\\end{pmatrix}$",
+      "Cosine with $(3, 1)$, the right sides"
+    ],
+    "answer": 2,
+    "why": "Two planes meet at the same angle as their normals: cosine of $\\mathbf n_1$ and $\\mathbf n_2$.",
+    "trap": 0,
+    "trap_why": "Sine with normals gives the complement; that rule is for a line meeting a plane.",
+    "source_question_id": "69110b4d-8196-4abc-8c5c-5fd9fc7f0c1d",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "a4bcb082-27d1-4c2c-8bd6-7d39540375b0"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-planes",
+    "stem": "Plane $\\pi$: $\\mathbf r\\cdot\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix} = 3$. Find the acute angle between $\\pi$ and the $xy$-plane.",
+    "options": [
+      "Cosine with $\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix}$ and $\\mathbf i + \\mathbf j$",
+      "Cosine with $\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix}$ and $\\mathbf k$",
+      "Sine with $\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix}$ and $\\mathbf k$",
+      "Cosine with $\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix}$ and $\\mathbf i$"
+    ],
+    "answer": 1,
+    "why": "The $xy$-plane's normal is $\\mathbf k$; two planes use cosine of their normals.",
+    "trap": 0,
+    "trap_why": "$\\mathbf i + \\mathbf j$ lies in the $xy$-plane; it is a direction, not its normal.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d173b897-5dd1-47de-9f38-cbf5aeca4d37"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-lines",
+    "stem": "Line $l$: $\\dfrac{x - 1}{-3} = \\dfrac{y - 2}{4} = z + 1$. Find the acute angle between $l$ and the $y$-axis.",
+    "options": [
+      "$\\sin\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf j|}{|\\mathbf d|}$, $\\mathbf d = \\begin{pmatrix}-3\\\\4\\\\1\\end{pmatrix}$",
+      "$\\cos\\theta$ with $\\begin{pmatrix}1\\\\2\\\\-1\\end{pmatrix}$ and $\\mathbf j$",
+      "$\\cos\\theta$ with $\\mathbf d$ and $\\mathbf k$",
+      "$\\cos\\theta = \\dfrac{|\\mathbf d\\cdot\\mathbf j|}{|\\mathbf d|}$, $\\mathbf d = \\begin{pmatrix}-3\\\\4\\\\1\\end{pmatrix}$"
+    ],
+    "answer": 3,
+    "why": "Two lines: cosine of their two directions, $\\mathbf d$ and $\\mathbf j$.",
+    "trap": 0,
+    "trap_why": "Sine is for a line and a plane's normal; the $y$-axis is a line.",
+    "source_question_id": "399ffa4b-9612-4a99-ada4-308d8fbc30db",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8be92f06-1c34-4c71-b413-1d9d0ac09b33"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-lines",
+    "stem": "Line $L$ passes through $(0, 7, 5)$ and $(3, 7, 8)$. Find the acute angle between $L$ and the vector $\\begin{pmatrix}1\\\\2\\\\-3\\end{pmatrix}$.",
+    "options": [
+      "Cosine with $\\begin{pmatrix}0\\\\7\\\\5\\end{pmatrix}$ and $\\begin{pmatrix}1\\\\2\\\\-3\\end{pmatrix}$",
+      "$\\mathbf d = \\begin{pmatrix}1\\\\0\\\\1\\end{pmatrix}$, sine with $\\begin{pmatrix}1\\\\2\\\\-3\\end{pmatrix}$",
+      "Cosine with $\\begin{pmatrix}3\\\\7\\\\8\\end{pmatrix}$ and $\\begin{pmatrix}1\\\\2\\\\-3\\end{pmatrix}$",
+      "$\\mathbf d = \\begin{pmatrix}1\\\\0\\\\1\\end{pmatrix}$, cosine with $\\begin{pmatrix}1\\\\2\\\\-3\\end{pmatrix}$"
+    ],
+    "answer": 3,
+    "why": "An angle with a line uses its direction, the difference of the two points.",
+    "trap": 0,
+    "trap_why": "$(0, 7, 5)$ is a position, not the direction of $L$.",
+    "source_question_id": "1a778c4b-a348-4a52-8b91-654843ba5c98",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "c14618b7-54cd-4266-a3ee-fa0b1861df52"
+  },
+  {
+    "area": "vectors",
+    "skill": "angle-two-lines",
+    "stem": "$\\overrightarrow{OA} = 5\\mathbf i - 2\\mathbf j + 3\\mathbf k$ and $\\overrightarrow{OB} = -\\mathbf i + 11\\mathbf j + 2\\mathbf k$. Find angle $AOB$.",
+    "options": [
+      "$\\cos AOB = \\dfrac{|\\mathbf a\\cdot\\mathbf b|}{|\\mathbf a||\\mathbf b|}$",
+      "$\\cos AOB = \\dfrac{\\mathbf a\\cdot\\mathbf b}{|\\mathbf a||\\mathbf b|}$, sign kept",
+      "$\\sin AOB = \\dfrac{|\\mathbf a\\times\\mathbf b|}{|\\mathbf a||\\mathbf b|}$ only",
+      "$\\cos AOB = \\dfrac{\\mathbf a\\cdot\\mathbf b}{|\\mathbf a - \\mathbf b|}$"
+    ],
+    "answer": 1,
+    "why": "Angle $AOB$ is an actual angle; $\\mathbf a\\cdot\\mathbf b = -21 < 0$, so it is obtuse.",
+    "trap": 0,
+    "trap_why": "The modulus forces an acute angle; use it only when the acute angle is asked.",
+    "source_question_id": "1803af00-64e1-4748-bc7a-243e2dec80e8",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — a.b = -21, so angle AOB is obtuse; option 0's absolute value would give the wrong (acute) angle.",
+    "id": "7568b8cf-1e43-4a71-a1ca-fbf516b1d057"
+  },
+  {
+    "area": "vectors",
+    "skill": "intersection-line-plane",
+    "stem": "Line $l_2$ passes through $(5, 2, 8)$ parallel to $2\\mathbf i + \\mathbf k$. Plane $\\pi_1$: $-4x - 3y + 2z = 2$. Find where $l_2$ meets $\\pi_1$.",
+    "options": [
+      "Write $\\mathbf r = (5 + 2\\lambda,\\ 2,\\ 8 + \\lambda)$, put into the plane",
+      "Solve $\\mathbf d\\cdot\\mathbf n = 0$ for $\\lambda$",
+      "Line through $(5, 2, 8)$ along the normal, meet $\\pi_1$",
+      "Cross $\\mathbf d$ with $\\mathbf n$"
+    ],
+    "answer": 0,
+    "why": "A general point of $l_2$ must satisfy the plane; that gives $\\lambda$.",
+    "trap": 1,
+    "trap_why": "$\\mathbf d\\cdot\\mathbf n$ has no $\\lambda$; it only tests whether $l_2$ is parallel.",
+    "source_question_id": "6474169f-5410-44f1-8349-d32ee130ed9c",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "0ae0fbec-067e-4572-a4ef-804e7858a3ff"
+  },
+  {
+    "area": "vectors",
+    "skill": "intersection-line-plane",
+    "stem": "Line $l$: $x - 4 = 4 - y,\\ z = 9$. Plane $p$: $2x + 5y - 4z = -2$. Find where $l$ meets $p$.",
+    "options": [
+      "Let $x - 4 = 4 - y = z - 9 = \\lambda$; put into $p$",
+      "Find the foot from $(4, 4, 9)$ to $p$",
+      "Let $x = 4 + \\lambda,\\ y = 4 - \\lambda,\\ z = 9$; put into $p$",
+      "Solve $p$ with $x = 4$, $y = 4$"
+    ],
+    "answer": 2,
+    "why": "Turn $l$ into a general point with one parameter, then substitute.",
+    "trap": 0,
+    "trap_why": "$z = 9$ is fixed, not $z - 9 = \\lambda$; $z$ does not change along $l$.",
+    "source_question_id": "8a2552bb-e66f-4e91-ac8f-5b41e0617f88",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "dc016f59-8110-4a26-a9be-7ef40b6e9f54"
+  },
+  {
+    "area": "vectors",
+    "skill": "intersection-line-plane",
+    "stem": "Line $l$: $\\mathbf r = \\mathbf i + 6\\mathbf j - 3\\mathbf k + s(\\mathbf i - 2\\mathbf j + 2\\mathbf k)$ meets plane $p$: $\\mathbf r\\cdot(2\\mathbf i - 3\\mathbf j + 6\\mathbf k) = 6$ at $C$. Find $C$.",
+    "options": [
+      "Substitute $l$ into $\\mathbf r\\cdot\\mathbf n = 6$, solve for $s$",
+      "Foot of the perpendicular from $(1, 6, -3)$ to $p$",
+      "Solve $(\\mathbf i - 2\\mathbf j + 2\\mathbf k)\\cdot\\mathbf n = 6$",
+      "Cross the two vectors to get $C$"
+    ],
+    "answer": 0,
+    "why": "$C$ is on both: a point of $l$ that satisfies the plane.",
+    "trap": 1,
+    "trap_why": "The foot is where the normal from that point lands, not where $l$ lands.",
+    "source_question_id": "fa1909f3-e91e-42f8-b949-ff736e25876e",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "b326a17d-926c-4f28-a76d-9046fda18e09"
+  },
+  {
+    "area": "vectors",
+    "skill": "line-of-intersection",
+    "stem": "Planes $p_1$: $-x + y + 2z = 1$ and $p_2$: $y - z = 5$. Find a vector equation of the line where they meet.",
+    "options": [
+      "Direction $\\mathbf n_1 + \\mathbf n_2$, plus one point on both",
+      "Direction $\\mathbf n_1$, through a point of $p_2$",
+      "Direction $\\mathbf n_1\\times\\mathbf n_2$, plus one point on both",
+      "Direction $\\mathbf n_1\\cdot\\mathbf n_2$"
+    ],
+    "answer": 2,
+    "why": "The line lies in both planes, so it is perpendicular to both normals: cross them.",
+    "trap": 0,
+    "trap_why": "$\\mathbf n_1 + \\mathbf n_2$ is not perpendicular to either normal, so it leaves the planes.",
+    "source_question_id": "f7a360b2-eb23-4cdb-ad2c-84e0c97ce821",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "80ec86b3-6b25-43bb-9f3f-2e8640f4defe"
+  },
+  {
+    "area": "vectors",
+    "skill": "line-of-intersection",
+    "stem": "Planes $p_1$: $\\mathbf r\\cdot\\begin{pmatrix}3\\\\2\\\\-5\\end{pmatrix} = 3$ and $p_2$: $\\mathbf r\\cdot\\begin{pmatrix}-5\\\\3\\\\2\\end{pmatrix} = -5$ meet in a line $l$. Find a vector equation of $l$.",
+    "options": [
+      "Direction $\\mathbf n_1\\times\\mathbf n_2$, through the origin",
+      "Solve both equations on the GC, one variable free",
+      "Direction $\\mathbf n_1\\times\\mathbf n_2$, through $(3, -5, 0)$",
+      "Direction $\\mathbf n_1 - \\mathbf n_2$, through the origin"
+    ],
+    "answer": 1,
+    "why": "Solving the two plane equations together gives a point and the direction at once.",
+    "trap": 0,
+    "trap_why": "The origin gives $0 \\neq 3$; it is on neither plane, so the line is wrong.",
+    "source_question_id": "32ba9d0e-4f74-4de8-ae57-1f7978197e27",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (medium) — n1 x n2 = (19,19,19). Neither the origin nor (3,-5,0) lies on both planes, so options 0 and 2 are wrong because of their point; (1,0,0) is a common point. The GC route is the only fully valid option.",
+    "id": "fa5712e2-4b46-4bbb-b6d8-f7626b60a2d3"
+  },
+  {
+    "area": "vectors",
+    "skill": "line-of-intersection",
+    "stem": "Planes $p_1$: $2x + y - 3z = 1$ and $p_2$: $\\mathbf r\\cdot\\begin{pmatrix}1\\\\-2\\\\1\\end{pmatrix} = 3$ meet in the line $l$. Find a vector equation of $l$.",
+    "options": [
+      "Use $\\mathbf n_1$ as the direction of $l$",
+      "Use $\\mathbf n_1\\cdot\\mathbf n_2$ as the direction",
+      "Substitute $\\mathbf r = \\lambda\\mathbf n_1$ into $p_2$",
+      "Solve $2x + y - 3z = 1$, $x - 2y + z = 3$ together"
+    ],
+    "answer": 3,
+    "why": "Points on $l$ satisfy both equations; solve them with one variable as the parameter.",
+    "trap": 0,
+    "trap_why": "$\\mathbf n_1$ sticks out of $p_1$ at right angles; $l$ lies inside $p_1$.",
+    "source_question_id": "b4fd7315-5548-4604-80e5-5c49940c58cc",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "3a7a08d5-817f-46c8-b92f-f956651ed8ab"
+  },
+  {
+    "area": "vectors",
+    "skill": "plane-equation",
+    "stem": "Plane $\\pi$ contains $A(1, 2, 3)$ and the line $l$: $\\mathbf r = \\begin{pmatrix}2\\\\1\\\\0\\end{pmatrix} + \\lambda\\begin{pmatrix}1\\\\0\\\\2\\end{pmatrix}$. Find $\\pi$ in scalar product form.",
+    "options": [
+      "$\\mathbf n = \\begin{pmatrix}1\\\\0\\\\2\\end{pmatrix}\\times\\begin{pmatrix}1\\\\2\\\\3\\end{pmatrix}$",
+      "$\\mathbf n = \\begin{pmatrix}1\\\\0\\\\2\\end{pmatrix}$, the line's direction",
+      "$\\mathbf n = \\begin{pmatrix}1\\\\0\\\\2\\end{pmatrix} + \\begin{pmatrix}1\\\\2\\\\3\\end{pmatrix}$",
+      "$\\mathbf n = \\begin{pmatrix}1\\\\0\\\\2\\end{pmatrix}\\times\\overrightarrow{BA}$, $B(2, 1, 0)$"
+    ],
+    "answer": 3,
+    "why": "Two directions in $\\pi$: $l$'s direction and $\\overrightarrow{BA}$. Their cross product is normal.",
+    "trap": 0,
+    "trap_why": "$(1, 2, 3)$ is a position vector from $O$, not a direction lying in $\\pi$.",
+    "source_question_id": "80698e04-90ad-4b7a-8fef-477f7e65bedd",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Option 0 crosses with OA, but O is not in the plane, so it is wrong.",
+    "id": "75a375e7-5100-406f-bb78-358f4fbdfe5e"
+  },
+  {
+    "area": "vectors",
+    "skill": "plane-equation",
+    "stem": "Plane $p_2$ contains the line $\\dfrac{x - 2}{1} = \\dfrac{y - 5}{-2} = \\dfrac{z - 3}{2}$ and the point $A(5, 10, -1)$. Find a cartesian equation of $p_2$.",
+    "options": [
+      "$\\mathbf n = \\begin{pmatrix}1\\\\-2\\\\2\\end{pmatrix}$",
+      "$\\mathbf n = \\begin{pmatrix}1\\\\-2\\\\2\\end{pmatrix}\\times\\begin{pmatrix}3\\\\5\\\\-4\\end{pmatrix}$",
+      "$\\mathbf n = \\begin{pmatrix}2\\\\5\\\\3\\end{pmatrix}\\times\\begin{pmatrix}5\\\\10\\\\-1\\end{pmatrix}$",
+      "$\\mathbf n = \\begin{pmatrix}5\\\\10\\\\-1\\end{pmatrix}$"
+    ],
+    "answer": 1,
+    "why": "$\\overrightarrow{BA} = (3, 5, -4)$ and the line's direction both lie in $p_2$; cross them.",
+    "trap": 0,
+    "trap_why": "The line lies in $p_2$, so its direction is along the plane, not normal to it.",
+    "source_question_id": "b22f4486-12c8-493b-abed-dc0c1dbb48da",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "bf89b1ff-4121-4293-a0c3-68cb48b55a8b"
+  },
+  {
+    "area": "vectors",
+    "skill": "plane-equation",
+    "stem": "Plane $p$ passes through $A(2, 1, 4)$ and is perpendicular to the line $l$: $\\mathbf r = \\begin{pmatrix}2\\\\0\\\\5\\end{pmatrix} + \\lambda\\begin{pmatrix}0\\\\1\\\\2\\end{pmatrix}$. Find $p$.",
+    "options": [
+      "$\\mathbf n = \\begin{pmatrix}0\\\\1\\\\2\\end{pmatrix}$, then $\\mathbf r\\cdot\\mathbf n = \\overrightarrow{OA}\\cdot\\mathbf n$",
+      "$\\mathbf n = \\begin{pmatrix}0\\\\1\\\\2\\end{pmatrix}\\times\\overrightarrow{OA}$",
+      "$\\mathbf n = \\begin{pmatrix}0\\\\1\\\\2\\end{pmatrix}\\times\\begin{pmatrix}2\\\\0\\\\5\\end{pmatrix}$",
+      "$\\mathbf n = \\overrightarrow{OA}$"
+    ],
+    "answer": 0,
+    "why": "A plane perpendicular to a line has the line's direction as its normal. No cross needed.",
+    "trap": 1,
+    "trap_why": "That cross makes the line lie along the plane, the opposite of perpendicular.",
+    "source_question_id": "c851eaef-e842-4645-b794-85cf330c2ede",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8fe8114a-acd1-469e-91be-d2088bad3036"
+  },
+  {
+    "area": "vectors",
+    "skill": "plane-equation",
+    "stem": "Plane $\\pi$ contains the origin and is parallel to $-\\mathbf i + \\mathbf k$ and $\\mathbf i + 2\\mathbf j$. Find $\\pi$ in scalar product form.",
+    "options": [
+      "$\\mathbf n = (-\\mathbf i + \\mathbf k) + (\\mathbf i + 2\\mathbf j)$, $D = 0$",
+      "$\\mathbf n = (-\\mathbf i + \\mathbf k)\\cdot(\\mathbf i + 2\\mathbf j)$",
+      "$\\mathbf n = (-\\mathbf i + \\mathbf k)\\times(\\mathbf i + 2\\mathbf j)$, $D = 0$",
+      "$\\mathbf n = -\\mathbf i + \\mathbf k$, $D = 0$"
+    ],
+    "answer": 2,
+    "why": "Both directions lie in $\\pi$; their cross product is perpendicular to both.",
+    "trap": 0,
+    "trap_why": "The sum is another direction in the plane, not a normal.",
+    "source_question_id": "372ddb24-c01b-40cf-b5fc-228cdd5594b4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "54296450-3f7f-4197-a322-c94c84bfe273"
+  },
+  {
+    "area": "vectors",
+    "skill": "reflection",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}3\\\\2\\\\1\\end{pmatrix} + \\lambda\\begin{pmatrix}-1\\\\1\\\\1\\end{pmatrix}$. Find the reflection $A'$ of $A(2, 1, 0)$ in $l$.",
+    "options": [
+      "Foot $N$ on $l$ first, then $\\overrightarrow{OA'} = 2\\overrightarrow{ON} - \\overrightarrow{OA}$",
+      "$\\overrightarrow{OA'} = 2\\begin{pmatrix}3\\\\2\\\\1\\end{pmatrix} - \\overrightarrow{OA}$",
+      "$\\overrightarrow{OA'} = -\\overrightarrow{OA}$",
+      "$\\overrightarrow{OA'} = \\overrightarrow{OA} + 2\\mathbf d$"
+    ],
+    "answer": 0,
+    "why": "The mirror point is the midpoint of $AA'$, and that midpoint is the foot $N$.",
+    "trap": 1,
+    "trap_why": "$(3, 2, 1)$ is just some point on $l$, not the foot; the image lands in the wrong place.",
+    "source_question_id": "4fff8a1e-8864-43fd-86c7-9dd915c37f4b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — The foot is at lambda = -1/3, so (3,2,1) is not the foot and option 1 is wrong.",
+    "id": "639ad772-5105-4673-8330-29721188f242"
+  },
+  {
+    "area": "vectors",
+    "skill": "reflection",
+    "stem": "Plane $\\pi$: $\\mathbf r\\cdot\\begin{pmatrix}2\\\\5\\\\-1\\end{pmatrix} = 9$. Point $C(2, 0, 4)$. Find the reflection $C'$ of $C$ in $\\pi$.",
+    "options": [
+      "$\\overrightarrow{OC'} = \\overrightarrow{OC} - 2\\mathbf n$",
+      "$\\overrightarrow{OC'} = -\\overrightarrow{OC}$",
+      "Foot $N$ (line from $C$ along $\\mathbf n$), then $C' = 2N - C$",
+      "$\\overrightarrow{OC'} = \\overrightarrow{OC}\\times\\mathbf n$"
+    ],
+    "answer": 2,
+    "why": "The foot is the midpoint of $CC'$; find it first, then double the step.",
+    "trap": 0,
+    "trap_why": "Moving by $2\\mathbf n$ ignores how far $C$ really is from $\\pi$.",
+    "source_question_id": "80698e04-90ad-4b7a-8fef-477f7e65bedd",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "796123b7-92cc-445d-b0ef-7f92191140dc"
+  },
+  {
+    "area": "vectors",
+    "skill": "reflection",
+    "stem": "Line $l_1$: $\\mathbf r = \\begin{pmatrix}2\\\\2\\\\3\\end{pmatrix} + \\lambda\\begin{pmatrix}0\\\\1\\\\1\\end{pmatrix}$ meets plane $\\pi$: $x + 2y - z = 4$ at $(2, 3, 4)$. Find the reflection of $l_1$ in $\\pi$.",
+    "options": [
+      "Keep $(2, 3, 4)$, use direction $-\\begin{pmatrix}0\\\\1\\\\1\\end{pmatrix}$",
+      "Reflect $(2, 2, 3)$ in $\\pi$ (foot first), join the image to $(2, 3, 4)$",
+      "Reflect only the direction: $\\mathbf d - 2\\mathbf n$",
+      "Keep $(2, 2, 3)$, use direction $\\mathbf n\\times\\mathbf d$"
+    ],
+    "answer": 1,
+    "why": "The image line passes through the meeting point and the image of one other point.",
+    "trap": 0,
+    "trap_why": "Reversing $\\mathbf d$ gives the same line $l_1$ again, not its mirror image.",
+    "source_question_id": "55bc744f-26e6-464e-9fa0-d5f73ca8d056",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Checked: (2,3,4) is on l1 (lambda=1) and on pi.",
+    "id": "eabc4ef8-c394-4c54-a754-fe198da78dfa"
+  },
+  {
+    "area": "vectors",
+    "skill": "reflection",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}1\\\\0\\\\3\\end{pmatrix} + \\lambda\\begin{pmatrix}1\\\\1\\\\0\\end{pmatrix}$ is parallel to the plane $x - y + z = 6$. Find the reflection of $l$ in the plane.",
+    "options": [
+      "Find where $l$ meets the plane, join to an image point",
+      "Keep $(1, 0, 3)$; use direction $\\begin{pmatrix}1\\\\-1\\\\1\\end{pmatrix}$",
+      "Reflect $(1, 0, 3)$; use direction $\\mathbf n$",
+      "Reflect $(1, 0, 3)$ in the plane; keep direction $\\begin{pmatrix}1\\\\1\\\\0\\end{pmatrix}$"
+    ],
+    "answer": 3,
+    "why": "The image of a parallel line is parallel too: same direction, through the image of one point.",
+    "trap": 0,
+    "trap_why": "A parallel line never meets the plane, so there is no meeting point to use.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — KaTeX problem in option 2: '$\\\\mathbf n$' is double-escaped, so it renders as a line break followed by the text 'mathbf n'. Use '$\\mathbf n$'.",
+    "id": "05643943-0091-4809-820a-feb58cc57ecd"
+  },
+  {
+    "area": "vectors",
+    "skill": "projection-length",
+    "stem": "Plane $\\pi$ has normal $\\mathbf n = \\begin{pmatrix}1\\\\3\\\\11\\end{pmatrix}$. $\\overrightarrow{PF} = \\begin{pmatrix}2\\\\-1\\\\1\\end{pmatrix}$. Find the length of projection of $\\overrightarrow{PF}$ onto $\\pi$.",
+    "options": [
+      "$|\\overrightarrow{PF}\\cdot\\hat{\\mathbf n}|$",
+      "$|\\overrightarrow{PF}|$",
+      "$|\\overrightarrow{PF}\\cdot\\mathbf n|$",
+      "$|\\overrightarrow{PF}\\times\\hat{\\mathbf n}|$"
+    ],
+    "answer": 3,
+    "why": "Onto a plane means the part at right angles to the normal: cross with $\\hat{\\mathbf n}$.",
+    "trap": 0,
+    "trap_why": "The dot product gives the part along the normal, the shadow onto the normal line.",
+    "source_question_id": "d665a155-c46a-4ce1-8e98-4dc9d75203f4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "82bf2dab-6d87-4376-b1e1-f291135716f5"
+  },
+  {
+    "area": "vectors",
+    "skill": "projection-length",
+    "stem": "$\\mathbf a = \\begin{pmatrix}2\\\\-1\\\\2\\end{pmatrix}$ and $\\mathbf b = \\begin{pmatrix}3\\\\0\\\\4\\end{pmatrix}$. Find the length of projection of $\\mathbf a$ onto $\\mathbf b$.",
+    "options": [
+      "$|\\mathbf a\\times\\hat{\\mathbf b}|$",
+      "$|\\mathbf a\\cdot\\hat{\\mathbf b}| = \\dfrac{|\\mathbf a\\cdot\\mathbf b|}{|\\mathbf b|}$",
+      "$|\\mathbf a\\cdot\\mathbf b|$",
+      "$\\dfrac{|\\mathbf a\\cdot\\mathbf b|}{|\\mathbf a|}$"
+    ],
+    "answer": 1,
+    "why": "Projection onto a vector is the part of $\\mathbf a$ along the unit vector $\\hat{\\mathbf b}$.",
+    "trap": 0,
+    "trap_why": "The cross product gives the perpendicular distance from $A$ to line $OB$.",
+    "source_question_id": "f86bb917-332e-4dc8-97b4-06ca9957a101",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d55da22b-f4ce-4332-80a5-2ee6fd203efd"
+  },
+  {
+    "area": "vectors",
+    "skill": "area-triangle",
+    "stem": "$\\overrightarrow{OA} = \\mathbf i + 4\\mathbf j + 8\\mathbf k$ and $\\overrightarrow{OB} = 6\\mathbf i + 2\\mathbf j + 3\\mathbf k$. Find the exact area of triangle $OAB$.",
+    "options": [
+      "$\\tfrac12|\\mathbf a\\times\\mathbf b|$",
+      "$\\tfrac12|\\mathbf a\\cdot\\mathbf b|$",
+      "$|\\mathbf a\\times\\mathbf b|$",
+      "$\\tfrac12|\\mathbf a||\\mathbf b|$"
+    ],
+    "answer": 0,
+    "why": "$|\\mathbf a\\times\\mathbf b|$ is the parallelogram on $OA$ and $OB$; the triangle is half.",
+    "trap": 1,
+    "trap_why": "The dot product carries the cosine, not the sine, so it is not an area.",
+    "source_question_id": "501c9d8c-4c4c-47db-ade7-35becdb2f657",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "cec3f864-ad2d-43f1-be11-7c2846e8a48c"
+  },
+  {
+    "area": "vectors",
+    "skill": "area-triangle",
+    "stem": "Points $A(1, 0, 2)$, $B(3, 1, 0)$ and $C(0, 2, 5)$. Find the area of triangle $ABC$.",
+    "options": [
+      "$\\tfrac12|\\overrightarrow{OB}\\times\\overrightarrow{OC}|$",
+      "$\\tfrac12|\\overrightarrow{AB}\\cdot\\overrightarrow{AC}|$",
+      "$\\tfrac12|\\overrightarrow{AB}\\times\\overrightarrow{AC}|$",
+      "$|\\overrightarrow{AB}\\times\\overrightarrow{BC}|$"
+    ],
+    "answer": 2,
+    "why": "Use two sides from the same corner of the triangle, then halve the cross product.",
+    "trap": 0,
+    "trap_why": "$OB$ and $OC$ start at the origin; that is triangle $OBC$, not $ABC$.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "36b36717-e3b9-483a-b38a-9f1bc8c28534"
+  },
+  {
+    "area": "vectors",
+    "skill": "area-triangle",
+    "stem": "$\\overrightarrow{OA} = \\mathbf a$, $\\overrightarrow{OB} = \\mathbf b$, and $\\overrightarrow{OC} = -\\tfrac12\\mathbf a + \\tfrac32\\mathbf b$. Find the area of triangle $OAC$ as $k|\\mathbf a\\times\\mathbf b|$.",
+    "options": [
+      "$\\tfrac12|\\mathbf a\\times\\overrightarrow{OC}|$, expand, $\\mathbf a\\times\\mathbf a = \\mathbf 0$",
+      "$\\tfrac12|\\mathbf a|\\,|\\overrightarrow{OC}|$",
+      "$\\tfrac12|\\mathbf a\\cdot\\overrightarrow{OC}|$",
+      "$\\tfrac12|\\mathbf a\\times\\mathbf b|$ directly"
+    ],
+    "answer": 0,
+    "why": "Area is half the cross product of two sides; expanding leaves a multiple of $\\mathbf a\\times\\mathbf b$.",
+    "trap": 1,
+    "trap_why": "That leaves out the sine of the angle at $O$, so it is not the area.",
+    "source_question_id": "3a980928-1f41-421c-ada8-7f2873810eae",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "6a3218d6-16a4-496a-86f4-2c13226e980b"
+  },
+  {
+    "area": "vectors",
+    "skill": "parallel-or-intersect",
+    "stem": "Line $l$: $\\mathbf r = \\begin{pmatrix}2\\\\1\\\\1\\end{pmatrix} + \\beta\\begin{pmatrix}1\\\\1\\\\1\\end{pmatrix}$. Plane $\\pi$: $\\mathbf r\\cdot\\begin{pmatrix}2\\\\-1\\\\-1\\end{pmatrix} = 3$. Does $l$ lie in $\\pi$, run parallel to it, or meet it once?",
+    "options": [
+      "Check $\\mathbf d\\cdot\\mathbf n = 0$ only; then $l$ lies in $\\pi$",
+      "Check $\\mathbf d\\times\\mathbf n = \\mathbf 0$",
+      "Check $\\mathbf d\\cdot\\mathbf n$, then test a point of $l$ in $\\pi$",
+      "Check $|\\mathbf d| = |\\mathbf n|$"
+    ],
+    "answer": 2,
+    "why": "$\\mathbf d\\cdot\\mathbf n = 0$ means parallel; then the point $(2, 1, 1)$ decides in or out.",
+    "trap": 0,
+    "trap_why": "$\\mathbf d\\cdot\\mathbf n = 0$ only says parallel; here $(2, 1, 1)$ gives $2 \\neq 3$, so not in.",
+    "source_question_id": "c6286c78-08ec-4809-b231-2ec7130f6d42",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — d.n = 0 and (2,1,1) gives 2 not 3, so the line is parallel and not in the plane.",
+    "id": "b24738be-c7c1-48c0-bcdf-de408a20f0a0"
+  },
+  {
+    "area": "vectors",
+    "skill": "parallel-or-intersect",
+    "stem": "Plane $p_1$: $-2x + y + 2z = 7$. Line $l$: $\\dfrac{x - 2}{1} = \\dfrac{y - 5}{-2} = \\dfrac{z - 3}{2}$. Show that $l$ lies in $p_1$.",
+    "options": [
+      "$\\mathbf d\\times\\mathbf n = \\mathbf 0$, and $(2, 5, 3)$ satisfies $p_1$",
+      "$\\mathbf d\\cdot\\mathbf n = 0$, and $(2, 5, 3)$ satisfies $p_1$",
+      "$(2, 5, 3)$ satisfies $p_1$ only",
+      "$\\mathbf d\\cdot\\mathbf n = 0$ only"
+    ],
+    "answer": 1,
+    "why": "In the plane needs both: parallel to it, and one point of $l$ in it.",
+    "trap": 0,
+    "trap_why": "$\\mathbf d\\times\\mathbf n = \\mathbf 0$ means $l$ is along the normal, perpendicular to $p_1$.",
+    "source_question_id": "b22f4486-12c8-493b-abed-dc0c1dbb48da",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8b4a913e-7759-4de1-98ae-1f9e8e1b9260"
+  },
+  {
+    "area": "vectors",
+    "skill": "parallel-or-intersect",
+    "stem": "Line $l$: $\\dfrac{x - 1}{-3} = \\dfrac{y - 2}{4} = z + 1$ lies in the plane $x + 3y + az = b$. Find $a$ and $b$.",
+    "options": [
+      "$\\begin{pmatrix}-3\\\\4\\\\1\\end{pmatrix} = k\\begin{pmatrix}1\\\\3\\\\a\\end{pmatrix}$ gives $a$",
+      "$(1, 2, -1)$ in the plane gives both $a$ and $b$",
+      "$\\begin{pmatrix}-3\\\\4\\\\1\\end{pmatrix}\\times\\begin{pmatrix}1\\\\3\\\\a\\end{pmatrix} = \\mathbf 0$ gives $a$",
+      "$\\begin{pmatrix}-3\\\\4\\\\1\\end{pmatrix}\\cdot\\begin{pmatrix}1\\\\3\\\\a\\end{pmatrix} = 0$ gives $a$; $(1, 2, -1)$ in the plane gives $b$"
+    ],
+    "answer": 3,
+    "why": "A line in a plane is perpendicular to its normal, and its points satisfy the plane.",
+    "trap": 0,
+    "trap_why": "$\\mathbf d$ parallel to $\\mathbf n$ would make $l$ perpendicular to the plane.",
+    "source_question_id": "399ffa4b-9612-4a99-ada4-308d8fbc30db",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "c4853d6f-4bb0-4f41-82a9-3eae3c34896a"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial",
+    "stem": "Chocolates are packed 20 to a packet, chosen at random from a huge stock in which 15% of pieces are hazelnut. Find the probability that a packet has at most 2 hazelnut pieces.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$B(20, 0.15)$ for the number of hazelnut pieces",
+      "Neither: draw a tree for each piece",
+      "Normal with mean $20 \\times 0.15$",
+      "Sum of 20 independent normals"
+    ],
+    "answer": 0,
+    "why": "Fixed 20 pieces, each hazelnut or not, same 15%, independent: binomial.",
+    "trap": 1,
+    "trap_why": "A huge stock keeps $p$ fixed at 0.15, so no tree is needed.",
+    "source_question_id": "214ce7a1-f330-4280-9c35-ac8d7ff08c3f",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "5668b504-fbe2-4825-aa33-5c60d6803fde"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial",
+    "stem": "29% of adults in a city hold a degree. 50 adults are chosen at random. Find the probability that more than 15 of them hold a degree.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Normal, since $n = 50$ is large",
+      "$B(50, 0.29)$ for the number with a degree",
+      "Neither: list the cases",
+      "Sample mean by the CLT"
+    ],
+    "answer": 1,
+    "why": "50 independent people, each with a degree or not, same 29%: count with $B(50, 0.29)$.",
+    "trap": 0,
+    "trap_why": "The normal approximation to the binomial is not in the syllabus; the GC does $B(50, 0.29)$ directly.",
+    "source_question_id": "e9451731-e474-4768-92d8-37c7ef9ecc6f",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Option 0 (normal approx to binomial) is out of the revised 9758 syllabus — fine as a distractor.",
+    "id": "b7dbf695-ccb4-4f82-99db-7dc503351ee9"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial",
+    "stem": "Over many years, 15% of candidates fail their first driving test. 12 candidates take the test. Find the probability that exactly 3 fail.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Neither: a tree for all 12 candidates",
+      "Normal with mean $12 \\times 0.15$",
+      "$B(12, 0.15)$ for the number who fail",
+      "Sum of 12 independent normals"
+    ],
+    "answer": 2,
+    "why": "Fixed 12 trials, pass or fail, same 15% each time: binomial.",
+    "trap": 0,
+    "trap_why": "A tree for 12 people is far too long; the binomial counts the cases for you.",
+    "source_question_id": "19e8c826-b23a-4461-8334-4e80bdb450d2",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "88115f29-ed4d-4a65-8541-7646e8e622f3"
+  },
+  {
+    "area": "distributions",
+    "skill": "not-binomial",
+    "stem": "A batch of phones is equally likely to come from company A (1 in 40 faulty) or company B (1 in 20 faulty). Two phones from the batch are tested. Find the probability that both are faulty.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$B(2, 0.0375)$ with the average fault rate",
+      "$B(2, \\frac{1}{20})$",
+      "Normal for the number faulty",
+      "Neither: tree, company first, then the two phones"
+    ],
+    "answer": 3,
+    "why": "The fault rate depends on the company; split by company first, then multiply.",
+    "trap": 0,
+    "trap_why": "Both phones share one company, so they are not independent with one fixed $p$.",
+    "source_question_id": "4bd58b04-3b9a-43db-bc86-4f1892638446",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Checked: tree gives 0.5(1/1600)+0.5(1/400)=0.0015625 vs 0.0375^2=0.0014063, so the averaged-rate binomial is genuinely wrong.",
+    "id": "6271ed9b-00cf-4a39-99e1-f47cfea32228"
+  },
+  {
+    "area": "distributions",
+    "skill": "not-binomial",
+    "stem": "A bag has 3 red and 2 white balls. Three balls are taken at random without replacement. Find the probability that exactly 2 are red.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Neither: list the cases, $p$ changes each draw",
+      "$B(3, \\frac{3}{5})$",
+      "Normal for the number of red balls",
+      "Sample mean by the CLT"
+    ],
+    "answer": 0,
+    "why": "Without replacement from 5 balls, each draw changes the chance; list the cases.",
+    "trap": 1,
+    "trap_why": "$B(3, \\frac35)$ needs the same $p$ every draw; here it changes after each ball.",
+    "source_question_id": "60132714-801a-4e58-a136-2456ea01e9d4",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "e338b378-273b-4273-b6f7-80f105cdfad5"
+  },
+  {
+    "area": "distributions",
+    "skill": "not-binomial",
+    "stem": "A fair die is rolled until the first six appears. Find the probability that exactly 4 rolls are needed.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$B(4, \\frac16)$, find $P(X = 1)$",
+      "Neither: three non-sixes, then a six",
+      "$B(6, \\frac16)$",
+      "Normal for the number of rolls"
+    ],
+    "answer": 1,
+    "why": "No fixed number of trials; the order matters: $(\\frac56)^3 \\times \\frac16$.",
+    "trap": 0,
+    "trap_why": "$B(4, \\frac16)$ lets the six land on any roll; here it must be the 4th.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "08cd18da-896e-4f76-ad48-351d08f47810"
+  },
+  {
+    "area": "distributions",
+    "skill": "normal",
+    "stem": "The inner radius of a tap, in cm, is $N(2.1, 0.04^2)$. Find the probability that a randomly chosen tap has radius more than 2.15 cm.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$B(n, p)$ for a count of taps",
+      "Sample mean $\\bar X$ of the radii",
+      "$N(2.1, 0.04^2)$ for one tap, then the GC",
+      "Sum of independent normals"
+    ],
+    "answer": 2,
+    "why": "One measurement, stated normal: find the tail area directly.",
+    "trap": 1,
+    "trap_why": "There is one tap, not a sample, so no sample mean.",
+    "source_question_id": "7fe8c8a5-fc53-4826-9f63-39bbcfc8c53b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "1ccb09c4-790b-4421-af7d-18c14bc164fb"
+  },
+  {
+    "area": "distributions",
+    "skill": "normal",
+    "stem": "The volume of a scoop is normal with mean 100 cm$^3$. The probability that a scoop holds more than 110 cm$^3$ is 0.00621. Find the standard deviation.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "$B(n, 0.00621)$ for the scoops",
+      "Sample mean by the CLT",
+      "Neither: list the cases",
+      "Standardise: $\\frac{110 - 100}{\\sigma}$ equals the $z$ from invNorm"
+    ],
+    "answer": 3,
+    "why": "A known tail area of one normal value: standardise and solve for $\\sigma$.",
+    "trap": 0,
+    "trap_why": "0.00621 is a tail area for one scoop, not a success rate in trials.",
+    "source_question_id": "01b4818c-bdcb-4ae2-b6ae-c330f327ba1f",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "ea7e6e2f-5de4-41a5-b0a2-018b382db803"
+  },
+  {
+    "area": "distributions",
+    "skill": "normal",
+    "stem": "$Y$ is normal with $P(Y < 2) = 0.1$ and $P(Y > 14) = 0.1$. Find the mean and standard deviation of $Y$.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Symmetry gives $\\mu = 8$; then standardise for $\\sigma$",
+      "Linear combination $Y_1 - Y_2$",
+      "$B(n, 0.1)$",
+      "Sample mean by the CLT"
+    ],
+    "answer": 0,
+    "why": "Equal tails sit equally far from the mean, so $\\mu$ is the midpoint.",
+    "trap": 2,
+    "trap_why": "0.1 is a tail area of one normal value, not a success rate.",
+    "source_question_id": "7493b478-1949-48ea-9746-1f2410798bbf",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "300a0de8-c291-4d7e-bef6-3b7704f90584"
+  },
+  {
+    "area": "distributions",
+    "skill": "sum-of-normals",
+    "stem": "The time between two bus stops is $N(2, 0.9^2)$ minutes, independently for each gap. Eva rides across 3 gaps. Find the probability that her ride takes more than 7 minutes.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$3X \\sim N(6, 9 \\times 0.9^2)$",
+      "$X_1 + X_2 + X_3 \\sim N(6, 3 \\times 0.9^2)$",
+      "$\\bar X$ of the 3 gaps",
+      "$B(3, p)$ for slow gaps"
+    ],
+    "answer": 1,
+    "why": "Three different gaps add; each copy adds $0.9^2$ to the variance.",
+    "trap": 0,
+    "trap_why": "$3X$ is one gap tripled; three separate gaps give variance $3 \\times 0.9^2$, not $9 \\times$.",
+    "source_question_id": "242f8918-30ef-4527-8903-19c787d59e15",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (medium) — Mild ambiguity: 'rides 3 stops' could be read as 2 or 3 gaps; intended 3 gaps. Consider 'rides across 3 gaps' or 'travels 3 stops on'.",
+    "id": "89b5033b-c0cc-496d-a605-3c1203b36d4d"
+  },
+  {
+    "area": "distributions",
+    "skill": "sum-of-normals",
+    "stem": "Tony's driving time is $N(14, 2.1^2)$ minutes and his wait at each of 4 traffic lights is $N(1.5, 0.2^2)$, all independent. Find the probability his total time exceeds 20 minutes.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$D + 4L$, variance $2.1^2 + 16(0.2^2)$",
+      "Mean of the 4 waits, $\\bar L$",
+      "$D + L_1 + \\dots + L_4$, variance $2.1^2 + 4(0.2^2)$",
+      "$B(4, p)$ for lights that hold him up"
+    ],
+    "answer": 2,
+    "why": "Four separate waits, each its own copy: add four variances of $0.2^2$.",
+    "trap": 0,
+    "trap_why": "$4L$ means one wait counted four times; the four lights are independent.",
+    "source_question_id": "5ecb94a6-61f4-4cfc-9b2c-d358dc8ae22a",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "16863fa3-c412-43a5-a140-53794f430cf5"
+  },
+  {
+    "area": "distributions",
+    "skill": "sum-of-normals",
+    "stem": "An apple's mass is $N(180, 9^2)$ grams. Find the probability that the total mass of 6 randomly chosen apples exceeds 1.1 kg.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$6A \\sim N(1080, 36 \\times 81)$",
+      "$\\bar A$ of 6 apples by the CLT",
+      "$B(6, p)$ for heavy apples",
+      "$A_1 + \\dots + A_6 \\sim N(1080, 6 \\times 81)$"
+    ],
+    "answer": 3,
+    "why": "Six different apples: means add, and each adds 81 to the variance.",
+    "trap": 0,
+    "trap_why": "$6A$ scales one apple; the variance would wrongly be $36 \\times 81$.",
+    "source_question_id": "fb53dc7f-47e8-4622-b373-2cf63b992fcd",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "45c97570-75ce-4928-b930-da61e9b8bb6b"
+  },
+  {
+    "area": "distributions",
+    "skill": "sum-of-normals",
+    "stem": "Dragon fruit masses are $N(350, 196)$ g and mango masses $N(250, 98)$ g, all independent. A pack holds 2 dragon fruits and 3 mangoes. Find the probability that a pack weighs more than 1.5 kg.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$D_1 + D_2 + M_1 + M_2 + M_3$, variance $2(196) + 3(98)$",
+      "$2D + 3M$, variance $4(196) + 9(98)$",
+      "$D - M$",
+      "$B(5, p)$ for heavy fruits"
+    ],
+    "answer": 0,
+    "why": "Five separate fruits: add one variance per fruit.",
+    "trap": 1,
+    "trap_why": "$2D + 3M$ treats the pack as one fruit of each, doubled and tripled.",
+    "source_question_id": "bb702df8-05a2-4077-9aa9-850ee6bfcce5",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "263a9b3d-e49b-494f-9923-fd5aff658f32"
+  },
+  {
+    "area": "distributions",
+    "skill": "drv-table",
+    "stem": "A blue tetrahedral die shows 1, 2, 3 or 4; a red one shows $-1$, 0, 1 or 2. Both are rolled and $X$ is the sum. Find the probability distribution of $X$.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Normal with mean 3",
+      "List all 16 outcomes and tabulate $X$",
+      "$B(4, \\frac14)$",
+      "CLT on the sum of the two dice"
+    ],
+    "answer": 1,
+    "why": "A score from a rule on two dice: list the outcomes and build the table.",
+    "trap": 2,
+    "trap_why": "There are no repeated success-or-fail trials; $X$ is a sum of faces.",
+    "source_question_id": "b18e53a8-42a7-4f05-a885-528d9f25575a",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f2ac62dc-025d-4181-a504-ab8e9172b9da"
+  },
+  {
+    "area": "distributions",
+    "skill": "linear-combination",
+    "stem": "Monthly rainfall in Sing is $N(182, 100)$ mm and in Jore $N(183, 169)$ mm, independent. Find the probability that Sing gets more rain than Jore in a month.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$B(2, p)$",
+      "Neither: list the cases",
+      "$S - J \\sim N(-1, 269)$; find $P(S - J > 0)$",
+      "$S - J \\sim N(-1, 69)$"
+    ],
+    "answer": 2,
+    "why": "\"More than\" compares two normals: use their difference.",
+    "trap": 3,
+    "trap_why": "Variances add for a difference too: $100 + 169$, never subtract.",
+    "source_question_id": "dc1b5f42-2a52-4b9d-b993-b93350a53d2d",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "7ded9ea6-5f2a-4965-84de-ec22d20f9d35"
+  },
+  {
+    "area": "distributions",
+    "skill": "linear-combination",
+    "stem": "Red watermelons weigh $N(2.9, 0.1^2)$ kg and yellow ones $N(2.1, 0.2^2)$ kg, independent. Find the probability that a red one weighs more than 1.5 times a yellow one.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$R - 1.5Y$, variance $0.1^2 - 1.5(0.2^2)$",
+      "$B(2, p)$",
+      "Find $P(R > Y)$, then multiply by 1.5",
+      "$R - 1.5Y$, variance $0.1^2 + 2.25(0.2^2)$"
+    ],
+    "answer": 3,
+    "why": "Compare with $R - 1.5Y > 0$; the 1.5 is squared and variances add.",
+    "trap": 0,
+    "trap_why": "The factor 1.5 must be squared to 2.25, and variances never subtract.",
+    "source_question_id": "e1a0f5ca-16de-4ba7-8d76-95b27d2d8d0b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "3eb0b414-05cb-4c12-939b-fc01fcd263ff"
+  },
+  {
+    "area": "distributions",
+    "skill": "linear-combination",
+    "stem": "Maths scores are $N(62, 12^2)$ and English scores $N(58, 8^2)$, independent. Find the probability that a student's Maths score beats his English score by more than 10.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$M - E \\sim N(4, 208)$; find $P(M - E > 10)$",
+      "$M - E \\sim N(4, 80)$",
+      "$M + E$",
+      "Sample mean of the two scores"
+    ],
+    "answer": 0,
+    "why": "\"Beats by more than 10\" is a difference: $M - E > 10$.",
+    "trap": 1,
+    "trap_why": "80 is $144 - 64$; variances add for a difference, giving 208.",
+    "source_question_id": "30c478c7-caae-43d5-8cdd-6b8f8041c033",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "e74805ec-2577-4518-bc4a-211ad10d5105"
+  },
+  {
+    "area": "distributions",
+    "skill": "linear-combination",
+    "stem": "Andrew's thinking time per game is $N(50, 8^2)$ minutes and Sally's is $N(45, 6^2)$, independent. Find the probability that Sally thinks longer than Andrew in a game.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Total time $S + A$",
+      "$S - A \\sim N(-5, 100)$; find $P(S - A > 0)$",
+      "$B(2, 0.5)$",
+      "Neither: list the cases"
+    ],
+    "answer": 1,
+    "why": "\"Who takes longer\" is the sign of the difference $S - A$.",
+    "trap": 0,
+    "trap_why": "The total says nothing about who is longer; compare with a difference.",
+    "source_question_id": "242f8f68-7912-4294-b846-d828ea985879",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "a73bb4f5-cfcb-43ee-9c60-c61ecf2b761d"
+  },
+  {
+    "area": "distributions",
+    "skill": "linear-combination",
+    "stem": "A 3-room household uses $N(14, 3^2)$ m$^3$ of water a month and a 5-room household $N(19, 4^2)$, independent. Find the probability that a 5-room household uses more than twice what a 3-room one uses.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$F - 2T$, variance $16 - 4(9)$",
+      "$F - (T_1 + T_2)$, variance $16 + 2(9)$",
+      "$F - 2T$, variance $16 + 4(9)$",
+      "$B(2, p)$"
+    ],
+    "answer": 2,
+    "why": "Twice ONE household's use is $2T$; its variance is $4 \\times 9$, added.",
+    "trap": 1,
+    "trap_why": "$T_1 + T_2$ is two different households; here it is one household doubled.",
+    "source_question_id": "9f530819-0dc2-4453-87fc-285f664f5d36",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "7147e252-765c-498e-82ab-573dd77a8c59"
+  },
+  {
+    "area": "distributions",
+    "skill": "drv-table",
+    "stem": "Box A holds balls 0, 1, 1 and box B holds 2, 2, 2, 3. One ball is drawn from each. The score is the product if both numbers are odd, otherwise the sum. Find the expected score.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "$B(2, p)$ for odd balls",
+      "A normal model for the score",
+      "Sum of two independent normals",
+      "Tabulate each score with its probability, then $E$"
+    ],
+    "answer": 3,
+    "why": "A score set by a rule: list the pairs, tabulate, then find $E$.",
+    "trap": 0,
+    "trap_why": "The score is not a count of successes; it follows a rule on two draws.",
+    "source_question_id": "5b544d9c-918a-43dc-9cc8-fe80f2747194",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "87529e46-9d5e-43d8-9fdb-bb2e355f9851"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-exact",
+    "stem": "Analysts' interest-rate forecasts are $N(7.5, 1.3^2)$ %. The consensus is the mean of 6 random forecasts. Find the probability that the consensus is above 8%.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$\\bar X \\sim N(7.5, \\frac{1.3^2}{6})$ exactly",
+      "$\\bar X \\sim N(7.5, \\frac{1.3}{6})$",
+      "$N(7.5, 1.3^2)$ for one forecast",
+      "$B(6, p)$"
+    ],
+    "answer": 0,
+    "why": "A normal population gives a normal $\\bar X$ for any $n$, variance $\\frac{\\sigma^2}{n}$.",
+    "trap": 1,
+    "trap_why": "Divide the variance by 6, not the standard deviation.",
+    "source_question_id": "369f7b45-b68b-4c22-88cc-bede93e5fd35",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "7163ce27-222f-4003-a17e-2011625aebe7"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-exact",
+    "stem": "A cushion's mass is $N(170, 12^2)$ grams. Find the probability that the mean mass of 5 random cushions is under 165 g.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$N(170, 12^2)$ for one cushion",
+      "$\\bar X \\sim N(170, \\frac{144}{5})$ exactly",
+      "Cannot be done: $n = 5$ is too small for the CLT",
+      "$B(5, p)$"
+    ],
+    "answer": 1,
+    "why": "The population is normal, so $\\bar X$ is exactly normal even for 5 cushions.",
+    "trap": 2,
+    "trap_why": "The CLT is not needed here; a normal population makes $\\bar X$ normal for any $n$.",
+    "source_question_id": "68266775-8a6e-4924-be0f-1819a35beb67",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "dd5e4156-3d59-430c-bc9c-670f00e7d921"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-exact",
+    "stem": "$X \\sim N(\\mu, \\sigma^2)$. For samples of 8, $P(\\bar X > 210) = 0.2$ and $P(\\bar X < 170) = 0.3$. Find $\\mu$ and $\\sigma$.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Standardise $X$ using $\\sigma$",
+      "Use the CLT, then standardise",
+      "Standardise $\\bar X$ with $\\frac{\\sigma}{\\sqrt 8}$; two equations",
+      "$B(8, p)$"
+    ],
+    "answer": 2,
+    "why": "The probabilities are about $\\bar X$, exactly normal, spread $\\frac{\\sigma}{\\sqrt 8}$.",
+    "trap": 0,
+    "trap_why": "These are probabilities for the sample mean, so $\\sigma$ alone is the wrong spread.",
+    "source_question_id": "37f85cd8-011d-48e5-b993-7d3b777e1eb5",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Checked consistent: sigma/sqrt8 ~ 29.3, mu ~ 185.4. X is normal so Xbar is exactly normal; option 1 (CLT with n=8) is wrong reasoning.",
+    "id": "42f720f2-f1c8-43f2-8407-6c4b9b2c18c8"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-clt",
+    "stem": "Call times have mean 8.1 min and standard deviation 1.7 min; their distribution is unknown. 40 calls are sampled. Find the least $k$ with $P(\\bar X > k) \\le 0.15$.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$N(8.1, 1.7^2)$ for one call",
+      "$\\bar X \\sim N(8.1, 1.7^2)$",
+      "$B(40, p)$",
+      "CLT: $\\bar X \\approx N(8.1, \\frac{1.7^2}{40})$"
+    ],
+    "answer": 3,
+    "why": "Not stated normal, but $n = 40$ is large: the CLT makes $\\bar X$ about normal.",
+    "trap": 1,
+    "trap_why": "Averaging 40 calls shrinks the variance to $\\frac{1.7^2}{40}$.",
+    "source_question_id": "4a2bfc55-cc13-4327-a0ac-e915f1726cea",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "6479baf2-70fb-424d-8972-c91583c1b93e"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-clt",
+    "stem": "$X$ has mean $\\mu$ and variance 36; its distribution is unknown. Find the least $n$ with $P(|\\bar X - \\mu| < 0.5) > 0.98$.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Assume $n$ large; CLT gives $\\bar X \\approx N(\\mu, \\frac{36}{n})$",
+      "$X \\sim N(\\mu, 36)$ for one value",
+      "$B(n, 0.98)$",
+      "$\\bar X \\sim N(\\mu, \\frac{6}{n})$"
+    ],
+    "answer": 0,
+    "why": "Unknown population: state $n$ is large, then the CLT gives $\\bar X$.",
+    "trap": 3,
+    "trap_why": "6 is the standard deviation; the variance of $\\bar X$ is $\\frac{36}{n}$.",
+    "source_question_id": "dc672ab2-d5e0-45b6-8f0e-ad6b2a4914ed",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "8ac9790d-2fc5-4e65-ab77-1cb6fe1b695c"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-clt",
+    "stem": "A coin's age, in whole years, has mean 2.3 and variance 2. Find the probability that the mean age of 119 randomly chosen coins exceeds 2.5 years.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Age is normal, $N(2.3, 2)$",
+      "CLT: $\\bar X \\approx N(2.3, \\frac{2}{119})$",
+      "$B(119, p)$",
+      "Sum of normals, $119X$"
+    ],
+    "answer": 1,
+    "why": "Age is a whole number, not normal; the large sample makes $\\bar X$ about normal.",
+    "trap": 0,
+    "trap_why": "Nothing says age is normal, and one coin's age is not the mean.",
+    "source_question_id": "84c7b578-75e8-488f-a826-ebaf6f77fc52",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "f5f0c35d-4205-489a-87d3-307d0b0915cd"
+  },
+  {
+    "area": "distributions",
+    "skill": "sample-mean-clt",
+    "stem": "A biased tetrahedral die scores 0 to 3 with $E(X) = 1.6$ and $\\text{Var}(X) = 1.04$. It is thrown 50 times. Find the probability that the mean score is below 1.5.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Build the table of $\\bar X$ from all outcomes",
+      "$B(50, p)$",
+      "CLT: $\\bar X \\approx N(1.6, \\frac{1.04}{50})$",
+      "$\\bar X \\sim N(1.6, 1.04)$"
+    ],
+    "answer": 2,
+    "why": "A discrete score, but $n = 50$ is large: the CLT handles $\\bar X$.",
+    "trap": 0,
+    "trap_why": "Listing $4^{50}$ outcomes is hopeless; the CLT does it for large $n$.",
+    "source_question_id": "79a2fa4f-d182-4aa1-abf5-d189bb220b7d",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "74dbdcea-32df-48fe-b0c0-ce41ba09ff7f"
+  },
+  {
+    "area": "distributions",
+    "skill": "drv-table",
+    "stem": "2 round beads and 3 cube beads, all different, are put in a random line. $X$ is the number of cube beads between the two round ones. Find $E(X)$.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "$B(3, \\frac12)$ for cubes between",
+      "A normal model for $X$",
+      "Sample mean by the CLT",
+      "Find $P(X = 0), \\dots, P(X = 3)$ by counting arrangements"
+    ],
+    "answer": 3,
+    "why": "$X$ comes from one arrangement: count cases for each value, then tabulate.",
+    "trap": 0,
+    "trap_why": "The cubes' positions are linked, so they are not independent trials.",
+    "source_question_id": "7d90263e-519b-4d49-94e9-0ee516e8d5fa",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high) — Linearity (each cube between the rounds with prob 1/3, E=1) is a quicker valid route not listed; counting arrangements is fine as the taught start.",
+    "id": "f3041d32-b7da-46bf-88d1-7e78776275a0"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial-of-normal",
+    "stem": "A cylinder's length is $N(8.5, 0.05^2)$ cm; it is acceptable between 8.40 and 8.65 cm. Find the probability that at least 18 of 20 cylinders are acceptable.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Find $p$ from the normal, then $B(20, p)$",
+      "Sum of 20 lengths",
+      "$\\bar X$ of 20 lengths",
+      "Neither: list the cases"
+    ],
+    "answer": 0,
+    "why": "Each cylinder passes with the same normal $p$; then count passes out of 20.",
+    "trap": 2,
+    "trap_why": "This counts acceptable cylinders; the mean length says nothing about how many pass.",
+    "source_question_id": "125cb09f-42e2-4909-a87f-725b8f4de492",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "3665c839-195d-4d6d-a5f3-41a9148986b3"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial-of-normal",
+    "stem": "Red watermelons weigh $N(2.9, 0.1^2)$ kg. Find the probability that exactly 3 out of 10 red watermelons weigh more than 3 kg.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$R_1 + \\dots + R_{10}$",
+      "$p = P(R > 3)$, then $B(10, p)$",
+      "$\\bar R$ of the 10 melons",
+      "$10R$"
+    ],
+    "answer": 1,
+    "why": "\"How many out of 10\" is a count: normal gives $p$, binomial counts.",
+    "trap": 2,
+    "trap_why": "The mean weight cannot tell you how many melons are over 3 kg.",
+    "source_question_id": "e1a0f5ca-16de-4ba7-8d76-95b27d2d8d0b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "1513740e-d866-40d1-b4d6-7ca64dc7b148"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial-of-normal",
+    "stem": "A cushion's mass is $N(170, 12^2)$ g; a cushion over 185 g is rejected. Find the probability that more than 2 of 25 cushions are rejected.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "Mean mass of 25 cushions",
+      "Total mass of 25 cushions",
+      "$p = P(X > 185)$, then $B(25, p)$",
+      "$25X$ compared with $25 \\times 185$"
+    ],
+    "answer": 2,
+    "why": "Each cushion is rejected or not with one normal $p$; count rejects out of 25.",
+    "trap": 0,
+    "trap_why": "A count of rejects needs the binomial; the mean mass cannot count them.",
+    "source_question_id": "299315a3-fa75-4979-b3f3-ad00e9adfc52",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "ddea7185-17ac-45d2-944b-e919a7242a04"
+  },
+  {
+    "area": "distributions",
+    "skill": "binomial-of-normal",
+    "stem": "A battery lasts $N(40, 3^2)$ hours. A pack holds 6 batteries. Find the probability that at most one battery in the pack lasts under 35 hours.",
+    "ask": "Which model gets you started?",
+    "options": [
+      "$\\bar X$ of the 6 batteries",
+      "Sum of 6 lifetimes",
+      "$6X$",
+      "$p = P(X < 35)$, then $B(6, p)$"
+    ],
+    "answer": 3,
+    "why": "\"At most one battery\" is a count: normal for $p$, then binomial.",
+    "trap": 0,
+    "trap_why": "The pack's mean life cannot say how many single batteries fail early.",
+    "source_question_id": null,
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "d4747354-6024-42fb-af35-ba66d01ac5ba"
+  },
+  {
+    "area": "distributions",
+    "skill": "one-tailed",
+    "stem": "An app says the mean trip time is 14.5 minutes. An analyst thinks it is more. 35 trips give $\\sum x = 539$, $\\sum x^2 = 8647.4$. State the alternative hypothesis.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu > 14.5$, one-tailed",
+      "$H_1: \\mu \\ne 14.5$, two-tailed",
+      "$H_1: \\mu < 14.5$, one-tailed",
+      "$H_1: \\bar x > 14.5$"
+    ],
+    "answer": 0,
+    "why": "The analyst suspects one direction, more, so only the upper tail counts.",
+    "trap": 1,
+    "trap_why": "\"More than\" names a direction; two tails would test any change.",
+    "source_question_id": "8e378edc-43c3-498c-8d8a-5d1713de365b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "abfbe5d7-afe0-4e98-ab50-9b6a71052816"
+  },
+  {
+    "area": "distributions",
+    "skill": "one-tailed",
+    "stem": "A firm says the mean wait is at most 10 minutes. After complaints about long waits, 80 customers are timed. State the hypotheses.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_0: \\mu = 10$, $H_1: \\mu \\ne 10$",
+      "$H_0: \\mu = 10$, $H_1: \\mu > 10$",
+      "$H_0: \\mu = 10$, $H_1: \\mu < 10$",
+      "$H_0: \\mu > 10$, $H_1: \\mu = 10$"
+    ],
+    "answer": 1,
+    "why": "The complaint is that waits are longer: test $\\mu > 10$.",
+    "trap": 2,
+    "trap_why": "\"At most\" is the firm's claim; the doubt is that waits are longer.",
+    "source_question_id": "0903435b-a1b5-481a-940f-2a22cf92a1fc",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "c0c5eb2b-f60a-415d-abf4-9b5bee8fe9e1"
+  },
+  {
+    "area": "distributions",
+    "skill": "one-tailed",
+    "stem": "A factory owner claims the mean mass of coffee in a packet is at least 10 g. 64 packets are weighed to test the claim.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu > 10$",
+      "$H_1: \\mu \\ne 10$",
+      "$H_1: \\mu < 10$",
+      "$H_1: \\mu \\ge 10$"
+    ],
+    "answer": 2,
+    "why": "\"At least 10\" is doubted only if packets are lighter: $H_1: \\mu < 10$.",
+    "trap": 0,
+    "trap_why": "Heavier packets agree with the claim; the test looks for lighter ones.",
+    "source_question_id": "1fd4f0d1-32a6-4a9b-b9d7-e95335dcfe5b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "81039eb7-162b-4872-973b-474fdacbc13c"
+  },
+  {
+    "area": "distributions",
+    "skill": "one-tailed",
+    "stem": "A bakery says its buns average 45 g. A customer says the bakery overstates the weight. 80 buns are weighed to test this.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu > 45$",
+      "$H_1: \\mu \\ne 45$",
+      "$H_0: \\mu < 45$",
+      "$H_1: \\mu < 45$"
+    ],
+    "answer": 3,
+    "why": "Overstating means the true mean is less than 45 g.",
+    "trap": 0,
+    "trap_why": "The customer says the buns are lighter than claimed, not heavier.",
+    "source_question_id": "cd494988-4a4b-4789-8602-334f62ec6575",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "391d93fd-ef95-479e-9465-88966b8f1807"
+  },
+  {
+    "area": "distributions",
+    "skill": "two-tailed",
+    "stem": "An illness has a mean infectious period of 150 hours. A sample of 100 children is used to test whether the mean has changed. The sample mean is 154.5 hours.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu \\ne 150$, two-tailed",
+      "$H_1: \\mu > 150$, one-tailed",
+      "$H_1: \\mu < 150$, one-tailed",
+      "$H_1: \\bar x \\ne 150$"
+    ],
+    "answer": 0,
+    "why": "\"Changed\" gives no direction, so both tails count.",
+    "trap": 1,
+    "trap_why": "The wording sets the tail, not the sample: 154.5 above 150 does not matter.",
+    "source_question_id": "bfc59bf6-91f8-4eaf-abdb-c684b46bbfe6",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "3f4053e3-deb4-461b-ba29-b4787a021b55"
+  },
+  {
+    "area": "distributions",
+    "skill": "two-tailed",
+    "stem": "The best pH for shampoo is 5.5; too high or too low is harmful. A maker tests whether his shampoo's mean pH is at the best value.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu > 5.5$",
+      "$H_1: \\mu \\ne 5.5$",
+      "$H_1: \\mu < 5.5$",
+      "$H_0: \\mu \\ne 5.5$"
+    ],
+    "answer": 1,
+    "why": "Either side of 5.5 is a problem, so test both tails.",
+    "trap": 2,
+    "trap_why": "Too high is as bad as too low; one tail misses half the problem.",
+    "source_question_id": "fb9e6231-6733-4c54-8759-2431c52b44cc",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "37116373-312d-4570-a4a8-547bb54b7329"
+  },
+  {
+    "area": "distributions",
+    "skill": "two-tailed",
+    "stem": "Beams are meant to be 6 m long. An engineer suspects they are not the stated length. 70 beams are measured; their mean is a little over 6 m.",
+    "ask": "Which test set-up?",
+    "options": [
+      "$H_1: \\mu < 6$",
+      "$H_1: \\mu > 6$",
+      "$H_1: \\mu \\ne 6$",
+      "$H_0: \\mu \\ne 6$"
+    ],
+    "answer": 2,
+    "why": "\"Not the stated length\" has no direction: two-tailed.",
+    "trap": 1,
+    "trap_why": "A long sample does not set the tail; the suspicion has no direction.",
+    "source_question_id": "7ebe4433-37b0-43b5-8d51-242cdcca2382",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "7b867d34-f01e-492d-bbbf-0900136fd950"
+  },
+  {
+    "area": "distributions",
+    "skill": "z-test-estimate",
+    "stem": "Laptop power use is normal with unknown variance. For 50 laptops, $\\sum(w - 100) = 26$ and $\\sum(w - 100)^2 = 273$. Test whether the mean differs from 100 W.",
+    "ask": "Which variance goes into the test?",
+    "options": [
+      "$\\sigma^2 = \\frac{273}{50}$",
+      "None: cannot test with $\\sigma$ unknown",
+      "$\\sigma^2 = 273$",
+      "$s^2 = \\frac{1}{49}\\left(273 - \\frac{26^2}{50}\\right)$"
+    ],
+    "answer": 3,
+    "why": "$\\sigma^2$ is unknown: use the unbiased estimate $s^2$, then a z-test.",
+    "trap": 0,
+    "trap_why": "That divides by $n$ and ignores the mean shift; use the unbiased $s^2$.",
+    "source_question_id": "5cf33bfc-4320-40fc-b528-59f5f069348b",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "e6fd60b6-a3ca-4cb1-9f3e-96acefaf7a79"
+  },
+  {
+    "area": "distributions",
+    "skill": "z-test-estimate",
+    "stem": "Rod lengths have an unknown distribution. For 60 rods, $\\sum(x - 8) = 1400$ and $\\sum(x - 8)^2 = 34800$. Test the claim that the mean length is 30 m.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Unbiased $s^2$; CLT makes $\\bar X$ about normal",
+      "Cannot test: lengths are not known normal",
+      "$\\bar X \\sim N(30, s^2)$",
+      "$B(60, p)$ for long rods"
+    ],
+    "answer": 0,
+    "why": "Large sample, unknown variance: estimate $s^2$, and the CLT makes $\\bar X$ normal.",
+    "trap": 1,
+    "trap_why": "With $n = 60$ the CLT makes $\\bar X$ normal; no normal population needed.",
+    "source_question_id": "35141db6-4401-4dc3-85da-89ae046028db",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "24a25e31-bbbf-4b0d-a846-5ab61a9d4057"
+  },
+  {
+    "area": "distributions",
+    "skill": "z-test-estimate",
+    "stem": "A bakery's bun weights have unknown variance. For 80 buns, $\\sum x = 3571$ and $\\sum x^2 = 159701$. Find the variance you will use in the z-test.",
+    "ask": "Which variance goes into the test?",
+    "options": [
+      "$\\frac{159701}{80} - \\bar x^2$",
+      "$s^2 = \\frac{1}{79}\\left(159701 - \\frac{3571^2}{80}\\right)$",
+      "$\\frac{159701}{79}$",
+      "None: the population variance must be given"
+    ],
+    "answer": 1,
+    "why": "Unknown variance: use the unbiased estimate, dividing by $n - 1 = 79$.",
+    "trap": 0,
+    "trap_why": "That divides by $n$; the test needs the unbiased $s^2$ with $n - 1$.",
+    "source_question_id": "cd494988-4a4b-4789-8602-334f62ec6575",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "c0e5705e-19ba-4afc-a3b3-edb95c7def0b"
+  },
+  {
+    "area": "distributions",
+    "skill": "z-test-known-variance",
+    "stem": "The time to sell a watch is normal with standard deviation 0.68 h and mean 1.75 h. After advertising, 8 watches take 11 h in total. Test whether the mean time has fallen.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Estimate $s^2$ from the 8 sales",
+      "Use the CLT for $\\bar X$",
+      "z-test: $\\bar X \\sim N(1.75, \\frac{0.68^2}{8})$ exactly",
+      "Cannot test: $n = 8$ is too small"
+    ],
+    "answer": 2,
+    "why": "Normal population, known $\\sigma$: $\\bar X$ is exactly normal, even for 8.",
+    "trap": 3,
+    "trap_why": "Small $n$ is fine here: a normal population with known $\\sigma$ needs no CLT.",
+    "source_question_id": "d0b04b22-7a94-460e-99ad-e282c5458aa5",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "50196c8e-10fd-4028-a6d6-557722297f85"
+  },
+  {
+    "area": "distributions",
+    "skill": "z-test-known-variance",
+    "stem": "Bulb lifetimes are normal with variance 35 h$^2$. 80 bulbs have a mean life of 1198.6 h. Test the maker's claim that the mean is at least 1200 h.",
+    "ask": "Which set-up gets you started?",
+    "options": [
+      "Estimate $s^2$ from the 80 bulbs",
+      "Cannot test without the raw data",
+      "$\\bar X \\sim N(1200, 35)$",
+      "z-test with $\\bar X \\sim N(1200, \\frac{35}{80})$"
+    ],
+    "answer": 3,
+    "why": "The variance is given and the population is normal: $\\bar X$ has variance $\\frac{35}{80}$.",
+    "trap": 0,
+    "trap_why": "The variance 35 is given; there is nothing to estimate.",
+    "source_question_id": "b69444d0-9000-4b86-8d89-c1902fe7e823",
+    "status": "live",
+    "verify_note": "blind solve 5 Oct 2026: agrees (high)",
+    "id": "53d4d156-35cd-4c87-96ef-a45efa1cc944"
+  }
+]

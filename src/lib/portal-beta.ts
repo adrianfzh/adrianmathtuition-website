@@ -309,6 +309,26 @@ export async function humanitiesOpen(): Promise<boolean> {
   return false;
 }
 
+// 🧭 "Which method?" drills + ✍️ the statistics write-up trainer for JC H2 students
+// (5 Oct 2026, Adrian: "build the which method drills and stats trainer";
+// SPEC-H2-TOOLS.md). CLOSED: Adrian's cookie and the demo student see them; flip one
+// to open it to every JC1/JC2 student (lib/h2-tools h2ToolVisible). Doors: a "JC
+// drills" section on the Practice tab, /app/practice/methods and /app/practice/stats.
+export const H2_METHOD_DRILLS_OPEN_TO_STUDENTS = false;
+export const H2_STATS_TRAINER_OPEN_TO_STUDENTS = false;
+export const H2_TOOLS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+/** May the current viewer use this H2 tool? `account` = the student session, when there is one. */
+export async function h2ToolOpen(tool: 'methods' | 'stats', account?: { id: string; airtable_student_id?: string | null; level?: string | null } | null): Promise<boolean> {
+  const { h2ToolVisible } = await import('./h2-tools');
+  const isAdmin = !(await viewingAsStudent()) && (await isNotesAuthed());
+  const { portalIdentity } = await import('./portal-auth');
+  return h2ToolVisible({
+    open: tool === 'methods' ? H2_METHOD_DRILLS_OPEN_TO_STUDENTS : H2_STATS_TRAINER_OPEN_TO_STUDENTS,
+    isAdmin, identity: account ? portalIdentity(account) : null, level: account?.level ?? null,
+    previewIdentities: H2_TOOLS_PREVIEW_IDENTITIES,
+  });
+}
+
 // 🔍 Find a question (/app/find, SPEC-PORTAL-V2 §4, 6 Sep 2026): photo or typed
 // question → a genuinely similar bank question or a made-for-you one, straight
 // into Practice. It replaced the students' "Request materials" door on Home, so

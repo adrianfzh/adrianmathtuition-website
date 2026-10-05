@@ -1,0 +1,2329 @@
+[
+  {
+    "kind": "hypotheses",
+    "context": "A tutor says that students at her centre study for an average of 5 hours a week. A student journalist surveys a random sample of 45 students to test this claim.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 5",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 5",
+            "mu=5",
+            "mu is 5",
+            "mu equals 5"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ ≠ 5",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu ≠ 5",
+            "mu != 5",
+            "mu =/= 5",
+            "mu not equal to 5",
+            "mu is not equal to 5",
+            "mu not 5",
+            "mu≠5",
+            "mu!=5",
+            "mu=/=5"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean time, in hours, a student spends studying per week",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "study",
+            "hours",
+            "time"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 5$\n$\\mathrm{H_1}: \\mu \\neq 5$\nwhere $\\mu$ is the population mean time (in hours) a student spends studying per week.",
+    "source_question_id": "db822d2c-225a-4db2-913f-b679f1781647",
+    "tests": {
+      "pass": "H0: mu = 5, H1: mu ≠ 5, where mu is the population mean study time per week of a student in hours",
+      "fail": "H0: mu = 5, H1: mu ≠ 5, where mu is the mean",
+      "fail_misses": [
+        "parameter"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "314b6f4c-cfe2-4cac-8d2b-ab063e24e050"
+  },
+  {
+    "kind": "hypotheses",
+    "context": "An app company states that users take 60 minutes on average to finish its online course. A trainer believes this average has been understated and times a random sample of 50 users.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 60",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 60",
+            "mu=60",
+            "mu is 60",
+            "mu equals 60"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ > 60",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu > 60",
+            "mu>60",
+            "mu more than 60",
+            "mu greater than 60",
+            "mu is greater than 60",
+            "mu is more than 60"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean time, in minutes, a user takes to finish the course",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "time",
+            "minutes",
+            "course",
+            "user"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 60$\n$\\mathrm{H_1}: \\mu > 60$\nwhere $\\mu$ is the population mean time (in minutes) a user takes to finish the course.",
+    "source_question_id": "f18256bc-0920-4a27-8e3f-a05dc45aa85d",
+    "tests": {
+      "pass": "H0: mu = 60 H1: mu > 60 where mu is the population mean time taken by a user to finish the course",
+      "fail": "H0: mu = 60 H1: mu < 60 where mu is the population mean time taken by a user to finish the course",
+      "fail_misses": [
+        "h1"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "ba076006-3340-4ad2-81ec-64be27f4328d"
+  },
+  {
+    "kind": "hypotheses",
+    "context": "A maker claims that its LED lamps last at least 900 hours on average. A consumer group thinks the mean lifetime is lower and tests a random sample of 70 lamps.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 900",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 900",
+            "mu=900",
+            "mu is 900",
+            "mu equals 900",
+            "mu ≥ 900",
+            "mu >= 900",
+            "mu≥900",
+            "mu>=900"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ < 900",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu < 900",
+            "mu<900",
+            "mu less than 900",
+            "mu is less than 900"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean lifetime, in hours, of an LED lamp",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "lifetime",
+            "lamp",
+            "hours",
+            "life"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 900$\n$\\mathrm{H_1}: \\mu < 900$\nwhere $\\mu$ is the population mean lifetime (in hours) of an LED lamp.",
+    "source_question_id": "b69444d0-9000-4b86-8d89-c1902fe7e823",
+    "tests": {
+      "pass": "H0: μ = 900, H1: μ < 900 where μ is the population mean lifetime of a lamp in hours",
+      "fail": "H0: μ = 900, H1: x̄ < 900 where μ is the population mean lifetime of a lamp in hours",
+      "fail_misses": [
+        "h1"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "ca7461ad-5646-49ca-85a4-361f16aeeb12"
+  },
+  {
+    "kind": "hypotheses",
+    "context": "A zoo states that its red pandas eat at most 4 kg of bamboo a day on average. A keeper suspects they eat more, and records the daily intake on 40 randomly chosen days.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 4",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 4",
+            "mu=4",
+            "mu is 4",
+            "mu equals 4",
+            "mu ≤ 4",
+            "mu <= 4",
+            "mu≤4",
+            "mu<=4"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ > 4",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu > 4",
+            "mu>4",
+            "mu more than 4",
+            "mu greater than 4",
+            "mu is greater than 4",
+            "mu is more than 4"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean mass, in kg, of bamboo a red panda eats per day",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "bamboo",
+            "intake",
+            "eat",
+            "mass",
+            "kg"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 4$\n$\\mathrm{H_1}: \\mu > 4$\nwhere $\\mu$ is the population mean mass (in kg) of bamboo a red panda eats per day.",
+    "source_question_id": "b70b0ee1-1251-4547-9bbf-631345d1b978",
+    "tests": {
+      "pass": "H0: mu = 4, H1: mu > 4, mu is the population mean mass of bamboo eaten by a red panda per day in kg",
+      "fail": "Null hypothesis: the mean is 4. H1: mu > 4, mu is the population mean mass of bamboo eaten per day",
+      "fail_misses": [
+        "h0"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "0fc3d0ed-2966-4c02-bb7f-dff9162f5a2a"
+  },
+  {
+    "kind": "hypotheses",
+    "context": "A toy maker claims its remote-control car runs for 25 minutes on a full charge, on average. An inspector suspects the mean running time is different and tests 36 randomly chosen cars.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 25",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 25",
+            "mu=25",
+            "mu is 25",
+            "mu equals 25"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ ≠ 25",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu ≠ 25",
+            "mu != 25",
+            "mu =/= 25",
+            "mu not equal to 25",
+            "mu is not equal to 25",
+            "mu not 25",
+            "mu≠25",
+            "mu!=25",
+            "mu=/=25"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean running time, in minutes, of a car on a full charge",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "running time",
+            "run",
+            "car",
+            "minutes"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 25$\n$\\mathrm{H_1}: \\mu \\neq 25$\nwhere $\\mu$ is the population mean running time (in minutes) of a car on a full charge.",
+    "source_question_id": "16829233-f9e7-4054-8d69-37fdfe50ac25",
+    "tests": {
+      "pass": "H0: mu = 25 vs H1: mu != 25 where mu is the population mean running time of a car on a full charge",
+      "fail": "H0: mu = 25 vs H1: mu < 25 where mu is the mean running time of a car",
+      "fail_misses": [
+        "h1",
+        "parameter"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "49952089-7658-4c59-a827-c6b0d648281b"
+  },
+  {
+    "kind": "hypotheses",
+    "context": "Patients with a certain infection used to take 9 days on average to recover. A clinic tries a new treatment and records the recovery times of 40 randomly chosen patients to see whether recovery is now faster.",
+    "task": "State suitable hypotheses for the test, defining any symbol you use.",
+    "elements": [
+      {
+        "id": "h0",
+        "label": "The null hypothesis",
+        "scheme": "H0: μ = 9",
+        "match": [
+          [
+            "h0",
+            "h_0",
+            "h₀",
+            "null hypothesis",
+            "h subscript 0"
+          ],
+          [
+            "mu = 9",
+            "mu=9",
+            "mu is 9",
+            "mu equals 9"
+          ]
+        ]
+      },
+      {
+        "id": "h1",
+        "label": "The alternative hypothesis",
+        "scheme": "H1: μ < 9",
+        "match": [
+          [
+            "h1",
+            "h_1",
+            "h₁",
+            "alternative hypothesis"
+          ],
+          [
+            "mu < 9",
+            "mu<9",
+            "mu less than 9",
+            "mu is less than 9"
+          ]
+        ],
+        "forbid": [
+          "x̄ <",
+          "x̄ >",
+          "x̄ ≠",
+          "xbar",
+          "x bar",
+          "x-bar",
+          "sample mean <",
+          "sample mean >"
+        ]
+      },
+      {
+        "id": "parameter",
+        "label": "μ defined as the population mean",
+        "scheme": "where μ is the population mean recovery time, in days, of a patient on the new treatment",
+        "match": [
+          [
+            "population mean",
+            "mean of all",
+            "mean of the population",
+            "of all"
+          ],
+          [
+            "recovery",
+            "recover",
+            "days",
+            "patient"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$\\mathrm{H_0}: \\mu = 9$\n$\\mathrm{H_1}: \\mu < 9$\nwhere $\\mu$ is the population mean recovery time (in days) of a patient on the new treatment.",
+    "source_question_id": "baf1757e-3f99-4012-b3ef-a2834d80dd43",
+    "tests": {
+      "pass": "H0: mu = 9, H1: mu < 9, where mu is the population mean recovery time in days of a patient on the new treatment",
+      "fail": "H0: mu = 9, H1: sample mean < 9, where mu is the mean recovery time of the 40 patients",
+      "fail_misses": [
+        "h1",
+        "parameter"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: matcher only: added no-space forms (e.g. \"mu≠5\") to H0/H1 and \"of all\" to the parameter definition so correct answers are not failed",
+    "id": "f7e7c4c3-147b-4eec-bced-ee87b7a10c25"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A maker claims its washing machines last 10 years on average. A consumer group suspects the mean lifespan is less than 10 years and tests a random sample of 50 machines. The p-value is 0.0213.",
+    "task": "State the conclusion of the test at the 5% level of significance, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since p-value = 0.0213 < 0.05, we reject H0",
+        "match": [
+          [
+            "reject"
+          ],
+          [
+            "0.0213",
+            "p-value",
+            "p value",
+            "< 0.05",
+            "less than 0.05",
+            "<0.05"
+          ]
+        ],
+        "forbid": [
+          "not reject",
+          "don't reject",
+          "dont reject",
+          "cannot reject",
+          "fail to reject",
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Sufficient evidence, with the level",
+        "scheme": "There is sufficient evidence at the 5% level of significance",
+        "match": [
+          [
+            "sufficient evidence",
+            "enough evidence"
+          ],
+          [
+            "5%",
+            "5 %",
+            "0.05"
+          ]
+        ],
+        "forbid": [
+          "insufficient",
+          "not sufficient",
+          "not enough",
+          "no sufficient"
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean lifespan of a washing machine is less than 10 years",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "lifespan",
+            "life",
+            "machine",
+            "last"
+          ],
+          [
+            "less than 10",
+            "< 10",
+            "<10",
+            "below 10",
+            "lower than 10",
+            "fewer than 10",
+            "shorter than 10"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $p$-value $= 0.0213 < 0.05$, we reject $\\mathrm{H_0}$.\nThere is sufficient evidence at the $5\\%$ level of significance to conclude that the mean lifespan of a washing machine is less than $10$ years.",
+    "source_question_id": "849953c9-c601-4c1c-b0d4-7bc59c34a211",
+    "tests": {
+      "pass": "Since p-value = 0.0213 < 0.05, we reject H0. There is sufficient evidence at the 5% level of significance to conclude that the mean lifespan of a washing machine is less than 10 years.",
+      "fail": "Since p-value = 0.0213 < 0.05, we reject H0. There is sufficient evidence at the 5% level to prove that the machines are bad.",
+      "fail_misses": [
+        "context"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "1053959d-9eea-4e60-9c5d-629574c7e333"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A café claims that its large latte contains 150 mg of caffeine on average. A random sample of 60 lattes is tested to see whether the mean caffeine content differs from 150 mg. The p-value is 0.184.",
+    "task": "State the conclusion of the test at the 10% level of significance, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since p-value = 0.184 > 0.1, we do not reject H0",
+        "match": [
+          [
+            "do not reject",
+            "not reject",
+            "don't reject",
+            "dont reject",
+            "cannot reject",
+            "fail to reject",
+            "unable to reject"
+          ],
+          [
+            "0.184",
+            "p-value",
+            "p value",
+            "> 0.1",
+            "greater than 0.1",
+            "more than 0.1",
+            ">0.1"
+          ]
+        ],
+        "forbid": [
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Insufficient evidence, with the level",
+        "scheme": "There is insufficient evidence at the 10% level of significance",
+        "match": [
+          [
+            "insufficient evidence",
+            "not sufficient evidence",
+            "not enough evidence",
+            "no sufficient evidence",
+            "not have sufficient evidence",
+            "not have enough evidence"
+          ],
+          [
+            "10%",
+            "10 %",
+            "0.10",
+            "0.1 level",
+            "0.1 significance",
+            "ten percent"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean caffeine content of a large latte differs from 150 mg",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "caffeine"
+          ],
+          [
+            "differ",
+            "not 150",
+            "≠ 150",
+            "not equal",
+            "different",
+            "!= 150"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $p$-value $= 0.184 > 0.1$, we do not reject $\\mathrm{H_0}$.\nThere is insufficient evidence at the $10\\%$ level of significance to conclude that the mean caffeine content of a large latte differs from $150$ mg.",
+    "source_question_id": "8ca1f891-b93a-46c0-8cae-3875835cfd83",
+    "tests": {
+      "pass": "Since p-value = 0.184 > 0.1, we do not reject H0. There is insufficient evidence at the 10% level of significance to conclude that the mean caffeine content of a large latte is different from 150 mg.",
+      "fail": "Since p-value = 0.184 > 0.1, we accept H0. There is insufficient evidence at the 10% level of significance to conclude that the mean caffeine content of a large latte is different from 150 mg.",
+      "fail_misses": [
+        "decision"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "1f11f722-2c41-4e50-b39a-a994227561c8"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A school claims that a new timetable has made the mean queuing time at a canteen stall longer than 6 minutes. For a test at the 5% level, the test statistic is z = 2.31 and the critical value is 1.645.",
+    "task": "State the conclusion of the test, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since z = 2.31 > 1.645, z lies in the critical region, so we reject H0",
+        "match": [
+          [
+            "reject"
+          ],
+          [
+            "2.31",
+            "critical region",
+            "critical value",
+            "rejection region",
+            "> 1.645",
+            "greater than 1.645"
+          ]
+        ],
+        "forbid": [
+          "not reject",
+          "don't reject",
+          "dont reject",
+          "cannot reject",
+          "fail to reject",
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Sufficient evidence, with the level",
+        "scheme": "There is sufficient evidence at the 5% level of significance",
+        "match": [
+          [
+            "sufficient evidence",
+            "enough evidence"
+          ],
+          [
+            "5%",
+            "5 %",
+            "0.05"
+          ]
+        ],
+        "forbid": [
+          "insufficient",
+          "not sufficient",
+          "not enough",
+          "no sufficient"
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean queuing time at the stall is more than 6 minutes",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "queu",
+            "wait"
+          ],
+          [
+            "more than 6",
+            "longer than 6",
+            "> 6",
+            ">6",
+            "greater than 6",
+            "exceeds 6",
+            "above 6"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $z = 2.31 > 1.645$, $z$ lies in the critical region, so we reject $\\mathrm{H_0}$.\nThere is sufficient evidence at the $5\\%$ level of significance to conclude that the mean queuing time at the stall is more than $6$ minutes.",
+    "source_question_id": "ecf47716-8562-404e-8c85-e4c9f35b2c65",
+    "tests": {
+      "pass": "Since z = 2.31 > 1.645, it lies in the critical region, so we reject H0. There is sufficient evidence at the 5% significance level to conclude that the mean queuing time at the stall is more than 6 minutes.",
+      "fail": "Since z = 2.31 > 1.645 we reject H0. The mean queuing time at the stall is more than 6 minutes.",
+      "fail_misses": [
+        "evidence"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "21d0cf62-de37-46cd-a373-d49ac02d9cf5"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A fruit stall says its mangoes have mean mass 400 g. A consumer group tests, at the 1% level, whether the stall has overstated the mean. The test statistic is z = -1.52 and the critical value is -2.326.",
+    "task": "State the conclusion of the test, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since z = -1.52 > -2.326, z does not lie in the critical region, so we do not reject H0",
+        "match": [
+          [
+            "do not reject",
+            "not reject",
+            "don't reject",
+            "dont reject",
+            "cannot reject",
+            "fail to reject",
+            "unable to reject"
+          ],
+          [
+            "-1.52",
+            "−1.52",
+            "critical region",
+            "critical value",
+            "rejection region",
+            "> -2.326"
+          ]
+        ],
+        "forbid": [
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Insufficient evidence, with the level",
+        "scheme": "There is insufficient evidence at the 1% level of significance",
+        "match": [
+          [
+            "insufficient evidence",
+            "not sufficient evidence",
+            "not enough evidence",
+            "no sufficient evidence",
+            "not have sufficient evidence",
+            "not have enough evidence"
+          ],
+          [
+            "1%",
+            "1 %",
+            "0.01"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean mass of a mango is less than 400 g (that the stall has overstated the mean)",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "mass",
+            "mango"
+          ],
+          [
+            "less than 400",
+            "< 400",
+            "<400",
+            "lower than 400",
+            "below 400",
+            "overstated"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $z = -1.52 > -2.326$, $z$ does not lie in the critical region, so we do not reject $\\mathrm{H_0}$.\nThere is insufficient evidence at the $1\\%$ level of significance to conclude that the mean mass of a mango is less than $400$ g.",
+    "source_question_id": "8d65f0c6-4020-4884-a9d9-bf8b552f07a3",
+    "tests": {
+      "pass": "Since z = -1.52 > -2.326, z is not in the critical region, so we do not reject H0. There is insufficient evidence at the 1% level of significance to conclude that the mean mass of a mango is less than 400 g.",
+      "fail": "Since z = -1.52 > -2.326 we do not reject H0. There is insufficient evidence at the 1% level, so the mean mass of a mango is 400 g.",
+      "fail_misses": [
+        "context"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "7073dbfa-ace2-4159-8d9e-abc614a2abcc"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A company advertises that its power banks last 480 minutes on average after a full charge. A reviewer tests whether the mean is less than 480 minutes, using a random sample of 45 power banks. The p-value is 0.0043.",
+    "task": "State the conclusion of the test at the 1% level of significance, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since p-value = 0.0043 < 0.01, we reject H0",
+        "match": [
+          [
+            "reject"
+          ],
+          [
+            "0.0043",
+            "p-value",
+            "p value",
+            "< 0.01",
+            "less than 0.01",
+            "<0.01"
+          ]
+        ],
+        "forbid": [
+          "not reject",
+          "don't reject",
+          "dont reject",
+          "cannot reject",
+          "fail to reject",
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Sufficient evidence, with the level",
+        "scheme": "There is sufficient evidence at the 1% level of significance",
+        "match": [
+          [
+            "sufficient evidence",
+            "enough evidence"
+          ],
+          [
+            "1%",
+            "1 %",
+            "0.01"
+          ]
+        ],
+        "forbid": [
+          "insufficient",
+          "not sufficient",
+          "not enough",
+          "no sufficient"
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean running time of a power bank is less than 480 minutes",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "power bank",
+            "running",
+            "last",
+            "time"
+          ],
+          [
+            "less than 480",
+            "< 480",
+            "<480",
+            "below 480",
+            "lower than 480",
+            "shorter than 480",
+            "fewer than 480"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $p$-value $= 0.0043 < 0.01$, we reject $\\mathrm{H_0}$.\nThere is sufficient evidence at the $1\\%$ level of significance to conclude that the mean running time of a power bank is less than $480$ minutes.",
+    "source_question_id": "b65c8149-7e7b-4775-8340-e71554ee18e7",
+    "tests": {
+      "pass": "p-value = 0.0043 < 0.01 so we reject H0. There is sufficient evidence at 1% level of significance to conclude that the mean running time of a power bank is less than 480 minutes.",
+      "fail": "p-value = 0.0043 < 0.01 so we reject H0. There is insufficient evidence at 1% level to conclude that the mean running time of a power bank is less than 480 minutes.",
+      "fail_misses": [
+        "evidence"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "b024ea82-0f22-48f0-bb1d-b12d408ef9ea"
+  },
+  {
+    "kind": "conclusion",
+    "context": "A sanctuary claims its elephants drink at most 150 litres of water a day on average. A ranger tests whether the mean daily intake is more than 150 litres. The p-value is 0.0614.",
+    "task": "State the conclusion of the test at the 5% level of significance, in context.",
+    "elements": [
+      {
+        "id": "decision",
+        "label": "The decision",
+        "scheme": "Since p-value = 0.0614 > 0.05, we do not reject H0",
+        "match": [
+          [
+            "do not reject",
+            "not reject",
+            "don't reject",
+            "dont reject",
+            "cannot reject",
+            "fail to reject",
+            "unable to reject"
+          ],
+          [
+            "0.0614",
+            "p-value",
+            "p value",
+            "> 0.05",
+            "greater than 0.05",
+            "more than 0.05",
+            ">0.05"
+          ]
+        ],
+        "forbid": [
+          "accept h0",
+          "accept the null",
+          "accept h_0"
+        ]
+      },
+      {
+        "id": "evidence",
+        "label": "Insufficient evidence, with the level",
+        "scheme": "There is insufficient evidence at the 5% level of significance",
+        "match": [
+          [
+            "insufficient evidence",
+            "not sufficient evidence",
+            "not enough evidence",
+            "no sufficient evidence",
+            "not have sufficient evidence",
+            "not have enough evidence"
+          ],
+          [
+            "5%",
+            "5 %",
+            "0.05"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The claim in context",
+        "scheme": "to conclude that the mean amount of water an elephant drinks per day is more than 150 litres",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "water",
+            "drink",
+            "intake",
+            "elephant"
+          ],
+          [
+            "more than 150",
+            "> 150",
+            ">150",
+            "greater than 150",
+            "exceeds 150",
+            "above 150"
+          ]
+        ],
+        "forbid": [
+          "prove",
+          "proven"
+        ]
+      }
+    ],
+    "model_answer": "Since $p$-value $= 0.0614 > 0.05$, we do not reject $\\mathrm{H_0}$.\nThere is insufficient evidence at the $5\\%$ level of significance to conclude that the mean amount of water an elephant drinks per day is more than $150$ litres.",
+    "source_question_id": "b70b0ee1-1251-4547-9bbf-631345d1b978",
+    "tests": {
+      "pass": "Since p-value = 0.0614 > 0.05, we do not reject H0. There is insufficient evidence at the 5% level of significance to conclude that the mean amount of water an elephant drinks per day is more than 150 litres.",
+      "fail": "Since p-value = 0.0614 > 0.05, we reject H0. There is sufficient evidence at the 5% level to conclude that the mean amount of water an elephant drinks per day is more than 150 litres.",
+      "fail_misses": [
+        "decision",
+        "evidence"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "8cfe28bb-c13f-475f-9dee-65cd876df6ea"
+  },
+  {
+    "kind": "test-statistic",
+    "context": "The college claims the mean queuing time at the canteen is 20 minutes, and the standard deviation is known to be 6 minutes. The distribution of queuing times is not known. A random sample of 50 students is taken to test whether the mean is less than 20 minutes.",
+    "task": "State the test statistic and its distribution under H0, giving a reason.",
+    "elements": [
+      {
+        "id": "statistic",
+        "label": "The standardised sample mean",
+        "scheme": "Z = (X̄ − 20) / (6/√50)",
+        "match": [
+          [
+            "x̄",
+            "xbar",
+            "x bar",
+            "x-bar",
+            "sample mean"
+          ],
+          [
+            "20"
+          ],
+          [
+            "50"
+          ]
+        ]
+      },
+      {
+        "id": "distribution",
+        "label": "Its distribution N(0, 1)",
+        "scheme": "~ N(0, 1) approximately (equivalently X̄ ~ N(20, 6²/50) approximately)",
+        "match": [
+          [
+            "n(0,1)",
+            "n(0, 1)",
+            "n (0,1)",
+            "n(0 ,1)",
+            "standard normal",
+            "n(20",
+            "n (20",
+            "n(20 ,"
+          ]
+        ]
+      },
+      {
+        "id": "clt",
+        "label": "Reason: Central Limit Theorem",
+        "scheme": "by the Central Limit Theorem, since n = 50 is large",
+        "match": [
+          [
+            "central limit",
+            "clt"
+          ],
+          [
+            "large",
+            "n = 50",
+            "n=50",
+            "50 is",
+            "sample size"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Under $\\mathrm{H_0}$, $Z = \\dfrac{\\bar{X} - 20}{6/\\sqrt{50}} \\sim N(0, 1)$ approximately,\nby the Central Limit Theorem, since $n = 50$ is large.",
+    "source_question_id": "62cdf9d9-ee22-4638-baac-9cf04b2a5974",
+    "tests": {
+      "pass": "Under H0, Z = (X̄ - 20)/(6/√50) ~ N(0,1) approximately by the Central Limit Theorem since n = 50 is large",
+      "fail": "Under H0, Z = (X̄ - 20)/(6/√50) ~ N(0,1)",
+      "fail_misses": [
+        "clt"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: distribution element now also accepts the equivalent form X̄ ~ N(20, 6²/50)",
+    "id": "426489a9-6914-40d3-8b74-3155f3b5afe2"
+  },
+  {
+    "kind": "test-statistic",
+    "context": "The masses of tennis rackets are normally distributed with standard deviation 12 g. A manager tests whether the mean mass is 300 g, using a random sample of 8 rackets.",
+    "task": "State the test statistic and its distribution under H0, giving a reason.",
+    "elements": [
+      {
+        "id": "statistic",
+        "label": "The standardised sample mean",
+        "scheme": "Z = (X̄ − 300) / (12/√8)",
+        "match": [
+          [
+            "x̄",
+            "xbar",
+            "x bar",
+            "x-bar",
+            "sample mean"
+          ],
+          [
+            "300"
+          ],
+          [
+            "√8",
+            "sqrt8",
+            "sqrt 8",
+            "sqrt(8)",
+            "root 8",
+            "√(8)",
+            "/ 8",
+            "/8",
+            "8)"
+          ]
+        ]
+      },
+      {
+        "id": "distribution",
+        "label": "Its distribution N(0, 1)",
+        "scheme": "~ N(0, 1) (equivalently X̄ ~ N(300, 12²/8))",
+        "match": [
+          [
+            "n(0,1)",
+            "n(0, 1)",
+            "n (0,1)",
+            "n(0 ,1)",
+            "standard normal",
+            "n(300",
+            "n (300",
+            "n(300 ,"
+          ]
+        ]
+      },
+      {
+        "id": "reason",
+        "label": "Reason: the masses are normal",
+        "scheme": "since the masses are normally distributed (exact; no CLT needed with n = 8)",
+        "match": [
+          [
+            "normally distributed",
+            "follows a normal",
+            "is normal",
+            "are normal",
+            "normal distribution"
+          ],
+          [
+            "mass",
+            "racket",
+            "population"
+          ]
+        ],
+        "forbid": [
+          "central limit",
+          "clt"
+        ]
+      }
+    ],
+    "model_answer": "Under $\\mathrm{H_0}$, $Z = \\dfrac{\\bar{X} - 300}{12/\\sqrt{8}} \\sim N(0, 1)$,\nsince the masses of the rackets are normally distributed.",
+    "source_question_id": "9ccf9811-ceae-4bb7-8993-475279476493",
+    "tests": {
+      "pass": "Under H0, Z = (X̄ - 300)/(12/√8) ~ N(0,1) since the masses of the rackets are normally distributed",
+      "fail": "Under H0, Z = (X̄ - 300)/(12/√8) ~ N(0,1) by the central limit theorem",
+      "fail_misses": [
+        "reason"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: distribution/statistic elements now also accept the equivalent form X̄ ~ N(300, 12²/8)",
+    "id": "4f8caf16-6205-475a-94e6-eaf966458439"
+  },
+  {
+    "kind": "assumption",
+    "context": "On average, 65 out of 100 students at a school hand in their online homework on time. M is the number of students in a class of 30 who hand in their online homework on time.",
+    "task": "State, in context, two assumptions needed for M to be well modelled by a binomial distribution.",
+    "elements": [
+      {
+        "id": "independence",
+        "label": "Independence, in context",
+        "scheme": "Whether a student hands in the homework on time is independent of whether any other student does",
+        "match": [
+          [
+            "independen"
+          ],
+          [
+            "student"
+          ],
+          [
+            "on time",
+            "homework",
+            "hand in",
+            "hands in",
+            "submit"
+          ]
+        ]
+      },
+      {
+        "id": "constant",
+        "label": "Constant probability, in context",
+        "scheme": "The probability that a student hands in the homework on time is the same (0.65) for every student",
+        "match": [
+          [
+            "probability",
+            "chance"
+          ],
+          [
+            "same",
+            "constant",
+            "equal",
+            "0.65"
+          ],
+          [
+            "student"
+          ],
+          [
+            "on time",
+            "homework",
+            "hand in",
+            "hands in",
+            "submit"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Whether a student hands in the homework on time is independent of whether any other student does.\nThe probability that a student hands in the homework on time is the same for every student.",
+    "source_question_id": "68279ebb-d1a2-4361-b0a1-26e9aaf1f28f",
+    "tests": {
+      "pass": "Whether a student hands in homework on time is independent of other students. The probability that a student hands in homework on time is constant for every student.",
+      "fail": "The students are independent of each other. The probability is constant.",
+      "fail_misses": [
+        "independence",
+        "constant"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "9049c4ca-f211-41e7-bf02-d12005efff64"
+  },
+  {
+    "kind": "assumption",
+    "context": "From past records, the probability that a passenger with a ticket does not turn up for a ferry trip is p. N is the number of ticket holders out of 250 who do not turn up for a trip.",
+    "task": "State, in context, two assumptions needed for N to be well modelled by a binomial distribution.",
+    "elements": [
+      {
+        "id": "independence",
+        "label": "Independence, in context",
+        "scheme": "Whether a passenger turns up is independent of whether any other passenger turns up",
+        "match": [
+          [
+            "independen"
+          ],
+          [
+            "passenger",
+            "ticket holder"
+          ],
+          [
+            "turn up",
+            "show up",
+            "turns up",
+            "shows up",
+            "no-show",
+            "not turn"
+          ]
+        ]
+      },
+      {
+        "id": "constant",
+        "label": "Constant probability, in context",
+        "scheme": "The probability that a passenger does not turn up is the same (p) for every passenger",
+        "match": [
+          [
+            "probability",
+            "chance"
+          ],
+          [
+            "same",
+            "constant",
+            "equal"
+          ],
+          [
+            "passenger",
+            "ticket holder"
+          ],
+          [
+            "turn up",
+            "show up",
+            "turns up",
+            "shows up",
+            "no-show"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Whether a passenger turns up is independent of whether any other passenger turns up.\nThe probability that a passenger does not turn up is the same for every passenger.",
+    "source_question_id": "18901012-25e1-4faa-80b3-5bea8725e964",
+    "tests": {
+      "pass": "Whether a passenger turns up is independent of whether other passengers turn up, and the probability that a passenger does not turn up is the same for every passenger.",
+      "fail": "Whether a passenger turns up is independent of whether other passengers turn up.",
+      "fail_misses": [
+        "constant"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "1dbe17ee-8717-4c54-b1d6-d2c70d82bbcf"
+  },
+  {
+    "kind": "assumption",
+    "context": "A factory makes marbles, of which 30% are striped. Marbles are packed at random into bags of 12. X is the number of striped marbles in a bag.",
+    "task": "State, in context, two assumptions needed for X to be well modelled by a binomial distribution.",
+    "elements": [
+      {
+        "id": "independence",
+        "label": "Independence, in context",
+        "scheme": "Whether a marble is striped is independent of whether any other marble in the bag is striped",
+        "match": [
+          [
+            "independen"
+          ],
+          [
+            "marble"
+          ],
+          [
+            "striped"
+          ]
+        ]
+      },
+      {
+        "id": "constant",
+        "label": "Constant probability, in context",
+        "scheme": "The probability that a marble is striped is the same (0.3) for every marble",
+        "match": [
+          [
+            "probability",
+            "chance"
+          ],
+          [
+            "same",
+            "constant",
+            "equal",
+            "0.3"
+          ],
+          [
+            "marble"
+          ],
+          [
+            "striped"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Whether a marble is striped is independent of whether any other marble in the bag is striped.\nThe probability that a marble is striped is the same for every marble.",
+    "source_question_id": "37cbd25b-bcfe-4639-b085-8ea4f3c3b950",
+    "tests": {
+      "pass": "Whether a marble is striped is independent of any other marble being striped. The probability that a marble is striped is constant at 0.3 for each marble.",
+      "fail": "Each trial is independent. Each trial has the same probability of success.",
+      "fail_misses": [
+        "independence",
+        "constant"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "2ceaf19c-0588-4f4a-a2f0-f22d5655edfe"
+  },
+  {
+    "kind": "assumption",
+    "context": "The mass of a bag of rice has unknown distribution, with mean μ and standard deviation 0.08 kg. A random sample of 50 bags is taken and their mean mass is used to test a claim about μ.",
+    "task": "Explain why a normal distribution can be used for the test, even though the distribution of the masses is unknown.",
+    "elements": [
+      {
+        "id": "large",
+        "label": "The sample is large",
+        "scheme": "Since n = 50 is large",
+        "match": [
+          [
+            "large",
+            "n = 50",
+            "n=50",
+            "n ≥ 30",
+            "n >= 30",
+            "more than 30",
+            "at least 30"
+          ]
+        ]
+      },
+      {
+        "id": "clt",
+        "label": "Names the Central Limit Theorem",
+        "scheme": "by the Central Limit Theorem",
+        "match": [
+          [
+            "central limit",
+            "clt"
+          ]
+        ]
+      },
+      {
+        "id": "sample-mean",
+        "label": "The SAMPLE MEAN is approx normal",
+        "scheme": "the sample mean mass X̄ is approximately normally distributed",
+        "match": [
+          [
+            "sample mean",
+            "x̄",
+            "xbar",
+            "x bar",
+            "x-bar",
+            "mean mass of the sample",
+            "mean mass of the 50"
+          ],
+          [
+            "approximately normal",
+            "approx normal",
+            "approx. normal",
+            "approximately follows a normal",
+            "approximately a normal"
+          ]
+        ],
+        "forbid": [
+          "masses are normal",
+          "mass is normal",
+          "population is normal",
+          "population is approximately normal",
+          "masses are approximately normal",
+          "mass is approximately normal"
+        ]
+      }
+    ],
+    "model_answer": "Since $n = 50$ is large,\nby the Central Limit Theorem the sample mean mass $\\bar{X}$ is approximately normally distributed.",
+    "source_question_id": "dc672ab2-d5e0-45b6-8f0e-ad6b2a4914ed",
+    "tests": {
+      "pass": "Since n = 50 is large, by the Central Limit Theorem the sample mean mass X̄ is approximately normally distributed.",
+      "fail": "Since n = 50 is large, by the Central Limit Theorem the masses are approximately normally distributed.",
+      "fail_misses": [
+        "sample-mean"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "9c007fb2-e415-48f7-b72f-f467fb44a8cd"
+  },
+  {
+    "kind": "assumption",
+    "context": "A bakery makes croissants that should be 12 cm long. The manager wants to take a sample of croissants made by one oven for a quality check.",
+    "task": "Explain what is meant by a random sample in this context.",
+    "elements": [
+      {
+        "id": "equal-chance",
+        "label": "Every croissant equally likely",
+        "scheme": "Every croissant made by the oven has an equal chance of being chosen",
+        "match": [
+          [
+            "equal chance",
+            "same chance",
+            "equally likely",
+            "equal probability",
+            "same probability"
+          ],
+          [
+            "croissant"
+          ]
+        ]
+      },
+      {
+        "id": "independent",
+        "label": "Selections are independent",
+        "scheme": "and the croissants are chosen independently of one another",
+        "match": [
+          [
+            "independen"
+          ],
+          [
+            "croissant",
+            "chosen",
+            "selection",
+            "selected"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Every croissant made by the oven has an equal chance of being chosen,\nand the croissants are chosen independently of one another.",
+    "source_question_id": "673c0517-05e0-4a64-bf4d-d4ab3742db9a",
+    "tests": {
+      "pass": "Every croissant made by the oven has an equal chance of being chosen, and the croissants are selected independently of each other.",
+      "fail": "Every croissant made by the oven has an equal chance of being chosen.",
+      "fail_misses": [
+        "independent"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "3818a29d-b3e6-4e62-8142-a3cbc2ccb75a"
+  },
+  {
+    "kind": "assumption",
+    "context": "A machine fills cups with soya milk, and the volume has standard deviation 6.3 ml. A test about the mean volume is carried out using a random sample of only 8 cups.",
+    "task": "State an assumption needed for the test to be valid, and explain why it is needed.",
+    "elements": [
+      {
+        "id": "normality",
+        "label": "Volumes are normally distributed",
+        "scheme": "The volume of soya milk in a cup is normally distributed",
+        "match": [
+          [
+            "normal"
+          ],
+          [
+            "volume",
+            "milk",
+            "cup"
+          ]
+        ]
+      },
+      {
+        "id": "why",
+        "label": "Small sample, so no CLT",
+        "scheme": "since the sample size of 8 is small, the Central Limit Theorem cannot be used",
+        "match": [
+          [
+            "small",
+            "only 8",
+            "not large",
+            "too few"
+          ],
+          [
+            "central limit",
+            "clt"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "Assume the volume of soya milk in a cup is normally distributed.\nThis is needed because the sample size $n = 8$ is small, so the Central Limit Theorem cannot be used.",
+    "source_question_id": "31613b34-3639-4028-a9ba-8e0736e125e6",
+    "tests": {
+      "pass": "The volume of soya milk in a cup is normally distributed. This is needed since the sample size of 8 is small so the central limit theorem cannot be applied.",
+      "fail": "The volume of soya milk in a cup is normally distributed.",
+      "fail_misses": [
+        "why"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "eb7bf9d6-18ff-4eea-9371-262245ed6571"
+  },
+  {
+    "kind": "tail",
+    "context": "A food company claims that the mean mass of a jar of jam is 340 g. The quality manager wants to test whether the filling machine is still working to this mean, since jars that are too heavy and jars that are too light are both a problem.",
+    "task": "Explain whether a one-tailed or a two-tailed test should be used.",
+    "elements": [
+      {
+        "id": "choice",
+        "label": "Two-tailed test",
+        "scheme": "A two-tailed test should be used",
+        "match": [
+          [
+            "two-tail",
+            "two tail",
+            "2-tail",
+            "2 tail",
+            "two-sided",
+            "two sided"
+          ]
+        ]
+      },
+      {
+        "id": "reason",
+        "label": "Any change, either direction",
+        "scheme": "because the manager is testing whether the mean has changed, in either direction (more or less than 340 g)",
+        "match": [
+          [
+            "differ",
+            "not equal",
+            "either",
+            "more or less",
+            "greater or less",
+            "higher or lower",
+            "increase or decrease",
+            "changed",
+            "any change",
+            "both direction",
+            "more or fewer",
+            "heavier or lighter",
+            "not 340",
+            "≠ 340"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The mean mass of a jar",
+        "scheme": "the mean mass of a jar of jam",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "mass",
+            "jar",
+            "jam"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "A two-tailed test should be used,\nbecause the manager is testing whether the mean mass of a jar of jam differs from $340$ g,\nwith no direction (more or less) suspected.",
+    "source_question_id": "e0b1b95d-3bd4-4978-9299-1816dede6642",
+    "tests": {
+      "pass": "Two-tailed test, because the manager wants to know whether the mean mass of a jar of jam differs from 340 g, either more or less.",
+      "fail": "Two-tailed test because the manager is checking the machine.",
+      "fail_misses": [
+        "reason",
+        "context"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: context fixed: \"after complaints\" suggested under-filling (a one-tailed test); now both directions matter, so two-tailed is unambiguous",
+    "id": "2327653c-1605-4eb8-8e94-189e2dab00de"
+  },
+  {
+    "kind": "tail",
+    "context": "Parents complain that the school bus arrives, on average, more than 10 minutes after the scheduled time. The principal records 40 randomly chosen arrival times to check the complaint.",
+    "task": "Explain whether a one-tailed or a two-tailed test should be used.",
+    "elements": [
+      {
+        "id": "choice",
+        "label": "One-tailed test",
+        "scheme": "A one-tailed test should be used",
+        "match": [
+          [
+            "one-tail",
+            "one tail",
+            "1-tail",
+            "1 tail",
+            "one-sided",
+            "one sided"
+          ]
+        ]
+      },
+      {
+        "id": "reason",
+        "label": "Only \"more than 10\" matters",
+        "scheme": "because the principal is testing only whether the mean is MORE than 10 minutes",
+        "match": [
+          [
+            "more than 10",
+            "greater than 10",
+            "> 10",
+            ">10",
+            "longer than 10",
+            "exceeds 10",
+            "later than 10",
+            "above 10"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "The mean lateness of the bus",
+        "scheme": "the mean time the bus arrives after the scheduled time",
+        "match": [
+          [
+            "mean",
+            "average"
+          ],
+          [
+            "bus",
+            "arriv",
+            "late"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "A one-tailed test should be used,\nbecause the principal is testing only whether the mean time the bus arrives after the scheduled time is more than $10$ minutes.",
+    "source_question_id": "6d227634-592f-4520-90ab-bdfeaa0b3d76",
+    "tests": {
+      "pass": "One-tailed, since the principal only wants to test whether the mean time the bus arrives after schedule is more than 10 minutes.",
+      "fail": "One-tailed, since the principal only wants to test whether the bus is late.",
+      "fail_misses": [
+        "reason",
+        "context"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "6cac1ae9-e003-4adb-9b21-b45a166e7e82"
+  },
+  {
+    "kind": "correlation",
+    "context": "For 8 randomly chosen students, x is the time spent gaming per week (hours) and y is the end-of-year exam score. The product moment correlation coefficient is r = -0.912.",
+    "task": "Interpret this value of r in context.",
+    "elements": [
+      {
+        "id": "strength",
+        "label": "Strong negative LINEAR correlation",
+        "scheme": "There is a strong negative linear correlation",
+        "match": [
+          [
+            "strong"
+          ],
+          [
+            "negative"
+          ],
+          [
+            "linear"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "What it means in context",
+        "scheme": "between time spent gaming and exam score: as the time spent gaming increases, the exam score tends to decrease",
+        "match": [
+          [
+            "gaming",
+            "gam"
+          ],
+          [
+            "score",
+            "mark",
+            "exam"
+          ],
+          [
+            "decrease",
+            "lower",
+            "falls",
+            "drops",
+            "fall",
+            "decline",
+            "smaller",
+            "less"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "There is a strong negative linear correlation between the time spent gaming per week and the exam score:\nas the time spent gaming increases, the exam score tends to decrease.",
+    "source_question_id": "a1ca17ea-98e8-4667-8342-46730eaf9f1b",
+    "tests": {
+      "pass": "There is a strong negative linear correlation between time spent gaming and exam score; as gaming time increases, the exam score tends to decrease.",
+      "fail": "Strong negative correlation between gaming time and exam score; as gaming time increases, the exam score decreases.",
+      "fail_misses": [
+        "strength"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "6c4b1d89-2f0d-43f9-bc9d-cf300bbc525f"
+  },
+  {
+    "kind": "correlation",
+    "context": "Biologists record the number of frogs in a pond, y (hundreds), in month x. The scatter diagram shows the points falling then rising along a clear curve, but r = 0.12.",
+    "task": "Explain why the value of r does not mean that there is no relationship between x and y.",
+    "elements": [
+      {
+        "id": "linear",
+        "label": "r measures LINEAR correlation only",
+        "scheme": "r only measures the strength of LINEAR correlation",
+        "match": [
+          [
+            "linear"
+          ]
+        ]
+      },
+      {
+        "id": "nonlinear",
+        "label": "A non-linear relationship exists",
+        "scheme": "the scatter diagram shows a non-linear (curved) relationship between x and y",
+        "match": [
+          [
+            "non-linear",
+            "nonlinear",
+            "not linear",
+            "curve",
+            "curved",
+            "quadratic"
+          ]
+        ]
+      },
+      {
+        "id": "context",
+        "label": "In context",
+        "scheme": "between the number of frogs and the month",
+        "match": [
+          [
+            "frog",
+            "number",
+            "population"
+          ],
+          [
+            "month",
+            "time"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$r$ only measures the strength of linear correlation.\nThe scatter diagram shows a clear non-linear (curved) relationship between the number of frogs and the month,\nso a value of $r$ close to $0$ does not mean there is no relationship.",
+    "source_question_id": "cc872a48-2027-4e94-91e4-1e43847cf85c",
+    "tests": {
+      "pass": "r only measures linear correlation. The scatter diagram shows the number of frogs and the month follow a curved, non-linear relationship.",
+      "fail": "r is small but the points follow a curve.",
+      "fail_misses": [
+        "linear",
+        "context"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "64d40785-3ad2-448b-b633-55e6b38bee9e"
+  },
+  {
+    "kind": "correlation",
+    "context": "The solubility of sugar, y (g per 100 ml of water), is measured at different temperatures T (°C). Two models are tried: for y = a + b ln T, r = 0.981; for y = a + b T^2, r = 0.962.",
+    "task": "State, with a reason, which model is the better one.",
+    "elements": [
+      {
+        "id": "choice",
+        "label": "The ln T model",
+        "scheme": "The model y = a + b ln T is better",
+        "match": [
+          [
+            "ln t",
+            "lnt",
+            "ln(t)",
+            "ln (t)",
+            "natural log",
+            "logarithm",
+            "0.981"
+          ]
+        ]
+      },
+      {
+        "id": "reason",
+        "label": "|r| is closer to 1",
+        "scheme": "since its |r| = 0.981 is closer to 1",
+        "match": [
+          [
+            "closer to 1",
+            "nearer to 1",
+            "closest to 1",
+            "nearer 1",
+            "closer to one",
+            "larger",
+            "greater",
+            "higher",
+            "bigger"
+          ]
+        ]
+      },
+      {
+        "id": "linear",
+        "label": "Stronger LINEAR correlation",
+        "scheme": "so there is a stronger linear correlation between y and ln T",
+        "match": [
+          [
+            "linear"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "The model $y = a + b\\ln T$ is better,\nsince its $|r| = 0.981$ is closer to $1$,\nshowing a stronger linear correlation between $y$ and $\\ln T$.",
+    "source_question_id": "9189dead-fd46-43da-b36d-07cc8ce79389",
+    "tests": {
+      "pass": "y = a + b ln T is better since |r| = 0.981 is closer to 1, showing a stronger linear correlation between y and ln T.",
+      "fail": "y = a + b ln T is better since |r| = 0.981 is closer to 1.",
+      "fail_misses": [
+        "linear"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: context fixed: it defined x but the models use y; scheme wording now says y and ln T",
+    "id": "bd1d7038-b7ba-4e78-be9d-056dd102fd98"
+  },
+  {
+    "kind": "correlation",
+    "context": "For 9 randomly chosen adults, x is the body mass index (BMI) and y is the cholesterol level. The product moment correlation coefficient is r = 0.97. A newspaper says this proves that a high BMI causes high cholesterol.",
+    "task": "Comment on the newspaper's statement.",
+    "elements": [
+      {
+        "id": "strength",
+        "label": "Strong positive LINEAR correlation",
+        "scheme": "r = 0.97 shows a strong positive linear correlation between BMI and cholesterol",
+        "match": [
+          [
+            "strong"
+          ],
+          [
+            "positive"
+          ],
+          [
+            "linear"
+          ]
+        ]
+      },
+      {
+        "id": "causation",
+        "label": "Correlation is not causation",
+        "scheme": "but correlation does not imply causation",
+        "match": [
+          [
+            "not imply",
+            "does not imply",
+            "doesn't imply",
+            "not necessarily",
+            "not mean",
+            "not prove",
+            "doesn't prove",
+            "does not prove",
+            "cannot prove",
+            "can't prove",
+            "no causal",
+            "not causal",
+            "not show",
+            "not establish",
+            "cannot conclude",
+            "can't conclude",
+            "not a cause",
+            "not the cause",
+            "cannot be concluded",
+            "not enough to conclude"
+          ],
+          [
+            "caus"
+          ]
+        ]
+      },
+      {
+        "id": "other",
+        "label": "Other factors may be involved",
+        "scheme": "both may be affected by other factors, such as diet or exercise",
+        "match": [
+          [
+            "other factor",
+            "third",
+            "diet",
+            "lurking",
+            "other variable",
+            "another factor",
+            "exercise",
+            "confound",
+            "other reason"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "$r = 0.97$ shows a strong positive linear correlation between BMI and cholesterol level,\nbut correlation does not imply causation.\nBoth may be affected by other factors, such as diet or exercise.",
+    "source_question_id": "ad36132d-44de-4767-aa03-3a61e98e2aab",
+    "tests": {
+      "pass": "There is a strong positive linear correlation between BMI and cholesterol, but correlation does not imply causation; other factors such as diet could affect both.",
+      "fail": "There is a strong positive linear correlation between BMI and cholesterol, so the newspaper is correct.",
+      "fail_misses": [
+        "causation",
+        "other"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: causation element tightened: \"caus\" matched \"because\" and \"not\" matched any negation, so \"the newspaper is correct because r is not small\" passed",
+    "id": "fa7ea17d-0ca8-4f25-8be4-13ba4f690414"
+  },
+  {
+    "kind": "regression",
+    "context": "For 10 farms, x is the rainfall in June (mm) and y is the crop yield per hectare (tonnes). The yield depends on the rainfall. A farmer wants to estimate the June rainfall on a farm whose yield was 12 tonnes per hectare.",
+    "task": "State which regression line should be used, giving a reason.",
+    "elements": [
+      {
+        "id": "line",
+        "label": "The line of y on x",
+        "scheme": "Use the regression line of y on x",
+        "match": [
+          [
+            "y on x",
+            "y-on-x"
+          ]
+        ]
+      },
+      {
+        "id": "reason",
+        "label": "Rainfall is the independent variable",
+        "scheme": "since rainfall x is the independent variable (the yield depends on the rainfall)",
+        "match": [
+          [
+            "independent",
+            "yield depends on",
+            "depends on the rainfall",
+            "depends on rainfall",
+            "dependent"
+          ],
+          [
+            "rainfall"
+          ]
+        ],
+        "forbid": [
+          "rainfall is the dependent",
+          "x is the dependent",
+          "rainfall is dependent",
+          "x is dependent"
+        ]
+      }
+    ],
+    "model_answer": "Use the regression line of $y$ on $x$,\nsince the rainfall $x$ is the independent variable (the yield depends on the rainfall),\neven though it is $x$ that is being estimated.",
+    "source_question_id": "684a4c81-fa9c-416a-8dde-66b93a9c2480",
+    "tests": {
+      "pass": "Use the regression line of y on x since the rainfall is the independent variable.",
+      "fail": "Use the line of x on y since we are estimating x from y.",
+      "fail_misses": [
+        "line",
+        "reason"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: context units made realistic (tonnes, not kg, per hectare); reason element now forbids \"rainfall is the dependent variable\" (it matched \"dependent\")",
+    "id": "d97f5eea-7682-4df2-9519-43b0ee787b16"
+  },
+  {
+    "kind": "regression",
+    "context": "For x from 1.2 to 2.4 units of fertiliser, the regression line of y (plant growth) on x is used to estimate the growth when x = 1.9. The correlation coefficient is r = 0.991.",
+    "task": "Comment on the reliability of the estimate.",
+    "elements": [
+      {
+        "id": "interpolation",
+        "label": "x = 1.9 is within the data range",
+        "scheme": "x = 1.9 lies within the data range 1.2 ≤ x ≤ 2.4 (interpolation)",
+        "match": [
+          [
+            "within",
+            "interpolat",
+            "inside",
+            "between 1.2"
+          ],
+          [
+            "range",
+            "data",
+            "1.2",
+            "2.4",
+            "interpolat"
+          ]
+        ]
+      },
+      {
+        "id": "strong",
+        "label": "r is close to 1",
+        "scheme": "and r = 0.991 is close to 1",
+        "match": [
+          [
+            "close to 1",
+            "near to 1",
+            "near 1",
+            "closer to 1",
+            "strong"
+          ],
+          [
+            "0.991",
+            "r =",
+            "r=",
+            "correlation",
+            "linear"
+          ]
+        ]
+      },
+      {
+        "id": "verdict",
+        "label": "So the estimate is reliable",
+        "scheme": "so the estimate is reliable",
+        "match": [
+          [
+            "reliable"
+          ]
+        ],
+        "forbid": [
+          "not reliable",
+          "unreliable"
+        ]
+      }
+    ],
+    "model_answer": "The estimate is reliable,\nsince $x = 1.9$ lies within the data range $1.2 \\le x \\le 2.4$ (interpolation)\nand $r = 0.991$ is close to $1$.",
+    "source_question_id": "f13925d8-ec3c-4012-937f-528cbd2c9c2d",
+    "tests": {
+      "pass": "The estimate is reliable since x = 1.9 is within the data range of 1.2 to 2.4 and r = 0.991 is close to 1.",
+      "fail": "The estimate is reliable since r = 0.991 is close to 1.",
+      "fail_misses": [
+        "interpolation"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: ok",
+    "id": "9bc3f278-a5b9-4b42-96df-3a311e3d369a"
+  },
+  {
+    "kind": "regression",
+    "context": "The amount of catalyst x (g) ranged from 2.0 to 6.0 in an experiment, and the regression line of reaction time y on x has r = -0.94. It is used to estimate the reaction time when x = 9.",
+    "task": "Comment on the reliability of the estimate.",
+    "elements": [
+      {
+        "id": "extrapolation",
+        "label": "x = 9 is outside the data range",
+        "scheme": "x = 9 lies outside the data range 2.0 ≤ x ≤ 6.0 (extrapolation)",
+        "match": [
+          [
+            "outside",
+            "extrapolat",
+            "beyond",
+            "not within",
+            "out of"
+          ],
+          [
+            "range",
+            "data",
+            "2.0",
+            "6.0",
+            "extrapolat"
+          ]
+        ]
+      },
+      {
+        "id": "verdict",
+        "label": "So the estimate is not reliable",
+        "scheme": "so the estimate is not reliable",
+        "match": [
+          [
+            "not reliable",
+            "unreliable"
+          ]
+        ]
+      }
+    ],
+    "model_answer": "The estimate is not reliable,\nsince $x = 9$ lies outside the data range $2.0 \\le x \\le 6.0$ (extrapolation),\nand the linear relationship may not hold there.",
+    "source_question_id": "4691ba26-992b-4196-ba21-5f55ae3b4b3a",
+    "tests": {
+      "pass": "The estimate is not reliable since x = 9 is outside the data range of 2.0 to 6.0, so the linear relationship may not hold there.",
+      "fail": "The estimate is reliable since r = -0.94 is close to -1.",
+      "fail_misses": [
+        "extrapolation",
+        "verdict"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: removed the \"linear trend may not continue\" element: \"x = 9 is outside the data range (extrapolation), so not reliable\" earns the marks without it",
+    "id": "c0188bde-d263-47f5-b079-b6a3df802b73"
+  },
+  {
+    "kind": "regression",
+    "context": "Researchers measure the concentration of a drug in the blood, x, at times t minutes after it is given. The scatter diagram has t on the horizontal axis and x on the vertical axis, and the least squares regression line of x on t is found.",
+    "task": "Explain what is meant by the \"least squares\" regression line of x on t.",
+    "elements": [
+      {
+        "id": "squares",
+        "label": "Sum of squares of residuals",
+        "scheme": "the line for which the sum of the squares of the residuals",
+        "match": [
+          [
+            "sum of"
+          ],
+          [
+            "square"
+          ]
+        ]
+      },
+      {
+        "id": "minimised",
+        "label": "That sum is minimised",
+        "scheme": "is a minimum",
+        "match": [
+          [
+            "minimi",
+            "minimum",
+            "smallest",
+            "as small as possible"
+          ]
+        ]
+      },
+      {
+        "id": "direction",
+        "label": "Distances in the x-direction (vertical)",
+        "scheme": "where the residuals are the distances from the points to the line measured in the x-direction (vertically on this diagram)",
+        "match": [
+          [
+            "vertical",
+            "x-direction",
+            "x direction",
+            "parallel to the x",
+            "x-values",
+            "x values",
+            "x-axis",
+            "x axis",
+            "concentration"
+          ]
+        ],
+        "forbid": [
+          "horizontal"
+        ]
+      }
+    ],
+    "model_answer": "It is the line for which the sum of the squares of the residuals is a minimum,\nwhere each residual is the distance from a data point to the line measured in the $x$-direction (the concentration), i.e. vertically on this diagram.",
+    "source_question_id": "8bd75cad-e39c-4f40-93ab-afd267fdf1e3",
+    "tests": {
+      "pass": "It is the line where the sum of the squares of the vertical distances (in the x-direction) from the points to the line is minimised.",
+      "fail": "It is the line where the sum of the squares of the horizontal distances from the points to the line is minimised.",
+      "fail_misses": [
+        "direction"
+      ]
+    },
+    "status": "live",
+    "verify_note": "examiner check 5 Oct 2026: direction was wrong: the line of x on t minimises distances in the x-direction (vertical with t across), not horizontal; context now fixes the axes, \"horizontal\" forbidden, tests swapped",
+    "id": "b199c18b-bd64-4bb2-9a50-f80db7f27471"
+  }
+]

@@ -595,6 +595,17 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🧭 ✍️ The JC H2 drills (5 Oct 2026, SPEC-H2-TOOLS.md): both routes behind a session.
+    timed('portal-h2-methods', async () => {
+      const r = await fetch(`${base}/api/portal/h2/methods?area=integration`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
+    timed('portal-h2-stats', async () => {
+      const r = await fetch(`${base}/api/portal/h2/stats`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('admin-humanities', async () => {
       const r = await fetch(`${base}/api/admin/humanities`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
