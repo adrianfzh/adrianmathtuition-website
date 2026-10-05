@@ -82,3 +82,17 @@ describe('the per-topic science switch (5 Oct 2026)', () => {
     expect(scienceRowOpen(open, 'PHY', null)).toBe(false);
   });
 });
+
+import { serveTopicKey } from './science-practice';
+import { sciencePoolLevels } from './science-levels';
+describe('science pools (5 Oct 2026)', () => {
+  it('pure and Combined Science draw from their own bank levels', () => {
+    expect(sciencePoolLevels('PHY', false)).toEqual(['PHYS']);
+    expect(sciencePoolLevels('CHEM', true)).toEqual(['CS_CHEM', 'CS_CHEM_NA']);
+    expect(sciencePoolLevels('XX', true)).toEqual([]);
+  });
+  it('each pool has its own allow-list key', () => {
+    expect(serveTopicKey('BIO', false)).toBe('BIO');
+    expect(serveTopicKey('BIO', true)).toBe('CS_BIO');
+  });
+});

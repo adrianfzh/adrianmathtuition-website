@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
-import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceTopicGate } from '@/lib/practice';
+import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceServeFor } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceNext, toPayload } from '@/lib/science-bank';
-import { parseSkill, scienceTopicOpen } from '@/lib/science-practice';
+import { parseSkill, scienceTopicOpen, serveTopicKey } from '@/lib/science-practice';
 import { scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 
 export const runtime = 'nodejs';
@@ -21,7 +21,9 @@ export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const { level, topic, exclude, tier, subgroupId, kind, skill } = body as {
+  const { level, topic, exclude, tier, subgroupId, kind, skill, pool } = body as {
+    /** science only (5 Oct 2026): 'pure' | 'combined' — honoured for Adrian only; a student's own choice decides */
+    pool?: string;
     level?: string; topic?: string; exclude?: string[]; tier?: string; subgroupId?: number | string | null;
     /** science only (1 Oct 2026): 'mcq' | 'structured' — the Science Practise tab's switch */
     kind?: string;
@@ -34,7 +36,8 @@ export async function POST(req: NextRequest) {
   // Science levels: the science bank's twin of practice_next (lib/science-bank).
   if (isScienceLevel(level)) {
     // Topic by topic (5 Oct 2026): a student is served only an open topic.
-    if (!scienceTopicOpen(await scienceTopicGate(caller), level, topic)) return NextResponse.json({ error: 'Topic not available yet' }, { status: 403 });
+    const serve = await scienceServeFor(caller, pool);
+    if (!scienceTopicOpen(serve.open, serveTopicKey(level, serve.combined), topic)) return NextResponse.json({ error: 'Topic not available yet' }, { status: 403 });
     try {
       // Written-answer questions stay with the admin cookie until the grader check passes:
       // a student is served MCQ whatever the request says (3 Oct 2026, the tab opened).
@@ -44,6 +47,7 @@ export async function POST(req: NextRequest) {
         levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
         skill: parseSkill(level, topic, skill),
         tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
+        combined: serve.combined, checkedOnly: serve.checkedOnly,
       });
       return NextResponse.json({ question: q ? toPayload(q) : null });
     } catch (e) {

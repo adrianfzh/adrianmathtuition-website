@@ -291,6 +291,14 @@ export async function GET(req: NextRequest) {
     // The qualitative-analysis flashcards (24 Sep 2026): the Chemistry tab's
     // door must not 404. Anonymous → the login redirect, which is fine.
     // The Science Practise tab (1 Oct 2026): its door must not 404. Anonymous → the login redirect.
+    // The open-topic list the nightly science MCQ check reads (5 Oct 2026).
+    timed('portal-science-open-topics', async () => {
+      const r = await fetch(`${base}/api/portal/practice/open-topics`, { signal: T(10000) });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const j = await r.json() as { topics?: Record<string, string[]> };
+      if (!j.topics || typeof j.topics !== 'object') throw new Error('no topics map');
+      return `${Object.values(j.topics).flat().length} open topic(s)`;
+    }),
     timed('portal-science-practice', async () => {
       const r = await fetch(`${base}/app/science/practice`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/practice is missing — the Science Practise door 404s');

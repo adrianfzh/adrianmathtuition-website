@@ -118,3 +118,8 @@ export function scienceRowOpen(open: OpenTopics | null, levelKey: string, topics
   if (!open) return true;
   return (topics ?? []).some(t => scienceTopicOpen(open, levelKey, t));
 }
+
+/** The allow-list key of a pool: 'CHEM' for the pure bank, 'CS_CHEM' for Combined Science (5 Oct 2026). */
+export function serveTopicKey(levelKey: string, combined: boolean): string {
+  return combined ? `CS_${levelKey}` : levelKey;
+}

@@ -164,6 +164,12 @@ export const SCIENCE_PRACTICE_OPEN_TOPICS: Readonly<Record<string, readonly stri
     'Nutrition in Humans',               // 77 checked, 77 passed
     'Nutrition in Plants',               // 43 checked, 40 first time; 3 hidden (option figures missing, ambiguous stem)
   ],
+  // Combined Science pools (5 Oct 2026, Adrian: "we should be using combined ones and the pure
+  // ones accordingly"): a Combined Science student is served from CS_PHYS / CS_CHEM / CS_BIO
+  // (+ _NA), under these keys, each topic opened only after ITS rows pass the same check.
+  CS_PHY: [],
+  CS_CHEM: [],
+  CS_BIO: [],
 };
 // Structured science practice = write an answer, get it MARKED, then the scheme (Adrian,
 // 1 Oct 2026: "they must practice right? then we mark? … no point just giving the answers

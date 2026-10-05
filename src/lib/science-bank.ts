@@ -18,7 +18,7 @@ import { createServiceClient } from './supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from './bank-question-markdown';
 import { scienceImageBase, withScienceImageUrls } from './science-images';
 import {
-  computeScienceMastery, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
+  computeScienceMastery, sciencePoolLevels, MCQ_ANSWER_RE, MCQ_BOLD_RE, mcqKey, mcqStemParagraphs, scienceLevel, tsvBlocksToTables, type ScienceSubject, type TopicMastery,
 } from './science-levels';
 
 let _client: SupabaseClient | null = null;
@@ -53,14 +53,19 @@ export type ScienceQuestionRow = BankQuestion & {
   /** server-side only — the gate reads it; toPayload never passes it on (source: null) */
   school?: string | null;
   practice_hidden?: boolean | null;
+  practice_checked_at?: string | null;
 };
+
+/** Which pool a caller draws from (lib/practice scienceServeFor): Combined Science or pure,
+ *  and whether only rows that passed the blind-solve check may be served (students). */
+export interface SciencePoolOpts { combined?: boolean; checkedOnly?: boolean }
 
 // The gate columns (ai_generated, verified, image_watermark_status, not_in_syllabus)
 // ride along so scienceEligible() sees what it checks — until 5 Oct 2026 they were
 // missing, so every figure question the picker served came back "Question not found"
 // from the grade route (image_watermark_status read as undefined ≠ 'clean').
 // solution_images too, so a scheme's diagram reaches "Show solution".
-const ROW_COLUMNS = 'id, subject, level, school, practice_hidden, question_text, parts, answer, solution, solution_images, topics, difficulty, total_marks, has_image, image_url, images, quarantined, ai_generated, verified, image_watermark_status, not_in_syllabus';
+const ROW_COLUMNS = 'id, subject, level, school, practice_hidden, practice_checked_at, question_text, parts, answer, solution, solution_images, topics, difficulty, total_marks, has_image, image_url, images, quarantined, ai_generated, verified, image_watermark_status, not_in_syllabus';
 
 /** A row with its figures pointed at the SCIENCE bucket (lib/science-images — the maths bucket 400s). */
 function withFigures<T extends ScienceQuestionRow>(q: T): T {
@@ -98,19 +103,20 @@ export interface ScienceTopicCount { topic: string; n: number; advanced_count: n
 const topicCache = new Map<string, { at: number; rows: ScienceTopicCount[] }>();
 const TOPIC_CACHE_MS = 10 * 60_000;
 
-export async function scienceTopicCounts(levelKey: string): Promise<ScienceTopicCount[]> {
+export async function scienceTopicCounts(levelKey: string, pool: SciencePoolOpts = {}): Promise<ScienceTopicCount[]> {
   const lvl = scienceLevel(levelKey);
   if (!lvl) return [];
-  const hit = topicCache.get(levelKey);
+  const cacheKey = `${levelKey}|${pool.combined ? 'cs' : 'pure'}|${pool.checkedOnly ? 'checked' : 'all'}`;
+  const hit = topicCache.get(cacheKey);
   if (hit && Date.now() - hit.at < TOPIC_CACHE_MS) return hit.rows;
   // PostgREST caps every response at 1,000 rows (db-max-rows), so page.
   const PAGE = 1000;
   const all: { topics: string[] | null; difficulty: string | null; answer?: string | null }[] = [];
   for (let from = 0; from < 20_000; from += PAGE) {
-    const { data, error } = await eligible<any>(getScienceClient().from('questions').select('topics, difficulty, answer'), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .eq('level', lvl.bankLevel)
-      .order('id')
-      .range(from, from + PAGE - 1);
+    let q = eligible<any>(getScienceClient().from('questions').select('topics, difficulty, answer'), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
+      .in('level', sciencePoolLevels(levelKey, !!pool.combined));
+    if (pool.checkedOnly) q = q.not('practice_checked_at', 'is', null);
+    const { data, error } = await q.order('id').range(from, from + PAGE - 1);
     if (error) throw new Error(`science topics: ${error.message}`);
     const page = (data || []) as { topics: string[] | null; difficulty: string | null; answer?: string | null }[];
     all.push(...page);
@@ -127,7 +133,7 @@ export async function scienceTopicCounts(levelKey: string): Promise<ScienceTopic
     acc.set(topic, cur);
   }
   const rows = [...acc.values()].sort((a, b) => a.topic.localeCompare(b.topic));
-  topicCache.set(levelKey, { at: Date.now(), rows });
+  topicCache.set(cacheKey, { at: Date.now(), rows });
   return rows;
 }
 
@@ -182,15 +188,17 @@ export async function scienceNext(opts: {
   kind?: 'mcq' | 'structured' | null;
   /** one skill inside the topic (`questions.skill`, lib/science-practice TOPIC_SKILLS); unset = the whole topic */
   skill?: string | null;
-}): Promise<ScienceQuestionRow | null> {
+} & SciencePoolOpts): Promise<ScienceQuestionRow | null> {
   const lvl = scienceLevel(opts.levelKey);
   if (!lvl) return null;
   const sb = getScienceClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const build = (select: string, head: boolean): any => {
     let q = eligible<any>(sb.from('questions').select(select, head ? { count: 'exact', head: true } : undefined), lvl.subject) // eslint-disable-line @typescript-eslint/no-explicit-any
-      .eq('level', lvl.bankLevel)
+      .in('level', sciencePoolLevels(opts.levelKey, !!opts.combined))
       .contains('topics', [opts.topic]);
+    // students: only rows that passed the blind-solve check (5 Oct 2026, questions.practice_checked_at)
+    if (opts.checkedOnly) q = q.not('practice_checked_at', 'is', null);
     // MCQ = a bare letter OR the "**B** — …" form (lib/science-levels mcqKey).
     if (opts.kind === 'mcq') q = q.filter('answer', 'match', MCQ_ANSWER_RE);
     // structured = not a lettered answer (most structured rows carry NO answer at all — a
@@ -222,8 +230,10 @@ export async function scienceQuestion(subject: ScienceSubject, id: string): Prom
 }
 
 /** True when a row passes the same bars the picker applies (a deep link must never open what the picker would refuse). */
-export function scienceEligible(q: ScienceQuestionRow): boolean {
+export function scienceEligible(q: ScienceQuestionRow, pool?: SciencePoolOpts & { levelKey?: string }): boolean {
   if (q.quarantined) return false;
+  if (pool?.checkedOnly && !q.practice_checked_at) return false;
+  if (pool?.levelKey && !sciencePoolLevels(pool.levelKey, !!pool.combined).includes(q.level ?? '')) return false;
   if (q.not_in_syllabus === true) return false;
   if ((q.school || '').trim().toUpperCase() === 'GCE') return false;   // national = grounding-only
   if (q.practice_hidden === true) return false;                          // hidden by the practice check

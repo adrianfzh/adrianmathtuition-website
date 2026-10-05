@@ -27,8 +27,8 @@ import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
-import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience, scienceTopicGate, type PracticeCaller } from '@/lib/practice';
-import { scienceTopicOpen } from '@/lib/science-practice';
+import { practiceAuth, practiceLevelAllowed, practiceLevelsFor, bankScope, rpcAudience, scienceServeFor, type PracticeCaller } from '@/lib/practice';
+import { scienceTopicOpen, serveTopicKey } from '@/lib/science-practice';
 import { isScienceLevel, scienceSubjectOf } from '@/lib/science-levels';
 import { scienceNext, scienceTopicCounts, toPayload } from '@/lib/science-bank';
 import { portalIdentity } from '@/lib/portal-auth';
@@ -115,7 +115,7 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
   const science = isScienceLevel(level);
   if (mixed) {
     if (science) {
-      try { topics = (await scienceTopicCounts(level)).map(t => t.topic); }
+      try { topics = (await scienceTopicCounts(level, await scienceServeFor(caller, body.pool))).map(t => t.topic); }
       catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
     } else {
       const { data, error } = await sb.rpc('practice_topics', { p_level: scope.level, p_qlevel: scope.qlevel, ...audience });
@@ -124,7 +124,8 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
     }
   }
   // Science topic by topic (5 Oct 2026): a student's set draws only from open topics.
-  if (science) { const gate = await scienceTopicGate(caller); topics = topics.filter(t => scienceTopicOpen(gate, level, t)); }
+  const serveS = science ? await scienceServeFor(caller, body.pool) : null;
+  if (serveS) topics = topics.filter(t => scienceTopicOpen(serveS.open, serveTopicKey(level, serveS.combined), t));
   if (!topics.length) return NextResponse.json({ error: 'No questions available for that level yet' }, { status: 409 });
 
   // Science levels: same slot plan, the science bank's picker per slot.
@@ -136,7 +137,7 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
       const order = [slotTopic, ...topics.filter(t => t !== slotTopic)];
       let row = null;
       for (const t of order) {
-        try { row = await scienceNext({ levelKey: level, topic: t, exclude: pickedS, tier }); }
+        try { row = await scienceNext({ levelKey: level, topic: t, exclude: pickedS, tier, combined: serveS?.combined, checkedOnly: serveS?.checkedOnly }); }
         catch (e) { return NextResponse.json({ error: (e as Error).message }, { status: 500 }); }
         if (row) break;
       }

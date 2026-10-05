@@ -118,6 +118,21 @@ export async function scienceTopicGate(caller: PracticeCaller): Promise<OpenTopi
   return (await sciencePracticeAccess()) === 'preview' ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
 }
 
+/**
+ * How a caller is served science practice (5 Oct 2026): `open` = the per-topic allow-list
+ * (null = Adrian, every topic); `combined` = the Combined Science pool (the student's own
+ * choice, prefs.combined_science; Adrian may ask for either with `pool`); `checkedOnly` =
+ * only rows that passed the blind-solve check (questions.practice_checked_at) — every student.
+ */
+export interface ScienceServe { open: OpenTopics | null; combined: boolean; checkedOnly: boolean }
+export async function scienceServeFor(caller: PracticeCaller, requestedPool?: unknown): Promise<ScienceServe> {
+  const open = await scienceTopicGate(caller);
+  const own = caller?.kind === 'student' ? !!studentSciences(caller.account.prefs)?.combined : false;
+  const asked = requestedPool === 'combined' ? true : requestedPool === 'pure' ? false : null;
+  const combined = open === null && asked !== null ? asked : own;
+  return { open, combined, checkedOnly: open !== null };
+}
+
 export async function practiceLevelAllowed(caller: PracticeCaller, level: string): Promise<boolean> {
   if (!caller) return false;
   if (!isScienceLevel(level)) return levelAllowed(caller, level);

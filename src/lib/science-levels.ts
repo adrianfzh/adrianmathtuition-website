@@ -36,6 +36,19 @@ export function scienceLevelForSubject(subject: ScienceSubject | null | undefine
   return SCIENCE_LEVELS.find(l => l.subject === subject) ?? null;
 }
 
+/**
+ * The bank levels a practice pool draws from (5 Oct 2026, Adrian: "we should be using
+ * combined ones and the pure ones accordingly for the students subjects"): a pure-science
+ * student practises the pure bank (PHYS); a Combined Science student the Combined Science
+ * bank of that science, Express and N(A) papers both (CS_PHYS, CS_PHYS_NA) — the stream is
+ * not recorded, and the N(A) syllabus sits inside the Express one.
+ */
+export function sciencePoolLevels(levelKey: string, combined: boolean): string[] {
+  const l = SCIENCE_LEVELS.find(x => x.key === levelKey);
+  if (!l) return [];
+  return combined ? [`CS_${l.bankLevel}`, `CS_${l.bankLevel}_NA`] : [l.bankLevel];
+}
+
 export function scienceLevel(key: string | null | undefined): ScienceLevel | null {
   return SCIENCE_LEVELS.find(l => l.key === key) ?? null;
 }

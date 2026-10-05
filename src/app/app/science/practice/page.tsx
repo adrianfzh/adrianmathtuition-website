@@ -18,7 +18,7 @@ import { sessionAccount } from '@/lib/portal-auth';
 import { SCIENCE_SUBJECTS, SCIENCE_SUBJECT_LABEL, studentSciences, type ScienceSubject } from '@/lib/portal-prefs';
 import { scienceLevelForSubject } from '@/lib/science-levels';
 import { scienceConfigured, scienceTopicCounts } from '@/lib/science-bank';
-import { parsePracticeKind, sciencePracticeHref, scienceTopicOpen, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
+import { parsePracticeKind, sciencePracticeHref, scienceTopicOpen, serveTopicKey, skillsFor, topicsForKind, type PracticeKind } from '@/lib/science-practice';
 import { SCIENCE_PRACTICE_OPEN_TOPICS } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 
@@ -48,10 +48,15 @@ export default async function SciencePracticePage({ searchParams }: { searchPara
   const levelKey = lvl?.key ?? 'PHY';
 
   // The bank's topics for this science, and the student's live mistakes in it.
-  const counts = scienceConfigured() ? await scienceTopicCounts(levelKey).catch(() => []) : [];
+  // The pool (5 Oct 2026): a Combined Science student practises the Combined Science bank,
+  // a pure-science student the pure one; students see only rows that passed the check.
+  const preview = access === 'preview';
+  const combined = !!choice?.combined && !isAdmin;
+  const pool = { combined, checkedOnly: !preview };
+  const counts = scienceConfigured() ? await scienceTopicCounts(levelKey, pool).catch(() => []) : [];
   // Topic by topic (5 Oct 2026): a student sees only the open topics; Adrian's cookie sees all.
-  const gate = access === 'preview' ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
-  const topics = topicsForKind(counts, kind).filter(t => scienceTopicOpen(gate, levelKey, t));
+  const gate = preview ? null : SCIENCE_PRACTICE_OPEN_TOPICS;
+  const topics = topicsForKind(counts, kind).filter(t => scienceTopicOpen(gate, serveTopicKey(levelKey, combined), t));
   const href = (s: ScienceSubject, k: PracticeKind) => `/app/science/practice?s=${s}${k === 'structured' ? '&mode=structured' : ''}`;
 
   return (
