@@ -121,6 +121,8 @@ export type SketchStatus = 'ok' | 'unlabelled' | 'wrong' | 'rough' | 'half' | 'm
 export interface SketchItem {
   id: string; group: string; kind: string; status: SketchStatus;
   want: string | null; wrote: string | null; at: [number, number] | null; note: string;
+  /** Since 5 Oct 2026 (later rows): the feature as TeX, its name and a two-word status. */
+  tex?: string | null; name?: string; short?: string;
 }
 export interface SketchSummaryLine { ok: boolean; check?: boolean; text: string; fix: string }
 export interface SketchReport {
@@ -140,16 +142,43 @@ export function headline(report: SketchReport | null, status: SketchRowStatus): 
   if (status === 'failed' || !report) return 'This sketch could not be checked.';
   const lost = report.deductions.length;
   if (lost === 0) return 'Every feature is there and labelled.';
-  return lost === 1 ? 'One mark would go. Fix the line in red.' : `${lost} marks would go. Fix the lines in red.`;
+  return lost === 1 ? 'One mark would go.' : `${lost} marks would go.`;
 }
 
-/** Plain lines for the checklist: wrong first, then checks, then right. */
-export function checklist(report: SketchReport): { mark: '✓' | '✗' | '?'; text: string; fix: string }[] {
-  return report.summary.map(l => ({ mark: l.ok ? '✓' : l.check ? '?' : '✗', text: l.text, fix: l.fix }));
+export interface ChecklistLine { mark: '✓' | '✗' | '?'; name: string; tex: string | null; text: string; short: string }
+
+/**
+ * One short line per point (Adrian, 5 Oct 2026: "be less verbose"): ✗ first, then
+ * ?, then ✓. The maths is TeX for the page's KaTeX; a point that is two features
+ * (the y-intercept that is the maximum) is one line.
+ */
+export function checklist(report: SketchReport): ChecklistLine[] {
+  const items = report.items ?? [];
+  if (!items.some(i => i.short !== undefined)) {
+    // a row from before the short form: the old summary, unchanged
+    return report.summary.map(l => ({ mark: l.ok ? '✓' : l.check ? '?' : '✗', name: '', tex: null, text: l.text, short: '' }));
+  }
+  const seen = new Map<string, ChecklistLine>();
+  for (const it of items) {
+    const mark = it.status === 'ok' ? '✓' : it.status === 'check' ? '?' : '✗';
+    if (it.kind === 'shape') {
+      const text = it.note || 'Shape right';
+      const key = `shape|${mark}|${it.note ? it.id : 'ok'}`;
+      if (!seen.has(key)) seen.set(key, { mark, name: '', tex: null, text, short: '' });
+      continue;
+    }
+    const key = `${it.tex ?? it.want}|${mark}`;
+    const prev = seen.get(key);
+    if (prev) { if (it.name && !prev.name.includes(it.name)) prev.name = `${prev.name} · ${it.name}`; continue; }
+    seen.set(key, { mark, name: it.name ?? '', tex: it.tex ?? null, text: it.want ?? it.wrote ?? '', short: it.short ?? '' });
+  }
+  const rank = { '✗': 0, '?': 1, '✓': 2 } as const;
+  return [...seen.values()].sort((a, b) => rank[a.mark] - rank[b.mark]);
 }
 
-/** The words for what a scheme would take off, one sentence. */
+/** What a scheme would take off, in one line. */
 export function deductionLine(report: SketchReport): string {
-  if (!report.deductions.length) return 'A mark scheme would give every mark for this sketch.';
-  return `A mark scheme would take off ${report.deductions.join('; ')}.`;
+  if (!report.deductions.length) return 'No marks lost.';
+  const list = report.deductions.map(d => d.replace(/ — .*$/, '').replace(/^the /, ''));
+  return `Marks lost: ${list.join(' · ')}.`;
 }

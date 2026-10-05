@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTypedFunction, parseDomain, sketchQuestions, sketchQuestionById, headline, checklist, deductionLine, type SketchReport } from './sketch-check';
+import { parseTypedFunction, parseDomain, sketchQuestions, sketchQuestionById, headline, checklist, deductionLine, type SketchReport, type SketchItem } from './sketch-check';
 
 describe('parseTypedFunction', () => {
   const ok = (s: string) => {
@@ -55,19 +55,28 @@ describe('the question list', () => {
 });
 
 describe('the report on the page', () => {
+  const item = (o: Partial<SketchItem>): SketchItem => ({ id: 'x', group: 'turning', kind: 'max', status: 'ok', want: null, wrote: null, at: null, note: '', ...o });
   const report: SketchReport = {
-    items: [], groups: {}, features: [], refused: [],
-    summary: [
-      { ok: false, text: 'y = x − 3: missing', fix: 'Draw the asymptote y = x − 3 (dashed) and label it.' },
-      { ok: false, check: true, text: 'Check — Piece 1 of 2: the left end should run below its asymptote.', fix: '' },
-      { ok: true, text: 'x = 1: drawn and labelled', fix: '' },
+    groups: {}, features: [], refused: [], summary: [],
+    items: [
+      item({ id: 'a', kind: 'vasym', group: 'asymptotes', status: 'ok', want: 'x = 1', tex: 'x = 1', name: 'Asymptote', short: '' }),
+      item({ id: 'b', kind: 'oasym', group: 'asymptotes', status: 'missing', want: 'y = x − 3', tex: 'y = x - 3', name: 'Asymptote', short: 'missing' }),
+      item({ id: 'c', kind: 'yint', group: 'intercepts', status: 'wrong', want: '(0, −4)', tex: '\\left(0,\\ -4\\right)', name: 'y-intercept', short: 'wrong label' }),
+      item({ id: 'd', kind: 'max', status: 'wrong', want: '(0, −4)', tex: '\\left(0,\\ -4\\right)', name: 'Max point', short: 'wrong label' }),
+      item({ id: 'shape0', kind: 'shape', group: 'shape', status: 'check', note: 'Piece 1: left end: below y = x − 3' }),
     ],
-    deductions: ['the asymptotes mark — every asymptote drawn with its equation'],
+    deductions: ['the asymptotes mark', 'the intercepts mark'],
   };
-  it('one headline, the checklist marks, the deduction', () => {
-    expect(headline(report, 'checked')).toBe('One mark would go. Fix the line in red.');
+  it('one short line per point, wrong first, a point that is two features once', () => {
+    const lines = checklist(report);
+    expect(lines.map(l => l.mark)).toEqual(['✗', '✗', '?', '✓']);
+    expect(lines[1].name).toBe('y-intercept · Max point');
+    expect(lines[1].short).toBe('wrong label');
+  });
+  it('the headline and the marks-lost line', () => {
+    expect(headline(report, 'checked')).toBe('2 marks would go.');
     expect(headline(null, 'checking')).toBe('Checking your sketch…');
-    expect(checklist(report).map(l => l.mark)).toEqual(['✗', '?', '✓']);
-    expect(deductionLine({ ...report, deductions: [] })).toMatch(/every mark/);
+    expect(deductionLine(report)).toBe('Marks lost: asymptotes mark · intercepts mark.');
+    expect(deductionLine({ ...report, deductions: [] })).toBe('No marks lost.');
   });
 });

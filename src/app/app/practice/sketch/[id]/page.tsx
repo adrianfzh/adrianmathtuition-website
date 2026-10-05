@@ -7,7 +7,7 @@ import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { h2ToolOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { fileHref } from '@/lib/student-files-url';
-import { sketchQuestionById, headline, checklist } from '@/lib/sketch-check';
+import { sketchQuestionById, headline, checklist, deductionLine } from '@/lib/sketch-check';
 import { loadSketch } from '@/lib/sketch-check-store';
 import { MathText } from '../../question-view';
 import RunPoll from '../../../humanities/[id]/run-poll';
@@ -61,34 +61,19 @@ export default async function SketchResult({ params }: { params: Promise<{ id: s
 
       {report && (
         <section className={`${CARD} p-4 space-y-2`}>
-          <p className="font-semibold text-navy">Checklist</p>
-          <ul className="space-y-2">
+          <ul className="space-y-1.5">
             {checklist(report).map((l, i) => (
-              <li key={i} className="flex gap-2 text-sm">
-                <span aria-hidden className={`w-4 shrink-0 font-bold ${l.mark === '✓' ? 'text-emerald-600' : 'text-red-600'}`}>{l.mark}</span>
-                <span className="min-w-0">
-                  <span className="block text-gray-800">{l.text}</span>
-                  {l.fix && <span className="block text-red-700">{l.fix}</span>}
+              <li key={i} className="flex items-baseline gap-2 text-sm">
+                <span aria-hidden className={`w-4 shrink-0 font-bold ${l.mark === '✓' ? 'text-emerald-600' : l.mark === '?' ? 'text-amber-600' : 'text-red-600'}`}>{l.mark}</span>
+                <span className="min-w-0 flex flex-wrap items-baseline gap-x-2">
+                  {l.name && <span className="text-xs text-gray-500">{l.name}</span>}
+                  {l.tex ? <span className="text-gray-900"><MathText text={`$${l.tex}$`} /></span> : <span className="text-gray-800">{l.text}</span>}
+                  {l.short && <span className={l.mark === '✓' ? 'text-gray-500' : 'text-red-700'}>{l.short}</span>}
                 </span>
               </li>
             ))}
           </ul>
-        </section>
-      )}
-
-      {report && (
-        <section className={`${CARD} p-4 space-y-1.5`}>
-          <p className="font-semibold text-navy">What a mark scheme would do</p>
-          {report.deductions.length === 0 ? (
-            <p className="text-sm text-gray-700">Give every mark for this sketch.</p>
-          ) : (
-            <>
-              <p className="text-sm text-gray-700">Take off:</p>
-              <ul className="list-disc pl-5 text-sm text-gray-700 space-y-1">
-                {report.deductions.map((d, i) => <li key={i}>{d}</li>)}
-              </ul>
-            </>
-          )}
+          <p className="text-sm text-gray-600 pt-1 border-t border-black/5">{deductionLine(report)}</p>
         </section>
       )}
 
