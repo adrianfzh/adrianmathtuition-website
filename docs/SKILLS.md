@@ -72,6 +72,12 @@ authoritative list.
 | `plan-marking` | Runs one cycle of the plan-billed 🌙 marking worker by hand; also the way to debug the launchd worker |
 | `author-lesson` | Drafts a `data/lessons/<slug>.json` animated lesson for one (level, topic) from APPROVED learning units, gated by `scripts/lessons/verify-lesson.mjs` and Adrian's scene-by-scene approval; admin-preview only → [`docs/LESSONS.md`](LESSONS.md) |
 | `science-bench` | Builds and runs the seeded-script bench for science marking (SPEC-SCIENCE-BENCH.md §1): fake scripts with defects chosen in advance, handed in through the real queue, scored into `calibration_results` as `truth_source 'seeded'`; needs no marked paper; Mac + both repos, any account |
+| `create-teaching-notes` | Teaching notes / revision sets / tailored practice WITH annotated solutions in Adrian's style, from the bank; style from `docs/teaching-style/` (moved here from the retired AdrianMath repo, 5 Oct 2026) |
+| `correct-math-notes` | Audits a chapter of Adrian's `.docx` notes: verifies every answer, fixes errors in red, lean improvements (moved from AdrianMath, 5 Oct 2026) |
+| `generate-similar-questions` | New questions like a given one at a chosen similarity, every answer independently verified; can insert into the bank as `ai_generated` (moved from AdrianMath, 5 Oct 2026) |
+| `prelim-practice-sets` | House format for the 2026 Prelim Practice Set series (E Math, A Math, JC H2) and the playbook for editing a practice-set PDF that already exists (PDF surgery + answer-key scripts; moved from AdrianMath, 5 Oct 2026) |
+| `reproduce-exam-paper` | Rebuilds a scanned exam paper as a clean typeset PDF matching the original page for page, answers-only key at the end (moved from AdrianMath, 5 Oct 2026) |
+| *(bot repo)* `question-processing` | The extraction law's skill — DOCX/PDF exam paper → the bank. Lives in the bot repo's `extraction/.claude/skills/` with the rest of the extraction toolkit; run sessions from `extraction/` → [`docs/EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md) §3 |
 | *(not a skill)* Telegram `/ws` | Adrian's five-kind worksheet menu in the bot: kind 3 (questions only) is the instant `/api/bot/worksheet` build, marks-banded; kinds 1 · 2 · 4 · 5 queue to `worksheet_jobs` and the Mac worker (`scripts/worksheet-worker/`) runs `revision-worksheet` / `crw --kind notes` / `crw --kind worked` / `prelim-paper` headless, files the DOCX and Telegrams it back → [`SPEC-WORKSHEET-MENU.md`](../SPEC-WORKSHEET-MENU.md) |
 
 ## Adding a skill

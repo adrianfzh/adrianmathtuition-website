@@ -272,9 +272,12 @@ both Macs closed — Adrian: "build it".
   when the marking queue is empty (the supervisor's `external-peek`). The bot wakes the
   machine at 00:02 for the night window; with the queue non-empty the machine stays up
   (`extract` is in jobs.sh's hold list) and claims one row every 15 min until it is dry.
-- **The run:** `claude -p` on a pooled CLI login (never the API key), in a clone of the
-  AdrianMath repo at `/data/bank` (`~/Desktop/AdrianMath` is a symlink to it, so the
-  law's paths read true), runner `PDF-Pipeline-Fly-<ddHHMM>`. The prompt fetches the
+- **The run:** `claude -p` on a pooled CLI login (never the API key), in **the extraction
+  folder** `/data/extract` — a copy of the BOT repo's `extraction/` (house rules, the
+  `question-processing` skill, `scripts/bank_insert.py`, topic lists, `science/`) that
+  jobs.sh `sync_extract` refreshes from `/data/bot` before every run (until 5 Oct 2026 a
+  clone of the AdrianMath repo at `/data/bank` — see "The AdrianMath folder is retired"
+  below), runner `PDF-Pipeline-Fly-<ddHHMM>`. The prompt fetches the
   law fresh from Supabase and follows it with overrides for the box: REST only
   (`scripts/bank_insert.py` reads `SUPABASE_URL` + `SUPABASE_SECRET_KEY` from env;
   reads are PostgREST GETs), the Bearer is `$ADMIN_PASSWORD` from env, no Mac-fleet
@@ -293,9 +296,29 @@ both Macs closed — Adrian: "build it".
   box's `papers/processing_log.txt` is local and disposable.
 
 The Mac tasks are redundant now; coexistence is harmless (the claim RPC is atomic and
-a lease is a lease), so Adrian removes them when convenient. `SCHOOL_ALIASES.md` and
-the `pending_images_*.txt` side files still live on the Macs; the alias list wants its
-own small table when it next matters.
+a lease is a lease), so Adrian removes them when convenient. School spellings live in
+`extraction_rules` (`type='alias'`, the learner's table); the old `SCHOOL_ALIASES.md`
+notes moved with the worker's `papers/` into `/data/extract/papers/`.
+
+**The AdrianMath folder is retired (5 Oct 2026, Adrian: "retire adrianmath > yes").**
+Everything lives in the two repos + the database:
+
+| was in `~/Desktop/AdrianMath` (GitHub `adrianfzh/AdrianMath`) | now |
+|---|---|
+| `CLAUDE.md` + `CLAUDE-ARCHIVE.md` (the house rules), `.claude/skills/question-processing/`, `scripts/bank_insert.py`, `canonical_topics.json`, `canonical_topics_bio.json`, `DIFFICULTY_SHAPES.md` | bot repo `extraction/` (same relative paths) |
+| `mac_b_science_tasks/` storage convention, science solution styles, `SPEC-SCIENCE-MERGE.md`, `canonical_topics_s1sci.json` | bot repo `extraction/science/` |
+| skills `create-teaching-notes`, `correct-math-notes`, `generate-similar-questions`, `prelim-practice-sets`, `reproduce-exam-paper` | this repo `.claude/skills/` |
+| `papers/` — every PDF / DOCX the Mac fleet processed (`processed/`, flagged, `needs_review/`, science staging) | the private `paper-library` bucket: rows the library already held by sha256 were left alone, the rest uploaded by `scripts/paper-library/archive-bank-folder.ts` as `kind='source'`, `status='library'` (in the library, never queued), notes `ARCHIVED 5 Oct 2026 from …` |
+| `teaching_style/`, `GCE Sets`, `School Papers`, `Twins`, worksheets | `docs/teaching-style/`, `~/Dropbox/AdrianMath Work/` (30 Sep 2026) |
+| one-off batch scripts, FLAG notes, viewers, old Mac fleet setups | left in the archived repo (read-only on GitHub, history intact) |
+
+The law (`extraction_worker_prompt` `exam-extraction`; archived copy
+`exam-extraction-2026-10-05-preretire`) calls the root "the extraction folder" = the run's
+working directory. On a Mac, run it from `~/dev/adrianmath-telegram-math-bot/extraction`
+(copy `.upload_secret` in; it is gitignored). The Mac B launchd fleet
+(`com.adrianmath.pdfpipelinecc.1–6`, failing with TCC since the Desktop move) was booted out
+and its plists moved to `~/Library/LaunchAgents/retired-2026-10-05/`. Mac A's fleet last
+beat on 2 Sep 2026. The iCloud folder itself stays as cold storage until Adrian says.
 
 ### 3a. Lower-sec N(A) (28 Sep 2026)
 

@@ -125,7 +125,7 @@ const vercel = JSON.parse(fs.readFileSync(path.join(WEB, 'vercel.json'), 'utf8')
 const crons = vercel.crons || [];
 const switches = switchStates(fs.readFileSync(path.join(WEB, 'src/lib/portal-beta.ts'), 'utf8'));
 
-// the paper bank (Mac: ~/Desktop/AdrianMath, Fly: /data/bank) — tracked files and skills only, never a walk
+// an extra repo's tracked files and skills (was the AdrianMath bank, retired 5 Oct 2026 — its toolkit is the bot's extraction/) — never a walk
 if (BANK && fs.existsSync(path.join(BANK, '.git'))) { try { files.bank = new Set(git(BANK, ['ls-files']).split('\n').filter(Boolean)); for (const f of files.bank) { let d = path.dirname(f); while (d && d !== '.') { dirs.add(`bank:${d}`); d = path.dirname(d); } } } catch {} }
 const skillNames = new Set();
 if (BANK) try { for (const d of fs.readdirSync(path.join(BANK, '.claude/skills'))) skillNames.add(d); } catch {}

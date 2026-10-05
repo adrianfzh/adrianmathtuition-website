@@ -12,7 +12,7 @@
 Science lives in a **separate merged Supabase project** — ref `eaxnstsecxmqdobfvmjh`
 (dashboard still named "adrianphysics"; env `SUPABASE_SERVICE_KEY_SCIENCE` +
 `SUPABASE_URL_SCIENCE` in the **bot** repo `.env`). Merged 2026-08-05 from four
-projects per `~/Desktop/AdrianMath/mac_b_science_tasks/SPEC-SCIENCE-MERGE.md`.
+projects per bot repo `extraction/science/SPEC-SCIENCE-MERGE.md` (moved from the retired AdrianMath folder).
 Live counts (queried 2026-08-21):
 
 | subject | rows | with solution | verified | embedded | with images | subgroups |
