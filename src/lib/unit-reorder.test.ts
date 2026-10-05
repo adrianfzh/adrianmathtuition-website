@@ -206,7 +206,7 @@ describe('checkSlotPermutation', () => {
       { id: 'a', unit_order: 0 },
     ]);
     expect(r).toMatchObject({ ok: false, status: 409 });
-    expect((r as { error: string }).error).toMatch(/learn-review/);
+    expect((r as { error: string }).error).toMatch(/unit_order/);
   });
 
   it('a no-op body is ok with no changes', () => {

@@ -3,9 +3,11 @@
 import { useState, useEffect } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { classifyDue, dueLabel, type DueBucket } from '@/lib/todo-dates';
+import LoopTasks from './loop-tasks';
 
-// Adrian's personal to-do list. NOT the build-test-fix /loop queue — that
-// lives at /admin/todo (Airtable "Todos"); nothing automated touches this.
+// Adrian's personal to-do list; nothing automated touches it. The second tab,
+// Loop tasks (?tab=loop), is the build-test-fix /loop queue (Airtable "Todos") —
+// its own page /admin/todo until 5 Oct 2026, now a redirect here.
 
 type Todo = { id: string; task: string; done: boolean; dueDate: string | null; createdAt: string; doneAt: string | null };
 
@@ -42,6 +44,19 @@ export default function MyTodosPage() {
   const [editDue, setEditDue] = useState('');
 
   const today = todayISO();
+
+  // Tab: 'mine' (personal list) | 'loop' (the /loop queue). Read from ?tab= once,
+  // kept in the URL so a reload or a redirect from /admin/todo lands on the right one.
+  const [tab, setTab] = useState<'mine' | 'loop'>('mine');
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('tab') === 'loop') setTab('loop');
+  }, []);
+  function pickTab(t: 'mine' | 'loop') {
+    setTab(t);
+    const u = new URL(window.location.href);
+    if (t === 'loop') u.searchParams.set('tab', 'loop'); else u.searchParams.delete('tab');
+    window.history.replaceState(null, '', u.toString());
+  }
 
   async function load(showSpinner = true) {
     if (showSpinner) setLoading(true);
@@ -222,8 +237,19 @@ export default function MyTodosPage() {
           <a href="/admin" style={{ textDecoration: 'none', color: '#6b7280', fontSize: 14, fontWeight: 600 }}>‹ Admin</a>
           <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0, color: '#111' }}>📝 My To-Dos</h1>
         </div>
+        <div role="tablist" style={{ display: 'flex', gap: 6, margin: '10px 0 14px' }}>
+          {([['mine', 'Mine'], ['loop', 'Loop tasks']] as const).map(([k, label]) => (
+            <button key={k} role="tab" aria-selected={tab === k} onClick={() => pickTab(k)}
+              style={{
+                border: '1px solid ' + (tab === k ? '#1e3a5f' : '#e5e7eb'), background: tab === k ? '#1e3a5f' : '#fff',
+                color: tab === k ? '#fff' : '#374151', borderRadius: 999, padding: '6px 14px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              }}>{label}</button>
+          ))}
+        </div>
+
+        {tab === 'loop' ? <LoopTasks /> : <>
         <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 16px' }}>
-          Your personal list — nothing automated touches it. Dev tasks for the loop go in <a href="/admin/todo" style={{ color: '#1e3a5f' }}>Loop tasks</a>.
+          Your personal list. Nothing automated touches it.
         </p>
 
         {apiError && (
@@ -273,6 +299,7 @@ export default function MyTodosPage() {
             <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>{done.map(row)}</ul>
           </div>
         )}
+        </>}
       </div>
     </div>
   );

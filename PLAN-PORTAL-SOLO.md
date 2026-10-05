@@ -187,7 +187,7 @@ tables + Auth user gone); two-account leak test on notes/settings APIs.
    **Model swap 2026-08-21:** A/B on the same harness moved `GRADING_MODEL` to `claude-opus-5` —
    ±1 gate identical (37/39, 95%; same two hard misses), exact agreement **31/39 (79%)** vs
    4.8's 23/39 (59%). Single-item latency 22s vs 17s — inside the route's 60s ceiling.
-   Post-swap regression cover = the ⚠ parseRetried rate on /admin/practice-checks.
+   Post-swap regression cover = the ⚠ parseRetried rate on /admin/practice-checks (page retired 5 Oct 2026, never used; read `student_attempts.marking_json` directly).
 
 **Verify:** full loop on 3 different questions; malformed-JSON path exercised; weakness_tags
 accumulate and appear in the next grading prompt; two-account leak test on attempts/history;

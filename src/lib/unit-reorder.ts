@@ -1,6 +1,7 @@
 // ── Drag-to-reorder for learning_units ───────────────────────────────────────
 //
-// The rule, shared by /admin/learn-review and the /notes review mode (Adrian,
+// The rule behind the /notes review mode (/admin/learn-review used it too until it
+// retired on 5 Oct 2026) (Adrian,
 // 3 Sep 2026: "arrange the order of the cards by holding and moving them"):
 //
 //   The units' EXISTING `unit_order` values are fixed slots. A drop changes
@@ -86,7 +87,7 @@ export type SlotCheck =
  *         non-finite slot (the client is talking about a different topic).
  *   409 — well-formed but not a permutation: the requested slots are not
  *         exactly the requested units' current slots (the page was stale, or
- *         a unit still has no slot — fix that in /admin/learn-review first).
+ *         a unit still has no slot — set its unit_order in Supabase first).
  *
  * On success, `changes` is the subset that differs from what's stored — the
  * only rows the route needs to touch.
@@ -118,7 +119,7 @@ export function checkSlotPermutation(
       return {
         ok: false,
         status: 409,
-        error: `unit ${c.id} has no unit_order yet — give it one in /admin/learn-review first`,
+        error: `unit ${c.id} has no unit_order yet — set it in Supabase first (learning_units.unit_order)`,
       };
     }
   }

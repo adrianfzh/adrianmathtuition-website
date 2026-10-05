@@ -1,7 +1,7 @@
 # AI Marking — detailed docs
 
 > Split out of `CLAUDE.md` on 2026-08-04. **MANDATORY reading before touching
-> `/admin/mark-paper`, `/admin/mark` (batch), any `mark-paper-*`/`mark-batch/*`
+> `/admin/mark-paper`, `/admin/mark` (batch — retired 5 Oct 2026, a redirect), any `mark-paper-*`/`mark-batch/*`
 > route, `render-marking`, the annotate overlay, or the bot's marking pipeline
 > touchpoints.** Nearly every paragraph here is a fixed bug — treat it as a
 > contract. Root policies: [`../CLAUDE.md`](../CLAUDE.md).
@@ -4021,6 +4021,11 @@ Accepts a structured marking JSON payload from the Fly.io bot (Stage B.1a) and r
 **Bot wiring:** Stage B.1c (not yet implemented). The bot will call this endpoint after the AI marking step and upload the PNG to Vercel Blob.
 
 ## Batch Marking
+
+> **RETIRED 5 Oct 2026** (Adrian's admin audit; the last batch was 23 Apr 2026). `/admin/mark` and
+> `/admin/mark/batch/<id>` redirect to `/admin/mark-paper`; every `/api/mark-batch/*` route and
+> `lib/mark-batch-submissions.ts` were deleted (no other caller in either repo). The Airtable batch
+> tables stay. What follows is history.
 
 Three-endpoint architecture, client-orchestrated, stays within Vercel Hobby 60 s limit.
 

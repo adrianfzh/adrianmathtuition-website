@@ -319,7 +319,8 @@ function Unit({ unit, admin }: { unit: NotesUnit; admin: boolean }) {
  * as rendered: ReorderUnits is never in their tree, so its chunk (dnd-kit) is
  * never sent to them. A lone card has nowhere to go, so it gets no handle.
  * The section's lead core is not in any group — a section IS its core's
- * position, so moving the core is a job for /admin/learn-review.
+ * position, so moving the core means editing its unit_order (the old
+ * /admin/learn-review page that did it retired on 5 Oct 2026).
  */
 function Sortable({
   admin,

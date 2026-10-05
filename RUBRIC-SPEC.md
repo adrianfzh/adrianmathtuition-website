@@ -59,7 +59,7 @@ rubrics (
    ±3 marks. Now it grades to the SG standard.
 
 ## 5. Admin UI
-- `/admin/rubrics` — list rubrics; edit `criteria` (band descriptors), `grading_notes`,
+- `/admin/rubrics` (since 5 Oct 2026 the folded Grading rubrics section of `/admin/essays`; the old URL redirects there) — list rubrics; edit `criteria` (band descriptors), `grading_notes`,
   `out_of`. View-only diff of versions. (Mirrors ren's grading-criteria editor.)
 - Changing a rubric is instant — next grade uses the new version.
 

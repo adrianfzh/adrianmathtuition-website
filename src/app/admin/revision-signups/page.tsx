@@ -778,6 +778,13 @@ export default function RevisionSignupsPage() {
       <div className="rs-header">
         <a href="/admin" className="rs-back">← Admin</a>
         <h1 className="rs-title">June 2026 Revision Sprint</h1>
+        {/* The two public schedule pages (was /admin/june-revision until 5 Oct 2026). */}
+        <div className="rs-publinks">
+          Published schedules:{' '}
+          <a href="/june-revision/jc2" target="_blank" rel="noopener noreferrer">JC2 H2 Math</a>
+          {' · '}
+          <a href="/june-revision/sec4" target="_blank" rel="noopener noreferrer">Sec 4 E/A Math</a>
+        </div>
       </div>
 
       {/* View tabs */}
@@ -1293,6 +1300,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   font-weight: 700;
   color: #111827;
 }
+.rs-publinks { font-size: 13px; color: #6b7280; margin-top: 4px; }
+.rs-publinks a { color: #1e3a5f; font-weight: 600; text-decoration: none; }
+.rs-publinks a:hover { text-decoration: underline; }
 
 .rs-chips-wrap {
   background: #fff;

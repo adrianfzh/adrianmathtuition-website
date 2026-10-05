@@ -9,7 +9,7 @@
 Self-service iPad kiosk at the centre: students print notes, revision worksheets and practice.
 Device authorised once (admin password → 180-day `kiosk_session` cookie); open/closed gate =
 `kiosk_config` mode (closed/open/scheduled) + opening hours in `lib/kiosk-hours.ts`; admin
-control at `/admin/kiosk`.
+control = the Kiosk card on `/admin/switches` (since 5 Oct 2026; `/admin/kiosk` redirects to `/admin/switches#kiosk`).
 
 **Student identity (Phase 1, 2026-07-16): WhatsApp reverse-QR pairing — students are HARD-LOCKED
 to their own level.** No anonymous browsing.

@@ -384,7 +384,6 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '💰', title: 'Invoices',  sub: 'Generate · send · track payments',     href: '/admin/invoices'  },
   { emoji: '📨', title: 'Email Log',     sub: 'All sent invoices & receipts',               href: '/admin/emails'       },
   { emoji: '✏️', title: 'Log lessons',   sub: 'Write up the day in one tap each',      href: '/admin/log'          },
-  { emoji: '🎯', title: 'Lesson prep',   sub: 'One card per student · today at a glance', href: '/admin/prep'      },
   { emoji: '📬', title: 'Parent Digests', sub: 'Weekly · monthly · term drafts',       href: '/admin/digests'      },
   { emoji: '🩺', title: 'Ops',           sub: 'Every job & queue · last run · alarms', href: '/admin/ops'          },
   { emoji: '🎚', title: 'Switches',      sub: 'Plan accounts · worker jobs · Mac plan only', href: '/admin/switches'   },
@@ -394,13 +393,10 @@ const LAUNCHERS: Launcher[] = [
   // need the desk?"); /admin/desk redirects there.
   { emoji: '🖨️', title: 'Notes',     sub: 'Print revision notes · AirPrint',      href: '/admin/notes'     },
   { emoji: '✍️', title: 'Mark a paper',   sub: 'Mark · release · annotate · Practice Again sheets', href: '/admin/mark-paper'  },
-  { emoji: '🎯', title: 'Game Plans',      sub: 'Per-student plans from marked papers · review & activate', href: '/admin/remediation' },
-  { emoji: '🔎', title: 'Practice checks', sub: 'Spot-check portal practice grades',     href: '/admin/practice-checks' },
   { emoji: '🎯', title: 'Trap review',     sub: 'Approve the traps students get told about', href: '/admin/pitfalls' },
   { emoji: '📄', title: 'Prelim Builder', sub: 'Assemble full papers from the blueprint', href: '/admin/prelim-builder' },
   { emoji: '📝', title: 'Print a paper', sub: 'Student self-serve mock / topic / weak-spot papers', href: '/app/print' },
   { emoji: '⚡', title: 'Revision Decks', sub: 'Quick recall · worked examples by topic', href: '/revise/am' },
-  { emoji: '🖥️', title: 'Kiosk control', sub: 'Open / close the centre kiosk', href: '/admin/kiosk' },
   { emoji: '🧾', title: 'Kiosk (student view)', sub: 'QR sign-in · print worksheets & notes', href: '/kiosk' },
   { emoji: '🗒️', title: 'Topic Cards', sub: 'Worksheet notes · edit & approve', href: '/admin/topic-cards' },
   { emoji: '🖼️', title: 'Figure review', sub: 'Flag figures to regenerate', href: '/admin/figures' },
@@ -411,8 +407,6 @@ const LAUNCHERS: Launcher[] = [
   { emoji: '⏳', title: 'Waitlist',        sub: 'Prospects · auto-alert on slot opening', href: '/admin/waitlist' },
   { emoji: '📥', title: 'Question Proposals', sub: 'Questions the sheets wrote — vet before the bank', href: '/admin/question-proposals' },
   { emoji: '📝', title: 'My To-Dos',       sub: 'Personal — things I need to do',       href: '/admin/my-todos' },
-  { emoji: '🔁', title: 'Loop Tasks',      sub: 'Build-test-fix /loop queue for Claude', href: '/admin/todo' },
-  { emoji: '📏', title: 'Grading Rubrics', sub: 'The standard Solo marks against',       href: '/admin/rubrics' },
   { emoji: '📐', title: 'Math Tools',      sub: 'Interactive visualisers · graphs · drills', href: '/tools' },
   { emoji: '🧮', title: 'TI-84',           sub: 'TI-84 CE · graphing calculator',      href: '/calculator?real=1', icon: CalcIcon },
   { emoji: '🧮', title: 'Casio fx-97SG X',  sub: 'ClassWiz · scientific calculator',     href: '/calculator/casio', icon: CasioIcon },
@@ -423,6 +417,10 @@ const LAUNCHERS: Launcher[] = [
   // Learn Review + Learn student view (hidden until the full-portal switch),
   // Revision Sign-ups + June Revision (seasonal — restore next April), and
   // At a glance /admin/status (the hub's own cards superseded it).
+  // Removed 5 Oct 2026 (Adrian's admin audit): Lesson prep, Practice checks and the
+  // status page RETIRED (redirects); Kiosk control → a card on /admin/switches; Loop
+  // Tasks → a tab on /admin/my-todos; Grading Rubrics → a section of /admin/essays;
+  // Game Plans tile only (the /admin/remediation page stays, the lane may return).
   { emoji: '📣', title: 'Marketing Calendar', sub: 'Post ideas vs SG exam calendar', href: '/admin/calendar-marketing-post' },
   { emoji: '🩺', title: 'Bank Health', sub: 'QB coverage · gaps · flagged questions', href: '/admin/bank-health' },
   { emoji: '🧭', title: 'Curriculum', sub: 'Strategy layer · dependency graph', href: '/admin/curriculum' },

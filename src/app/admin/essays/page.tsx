@@ -2,10 +2,12 @@
 // /admin/essays — every essay the marker has read (SPEC-ESSAY-MARKING.md, 12 Sep
 // 2026): status, student, kind, the band range, the habits, and — for a HELD
 // essay — why the reads disagreed. Each row opens the student's own report page
-// (Adrian's cookie may open any). Read-only in E1.
+// (Adrian's cookie may open any). Read-only in E1. At the foot, folded: the
+// grading rubrics (was /admin/rubrics until 5 Oct 2026, now a redirect here).
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
+import RubricsSection from './rubrics-section';
 
 type Row = {
   id: string; created_at: string; student_name: string | null; airtable_student_id: string; subject: string; essay_kind: string;
@@ -106,6 +108,7 @@ export default function AdminEssaysPage() {
             </tbody>
           </table>
         </div>
+        <RubricsSection />
       </div>
     </div>
   );

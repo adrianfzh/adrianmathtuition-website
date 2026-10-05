@@ -1,19 +1,9 @@
-import LearnReviewClient from './LearnReviewClient';
+// /admin/learn-review — RETIRED 5 Oct 2026: the /notes reader does the review now (lib/unit-reorder.ts stays, shared with it).
+// Old bookmarks and links still land somewhere useful.
+import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: 'Learn Review — Admin',
-};
+export const dynamic = 'force-dynamic';
 
-export default function LearnReviewPage() {
-  return (
-    <>
-      <a
-        href="/admin"
-        style={{ position: 'fixed', top: 10, left: 10, zIndex: 50, color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600, background: 'rgba(255,255,255,0.9)', padding: '4px 10px', borderRadius: 8 }}
-      >
-        ‹ Admin
-      </a>
-      <LearnReviewClient />
-    </>
-  );
+export default function LearnReviewRetired() {
+  redirect('/admin');
 }

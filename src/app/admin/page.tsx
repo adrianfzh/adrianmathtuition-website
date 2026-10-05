@@ -21,31 +21,31 @@ const OVERALL_WORD: Record<Tone, string> = { green: 'All fine', amber: 'Some thi
 type ToolLink = { label: string; href: string };
 const TOOLS: { group: string; links: ToolLink[] }[] = [
   { group: 'Teaching', links: [
-    { label: 'Schedule', href: '/admin/schedule' }, { label: 'Log lessons', href: '/admin/log' }, { label: 'Lesson prep', href: '/admin/prep' },
+    { label: 'Schedule', href: '/admin/schedule' }, { label: 'Log lessons', href: '/admin/log' },
     { label: 'Students', href: '/admin/students' }, { label: 'Exams', href: '/admin/exams' }, { label: 'Follow-ups', href: '/admin/followups' },
     { label: 'Parent digests', href: '/admin/digests' }, { label: 'Waitlist', href: '/admin/waitlist' },
   ] },
   { group: 'Marking', links: [
     { label: 'Mark a paper', href: '/admin/mark-paper' }, { label: 'Marked papers', href: '/admin/papers' }, { label: 'Mark schemes', href: '/admin/schemes' },
-    { label: 'Calibration', href: '/admin/calibration' }, { label: 'Stuck', href: '/admin/stuck' }, { label: 'Practice checks', href: '/admin/practice-checks' },
-    { label: 'Generated', href: '/admin/generated' }, { label: 'Game plans', href: '/admin/remediation' },
+    { label: 'Calibration', href: '/admin/calibration' }, { label: 'Stuck', href: '/admin/stuck' },
+    { label: 'Generated', href: '/admin/generated' }, { label: 'Essays', href: '/admin/essays' },
   ] },
   { group: 'The machine', links: [
     { label: 'Ops logbook', href: '/admin/ops' }, { label: 'Switches', href: '/admin/switches' }, { label: 'Costs', href: '/admin/costs' },
-    { label: 'Extraction rules', href: '/admin/extraction-rules' }, { label: 'Library', href: '/admin/library' }, { label: 'Bot', href: '/admin/bot' },
+    { label: 'Extraction rules', href: '/admin/extraction-rules' }, { label: 'Bot', href: '/admin/bot' },
   ] },
   { group: 'Bank + materials', links: [
     { label: 'Question bank', href: '/admin/questions' }, { label: 'Question proposals', href: '/admin/question-proposals' }, { label: 'Bank health', href: '/admin/bank-health' },
     { label: 'Bank figures', href: '/admin/figures-bank' }, { label: 'Figure review', href: '/admin/figures' }, { label: 'Trap review', href: '/admin/pitfalls' },
     { label: 'Topic cards', href: '/admin/topic-cards' }, { label: 'Notes', href: '/admin/notes' }, { label: 'Prelim builder', href: '/admin/prelim-builder' },
-    { label: 'Print a paper', href: '/app/print' }, { label: 'Rubrics', href: '/admin/rubrics' }, { label: 'Teaching decks', href: '/admin/lessons' },
+    { label: 'Print a paper', href: '/app/print' }, { label: 'Worksheet builder', href: '/admin/worksheet-builder' }, { label: 'Teaching decks', href: '/admin/lessons' },
     { label: 'Curriculum', href: '/admin/curriculum' },
   ] },
   { group: 'Money', links: [
     { label: 'Invoices', href: '/admin/invoices' }, { label: 'Email log', href: '/admin/emails' },
   ] },
   { group: 'Other', links: [
-    { label: 'My to-dos', href: '/admin/my-todos' }, { label: 'Loop tasks', href: '/admin/todo' }, { label: 'Kiosk control', href: '/admin/kiosk' },
+    { label: 'My to-dos', href: '/admin/my-todos' }, { label: 'Loop tasks', href: '/admin/my-todos?tab=loop' }, { label: 'Kiosk (on Switches)', href: '/admin/switches#kiosk' },
     { label: 'Math tools', href: '/tools' }, { label: 'Marketing calendar', href: '/admin/calendar-marketing-post' },
     { label: 'Old hub (tiles)', href: '/admin/classic' },
   ] },

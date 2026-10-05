@@ -6,6 +6,8 @@
 //   · the plan accounts     — one switch + meters each     (/api/admin/slot-accounts)
 //   · the worker's jobs     — extraction, twins, filing, the daily reviews, the
 //                             on-request jobs               (/api/admin/worker-jobs)
+//   · the kiosk             — closed / open / scheduled     (/api/kiosk/status; was
+//                             /admin/kiosk until 5 Oct 2026, now a redirect to #kiosk)
 // The first two sat on /admin/mark-paper until today; the routes and their rules are
 // unchanged. A switch stops NEW work only — whatever is running finishes.
 // Student-facing switches (the *_OPEN_TO_STUDENTS constants) are code, not settings, and
@@ -14,6 +16,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { WORKER_JOB_GROUPS, type WorkerJobRow } from '@/lib/worker-jobs';
+import KioskCard from './kiosk-card';
 
 type Flag = { on: boolean; at: string | null };
 type SlotUsage = { five_hour: number | null; seven_day: number | null; resets_5h: string | null; resets_7d: string | null; at: string; from: string | null };
@@ -193,6 +196,9 @@ export default function SwitchesPage() {
           )}
           <p className="text-xs text-neutral-400 mt-3">Marking itself has no off switch here on purpose. Auto-release and the Science tab are settled and stay on.</p>
         </section>
+
+        {/* ── Kiosk ── */}
+        <KioskCard />
 
         {/* ── Accounts ── */}
         <section className="bg-white rounded-xl shadow-sm p-4" data-section="accounts">

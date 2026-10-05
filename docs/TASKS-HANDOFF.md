@@ -26,7 +26,7 @@ practice). They are still `status='pending'`. When Adrian says approve:
 ```sql
 UPDATE learning_units SET status='approved', updated_at=now()
 WHERE subject='AM' AND topic='Trigonometry (Identities)' AND status='pending';
--- expect 26 rows; then verify they render at /admin/learn-review and /app/learn
+-- expect 26 rows; then verify they render at /admin/learn-review (retired 5 Oct 2026 — use the /notes reader) and /app/learn
 ```
 
 ## 3. Continue the unit-review rollout (1,293 still pending)

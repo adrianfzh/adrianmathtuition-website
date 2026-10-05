@@ -4,7 +4,7 @@ description: >
   Ad-hoc question clerk — fetch questions from the Supabase QB (or generate new ones
   via the Fly 4-gate worker), show them to Adrian to pick from, and build a PHYSICAL
   worksheet (DOCX/PDF) where each pick is either a fully worked annotated example or a
-  practice question to attempt. Can also read jobs from /admin/todo, and optionally
+  practice question to attempt. Can also read jobs from the Loop tasks list (/admin/my-todos?tab=loop, was /admin/todo), and optionally
   publish picks to the student portal. Use when Adrian asks to "pull questions",
   "show me questions on <topic>", "let me choose", or references a worksheet todo.
   The round of choosing is the point of this skill: use it only when Adrian wants to
@@ -27,7 +27,7 @@ All database access goes through the Supabase MCP tools (`execute_sql`, project 
 Two entry points:
 
 - **Ad-hoc**: Adrian asks directly ("pull 10 AM Polynomials questions, mix of worked and practice").
-- **From /admin/todo**: Adrian says "check my todo list" (or a scheduled run does). Read open todos from the Airtable `Todos` table (fields: `Task`, `Status` = `To Do`/`Done`, `Notes`), oldest first — via `GET /api/admin/todo` with admin auth, or the Airtable API directly. Handle the worksheet-shaped ones (e.g. "worksheet: Sec 4 AM differentiation, 8 qns"); when a worksheet is delivered, PATCH the todo to `Status='Done'` and put the output file path/summary in `Notes`.
+- **From the Loop tasks list** (/admin/my-todos?tab=loop; /admin/todo redirects there since 5 Oct 2026): Adrian says "check my todo list" (or a scheduled run does). Read open todos from the Airtable `Todos` table (fields: `Task`, `Status` = `To Do`/`Done`, `Notes`), oldest first — via `GET /api/admin/todo` with admin auth, or the Airtable API directly. Handle the worksheet-shaped ones (e.g. "worksheet: Sec 4 AM differentiation, 8 qns"); when a worksheet is delivered, PATCH the todo to `Status='Done'` and put the output file path/summary in `Notes`.
 
 ## Step 1 — Parse the request
 
@@ -128,7 +128,7 @@ INSERT INTO worksheet_exports (title, subtitle, level, mode, format, question_id
 VALUES ('<title>', '<subtitle>', '<LEVEL>', 'mixed', '<docx|pdf|both>', ARRAY[<uuids>]::uuid[], <n>, <sum marks>, NULL);
 ```
 
-If the job came from /admin/todo, PATCH the todo to `Status='Done'` and write the **full output file path(s)** into `Notes` — that's where Adrian finds the result later.
+If the job came from the Loop tasks list, PATCH the todo to `Status='Done'` and write the **full output file path(s)** into `Notes` — that's where Adrian finds the result later.
 
 ## Step 6 — Optional portal publishing (only when Adrian explicitly asks)
 

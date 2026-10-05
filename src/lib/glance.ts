@@ -183,11 +183,11 @@ function todayTiles(f: GlanceFacts): Tile[] {
     sub: f.queue ? `${f.queue.waiting + f.queue.marking} waiting` : undefined,
     tone: 'green', status: f.marked.today ? 'Going out' : 'Quiet', href: '/admin/mark-paper', trend: f.marked.perDay,
   });
-  if (f.practice == null) out.push(NO_READING('practice', 'Practice today', '/admin/practice-checks'));
+  if (f.practice == null) out.push(NO_READING('practice', 'Practice today', '/admin/students'));
   else out.push({
     id: 'practice', label: 'Practice today', value: String(f.practice.questions),
     sub: `${plural(f.practice.students, 'student')}`,
-    tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/practice-checks', trend: f.practice.perDay,
+    tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/students', trend: f.practice.perDay,
   });
   return out;
 }
