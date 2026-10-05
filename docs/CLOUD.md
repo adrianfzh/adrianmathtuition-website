@@ -256,3 +256,14 @@ outward-facing) and a safe allowlist: read/search tools, edits, git (status/diff
 pull/branch — pushes stay under the cloud's own `claude/…` branch rule), tests and type checks,
 read-only `gh`, and `curl -s` to our own two sites. Never commit `bypassPermissions` — the cloud
 agent holds triggers, not power. A local `settings.local.json` still overrides all of it here.
+
+
+---
+
+# Moved from CLAUDE.md (6 Oct 2026)
+
+> Moved here verbatim from `CLAUDE.md` on 6 Oct 2026 when CLAUDE.md became a lean index (Adrian: "yes" to slimming it). Edit it here; CLAUDE.md keeps only the rule and a pointer.
+
+## ☁️ Cloud sessions (claude.ai/code) → [`docs/CLOUD.md`](docs/CLOUD.md)
+
+claude.ai environments and skill libraries are **per-account**, but everything committed in this repo (skills, docs, the `env` block in `.claude/settings.json` with the public Supabase config) carries to any account/machine automatically. The only per-account step is a one-time ~5-min secrets bootstrap — `CRON_SECRET` + a read-only Airtable token + the network allowlist. Recipe, verification probes, and the crown-jewels-never-in-cloud list: [`docs/CLOUD.md`](docs/CLOUD.md). Posture: **the cloud agent holds triggers, not power**. **SET UP AND VERIFIED 17 Sep 2026** (`docs/CLOUD.md` §STATUS): a cloud session on Adrian's account can push both repos, promote, deploy the bot, move the preview alias, and use all six `AGENT_TOKEN_*` doors; only the Mac slots/workers/reviews, Xcode, the iPad, sends and secret-key work stay Mac-only. **☁️ If you ARE a cloud session (claude.ai/code): you CAN push and deploy — the cloud's git rule only lets you push to your own `claude/…` branch until Adrian says "push to dev", "promote" or "merge #N" in so many words, and a bare push to the bot's `main` is denied as a production deploy (merge the PR instead). Never tell Adrian you cannot push or deploy; say what words you need. `vercel`/`gh`/`flyctl` are not installed there — `npx vercel`, curl the GitHub API. → `docs/CLOUD.md` §Cloud sessions CAN push and deploy (24 Sep 2026).**

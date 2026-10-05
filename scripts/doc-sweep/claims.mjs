@@ -142,7 +142,7 @@ export function routeResolves(route, appEntries) {
   return false;
 }
 
-/** The CLAUDE.md switch table: rows naming `*_OPEN_TO_STUDENTS` with an open/closed word. */
+/** The switch table (docs/SWITCHES.md; CLAUDE.md before 6 Oct 2026): rows naming `*_OPEN_TO_STUDENTS` with an open/closed word. */
 export function switchTableClaims(lines) {
   const out = [];
   lines.forEach((line, i) => {
@@ -306,4 +306,12 @@ export function importance(doc, f) {
   s += { switch: 40, cron: 35, worker_time: 35, path: 20, route: 18, skill: 18, name: 12, memory_index: 15, model: 8, table: 15 }[f.kind] || 5;
   if (f.fix) s += 5;
   return s;
+}
+
+/** CLAUDE.md is the lean index (Adrian, 6 Oct 2026): every session and agent loads it on start.
+ *  Returns the finding text when a CLAUDE.md of `bytes` is over the cap, else null. */
+export const CLAUDE_MD_CAP_BYTES = 40 * 1024;
+export function claudeMdOverCap(bytes, cap = CLAUDE_MD_CAP_BYTES) {
+  if (bytes <= cap) return null;
+  return `over the ${Math.round(cap / 1024)} KB cap — move detail into docs/ — CLAUDE.md is the lean index`;
 }

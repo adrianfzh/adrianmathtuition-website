@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   judgeDoc, importance, switchTableClaims, switchStates, workerTimes, statedTimes,
-  memoryIndexLinks, routeResolves,
+  memoryIndexLinks, routeResolves, claudeMdOverCap,
 } from './claims.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, x, i, all) => (x.startsWith('--') ? [...a, [x.slice(2), all[i + 1] && !all[i + 1].startsWith('--') ? all[i + 1] : true]] : a), []));
@@ -196,19 +196,27 @@ for (const d of docs) {
   for (const f of judgeDoc(text, { ...ctxBase, repo: d.repo === 'memory' ? 'memory' : d.repo === 'bot' ? 'bot' : 'web' })) findings.push({ doc: d.label, abs: d.abs, ...f });
 }
 
-// — the CLAUDE.md switch table vs portal-beta.ts —
+// — the switch table (docs/SWITCHES.md since 6 Oct 2026; CLAUDE.md before) vs portal-beta.ts —
 {
-  const lines = fs.readFileSync(path.join(WEB, 'CLAUDE.md'), 'utf8').split('\n');
+  const SW_DOC = fs.existsSync(path.join(WEB, 'docs/SWITCHES.md')) ? 'docs/SWITCHES.md' : 'CLAUDE.md';
+  const lines = fs.readFileSync(path.join(WEB, SW_DOC), 'utf8').split('\n');
   const rows = switchTableClaims(lines);
   const named = new Set(rows.map(r => r.name));
   for (const r of rows) {
-    if (!(r.name in switches)) findings.push({ doc: 'website/CLAUDE.md', line: r.line, kind: 'switch', claim: r.name, actual: 'no such switch in src/lib/portal-beta.ts' });
+    if (!(r.name in switches)) findings.push({ doc: `website/${SW_DOC}`, line: r.line, kind: 'switch', claim: r.name, actual: 'no such switch in src/lib/portal-beta.ts' });
     else if (r.open !== null && r.open !== switches[r.name] && !/SCIENCE_MARKING_OPEN/.test(r.name))
-      findings.push({ doc: 'website/CLAUDE.md', line: r.line, kind: 'switch', claim: `${r.name} ${r.open ? 'open' : 'closed'}`, actual: `${switches[r.name] ? 'open' : 'closed'} in src/lib/portal-beta.ts`, fix: { table: true } });
+      findings.push({ doc: `website/${SW_DOC}`, line: r.line, kind: 'switch', claim: `${r.name} ${r.open ? 'open' : 'closed'}`, actual: `${switches[r.name] ? 'open' : 'closed'} in src/lib/portal-beta.ts`, fix: { table: true } });
   }
   const tableLine = rows.length ? rows[rows.length - 1].line : 0;
   for (const n of Object.keys(switches)) if (!named.has(n))
-    findings.push({ doc: 'website/CLAUDE.md', line: tableLine, kind: 'switch', claim: `(no row for ${n})`, actual: `${n} exists in src/lib/portal-beta.ts (${switches[n] ? 'open' : 'closed'}) but the switch table has no row`, fix: { table: true } });
+    findings.push({ doc: `website/${SW_DOC}`, line: tableLine, kind: 'switch', claim: `(no row for ${n})`, actual: `${n} exists in src/lib/portal-beta.ts (${switches[n] ? 'open' : 'closed'}) but the switch table has no row`, fix: { table: true } });
+}
+
+// — CLAUDE.md is the lean index: each repo's must stay under the cap (6 Oct 2026) —
+for (const [r, dir] of Object.entries(repos)) {
+  const bytes = fs.statSync(path.join(dir, 'CLAUDE.md')).size;
+  const over = claudeMdOverCap(bytes);
+  if (over) findings.push({ doc: `${r === 'web' ? 'website' : 'bot'}/CLAUDE.md`, line: 1, kind: 'size', claim: `${Math.round(bytes / 1024)} KB`, actual: over });
 }
 
 // — the Fly worker's times vs the switches page's "when" and the rhythm labels —

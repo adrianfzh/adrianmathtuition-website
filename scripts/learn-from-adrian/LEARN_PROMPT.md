@@ -109,8 +109,9 @@ counts double. Draft the top 5; the rest stay `watching` for tomorrow.
 
 **Where a rule lives** (the house split):
 - how every session in a repo must work → that repo's `CLAUDE.md` (both repos when it is
-  about sessions in general; the website one is the lean index — add a short section or
-  a bullet under an existing one, never a wall of text);
+  about sessions in general). **Both CLAUDE.md files are lean indexes, capped at 40 KB by a
+  test (6 Oct 2026)** — add ONE bullet or a two-line section at most, and put any detail in
+  the topical `docs/` file it points to; never a wall of text;
 - one area (marking, sheets, schedule, invoices, the portal…) → that area's doc in
   `docs/` or its spec, or the skill file the work runs through;
 - how Adrian likes to be talked to / a personal preference → a memory file (read 2–3
@@ -119,7 +120,7 @@ counts double. Draft the top 5; the rest stay `watching` for tomorrow.
 
 **House style for a rule:** a heading or bullet with the date; Adrian's own words quoted
 (`Adrian, 4 Oct 2026: *"…"*`); the WHY in one line; what to do, one idea per line;
-plain words. Look at "📖 Readability — everything" and "⏱ Do not keep Adrian waiting"
+plain words. Look at "📖 Readability — everything" and "⏱ After a push that deploys"
 in the website CLAUDE.md — match that shape.
 
 **Rule exists but he still repeats it → the wording is not working.** Propose ONE of:

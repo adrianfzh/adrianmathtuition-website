@@ -1,0 +1,39 @@
+# Student-facing switches — the full table
+
+> Moved here verbatim from `CLAUDE.md` on 6 Oct 2026 when CLAUDE.md became a lean index (Adrian: "yes" to slimming it). Edit it here; CLAUDE.md keeps only the rule and a pointer.
+
+## 🚪 Student-facing switches — check before every promote (Adrian, 1 Oct 2026)
+
+Every unfinished student surface is behind ONE constant in `src/lib/portal-beta.ts`, named
+`*_OPEN_TO_STUDENTS`. `false` = students never see it; **Adrian's admin cookie and the preview
+student (`portal-teste@example.com`) always do**, so he can test as a student. Flipping one is a
+one-word change plus a push; nothing else gates them. **Before a promote, list them
+(`grep -n "OPEN_TO_STUDENTS = " src/lib/portal-beta.ts`) and say in the report which are open** —
+Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future sessions know".
+
+| Switch | State (1 Oct 2026) | What it opens |
+|---|---|---|
+| `SCIENCE_PRACTICE_OPEN_TO_STUDENTS` | **open, topic by topic** since 5 Oct 2026 (Adrian: "we can open up topics one by one" … "a model does the checking — just make sure it is good") — a student sees ONLY the topics on `SCIENCE_PRACTICE_OPEN_TOPICS` (same file); a topic goes on after its MCQs pass the blind-solve check (≥ 98 % agree with the stored key after fixes, ≥ 30 servable). Open: Chemistry › Chemical Calculations, Acids and Bases, Salts, The Periodic Table · Physics › Kinematics, Forces, Turning Effect of Forces, Pressure · Biology › Cell Structure and Organisation, Movement of Substances, Enzymes, Nutrition in Humans, Nutrition in Plants; **Combined Science students have their own switch, `SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS`** — open since 5 Oct 2026 for Physics › Kinematics, Forces, Turning Effect of Forces, Pressure and Chemistry › Chemical Calculations, Acids and Bases, Salts, The Periodic Table; Biology closed (every CS topic < 30 MCQs); a closed science shows "Practice for Combined Science is coming soon" (Adrian, 5 Oct 2026: "switch off for combined science students first"; no pure-pool stand-in) | the Science Practise tab (MCQ by topic, every science the student takes; the question's school / year / paper is never sent; national `GCE` rows and `practice_hidden` rows never served; **a student is served ONLY rows stamped `practice_checked_at`** — passed the blind-solve check — and a Combined Science student (`prefs.combined_science`) draws from `CS_*` (+ `_NA`) under the `CS_PHY`/`CS_CHEM`/`CS_BIO` allow-list keys, `lib/practice scienceServeFor`; the open list is public at `/api/portal/practice/open-topics` for the worker's nightly check) |
+| `SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS` | **closed** until the seeded grader check passes | structured science practice (write, get marked, then the scheme) |
+| `EXPLAIN_CLIP_OPEN_TO_STUDENTS` | **closed** until Adrian has watched a few | ▶ Explain it · 1 min on the paper page + Notebook cards (`docs/LESSONS.md`) |
+| `WATCH_IT_OPEN_TO_STUDENTS` | **closed** — Adrian's admin cookie ONLY (not the demo student) until he says so (built 5 Oct 2026) | ▶ Watch it under a science MCQ's worked solution — Kinematics + Chemical Calculations clips; gallery `/admin/watch-it` (`docs/LESSONS.md` § ▶ Watch it) |
+| `SCIENCE_MARKING_OPEN_TO_STUDENTS` | closed in code — the LIVE switch is the Airtable `Settings` row `science_marking_open` (on since 25 Sep 2026) | the Science tab |
+| `QA_FLASHCARDS_OPEN_TO_STUDENTS` | closed | `/app/science/qa` — the qualitative-analysis page in pictures (3 Oct 2026; was flashcards) |
+| `SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) until Adrian has read the list | `/app/science/definitions` — Physics definitions by topic, door on the Physics tab |
+| `BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) until Adrian has read the list | `/app/science/definitions?s=biology` — Biology (6093) definitions by topic (`lib/biology-definitions.ts`), door on the Biology tab |
+| `BIOLOGY_PROCESSES_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) | `/app/science/processes` — twelve Biology processes as step chains with arrows (`lib/bio-processes.ts`), door on the Biology tab; health-check `portal-science-processes` |
+| `COMMAND_WORDS_OPEN_TO_STUDENTS` | closed (built 3 Oct 2026) | `/app/science/command-words` — what each command word needs + how to describe a graph (`lib/command-words.ts`), a row on Science Home for all three sciences; health-check `portal-science-command-words` |
+| `SCIENCE_LEVELS_OPEN_TO_STUDENTS` | **open** (5 Oct 2026, the sessions' call — Adrian left science to them; reaches students at the next promote) | 🎚 the science MCQ levels used SILENTLY — no buttons: each topic is one stream that starts at Core, climbs to Exam after 3 right in a row and Challenge after 3 more, drops a level after 2 wrong in a row (`lib/science-practice` `stepAdaptive`, tested), falls back to the next level when one runs out, and mixes in questions with no level yet. Levels live in the science project's `practice_difficulty` (2,573 estimates from a work score + a test solve, `scripts/practice-difficulty/`; real results take over at 20+ first tries — nightly cron `practice-difficulty`, `lib/practice-difficulty.ts`) |
+| `SUGGESTIONS_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) | 💡 Suggestions — a quiet row at the foot of Home + in Settings → `/app/suggestions`: one box (500 characters), "Stay anonymous", Submit, a thank-you; no subjects, no daily limit → `portal_suggestions` + one Telegram line to the students topic. **Anonymous = the row holds only the text, the date and `anonymous=true`** (no account, identity or name — a table check enforces it) and the line says "Anonymous"; the only abuse guard is identity-free (the same text within a minute is dropped). Adrian reads them on `/admin/suggestions` (`lib/suggestions.ts` pure/tested, `suggestions-store.ts`, `POST /api/portal/suggestions`, `GET\|PATCH /api/admin/suggestions`; named rows in the export and erased with the account; the dashboard's "Suggestions (new)" tile; health-checks `portal-suggestions` + `admin-suggestions`) |
+| `TUTOR_MARKED_UPLOAD_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) until Adrian has seen it | 📝 "A paper my tutor marked on paper" on the Hand in page → `/app/submit/tutor-marked`: filed in Papers with a "Marked by your tutor" tag, no computer marking, only the total read once (typed when unsure), no weekly limit (`lib/tutor-marked.ts`, `POST /api/portal/tutor-marked`, health-check `portal-tutor-marked`) |
+| `ESSAY_MARKING_OPEN_TO_STUDENTS` | closed | the Languages family |
+| `HUMANITIES_OPEN_TO_STUDENTS` | closed (built 2 Oct 2026; H2 3 Oct) | the Humanities family (Social Studies source questions + structured response, History source questions) |
+| `H2_METHOD_DRILLS_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) | 🧭 Which method? drills for JC students (`/app/practice/methods`, SPEC-H2-TOOLS.md) |
+| `H2_STATS_TRAINER_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) | ✍️ Statistics write-ups for JC students (`/app/practice/stats`) |
+| `H2_SKETCH_CHECK_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) | 📈 Check my sketch — the graph-sketch checker (JC students; a row in the Practice tab's "JC drills") |
+| `EXAM_PREP_OPEN_TO_STUDENTS` | closed | ⏱ Timed set + the exam card's door |
+| `NOTES_OPEN_TO_STUDENTS`, `PRACTICE_PICKER_OPEN_TO_STUDENTS`, `LAST_LESSON_OPEN_TO_STUDENTS`, `MARK_SUBJECT_OPEN_TO_STUDENTS` | closed | the marking-only beta's held-back surfaces |
+| `FIND_OPEN_TO_STUDENTS`, `PRACTICE_PHOTO_OPEN_TO_STUDENTS`, `PROOF_LADDER_OPEN_TO_STUDENTS` | **open** | Find a question · Practice photo · 🤔 Stuck? Next step (opened 1 Oct 2026) |
+
+The table is a snapshot; the file is the truth. When you add a switch, add a row. When Adrian
+opens one, update the row in the same commit.

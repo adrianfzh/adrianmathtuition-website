@@ -355,8 +355,9 @@ Two halves:
   claim a machine can: file paths (renamed → the new name; deleted → when), function and
   constant names (gone from the code → the commit), routes and pages, `vercel.json` crons named
   beside their route, the Fly worker's times vs `WORKER_JOBS` and `JOB_RHYTHMS` labels, the
-  switch table vs `lib/portal-beta.ts`, skill names, model ids, the live Supabase table list
-  (main + science), and the old `~/Desktop/<repo>` paths. Each finding is **sure** or **look**
+  switch table (`docs/SWITCHES.md`) vs `lib/portal-beta.ts`, skill names, model ids, the live Supabase table list
+  (main + science), the old `~/Desktop/<repo>` paths, and **each repo's CLAUDE.md size against the
+  40 KB lean-index cap** (6 Oct 2026; finding kind `size` — move the detail into `docs/`). Each finding is **sure** or **look**
   (a plan, an outside name, a file outside the repos). `--apply` rewrites only sure renames and
   Desktop paths, one line at a time, never in a SPEC / IDEAS / briefing. Pure half
   `scripts/doc-sweep/claims.mjs`, tested by `claims.test.mjs` (in `npm test`). ~3 min, most of it

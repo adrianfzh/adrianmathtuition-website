@@ -162,6 +162,35 @@ hand-in; the strip-note fix reached Fly at 18:35; she was re-issued a copy drawn
 with the fault the fix was for). Check `gh run list` shows the deploy green, then
 re-ink; and re-issue only after Adrian has seen the redrawn pages.
 
+### 9a. Token rules — what every session and agent costs (6 Oct 2026, Adrian: "yes")
+
+On 5 Oct 2026 more than a hundred agents each loaded both CLAUDE.md files on start —
+website ≈151 KB (≈38k tokens) and bot ≈352 KB (≈90k tokens) — before doing any work,
+and many of them sent progress messages that re-woke the main session (every wake-up
+re-reads the whole conversation). Both CLAUDE.md files are now lean indexes (≤ 40 KB,
+test-gated in both repos, reported by the Sunday doc-sweep), and these rules stand:
+
+- **(a) Report ONCE.** A background or batch agent reports at the end — or on a real
+  blocker that needs a decision — and never sends per-batch progress to the main
+  session. Progress goes to `STATUS.txt` in its own clone (§2), which the orchestrator
+  reads when it chooses. A coordinator collects its sub-agents' results silently and
+  sends one summary. Brief line to paste: *"Report once, at the end (or if blocked).
+  No progress messages."*
+- **(b) One topic per session.** Unrelated work starts a fresh session — a long
+  session re-reads everything it has ever done on every turn.
+- **(c) Model per agent.** Haiku or Sonnet for search, counting, formatting, file
+  moves, screenshot and render checks; Opus for writing, checking, marking rules and
+  anything that needs judgement (the table above decides the marking-fix cases).
+  Medium effort by default; high only where the table says so.
+- **(d) Bulk jobs go to the Fly worker lanes or the cloud credit**, never an
+  interactive session (twins, extraction, sweeps, re-files, backfills).
+- **(e) Don't re-read big files.** Ask the library index
+  (`npx tsx scripts/library-index.ts --q "…"`), `grep`, and read line ranges; never
+  cat a 100 KB doc or JSON dump to find one fact. Hand an agent the exact paths and
+  line ranges it needs.
+- **(f) CLAUDE.md stays lean.** Detail goes into the topical doc in `docs/` or a
+  `SPEC-*.md`; CLAUDE.md gets at most one routing line.
+
 **Dated log**
 - 17 Sep 2026 — written after the F2/F7/F9 strip regression (docs/MARKING-DEFECTS.md
   F15); the re-mark-before-deploy line added the same evening after F17. Later that
@@ -177,3 +206,4 @@ re-ink; and re-issue only after Adrian has seen the redrawn pages.
   writer and the one that scored the earlier Sets; author, blind solve, repair and
   figures stay on Opus 5.5.
 - 2 Oct 2026 — paper-PDF tidy-up row added (AM Prelim Practice Set 5: header/footer off, answers after each paper). Adrian: "we should just do haiku then" … "put in memory so that other future sessions in other claude plans know".
+- 6 Oct 2026 — §9a token rules added and both CLAUDE.md files slimmed to lean indexes (website 151 KB → ~29 KB, bot 352 KB → under 32 KB; the detail moved verbatim into `docs/`). Adrian: "yes" to (1) slimming both and (2) agents report once.
