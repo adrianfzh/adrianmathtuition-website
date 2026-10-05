@@ -10,7 +10,7 @@ const TOOLS_DESC =
 export const metadata: Metadata = {
   title: "Interactive Math Tools | Adrian's Math Tuition",
   description: TOOLS_DESC,
-  alternates: { canonical: 'https://adrianmathtuition.com/tools' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/tools' },
   ...ogCard({
     card: 'Interactive Math Tools',
     cardSub: 'Drag, play and explore the concepts that are hard to see on paper. Free, no sign-up.',

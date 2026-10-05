@@ -7,7 +7,7 @@ const p = formulaPage('logarithms')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/logarithms' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/logarithms' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

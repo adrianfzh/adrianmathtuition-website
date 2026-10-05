@@ -14,6 +14,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin/', '/admin', '/api/', '/app/', '/app', '/kiosk', '/login', '/signup', '/explain/'],
       },
     ],
-    sitemap: 'https://adrianmathtuition.com/sitemap.xml',
+    sitemap: 'https://www.adrianmathtuition.com/sitemap.xml',
   };
 }

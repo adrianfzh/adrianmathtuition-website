@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "O-Level Additional Mathematics (A Math) Tuition Singapore | Adrian's Math Tuition",
   description: DESC,
   alternates: {
-    canonical: 'https://adrianmathtuition.com/o-level-a-math-tuition',
+    canonical: 'https://www.adrianmathtuition.com/o-level-a-math-tuition',
   },
   ...ogCard({
     card: 'O-Level A Math Tuition',

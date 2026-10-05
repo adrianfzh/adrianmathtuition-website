@@ -19,7 +19,7 @@ import {
 // formula is typeset by KaTeX at build time, so the HTML a crawler (or a phone on a slow
 // line) receives already carries the maths — nothing waits for client JS.
 
-const SITE = 'https://adrianmathtuition.com';
+const SITE = 'https://www.adrianmathtuition.com';
 
 function tex(src: string, display = true): string {
   return katex.renderToString(src, { displayMode: display, throwOnError: false, output: 'htmlAndMathml' });

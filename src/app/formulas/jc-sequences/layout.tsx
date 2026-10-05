@@ -7,7 +7,7 @@ const p = formulaPage('jc-sequences')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/jc-sequences' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/jc-sequences' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

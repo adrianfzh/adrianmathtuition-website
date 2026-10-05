@@ -11,7 +11,7 @@ const DESC =
 export const metadata: Metadata = {
   title: 'Math Formula Sheets: MF27, H2 Maths, A Math, E Math',
   description: DESC,
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas' },
   ...ogCard({
     card: 'Math Formula Sheets',
     cardSub: 'MF27, H2 Maths, O-Level A Math and E Math — by topic.',
@@ -28,7 +28,7 @@ const LEVELS: { level: FormulaLevel; blurb: string }[] = [
   { level: 'O-Level E Math', blurb: 'Mathematics (4052).' },
 ];
 
-const SITE = 'https://adrianmathtuition.com';
+const SITE = 'https://www.adrianmathtuition.com';
 const breadcrumb = {
   '@context': 'https://schema.org',
   '@type': 'BreadcrumbList',

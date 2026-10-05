@@ -18,7 +18,7 @@ const DESC =
 export const metadata: Metadata = {
   title: "Annotated Model Solutions for O-Level Math | Adrian's Math Tuition",
   description: DESC,
-  alternates: { canonical: 'https://adrianmathtuition.com/solutions' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/solutions' },
   ...ogCard({
     card: 'Annotated Model Solutions',
     cardSub: 'Every step marked up with the reason it earns its mark.',
@@ -38,7 +38,7 @@ export default function SolutionsIndexPage() {
     '@type': 'CollectionPage',
     name: 'Annotated Model Solutions',
     description: DESC,
-    url: 'https://adrianmathtuition.com/solutions',
+    url: 'https://www.adrianmathtuition.com/solutions',
     isPartOf: { '@type': 'WebSite', name: "Adrian's Math Tuition" },
   };
 

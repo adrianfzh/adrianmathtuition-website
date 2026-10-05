@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
-const SITE_URL = "https://adrianmathtuition.com";
+const SITE_URL = "https://www.adrianmathtuition.com";
 const SITE_NAME = "Adrian's Math Tuition";
 const DEFAULT_TITLE = "Adrian's Math Tuition — Personalized Math Coaching";
 const DEFAULT_DESC =

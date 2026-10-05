@@ -35,7 +35,7 @@ export async function generateMetadata({
   return {
     title: `${sol.title} | ${level} Model Solution`,
     description: sol.seo.description,
-    alternates: { canonical: `https://adrianmathtuition.com${path}` },
+    alternates: { canonical: `https://www.adrianmathtuition.com${path}` },
     ...ogCard({
       card: sol.title,
       cardSub: `${level} · ${sol.topic} — every step annotated with the mark it earns.`,
@@ -86,7 +86,7 @@ export default async function SolutionPage({ params }: { params: Promise<{ slug:
     description: sol.seo.description,
     author: { '@type': 'Person', name: 'Adrian Fong' },
     publisher: { '@type': 'Organization', name: "Adrian's Math Tuition" },
-    mainEntityOfPage: `https://adrianmathtuition.com/solutions/${sol.slug}`,
+    mainEntityOfPage: `https://www.adrianmathtuition.com/solutions/${sol.slug}`,
     about: `${sol.topic}, ${level}`,
   };
 

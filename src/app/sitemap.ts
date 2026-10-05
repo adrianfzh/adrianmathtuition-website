@@ -4,8 +4,8 @@ import { FORMULA_PAGES, MF_PAGES } from '@/lib/formula-pages';
 
 // The site's sitemap (served at /sitemap.xml). Public, indexable pages only —
 // no /admin, no /app, no /kiosk, no tokenized routes. Base matches the
-// canonical URLs the pages themselves declare (apex; Vercel 307s to www).
-const BASE = 'https://adrianmathtuition.com';
+// canonical URLs the pages themselves declare (www — the apex only redirects here).
+const BASE = 'https://www.adrianmathtuition.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const page = (path: string, priority: number): MetadataRoute.Sitemap[number] => ({

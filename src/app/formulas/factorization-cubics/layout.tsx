@@ -7,7 +7,7 @@ const p = formulaPage('factorization-cubics')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/factorization-cubics' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/factorization-cubics' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

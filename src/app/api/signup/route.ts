@@ -497,7 +497,7 @@ export async function POST(request: NextRequest) {
               const breakdown = batchAlreadyRan && nextMonthCount > 0
                 ? `${aprilCount} lessons in ${startMonthLabel} + ${nextMonthCount} in ${nextMonthLabel}`
                 : `${totalLessons} lesson${totalLessons !== 1 ? 's' : ''}, ${startMonthLabel}`;
-              const baseUrl = process.env.WEBSITE_URL || 'https://adrianmathtuition.com';
+              const baseUrl = process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com';
               await sendTelegramWithButtons(
                 `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
                 `First invoice: $${totalAmount.toFixed(2)} (${breakdown})\n` +

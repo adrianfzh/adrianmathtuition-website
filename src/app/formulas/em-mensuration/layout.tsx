@@ -7,7 +7,7 @@ const p = formulaPage('em-mensuration')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-mensuration' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-mensuration' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

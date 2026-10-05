@@ -7,7 +7,7 @@ const p = formulaPage('jc-integration')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/jc-integration' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/jc-integration' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

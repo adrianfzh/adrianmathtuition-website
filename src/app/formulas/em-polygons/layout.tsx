@@ -7,7 +7,7 @@ const p = formulaPage('em-polygons')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-polygons' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-polygons' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

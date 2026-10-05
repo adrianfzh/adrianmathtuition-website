@@ -7,7 +7,7 @@ const p = formulaPage('em-congruency-similarity')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-congruency-similarity' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-congruency-similarity' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

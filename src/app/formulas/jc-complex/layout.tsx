@@ -7,7 +7,7 @@ const p = formulaPage('jc-complex')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/jc-complex' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/jc-complex' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

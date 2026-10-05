@@ -7,7 +7,7 @@ const p = formulaPage('em-trigonometry')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-trigonometry' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-trigonometry' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "How to Stop Losing Marks in Linear Law | Adrian's Math Tuition",
   description: DESC,
   alternates: {
-    canonical: 'https://adrianmathtuition.com/articles/linear-law-marks',
+    canonical: 'https://www.adrianmathtuition.com/articles/linear-law-marks',
   },
   ...ogCard({
     card: 'How to stop losing marks in Linear Law',
@@ -33,7 +33,7 @@ const articleSchema = {
   author: { '@type': 'Person', name: 'Adrian Fong' },
   publisher: { '@type': 'Organization', name: "Adrian's Math Tuition" },
   datePublished: '2026-08-04',
-  mainEntityOfPage: 'https://adrianmathtuition.com/articles/linear-law-marks',
+  mainEntityOfPage: 'https://www.adrianmathtuition.com/articles/linear-law-marks',
   about: 'Linear Law, O-Level Additional Mathematics',
 };
 

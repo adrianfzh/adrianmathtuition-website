@@ -7,7 +7,7 @@ const p = formulaPage('em-indices')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-indices' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-indices' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

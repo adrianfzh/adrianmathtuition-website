@@ -10,7 +10,7 @@ const DESC =
 export const metadata: Metadata = {
   title: 'MF27 Formula List: Every H2 Math Formula + Free PDF (2026)',
   description: DESC,
-  alternates: { canonical: `https://adrianmathtuition.com${PATH}` },
+  alternates: { canonical: `https://www.adrianmathtuition.com${PATH}` },
   ...ogCard({
     card: 'MF27 Formula List',
     cardSub: 'Every A-Level H2 Maths formula, typeset — and what you must memorise.',

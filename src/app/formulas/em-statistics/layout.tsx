@@ -7,7 +7,7 @@ const p = formulaPage('em-statistics')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-statistics' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-statistics' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

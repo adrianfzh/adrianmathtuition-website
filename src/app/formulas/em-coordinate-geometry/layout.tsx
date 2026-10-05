@@ -7,7 +7,7 @@ const p = formulaPage('em-coordinate-geometry')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-coordinate-geometry' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-coordinate-geometry' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "JC H2 Mathematics Tuition Singapore | Adrian's Math Tuition",
   description: DESC,
   alternates: {
-    canonical: 'https://adrianmathtuition.com/jc-h2-math-tuition',
+    canonical: 'https://www.adrianmathtuition.com/jc-h2-math-tuition',
   },
   ...ogCard({
     card: 'JC H2 Math Tuition',

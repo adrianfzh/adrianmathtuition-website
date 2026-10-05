@@ -7,7 +7,7 @@ const p = formulaPage('partial-fractions')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/partial-fractions' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/partial-fractions' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

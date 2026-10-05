@@ -7,7 +7,7 @@ const p = formulaPage('em-vectors')!;
 export const metadata: Metadata = {
   title: { absolute: formulaPageTitle(p) },
   description: formulaPageDescription(p),
-  alternates: { canonical: 'https://adrianmathtuition.com/formulas/em-vectors' },
+  alternates: { canonical: 'https://www.adrianmathtuition.com/formulas/em-vectors' },
 };
 
 export default function Layout({ children }: { children: React.ReactNode }) {

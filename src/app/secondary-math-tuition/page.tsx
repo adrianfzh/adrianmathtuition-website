@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   title: "Secondary 1 & 2 Mathematics Tuition Singapore | Adrian's Math Tuition",
   description: DESC,
   alternates: {
-    canonical: 'https://adrianmathtuition.com/secondary-math-tuition',
+    canonical: 'https://www.adrianmathtuition.com/secondary-math-tuition',
   },
   ...ogCard({
     card: 'Secondary 1 & 2 Math Tuition',
