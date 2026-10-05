@@ -130,7 +130,9 @@ export async function scienceServeFor(caller: PracticeCaller, requestedPool?: un
   const open = await scienceTopicGate(caller);
   const own = caller?.kind === 'student' ? !!studentSciences(caller.account.prefs)?.combined : false;
   const asked = requestedPool === 'combined' ? true : requestedPool === 'pure' ? false : null;
-  const combined = open === null && asked !== null ? asked : own;
+  // Adrian's preview: the pure pool unless he asks for Combined (the Practise page lists the pure
+  // topics for him, so the run must draw from the same pool).
+  const combined = open === null ? asked === true : own;
   return { open, combined, checkedOnly: open !== null };
 }
 
