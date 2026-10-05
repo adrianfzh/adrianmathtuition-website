@@ -68,7 +68,7 @@ export default async function SketchResult({ params }: { params: Promise<{ id: s
                 <span className="min-w-0 flex flex-wrap items-baseline gap-x-2">
                   {l.name && <span className="text-xs text-gray-500">{l.name}</span>}
                   {l.tex ? <span className="text-gray-900"><MathText text={`$${l.tex}$`} /></span> : <span className="text-gray-800">{l.text}</span>}
-                  {l.short && <span className={l.mark === '✓' ? 'text-gray-500' : 'text-red-700'}>{l.short}</span>}
+                  {l.short && l.mark !== '✓' && <span className="text-red-700">{l.short}</span>}
                 </span>
               </li>
             ))}
