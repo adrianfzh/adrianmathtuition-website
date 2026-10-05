@@ -319,10 +319,10 @@ export async function humanitiesOpen(): Promise<boolean> {
   return false;
 }
 
-// 💡 Suggest something (5 Oct 2026, Adrian: "a suggestion button … students can
-// suggest what they need for their exams, if reasonable and helpful - i will try to
-// add it"). A quiet row on Home + Settings opens a short form (lib/suggestions.ts,
-// POST /api/portal/suggestions, /admin/suggestions). CLOSED: Adrian's cookie and the
+// 💡 Suggestions (5 Oct 2026, Adrian: "a suggestion button … students can suggest
+// what they need for their exams, if reasonable and helpful - i will try to add it").
+// A quiet row on Home + Settings opens /app/suggestions — one box, Stay anonymous,
+// Submit (lib/suggestions.ts, POST /api/portal/suggestions, /admin/suggestions). CLOSED: Adrian's cookie and the
 // demo student see it. Flip to true to show it to every student.
 export const SUGGESTIONS_OPEN_TO_STUDENTS = false;
 export const SUGGESTIONS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;

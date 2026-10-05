@@ -1,18 +1,16 @@
-// 💡 Suggest something (5 Oct 2026, Adrian: "how about a suggestion button … that
-// give a message students can suggest what they need for their exams, if reasonable
-// and helpful - i will try to add it").
+// 💡 Suggestions (5 Oct 2026, Adrian: "how about a suggestion button … that give a
+// message students can suggest what they need for their exams, if reasonable and
+// helpful - i will try to add it"; then: one text box, a "Stay anonymous" box, no
+// subjects, no daily limit).
 //
-// Pure; tested. The rules for one suggestion: its length, the daily cap, which
-// subject chips a student is offered, the statuses Adrian sets, and the one plain
-// Telegram line he gets. The store is lib/suggestions-store.ts; the student's door
-// is POST /api/portal/suggestions; his page is /admin/suggestions.
-
-import { allowedSubjects, paperSubjectForMarkSubject, type SubjectAccount } from './portal-subjects';
-import { studentSciences } from './portal-prefs';
+// Pure; tested. The rules for one suggestion: its length, the duplicate guard (the
+// only abuse guard, and it needs no identity), the statuses Adrian sets, and the one
+// plain Telegram line he gets. The store is lib/suggestions-store.ts; the student's
+// page is /app/suggestions (POST /api/portal/suggestions); his is /admin/suggestions.
 
 export const MAX_SUGGESTION_CHARS = 500;
-/** Suggestions a student may send in one Singapore day. */
-export const DAILY_SUGGESTION_CAP = 3;
+/** The same text sent again within this long is dropped quietly (a double tap, a resend). */
+export const DUPLICATE_WINDOW_MS = 60_000;
 
 export const SUGGESTION_STATUSES = ['new', 'planned', 'done', 'no'] as const;
 export type SuggestionStatus = (typeof SUGGESTION_STATUSES)[number];
@@ -28,8 +26,8 @@ export function isSuggestionStatus(s: unknown): s is SuggestionStatus {
 
 /**
  * The text as stored: trimmed, runs of blank lines folded to one, spaces inside a
- * line folded. `null` = nothing to send; a text over the limit is refused, never cut
- * (the box stops the student at the limit, so only a hand-made request gets here).
+ * line folded. A text over the limit is refused, never cut (the box stops the
+ * student at the limit, so only a hand-made request gets here).
  */
 export function cleanSuggestion(raw: unknown): { ok: true; text: string } | { ok: false; error: string } {
   const text = String(raw ?? '')
@@ -42,36 +40,28 @@ export function cleanSuggestion(raw: unknown): { ok: true; text: string } | { ok
   return { ok: true, text };
 }
 
-/** The subject chips a student is offered: their maths subjects, then the sciences they take. */
-export function suggestionSubjects(account: (SubjectAccount & { prefs?: unknown }) | null | undefined): string[] {
-  const out: string[] = [...allowedSubjects(account)];
-  const sci = studentSciences(account?.prefs);
-  for (const s of sci?.subjects ?? []) {
-    const name = paperSubjectForMarkSubject(s);
-    if (name) out.push(name);
-  }
-  return out;
+/** Is this text an exact repeat of one stored in the last minute? Compared case-blind. */
+export function isRecentDuplicate(text: string, recent: { text: string; created_at: string }[], now: number): boolean {
+  const key = text.trim().toLowerCase();
+  return recent.some((r) => r.text.trim().toLowerCase() === key && now - Date.parse(r.created_at) < DUPLICATE_WINDOW_MS);
 }
 
-/** The subject as stored: one of the student's own chips, else null (a chip is optional). */
-export function cleanSubject(raw: unknown, offered: readonly string[]): string | null {
-  const s = String(raw ?? '').trim();
-  if (!s) return null;
-  return offered.includes(s) ? s : null;
-}
-
-/** May the student send another today? `sentToday` = their rows since SGT midnight. */
-export function underDailyCap(sentToday: number): boolean {
-  return sentToday < DAILY_SUGGESTION_CAP;
+/** What a stored row holds about who sent it. Anonymous = nothing at all. */
+export function senderFields(
+  anonymous: boolean,
+  who: { accountId: string; identity: string; name: string | null },
+): { anonymous: boolean; account_id: string | null; airtable_student_id: string | null; student_name: string | null } {
+  return anonymous
+    ? { anonymous: true, account_id: null, airtable_student_id: null, student_name: null }
+    : { anonymous: false, account_id: who.accountId, airtable_student_id: who.identity, student_name: who.name };
 }
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** The Telegram line to the students topic: name, subject, the text. HTML. */
-export function suggestionTelegramLine(s: { name?: string | null; subject?: string | null; text: string }): string {
-  const name = esc((s.name || '').trim() || 'A student');
-  const subject = s.subject ? ` · ${esc(s.subject)}` : '';
-  return `💡 <b>${name}</b>${subject} suggests:\n${esc(s.text)}`;
+/** The Telegram line to the students topic: who (or "Anonymous") and the text. HTML. */
+export function suggestionTelegramLine(s: { name?: string | null; anonymous: boolean; text: string }): string {
+  const who = s.anonymous ? 'Anonymous' : esc((s.name || '').trim() || 'A student');
+  return `💡 <b>${who}</b> suggests:\n${esc(s.text)}`;
 }
 
 /** Newest first, the new ones on top. */

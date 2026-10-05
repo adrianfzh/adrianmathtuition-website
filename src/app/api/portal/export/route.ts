@@ -122,9 +122,10 @@ export async function GET() {
     studentId
       ? admin.from('sheet_jobs').select('id, created_at, status, scheduled_for, photos').eq('airtable_student_id', studentId).eq('kind', 'photo-sheet')
       : empty,
-    // 💡 Their suggestions (5 Oct 2026) — what they wrote and where it stands; the tutor's own note stays out.
+    // 💡 Their named suggestions (5 Oct 2026) — what they wrote and where it stands; the
+    // tutor's own note stays out. Anonymous ones carry no identity, so nobody can pull them.
     studentId
-      ? admin.from('portal_suggestions').select('id, created_at, subject, text, status').eq('airtable_student_id', studentId)
+      ? admin.from('portal_suggestions').select('id, created_at, text, status').eq('airtable_student_id', studentId)
       : empty,
   ]);
 

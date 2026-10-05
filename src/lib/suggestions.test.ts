@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import {
-  cleanSuggestion, cleanSubject, suggestionSubjects, underDailyCap, suggestionTelegramLine, sortSuggestions,
-  isSuggestionStatus, MAX_SUGGESTION_CHARS, DAILY_SUGGESTION_CAP,
+  cleanSuggestion, isRecentDuplicate, senderFields, suggestionTelegramLine, sortSuggestions,
+  isSuggestionStatus, MAX_SUGGESTION_CHARS,
 } from './suggestions';
+
+const NOW = Date.parse('2026-10-05T05:00:00Z');
+const ago = (s: number) => new Date(NOW - s * 1000).toISOString();
 
 describe('cleanSuggestion', () => {
   it('trims, folds spaces and blank lines', () => {
@@ -18,35 +21,35 @@ describe('cleanSuggestion', () => {
   });
 });
 
-describe('subject chips', () => {
-  it('a Sec 4 student with both maths and two sciences gets all four', () => {
-    const acct = { level: 'Sec 4', subjects: ['A Math', 'E Math'], prefs: { sciences: ['chemistry', 'physics'] } };
-    expect(suggestionSubjects(acct)).toEqual(['A Math', 'E Math', 'Physics', 'Chemistry']);
+describe('the duplicate guard (needs no identity)', () => {
+  it('drops the same text sent again within a minute', () => {
+    expect(isRecentDuplicate('More vectors', [{ text: 'more vectors', created_at: ago(20) }], NOW)).toBe(true);
   });
-  it('a JC student gets H2 Math only', () => {
-    expect(suggestionSubjects({ level: 'JC2', subjects: ['Math'], prefs: {} })).toEqual(['H2 Math']);
-  });
-  it('a subject not offered is dropped, never stored', () => {
-    expect(cleanSubject('E Math', ['E Math'])).toBe('E Math');
-    expect(cleanSubject('Biology', ['E Math'])).toBeNull();
-    expect(cleanSubject('', ['E Math'])).toBeNull();
+  it('lets the same text through after a minute, and a different text at once', () => {
+    expect(isRecentDuplicate('More vectors', [{ text: 'More vectors', created_at: ago(61) }], NOW)).toBe(false);
+    expect(isRecentDuplicate('More trig', [{ text: 'More vectors', created_at: ago(5) }], NOW)).toBe(false);
   });
 });
 
-describe('daily cap', () => {
-  it(`allows ${DAILY_SUGGESTION_CAP} a day`, () => {
-    expect(underDailyCap(DAILY_SUGGESTION_CAP - 1)).toBe(true);
-    expect(underDailyCap(DAILY_SUGGESTION_CAP)).toBe(false);
+describe('who sent it', () => {
+  const who = { accountId: 'a58e1c18-0000-0000-0000-000000000000', identity: 'recX', name: 'Joey Tan' };
+  it('anonymous stores nothing about the student', () => {
+    expect(senderFields(true, who)).toEqual({ anonymous: true, account_id: null, airtable_student_id: null, student_name: null });
+  });
+  it('named stores the account, identity and name', () => {
+    expect(senderFields(false, who)).toEqual({ anonymous: false, account_id: who.accountId, airtable_student_id: 'recX', student_name: 'Joey Tan' });
   });
 });
 
 describe('the Telegram line', () => {
-  it('names the student and the subject, escapes the text', () => {
-    expect(suggestionTelegramLine({ name: 'Joey Tan', subject: 'A Math', text: 'more <b>proofs</b> & trig' }))
-      .toBe('💡 <b>Joey Tan</b> · A Math suggests:\nmore &lt;b&gt;proofs&lt;/b&gt; &amp; trig');
+  it('names the student and escapes the text', () => {
+    expect(suggestionTelegramLine({ name: 'Joey Tan', anonymous: false, text: 'more <b>proofs</b> & trig' }))
+      .toBe('💡 <b>Joey Tan</b> suggests:\nmore &lt;b&gt;proofs&lt;/b&gt; &amp; trig');
   });
-  it('works with no name and no subject', () => {
-    expect(suggestionTelegramLine({ text: 'x' })).toBe('💡 <b>A student</b> suggests:\nx');
+  it('says Anonymous and never the name when anonymous', () => {
+    const line = suggestionTelegramLine({ name: 'Joey Tan', anonymous: true, text: 'x' });
+    expect(line).toBe('💡 <b>Anonymous</b> suggests:\nx');
+    expect(line).not.toContain('Joey');
   });
 });
 

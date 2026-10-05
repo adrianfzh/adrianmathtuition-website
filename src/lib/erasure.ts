@@ -24,7 +24,7 @@ export const ERASE_BY_IDENTITY: readonly { table: string; column: string }[] = [
   { table: 'humanities_runs', column: 'airtable_student_id' }, // humanities answers + feedback
   { table: 'student_work_ink', column: 'identity' }, // their pen marks on worksheets / practice
   { table: 'portal_event_log', column: 'identity' }, // the app-use log
-  { table: 'portal_suggestions', column: 'airtable_student_id' }, // 💡 their suggestions (5 Oct 2026)
+  { table: 'portal_suggestions', column: 'airtable_student_id' }, // 💡 their named suggestions (anonymous ones hold no identity)
 ];
 
 /**

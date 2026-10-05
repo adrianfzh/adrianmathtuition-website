@@ -4,7 +4,6 @@ import { currentAccount } from '@/lib/portal-auth';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import SettingsClient from './SettingsClient';
 import { suggestionsOpen } from '@/lib/portal-beta';
-import { suggestionSubjects } from '@/lib/suggestions';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +18,7 @@ export default async function SettingsPage() {
       telegramChatId={account.telegram_chat_id ? String(account.telegram_chat_id) : ''}
       telegramLinked={tg === 'linked'}
       tuition={Boolean(account.airtable_student_id?.trim())}
-      suggestSubjects={suggest ? suggestionSubjects(account) : null}
+      showSuggestions={suggest}
     />
   );
 }

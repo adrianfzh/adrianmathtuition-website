@@ -15,13 +15,13 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, tuition = false, suggestSubjects = null,
+  email, displayName, level, telegramChatId, telegramLinked, tuition = false, showSuggestions = false,
 }: {
   email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
   /** A tuition student (linked to Adrian's roster) — sees the "When your lessons end" note. */
   tuition?: boolean;
-  /** 💡 Suggest something — the student's subject chips, or null when the switch is closed for them. */
-  suggestSubjects?: string[] | null;
+  /** 💡 Suggestions — the row to /app/suggestions, when the switch is open for them. */
+  showSuggestions?: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -145,7 +145,7 @@ export default function SettingsClient({
           says ✓ once the portal is running as an installed app. */}
       <InstallCard variant="settings" />
 
-      {suggestSubjects && <SuggestCard variant="settings" subjects={suggestSubjects} />}
+      {showSuggestions && <SuggestCard variant="settings" />}
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Your data</p>

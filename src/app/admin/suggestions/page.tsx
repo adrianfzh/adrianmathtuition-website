@@ -2,7 +2,8 @@
 
 // /admin/suggestions — 💡 what students asked for (5 Oct 2026, Adrian: "a suggestion
 // button … students can suggest what they need for their exams, if reasonable and
-// helpful - i will try to add it"). Every suggestion, new ones first; a status button
+// helpful - i will try to add it"). Every suggestion, new ones first ("Anonymous" when
+// the student ticked Stay anonymous — the row holds no identity at all); a status button
 // row per card (New · Planned · Done · Not now) and a private note. Students never see
 // the status or the note. Data: GET|PATCH /api/admin/suggestions.
 
@@ -97,13 +98,13 @@ export default function SuggestionsPage() {
 
 function Card({ r, onPatch }: { r: SuggestionRow; onPatch: (b: { status?: SuggestionStatus; adminNote?: string }) => void }) {
   const [note, setNote] = useState(r.admin_note ?? '');
-  const studentHref = r.airtable_student_id.startsWith('rec') ? `/admin/students/${r.airtable_student_id}` : null;
+  const studentHref = r.airtable_student_id?.startsWith('rec') ? `/admin/students/${r.airtable_student_id}` : null;
+  const who = r.anonymous ? 'Anonymous' : (r.student_name || 'A student');
   return (
     <article className="bg-white rounded-xl shadow-sm p-4">
       <div className="flex items-baseline justify-between gap-2 text-sm">
-        <span className="font-semibold min-w-0 truncate">
-          {studentHref ? <Link href={studentHref} className="hover:underline">{r.student_name || 'A student'}</Link> : (r.student_name || 'A student')}
-          {r.subject && <span className="ml-2 text-xs font-medium text-neutral-500">{r.subject}</span>}
+        <span className={`font-semibold min-w-0 truncate${r.anonymous ? ' text-neutral-500 italic' : ''}`}>
+          {studentHref ? <Link href={studentHref} className="hover:underline">{who}</Link> : who}
         </span>
         <span className="shrink-0 text-xs text-neutral-400">{when(r.created_at)}</span>
       </div>
