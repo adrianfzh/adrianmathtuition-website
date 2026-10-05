@@ -45,6 +45,7 @@ import {
 import { splitBook, type BookRead } from '@/lib/paper-book-split-io';
 import { describeParts, partFileName } from '@/lib/paper-book-split';
 import { sendTelegram } from '@/lib/telegram';
+import { sweepHandoffs } from '@/lib/handin-extraction-store';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -403,7 +404,21 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const summary = inboxSummary(counts);
+  // ── Hand-ins → the queue (SPEC-PAPER-MATCH §⑤, 5 Oct 2026) ─────────────────
+  // A marked hand-in of a paper the bank does not hold sends its PRINTED-only
+  // pages (never the student's working) as one PDF named by the paper key —
+  // lib/handin-extraction.ts decides, -store does it. After marking, never in
+  // its way; at most two papers a tick; no Telegram (the tick's summary counts).
+  let handoff: { summary: string; items: unknown[] } | null = null;
+  try {
+    const h = await sweepHandoffs({ sinceDays: 7, maxQueue: 2, stampSkips: true, dry });
+    handoff = { summary: h.summary, items: h.items.filter(i => i.action === 'queued' || i.action === 'failed') };
+  } catch (e) {
+    handoff = { summary: `hand-in sweep failed: ${((e as Error).message || String(e)).slice(0, 120)}`, items: [] };
+  }
+
+  const queuedFromHandins = handoff.items.filter(i => (i as { action?: string }).action === 'queued').length;
+  const summary = inboxSummary(counts) + (queuedFromHandins ? ` · ${queuedFromHandins} from hand-ins` : '');
   if (!dry) await logJobRun('extraction-inbox', counts.failed === 0, summary).catch(() => {});
-  return NextResponse.json({ ok: true, dry, folder: INBOX_FOLDER, summary, results: out });
+  return NextResponse.json({ ok: true, dry, folder: INBOX_FOLDER, summary, results: out, handoff });
 }

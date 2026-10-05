@@ -149,6 +149,37 @@ done by hand that morning — and the A-Level book 8 + 8. A model or API failure
 throws, the tick says `covers not read: …` on the item and the book is queued
 whole; the next drop tries again.
 
+## 1d. Papers students hand in (5 Oct 2026)
+
+Adrian: *"build that. and start to extract papers previously uploaded that we don't already
+have in the question bank too"*. A marked hand-in of a paper no index line holds is a second
+door into the queue — same row shape, `source_folder='hand-in'`, no Dropbox file.
+
+- **What goes:** ONLY printed pages with nothing of the student's — the pre-pass said
+  `question_paper` and the page's own marking read agreed (`non_work_pages`, no marked
+  answer). Never `mixed` / `working` / `cover` / an answer page. ≥ 3 such pages and ≥ half the
+  printed pages, or nothing. An attached question-paper PDF goes whole. Never the student's
+  name: the file is named by the paper key (`CHEM PRELIM 2026 Queenstown Paper 2.pdf`), a
+  school is taken only from the alias table, and the name must read back through
+  `parseSourceFilename`.
+- **When:** the extraction-inbox tick, after its inbox work: runs created in the last 7 days,
+  at most 2 papers a tick, every run stamped `result_json.extraction_handoff` so it is looked at
+  once. The tick's summary ends "· n from hand-ins".
+- **Duplicates:** the library index decides (banked, queued, held, being extracted or skipped =
+  known); a second hand-in of the same paper is not sent; same name or same bytes already in
+  `paper_library` → not filed. A student's attached scheme → its own `… MS.pdf` row, `skipped`.
+- **Rows:** notes `from a student hand-in, printed pages only (photos 12, 13, 15), run <id>`,
+  plus `PARTIAL: …` when printed pages were left out — the worker banks what is there and a
+  full copy later completes it (`xr-short-duplicate-completes`).
+- **Code:** `src/lib/handin-extraction.ts` (pure, tested) · `src/lib/handin-extraction-store.ts`
+  · backfill `npx tsx scripts/handin-extraction-backfill.ts [--go] [--stamp] [--json]`.
+- **First backfill (5 Oct 2026):** 399 runs, **0 queued** — 134 in the bank already, 6 queued,
+  156 our own sheets, 89 not nameable (no exam word, no year, or an acronym the alias table
+  lacks: SJC, SJI, TKGS, XMS, GES, PLMGS, SCSS), 3 with too few clean printed pages, 11
+  unmarked/superseded. Students write on the paper (3,700 printed pages with working, 94
+  without), so a hand-in only yields a paper when a clean copy is photographed or the question
+  PDF is attached. → SPEC-PAPER-MATCH.md §⑤
+
 ## 2. The queue — `paper_library`, `kind='source'`
 
 The table the marker's exam library already lived in, extended (migration
