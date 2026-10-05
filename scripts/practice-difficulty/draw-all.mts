@@ -3,6 +3,15 @@
 // SCIENCE_PRACTICE_COMBINED_OPEN_TOPICS = the Combined Science pools) → out/all.json.
 // Rows flagged as broken (SKIP) are left out until fixed. Read-only.
 //   npx tsx scripts/practice-difficulty/draw-all.mts
+//
+// ✅ DONE 5 Oct 2026 (paused once, resumed): 2,576 drawn, 2,573 written as source 'estimate'
+// (3 the reader flagged broken get no level → Mixed only). Work scores: saved/work-scores.json
+// (Opus, plan). Test solve: saved/test-solve-plan.json — ONE try per question by plan-billed
+// model "haiku" Agent spawns, batches of 50, answers tagged by id (TS_PROMPT.md; positional
+// answers came back misaligned), ~90 % agree with the key; the sample's 86 keep their earlier
+// API run (two tries). Then combine.mts → practice_difficulty; level-report.mts = what a student sees.
+// To redo or add a topic: draw-all → work-score new ids (WORK_PROMPT.md) → haiku agents → combine.
+// combine never writes over a row whose source is 'results'.
 import dotenv from 'dotenv'; import fs from 'fs'; import path from 'path';
 const env = dotenv.parse(fs.readFileSync('.env.local')); for (const k of Object.keys(env)) process.env[k] = env[k].trim();
 const OUT = path.join(path.dirname(new URL(import.meta.url).pathname), 'out');
