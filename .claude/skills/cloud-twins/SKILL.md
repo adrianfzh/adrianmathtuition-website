@@ -32,7 +32,9 @@ Work in a run folder OUTSIDE the repo checkout, e.g. `~/twins/<date>/` — never
 | "twins for the stuck topics" | `queue --bank maths --level EM --focus-only` (and AM) |
 | "only physics" | `queue --bank science --pool PHY` (or `CS_PHY` for Combined) |
 
-Batches of ≤10 per queue call. Take the next batch only when the last one is done, so two
+Batches of ≤10 per queue call. Seeds you parked keep coming back at the head of the queue
+(one per sub-skill per round), so pass them back with `--skip id,id` or `--skip-file <file>`
+(one id per line) — the next sub-skill's seeds then come forward. Take the next batch only when the last one is done, so two
 sessions never twin the same seed (the server refuses a seed that already has a live twin, and
 a sub-skill that is already full — 409: just take the next seed).
 

@@ -163,14 +163,15 @@ async function mathPacket(row: TwinQueueRow & { need: number; have: number; focu
   };
 }
 
-export async function mathQueue(level: string, n: number, opts: { focusOnly?: boolean } = {}) {
+export async function mathQueue(level: string, n: number, opts: { focusOnly?: boolean; skip?: string[] } = {}) {
   const sb = getSupabaseAdmin();
   const lv = familyOf(level);
   const { have } = await twinCounts(level);
   const rows = await pageAll((a, b) => sb.from('twin_queue').select('source_id, level, subgroup_id, subgroup, topic, draws_90d, total_marks, has_image')
     .in('level', lv).gt('text_len', 40).eq('has_any_twin', false).not('subgroup_id', 'is', null).order('draws_90d', { ascending: false }).order('source_id').range(a, b));
   const focus = await stuckFocus();
-  const { picked, subskills, toWrite } = orderMathQueue(rows.map((r) => ({ ...r, subgroup_id: Number(r.subgroup_id), draws_90d: Number(r.draws_90d) || 0 })), have, { per: TWINS_PER_SKILL, focus, level, limit: n, focusOnly: opts.focusOnly });
+  const skip = new Set(opts.skip ?? []);
+  const { picked, subskills, toWrite } = orderMathQueue(rows.filter((r) => !skip.has(String(r.source_id))).map((r) => ({ ...r, subgroup_id: Number(r.subgroup_id), draws_90d: Number(r.draws_90d) || 0 })), have, { per: TWINS_PER_SKILL, focus, level, limit: n, focusOnly: opts.focusOnly });
   const items = (await Promise.all(picked.map((r) => mathPacket(r).catch((e) => ({ error: (e as Error).message, seed_id: r.source_id }))))).filter(Boolean);
   return { bank: 'maths', level, family: lv, subskills_short: subskills, twins_to_write: toWrite, per_skill: TWINS_PER_SKILL, items };
 }
