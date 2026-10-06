@@ -682,3 +682,23 @@ print (2); only the first of two slips ringed (F51 class, Denise p10); a zero pa
 three to five times (14 pages, F23/F17); strip notes over 25 words; "should be" on a value right for her line; ring
 and ✓ on one value; a wrong final answer with ✗ and no word; a part at 0 or 1 with only ticks.
 Proof on the worker: pen bench 697/697 checks over 103 cases on the final tree (the eight new cases included, each FAIL on main); touched-module unit tests 900 (the one red, a check name missing from the well-formed list, fixed and re-run green); the six commits' tree is byte-identical to the benched one. Full `npm test` left to CI.
+
+# 6 Oct 2026 — Adrian's own screenshots (pen_reports 1–6, 8, 11, 15), worked by a session
+
+Alexis AM TKGS P1/P2 (`c1c3f68c`, `91f86a39`), Alexis AM Set 1 P1 (`649bcbdd`), Rainie TKGS 2025 AM P2 (`c6d20db0`),
+Eva O-Level 2020 EM P1 (`241e8b56`). Shipped to bot `main` 6 Oct on his "ship all" / "both".
+
+| # | What the page showed | Layer | Cause | Fix |
+|---|---|---|---|---|
+| F77 | A strip note printed `\"the coordinates of B \"` with the backslashes (Alexis Set 1 Q4(b)) | pen (symbols) | the marker's text arrived escaped twice; the wrap made the closing quote its own word | bot `396e940`: quotes unescaped before the split; live check `no-raw-markup-as-text` |
+| F78 | Marker's notes: each grey "←" reason on the row BELOW its step, steps indented unevenly (Q5(b)/(c), the tan θ page) — "still not on the same line" | pen (layout) | the footer column drew every reason as its own row; same-row layout existed only for the on-page box | bot `f3cd06d`: the reason sits on its step's row, drops below only when it cannot fit; live check `reason-on-its-step-row` |
+| F79 | Arrow pointing at nothing — `repeat ×3` (C1, F10, F50, F54, F76): strip arrows ending in blank paper (Q10(a), Q2(a)(ii)), a box arrow left of "Answer" (Eva Q16(a)(ii)), arrows ending on a ✗ (Q12(e), Q4(b)), the brown arrow straight down (Alexis P1 Q2) | pen (placement) | each caller aimed its own way — the middle of a part's edge, the ✗, the printed "Answer" | bot `717e2e5`: **general check — replaces the patches**. One gate every arrow passes (`lib/leader-gate.js`): the head lands on a ring, a named feature or real writing of its own question, or the arrow is not drawn (the note stays). A note about something never written has no arrow (Adrian: "yes, no arrow for that"). Live check `leader-lands-on-its-line` |
+| F80 | Arrow through the ✗ ("should be 17/24", Alexis P2 p15; the tan θ page) | pen (placement) | the pen's own ticks, crosses, codes and rings were never obstacles to an arrow | bot `1ea66bc`: same gate — a shaft crossing a mark is arced round or relaunched, else not drawn; live check `leaders-clear-of-marks` |
+
+On 84 stored pages the gated pen drew 48 arrows as before, re-aimed 16, withheld 4. **Design changes shipped the same day
+(his "both")**: a red circled number beside the line a correction starts from and the box headed "From line ①"
+(`PEN_LINE_NUMBERS=0` turns it off; the number goes after the line's ✓ when the paper on its left is written on — his
+"yes do it"), bot `a3b7ef5`; a part's note seated in clear paper LEFT of its line with a short arrow before the side
+strip is tried, at the smaller on-page size (`PEN_NOTE_LEFT=0`), bot `9e109cf`. The page check before release
+(SPEC-RED-PEN.md, `PAGE_GATE=watch`) went in with them.
+

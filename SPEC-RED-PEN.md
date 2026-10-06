@@ -472,3 +472,111 @@ mode only** (`MARK_RED_INK=1`); the professional look is untouched. Bot
 
 Follow-up noted, not built: prose inside a typeset (`$…$`) note still comes out in
 MathJax's serif, which reads printed beside the wobbled pen lines.
+
+## Page check before release (6 Oct 2026)
+
+Adrian: *"so we have to have all scenarios? can't model understand the idea?"*
+
+**What it is.** After a page is drawn, and before the student gets it, a model that can see
+looks at the finished page once and says which drawn things break a short list of rules.
+It checks the DRAWING only. It never judges a mark and never judges the wording.
+
+Code: bot `ai/page-gate.js`. The rules are one list at the top of that file (`RULES`).
+
+### The rules
+
+| Rule | What it means |
+|---|---|
+| `arrow-ends-on-nothing` | An arrow's tip lands on blank paper, or on print that is not what its note is about. |
+| `arrow-through-mark` | An arrow's line runs through a ✓, a ✗, a mark code or the inside of a ring, and carries on past it. An arrow that only points at a mark is fine. |
+| `arrow-across-writing` | An arrow's line runs along her handwriting like a strike-through. |
+| `ink-over-writing` | A tick, cross, note or box sits on top of her writing or the printed question. |
+| `mark-on-crossed-out` | A tick or cross beside work she struck out herself. |
+| `mark-far-from-its-line` | A ✗, or the red words beside it, far from the thing it is about. |
+| `note-outside-page` | Words cut off at the page edge, or running across the strip's dashed rule. |
+| `raw-markup` | A backslash, `\"`, `$` or `^` showing in drawn words. |
+| `same-point-repeated` | The same sentence drawn more than twice on the page. |
+
+To add a rule: one entry in `RULES` — a key, the kinds of thing it applies to, the plain
+words, and which fallback it takes.
+
+### What it does about a finding (the safe redraw)
+
+The rule decides, never the model.
+
+| Finding | In `act` mode |
+|---|---|
+| Any arrow rule | The arrow comes off. Its note stays where it is. |
+| A note or box over writing | Moved into the side strip at the same height, without its arrow. No strip, too wide, or no room there: left alone and counted. |
+| Raw markup | The stray symbols are cleaned out of the drawn words. |
+| Anything on a tick or cross; a ✗ far from its line; a note off the page; a repeated sentence | Counted only. Nothing moves. |
+
+- **A mark never changes.** No tick or cross is moved, added or removed.
+- **Nothing the marker wrote is reworded.**
+- One redraw a page at most. No second look.
+- Only the small rectangles the change touched are redrawn; the rest of the page is the page as drawn. The with-solutions copy and the editable layer get the same change.
+- One safety net in code: "arrow through a mark" is only kept when the layer's own geometry agrees the line passes a tick, cross or ring before its tip. It can only remove a finding.
+
+### The switch
+
+`PAGE_GATE` in the bot's `fly.toml` `[env]` (**`watch` since 6 Oct 2026**):
+
+- `off` (the default) — nothing runs. Pages are exactly as before.
+- `watch` — looks and records. The page is not touched.
+- `act` — looks, applies the safe redraw, records.
+
+Other knobs: `PAGE_GATE_MODEL` (which model looks), `PAGE_GATE_TIMEOUT_MS` (25 s a page),
+`PAGE_GATE_PARALLEL` (4 pages at once).
+
+**It fails open.** An error, a timeout, an answer that cannot be read, a redraw that does
+not match the page: the page goes out exactly as drawn, and the failure is recorded.
+
+### Where it sits
+
+Bot `ai/paper-marker.js`, after the last redraw of the paper (reconcile, fix-first) and
+before the result is built, stored and released. A paper already delivered is never
+touched. A desk redraw is not checked.
+
+### How to read the record
+
+On the run: `result_json.page_gate`.
+
+- `mode`, `model`, `ms`, `cost_usd` — the whole paper.
+- `pages_looked`, `pages_failed`, `pages_flagged`, `pages_changed`.
+- `rules` — how many times each rule was hit. `changed` — how many of each redraw.
+- `pages[]` — one entry a page: `findings` (`id`, `rule`, `why` in the model's words),
+  `changed` (what was redrawn), `counted` (what was left and why), `vetoed`, `error`,
+  `ms`, `tokens`, `cost_usd`.
+- A page that was redrawn keeps the first drawing as `annotated_photos[].pre_gate_url`.
+
+In Adrian's delivery message, on the watch-outs list:
+
+- `Page check: 3 arrows removed (pages 3, 5)`
+- `Page check saw, and left as drawn: a mark beside crossed-out work (page 7)`
+- `Page check could not look at page 4 — sent as drawn`
+
+Cost: the ledger feature is `marking_page_gate`; it is inside the run's `vision_usage`
+(kind `page_gate`) and so inside the paper's cost.
+
+### Measuring it
+
+`node scripts/page-gate-bench.cjs --models <id>` (bot repo). Dry-run: it reads stored
+pages, asks the model, prints caught / false alarms / time / cost. The pages are
+`test/golden/page-gate-cases.json`: Adrian's complaints of 6 Oct 2026 (bad), 21 tidy
+pages (clean — any finding there is a false alarm), and 10 arguable pages (not scored).
+Add a page he sends back as a new `bad` case.
+
+### How it was chosen, and what is still unproven (6 Oct 2026)
+
+Ten of Adrian's complaint pages (12 known defects) and 21 tidy pages, dry-run only:
+`gemini-3.7-flash` 8/12 caught, 0/21 false alarms, ~8 s and US$0.003 a page (the default);
+`gemini-3.1-pro-preview` 8/12, 0/21, ~24 s; `claude-opus-5-5` 10/12 but 4/21 false alarms,
+~21 s, US$0.027 a page; `claude-haiku-4-5` 6/12, 5/21. Bench: bot
+`scripts/page-gate-bench.cjs`, cases `test/golden/page-gate-cases.json`.
+
+Switched on in **watch** because the redraw has not run inside a live marking, the looks
+share the 20-a-minute Gemini budget with placement (a busy paper may time out and fail
+open — it shows as `pages_failed`), and "note moved to the strip" has only been seen on a
+synthetic layer. Move to `act` after about a week of clean `result_json.page_gate` records.
+The morning page reader stays daily meanwhile: it is the measure of what this lets through.
+
