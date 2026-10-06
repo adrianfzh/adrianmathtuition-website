@@ -113,6 +113,8 @@ async function one(f: Row, law: string) {
     const grid = await forModel(await judgeView(src));
     const grey = await sharp(src).greyscale().raw().toBuffer();
     let verdict = parseRecropVerdict(await ask(recropPrompt(stem, f.note), [grid]));
+    // an answer that is not JSON is a transient miss, not a refusal: ask once more
+    if (verdict.refuse && /no JSON|did not parse/.test(verdict.refuse)) verdict = parseRecropVerdict(await ask(recropPrompt(stem, f.note), [grid]));
     let check = null, share: number | null = null, plan: CropPlan | null = null, sliced = false, crop: Buffer | null = null;
     // One correction: a first cut that lost a label (or kept a sentence) goes back to the judge
     // with what the second look found, and is cut and checked once more. Never a third time.
