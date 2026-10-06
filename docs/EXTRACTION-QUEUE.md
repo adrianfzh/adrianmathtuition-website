@@ -504,6 +504,18 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   (P1 + P2); Methodist Girls', St Margaret's (P1 only — the compilation has no P2). Every page carries
   the vendor watermark: text is transcribed, any picture carrying it is withheld (law rule
   `xr-vendor-stamp-withheld`, archive `exam-extraction-2026-10-06b`).
+- **The 2024 and 2023 G3 English compilations (6 Oct 2026, Adrian: "two more years of english, do the same …
+  make first in queue, also put the copies into dropbox"):** `~/Downloads/2024 4E G3 English-12s.pdf` (404 pages,
+  12 sets) and `2023 Sec 4 G3 English-12s.pdf` (448 pages, 12 schools), mostly scans, so the page map was read
+  from the pages (one helper per year, the answer-file boundaries checked by eye). Same shape as 2025:
+  `English PRELIM <year> <School> Paper 1|Paper 2|Answers.pdf` — Paper 1 = booklet then its Insert, Paper 2 =
+  Insert then booklet, Answers = `status='skipped'` for pairing (each paper's notes NAME its answers file).
+  57 files: 33 papers queued at `indexed_at` 2000-12-29 (ahead of everything, 2024 first) + 24 answers files;
+  bucket `sources/EL/<year>/<School>/`, Dropbox `AdrianMath Work/Papers/English/<year> Prelims/`.
+  Only 9 of the 24 sets have a Paper 1. Known gaps, written on the rows: ACS (Barker Road) 2024 appears twice
+  (a Weighted Assessment, `English WA 2024 …`, Section B only, and the prelim); Gan Eng Seng 2024 P1 has no
+  Insert; Kranji 2024 answers have no Section C; Pei Hwa 2023 P2 is missing Text 4 and Section C; Catholic
+  High 2023 answers are three pieces; Pasir Ris Crest 2023's stray Paper 1 key (no Paper 1 in the file) left out.
 - **Held, not queued:** humanities papers with no scheme in the file or beside it (22 SS, 2 SS N(A),
   5 HIST_E, 4 GEOG, 9 GEOG_E — the reason in `notes`); English papers with no scheme (all the 2023 and 2025 N(A) prelims) (Adrian, 6 Oct: "papers without a scheme: copy, don't queue yet");
   Literature (no exam papers in the copy — notes only); Chinese / Higher Chinese / Chinese Literature
