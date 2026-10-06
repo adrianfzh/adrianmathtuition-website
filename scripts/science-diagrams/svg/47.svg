@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1080" viewBox="0 0 1200 1080">
+<rect width="1200" height="1080" fill="#fff"/>
+<!-- body outline -->
+<g fill="none" stroke="#888" stroke-width="2.5">
+  <ellipse cx="600" cy="115" rx="78" ry="98"/>
+  <path d="M 560 208 L 560 255 Q 410 262 350 298 Q 322 318 322 380 L 322 1060"/>
+  <path d="M 640 208 L 640 255 Q 790 262 850 298 Q 878 318 878 380 L 878 1060"/>
+</g>
+<!-- salivary glands + ducts -->
+<path d="M 545 182 Q 565 175 585 168 M 655 182 Q 635 175 615 168" stroke="#000" stroke-width="3" fill="none"/>
+<ellipse cx="535" cy="188" rx="20" ry="14" fill="#f5dc95" stroke="#000" stroke-width="2.5"/>
+<ellipse cx="665" cy="188" rx="20" ry="14" fill="#f5dc95" stroke="#000" stroke-width="2.5"/>
+<!-- duodenum + small intestine: outline first -->
+<path d="M 650 524 L 600 524 Q 540 526 525 545 L 520 600 Q 522 628 585 628 Q 610 640 610 700 L 720 700 Q 745 700 745 722 Q 745 744 720 744 L 490 744 Q 468 744 468 766 Q 468 788 490 788 L 720 788 Q 745 788 745 810 Q 745 832 720 832 L 495 832 Q 466 832 462 848 Q 458 866 420 866" stroke="#000" stroke-width="31" fill="none" stroke-linejoin="round"/>
+<!-- oesophagus + stomach -->
+<path d="M 587 172 L 587 362 Q 590 396 618 412 C 645 432 668 445 668 470 C 668 500 640 520 604 512 L 598 532 C 608 538 620 545 640 552 C 715 580 806 540 798 455 C 790 368 665 352 632 384 Q 613 375 613 355 L 613 172 Z" fill="#f6c9c0" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+<path d="M 650 524 L 600 524 Q 540 526 525 545 L 520 600 Q 522 628 585 628 Q 610 640 610 700 L 720 700 Q 745 700 745 722 Q 745 744 720 744 L 490 744 Q 468 744 468 766 Q 468 788 490 788 L 720 788 Q 745 788 745 810 Q 745 832 720 832 L 495 832 Q 466 832 462 848 Q 458 866 420 866" stroke="#f6c9c0" stroke-width="25" fill="none" stroke-linejoin="round"/>
+<!-- mouth -->
+<path d="M 572 160 Q 600 150 628 160 Q 600 178 572 160 Z" fill="#e6a0a0" stroke="#000" stroke-width="2.5"/>
+<!-- pancreas -->
+<path d="M 548 565 C 570 550 625 562 680 552 C 730 543 772 540 782 554 C 788 572 742 580 692 586 C 640 594 595 604 556 603 C 538 598 536 576 548 565 Z" fill="#f5dc95" stroke="#000" stroke-width="2.5"/>
+
+<!-- liver -->
+<path d="M 352 352 C 420 318 565 318 655 342 C 668 356 650 376 606 396 C 540 430 470 458 400 470 C 366 472 348 425 352 352 Z" fill="#d9a088" stroke="#000" stroke-width="3"/>
+<!-- gall bladder + bile duct -->
+<path d="M 478 470 Q 505 515 528 548" stroke="#000" stroke-width="9" fill="none"/>
+<path d="M 478 470 Q 505 515 528 548" stroke="#9fcf86" stroke-width="5" fill="none"/>
+<ellipse cx="462" cy="478" rx="20" ry="30" transform="rotate(-25 462 478)" fill="#b5d99c" stroke="#000" stroke-width="2.5"/>
+
+<!-- large intestine: caecum, ascending, transverse, descending, then rectum -->
+<path d="M 410 890 L 410 680 Q 410 655 435 655 L 775 655 Q 800 655 800 680 L 800 880 Q 800 915 740 925 L 640 930 Q 600 932 600 960 L 600 1010" stroke="#000" stroke-width="48" fill="none" stroke-linejoin="round"/>
+<path d="M 410 890 L 410 680 Q 410 655 435 655 L 775 655 Q 800 655 800 680 L 800 880 Q 800 915 740 925 L 640 930 Q 600 932 600 960 L 600 1009" stroke="#e8b49b" stroke-width="42" fill="none" stroke-linejoin="round"/>
+<!-- caecum pouch + appendix -->
+<path d="M 400 920 Q 395 955 420 975 Q 440 990 445 1012" stroke="#000" stroke-width="16" fill="none" stroke-linecap="round"/>
+<path d="M 400 920 Q 395 955 420 975 Q 440 990 445 1012" stroke="#e8b49b" stroke-width="10" fill="none" stroke-linecap="round"/>
+<circle cx="410" cy="895" r="24" fill="#000"/>
+<circle cx="410" cy="895" r="21" fill="#e8b49b"/>
+<rect x="389" y="860" width="42" height="36" fill="#e8b49b"/>
+<!-- anus -->
+<path d="M 572 1011 L 628 1011" stroke="#000" stroke-width="5"/>
+
+<!-- label lines -->
+<g stroke="#000" stroke-width="1.5">
+  <line x1="305" y1="190" x2="515" y2="190"/>
+  <line x1="300" y1="390" x2="420" y2="390"/>
+  <line x1="300" y1="480" x2="448" y2="480"/>
+  <line x1="300" y1="545" x2="505" y2="510"/>
+  <line x1="300" y1="610" x2="519" y2="600"/>
+  <line x1="300" y1="720" x2="410" y2="720"/>
+  <line x1="300" y1="915" x2="390" y2="915"/>
+  <line x1="300" y1="1000" x2="440" y2="1004"/>
+  <line x1="895" y1="160" x2="630" y2="160"/>
+  <line x1="895" y1="290" x2="602" y2="290"/>
+  <line x1="895" y1="440" x2="760" y2="440"/>
+  <line x1="895" y1="570" x2="770" y2="560"/>
+  <line x1="895" y1="790" x2="735" y2="790"/>
+  <line x1="895" y1="950" x2="602" y2="955"/>
+  <line x1="895" y1="1020" x2="610" y2="1013"/>
+</g>
+<g font-family="DejaVu Sans" font-size="28" fill="#000">
+  <text x="295" y="182" text-anchor="end">salivary</text>
+  <text x="295" y="214" text-anchor="end">glands</text>
+  <text x="290" y="400" text-anchor="end">liver</text>
+  <text x="290" y="472" text-anchor="end">gall</text>
+  <text x="290" y="504" text-anchor="end">bladder</text>
+  <text x="290" y="555" text-anchor="end">bile duct</text>
+  <text x="290" y="620" text-anchor="end">duodenum</text>
+  <text x="290" y="712" text-anchor="end">large</text>
+  <text x="290" y="744" text-anchor="end">intestine</text>
+  <text x="290" y="776" text-anchor="end">(colon)</text>
+  <text x="290" y="925" text-anchor="end">caecum</text>
+  <text x="290" y="1010" text-anchor="end">appendix</text>
+  <text x="905" y="170">mouth</text>
+  <text x="905" y="300">oesophagus</text>
+  <text x="905" y="450">stomach</text>
+  <text x="905" y="580">pancreas</text>
+  <text x="905" y="782">small</text>
+  <text x="905" y="814">intestine</text>
+  <text x="905" y="846">(ileum)</text>
+  <text x="905" y="960">rectum</text>
+  <text x="905" y="1030">anus</text>
+</g>
+</svg>

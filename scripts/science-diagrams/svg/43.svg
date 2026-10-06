@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1110" viewBox="0 0 1200 1110">
+<defs>
+  <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 z" fill="#000"/>
+  </marker>
+</defs>
+<rect width="1200" height="1110" fill="#fff"/>
+<g transform="translate(0,80)">
+  <!-- heart muscle -->
+  <path d="M 280 340 Q 280 300 320 300 L 885 300 Q 925 300 925 340 L 925 560 Q 920 800 770 955 Q 600 900 470 790 Q 385 720 385 620 L 385 560 L 280 560 Z" fill="#f2d8c9" stroke="#000" stroke-width="3"/>
+
+  <!-- superior vena cava (passes BEHIND the pulmonary artery) -->
+  <path d="M 362 40 L 362 312" stroke="#000" stroke-width="66" fill="none"/>
+  <path d="M 362 40 L 362 312" stroke="#9ec5f0" stroke-width="60" fill="none"/>
+  <!-- aorta (behind pulmonary artery) -->
+  <path d="M 745 10 L 738 -50 M 805 10 L 815 -45" stroke="#000" stroke-width="30" fill="none"/>
+  <path d="M 745 10 L 738 -50 M 805 10 L 815 -45" stroke="#f3a5a5" stroke-width="24" fill="none"/>
+  <path d="M 687.5 312 L 687.5 110 A 85 85 0 0 1 857.5 110 L 857.5 215" stroke="#000" stroke-width="78" fill="none"/>
+  <path d="M 687.5 312 L 687.5 110 A 85 85 0 0 1 857.5 110 L 857.5 215" stroke="#f3a5a5" stroke-width="72" fill="none"/>
+
+  <!-- pulmonary artery: trunk + both branches (in front of aorta) -->
+  <path d="M 225 200 L 950 200 M 560 312 L 560 200" stroke="#000" stroke-width="76" fill="none"/>
+  <path d="M 225 200 L 950 200 M 560 312 L 560 200" stroke="#9ec5f0" stroke-width="70" fill="none"/>
+
+
+  <!-- inferior vena cava -->
+  <path d="M 335 548 L 335 690" stroke="#000" stroke-width="66" fill="none"/>
+  <path d="M 335 545 L 335 690" stroke="#9ec5f0" stroke-width="60" fill="none"/>
+
+  <!-- pulmonary veins -->
+  <path d="M 915 385 L 968 385 M 915 455 L 968 455" stroke="#000" stroke-width="46" fill="none"/>
+  <path d="M 905 385 L 968 385 M 905 455 L 968 455" stroke="#f3a5a5" stroke-width="40" fill="none"/>
+
+  <!-- chambers -->
+  <rect x="298" y="318" width="202" height="217" rx="28" fill="#9ec5f0" stroke="#000" stroke-width="2.5"/>
+  <rect x="745" y="318" width="160" height="192" rx="28" fill="#f3a5a5" stroke="#000" stroke-width="2.5"/>
+  <path d="M 405 578 L 520 578 L 520 300 L 600 300 L 600 845 Q 500 800 445 730 Q 405 680 405 578 Z" fill="#9ec5f0" stroke="#000" stroke-width="2.5"/>
+  <path d="M 650 300 L 725 300 L 725 548 L 845 548 Q 850 720 770 880 Q 700 855 650 820 Z" fill="#f3a5a5" stroke="#000" stroke-width="2.5"/>
+
+  <!-- openings (patches) -->
+  <rect x="333" y="300" width="58" height="30" fill="#9ec5f0"/>
+  <rect x="306" y="525" width="58" height="40" fill="#9ec5f0"/>
+  <rect x="525" y="290" width="70" height="20" fill="#9ec5f0"/>
+  <rect x="652" y="290" width="71" height="20" fill="#f3a5a5"/>
+  <rect x="895" y="366" width="22" height="38" fill="#f3a5a5"/>
+  <rect x="895" y="436" width="22" height="38" fill="#f3a5a5"/>
+  <rect x="422" y="528" width="73" height="54" fill="#9ec5f0"/>
+  <rect x="767" y="503" width="73" height="49" fill="#f3a5a5"/>
+  <!-- re-draw the opening edges -->
+  <path d="M 422 535 L 422 578 M 495 535 L 495 578" stroke="#000" stroke-width="2.5"/>
+  <path d="M 767 510 L 767 548 M 840 510 L 840 548" stroke="#000" stroke-width="2.5"/>
+
+  <!-- tricuspid + bicuspid valve flaps -->
+  <path d="M 422 576 L 448 642 M 495 576 L 469 642" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 422 576 L 448 642 M 495 576 L 469 642" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+  <path d="M 767 546 L 793 612 M 840 546 L 814 612" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+  <path d="M 767 546 L 793 612 M 840 546 L 814 612" stroke="#333" stroke-width="5" stroke-linecap="round"/>
+  <!-- semi-lunar valves (cusps open towards the artery) -->
+  <path d="M 525 272 Q 542 300 560 272 Q 578 300 595 272" stroke="#333" stroke-width="5" fill="none"/>
+  <path d="M 652 330 Q 670 358 687.5 330 Q 705 358 723 330" stroke="#333" stroke-width="5" fill="none"/>
+
+  <!-- blood flow arrows -->
+  <g stroke="#000" stroke-width="4" fill="none" marker-end="url(#ah)">
+    <path d="M 362 50 L 362 135"/>
+    <path d="M 335 685 L 335 600"/>
+    <path d="M 458 440 L 458 700"/>
+    <path d="M 560 760 L 560 380"/>
+    <path d="M 512 200 L 412 200"/>
+    <path d="M 305 200 L 240 200"/>
+    <path d="M 610 200 L 935 200"/>
+    <path d="M 965 385 L 912 385"/>
+    <path d="M 965 455 L 912 455"/>
+    <path d="M 803 400 L 803 680"/>
+    <path d="M 687.5 790 L 687.5 400"/>
+    <path d="M 687.5 150 L 687.5 110 A 85 85 0 0 1 846 67.5"/>
+  </g>
+
+  <!-- label lines -->
+  <g stroke="#000" stroke-width="1.5">
+    <line x1="290" y1="280" x2="345" y2="280"/>
+    <line x1="235" y1="420" x2="360" y2="420"/>
+    <line x1="290" y1="620" x2="318" y2="640"/>
+    <line x1="280" y1="730" x2="440" y2="630"/>
+    <line x1="280" y1="830" x2="520" y2="720"/>
+    <line x1="965" y1="70" x2="885" y2="100"/>
+    <line x1="965" y1="200" x2="952" y2="200"/>
+    <line x1="965" y1="265" x2="580" y2="285"/>
+    <line x1="965" y1="275" x2="700" y2="340"/>
+    <line x1="990" y1="395" x2="970" y2="390"/>
+    <line x1="990" y1="440" x2="970" y2="452"/>
+    <line x1="965" y1="530" x2="870" y2="470"/>
+    <line x1="965" y1="615" x2="830" y2="590"/>
+    <line x1="965" y1="740" x2="790" y2="740"/>
+    <line x1="625" y1="975" x2="625" y2="800"/>
+  </g>
+
+  <!-- labels -->
+  <g font-family="DejaVu Sans" font-size="28" fill="#000">
+    <text x="285" y="268" text-anchor="end">superior</text>
+    <text x="285" y="300" text-anchor="end">vena cava</text>
+    <text x="228" y="410" text-anchor="end">right</text>
+    <text x="228" y="442" text-anchor="end">atrium</text>
+    <text x="285" y="598" text-anchor="end">inferior</text>
+    <text x="285" y="630" text-anchor="end">vena cava</text>
+    <text x="275" y="728" text-anchor="end">tricuspid</text>
+    <text x="275" y="760" text-anchor="end">valve</text>
+    <text x="275" y="830" text-anchor="end">right</text>
+    <text x="275" y="862" text-anchor="end">ventricle</text>
+
+    <text x="972" y="72">aorta</text>
+    <text x="972" y="196">pulmonary</text>
+    <text x="972" y="228">artery</text>
+    <text x="972" y="270">semi-lunar</text>
+    <text x="972" y="302">valves</text>
+    <text x="995" y="405">pulmonary</text>
+    <text x="995" y="437">vein</text>
+    <text x="972" y="530">left</text>
+    <text x="972" y="562">atrium</text>
+    <text x="972" y="620">bicuspid</text>
+    <text x="972" y="652">valve</text>
+    <text x="972" y="740">left</text>
+    <text x="972" y="772">ventricle</text>
+    <text x="625" y="1005" text-anchor="middle">septum</text>
+  </g>
+</g>
+</svg>

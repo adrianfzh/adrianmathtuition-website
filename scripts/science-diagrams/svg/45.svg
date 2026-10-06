@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000">
+<rect width="1200" height="1000" fill="#fff"/>
+<circle cx="610" cy="520" r="296" fill="#eef3f7"/>
+<path d="M 359.0 355.2 A 173.7 173.7 0 0 0 359.0 684.8 Z" fill="#dcecf8"/>
+<path d="M 353.0 693.3 A 310 310 0 1 0 353.0 346.7 A 183.7 183.7 0 0 0 353.0 693.3 Z" stroke="#000" stroke-width="24" fill="none" stroke-linejoin="round"/>
+<path d="M 353.0 346.7 A 183.7 183.7 0 0 0 353.0 693.3" stroke="#eaf6fd" stroke-width="19" fill="none"/>
+<path d="M 353.0 346.7 A 310 310 0 1 1 353.0 693.3" stroke="#ffffff" stroke-width="19" fill="none"/>
+<path d="M 382.3 335.6 A 293 293 0 1 1 382.3 704.4" stroke="#9c6a4e" stroke-width="10" fill="none"/>
+<path d="M 427.8 302.8 A 283.5 283.5 0 1 1 427.8 737.2" stroke="#f0cf6a" stroke-width="9" fill="none"/>
+<path d="M 430.7 306.3 A 279 279 0 1 1 430.7 733.7" stroke="#000" stroke-width="1.5" fill="none"/>
+<path d="M 889.0 504.0 Q 904.0 514.0 904.0 520.0 Q 904.0 526.0 889.0 536.0 Z" fill="#eef3f7" stroke="none"/>
+<path d="M 889.0 504.0 Q 904.0 514.0 904.0 520.0 Q 904.0 526.0 889.0 536.0" stroke="#000" stroke-width="1.5" fill="none"/>
+<path d="M 868.9,625.6 L 1027.4,717.1 L 989.4,782.9 L 830.9,691.4" fill="#f6e7a8" stroke="#000" stroke-width="2.5"/>
+<line x1="866.3" y1="646.0" x2="1014.4" y2="731.5" stroke="#c9b36a" stroke-width="2"/>
+<line x1="856.8" y1="662.5" x2="1004.9" y2="748.0" stroke="#c9b36a" stroke-width="2"/>
+<line x1="847.3" y1="679.0" x2="995.4" y2="764.5" stroke="#c9b36a" stroke-width="2"/>
+<path d="M 376.2,294.2 A 325 325 0 0 0 343.0 334.3 A 198.7 198.7 0 0 0 343.0 705.7 A 325 325 0 0 0 376.2,745.8" stroke="#c2577a" stroke-width="3" fill="none"/>
+<ellipse cx="417.0" cy="520" rx="42" ry="95" fill="#f9fcff" stroke="#000" stroke-width="2.5"/>
+<polygon points="403.0,734.4 349.4,664.5 373.0,667.0 409.0,659.0" fill="#c98b6b" stroke="#000" stroke-width="2.5"/>
+<line x1="385.4" y1="662.0" x2="401.0" y2="606.8" stroke="#000" stroke-width="2"/>
+<line x1="395.0" y1="662.0" x2="417.0" y2="614.0" stroke="#000" stroke-width="2"/>
+<line x1="404.6" y1="662.0" x2="433.0" y2="606.8" stroke="#000" stroke-width="2"/>
+<path d="M 359.0 671.0 L 371.0 671.0 L 370.0 562.0 L 359.0 562.0 Z" fill="#6f8fb0" stroke="#000" stroke-width="2"/>
+<polygon points="403.0,305.6 349.4,375.5 373.0,373.0 409.0,381.0" fill="#c98b6b" stroke="#000" stroke-width="2.5"/>
+<line x1="385.4" y1="378.0" x2="401.0" y2="433.2" stroke="#000" stroke-width="2"/>
+<line x1="395.0" y1="378.0" x2="417.0" y2="426.0" stroke="#000" stroke-width="2"/>
+<line x1="404.6" y1="378.0" x2="433.0" y2="433.2" stroke="#000" stroke-width="2"/>
+<path d="M 359.0 369.0 L 371.0 369.0 L 370.0 478.0 L 359.0 478.0 Z" fill="#6f8fb0" stroke="#000" stroke-width="2"/>
+<line x1="208.0" y1="298.0" x2="310.9" y2="350.0" stroke="#000" stroke-width="1.5"/>
+<line x1="208.0" y1="410.0" x2="240.1" y2="460.0" stroke="#000" stroke-width="1.5"/>
+<line x1="208.0" y1="520.0" x2="365.0" y2="520.0" stroke="#000" stroke-width="1.5"/>
+<line x1="208.0" y1="620.0" x2="313.0" y2="600.0" stroke="#000" stroke-width="1.5"/>
+<line x1="208.0" y1="746.0" x2="365.0" y2="635.0" stroke="#000" stroke-width="1.5"/>
+<line x1="300.0" y1="112.0" x2="383.6" y2="358.8" stroke="#000" stroke-width="1.5"/>
+<line x1="560.0" y1="105.0" x2="415.0" y2="400.0" stroke="#000" stroke-width="1.5"/>
+<line x1="790.0" y1="130.0" x2="455.0" y2="480.0" stroke="#000" stroke-width="1.5"/>
+<line x1="947.0" y1="216.0" x2="858.2" y2="326.1" stroke="#000" stroke-width="1.5"/>
+<line x1="947.0" y1="296.0" x2="868.7" y2="382.4" stroke="#000" stroke-width="1.5"/>
+<line x1="947.0" y1="376.0" x2="879.1" y2="432.5" stroke="#000" stroke-width="1.5"/>
+<line x1="947.0" y1="510.0" x2="895.0" y2="520.0" stroke="#000" stroke-width="1.5"/>
+<line x1="947.0" y1="651.0" x2="849.9" y2="658.5" stroke="#000" stroke-width="1.5"/>
+<line x1="1015.0" y1="870.0" x2="982.4" y2="765.0" stroke="#000" stroke-width="1.5"/>
+<line x1="610.0" y1="920.0" x2="610.0" y2="700.0" stroke="#000" stroke-width="1.5"/>
+<text x="200" y="305" font-family="DejaVu Sans" font-size="28" text-anchor="end">conjunctiva</text>
+<text x="200" y="420" font-family="DejaVu Sans" font-size="28" text-anchor="end">cornea</text>
+<text x="200" y="530" font-family="DejaVu Sans" font-size="28" text-anchor="end">pupil</text>
+<text x="200" y="620" font-family="DejaVu Sans" font-size="28" text-anchor="end">aqueous</text>
+<text x="200" y="652" font-family="DejaVu Sans" font-size="28" text-anchor="end">humour</text>
+<text x="200" y="755" font-family="DejaVu Sans" font-size="28" text-anchor="end">iris</text>
+<text x="300" y="100" font-family="DejaVu Sans" font-size="28" text-anchor="middle">ciliary muscle</text>
+<text x="560" y="60" font-family="DejaVu Sans" font-size="28" text-anchor="middle">suspensory</text>
+<text x="560" y="92" font-family="DejaVu Sans" font-size="28" text-anchor="middle">ligaments</text>
+<text x="790" y="120" font-family="DejaVu Sans" font-size="28" text-anchor="middle">lens</text>
+<text x="955" y="225" font-family="DejaVu Sans" font-size="28" text-anchor="start">sclera</text>
+<text x="955" y="305" font-family="DejaVu Sans" font-size="28" text-anchor="start">choroid</text>
+<text x="955" y="385" font-family="DejaVu Sans" font-size="28" text-anchor="start">retina</text>
+<text x="955" y="500" font-family="DejaVu Sans" font-size="28" text-anchor="start">fovea</text>
+<text x="955" y="532" font-family="DejaVu Sans" font-size="28" text-anchor="start">(yellow spot)</text>
+<text x="955" y="660" font-family="DejaVu Sans" font-size="28" text-anchor="start">blind spot</text>
+<text x="955" y="900" font-family="DejaVu Sans" font-size="28" text-anchor="start">optic nerve</text>
+<text x="610" y="950" font-family="DejaVu Sans" font-size="28" text-anchor="middle">vitreous humour</text>
+</svg>
