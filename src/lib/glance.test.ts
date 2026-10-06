@@ -108,7 +108,10 @@ describe('buildGlance', () => {
       { name: 'b', on: true, fiveHour: null, sevenDay: 85, at: null },
       { name: 'c', on: false, fiveHour: null, sevenDay: 10, at: null },
     ] }), NOW), 'logins');
-    expect(t).toMatchObject({ value: '85 %', tone: 'amber', status: '1 full', sub: '1: 97% · 2: 85% · 3: off' });
+    expect(t).toMatchObject({ value: '85 %', tone: 'amber', status: '1 full' });
+    // one line per login on the tile itself (6 Oct 2026), not a squeezed "1: 97% · 2: 85%"
+    expect(t.rows!.map((r) => `${r.main}: ${r.note}`)).toEqual(['Login 1: week 97 % · 5 h ?', 'Login 2: week 85 % · 5 h ?', 'Login 3: off']);
+    expect(t.rows!.map((r) => r.tone)).toEqual(['red', 'amber', 'grey']);
   });
 
   it('disk past 90 % is red', () => {
@@ -159,5 +162,46 @@ describe('Tabs opened this week (6 Oct 2026)', () => {
   it('shows at most five tabs', () => {
     const top = Array.from({ length: 8 }, (_, i) => ({ label: `T${i}`, students: 8 - i, opens: 8 - i }));
     expect(tile(buildGlance(facts({ tabs: { students: 9, top } }), NOW), 'tabs').sub!.split(' · ')).toHaveLength(5);
+  });
+});
+
+// 6 Oct 2026, Adrian: "it's just tabs/buttons leading to pages. can i have a
+// dash board with information on the dashboard itself?"
+describe('the things themselves, on the tile', () => {
+  it('papers to check lists each paper with its own link, and says how many more', () => {
+    const list = Array.from({ length: 8 }, (_, i) => ({ id: `r${i}`, student: `Chloe Tan ${i}`, paper: 'AM P1', parts: i + 1 }));
+    const t = tile(buildGlance(facts({ papersToCheck: { papers: 19, parts: 110, list } }), NOW), 'papers-to-check');
+    expect(t.rows).toHaveLength(5);
+    expect(t.rows![0]).toEqual({ main: 'Chloe', note: 'AM P1 · 1 part', href: '/admin/mark-paper?run=r0' });
+    expect(t.more).toBe('+14 more');
+    // a run with no student on it shows the paper, never "A"
+    const bare = tile(buildGlance(facts({ papersToCheck: { papers: 1, parts: 2, list: [{ id: 'x', student: null, paper: 'gavin s3 em set 2 p1', parts: 2 }] } }), NOW), 'papers-to-check');
+    expect(bare.rows![0]).toEqual({ main: 'gavin s3 em set 2 p1', note: '2 parts', href: '/admin/mark-paper?run=x' });
+    expect(t.wide).toBe(true);
+  });
+  it('a proposal that did not ship is named, with why in a few words', () => {
+    const t = tile(buildGlance(facts({ shipsFailed: 1, shipsFailedList: [{ slug: 'red-pen-batch', action: 'ship', at: ago(3), result: '❌ The gate failed for red-pen-batch (npm test). Nothing shipped; the branch is still there.' }] }), NOW), 'ships-failed');
+    expect(t.rows).toEqual([{ main: 'red-pen-batch', note: 'The gate failed (npm test).', tone: 'red' }]);
+    expect(t.more).toBeUndefined();
+  });
+  it('a failed job says why; a late one says how late', () => {
+    const t = tile(buildGlance(facts({ jobs: { total: 40, failing: ['twin-batch'], failingWhy: { 'twin-batch': 'last run FAILED — no login had room' }, late: [{ job: 'qb-topup', reason: "hasn't run in 40h (expected daily)" }], lastSelfFix: null } }), NOW), 'jobs');
+    expect(t.rows).toEqual([
+      { main: 'twin-batch', note: 'no login had room', tone: 'red' },
+      { main: 'qb-topup', note: "hasn't run in 40h (expected daily)", tone: 'amber' },
+    ]);
+  });
+  it('today’s lessons are rows that open each Next lesson page; lessons to log are split by day', () => {
+    const g = buildGlance(facts({
+      lessonsToday: [{ lessonId: 'l1', studentId: 's1', name: 'Joey Lim', time: '5-7pm', href: '/admin/students/s1/next' }],
+      lessonsToLog: 9, lessonsToLogDays: [{ date: '2026-10-05', n: 1 }, { date: '2026-10-04', n: 2 }, { date: '2026-10-02', n: 1 }, { date: '2026-10-01', n: 1 }, { date: '2026-09-30', n: 4 }],
+    }), NOW);
+    expect(tile(g, 'lessons').rows).toEqual([{ main: 'Joey Lim', note: '5-7pm · next lesson page', href: '/admin/students/s1/next' }]);
+    expect(tile(g, 'to-log').rows!.map((r) => `${r.main} ${r.note}`)).toEqual(['Today 1 lesson', 'Yesterday 2 lessons', 'Fri 2 Oct 1 lesson', 'Thu 1 Oct 1 lesson', 'Earlier 4 lessons']);
+  });
+  it('a tile with nothing to list carries no rows', () => {
+    const g = buildGlance(facts(), NOW);
+    for (const id of ['lessons', 'marked', 'queue', 'jobs', 'stuck']) expect(tile(g, id).rows).toBeUndefined();
+    expect(tile(g, 'to-log')).toBeUndefined();
   });
 });

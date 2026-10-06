@@ -25,6 +25,8 @@ const BOT_HEALTH_URL = 'https://adrianmath-telegram-math-bot.fly.dev/health';
 /** The levels the twins lanes write for (as scripts/ops-status.mjs counts them). */
 const TWIN_LEVELS = ['S1', 'S2'];
 const TREND_DAYS = 7;
+/** How many of the things themselves a tile's list carries (the page shows fewer and says "+N more"). */
+const LIST_ROWS = 8;
 /** The worker's self-fix stamps (docs/OPS.md §The worker's self-fixes). */
 const SELF_FIX_JOBS = ['worker-recover', 'login-pool', 'disk-clean'];
 
@@ -62,16 +64,19 @@ async function lastJob(sb: Sb, job: string): Promise<(JobLine & { meta?: Record<
 
 async function papersToCheck(sb: Sb) {
   const since = new Date(Date.now() - 14 * 86400_000).toISOString();
-  const { data, error } = await sb.from('paper_marking_runs').select('result_json')
-    .is('released_at', null).is('archived_at', null).gte('created_at', since).limit(200);
+  const { data, error } = await sb.from('paper_marking_runs').select('id, student_name, paper_name, result_json')
+    .is('released_at', null).is('archived_at', null).gte('created_at', since).order('created_at', { ascending: false }).limit(200);
   if (error) throw new Error(error.message);
   let papers = 0, parts = 0;
+  const list: { id: string; student: string | null; paper: string | null; parts: number }[] = [];
   for (const row of data ?? []) {
     if (!Array.isArray((row.result_json as { results?: unknown })?.results)) continue;
     const n = extractFlagged(row.result_json).flagged.length;
-    if (n) { papers += 1; parts += n; }
+    if (!n) continue;
+    papers += 1; parts += n;
+    if (list.length < LIST_ROWS) list.push({ id: row.id as string, student: (row.student_name as string | null) ?? null, paper: (row.paper_name as string | null) ?? null, parts: n });
   }
-  return { papers, parts };
+  return { papers, parts, list };
 }
 
 // ── Today ───────────────────────────────────────────────────────────────────
@@ -97,11 +102,14 @@ function slotOrder(t: string | null): number {
 }
 
 /** Mirrors /api/admin-stats lessonsToLog (the /admin/log queue): same window, same clock. */
-async function lessonsToLog(): Promise<number> {
+async function lessonsToLog(): Promise<{ total: number; days: { date: string; n: number }[] }> {
   const today = localToday();
   const formula = `AND({Date}>='${daysAgo(EDIT_WINDOW_DAYS)}',{Date}<'${addDaysISO(today, 1)}',OR({Status}='Scheduled',{Status}='Completed'),NOT({Progress Logged}))`;
-  const data = await airtableRequestAll('Lessons', `?filterByFormula=${encodeURIComponent(formula)}&fields%5B%5D=Student`);
-  return (data.records as { fields: Record<string, unknown> }[]).filter((r) => ((r.fields['Student'] as unknown[]) ?? []).length > 0).length;
+  const data = await airtableRequestAll('Lessons', `?filterByFormula=${encodeURIComponent(formula)}&fields%5B%5D=Student&fields%5B%5D=Date`);
+  const rows = (data.records as { fields: Record<string, unknown> }[]).filter((r) => ((r.fields['Student'] as unknown[]) ?? []).length > 0);
+  const byDay = new Map<string, number>();
+  for (const r of rows) { const d = String(r.fields['Date'] ?? '').slice(0, 10); if (d) byDay.set(d, (byDay.get(d) ?? 0) + 1); }
+  return { total: rows.length, days: [...byDay].map(([date, n]) => ({ date, n })).sort((a, b) => b.date.localeCompare(a.date)) };
 }
 
 // ── The machine ─────────────────────────────────────────────────────────────
@@ -117,21 +125,24 @@ async function queue(sb: Sb) {
   for (const r of [...(inFlight.data || []), ...(flagged.data || [])] as unknown as QueueRunRow[]) byId.set(r.id, r);
   const s = markingQueueState([...byId.values()]);
   const marking = s.rows.filter((r) => r.phase !== 'unclaimed').length;
-  return { waiting: s.rows.length - marking, marking, oldestMinutes: s.oldestMinutes };
+  const list = s.rows.slice(0, LIST_ROWS).map((r) => ({ student: r.student, paper: r.paper, phase: r.phase, waitingMinutes: r.waitingMinutes, pagesDone: r.pagesDone, pagesTotal: r.pagesTotal }));
+  return { waiting: s.rows.length - marking, marking, oldestMinutes: s.oldestMinutes, list };
 }
 
 async function extraction(sb: Sb, midnight: string, now: number) {
   const src = () => sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source');
   const weekAgo = sgtDayStartISO(sgtDaysAgoISO(TREND_DAYS - 1));
-  const [waiting, working, held, doneToday, done24h, week] = await Promise.all([
+  const [waiting, working, held, doneToday, done24h, week, claimed] = await Promise.all([
     count(src().eq('status', 'queued')),
     count(src().eq('status', 'claimed')),
     count(src().eq('status', 'held')),
     count(src().eq('status', 'done').gte('finished_at', midnight)),
     count(src().eq('status', 'done').gte('finished_at', new Date(now - 86400_000).toISOString())),
     all<{ finished_at: string }>((a, b) => sb.from('paper_library').select('finished_at').eq('kind', 'source').eq('status', 'done').gte('finished_at', weekAgo).range(a, b), 5000),
+    sb.from('paper_library').select('source_file').eq('kind', 'source').eq('status', 'claimed').order('claimed_at', { ascending: false }).limit(LIST_ROWS),
   ]);
-  return { waiting, working, held, doneToday, done24h, perDay: perDay(week.map((r) => r.finished_at), TREND_DAYS, now) };
+  const workingOn = ((claimed.data ?? []) as { source_file: string | null }[]).map((r) => r.source_file || '').filter(Boolean);
+  return { waiting, working, held, doneToday, done24h, perDay: perDay(week.map((r) => r.finished_at), TREND_DAYS, now), workingOn };
 }
 
 let twinsLeftCache: { at: number; left: Record<string, number | null> } | null = null;
@@ -167,12 +178,14 @@ async function jobs(sb: Sb) {
   }));
   const rows = [...latest, ...extra.filter((r): r is JobRunRow => !!r)];
   const stale = staleJobs(rows, new Date());
-  const failing = stale.filter((s) => s.reason.startsWith('last run FAILED')).map((s) => s.job);
+  const failed = stale.filter((s) => s.reason.startsWith('last run FAILED'));
+  const failing = failed.map((s) => s.job);
+  const failingWhy = Object.fromEntries(failed.map((s) => [s.job, s.reason]));
   const late = stale.filter((s) => !s.reason.startsWith('last run FAILED'));
   const fixes = rows.filter((r) => SELF_FIX_JOBS.includes(r.job)).sort((a, b) => b.ran_at.localeCompare(a.ran_at));
   const lastSelfFix = fixes[0] ? { job: fixes[0].job, at: fixes[0].ran_at, summary: fixes[0].summary } : null;
   const total = rows.filter((r) => JOB_RHYTHMS[r.job]).length;
-  return { total, late, failing, lastSelfFix };
+  return { total, late, failing, failingWhy, lastSelfFix };
 }
 
 async function logins() {
@@ -252,6 +265,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
 
   const [
     questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
+    shipsList, flaggedList, proposalLevels,
     lessons, toLog, marked, practice,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
     st, cs, tb,
@@ -263,12 +277,31 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
     safe(() => count(sb.from('paper_library').select('id', { count: 'exact', head: true }).eq('kind', 'source').in('status', ['flagged', 'failed']))),
     safe(() => count(sb.from('portal_event_log').select('id', { count: 'exact', head: true }).eq('kind', 'submit:failed').gte('created_at', new Date(now - 86400_000).toISOString()))),
     safe(() => count(sb.from('portal_suggestions').select('id', { count: 'exact', head: true }).eq('status', 'new'))),
+    safe(async () => {
+      const { data, error } = await sb.from('proposal_requests').select('slug, action, result, requested_at').eq('status', 'failed')
+        .gte('requested_at', new Date(now - 7 * 86400_000).toISOString()).order('requested_at', { ascending: false }).limit(LIST_ROWS);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => ({ slug: String(r.slug), action: String(r.action), result: (r.result as string | null) ?? null, at: String(r.requested_at) }));
+    }),
+    safe(async () => {
+      const { data, error } = await sb.from('paper_library').select('source_file, status, notes').eq('kind', 'source').in('status', ['flagged', 'failed'])
+        .order('status', { ascending: true }).order('finished_at', { ascending: false, nullsFirst: false }).limit(LIST_ROWS);
+      if (error) throw new Error(error.message);
+      return (data ?? []).map((r) => ({ file: String(r.source_file || 'a paper'), status: String(r.status), note: (r.notes as string | null) ?? null }));
+    }),
+    safe(async () => {
+      const rows = await all<{ level: string | null }>((a, b) => sb.from('authored_question_proposals').select('level').eq('status', 'pending').range(a, b), 5000);
+      const by = new Map<string, number>();
+      for (const r of rows) by.set(r.level || 'No level', (by.get(r.level || 'No level') ?? 0) + 1);
+      return [...by].map(([level, n]) => ({ level, n })).sort((a, b) => b.n - a.n);
+    }),
     safe(() => lessonsToday()),
     safe(() => lessonsToLog()),
     safe(async () => {
-      const rows = await all<{ released_at: string }>((a, b) => sb.from('paper_marking_runs').select('released_at').gte('released_at', weekAgo).range(a, b), 3000);
+      const rows = await all<{ id: string; released_at: string; student_name: string | null; paper_name: string | null }>((a, b) => sb.from('paper_marking_runs').select('id, released_at, student_name, paper_name').gte('released_at', weekAgo).order('released_at', { ascending: false }).range(a, b), 3000);
       const at = rows.map((r) => r.released_at);
-      return { today: at.filter((x) => x >= midnight).length, perDay: perDay(at, TREND_DAYS, now) };
+      const today = rows.filter((r) => r.released_at >= midnight);
+      return { today: today.length, perDay: perDay(at, TREND_DAYS, now), list: today.slice(0, LIST_ROWS).map((r) => ({ id: r.id, student: r.student_name, paper: r.paper_name })) };
     }),
     safe(async () => {
       const rows = await all<{ airtable_student_id: string | null; attempted_at: string }>((a, b) => sb.from('student_attempts').select('airtable_student_id, attempted_at').gte('attempted_at', weekAgo).range(a, b), 5000);
@@ -295,7 +328,8 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const line = (j: (JobLine & { meta?: unknown }) | null): JobLine | null => (j ? { ok: j.ok, at: j.at, summary: j.summary } : null);
   return {
     questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew,
-    lessonsToday: lessons, lessonsToLog: toLog, marked, practice,
+    shipsFailedList: shipsList, extractionFlaggedList: flaggedList, questionProposalsByLevel: proposalLevels,
+    lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice,
     queue: q, extraction: ext, twins: tw, jobs: jb, logins: lg, disk,
     deploys: {
       website: process.env.VERCEL_GIT_COMMIT_SHA ? { sha: process.env.VERCEL_GIT_COMMIT_SHA, message: (process.env.VERCEL_GIT_COMMIT_MESSAGE || '').split('\n')[0].slice(0, 80) || null } : null,
