@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import PullToRefresh from '@/components/PullToRefresh';
+import AdminVisitCounter from '@/components/AdminVisitCounter';
 
 export const metadata: Metadata = {
   title: "Admin — Adrian's Math Tuition",
@@ -15,5 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <PullToRefresh>{children}</PullToRefresh>;
+  return <PullToRefresh><AdminVisitCounter />{children}</PullToRefresh>;
 }
