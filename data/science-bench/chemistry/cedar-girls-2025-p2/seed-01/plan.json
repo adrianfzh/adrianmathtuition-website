@@ -5,15 +5,15 @@
  "seed": 1,
  "runs": {
   "rules-alone": {
-   "runId": "0c74e671-9b5a-45bd-b622-b1141224387f",
+   "runId": "a25ce0f0-4f30-454d-bf23-00d3c6e3efff",
    "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01",
-   "queuedAt": "2026-09-24T02:12:27.298Z"
+   "queuedAt": "2026-10-06T16:26:04.395Z"
   },
   "scheme-grounded": {
-   "runId": "892185bf-403e-44f5-a1c5-71d5b62004e7",
+   "runId": "abd6c2b2-6c44-470e-86eb-e6ed18be1c0d",
    "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01 · scheme",
    "scheme": "cedar-p2-scheme.pdf",
-   "queuedAt": "2026-09-24T04:48:27.168Z"
+   "queuedAt": "2026-10-06T16:26:10.305Z"
   }
  },
  "parts": [
@@ -223,6 +223,21 @@
    "defect": "WRONG_WORD",
    "truth": 0,
    "why": "scheme: \"reject: chemical formula of calcium chloride\" — the question asks for a name"
+  }
+ ],
+ "earlierRuns": [
+  {
+   "mode": "rules-alone",
+   "runId": "0c74e671-9b5a-45bd-b622-b1141224387f",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01",
+   "queuedAt": "2026-09-24T02:12:27.298Z"
+  },
+  {
+   "mode": "scheme-grounded",
+   "runId": "892185bf-403e-44f5-a1c5-71d5b62004e7",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · A · seed 01 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:27.168Z"
   }
  ]
 }

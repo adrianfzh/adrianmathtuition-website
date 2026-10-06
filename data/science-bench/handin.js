@@ -3,7 +3,7 @@
 //   no scheme → run 'rules-alone'; with a scheme PDF → it rides save-paper as source.scheme_source, run 'scheme-grounded'
 const fs = require('fs'), path = require('path');
 const W = '/Users/adrianfong/dev/adrianmathtuition-website';
-const env = require(W + '/node_modules/dotenv').parse(fs.readFileSync(W + '/.env.local.bak-2026-09-08'));
+const env = require(W + '/node_modules/dotenv').parse(fs.readFileSync(W + '/.env.local'));
 const PW = String(env.ADMIN_PASSWORD).trim().replace(/^"|"$/g, '');
 const SITE = 'https://www.adrianmathtuition.com';
 const H = { Authorization: `Bearer ${PW}` };
@@ -36,6 +36,8 @@ const plan = JSON.parse(fs.readFileSync(planFile, 'utf8'));
   if (!runId) throw new Error('save: ' + JSON.stringify(save).slice(0, 400));
   const q = await (await fetch(`${SITE}/api/admin/mark-paper`, { method: 'POST', headers: { ...H, 'content-type': 'application/json' },
     body: JSON.stringify({ phase: 'enqueue', id: runId, model: 'opus', style: 'teacher' }) })).json();
+  // a re-hand-in after a rule change keeps the earlier run, so the two can be compared (7 Oct 2026)
+  if (plan.runs[mode]) (plan.earlierRuns ||= []).push({ mode, ...plan.runs[mode] });
   plan.runs[mode] = { runId, paperName, ...(schemePdf ? { scheme: require('path').basename(schemePdf) } : {}), queuedAt: new Date().toISOString() };
   fs.writeFileSync(planFile, JSON.stringify(plan, null, 1));
   console.log(seedName, runId, paperName, JSON.stringify(q));

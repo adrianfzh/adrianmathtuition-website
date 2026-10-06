@@ -5,15 +5,15 @@
  "seed": 2,
  "runs": {
   "rules-alone": {
-   "runId": "7f68e28c-ab37-49d8-84ba-85d6e8592d92",
+   "runId": "e4042ed7-68fb-4356-b202-4811c5d55d4c",
    "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02",
-   "queuedAt": "2026-09-24T02:12:29.346Z"
+   "queuedAt": "2026-10-06T16:26:13.816Z"
   },
   "scheme-grounded": {
-   "runId": "d7308d40-244e-457f-ac99-1be1de5f3f39",
+   "runId": "588b35b2-76c7-4f6f-8eee-1784d19fdccd",
    "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02 · scheme",
    "scheme": "cedar-p2-scheme.pdf",
-   "queuedAt": "2026-09-24T04:48:32.547Z"
+   "queuedAt": "2026-10-06T16:26:18.545Z"
   }
  },
  "parts": [
@@ -223,6 +223,21 @@
    "defect": "CLEAN",
    "truth": 1,
    "why": "fully correct"
+  }
+ ],
+ "earlierRuns": [
+  {
+   "mode": "rules-alone",
+   "runId": "7f68e28c-ab37-49d8-84ba-85d6e8592d92",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02",
+   "queuedAt": "2026-09-24T02:12:29.346Z"
+  },
+  {
+   "mode": "scheme-grounded",
+   "runId": "d7308d40-244e-457f-ac99-1be1de5f3f39",
+   "paperName": "BENCH · chemistry · Cedar Girls 2025 Prelim Chemistry P2 · C · seed 02 · scheme",
+   "scheme": "cedar-p2-scheme.pdf",
+   "queuedAt": "2026-09-24T04:48:32.547Z"
   }
  ]
 }

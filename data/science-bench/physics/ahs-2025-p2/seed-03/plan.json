@@ -5,15 +5,15 @@
  "seed": 3,
  "runs": {
   "rules-alone": {
-   "runId": "52e8a71d-a646-4b16-8e90-4f63039a0e69",
+   "runId": "27c9765f-7f41-4224-8a53-96ae179c8630",
    "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03",
-   "queuedAt": "2026-09-30T08:46:48.771Z"
+   "queuedAt": "2026-10-06T16:26:45.211Z"
   },
   "scheme-grounded": {
-   "runId": "4a5365c3-a2e0-448d-a62f-317e9ae186c9",
+   "runId": "02fe9786-e3af-42fa-9df0-3720a7ec3aa4",
    "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03 · scheme",
-   "scheme": "scheme.pdf",
-   "queuedAt": "2026-09-30T08:46:55.216Z"
+   "scheme": "ahs-scheme.pdf",
+   "queuedAt": "2026-10-06T16:26:49.893Z"
   }
  },
  "parts": [
@@ -214,6 +214,21 @@
    "defect": "WRONG_WORD",
    "truth": 0,
    "why": "scheme rejects both: \"harmful\" is too general; penetrating the skin is not needed as the blood samples are removed → 0"
+  }
+ ],
+ "earlierRuns": [
+  {
+   "mode": "rules-alone",
+   "runId": "52e8a71d-a646-4b16-8e90-4f63039a0e69",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03",
+   "queuedAt": "2026-09-30T08:46:48.771Z"
+  },
+  {
+   "mode": "scheme-grounded",
+   "runId": "4a5365c3-a2e0-448d-a62f-317e9ae186c9",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · E · seed 03 · scheme",
+   "scheme": "scheme.pdf",
+   "queuedAt": "2026-09-30T08:46:55.216Z"
   }
  ]
 }

@@ -85,6 +85,18 @@ version when the scores are higher … their costumes get more impressive". Deci
   `docs/characters/2026-10-06/`. Not kept: Nano Banana 2's blue dragon, MiniMax (five different animals, a
   watermark — it failed the brief), the session's own code-drawn otter and dragon (SVG, same folder — still the
   option for a tiny badge that must be sharp and identical every time).
+- **7 Oct 2026 — the look changed, and the first suites he KEPT.** The rounded/flat sheets above were all
+  rejected ("it doesn't have the 'cute' factor - like chinese soft toys or chinese animation now"). What he
+  liked: the **cute animation style** (Chinese 萌系 Q版 sticker-pack look: chibi, two heads tall, huge eyes) with
+  **little human characters**. He asked for a "modern scholar - male and female versions" and said **"keep all the
+  modern scholar character suites … will use them next time"**: eight sheets (boy + girl × GPT Image 2, Gemini 3
+  Pro Image, Seedream 5.0 Pro, Qwen-Image 3 Pro), each pupil → keen student → top student → graduate →
+  young professor. Files and the exact brief: `docs/characters/2026-10-07-modern-scholar/` (`PROMPT.md`).
+  Chinese models (Seedream, Qwen) were the strongest at this look; all image models are reachable through
+  OpenRouter (the bot's `OPENROUTER_API_KEY`) except Midjourney. Known flaw: Seedream's boy wears a skirt at level 2.
+  Earlier little-human sheets he saw but did not rule on (wizard boy/girl, knight, traditional scholar, pupils):
+  `.scratch_shot/characters-2026-10-06/round4/` on the Mac only.
+- **Score bands (his, 6 Oct):** level 1 = 50–59, 2 = 60–69, 3 = 70–79, 4 = 80–89, 5 = 90–100.
 - **Rules proposed, not yet confirmed by him:** earned not sprayed (two or three a paper at most), never as
   consolation on a weak paper, no slang.
 - **Still to do:** more suites (he wants several — other animals and non-animals); try Recraft, Midjourney and the

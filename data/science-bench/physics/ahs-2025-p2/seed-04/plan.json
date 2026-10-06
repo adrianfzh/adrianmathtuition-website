@@ -5,15 +5,15 @@
  "seed": 4,
  "runs": {
   "rules-alone": {
-   "runId": "895b7f8e-9b40-4238-b454-8f53e05a33f3",
+   "runId": "ce89a34b-1ac6-415e-b3f8-7baa344711d8",
    "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · C · seed 04",
-   "queuedAt": "2026-09-30T08:46:59.021Z"
+   "queuedAt": "2026-10-06T16:26:53.970Z"
   },
   "scheme-grounded": {
-   "runId": "e169a37a-5e37-4f5d-b7b5-17399add7d6c",
+   "runId": "5a3ce5b7-c0be-4c96-86e5-8a7e4cd5bb85",
    "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · C · seed 04 · scheme",
-   "scheme": "scheme.pdf",
-   "queuedAt": "2026-09-30T08:47:02.441Z"
+   "scheme": "ahs-scheme.pdf",
+   "queuedAt": "2026-10-06T16:27:00.643Z"
   }
  },
  "parts": [
@@ -214,6 +214,21 @@
    "defect": "CLEAN",
    "truth": 2,
    "why": "fully correct"
+  }
+ ],
+ "earlierRuns": [
+  {
+   "mode": "rules-alone",
+   "runId": "895b7f8e-9b40-4238-b454-8f53e05a33f3",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · C · seed 04",
+   "queuedAt": "2026-09-30T08:46:59.021Z"
+  },
+  {
+   "mode": "scheme-grounded",
+   "runId": "e169a37a-5e37-4f5d-b7b5-17399add7d6c",
+   "paperName": "BENCH · physics · AHS 2025 Prelim Physics P2 · C · seed 04 · scheme",
+   "scheme": "scheme.pdf",
+   "queuedAt": "2026-09-30T08:47:02.441Z"
   }
  ]
 }
