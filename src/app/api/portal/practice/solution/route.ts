@@ -8,6 +8,7 @@ import { isScienceSubject, mcqKey, scienceLevelForSubject, sciencePoolLevels } f
 import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
 import { tidyChemText } from '@/lib/chem-text';
+import { approvedDiagrams, diagramForQuestion } from '@/lib/science-diagram-library';
 
 export const runtime = 'nodejs';
 
@@ -47,7 +48,12 @@ export async function GET(req: NextRequest) {
       // An MCQ's stored answer may carry its whole explanation ("**D** — … Why: …", 805 served rows):
       // print just the letter — the explanation is the solution below.
       const key = mcqKey(sq.answer);
-      return NextResponse.json({ markdown: tidyChemText(solutionMarkdown(own ? { ...sq, answer: null } : key ? { ...sq, answer: key } : sq, gate)) });
+      let markdown = tidyChemText(solutionMarkdown(own ? { ...sq, answer: null } : key ? { ...sq, answer: key } : sq, gate));
+      // A question that asks the student to draw / label / complete a diagram shows the
+      // matching approved picture from the science library after the solution (6 Oct 2026).
+      const pic = diagramForQuestion(await approvedDiagrams(subject), String((sq as { question_text?: string | null }).question_text || ''));
+      if (pic) markdown += `\n\n**Diagram — ${pic.name}**\n\n<img src="${pic.url}" alt="${pic.name.replace(/"/g, '')}" style="max-width:100%;display:block;margin:8px 0" />`;
+      return NextResponse.json({ markdown });
     } catch (e) {
       return NextResponse.json({ error: (e as Error).message }, { status: 500 });
     }

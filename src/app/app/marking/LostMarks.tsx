@@ -55,6 +55,14 @@ export default function LostMarks({ paper, explain = false }: { paper: StudentPa
                 ))}
               </div>
             )}
+            {/* Science, a lost mark on a draw / label part: the correct picture (6 Oct 2026). */}
+            {q.diagram && (
+              <figure className="mt-2 rounded-xl border border-emerald-100 bg-emerald-50/40 p-2">
+                <figcaption className="text-[12px] font-semibold text-emerald-900 mb-1">Correct diagram — {q.diagram.name}</figcaption>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={q.diagram.url} alt={q.diagram.name} loading="lazy" className="w-full max-h-[420px] object-contain bg-white rounded-lg" />
+              </figure>
+            )}
             {/* Science, a point lost for the WORDS not the idea (24 Sep 2026, the
                 chemistry study loop): the scheme's phrase beside the student's
                 own, both verbatim — the pair they learn from. */}

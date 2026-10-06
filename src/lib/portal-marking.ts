@@ -85,6 +85,9 @@ export interface StudentQuestion {
   full: boolean;
   /** The printed question as the marker read it, when it extracted one. */
   prompt: string | null;
+  /** Science, a lost mark on a draw / label / complete-the-diagram question: the matching
+   *  approved picture from the library (lib/science-diagram-match, attached by the paper page). */
+  diagram?: { url: string; name: string } | null;
   /**
    * Per-part SEAB scheme codes ("M1 A0", "B1") — teacher-margin shorthand the
    * marker emits since 2026-08-24, plus that part's red-ink reason and ✱

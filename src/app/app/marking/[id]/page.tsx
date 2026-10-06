@@ -12,7 +12,9 @@ import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
+import { buildStudentMarking, type MarkingRunRow, type StudentQuestion } from '@/lib/portal-marking';
+import { asksForDiagram } from '@/lib/science-diagram-match';
+import { approvedDiagrams, diagramForQuestion } from '@/lib/science-diagram-library';
 import { readOnceToStamp } from '@/lib/paper-notice';
 import { stampNoticesSeen } from '@/lib/paper-notice-store';
 import { fileHref } from '@/lib/student-files-url';
@@ -97,6 +99,9 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const isScience = lane !== 'math';
   if (isScience && under !== 'science') redirect(`/app/science/marking/${id}`);
   if (!isScience && under === 'science') redirect(`/app/marking/${id}`);
+  // 🖼 A lost mark on a "draw / label the diagram" part shows the correct picture from the
+  // science library (6 Oct 2026, Adrian: "marking use them"). Approved pictures only.
+  if (isScience) await attachLibraryDiagrams(lane, paper.dropped);
   const tone = subjectTone(paper.subject);
   // ▶ Explain it (1 Oct 2026): admin-only until the flag flips; the preview student sees it.
   const explain = await explainClipVisible(sid);
@@ -378,4 +383,12 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
     </div>
   );
+}
+
+/** For each lost-mark question that asks for a diagram, the approved library picture that
+ *  matches its printed words. One small read; any failure leaves the page as it was. */
+async function attachLibraryDiagrams(subject: string, dropped: StudentQuestion[]) {
+  if (!dropped.some(q => asksForDiagram(q.prompt))) return;
+  const rows = await approvedDiagrams(subject);
+  for (const q of dropped) q.diagram = diagramForQuestion(rows, q.prompt) ?? q.diagram ?? null;
 }
