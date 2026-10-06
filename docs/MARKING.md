@@ -491,6 +491,7 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
     palette below), so an old cached cover is rendered once more on its next view and a
     student's list never mixes the two looks (no batch re-render). Tested in
     `front-page-html.test.ts` "the subject frame".
+  - **The whole-paper bar (6 Oct 2026, Adrian: "a bar (green and red - for the marks obtained), then like 'zoom in' on the red > then show the red bars")**: under "Where the marks went" one bar shows marks kept (green) and lost (red); a dashed funnel opens the red end into the per-question rows, and one last line says how many lost marks sit in questions not listed. `front-page-html.ts paperBar` — no bar when the total is being checked (`overCount`), the paper was marked without its question paper, or nothing was lost; the section then reads as before. Tested in `front-page-html.test.ts`.
     **The palette — "Set 2" (25 Sep 2026; Adrian, after E Math sky and Physics blue "look
     almost the same", "for orange, why not the same colour here?", "should be coherent with
     the overall app", then "Set 2" of the three sets shown):** one colour per subject, and

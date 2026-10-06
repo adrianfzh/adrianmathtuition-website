@@ -221,6 +221,42 @@ function questionRow(q: { question: string; lost: number; max: number; topic?: s
 }
 
 /**
+ * The whole paper as ONE bar — green for the marks kept, red for the marks lost —
+ * and the red end opened out into the per-question rows below it (Adrian, 6 Oct
+ * 2026: "at the top of that show a bar (green and red - for the marks obtained),
+ * then like 'zoom in' on the red > then show the red bars"). The funnel is an SVG
+ * polygon from the red segment's two ends down to the full width, in the same
+ * tint as the box the rows sit in, so the eye reads "these rows ARE that red".
+ *
+ * Shown only when the total can be trusted and something was lost: a paper being
+ * checked (overCount) or marked without its question paper has no honest
+ * denominator to draw. `null` → the section renders exactly as it did before.
+ */
+export function paperBar(input: FrontPageInput): { html: string; lost: number } | null {
+  const { awarded, max } = input;
+  if (!(max > 0) || overCount(input) || (input.ungrounded && input.ungrounded.countedMax > 0)) return null;
+  const lost = Math.round((max - awarded) * 10) / 10;
+  if (!(awarded >= 0) || lost <= 0) return null;
+  // the red segment keeps room for its label however small the loss; the green for its own
+  const redPct = Math.min(88, Math.max(13, (lost / max) * 100));
+  const keptPct = Math.round((100 - redPct) * 100) / 100;
+  const html = `<div class="pbar" role="img" aria-label="${awarded} of ${max} marks kept, ${lost} lost">
+    <span class="pbar-kept" style="width:${keptPct}%"><b>${awarded}</b> kept</span><span class="pbar-lost" style="width:${Math.round(redPct * 100) / 100}%"><b>${lost}</b> lost</span>
+  </div>
+  <svg class="pzoom" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><polygon points="${keptPct},0 100,0 100,10 0,10"/><line x1="${keptPct}" y1="0" x2="0" y2="10"/><line x1="100" y1="0" x2="100" y2="10"/></svg>`;
+  return { html, lost };
+}
+
+/**
+ * The lost marks the listed questions do not account for, as one last line — words,
+ * no bar: the rows' bars are scaled to the worst single question, and a bar for
+ * "everything else together" on that scale would say nothing true.
+ */
+function restRow(rest: number): string {
+  return `<div class="q-rest">and <b>${rest}</b> more mark${rest === 1 ? '' : 's'} across other questions</div>`;
+}
+
+/**
  * ONE compact row under the score: where the marks went by KIND of error —
  * "Marks lost · concept 9 · careless 7 (arithmetic 4, sign 3) · incomplete 3".
  *
@@ -477,6 +513,8 @@ export function frontPageHtml(input: FrontPageInput): string {
   const worst = (input.worstQuestions || []).slice(0, MAX_QUESTIONS);
   const withTopics = worst.some(q => !!(q.topic || '').trim());
   const maxLost = worst.reduce((m, q) => Math.max(m, q.lost), 0);
+  const pbar = worst.length ? paperBar(input) : null;
+  const rest = pbar ? Math.round((pbar.lost - worst.reduce((a, q) => a + q.lost, 0)) * 10) / 10 : 0;
   const top = themes[0];
   // A score above the total outranks the top theme: the student must read that the
   // number is being checked before they read anything built on it. Student words —
@@ -575,6 +613,22 @@ h2::before{content:none}
 .bar span{position:absolute;inset:0 auto 0 0;background:var(--verdict);opacity:.8}
 .q-marks{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
          font-size:.73rem;color:var(--ink-soft);text-align:right}
+.pbar{display:flex;height:1.45rem;margin-top:.55rem;font-family:"IBM Plex Mono",monospace;
+      font-variant-numeric:tabular-nums;font-size:.72rem;line-height:1.45rem;color:#fff;white-space:nowrap}
+.pbar span{overflow:hidden;padding:0 .55rem}
+.pbar b{font-weight:600}
+.pbar-kept{background:var(--earned)}
+.pbar-lost{background:var(--verdict);text-align:right}
+.pzoom{display:block;width:100%;height:1.7rem}
+.pzoom polygon{fill:var(--verdict);fill-opacity:.07}
+.pzoom line{stroke:var(--verdict);stroke-opacity:.55;stroke-width:1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
+.zoomed{background:rgba(196,52,44,.07);padding:.35rem .75rem .65rem;margin-bottom:1.1rem;
+        border:1px dashed rgba(196,52,44,.55);border-top:none}
+.zoomed .sub{margin:.05rem 0 .5rem}
+.zoomed .questions{margin-bottom:0}
+.zoomed .bar{background:#fff}
+.q-rest{font-size:.78rem;color:var(--ink-soft);font-style:italic;margin-top:.15rem}
+.q-rest b{color:var(--ink);font-weight:600;font-style:normal}
 .close{margin-top:auto;border-top:1.5px solid var(--ink);padding-top:.8rem;
        font-size:.89rem;color:var(--teach)}
 .close-tag{display:block;font-family:"IBM Plex Mono",monospace;font-size:.6rem;font-weight:600;
@@ -604,8 +658,10 @@ ${kindsRow(input.errorKinds, kindsScore(input), input.paperName)}<div class="sec
 </div>
 <div class="sec-where">
 <h2>Where the marks went</h2>
-<p class="sub">The questions that cost you most.</p>
-<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics, maxLost)).join('')}</div>
+${pbar ? pbar.html : ''}<div class="${pbar ? 'zoomed' : ''}">
+<p class="sub">${pbar ? `The ${pbar.lost} mark${pbar.lost === 1 ? '' : 's'} you lost, question by question.` : 'The questions that cost you most.'}</p>
+<div class="questions${withTopics ? ' with-topics' : ''}">${worst.map(q => questionRow(q, withTopics, maxLost)).join('')}${pbar && rest > 0 ? restRow(rest) : ''}</div>
+</div>
 </div>
 ${closingLine(input)}
 </div>

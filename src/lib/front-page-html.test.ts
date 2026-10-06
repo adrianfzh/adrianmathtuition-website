@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject } from './front-page-html';
+import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject } from './front-page-html';
 import { changedPartCount, ungroundedFrontPage, lostPartsFromRun } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
@@ -354,10 +354,16 @@ describe('frontPageHtml — a score above the paper total', () => {
   });
 
   it('changes the badge and the verdict line, and nothing else on the page', () => {
+    // Since 6 Oct 2026 it also has no whole-paper bar: a total that is being checked
+    // is not drawn as a bar. The question rows themselves are unchanged.
     const rest = (h: string) => h
       .replace(/<style>\n\.check-tag[\s\S]*?<\/style>/, '')
       .replace(/<div class="badge">[\s\S]*?<\/div><\/div>/, '')
-      .replace(/<p class="verdict">[\s\S]*?<\/p>/, '');
+      .replace(/<p class="verdict">[\s\S]*?<\/p>/, '')
+      .replace(/<div class="pbar"[\s\S]*?<\/svg>/, '')
+      .replace('<div class="zoomed">', '<div class="">')
+      .replace(/<p class="sub">The [\d.]+ marks? you lost, question by question\.<\/p>/, '<p class="sub">The questions that cost you most.</p>')
+      .replace(/<div class="q-rest">[\s\S]*?<\/div>/, '');
     expect(rest(frontPageHtml(over))).toBe(rest(frontPageHtml(base)));
     expect(rest(frontPageHtml(over))).not.toBe('');
   });
@@ -656,5 +662,41 @@ describe('frontPageHtml — the subject frame', () => {
     for (const s of ['A Math', 'E Math', 'Physics', 'Chemistry', 'Biology']) expect(coverSubject(s)?.band).toBe(coverSubject(s)?.solid);
     expect(coverSubject('Other')).toBeNull();
     expect(coverSubject(undefined)).toBeNull();
+  });
+});
+
+// 6 Oct 2026, Adrian: "at the top of that show a bar (green and red - for the marks
+// obtained), then like 'zoom in' on the red > then show the red bars".
+describe('the whole-paper bar, zoomed into the lost marks', () => {
+  const five = [
+    { question: 'Q2', lost: 1, max: 2 }, { question: 'Q5', lost: 1, max: 1 }, { question: 'Q6', lost: 1, max: 2 },
+    { question: 'Q7', lost: 1, max: 3 }, { question: 'Q13', lost: 1, max: 2 },
+  ];
+  it('one bar: marks kept in green, marks lost in red, then the rows, then the rest', () => {
+    const h = frontPageHtml({ ...base, awarded: 80, max: 90, worstQuestions: five });
+    expect(h).toContain('<b>80</b> kept');
+    expect(h).toContain('<b>10</b> lost');
+    expect(h).toContain('The 10 marks you lost, question by question.');
+    expect(h).toContain('and <b>5</b> more marks across other questions');   // 10 lost, 5 listed → 5 elsewhere
+    expect(h).not.toContain('The questions that cost you most.');
+  });
+  it('the funnel starts where the red starts; a small loss still has room for its label', () => {
+    const big = paperBar({ ...base, awarded: 45, max: 90 })!;
+    expect(big.html).toContain('width:50%');
+    expect(big.html).toContain('points="50,0 100,0 100,10 0,10"');
+    const small = paperBar({ ...base, awarded: 88, max: 90 })!;
+    expect(small.html).toContain('points="87,0');
+  });
+  it('no rest row when the listed questions are the whole loss', () => {
+    const h = frontPageHtml({ ...base, awarded: 83, max: 90, worstQuestions: [{ question: 'Q5', lost: 7, max: 7 }] });
+    expect(h).not.toContain('class="q-rest"');
+  });
+  it('no bar when the total cannot be trusted or nothing was lost', () => {
+    expect(paperBar({ ...base, awarded: 95, max: 90 })).toBeNull();
+    expect(paperBar({ ...base, awarded: 90, max: 90 })).toBeNull();
+    expect(paperBar({ ...base, awarded: 30, max: 90, ungrounded: { countedMax: 40 } } as FrontPageInput)).toBeNull();
+    const h = frontPageHtml({ ...base, awarded: 95, max: 90 });
+    expect(h).toContain('The questions that cost you most.');
+    expect(h).not.toContain('class="pbar"');
   });
 });
