@@ -18,11 +18,14 @@ type Diagram = {
 
 const SUBJECTS = ['all', 'biology', 'chemistry', 'physics'];
 
+type Missing = { subject: string; kind: string; spec: string; outcome: string; count: number; last: string };
+
 export default function ScienceDiagramsPage() {
   const [password, setPassword] = useState('');
   const [authed, setAuthed] = useState(false);
   const [authError, setAuthError] = useState('');
   const [rows, setRows] = useState<Diagram[]>([]);
+  const [missing, setMissing] = useState<Missing[]>([]);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
   const [busy, setBusy] = useState<Set<string>>(new Set());
@@ -35,6 +38,7 @@ export default function ScienceDiagramsPage() {
       const r = await fetch('/api/admin/science-diagrams');
       const d = await r.json();
       setRows(d.rows || []);
+      setMissing(d.missing || []);
       setApiError(d.error || '');
     } catch { setApiError('Connection error'); }
     finally { setLoading(false); }
@@ -102,6 +106,23 @@ export default function ScienceDiagramsPage() {
       <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 16 }}>
         {SUBJECTS.map(s => <button key={s} onClick={() => setSubject(s)} style={chip(subject === s)}>{s}</button>)}
       </div>
+      {missing.length > 0 && (
+        <section style={{ border: '1px solid #fde68a', background: '#fffbeb', borderRadius: 11, padding: '10px 13px', marginBottom: 16 }}>
+          <h2 style={{ fontSize: 15, margin: '0 0 6px' }}>Pictures students needed — last 60 days</h2>
+          <p style={{ fontSize: 12.5, color: '#6b7280', margin: '0 0 8px' }}>
+            The bot wanted one of these and had none to send (or had one you have not approved). Most asked first.
+          </p>
+          {missing.map((m, i) => (
+            <div key={i} style={{ display: 'flex', gap: 8, fontSize: 13.5, padding: '4px 0', borderTop: i ? '1px solid #fef3c7' : 0 }}>
+              <span style={{ minWidth: 26, fontWeight: 600 }}>{m.count}×</span>
+              <span style={{ flex: 1 }}>{m.spec} <span style={{ color: '#9ca3af' }}>· {m.subject}</span></span>
+              <span style={{ fontSize: 12, color: m.outcome === 'not-approved' ? '#b45309' : '#6b7280' }}>
+                {m.outcome === 'not-approved' ? 'have one — not approved' : 'none in library'}
+              </span>
+            </div>
+          ))}
+        </section>
+      )}
       {apiError && <p style={{ color: '#b91c1c' }}>{apiError}</p>}
       {loading && <p style={{ color: '#6b7280' }}>Loading…</p>}
       {!loading && shown.length === 0 && <p style={{ color: '#6b7280', padding: '28px 0' }}>Nothing here — that list is clear.</p>}

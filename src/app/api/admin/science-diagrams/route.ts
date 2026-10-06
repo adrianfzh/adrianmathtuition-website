@@ -24,7 +24,23 @@ export async function GET(req: NextRequest) {
     .select('id, name, subject, topic, kind, keywords, image_url, source, is_published, student_ok, reviewed_at')
     .order('subject').order('topic').order('name');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ rows: (data || []) as Row[] });
+
+  // What students needed and did not get (bot's ai/science-diagram.js logs every lookup to
+  // science_diagram_requests since 6 Oct 2026): grouped by the picture asked for, last 60 days.
+  const since = new Date(Date.now() - 60 * 86400_000).toISOString();
+  const { data: reqs } = await supa.from('science_diagram_requests')
+    .select('subject, kind, spec, outcome, created_at')
+    .gte('created_at', since).in('outcome', ['miss', 'not-approved'])
+    .order('created_at', { ascending: false }).limit(1000);
+  const groups = new Map<string, { subject: string; kind: string; spec: string; outcome: string; count: number; last: string }>();
+  for (const r of (reqs || []) as { subject: string; kind: string; spec: string; outcome: string; created_at: string }[]) {
+    const key = `${r.subject}|${r.outcome}|${String(r.spec || '').toLowerCase().trim()}`;
+    const g = groups.get(key);
+    if (g) g.count++;
+    else groups.set(key, { subject: r.subject, kind: r.kind, spec: r.spec, outcome: r.outcome, count: 1, last: r.created_at });
+  }
+  const missing = [...groups.values()].sort((a, b) => b.count - a.count).slice(0, 50);
+  return NextResponse.json({ rows: (data || []) as Row[], missing });
 }
 
 export async function PATCH(req: NextRequest) {
