@@ -68,6 +68,30 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
+## 🏅 Reward stickers on marked papers — characters that level up (Adrian, 6 Oct 2026) — DESIGN, not built
+
+Adrian: "are we able to put like 'stickers' if students did well? like how teachers will put stickers … make it fun";
+"no singaporean slang/singlish, and we have to come up with the characters"; "there must be like a 'leveled up'
+version when the scores are higher … their costumes get more impressive". Decided so far:
+
+- **A suite = ONE character at five levels**, the outfit richer each level, plus a few special stickers of the same
+  character later (zero careless slips, comeback, clever method). The student picks a suite.
+- **The level follows the PAPER's score band** (his cut-offs): level 1 = 50–59 %, 2 = 60–69 %, 3 = 70–79 %,
+  4 = 80–89 %, 5 = 90–100 %. Below 50 %: no level sticker (not yet decided what, if anything, shows).
+- **Style: rounded** (bold outline, flat colour) — picked from four tried (`docs/characters/2026-10-06/otter-styles.png`).
+- **Two suites KEPT** from an open brief given to four image models ("invent a mascot suite that levels up five
+  times", same context): the **otter explorer → mage-king** (GPT Image 2) and the **owl scholar → professor**
+  (Gemini 3 Pro Image; its "Level 1…5" captions and the logo on the tablet must come off). Files:
+  `docs/characters/2026-10-06/`. Not kept: Nano Banana 2's blue dragon, MiniMax (five different animals, a
+  watermark — it failed the brief), the session's own code-drawn otter and dragon (SVG, same folder — still the
+  option for a tiny badge that must be sharp and identical every time).
+- **Rules proposed, not yet confirmed by him:** earned not sprayed (two or three a paper at most), never as
+  consolation on a weak paper, no slang.
+- **Still to do:** more suites (he wants several — other animals and non-animals); try Recraft, Midjourney and the
+  Chinese models (Seedream, Qwen-Image, HunyuanImage, Kolors) once he has accounts; one approved sheet per suite as the
+  reference for every later picture; then where the sticker sits (cover page and beside the question), the pen/cover
+  code, and a switch. Nothing student-facing exists yet.
+
 ## 🌙 Nightly builder — approved to build
 
 The Fly worker builds the rows below overnight (01:30 SGT, at most one a night), each on its own
