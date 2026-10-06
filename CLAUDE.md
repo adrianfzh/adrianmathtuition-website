@@ -59,6 +59,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | Commit / push / preview alias / promote detail, CLI seat block | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 | Patterns (sgt.ts, teaching-knowledge layer, figure library, student files, Puppeteer, KaTeX), every gotcha, env-var notes | [`docs/PATTERNS.md`](docs/PATTERNS.md) |
 | Cloud sessions (claude.ai/code) | [`docs/CLOUD.md`](docs/CLOUD.md) |
+| Adrian asks for a summary, or is switching account (the hand-over note + the starter line he keeps) | [`docs/FANOUT.md`](docs/FANOUT.md) §7a |
 | Which skill does what | [`docs/SKILLS.md`](docs/SKILLS.md) — add a row when you add a skill |
 
 The marking, kiosk, schedule and invoices rows also exist as auto-loading skills in `.claude/skills/`.

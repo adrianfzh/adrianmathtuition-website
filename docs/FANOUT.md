@@ -101,6 +101,22 @@ evening across ALL machines — check `gh run list` before pushing `main`), and
 the iCloud/Dropbox folders (one machine per append-only file; never rewrite
 `papers/processing_log.txt` in place).
 
+**7a. The hand-over note — a summary, or a switch of account (Adrian, 3 → 6 Oct 2026).**
+Adrian: *"give me a summary of what we discussed here"* (3 Oct, two sessions); 6 Oct, before
+moving to another account: *"give me a summary of what we have done"* … *"give a prompt so
+that the next session on another claude account knows"*. Why: a plan's 5-hour limit moves him
+to another account mid-work, and the new session knows nothing he did not paste.
+- **One note, one place:** `docs/HANDOFF-<date>.md` in the website repo — today's, started
+  from the newest one. Sections: State right now · Waiting on Adrian · Things that bit us ·
+  Next. Later the same day → a "Later on <date>" section, not a second file.
+- **He asks for a summary, says he is switching account, or the session is near its limit →**
+  update the note, commit and push it (docs only, builds nothing), then reply with the summary
+  in ten plain lines or fewer.
+- **The starter line never changes**, so he can keep it and paste it on any account:
+  *"Read the newest docs/HANDOFF-*.md in the website repo, then CLAUDE.md. Talk to me in
+  plain, short words. Check the live state yourself, then tell me in a few lines where things
+  stand and ask what I want next."* Give him that line under the summary.
+
 ## 8. Report shape
 
 One status line per hour while a round runs. At the end: what landed (commits,
