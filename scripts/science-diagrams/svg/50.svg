@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1020" viewBox="0 0 1200 1020">
+<rect width="1200" height="1020" fill="#fff"/>
+<!-- ureter -->
+<path d="M880,40 C860,120 790,160 722,222" fill="none" stroke="#000" stroke-width="18"/>
+<path d="M881,36 C860,120 790,160 722,222" fill="none" stroke="#f7e3a8" stroke-width="12"/>
+<!-- bladder -->
+<ellipse cx="620" cy="300" rx="140" ry="115" fill="#f7e3a8" stroke="#000" stroke-width="3"/>
+<!-- scrotum -->
+<ellipse cx="575" cy="805" rx="125" ry="130" fill="#f8dccf" stroke="#000" stroke-width="3"/>
+<!-- penis -->
+<path d="M620,560 L235,690 C190,708 205,792 252,778 L620,650 C650,640 650,570 620,560 Z" fill="#f4c1b0" stroke="#000" stroke-width="3" stroke-linejoin="round"/>
+<!-- seminal vesicle -->
+<path d="M800,470 C770,440 790,400 800,380 C790,360 810,330 830,345 C850,330 870,360 860,385 C875,410 860,440 845,455 C840,470 815,480 800,470 Z" fill="#e6d08a" stroke="#000" stroke-width="2.5"/>
+<!-- prostate -->
+<ellipse cx="660" cy="500" rx="62" ry="48" fill="#cdb7dd" stroke="#000" stroke-width="3"/>
+<!-- urethra -->
+<path d="M650,412 L650,560 C650,600 610,605 570,615 L222,742" fill="none" stroke="#000" stroke-width="16" stroke-linejoin="round"/>
+<path d="M650,410 L650,560 C650,600 610,605 570,615 L218,744" fill="none" stroke="#fdf3d6" stroke-width="10" stroke-linejoin="round"/>
+<!-- testis -->
+<ellipse cx="560" cy="815" rx="60" ry="82" fill="#fbecd0" stroke="#000" stroke-width="3"/>
+<!-- epididymis -->
+<path d="M590,743 C665,753 672,865 610,887" fill="none" stroke="#000" stroke-width="30" stroke-linecap="round"/>
+<path d="M590,743 C665,753 672,865 610,887" fill="none" stroke="#e3b866" stroke-width="24" stroke-linecap="round"/>
+<!-- sperm duct -->
+<path d="M612,885 C655,862 652,780 648,725 C644,670 720,640 880,590 C960,560 960,330 935,240 C915,160 880,100 830,95 C770,90 740,150 770,210 C790,250 805,290 810,330 C820,420 740,470 700,490" fill="none" stroke="#000" stroke-width="12" stroke-linejoin="round"/>
+<path d="M612,885 C655,862 652,780 648,725 C644,670 720,640 880,590 C960,560 960,330 935,240 C915,160 880,100 830,95 C770,90 740,150 770,210 C790,250 805,290 810,330 C820,420 740,470 700,490" fill="none" stroke="#9fc3e6" stroke-width="6" stroke-linejoin="round"/>
+
+<clipPath id="cx"><circle cx="766" cy="186" r="26"/></clipPath>
+<g clip-path="url(#cx)"><path d="M880,40 C860,120 790,160 722,222" fill="none" stroke="#000" stroke-width="18"/>
+<path d="M881,36 C860,120 790,160 722,222" fill="none" stroke="#f7e3a8" stroke-width="12"/></g>
+<g font-family="DejaVu Sans" font-size="30" fill="#000">
+<g stroke="#000" stroke-width="1.5">
+<line x1="185" y1="290" x2="480" y2="300"/>
+<line x1="165" y1="560" x2="420" y2="680"/>
+<line x1="125" y1="830" x2="300" y2="762"/>
+<line x1="140" y1="905" x2="502" y2="840"/>
+<line x1="180" y1="985" x2="485" y2="895"/>
+<line x1="990" y1="55" x2="884" y2="55"/>
+<line x1="990" y1="230" x2="935" y2="250"/>
+<line x1="990" y1="400" x2="866" y2="400"/>
+<line x1="290" y1="470" x2="600" y2="495"/>
+<line x1="990" y1="805" x2="667" y2="805"/>
+</g>
+<text x="40" y="300">bladder</text>
+<text x="40" y="570">urethra</text>
+<text x="40" y="840">penis</text>
+<text x="40" y="915">testis</text>
+<text x="40" y="995">scrotum</text>
+<text x="1000" y="65">ureter</text>
+<text x="1000" y="240">sperm duct</text>
+<text x="1000" y="390">seminal</text><text x="1000" y="425">vesicle</text>
+<text x="40" y="480">prostate gland</text>
+<text x="1000" y="815">epididymis</text>
+</g>
+</svg>

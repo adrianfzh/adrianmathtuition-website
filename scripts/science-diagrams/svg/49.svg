@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000">
+<rect width="1200" height="1000" fill="#fff"/>
+<defs>
+<g id="side">
+  <!-- oviduct -->
+  <path d="M478,318 C430,260 360,215 290,232 C235,246 210,290 212,335" fill="none" stroke="#000" stroke-width="20"/>
+  <path d="M482,320 C430,260 360,215 290,232 C235,246 210,290 212,337" fill="none" stroke="#f4c1b0" stroke-width="14"/>
+  <path d="M482,320 C430,260 360,215 290,232 C235,246 210,290 212,340" fill="none" stroke="#fff" stroke-width="5"/>
+  <!-- funnel with fimbriae -->
+  <path d="M200,332 L224,332 L262,392 C250,400 238,392 230,402 C222,394 210,404 200,396 C192,404 180,394 172,402 C166,394 160,398 160,392 Z" fill="#f4c1b0" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- ovarian ligament -->
+  <path d="M360,410 C410,410 450,395 485,380" fill="none" stroke="#000" stroke-width="2"/>
+  <!-- ovary -->
+  <ellipse cx="300" cy="420" rx="62" ry="38" fill="#f7dfa0" stroke="#000" stroke-width="3"/>
+  <circle cx="275" cy="412" r="9" fill="none" stroke="#000" stroke-width="1.5"/>
+  <circle cx="318" cy="428" r="12" fill="none" stroke="#000" stroke-width="1.5"/>
+  <circle cx="300" cy="404" r="6" fill="none" stroke="#000" stroke-width="1.5"/>
+</g>
+<g id="chan">
+  <path d="M466,316 C500,312 525,308 543,305" fill="none" stroke="#000" stroke-width="9"/>
+  <path d="M466,316 C500,312 525,308 552,305" fill="none" stroke="#fff" stroke-width="5"/>
+</g>
+</defs>
+<use href="#side"/>
+<use href="#side" transform="translate(1200,0) scale(-1,1)"/>
+<!-- vagina -->
+<path d="M553,570 C530,590 505,600 505,640 L505,930 Q505,960 535,960 L665,960 Q695,960 695,930 L695,640 C695,600 670,590 647,570 Z" fill="#f4c1b0" stroke="#000" stroke-width="3"/>
+<!-- uterus body + cervix -->
+<path d="M470,300 C470,232 730,232 730,300 C730,400 692,500 648,560 L648,672 L552,672 L552,560 C508,500 470,400 470,300 Z" fill="#f4c1b0" stroke="#000" stroke-width="3"/>
+<!-- uterine lining -->
+<path d="M507,300 C507,268 693,268 693,300 C688,380 650,455 612,522 L588,522 C550,455 512,380 507,300 Z" fill="#e0708a" stroke="#000" stroke-width="1.5"/>
+<!-- cavity -->
+<path d="M540,302 C570,296 630,296 660,302 L606,508 L594,508 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
+<rect x="595" y="505" width="10" height="170" fill="#fff"/>
+<path d="M594,508 L594,674 M606,508 L606,674" stroke="#000" stroke-width="1.5"/>
+<path d="M594,670 C560,684 536,698 536,724 L536,962 L664,962 L664,724 C664,698 640,684 606,670 Z" fill="#fff"/>
+<path d="M594,672 C560,684 536,698 536,724 L536,960 M664,960 L664,724 C664,698 640,684 606,672" fill="none" stroke="#000" stroke-width="2.5"/>
+<use href="#chan"/>
+<use href="#chan" transform="translate(1200,0) scale(-1,1)"/>
+<!-- labels -->
+<g font-family="DejaVu Sans" font-size="30" fill="#000">
+<g stroke="#000" stroke-width="1.5">
+<line x1="160" y1="140" x2="330" y2="226"/>
+<line x1="130" y1="520" x2="200" y2="396"/>
+<line x1="185" y1="640" x2="280" y2="456"/>
+<line x1="600" y1="110" x2="600" y2="250"/>
+<line x1="845" y1="545" x2="662" y2="440"/>
+<line x1="845" y1="640" x2="650" y2="640"/>
+<line x1="845" y1="800" x2="697" y2="800"/>
+</g>
+<text x="40" y="130">oviduct</text>
+<text x="20" y="555">funnel of</text><text x="20" y="590">oviduct</text>
+<text x="110" y="675">ovary</text>
+<text x="555" y="95">uterus</text>
+<text x="855" y="555">uterine lining</text>
+<text x="855" y="650">cervix</text>
+<text x="855" y="810">vagina</text>
+</g>
+</svg>

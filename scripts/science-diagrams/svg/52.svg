@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="830" viewBox="0 170 1200 830">
+<rect y="170" width="1200" height="830" fill="#fff"/>
+<defs>
+<g id="half">
+  <!-- sepal -->
+  <path d="M545,770 C480,780 400,760 345,700 C420,715 480,730 535,735 Z" fill="#a9d18e" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- petal -->
+  <path d="M520,725 C440,690 340,580 300,380 C370,460 440,570 540,700 Z" fill="#f6c6d8" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- nectary -->
+  <ellipse cx="547" cy="712" rx="14" ry="9" fill="#f2b84b" stroke="#000" stroke-width="2"/>
+  <!-- filament -->
+  <path d="M560,716 C540,640 505,540 492,450" fill="none" stroke="#000" stroke-width="5"/>
+  <!-- anther -->
+  <ellipse cx="490" cy="415" rx="20" ry="42" fill="#f5d76e" stroke="#000" stroke-width="2.5"/>
+  <line x1="490" y1="378" x2="490" y2="452" stroke="#000" stroke-width="1.5"/>
+</g>
+</defs>
+<use href="#half"/>
+<use href="#half" transform="translate(1200,0) scale(-1,1)"/>
+<!-- flower stalk -->
+<path d="M580,985 L580,790 L620,790 L620,985" fill="#bfe0a5" stroke="#000" stroke-width="2.5"/>
+<!-- receptacle -->
+<path d="M572,800 C560,770 535,745 520,725 L680,725 C665,745 640,770 628,800 Z" fill="#bfe0a5" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+<!-- carpel: ovary, style, stigma -->
+<path d="M600,560 C655,560 668,640 660,690 C652,725 548,725 540,690 C532,640 545,560 600,560 Z" fill="#cfe7b6" stroke="#000" stroke-width="2.5"/>
+<path d="M600,598 C628,598 634,650 628,684 C622,700 578,700 572,684 C566,650 572,598 600,598 Z" fill="#fff" stroke="#000" stroke-width="1.5"/>
+<ellipse cx="588" cy="620" rx="8" ry="11" fill="#fff6c8" stroke="#000" stroke-width="1.5"/>
+<ellipse cx="588" cy="652" rx="8" ry="11" fill="#fff6c8" stroke="#000" stroke-width="1.5"/>
+<ellipse cx="612" cy="636" rx="8" ry="11" fill="#fff6c8" stroke="#000" stroke-width="1.5"/>
+<ellipse cx="612" cy="668" rx="8" ry="11" fill="#fff6c8" stroke="#000" stroke-width="1.5"/>
+<path d="M590,562 L592,330 L608,330 L610,562" fill="#cfe7b6" stroke="#000" stroke-width="2.5"/>
+<path d="M565,330 C560,300 585,290 600,302 C615,290 640,300 635,330 C620,340 580,340 565,330 Z" fill="#cfe7b6" stroke="#000" stroke-width="2.5"/>
+<g font-family="DejaVu Sans" font-size="30" fill="#000">
+<g stroke="#000" stroke-width="1.5">
+<!-- left -->
+<line x1="275" y1="290" x2="302" y2="390"/>
+<line x1="262" y1="415" x2="470" y2="415"/>
+<line x1="285" y1="560" x2="520" y2="580"/>
+<line x1="210" y1="652" x2="536" y2="710"/>
+<line x1="235" y1="800" x2="400" y2="738"/>
+<!-- right -->
+<line x1="920" y1="250" x2="622" y2="305"/>
+<line x1="920" y1="345" x2="608" y2="345"/>
+<line x1="920" y1="590" x2="662" y2="625"/>
+<line x1="920" y1="680" x2="620" y2="668"/>
+<line x1="920" y1="790" x2="640" y2="770"/>
+<line x1="900" y1="900" x2="620" y2="900"/>
+<!-- brackets -->
+<path d="M140,385 L130,385 L130,580 L140,580" fill="none"/>
+<path d="M1050,225 L1060,225 L1060,700 L1050,700" fill="none"/>
+</g>
+<text x="220" y="275">petal</text>
+<text x="150" y="425">anther</text>
+<text x="150" y="570">filament</text>
+<text x="15" y="490">stamen</text>
+<text x="80" y="662">nectary</text>
+<text x="130" y="815">sepal</text>
+<text x="930" y="260">stigma</text>
+<text x="930" y="355">style</text>
+<text x="930" y="600">ovary</text>
+<text x="930" y="690">ovule</text>
+<text x="1070" y="472">carpel</text>
+<text x="930" y="800">receptacle</text>
+<text x="910" y="910">flower stalk</text>
+</g>
+</svg>

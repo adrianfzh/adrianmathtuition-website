@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1080" viewBox="0 0 1200 1080">
+<rect width="1200" height="1080" fill="#fff"/>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
+<line x1="560" y1="966" x2="560" y2="876" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="701" y1="785" x2="909" y2="735" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="510" y1="764" x2="369" y2="604" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="603" y1="764" x2="726" y2="604" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="909" y1="673" x2="446" y2="583" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="1057" y1="644" x2="1074" y2="504" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="866" y1="527" x2="974" y2="493" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="294" y1="516" x2="156" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="337" y1="516" x2="363" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="381" y1="516" x2="579" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="423" y1="516" x2="787" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="738" y1="516" x2="652" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="780" y1="516" x2="860" y2="344" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="362" y1="256" x2="338" y2="124" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="470" y1="256" x2="770" y2="124" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="570" y1="256" x2="390" y2="124" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="678" y1="256" x2="822" y2="124" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="878" y1="256" x2="872" y2="124" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<rect x="210.0" y="42.0" width="240" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="330" y="90" text-anchor="middle" font-family="DejaVu Sans" font-size="30">polar bear</text>
+<rect x="745.0" y="42.0" width="250" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="870" y="90" text-anchor="middle" font-family="DejaVu Sans" font-size="30">killer whale</text>
+<rect x="15.0" y="262.0" width="210" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="120" y="310" text-anchor="middle" font-family="DejaVu Sans" font-size="30">Arctic birds</text>
+<rect x="260.0" y="262.0" width="220" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="370" y="310" text-anchor="middle" font-family="DejaVu Sans" font-size="30">ringed seal</text>
+<rect x="510.0" y="262.0" width="240" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="630" y="310" text-anchor="middle" font-family="DejaVu Sans" font-size="30">harbour seal</text>
+<rect x="780.0" y="262.0" width="200" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="880" y="310" text-anchor="middle" font-family="DejaVu Sans" font-size="30">harp seal</text>
+<rect x="980.0" y="422.0" width="200" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="1080" y="470" text-anchor="middle" font-family="DejaVu Sans" font-size="30">Arctic char</text>
+<rect x="220.0" y="522.0" width="220" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="330" y="570" text-anchor="middle" font-family="DejaVu Sans" font-size="30">Arctic cod</text>
+<rect x="660.0" y="522.0" width="200" height="76" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="760" y="570" text-anchor="middle" font-family="DejaVu Sans" font-size="30">capelin</text>
+<rect x="915.0" y="650.0" width="270" height="100" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="1050" y="693" text-anchor="middle" font-family="DejaVu Sans" font-size="30">carnivorous</text>
+<text x="1050" y="727" text-anchor="middle" font-family="DejaVu Sans" font-size="30">zooplankton</text>
+<rect x="425.0" y="770.0" width="270" height="100" rx="14" fill="#fff" stroke="#000" stroke-width="2.5"/>
+<text x="560" y="813" text-anchor="middle" font-family="DejaVu Sans" font-size="30">herbivorous</text>
+<text x="560" y="847" text-anchor="middle" font-family="DejaVu Sans" font-size="30">zooplankton</text>
+<rect x="415.0" y="972.0" width="290" height="76" rx="14" fill="#dff0d0" stroke="#000" stroke-width="2.5"/>
+<text x="560" y="1020" text-anchor="middle" font-family="DejaVu Sans" font-size="30">phytoplankton</text>
+</svg>
