@@ -593,3 +593,35 @@ renders the wrapper as plain SVG, as it does for moves.
 **Filed, not fixed here (docs/MARKING-DEFECTS.md F50, F51):** the note's arrow landing on
 the ✗ row instead of the line the slip is on; a second independent slip on the same line
 going unnamed. "2pi(6)(15)" as words was F42, fixed forward before her paper was marked.
+
+## 18. Reloads mid-marking, lasso colour, line vs arc (6 Oct 2026)
+
+Adrian, after annotating Gavin's 20-page S3 EM paper: "sometimes halfway marking pages will
+go back to mark pages page, then go back to the annotations again"; "the ink is not perfect
+- strokes are not full"; "the lasso > should have style? (color)"; "hold and get a straight
+line, sometimes i get little arcs instead".
+
+**What the log said.** `annotate_ink_log` for that run: `shell: false, standalone: true` —
+he was in the Home-screen web app, not AdrianMarker — and the pen opened four times in 18
+minutes (10:16, 10:24, 10:28, 10:34). So (a) the patchy ink is §12's Live Text again (only
+the shell turns it off), and (b) the page was being killed and reloaded about every five
+minutes. The overlay now shows an amber line when an iPad opens it outside the shell.
+
+**Memory.** Every layered page decodes the full-size original and draws it into a
+double-size canvas (≈ 25 MB); a 20-page paper did all twenty at once on open. Now two at a
+time, nearest the opened page first, and the working canvas is zeroed as soon as its JPEG
+is out. NOT proven to be the whole cause — the per-stroke surface resets (§12's defence
+layers, two full-screen reallocations a stroke) are the other suspect and were left alone
+because they cannot be judged without the iPad.
+
+**Evidence next time.** While the pen is open `localStorage 'annotate-alive:v1'` holds
+{pages, layered, strokes, points, zoom, shell, openedAt, at} (refreshed every 15 s, removed
+on a clean close). Finding one at the next open posts `diedMidMarking` to
+`annotate_ink_log` — `select payload from annotate_ink_log where payload ? 'diedMidMarking'`.
+
+**Lasso colour.** The selection chip carries the five pen favourites and 🎨 (the full
+palette in `'sel'` mode); `recolourSelection` swaps in new stroke objects (one undo step).
+
+**Line vs arc.** `shape-fit` `LINE_MAX_DEVIATION` 0.04 → 0.07 and `ARC_MIN_SWEEP` 25° → 32°:
+a hand line that bows up to ~32° is a line; the gap where a faint bend became a shallow
+curve is closed. Tested both ways.

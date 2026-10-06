@@ -123,6 +123,7 @@ const HOLD_MOVE_PX = 6;             // css px of movement that resets the hold
 const SNAP_MIN_CSS = 24;            // stroke length below this never snaps
 const ERASER_TOL_CSS = 8;
 const TOOLS_KEY = 'annotate-tools:v1';
+const ALIVE_KEY = 'annotate-alive:v1';   // present only while the pen is open — see the mount effect
 
 type Op =
   | { t: 'add'; stroke: Stroke }
@@ -489,7 +490,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [penColor, setPenColor] = useState(PEN_COLORS[0]);
   const [penFavs, setPenFavs] = useState<string[]>(PEN_FAVOURITES_DEFAULT);
   const [hlFavs, setHlFavs] = useState<string[]>(HL_FAVOURITES_DEFAULT);
-  const [palette, setPalette] = useState<null | 'pen' | 'hl'>(null);
+  const [palette, setPalette] = useState<null | 'pen' | 'hl' | 'sel'>(null);   // 'sel' = recolouring the lasso selection
   const favHoldRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const penColorRef = useRef(penColor);
   penColorRef.current = penColor;
@@ -497,6 +498,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [hlColor, setHlColor] = useState(HL_COLORS[0]);
   const [eraserMode, setEraserMode] = useState<EraserMode>('stroke');
   const [selChip, setSelChip] = useState<{ x: number; y: number } | null>(null);
+  // An iPad outside the AdrianMarker app: the system's Live Text takes Pencil strokes over printed text (SPEC-ANNOTATE §12).
+  const [shellHint, setShellHint] = useState(false);
   const selDownAtRef = useRef(0);
   const swapLayerMarkRef = useRef<() => void>(() => {});
   const [pageNo, setPageNo] = useState(1);
@@ -2480,6 +2483,10 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         cx.drawImage(orig, -dw / 2, -dh / 2, dw, dh);
         cx.restore();
         const blob: Blob | null = await new Promise((res) => c.toBlob(res, 'image/jpeg', 0.92));
+        // Hand the working canvas's memory back NOW (6 Oct 2026): iPadOS frees a canvas's
+        // backing store lazily, and twenty of these (≈ 25 MB each) is what a web app's
+        // memory budget cannot hold — the page gets killed and reloads mid-marking.
+        c.width = 0; c.height = 0;
         if (!blob) throw new Error('could not build the page base');
         imgsRef.current[i] = await loadImage(URL.createObjectURL(blob));
         dimsRef.current[i] = { w: meta.canvasW, h: meta.totalH };
@@ -2502,10 +2509,27 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         loadFlat(p, i);
       }
     };
+    // Layered pages build TWO AT A TIME, not all at once (6 Oct 2026, Adrian: "sometimes
+    // halfway marking pages will go back to mark pages page, then go back to the
+    // annotations again"). Each one decodes the full-size original and draws it into a
+    // double-size canvas; a 20-page paper did all twenty together — hundreds of MB in one
+    // burst, on a device that kills a page for less. Flat pages are just an <img> each.
+    const layeredQueue: number[] = [];
     pages.forEach((p, i) => {
-      if (p.layerUrl && p.layer && p.originalUrl) void loadLayered(p, i);
+      if (p.layerUrl && p.layer && p.originalUrl) layeredQueue.push(i);
       else loadFlat(p, i);
     });
+    // the page he opened on first, then outwards from it
+    const start = Math.max(0, pages.findIndex((p) => p.photoIndex === initialPage));
+    layeredQueue.sort((a, b) => Math.abs(a - start) - Math.abs(b - start) || a - b);
+    let stopLoading = false;
+    const pump = async () => {
+      while (!stopLoading && layeredQueue.length) {
+        const i = layeredQueue.shift()!;
+        await loadLayered(pages[i], i);
+      }
+    };
+    void pump(); void pump();
     // A saved draft (crash recovery, a Safari reload mid-paper, or a post-Done
     // re-edit) comes back ON THE PAGES straight away — the inked copy is the
     // default, and the banner's "Start fresh" is the revert. Before 3 Sep 2026
@@ -2562,11 +2586,32 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         .wakeLock?.request('screen').then((l) => { lock = l; }).catch(() => {});
     };
     requestLock();
+    // "Was the pen closed, or did the page die under it?" (6 Oct 2026). A note is kept
+    // while the pen is open and removed on a clean close; finding one at the next open
+    // means the page was killed or reloaded mid-marking — that goes to annotate_ink_log
+    // with how big the job was, so the next report of it comes with numbers.
+    const inShell = !!(window as unknown as { webkit?: { messageHandlers?: { pencilBridge?: unknown } } }).webkit?.messageHandlers?.pencilBridge;
+    const openedAt = Date.now();
+    const aliveNote = () => JSON.stringify({
+      runId, openedAt, at: Date.now(), pages: pages.length, layered: pages.filter((p) => !!p.layerUrl).length,
+      strokes: strokesRef.current.reduce((a, l) => a + l.length, 0), points: strokesRef.current.reduce((a, l) => a + l.reduce((b, q) => b + q.points.length, 0), 0),
+      zoom: Math.round(viewRef.current.zoom * 100) / 100, shell: inShell, hidden: document.hidden,
+    });
+    try {
+      const died = JSON.parse(localStorage.getItem(ALIVE_KEY) || 'null');
+      if (died && typeof died === 'object') postInkLog('log', { at: new Date().toISOString(), diedMidMarking: died, minutesOpen: Math.round(((died.at ?? 0) - (died.openedAt ?? 0)) / 6000) / 10 });
+      localStorage.setItem(ALIVE_KEY, aliveNote());
+    } catch { /* diagnostics only */ }
+    const aliveTimer = setInterval(() => { try { localStorage.setItem(ALIVE_KEY, aliveNote()); } catch { /* diagnostics only */ } }, 15_000);
+    if (!isStudent && !inShell && navigator.maxTouchPoints > 1 && /Mac|iPad/.test(navigator.userAgent)) setShellHint(true);
     const onVis = () => { if (!document.hidden) requestLock(); };
     document.addEventListener('visibilitychange', onVis);
     const bitmaps = bitmapsRef.current;
     const imgs = imgsRef.current;
     return () => {
+      stopLoading = true;
+      clearInterval(aliveTimer);
+      try { localStorage.removeItem(ALIVE_KEY); } catch { /* diagnostics only */ }
       document.body.style.overflow = '';
       if (viewportMeta) viewportMeta.setAttribute('content', prevViewport ?? 'width=device-width, initial-scale=1');
       else lockMeta.remove();
@@ -2728,6 +2773,28 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
     strokes.push(...clones);
     pushUndo(sel.pageIdx, { t: 'page', before, after: strokes.slice() });
     selRef.current = { pageIdx: sel.pageIdx, set: new Set(clones) };
+    bumpInk();
+    scheduleBase();
+  }, [bumpInk, pushUndo, scheduleBase]);
+
+  // Recolour what the lasso holds (6 Oct 2026, Adrian: "the lasso > should have style? that
+  // i can change style (color) when select with lasso?"). New stroke objects, never a
+  // mutation — the undo snapshots hold the old ones by reference.
+  const recolourSelection = useCallback((color: string) => {
+    const sel = selRef.current;
+    if (!sel || !sel.set.size || !isHex(color)) return;
+    const strokes = strokesRef.current[sel.pageIdx];
+    if ([...sel.set].every((s) => s.color.toLowerCase() === color.toLowerCase())) return;
+    const before = strokes.slice();
+    const next = new Set<Stroke>();
+    strokesRef.current[sel.pageIdx] = strokes.map((s) => {
+      if (!sel.set.has(s)) return s;
+      const c = { ...s, color };
+      next.add(c);
+      return c;
+    });
+    pushUndo(sel.pageIdx, { t: 'page', before, after: strokesRef.current[sel.pageIdx].slice() });
+    selRef.current = { pageIdx: sel.pageIdx, set: next };
     bumpInk();
     scheduleBase();
   }, [bumpInk, pushUndo, scheduleBase]);
@@ -3008,6 +3075,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           ✗ {error} <button style={{ marginLeft: 8, border: 'none', background: 'none', color: '#b91c1c', fontWeight: 700, cursor: 'pointer' }} onClick={() => setError('')}>dismiss</button>
         </div>
       )}
+      {shellHint && (
+        <div style={{ background: '#fffbeb', color: '#92400e', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #fde68a', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span>✏️ This is not the AdrianMarker app. Here the iPad can swallow Pencil strokes over printed text — open the paper in AdrianMarker for full ink.</span>
+          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setShellHint(false)}>OK</button>
+        </div>
+      )}
       {restoreOffer && (
         <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span>
@@ -3041,11 +3114,11 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         )}
         {palette && (
           <PalettePopover
-            current={palette === 'pen' ? penColor : hlColor}
-            favs={palette === 'pen' ? penFavs : hlFavs}
-            onPick={(c) => { if (palette === 'pen') setPenColor(c); else setHlColor(c); }}
+            current={palette === 'hl' ? hlColor : palette === 'sel' ? ([...(selRef.current?.set ?? [])][0]?.color ?? penColor) : penColor}
+            favs={palette === 'hl' ? hlFavs : penFavs}
+            onPick={(c) => { if (palette === 'pen') setPenColor(c); else if (palette === 'sel') recolourSelection(c); else setHlColor(c); }}
             onFavourite={(c) => {
-              const set = palette === 'pen' ? setPenFavs : setHlFavs;
+              const set = palette === 'hl' ? setHlFavs : setPenFavs;
               set(f => (f.includes(c) ? f : [...f.slice(0, 5), c]));
             }}
             onClose={() => setPalette(null)}
@@ -3080,7 +3153,15 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
               <>
                 <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13, color: '#b91c1c', border: '1px solid #fca5a5' }} onClick={deleteSelection}>🗑 Delete</button>
                 <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={duplicateSelection}>⧉ Duplicate</button>
-                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); scheduleBase(); }}>Deselect</button>
+                <div style={{ display: 'inline-flex', gap: 3, alignItems: 'center' }} aria-label="Colour of the selection" data-sel-colours>
+                  {penFavs.slice(0, 5).map((c) => (
+                    <button key={c} style={{ ...SWATCH_BTN, height: 36, minWidth: 30, width: 30, padding: 0 }} aria-label={`Make the selection ${c}`} onClick={() => recolourSelection(c)}>
+                      <span style={{ width: 18, height: 18, borderRadius: '50%', background: c, display: 'inline-block', boxShadow: c.toLowerCase() === '#ffffff' ? 'inset 0 0 0 1px #d1d5db' : undefined }} />
+                    </button>
+                  ))}
+                  <button style={{ ...btn, height: 36, minWidth: 30, padding: '0 6px', fontSize: 13 }} aria-label="More colours for the selection" title="More colours" onClick={() => setPalette(p => (p === 'sel' ? null : 'sel'))}>🎨</button>
+                </div>
+                <button style={{ ...btn, height: 36, minWidth: 0, fontSize: 13 }} onClick={() => { clearSelection(); setPalette(p => (p === 'sel' ? null : p)); scheduleBase(); }}>Deselect</button>
               </>
             )}
           </div>

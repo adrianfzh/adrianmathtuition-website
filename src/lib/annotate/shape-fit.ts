@@ -37,7 +37,12 @@ const SMOOTH_SAMPLES = 96;
 const CORNER_MERGE_FRACTION = 0.08;
 
 
-const LINE_MAX_DEVIATION = 0.04;    // of stroke length
+// 0.04 until 6 Oct 2026 (Adrian: "when using the pen to hold and get a straight line,
+// sometimes i get little arcs instead -> too sensitive?"). A hand line bows: 4 % of the
+// length is a bend of only ~18°, and anything past it came out as a shallow arc or curve.
+// 7 % ≈ a 32° bend — the same place ARC_MIN_SWEEP now starts, so there is no gap between
+// "line" and "arc" for a faint curve to fall into.
+const LINE_MAX_DEVIATION = 0.07;    // of stroke length
 const CLOSURE_MAX_GAP = 0.25;       // first↔last gap, of perimeter (rect + ellipse) — 0.15 until 17 Sep 2026: real hands under-close a circle
 const RDP_EPSILON = 0.025;          // of stroke length (corner detection)
 const RECT_ANGLE_TOL = (20 * Math.PI) / 180;   // corner angle within 20° of 90°
@@ -47,7 +52,7 @@ const CIRCLE_AXIS_RATIO = 0.28;                // axes within 28% of each other 
 
 // Arc + curve (22 Sep 2026)
 const ARC_MAX_RADIAL_ERR = 0.06;    // mean |dist − r| / r for an open stroke to be a circular arc
-const ARC_MIN_SWEEP = (25 * Math.PI) / 180;    // less than this bends too little to be an arc
+const ARC_MIN_SWEEP = (32 * Math.PI) / 180;    // less than this bends too little to be an arc (25° until 6 Oct 2026 — see LINE_MAX_DEVIATION)
 const ARC_MAX_SWEEP = (340 * Math.PI) / 180;   // more is a loop — the closed-shape fits own it
 const ARC_MAX_RADIUS_TO_LEN = 4;    // a "circle" four times longer than the stroke is a line that wobbled
 const CURVE_ERROR_FRACTION = 0.02;  // Bézier tolerance, of stroke length …

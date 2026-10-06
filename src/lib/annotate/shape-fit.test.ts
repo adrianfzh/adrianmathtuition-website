@@ -375,6 +375,24 @@ function residual(points: StrokePoint[], poly: StrokePoint[]): number {
 }
 
 describe('arcs (22 Sep 2026)', () => {
+  // 6 Oct 2026, Adrian: "when using the pen to hold and get a straight line, sometimes i
+  // get little arcs instead -> too sensitive?" — a hand line bows a little; that is a line.
+  it('a gently bowed stroke snaps to a line, not a little arc', () => {
+    const deg = Math.PI / 180;
+    for (const sweep of [12, 20, 28]) {
+      for (const seed of [1, 2, 3]) {
+        const fit = fitStroke(handArc(400, 0.3, 0.3 + sweep * deg, { seed }), { minLength: 20 });
+        expect(fit?.kind, `${sweep}° seed ${seed}`).toBe('line');
+      }
+    }
+  });
+  it('a real bend is still an arc', () => {
+    const deg = Math.PI / 180;
+    for (const sweep of [45, 70]) {
+      const fit = fitStroke(handArc(200, 0.3, 0.3 + sweep * deg, { seed: 2 }), { minLength: 20 });
+      expect(fit?.kind, `${sweep}°`).toBe('arc');
+    }
+  });
   it('a hand arc ending in a hold cluster snaps to the circle it sits on', () => {
     for (const seed of [1, 2, 3]) {
       const fit = fitStroke(handArc(120, 0.2, 2.0, { seed }), { minLength: 20 });
