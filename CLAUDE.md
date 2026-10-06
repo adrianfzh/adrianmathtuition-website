@@ -127,6 +127,11 @@ lines to students, download file names — says **"your tutor"** or **"we"**, ne
 identifiers (`fromAdrian`, `notes=adrian`), e-mails he signs and the tuition site's brand name
 are untouched. Older sections of this file still quote the old labels ("From Adrian").
 
+## 🔧 Leftovers come with a fix (Adrian, 5 → 7 Oct 2026)
+
+Adrian, 5 Oct: *"yes fix first, then just inform me"*; 6 Oct, under a report that 2,578 questions "were skipped, not broken": *"can we fix it?"*. Why: a report that only lists what was skipped, flagged or left over hands the work back to him.
+- **Anything a job skipped, flagged or left over → fix it in the same turn when it is safe and inside the job, then tell him in one line.** Only what needs his word (a ruling, money, something students see) waits — and then say what you would do. Detail: `docs/DEPLOY.md` §Do not keep Adrian waiting.
+
 ## 🏢 The company — standing reminders (Adrian, 24 Sep 2026)
 
 Adrian: *"put #5 into memory and remind me when anything about company comes up"* and *"the

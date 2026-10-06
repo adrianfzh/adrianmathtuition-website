@@ -48,6 +48,17 @@ doing things"*. A standing rule for every session, on any account:
 
 - **Never block on something the next step does not need.** Start it, say it is running, carry
   on, and check it once at the end of the turn.
+- **Leftovers come with a fix** (Adrian, 5 → 7 Oct 2026). He kept asking the same question
+  under reports: *"so why not fix it instead?"* (5 Oct, flagged extraction papers), *"deal with
+  the flagged ones > can they be auto fix? do autofix if possible"* (6 Oct), *"can we fix it?"*
+  (6 Oct, 2,578 questions left unindexed), *"fix the missing 1"* (6 Oct). The marker and the
+  Fly worker already fix first (`docs/MARKING.md` §Fix first); sessions must too.
+  - A report that lists something skipped, flagged, failed or "left for later" says, for each
+    group, **why** and **whether it can be fixed** — and the fix is done in the same turn when it
+    is reversible and inside the job he asked for.
+  - What waits for him: a ruling (which school, keep or drop), money beyond the job's price,
+    anything students see. Then name the fix you would make, so his answer can be one word.
+  - "Skipped, not broken" is not an ending. Say what it would take to finish.
 - **A bot push:** say "deploying" and carry on. Look once at the end of the turn
   (`gh run list -R adrianfzh/adrianmath-telegram-bot -L 1`) and report green or failed. No
   `gh run watch`, no sleep loop. Still look — a red check skips the deploy with no message.
