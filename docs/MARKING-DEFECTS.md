@@ -637,3 +637,43 @@ as "%" (`4d1de7ae` photo 21); a ring AND a ✓ on one value (3 pages); labels br
 ("base ∠ / s of isos"); the same point three or four times at one error (11 pages, wording — still
 Adrian's question); F62's fresh-method column again (`7feb3d7c` photo 7, the pending proposal).
 Proof on the worker: pen bench 678/678 checks over 93 cases on the final tree (the four new cases included; three of them FAIL on main); touched-module unit tests 594/594 (74 files); the two commits' tree is byte-identical to the benched one. Full `npm test` left to CI.
+
+
+# 6 Oct 2026 — the fixer's run on the findings of 6 Oct (9 papers, 39 pages, ~75 findings)
+
+Chloe AM TYS 2021 P1/P2 and 2023 P1/P2 (`0a042a51`, `d0e6e804`, `8f13c052`, `1ac9283f`), Alexis EM GCE 2021 P2
+(`94e37005`), Isabelle Prelim Set 5 P1 (`4770c66d`), Rainie TKGS 2025 AM P2 (`c6d20db0`), Denise TYS 2021 EM P2
+(`c3731813`), Eva O-Level 2020 EM P1 (`241e8b56`). Second guard: F63 (`2dd4dba`) was SEEN AGAIN on pages drawn after
+it — a different cause (F66 below), fixed again, nothing reverted.
+
+| # | What the page showed | Layer | Cause | Fix |
+|---|---|---|---|---|
+| F66 | A ✓ on the printed "Answer" again (F63/F25), on a page drawn AFTER F63's fix — Eva O-Level 2020 EM P1 p2 Q1: the ✓ of "≈ −1.46" drawn on the printed word; and p4 Q7(b): the ✓ of "75 − 6 = 69" hanging under its line, level with nothing (the reader's "ticks at nothing") | pen (placement) | her two lines stand 17–20 px apart, so the second ✓ "touched" the first and was nudged DOWN a step, off its own line; on p2 that landed level with the print underneath and the slide-past-ink guard then carried it along the word | bot `bfe2843`: a bare ✓/✗ (no scheme code) whose step down would leave its own line stays where it is when the two glyphs only brush (one under the other, each at the end of its line), else steps RIGHT of the glyph it touches, level with its line, when that square is clear. A mark with a code ("✗ A0") keeps the nudge it had. Cases `eva-ol20p1-p2-tick-nudged-onto-answer`, `eva-ol20p1-p4-tick-on-minutes-in-shadow` (both FAIL on main, PASS on the fix); new `tolY` on `mark-beside-its-line` |
+| F67 | Eva p4 Q7(b): the B1 ✓ drawn through the printed word "minutes" — the foot of the photo is in shadow | pen (placement) | the three "is there writing in this square?" guards call a pixel ink when it is darker than 150; in the shadow the PAPER is darker than that, every square "held ink", no clear square was ever found and the guard stood down (the 1 Oct note on Shayenne p13, "reads the paper as ink", is the same thing) | bot `c7d08db`: `lib/shadow-flat.js` — ink is judged against the paper around it (block-wise 80th-percentile brightness, borrowed from the brightest neighbour); bright paper (≥ 185) is returned to the pixel, shadowed paper counts a pixel as ink only under 0.78 of it. The guards read that raster (`occ.lit`); the scans that tell paper from the table keep the bare one. The bench's page raster is flattened the same way, so it stops calling shadowed paper "writing". Case `eva-ol20p1-p4-tick-on-minutes-in-shadow`; `eva-ol20p1-p8-u-is-in-b` pins the same paper's p8 |
+| F68 | Chloe AM TYS 2023 P2 p15 Q8(b): the note box "θ = 45° is right, but the maximum area 3/2 r² was never stated." drawn across the side strip's dashed rule, its own arrow inside the box through its words | pen (placement) | the placement grid's last column is a part-cell wide, so a spot that fits the grid could be drawn up to a cell past the paper's edge (box at x 730, 140 px wide, page 863 px); and a note seated ON the place it is about still drew its arrow | bot `8bcaa14`: a spot whose drawn box would pass the paper's right edge is refused (the note went to the side strip here, under "Q8(b):"); an arrow whose head is inside its own note is not drawn. New check `notes-on-their-side-of-the-rule`. Case `chloe-am23p2-p15-note-across-the-rule` (FAIL on main, PASS on the fix) |
+| F69 | Raw caret in a notation label again (F47) — Chloe AM TYS 2023 P2 p6 Q3(c)(ii): "missing minus: Tf = 86e^(-0.00079380t)" as typed, broken after the caret | pen (symbols) | the note beside a ✓ (`notation_slip`) went to the label as plain text; only `$…$` took the typeset branch | bot `5a2a5a2`: a notation note that carries a typed power or subscript is run through `autoTexProse` first, so the label is typeset on one line. Case `chloe-am23p2-p6-caret-in-notation-label` (FAIL on main, PASS on the fix). **Not fixed on the same line:** the drawn-in "−" still sits on the label's first letter (the reader's P13) |
+| F70 | Rendering, six small ones: "BF = ½BA, BA = ¾p − q" and "synthetic division by −½" (the hand's ½ reads as "%" — 4 Oct residue); "$ 2063" with a gap (Denise p4); "1 st hour … 5 th hour" (Rainie p8 Q3(d)); "cm/s" set as italic maths (Chloe 2021 P1 p19); "dy/dx = 1 − x − 6x² - 6x² + x − 1 = 0 was the rearranged equation" — a dash between two expressions written as the hand's hyphen and read as a minus (Chloe 2023 P1 p10, comprehension FAIL); "U is in B" for the element u (Eva p8) | pen (symbols) | ½ ¼ ¾ are Latin-1, so the hand wrote them itself; a joint space was seated after a currency "$"; `1\text{st hour}` typeset the digit apart from its word; "cm/s" matched the plain-maths token rule; the pen writes every dash as a hyphen; `asSentence` capitalised a lone letter | bot `c51e7ce` (`ai/pen-math.js`, `lib/pen-labels.js`): typed fraction characters are typeset (and join a plain-maths run); no space between "$" and its number; an ordinal's digit rides with its word; unit rates (cm/s, m/s², km/h) stay words; a lone dash between two typeset expressions is written "; "; a lone letter other than "a"/"i" opening a note keeps its case. Cases `alexis-em21p2-p17-half-reads-as-percent`, `rainie-tkgs25p2-p8-ordinals-split`, `chloe-am23p1-p10-dash-read-as-minus`, `eva-ol20p1-p8-u-is-in-b` (each FAIL on main, PASS on the fix); `test/marking-fix-1006.test.js` |
+
+**Proposed (Adrian's call):** `carried-value-words` — the note beside a follow-through ✓ ("incorrect from previous
+line", his words of 30 Sep) read as a tick that says incorrect on seven lines of five papers, and "previous line" was
+untrue on two → "right method, wrong value from earlier" (branch `proposal/2026-10-06-carried-value-words`).
+
+**Report only (the read):** Chloe `d0e6e804` Q7(a) 0/4 — correct pencil working (not over anything) treated as a
+correction pen, 4 marks, possibly harsh; Isabelle `4770c66d` Q3(a) 1/3 — the blue "cos(A+B) = 3/4 − 1/12 = 2/3" line
+not credited as exam working; Eva `241e8b56` Q17(b) 2/2 with 827 on the answer line and a "do not round" box beside
+it (Isabelle got A0 for the same 827 on 2 Oct); Denise `c3731813` Q4(b) 3/6 ("17.3672 → 17.4" crossed though the
+rounding is right for her line); Chloe `8f13c052` Q1 "c = 3/4" ✗ with no "should be"; Isabelle Q7(b) 0/2 for one
+swap; error kinds ("copied wrongly" for a sign flipped while rearranging).
+
+**Not worked — first in line next run** (`remaining` in the fixer's file): the ring cuts through the number, 6 pages
+(the token box is the vision model's; ink profiles show no gap rule that tells the next digit from the next word —
+needs a design, e.g. snap to ink runs by the token's character count); ✗ and ring on scribbled-out working with the
+live line bare, Chloe `8f13c052` p10 (the vision boxes sat on the scribbled-out copies of the same text; a change to
+the placement ask cannot be proven from stored boxes and costs API calls — Adrian's call); maths in a note box set far
+smaller than its words (6 pages); leaders through her ink or the printed question (5); glyphs on her writing outside
+shadow (5); ✗ beside the printed "[1]" off her answer (2); a note or box seated at the wrong part (2); labels over
+print (2); only the first of two slips ringed (F51 class, Denise p10); a zero part with a hint and no worked solution
+(3); "int ∠ s" gap and a footer reason "3sin4x + 2cos4x" with no spaces. Words not proposed tonight: one point said
+three to five times (14 pages, F23/F17); strip notes over 25 words; "should be" on a value right for her line; ring
+and ✓ on one value; a wrong final answer with ✗ and no word; a part at 0 or 1 with only ticks.
+Proof on the worker: pen bench 697/697 checks over 103 cases on the final tree (the eight new cases included, each FAIL on main); touched-module unit tests 900 (the one red, a check name missing from the well-formed list, fixed and re-run green); the six commits' tree is byte-identical to the benched one. Full `npm test` left to CI.
