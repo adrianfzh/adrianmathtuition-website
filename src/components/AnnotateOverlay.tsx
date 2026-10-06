@@ -27,6 +27,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { uploadStudentFile } from '@/lib/student-files-client';
 import type { Stroke, StrokePoint, ToolKind } from '@/lib/annotate/types';
 import { fitStroke, shapeToPolyline } from '@/lib/annotate/shape-fit';
+import { isScribble, scribbleTargets } from '@/lib/annotate/scribble';
 import { outlineToPath, strokeOutline } from '@/lib/annotate/ink-outline';
 import { hitStrokes, strokeHit } from '@/lib/annotate/hit-test';
 import { splitStrokeAtCircle } from '@/lib/annotate/stroke-split';
@@ -123,6 +124,7 @@ const HOLD_MOVE_PX = 6;             // css px of movement that resets the hold
 const SNAP_MIN_CSS = 24;            // stroke length below this never snaps
 const ERASER_TOL_CSS = 8;
 const TOOLS_KEY = 'annotate-tools:v1';
+const GESTURE_HINT_KEY = 'annotate-gesture-hint:v1';
 const ALIVE_KEY = 'annotate-alive:v1';   // present only while the pen is open — see the mount effect
 
 type Op =
@@ -500,6 +502,20 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [selChip, setSelChip] = useState<{ x: number; y: number } | null>(null);
   // An iPad outside the AdrianMarker app: the system's Live Text takes Pencil strokes over printed text (SPEC-ANNOTATE §12).
   const [shellHint, setShellHint] = useState(false);
+  // The gestures nobody can see (7 Oct 2026, Adrian: "let users know the two-finger tap is undo and
+  // the three-finger tap is redo"): one line the first time the pen opens on a device, gone on OK.
+  const [gestureHint, setGestureHint] = useState(false);
+  useEffect(() => { try { if (!localStorage.getItem(GESTURE_HINT_KEY)) setGestureHint(true); } catch { /* no store → no hint */ } }, []);
+  const dismissGestureHint = () => { setGestureHint(false); try { localStorage.setItem(GESTURE_HINT_KEY, '1'); } catch { /* shown again next time */ } };
+  // A short line after something happened that the hand may not have meant (a scribble rub).
+  const [tip, setTip] = useState('');
+  const tipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const flashTip = useCallback((text: string) => {
+    setTip(text);
+    if (tipTimerRef.current) clearTimeout(tipTimerRef.current);
+    tipTimerRef.current = setTimeout(() => setTip(''), 3200);
+  }, []);
+  useEffect(() => () => { if (tipTimerRef.current) clearTimeout(tipTimerRef.current); }, []);
   const selDownAtRef = useRef(0);
   const swapLayerMarkRef = useRef<() => void>(() => {});
   const [pageNo, setPageNo] = useState(1);
@@ -2027,8 +2043,32 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
       currentRef.current = null;
       if (cur && cur.stroke.points.length) {
         logInk('commit', { n: cur.stroke.points.length, page: cur.pageIdx, snapped: cur.stroke.snapped || '' });
-        strokesRef.current[cur.pageIdx].push(cur.stroke);
-        pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
+        // Scribble to erase (7 Oct 2026, Adrian: "scribble with the pen as the eraser, like how
+        // one uses the eraser to erase"): a quick back-and-forth over existing ink rubs that
+        // ink out and is not kept. A zigzag that lands on nothing stays as ordinary ink, and
+        // the rub is one undo step — two-finger tap brings everything back.
+        let rubbed = false;
+        if (cur.stroke.tool === 'pen' && !cur.stroke.snapped && !cur.stroke.text) {
+          const dS = dimsRef.current[cur.pageIdx];
+          const cssPerImg = dS ? (kFactor() * DOC_W) / dS.w : 1;
+          if (isScribble(cur.stroke.points, 26 / cssPerImg)) {
+            const list = strokesRef.current[cur.pageIdx];
+            const hit = new Set(scribbleTargets(list, cur.stroke.points, cur.stroke.width / 2 + 7 / cssPerImg));
+            if (hit.size) {
+              const before = list.slice();
+              strokesRef.current[cur.pageIdx] = list.filter((_, i) => !hit.has(i));
+              pushUndo(cur.pageIdx, { t: 'page', before, after: strokesRef.current[cur.pageIdx].slice() });
+              clearSelection();
+              rubbed = true;
+              logInk('scribble-erase', { n: hit.size, page: cur.pageIdx });
+              flashTip(`Rubbed out ${hit.size === 1 ? '1 stroke' : `${hit.size} strokes`} · two-finger tap to undo`);
+            }
+          }
+        }
+        if (!rubbed) {
+          strokesRef.current[cur.pageIdx].push(cur.stroke);
+          pushUndo(cur.pageIdx, { t: 'add', stroke: cur.stroke });
+        }
         {
           const perf = strokePerfRef.current;
           if (perf) {
@@ -3081,6 +3121,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={() => setShellHint(false)}>OK</button>
         </div>
       )}
+      {gestureHint && (
+        <div style={{ background: '#f0fdf4', color: '#166534', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bbf7d0', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span>✌️ Two-finger tap = undo · three-finger tap = redo · scribble back and forth over your ink to rub it out.</span>
+          <button style={{ ...btn, height: 32, fontSize: 13, fontWeight: 700 }} onClick={dismissGestureHint}>OK</button>
+        </div>
+      )}
       {restoreOffer && (
         <div style={{ background: '#eff6ff', color: '#1d4ed8', padding: '8px 14px', fontSize: 13, borderBottom: '1px solid #bfdbfe', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <span>
@@ -3111,6 +3157,12 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
           }}>
             ✏️ ink on {inkedCount} page{inkedCount > 1 ? 's' : ''}
           </div>
+        )}
+        {tip && (
+          <div role="status" style={{
+            position: 'absolute', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 44px)', left: 12,
+            background: 'rgba(17,24,39,0.86)', color: '#fff', fontSize: 13, padding: '6px 12px', borderRadius: 999, pointerEvents: 'none',
+          }}>{tip}</div>
         )}
         {palette && (
           <PalettePopover

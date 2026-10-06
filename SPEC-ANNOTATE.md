@@ -625,3 +625,25 @@ palette in `'sel'` mode); `recolourSelection` swaps in new stroke objects (one u
 **Line vs arc.** `shape-fit` `LINE_MAX_DEVIATION` 0.04 → 0.07 and `ARC_MIN_SWEEP` 25° → 32°:
 a hand line that bows up to ~32° is a line; the gap where a faint bend became a shallow
 curve is closed. Tested both ways.
+
+## 19. Scribble to erase, and the gestures nobody could see (7 Oct 2026)
+
+Adrian: "let users know the two-finger tap is undo and the three-finger tap is redo. how about
+scribble with the pen as the eraser, like how one uses the eraser to erase".
+
+- **Scribble to erase** (`lib/annotate/scribble.ts`, pure, tested; wired at the pen's commit in
+  `AnnotateOverlay.tsx`). A pen stroke that is a rubbing zigzag — at least four turns back along
+  its long axis, a path ≥ 2.6 × the diagonal of the patch it covers, a long side of at least 26
+  css px — is tested against the ink already on that page. Every stroke it passes over (two
+  sampled points inside the patch and within half its width + 7 css px of the zigzag) is removed
+  whole, the zigzag is not kept, and it is ONE `page` undo step. **A zigzag that lands on no ink
+  stays as ordinary ink** — hatching and shading on blank paper are safe. A short line says what
+  happened ("Rubbed out 2 strokes · two-finger tap to undo"). His own ink only: the marker's
+  layer objects still go through the eraser tool or their own Delete. Not snapped shapes, not the
+  highlighter, not typed notes as the rubbing stroke. Works for the student overlay too.
+- **The hint.** The first time the pen opens on a device one green line names the gestures
+  (two-finger tap undo · three-finger tap redo · scribble to rub out); OK stores
+  `localStorage annotate-gesture-hint:v1` and it does not return.
+- **Not tried with a Pencil.** The thresholds are from drawn test shapes; if real handwriting
+  trips it (a tight "www", fast cross-hatching over a line), raise `MIN_REVERSALS` or
+  `MIN_LENGTH_TO_DIAGONAL` — the ink log records every `scribble-erase`.
