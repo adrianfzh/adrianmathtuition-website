@@ -338,6 +338,14 @@ export async function GET(req: NextRequest) {
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),
+    timed('portal-english-practice', async () => {
+      const r = await fetch(`${base}/api/portal/english/practice`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`anonymous POST answered ${r.status}, expected 401`);
+      const p = await fetch(`${base}/app/languages/practice`, { redirect: 'manual', signal: T(10000) });
+      if (p.status === 404) throw new Error('/app/languages/practice is missing');
+      if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
+      return `401 · page ${p.status}`;
+    }),
     timed('portal-languages-formats', async () => {
       const r = await fetch(`${base}/app/languages/formats`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/languages/formats is missing — the Formats door 404s');

@@ -444,6 +444,20 @@ export const COMMAND_WORDS_OPEN_TO_STUDENTS = false;
  */
 export const ENGLISH_FORMATS_OPEN_TO_STUDENTS = false;
 
+/**
+ * ✍️ English practice (/app/languages/practice, 6 Oct 2026; SPEC-ENGLISH-PRACTICE.md):
+ * editing, comprehension, visual text and summary from the language bank, marked
+ * against each paper's OWN scheme. CLOSED — Adrian's cookie only. Opening it is a
+ * CONTENT-POLICY decision as well as a readiness one: the language bank is
+ * grounding-only until Adrian says school English questions may be served
+ * (docs/CONTENT-POLICY.md).
+ */
+export const ENGLISH_PRACTICE_OPEN_TO_STUDENTS = false;
+export async function englishPracticeOpen(): Promise<boolean> {
+  if (ENGLISH_PRACTICE_OPEN_TO_STUDENTS) return true;
+  return !(await viewingAsStudent()) && (await isNotesAuthed());
+}
+
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
 // chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
 // has watched a few — flip this to open the door on every mistake card and on the
