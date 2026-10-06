@@ -800,8 +800,8 @@ export default function ChatPage() {
 
       conversationHistoryRef.current.push({ role: 'user', content: text || '[image]' });
       conversationHistoryRef.current.push({ role: 'assistant', content: fullText });
-      if (conversationHistoryRef.current.length > 12) {
-        conversationHistoryRef.current = conversationHistoryRef.current.slice(-12);
+      if (conversationHistoryRef.current.length > 40) {
+        conversationHistoryRef.current = conversationHistoryRef.current.slice(-40); // 12 → 40, 6 Oct 2026 (longer memory; bot WEB_HISTORY_MAX)
       }
       try { localStorage.setItem('am_chat_last', String(Date.now())); } catch { /* noop */ }
       if (doneMessageId) {

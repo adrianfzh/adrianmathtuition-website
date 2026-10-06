@@ -45,7 +45,7 @@ const TOOLS: { group: string; links: ToolLink[] }[] = [
   ] },
   { group: 'Bank + materials', links: [
     { label: 'Question bank', href: '/admin/questions' }, { label: 'Question proposals', href: '/admin/question-proposals' }, { label: 'Bank health', href: '/admin/bank-health' },
-    { label: 'Bank figures', href: '/admin/figures-bank' }, { label: 'Figure review', href: '/admin/figures' }, { label: 'Trap review', href: '/admin/pitfalls' },
+    { label: 'Bank figures', href: '/admin/figures-bank' }, { label: 'Figure review', href: '/admin/figures' }, { label: 'Trap review', href: '/admin/pitfalls' }, { label: 'Science pictures', href: '/admin/science-diagrams' },
     { label: 'Topic cards', href: '/admin/topic-cards' }, { label: 'Notes', href: '/admin/notes' }, { label: 'Prelim builder', href: '/admin/prelim-builder' },
     { label: 'Print a paper', href: '/app/print' }, { label: 'Worksheet builder', href: '/admin/worksheet-builder' }, { label: 'Teaching decks', href: '/admin/lessons' },
     { label: 'Curriculum', href: '/admin/curriculum' },
