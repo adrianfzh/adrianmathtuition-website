@@ -146,6 +146,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'daily-queue': { kind: 'interval', hours: 36, label: 'daily midnight' },
   // 🎚 Science practice Core / Exam / Challenge from students' first tries (5 Oct 2026); stamps every night.
   'practice-difficulty': { kind: 'interval', hours: 36, label: 'daily 3:30am' },
+  // 🔎 the bank index top-up (bot lib/embed-backfill.js via /api/cron/embed-index, 6 Oct 2026)
+  'embed-index':       { kind: 'interval', hours: 36, label: 'nightly 2:40am' },
   // Weekly and deliberately quiet — it stamps every run, so a silent Telegram and
   // a dead cron are told apart here rather than by their absence.
   'question-proposals-nudge': { kind: 'interval', hours: 204, label: 'Mondays 9am' },

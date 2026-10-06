@@ -206,6 +206,10 @@
     {
       "path": "/api/cron/practice-difficulty",
       "schedule": "30 19 * * *"
+    },
+    {
+      "path": "/api/cron/embed-index",
+      "schedule": "40 18 * * *"
     }
   ]
 }
