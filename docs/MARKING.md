@@ -883,6 +883,30 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
      strip (still level) instead of sagging down the page.
 - **Runs link to their student** (2026-07-30): picking a student in the send row silently fires `phase:'set-student'` (bot store → `student_id`/`student_name` on `paper_marking_runs`, indexed; last pick wins). The organizing principle is the same as Lessons/Invoices — a link to the Airtable Student record, NOT per-student Blob folders (Blob is the shelf, the DB row is the index card). `phase:'by-student'` returns one student's runs; `/admin/students/[id]` renders them in a **Marked papers** section (overview tab, ✍️/🖼/📄 links). History rows show the tagged name. Runs marked before 2026-07-30 are untagged until re-loaded and re-picked.
 
+## 🖊 Adrian says a marked page is wrong → `pen_reports` (6 Oct 2026)
+
+Adrian, 6 Oct 2026, on being told the page fixer had not reached the six things in his
+screenshots: "so can the fixer fix more things?" → "yes do all 2-4".
+
+- **When he sends a marked page with a complaint** (a screenshot, a sentence, in any
+  session, on Telegram): file ONE ROW PER POINT in Supabase `pen_reports`
+  (`migrations/pen_reports.sql`) — `said` his words verbatim, `what` what the page shows
+  in one plain sentence, `run_id` / `page` / `question` when you can tell, `kind` `bug`
+  (the page breaks a rule that already exists) or `design` (the page is drawn as
+  designed and he wants the design changed). Leave `status = 'new'` — unless you fix it
+  in the same session, then `'taken'` with `taken_by` = your session, and close it
+  (`'fixed'` + the sha, or `'proposed'` + the slug) when you are done.
+- **The page fixer works `new` rows first**, before its own list and the reader's
+  findings (bot `.claude/skills/marking-fix/SKILL.md` §0), and he hears back on each.
+- **A layout change comes to him as pictures**: the change built on a proposal branch,
+  a before and an after crop of the page, ✅ Ship / ✏️ Change / 🗑 Drop (skill §3b;
+  `scripts/notify-adrian.js --photos`).
+- **The third return of a defect is not patched again**: it gets a check the pen runs on
+  every page that fails closed (the wrong arrow is not drawn), or a redesign proposal;
+  the ledger row in `docs/MARKING-DEFECTS.md` says `repeat ×3` (skill §0).
+- Open rows: `select id, created_at, question, said, kind, status, taken_by, outcome from
+  pen_reports where status in ('new','taken') order by created_at`.
+
 ## 🎓 Learning from Adrian's corrections — Loop 1 (5 Oct 2026)
 
 Adrian: *"do learn from your corrections loop."* Every mark or note he changes on a marked

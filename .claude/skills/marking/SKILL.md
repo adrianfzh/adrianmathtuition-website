@@ -18,5 +18,7 @@ routes you there and pins the traps that shipped real bugs:
   still need his manual Release in triage.
 - **Marking rules are level-conditional**: bare "(rej)" is fine at O-Level;
   only A-Level rejections must state a reason.
+- **Adrian sends a marked page and says what is wrong with it** → one row per point in
+  Supabase `pen_reports` (docs/MARKING.md §🖊); the page fixer works those first.
 - Marked-PDF assembly, annotate tokens, and the batch chunking flow all have
   archaeology in the doc — check it before redesigning any of them.
