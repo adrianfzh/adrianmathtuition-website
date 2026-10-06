@@ -11,6 +11,7 @@
 //   AGENT_TOKEN_PAPERS    papers (tag / rename / looked-at) + desk/rebuild
 //   AGENT_TOKEN_ASSIGN    assignments (Send work)
 //   AGENT_TOKEN_TWINS     /api/agent/twins/* — cloud sessions write twins, maths + science (5 Oct 2026)
+//   AGENT_TOKEN_FIGURES   /api/agent/recrop/* — cloud sessions judge the science re-crops; the server cuts (7 Oct 2026)
 //
 // The admin password and the cookie keep working everywhere; this is an
 // additional door, closed when its env var is unset. Pure check + a fail-soft
@@ -19,12 +20,12 @@ import type { NextRequest } from 'next/server';
 import { safeEqual } from './safe-equal';
 import { getSupabaseAdmin } from './supabase';
 
-export type AgentScope = 'release' | 'sheets' | 'reinstate' | 'switches' | 'papers' | 'assign' | 'twins';
+export type AgentScope = 'release' | 'sheets' | 'reinstate' | 'switches' | 'papers' | 'assign' | 'twins' | 'figures';
 
 const ENV: Record<AgentScope, string> = {
   release: 'AGENT_TOKEN_RELEASE', sheets: 'AGENT_TOKEN_SHEETS', reinstate: 'AGENT_TOKEN_REINSTATE',
   switches: 'AGENT_TOKEN_SWITCHES', papers: 'AGENT_TOKEN_PAPERS', assign: 'AGENT_TOKEN_ASSIGN',
-  twins: 'AGENT_TOKEN_TWINS',
+  twins: 'AGENT_TOKEN_TWINS', figures: 'AGENT_TOKEN_FIGURES',
 };
 
 /** Pure: does this bearer match the scope's token? Unset token → never. */

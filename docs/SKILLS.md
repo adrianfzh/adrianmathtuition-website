@@ -24,6 +24,7 @@ several of them are paper-shaped and it stops being obvious which is which.
 | Write a NEW paper in the SEAB O-Level or A-Level H2 shape and file it as a Print-a-paper Set | `gce-paper` |
 | Write OUR OWN twin of a school question already in the bank (same sub-skill, structure, marks; new numbers, context, sentences; `verified=false` until I read it) | `twin-question` |
 | Write twins from a **claude.ai cloud session** (no database key — through the `AGENT_TOKEN_TWINS` doors), e.g. "write 30 science Challenge twins" or "write 40 Sec 2 twins" | `cloud-twins` |
+| `cloud-recrop` | Re-crop the science figures from a cloud session through the AGENT_TOKEN_FIGURES door (docs/CLOUD.md §Cloud re-crops) |
 | Second-guess a prelim draft I already saved | `setter-pass` |
 | Clean up a past-paper PDF I downloaded and add its answer key | `finish-practice-set` |
 | See which topics my students actually lose marks on | `bleed-table` |

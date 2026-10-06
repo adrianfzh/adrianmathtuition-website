@@ -1265,7 +1265,7 @@ async function recropLaneGet(sp: URLSearchParams) {
   const size = Math.min(60, Math.max(6, Number(sp.get('pageSize') ?? 20) || 20));
   const all: { path: string; question_id: string; new_path: string | null; final: string; why: string | null; fitness: { verdict?: string; reason?: string } | null; furniture: string[] | null }[] = [];
   for (let from = 0; ; from += 1000) {
-    const { data, error } = await sci.from('figure_recrops').select('path, question_id, new_path, final, why, fitness, furniture').is('decision', null).order('path').range(from, from + 999);
+    const { data, error } = await sci.from('figure_recrops').select('path, question_id, new_path, final, why, fitness, furniture').is('decision', null).neq('final', 'working').order('path').range(from, from + 999);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     all.push(...((data ?? []) as typeof all));
     if (!data || data.length < 1000) break;

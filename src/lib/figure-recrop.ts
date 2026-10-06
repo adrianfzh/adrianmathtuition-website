@@ -266,3 +266,52 @@ export function swapFigureRef(row: FigureFields, oldName: string, newName: strin
 
 /** What Adrian's release writes on the flag — the sweep's own note stays behind the prefix. */
 export const RECROP_NOTE_PREFIX = 'Adrian: re-cropped · ';
+
+// ── the fitness check on the new picture, and the one correction ─────────────
+export const FITNESS_WORDS = ['ok', 'unsure', 'incomplete', 'illegible', 'foreign', 'wrong-kind', 'watermark', 'mismatch', 'missing-object', 'wrong-figure', 'answer-leak'] as const;
+
+export function fitnessPrompt(law: string, stem: string, answer: string): string {
+  return [
+    'You are the figure-fitness judge for a question bank. The rules are below, verbatim from the bank\'s law.',
+    'Judge the ONE image you are shown against the typed question it belongs to. You do not have the source page,',
+    'so judge what can be judged from the image and the question: (a) it belongs to this question, (b) it is whole',
+    'and carries nothing foreign, (c) it does not hand over the answer, (d) it is legible, (e) it carries no watermark.',
+    'Note: this picture was deliberately cut to the drawing only — the question number and sentences are typed',
+    'beside it in the app, so their ABSENCE is correct and is not "incomplete".',
+    '', '--- LAW ---', law.slice(0, 9000), '--- END LAW ---', '',
+    'The typed question:', stem.slice(0, 1200), answer ? `The answer on file: ${answer.slice(0, 200)}` : '', '',
+    `Answer with JSON only: {"verdict":"<one of ${FITNESS_WORDS.join(' | ')}>","severity":"<blocks-answering | cosmetic | none>","reason":"<one sentence>"}`,
+  ].join('\n');
+}
+
+export type Fitness = { verdict: string; severity: string; reason: string };
+/** Never throws; a verdict outside the vocabulary is `unsure`, which holds the figure. */
+export function parseFitness(v: unknown): Fitness {
+  let o: Record<string, unknown> = {};
+  if (typeof v === 'string') { const m = v.match(/\{[\s\S]*\}/); try { o = m ? JSON.parse(m[0]) : {}; } catch { o = {}; } }
+  else if (v && typeof v === 'object') o = v as Record<string, unknown>;
+  const verdict = (FITNESS_WORDS as readonly string[]).includes(String(o.verdict)) ? String(o.verdict) : 'unsure';
+  return { verdict, severity: String(o.severity ?? '').slice(0, 40), reason: String(o.reason ?? (verdict === 'unsure' ? 'no readable verdict' : '')).slice(0, 600) };
+}
+
+/** What the judge is told when the second look found a fault in the first cut. */
+export function correctionNote(v: RecropVerdict, check: RecropCheck): string {
+  return [
+    'A FIRST CUT was made from these boxes and checked against the original:',
+    JSON.stringify({ keep: v.keep.map((k) => ({ what: k.what, box: [k.box.x0, k.box.y0, k.box.x1, k.box.y1] })) }),
+    `The check found — ${check.note}.`,
+    'Give corrected boxes: widen a box until every label, axis title, arrow and caption named as lost is inside it with a clear margin, and pull an edge in (or add a drop box) to leave out anything named as still in.',
+  ].join('\n');
+}
+
+/** The one word for a figure's fate: would-release, held-by-fitness (…), or the outcome. */
+export function finalOf(outcome: RecropOutcome, fitness: Fitness | null): string {
+  if (outcome !== 'recrop') return outcome;
+  return fitness?.verdict === 'ok' ? 'would-release' : `held-by-fitness (${fitness?.verdict ?? '?'})`;
+}
+
+/** The flags the re-crop is for: cosmetic · foreign, not yet decided by Adrian, and the note says the crop holds the question. */
+export function isRecropCandidate(note: string | null | undefined): boolean {
+  const n = String(note ?? '');
+  return !n.startsWith('Adrian:') && /· cosmetic · foreign ·/i.test(n) && /(question number|prose|stem|options|whole question)/i.test(n);
+}

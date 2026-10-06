@@ -111,3 +111,27 @@ describe('pointing the question at the new picture', () => {
     expect(swapFigureRef({ image_url: 'something_else.png', parts: [] }, OLD, NEW)).toEqual({ patch: {}, fields: [], count: 0 });
   });
 });
+
+import { parseFitness, finalOf, isRecropCandidate, correctionNote } from './figure-recrop';
+
+describe('fitness and the final word', () => {
+  it('a verdict outside the vocabulary is unsure, and unsure holds the figure', () => {
+    expect(parseFitness({ verdict: 'great', reason: 'x' }).verdict).toBe('unsure');
+    expect(parseFitness('{"verdict":"ok","severity":"none","reason":"whole"}')).toEqual({ verdict: 'ok', severity: 'none', reason: 'whole' });
+    expect(parseFitness('nonsense').verdict).toBe('unsure');
+    expect(finalOf('recrop', parseFitness({ verdict: 'ok' }))).toBe('would-release');
+    expect(finalOf('recrop', parseFitness({ verdict: 'mismatch' }))).toBe('held-by-fitness (mismatch)');
+    expect(finalOf('recrop', null)).toBe('held-by-fitness (?)');
+    expect(finalOf('refused-school-mark', null)).toBe('refused-school-mark');
+  });
+  it('only the flags this job is for', () => {
+    expect(isRecropCandidate('figure-fitness 2026-10-04 · cosmetic · foreign · ripple tank whole; question number 25, prose and options A–D are inside the frame')).toBe(true);
+    expect(isRecropCandidate('Adrian: repair · figure-fitness 2026-10-04 · cosmetic · foreign · question number in frame')).toBe(false);
+    expect(isRecropCandidate('figure-fitness 2026-10-04 · blocks-answering · incomplete · the axis is cut; stem prose in frame')).toBe(false);
+    expect(isRecropCandidate('figure-fitness 2026-10-04 · cosmetic · foreign · a stray label R at the edge')).toBe(false);
+  });
+  it('the correction names what the second look found', () => {
+    const v = parseRecropVerdict('{"keep":[{"what":"graph","box":[100,100,900,800]}]}');
+    expect(correctionNote(v, parseRecropCheck('{"ok":false,"lost":["x-axis title"],"leftover":[]}'))).toMatch(/lost: x-axis title/);
+  });
+});

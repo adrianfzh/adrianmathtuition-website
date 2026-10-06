@@ -99,6 +99,38 @@ apply to **new sessions only**.
    stay behind Adrian's sign-off; the proxy-level block (CONNECT 403) is the
    exfiltration chokepoint.
 
+## Cloud re-crops — the science figures, on the cloud credit (7 Oct 2026)
+
+Adrian, 7 Oct 2026: *"can i use the cloud workers $250 credit?"* — for the ~800 science figures
+whose stored picture is the whole question (`docs/FIGURES.md` §"✂️ Re-crops"). A local batch on the
+API had prepared the first 85; the rest go through a door so the LOOKING is paid by the cloud
+credit and no key reaches the cloud. The playbook is the `cloud-recrop` skill; the session's side
+is `scripts/figure-recrop/cloud-door.mjs`.
+
+**The doors** (`AGENT_TOKEN_FIGURES` or the admin password; every call → `agent_actions` scope
+`figures`; ≤ 3,000 calls an hour; a finished figure → `job_runs` `recrop-cloud`; health-check
+`agent-recrop` probes the four 401s):
+
+| Door | What |
+|---|---|
+| `GET /api/agent/recrop/queue?n=5` | the next figures, each with the typed question, the sweep's note, the judge's brief and where to fetch the picture. Handing one out writes a `figure_recrops` row marked `working` (science project); a row `working` for 90 min is handed out again |
+| `GET /api/agent/recrop/image?path=&view=orig\|grid\|new` | the pictures the session looks at — only for a figure in `figure_recrops`, never an open proxy |
+| `POST /api/agent/recrop/cut` | `{path, verdict}` — the server snaps and cuts (`lib/figure-recrop-cut.ts`, the batch's own code), stores `<name>__rc1.png` beside the original, returns the briefs for the two looks. A refusal or a school mark ends the figure. At most two cuts |
+| `POST /api/agent/recrop/submit` | `{path, check, fitness?}` — the server decides by the batch's rule (`outcomeOf` / `finalOf`): ready, held by fitness, or failed. A failed FIRST cut answers `again` with the correction |
+
+Nothing in the door can release a figure, change a question or touch a flag — that is
+`/admin/figures-bank?kind=recrop`, his. Code: `src/app/api/agent/recrop/*`, `lib/recrop-door.ts`.
+Tested 7 Oct 2026 against a local server with the admin bearer: one figure queued, cut from boxes,
+second look and fitness submitted → `would-release`; a second submit and a late cut both refused (409).
+
+**Adrian's one-time setup (two places, ~3 min) — the same steps as the twins token:**
+1. Mint the value on the Mac: `openssl rand -hex 24`.
+2. Vercel → adrianmathtuition-website → Settings → Environment Variables → add
+   `AGENT_TOKEN_FIGURES` = that value, **Production and Preview**, then redeploy (the next promote does it).
+3. claude.ai/code → the cloud icon above the message box → the environment → gear → Environment
+   variables → add `AGENT_TOKEN_FIGURES=<the value>`. New sessions pick it up.
+Then in a new cloud session: *"run the re-crops"* (or *"do 100 re-crops"*).
+
 ## NEVER in a cloud environment (crown jewels)
 
 `ADMIN_PASSWORD`, `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY`,

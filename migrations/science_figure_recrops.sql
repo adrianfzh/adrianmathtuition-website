@@ -33,3 +33,8 @@ create table if not exists figure_clean_log (
 );
 create index if not exists figure_clean_log_q on figure_clean_log (question_id);
 alter table figure_clean_log enable row level security;
+
+-- 7 Oct 2026 — the cloud door (docs/CLOUD.md §Cloud re-crops): the judge's boxes are kept
+-- between the cut and the submit, and a figure gets at most two cuts.
+alter table figure_recrops add column if not exists judge jsonb;
+alter table figure_recrops add column if not exists attempts int not null default 0;

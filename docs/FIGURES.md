@@ -484,6 +484,8 @@ calibration and law (read from the maths project's law row) over the science pro
 - The sweep: `FIGFIT_BANK=science sh /app/worker/fly/figfit/sweep.sh <i> <n> [stop epoch]`
   (log `figsweep-sci<i>.log`); the stop file is shared with the maths sweep.
 
+> **Two ways to prepare a batch (7 Oct 2026).** The local script (`scripts/figure-recrop/dry-run.mts`) pays the API per picture — it prepared the first 85 and is now only for dry runs. The rest go through the **cloud door** on the cloud credit: `cloud-recrop` skill, `docs/CLOUD.md` §Cloud re-crops. Same cutter, same rules, same staging table; a figure being worked on (`final='working'`) is not shown on the tab. Either way only Adrian releases.
+
 **✂️ Re-crops — science figures whose crop held the whole question (7 Oct 2026).** The 4 Oct
 science sweep held ~800 figures as `foreign · cosmetic` with notes like "ripple tank … whole and
 agrees; question number 25, prose and options A–D are inside the frame": the figure is right, the

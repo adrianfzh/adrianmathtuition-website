@@ -581,6 +581,20 @@ export async function GET(req: NextRequest) {
       return 'auth gate up';
     }),
     // 👯 Cloud twins (5 Oct 2026): the four AGENT_TOKEN_TWINS doors stay shut to strangers.
+    // ✂️ Cloud re-crops (7 Oct 2026): the four AGENT_TOKEN_FIGURES doors stay shut to strangers.
+    timed('agent-recrop', async () => {
+      const probes: [string, RequestInit][] = [
+        ['/api/agent/recrop/queue', {}],
+        ['/api/agent/recrop/image?path=x.png&view=orig', {}],
+        ['/api/agent/recrop/cut', { method: 'POST' }],
+        ['/api/agent/recrop/submit', { method: 'POST' }],
+      ];
+      for (const [path, init] of probes) {
+        const r = await fetch(`${base}${path}`, { ...init, redirect: 'manual', signal: T(10000) });
+        if (r.status !== 401) throw new Error(`${path}: expected 401 (auth gate), got HTTP ${r.status}`);
+      }
+      return '4 doors gated';
+    }),
     timed('agent-twins', async () => {
       const probes: [string, RequestInit][] = [
         ['/api/agent/twins/queue?bank=maths&level=EM', {}],
