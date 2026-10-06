@@ -4,7 +4,11 @@
 Checked against the SEAB 1184 syllabus (`docs/rubrics/1184_y26_sy.pdf`).
 Where it came from and what was left out: [`english-notes-review.md`](english-notes-review.md).
 
-**Nothing uses this yet.** Once approved it feeds:
+**In use since 6 Oct 2026 (Adrian: "start on step 2"):** Parts 1 and 2 reach the essay marker as
+`data/rubrics/english-1184-guidance.json` → `lib/essay-guidance.ts` → the bot's `guidanceBlock`
+(`ai/essay-marker.js`). They shape what the marker looks for and how it words feedback; they never
+move a band. Change the JSON to change what the marker is told. The marker is still closed to
+students. Part 3 (oral) and the students' Formats page are not built. It feeds:
 1. the essay marker's feedback (closed to students),
 2. a "Formats" page for students (closed until Adrian has read it),
 3. oral practice, later.

@@ -5,6 +5,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { essayRubricFor, ESSAY_KINDS, type EssayKind } from './essay-rubric';
 import { essayCodesFor } from './essay-codes';
+import { essayGuidanceFor } from './essay-guidance';
 
 /** Essays a student may hand in per Singapore day. Three while E1 is preview-only (the spec's one a day lands with E5). */
 export const DAILY_ESSAY_CAP = 3;
@@ -80,6 +81,7 @@ export async function submitEssay(s: EssaySubmission): Promise<SubmitOutcome> {
         runId: row.id, text, question: question || null, essayKind: kind as EssayKind,
         subject: 'english', syllabus: rubric.syllabus, level: s.level,
         studentName: s.studentName, rubric: { criteria: rubric.criteria }, codes,
+        guidance: essayGuidanceFor('english', kind),
       }),
       signal: AbortSignal.timeout(15000),
     });

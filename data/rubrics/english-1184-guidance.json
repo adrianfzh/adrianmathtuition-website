@@ -1,0 +1,30 @@
+{
+  "source": {
+    "title": "Our own marking guidance for English 1184 Paper 1 — what to look for and how to word feedback",
+    "written": "2026-10-06",
+    "doc": "docs/english-guidance-draft.md",
+    "note": "Written by us and checked against the SEAB 1184 syllabus (docs/rubrics/1184_y26_sy.pdf). It never changes a band: the rubric's descriptors are the only scale. No model essays, no phrase bank."
+  },
+  "continuous_writing": [
+    "READ THE QUESTION FIRST and name its kind: a story or personal account (\"Write about a time when…\"), a description, an argument (\"Do you agree?\", \"How far do you agree?\"), or a weighing of views (\"What are your views?\").",
+    "An essay of the wrong kind has not addressed the task: a story where the question asks for views, or an argument where it asks for a personal account. Say so in one plain line.",
+    "ABSOLUTE WORDS — only, never, always, all, every, no, the key, the most. When the question has one, the essay must deal with THAT WORD, not just the topic: why someone would hold the view, then where it fails (an exception, a change over time, who it does not fit), then how far the writer agrees. List \"deals with the word '<word>'\" as a point in \"task\". An essay that only praises or attacks the topic has not met it.",
+    "COMPARING WORDS — more, better, enough, still, further. \"What more can be done?\" takes for granted that something is done already and falls short. A full answer says what is done now, why that is not enough, and what should be added. List \"says what MORE should be done\" as a point in \"task\". An essay that only lists what is done now has not met it.",
+    "For an argument, look for: the key words of the question explained in the writer's own words; one clear stand that stays the same from opening to ending; reasons each carried by a real example; one point from the other side, answered. Where one is missing, name which, and where.",
+    "For a story or personal account, look for what the question's own words demand (the event, the turning point, what was felt or learnt) and list each as a point in \"task\".",
+    "A stand that changes between the opening and the ending is worth one line under \"task\" — quote both.",
+    "Never suggest a made-up statistic, a memorised opening, or a rarer word for its own sake. An upgrade makes the sentence clearer or more exact, not grander."
+  ],
+  "situational_writing": [
+    "Task Fulfilment looks at three things only: every required point addressed and developed; purpose, audience and context; use of the given information. Check each of them.",
+    "List EVERY point the task gives as its own entry in \"task\".\"points\", in the task's order, and say whether each is met. A point mentioned in half a sentence is addressed but not developed — say so in the note.",
+    "Name the reader and the purpose from the task, then judge the tone against that reader: slang or texting language to a principal or an organisation, or stiff formality to a friend, is a \"register\" slip. Quote it.",
+    "The first paragraph should say who the writer is (when the reader does not know them) and why they are writing. If it does not, say that in \"opening\".",
+    "The task comes with a visual text. Details it gives (dates, costs, places, choices) are there to be used. Where the essay ignores them or invents its own, say which detail was available.",
+    "The task's own word decides the text type: \"write a proposal\" is a proposal, \"write a letter to propose\" is a letter. A piece written as the wrong text type shows the context was missed — say it once, plainly.",
+    "What each text type needs, so the reader is addressed properly. Formal letter or formal email: a greeting and close that match (\"Dear Sir or Madam\" with \"Yours faithfully\"; \"Dear Mr Tan\" with \"Yours sincerely\"), a line saying what it is about, the writer's full name. Informal letter or email: first name, a friendly close, full sentences still. Speech: greet the audience, speak to them (\"you\", \"we\"), end with what they should do. Report or proposal: who it is to and from, a title, a neutral tone, a recommendation or request at the end, no letter close. Article: a title, written for the readers the task names, no greeting or close.",
+    "LAYOUT IS NOT A MARKING LINE OF ITS OWN. Mention a layout slip only where it shows the writer missed the audience or the context, and at most twice. School habits differ and are all acceptable — a comma or none after \"Dear Mr Tan\", a \"RE:\" title or a plain subject line, indented or blocked paragraphs, \"Regards\" or \"Yours sincerely\" on a formal email. NEVER mark those as slips.",
+    "The syllabus asks for 250–350 words. Well under: points cannot be developed. Well over: say what to cut, in one line.",
+    "Never suggest a memorised formal phrase (\"kindly accede to my request\"). Plain, polite and clear is the standard."
+  ]
+}

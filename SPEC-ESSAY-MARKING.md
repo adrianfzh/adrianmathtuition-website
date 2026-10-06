@@ -309,6 +309,10 @@ building yet.
 
 **Website** (dev 5a243e7e):
 - `essay_runs` table (migration `essay_runs`, RLS with no policies — service key only).
+- `data/rubrics/english-1184-guidance.json` + `lib/essay-guidance.ts` (6 Oct 2026): our own
+  what-to-look-for lines per kind (reading the question's absolute / comparing words; a situational
+  task's points, reader and given information; school layout habits never marked), sent in the
+  payload as `guidance` beside the rubric — wording only, never a band → `docs/english-guidance-draft.md`
 - `data/rubrics/english-1184-writing.json` + `lib/essay-rubric.ts` (`essayRubricFor`),
   `lib/essay-codes.ts` (the sixteen English codes), `lib/essay-submit.ts` (the ONE
   door both the student's POST and the harness use: validate, insert queued, ping
