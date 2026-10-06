@@ -338,6 +338,12 @@ export async function GET(req: NextRequest) {
       if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
       return `page ${r.status}`;
     }),
+    timed('portal-languages-formats', async () => {
+      const r = await fetch(`${base}/app/languages/formats`, { redirect: 'manual', signal: T(10000) });
+      if (r.status === 404) throw new Error('/app/languages/formats is missing — the Formats door 404s');
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `page ${r.status}`;
+    }),
     timed('portal-science-command-words', async () => {
       const r = await fetch(`${base}/app/science/command-words`, { redirect: 'manual', signal: T(10000) });
       if (r.status === 404) throw new Error('/app/science/command-words is missing — the Command words door 404s');

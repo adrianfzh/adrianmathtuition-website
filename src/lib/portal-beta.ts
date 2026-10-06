@@ -436,6 +436,14 @@ export const BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS = false;
 export const BIOLOGY_PROCESSES_OPEN_TO_STUDENTS = false;
 export const COMMAND_WORDS_OPEN_TO_STUDENTS = false;
 
+/**
+ * ✍️ Formats (/app/languages/formats, 6 Oct 2026): how to set out each
+ * situational-writing text type (lib/english-formats.ts). Inside the Languages
+ * family (itself closed by ESSAY_MARKING_OPEN_TO_STUDENTS) this page is Adrian's
+ * cookie only until he has read it.
+ */
+export const ENGLISH_FORMATS_OPEN_TO_STUDENTS = false;
+
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
 // chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
 // has watched a few — flip this to open the door on every mistake card and on the

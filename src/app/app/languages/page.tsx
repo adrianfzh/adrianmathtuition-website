@@ -4,7 +4,9 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { essayMarkingOpen } from '@/lib/portal-beta';
+import { cookies } from 'next/headers';
+import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
+import { ENGLISH_FORMATS_OPEN_TO_STUDENTS, essayMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadEssaysFor } from '@/lib/essay-runs';
@@ -25,6 +27,8 @@ export default async function LanguagesPage() {
   const essays = await loadEssaysFor(sid);
   const inFlight = essays.filter(e => e.status === 'queued' || e.status === 'marking' || e.status === 'held');
   const done = essays.filter(e => e.status === 'marked');
+  const formatsOpen = ENGLISH_FORMATS_OPEN_TO_STUDENTS
+    || (verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent()));
   const trend = trendFor(essays.map(e => ({ marked_at: e.marked_at, created_at: e.created_at, code_counts: e.code_counts })));
 
   return (
@@ -49,6 +53,22 @@ export default async function LanguagesPage() {
         <span className="flex-1">Hand in an essay</span>
         <span className="shrink-0 text-white/80 text-lg">›</span>
       </Link>
+
+      {formatsOpen && (
+        <Link
+          href="/app/languages/formats"
+          className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-black/5 shadow-sm hover:bg-violet-50/40 active:scale-[0.99] transition"
+        >
+          <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-violet-600 text-white shrink-0" aria-hidden>
+            <PortalIcon name="book" className="w-5 h-5" />
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[15px] font-semibold text-navy leading-tight">Formats</span>
+            <span className="block text-[12px] text-gray-500">How to set out a letter, e-mail, speech, report, proposal and article</span>
+          </span>
+          <span className="shrink-0 text-gray-300 text-lg">›</span>
+        </Link>
+      )}
 
       {inFlight.length > 0 && (
         <div className="space-y-2">

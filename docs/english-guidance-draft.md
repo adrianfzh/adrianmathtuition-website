@@ -8,7 +8,7 @@ Where it came from and what was left out: [`english-notes-review.md`](english-no
 `data/rubrics/english-1184-guidance.json` → `lib/essay-guidance.ts` → the bot's `guidanceBlock`
 (`ai/essay-marker.js`). They shape what the marker looks for and how it words feedback; they never
 move a band. Change the JSON to change what the marker is told. The marker is still closed to
-students. Part 3 (oral) and the students' Formats page are not built. It feeds:
+students. The students' **Formats page is built** (6 Oct 2026, `/app/languages/formats`, `lib/english-formats.ts`, closed: `ENGLISH_FORMATS_OPEN_TO_STUDENTS=false`). Part 3 (oral) is not built. It feeds:
 1. the essay marker's feedback (closed to students),
 2. a "Formats" page for students (closed until Adrian has read it),
 3. oral practice, later.
