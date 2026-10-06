@@ -484,6 +484,36 @@ calibration and law (read from the maths project's law row) over the science pro
 - The sweep: `FIGFIT_BANK=science sh /app/worker/fly/figfit/sweep.sh <i> <n> [stop epoch]`
   (log `figsweep-sci<i>.log`); the stop file is shared with the maths sweep.
 
+**✂️ Re-crops — science figures whose crop held the whole question (7 Oct 2026).** The 4 Oct
+science sweep held ~800 figures as `foreign · cosmetic` with notes like "ripple tank … whole and
+agrees; question number 25, prose and options A–D are inside the frame": the figure is right, the
+crop is too big, and the question is hidden for it. Adrian's rules (`docs/HANDOFF-SCIENCE-RECROP.md`):
+the diagram only; the options stay when they are PICTURES; a school's name, crest, an identifying
+footer or a paper code is REFUSED (never scrubbed) while plain furniture that names nobody ("[Turn
+over", "END OF PAPER") is cut away like prose (his word, 7 Oct); the original is always kept; and
+**he sees every new picture before it is released** ("can i see the diagrams first before release?").
+- **Rules + arithmetic:** `src/lib/figure-recrop.ts` (pure, tested) — the judge's prompt (boxes on
+  the 0–1000 grid of `figure-blemish judgeView`), `snapOutward` (an edge never cuts a stroke),
+  `planCrop` (one cut, or the kept drawings stacked when a sentence sits between them), the second
+  look (`lost` / `leftover`), `swapFigureRef` for the release.
+- **The batch:** `scripts/figure-recrop/dry-run.mts`. Dry run = a list of paths, writes nothing
+  (`.scratch_shot/recrop-dryrun-2026-10-07/index.html` was the 30-figure sample: 19 would release,
+  4 school marks, 4 failed the second look, 3 held by fitness). Stage = `RECROP_STAGE=<batch> … ALL`:
+  for every such flag not yet staged it stores `<name>__rc1.png` in the science bucket BESIDE the
+  original and writes one science-project `figure_recrops` row (`migrations/science_figure_recrops.sql`).
+  One correction round when the second look finds a clipped label; never a third. The five-point
+  fitness check runs on the new picture with the live law section. Resumable; it changes no
+  question, flag or existing object. Judge = `FIGURE_JUDGE_MODEL` (Opus 5.5), about 12k tokens in
+  a figure. A row whose `why` says the judge's JSON did not parse is a transient miss: delete the
+  row and run again.
+- **The release, his:** `/admin/figures-bank?kind=recrop` (`RecropLane.tsx`, route `kind=recrop`) —
+  old crop beside new, three views (Ready · cut but held by the check · not cut), ✓ Release / Keep
+  hidden per card, and **Release all N** for the ones that passed every check. A release points the
+  question at the new name wherever it referred to the old one, logs each field in the science
+  `figure_clean_log` (the revert ledger: point the field back at `old_path`), marks the flag `fixed`
+  behind `Adrian: re-cropped · `, and sets the row `clean` when no other live flag holds it and it
+  is not quarantined. Reject records the decision and changes nothing else.
+
 **Who may un-serve.** Adrian, by tapping 🙈 in the fitness lane — with two
 exceptions the catch-up may set to `open` itself, because they are correctness
 failures rather than cosmetics: **`wrong-figure`** (the figure belongs to another

@@ -9,6 +9,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { CORRECTNESS_HOLD } from '@/lib/figure-flag-release';
 import ScienceLane from './ScienceLane';
+import RecropLane from './RecropLane';
 import {
   candidateChip, candidateCaption, candidateButtonLabel, candidateButtonColour,
 } from '@/lib/solution-candidate-chip';
@@ -107,7 +108,7 @@ function severityChip(it: FitItem): { text: string; colour: string; bg: string }
   return { text: 'unrated', colour: '#475569', bg: '#f1f5f9' };
 }
 
-type Tab = 'all' | 'flagged' | 'solutions' | 'fitness' | 'science';
+type Tab = 'all' | 'flagged' | 'solutions' | 'fitness' | 'science' | 'recrop';
 
 const LEVELS = ['', 'AM', 'EM', 'EM_NA', 'S1', 'S2', 'S3_AM', 'S3_EM', 'S3_EM_NA', 'JC1', 'JC2'];
 /** Mirrors JC_LEVELS in the route — the solution lane's Sec/JC scope split. */
@@ -160,6 +161,7 @@ export default function FiguresPage() {
     }
     else if (p.get('kind') === 'fitness') { setTab('fitness'); setPage(0); }
     else if (p.get('kind') === 'science') { setTab('science'); setPage(0); }
+    else if (p.get('kind') === 'recrop') { setTab('recrop'); setPage(0); }
     else if (p.get('flagged') === '1') { setTab('flagged'); setPage(0); }
   }, []);
   const goTab = (t: Tab) => {
@@ -171,6 +173,7 @@ export default function FiguresPage() {
       if (t === 'solutions') u.searchParams.set('kind', 'solution');
       if (t === 'fitness') u.searchParams.set('kind', 'fitness');
       if (t === 'science') u.searchParams.set('kind', 'science');
+      if (t === 'recrop') u.searchParams.set('kind', 'recrop');
       window.history.replaceState(null, '', u.toString());
     }
   };
@@ -203,7 +206,7 @@ export default function FiguresPage() {
 
   const load = useCallback(async () => {
     // The science lane loads itself (ScienceLane).
-    if (tab === 'science') return;
+    if (tab === 'science' || tab === 'recrop') return;
     setLoading(true);
     try {
       const qs = tab === 'solutions'
@@ -472,6 +475,7 @@ export default function FiguresPage() {
             : tab === 'solutions' ? 'switched-off solution images — approve, amend, or leave hidden'
               : tab === 'fitness' ? 'question figures the fitness pass held for a look — hide, accept, or send to repair'
               : tab === 'science' ? 'science figures the sweep flagged — students see these questions only once the figure is fine'
+              : tab === 'recrop' ? 'science figures cut down to the diagram — look at each new picture, then release it'
                 : 'each figure with its question and what the checks found'}
         </span>
         <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -513,10 +517,17 @@ export default function FiguresPage() {
               borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
             🧪 Science
           </button>
+          <button onClick={() => goTab('recrop')}
+            style={{ fontSize: 13.5, fontWeight: 700, color: tab === 'recrop' ? '#fff' : '#0f766e',
+              border: '1px solid #0f766e', background: tab === 'recrop' ? '#0f766e' : '#fff',
+              borderRadius: 8, padding: '6px 14px', cursor: 'pointer' }}>
+            ✂️ Re-crops
+          </button>
         </span>
       </div>
 
       {tab === 'science' && <ScienceLane />}
+      {tab === 'recrop' && <RecropLane />}
 
       {tab === 'all' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>

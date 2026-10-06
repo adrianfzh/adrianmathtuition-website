@@ -1,5 +1,9 @@
 # Hand-over — re-crop the science figures that swallowed the whole question
 
+> **Picked up 7 Oct 2026.** Built and run as a prepare-then-release flow (Adrian wanted to see every
+> new picture first). What exists now and how to use it: `docs/FIGURES.md` §"✂️ Re-crops". The rest of
+> this file is the original brief.
+
 Written 7 Oct 2026 (00:10 SGT) at the end of a very long session. Adrian said **"yes"** to
 building this, and to starting it in a fresh session. Talk to him in plain, short words.
 Read `docs/FIGURES.md` first (mandatory — the claim protocol and the traps), then this.

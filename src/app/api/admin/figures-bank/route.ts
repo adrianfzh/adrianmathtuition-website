@@ -61,6 +61,7 @@ import { sgtTodayISO } from '@/lib/sgt';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
+import { swapFigureRef, RECROP_NOTE_PREFIX } from '@/lib/figure-recrop';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
@@ -1244,6 +1245,120 @@ async function scienceLanePost(body: Record<string, unknown>, path: string, ques
   return NextResponse.json({ ok: true, status, released });
 }
 
+// ── ✂️ Re-crops (7 Oct 2026, Adrian: "yes run the rest … can i see the diagrams first before release?") ──
+// About 800 science figures were held because the crop held the whole question. A batch
+// (scripts/figure-recrop) PREPARED a tighter picture for each and stored it beside the
+// original; the science project's `figure_recrops` holds what it made and why. Nothing a
+// student sees changes until a row is released here:
+//   release → the question points at the new picture (logged in figure_clean_log, the
+//             original stays in the bucket), the flag is fixed, and the row turns clean
+//             when nothing else holds it
+//   reject  → recorded; the flag and the question stay exactly as they were
+type RecropView = 'ready' | 'held' | 'stopped';
+const recropView = (final: string, hasNew: boolean): RecropView => (final === 'would-release' ? 'ready' : hasNew ? 'held' : 'stopped');
+
+async function recropLaneGet(sp: URLSearchParams) {
+  if (!scienceConfigured()) return NextResponse.json({ error: 'science bank not configured' }, { status: 503 });
+  const sci = getScienceClient();
+  const view = (['ready', 'held', 'stopped'] as const).find((v) => v === sp.get('view')) ?? 'ready';
+  const page = Math.max(0, Number(sp.get('page') ?? 0) || 0);
+  const size = Math.min(60, Math.max(6, Number(sp.get('pageSize') ?? 20) || 20));
+  const all: { path: string; question_id: string; new_path: string | null; final: string; why: string | null; fitness: { verdict?: string; reason?: string } | null; furniture: string[] | null }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const { data, error } = await sci.from('figure_recrops').select('path, question_id, new_path, final, why, fitness, furniture').is('decision', null).order('path').range(from, from + 999);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    all.push(...((data ?? []) as typeof all));
+    if (!data || data.length < 1000) break;
+  }
+  const totals = { ready: 0, held: 0, stopped: 0 };
+  for (const r of all) totals[recropView(r.final, !!r.new_path)] += 1;
+  const lane = all.filter((r) => recropView(r.final, !!r.new_path) === view);
+  const slice = lane.slice(page * size, page * size + size);
+  const qids = [...new Set(slice.map((r) => r.question_id))];
+  const meta: Record<string, Record<string, unknown>> = {};
+  if (qids.length) {
+    const { data: rows } = await sci.from('questions').select('id, subject, school, year, paper, question_number, question_text, answer, quarantined').in('id', qids);
+    for (const r of rows ?? []) meta[r.id as string] = r;
+  }
+  const items = slice.map((r) => {
+    const m = meta[r.question_id] ?? {};
+    return {
+      path: r.path, qid: r.question_id, final: r.final, why: r.why ?? '', fitness: r.fitness ? `${r.fitness.verdict ?? ''} — ${r.fitness.reason ?? ''}` : '',
+      furniture: (r.furniture ?? []).join('; '),
+      before: sciImgSrc(r.path), after: r.new_path ? sciImgSrc(r.new_path) : '',
+      subject: (m.subject as string) ?? '',
+      source: [m.school, m.year, m.paper ? `P${m.paper}` : '', m.question_number ? `Q${m.question_number}` : ''].filter(Boolean).join(' · '),
+      text: String(m.question_text ?? '').slice(0, 600), answer: (m.answer as string) ?? '', quarantined: !!m.quarantined,
+    };
+  });
+  return NextResponse.json({ items, totals, total: lane.length });
+}
+
+/** Release ONE prepared re-crop. Returns what happened; never half-applies silently. */
+async function releaseRecrop(sci: ReturnType<typeof getScienceClient>, path: string): Promise<{ ok: boolean; step?: string; error?: string; opened?: boolean }> {
+  const { data: rc, error: e0 } = await sci.from('figure_recrops').select('path, question_id, new_path, batch, decision').eq('path', path).maybeSingle();
+  if (e0) return { ok: false, step: 'read the re-crop', error: e0.message };
+  if (!rc) return { ok: false, step: 'read the re-crop', error: 'no prepared re-crop at that path' };
+  if (rc.decision) return { ok: false, step: 'read the re-crop', error: `already ${rc.decision}` };
+  if (!rc.new_path) return { ok: false, step: 'read the re-crop', error: 'no new picture was made for this figure' };
+  const qid = rc.question_id as string;
+  const { data: q, error: e1 } = await sci.from('questions').select('image_url, images, parts, question_text, image_watermark_status, image_watermark_notes, quarantined').eq('id', qid).maybeSingle();
+  if (e1 || !q) return { ok: false, step: 'read the question', error: e1?.message ?? 'question not found' };
+  const swap = swapFigureRef(q, path, rc.new_path as string);
+  if (!swap.count) return { ok: false, step: 'point the question at the new picture', error: 'the question no longer points at the original picture — nothing changed' };
+  const stamp = `recrop ${new Date().toISOString().slice(0, 10)}`;
+  const notes = [String(q.image_watermark_notes ?? '').trim(), stamp].filter(Boolean).join(' · ');
+  const { error: e2 } = await sci.from('questions').update({ ...swap.patch, image_watermark_notes: notes }).eq('id', qid);
+  if (e2) return { ok: false, step: 'point the question at the new picture', error: e2.message };
+  const { error: e3 } = await sci.from('figure_clean_log').insert(swap.fields.map((field) => ({ question_id: qid, field, old_path: path, new_path: rc.new_path, batch: rc.batch })));
+  if (e3) return { ok: false, step: 'write the revert log (the question already points at the new picture)', error: e3.message };
+  const { data: flag } = await sci.from('figure_flags').select('note, status').eq('path', path).eq('question_id', qid).maybeSingle();
+  if (flag && flag.status !== 'fixed') {
+    const { error: e4 } = await sci.from('figure_flags').update({ status: 'fixed', note: RECROP_NOTE_PREFIX + String(flag.note ?? '') }).eq('path', path).eq('question_id', qid);
+    if (e4) return { ok: false, step: 'close the flag', error: e4.message };
+  }
+  const { data: others } = await sci.from('figure_flags').select('path').eq('question_id', qid).in('status', ['held', 'open']);
+  let opened = false;
+  if (!(others ?? []).length && !q.quarantined && !q.image_watermark_status) {
+    const { error: e5 } = await sci.from('questions').update({ image_watermark_status: 'clean', image_watermark_scanned_at: new Date().toISOString() }).eq('id', qid);
+    if (e5) return { ok: false, step: 'open the question', error: e5.message };
+    opened = true;
+  }
+  const { error: e6 } = await sci.from('figure_recrops').update({ decision: 'released', decided_at: new Date().toISOString() }).eq('path', path);
+  if (e6) return { ok: false, step: 'record the decision', error: e6.message };
+  return { ok: true, opened };
+}
+
+async function recropLanePost(body: Record<string, unknown>) {
+  if (!scienceConfigured()) return NextResponse.json({ error: 'science bank not configured' }, { status: 503 });
+  const sci = getScienceClient();
+  const action = String(body.action ?? '');
+  if (action === 'release-all') {
+    // only what passed every check, a slice at a time (the page calls again until none are left)
+    const { data, error } = await sci.from('figure_recrops').select('path').is('decision', null).eq('final', 'would-release').not('new_path', 'is', null).order('path').limit(40);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    let released = 0, opened = 0; const failed: { path: string; error: string }[] = [];
+    for (const r of data ?? []) {
+      const out = await releaseRecrop(sci, r.path as string);
+      if (out.ok) { released += 1; if (out.opened) opened += 1; } else failed.push({ path: r.path as string, error: `${out.step}: ${out.error}` });
+    }
+    // a row that cannot be released would be picked again forever — park it as rejected with the reason
+    for (const f of failed) await sci.from('figure_recrops').update({ decision: 'rejected', decided_at: new Date().toISOString(), why: `could not release — ${f.error}` }).eq('path', f.path);
+    const { count } = await sci.from('figure_recrops').select('path', { count: 'exact', head: true }).is('decision', null).eq('final', 'would-release').not('new_path', 'is', null);
+    return NextResponse.json({ ok: true, released, opened, failed, left: count ?? 0 });
+  }
+  const path = String(body.path ?? '');
+  if (!path) return NextResponse.json({ error: 'path required' }, { status: 400 });
+  if (action === 'reject') {
+    const { error } = await sci.from('figure_recrops').update({ decision: 'rejected', decided_at: new Date().toISOString() }).eq('path', path).is('decision', null);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  }
+  if (action !== 'release') return NextResponse.json({ error: 'action must be release | reject | release-all' }, { status: 400 });
+  const out = await releaseRecrop(sci, path);
+  return NextResponse.json(out, { status: out.ok ? 200 : 409 });
+}
+
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const supa = getSupabaseAdmin();
@@ -1253,6 +1368,7 @@ export async function GET(req: NextRequest) {
   if (sp.get('kind') === 'fitness') return fitnessLaneGet(supa, sp);
   if (sp.get('kind') === 'check') return checkLaneGet(supa, sp);
   if (sp.get('kind') === 'science') return scienceLaneGet(sp);
+  if (sp.get('kind') === 'recrop') return recropLaneGet(sp);
 
   if (sp.get('flagged') === '1') {
     const { data: allFlags, error } = await supa
@@ -1352,6 +1468,7 @@ export async function POST(req: NextRequest) {
   catch { return NextResponse.json({ error: 'invalid JSON' }, { status: 400 }); }
   const rawPath = typeof body.path === 'string' ? body.path.trim() : '';
   const questionId = typeof body.questionId === 'string' ? body.questionId : '';
+  if (body.kind === 'recrop') return recropLanePost(body);
   if (!rawPath || !questionId) return NextResponse.json({ error: 'path and questionId required' }, { status: 400 });
   // Two spellings live in figure_flags.path: question-figure rows are bare
   // filenames, but the fleet's recent solution images and every ingest-fitness
