@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="790" viewBox="0 0 1200 790">
+<defs>
+<marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahs" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="16" markerHeight="16" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahR" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+<marker id="ahM" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+
+<marker id="ahB" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#1f5fbf"/></marker>
+</defs>
+<rect width="1200" height="790" fill="#fff"/>
+<g font-family="DejaVu Sans" font-size="30" fill="#000">
+<line x1="30.0" y1="430.0" x2="1170.0" y2="430.0" stroke="#000" stroke-width="2" />
+<path d="M600,170 Q646,430 600,690 Q554,430 600,170 z" fill="#dbeeff" stroke="#000" stroke-width="3"/>
+<circle cx="440" cy="430" r="6" fill="#000"/>
+<text x="440.0" y="472.0" text-anchor="middle" font-size="30" font-weight="bold">F</text>
+<circle cx="760" cy="430" r="6" fill="#000"/>
+<text x="760.0" y="472.0" text-anchor="middle" font-size="30" font-weight="bold">F</text>
+<circle cx="280" cy="430" r="6" fill="#000"/>
+<text x="280.0" y="472.0" text-anchor="middle" font-size="30" font-weight="bold">2F</text>
+<circle cx="920" cy="430" r="6" fill="#000"/>
+<text x="920.0" y="472.0" text-anchor="middle" font-size="30" font-weight="bold">2F</text>
+<line x1="180.0" y1="430.0" x2="180.0" y2="294.0" stroke="#1f5fbf" stroke-width="4" marker-end="url(#ahB)"/>
+<line x1="180.0" y1="290.0" x2="600.0" y2="290.0" stroke="#c0392b" stroke-width="3" />
+<line x1="600.0" y1="290.0" x2="1010.0" y2="648.8" stroke="#c0392b" stroke-width="3" />
+<line x1="180.0" y1="290.0" x2="1060.0" y2="583.3" stroke="#c0392b" stroke-width="3" />
+<line x1="380.0" y1="290.0" x2="402.0" y2="290.0" stroke="#c0392b" stroke-width="3" marker-end="url(#ahR)"/>
+<line x1="688.5" y1="367.4" x2="705.0" y2="381.9" stroke="#c0392b" stroke-width="3" marker-end="url(#ahR)"/>
+<line x1="380.5" y1="356.8" x2="401.4" y2="363.8" stroke="#c0392b" stroke-width="3" marker-end="url(#ahR)"/>
+<line x1="858.5" y1="430.0" x2="858.5" y2="512.2" stroke="#1f5fbf" stroke-width="4" marker-end="url(#ahB)"/>
+<text x="180.0" y="268.0" text-anchor="middle" >object</text>
+<text x="828.5" y="591.2" text-anchor="end" >image</text>
+<line x1="824.5" y1="566.2" x2="854.5" y2="520.2" stroke="#000" stroke-width="1.5" />
+<text x="1170.0" y="750.0" text-anchor="end" font-size="28">image: real, inverted, diminished</text>
+<text x="600.0" y="150.0" text-anchor="middle" >converging lens</text>
+<text x="30.0" y="416.0" text-anchor="start" font-size="28">principal axis</text>
+</g></svg>

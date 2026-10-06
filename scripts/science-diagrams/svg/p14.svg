@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="950" viewBox="0 0 1200 950">
+<defs>
+<marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahR" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+<marker id="ahB" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1f5fbf"/></marker>
+<marker id="ahG" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1e8449"/></marker>
+<marker id="ahM" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahMR" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+</defs>
+<rect width="1200" height="950" fill="#fff"/>
+<g font-family="DejaVu Sans" font-size="28" fill="#000">
+<rect x="330" y="70" width="540" height="820" rx="60" fill="#f2f2f2" stroke="#000" stroke-width="3"/>
+<rect x="565" y="150" width="70" height="140" fill="#d4a017" stroke="#000" stroke-width="2.5"/>
+<circle cx="600" cy="190" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="593" y1="190" x2="607" y2="190" stroke="#000" stroke-width="2"/>
+<rect x="395" y="520" width="120" height="70" fill="#d4a017" stroke="#000" stroke-width="2.5"/>
+<circle cx="430" cy="555" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="423" y1="555" x2="437" y2="555" stroke="#000" stroke-width="2"/>
+<rect x="685" y="520" width="120" height="70" fill="#d4a017" stroke="#000" stroke-width="2.5"/>
+<rect x="725" y="285" width="60" height="45" fill="#d4a017" stroke="#000" stroke-width="2.5"/>
+<rect x="733" y="330" width="44" height="190" rx="6" fill="#fff8dc" stroke="#000" stroke-width="2.5"/>
+<rect x="733" y="330" width="44" height="28" fill="#ccc" stroke="#000" stroke-width="2"/><rect x="733" y="492" width="44" height="28" fill="#ccc" stroke="#000" stroke-width="2"/>
+<path d="M560,950 L560,700 Q600,688 640,700 L640,950" fill="#777" stroke="#000" stroke-width="2.5"/>
+<path d="M578,705 C578,640 470,650 470,575" fill="none" stroke="#000" stroke-width="20" stroke-linecap="round"/><path d="M578,705 C578,640 470,650 470,575" fill="none" stroke="#2e6fd8" stroke-width="16" stroke-linecap="round"/>
+<path d="M622,705 C622,640 680,640 680,450 L680,320 Q680,307 700,307 L740,307" fill="none" stroke="#000" stroke-width="20" stroke-linecap="round"/><path d="M622,705 C622,640 680,640 680,450 L680,320 Q680,307 700,307 L740,307" fill="none" stroke="#8b4513" stroke-width="16" stroke-linecap="round"/>
+<path d="M600,700 L600,275" fill="none" stroke="#000" stroke-width="20" stroke-linecap="round"/><path d="M600,700 L600,275" fill="none" stroke="#2e9e44" stroke-width="16" stroke-linecap="round"/>
+<path d="M600,700 L600,275" fill="none" stroke="#f4d03f" stroke-width="16" stroke-dasharray="14,14"/>
+<circle cx="470" cy="555" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="463" y1="555" x2="477" y2="555" stroke="#000" stroke-width="2"/>
+<circle cx="600" cy="265" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="593" y1="265" x2="607" y2="265" stroke="#000" stroke-width="2"/>
+<circle cx="760" cy="307" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="753" y1="307" x2="767" y2="307" stroke="#000" stroke-width="2"/>
+<circle cx="770" cy="555" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="763" y1="555" x2="777" y2="555" stroke="#000" stroke-width="2"/>
+<rect x="520" y="770" width="160" height="34" rx="6" fill="#444" stroke="#000" stroke-width="2"/>
+<circle cx="540" cy="787" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="533" y1="787" x2="547" y2="787" stroke="#000" stroke-width="2"/>
+<circle cx="660" cy="787" r="11" fill="#bbb" stroke="#000" stroke-width="2"/><line x1="653" y1="787" x2="667" y2="787" stroke="#000" stroke-width="2"/>
+<text x="30.0" y="205.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">earth pin (E)</text>
+<line x1="250.0" y1="197.0" x2="563.0" y2="197.0" stroke="#000" stroke-width="1.5" />
+<text x="30.0" y="420.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">earth wire</text>
+<text x="30.0" y="454.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">(green/yellow)</text>
+<line x1="220.0" y1="412.0" x2="590.0" y2="412.0" stroke="#000" stroke-width="1.5" />
+<text x="30.0" y="565.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">neutral pin (N)</text>
+<line x1="262.0" y1="556.0" x2="393.0" y2="556.0" stroke="#000" stroke-width="1.5" />
+<text x="30.0" y="680.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">neutral wire</text>
+<text x="30.0" y="714.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">(blue)</text>
+<line x1="205.0" y1="672.0" x2="520.0" y2="660.0" stroke="#000" stroke-width="1.5" />
+<text x="30.0" y="870.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">cable</text>
+<line x1="115.0" y1="862.0" x2="557.0" y2="862.0" stroke="#000" stroke-width="1.5" />
+<text x="905.0" y="422.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">fuse</text>
+<line x1="900.0" y1="414.0" x2="779.0" y2="414.0" stroke="#000" stroke-width="1.5" />
+<text x="905.0" y="565.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">live pin (L)</text>
+<line x1="900.0" y1="556.0" x2="807.0" y2="556.0" stroke="#000" stroke-width="1.5" />
+<text x="905.0" y="680.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">live wire</text>
+<text x="905.0" y="714.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">(brown)</text>
+<line x1="900.0" y1="672.0" x2="668.0" y2="620.0" stroke="#000" stroke-width="1.5" />
+<text x="905.0" y="795.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">cable grip</text>
+<line x1="900.0" y1="787.0" x2="682.0" y2="787.0" stroke="#000" stroke-width="1.5" />
+</g>
+</svg>

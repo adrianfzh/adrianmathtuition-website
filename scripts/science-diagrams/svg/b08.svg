@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1110" viewBox="0 0 1200 1110">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#000"/></marker></defs>
+<rect width="1200" height="1110" fill="#fff"/>
+<circle cx="600" cy="155" r="125" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="541.5" y1="115.0" x2="541.5" y2="185.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="554.5" y1="115.0" x2="554.5" y2="185.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="548.0" cy="150.0" r="6.2" fill="#222"/>
+<line x1="571.5" y1="115.0" x2="571.5" y2="185.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="584.5" y1="115.0" x2="584.5" y2="185.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="578.0" cy="150.0" r="6.2" fill="#222"/>
+<line x1="621.5" y1="142.0" x2="621.5" y2="184.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="634.5" y1="142.0" x2="634.5" y2="184.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="628.0" cy="163.0" r="6.2" fill="#222"/>
+<line x1="651.5" y1="142.0" x2="651.5" y2="184.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="664.5" y1="142.0" x2="664.5" y2="184.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="658.0" cy="163.0" r="6.2" fill="#222"/>
+<text x="455" y="135.0" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >parent cell</text><text x="455" y="168.04" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >2n = 4</text>
+<path d="M614 135 L614 125 L672 125 L672 135" fill="none" stroke="#000" stroke-width="2"/>
+<line x1="760" y1="112" x2="643" y2="125" stroke="#000" stroke-width="1.5"/><circle cx="643" cy="125" r="3" fill="#000"/>
+<text x="770" y="107.0" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >homologous</text><text x="770" y="140.04" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >pair</text>
+<line x1="515" y1="250" x2="375" y2="400" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="685" y1="250" x2="825" y2="400" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<text x="600" y="345" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >meiosis I</text>
+<text x="600" y="385.0" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >homologous</text><text x="600" y="418.04" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >chromosomes</text><text x="600" y="451.08" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >separate</text>
+<circle cx="290" cy="520" r="105" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="261.5" y1="485.0" x2="261.5" y2="555.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="274.5" y1="485.0" x2="274.5" y2="555.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="268.0" cy="520.0" r="6.2" fill="#222"/>
+<line x1="309.5" y1="507.0" x2="309.5" y2="549.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="322.5" y1="507.0" x2="322.5" y2="549.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="316.0" cy="528.0" r="6.2" fill="#222"/>
+<circle cx="910" cy="520" r="105" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="881.5" y1="485.0" x2="881.5" y2="555.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="894.5" y1="485.0" x2="894.5" y2="555.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="888.0" cy="520.0" r="6.2" fill="#222"/>
+<line x1="929.5" y1="507.0" x2="929.5" y2="549.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="942.5" y1="507.0" x2="942.5" y2="549.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="936.0" cy="528.0" r="6.2" fill="#222"/>
+<text x="290" y="665" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >n = 2</text>
+<text x="910" y="665" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >n = 2</text>
+<line x1="250" y1="690" x2="170" y2="808" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="330" y1="690" x2="420" y2="808" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="870" y1="690" x2="780" y2="808" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="950" y1="690" x2="1030" y2="808" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<text x="600" y="700" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >meiosis II</text>
+<text x="600" y="740.0" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >sister chromatids</text><text x="600" y="773.04" font-family="DejaVu Sans" font-size="28" text-anchor="middle" font-weight="normal" fill="#000" >separate</text>
+<circle cx="150" cy="915" r="95" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="130.0" y1="880.0" x2="130.0" y2="950.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>
+<line x1="172.0" y1="902.0" x2="172.0" y2="944.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/>
+<circle cx="450" cy="915" r="95" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="430.0" y1="880.0" x2="430.0" y2="950.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>
+<line x1="472.0" y1="902.0" x2="472.0" y2="944.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/>
+<circle cx="750" cy="915" r="95" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="730.0" y1="880.0" x2="730.0" y2="950.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/>
+<line x1="772.0" y1="902.0" x2="772.0" y2="944.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>
+<circle cx="1050" cy="915" r="95" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="1030.0" y1="880.0" x2="1030.0" y2="950.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/>
+<line x1="1072.0" y1="902.0" x2="1072.0" y2="944.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/>
+<text x="600" y="1060" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >four haploid cells (n = 2)</text>
+</svg>

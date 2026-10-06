@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="960" viewBox="0 0 1200 960">
+<defs>
+<marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahR" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+<marker id="ahB" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1f5fbf"/></marker>
+<marker id="ahG" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1e8449"/></marker>
+<marker id="ahM" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahMR" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+</defs>
+<rect width="1200" height="960" fill="#fff"/>
+<g font-family="DejaVu Sans" font-size="28" fill="#000">
+<text x="30.0" y="60.0" text-anchor="start" font-size="32" font-weight="bold" fill="#000">(a)</text>
+<line x1="300.0" y1="500.0" x2="300.0" y2="700.0" stroke="#b5651d" stroke-width="4" />
+<path d="M40.0,600.0 L170.0,400.0 L570.0,400.0 L440.0,600.0" fill="#f3efe2" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<ellipse cx="300" cy="500" rx="62" ry="19" fill="none" stroke="#1f5fbf" stroke-width="2.5"/>
+<path d="M298,519 L302,519" stroke="none" marker-end="url(#ahB)"/>
+<path d="M238,498 L238,502" stroke="none" marker-end="url(#ahB)"/>
+<path d="M362,502 L362,498" stroke="none" marker-end="url(#ahB)"/>
+<ellipse cx="300" cy="500" rx="120" ry="37" fill="none" stroke="#1f5fbf" stroke-width="2.5"/>
+<path d="M298,537 L302,537" stroke="none" marker-end="url(#ahB)"/>
+<path d="M180,498 L180,502" stroke="none" marker-end="url(#ahB)"/>
+<path d="M420,502 L420,498" stroke="none" marker-end="url(#ahB)"/>
+<ellipse cx="300" cy="500" rx="185" ry="57" fill="none" stroke="#1f5fbf" stroke-width="2.5"/>
+<path d="M298,557 L302,557" stroke="none" marker-end="url(#ahB)"/>
+<path d="M115,498 L115,502" stroke="none" marker-end="url(#ahB)"/>
+<path d="M485,502 L485,498" stroke="none" marker-end="url(#ahB)"/>
+<line x1="300.0" y1="120.0" x2="300.0" y2="500.0" stroke="#b5651d" stroke-width="4" />
+<line x1="300" y1="300" x2="300" y2="170" stroke="#c0392b" stroke-width="4" marker-end="url(#ahR)"/>
+<text x="320.0" y="200.0" text-anchor="start" font-size="28" font-weight="normal" fill="#c0392b">current</text>
+<line x1="295.0" y1="140.0" x2="180.0" y2="140.0" stroke="#000" stroke-width="1.5" />
+<text x="40.0" y="150.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">wire</text>
+<line x1="462.4" y1="472.7" x2="470.0" y2="330.0" stroke="#000" stroke-width="1.5" />
+<text x="325.0" y="300.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">magnetic field lines</text>
+<text x="330.0" y="326.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000"></text>
+<line x1="150.0" y1="580.0" x2="120.0" y2="660.0" stroke="#000" stroke-width="1.5" />
+<text x="40.0" y="690.0" text-anchor="start" font-size="28" font-weight="normal" fill="#000">card</text>
+<text x="40.0" y="760.0" text-anchor="start" font-size="26" font-weight="bold" fill="#000">right-hand grip rule:</text>
+<text x="40.0" y="795.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">thumb → direction of current</text>
+<text x="40.0" y="830.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">fingers curl → direction of field</text>
+<text x="40.0" y="885.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">field is anticlockwise when</text>
+<text x="40.0" y="920.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">viewed from above</text>
+<text x="620.0" y="60.0" text-anchor="start" font-size="32" font-weight="bold" fill="#000">(b)</text>
+<path d="M1050,445 C1150,400 1140,290 880,290 C620,290 610,400 720,445" fill="none" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M882,290 L878,290" stroke="none" marker-end="url(#ahB)"/>
+<path d="M1050,445 C1175,400 1165,195 880,195 C600,195 590,400 720,445" fill="none" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M882,195 L878,195" stroke="none" marker-end="url(#ahB)"/>
+<path d="M1055,520 C1180,560 1165,790 880,790 C600,790 600,560 725,520" fill="none" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M882,790 L878,790" stroke="none" marker-end="url(#ahB)"/>
+<path d="M730.0,560.0 L762.0,400.0" fill="none" stroke="#c9a27e" stroke-width="3" stroke-linejoin="round" />
+<path d="M794.0,560.0 L826.0,400.0" fill="none" stroke="#c9a27e" stroke-width="3" stroke-linejoin="round" />
+<path d="M858.0,560.0 L890.0,400.0" fill="none" stroke="#c9a27e" stroke-width="3" stroke-linejoin="round" />
+<path d="M922.0,560.0 L954.0,400.0" fill="none" stroke="#c9a27e" stroke-width="3" stroke-linejoin="round" />
+<path d="M986.0,560.0 L1018.0,400.0" fill="none" stroke="#c9a27e" stroke-width="3" stroke-linejoin="round" />
+<line x1="700" y1="445" x2="1070" y2="445" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M878,445 L882,445" stroke="none" marker-end="url(#ahB)"/>
+<line x1="700" y1="480" x2="1070" y2="480" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M878,480 L882,480" stroke="none" marker-end="url(#ahB)"/>
+<line x1="700" y1="515" x2="1070" y2="515" stroke="#1f5fbf" stroke-width="2.2"/>
+<path d="M878,515 L882,515" stroke="none" marker-end="url(#ahB)"/>
+<path d="M762.0,400.0 L794.0,560.0" fill="none" stroke="#b5651d" stroke-width="5" stroke-linejoin="round" />
+<path d="M762.0,400 Q752.0,394 730.0,400" fill="none" stroke="#b5651d" stroke-width="0"/>
+<path d="M826.0,400.0 L858.0,560.0" fill="none" stroke="#b5651d" stroke-width="5" stroke-linejoin="round" />
+<path d="M826.0,400 Q816.0,394 794.0,400" fill="none" stroke="#b5651d" stroke-width="0"/>
+<path d="M890.0,400.0 L922.0,560.0" fill="none" stroke="#b5651d" stroke-width="5" stroke-linejoin="round" />
+<path d="M890.0,400 Q880.0,394 858.0,400" fill="none" stroke="#b5651d" stroke-width="0"/>
+<path d="M954.0,400.0 L986.0,560.0" fill="none" stroke="#b5651d" stroke-width="5" stroke-linejoin="round" />
+<path d="M954.0,400 Q944.0,394 922.0,400" fill="none" stroke="#b5651d" stroke-width="0"/>
+<path d="M1018.0,400.0 L1050.0,560.0" fill="none" stroke="#b5651d" stroke-width="5" stroke-linejoin="round" />
+<path d="M1018.0,400 Q1008.0,394 986.0,400" fill="none" stroke="#b5651d" stroke-width="0"/>
+<line x1="730.0" y1="560.0" x2="730.0" y2="640.0" stroke="#b5651d" stroke-width="4" />
+<line x1="1050.0" y1="560.0" x2="1050.0" y2="640.0" stroke="#b5651d" stroke-width="4" />
+<line x1="730" y1="640" x2="730" y2="600" stroke="#c0392b" stroke-width="3" marker-end="url(#ahR)"/>
+<line x1="1050.0" y1="590" x2="1050.0" y2="635" stroke="#c0392b" stroke-width="3" marker-end="url(#ahR)"/>
+<text x="730.0" y="680.0" text-anchor="middle" font-size="26" font-weight="normal" fill="#c0392b">current in</text>
+<text x="1050.0" y="680.0" text-anchor="middle" font-size="26" font-weight="normal" fill="#c0392b">current out</text>
+<path d="M829.5,417 L832.5,433" stroke="none" marker-end="url(#ahR)"/>
+<path d="M957.5,417 L960.5,433" stroke="none" marker-end="url(#ahR)"/>
+<text x="1095.0" y="495.0" text-anchor="middle" font-size="40" font-weight="bold" fill="#000">N</text>
+<text x="678.0" y="495.0" text-anchor="middle" font-size="40" font-weight="bold" fill="#000">S</text>
+<text x="620.0" y="880.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">field outside: from N end to S end</text>
+<text x="620.0" y="915.0" text-anchor="start" font-size="26" font-weight="normal" fill="#000">(like a bar magnet)</text>
+</g>
+</svg>

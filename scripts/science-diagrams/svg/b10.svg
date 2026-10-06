@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1100" viewBox="0 0 1200 1100">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#000"/></marker></defs>
+<rect width="1200" height="1100" fill="#fff"/>
+<path d="M515 940 L500 1090 L700 1090 L685 940 Z" fill="#e9a0a0" stroke="#000" stroke-width="3"/>
+<path d="M570 945 L560 1090 L640 1090 L630 945 Z" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M600 60 C795 60 885 185 885 380 C885 590 775 760 695 840 L690 950 L510 950 L505 840 C425 760 315 590 315 380 C315 185 405 60 600 60 Z" fill="#e9a0a0" stroke="#000" stroke-width="3"/>
+<path d="M600 112 C765 112 840 215 840 385 C840 580 740 735 660 805 L625 832 L575 832 L540 805 C460 735 360 580 360 385 C360 215 435 112 600 112 Z" fill="#f7d3d3" stroke="#000" stroke-width="2"/>
+<path d="M590 832 L590 950 L610 950 L610 832 Z" fill="#f5efc8" stroke="#000" stroke-width="1.5"/>
+<path d="M600 128 C752 128 824 222 824 385 C824 572 728 724 652 790 L620 812 L580 812 L548 790 C472 724 376 572 376 385 C376 222 448 128 600 128 Z" fill="#d7ecf8" stroke="#2a6fa8" stroke-width="2.5"/>
+<path d="M640 114 C760 118 836 210 840 345 C800 330 770 250 735 215 C705 185 670 172 625 168 Z" fill="#a8323a" stroke="#000" stroke-width="2.5"/>
+<path d="M705 455 L735 300" fill="none" stroke="#000" stroke-width="51" stroke-linecap="round" stroke-linejoin="round"/><path d="M705 455 L735 300" fill="none" stroke="#f3c9a8" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse cx="745" cy="282" rx="34" ry="20" transform="rotate(-70 745 282)" fill="#f3c9a8" stroke="#000" stroke-width="2.5"/>
+<path d="M545 600 C470 560 450 430 480 330 C505 250 560 215 615 222 C680 230 715 300 700 380 C690 450 680 520 640 590 Z" fill="#f3c9a8" stroke="#000" stroke-width="2.5"/>
+<path d="M620 290 L700 460" fill="none" stroke="#000" stroke-width="77" stroke-linecap="round" stroke-linejoin="round"/><path d="M620 290 L700 460" fill="none" stroke="#f3c9a8" stroke-width="72" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M590 520 C630 560 650 590 675 620" fill="none" stroke="#000" stroke-width="35" stroke-linecap="round" stroke-linejoin="round"/><path d="M590 520 C630 560 650 590 675 620" fill="none" stroke="#f3c9a8" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="590" cy="672" r="100" fill="#f3c9a8" stroke="#000" stroke-width="2.5"/>
+<path d="M628 694 q14 8 28 0" fill="none" stroke="#000" stroke-width="2.5"/>
+<path d="M558 650 c-18 0 -22 30 -4 34" fill="none" stroke="#000" stroke-width="2.5"/>
+<path d="M790 270 C825 360 770 420 790 480 C805 535 720 565 662 545" fill="none" stroke="#000" stroke-width="40" stroke-linecap="round"/>
+<path d="M790 270 C825 360 770 420 790 480 C805 535 720 565 662 545" fill="none" stroke="#efe6cf" stroke-width="35" stroke-linecap="round"/>
+<path d="M790 270 C825 360 770 420 790 480 C805 535 720 565 662 545" fill="none" stroke="#c62828" stroke-width="9"/>
+<path d="M790 270 C825 360 770 420 790 480 C805 535 720 565 662 545" transform="translate(-10 -3)" fill="none" stroke="#1e5fbf" stroke-width="5"/>
+<path d="M790 270 C825 360 770 420 790 480 C805 535 720 565 662 545" transform="translate(10 3)" fill="none" stroke="#1e5fbf" stroke-width="5"/>
+<line x1="905" y1="150" x2="780" y2="200" stroke="#000" stroke-width="1.5"/><circle cx="780" cy="200" r="3" fill="#000"/>
+<text x="915" y="160" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >placenta</text>
+<line x1="905" y1="290" x2="812" y2="350" stroke="#000" stroke-width="1.5"/><circle cx="812" cy="350" r="3" fill="#000"/>
+<text x="915" y="300" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >umbilical cord</text>
+<line x1="905" y1="410" x2="790" y2="440" stroke="#000" stroke-width="1.5"/><circle cx="790" cy="440" r="3" fill="#000"/>
+<text x="915" y="420" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >umbilical vein</text>
+<line x1="905" y1="520" x2="801" y2="505" stroke="#000" stroke-width="1.5"/><circle cx="801" cy="505" r="3" fill="#000"/>
+<text x="915" y="530" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >umbilical artery</text>
+<line x1="905" y1="700" x2="730" y2="700" stroke="#000" stroke-width="1.5"/><circle cx="730" cy="700" r="3" fill="#000"/>
+<text x="915" y="710" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >amniotic fluid</text>
+<line x1="290" y1="200" x2="335" y2="330" stroke="#000" stroke-width="1.5"/><circle cx="335" cy="330" r="3" fill="#000"/>
+<text x="280" y="210" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >uterus wall</text>
+<line x1="290" y1="330" x2="378" y2="440" stroke="#000" stroke-width="1.5"/><circle cx="378" cy="440" r="3" fill="#000"/>
+<text x="280" y="340" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >amniotic sac</text>
+<line x1="290" y1="460" x2="500" y2="420" stroke="#000" stroke-width="1.5"/><circle cx="500" cy="420" r="3" fill="#000"/>
+<text x="280" y="470" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >fetus</text>
+<line x1="290" y1="1040" x2="540" y2="1040" stroke="#000" stroke-width="1.5"/><circle cx="540" cy="1040" r="3" fill="#000"/>
+<text x="280" y="1050" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >vagina</text>
+<line x1="290" y1="900" x2="530" y2="900" stroke="#000" stroke-width="1.5"/><circle cx="530" cy="900" r="3" fill="#000"/>
+<text x="280" y="910" font-family="DejaVu Sans" font-size="28" text-anchor="end" font-weight="normal" fill="#000" >cervix</text>
+</svg>

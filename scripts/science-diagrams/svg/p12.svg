@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000">
+<defs>
+<marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahR" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+<marker id="ahB" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1f5fbf"/></marker>
+<marker id="ahG" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1e8449"/></marker>
+<marker id="ahM" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahMR" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+</defs>
+<rect width="1200" height="1000" fill="#fff"/>
+<g font-family="DejaVu Sans" font-size="28" fill="#000">
+<path d="M182.0,374.0 L332.0,374.0 L368.0,266.0 L218.0,266.0 L182.0,374.0" fill="#f1948a" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M332.0,534.0 L368.0,426.0 L368.0,266.0 L332.0,374.0 L332.0,534.0" fill="#c0392b" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M182.0,534.0 L332.0,534.0 L332.0,374.0 L182.0,374.0 L182.0,534.0" fill="#e74c3c" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<text x="257.0" y="470.0" text-anchor="middle" font-size="44" font-weight="bold" fill="#fff">N</text>
+<path d="M832.0,374.0 L982.0,374.0 L1018.0,266.0 L868.0,266.0 L832.0,374.0" fill="#a9c4ec" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M982.0,534.0 L1018.0,426.0 L1018.0,266.0 L982.0,374.0 L982.0,534.0" fill="#2e5fa8" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M832.0,534.0 L982.0,534.0 L982.0,374.0 L832.0,374.0 L832.0,534.0" fill="#5d8fd6" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<text x="907.0" y="470.0" text-anchor="middle" font-size="44" font-weight="bold" fill="#fff">S</text>
+<line x1="550.5" y1="548.5" x2="645.0" y2="265.0" stroke="#555" stroke-width="2" stroke-dasharray="10,7"/>
+<path d="M687.0,259.0 A48,48 0 1 0 672.0,312.0" fill="none" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<path d="M387.5,467.5 L432.5,332.5 L812.5,332.5 L767.5,467.5" fill="none" stroke="#b5651d" stroke-width="6" stroke-linejoin="round" />
+<path d="M549.0,553.0 L577.5,467.5" fill="none" stroke="#888" stroke-width="10" stroke-linejoin="round" />
+<circle cx="574.2" cy="477.4" r="40" fill="#e0a060" stroke="#000" stroke-width="2"/>
+<path d="M530.0,490.0 L534.2,477.4 M610.0,490.0 L614.2,477.4" stroke="#000" stroke-width="2"/>
+<path d="M534.2,477.4 L530.0,490.0 A40,40 0 0 0 610.0,490.0 L614.2,477.4 A40,40 0 0 1 534.2,477.4 Z" fill="#e0a060" stroke="none"/>
+<circle cx="570.0" cy="490.0" r="40" fill="#e0a060" stroke="#000" stroke-width="2.5"/>
+<circle cx="570.0" cy="490.0" r="20" fill="#fff" stroke="#000" stroke-width="2"/>
+<path d="M767.5,467.5 L606.0,484.0" fill="none" stroke="#b5651d" stroke-width="4" stroke-linejoin="round" />
+<path d="M387.5,467.5 L513.0,547.0" fill="none" stroke="#b5651d" stroke-width="4" stroke-linejoin="round" />
+<circle cx="553.2" cy="540.4" r="40" fill="#e8b070" stroke="#000" stroke-width="2"/>
+<path d="M509.0,553.0 L513.2,540.4 M589.0,553.0 L593.2,540.4" stroke="#000" stroke-width="2"/>
+<path d="M513.2,540.4 L509.0,553.0 A40,40 0 0 0 589.0,553.0 L593.2,540.4 A40,40 0 0 1 513.2,540.4 Z" fill="#e8b070" stroke="none"/>
+<circle cx="549.0" cy="553.0" r="40" fill="#e8b070" stroke="#000" stroke-width="2.5"/>
+<circle cx="549.0" cy="553.0" r="20" fill="#fff" stroke="#000" stroke-width="2"/>
+<rect x="419.0" y="541.0" width="88" height="24" fill="#555" stroke="#000" stroke-width="2"/>
+<rect x="612.0" y="478.0" width="88" height="24" fill="#555" stroke="#000" stroke-width="2"/>
+<path d="M419.0,553.0 L369.0,553.0 L369.0,830.0 L570.0,830.0" fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" />
+<path d="M700.0,490.0 L750.0,490.0 L750.0,830.0 L630.0,830.0" fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" />
+<circle cx="600" cy="830" r="30" fill="#fff" stroke="#000" stroke-width="3"/>
+<line x1="579.0" y1="809.0" x2="621.0" y2="851.0" stroke="#000" stroke-width="3" />
+<line x1="579.0" y1="851.0" x2="621.0" y2="809.0" stroke="#000" stroke-width="3" />
+<text x="600.0" y="905.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">lamp (or c.r.o.) — output a.c.</text>
+<text x="645.0" y="195.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">axis of rotation</text>
+<line x1="546.5" y1="332.5" x2="486.5" y2="252.5" stroke="#000" stroke-width="1.5" />
+<text x="486.5" y="242.5" text-anchor="end" font-size="28" font-weight="normal" fill="#000">coil</text>
+<line x1="463.0" y1="565.0" x2="463.0" y2="690.0" stroke="#000" stroke-width="1.5" />
+<line x1="656.0" y1="502.0" x2="656.0" y2="690.0" stroke="#000" stroke-width="1.5" />
+<text x="559.5" y="725.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">carbon brushes</text>
+<line x1="549.0" y1="595.0" x2="549.0" y2="612.0" stroke="#000" stroke-width="1.5" />
+<text x="549.0" y="645.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">slip rings</text>
+</g>
+</svg>

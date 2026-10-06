@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1160" viewBox="0 0 1200 1160">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#000"/></marker></defs>
+<rect width="1200" height="1160" fill="#fff"/>
+<ellipse cx="200" cy="190" rx="155" ry="140" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<circle cx="200" cy="190" r="75" fill="#f1e6f7" stroke="#000" stroke-width="2"/>
+<path d="M150 170 q15 -25 30 -5 t30 0 t25 10 M155 215 q20 15 35 -5 t35 5 t20 -15 M180 140 q10 20 25 10 t20 15 M170 240 q15 -10 30 0 t30 -5" fill="none" stroke="#8a6aa8" stroke-width="2.5"/>
+<circle cx="225" cy="185" r="14" fill="#8a6aa8"/>
+<text x="200" y="385" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >interphase</text>
+<text x="200" y="422" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >DNA replicates</text>
+<ellipse cx="600" cy="190" rx="155" ry="140" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<circle cx="600" cy="190" r="95" fill="#f1e6f7" stroke="#000" stroke-width="2.2" stroke-dasharray="14 10"/>
+<line x1="542.9" y1="132.2" x2="564.8" y2="192.3" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="555.2" y1="127.7" x2="577.1" y2="187.8" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="560.0" cy="160.0" r="6.2" fill="#222"/>
+<line x1="642.6" y1="133.3" x2="615.6" y2="191.3" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="654.4" y1="138.7" x2="627.4" y2="196.7" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="635.0" cy="165.0" r="6.2" fill="#222"/>
+<line x1="549.9" y1="234.6" x2="585.6" y2="247.6" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="554.4" y1="222.4" x2="590.1" y2="235.4" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="570.0" cy="235.0" r="6.2" fill="#222"/>
+<line x1="653.2" y1="219.9" x2="620.3" y2="238.9" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="659.7" y1="231.1" x2="626.8" y2="250.1" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="640.0" cy="235.0" r="6.2" fill="#222"/>
+<text x="600" y="385" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >prophase</text>
+<text x="600" y="422" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >chromosomes condense</text>
+<ellipse cx="1000" cy="190" rx="155" ry="140" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="865" y1="190" x2="1000" y2="98" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="1135" y1="190" x2="1000" y2="98" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="865" y1="190" x2="1000" y2="170" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="1135" y1="190" x2="1000" y2="170" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="865" y1="190" x2="1000" y2="228" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="1135" y1="190" x2="1000" y2="228" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="865" y1="190" x2="1000" y2="276" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="1135" y1="190" x2="1000" y2="276" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="993.5" y1="70.0" x2="993.5" y2="126.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="1006.5" y1="70.0" x2="1006.5" y2="126.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="1000.0" cy="98.0" r="6.2" fill="#222"/>
+<line x1="993.5" y1="142.0" x2="993.5" y2="198.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="1006.5" y1="142.0" x2="1006.5" y2="198.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="1000.0" cy="170.0" r="6.2" fill="#222"/>
+<line x1="993.5" y1="212.0" x2="993.5" y2="244.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><line x1="1006.5" y1="212.0" x2="1006.5" y2="244.0" stroke="#1e5fbf" stroke-width="10" stroke-linecap="round"/><circle cx="1000.0" cy="228.0" r="6.2" fill="#222"/>
+<line x1="993.5" y1="260.0" x2="993.5" y2="292.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><line x1="1006.5" y1="260.0" x2="1006.5" y2="292.0" stroke="#d32f2f" stroke-width="10" stroke-linecap="round"/><circle cx="1000.0" cy="276.0" r="6.2" fill="#222"/>
+<line x1="1000" y1="60" x2="1000" y2="320" stroke="#555" stroke-width="1.5" stroke-dasharray="6 6"/>
+<text x="1000" y="385" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >metaphase</text>
+<text x="1000" y="422" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >line up at the equator</text>
+<ellipse cx="185" cy="620" rx="162" ry="128" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<line x1="40" y1="620" x2="115" y2="540" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="330" y1="620" x2="255" y2="540" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="40" y1="620" x2="115" y2="593" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="330" y1="620" x2="255" y2="593" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="40" y1="620" x2="115" y2="645" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="330" y1="620" x2="255" y2="645" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="40" y1="620" x2="115" y2="688" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="330" y1="620" x2="255" y2="688" stroke="#7a7a7a" stroke-width="1.6"/>
+<line x1="115.0" y1="540.0" x2="148.3" y2="520.8" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="115.0" y1="540.0" x2="148.3" y2="559.2" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<line x1="255.0" y1="540.0" x2="221.7" y2="559.2" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="255.0" y1="540.0" x2="221.7" y2="520.8" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<line x1="115.0" y1="593.0" x2="148.3" y2="573.8" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="115.0" y1="593.0" x2="148.3" y2="612.2" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/>
+<line x1="255.0" y1="593.0" x2="221.7" y2="612.2" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="255.0" y1="593.0" x2="221.7" y2="573.8" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/>
+<line x1="115.0" y1="645.0" x2="134.7" y2="633.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="115.0" y1="645.0" x2="134.7" y2="656.4" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/>
+<line x1="255.0" y1="645.0" x2="235.3" y2="656.4" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="255.0" y1="645.0" x2="235.3" y2="633.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/>
+<line x1="115.0" y1="688.0" x2="134.7" y2="676.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="115.0" y1="688.0" x2="134.7" y2="699.4" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<line x1="255.0" y1="688.0" x2="235.3" y2="699.4" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="255.0" y1="688.0" x2="235.3" y2="676.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<text x="185" y="815" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >anaphase</text>
+<text x="185" y="852" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >chromatids pulled apart</text>
+<path d="M570 565 C540 495 407 490 405 620 C407 750 540 745 570 675 C600 745 733 750 735 620 C733 490 600 495 570 565 Z" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<circle cx="486" cy="620" r="58" fill="#f1e6f7" stroke="#000" stroke-width="2"/><line x1="464.0" y1="585.3" x2="472.0" y2="630.7" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="506.0" y1="583.3" x2="498.0" y2="628.7" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="452.5" y1="646.4" x2="479.5" y2="653.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="519.5" y1="646.4" x2="492.5" y2="653.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<circle cx="654" cy="620" r="58" fill="#f1e6f7" stroke="#000" stroke-width="2"/><line x1="632.0" y1="585.3" x2="640.0" y2="630.7" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="674.0" y1="583.3" x2="666.0" y2="628.7" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="620.5" y1="646.4" x2="647.5" y2="653.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="687.5" y1="646.4" x2="660.5" y2="653.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<text x="570" y="815" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >telophase</text>
+<text x="570" y="852" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >nuclei re-form</text>
+<circle cx="919" cy="620" r="84" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<circle cx="919" cy="620" r="56" fill="#f1e6f7" stroke="#000" stroke-width="2"/><line x1="897.0" y1="585.3" x2="905.0" y2="630.7" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="939.0" y1="583.3" x2="931.0" y2="628.7" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="885.5" y1="646.4" x2="912.5" y2="653.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="952.5" y1="646.4" x2="925.5" y2="653.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<circle cx="1101" cy="620" r="84" fill="#fdf3e3" stroke="#000" stroke-width="3"/>
+<circle cx="1101" cy="620" r="56" fill="#f1e6f7" stroke="#000" stroke-width="2"/><line x1="1079.0" y1="585.3" x2="1087.0" y2="630.7" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/><line x1="1121.0" y1="583.3" x2="1113.0" y2="628.7" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="1067.5" y1="646.4" x2="1094.5" y2="653.6" stroke="#1e5fbf" stroke-width="8" stroke-linecap="round"/><line x1="1134.5" y1="646.4" x2="1107.5" y2="653.6" stroke="#d32f2f" stroke-width="8" stroke-linecap="round"/>
+<text x="1010" y="815" font-family="DejaVu Sans" font-size="30" text-anchor="middle" font-weight="bold" fill="#000" >two daughter cells</text>
+<text x="1010" y="852" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#333" >identical, each 2n = 4</text>
+<line x1="362" y1="190" x2="438" y2="190" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="762" y1="190" x2="838" y2="190" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="352" y1="620" x2="400" y2="620" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<line x1="742" y1="620" x2="820" y2="620" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<path d="M1000 445 C1000 500 185 440 185 480" fill="none" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<rect x="40" y="900" width="1120" height="230" rx="14" fill="#fafafa" stroke="#999" stroke-width="1.5"/>
+<text x="70" y="942" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="bold" fill="#000" >key</text>
+<line x1="191.0" y1="970.0" x2="191.0" y2="1060.0" stroke="#d32f2f" stroke-width="13" stroke-linecap="round"/><line x1="209.0" y1="970.0" x2="209.0" y2="1060.0" stroke="#d32f2f" stroke-width="13" stroke-linecap="round"/><circle cx="200.0" cy="1015.0" r="8.1" fill="#222"/>
+<line x1="330" y1="965" x2="211" y2="995" stroke="#000" stroke-width="1.5"/><circle cx="211" cy="995" r="3" fill="#000"/>
+<text x="338" y="975" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >chromatid</text>
+<line x1="330" y1="1052" x2="203" y2="1015" stroke="#000" stroke-width="1.5"/><circle cx="203" cy="1015" r="3" fill="#000"/>
+<text x="338" y="1062" font-family="DejaVu Sans" font-size="28" text-anchor="start" font-weight="normal" fill="#000" >centromere</text>
+<line x1="640.0" y1="965.0" x2="640.0" y2="1035.0" stroke="#d32f2f" stroke-width="12" stroke-linecap="round"/>
+<line x1="670.0" y1="965.0" x2="670.0" y2="1035.0" stroke="#1e5fbf" stroke-width="12" stroke-linecap="round"/>
+<line x1="720.0" y1="988.0" x2="720.0" y2="1032.0" stroke="#1e5fbf" stroke-width="12" stroke-linecap="round"/>
+<line x1="750.0" y1="988.0" x2="750.0" y2="1032.0" stroke="#d32f2f" stroke-width="12" stroke-linecap="round"/>
+<text x="800" y="975.0" font-family="DejaVu Sans" font-size="26" text-anchor="start" font-weight="normal" fill="#000" >red and blue = one</text><text x="800" y="1005.68" font-family="DejaVu Sans" font-size="26" text-anchor="start" font-weight="normal" fill="#000" >homologous pair</text><text x="800" y="1036.36" font-family="DejaVu Sans" font-size="26" text-anchor="start" font-weight="normal" fill="#000" >(one from each parent)</text>
+<text x="600" y="1110" font-family="DejaVu Sans" font-size="26" text-anchor="middle" font-weight="normal" fill="#000" >2n = 4: two homologous pairs (one long, one short)</text>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000">
+<defs>
+<marker id="ah" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="20" markerHeight="20" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahR" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+<marker id="ahB" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1f5fbf"/></marker>
+<marker id="ahG" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="22" markerHeight="22" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L12,6 L0,12 z" fill="#1e8449"/></marker>
+<marker id="ahM" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#000"/></marker>
+<marker id="ahMR" viewBox="0 0 12 12" refX="6" refY="6" markerWidth="24" markerHeight="24" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#c0392b"/></marker>
+</defs>
+<rect width="1200" height="1000" fill="#fff"/>
+<g font-family="DejaVu Sans" font-size="28" fill="#000">
+<path d="M182.0,374.0 L332.0,374.0 L368.0,266.0 L218.0,266.0 L182.0,374.0" fill="#f1948a" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M332.0,534.0 L368.0,426.0 L368.0,266.0 L332.0,374.0 L332.0,534.0" fill="#c0392b" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M182.0,534.0 L332.0,534.0 L332.0,374.0 L182.0,374.0 L182.0,534.0" fill="#e74c3c" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<text x="257.0" y="470.0" text-anchor="middle" font-size="44" font-weight="bold" fill="#fff">N</text>
+<path d="M832.0,374.0 L982.0,374.0 L1018.0,266.0 L868.0,266.0 L832.0,374.0" fill="#a9c4ec" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M982.0,534.0 L1018.0,426.0 L1018.0,266.0 L982.0,374.0 L982.0,534.0" fill="#2e5fa8" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<path d="M832.0,534.0 L982.0,534.0 L982.0,374.0 L832.0,374.0 L832.0,534.0" fill="#5d8fd6" stroke="#000" stroke-width="2.5" stroke-linejoin="round" />
+<text x="907.0" y="470.0" text-anchor="middle" font-size="44" font-weight="bold" fill="#fff">S</text>
+<line x1="550.5" y1="548.5" x2="645.0" y2="265.0" stroke="#555" stroke-width="2" stroke-dasharray="10,7"/>
+<path d="M687.0,259.0 A48,48 0 1 0 672.0,312.0" fill="none" stroke="#000" stroke-width="3" marker-end="url(#ah)"/>
+<path d="M387.5,467.5 L432.5,332.5 L812.5,332.5 L767.5,467.5" fill="none" stroke="#b5651d" stroke-width="6" stroke-linejoin="round" />
+<path d="M397.8,436.6 L399.7,430.9" stroke="none" marker-end="url(#ahR)"/>
+<path d="M619.5,332.5 L625.5,332.5" stroke="none" marker-end="url(#ahR)"/>
+<path d="M779.7,430.9 L777.8,436.6" stroke="none" marker-end="url(#ahR)"/>
+<path d="M387.5,467.5 L544.2,501.2" fill="none" stroke="#b5651d" stroke-width="4" stroke-linejoin="round" />
+<path d="M767.5,467.5 L588.2,501.2" fill="none" stroke="#b5651d" stroke-width="4" stroke-linejoin="round" />
+<path d="M570.2,463.2 L576.8,463.8 L583.2,465.5 L589.2,468.3 L594.7,472.1 L599.4,476.8 L603.2,482.2 L606.0,488.3 L607.7,494.7 L608.2,501.2 L607.7,507.8 L606.0,514.2 L603.2,520.2 L599.4,525.7 L594.7,530.4 L589.2,534.2 L583.2,537.0 L576.8,538.7 L570.2,539.2 L562.8,561.8 L569.3,561.2 L575.7,559.5 L581.8,556.7 L587.2,552.9 L591.9,548.2 L595.7,542.8 L598.5,536.7 L600.2,530.3 L600.8,523.8 L600.2,517.2 L598.5,510.8 L595.7,504.8 L591.9,499.3 L587.2,494.6 L581.8,490.8 L575.7,488.0 L569.3,486.3 L562.8,485.8 L570.2,463.2" fill="#e0a060" stroke="#000" stroke-width="2" stroke-linejoin="round" />
+<path d="M562.8,485.8 L569.3,486.3 L575.7,488.0 L581.8,490.8 L587.2,494.6 L591.9,499.3 L595.7,504.8 L598.5,510.8 L600.2,517.2 L600.8,523.8 L600.2,530.3 L598.5,536.7 L595.7,542.8 L591.9,548.2 L587.2,552.9 L581.8,556.7 L575.7,559.5 L569.3,561.2 L562.8,561.8 L562.8,485.8" fill="#e0a060" stroke="#000" stroke-width="2" stroke-linejoin="round" />
+<path d="M562.2,463.2 L555.7,463.8 L549.3,465.5 L543.2,468.3 L537.8,472.1 L533.1,476.8 L529.3,482.2 L526.5,488.3 L524.8,494.7 L524.2,501.2 L524.8,507.8 L526.5,514.2 L529.3,520.2 L533.1,525.7 L537.8,530.4 L543.2,534.2 L549.3,537.0 L555.7,538.7 L562.2,539.2 L554.8,561.8 L548.2,561.2 L541.8,559.5 L535.8,556.7 L530.3,552.9 L525.6,548.2 L521.8,542.8 L519.0,536.7 L517.3,530.3 L516.8,523.8 L517.3,517.2 L519.0,510.8 L521.8,504.8 L525.6,499.3 L530.3,494.6 L535.8,490.8 L541.8,488.0 L548.2,486.3 L554.8,485.8 L562.2,463.2" fill="#e8b070" stroke="#000" stroke-width="2" stroke-linejoin="round" />
+<path d="M554.8,485.8 L548.2,486.3 L541.8,488.0 L535.8,490.8 L530.3,494.6 L525.6,499.3 L521.8,504.8 L519.0,510.8 L517.3,517.2 L516.8,523.8 L517.3,530.3 L519.0,536.7 L521.8,542.8 L525.6,548.2 L530.3,552.9 L535.8,556.7 L541.8,559.5 L548.2,561.2 L554.8,561.8 L554.8,485.8" fill="#e8b070" stroke="#000" stroke-width="2" stroke-linejoin="round" />
+<rect x="429.5" y="500.5" width="89.0" height="24" fill="#555" stroke="#000" stroke-width="2"/>
+<rect x="606.5" y="500.5" width="89.0" height="24" fill="#555" stroke="#000" stroke-width="2"/>
+<path d="M429.5,512.5 L369.5,512.5 L369.5,840.0 L585.0,840.0" fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" />
+<path d="M695.5,512.5 L755.5,512.5 L755.5,840.0 L615.0,840.0" fill="none" stroke="#000" stroke-width="3" stroke-linejoin="round" />
+<line x1="585.0" y1="800.0" x2="585.0" y2="880.0" stroke="#000" stroke-width="3" />
+<line x1="615.0" y1="820.0" x2="615.0" y2="860.0" stroke="#000" stroke-width="8" />
+<text x="565.0" y="792.0" text-anchor="middle" font-size="32" font-weight="bold" fill="#000">+</text>
+<text x="639.0" y="806.0" text-anchor="middle" font-size="32" font-weight="bold" fill="#000">−</text>
+<path d="M369.5,730 L369.5,722" stroke="none" marker-end="url(#ahR)"/>
+<path d="M755.5,722 L755.5,730" stroke="none" marker-end="url(#ahR)"/>
+<line x1="419.0" y1="373.0" x2="419.0" y2="468.0" stroke="#1e8449" stroke-width="4" marker-end="url(#ahG)"/>
+<line x1="799.0" y1="373.0" x2="799.0" y2="278.0" stroke="#1e8449" stroke-width="4" marker-end="url(#ahG)"/>
+<text x="433.0" y="464.0" text-anchor="start" font-size="30" font-weight="bold" fill="#1e8449">F</text>
+<text x="813.0" y="296.0" text-anchor="start" font-size="30" font-weight="bold" fill="#1e8449">F</text>
+<text x="645.0" y="195.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">axis of rotation</text>
+<line x1="546.5" y1="332.5" x2="486.5" y2="252.5" stroke="#000" stroke-width="1.5" />
+<text x="486.5" y="242.5" text-anchor="end" font-size="28" font-weight="normal" fill="#000">coil</text>
+<line x1="464.5" y1="524.5" x2="200.0" y2="620.0" stroke="#000" stroke-width="1.5" />
+<text x="200.0" y="655.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">carbon brush</text>
+<line x1="558.8" y1="563.8" x2="558.8" y2="622.0" stroke="#000" stroke-width="1.5" />
+<text x="558.8" y="655.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">split-ring commutator</text>
+<text x="600.0" y="935.0" text-anchor="middle" font-size="28" font-weight="normal" fill="#000">battery</text>
+<line x1="600.0" y1="905.0" x2="600.0" y2="884.0" stroke="#000" stroke-width="1.5" />
+<text x="60.0" y="140.0" text-anchor="start" font-size="26" font-weight="normal" fill="#c0392b">current direction shown in red</text>
+<text x="60.0" y="180.0" text-anchor="start" font-size="26" font-weight="normal" fill="#1e8449">F = force on each side of the coil</text>
+</g>
+</svg>
