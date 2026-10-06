@@ -637,8 +637,8 @@ scribble with the pen as the eraser, like how one uses the eraser to erase".
   css px — is tested against the ink already on that page. Every stroke it passes over (two
   sampled points inside the patch and within half its width + 7 css px of the zigzag) is removed
   whole, the zigzag is not kept, and it is ONE `page` undo step. **A zigzag that lands on no ink
-  stays as ordinary ink** — hatching and shading on blank paper are safe. A short line says what
-  happened ("Rubbed out 2 strokes · two-finger tap to undo"). His own ink only: the marker's
+  stays as ordinary ink** — hatching and shading on blank paper are safe. Nothing is shown when it
+  happens (a confirming line was built and removed the same day at his word). His own ink only: the marker's
   layer objects still go through the eraser tool or their own Delete. Not snapped shapes, not the
   highlighter, not typed notes as the rubbing stroke. Works for the student overlay too.
 - **The hint.** The first time the pen opens on a device one green line names the gestures

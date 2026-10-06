@@ -507,15 +507,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
   const [gestureHint, setGestureHint] = useState(false);
   useEffect(() => { try { if (!localStorage.getItem(GESTURE_HINT_KEY)) setGestureHint(true); } catch { /* no store → no hint */ } }, []);
   const dismissGestureHint = () => { setGestureHint(false); try { localStorage.setItem(GESTURE_HINT_KEY, '1'); } catch { /* shown again next time */ } };
-  // A short line after something happened that the hand may not have meant (a scribble rub).
-  const [tip, setTip] = useState('');
-  const tipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const flashTip = useCallback((text: string) => {
-    setTip(text);
-    if (tipTimerRef.current) clearTimeout(tipTimerRef.current);
-    tipTimerRef.current = setTimeout(() => setTip(''), 3200);
-  }, []);
-  useEffect(() => () => { if (tipTimerRef.current) clearTimeout(tipTimerRef.current); }, []);
+
   const selDownAtRef = useRef(0);
   const swapLayerMarkRef = useRef<() => void>(() => {});
   const [pageNo, setPageNo] = useState(1);
@@ -2046,7 +2038,8 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
         // Scribble to erase (7 Oct 2026, Adrian: "scribble with the pen as the eraser, like how
         // one uses the eraser to erase"): a quick back-and-forth over existing ink rubs that
         // ink out and is not kept. A zigzag that lands on nothing stays as ordinary ink, and
-        // the rub is one undo step — two-finger tap brings everything back.
+        // the rub is one undo step — two-finger tap brings everything back. No message when it
+        // happens (Adrian, 7 Oct 2026: "you don't have to have a short line to confirm it").
         let rubbed = false;
         if (cur.stroke.tool === 'pen' && !cur.stroke.snapped && !cur.stroke.text) {
           const dS = dimsRef.current[cur.pageIdx];
@@ -2061,7 +2054,6 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
               clearSelection();
               rubbed = true;
               logInk('scribble-erase', { n: hit.size, page: cur.pageIdx });
-              flashTip(`Rubbed out ${hit.size === 1 ? '1 stroke' : `${hit.size} strokes`} · two-finger tap to undo`);
             }
           }
         }
@@ -3158,12 +3150,7 @@ export default function AnnotateOverlay({ runId, pages: pagesIn, student, totals
             ✏️ ink on {inkedCount} page{inkedCount > 1 ? 's' : ''}
           </div>
         )}
-        {tip && (
-          <div role="status" style={{
-            position: 'absolute', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 44px)', left: 12,
-            background: 'rgba(17,24,39,0.86)', color: '#fff', fontSize: 13, padding: '6px 12px', borderRadius: 999, pointerEvents: 'none',
-          }}>{tip}</div>
-        )}
+
         {palette && (
           <PalettePopover
             current={palette === 'hl' ? hlColor : palette === 'sel' ? ([...(selRef.current?.set ?? [])][0]?.color ?? penColor) : penColor}
