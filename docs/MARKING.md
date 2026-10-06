@@ -892,8 +892,8 @@ screenshots: "so can the fixer fix more things?" → "yes do all 2-4".
   session, on Telegram): file ONE ROW PER POINT in Supabase `pen_reports`
   (`migrations/pen_reports.sql`) — `said` his words verbatim, `what` what the page shows
   in one plain sentence, `run_id` / `page` / `question` when you can tell, `kind` `bug`
-  (the page breaks a rule that already exists) or `design` (the page is drawn as
-  designed and he wants the design changed). Leave `status = 'new'` — unless you fix it
+  (the page breaks a rule that already exists) `design` (the page is drawn as
+  designed and he wants the design changed) or `wording` (what a note should SAY instead). Leave `status = 'new'` — unless you fix it
   in the same session, then `'taken'` with `taken_by` = your session, and close it
   (`'fixed'` + the sha, or `'proposed'` + the slug) when you are done.
 - **The page fixer works `new` rows first**, before its own list and the reader's

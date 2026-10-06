@@ -11,7 +11,7 @@ create table if not exists pen_reports (
   question    text,                 -- "Q5(c)"
   said        text not null,        -- Adrian's own words, verbatim
   what        text not null,        -- what the page shows, one plain sentence
-  kind        text not null default 'bug' check (kind in ('bug', 'design')),
+  kind        text not null default 'bug' check (kind in ('bug', 'design', 'wording')),
   status      text not null default 'new' check (status in ('new', 'taken', 'fixed', 'proposed', 'wont')),
   taken_by    text,                 -- 'marking-fix 2026-10-07' | 'session 6 Oct'
   outcome     text,                 -- sha / proposal slug / why not
