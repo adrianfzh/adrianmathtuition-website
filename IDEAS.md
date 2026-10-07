@@ -82,6 +82,16 @@ papers). It does not yet teach a student from zero. What a weaker student needs 
   once Adrian is happy with them (both closed).
 - **A "start here" per student**, from what their marked work shows.
 
+- **A weekly rhythm** — a fixed "session" in the calendar with a start, a set of work and an end,
+  so it feels like a lesson and not a library.
+- **Someone who notices** — it need not be a tutor; the parent can, if we make it easy: a WhatsApp
+  note each week ("Jayden did 2 of 3 sessions. Strong on indices, stuck on surds. Next week:
+  surds."). The parent supplies the push — so the WhatsApp work (bot `docs/HANDOFF-WHATSAPP-STEP1.md`)
+  matters more than it looks.
+
+Adrian confirmed all six the same day ("Yes put into memory"). Which aim — tutor's tool ·
+tutor-light · no tutor at all — is still his to pick.
+
 Matters most for lower levels and for anyone using the app without lessons. Not started: on
 7 Oct 2026 the Humanities, English and WhatsApp builds are running. Needs a design talk first.
 
