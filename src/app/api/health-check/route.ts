@@ -1223,7 +1223,7 @@ export async function GET(req: NextRequest) {
     const { getSupabaseAdmin } = await import('@/lib/supabase');
     const { data, error } = await getSupabaseAdmin()
       .from('paper_marking_runs')
-      .select('id, created_at, queue:result_json->queue')
+      .select('id, created_at, queue_status, queue:result_json->queue')
       .is('total_max', null)
       .order('created_at', { ascending: false })
       .limit(50);
@@ -1231,6 +1231,9 @@ export async function GET(req: NextRequest) {
     type Q = { queued_at?: string; failed_at?: string };
     const lagged = (data || []).filter((r) => {
       const q = (r as { queue?: Q }).queue;
+      // A paper parked or cancelled (queue_status 'failed', e.g. Adrian cancelling
+      // bench scripts, 7 Oct 2026) is not waiting — it held this alarm red for good.
+      if ((r as { queue_status?: string | null }).queue_status === 'failed') return false;
       if (!q || !q.queued_at || q.failed_at) return false;
       return Date.now() - new Date(q.queued_at).getTime() > 2 * 3600e3;
     });
