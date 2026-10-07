@@ -45,7 +45,17 @@ export function announcementKey(id: string): string {
 //     body: '…', cta: { label: 'Hand in a paper', href: '/app/submit' }, until: '2026-09-08' }
 // Retired 2026-08-28 (mock-papers card): Adrian — "the new banner need not be
 // there this time. everything is new to the students."
-export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = null;
+// 7 Oct 2026 — the privacy page changed (version 3). Adrian: "I'd still show the small one-time
+// 'we've updated our privacy page' — yes let's do that." A policy note stays longer than a
+// feature card (a month), and its link lands on the page's own "what changed" box.
+export const CURRENT_ANNOUNCEMENT: PortalAnnouncement | null = {
+  id: '2026-10-privacy-v3',
+  emoji: '🔒',
+  title: 'We updated our privacy page',
+  body: 'It now says we use what we keep to improve our teaching and marking, as well as for tuition. Nothing new is collected.',
+  cta: { label: 'See what changed', href: '/privacy#changed' },
+  until: '2026-11-07',
+};
 
 /** The announcement to show today — null when none is set or it has expired. */
 export function activeAnnouncement(now: Date = new Date()): PortalAnnouncement | null {

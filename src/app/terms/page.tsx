@@ -139,6 +139,27 @@ const policies = [
     ),
   },
   {
+    icon: '🔒',
+    title: 'Your Child’s Information',
+    body: (
+      <>
+        <p>
+          To teach your child we keep your contact details, lesson and payment records, and the schoolwork
+          handed in with our marking and feedback. We use these only for tuition, and to improve our teaching
+          and marking. We never sell them or use them for advertising.
+        </p>
+        <p>
+          By registering, you agree to this on your child&apos;s behalf. The full details, and how to see,
+          correct or delete what we hold, are on our{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-navy font-medium hover:underline">
+            privacy page
+          </a>
+          .
+        </p>
+      </>
+    ),
+  },
+  {
     icon: '💬',
     title: 'Getting Help',
     body: (

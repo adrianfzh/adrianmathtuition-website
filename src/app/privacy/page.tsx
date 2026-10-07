@@ -1,5 +1,7 @@
 // Privacy page for the AdrianMath app — the SHORT, parent-facing version
-// (docs/PRIVACY-DRAFT-2026-09.md, live since 11 Sep 2026). Adrian: "can you
+// (docs/PRIVACY-DRAFT-2026-09.md, live since 11 Sep 2026; VERSION 3 since 7 Oct 2026 — the
+// purpose now includes "to improve our teaching and marking", and the AI sentence is about the
+// OUTSIDE services only; Adrian: "let's fix that sentence"). Adrian: "can you
 // don't reveal the stack?" — no service is named here; the processor list is
 // internal reference only (that doc's foot). The consent checkbox at account
 // activation references this page; POLICY_VERSION in src/lib/portal-consent.ts
@@ -11,7 +13,7 @@ export const metadata = {
   description: 'What the AdrianMath app keeps about your child, why, for how long, and what you can ask us to do.',
 };
 
-const POLICY_VERSION_LABEL = 'Version 2 · September 2026';
+const POLICY_VERSION_LABEL = 'Version 3 · October 2026';
 const CONTACT_EMAIL = 'adrianmathtuition@gmail.com';
 
 export default function PrivacyPage() {
@@ -23,7 +25,17 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-[hsl(45,100%,98%)]">
       <div className="max-w-2xl mx-auto px-5 py-12">
         <h1 className="text-2xl font-bold text-navy mb-1">Privacy at AdrianMath</h1>
-        <p className="text-sm text-gray-500 mb-8">{POLICY_VERSION_LABEL} · Adrian&apos;s Math Tuition, Singapore</p>
+        <p className="text-sm text-gray-500 mb-4">{POLICY_VERSION_LABEL} · Adrian&apos;s Math Tuition, Singapore</p>
+
+        {/* What changed in this version — the app's one-time note links here (#changed). */}
+        <div id="changed" className="mb-8 rounded-2xl border border-[hsl(43,80%,80%)] bg-[hsl(45,100%,94%)] px-4 py-3 scroll-mt-6">
+          <p className="text-sm font-bold text-navy">Updated October 2026 — what changed</p>
+          <ul className="mt-1 list-disc pl-5 text-[14px] leading-relaxed text-gray-700">
+            <li>We now say that we use what we keep to improve our teaching and marking, as well as for tuition.</li>
+            <li>We now say plainly that the outside services we use may not use your child&apos;s work for their own purposes.</li>
+            <li>Nothing new is collected, and nothing is sold or shared for advertising.</li>
+          </ul>
+        </div>
 
         <p className={p}>
           This page explains what the AdrianMath app keeps about your child, why, how long, and
@@ -53,9 +65,10 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p className={p}>
-          We do not sell your child&apos;s data, show advertising, or use it for anything other than
-          tuition. Marking and feedback are produced with the help of AI tools that Adrian checks;
-          these tools are not permitted to train on your child&apos;s work.
+          We do not sell your child&apos;s data or show advertising. We use it only for tuition, and to
+          improve our teaching and marking. Marking and feedback are produced with the help of AI
+          services that Adrian checks; the outside services we use are not permitted to use your
+          child&apos;s work for their own purposes.
         </p>
 
         <h2 className={h2}>Who else handles it</h2>
@@ -93,6 +106,12 @@ export default function PrivacyPage() {
           Each account can only ever see its own records, and connections are encrypted. If we ever
           learn of a data breach affecting your child, we will tell you, and the Personal Data
           Protection Commission where the law requires it.
+        </p>
+
+        <h2 className={h2}>Changes to this page</h2>
+        <p className={p}>
+          We may update this page from time to time. The version and date are at the top, with a
+          short note of what changed, and the app shows a note when it does.
         </p>
 
         <h2 className={h2}>Contact</h2>

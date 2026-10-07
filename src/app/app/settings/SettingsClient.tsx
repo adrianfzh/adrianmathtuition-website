@@ -155,6 +155,9 @@ export default function SettingsClient({
           JSON file. Or permanently delete the account. Details in the{' '}
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
         </p>
+        <a href="/privacy" target="_blank" className="flex items-center justify-between rounded-xl border border-black/10 px-3.5 py-2.5 mb-3 text-sm font-semibold text-navy hover:bg-navy/5 transition-colors">
+          <span>🔒 Privacy page</span><span className="text-gray-300 text-lg" aria-hidden>›</span>
+        </a>
         <div className="flex flex-wrap gap-2">
           <a href="/api/portal/marked-papers-zip" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">
             ⬇️ Download all my marked papers

@@ -7,6 +7,23 @@
 > is adrianmathtuition@gmail.com; the protection paragraph was cut to two sentences. The
 > named-processor list at the bottom is internal reference only — it is NOT published.
 
+> **VERSION 3 — 7 Oct 2026 (`POLICY_VERSION = 'v3-2026-10'`).** Adrian: "let's fix that sentence" · "can we
+> not mention training of data?" · "the privacy page … says 'we may update this page from time to time' >
+> let's do that too" · "add a short data clause to the terms the parent already ticks at registration > yes".
+> What changed on `/privacy`: (1) the purpose line now reads "We use it only for tuition, and to improve our
+> teaching and marking"; (2) the AI sentence is about the OUTSIDE services only — "not permitted to use your
+> child's work for their own purposes" (the old "these tools are not permitted to train on your child's work"
+> read as a promise that no model is ever trained on the work, which is no longer true: Adrian is building his
+> own page reader from marked pages, names removed); (3) a "what changed" box at the top (`#changed`) and a
+> "Changes to this page" section. Told to existing accounts by the app's one-time card
+> (`lib/portal-announcement.ts`, id `2026-10-privacy-v3`, until 7 Nov 2026) and a 🔒 Privacy page row in
+> Settings. `/terms` gained "Your Child's Information", so the PARENT agrees to the data use at registration.
+> Basis as understood (not legal advice): PDPC's 2024 AI guidelines — the business-improvement exception
+> covers using data already held to develop or improve one's own systems. STILL OPEN: the page says accounts
+> are opened "only with a parent's or guardian's consent" while every `consent_record` says
+> `consented_by: 'student'`; and no per-student "leave my pages out" mark exists yet.
+> The draft text below is version 2 as written in September.
+
 ---
 
 **Privacy at AdrianMath** · Version 2 · September 2026 · Adrian's Math Tuition, Singapore
