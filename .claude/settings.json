@@ -62,7 +62,8 @@
       "Bash(curl -s https://www.adrianmathtuition.com/*)",
       "Bash(curl -s https://adrianmath-dev.vercel.app/*)",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "mcp__Supabase_read-only__execute_sql"
     ],
     "defaultMode": "auto"
   },
