@@ -57,6 +57,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'proposals', group: 'requests', label: '🚢 Ship or drop a proposal', what: 'Acts on "ship proposal …" sent from Telegram.', when: 'checks every minute' },
   { key: 'flagjudge', group: 'requests', label: '🤔 Flag judge', what: 'Settles a student\'s flag the first check could not.', when: 'checks every minute' },
   { key: 'flag-review', group: 'requests', label: '🚩 Same-day flag review', what: 'When a student\'s flag shows the bot was wrong, finds why the same day and proposes the fix.', when: 'checks every 10 min' },
+  { key: 'plan-reads', group: 'requests', label: '✍️ Answer reader', what: 'Reads the English practice answers students hand in, on the plan (no paid key).', when: 'checks every minute' },
 ];
 
 export interface WorkerJobState { on: boolean; at: string | null; by: string | null }

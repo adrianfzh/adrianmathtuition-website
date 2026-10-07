@@ -2,7 +2,10 @@
 // One text and its questions. Each question is checked by itself: type → Check →
 // the marks, one line on why, then "The scheme says" / "You wrote". A summary shows
 // which of the scheme's points were made. POST /api/portal/english/practice.
-import { useState } from 'react';
+// A judged answer is read on plan usage, not on the spot (7 Oct 2026): the POST answers
+// { kind: 'queued', job }, the card says so and asks GET ?job= until the marks are in. Coming
+// back to the page later shows them too (GET ?set=).
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { PublicUnit } from '@/lib/english-practice';
 import type { VisualBlock, VisualTheme } from '@/lib/english-own';
@@ -15,25 +18,53 @@ type Shown = { answer: string | null; accept: string[]; points: string[] };
 type ShortRes = { kind: 'short'; awarded: number; marks: number; line: string; why: string; missing: string | null; scheme: Shown };
 type SummaryRes = { kind: 'summary'; content: number; contentMax: number; hit: number[]; language: string; words: number; over: boolean; scheme: Shown };
 type Res = ShortRes | SummaryRes;
+export type Earlier = { job: string; state: 'waiting' | 'done' | 'failed'; answer: string; result?: Res };
+const API = '/api/portal/english/practice';
 
 const countWords = (s: string): number => (s.trim().match(/\S+/g) ?? []).length;
 
-function Question({ u, wordLimit }: { u: PublicUnit; wordLimit: number }) {
+function Question({ u, wordLimit, earlier }: { u: PublicUnit; wordLimit: number; earlier?: Earlier }) {
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [res, setRes] = useState<Res | null>(null);
   const [sent, setSent] = useState('');
+  const [job, setJob] = useState<string | null>(null);   // an answer waiting to be read
+
+  // an answer handed in earlier (this visit or a past one): show it, and its marks once they are in
+  useEffect(() => {
+    if (!earlier) return;
+    setAnswer(a => a || earlier.answer); setSent(earlier.answer);
+    if (earlier.state === 'done' && earlier.result) setRes(earlier.result);
+    else if (earlier.state === 'waiting') setJob(earlier.job);
+  }, [earlier]);
+
+  useEffect(() => {
+    if (!job) return;
+    let tries = 0;
+    const t = setInterval(async () => {
+      tries++;
+      try {
+        const r = await fetch(`${API}?job=${job}`);
+        const j = await r.json().catch(() => ({}));
+        if (j.state === 'done') { setRes(j.result as Res); setJob(null); }
+        else if (j.state === 'failed' || !r.ok) { setError('Could not check it. Try again.'); setJob(null); }
+      } catch { /* a dropped request: ask again on the next turn */ }
+      if (tries >= 150) { setJob(null); setError('Still being checked. Come back to this page in a little while.'); }
+    }, 6000);
+    return () => clearInterval(t);
+  }, [job]);
   const summary = u.kind === 'summary';
   const words = countWords(answer);
 
   const check = async (value: string) => {
     setBusy(true); setError(null);
     try {
-      const r = await fetch('/api/portal/english/practice', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ unit: u.key, answer: value }) });
+      const r = await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ unit: u.key, answer: value }) });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Could not check it. Try again.');
-      setRes(j as Res); setSent(value);
+      setSent(value);
+      if (j.kind === 'queued') { setRes(null); setJob(String(j.job)); } else setRes(j as Res);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not check it. Try again.'); }
     finally { setBusy(false); }
   };
@@ -60,14 +91,15 @@ function Question({ u, wordLimit }: { u: PublicUnit; wordLimit: number }) {
         </div>
       ) : (
         <>
-          <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={summary ? 7 : u.marks >= 2 ? 3 : 2} maxLength={1500} disabled={busy}
+          <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={summary ? 7 : u.marks >= 2 ? 3 : 2} maxLength={1500} disabled={busy || !!job}
             placeholder={summary ? 'Write your summary in continuous writing.' : 'Type your answer.'}
             className="w-full rounded-2xl border border-black/10 bg-white p-3 text-[15px] text-gray-900 focus:outline-none focus:border-violet-500" />
           {summary && <p className={`text-[12px] -mt-1.5 ${words > wordLimit ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>{words} of {wordLimit} words</p>}
-          <button onClick={() => void check(answer)} disabled={busy || answer.trim().length < 1}
+          <button onClick={() => void check(answer)} disabled={busy || !!job || answer.trim().length < 1}
             className="w-full rounded-xl bg-violet-600 text-white text-sm font-semibold px-4 py-2.5 disabled:opacity-50">
-            {busy ? 'Checking…' : res ? 'Check again' : 'Check my answer'}
+            {busy ? 'Sending…' : job ? 'Being checked…' : res ? 'Check again' : 'Check my answer'}
           </button>
+          {job && <p className="text-[13px] leading-snug text-gray-600">Handed in. The marks will show here in a few minutes — carry on with the next question.</p>}
         </>
       )}
       {error && <p className="text-sm text-red-600">{error}</p>}
@@ -124,6 +156,13 @@ export default function ReadingForm({ title, paragraphs, visual, units, backHref
   title: string; paragraphs: string[] | null; visual: { format: string; theme: VisualTheme; blocks: VisualBlock[] } | null;
   units: PublicUnit[]; backHref: string; wordLimit: number;
 }) {
+  // answers handed in earlier on this set, and their marks when they are in
+  const [earlier, setEarlier] = useState<Record<string, Earlier>>({});
+  const setId = units[0]?.itemId;
+  useEffect(() => {
+    if (!setId) return;
+    fetch(`${API}?set=${setId}`).then(r => (r.ok ? r.json() : null)).then(j => { if (j?.jobs) setEarlier(j.jobs as Record<string, Earlier>); }).catch(() => {});
+  }, [setId]);
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
@@ -144,7 +183,7 @@ export default function ReadingForm({ title, paragraphs, visual, units, backHref
         </div>
       )}
 
-      {units.map(u => <Question key={u.key} u={u} wordLimit={wordLimit} />)}
+      {units.map(u => <Question key={u.key} u={u} wordLimit={wordLimit} earlier={earlier[u.key]} />)}
 
       <Link href={backHref} className="block text-center w-full rounded-xl border border-violet-600 text-violet-700 text-sm font-semibold px-4 py-3">Choose another text</Link>
     </div>

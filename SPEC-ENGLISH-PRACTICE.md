@@ -25,6 +25,30 @@ longer a content-policy decision. What it waits on: the bench on all 51 own sets
 - **Questions point at paragraphs, never line numbers** — lines move on a phone.
 - The writers' brief for a batch: `docs/english-own-brief.md`.
 
+## On the plan, not the paid key (7 Oct 2026)
+
+Adrian, 7 Oct 2026: *"we should not be using API"* … *"all on plan"* … (to a queue with marks in a
+few minutes) *"yes"*.
+
+- **Rule-marked answers are instant and free**, as before: editing, a choice, a "which word".
+- **A judged answer is queued.** The route builds the same prompt as before and writes it to
+  `plan_reads` (`migrations/plan_reads.sql`, `src/lib/plan-reads.ts`); the reply is
+  `{ kind: 'queued', job }`. The card says "Handed in. The marks will show here in a few minutes"
+  and asks `GET ?job=` every 6 seconds. `GET ?set=` gives the newest answer and marks per question,
+  so a student who leaves and comes back still sees them.
+- **The reader** is the Fly worker's one-minute lane `plan-reads` (bot `scripts/plan-reads.js`,
+  `worker/fly/jobs.sh`): one `claude -p` per answer on a pooled login, model alias `sonnet`, **no
+  tools at all** (the prompt holds a student's own words), an empty working directory. It writes
+  the raw reply back; the website parses it with the same `parseShortReply` / `parseSummaryReply`.
+  The bot starts a stopped worker when a read is queued (`lib/fly-worker.js`).
+- **Speed:** about a minute when the worker is awake; a few minutes when it has to start.
+- **Switch:** `plan-reads` on `/admin/switches`. **Alarm:** health-check `plan-reads` — an answer
+  waiting over 20 minutes. **Cap:** 40 queued answers a student a day.
+- The paid call is still in the code behind `ENGLISH_CHECK_USE_API=1` (unset everywhere). Do not
+  set it without Adrian's word.
+- `plan_reads` is generic (a finished prompt in, a raw reply out) — the next small check that
+  should leave the paid key can use it with a new `kind`.
+
 ## The bench (7 Oct 2026) — `npx tsx scripts/english-bench/run.ts`
 
 Runs on a Mac with the paid key; the same reading the page uses, no cap, nothing logged. About
@@ -37,6 +61,18 @@ Runs on a Mac with the paid key; the same reading the page uses, no cap, nothing
 | Padding | every fifth read again with empty words around it | unmoved ≥ 90 % |
 | Swapped | a full answer handed to a question half the set away | earns 0, ≥ 90 % |
 | Summary | every seeded summary, twice | content within 1 point ≥ 90 %, never 3 away |
+
+**On the plan:** `scripts/english-bench/plan.ts export` writes the unread rows as task sheets,
+plan-billed readers mark them, `import` folds the marks back, `run.ts --report-only` scores. `run.ts`
+without `--report-only` uses the paid key and needs `ENGLISH_CHECK_USE_API=1` — Adrian's word first.
+
+**The batch, 7 Oct 2026** (`results/batch-2026-10-07.json`, the 33 new reading sets, 2,496 reads —
+1,160 on the paid key before it was stopped, 1,336 on the plan): seeded 1454/1459 (99.7 %) ·
+repeats 367/370 · padding 286/287 · swapped 268/270 · summary 110/110, every point agreed.
+By the strict gate it does NOT pass: 2 gross misses. One — a full answer in the scheme's own words
+read once as "copied the scheme" — is answered by a rule added to the prompt the same day, not yet
+re-read. The other — a lifted line given the mark on a "what attitude" question (vt06 Q3) — stands.
+The plan sheets hold many answers in one reading, where the page reads one at a time.
 
 **Pilot, 7 Oct 2026** (`results/pilot-2026-10-07.json`, 3 reading sets, 220 reads): seeded 128/128 ·
 repeats 33/33 · padding 25/25 · swapped 24/24 · summary 10/10, every point agreed. Limits: few sets,

@@ -15,6 +15,7 @@ import {
 } from './english-practice';
 import { isEditing, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
 import { OWN_EDITING, OWN_READING, ownByUuid } from './english-own-data';
+import { enqueuePlanRead, getPlanRead, planReadsFor, planReadsSince, setPlanReadMeta, type PlanRead } from './plan-reads';
 
 // ── Editing ─────────────────────────────────────────────────────────────────
 export interface EditingListing { itemId: string; about: string }
@@ -146,4 +147,67 @@ export async function judgeSummary(unit: Unit, answer: string, passage: string):
   if (!verdict) return { state: 'failed' };
   const contentMax = summaryContentMax(unit.scheme);
   return { state: 'marked', verdict, contentMax, content: Math.min(contentMax, verdict.hit.length) };
+}
+
+// ── The plan-billed reader (7 Oct 2026, Adrian: "all on plan") ───────────────
+// A judgement answer is not read on the spot. Its finished prompt goes into plan_reads; the Fly
+// worker reads it on plan usage (about a minute; a few when the machine has to start) and the
+// reply is parsed HERE, with the same parsers the paid call used. The page shows "being checked"
+// and asks again. Rule-marked answers (editing, choices, exact words) never queue.
+export const ENGLISH_READ_KIND = 'english-check';
+
+export async function queuedToday(identity: string): Promise<number> {
+  return planReadsSince(identity, ENGLISH_READ_KIND, sgtDayStartISO());
+}
+
+/** Queue one answer for the plan reader. Null = could not queue. */
+export async function queueCheck(unit: Unit, answer: string, passage: string, identity: string): Promise<string | null> {
+  const summary = unit.kind === 'summary';
+  const prompt = summary ? buildSummaryPrompt(unit, withinLimit(answer), passage) : buildShortPrompt(unit, answer, passage);
+  return enqueuePlanRead({ kind: ENGLISH_READ_KIND, identity, ref: unit.key, prompt, meta: { itemId: unit.itemId, answer } });
+}
+
+export type JobView =
+  | { state: 'waiting' }
+  | { state: 'failed' }
+  | { state: 'done'; unit: Unit; answer: string; short?: ShortVerdict; summary?: { verdict: SummaryVerdict; contentMax: number; content: number } };
+
+/** A queued answer, read back: still waiting, failed, or the verdict parsed from the reader's reply. */
+export async function viewJob(row: PlanRead): Promise<JobView> {
+  if (row.status === 'queued' || row.status === 'claimed') return { state: 'waiting' };
+  const meta = (row.meta ?? {}) as { itemId?: string; answer?: string; logged?: boolean };
+  const found = row.status === 'replied' && meta.itemId && row.ref ? await loadUnit(meta.itemId, row.ref) : null;
+  if (!found || !row.reply) return { state: 'failed' };
+  const { unit } = found;
+  const answer = String(meta.answer ?? '');
+  if (unit.kind === 'summary') {
+    const verdict = parseSummaryReply(row.reply, unit.scheme.points.length);
+    if (!verdict) return { state: 'failed' };
+    const contentMax = summaryContentMax(unit.scheme);
+    const content = Math.min(contentMax, verdict.hit.length);
+    if (!meta.logged) {
+      await logAttempt({ identity: row.identity ?? 'unknown', itemId: unit.itemId, unit: unit.key, kind: 'summary', answer, awarded: content, max: contentMax, usedModel: true, result: { hit: verdict.hit, by: 'plan' } });
+      await setPlanReadMeta(row.id, { ...meta, logged: true });
+    }
+    return { state: 'done', unit, answer, summary: { verdict, contentMax, content } };
+  }
+  const short = parseShortReply(row.reply, unit.marks);
+  if (!short) return { state: 'failed' };
+  if (!meta.logged) {
+    await logAttempt({ identity: row.identity ?? 'unknown', itemId: unit.itemId, unit: unit.key, kind: 'short', answer, awarded: short.awarded, max: unit.marks, usedModel: true, result: { by: 'plan' } });
+    await setPlanReadMeta(row.id, { ...meta, logged: true });
+  }
+  return { state: 'done', unit, answer, short };
+}
+
+export async function loadJob(id: string, identity: string): Promise<PlanRead | null> {
+  const row = await getPlanRead(id);
+  return row && row.kind === ENGLISH_READ_KIND && row.identity === identity ? row : null;
+}
+
+/** The newest queued-or-read answer for each question of a set — so a student who comes back sees the marks. */
+export async function latestJobs(setUuid: string, identity: string): Promise<PlanRead[]> {
+  const rows = await planReadsFor(identity, ENGLISH_READ_KIND, setUuid);
+  const seen = new Set<string>();
+  return rows.filter(r => r.ref && !seen.has(r.ref) && !!seen.add(r.ref));
 }

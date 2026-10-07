@@ -1,3 +1,4 @@
+import { stuckReads, waitingPlanReads } from '@/lib/plan-reads';
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { createHmac } from 'crypto';
@@ -345,6 +346,14 @@ export async function GET(req: NextRequest) {
       if (p.status === 404) throw new Error('/app/languages/practice is missing');
       if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
       return `401 · page ${p.status}`;
+    }),
+    // plan_reads (7 Oct 2026, "all on plan"): an answer handed in for checking is read by the Fly
+    // worker's one-minute lane. One still waiting after 20 minutes means that lane is not running.
+    timed('plan-reads', async () => {
+      const rows = await waitingPlanReads();
+      const stuck = stuckReads(rows, Date.now());
+      if (stuck > 0) throw new Error(`${stuck} answer(s) have waited over 20 minutes for the plan reader (worker lane plan-reads)`);
+      return `${rows.length} waiting`;
     }),
     timed('portal-languages-formats', async () => {
       const r = await fetch(`${base}/app/languages/formats`, { redirect: 'manual', signal: T(10000) });

@@ -41,6 +41,12 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
   clean ones written by the set's own writer. **Still owed before any opening:** the bench on every
   new set, and a HARD set — answers written the way students write (slips, half-ideas, a right idea
   buried in a wrong one), as the humanities bench has (`hard-answers.json`).
+- **All on the plan** (Adrian, 7 Oct 2026, after the bench had spent about US$40 on the paid key
+  without his word): the paid call is off; judged answers queue in `plan_reads` and the Fly worker
+  reads them (SPEC-ENGLISH-PRACTICE.md §On the plan). **Never run a bench or batch on the paid key
+  without asking him first.** The batch bench was finished on the plan: 1454/1459 seeded.
+- Still owed on step 2: a re-read of the one fixed gross miss, a HARD set, one end-to-end test of
+  the queue on the preview once the worker lane is deployed.
 - Not started: steps 3–8.
 
 ## What is missing — the build, in order
