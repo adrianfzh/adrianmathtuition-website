@@ -89,8 +89,10 @@ papers). It does not yet teach a student from zero. What a weaker student needs 
   surds."). The parent supplies the push — so the WhatsApp work (bot `docs/HANDOFF-WHATSAPP-STEP1.md`)
   matters more than it looks.
 
-Adrian confirmed all six the same day ("Yes put into memory"). Which aim — tutor's tool ·
-tutor-light · no tutor at all — is still his to pick.
+Adrian confirmed all six the same day ("Yes put into memory"). **The aim, 8 Oct 2026: "My aim is
+no tutor at all"** — a pure self-learning tool; the parent is the only person in the loop. This
+moves the Building doctrine's "what stays human" line (Accountability, Relationships) for that
+product — an edit to the doctrine is to be proposed in the open at the design talk, not assumed.
 
 Matters most for lower levels and for anyone using the app without lessons. Not started: on
 7 Oct 2026 the Humanities, English and WhatsApp builds are running. Needs a design talk first.
