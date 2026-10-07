@@ -196,14 +196,18 @@ async function logins() {
 }
 
 async function botUp() {
-  try {
-    const r = await fetch(BOT_HEALTH_URL, { signal: AbortSignal.timeout(3000), cache: 'no-store' });
-    if (!r.ok) return { up: false, uptimeSec: null };
-    const d = await r.json().catch(() => ({})) as { uptime?: number };
-    return { up: true, uptimeSec: typeof d.uptime === 'number' ? d.uptime : null };
-  } catch {
-    return { up: false, uptimeSec: null };
+  // 8 s and one retry (7 Oct 2026): at 3 s the tile said "Bot down" for half an hour while the
+  // bot answered every job — this read runs beside ~20 others in one cold function, from the
+  // US to Singapore; the health check gives the same page 15 s and saw it up.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const r = await fetch(BOT_HEALTH_URL, { signal: AbortSignal.timeout(8000), cache: 'no-store' });
+      if (!r.ok) continue;
+      const d = await r.json().catch(() => ({})) as { uptime?: number };
+      return { up: true, uptimeSec: typeof d.uptime === 'number' ? d.uptime : null };
+    } catch { /* timed out or refused — once more */ }
   }
+  return { up: false, uptimeSec: null };
 }
 
 // ── This week ───────────────────────────────────────────────────────────────
