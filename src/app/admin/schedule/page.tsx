@@ -18,6 +18,8 @@ import {
 } from '@dnd-kit/core';
 import { snapCenterToCursor } from '@dnd-kit/modifiers';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { splitAdhoc } from '@/lib/adhoc-past';
+import { sgtTodayISO } from '@/lib/sgt';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1411,6 +1413,7 @@ export default function SchedulePage() {
   // ⚡ Ad-hoc sessions — one-off classes that exist only on the dates picked.
   // `maxTouched` keeps the level's default capacity following the level until
   // Adrian types his own number, at which point his number sticks.
+  const [showPastAdhoc, setShowPastAdhoc] = useState(false);
   const [adhocModal, setAdhocModal] = useState<{
     dates: string[]; times: string[]; level: SlotLevel; maxStudents: number; maxTouched: boolean;
     force: boolean; collisions: { id: string; day: string; time: string; level: string; dated: boolean }[];
@@ -4446,7 +4449,16 @@ export default function SchedulePage() {
                   <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>Loading…</div>
                 ) : adhocModal.sessions.length === 0 ? (
                   <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions right now.</div>
-                ) : adhocModal.sessions.map(sess => {
+                ) : (() => {
+                  // Sessions whose dates have all passed sit behind "Show past" (Adrian, 8 Oct
+                  // 2026: "hide past ad-hoc" — lib/adhoc-past). Upcoming, soonest first.
+                  const { upcoming, past } = splitAdhoc(adhocModal.sessions, sgtTodayISO());
+                  const shown = showPastAdhoc ? [...upcoming, ...past] : upcoming;
+                  return (<>
+                  {upcoming.length === 0 && (
+                    <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions coming up.</div>
+                  )}
+                  {shown.map(sess => {
                   const ed = adhocModal.editing?.id === sess.id ? adhocModal.editing : null;
                   const edCapBites = ed?.level === 'Secondary' && data?.secCap != null && data.secCap < ed.maxStudents;
                   const setEd = (patch: Partial<{ level: SlotLevel; maxStudents: number }>) =>
@@ -4533,7 +4545,15 @@ export default function SchedulePage() {
                     )}
                   </div>
                   );
-                })}
+                  })}
+                  {past.length > 0 && (
+                    <button type="button" onClick={() => setShowPastAdhoc(v => !v)}
+                      style={{ background: 'none', border: 'none', padding: '6px 0', color: '#7e22ce', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                      {showPastAdhoc ? 'Hide past sessions' : `Show ${past.length} past session${past.length === 1 ? '' : 's'}`}
+                    </button>
+                  )}
+                  </>);
+                })()}
 
               </div>
             </div>
