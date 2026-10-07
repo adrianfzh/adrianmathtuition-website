@@ -21,7 +21,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
 import { overallTone, type Glance, type Tile, type Tone } from '@/lib/glance';
-import { ADMIN_TOOLS, TAPS_KEY, parseTaps, topTools, type AdminTool } from '@/lib/admin-tools';
+import { ADMIN_TOOLS, TAPS_KEY, TAPS_MERGED_KEY, parseTaps, topTools, type AdminTool } from '@/lib/admin-tools';
 import { countAdminOpen } from '@/components/AdminVisitCounter';
 
 const REFRESH_MS = 60_000;
@@ -57,12 +57,29 @@ export default function AdminDashboard() {
   const busy = useRef(false);
 
   useEffect(() => { ensureAdminSession().then(ok => setAuthed(ok)); }, []);
-  // The row as learnt on this device; read again whenever the page comes back into view.
+  // The row: this browser's copy at once, then the SHARED tally (8 Oct 2026 — the phone and
+  // the computer each learnt their own and showed different tiles). A device's old private
+  // tally is added to the shared one once.
   useEffect(() => {
     const read = () => { try { setRow(topTools(parseTaps(localStorage.getItem(TAPS_KEY)))); } catch { /* defaults stand */ } };
-    read();
-    window.addEventListener('pageshow', read);
-    return () => window.removeEventListener('pageshow', read);
+    const sync = async () => {
+      try {
+        let mine: Record<string, number> = {}; let merged = true;
+        try { mine = parseTaps(localStorage.getItem(TAPS_KEY)); merged = localStorage.getItem(TAPS_MERGED_KEY) === '1'; } catch { /* no store */ }
+        const r = !merged && Object.keys(mine).length
+          ? await fetch('/api/admin/dash-taps', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ merge: mine }) })
+          : await fetch('/api/admin/dash-taps');
+        if (!r.ok) return;
+        const d = (await r.json()) as { counts?: Record<string, number> };
+        if (!d.counts) return;
+        try { localStorage.setItem(TAPS_KEY, JSON.stringify(d.counts)); localStorage.setItem(TAPS_MERGED_KEY, '1'); } catch { /* fine */ }
+        setRow(topTools(parseTaps(JSON.stringify(d.counts))));
+      } catch { /* this device's copy stands */ }
+    };
+    const both = () => { read(); void sync(); };
+    both();
+    window.addEventListener('pageshow', both);
+    return () => window.removeEventListener('pageshow', both);
   }, []);
 
   const load = useCallback(async (fresh = false) => {
@@ -252,8 +269,8 @@ const CSS = `
 .gl-body { max-width: 1120px; margin: 0 auto; padding: 14px 16px 8px; }
 .gl-error { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
 .gl-wait { color: #6b7280; font-size: 14px; padding: 40px 0; text-align: center; }
-.gl-row-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
-@media (min-width: 760px) { .gl-row-tools { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+.gl-row-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (min-width: 760px) { .gl-row-tools { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
 .gl-tool { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 4px 12px; text-decoration: none; color: #111827; min-width: 0; }
 .gl-tool:hover { background: #f9fafb; border-color: #d1d5db; }
 .gl-tool-e { font-size: 30px; line-height: 1; }

@@ -21,7 +21,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
   { group: 'The machine', links: [
     { label: 'Ops logbook', href: '/admin/ops', emoji: '🩺' }, { label: 'Switches', href: '/admin/switches', emoji: '🎚' },
     { label: 'Costs', href: '/admin/costs', emoji: '💵' }, { label: 'Extraction rules', href: '/admin/extraction-rules', emoji: '📜' },
-    { label: 'Bot', href: '/admin/bot', emoji: '🤖' },
+    { label: 'Bot', href: '/admin/bot', emoji: '🤖' }, { label: 'Bot analytics', href: '/admin/bot-analytics', emoji: '📈' },
   ] },
   { group: 'Bank + materials', links: [
     { label: 'Question bank', href: '/admin/questions', emoji: '📚' }, { label: 'Question proposals', href: '/admin/question-proposals', emoji: '📥' },
@@ -48,7 +48,12 @@ export const ALL_ADMIN_TOOLS: AdminTool[] = ADMIN_TOOLS.flatMap((g) => g.links);
 /** What the row shows before it has learnt anything, in this order. */
 export const DEFAULT_TOOLS = ['/admin/schedule', '/admin/log', '/admin/students', '/admin/mark-paper', '/admin/invoices', '/admin/questions', '/admin/notes'];
 
+/** Always in the row, first, whatever the tally says (Adrian, 8 Oct 2026: "can you put bot analytics and switch on the admin hub?"). */
+export const PINNED_TOOLS = ['/admin/bot-analytics', '/admin/switches'];
+
 export const TAPS_KEY = 'admin_dash_taps_v1';
+/** Set once a device has handed its old private tally to the shared one. */
+export const TAPS_MERGED_KEY = 'admin_dash_taps_merged_v1';
 /** Past this many counted opens every count is halved, so last month's habit fades. */
 export const TAPS_DECAY_AT = 300;
 
@@ -79,13 +84,22 @@ export function bumpTap(counts: TapCounts, href: string): TapCounts {
   return next;
 }
 
-/** The `n` tools for the row: most opened first; ties and the not-yet-opened fall back to the default order. */
+/** The row: the pinned tools first, then the `n` most opened of the rest; ties and the not-yet-opened fall back to the default order. */
 export function topTools(counts: TapCounts, n = 7): AdminTool[] {
   const rank = (href: string) => { const i = DEFAULT_TOOLS.indexOf(href); return i < 0 ? DEFAULT_TOOLS.length + ALL_ADMIN_TOOLS.findIndex((t) => t.href === href) : i; };
-  return [...ALL_ADMIN_TOOLS]
-    .filter((t) => t.href !== '/admin/classic')
+  const pinned = PINNED_TOOLS.map((h) => ALL_ADMIN_TOOLS.find((t) => t.href === h)).filter((t): t is AdminTool => !!t);
+  const rest = [...ALL_ADMIN_TOOLS]
+    .filter((t) => t.href !== '/admin/classic' && !PINNED_TOOLS.includes(t.href))
     .sort((a, b) => (counts[b.href] ?? 0) - (counts[a.href] ?? 0) || rank(a.href) - rank(b.href))
     .slice(0, n);
+  return [...pinned, ...rest];
+}
+
+/** Two tallies added together — a device's old private one into the shared one. */
+export function mergeTaps(a: TapCounts, b: TapCounts): TapCounts {
+  const out: TapCounts = { ...a };
+  for (const [k, v] of Object.entries(b)) if (v > 0 && ALL_ADMIN_TOOLS.some((t) => t.href === k)) out[k] = (out[k] ?? 0) + v;
+  return Object.keys(b).length ? out : a;
 }
 
 export function parseTaps(raw: string | null): TapCounts {
