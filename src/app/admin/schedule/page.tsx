@@ -4334,102 +4334,10 @@ export default function SchedulePage() {
                 <button className="modal-close" onClick={() => setAdhocModal(null)} disabled={adhocModal.saving}>✕</button>
               </div>
               <div className="modal-body">
-                {/* Existing sessions */}
-                {adhocModal.loading ? (
-                  <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>Loading…</div>
-                ) : adhocModal.sessions.length === 0 ? (
-                  <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions right now.</div>
-                ) : adhocModal.sessions.map(sess => {
-                  const ed = adhocModal.editing?.id === sess.id ? adhocModal.editing : null;
-                  const edCapBites = ed?.level === 'Secondary' && data?.secCap != null && data.secCap < ed.maxStudents;
-                  const setEd = (patch: Partial<{ level: SlotLevel; maxStudents: number }>) =>
-                    setAdhocModal(m => m?.editing ? { ...m, editing: { ...m.editing, ...patch } } : m);
-                  return (
-                  <div key={sess.id} style={{ padding: '8px 10px', background: '#faf5ff', border: `1px solid ${ed ? '#c084fc' : '#e9d5ff'}`, borderRadius: 8, marginBottom: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <span style={{ fontSize: 13.5, color: '#581c87', lineHeight: 1.5 }}>
-                      ⚡ <strong>{sess.dayLabel} {sess.time}</strong> · {sess.level === 'Secondary' ? 'Sec' : sess.level === 'JC' ? 'JC' : 'Mixed'} · max {sess.effectiveMax ?? sess.maxStudents ?? '—'}
-                      {sess.effectiveMax != null && sess.maxStudents != null && sess.effectiveMax < sess.maxStudents && (
-                        <span style={{ color: '#7c3aed' }}> (Sec cap, set to {sess.maxStudents})</span>
-                      )}
-                      <br />
-                      <span style={{ color: '#7e22ce', fontSize: 12.5 }}>
-                        {sess.dates.length
-                          ? sess.dates.map(d => formatExamDate(d)).join(' · ')
-                          : (sess as { undated?: boolean }).undated
-                            ? 'no dates — this slot shows EVERY week until you remove it'
-                            : 'no dates'}
-                        {sess.lessonCount > 0 && ` · ${sess.lessonCount} lesson${sess.lessonCount === 1 ? '' : 's'} booked`}
-                      </span>
-                    </span>
-                    <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                      {/* Level and size are editable after the fact; dates and
-                          time are not — see the PATCH route's note. */}
-                      <button onClick={() => setAdhocModal(m => m ? {
-                        ...m,
-                        editing: ed ? null : {
-                          id: sess.id,
-                          level: isSlotLevel(sess.level) ? sess.level : 'Adhoc',
-                          maxStudents: sess.maxStudents ?? LEVEL_DEFAULT_CAPACITY[isSlotLevel(sess.level) ? sess.level : 'Adhoc'].makeup,
-                          saving: false,
-                        },
-                      } : m)}
-                        disabled={ed?.saving}
-                        style={{ fontSize: 11.5, fontWeight: 600, color: '#6b21a8', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
-                        {ed ? 'Cancel' : 'Edit'}
-                      </button>
-                      {!ed && (
-                        <button onClick={() => removeAdhocSession(sess)}
-                          style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
-                          Remove
-                        </button>
-                      )}
-                    </span>
-                    </div>
-
-                    {ed && (
-                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e9d5ff' }}>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {SLOT_LEVELS.map(lv => {
-                            const on = ed.level === lv;
-                            return (
-                              <button key={lv} type="button" onClick={() => setEd({ level: lv })}
-                                style={{ flex: 1, fontSize: 12.5, fontWeight: 700, padding: '7px 0', borderRadius: 8, cursor: 'pointer',
-                                  border: `1px solid ${on ? '#1e3a5f' : '#e2e8f0'}`, background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569' }}>
-                                {slotLevelLabel(lv)}
-                              </button>
-                            );
-                          })}
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                          <span style={{ fontSize: 12.5, color: '#64748b', fontWeight: 600 }}>Max students</span>
-                          <input type="number" inputMode="numeric" min={1} max={12} className="modal-input" style={{ width: 78 }}
-                            value={ed.maxStudents}
-                            onChange={e => setEd({ maxStudents: Number(e.target.value) })} />
-                          <span style={{ fontSize: 12, color: '#94a3b8' }}>usual for {slotLevelLabel(ed.level)} is {LEVEL_DEFAULT_CAPACITY[ed.level].makeup}</span>
-                        </div>
-                        {edCapBites && (
-                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#7c3aed', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
-                            Sec cap {data!.secCap} is on, so this Sec session takes <strong>{data!.secCap} per date</strong>, not {ed.maxStudents}.
-                          </div>
-                        )}
-                        {ed.level !== 'Adhoc' && sess.level === 'Adhoc' && sess.lessonCount > 0 && (
-                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
-                            The {sess.lessonCount} lesson{sess.lessonCount === 1 ? '' : 's'} already booked stay put. This only changes who can book it from now on — {slotLevelLabel(ed.level)} students only.
-                          </div>
-                        )}
-                        <button className="btn-primary" style={{ width: '100%', marginTop: 8, padding: '8px 0', fontSize: 13 }}
-                          disabled={ed.saving} onClick={saveAdhocEdit}>
-                          {ed.saving ? 'Saving…' : 'Save changes'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  );
-                })}
-
-                {/* New session */}
-                <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 10, paddingTop: 10 }}>
+                {/* New session — FIRST (Adrian, 7 Oct 2026, on his phone: "should place the calendar at the
+                    top"): adding one is why he opens this; the list of what exists had grown to
+                    a screen and a half above it. */}
+                <div style={{ paddingBottom: 12 }}>
                   <div className="form-group">
                     <span className="form-label">Dates</span>
                     <MultiDateCalendar dates={adhocModal.dates} seedMonth={adhocModal.seedMonth}
@@ -4532,6 +4440,101 @@ export default function SchedulePage() {
                     Students can reschedule into an ad-hoc session from Telegram — but only on its own dates, and it never appears on the public timetable or in weekly-slot pickers.
                   </div>
                 </div>
+                {/* Existing sessions — below the form, under their own heading */}
+                <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 4, paddingTop: 12, marginBottom: 8 }}><span className="form-label">Existing sessions</span></div>
+                {adhocModal.loading ? (
+                  <div style={{ color: '#94a3b8', fontSize: 13, marginBottom: 10 }}>Loading…</div>
+                ) : adhocModal.sessions.length === 0 ? (
+                  <div style={{ color: '#94a3b8', fontStyle: 'italic', fontSize: 13, marginBottom: 10 }}>No ad-hoc sessions right now.</div>
+                ) : adhocModal.sessions.map(sess => {
+                  const ed = adhocModal.editing?.id === sess.id ? adhocModal.editing : null;
+                  const edCapBites = ed?.level === 'Secondary' && data?.secCap != null && data.secCap < ed.maxStudents;
+                  const setEd = (patch: Partial<{ level: SlotLevel; maxStudents: number }>) =>
+                    setAdhocModal(m => m?.editing ? { ...m, editing: { ...m.editing, ...patch } } : m);
+                  return (
+                  <div key={sess.id} style={{ padding: '8px 10px', background: '#faf5ff', border: `1px solid ${ed ? '#c084fc' : '#e9d5ff'}`, borderRadius: 8, marginBottom: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <span style={{ fontSize: 13.5, color: '#581c87', lineHeight: 1.5 }}>
+                      ⚡ <strong>{sess.dayLabel} {sess.time}</strong> · {sess.level === 'Secondary' ? 'Sec' : sess.level === 'JC' ? 'JC' : 'Mixed'} · max {sess.effectiveMax ?? sess.maxStudents ?? '—'}
+                      {sess.effectiveMax != null && sess.maxStudents != null && sess.effectiveMax < sess.maxStudents && (
+                        <span style={{ color: '#7c3aed' }}> (Sec cap, set to {sess.maxStudents})</span>
+                      )}
+                      <br />
+                      <span style={{ color: '#7e22ce', fontSize: 12.5 }}>
+                        {sess.dates.length
+                          ? sess.dates.map(d => formatExamDate(d)).join(' · ')
+                          : (sess as { undated?: boolean }).undated
+                            ? 'no dates — this slot shows EVERY week until you remove it'
+                            : 'no dates'}
+                        {sess.lessonCount > 0 && ` · ${sess.lessonCount} lesson${sess.lessonCount === 1 ? '' : 's'} booked`}
+                      </span>
+                    </span>
+                    <span style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                      {/* Level and size are editable after the fact; dates and
+                          time are not — see the PATCH route's note. */}
+                      <button onClick={() => setAdhocModal(m => m ? {
+                        ...m,
+                        editing: ed ? null : {
+                          id: sess.id,
+                          level: isSlotLevel(sess.level) ? sess.level : 'Adhoc',
+                          maxStudents: sess.maxStudents ?? LEVEL_DEFAULT_CAPACITY[isSlotLevel(sess.level) ? sess.level : 'Adhoc'].makeup,
+                          saving: false,
+                        },
+                      } : m)}
+                        disabled={ed?.saving}
+                        style={{ fontSize: 11.5, fontWeight: 600, color: '#6b21a8', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                        {ed ? 'Cancel' : 'Edit'}
+                      </button>
+                      {!ed && (
+                        <button onClick={() => removeAdhocSession(sess)}
+                          style={{ fontSize: 11.5, fontWeight: 600, color: '#b91c1c', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 6, padding: '3px 9px', cursor: 'pointer' }}>
+                          Remove
+                        </button>
+                      )}
+                    </span>
+                    </div>
+
+                    {ed && (
+                      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px dashed #e9d5ff' }}>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {SLOT_LEVELS.map(lv => {
+                            const on = ed.level === lv;
+                            return (
+                              <button key={lv} type="button" onClick={() => setEd({ level: lv })}
+                                style={{ flex: 1, fontSize: 12.5, fontWeight: 700, padding: '7px 0', borderRadius: 8, cursor: 'pointer',
+                                  border: `1px solid ${on ? '#1e3a5f' : '#e2e8f0'}`, background: on ? '#1e3a5f' : '#fff', color: on ? '#fff' : '#475569' }}>
+                                {slotLevelLabel(lv)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                          <span style={{ fontSize: 12.5, color: '#64748b', fontWeight: 600 }}>Max students</span>
+                          <input type="number" inputMode="numeric" min={1} max={12} className="modal-input" style={{ width: 78 }}
+                            value={ed.maxStudents}
+                            onChange={e => setEd({ maxStudents: Number(e.target.value) })} />
+                          <span style={{ fontSize: 12, color: '#94a3b8' }}>usual for {slotLevelLabel(ed.level)} is {LEVEL_DEFAULT_CAPACITY[ed.level].makeup}</span>
+                        </div>
+                        {edCapBites && (
+                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#7c3aed', background: '#fff', border: '1px solid #e9d5ff', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
+                            Sec cap {data!.secCap} is on, so this Sec session takes <strong>{data!.secCap} per date</strong>, not {ed.maxStudents}.
+                          </div>
+                        )}
+                        {ed.level !== 'Adhoc' && sess.level === 'Adhoc' && sess.lessonCount > 0 && (
+                          <div style={{ marginTop: 8, fontSize: 12.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 8, padding: '7px 10px', lineHeight: 1.5 }}>
+                            The {sess.lessonCount} lesson{sess.lessonCount === 1 ? '' : 's'} already booked stay put. This only changes who can book it from now on — {slotLevelLabel(ed.level)} students only.
+                          </div>
+                        )}
+                        <button className="btn-primary" style={{ width: '100%', marginTop: 8, padding: '8px 0', fontSize: 13 }}
+                          disabled={ed.saving} onClick={saveAdhocEdit}>
+                          {ed.saving ? 'Saving…' : 'Save changes'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  );
+                })}
+
               </div>
             </div>
           </div>
