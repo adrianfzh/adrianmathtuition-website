@@ -86,7 +86,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'dropbox-tray':      { kind: 'interval', hours: 30, label: 'daily 3:30am' },
   // Weekly exam-library refresh on the Mac (scripts/paper-library/run.sh, launchd com.adrianmath.paperlibrary, Sun 04:10 SGT, 7 Sep 2026).
   'paper-library':     { kind: 'interval', hours: 180, label: 'Sundays 4:10am' },
-  'question-mine':     { kind: 'interval', hours: 108, label: 'Mon & Thu 7am' },
+  // 'question-mine' retired 7 Oct 2026 (Adrian: "yes") — four runs asked for no new questions.
   'figure-fitness':    { kind: 'interval', hours: 36, label: 'nightly 3:10am' },
   'extraction-learn':  { kind: 'interval', hours: 36, label: 'daily 6:50am (Fly worker)' },
   // 🖼 The missing-figure sweep (5 Oct 2026): bot scripts/missing-figures-sweep.js on the Fly

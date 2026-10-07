@@ -1,12 +1,10 @@
 # QMINE — student-demand mining (spec)
 
-> Owner: the Fly worker (bot `worker/fly/jobs.sh job_question_mine`, switch `question-mine`,
-> **Mon & Thu 7:00am SGT**) since 7 Oct 2026 — the Mac task went silent 7 Sep. On the worker the keys
-> are environment variables, not `.env.local` (the job tells the session so). Doctrine: [CLAUDE.md → Building doctrine]. This
-> file is the spec the task follows verbatim (step 1 of the recipe). Created
-> 2026-08-28 as daily (Adrian: "instead of weekly, make it more frequent");
-> same day dialed to twice-weekly (Adrian: "daily is too frequent") and pinned
-> to **Fable 5, high reasoning effort** for the mining + judgment work.
+> ⏹ **RETIRED 7 Oct 2026** (Adrian: "yes"). Four runs (31 Aug, 4 Sep, 7 Sep, 7 Oct) enqueued
+> nothing — the practice pool covered every topic students asked about (min 15 eligible) — and the
+> judgment items repeated one finding: thin E Math revision notes (Mensuration, Vectors, Coordinate
+> Geometry, Numbers (Rate)), now one line in `IDEAS.md`. The day-review reads every student question
+> already. This spec is kept for reference only; nothing runs it.
 
 ## What this loop is (and is not)
 

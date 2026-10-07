@@ -227,6 +227,8 @@ from the marker) are the least useful lines; the marker should name the kind mor
 - 💡 **Privacy-policy copy update** — marking-records retention after deletion + dormancy policy, folded in when retention is signed off.
 
 ## Content review debt
+
+- **Thin E Math revision notes — what students ask about most** (7 Oct 2026, from the retired question-mine's four runs, 31 Aug–7 Oct): Mensuration, Vectors, Coordinate Geometry and Numbers (Rate) have few or no `content_snippets` in the `/revise` tree while students keep asking the bot about them. Practice questions are plentiful (≥ 15 each); the notes are the gap. Status: open — Adrian's call which to write first.
 - 📐 **Notes bulk approval**: 594 learning-unit blocks approved (live to students) vs **1,297 pending** (invisible to students). Options: Adrian approves topic-by-topic via the /notes Review bar, or a session runs a QC pass over all pending (correctness + readability) and he bulk-approves. (The KEY FACTS/TECHNIQUES mobile readability fix shipped 2026-08-29 — phone-review #12.)
 
 ## Growth builds (Adrian-approved directions)
