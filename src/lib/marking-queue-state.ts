@@ -104,9 +104,12 @@ export function claimAccount(by: string | null | undefined): string | null {
   return /^[^@\s]+@[^@\s]+$/.test(acct) ? acct : null;
 }
 
-/** In flight: queued, not failed, and no total yet. */
+/** In flight: queued, not failed, and no total yet. A row parked or cancelled
+ *  (`queue_status='failed'` — Adrian cancelling five bench scripts, 7 Oct 2026)
+ *  is not in flight: it showed as "5 stuck" on the dashboard for good. */
 export function isInFlight(r: QueueRunRow): boolean {
   const q = r.queue;
+  if (String(r.queue_status || '') === 'failed') return false;
   return !!(q && q.queued_at && !q.failed_at) && r.total_max == null;
 }
 

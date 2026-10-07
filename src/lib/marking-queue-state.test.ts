@@ -47,6 +47,9 @@ describe('isInFlight', () => {
   it('is false with no queue blob at all', () => {
     expect(isInFlight(row({ queue: null }))).toBe(false);
   });
+  it('a paper cancelled or parked (queue_status failed) is not in flight — 7 Oct 2026, five bench scripts read as stuck', () => {
+    expect(isInFlight(row({ queue_status: 'failed' }))).toBe(false);
+  });
 });
 
 describe('markingQueueState', () => {
