@@ -240,8 +240,12 @@ subskills like math — if we are to sell subscriptions on the app."* The Challe
 (30 per open topic) lasted one batch; the goal is now coverage per SUB-SKILL.
 
 **Goal.** **3 verified twins for every (pool, sub-skill)** — pools PHY / CHEM / BIO (pure, the
-science bank's `subgroups`) and CS_PHY / CS_CHEM / CS_BIO (Combined: the same sub-skills, for the
-topics the Combined bank has). Order: the open practice topics first (`SCIENCE_PRACTICE_OPEN_TOPICS`
+science bank's `subgroups`) and CS_PHY / CS_CHEM / CS_BIO (Combined: **only the sub-skills a Combined
+school question is filed under** — the `combined_subskills` view in the science project, since
+7 Oct 2026; before that it was every pure sub-skill of a topic the Combined bank has, which sent
+runs to sub-skills Combined does not teach. The view fills as `file-subgroups-science` files the
+Combined rows — every two hours, Combined first on ten of the twelve runs, `FILING_TIER=2` — so
+the Combined pools write nothing until then). Order: the open practice topics first (`SCIENCE_PRACTICE_OPEN_TOPICS`
 + the Combined list), then every other topic; inside, fewest twins first, the six pools and the
 topics taking turns. MCQ first; structured twins are a later phase (structured practice is
 still closed to students). Each twin is written **at its seed's level** (Core / Exam /
@@ -258,8 +262,8 @@ seed — 1,792 twins to write, 292 of them on the open practice topics.**
 **What a science twin is.** A NEW MCQ modelled on a real school row filed under the sub-skill: a
 new situation and new numbers, the seed's demand (never easier), four options whose wrong ones are
 real student mistakes, ONLY 6091 / 6092 / 6093 / Combined Science content (physics: no equations
-of motion, no momentum, no circular motion). A Combined twin is modelled on a filed PURE seed (the
-Combined rows are not filed) and written inside the Combined syllabus. Figures only from the bot's
+of motion, no momentum, no circular motion). A Combined twin is modelled on a filed PURE seed (a
+pure seed keeps the demand; the Combined rows only decide WHICH sub-skills count) and written inside the Combined syllabus. Figures only from the bot's
 figure library (`lib/figures`, verify fails closed), never copied. The solution is the house
 shape: **Key idea:**, one step a line, **Answer: X**, **Why not the others** (naming a mistake only
 when it reproduces that option exactly). Nothing names a school, a year or a model.

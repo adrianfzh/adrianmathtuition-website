@@ -24,7 +24,7 @@ cs_topics as (
   cross join lateral (select distinct unnest(q.topics) topic from questions q where p.combined and q.level in (p.lvl, p.lvl || '_NA')) t),
 units as (
   select p.*, s.id sgid, s.name sgname, s.topic sgtopic from pools p join subgroups s on s.subject = p.subject
-  where not p.combined or exists (select 1 from cs_topics c where c.pool = p.pool and c.topic = s.topic)),
+  where not p.combined or exists (select 1 from combined_subskills c where c.subgroup_id = s.id)),
 seeds as (
   select qs.subgroup_id, q.id, q.level, q.practice_checked_at is not null checked, coalesce(q.has_image,false) img,
          exists (select 1 from practice_difficulty d where d.question_id = q.id and d.source in ('results','estimate')) has_lvl
