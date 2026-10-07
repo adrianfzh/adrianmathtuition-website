@@ -1,0 +1,168 @@
+{
+  "id": "na07",
+  "kind": "narrative",
+  "title": "The Short Cut",
+  "paragraphs": [
+    "I should say at the start that the map was in my hands because I had taken it, not because anyone had given it to me. Mr Ong had held it out to the four of us at the jetty, and I had simply been the quickest. “Two kilometres to the campsite,” I announced, glancing at it for about as long as you glance at a bus number. “Follow me.”",
+    "I had been to the island once before, with my father, when I was seven. I remembered a quarry lake, a wild boar and an ice-cream. On the strength of this I considered myself a local. So when the gravel path curved left, the long way round a hill, and a narrow trail ran straight on into the trees, I did not hesitate. “Short cut,” I said. Farah, who was the smallest of us and had hardly spoken on the ferry, looked at the trail and then at the map in my fist. “Shouldn’t we check?” “I’ve checked,” I said, which was not true.",
+    "For twenty minutes the trail behaved itself. Then it began to thin, the way a stream thins in a drought, until it was only a suggestion between the ferns. The trees closed over us and the light turned green, as if we were walking along the bottom of a pond. Haziq stopped joking. Jun Wei, behind him, asked how much further it was, and I said, “Nearly there,” in the voice my father uses when he is driving and has missed the exit.",
+    "The truth arrived all at once, like cold water down the collar. We came to a fallen trunk furred with moss, with a hollow in it shaped like a mouth — and I had seen that mouth before. Half an hour before. We had walked in a circle, and I had led it. I unfolded the map properly for the first time. It was a tangle of brown lines that meant nothing to me, and I held it a little higher so that the others could not see my hands.",
+    "“We’re lost, right?” said Haziq. Nobody answered. Somewhere a cicada started up like a drill. It was five o’clock, and under the trees it was already later than that. I thought of saying that the map was wrong. I thought of saying it was a test and I had known all along. The lies queued up politely, one behind another, and what came out of my mouth, to my own surprise, was: “Yes. I’m sorry. I don’t know where we are.”",
+    "Saying it was like putting down a bag I had not known I was carrying. And it was Farah who picked it up. She did not say I told you so. She took a stub of pencil from her pocket and pointed with it — not at the map, but back the way we had come. “I’ve been snapping a twig at every fork,” she said, almost apologetically. “On the left side. In case.” She had not trusted me for one minute, I realised, and she had been too polite to say so.",
+    "We followed her twigs back, one after another, like beads on a string, and came out onto the gravel as the sky was going orange. At the campsite Mr Ong looked at his watch, then at our scratched legs. “Who was navigating?” I felt the others not look at me. It was a generous kind of not-looking, and I did not deserve it. “I was,” I said. “Badly. Farah got us back.”",
+    "Mr Ong only nodded and wrote something on his clipboard. That night, when the routes for the morning hike were given out, I took our map from the pile, carried it across the wet grass and put it into Farah’s hands. She unfolded it at once, the right way up, and began to read. I held the torch."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 1, the narrator glances at the map ‘for about as long as you glance at a bus number’. What does this comparison tell you about how he looked at the map, and what does it suggest about him?",
+      "scheme": { "answer": "He looked at the map for only a second, without studying it [1], which suggests he was overconfident and thought he did not need it [1].", "points": ["He looked at it for only a moment / did not study it.", "He was overconfident / careless — he thought he did not need to study it."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He only looked at the map for a second without studying it. This suggests he was overconfident and thought he did not need it." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He gave the map one quick look and nothing more. He seems cocky, as he was so sure of himself that he felt reading it properly was unnecessary." },
+        { "mark": 1, "flaw": "half", "text": "He looked at the map for only a second." },
+        { "mark": 1, "flaw": "half", "text": "He was too sure of himself and believed he did not need the map." },
+        { "mark": 0, "flaw": "wrong", "text": "He was looking for the bus that would take them to the campsite." },
+        { "mark": 0, "flaw": "vague", "text": "It tells us about the way that he looked at the map." }
+      ]
+    },
+    {
+      "n": "2", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "‘On the strength of this I considered myself a local’ (Paragraph 2). In your own words, explain why the narrator had little reason to feel he knew the island well.",
+      "scheme": { "answer": "He had visited it only a single time, long ago, as a small child [1], and all he could recall were a few unimportant things, nothing about the routes [1].", "points": ["He had visited only a single time, long ago, as a small child.", "He recalled only a few unimportant things — nothing about the routes."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He had only visited the place a single time, long ago, as a small child. All he could recall were a few unimportant things and nothing about the routes." },
+        { "mark": 2, "flaw": "paraphrase", "text": "His only trip there was years earlier when he was still very young. What stayed in his mind were just some random sights and a treat, which would not help anyone find the way." },
+        { "mark": 1, "flaw": "half", "text": "He had only gone there one time, and that was when he was a little kid." },
+        { "mark": 1, "flaw": "half", "text": "The few things he could recall were not useful for finding the way." },
+        { "mark": 0, "flaw": "lifted", "text": "He had been to the island once before, with his father, when he was seven. He remembered a quarry lake, a wild boar and an ice-cream." },
+        { "mark": 0, "flaw": "wrong", "text": "He lived on the island with his father, so he knew it very well." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "literal",
+      "text": "What did Farah suggest before the group took the narrow trail (Paragraph 2)?",
+      "scheme": { "answer": "That they should check the map first.", "accept": ["That they should check whether the trail was the right way."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "She suggested that they should check the map first." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She asked whether they ought to make sure the trail was the right way before taking it." },
+        { "mark": 0, "flaw": "wrong", "text": "She suggested that they take the short cut." },
+        { "mark": 0, "flaw": "wrong", "text": "She suggested that they go back to the ferry." },
+        { "mark": 0, "flaw": "vague", "text": "She said something to the narrator about the trail." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "inference",
+      "text": "The narrator says ‘Nearly there’ in ‘the voice my father uses when he is driving and has missed the exit’ (Paragraph 3). What does this tell you about the narrator at that moment?",
+      "scheme": { "answer": "He was pretending to be calm and sure, although he already suspected he had gone wrong and did not want to admit it.", "accept": ["He was putting on a confident voice to hide the fact that he no longer knew the way."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He was pretending to be calm and sure, although he already suspected he had gone wrong and did not want to admit it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He was putting on a confident voice to hide the fact that he no longer knew the way." },
+        { "mark": 0, "flaw": "wrong", "text": "He knew that the campsite was just a few steps away." },
+        { "mark": 0, "flaw": "wrong", "text": "He was angry with his father for missing the exit." },
+        { "mark": 0, "flaw": "vague", "text": "He told Jun Wei that they were nearly there." }
+      ]
+    },
+    {
+      "n": "5", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "Give two details from Paragraph 3 that show the other members of the group were becoming uneasy.",
+      "scheme": { "answer": "Haziq stopped joking [1] and Jun Wei asked how much further it was [1].", "points": ["Haziq stopped joking.", "Jun Wei asked how much further it was."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Haziq stopped joking, and Jun Wei asked how much further it was." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One boy who had been making jokes went quiet, and another wanted to know how far they still had to walk." },
+        { "mark": 1, "flaw": "half", "text": "Haziq was no longer making jokes." },
+        { "mark": 1, "flaw": "half", "text": "Jun Wei asked how much further they had to go." },
+        { "mark": 0, "flaw": "wrong", "text": "The trail became thin and the light turned green." },
+        { "mark": 0, "flaw": "vague", "text": "They were feeling worried." }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "‘The truth arrived all at once, like cold water down the collar’ (Paragraph 4). What does this comparison suggest about the moment the narrator realised they were lost?",
+      "scheme": { "answer": "The realisation came suddenly [1], and it was a nasty shock that chilled him [1].", "points": ["It was sudden.", "It was an unpleasant shock / it chilled him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The realisation came very suddenly, and it was a nasty shock that chilled him." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He understood it in one instant with no warning, and it gave him a horrible jolt, the way something icy on your neck does." },
+        { "mark": 1, "flaw": "half", "text": "He realised it very suddenly." },
+        { "mark": 1, "flaw": "half", "text": "Realising it was an unpleasant shock for him." },
+        { "mark": 0, "flaw": "wrong", "text": "It started to rain and the rainwater went into his shirt." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests the truth was like water." }
+      ]
+    },
+    {
+      "n": "7", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 4 shows that the moss covered the trunk like a thick, soft coat?",
+      "scheme": { "answer": "furred" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "furred" },
+        { "mark": 1, "flaw": "full", "text": "“furred”" },
+        { "mark": 0, "flaw": "wrong", "text": "fallen" },
+        { "mark": 0, "flaw": "wrong", "text": "hollow" }
+      ]
+    },
+    {
+      "n": "8", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, describe the two excuses the narrator thought of making in Paragraph 5.",
+      "scheme": { "answer": "He thought of blaming the map for being inaccurate [1], and of pretending he had got them lost on purpose to try them out and had never really been unsure of the way [1].", "points": ["Blaming the map — claiming it was inaccurate / had mistakes.", "Pretending he had done it on purpose to try the group out, and had never really been unsure of the way."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He thought of blaming the map by claiming it was inaccurate. He also thought of pretending that he got them lost on purpose to try them out, and that he was never really unsure of the way." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One excuse was that the paper they were given had mistakes in it. The other was to pretend it was a challenge he had planned for the group and that he was actually aware of their position the whole time." },
+        { "mark": 1, "flaw": "half", "text": "He considered claiming that the map had mistakes in it." },
+        { "mark": 1, "flaw": "half", "text": "He considered pretending he did it on purpose as a challenge for them." },
+        { "mark": 0, "flaw": "lifted", "text": "He thought of saying that the map was wrong. He thought of saying it was a test and he had known all along." },
+        { "mark": 0, "flaw": "wrong", "text": "He thought of blaming Farah and Haziq for walking too slowly." }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "‘Saying it was like putting down a bag I had not known I was carrying’ (Paragraph 6). What does this comparison suggest about the effect of admitting the truth?",
+      "scheme": { "answer": "Admitting it brought him relief [1], because pretending to know the way had been a strain weighing on him without his noticing [1].", "points": ["Admitting it brought relief.", "Pretending to know the way had been a burden / strain on him, without his noticing."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Admitting it brought him relief, because pretending to know the way had been a strain weighing on him without him noticing." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Once he owned up he felt lighter. Keeping up the act of being the expert had been a burden on him the whole time, though he was not aware of it." },
+        { "mark": 1, "flaw": "half", "text": "He felt relieved after he admitted it." },
+        { "mark": 1, "flaw": "half", "text": "Pretending to know the way had been a burden on him that he did not notice." },
+        { "mark": 0, "flaw": "wrong", "text": "His backpack was too heavy, so he put it down on the ground." },
+        { "mark": 0, "flaw": "lifted", "text": "Saying it was like putting down a bag he had not known he was carrying." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "inference",
+      "text": "What do Farah’s actions and her manner in Paragraph 6 tell you about her character?",
+      "scheme": { "answer": "She is careful and sensible, having quietly marked the route in case they got lost [1], and she is modest and considerate, since she did not gloat or embarrass the narrator [1].", "points": ["She is careful / sensible / prepared — she had quietly marked the route in case.", "She is modest / considerate — she did not gloat or embarrass him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She is careful and sensible because she quietly marked the route in case they got lost. She is also modest and considerate, as she did not gloat or embarrass the narrator." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Farah thinks ahead and prepares for problems. She is humble and kind too, since she spared his feelings and did not show off about being right." },
+        { "mark": 1, "flaw": "half", "text": "She is a careful person who prepared for the possibility of getting lost." },
+        { "mark": 1, "flaw": "half", "text": "She is considerate because she did not want to embarrass him or show off." },
+        { "mark": 0, "flaw": "wrong", "text": "She is a show-off who wanted to make the narrator look foolish in front of everyone." },
+        { "mark": 0, "flaw": "vague", "text": "She is a good girl." }
+      ]
+    },
+    {
+      "n": "11", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘It was a generous kind of not-looking’ (Paragraph 7). What were the others doing for the narrator by not looking at him?",
+      "scheme": { "answer": "They were kindly refusing to give him away to Mr Ong, leaving it to him to own up.", "accept": ["They were sparing him from blame instead of pointing him out as the one who got them lost."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "They were kindly refusing to give him away to Mr Ong, and leaving it to him to own up." },
+        { "mark": 1, "flaw": "paraphrase", "text": "They were sparing him from blame by not pointing him out as the one who got them lost." },
+        { "mark": 0, "flaw": "wrong", "text": "They were ignoring him because they hated him and did not want to be his friends." },
+        { "mark": 0, "flaw": "wrong", "text": "They were busy looking at their scratched legs." },
+        { "mark": 0, "flaw": "vague", "text": "They did not look at him." }
+      ]
+    },
+    {
+      "n": "12", "marks": 2, "type": "short", "skill": "inference",
+      "text": "In Paragraph 8, the narrator gives the map to Farah and says, ‘I held the torch.’ What does this ending show about how he had changed?",
+      "scheme": { "answer": "He now accepted that Farah was the better navigator and let her lead [1], and he was humble enough to be content with helping instead of being in charge [1].", "points": ["He accepts that Farah is the better navigator and lets her lead.", "He is humbler — content to take a supporting role instead of being in charge."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He now accepted that Farah was the better navigator and let her lead. He had become humble enough to be content with just helping instead of being in charge." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He handed the leading over to the person who could really read a map. He no longer needed to be the boss and was happy to assist her." },
+        { "mark": 1, "flaw": "half", "text": "He recognised that Farah was better at finding the way, so he let her lead." },
+        { "mark": 1, "flaw": "half", "text": "He was now humble and willing to just be a helper instead of the one in charge." },
+        { "mark": 0, "flaw": "wrong", "text": "He was angry with Farah and made her do all the work as a punishment." },
+        { "mark": 0, "flaw": "vague", "text": "He gave the map to Farah and held the torch." }
+      ]
+    }
+  ]
+}

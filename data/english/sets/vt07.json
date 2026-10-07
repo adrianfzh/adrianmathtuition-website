@@ -1,0 +1,88 @@
+{
+  "id": "vt07",
+  "kind": "visual",
+  "title": "The Dinner Table Project",
+  "format": "poster",
+  "theme": "amber",
+  "visual": [
+    { "t": "kicker", "text": "THE DINNER TABLE PROJECT" },
+    { "t": "headline", "text": "Tonight, the only thing to pass around is the rice." },
+    { "t": "tagline", "text": "One evening a week. Everyone at the table. Every phone in the basket." },
+    { "t": "picture", "text": "A family of four sits at a small dining table, laughing as they reach for the dishes. On a shelf behind them stands a rattan basket holding four phones." },
+    { "t": "body", "text": "When did you last hear how your sister’s day really went? Not a thumbs-up in the family chat — the whole story, with the funny voices. Meals are when families used to talk. Now we eat side by side and scroll alone. Pick one dinner this week and take it back." },
+    { "t": "box", "title": "Try it this week", "items": [
+      "Choose a night when everyone is home",
+      "Put a basket by the door; phones go in before the food comes out",
+      "Everyone shares one good thing and one hard thing from the day",
+      "Whoever reaches for a phone first washes the dishes"
+    ] },
+    { "t": "quote", "text": "“The first ten minutes were awkward. Then my dad told a story about his school days that I had never heard in fifteen years.” — Farah, 15" },
+    { "t": "small", "text": "Collect a free basket and a set of conversation cards from the residents’ corner at Block 77." },
+    { "t": "button", "text": "Take the one-dinner challenge" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "‘Now we eat side by side and scroll alone.’ What is the writer suggesting about family meals today?",
+      "scheme": { "answer": "Family members sit together at meals, but each one is busy with a phone, so they do not really talk to one another.", "accept": ["Families are together only in body; their attention is on their screens and not on each other."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The writer is suggesting that family members sit together but everyone is busy with their own phone, so they do not really talk." },
+        { "mark": 1, "flaw": "paraphrase", "text": "They are at the same table, but their minds are on their screens and not on each other." },
+        { "mark": 0, "flaw": "wrong", "text": "Families no longer eat at the same table, and everyone eats in a different room." },
+        { "mark": 0, "flaw": "lifted", "text": "We eat side by side and scroll alone." },
+        { "mark": 0, "flaw": "vague", "text": "Family meals have changed compared to the past." },
+        { "mark": 0, "flaw": "wrong", "text": "Families enjoy sharing videos with one another while eating." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "visual",
+      "text": "How does the picture show that the idea in the poster works?",
+      "scheme": { "answer": "It shows a family laughing and enjoying their meal together while their phones are put away in the basket.", "accept": ["With the phones in the basket, the family members are paying attention to one another and are clearly happy."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It shows the family laughing and enjoying dinner together while all their phones are kept in the basket." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Nobody is holding a phone because the phones are on the shelf, and the family looks happy and close." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that the family owns four phones." },
+        { "mark": 0, "flaw": "vague", "text": "It shows a family having their dinner at home." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that the family is laughing at something funny on a phone." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the body text gives an example of the brief replies that family members send one another instead of talking?",
+      "scheme": { "answer": "a thumbs-up in the family chat", "accept": ["a thumbs-up", "thumbs-up", "Not a thumbs-up in the family chat", "thumbs-up in the family chat"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "a thumbs-up in the family chat" },
+        { "mark": 1, "flaw": "paraphrase", "text": "'a thumbs-up'" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"Not a thumbs-up in the family chat\"." },
+        { "mark": 0, "flaw": "wrong", "text": "the whole story" },
+        { "mark": 0, "flaw": "wrong", "text": "with the funny voices" },
+        { "mark": 0, "flaw": "wrong", "text": "take it back" }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "inference",
+      "text": "What does Farah’s experience suggest a family may gain from a dinner without phones?",
+      "scheme": { "answer": "Family members may learn things about one another that they never knew, and so grow closer.", "accept": ["They may hear stories from their parents for the first time and get to know them better."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "They may find out things about each other that they never knew before, and become closer." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Children can hear their parents' stories for the first time and understand them better as people." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the family will feel awkward for the whole dinner." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that Farah's father enjoyed his school days." },
+        { "mark": 0, "flaw": "vague", "text": "They may gain something good from it." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The last item in the box reads ‘Whoever reaches for a phone first washes the dishes’. Why is this item included?",
+      "scheme": { "answer": "It sets a light-hearted penalty that discourages family members from picking up their phones during the meal.", "accept": ["It turns the rule into a game, so that everyone tries to keep away from their phone."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It is a fun penalty that stops family members from picking up their phones during the meal." },
+        { "mark": 1, "flaw": "paraphrase", "text": "So that nobody dares to take their phone from the basket, because they do not want to end up washing the dishes." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It makes the rule into a kind of game, so everyone will try to stay away from their phone." },
+        { "mark": 0, "flaw": "wrong", "text": "To make sure the dishes get washed after dinner." },
+        { "mark": 0, "flaw": "wrong", "text": "To teach teenagers how to do housework." },
+        { "mark": 0, "flaw": "vague", "text": "Because it is one of the steps to follow." }
+      ]
+    }
+  ]
+}

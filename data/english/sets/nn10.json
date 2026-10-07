@@ -1,0 +1,199 @@
+{
+  "id": "nn10",
+  "kind": "non_narrative",
+  "title": "The Useful Flop",
+  "paragraphs": [
+    "The best thing that happened to me in my first year of secondary school was a science project that fell apart in front of the whole class. It was a bridge made of ice-cream sticks, meant to carry five textbooks, and I had been so sure of it that I had not tried it once at home. It carried exactly one before folding up like a deckchair, and thirty-nine people laughed.",
+    "At the time I wanted the floor to open and swallow me. Yet nobody remembers that bridge now except me, and I remember it fondly. It cost me a few marks that no one has asked about since, and it taught me to test a thing in private before showing it off in public. That is the bargain of failing early: the price is small and the lesson is large. Make the same mistake ten years later, with real money and other people depending on you, and the lesson is no bigger, but the bill certainly is.",
+    "What does an early failure give you? To begin with, it shows you exactly what you do not know: a test you pass tells you little, but a test you fail points straight at the gap. It also takes away some of the fear of failing, because you discover that the sky stays where it was and that by Friday everyone has forgotten. And you get practice at picking yourself up and starting again, which is a skill like any other and is best learnt young.",
+    "There are quieter gains too. Nothing punctures a big head like a public flop, and a person who has been humbled is readier to listen to advice. Having stood there red-faced yourself, you become kinder to the next person it happens to. And failing tells you what you truly care about: if you still want another go after falling flat, the thing matters to you; if all you feel is relief, perhaps it never did.",
+    "Failing well, however, takes some method. Try difficult things first where little is at stake, in a class quiz or a friendly match and not in the final. When it goes wrong, admit that it did and that the fault was yours, without blaming the referee or the weather. Work out what went wrong while the memory is still fresh. Ask someone better than you what they noticed, since they will have seen what you could not. Then change one thing and try again soon, before the failure has time to harden into a reason for never trying.",
+    "I am not saying that failure is pleasant, or that it is good in itself; a failure you learn nothing from is merely a bad day. Nor are adults always a help. The parent who rushes a forgotten PE shirt to the school gate is delivering more than a shirt. That parent is taking away a cheap lesson and saving up an expensive one.",
+    "The ice-cream sticks went into the bin that same afternoon, and I was glad to see them go. I did not know then that I would be carrying them around for years. Every bridge I have built since, real or otherwise, has stood on the one that fell."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer says the bridge ended up ‘folding up like a deckchair’. What does this comparison suggest about the way the bridge failed?",
+      "scheme": {
+        "answer": "It collapsed suddenly and completely, going flat all at once.",
+        "accept": [
+          "It gave way quickly and totally, not bit by bit."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that the bridge collapsed all at once and went completely flat." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The bridge gave way suddenly and totally, not bit by bit." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the bridge was strong and comfortable like a chair." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the bridge was made of wood and cloth." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that something happened to the bridge." }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the writer says, ‘I wanted the floor to open and swallow me.’ What does this tell you about how the writer felt at that moment?",
+      "scheme": {
+        "answer": "The writer felt so embarrassed that the writer wished to disappear from everyone’s sight.",
+        "accept": [
+          "The writer was deeply ashamed and wanted to vanish."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The writer felt so embarrassed that the writer wanted to disappear from the room." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The writer was terribly ashamed and wished to vanish so that no one could look at them." },
+        { "mark": 0, "flaw": "wrong", "text": "The writer was afraid that the classroom floor was going to break like the bridge." },
+        { "mark": 0, "flaw": "wrong", "text": "The writer felt angry with the classmates who laughed." },
+        { "mark": 0, "flaw": "vague", "text": "The writer had strong feelings at that time." }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the writer now looks back on the failed bridge with affection?",
+      "scheme": { "answer": "fondly" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "fondly" },
+        { "mark": 1, "flaw": "full", "text": "‘fondly’" },
+        { "mark": 0, "flaw": "wrong", "text": "bargain" },
+        { "mark": 0, "flaw": "wrong", "text": "certainly" }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what the writer means by ‘the bargain of failing early’ (Paragraph 2).",
+      "scheme": {
+        "answer": "When you fail while you are young, you lose very little [1] but you learn a great deal from it [1].",
+        "points": [
+          "You lose very little / it costs you hardly anything.",
+          "You learn a great deal / something very valuable from it."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "When you fail at a young age, you lose very little, but you learn a great deal from it." },
+        { "mark": 2, "flaw": "paraphrase", "text": "An early failure hardly costs you anything, yet what it teaches you is very valuable, so it is a good deal." },
+        { "mark": 1, "flaw": "half", "text": "Failing early does not cost you much." },
+        { "mark": 1, "flaw": "half", "text": "You learn something very valuable when you fail early." },
+        { "mark": 0, "flaw": "lifted", "text": "That is the bargain of failing early: the price is small and the lesson is large." },
+        { "mark": 0, "flaw": "wrong", "text": "It means that materials like ice-cream sticks are cheap to buy when you are young." }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 6, what kind of failure is ‘merely a bad day’?",
+      "scheme": {
+        "answer": "A failure that you learn nothing from.",
+        "accept": [
+          "One that teaches you no lesson."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "A failure that you do not learn anything from." },
+        { "mark": 1, "flaw": "paraphrase", "text": "One that teaches you no lesson at all." },
+        { "mark": 0, "flaw": "wrong", "text": "A failure that happens in front of the whole class." },
+        { "mark": 0, "flaw": "wrong", "text": "A failure that costs a lot of money." },
+        { "mark": 0, "flaw": "vague", "text": "A failure that is not good." }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer says that the parent who brings the forgotten PE shirt is ‘taking away a cheap lesson and saving up an expensive one’. Explain what the writer means.",
+      "scheme": {
+        "answer": "The child loses the chance to learn from a small mistake that would have brought only a little trouble [1], and will have to learn the same thing later in life, when the consequences are far more serious [1].",
+        "points": [
+          "The child loses the chance to learn (to be responsible) from a small mistake that would have cost little.",
+          "The child will have to learn it later, when the consequences are far more serious."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The child loses the chance to learn to be responsible when the only cost is a small punishment in school. The child will then have to learn it when older, when forgetting things has much more serious results." },
+        { "mark": 2, "flaw": "paraphrase", "text": "By rescuing the child, the parent stops them from learning from a small mistake now. Later, the same carelessness will be learnt the hard way when much more is at stake." },
+        { "mark": 1, "flaw": "half", "text": "The child does not get to learn from a small mistake that would only have brought a little trouble." },
+        { "mark": 1, "flaw": "half", "text": "The child will have to learn the lesson later, when the consequences are much worse." },
+        { "mark": 0, "flaw": "wrong", "text": "The parent is wasting money on petrol to bring the shirt, which is expensive." },
+        { "mark": 0, "flaw": "vague", "text": "The parent is not helping the child in the correct way." }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, the writer says that every bridge built since ‘has stood on the one that fell’. What does the writer mean?",
+      "scheme": {
+        "answer": "Everything the writer has achieved since then was made possible by what the failed bridge taught.",
+        "accept": [
+          "The lesson of that failure has been the base of all the writer’s later successes."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Everything the writer has succeeded in since then was built on what was learnt from the failed bridge." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The lesson from that failure has been the base for all the things the writer did well afterwards." },
+        { "mark": 0, "flaw": "wrong", "text": "The writer used the old ice-cream sticks again to build new bridges." },
+        { "mark": 0, "flaw": "wrong", "text": "The writer grew up to build real bridges at the same place where the first one fell." },
+        { "mark": 0, "flaw": "vague", "text": "The writer has done many things since then." }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the tone of this article?",
+      "options": [
+        { "label": "A", "text": "Bitter about a humiliation that still hurts" },
+        { "label": "B", "text": "Stern, as if scolding readers for not trying hard enough" },
+        { "label": "C", "text": "Anxious about the failures that are still to come" },
+        { "label": "D", "text": "Light-hearted, but serious about the point being made" }
+      ],
+      "scheme": { "answer": "Light-hearted, but serious about the point being made" },
+      "seeds": []
+    },
+    {
+      "n": "9",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise what a person gains from failing early and what a person should do in order to fail well.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "It shows you exactly what you do not know.",
+          "It makes you less afraid of failing (you find that life goes on and people forget).",
+          "It gives you practice at recovering and starting again.",
+          "It humbles you, so you are readier to take advice.",
+          "It makes you kinder to other people who fail.",
+          "It shows you what you really care about (whether you still want to try again).",
+          "Try difficult things first where little is at stake.",
+          "Admit the failure and that it was your own fault (no blaming).",
+          "Work out what went wrong soon, while it is fresh.",
+          "Ask someone better than you what they noticed.",
+          "Change one thing and try again soon."
+        ],
+        "answer": "Failing early reveals precisely where your knowledge is lacking, makes failure less frightening and trains you to recover. It also humbles you into accepting guidance, makes you sympathetic to others who stumble, and shows which pursuits really matter to you. To fail well, attempt hard things when the stakes are low, own up without excuses, examine the cause promptly, seek the view of someone more skilled, then alter one thing and quickly make another attempt."
+      },
+      "seeds": [
+        { "mark": 8, "flaw": "full", "hit": [1, 2, 3, 4, 5, 7, 8, 9, 10, 11], "text": "Failing early shows you exactly what you do not know and makes you less afraid of failing again. You learn how to pick yourself up. It makes you humble, so you listen to advice, and kinder to others who fail. To fail well, try hard things when it does not matter much, admit it was your own fault, find out what went wrong quickly, ask a more skilled person what they saw, then change one thing and try again soon." },
+        { "mark": 5, "flaw": "half", "hit": [1, 3, 7, 8, 10], "text": "An early failure is useful because it points to exactly what you do not know yet. It also gives you practice in getting up and starting again. To fail well, you should try difficult things first in places where little is at stake, like a class quiz. When you fail, you should admit that it was your own fault. You should also ask somebody who is better than you what they noticed." },
+        { "mark": 2, "flaw": "vague", "hit": [2, 11], "text": "Failing early is actually a good thing and people should not look down on it. There are many benefits that a person can get from it. One is that you will not be so scared of failing next time. Failing well is also important and there are steps to follow. For example, you should change one thing and try again soon. In this way, failure can help us in life." },
+        { "mark": 0, "flaw": "wrong", "hit": [], "text": "The writer’s bridge of ice-cream sticks collapsed in front of the class and everyone laughed. The writer wanted the floor to open, but now remembers the bridge fondly because it only cost a few marks. Failure is not pleasant, and a parent who brings a forgotten PE shirt to school is taking away a cheap lesson. Every bridge the writer built afterwards stood on the one that fell." },
+        { "mark": 4, "flaw": "lifted", "hit": [1, 5, 9, 10], "text": "A test you pass tells you little, but a test you fail points straight at the gap. Having stood there red-faced yourself, you become kinder to the next person it happens to. Work out what went wrong while the memory is still fresh. Ask someone better than you what they noticed, since they will have seen what you could not." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,377 @@
+{
+  "id": "nn02",
+  "kind": "non_narrative",
+  "title": "The Slow Pen",
+  "paragraphs": [
+    "My grandmother’s shopping lists were works of art by accident. Written on the backs of old envelopes, in a slanting hand that leaned forward like a person walking into the wind, they said eggs, soap and thread, and somehow they also said her. When I type my own list into my phone, it says eggs, soap and thread, and nothing else at all.",
+    "It is easy to see why the pen is losing. Typing is faster, tidier and kinder to those of us whose handwriting resembles a spider that fell into ink and crawled home. A typed message can be corrected without a trace and sent across the island in a second. In many classrooms the keyboard has quietly taken the pen’s place, and few students miss it. Why keep a slow tool when a quick one is within reach?",
+    "The answer is that the slowness is the point. Because the hand cannot keep up with a teacher’s voice, a student writing notes by hand is forced to choose what matters and put it in fewer words. Someone typing can take down every sentence without thinking about any of them. Forming each letter also takes effort, and what costs effort tends to stay: most of us remember a word we have written out far longer than one we have tapped. A page of paper holds no notifications either, so the writer’s attention stays where the pen is. And a pen is free in a way a keyboard is not. An arrow here, a circle there, a small diagram in the margin: ideas can be joined up on the page as quickly as they join up in the head.",
+    "Handwriting does other work besides. It is personal: no two hands are alike, and a note in a friend’s own writing carries something of the friend. It shows care, since everyone knows that a handwritten card took time that a forwarded greeting did not. It lasts — a letter in a drawer can be read fifty years on without a charger or a password. And for many people, writing a worry down by hand at the end of a long day is calming, as though the trouble has been lifted out of the head and set down somewhere safe.",
+    "None of this requires giving up the keyboard. It requires keeping the pen in practice. A student can begin by taking notes by hand in at least one subject. A paper diary or journal, even three lines a night, keeps the habit alive. Birthday wishes and thank-you messages can be written on cards rather than sent as texts. And when a problem refuses to be solved on a screen, it is worth planning it on paper first, where a messy first attempt costs nothing and can be crossed out with some satisfaction.",
+    "Of course, there will be complaints. Handwriting makes the wrist ache; it cannot be searched; it is occasionally unreadable even to its owner. All true. But we do not stop walking because buses exist. We walk because some things — the neighbourhood, the weather, our own thoughts — can only be noticed at that speed.",
+    "I have kept one of my grandmother’s envelopes. The paper has yellowed and the thread was used up long ago, but the handwriting still leans forward, still in a hurry, still unmistakably hers. I look at it sometimes when my phone reminds me, in its neat and nameless letters, to buy eggs."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer calls the grandmother’s shopping lists ‘works of art by accident’. What do the words ‘by accident’ tell us about the lists?",
+      "scheme": {
+        "answer": "The grandmother was not trying to make them beautiful or special; they simply turned out that way.",
+        "accept": [
+          "She had no intention of making anything artistic when she wrote them."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She did not mean to make the lists beautiful. They just turned out that way."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The grandmother was only writing down what to buy and was not trying to create anything special, so the beauty was not planned."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She made a lot of mistakes when she wrote her lists."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She spilled something on the envelopes by accident."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They were lists of things to buy."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘A typed message can be corrected without a trace and sent across the island in a second.’ In your own words, give the two advantages of a typed message described in this sentence from Paragraph 2.",
+      "scheme": {
+        "answer": "Mistakes in it can be fixed without leaving any sign that they were there [1], and it reaches someone far away almost immediately [1].",
+        "points": [
+          "Mistakes can be fixed and nobody can tell there was one / no mark is left behind.",
+          "It reaches a person far away almost at once / with no waiting."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "If you make a mistake you can fix it and nobody will know it was ever there. It also reaches a person who is far away almost immediately."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Errors can be changed and no mark is left behind. The message also gets to someone in another part of the country with hardly any waiting."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "You can fix your mistakes and no one can tell that you made any."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It can reach somebody who lives far away almost immediately."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "A typed message can be corrected without a trace and sent across the island in a second."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "A typed message is free and it can be kept for many years."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the keyboard replaced the pen without anyone making a fuss?",
+      "scheme": {
+        "answer": "quietly"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "quietly"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘quietly’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "faster"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "tidier"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "At the start of Paragraph 3, the writer says ‘the slowness is the point’. What does the writer mean?",
+      "scheme": {
+        "answer": "Being slow is the very thing that makes handwriting useful; it is a strength, not a weakness.",
+        "accept": [
+          "The fact that handwriting takes longer is exactly why it is worth doing."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer means that being slow is actually the advantage of handwriting and not its weakness."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Handwriting takes longer, and that is exactly the reason it is good for us."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Handwriting is too slow to be of any use today."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "A pen has a sharp point which makes people write slowly."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The slowness is the point of handwriting."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "literal",
+      "text": "From Paragraph 6, give two complaints about handwriting that the writer agrees are true.",
+      "scheme": {
+        "answer": "Any two of these: it makes the wrist ache [1]; it cannot be searched [1]; it is sometimes unreadable, even to the person who wrote it [1].",
+        "points": [
+          "It makes the wrist ache.",
+          "It cannot be searched.",
+          "It is sometimes unreadable, even to the person who wrote it."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "It makes the wrist ache and it cannot be searched."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Your hand gets sore from writing, and sometimes even you cannot read what you wrote."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It makes the wrist ache."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "You cannot search through handwriting for a word."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Pens and paper cost too much money."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "There are some things about it that people do not like."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer says, ‘we do not stop walking because buses exist’. Explain how this supports the writer’s argument about handwriting.",
+      "scheme": {
+        "answer": "Just as we still walk although buses are faster, we should still write by hand although typing is faster [1], because the slower way lets us notice or gain things that the faster way misses [1].",
+        "points": [
+          "We should keep writing by hand although typing is faster, just as we still walk although buses are faster.",
+          "The slower way lets us notice or gain things that the faster way misses."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "We still walk even though buses are faster, so in the same way we should still write by hand even though typing is faster. This is because the slow way lets us notice things that we miss when we go fast."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Having a quicker choice is no reason to drop the slower one. Like walking, handwriting gives us something that the quick method cannot, since going slowly makes us pay attention to more."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Typing is faster, but that does not mean we should stop handwriting, just like we do not stop walking when there are buses."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Doing something slowly lets us notice things that we would miss if we did it quickly."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Walking is healthier than taking the bus, so people should walk more."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Buses are like keyboards and both of them should be given up."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the writer’s attitude towards typing?",
+      "options": [
+        {
+          "label": "A",
+          "text": "It is a useful tool that should not push the pen out completely"
+        },
+        {
+          "label": "B",
+          "text": "It is a harmful habit that students ought to give up"
+        },
+        {
+          "label": "C",
+          "text": "It is the only sensible way to write nowadays"
+        },
+        {
+          "label": "D",
+          "text": "It is something that only older people complain about"
+        }
+      ],
+      "scheme": {
+        "answer": "It is a useful tool that should not push the pen out completely"
+      },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise the benefits of writing by hand and what a student can do to keep the habit.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "Being slow, it forces the writer to pick out what matters and say it in fewer words.",
+          "The effort of forming the letters makes what is written stay in the memory.",
+          "Paper has no notifications, so attention stays on the writing.",
+          "A pen can draw arrows, circles and diagrams, so ideas can be linked freely.",
+          "It is personal: it carries something of the writer.",
+          "It shows care, because the reader knows it took time.",
+          "It lasts, and can be read many years later without any device.",
+          "Writing worries down by hand is calming.",
+          "Take notes by hand in at least one subject.",
+          "Keep a paper diary or journal.",
+          "Write cards for birthdays and thanks instead of sending texts.",
+          "Plan a difficult problem on paper first."
+        ],
+        "answer": "Because writing by hand is slow, students must pick out what matters, and the effort helps them remember it. Paper has no alerts to distract them, and they can sketch and connect ideas freely. Handwriting also reveals the writer’s character, shows the receiver that trouble was taken, survives for decades without any device, and soothes a worried mind. Students can handwrite notes for one subject, keep a short diary, write cards for special occasions and plan hard problems on paper."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "text": "Writing by hand is slow, so students have to choose only the important ideas, and the effort makes them remember better. There are no notifications on paper to distract them. Handwriting shows the writer’s personality and proves that time was spent on the reader. A letter can last many years without needing a device, and writing down worries makes people calmer. Students can take notes by hand for one subject, keep a paper diary and write cards instead of texts."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            2,
+            4,
+            6,
+            9,
+            10
+          ],
+          "text": "Handwriting is useful because we remember things better when we write them out with effort. With a pen we can also draw arrows and small diagrams to connect our ideas. A handwritten card shows the other person that we care, because it takes time. To keep the habit, students should write their notes by hand for at least one subject and keep a diary on paper, even if it is short."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            3,
+            11
+          ],
+          "text": "Handwriting is still very important today and it has many good points that people forget about. It is better than typing in a lot of ways. For instance, paper does not have notifications, so we do not get distracted. Students must not give up on handwriting and should try to use a pen more often in their daily lives, such as writing a card for a friend’s birthday instead of sending a text."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "The writer’s grandmother wrote her shopping lists on the backs of old envelopes in a slanting hand. Typing is faster and tidier, and a typed message can be corrected and sent in a second, so the keyboard has replaced the pen in many classrooms. Some people complain that handwriting makes the wrist ache and cannot be searched. The writer still keeps one of the grandmother’s envelopes today."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            5,
+            7,
+            9,
+            10
+          ],
+          "text": "It is personal: no two hands are alike, and a note in a friend’s own writing carries something of the friend. It lasts — a letter in a drawer can be read fifty years on without a charger or a password. A student can begin by taking notes by hand in at least one subject. A paper diary or journal, even three lines a night, keeps the habit alive."
+        }
+      ]
+    }
+  ]
+}

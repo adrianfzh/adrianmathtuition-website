@@ -1,0 +1,609 @@
+{
+  "id": "na10",
+  "kind": "narrative",
+  "title": "The Blue Rope",
+  "paragraphs": [
+    "From the jetty, the sea at Kampung Teluk Batu had looked like a sheet of hammered tin, flat and harmless. Nadia had taken three photographs of it before breakfast. Now, an hour out in her uncle’s boat, with the village shrunk to a line of rust-coloured roofs, she understood that the sea was not something one looked at. It was something one was on, and it did not care whether she was comfortable.",
+    "Pak Long stood at the stern under the one patched sail, with a bare foot on the tiller, steering as casually as other people scratch an itch. He had said perhaps twenty words to her since she arrived from Singapore four days ago, most of them “Eat”. Her mother called him stubborn. Watching him haul in the first net hand over hand, Nadia thought the word was too small.",
+    "It was she who saw the cloud first, though she did not know what she was seeing. Far to the east the sky had turned the purple-grey of an old bruise, and under it the water had lost its shine. “Pak Long,” she said, “is that rain?” He glanced over his shoulder for no longer than a breath. Then he looked at the net still in the water, at the few fish already silver in the hold, and at her. She watched him weigh the three.",
+    "“We go back,” he said. He began pulling in the net, half empty, fast. He did not sound afraid, and that frightened her more than shouting would have.",
+    "The wind arrived before the rain did, and every wave it touched stood up white. The boat, which had rocked like a cradle all morning, began to buck. Spray hit Nadia’s face, warm and salty. Her phone was in her pocket; for once it did not occur to her to take it out. She gripped the wooden bench until her knuckles hurt, and stared at the back of her uncle’s faded shirt as if it were the only steady thing in the world.",
+    "“Nadia.” He had to say it twice. “The blue rope. Hold. When I say, you let go — not before.” He pointed with his chin. She crawled to it on her knees. The rope was wet and rough and alive, tugging like a dog that has seen a cat, and she wrapped it twice around her fist the way she had seen him do. She was shaking. She held on anyway.",
+    "The rain came down all at once, as though someone had slit a bag. She could no longer see the roofs. She could barely see her uncle. But she could hear him, and when at last he shouted “Now!” she opened her hand. Something heavy swung across above her head, and the boat, which had been fighting the waves, turned and began to run with them.",
+    "Twenty minutes later they bumped against the jetty. Her aunt was waiting under a sheet of plastic with a towel, scolding them both before the boat was even tied. Pak Long said nothing. He lifted the single basket of fish onto the planks, then reached down and pulled Nadia up after it with one hard, wet hand.",
+    "He did not let go at once. He turned her palm over. The rope had left two red stripes across it. He looked at them for a moment, nodded once, and went to see to his boat. Nadia closed her hand around the stripes, as carefully as if they were something she had been given."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the village had ‘shrunk to a line of rust-coloured roofs’. What does the word ‘shrunk’ tell you about where the boat was?",
+      "scheme": {
+        "answer": "The boat had gone so far out to sea that the village looked tiny in the distance.",
+        "accept": [
+          "They were a long way from the shore."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The boat was so far out at sea that the village looked very small."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "They had travelled a long way from the shore, so the houses seemed tiny."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The village was a very small one with only a few houses."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The village had become smaller because people were moving away."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It tells us the boat was on the sea."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain how Nadia’s idea of the sea changed once she was out on the boat (Paragraph 1).",
+      "scheme": {
+        "answer": "From the shore she had thought of it as a calm, safe thing to admire [1]; out on it, she saw that it was a powerful place she was at the mercy of, with no concern for her [1].",
+        "points": [
+          "Before: a calm / safe / pretty sight to admire from land.",
+          "Now: something powerful that she was in the middle of and at the mercy of — it had no concern for her."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "At first she thought the sea was just a calm and safe thing to admire from the land. Out on the boat she realised it was powerful and had no concern for her, and she was at its mercy."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Before, it was only a pretty view to her that could do no damage. Now she was in the middle of it and saw that she was at its mercy."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "On the boat she realised the sea was powerful and she was at its mercy."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "At first she thought the sea was just a calm, safe view to admire."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The sea had looked flat and harmless. Now she understood that the sea was not something one looked at. It was something one was on, and it did not care whether she was comfortable."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She used to be afraid of the sea but now she found it beautiful and took photographs."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "Pak Long steers ‘as casually as other people scratch an itch’ (Paragraph 2). What does this comparison suggest about him?",
+      "scheme": {
+        "answer": "Handling the boat came so naturally to him that he did it without effort or thought.",
+        "accept": [
+          "He was so experienced that steering was second nature to him."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests that steering the boat was so natural to him that he did it without thinking or effort."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "He was so experienced that handling the boat was second nature to him."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests his foot was itchy."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests he did not know how to steer a boat properly."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "He steered as casually as other people scratch an itch, with a bare foot on the tiller."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "From Paragraph 2, how do we know that Pak Long was a man of few words?",
+      "scheme": {
+        "answer": "He had said only about twenty words to Nadia in the four days since she arrived.",
+        "accept": [
+          "He had hardly spoken to her since she came, and most of what he said was the single word ‘Eat’."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "He had only said about twenty words to Nadia in four days."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "He had barely spoken to her since she came, and mostly it was just the word 'Eat'."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Her mother said that he was stubborn."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was steering the boat with his foot."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Because he was a quiet man."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "The sky is described as ‘the purple-grey of an old bruise’ (Paragraph 3). What does this suggest about the cloud?",
+      "scheme": {
+        "answer": "It looked dark, ugly and threatening, as though something harmful was coming.",
+        "accept": [
+          "It was a dark, unhealthy colour that gave a sense of danger."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests the cloud looked dark and ugly, like a sign that something harmful was coming."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The colour was dark and unhealthy-looking, which gives a feeling of danger."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests the cloud was beautiful and colourful."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that Nadia had hurt herself on the boat."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The sky had turned the purple-grey of an old bruise."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘She watched him weigh the three’ (Paragraph 3). Explain what Pak Long was deciding as he looked at the net, the fish and Nadia.",
+      "scheme": {
+        "answer": "He was deciding whether to stay and bring in a full catch, which was his living [1], or to head back at once to keep his niece safe from the storm [1].",
+        "points": [
+          "On one side: staying to finish fishing / the catch (his income).",
+          "On the other: Nadia’s safety — getting her home before the storm."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He was deciding whether to stay and catch more fish, which was his income, or to go back straight away so that Nadia would be safe from the storm."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He had to choose between his earnings for the day and his niece's safety, because bad weather was on the way."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He was thinking about whether he should stay and catch more fish."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He was thinking about whether Nadia would be safe in the storm."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was working out how heavy the net, the fish and Nadia were for the boat."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was deciding which fish to give to Nadia."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 2,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Give two details from Paragraph 4 which show that Pak Long took the storm seriously.",
+      "scheme": {
+        "answer": "Any two of the three details, 1 mark each.",
+        "points": [
+          "He decided at once to go back.",
+          "He pulled in the net although it was only half full.",
+          "He pulled it in fast."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He said they were going back, and he pulled the net in even though it was only half full."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He gave up on the rest of the catch, bringing the net up before it was full, and he hauled it in quickly."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He pulled in the net very fast. He also did not sound afraid."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He told her that they were going back."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He did not sound afraid and he did not shout."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "He did things on the boat."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 5, the boat ‘had rocked like a cradle all morning’ but then ‘began to buck’. What does each of these descriptions suggest about the movement of the boat?",
+      "scheme": {
+        "answer": "‘Rocked like a cradle’ suggests a gentle, soothing, safe motion [1]; ‘buck’ suggests violent jerking, like an animal trying to throw off its rider [1].",
+        "points": [
+          "‘Cradle’: gentle / soothing / safe swaying.",
+          "‘Buck’: sudden, violent jerking, as if trying to throw them off — dangerous."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "'Rocked like a cradle' suggests the boat was swaying gently and felt safe. 'Buck' suggests it was jerking violently like an animal trying to throw them off."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "At first the motion was soft and comforting like a baby being put to sleep. After that the boat was leaping up and down roughly and it was dangerous."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "At first the boat moved gently and it was comforting, like for a baby."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "'Buck' shows the boat was jumping about violently like a wild horse."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Both suggest that the boat was moving very slowly on the water."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They suggest that the boat was moving in different ways."
+        }
+      ]
+    },
+    {
+      "n": "9",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 5 shows that Nadia held on to the bench very tightly?",
+      "scheme": {
+        "answer": "gripped"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "gripped"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "“Gripped”."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "stared"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "steady"
+        }
+      ]
+    },
+    {
+      "n": "10",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "Nadia’s phone was in her pocket, but ‘for once it did not occur to her to take it out’ (Paragraph 5). What does this show about her at that moment?",
+      "scheme": {
+        "answer": "She was too frightened and too caught up in what was happening to think about taking pictures.",
+        "accept": [
+          "The danger was real to her now; the sea was no longer just something to photograph."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She was so frightened and caught up in what was happening that she did not think about taking photos."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The danger was real to her now, so the sea was not just something to photograph any more."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Her phone had no battery left."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was bored on the boat."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She left her phone in her pocket."
+        }
+      ]
+    },
+    {
+      "n": "11a",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "stem": "In Paragraph 6, Pak Long tells Nadia to hold the blue rope.",
+      "text": "The rope is described as ‘tugging like a dog that has seen a cat’. What does this comparison suggest about the rope?",
+      "scheme": {
+        "answer": "It was pulling hard and suddenly, as if it were alive, and was difficult to hold on to.",
+        "accept": [
+          "It jerked strongly against her hand and was hard to control."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests the rope was pulling very hard and suddenly, and it was difficult for her to hold on to."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The rope kept jerking strongly as if it wanted to get away, so it was hard to control."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests there was a dog on the boat."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that the rope was moving."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The rope was wet and rough and alive, tugging like a dog that has seen a cat."
+        }
+      ]
+    },
+    {
+      "n": "11b",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "stem": "In Paragraph 6, Pak Long tells Nadia to hold the blue rope.",
+      "text": "‘She was shaking. She held on anyway.’ What do these two sentences show about Nadia?",
+      "scheme": {
+        "answer": "She was very frightened, but she was brave and determined enough to do what she had been asked.",
+        "accept": [
+          "She showed courage — she did her part in spite of her fear."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "They show that although she was very frightened, she was brave and determined to do what her uncle asked."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She had courage. She did her part in spite of her fear."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They show that she was too weak to hold the rope."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They show that she did not want to listen to her uncle."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They show that she was holding the rope."
+        }
+      ]
+    },
+    {
+      "n": "12",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, describe what happened to the boat after Nadia let go of the rope (Paragraph 7).",
+      "scheme": {
+        "answer": "The boat changed direction [1], and instead of struggling against the sea it started to move along in the same direction as the waves [1].",
+        "points": [
+          "The boat changed direction / swung round.",
+          "It no longer struggled against the sea but moved along in the same direction as the waves."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The boat changed direction. Instead of struggling against the sea, it started moving along in the same direction as the waves."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The boat swung round to face another way, and after that it was carried along by the sea rather than battling it."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The boat changed its direction."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The boat stopped struggling against the sea and went along with it."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Something heavy swung across above her head, and the boat, which had been fighting the waves, turned and began to run with them."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The boat stopped moving and they had to wait for the rain to end."
+        }
+      ]
+    },
+    {
+      "n": "13",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "At the end, Nadia closes her hand around the red stripes ‘as carefully as if they were something she had been given’ (Paragraph 9). What does this suggest about how she felt about the marks, and why?",
+      "scheme": {
+        "answer": "She was proud of the marks and treasured them [1], because they were proof that she had done something real to help and had earned her uncle’s approval [1].",
+        "points": [
+          "She valued / was proud of the marks — they were precious to her, not something to complain about.",
+          "Because they showed she had truly helped / had earned her uncle’s respect (his nod)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She was proud of the marks and treasured them. This was because they proved she had really helped on the boat and her uncle approved of her."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The stripes were precious to her, like a prize. They were a sign that she had done real work and earned the respect of her uncle."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She felt proud of the marks on her hand and treasured them."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The marks showed that she had really helped and that her uncle approved of what she did."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She closed her hand carefully because the marks were very painful."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was upset that the rope had spoilt her hand."
+        }
+      ]
+    }
+  ]
+}

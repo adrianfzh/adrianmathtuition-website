@@ -1,0 +1,88 @@
+{
+  "id": "vt05",
+  "kind": "visual",
+  "title": "The Year-End Swap",
+  "format": "poster",
+  "theme": "rose",
+  "visual": [
+    { "t": "kicker", "text": "PARENT SUPPORT GROUP · YEAR-END SWAP" },
+    { "t": "headline", "text": "Outgrown it? Someone else is about to grow into it." },
+    { "t": "tagline", "text": "Pass on your uniforms and textbooks. Pick up what you need for next year." },
+    { "t": "picture", "text": "A long table in a school hall is piled with folded uniforms sorted by size. A tall Secondary 4 boy hands a stack of textbooks to a much smaller boy, who is grinning and already holding the top book open." },
+    { "t": "body", "text": "New uniforms and a full booklist are a heavy bill at the start of every year. Yet in most homes, last year’s books sit in a box, and shirts that no longer fit hang at the back of the wardrobe. Bring them to the Swap. Whatever you bring, someone will use — and whatever you need, you take home free." },
+    { "t": "box", "title": "What we accept", "items": [
+      "School uniforms and PE attire, washed and without tears",
+      "Textbooks on next year’s booklist — notes in pencil are fine",
+      "School shoes and bags in good condition",
+      "Sorry, no workbooks that have been written in"
+    ] },
+    { "t": "quote", "text": "“My brother’s old Chemistry textbook had his notes in the margins. They explained things better than the book did.” — Aditi, Secondary 3" },
+    { "t": "small", "text": "There is no need to bring something in order to take something. Nobody will ask." },
+    { "t": "button", "text": "Saturday, 22 November · 9 am to 1 pm · School Hall" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the headline: ‘Outgrown it? Someone else is about to grow into it.’ What does it suggest about the things students no longer need?",
+      "scheme": { "answer": "They are still useful, because a younger student will soon need exactly those things.", "accept": ["Items that are too small or no longer needed by one student can be used by another, so they should not be wasted."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that these things are still useful because a younger student will need them soon." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Something too small for you is just right for another person, so it should be passed on and not wasted." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that students should buy bigger uniforms so that they last longer." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that old things should be thrown away." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that students grow." },
+        { "mark": 0, "flaw": "lifted", "text": "Someone else is about to grow into it." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "visual",
+      "text": "How does the picture support the message of the poster?",
+      "scheme": { "answer": "It shows an older student passing his books to a younger one who is clearly delighted, which shows that used items are welcomed and put to use by someone else.", "accept": ["The smaller boy’s grin shows that what one student no longer needs can make another student happy."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It shows an older boy giving his books to a younger boy who is very happy to get them, so we see that used things are still wanted by someone." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The small boy is grinning and already reading the book, which proves that things you have finished with can make another student glad." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that the uniforms are sold at a cheap price in the hall." },
+        { "mark": 0, "flaw": "vague", "text": "It shows what the school hall looks like." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that Secondary 4 boys are taller than other boys." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the body text suggests that buying everything new costs families a lot of money?",
+      "scheme": { "answer": "a heavy bill", "accept": ["heavy bill", "are a heavy bill", "a heavy bill at the start of every year"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "a heavy bill" },
+        { "mark": 1, "flaw": "paraphrase", "text": "'heavy bill'" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"a heavy bill at the start of every year\"." },
+        { "mark": 0, "flaw": "wrong", "text": "sit in a box" },
+        { "mark": 0, "flaw": "wrong", "text": "at the back of the wardrobe" },
+        { "mark": 0, "flaw": "wrong", "text": "no longer fit" }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘There is no need to bring something in order to take something. Nobody will ask.’ Why do you think the poster includes these lines?",
+      "scheme": { "answer": "To assure students who have nothing to give that they can still take what they need without feeling embarrassed.", "accept": ["So that families who need the items will come and take them freely, knowing that nobody will question or judge them."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "To assure students who have nothing to give that they can still take things and need not feel embarrassed about it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "So that families who really need the uniforms and books will not be shy to come, because no one will question them or judge them." },
+        { "mark": 0, "flaw": "wrong", "text": "To remind students that they must bring something before they are allowed to take anything." },
+        { "mark": 0, "flaw": "wrong", "text": "To show that nobody is interested in the Swap." },
+        { "mark": 0, "flaw": "vague", "text": "To tell students the rules of the Swap." },
+        { "mark": 0, "flaw": "lifted", "text": "Because there is no need to bring something in order to take something." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "visual",
+      "text": "According to Aditi’s words, what advantage can a used textbook have over a new one?",
+      "scheme": { "answer": "It may contain the previous owner’s notes, which help the next student understand the subject better.", "accept": ["The notes written in it by an older student can explain the lessons more clearly."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "A used textbook may have the notes of the previous owner, and these help you to understand the subject better." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The older student has already written explanations inside, so the topics become clearer to the next person." },
+        { "mark": 0, "flaw": "wrong", "text": "A used textbook is cheaper than a new one." },
+        { "mark": 0, "flaw": "wrong", "text": "Her brother is very good at Chemistry." },
+        { "mark": 0, "flaw": "vague", "text": "Used textbooks are better than new textbooks." }
+      ]
+    }
+  ]
+}

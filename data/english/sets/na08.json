@@ -1,0 +1,573 @@
+{
+  "id": "na08",
+  "kind": "narrative",
+  "title": "Room Four",
+  "paragraphs": [
+    "The waiting area outside Room Four smelled of floor polish and other people’s nerves. I sat with my scale book shut on my lap, because opening it now would only prove how much I had forgotten. Beside me, my mother was reading the same page of her magazine for the fourth time.",
+    "When the door opened, the boy before me came out with his ears red and walked straight past his father. “Next,” said a voice from inside. It was just a word, put down like a coin on a counter.",
+    "The examiner was a thin woman with grey hair cut as straight as a ruler’s edge. She did not smile or ask how I was. She looked at her form, then at the piano, and that was the whole of my welcome. “Scales,” she said. “B flat minor. Hands together.” My fingers had played that scale every morning since March, and now they felt as if they belonged to somebody else. I got through it the way one crosses a drain on a narrow plank — quickly, and without looking down.",
+    "Her pen scratched. It was the only sound in the room. I tried to read her face, but there was nothing on it to read. Mrs Devi, my teacher, nodded along when I played and hummed the tune under her breath; this woman sat as still as the metronome on the shelf with its arm locked.",
+    "The first two pieces passed in a blur. The third was the slow one, the one Mrs Devi said I always played “like someone reading out a shopping list”. Halfway down the second page, my left hand landed on a wrong chord. It was not a small slip; it sat in the air like a dropped plate. Every lesson I had ever had told me to keep going. Instead I stopped. My hands hovered. I heard myself say, “Sorry. May I start again from the top of the page?”",
+    "For the first time, the examiner looked up from her form. I waited for the sigh, or for the glance at the clock. “You may,” she said. That was all. But she put her pen down.",
+    "I do not know why that mattered so much. Perhaps it was because, for a moment, nobody was writing about me. I began again and, since the worst had already happened, there was nothing left to guard. I stopped counting. I let the slow notes take the time they wanted. Somewhere in the middle I forgot the woman at the desk altogether, and played it the way I played at home when the flat was empty, with the windows open and nobody listening — as if it were mine.",
+    "When the last note faded, the pen stayed where it was a second longer than it needed to. Then she picked it up and wrote something short. “Thank you,” she said. “Close the door gently, please.”",
+    "My mother stood up so fast that her magazine slid to the floor. “Well? What did she say?” “Almost nothing,” I said, and found, to my own surprise, that I was smiling. On the way to the bus stop she asked whether I thought I had passed. I told her honestly that I did not know. What I did not tell her was that I was no longer certain that was the question."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the waiting area ‘smelled of floor polish and other people’s nerves’. What does the phrase ‘other people’s nerves’ suggest about the mood there?",
+      "scheme": {
+        "answer": "Everyone waiting there was so anxious that the tension could almost be sensed in the air.",
+        "accept": [
+          "The place was full of nervous candidates, and their worry was strong enough to feel."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests that everybody waiting was very nervous, so much that she could almost feel the tension in the air."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The other candidates were all anxious about their exams and the worry filled the whole place."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The place was dirty and had a bad smell."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests there was a certain mood there."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "It smelled of floor polish and other people's nerves."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "The narrator’s mother ‘was reading the same page of her magazine for the fourth time’ (Paragraph 1). What does this tell you about her?",
+      "scheme": {
+        "answer": "She was too worried about her daughter’s examination to take in what she was reading.",
+        "accept": [
+          "She was nervous too and was only pretending to read."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She was also nervous about the exam so she could not concentrate on the magazine."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Her mind was on her daughter and not on the page, because she was worried for her."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She found the page very interesting and wanted to read it again."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was a slow reader."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She was reading a magazine while waiting."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the examiner’s ‘Next’ is described as ‘a word put down like a coin on a counter’. What does this comparison suggest about the way she spoke?",
+      "scheme": {
+        "answer": "She spoke in a flat, businesslike way, with no warmth or feeling in her voice.",
+        "accept": [
+          "She said it briskly and coldly, as if calling in a candidate were only a routine piece of business."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She spoke in a flat and businesslike way without any warmth, as if it was just a routine thing."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Her voice had no feeling in it. She was just getting on with the job, like a cashier serving one more customer."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She shouted angrily at the candidates."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was asking the narrator to pay for the exam."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "It was just a word, put down like a coin on a counter."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Give two details from Paragraph 3 which show that the examiner was not friendly towards the narrator.",
+      "scheme": {
+        "answer": "Any two of the three details, 1 mark each.",
+        "points": [
+          "She did not smile.",
+          "She did not ask how the narrator was / gave her no greeting.",
+          "She only looked at her form and the piano, and spoke only in short orders."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She did not smile at her, and she did not ask how she was."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The examiner gave no greeting at all. She also spoke only in short orders like 'Scales' and 'Hands together'."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She did not smile at the narrator. She also had grey hair cut very straight."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She only gave short instructions like 'Scales'."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was thin and had grey hair cut as straight as a ruler."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She was not nice and made the narrator scared."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "The narrator says she got through the scale ‘the way one crosses a drain on a narrow plank’ (Paragraph 3). What does this comparison tell you about how she played it?",
+      "scheme": {
+        "answer": "She played it fast to get it over with [1], not daring to think about what she was doing in case she lost her nerve and went wrong [1].",
+        "points": [
+          "She rushed through it, just to reach the end.",
+          "She did not let herself think about what she was doing (or about mistakes), for fear of slipping up / losing her nerve."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She played it fast just to get it over with. She also did not dare to think about the notes because she was scared she would make a mistake and fall apart."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She hurried to the end of the scale, and she kept her mind off it, since thinking about how risky it was would have made her panic and slip."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She played the scale very fast to finish it as soon as possible."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She was afraid that if she thought about what she was playing she would go wrong."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She played it slowly and carefully so that every note was correct."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It tells us she managed to play the scale."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain how Mrs Devi’s behaviour while the narrator played was different from the examiner’s (Paragraph 4).",
+      "scheme": {
+        "answer": "Her teacher showed she was following and enjoying the music by moving her head and singing softly [1], while the examiner stayed completely motionless and gave no reaction at all [1].",
+        "points": [
+          "Mrs Devi responded to the music / showed she was following it (moving her head, singing softly).",
+          "The examiner did not move or react at all / showed nothing."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Her teacher would move her head to the music and sing it softly, showing she was following. The examiner did not move at all and showed no reaction."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Mrs Devi joined in with the music in little ways so the narrator knew she was enjoying it, but the examiner was like a statue and gave nothing away."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The examiner did not move a muscle and showed no reaction to the playing."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Her teacher showed she was enjoying the music by moving her head and singing quietly."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Mrs Devi nodded along when she played and hummed the tune under her breath, but this woman sat as still as the metronome on the shelf with its arm locked."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Mrs Devi was strict and scolded her, but the examiner was kinder and let her play."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "The wrong chord ‘sat in the air like a dropped plate’ (Paragraph 5). What does this comparison suggest about the mistake?",
+      "scheme": {
+        "answer": "The mistake was loud and obvious, impossible to miss [1], and it felt like a small disaster that could not be undone [1].",
+        "points": [
+          "It was very noticeable / jarring — nobody could have missed it.",
+          "It felt like an accident that could not be taken back / a shock that spoilt the piece."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The mistake was very obvious and nobody could miss it. It also felt like a disaster that she could not undo, just like a plate that is already broken."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The wrong chord rang out harshly so the examiner was sure to hear it, and once it was out there was no way to take it back. The damage was done."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests the mistake was very loud and obvious to anyone listening."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests that the mistake could not be taken back, like something that is broken."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that she dropped something on the floor during the exam."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that she made a mistake in the piece."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 5, what had the narrator’s lessons taught her to do after making a mistake?",
+      "scheme": {
+        "answer": "To carry on playing without stopping.",
+        "accept": [
+          "To keep going."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "They taught her to carry on playing and not stop."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She was supposed to continue with the piece as if nothing had happened."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They taught her to stop and start again from the top of the page."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They taught her to say sorry to the examiner."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They taught her how to play the piano."
+        }
+      ]
+    },
+    {
+      "n": "9",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 5 shows that the narrator’s hands stayed in the air above the keys?",
+      "scheme": {
+        "answer": "hovered"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "hovered"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "“Hovered”."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "landed"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "blur"
+        }
+      ]
+    },
+    {
+      "n": "10",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘But she put her pen down’ (Paragraph 6). What does this action suggest about the examiner at that moment?",
+      "scheme": {
+        "answer": "She had stopped writing notes on the narrator and was ready simply to listen to her play.",
+        "accept": [
+          "She was giving the narrator her full attention and a fair second chance, instead of judging her on paper."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests she stopped writing about the narrator and was going to just listen to her playing."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "For once she was not marking. She was giving the girl her full attention and a proper chance to play it again."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She had finished the exam and decided to fail the narrator."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was tired of writing and her hand was aching."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She put her pen on the table."
+        }
+      ]
+    },
+    {
+      "n": "11",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, the narrator says that ‘since the worst had already happened, there was nothing left to guard’. Explain what she means.",
+      "scheme": {
+        "answer": "She had already made a bad mistake and stopped, which was what she had feared most [1], so there was no longer any point in playing cautiously and she could play freely [1].",
+        "points": [
+          "The thing she dreaded — a serious mistake / having to stop — had already taken place.",
+          "So she had no reason to be careful or afraid any more / she could relax and play freely."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The thing she was most afraid of, making a big mistake and stopping, had already happened. So she did not need to play so carefully any more and could just play freely."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She had already messed up in front of the examiner, which was her biggest fear. After that she had nothing more to lose, so she stopped being so cautious."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means that she had already made the terrible mistake she was scared of."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means she did not have to be so careful any more and could relax when playing."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She means the examiner had already failed her so she gave up trying."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She means that there was no guard in the examination room."
+        }
+      ]
+    },
+    {
+      "n": "12",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain how the narrator played the slow piece the second time (Paragraph 7).",
+      "scheme": {
+        "answer": "She played without hurrying or keeping strict track of the beat [1], and with natural feeling, as though nobody was judging her and the music belonged to her [1].",
+        "points": [
+          "She did not rush / did not keep strict track of the beat — she gave the music room.",
+          "She played naturally, for herself, as if no one were judging her / as if the piece belonged to her."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She did not rush or keep strict track of the beat. She played with feeling, like she was playing for herself and no one was judging her."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "This time she was unhurried and gave each part of the music room. She was relaxed and natural, as though the piece belonged to her and there was no examiner."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She played it in an unhurried way and did not worry about keeping to the beat."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She played as though she was by herself with no one judging her."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "She stopped counting and let the slow notes take the time they wanted. She played it the way she played at home when the flat was empty, with the windows open and nobody listening."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She played it faster and louder so that the examiner would be impressed."
+        }
+      ]
+    },
+    {
+      "n": "13",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "At the end, the narrator says she ‘was no longer certain that was the question’ (Paragraph 9). What does she mean?",
+      "scheme": {
+        "answer": "Whether she had passed no longer seemed the most important thing to her [1]; what mattered more was that she had played the piece truly, with feeling, as her own [1].",
+        "points": [
+          "Passing / the result no longer seemed the main thing.",
+          "What mattered more was the way she had played — honestly, with feeling, as her own."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She means passing the exam was not the most important thing to her any more. What mattered more was that she had really played the piece with feeling, as her own."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The result did not seem to be the main point now. She cared more that for once she had played the music properly, from the heart."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means that whether she passed was not so important to her any more."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means the important thing was that she had played the piece with real feeling for once."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She means she did not understand what her mother was asking her."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She means she was sure she had failed the exam."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ed15",
+  "kind": "editing",
+  "about": "A student-run recycling drive",
+  "lines": [
+    {"text": "Every Friday afternoon, the canteen of our school turns into a sorting station."},
+    {"text": "The recycling drive was started two years ago by five student who were", "wrong": "student", "right": "students", "note": "Plural: 'five' needs 'students'."},
+    {"text": "tired of seeing full rubbish bins. They place three large boxes near the", "wrong": "place", "right": "placed", "note": "Tense: 'placed … and asked' — both verbs are in the past."},
+    {"text": "drink stall and asked his schoolmates to bring paper, cans and plastic bottles.", "wrong": "his", "right": "their", "note": "Pronoun: 'they' is plural, so it is 'their schoolmates'."},
+    {"text": "At first, the response was disappointed, and some people even threw food into", "wrong": "disappointed", "right": "disappointing", "note": "Word form: the response is 'disappointing'; a person feels 'disappointed'."},
+    {"text": "the boxes. The team did not give up. They spoke at assembly, made"},
+    {"text": "posters and showed a video who explained where the school’s rubbish goes.", "wrong": "who", "right": "that", "accept": ["which"], "note": "'Who' is for people. A video takes 'that' or 'which'."},
+    {"text": "Slowly, the boxes began to fill. Today, each class have its own monitor,", "wrong": "have", "right": "has", "note": "Agreement: 'each class' is singular, so it is 'has'."},
+    {"text": "and the items are weighed before a collection lorry arrives. The class that"},
+    {"text": "collects the more receives a small prize at the end of each term.", "wrong": "more", "right": "most", "note": "Superlative: among all the classes it is 'the most'."},
+    {"text": "The founders have since graduated, but younger students have taken over of them.", "wrong": "of", "right": "from", "note": "Preposition: we take over 'from' someone."},
+    {"text": "What began as a small complaint has become a habit for everyone."}
+  ]
+}

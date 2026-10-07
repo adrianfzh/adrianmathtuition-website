@@ -1,0 +1,19 @@
+{
+  "id": "ed03",
+  "kind": "editing",
+  "about": "A garden on the school roof",
+  "lines": [
+    {"text": "Few visitors to our school ever guess what lies above the science laboratories."},
+    {"text": "Three years ago, the flat roof were nothing more than bare grey concrete,", "wrong": "were", "right": "was", "note": "Agreement: 'the flat roof' is one thing, so it is 'was'."},
+    {"text": "but a group of teachers decided to turn it into an garden. They", "wrong": "an", "right": "a", "note": "Article: 'garden' starts with a consonant sound, so it is 'a garden'."},
+    {"text": "began with a few pots of chilli and basil. Today, more than forty"},
+    {"text": "kinds of vegetables and herbs are grew there in long wooden boxes. Every", "wrong": "grew", "right": "grown", "note": "Verb form: after 'are' it is 'grown', not 'grew'."},
+    {"text": "morning, members of the Gardening Club water the plants careful before lessons begin.", "wrong": "careful", "right": "carefully", "note": "Word form: 'water' is a verb here, so it takes the adverb 'carefully'."},
+    {"text": "They also check the leaves for snails, who can ruin a whole", "wrong": "who", "right": "which", "note": "'Who' is for people. Snails take 'which'."},
+    {"text": "crop overnight. The work is tiring, so nobody complains because the results are", "wrong": "so", "right": "but", "accept": ["yet"], "note": "Connector: the two ideas contrast, so it is 'but', not 'so'."},
+    {"text": "easy to see. Once a month, the harvest is sold to parents and"},
+    {"text": "teachers at a small stall. Several student have even started growing vegetables at", "wrong": "student", "right": "students", "note": "Plural: 'several' needs 'students'."},
+    {"text": "home. Our principal says the garden has taught us most than any textbook", "wrong": "most", "right": "more", "note": "Comparative: before 'than' it is 'more', not 'most'."},
+    {"text": "could about patience, teamwork and where our food really comes from."}
+  ]
+}

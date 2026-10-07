@@ -1,0 +1,88 @@
+{
+  "id": "vt10",
+  "kind": "visual",
+  "title": "The Read-for-15 Challenge",
+  "format": "poster",
+  "theme": "teal",
+  "visual": [
+    { "t": "kicker", "text": "YOUR NEIGHBOURHOOD LIBRARY · JUNE HOLIDAY CHALLENGE" },
+    { "t": "headline", "text": "You have fifteen minutes. You just spent them on someone else’s holiday photos." },
+    { "t": "tagline", "text": "The Read-for-15 Challenge: one small slice of your day, any book you like." },
+    { "t": "picture", "text": "A teenager sits on a bench at an MRT platform with a paperback open on his knees, so absorbed that he has not noticed the train doors opening behind him. His phone lies face down beside him." },
+    { "t": "body", "text": "Nobody is asking you to finish a classic by Friday. Fifteen minutes is the bus ride home, the queue for bubble tea, the wait while your rice cools. Read a comic, a cookbook, a football biography — it all counts. Do it for twenty-one days and see whether you can still stop." },
+    { "t": "box", "title": "How to join", "items": [
+      "Pick up a bookmark tracker at the counter",
+      "Colour one square for every day you read for fifteen minutes",
+      "Return a full bookmark by 30 June for a lucky draw — and keep the habit for free"
+    ] },
+    { "t": "quote", "text": "“I started with one volume of manga on Day 1. By Day 21 I was halfway through a thick mystery and annoyed when my stop came.” — Marcus, 14" },
+    { "t": "small", "text": "Stuck for ideas? Ask any librarian for the ‘If you liked that, try this’ shelf." },
+    { "t": "button", "text": "Start today. Day 1 is the hardest." }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "visual",
+      "text": "What does the picture suggest about reading?",
+      "scheme": { "answer": "Reading can be so enjoyable and absorbing that a reader forgets everything around him, even his phone.", "accept": ["A good book can hold a person’s attention completely."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that reading can be so enjoyable that you forget about everything around you, even your phone." },
+        { "mark": 1, "flaw": "paraphrase", "text": "A good book can take up all of a person's attention, until he does not even notice his train has come." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that people should only read at MRT stations." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the teenager's phone is spoilt." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that reading is good for teenagers." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the body text tells readers that any kind of reading material is acceptable for the challenge?",
+      "scheme": { "answer": "it all counts", "accept": ["a comic, a cookbook, a football biography — it all counts", "Read a comic, a cookbook, a football biography", "a comic, a cookbook, a football biography"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "it all counts" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is 'it all counts'." },
+        { "mark": 1, "flaw": "paraphrase", "text": "\"a comic, a cookbook, a football biography — it all counts\"" },
+        { "mark": 0, "flaw": "wrong", "text": "finish a classic by Friday" },
+        { "mark": 0, "flaw": "wrong", "text": "the queue for bubble tea" },
+        { "mark": 0, "flaw": "wrong", "text": "twenty-one days" }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the headline. What does it suggest about the way readers use their spare time?",
+      "scheme": { "answer": "They do have time to read, but they spend it scrolling through other people’s posts on their phones.", "accept": ["Readers waste on social media the short periods of free time that they could have used for reading."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that readers do have time to read, but they spend it scrolling through other people's posts on their phones." },
+        { "mark": 1, "flaw": "paraphrase", "text": "They waste their little bits of free time on social media when they could have used the time for a book." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that readers go on holiday very often." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that readers enjoy taking photographs." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that readers have fifteen minutes." },
+        { "mark": 0, "flaw": "wrong", "text": "Readers are too busy and have no spare time at all." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The button says, ‘Day 1 is the hardest.’ What does this suggest about the days that follow?",
+      "scheme": { "answer": "Reading every day becomes easier once you have begun, as it turns into a habit.", "accept": ["The only difficult part is getting started; after that it takes less effort to keep going."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that it gets easier to read every day once you have started, because it becomes a habit." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Starting is the only tough part, and after that it takes less and less effort to carry on." },
+        { "mark": 0, "flaw": "wrong", "text": "The challenge gets harder and harder every day." },
+        { "mark": 0, "flaw": "wrong", "text": "The book for Day 1 is the most difficult one to read." },
+        { "mark": 0, "flaw": "lifted", "text": "Day 1 is the hardest." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests something about the other days." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The poster is aimed at people who do not read much. Give one piece of evidence from the poster that shows this.",
+      "scheme": { "answer": "It says ‘Nobody is asking you to finish a classic by Friday’, assuring readers that they need not read anything difficult.", "accept": ["It asks for only fifteen minutes a day, ‘one small slice of your day’.", "It says comics, cookbooks and football biographies all count.", "It says ‘Day 1 is the hardest’, as if the reader is not used to reading.", "It offers help to those who are ‘stuck for ideas’ about what to read.", "It quotes Marcus, who started with only one volume of manga."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It says nobody is asking you to finish a classic by Friday, so readers know they need not read something difficult." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It only asks for fifteen minutes a day, which is very little." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It says even a comic or a cookbook counts, so people who do not like serious books can join." },
+        { "mark": 0, "flaw": "wrong", "text": "The challenge ends on 30 June." },
+        { "mark": 0, "flaw": "wrong", "text": "The poster is from the neighbourhood library." },
+        { "mark": 0, "flaw": "vague", "text": "The poster is very persuasive." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,411 @@
+{
+  "id": "nn06",
+  "kind": "non_narrative",
+  "title": "More Than a Meal",
+  "paragraphs": [
+    "Nobody goes to a hawker centre for the furniture. The stools are bolted to the floor, the tables wobble, and the ceiling fans push warm air from one side of the hall to the other. And yet, if you asked the people of my estate which building they could least bear to lose, I suspect the shopping mall would not even come second.",
+    "The food is the obvious reason, and it is a good one. A plate of chicken rice that costs less than a cup of coffee in the mall is not a small thing. But food can be delivered to the door these days in a paper bag. If eating were all a hawker centre was for, it would have emptied long ago. It has not, because people come for a good deal that is not written on any menu.",
+    "To begin with, it is one of the few places where everybody sits together. The taxi driver, the office manager and the student in PE shorts share one long table, and nobody finds it odd. It is also a daily meeting place for the old: the same retirees gather at the same table each morning, and for some of them that cup of coffee is the main conversation of the day. And it makes neighbours of strangers, because a stallholder who has seen you every week since you were in primary school knows your order by heart and notices when you look tired.",
+    "It teaches without meaning to. A child sent to buy four packets of noodles learns to queue, to speak up, to count the change and to carry the lot back without spilling. In the mixture of stalls — Malay, Chinese, Indian and everything in between — the young taste one another’s food long before they study one another’s festivals. The centre also keeps old recipes alive, dishes that take hours to prepare and that few of us would attempt at home. And it gives small cooks a living. A stall needs far less money to open than a restaurant, so a good recipe and hard work are nearly enough.",
+    "Places like this last only if they are used and looked after. We can eat there instead of ordering in, at least some of the time. We can try the quiet stall at the end of the row as well as the famous one with the queue. We can return our trays and leave the table fit for the next family. We can be patient at peak hours, remembering that the person behind the counter has been standing since before dawn. And the young can learn at least one of those old dishes from someone who knows it, before the knowledge retires with its owner.",
+    "I know the complaints. It is hot, it is noisy, the floor is sometimes wet, and a seat at noon must be hunted like treasure. A mall food court solves all of these with air-conditioning and matching chairs. But notice that nobody there knows your name, and nobody stays after the last mouthful. Comfort, it turns out, is not the same thing as belonging.",
+    "Last Sunday I watched an old man at the next table push his plate aside, take out a chess board and set up the pieces. Within minutes, another man had sat down opposite him without a word. The table still wobbled. Neither of them seemed to mind."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "From Paragraph 1, give one detail which shows that a hawker centre is not a comfortable place.",
+      "scheme": {
+        "answer": "The tables wobble.",
+        "accept": [
+          "The stools are bolted to the floor.",
+          "The ceiling fans only push warm air around."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The tables wobble."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The fans do not cool the place and just move warm air around."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The food there is expensive."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "There is no air-conditioning in the shopping mall."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The furniture is there."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 1, the writer suspects that ‘the shopping mall would not even come second’. What does this suggest about how the residents feel about their hawker centre?",
+      "scheme": {
+        "answer": "They value the hawker centre above every other building, far more than the mall.",
+        "accept": [
+          "The hawker centre is the place they would miss most; the mall matters much less to them."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "They treasure the hawker centre most of all, far more than the shopping mall."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "To them the hawker centre is the most important place in the estate, and the mall is nowhere near it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They like the shopping mall better than the hawker centre."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They think the hawker centre is the second best building in the estate."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They have feelings about the buildings in their estate."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 tells us that the reason is plain for anyone to see?",
+      "scheme": {
+        "answer": "obvious"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "obvious"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘obvious’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "delivered"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "small"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 2, the writer says, ‘If eating were all a hawker centre was for, it would have emptied long ago.’ Explain the writer’s reasoning.",
+      "scheme": {
+        "answer": "Food can now be delivered to people’s homes, so nobody needs to go to a hawker centre just to eat [1]; since people still go there, they must be going for reasons other than the food [1].",
+        "points": [
+          "Food can be delivered home, so people do not need to go there just to eat.",
+          "People still go, so they must be going for something other than food."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Nowadays food can be delivered to our homes, so nobody needs to go to the hawker centre just to eat. Since people still go there, they must be going for other reasons besides food."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "People can get their meals sent to the door without stepping out. The hawker centre is still crowded, which shows that it offers them something more than a meal."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Food can be delivered to our homes now, so we do not need to go there just to eat."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "People still go to the hawker centre, so they must be going for other reasons besides the food."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The food at the hawker centre is not good, so people will stop going there."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Hawker centres are emptied every night for cleaning."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 6, the writer says a seat at noon ‘must be hunted like treasure’. What does this comparison suggest about seats at lunchtime?",
+      "scheme": {
+        "answer": "They are very hard to find, so getting one feels precious.",
+        "accept": [
+          "The place is so crowded at noon that people must search hard for somewhere to sit."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "Seats at lunchtime are very hard to find, so getting one feels precious."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "At noon it is so crowded that you have to search hard before you get a place to sit."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "People hide the seats from one another."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Customers have to pay extra for a seat at noon."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "People look for seats at noon."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘But notice that nobody there knows your name, and nobody stays after the last mouthful.’ In your own words, explain the two things the writer finds missing in a mall food court (Paragraph 6).",
+      "scheme": {
+        "answer": "The people there do not recognise you personally; you are a stranger to them [1]. People leave as soon as they have finished eating instead of lingering [1].",
+        "points": [
+          "You are a stranger there / nobody recognises you personally.",
+          "People leave as soon as they finish eating / nobody lingers."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "In a food court you are a stranger to everyone and no one recognises you. People also leave the moment they finish eating instead of sitting around."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The people there have no idea who you are. Once the meal is over, everyone gets up and goes, so there is no lingering to chat."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Everyone there is a stranger to you and no one recognises you."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "People leave straight away once they have finished their food."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Nobody there knows your name, and nobody stays after the last mouthful."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "There is no air-conditioning and the chairs do not match."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "At the end of Paragraph 7, the writer notes that the table still wobbled but ‘Neither of them seemed to mind.’ What is the writer showing about why people come to a hawker centre?",
+      "scheme": {
+        "answer": "People come for company, so the poor furniture does not matter to them.",
+        "accept": [
+          "Being with others matters more to them than comfort."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer is showing that people come for company, so the uncomfortable furniture does not matter to them."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "What they value is having someone to be with, not how good the tables are."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The two men were too old to notice that the table was shaking."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The tables had been repaired by then."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The two men were playing chess."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "In Paragraph 6, which of the following best describes the writer’s attitude towards mall food courts?",
+      "options": [
+        {
+          "label": "A",
+          "text": "They are better than hawker centres in every way"
+        },
+        {
+          "label": "B",
+          "text": "They are too expensive for ordinary families"
+        },
+        {
+          "label": "C",
+          "text": "They are comfortable but lack a sense of community"
+        },
+        {
+          "label": "D",
+          "text": "They should be closed to protect hawker centres"
+        }
+      ],
+      "scheme": {
+        "answer": "They are comfortable but lack a sense of community"
+      },
+      "seeds": []
+    },
+    {
+      "n": "9",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise what a hawker centre gives a neighbourhood besides food, and what people can do to keep such places alive.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "People from all walks of life sit together.",
+          "It is a daily meeting place for the old (company / conversation).",
+          "Stallholders get to know their regular customers, so strangers become neighbours.",
+          "Children learn everyday skills (queueing, speaking up, handling money).",
+          "The young taste the food of other cultures.",
+          "It keeps old / traditional recipes alive.",
+          "It gives cooks a cheap way to start a business and earn a living.",
+          "Eat there instead of ordering in.",
+          "Try the quiet stalls as well as the popular ones.",
+          "Return trays and leave the table clean.",
+          "Be patient at peak hours.",
+          "The young can learn an old dish from someone who knows it."
+        ],
+        "answer": "A hawker centre brings people of every background to the same table and gives the elderly daily company. Stallholders come to know their regular customers. Children running errands there learn practical skills, and the young taste other cultures’ food. It preserves traditional dishes and lets cooks start a business cheaply. To keep it alive, we should eat there, support less popular stalls, return our trays, be patient when it is crowded, and learn an old recipe."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11
+          ],
+          "text": "At a hawker centre, people from all kinds of jobs and backgrounds sit together. Old people meet their friends there daily. Children who buy food there learn to queue and handle money, and young people get to try the food of other races. Old recipes are kept alive and cooks can open a stall cheaply. We should eat there instead of ordering delivery, buy from the less popular stalls, return our trays and be patient during busy hours."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            2,
+            3,
+            6,
+            8,
+            10
+          ],
+          "text": "The hawker centre is where elderly people gather every morning for company. The stallholders also know their regular customers well, so people feel like neighbours and not strangers. It also keeps traditional dishes alive that people would not cook at home. To make sure hawker centres survive, we should go there to eat instead of ordering food to our homes, and we should return our trays so the tables are clean for the next people."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            1,
+            11
+          ],
+          "text": "Hawker centres are a special part of our lives and they give us much more than just food. They are very meaningful to the neighbourhood in many ways. For example, all sorts of people sit together at the same tables there. We must do our part to protect our hawker centres so that they will not disappear in future. One thing we can do is to be patient when it is crowded."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "Hawker centres have stools bolted to the floor, wobbly tables and fans that blow warm air, but residents love them more than the mall. The chicken rice is cheap, though food can be delivered nowadays. Hawker centres are hot and noisy, while food courts have air-conditioning and matching chairs. Seats at noon are hard to find. Last Sunday an old man pushed his plate aside and took out a chess board, and the table still wobbled."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            4,
+            7,
+            9,
+            10
+          ],
+          "text": "A child sent to buy four packets of noodles learns to queue, to speak up and to count the change. A stall needs far less money to open than a restaurant, so a good recipe and hard work are nearly enough. We can try the quiet stall at the end of the row as well as the famous one with the queue. We can return our trays and leave the table fit for the next family."
+        }
+      ]
+    }
+  ]
+}

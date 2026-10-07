@@ -82,7 +82,7 @@ function Question({ u, wordLimit }: { u: PublicUnit; wordLimit: number }) {
           {/* one statement of the scheme, not two: its points when it lists them, else its answer */}
           {res.scheme.points.length > 0 ? (
             <div>
-              <p className={`${TAG} text-emerald-700`}>The scheme says</p>
+              <p className={`${TAG} text-emerald-700`}>The scheme says{res.scheme.points.length > res.marks ? ` — any ${res.marks} of these` : ''}</p>
               <ul className="text-[14px] leading-snug text-gray-800 list-disc pl-5 mt-0.5">{res.scheme.points.map((p, i) => <li key={i}>{p}</li>)}</ul>
             </div>
           ) : res.scheme.answer && <p className="text-[14px] leading-snug text-gray-800"><span className={`${TAG} text-emerald-700`}>The scheme says</span>{res.scheme.answer}</p>}

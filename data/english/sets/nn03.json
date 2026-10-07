@@ -1,0 +1,410 @@
+{
+  "id": "nn03",
+  "kind": "non_narrative",
+  "title": "While the City Sleeps",
+  "paragraphs": [
+    "At six in the morning, the void deck below my flat is spotless. The bins are empty, the floor is still damp and smells faintly of soap, and the only sign that anyone has been there is a yellow board warning me not to slip. For years I assumed, as a small child assumes about the tooth fairy, that this simply happened.",
+    "It does not simply happen. I learnt this on the night I came home very late from a cousin’s wedding and found the estate wide awake. A man was hosing down the bin centre. Two women were working their way along the corridor of the opposite block, their mops moving in step like rowers. Out on the main road, a sweeping truck crept beside the pavement with its brushes whirring. I had lived there for fifteen years and had never once seen my own neighbourhood being cleaned.",
+    "There are good reasons why the work is done while the rest of us sleep. Roads are almost empty, so a truck can crawl along the kerb without holding up a line of buses. Markets, food centres and shopping streets cannot be scrubbed while customers are standing in them. The air is cooler, which matters a great deal to anyone doing heavy work outdoors. And rubbish left until morning would not wait politely: by daybreak it would smell, and it would invite every rat and cockroach in the district to breakfast.",
+    "But the arrangement has a price, and it is the cleaners who pay it. They must sleep by day, when the rest of the block is drilling walls, practising the piano and slamming doors, so their rest is broken. They miss family dinners and their children’s bedtimes. The work itself is hard on the body: bending, lifting and pushing for hours. It can be dangerous too, for on a dark road a passing driver may not see a worker until it is too late. And because nobody is awake to watch, the work is rarely thanked. It is a strange sort of job in which the better it is done, the less anyone remembers that it was done at all.",
+    "The rest of us cannot take over the night shift, but we can make it lighter. We can tie rubbish bags properly so that they do not split in a cleaner’s hands. We can stop treating the ground as a bin, since every dropped wrapper is something a person must bend down to pick up. And when we do meet a cleaner, at whatever hour, we can do the simplest thing of all, which is to greet them and say thank you.",
+    "None of this is charity. A city is a shared home, and in any home the person who clears up after everyone else deserves at least to be noticed. We are quick to complain when a bin overflows. We might be equally quick to notice the hundreds of mornings when it does not.",
+    "I still leave for school at six, and the floor of the void deck is still damp. But I no longer think of the tooth fairy. I think of two mops moving in step in the dark, and I walk around the wet patch rather than through it."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer compares an earlier belief about the clean void deck to what ‘a small child assumes about the tooth fairy’. What does this comparison suggest about how the writer used to think?",
+      "scheme": {
+        "answer": "The writer used to believe the place became clean by itself, as if by magic, and never wondered who did the work.",
+        "accept": [
+          "The writer accepted the cleanliness without questioning it or thinking about the people behind it."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer used to think the void deck became clean by itself, like magic, and never thought about who actually did it."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The writer never questioned how the place got clean and just believed it happened without anybody working."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer believed in the tooth fairy until the age of fifteen."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer thought that the cleaners were paid too little."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The writer was young at that time."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 2, why was the writer coming home very late that night?",
+      "scheme": {
+        "answer": "The writer had been at a cousin’s wedding.",
+        "accept": [
+          "The writer was returning from a relative’s wedding."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer was coming home from a cousin’s wedding."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The writer had attended a relative’s wedding celebration, which ended late."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer had been studying late in school."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer wanted to watch the cleaners at work."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The writer had something on that night."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the writer describes the two women’s mops as ‘moving in step like rowers’. What does this comparison suggest about the way the two women worked?",
+      "scheme": {
+        "answer": "They worked together in the same rhythm, in perfect time with each other, like a practised team.",
+        "accept": [
+          "Their movements matched each other exactly, showing smooth teamwork."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "They were working at exactly the same pace and rhythm as each other, like a team."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The two of them moved together in time, so smoothly that they seemed like one unit."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They were cleaning a boat."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They were working very slowly because they were lazy."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They were mopping the floor."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the sweeping truck was moving very slowly?",
+      "scheme": {
+        "answer": "crept"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "crept"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘crept’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "whirring"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "hosing"
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer calls a city ‘a shared home’. What does this suggest about who is responsible for keeping it clean?",
+      "scheme": {
+        "answer": "Everyone who lives in the city shares the responsibility, not the cleaners alone.",
+        "accept": [
+          "Because it belongs to all of us, all of us should look after it."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "Since the city belongs to all of us, everyone has a part in keeping it clean, not just the cleaners."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "All the people living in it should look after it together, the way a family looks after its house."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The cleaners live in the same flats as the residents."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "People should stay at home more so that the city stays clean."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "A city is a shared home."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘We are quick to complain when a bin overflows. We might be equally quick to notice the hundreds of mornings when it does not.’ In your own words, explain what the writer is saying about our behaviour and what the writer wants us to do instead (Paragraph 6).",
+      "scheme": {
+        "answer": "We readily grumble when the cleaning has not been done [1]; we should just as readily pay attention to, and appreciate, the many times when it has been done well [1].",
+        "points": [
+          "We readily grumble / find fault when the cleaning has not been done.",
+          "We should just as readily be aware of / appreciate the many times it has been done properly."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "We grumble straight away when the rubbish is not cleared. The writer wants us to be just as fast to realise and appreciate all the many days when the cleaning is done properly."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "People find fault immediately if the cleaners fail once. We ought to pay the same attention to the countless times they did their job well."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "We are very fast to grumble when the rubbish has not been cleared."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "We should pay attention to and appreciate the many days when the place has been cleaned properly."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "We are quick to complain when a bin overflows and we might be equally quick to notice the hundreds of mornings when it does not."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "We should complain more quickly so that the bins get emptied every morning."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, the writer now walks ‘around the wet patch rather than through it’. What does this action show about how the writer has changed?",
+      "scheme": {
+        "answer": "The writer is now aware that real people cleaned the floor during the night [1], and takes care not to spoil their work, as a way of respecting them [1].",
+        "points": [
+          "The writer now knows / thinks about the people who cleaned the floor.",
+          "The writer takes care not to dirty or spoil their work (shows respect through this action)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The writer now knows that real people cleaned the floor at night. So the writer is careful not to dirty the floor they just mopped, to respect their work."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The writer has become aware of the cleaners behind the clean floor, and shows respect by not stepping on what they have just washed."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer now thinks about the people who cleaned the floor instead of thinking it just happened."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer does not want to dirty the floor that has just been mopped."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer is afraid of slipping and getting hurt."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer has become a cleaner too."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the writer’s attitude towards the people who clean at night?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Amused by the strange hours they keep"
+        },
+        {
+          "label": "B",
+          "text": "Annoyed that their work disturbs sleeping residents"
+        },
+        {
+          "label": "C",
+          "text": "Respectful of work that usually goes unseen"
+        },
+        {
+          "label": "D",
+          "text": "Doubtful that so much cleaning is really needed"
+        }
+      ],
+      "scheme": {
+        "answer": "Respectful of work that usually goes unseen"
+      },
+      "seeds": []
+    },
+    {
+      "n": "9",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise why cleaning is done at night, what this costs the cleaners, and what residents can do to help.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "Roads are almost empty, so cleaning vehicles do not hold up traffic.",
+          "Busy places (markets, food centres, shopping streets) cannot be cleaned while customers are there.",
+          "It is cooler at night for heavy outdoor work.",
+          "Rubbish left until morning would smell and attract pests.",
+          "Cleaners sleep by day, and noise breaks their rest.",
+          "They miss time with their families.",
+          "The work is hard on the body.",
+          "It can be dangerous: drivers may not see them in the dark.",
+          "Their work is unseen and rarely thanked.",
+          "Tie rubbish bags properly.",
+          "Do not litter.",
+          "Greet and thank cleaners."
+        ],
+        "answer": "Cleaning is done at night because roads are clear, busy places are free of customers, the air is cooler, and rubbish left until morning would stink and attract pests. However, cleaners sleep badly in the noisy daytime, lose time with their families, strain their bodies, risk being hit by drivers who cannot see them, and receive little appreciation. Residents can help by securing their rubbish bags, not littering, and greeting and thanking the cleaners they meet."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9,
+            10,
+            12
+          ],
+          "text": "The work is done at night as the roads are empty, shops and markets have no customers, and it is cooler. Rubbish also cannot wait till morning or it will smell and attract pests. But the cleaners cannot sleep well in the noisy day and miss dinner with their families. The job tires their bodies and nobody thanks them. Residents should tie up their rubbish bags tightly and say thank you when they see a cleaner."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            2,
+            4,
+            6,
+            8,
+            11
+          ],
+          "text": "Places like markets and food centres can only be scrubbed when no customers are around, and rubbish left overnight would stink and bring rats. However, night cleaners hardly get to spend time with their families. It is also dangerous, because drivers may not see them working beside the road in the dark. Residents can help by not throwing litter on the ground, so there is less for the cleaners to pick up."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            3,
+            12
+          ],
+          "text": "Night cleaners do a very important job for all of us and we should appreciate them more. They work at night for some reasons, for example it is not so hot then. Their job is not easy at all and they have many difficulties in their lives. Everyone should play a part to help them in whatever way we can, such as greeting them and thanking them when we meet them."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "At six in the morning the void deck is spotless and the floor is damp, with a yellow board. The writer came home late from a cousin’s wedding and saw a man hosing the bin centre, two women mopping the corridor and a sweeping truck on the main road. The writer says a city is a shared home and we complain quickly when a bin overflows. Now the writer walks around the wet patch."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            1,
+            3,
+            7,
+            10
+          ],
+          "text": "Roads are almost empty, so a truck can crawl along the kerb without holding up a line of buses. The air is cooler, which matters a great deal to anyone doing heavy work outdoors. The work itself is hard on the body: bending, lifting and pushing for hours. We can tie rubbish bags properly so that they do not split in a cleaner’s hands."
+        }
+      ]
+    }
+  ]
+}

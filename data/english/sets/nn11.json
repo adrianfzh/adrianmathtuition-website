@@ -1,0 +1,182 @@
+{
+  "id": "nn11",
+  "kind": "non_narrative",
+  "title": "The Drawer of Broken Things",
+  "paragraphs": [
+    "Every home has a drawer where broken things go to wait. Ours holds three chargers, a torch, a pair of spectacles with one arm, and a radio that my grandfather insists he will fix one day. Nothing in that drawer has ever been fixed. It is less a workshop than a waiting room for the rubbish chute.",
+    "My grandfather, to be fair, grew up when mending was ordinary. A shoe went to the cobbler, a shirt got a new button, and a fan that stopped turning was opened up on the kitchen table. You bought a thing expecting to keep it. Today’s things are sealed shut with glue, and a new kettle costs less than an hour of a repairman’s time. So we replace, almost without thinking, and tell ourselves that it is only sensible.",
+    "Sometimes it is. But a thing we have repaired is not the same as a thing we have replaced, and the difference is worth noticing. To mend something you must first open it, so you end up understanding how it works. It gathers a history: the schoolbag with the restitched strap is the one that went to every camp, and no new bag can say that. Having spent an evening on it, you handle it more carefully afterwards. There is pride in it too, the plain satisfaction of having made a dead thing go with your own hands. Over the years it saves money, since a tube of glue is cheaper than a pair of shoes. And it keeps one more object out of the bin.",
+    "Repairing more is mostly a matter of small habits. Before you buy, check whether the thing can be opened and whether spare parts are sold for it. Learn a few simple skills, such as sewing on a button or gluing a sole. Keep a basic kit at home — needle, thread, glue, a screwdriver — because a repair that needs a trip to the shop rarely happens. Ask the older people in your family to show you how; they are usually delighted to be asked. When something breaks, give it a deadline instead of a drawer: try to fix it by the weekend. And what you cannot mend yourself, take to someone who can, like the cobbler under the block or the alteration shop at the market.",
+    "I do not want to make a religion of this. A phone battery that has begun to swell is dangerous, and should go. So should the cheap umbrella whose repair would cost three times what it is worth. Knowing when to let go is part of the craft.",
+    "What worries me is the habit, not the kettle. A person who throws things out at the first fault may come to believe that anything flawed is finished. It is a short step from there to dropping a hobby after one bad week, or a friend after one quarrel.",
+    "Last month I took the radio out of the drawer myself. It cost me two evenings, one borrowed screwdriver and a burnt thumb, and it now plays with a faint crackle, like an old man clearing his throat. It is the worst radio in the house. It is also the only one I would save from a fire."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer says the drawer is ‘less a workshop than a waiting room for the rubbish chute’. What does this suggest about the things in the drawer?",
+      "scheme": {
+        "answer": "They are never really going to be repaired; they are only being kept for a while before they are thrown away.",
+        "accept": [
+          "Nobody will fix them, so the drawer is just a stop on the way to the bin."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that the things in the drawer never actually get repaired and are only kept there until they are thrown away." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Nobody is really going to fix them, so the drawer is just a stop before the bin." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the drawer is next to the rubbish chute." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the family repairs the things in the drawer and then uses them again." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that the drawer has many things inside." }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 tells us that mending used to be a normal, everyday thing to do?",
+      "scheme": { "answer": "ordinary" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "ordinary" },
+        { "mark": 1, "flaw": "full", "text": "‘ordinary’" },
+        { "mark": 0, "flaw": "wrong", "text": "sensible" },
+        { "mark": 0, "flaw": "wrong", "text": "sealed" }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, give the two reasons the writer offers in Paragraph 2 for why people today replace things instead of repairing them.",
+      "scheme": {
+        "answer": "Things today are made so that they cannot be opened up [1], and buying a new one is cheaper than paying someone to repair the old one [1].",
+        "points": [
+          "Things today are made so that they cannot be opened up.",
+          "Buying a new one is cheaper than paying for a repair."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Things today are made in a way that they cannot be opened up. Also, buying a new one is cheaper than paying someone to repair it." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Modern products are closed up for good so you cannot get inside them, and getting them repaired costs more than a brand new one." },
+        { "mark": 1, "flaw": "half", "text": "Things nowadays are made so that people cannot open them." },
+        { "mark": 1, "flaw": "half", "text": "It is cheaper to buy a new one than to pay for a repair." },
+        { "mark": 0, "flaw": "lifted", "text": "Today’s things are sealed shut with glue, and a new kettle costs less than an hour of a repairman’s time." },
+        { "mark": 0, "flaw": "wrong", "text": "People today are too busy with work and school to repair things." }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 5, in which two situations should a broken thing be thrown away and not repaired?",
+      "scheme": {
+        "answer": "When it has become dangerous to keep [1], and when repairing it would cost more than the thing is worth [1].",
+        "points": [
+          "When it has become dangerous / unsafe.",
+          "When the repair would cost (much) more than the thing is worth."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "When the thing is dangerous to keep, and when repairing it costs more than the thing is worth." },
+        { "mark": 2, "flaw": "paraphrase", "text": "If it is no longer safe, like a swollen phone battery, or if the repair is more expensive than the item itself, like a cheap umbrella." },
+        { "mark": 1, "flaw": "half", "text": "When it is not safe to use anymore." },
+        { "mark": 1, "flaw": "half", "text": "When the repair would cost more than what the thing is worth." },
+        { "mark": 0, "flaw": "wrong", "text": "When the thing is old and out of fashion." },
+        { "mark": 0, "flaw": "vague", "text": "When it is the right time to let go of it." }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer says, ‘What worries me is the habit, not the kettle.’ What habit is the writer worried about?",
+      "scheme": {
+        "answer": "The habit of giving up on anything, not only objects, as soon as it shows a fault, without trying to put it right.",
+        "accept": [
+          "Getting used to abandoning whatever is not perfect, such as a hobby or a friendship, without trying to fix it."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The habit of giving up on something the moment it has a problem, instead of trying to put it right." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Getting used to abandoning anything that is not perfect, including hobbies and friends, without making an effort to fix it." },
+        { "mark": 0, "flaw": "wrong", "text": "The habit of buying kettles that are too cheap." },
+        { "mark": 0, "flaw": "wrong", "text": "The habit of keeping broken things in a drawer." },
+        { "mark": 0, "flaw": "vague", "text": "The habit that people have nowadays." }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "From Paragraph 7, explain why the writer would save ‘the worst radio in the house’ from a fire.",
+      "scheme": {
+        "answer": "The writer repaired it personally, with a good deal of time and effort [1], and so it means more to the writer than the radios that work better [1].",
+        "points": [
+          "The writer repaired it personally, with time and effort.",
+          "So it means more to the writer / is more precious than the radios that work better."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The writer repaired the radio personally and put a lot of time and effort into it. Because of this it is more precious to the writer than the radios that work better." },
+        { "mark": 2, "flaw": "paraphrase", "text": "After two evenings of work and a burnt thumb, the writer feels attached to it, so it matters more than the others even though they sound nicer." },
+        { "mark": 1, "flaw": "half", "text": "Because the writer spent a lot of time and effort repairing it." },
+        { "mark": 1, "flaw": "half", "text": "Because it is the radio the writer treasures most in the house." },
+        { "mark": 0, "flaw": "wrong", "text": "Because it is the most expensive radio in the house." },
+        { "mark": 0, "flaw": "wrong", "text": "Because the other radios are too heavy to carry out of the house." }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the writer’s attitude towards repairing things?",
+      "options": [
+        { "label": "A", "text": "It is always better to repair than to replace, whatever the cost" },
+        { "label": "B", "text": "It is worth doing far more often than we do, though not in every case" },
+        { "label": "C", "text": "It is a charming old habit that no longer makes sense" },
+        { "label": "D", "text": "It should be left to skilled workers and not tried at home" }
+      ],
+      "scheme": { "answer": "It is worth doing far more often than we do, though not in every case" },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise what we gain when we repair a thing instead of replacing it, and what a person can do to repair more.\n\nUse only Paragraphs 3 and 4.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "We come to understand how the thing works.",
+          "The thing holds a history / memories for us.",
+          "We treat it more carefully afterwards.",
+          "We feel pride / satisfaction at having fixed it ourselves.",
+          "It saves money over time.",
+          "It means less waste.",
+          "Before buying, check that the thing can be opened and has spare parts.",
+          "Learn a few simple repair skills.",
+          "Keep a basic set of tools at home.",
+          "Ask older family members to teach you.",
+          "Set a deadline for fixing a broken thing.",
+          "Take what you cannot fix to someone who can."
+        ],
+        "answer": "Repairing a thing teaches us how it works, gives it a past worth remembering and makes us gentler with it. We feel proud of our handiwork, spend less in the long run and throw less away. To repair more, choose goods that open and have spare parts, pick up basic mending skills, keep simple tools at home, get older relatives to teach us, set a date for fixing a broken item, and bring harder jobs to a tradesman."
+      },
+      "seeds": [
+        { "mark": 8, "flaw": "full", "hit": [1, 2, 3, 4, 5, 6, 8, 9, 10, 12], "text": "When we repair something, we understand how it works and it holds memories for us. We are more careful with it afterwards and feel proud that we fixed it ourselves. We also save money and create less rubbish. To repair more, we can learn simple skills like sewing a button, keep some tools at home, ask older family members to teach us, and bring things we cannot fix to a repair person such as a cobbler." },
+        { "mark": 5, "flaw": "half", "hit": [1, 4, 6, 8, 11], "text": "Repairing is good because you have to open the thing, so you learn how it works. You also feel proud that you fixed it with your own hands, and there is less rubbish thrown away. To repair more things, people should learn a few easy skills such as gluing a shoe. When something breaks, they should set themselves a deadline, for example to fix it by the weekend." },
+        { "mark": 2, "flaw": "vague", "hit": [5, 9], "text": "Repairing things is much better than replacing them and more people should do it. It is good for us in many ways that we do not realise. For instance, we can save money. There are also many things that a person can do to repair more instead of always buying new things. One of them is to keep some basic tools at home. If we all try, we can make a difference." },
+        { "mark": 0, "flaw": "wrong", "hit": [], "text": "Every home has a drawer of broken things that never get fixed. In the past mending was normal, but now things are sealed with glue and a new kettle is cheaper than a repairman. A swollen phone battery is dangerous and should be thrown away. People who throw things away may also give up on friends after a quarrel. The writer’s old radio now plays with a crackle." },
+        { "mark": 4, "flaw": "lifted", "hit": [2, 3, 7, 10], "text": "It gathers a history: the schoolbag with the restitched strap is the one that went to every camp, and no new bag can say that. Having spent an evening on it, you handle it more carefully afterwards. Before you buy, check whether the thing can be opened and whether spare parts are sold for it. Ask the older people in your family to show you how." }
+      ]
+    }
+  ]
+}

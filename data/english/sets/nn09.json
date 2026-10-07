@@ -1,0 +1,378 @@
+{
+  "id": "nn09",
+  "kind": "non_narrative",
+  "title": "The Last Free Room",
+  "paragraphs": [
+    "There are not many places left where you can sit for four hours in air-conditioned comfort and spend nothing at all. The neighbourhood library is one of them. You may walk in with a full schoolbag or with empty hands, and nobody at the door asks why you have come.",
+    "It was not supposed to last. When every book could be squeezed into a phone, people said that libraries would soon go the way of the video rental shop. Why keep a whole building full of paper when the same words weigh nothing in your pocket? It was a reasonable prediction, and it was wrong, because it supposed that a library was only a warehouse for books. Spend a weekday afternoon in one and you will see how much else goes on there.",
+    "Start with the students. A flat shared with two younger brothers and a television is no place to revise, and the library offers what such a home cannot: a quiet desk. It offers books without a price, so that a child whose family buys few can still read a new one every week. It also lets readers try a subject they know nothing about, since a book on astronomy that is given up after ten pages has cost them nothing.",
+    "Then look at who else is there. The old men turning the pages of the newspapers by the window have come as much for company as for news; a morning among other people is better than a morning alone in a flat. At the computers, someone without internet at home is filling in a job application. And behind the counter sits a person whose whole job is to help you find information you can trust, which matters more, not less, now that anybody can publish anything.",
+    "A place this useful is kept so by the people who use it, and the rules are not difficult. Keep your voice down, and take your phone calls outside. Bring books back on time, because somebody else is waiting for the one on your bedside table. Treat them gently: a folded corner or a curry stain is a message to every later reader that you did not care. Do not leave a bag on a chair for half the day to hold a seat you are not sitting in. Put a book back where you found it, or on the trolley, for a book on the wrong shelf is as good as lost. Above all, borrow. A library that nobody uses is the easiest thing in the world to close.",
+    "What I like best, though, is what a library refuses to do. It does not hurry you. It does not play music to make you spend, or move you along with a queue number, or mind whether you look like someone who belongs. A boy in a school uniform and a retired taxi driver are given exactly the same chair. In a city where almost every square metre is trying to sell you something, that is rarer than it sounds.",
+    "Tonight, somewhere, a girl will finish her homework at a table she does not own, under a light she does not pay for, across from an old man asleep over the sports pages. Neither of them will think of it as a gift. That is the quiet part. The library is the neighbour who lends you the ladder and never mentions it."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer says that ‘nobody at the door asks why you have come’. What does this suggest about the library?",
+      "scheme": {
+        "answer": "Anybody is welcome there for any reason, and no one has to explain or pay for being there.",
+        "accept": [
+          "It is open to everyone, whatever they have come to do."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests that anybody is welcome in the library and you do not need to give a reason for being there."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The library is open to all, whatever they have come to do, and no one has to explain themselves."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that there are no staff working at the library."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that people in the library are unfriendly and do not talk to you."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that the library is a good place."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain why people expected libraries to close down and why the writer says they were mistaken (Paragraph 2).",
+      "scheme": {
+        "answer": "Books could now be read on a phone, so a building to keep them in seemed unnecessary [1], but people were wrong to think that a library is nothing more than a place where books are stored [1].",
+        "points": [
+          "Books could be read on a phone, so a building to keep them in seemed unnecessary.",
+          "People wrongly thought a library was nothing more than a place where books are stored / it does much more than store books."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "People could read any book on their phones, so they thought a building to keep books was not needed anymore. They were mistaken because a library is not just a place for storing books."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Since reading could be done on a small device, a big place holding printed books looked pointless. But this idea treated the library as a storeroom only, when it actually does much more."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "People thought nobody needed a building for books when all the books could be read on a phone."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "They were mistaken because a library does much more than just store books."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Every book could be squeezed into a phone, so why keep a whole building full of paper. It was wrong because it supposed that a library was only a warehouse for books."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "People expected libraries to close because video rental shops were more popular than libraries."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the writer thinks the prediction made good sense at the time?",
+      "scheme": {
+        "answer": "reasonable"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "reasonable"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘reasonable’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "wrong"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "warehouse"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 6, what are two things that a library does not do to its visitors?",
+      "scheme": {
+        "answer": "Any two of these, 1 mark each.",
+        "points": [
+          "It does not hurry them.",
+          "It does not play music to make them spend money.",
+          "It does not move them along with a queue number.",
+          "It does not mind whether they look as if they belong there."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "It does not hurry them and it does not play music to make them spend money."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The library does not use queue numbers to move people along, and it does not care if a person looks like he belongs there or not."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It does not rush its visitors."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It does not play music to make people spend money, and it does not let them bring in food."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It does not give them chairs and it does not let old people in."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It does not do the bad things that other places do."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer says that ‘a boy in a school uniform and a retired taxi driver are given exactly the same chair’. What point is the writer making about the library?",
+      "scheme": {
+        "answer": "The library treats everyone in the same way, whatever their age, work or position in life.",
+        "accept": [
+          "Everybody is equal in a library; no one is treated as more important."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The library treats everyone the same, no matter how old they are or what work they do."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "In a library all people are equal and nobody is seen as more important than anybody else."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The library does not have enough money to buy different kinds of chairs."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Students and old people have to share one chair because the library is crowded."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The library has chairs for people to sit on."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 7, the writer calls the library ‘the neighbour who lends you the ladder and never mentions it’. Explain what this comparison suggests about the library.",
+      "scheme": {
+        "answer": "The library gives people real, practical help that they need [1], and it does so quietly, without asking for thanks or attention, so it is easily taken for granted [1].",
+        "points": [
+          "It gives people real, practical help that they need.",
+          "It does so quietly, without asking for thanks or attention / so it is easily taken for granted."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "It suggests the library gives people help that they really need, like a neighbour lending a ladder. It also does this quietly without asking for thanks, so people hardly notice it."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The library is useful to us in a practical way, and it never makes a fuss or expects anything back, which is why we take it for granted."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests that the library is helpful and gives people what they need."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests that the library does not ask for any thanks or attention for what it does."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that libraries lend out tools such as ladders to people living nearby."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that the library is built very near to people's homes."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "What is the writer’s main purpose in this article?",
+      "options": [
+        {
+          "label": "A",
+          "text": "To show that public libraries still matter and deserve to be looked after"
+        },
+        {
+          "label": "B",
+          "text": "To explain how a library arranges and lends out its books"
+        },
+        {
+          "label": "C",
+          "text": "To complain that people today prefer their phones to books"
+        },
+        {
+          "label": "D",
+          "text": "To argue that libraries should be turned into study centres for students"
+        }
+      ],
+      "scheme": {
+        "answer": "To show that public libraries still matter and deserve to be looked after"
+      },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise the ways in which a public library is useful to people today and what its users should do to keep it useful.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "A quiet place to study for students whose homes are crowded or noisy.",
+          "Free books for children whose families buy few.",
+          "Readers can try an unfamiliar subject at no cost.",
+          "Company for old people who would otherwise be alone.",
+          "Computers / internet for people who have none at home.",
+          "Staff who help people find information they can trust.",
+          "Keep quiet (take phone calls outside).",
+          "Return books on time.",
+          "Handle books with care (no folded corners or stains).",
+          "Do not hold a seat with a bag when not using it.",
+          "Put books back in the right place (or on the trolley).",
+          "Borrow / use the library, so that it is not closed."
+        ],
+        "answer": "Libraries give students from noisy homes somewhere peaceful to study, supply free reading to children with few books, and let people explore new subjects without cost. The elderly find companionship there, people lacking internet get online, and staff guide users to reliable information. In return, users should stay quiet, return loans promptly, handle books carefully, avoid reserving seats with belongings, reshelve books correctly and keep borrowing so the library stays open."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            11,
+            12
+          ],
+          "text": "The library gives students a quiet place to study when home is noisy. Children from families that buy few books can read for free. Old people go there for company, and people with no internet at home can use the computers. Librarians help us find information we can trust. Users should keep quiet, return books on time, look after the books, put them back in the right place and borrow often so the library is not closed."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            1,
+            2,
+            7,
+            8,
+            10
+          ],
+          "text": "The library is useful because students who cannot study at home have a quiet desk there. Children can also read many books for free even if their parents do not buy books. To keep the library useful, people should talk softly and take calls outside. They should return their books on time for the next person. They should not put a bag on a chair to keep the seat for hours."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            4,
+            9
+          ],
+          "text": "The library is a very useful place for everybody in the neighbourhood, young and old. There are many good things there for us. For example, old people can go there to have company. We should all appreciate the library more and do our part as users. One way is to take good care of the books and not damage them. Then the library will still be useful in future."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "The library is a place where you can sit for hours in air-conditioning without spending money. People thought libraries would disappear like video rental shops because books can be read on a phone, but they were wrong. A library does not hurry you or play music to make you spend. A boy and a taxi driver get the same chair. It is like a neighbour who lends you a ladder."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            3,
+            5,
+            8,
+            11
+          ],
+          "text": "It also lets readers try a subject they know nothing about, since a book on astronomy that is given up after ten pages has cost them nothing. At the computers, someone without internet at home is filling in a job application. Bring books back on time, because somebody else is waiting for the one on your bedside table. Put a book back where you found it, or on the trolley."
+        }
+      ]
+    }
+  ]
+}

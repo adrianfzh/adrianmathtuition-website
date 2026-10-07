@@ -8,8 +8,7 @@ the same day, CLOSED** — `ENGLISH_PRACTICE_OPEN_TO_STUDENTS = false`, Adrian's
 Adrian, 7 Oct 2026: *"build english first"* — step 1 of `docs/HANDOFF-ENGLISH-BUILD.md`. The page
 now serves **only passages, questions and schemes we wrote ourselves**. It does not read the
 language bank at all, so no school or national text can reach a student, and opening it is no
-longer a content-policy decision. What it waits on: enough own sets (5 of 51 so far) and the bench
-on all of them.
+longer a content-policy decision. What it waits on: the bench on all 51 own sets (written 7 Oct 2026) and a hard set.
 
 - **A set** is one file in `data/english/sets/` — `ed..` editing (12 lines, 8 wrong words, 2 clean
   lines), `vt..` visual text (drawn from blocks, 5 marks), `na..` narrative (20 marks), `nn..`
@@ -90,4 +89,3 @@ write them) is still owed, and every new set is benched before it counts.
 
 - The bench on a hard set and on every new set (see The bench).
 - Marking history on the list (what was tried, what was right).
-- 46 more own sets (the bulk batch).

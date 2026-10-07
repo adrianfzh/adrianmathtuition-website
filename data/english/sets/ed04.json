@@ -1,0 +1,19 @@
+{
+  "id": "ed04",
+  "kind": "editing",
+  "about": "A hawker and his one dish",
+  "lines": [
+    {"text": "Mr Goh has stood behind the same stall at the hawker centre for"},
+    {"text": "forty years. He sells only one dish, a bowl of fishball noodles, or", "wrong": "or", "right": "and", "note": "Connector: he is adding a second fact, so it is 'and', not 'or'."},
+    {"text": "he has never changed the recipe. His day begins long before sunrise, when"},
+    {"text": "he mixes fresh fish paste by hand and shape every ball himself. By", "wrong": "shape", "right": "shapes", "note": "Agreement: 'he mixes … and shapes' — both verbs go with 'he'."},
+    {"text": "six o’clock, a queue has usually formed at front of the stall.", "wrong": "at", "right": "in", "note": "Preposition: the phrase is 'in front of'."},
+    {"text": "Many of his customers first came as children and now bring its own", "wrong": "its", "right": "their", "note": "Pronoun: 'customers' are people and plural, so it is 'their'."},
+    {"text": "children along. Mr Goh remembers most of their orders without being told. He"},
+    {"text": "could have retire years ago, for his three sons all earn good salaries.", "wrong": "retire", "right": "retired", "note": "Verb form: after 'could have' it is 'retired'."},
+    {"text": "However, he insists that cooking is good for him than resting at home.", "wrong": "good", "right": "better", "note": "Comparative: before 'than' it is 'better', not 'good'."},
+    {"text": "Nobody in the family has yet agreed to take over a stall, so", "wrong": "a", "right": "the", "accept": ["his"], "note": "Article: it is his own stall, already mentioned, so it is 'the stall'."},
+    {"text": "he worries that the taste will disappear when he finally stopped working. For", "wrong": "stopped", "right": "stops", "note": "Tense: this is about the future, so it is 'when he finally stops'."},
+    {"text": "now, though, the queue is as long as it has ever been."}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ed13",
+  "kind": "editing",
+  "about": "Learning to cook in the holidays",
+  "lines": [
+    {"text": "Last June, my mother announced that I would cook dinner once a week."},
+    {"text": "I had never made anything more difficult than instant noodles, so I was"},
+    {"text": "nervous. My first attempt was fried rice, which sound easy but was not.", "wrong": "sound", "right": "sounded", "accept": ["sounds"], "note": "Tense: the story is in the past, so it is 'sounded'."},
+    {"text": "I added too many soy sauce, and the rice turned dark and salty.", "wrong": "many", "right": "much", "note": "'Much' goes with things you cannot count, like soy sauce."},
+    {"text": "My brother ate it anyway, although he drank three glass of water afterwards.", "wrong": "glass", "right": "glasses", "note": "Plural: 'three' needs 'glasses'."},
+    {"text": "The following week, I watched my grandmother closely as she prepared chicken curry."},
+    {"text": "She never measures anything, but each dish she makes taste exactly the same.", "wrong": "taste", "right": "tastes", "note": "Agreement: 'each dish' is singular, so it is 'tastes'."},
+    {"text": "That day, she let I stir the pot while she explained each step slowly.", "wrong": "I", "right": "me", "note": "Pronoun: after 'let' it is 'me', not 'I'."},
+    {"text": "By the end of the holidays, I could prepared four dishes without help.", "wrong": "prepared", "right": "prepare", "note": "Verb form: after 'could' the verb stays plain — 'prepare'."},
+    {"text": "Cooking has also made me more grateful to the meals my parents make", "wrong": "to", "right": "for", "note": "Preposition: we are grateful 'for' a thing."},
+    {"text": "after a long day at work. I am still a slowly cook, but", "wrong": "slowly", "right": "slow", "note": "Word form: 'cook' is a noun here, so it takes the adjective 'slow'."},
+    {"text": "nobody at our table reaches for the water jug any more."}
+  ]
+}

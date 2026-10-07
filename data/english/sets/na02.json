@@ -1,0 +1,179 @@
+{
+  "id": "na02",
+  "kind": "narrative",
+  "title": "What Is Standing Behind the Stall",
+  "paragraphs": [
+    "At half past five in the morning the wet market was already louder than my school canteen at recess. Auntie Hui Min tied a rubber apron round my waist, so new and stiff that it stood away from my body like a board, and pointed at the trays of crushed ice. “Pomfret here, threadfin there, prawns in front where people can see them. And don’t smile so much. They’ll think you’re hiding something.”",
+    "I had volunteered for this. My mother had mentioned, in the careful voice she keeps for other people’s troubles, that Auntie’s helper had gone home to Ipoh and that Auntie was managing the stall alone with a bad wrist. I had pictured myself weighing fish and handing over change, quick and capable. I had not pictured the smell, which climbed into my hair within minutes, or the floor, slick as a skating rink, or the way the fish stared up at me from the ice with their flat silver eyes as if they already knew I was a fraud.",
+    "For the first hour I was mostly in the way. I gave a man change for a fifty when he had paid with a ten, and Auntie rescued the notes from his hand without a word. I wrapped a mackerel so badly that its tail poked out of the newspaper like a bookmark. Each time, Auntie only clicked her tongue and went on scaling, her knife rasping, her bandaged wrist held close to her body.",
+    "Then the woman with the jade bangle arrived, just as Auntie had gone to fetch more ice. The other customers seemed to make room for her without being asked. She did not look at me. She looked at the fish, one tray at a time, the way a teacher looks down a row of desks. “Where is Hui Min?” “Getting ice. I can help you, Auntie.” Her eyebrows rose a careful millimetre. “Then choose me a pomfret. A fresh one. For steaming.”",
+    "My mind emptied. Eight pomfret lay before me, identical as coins. I reached for the biggest, and saw the corner of her mouth move — not a smile, but the beginning of a verdict. So I stopped. What had Auntie said in the van, while I was half asleep? Eyes clear, not cloudy. Gills red, not brown. Press the flesh, and it should spring back. I put the big one down. I lifted the gill of the next fish with a finger that was not quite steady, then the next, and at the fourth I found a red as bright as fresh chilli. I pressed its side. It pushed back.",
+    "“This one,” I said. “The big one is from yesterday.” It was out before I thought about it — telling a customer that our own fish was old. My ears burned. The woman took the pomfret from me, lifted the gill herself, and pressed exactly where I had pressed. “Hm,” she said. She paid in exact change, counted into my palm coin by coin, and left.",
+    "When Auntie came back, dragging the sack of ice with her good hand, I confessed everything in one breath. I waited for the click of her tongue. Instead she laughed, a short bark that startled the prawn seller next door. “Madam Goh? Twenty years she has been coming here. She knows fish better than I do. She does not need anybody to choose for her.” “Then why did she ask me?” Auntie shrugged and tipped the ice over the trays. “To see what is standing behind my stall.”",
+    "By closing time my fingers were wrinkled and I smelled like the bottom of a fishing boat. Auntie hosed down the floor. Then she untied her own apron — soft, faded, moulded by years — and hung it on the nail beside mine. “Same time on Saturday,” she said. It was not a question, and I found I did not want it to be."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "inference",
+      "text": "In Paragraph 1, Auntie tells the narrator, ‘Don’t smile so much. They’ll think you’re hiding something.’ What does this suggest about the customers at the market?",
+      "scheme": { "answer": "They are suspicious and quick to believe that a seller is trying to cheat them.", "accept": ["They do not trust sellers easily and are on guard against being tricked."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests the customers are suspicious people who easily think the seller is trying to cheat them." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The customers do not trust sellers easily and are always on guard against being tricked." },
+        { "mark": 0, "flaw": "wrong", "text": "The customers like to hide things from the sellers." },
+        { "mark": 0, "flaw": "wrong", "text": "The customers are cheerful people who like to smile a lot." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests something about how the customers think when they come to the market." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "literal",
+      "text": "According to Paragraph 2, why did Auntie need help at the stall?",
+      "scheme": { "answer": "Her helper had gone home, so she was running the stall alone with an injured wrist.", "accept": ["Her helper had left and she was working by herself with a bad wrist."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Her helper had gone back to Ipoh so Auntie was alone at the stall, and she also had a bad wrist." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The person who used to work for her had left, so she had to do everything herself with an injured wrist." },
+        { "mark": 0, "flaw": "wrong", "text": "Because the narrator's mother forced the narrator to go and work there." },
+        { "mark": 0, "flaw": "wrong", "text": "Because Auntie was too old to sell fish any more." },
+        { "mark": 0, "flaw": "vague", "text": "Because the stall needed some help." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain how the job was different from what the narrator had imagined (Paragraph 2).",
+      "scheme": { "answer": "She had imagined doing simple tasks well and fast [1], but she had not expected how unpleasant the place would be, with its clinging stink and slippery ground [1].", "points": ["What she imagined: doing the simple tasks well / efficiently / with skill.", "What she had not expected: the unpleasant conditions — a stink that clung to her, a slippery ground."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She imagined that she would do the simple tasks fast and well. She did not expect the place to be so unpleasant, with a stink that stuck to her and ground that was slippery." },
+        { "mark": 2, "flaw": "paraphrase", "text": "In her head she was an efficient helper who was good at the work. In real life the market stank, the stink got onto her, and the ground was so wet she could slide on it." },
+        { "mark": 1, "flaw": "half", "text": "She thought she would be very good at the work and do it speedily." },
+        { "mark": 1, "flaw": "half", "text": "She never expected the market to stink so much and the ground to be so slippery." },
+        { "mark": 0, "flaw": "lifted", "text": "She had pictured herself weighing fish and handing over change, quick and capable. She had not pictured the smell, which climbed into her hair within minutes, or the floor, slick as a skating rink." },
+        { "mark": 0, "flaw": "wrong", "text": "She imagined the job would be very tiring, but it turned out to be easy and fun." }
+      ]
+    },
+    {
+      "n": "4", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 2, the fish stare up at the narrator ‘as if they already knew I was a fraud’. What does this description suggest about how the narrator felt?",
+      "scheme": { "answer": "She felt like a fake who did not really know how to do the job [1], and she was so nervous that she imagined even the dead fish were watching and judging her [1].", "points": ["She felt like a fake / a pretender who did not really know the job.", "She felt watched and judged — so nervous that even the dead fish seemed to see through her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She felt like a fake who was only pretending to know how to sell fish. She was so nervous that she imagined even the dead fish were judging her." },
+        { "mark": 2, "flaw": "paraphrase", "text": "She felt she was just acting as a fishmonger without the skills. It also shows she felt watched, as if everything there, even the fish, could see through her." },
+        { "mark": 1, "flaw": "half", "text": "She felt she was a fake who did not really know how to do the job." },
+        { "mark": 1, "flaw": "half", "text": "She felt as if she was being watched and judged all the time." },
+        { "mark": 0, "flaw": "wrong", "text": "She felt scared because the fish were still alive and looking at her." },
+        { "mark": 0, "flaw": "lifted", "text": "The fish stared up at her from the ice with their flat silver eyes as if they already knew she was a fraud." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 3 shows that Auntie saved the money just in time?",
+      "scheme": { "answer": "rescued" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "rescued" },
+        { "mark": 1, "flaw": "full", "text": "“Rescued”." },
+        { "mark": 0, "flaw": "wrong", "text": "wrapped" },
+        { "mark": 0, "flaw": "wrong", "text": "clicked" }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "The narrator says that for the first hour she was ‘mostly in the way’. Give two details from Paragraph 3 that show she was not yet good at the job.",
+      "scheme": { "answer": "She gave a customer far too much change [1] and she wrapped a fish so badly that its tail stuck out of the paper [1].", "points": ["She gave change for a fifty-dollar note when the man had paid with ten dollars.", "She wrapped a mackerel so badly that its tail stuck out of the newspaper."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She gave a man change for fifty dollars when he only paid ten. She also wrapped a mackerel so badly that the tail was sticking out." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One customer nearly got too much money back from her, and the fish she wrapped was not covered properly because its tail poked out of the paper." },
+        { "mark": 1, "flaw": "half", "text": "She gave the wrong change to a man who paid with a ten-dollar note." },
+        { "mark": 1, "flaw": "half", "text": "The mackerel she wrapped had its tail poking out of the newspaper." },
+        { "mark": 0, "flaw": "wrong", "text": "She dropped the fish on the floor and cut her finger with the knife." },
+        { "mark": 0, "flaw": "vague", "text": "She made a lot of mistakes at the stall." }
+      ]
+    },
+    {
+      "n": "7", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 4, the woman looks at the fish ‘the way a teacher looks down a row of desks’. What does this comparison suggest about her?",
+      "scheme": { "answer": "She inspected the fish strictly and thoroughly, like someone in charge who expects to find faults.", "accept": ["She examined everything in a stern, careful way, as if checking for mistakes."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests she inspected the fish strictly and carefully, like a person in charge who is looking for faults." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She checked every tray in a stern way as if she was hunting for mistakes, so she seems like someone who is hard to please." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that she worked as a teacher in a school." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that she looked at the fish." },
+        { "mark": 0, "flaw": "lifted", "text": "She looked at the fish, one tray at a time, the way a teacher looks down a row of desks." }
+      ]
+    },
+    {
+      "n": "8", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The eight pomfret are described as ‘identical as coins’ (Paragraph 5). What does this tell you about the narrator’s difficulty?",
+      "scheme": { "answer": "The fish all looked exactly the same to her, so she could not tell which one was the freshest.", "accept": ["She could see no difference between them, so she had no idea which to choose."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "All the pomfret looked exactly the same to her so she could not tell which one was the freshest." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She could not see any difference between the fish, so she did not know how to pick the right one." },
+        { "mark": 0, "flaw": "wrong", "text": "The fish were small, round and silver so they were hard to pick up." },
+        { "mark": 0, "flaw": "wrong", "text": "She did not know how much money to charge for each fish." },
+        { "mark": 0, "flaw": "vague", "text": "It tells us the pomfret were like coins." }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "inference",
+      "text": "The narrator reached for the biggest fish and then ‘stopped’ (Paragraph 5). Explain why she stopped.",
+      "scheme": { "answer": "She could tell from the woman’s face that she was being judged and was about to be found wanting [1], so she realised that simply taking the biggest fish was the wrong way to choose and that she had to check for freshness properly [1].", "points": ["She saw from the woman’s expression that she was being judged / about to be judged badly.", "She realised that just taking the biggest fish was the wrong way to choose — she needed to check freshness the way Auntie had taught her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She saw from the woman's face that she was being judged and was about to fail. So she realised that grabbing the biggest fish was the wrong way to choose and she had to check which one was really fresh." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The look on the customer's mouth told her the customer was already deciding she knew nothing. That made her understand size was not the point, and she tried to remember her aunt's advice on how to test a fresh fish." },
+        { "mark": 1, "flaw": "half", "text": "She could tell from the customer's expression that the customer was judging her and thinking badly of her." },
+        { "mark": 1, "flaw": "half", "text": "She realised that picking the biggest fish was not the correct way to choose a fresh one." },
+        { "mark": 0, "flaw": "wrong", "text": "The woman smiled at her, so she felt happy and paused for a while." },
+        { "mark": 0, "flaw": "wrong", "text": "The biggest fish was too heavy for her to lift." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain why the narrator’s ‘ears burned’ in Paragraph 6.",
+      "scheme": { "answer": "She had spoken without stopping to think [1], and she had let a buyer know that some of the stall’s stock was not fresh [1].", "points": ["She had spoken without thinking first.", "She had revealed to a buyer that some of the stall’s stock was not fresh (which could harm her aunt’s business)."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She was embarrassed because she had spoken without thinking, and she had let a buyer know that some of the stall's stock was not fresh." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The words just slipped from her mouth with no planning. What she revealed was that her aunt was selling something stale, which could make buyers stay away." },
+        { "mark": 1, "flaw": "half", "text": "She said it without thinking first." },
+        { "mark": 1, "flaw": "half", "text": "She had revealed to a buyer that her aunt's stall had stale stock." },
+        { "mark": 0, "flaw": "lifted", "text": "It was out before she thought about it, telling a customer that our own fish was old." },
+        { "mark": 0, "flaw": "wrong", "text": "Her ears burned because the market was very hot and crowded." }
+      ]
+    },
+    {
+      "n": "11", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘To see what is standing behind my stall’ (Paragraph 7). Using Paragraph 7, explain why Madam Goh had asked the narrator to choose a fish for her.",
+      "scheme": { "answer": "Madam Goh did not need any help, because she knew fish extremely well herself [1]; she was testing the new helper to see whether she knew her work and could be trusted [1].", "points": ["She did not need help choosing — she was an expert on fish herself.", "She was testing the new helper: what sort of person she was / whether she knew the job / could be trusted."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Madam Goh did not actually need help because she knows fish very well. She asked in order to test the new girl and see whether she knew her work and could be trusted." },
+        { "mark": 2, "flaw": "paraphrase", "text": "She is an expert who has bought fish for twenty years, so the request was really a test to find out what kind of person the new helper was." },
+        { "mark": 1, "flaw": "half", "text": "She wanted to test what kind of helper the narrator was." },
+        { "mark": 1, "flaw": "half", "text": "She did not really need help because she knew more about fish than anyone." },
+        { "mark": 0, "flaw": "wrong", "text": "She did not know how to choose a fresh pomfret for steaming." },
+        { "mark": 0, "flaw": "wrong", "text": "She wanted to see whether Auntie was hiding behind the stall." }
+      ]
+    },
+    {
+      "n": "12", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Auntie’s apron is described as ‘soft, faded, moulded by years’ (Paragraph 8). What does this description suggest about Auntie?",
+      "scheme": { "answer": "She has worked at the stall for a very long time and is thoroughly experienced.", "accept": ["She has done this work for so many years that it has become part of her."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests Auntie has been working at the stall for a very long time and is very experienced." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She has been a fishmonger for so many years that she is completely used to the work." },
+        { "mark": 0, "flaw": "wrong", "text": "She is a soft and weak person who is getting too old." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests what her apron looks like." },
+        { "mark": 0, "flaw": "lifted", "text": "Her apron was soft, faded and moulded by years." }
+      ]
+    },
+    {
+      "n": "13", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘It was not a question, and I found I did not want it to be’ (Paragraph 8). What does this sentence tell you about what Auntie had decided and about how the narrator felt?",
+      "scheme": { "answer": "Auntie had decided that the narrator would come back, which shows she had accepted her as a helper [1]; the narrator was glad, because she now wanted to return [1].", "points": ["Auntie had decided / took it for granted that the narrator would come back — she had accepted her as a helper.", "The narrator was glad of this — she wanted to come back."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Auntie had already decided the narrator would come back to help, so she had accepted her. The narrator was happy about it because she wanted to return." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Her aunt took it for granted that she would be there again, meaning she had passed. The narrator herself was keen to work at the stall again." },
+        { "mark": 1, "flaw": "half", "text": "Auntie had decided that the narrator was coming back to help on Saturday." },
+        { "mark": 1, "flaw": "half", "text": "The narrator actually wanted to go back and work there again." },
+        { "mark": 0, "flaw": "wrong", "text": "Auntie was forcing her to come and the narrator felt unhappy about it." },
+        { "mark": 0, "flaw": "vague", "text": "Auntie told her the time for Saturday." }
+      ]
+    }
+  ]
+}

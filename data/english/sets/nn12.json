@@ -1,0 +1,200 @@
+{
+  "id": "nn12",
+  "kind": "non_narrative",
+  "title": "The Bell That Rings Too Early",
+  "paragraphs": [
+    "At a quarter past six on a school morning, the least truthful sentence in the language is spoken in bedrooms all over the island: ‘I’m up.’ The speaker is not up. The speaker is lying flat with both eyes shut, bargaining with an alarm clock for five more minutes like a shopper haggling over the last fish at the market.",
+    "Adults have a ready explanation, and it is either laziness or the phone. There is some truth in the second. But anyone who can remember being fifteen knows that something odder is going on. A teenager seems to run on a later clock than the rest of the household. At eleven at night, when the parents are yawning, the fifteen-year-old is wide awake and full of plans; at seven the next morning, the same person can hardly spell their own name. The school timetable, however, was drawn up by people who wake easily at dawn. So the young are asked to do their hardest thinking at the very hour when they are least fit for it.",
+    "The cost of too little sleep is familiar to anyone who has sat in a classroom. The first lesson passes in a fog, because a tired mind cannot hold its attention on anything for long. What was revised the night before has slipped away by morning, as if it had been written on water. Tempers shorten, so that a harmless remark from a sister at breakfast starts a quarrel. Tired students make careless slips as well, misreading the question or missing the step off the bus. They seem to catch every cold that is going round. And they lose their appetite for the things they used to love: the keen footballer is suddenly too weary for training.",
+    "Some of the remedy lies with teenagers themselves. They can keep to the same bedtime every night, weekends included, since a body that never knows when to expect sleep will not offer it on demand. They can leave the phone to charge outside the bedroom. They can start their homework soon after dinner instead of at ten o’clock. And they can stay away from coffee and sweet bubble tea once evening comes.",
+    "The rest lies with adults. Parents can dim the lights and turn the television down late in the evening, for nobody falls asleep easily in a flat that is still wide awake. Schools can move the most demanding lessons away from the first period of the day. Neither change costs anything except the admission that the young are not simply being difficult.",
+    "None of this is an excuse. The boy who is still gaming at two in the morning cannot blame the timetable. But listen to how we talk about sleep. We praise the student who ‘burned the midnight oil’ and tease the one who was in bed by ten. We have made tiredness into a medal, and then we wonder why the young are so eager to wear it.",
+    "A timetable is only paper, and paper can be rewritten. A fifteen-year-old cannot. Until somebody moves the bell, the least we can do is stop calling them lazy, and let ‘I’m up’ be true a little more often."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer describes the teenager as bargaining ‘like a shopper haggling over the last fish at the market’. What does this comparison suggest about how the teenager feels about a few more minutes of sleep?",
+      "scheme": {
+        "answer": "The teenager wants them badly and treats them as something precious, worth fighting hard for.",
+        "accept": [
+          "Every extra minute in bed is very valuable to the teenager, who tries hard to get it."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that the teenager badly wants even a little more sleep and treats the extra minutes as something precious to fight for." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Every extra minute in bed is very valuable to the teenager, who tries hard to get it." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the teenager has to go to the market before school." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the teenager does not care whether he gets more sleep or not." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that the teenager is doing something in bed." }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that adults give their explanation quickly, without needing to think about it?",
+      "scheme": { "answer": "ready" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "ready" },
+        { "mark": 1, "flaw": "full", "text": "‘ready’" },
+        { "mark": 0, "flaw": "wrong", "text": "odder" },
+        { "mark": 0, "flaw": "wrong", "text": "easily" }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain how running on ‘a later clock’ affects a teenager at night and in the morning (Paragraph 2).",
+      "scheme": {
+        "answer": "Late at night the teenager is still alert and lively while others are sleepy [1], but early the next morning the teenager can barely think [1].",
+        "points": [
+          "Late at night the teenager is still alert and lively (while others are sleepy).",
+          "Early in the morning the teenager can barely think / the mind hardly works."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "At night the teenager is still alert and lively while the others are sleepy. But early the next morning the teenager can barely think properly." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Teenagers have lots of energy late in the evening when everyone else is tired, and then their brains hardly work when they have to get up early." },
+        { "mark": 1, "flaw": "half", "text": "Late at night the teenager is still very alert and not sleepy at all." },
+        { "mark": 1, "flaw": "half", "text": "In the early morning the teenager's mind can hardly work." },
+        { "mark": 0, "flaw": "lifted", "text": "At eleven at night, the fifteen-year-old is wide awake and full of plans; at seven the next morning, the same person can hardly spell their own name." },
+        { "mark": 0, "flaw": "wrong", "text": "The teenager's clock is set later, so the alarm rings late and the teenager misses the bus." }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 2, the writer says the school timetable ‘was drawn up by people who wake easily at dawn’. What is the writer suggesting about the people who plan the school day?",
+      "scheme": {
+        "answer": "They do not find early mornings hard themselves, so they do not take into account how hard early mornings are for teenagers.",
+        "accept": [
+          "They are early risers, so they do not realise that the timing does not suit the young."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that the adults who plan the school day do not have this problem themselves, so they do not consider how hard early mornings are for teenagers." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The planners are early risers, so they do not realise that the timing does not suit young people." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the people who plan the timetable want to punish teenagers." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the timetable was written very early in the morning." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that some people made the timetable." }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 6, which teenager cannot blame the timetable for being tired?",
+      "scheme": {
+        "answer": "The one who is still playing games at two in the morning.",
+        "accept": [
+          "A teenager who chooses to stay up very late gaming."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The one who is still playing games at two in the morning." },
+        { "mark": 1, "flaw": "paraphrase", "text": "A teenager who chooses to stay up very late gaming." },
+        { "mark": 0, "flaw": "wrong", "text": "The one who goes to bed by ten." },
+        { "mark": 0, "flaw": "wrong", "text": "The one who cannot wake up when the alarm rings." },
+        { "mark": 0, "flaw": "vague", "text": "A teenager who has bad habits." }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "From Paragraph 6, explain what the writer thinks is wrong with the way we talk about sleep.",
+      "scheme": {
+        "answer": "We admire those who give up sleep and make fun of those who go to bed early [1], which makes being tired seem something to be proud of, so the young are encouraged to sleep less [1].",
+        "points": [
+          "We admire those who stay up late (to work) and make fun of those who sleep early.",
+          "This makes being tired seem something to be proud of / encourages the young to sleep less."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "We admire students who stay up late to study and laugh at those who sleep early. This makes being tired look like something to be proud of, so teenagers want to sleep less." },
+        { "mark": 2, "flaw": "paraphrase", "text": "People speak well of those who give up sleep and make fun of those who do not. As a result, the young see lack of sleep as an achievement and try to copy it." },
+        { "mark": 1, "flaw": "half", "text": "We admire people who stay up late and make fun of people who go to bed early." },
+        { "mark": 1, "flaw": "half", "text": "It makes teenagers think that being tired is something to be proud of." },
+        { "mark": 0, "flaw": "wrong", "text": "We talk about sleep too loudly at night, so teenagers cannot fall asleep." },
+        { "mark": 0, "flaw": "vague", "text": "We talk about sleep in the wrong way." }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 7, the writer says that ‘a timetable is only paper’. What point is the writer making by describing the timetable in this way?",
+      "scheme": {
+        "answer": "The timetable is just something people made, so it can easily be changed to suit teenagers, whereas teenagers cannot be changed.",
+        "accept": [
+          "It is far easier to change the school day than to change how a teenager’s body works."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The timetable is just something people made, so it can easily be changed to suit teenagers." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It is much easier to change the school schedule than to change how a teenager's body works." },
+        { "mark": 0, "flaw": "wrong", "text": "The timetable is printed on paper and given out to students." },
+        { "mark": 0, "flaw": "wrong", "text": "The timetable is not important, so students need not follow it." },
+        { "mark": 0, "flaw": "vague", "text": "The timetable is a thing in school." }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "What is the writer’s main purpose in this article?",
+      "options": [
+        { "label": "A", "text": "To advise teenagers to give up their phones and games" },
+        { "label": "B", "text": "To describe a typical school morning in an amusing way" },
+        { "label": "C", "text": "To argue that teenagers’ need for sleep should be taken seriously and acted on" },
+        { "label": "D", "text": "To blame schools for the poor results of tired students" }
+      ],
+      "scheme": { "answer": "To argue that teenagers’ need for sleep should be taken seriously and acted on" },
+      "seeds": []
+    },
+    {
+      "n": "9",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise how too little sleep affects teenagers and what can be done to help them sleep more.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "They cannot concentrate in class.",
+          "They forget what they have studied.",
+          "They become short-tempered / quarrel easily.",
+          "They make careless mistakes.",
+          "They fall ill more easily.",
+          "They lose interest in / energy for the activities they enjoy.",
+          "Keep the same bedtime every night, weekends too.",
+          "Keep the phone out of the bedroom.",
+          "Start homework earlier in the evening.",
+          "Avoid coffee and sweet drinks in the evening.",
+          "Parents make the home dim and quiet late in the evening.",
+          "Schools move the hardest lessons away from the start of the day."
+        ],
+        "answer": "Sleep-starved teenagers struggle to focus in class and forget what they studied. They grow irritable, make needless errors, fall ill more often and have no energy for favourite activities. To improve matters, they should sleep at a fixed hour daily, keep phones out of the bedroom, begin homework earlier and avoid caffeinated or sugary drinks at night. Parents should make the home darker and quieter late on, and schools should schedule the toughest lessons later."
+      },
+      "seeds": [
+        { "mark": 8, "flaw": "full", "hit": [1, 2, 3, 4, 5, 7, 8, 9, 10, 12], "text": "Teenagers who sleep too little cannot pay attention in class and forget what they have revised. They lose their temper easily, make careless mistakes and fall sick more often. To sleep more, they should go to bed at the same time every night, charge their phones outside the bedroom, start homework earlier in the evening and not drink coffee or bubble tea at night. Schools can also move the hardest lessons to later in the day." },
+        { "mark": 5, "flaw": "half", "hit": [1, 3, 7, 9, 11], "text": "When teenagers do not sleep enough, they cannot concentrate during lessons. They also become bad-tempered and quarrel over small things. To get more sleep, teenagers should keep to one bedtime every night, even on weekends. They should start their homework soon after dinner so that they do not stay up late. Parents can help by dimming the lights and keeping the flat quiet late in the evening." },
+        { "mark": 2, "flaw": "vague", "hit": [5, 8], "text": "Sleep is very important for teenagers and many of them are not getting enough of it nowadays. This is bad for them in a lot of ways. For example, they get sick more easily. There are things that everyone can do to solve this problem and we should all play our part. Teenagers can leave their phones outside the bedroom at night. Then they will be healthier and happier." },
+        { "mark": 0, "flaw": "wrong", "hit": [], "text": "Teenagers say they are up in the morning when they are still in bed bargaining with the alarm clock. Adults say they are lazy, but teenagers run on a later clock and are wide awake at eleven at night. The timetable was made by people who wake up early. We praise students who burn the midnight oil and tease those who sleep at ten. The boy who plays games until two cannot blame the timetable." },
+        { "mark": 4, "flaw": "lifted", "hit": [2, 4, 10, 11], "text": "What was revised the night before has slipped away by morning, as if it had been written on water. Tired students make careless slips as well, misreading the question or missing the step off the bus. They can stay away from coffee and sweet bubble tea once evening comes. Parents can dim the lights and turn the television down late in the evening." }
+      ]
+    }
+  ]
+}

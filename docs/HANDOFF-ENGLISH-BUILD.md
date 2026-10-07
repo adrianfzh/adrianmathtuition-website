@@ -29,11 +29,12 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
 - **The shape for our own sets is built** and Practise now serves ONLY own sets (the bank is not read
   by the page any more): one JSON file a set in `data/english/sets/`, checked and merged by
   `npx tsx scripts/english-own/build.ts`; shapes and checks in `src/lib/english-own.ts`.
-- **Pilot: 5 own sets** — `ed01`, `ed02` (editing), `vt01` (visual text, 5 marks), `na01` (story, 20
-  marks, 13 questions), `nn01` (article, 10 marks + summary). Target is 15 / 12 / 12 / 12, so
-  **46 to go** — the bulk batch, brief in [`docs/english-own-brief.md`](english-own-brief.md).
-  Adrian was told the cost; it has NOT been started (weekly meter 74 %, reset 8 Oct 9 am).
-- **The copy check**: `npx tsx scripts/english-own/novelty.ts` — all 5 are ours.
+- **All 51 own sets are written** (7 Oct 2026, Adrian: "you can run the 46-batch now"): 15 editing
+  (`ed01`–`ed15`), 12 visual texts (`vt01`–`vt12`), 12 stories (`na01`–`na12`), 12 articles with a
+  summary (`nn01`–`nn12`). 5 by the session, 46 by six Opus writers on the brief
+  [`docs/english-own-brief.md`](english-own-brief.md); the session read every set and fixed five small
+  things (a second accepted word, two scheme shapes, one arguable inference, a repeated simile).
+- **The copy check**: `npx tsx scripts/english-own/novelty.ts` — all 51 are ours.
 - **The Practise bench is built and passes on the pilot** (`npx tsx scripts/english-bench/run.ts`,
   results in `scripts/english-bench/results/pilot-2026-10-07.json`): seeded 128/128, repeats 33/33,
   padding 25/25, swapped 24/24, summary 10/10. Limits: 3 reading sets only; the seeded answers are

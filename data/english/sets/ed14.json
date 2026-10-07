@@ -1,0 +1,19 @@
+{
+  "id": "ed14",
+  "kind": "editing",
+  "about": "A bus captain’s first route of the day",
+  "lines": [
+    {"text": "Long before most of the city wakes, Mdm Lee is already at work."},
+    {"text": "She has drove the first bus out of the depot for eleven years.", "wrong": "drove", "right": "driven", "note": "Verb form: after 'has' it is 'driven', not 'drove'."},
+    {"text": "Her alarm rings at half past three, and she reach the depot by", "wrong": "reach", "right": "reaches", "note": "Agreement: 'she' takes 'reaches'."},
+    {"text": "four. Before setting off, she checks the tyres, the mirrors and the doors."},
+    {"text": "The roads are almost empty at that hour, so the route is never", "wrong": "so", "right": "but", "accept": ["yet"], "note": "Connector: the two ideas contrast, so it is 'but', not 'so'."},
+    {"text": "lonely. Her earliest passengers are cleaners, nurses and bakers which start work before", "wrong": "which", "right": "who", "accept": ["that"], "note": "'Which' is for things. People take 'who'."},
+    {"text": "dawn. She knows many of them by name and greets them warm.", "wrong": "warm", "right": "warmly", "note": "Word form: 'greets' is a verb, so it takes the adverb 'warmly'."},
+    {"text": "One old man has brought her coffee every morning since many years.", "wrong": "since", "right": "for", "note": "Preposition: a length of time takes 'for'; 'since' needs a starting point."},
+    {"text": "Last month, when a schoolboy leaves his wallet on a seat, she handed", "wrong": "leaves", "right": "left", "note": "Tense: it happened last month, so it is 'left'."},
+    {"text": "it in at the office herself. Driving safely, she says, matters far more"},
+    {"text": "than driving fast. By sunrise, she has already completed a entire trip, and", "wrong": "a", "right": "an", "note": "Article: 'entire' starts with a vowel sound, so it is 'an entire trip'."},
+    {"text": "her passengers have reached their workplaces safely and on time."}
+  ]
+}

@@ -1,0 +1,179 @@
+{
+  "id": "na03",
+  "kind": "narrative",
+  "title": "In Case the Lift Moves",
+  "paragraphs": [
+    "The lift stopped between the ninth and tenth floors with a jolt like a hiccup, and then the light went out. It did not dim. It went, as completely as a candle pinched between two fingers. Somewhere far below, a generator failed to start.",
+    "“Cool,” said Kiran. He was nine, and believed that anything which interrupted homework was an adventure. Arjun heard him bounce on his heels, heard the plastic bag of prata from the coffee shop swing against the wall. Arjun himself did not move. He was sixteen, a prefect, the boy who had been trusted to fetch dinner and his brother in one trip, and his heart was going like a fist on a door.",
+    "The dark in a lift is not like the dark in a bedroom. There is no grey square of window, no thread of light under a door. It pressed against his open eyes like a wet cloth. He found the wall with his palm and kept it there; the metal was cold and real. “Press the alarm,” Kiran said. “I’m pressing it.” He had been pressing it for some time. Nothing rang.",
+    "“Are you scared, Anna?” “Don’t be silly.” The words came out too fast and a little too high, and he coughed to cover them. “It’s a power failure. The whole block, probably. Someone will come.” He was grateful, at least, that the dark hid his face. For six years he had slept with the corridor light on, and had told his mother it was so that Kiran would not trip on the way to the toilet.",
+    "Minutes passed, or what felt like minutes; without light, time had no edges. Arjun counted his breaths the way the school counsellor had once taught the whole class before the examinations. In for four. Out for four. Beside him the bouncing had stopped. Then a small hand found his sleeve, travelled down it, and closed around two of his fingers.",
+    "“I’m not scared,” Kiran announced. “I just think we should hold hands. In case the lift moves suddenly.” “That’s sensible,” Arjun said. The hand was warm and slightly sticky with curry. He held it as carefully as he would have held a cup filled to the brim, and something in his chest that had been clenched since the light went out loosened by a notch. “Tell me about your football match,” he said. So Kiran did, at length, pass by pass, including the goal that was definitely not offside, and Arjun asked more questions than he had asked in a year.",
+    "They had reached the second half when the lights stuttered on. Both boys flinched. In the sudden white glare, the lift was only a lift: scratched steel, a notice about bulky items, two brothers and a bag of cooling prata. Kiran looked at their joined hands, then up at Arjun’s face, which was damp at the temples. Arjun waited for it — the crow of delight, the story that would be told at dinner tonight and at every dinner after.",
+    "Kiran let go and scratched his nose. “You were holding quite tight,” he said. “In case the lift moved,” said Arjun. “Ya. In case.” The doors slid open on the tenth floor. Kiran marched out first, swinging the bag, and stopped at their gate. “Anna,” he said, not turning round. “Tonight can we leave the corridor light on? I think I might trip.”"
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 1, the light goes out ‘as completely as a candle pinched between two fingers’. What does this comparison suggest about the way the light went out?",
+      "scheme": { "answer": "The light went out in an instant, with no warning [1], and it went out totally, so that not even a faint glow was left [1].", "points": ["It was sudden / instant.", "It was total — no light at all was left."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "It suggests the light went out in an instant, and it was total darkness with no glow left at all." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One second there was light and the next second there was none, just like when you snuff a flame. Nothing could be seen after that, not even a little bit." },
+        { "mark": 1, "flaw": "half", "text": "The light went off very suddenly, in one moment." },
+        { "mark": 1, "flaw": "half", "text": "There was no light left at all, it was totally dark." },
+        { "mark": 0, "flaw": "wrong", "text": "There was a candle in the lift and somebody put it out." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that the light went out." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Kiran ‘believed that anything which interrupted homework was an adventure’ (Paragraph 2). What does this tell you about how Kiran felt when the lift first stopped?",
+      "scheme": { "answer": "He was excited rather than worried; he saw being stuck as something fun.", "accept": ["He was thrilled and treated it as a bit of fun, not a danger."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He felt excited and not worried at all, because to him being stuck was something fun." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He was thrilled. He did not see any danger and treated it like a game." },
+        { "mark": 0, "flaw": "wrong", "text": "He was frightened and wanted to go home quickly." },
+        { "mark": 0, "flaw": "wrong", "text": "He was upset because he could not finish his homework on time." },
+        { "mark": 0, "flaw": "vague", "text": "He had some feelings about the lift stopping." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "Arjun’s heart ‘was going like a fist on a door’ (Paragraph 2). What does this comparison tell you about Arjun at that moment?",
+      "scheme": { "answer": "His heart was pounding hard and fast [1], which shows that he was terrified, even panicking [1].", "points": ["His heart was beating very hard / fast / loudly.", "He was very frightened / panicking."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "His heart was pounding very hard and fast, which shows he was terrified." },
+        { "mark": 2, "flaw": "paraphrase", "text": "It tells us he was in a panic, because his heartbeat was as strong and rapid as someone banging to be let out." },
+        { "mark": 1, "flaw": "half", "text": "His heart was beating very hard and fast." },
+        { "mark": 1, "flaw": "half", "text": "He was extremely frightened." },
+        { "mark": 0, "flaw": "wrong", "text": "He was angry and wanted to punch the lift door." },
+        { "mark": 0, "flaw": "wrong", "text": "He was knocking on the door of the lift to call for help." }
+      ]
+    },
+    {
+      "n": "4", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain what kind of boy Arjun was expected to be (Paragraph 2).",
+      "scheme": { "answer": "He was nearly grown up and held a position of responsibility at school [1], and his family relied on him to look after his younger brother and run errands [1].", "points": ["He was older / nearly an adult and a student leader with authority at school.", "His family relied on him to take care of things — to look after his younger brother and run errands."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He was almost grown up and a leader among the students, and his family relied on him to look after his younger sibling and run errands." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He was supposed to be the mature one, a senior student with authority. His parents also depended on him to take care of Kiran and buy the food." },
+        { "mark": 1, "flaw": "half", "text": "He was a student leader and nearly an adult." },
+        { "mark": 1, "flaw": "half", "text": "His parents depended on him to take care of his little brother." },
+        { "mark": 0, "flaw": "lifted", "text": "He was sixteen, a prefect, the boy who had been trusted to fetch dinner and his brother in one trip." },
+        { "mark": 0, "flaw": "wrong", "text": "He was expected to be a boy who finished all his homework on time." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 3, the dark ‘pressed against his open eyes like a wet cloth’. What does this comparison suggest about how the darkness felt to Arjun?",
+      "scheme": { "answer": "It felt thick and smothering, like something solid covering his face.", "accept": ["It felt heavy and suffocating, as if it were physically touching him."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests the darkness felt thick and smothering, like something solid covering his face." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The dark felt heavy and suffocating to him, as if it was actually touching him." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests the inside of the lift was damp and wet." },
+        { "mark": 0, "flaw": "wrong", "text": "He was crying, so his eyes were wet." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests the darkness was like a cloth." }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "Give two details from Paragraph 4 that show Arjun was trying to hide his fear.",
+      "scheme": { "answer": "Any two of the details, 1 mark each.", "points": ["He coughed to cover up how fast and high his voice had come out.", "He was glad that the dark hid his face.", "He had told his mother that the corridor light was left on for Kiran’s sake.", "He denied it at once (‘Don’t be silly’) and spoke as if it were only a power failure."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He coughed to cover up his voice, which came out too fast and high. He was also glad that the dark hid his face." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He was relieved that Kiran could not see his expression, and he had lied to his mother that the corridor light was for Kiran." },
+        { "mark": 1, "flaw": "half", "text": "He coughed so that Kiran would not notice his voice was too high." },
+        { "mark": 1, "flaw": "half", "text": "He was thankful that his face could not be seen in the dark." },
+        { "mark": 0, "flaw": "wrong", "text": "He pressed the alarm many times and held on to the wall." },
+        { "mark": 0, "flaw": "vague", "text": "He did not want anyone to know." }
+      ]
+    },
+    {
+      "n": "7", "marks": 1, "type": "short", "skill": "literal",
+      "text": "In Paragraph 5, what did Arjun do to keep himself calm?",
+      "scheme": { "answer": "He counted his breaths, breathing in for four and out for four.", "accept": ["He counted his breathing as the school counsellor had taught."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He counted his breaths, in for four and out for four." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He did the breathing exercise the counsellor taught, counting each breath in and out." },
+        { "mark": 0, "flaw": "wrong", "text": "He talked to Kiran about his football match." },
+        { "mark": 0, "flaw": "wrong", "text": "He kept pressing the alarm button." },
+        { "mark": 0, "flaw": "vague", "text": "He tried his best to stay calm." }
+      ]
+    },
+    {
+      "n": "8", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 5 shows that Kiran’s hand moved slowly along Arjun’s sleeve?",
+      "scheme": { "answer": "travelled" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "travelled" },
+        { "mark": 1, "flaw": "full", "text": "‘travelled’" },
+        { "mark": 0, "flaw": "wrong", "text": "counted" },
+        { "mark": 0, "flaw": "wrong", "text": "closed" }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "inference",
+      "text": "Why do you think Arjun agreed so readily that holding hands was ‘sensible’ (Paragraph 6)?",
+      "scheme": { "answer": "He was frightened and badly wanted the comfort of holding someone’s hand [1], and Kiran’s reason gave him a way to accept it without admitting that he was afraid [1].", "points": ["He wanted the comfort of holding a hand because he was afraid.", "Kiran’s reason (the lift might move) let him accept without admitting his fear."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He was scared himself and really wanted the comfort of holding a hand. Kiran's reason let him do it without admitting that he was afraid." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Holding on to somebody made him feel safer in the dark, and the excuse about the lift moving meant he did not have to confess his fear." },
+        { "mark": 1, "flaw": "half", "text": "He wanted to hold his brother's hand because he was frightened and it comforted him." },
+        { "mark": 1, "flaw": "half", "text": "The excuse allowed him to hold hands without having to admit he was scared." },
+        { "mark": 0, "flaw": "wrong", "text": "Because the lift really was about to move and they could fall down." },
+        { "mark": 0, "flaw": "wrong", "text": "Because he wanted to stop Kiran from bouncing and making noise." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain what happened to Arjun’s feelings when he held Kiran’s hand (Paragraph 6).",
+      "scheme": { "answer": "He had been tight with fear ever since it went dark [1], and now he relaxed a little, though not completely [1].", "points": ["He had been tense / tight with fear from the moment it went dark.", "Now he relaxed slightly — a little, not fully."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He had been tense with fear from the moment it became dark, but holding the hand made him relax a little." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Ever since the blackout began he had been stiff with fright. Now he became slightly calmer, although not fully." },
+        { "mark": 1, "flaw": "half", "text": "He had been very tense and afraid ever since the lift became dark." },
+        { "mark": 1, "flaw": "half", "text": "He felt a little bit calmer." },
+        { "mark": 0, "flaw": "lifted", "text": "Something in his chest that had been clenched since the light went out loosened by a notch." },
+        { "mark": 0, "flaw": "wrong", "text": "He felt disgusted because the hand was sticky with curry." }
+      ]
+    },
+    {
+      "n": "11", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "‘In the sudden white glare, the lift was only a lift’ (Paragraph 7). What does the writer suggest by the words ‘only a lift’?",
+      "scheme": { "answer": "Once it was lit, the lift was an ordinary, harmless place; it had only seemed terrifying in the dark.", "accept": ["With the lights on there was nothing frightening about it — the terror had come from the darkness."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "With the lights on, the lift was just an ordinary harmless place. It had only seemed terrifying because of the dark." },
+        { "mark": 1, "flaw": "paraphrase", "text": "There was actually nothing scary in the lift at all. What had frightened him was the darkness, not the lift." },
+        { "mark": 0, "flaw": "wrong", "text": "The lift was the only one in the block that was working." },
+        { "mark": 0, "flaw": "wrong", "text": "The lift was old, scratched and dirty and needed repairs." },
+        { "mark": 0, "flaw": "vague", "text": "The writer suggests that it was a lift." }
+      ]
+    },
+    {
+      "n": "12", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘Arjun waited for it’ (Paragraph 7). What did Arjun expect Kiran to do?",
+      "scheme": { "answer": "He expected Kiran to tease him gleefully for being scared and to tell the family about it.", "accept": ["He expected Kiran to make fun of him and repeat the story to everyone at home."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He expected Kiran to tease him happily for being scared and then tell the whole family about it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He thought his brother would make fun of him for being afraid and keep repeating the story at home." },
+        { "mark": 0, "flaw": "wrong", "text": "He expected the lift doors to open." },
+        { "mark": 0, "flaw": "wrong", "text": "He expected Kiran to start crying." },
+        { "mark": 0, "flaw": "vague", "text": "He expected Kiran to do something." }
+      ]
+    },
+    {
+      "n": "13", "marks": 2, "type": "short", "skill": "inference",
+      "text": "At the end of Paragraph 8, Kiran asks, ‘Tonight can we leave the corridor light on? I think I might trip.’ What does this show about Kiran?",
+      "scheme": { "answer": "He had worked out that his brother was afraid of the dark [1], and instead of teasing him he kindly protected Arjun’s pride by pretending the light was for himself [1].", "points": ["He had realised that Arjun was afraid of the dark.", "He was kind — he protected Arjun’s pride by pretending the light was for himself, instead of teasing him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "It shows Kiran had realised his brother was afraid of the dark. Instead of teasing him, he kindly pretended the light was for himself so that Arjun would not be embarrassed." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Kiran knew the truth about Arjun's fear. He is thoughtful, because he gave his brother a reason to have the light on without losing face." },
+        { "mark": 1, "flaw": "half", "text": "Kiran had found out that Arjun was scared of the dark." },
+        { "mark": 1, "flaw": "half", "text": "Kiran is kind because he pretended he was the one who needed the light, to save his brother from embarrassment." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that Kiran is clumsy and often trips at night." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that Kiran wanted to tell their mother what happened in the lift." }
+      ]
+    }
+  ]
+}

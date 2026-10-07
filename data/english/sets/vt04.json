@@ -1,0 +1,87 @@
+{
+  "id": "vt04",
+  "kind": "visual",
+  "title": "Sunday Beach Clean-up",
+  "format": "post",
+  "theme": "teal",
+  "visual": [
+    { "t": "kicker", "text": "SHORELINE KAKIS · posted on Thursday" },
+    { "t": "headline", "text": "The sea keeps returning what we throw away. This Sunday, help us take it back." },
+    { "t": "tagline", "text": "Changi Beach clean-up · Sunday, 7.30 am · all hands welcome" },
+    { "t": "picture", "text": "A girl of about fourteen holds up a single faded slipper tangled in fishing line. Behind her, volunteers with tongs and sacks spread out across the sand at sunrise." },
+    { "t": "body", "text": "Last month we found bottles, straws, slippers and even a rice cooker — all before breakfast. None of it belongs on a beach where children dig and crabs make their homes. You do not need to be fit or know anything about the sea. If you can bend down and pick something up, you are qualified." },
+    { "t": "box", "title": "What to expect", "items": [
+      "We bring: gloves, tongs, sacks and a weighing scale",
+      "You bring: a water bottle, a hat and covered shoes",
+      "Afterwards: teh and curry puffs on us"
+    ] },
+    { "t": "quote", "text": "“I thought two hours would feel long. Then I found a toothbrush older than I am, and I could not stop looking.” — Danish, 14, first-timer" },
+    { "t": "small", "text": "Under 12? Bring an adult. Wet weather? Check this page at 6.30 am." },
+    { "t": "button", "text": "Tap ‘Going’ so we know how many curry puffs to buy" },
+    { "t": "small", "text": "Tag a friend who owes you a favour. #ShorelineKakis" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "‘If you can bend down and pick something up, you are qualified.’ What is the writer suggesting about the clean-up?",
+      "scheme": { "answer": "Anyone can take part because the work is simple and needs no special skill, fitness or knowledge.", "accept": ["The clean-up is easy enough for everybody, so nobody should think they are not good enough to join."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The writer is suggesting that anyone can join because it is simple work and you do not need any special skills." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It is so easy that everybody is good enough to help, even people who are not sporty or have never done it before." },
+        { "mark": 0, "flaw": "wrong", "text": "Volunteers need to have a qualification before they can join." },
+        { "mark": 0, "flaw": "wrong", "text": "The clean-up is very tiring because you have to keep bending down." },
+        { "mark": 0, "flaw": "lifted", "text": "If you can bend down and pick something up, you are qualified." },
+        { "mark": 0, "flaw": "vague", "text": "The writer is suggesting something good about the clean-up." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Danish says he ‘could not stop looking’. What does this suggest about how he found the clean-up?",
+      "scheme": { "answer": "He found it so interesting that he became absorbed in searching for things, instead of being bored as he had expected.", "accept": ["He enjoyed it and was curious to see what else he could find."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He found it really interesting and got absorbed in searching, even though he expected to be bored." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He was curious about what else was hidden in the sand, so he ended up enjoying himself." },
+        { "mark": 0, "flaw": "wrong", "text": "He found the two hours very long and tiring." },
+        { "mark": 0, "flaw": "wrong", "text": "He had lost his toothbrush and was trying to find it." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that he went to the clean-up and looked around." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The post hopes to attract people who have never joined a beach clean-up before. Give one piece of evidence from the post that shows this.",
+      "scheme": { "answer": "It says ‘You do not need to be fit or know anything about the sea.’", "accept": ["It says that if you can bend down and pick something up, you are qualified.", "It quotes Danish, a first-timer.", "It says ‘all hands welcome’.", "It promises to provide the gloves, tongs and sacks and tells readers what to bring, as if they would not know."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It says you do not need to be fit or know anything about the sea." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The person they quoted, Danish, is a first-timer, so new people will feel they can come too." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It tells readers that the group will bring the gloves, tongs and sacks, and lists what to bring, which only new people need to be told." },
+        { "mark": 0, "flaw": "wrong", "text": "It is held at Changi Beach on Sunday at 7.30 am." },
+        { "mark": 0, "flaw": "wrong", "text": "They found a rice cooker on the beach last month." },
+        { "mark": 0, "flaw": "vague", "text": "The post sounds friendly." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the box tells readers that volunteers will be given a treat for their effort?",
+      "scheme": { "answer": "teh and curry puffs on us", "accept": ["on us", "curry puffs on us", "teh and curry puffs", "Afterwards: teh and curry puffs on us"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "teh and curry puffs on us" },
+        { "mark": 1, "flaw": "paraphrase", "text": "'curry puffs on us'" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"Afterwards: teh and curry puffs on us\"." },
+        { "mark": 0, "flaw": "wrong", "text": "a weighing scale" },
+        { "mark": 0, "flaw": "wrong", "text": "a water bottle, a hat and covered shoes" }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the first sentence of the headline: ‘The sea keeps returning what we throw away.’ What does it suggest about where the rubbish on the beach comes from?",
+      "scheme": { "answer": "The rubbish was thrown away by people, and the sea washes it back onto the shore.", "accept": ["The litter on the beach is our own; humans are responsible for it."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests the rubbish comes from people who threw it away, and the waves wash it back up onto the beach." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The mess is caused by humans. Our own litter ends up in the water and then lands on the shore again." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that the sea produces the rubbish by itself." },
+        { "mark": 0, "flaw": "wrong", "text": "The rubbish is left behind by the volunteers every Sunday." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that the beach has a problem." }
+      ]
+    }
+  ]
+}

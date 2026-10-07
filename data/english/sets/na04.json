@@ -1,0 +1,179 @@
+{
+  "id": "na04",
+  "kind": "narrative",
+  "title": "Overdue",
+  "paragraphs": [
+    "We found it while clearing Atok’s wardrobe, three weeks after the funeral: a hardcover book in a brown-paper jacket, tucked beneath his folded sarongs as if it were something precious or something shameful. Inside the cover was a paper pocket and a slip of stamped dates. The last stamp, in violet ink gone pale with age, said 14 MAR 1979.",
+    "“More than forty years overdue,” my mother said, and laughed, and then stopped laughing and had to sit down on the bed. The book was a guide to shore birds, with painted plates. Atok had put neat pencil ticks beside some of them — the kingfisher, the little heron, the sandpiper — and beside each tick a place and a date. The last tick was from only two years ago, in handwriting that shook.",
+    "“Take it back,” my mother told me. “He hated owing people.” I did not want to. I worked out the fine on my phone, at so many cents a day, and got a number that made my stomach drop. More than that, I did not want to hand the ticks to a stranger behind a counter. But my mother had the look of someone holding herself together with clothes pegs, so on Saturday I took the book on the bus, in a plastic bag on my lap, like a pot of something that might spill.",
+    "The library was nothing Atok would have recognised. Glass doors breathed open by themselves. Machines swallowed returned books through a slot and blinked green. I stood before one of them for a long time. The slot was the width of a letterbox and just as final. A small boy behind me sighed loudly, the way people do when they want you to know they are being patient.",
+    "I stepped out of the queue and went to the desk instead. The librarian was a tall man with reading glasses pushed up into grey hair. I had my explanation ready — my grandfather, the wardrobe, I can pay a bit every month — but it came out backwards and tangled, and in the end I simply slid the book across. He opened it at the date slip. He was quiet for so long that I began counting the ceiling lights.",
+    "“Nineteen seventy-nine,” he said at last, almost fondly. “This branch wasn’t even built. It would have come from the old place by the river, the one with the fans that never worked.” He turned the pages slowly and stopped at a tick. “Your grandfather saw a blue-eared kingfisher at the reservoir? I’ve been trying to see one for eleven years.” He did not sound like a man about to mention money.",
+    "“The fine—” I began. He tapped at his keyboard, frowned, tapped again. “This title was written off before I was hired. As far as our records are concerned, it doesn’t exist.” He closed the cover with two hands, the way you close a door on a sleeping child. “I can’t fine a book that doesn’t exist. I can’t put one on a shelf, either.” He pushed it back across the desk. “I think it had better stay lost.”",
+    "I carried the book home on my lap again, more carefully than before. That evening my mother found me at the window with it open, squinting at a brown bird on the railing of the opposite block. I had a pencil. It was an ordinary mynah, I am fairly sure, and it flew off before I could decide; but I had already turned to the back, where there was a clean page, and written the date."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, give the two possible reasons the narrator suggests for the book being hidden beneath the sarongs (Paragraph 1).",
+      "scheme": { "answer": "Atok may have hidden it because he treasured it [1], or because he was embarrassed at never having returned it [1].", "points": ["He valued / treasured the book greatly.", "He was embarrassed / felt guilty about it (about having kept it)."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "His grandfather may have hidden it because he treasured the book very much, or because he was embarrassed that he had never returned it." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One reason is that the book was very valuable to him. The other is that he felt guilty about keeping it and did not want anyone to see it." },
+        { "mark": 1, "flaw": "half", "text": "Maybe his grandfather treasured the book a lot." },
+        { "mark": 1, "flaw": "half", "text": "Maybe he was embarrassed about still having the book." },
+        { "mark": 0, "flaw": "lifted", "text": "It was something precious or something shameful." },
+        { "mark": 0, "flaw": "wrong", "text": "His grandfather wanted to sell the book, or he had forgotten where he put it." }
+      ]
+    },
+    {
+      "n": "2", "marks": 2, "type": "short", "skill": "inference",
+      "text": "In Paragraph 2, the narrator’s mother ‘laughed, and then stopped laughing and had to sit down on the bed’. Explain why her reaction changed.",
+      "scheme": { "answer": "At first she was amused at how very late the book was [1]; then it brought home to her that her father was gone, and her grief overcame her [1].", "points": ["First she found it funny that the book was so many years late.", "Then the book reminded her of her father / of his death, and her grief overcame her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "At first she found it funny that the book was so many years late. Then it reminded her that her father was gone and she was overcome by grief." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The idea of a book forty years late amused her for a moment, but seeing something of her father's made the sadness of losing him hit her all over again." },
+        { "mark": 1, "flaw": "half", "text": "She thought it was funny that the book was so late." },
+        { "mark": 1, "flaw": "half", "text": "The book made her think of her father who had just died, so she became very sad." },
+        { "mark": 0, "flaw": "wrong", "text": "She was tired from clearing the wardrobe and needed a rest." },
+        { "mark": 0, "flaw": "wrong", "text": "She was angry about how much they would have to pay the library." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "Give two details from Paragraph 2 that show Atok had used the book over many years.",
+      "scheme": { "answer": "Any two of the three details, 1 mark each.", "points": ["He had ticked the birds (he had seen) in pencil.", "He had written a place and a date beside each tick.", "The last tick was made only two years ago / in shaky handwriting — he was still using it as an old man."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He put pencil ticks next to some of the birds, and the last tick was made only two years ago when his handwriting was already shaky." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He marked off certain birds in the book, and next to every mark he noted down where and when." },
+        { "mark": 1, "flaw": "half", "text": "He ticked some of the birds in pencil." },
+        { "mark": 1, "flaw": "half", "text": "His last tick was from just two years ago." },
+        { "mark": 0, "flaw": "wrong", "text": "The book was a guide to shore birds and it had painted plates." },
+        { "mark": 0, "flaw": "vague", "text": "He used the book a lot." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "literal",
+      "text": "Why did the narrator’s mother want the book taken back (Paragraph 3)?",
+      "scheme": { "answer": "Atok had hated owing anything to anyone.", "accept": ["Her father never liked to be in debt to people, so she wanted this put right for him."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Because his grandfather hated owing people." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Atok never liked to be in debt to anybody, so she wanted it settled for him." },
+        { "mark": 0, "flaw": "wrong", "text": "Because the fine was getting bigger every day." },
+        { "mark": 0, "flaw": "wrong", "text": "Because she wanted more space in the wardrobe." },
+        { "mark": 0, "flaw": "vague", "text": "Because she told him to take it back." }
+      ]
+    },
+    {
+      "n": "5", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, give the two reasons why the narrator did not want to return the book (Paragraph 3).",
+      "scheme": { "answer": "The penalty for lateness would be frighteningly large [1], and he could not bear to give his grandfather’s personal markings to someone who had never known him [1].", "points": ["The penalty for lateness would be frighteningly large.", "He did not want to give up his grandfather’s personal markings / notes to someone who did not know him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The penalty for being so late would be a frighteningly large sum. Also, he could not bear to give his grandfather's personal markings to somebody who never knew him." },
+        { "mark": 2, "flaw": "paraphrase", "text": "First, the amount he would have to pay was huge and it scared him. Second, the notes his grandfather made in the book were private to the family and he did not wish to pass them to an outsider." },
+        { "mark": 1, "flaw": "half", "text": "He would have to pay a very big amount for returning it late." },
+        { "mark": 1, "flaw": "half", "text": "He did not want to give away his grandfather's markings to someone who did not know him." },
+        { "mark": 0, "flaw": "lifted", "text": "He got a number that made his stomach drop. More than that, he did not want to hand the ticks to a stranger behind a counter." },
+        { "mark": 0, "flaw": "wrong", "text": "He was lazy to take the bus on a Saturday and he wanted to read the book himself." }
+      ]
+    },
+    {
+      "n": "6", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The narrator’s mother ‘had the look of someone holding herself together with clothes pegs’ (Paragraph 3). What does this suggest about her?",
+      "scheme": { "answer": "She was only just managing to control her grief and could break down at any moment.", "accept": ["She was barely coping; it would take very little to make her fall apart."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests she was only just managing to control her grief and could break down at any moment." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She was barely coping with her sadness, and it would not take much to make her fall apart." },
+        { "mark": 0, "flaw": "wrong", "text": "She was busy hanging up the laundry." },
+        { "mark": 0, "flaw": "vague", "text": "She had a certain look on her face." },
+        { "mark": 0, "flaw": "lifted", "text": "She had the look of someone holding herself together with clothes pegs." }
+      ]
+    },
+    {
+      "n": "7", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The narrator held the book on his lap ‘like a pot of something that might spill’ (Paragraph 3). What does this comparison suggest about the way he carried it?",
+      "scheme": { "answer": "He carried it with great care, as something precious that could easily be damaged or lost.", "accept": ["He held it very carefully, afraid that something might happen to it."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He carried it with great care, as if it was something precious that could easily be damaged." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He held it very cautiously and steadily because he was afraid something would happen to it." },
+        { "mark": 0, "flaw": "wrong", "text": "The book was wet and dripping inside the plastic bag." },
+        { "mark": 0, "flaw": "wrong", "text": "He was bringing a pot of food to the library." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests he carried the book on the bus." }
+      ]
+    },
+    {
+      "n": "8", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 4 suggests that the machines took in the books as if they were eating them?",
+      "scheme": { "answer": "swallowed" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "swallowed" },
+        { "mark": 1, "flaw": "full", "text": "“swallowed”" },
+        { "mark": 0, "flaw": "wrong", "text": "breathed" },
+        { "mark": 0, "flaw": "wrong", "text": "blinked" }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "‘The slot was the width of a letterbox and just as final’ (Paragraph 4). Explain why the narrator stood in front of the machine ‘for a long time’.",
+      "scheme": { "answer": "Once the book went into the slot it could never be got back [1], and he was not ready to part for ever with something that had been so close to his grandfather [1].", "points": ["‘Final’: once the book was dropped in, it could not be taken back.", "He was not ready to part with it for good — it was his grandfather’s / held his grandfather’s notes."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Once the book went into the slot he could never get it back. He was not ready to part for ever with something that belonged so closely to his grandfather." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Like posting a letter, there was no way of undoing it afterwards. He hesitated because he could not bring himself to give up his grandfather's book for good." },
+        { "mark": 1, "flaw": "half", "text": "If he put the book in, there was no way to take it out again." },
+        { "mark": 1, "flaw": "half", "text": "He was not willing to give up his grandfather's book for good." },
+        { "mark": 0, "flaw": "wrong", "text": "He did not know how to use the machine." },
+        { "mark": 0, "flaw": "wrong", "text": "The slot was too narrow for the book to fit inside." }
+      ]
+    },
+    {
+      "n": "10", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘He did not sound like a man about to mention money’ (Paragraph 6). What does Paragraph 6 suggest mattered more to the librarian than the fine?",
+      "scheme": { "answer": "The book’s history and the birds the grandfather had recorded in it.", "accept": ["He cared more about where the book had come from and about the grandfather’s bird sightings than about collecting money."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The history of the book and the birds that the grandfather had seen and recorded in it mattered more to him." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He cared more about where the old book came from and the grandfather's bird sightings than about collecting any payment." },
+        { "mark": 0, "flaw": "wrong", "text": "Getting the narrator to pay a bit every month." },
+        { "mark": 0, "flaw": "wrong", "text": "Repairing the fans that never worked." },
+        { "mark": 0, "flaw": "vague", "text": "He did not talk about money." }
+      ]
+    },
+    {
+      "n": "11", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "The librarian closed the cover ‘the way you close a door on a sleeping child’ (Paragraph 7). What does this comparison suggest about the way he closed the book and about how he regarded it?",
+      "scheme": { "answer": "He closed it very gently and quietly [1], which shows that he regarded it with tenderness, as something precious to be protected [1].", "points": ["He closed it very gently / softly / quietly.", "He regarded it with tenderness / respect — as something precious to be protected."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He closed the book very gently and quietly. It shows he regarded the book with tenderness, as something precious that should be protected." },
+        { "mark": 2, "flaw": "paraphrase", "text": "His movement was soft and slow so as not to disturb anything, and this tells us he respected the book and thought it was worth looking after." },
+        { "mark": 1, "flaw": "half", "text": "He shut the book very softly and gently." },
+        { "mark": 1, "flaw": "half", "text": "He saw the book as something precious that deserved respect." },
+        { "mark": 0, "flaw": "wrong", "text": "He was afraid of waking up a child who was sleeping in the library." },
+        { "mark": 0, "flaw": "wrong", "text": "He closed the book quickly because he was bored with it." }
+      ]
+    },
+    {
+      "n": "12", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘I think it had better stay lost’ (Paragraph 7). Explain what the librarian meant and why he said it.",
+      "scheme": { "answer": "He meant that the narrator should keep the book and pay nothing [1]; he said it because he understood how much the book, with the grandfather’s notes, meant to the family [1].", "points": ["Meaning: the narrator could keep the book, with no fine.", "Why: he understood what the book and its notes meant to the family — the missing record was his kind excuse."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He meant the narrator should keep the book and not pay anything. He said it because he understood how much the book with the grandfather's notes meant to the family." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He was telling the boy to take it home for free. The missing record was his excuse, as he could see the book was a precious memory of the grandfather." },
+        { "mark": 1, "flaw": "half", "text": "He meant the narrator could take the book home and need not pay any fine." },
+        { "mark": 1, "flaw": "half", "text": "He understood that the book was precious to the family because of the grandfather's notes." },
+        { "mark": 0, "flaw": "wrong", "text": "He meant that the book was missing and nobody could find it in the library." },
+        { "mark": 0, "flaw": "wrong", "text": "He was telling the narrator to throw the book away so that nobody would find out." }
+      ]
+    },
+    {
+      "n": "13", "marks": 1, "type": "short", "skill": "inference",
+      "text": "At the end of Paragraph 8, the narrator writes the date on a clean page at the back of the book. What does this suggest he has begun to do?",
+      "scheme": { "answer": "He has begun to record the birds he sees, carrying on his grandfather’s habit.", "accept": ["He is continuing his grandfather’s bird-watching record in the same book."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He has begun to record the birds he sees, carrying on what his grandfather used to do." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He is continuing his grandfather's hobby by keeping his own bird-watching notes in the same book." },
+        { "mark": 0, "flaw": "wrong", "text": "He has begun to write down the day he must return the book." },
+        { "mark": 0, "flaw": "wrong", "text": "He has begun to do his homework at the window." },
+        { "mark": 0, "flaw": "vague", "text": "He has begun to write in the book." }
+      ]
+    }
+  ]
+}

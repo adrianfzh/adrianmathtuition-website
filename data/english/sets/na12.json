@@ -1,0 +1,608 @@
+{
+  "id": "na12",
+  "kind": "narrative",
+  "title": "Thirty-One Cartons",
+  "paragraphs": [
+    "By nine o’clock the flat had stopped looking like ours. Thirty-one cartons stood in the living room, each labelled in my mother’s square capitals, and the walls, stripped of their calendars and clocks, showed pale rectangles where our life had hung. The movers were coming at seven. My job was the storeroom, which nobody had properly opened since I was in primary school.",
+    "The first thing I found was not in the storeroom but on it: the height chart. It was not a real one, only the edge of the door frame, with pencil lines and dates in my father’s handwriting. It ended when I was twelve, the year I announced that I was too old for it. I ran my thumb up the marks. They climbed in great leaps near the bottom and crowded together near the top, like someone getting tired on a staircase. You cannot pack a door frame. I took a photograph, which is not the same thing.",
+    "Inside, I pulled out the rice cooker with the cracked lid, which my mother had refused to throw away for ten years “in case”. Then my brother’s football boots, stiff as dried fish, from the single season he had played. Then a biscuit tin. I knew that tin. It had sat on top of the fridge all through my childhood, and I had believed, for longer than I like to admit, that it held biscuits.",
+    "It held receipts, a spare key to a gate we no longer had, and every report book I had ever brought home, in order. I opened the Primary Four one. “Talkative. She can do better,” a teacher had written. Under it, in blue ballpoint, my mother had signed her name — and beside her signature, so small that I had to tilt the page, she had added a tick. Just a tick. It was there in every book. I had never noticed; I had only ever checked that she had signed, so that I could hand the book in.",
+    "“Ma,” I called, “why did you keep all these?” She came to the doorway wiping her hands, saw the tin and took it from me the way you take scissors from a child. “Rubbish,” she said. “I forgot they were there.” She put the tin in the carton marked KITCHEN — FRAGILE, between the good bowls, and taped it shut herself.",
+    "My father, meanwhile, had spent forty minutes failing to pack one clock. It was the ugly brown one from the hallway that had run seven minutes ahead for as long as I could remember; we had all simply learned to subtract. He kept wrapping it in newspaper, unwrapping it and holding it to his ear. “The new place has a clock on the oven,” my brother told him. “And on every phone.” “Those are correct,” my father said, as though that were a fault. He wound it, set it seven minutes fast and laid it on top of his own shirts.",
+    "Near midnight we ate instant noodles sitting on cartons, because the table was already in pieces. Nobody said anything large. My mother complained that the new kitchen had no window. My brother said the lift there was faster. Without its curtains the room echoed, and our voices came back to us slightly wrong, like a recording of a family.",
+    "Afterwards, when the others had gone to lie down on mattresses on the floor, I went back to the storeroom door. I found a pencil in a carton marked MISC. I stood against the frame with my heels together, the way I used to be told to, laid the pencil flat on my head and made a line — a hand’s width above the last one — and wrote the date. Whoever came next would paint over it. I knew that. I switched off the light."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 1, why had the flat ‘stopped looking like ours’?",
+      "scheme": {
+        "answer": "Everything that made it their home had been packed away, leaving bare walls and cartons.",
+        "accept": [
+          "Their belongings were all in boxes and the walls were empty, so it no longer looked lived in by them."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "All the things that made it their home were packed away, so there were only bare walls and boxes."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Their belongings were in cartons and nothing was on the walls, so it did not feel like their place any more."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Another family had already moved their things in."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The flat had been repainted in a new colour."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Because the flat looked different that night."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "The walls showed ‘pale rectangles where our life had hung’ (Paragraph 1). What does the phrase ‘where our life had hung’ suggest about the things that had been taken down?",
+      "scheme": {
+        "answer": "They were not just objects but part of the family’s everyday life and memories.",
+        "accept": [
+          "The calendars and clocks stood for the family’s daily routine in the flat."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests the things were not just objects. They were part of the family's daily life and memories."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The calendars and clocks stood for the family's everyday routine in that home."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests the family used to hang their clothes on the walls."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that things were hanging on the walls before."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The walls were stripped of their calendars and clocks and showed pale rectangles."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the pencil marks climb ‘like someone getting tired on a staircase’. What does this comparison tell you about how the narrator grew?",
+      "scheme": {
+        "answer": "She grew quickly when she was small and more and more slowly as she got older.",
+        "accept": [
+          "Her growth slowed down over the years, so the marks got closer together."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She grew quickly when she was small and then more and more slowly as she got older."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Her growth slowed down as the years passed, so the gaps between the marks became smaller."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She got tired from climbing the stairs to the flat."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She stopped growing when she was very young."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It tells us that she grew taller."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘You cannot pack a door frame. I took a photograph, which is not the same thing’ (Paragraph 2). In your own words, explain what the narrator means.",
+      "scheme": {
+        "answer": "The height chart was part of the flat itself, so it could not be brought along to the new home [1], and a picture of it could not replace the real thing or what it meant to her [1].",
+        "points": [
+          "The chart was part of the flat and had to be left behind.",
+          "A picture is a poor substitute — it cannot replace the real marks / what they meant."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The height chart was part of the flat so she could not bring it along to the new home. A picture of it could not replace the real thing and what it meant to her."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She had to leave the marks behind since they were on the building itself. Having an image on her phone was a poor substitute for the real lines her father drew."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means the chart had to be left behind because it was part of the flat."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She means a picture cannot replace the real thing."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "She means you cannot pack a door frame, and she took a photograph, which is not the same thing."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She means the door frame was too heavy for the movers to carry."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Give two details from Paragraph 3 which show that the family kept things they no longer used.",
+      "scheme": {
+        "answer": "The rice cooker with the cracked lid had been kept for ten years [1], and her brother’s football boots were kept although he had played for only one season [1].",
+        "points": [
+          "The rice cooker with a cracked lid, kept for ten years ‘in case’.",
+          "Her brother’s football boots, kept though he played only one season (and now stiff from disuse)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "They still had a rice cooker with a cracked lid that her mother kept for ten years. They also kept her brother's football boots although he only played for one season."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "A broken rice cooker was never thrown out, and there was an old pair of boots her brother had not worn since he gave up football."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Her brother's football boots were still there even though he only played one season. There was also a tin on top of the fridge."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The rice cooker with the cracked lid was kept for ten years."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "There was a biscuit tin and she believed it held biscuits."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The storeroom had many things inside."
+        }
+      ]
+    },
+    {
+      "n": "6a",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "stem": "In Paragraph 4, the narrator finds a small tick beside her mother’s signature in every report book.",
+      "text": "What does the tick suggest about what the reports meant to her mother?",
+      "scheme": {
+        "answer": "The reports mattered to her: she read each one with care and quietly took pride in her daughter, though she never said so.",
+        "accept": [
+          "She paid close attention to every report because she cared about her daughter’s progress.",
+          "She approved of / was proud of her daughter, and it mattered to her."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests her mother read each report carefully and was quietly proud of her, even though she never said it."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She was pleased with her daughter's results and they mattered to her."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests her mother was angry that she was talkative."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests her mother was a teacher who marked her work."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that her mother saw the report book."
+        }
+      ]
+    },
+    {
+      "n": "6b",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "stem": "In Paragraph 4, the narrator finds a small tick beside her mother’s signature in every report book.",
+      "text": "Why had the narrator never noticed the tick before?",
+      "scheme": {
+        "answer": "She had only ever looked to see that the book was signed so that she could hand it back.",
+        "accept": [
+          "All she cared about was getting the signature and returning the book."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She only checked that her mother had signed so that she could hand the book in."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "All she cared about as a child was getting the signature and returning the book to school."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Her mother only added the ticks that night."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She did not know how to read at that time."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Because she never noticed it."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "Her mother takes the tin ‘the way you take scissors from a child’ (Paragraph 5). What does this comparison suggest about how she took it?",
+      "scheme": {
+        "answer": "She took it quickly and firmly, as though it were something her daughter should not be handling.",
+        "accept": [
+          "She removed it at once, as if the narrator was not supposed to have it or look inside."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She took it away quickly and firmly, as if it was something her daughter should not be holding."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She removed it at once, like the narrator was not supposed to have it or see what was inside."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests the tin was sharp and dangerous."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that she took it slowly and gently."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "She took it from her the way you take scissors from a child."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "Her mother calls the report books ‘Rubbish’ (Paragraph 5). Explain what her actions afterwards reveal.",
+      "scheme": {
+        "answer": "The books were in fact precious to her, since she packed them with her best bowls in the carton for fragile things and sealed it herself [1], but she did not want to admit or show how much they meant to her [1].",
+        "points": [
+          "She actually treasured them — she packed them protectively (with the good bowls, in the FRAGILE carton, taping it herself).",
+          "She did not want to admit / show her feelings — calling them rubbish was a cover."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Her actions show the report books were actually precious to her, because she packed them with her best bowls in the fragile box. But she did not want to admit how much they meant to her."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She really treasured them and wanted them kept safe. Calling them rubbish was just her way of hiding that she is sentimental."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "They reveal that she actually treasured the report books and wanted them to be safe."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "They reveal that she did not want to show her true feelings to her daughter."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They reveal that she was going to throw the tin away with the rubbish."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They reveal that she had really forgotten the report books were there."
+        }
+      ]
+    },
+    {
+      "n": "9",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 6 tells you that the family took seven minutes off the time the clock showed?",
+      "scheme": {
+        "answer": "subtract"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "subtract"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "“subtract”"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "correct"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "wound"
+        }
+      ]
+    },
+    {
+      "n": "10",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "Why do you think the narrator’s father ‘set it seven minutes fast’ before packing the clock (Paragraph 6)?",
+      "scheme": {
+        "answer": "He wanted the clock to stay exactly as it had always been in the old flat [1], because he was attached to the family’s old ways and found it hard to let them go [1].",
+        "points": [
+          "He wanted it to be exactly as it had always been — its fault was part of it.",
+          "He was attached to the old home / the family’s habits and did not want to let go of them."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He wanted the clock to be exactly the same as it always was in the old flat. This is because he was attached to their old way of life and found it hard to let go."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "To him the clock being wrong was part of the family, so he kept it that way. He was sentimental about the home they were leaving and wanted to bring a piece of it along unchanged."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He wanted the clock to stay just the way it had always been."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He was sad to leave the old flat and did not want to let go of it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He wanted the family to be early for the movers the next morning."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He did not know how to set the clock to the correct time."
+        }
+      ]
+    },
+    {
+      "n": "11",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "‘Nobody said anything large’ (Paragraph 7). What does the writer mean by ‘large’ here?",
+      "scheme": {
+        "answer": "Nobody spoke about the big, emotional matter of leaving their home; they kept to small, everyday remarks.",
+        "accept": [
+          "No one talked about their feelings about moving — only about minor things."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It means nobody talked about the big emotional thing, which was leaving their home. They only made small everyday remarks."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "No one spoke about their feelings about moving. They just talked about minor things like the lift."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It means nobody spoke loudly."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It means nobody talked about the size of the new flat."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It means they were talking while eating."
+        }
+      ]
+    },
+    {
+      "n": "12",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In the bare room their voices came back ‘slightly wrong, like a recording of a family’ (Paragraph 7). What does this comparison suggest?",
+      "scheme": {
+        "answer": "Their voices sounded hollow and unnatural in the bare room [1], as if the real family life of the flat was already over and only a copy of it was left [1].",
+        "points": [
+          "The voices sounded unnatural / hollow / not like themselves.",
+          "It no longer felt like their real home life — only a copy; the real thing was already gone."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Their voices sounded hollow and unnatural in the bare room. It also suggests their real family life in the flat was already over, and what was left was only like a copy."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "They did not sound like themselves because of the echo, and it felt as if the home was gone already and they were just an imitation of the family that used to live there."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests their voices sounded strange and unnatural in the empty room."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests the real family life there had already ended and only a copy was left."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that someone was recording the family while they ate."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that the family was talking in the room."
+        }
+      ]
+    },
+    {
+      "n": "13",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what the narrator did at the storeroom door, and what she knew would become of it (Paragraph 8).",
+      "scheme": {
+        "answer": "She measured her own height and added a new, dated mark above the old ones [1], knowing that the next people to live there would cover it up [1].",
+        "points": [
+          "She measured herself and added a new dated mark, higher than the old ones.",
+          "She knew the next occupants would cover it up / it would not last."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She measured her own height and added a new mark higher than the old ones, with the day written beside it. She knew the next people living there would cover it up."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She brought the height chart up to date with one final marking of how tall she was now. She was aware it would not last, as the new owners would cover the marks."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She measured how tall she was now and marked it on the frame."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She knew the people moving in would cover up the marks."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "She laid the pencil flat on her head and made a line and wrote the date. Whoever came next would paint over it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She rubbed out all the old pencil marks so that the new owners would not see them."
+        }
+      ]
+    }
+  ]
+}

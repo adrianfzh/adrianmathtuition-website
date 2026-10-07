@@ -1,0 +1,87 @@
+{
+  "id": "vt08",
+  "kind": "visual",
+  "title": "Open Rehearsal",
+  "format": "post",
+  "theme": "rose",
+  "visual": [
+    { "t": "kicker", "text": "EASTWIND YOUTH ORCHESTRA · posted today" },
+    { "t": "headline", "text": "Come and hear us get it wrong." },
+    { "t": "tagline", "text": "Free open rehearsal · Saturday, 3 pm · no ticket, no dress code, no shushing" },
+    { "t": "picture", "text": "A conductor in a T-shirt has stopped with her baton in the air, grinning. In front of her, teenage violinists in shorts and slippers are laughing at a mistake; one hides her face behind her bow." },
+    { "t": "body", "text": "A concert shows you the polished two hours. A rehearsal shows you everything that came before: the wrong notes, the restarts, the moment sixty players finally breathe together. This Saturday we are opening the doors. Sit anywhere. Walk around. Stand behind the drums if you dare." },
+    { "t": "box", "title": "During the break", "items": [
+      "Try a cello, a trumpet or the timpani",
+      "Ask any player how long they have been learning",
+      "Find out how to join our beginners’ ensemble — no audition"
+    ] },
+    { "t": "quote", "text": "“I walked in thinking orchestras were for other people. I walked out having held a French horn.” — Wei Jie, 13, who joined last year" },
+    { "t": "small", "text": "Eastwind Hall, Level 2. Children are welcome; noise is forgiven." },
+    { "t": "button", "text": "Tell us you are coming" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the headline: ‘Come and hear us get it wrong.’ What does it tell readers to expect at the event?",
+      "scheme": { "answer": "They will watch the orchestra practising, with mistakes and corrections, rather than a perfect performance.", "accept": ["It is a rehearsal, so the playing will be unpolished and the players will stop and try again."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Readers should expect to watch the orchestra practising and making mistakes, not a perfect performance." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It will be an unpolished practice session where the players stop and redo the parts they played badly." },
+        { "mark": 0, "flaw": "wrong", "text": "It tells readers that the orchestra is not good at music." },
+        { "mark": 0, "flaw": "wrong", "text": "The audience is expected to correct the players' mistakes." },
+        { "mark": 0, "flaw": "vague", "text": "It tells readers to expect something different." },
+        { "mark": 0, "flaw": "lifted", "text": "To come and hear them get it wrong." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the tagline suggests that the audience need not keep quiet?",
+      "scheme": { "answer": "no shushing", "accept": ["no ticket, no dress code, no shushing", "no dress code, no shushing"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "no shushing" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is 'no shushing'." },
+        { "mark": 0, "flaw": "wrong", "text": "no dress code" },
+        { "mark": 0, "flaw": "wrong", "text": "Free open rehearsal" },
+        { "mark": 0, "flaw": "wrong", "text": "no ticket" }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "visual",
+      "text": "What impression of the orchestra does the picture give?",
+      "scheme": { "answer": "It seems relaxed, friendly and fun, not strict or formal.", "accept": ["The players and the conductor are casual and good-humoured, and can laugh at their own mistakes."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It gives the impression that the orchestra is relaxed and fun, not strict or formal." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The players are casual and cheerful, and even the conductor can laugh when someone makes a mistake." },
+        { "mark": 0, "flaw": "wrong", "text": "It gives the impression that the conductor is angry with the violinists." },
+        { "mark": 0, "flaw": "wrong", "text": "The orchestra is very formal and serious." },
+        { "mark": 0, "flaw": "vague", "text": "It gives a good impression of the orchestra." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The post is aimed at people who feel that orchestras are not for them. Give one piece of evidence from the post that shows this.",
+      "scheme": { "answer": "It promises ‘no ticket, no dress code, no shushing’, removing the things that make concerts feel formal.", "accept": ["It quotes Wei Jie, who came in ‘thinking orchestras were for other people’.", "It invites visitors to try the instruments themselves.", "It mentions a beginners’ ensemble with no audition.", "It says children are welcome and noise is forgiven.", "It tells visitors to sit anywhere and walk around."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It says there is no ticket, no dress code and no shushing, so it will not feel formal." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Wei Jie says he used to think orchestras were for other people, just like the readers think." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It lets people try the instruments and there is a beginners' group with no audition." },
+        { "mark": 0, "flaw": "wrong", "text": "The rehearsal is on Saturday at 3 pm." },
+        { "mark": 0, "flaw": "wrong", "text": "The orchestra has sixty players." },
+        { "mark": 0, "flaw": "vague", "text": "The post is written in an interesting way." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The body text mentions ‘the moment sixty players finally breathe together’. What does this suggest happens at a rehearsal after the wrong notes and restarts?",
+      "scheme": { "answer": "After many attempts, all the players at last play in time with one another, as one group.", "accept": ["The orchestra finally comes together and gets the music right."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "After trying many times, all the players are finally in time with one another and play as one group." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The whole orchestra at last comes together and gets the piece right." },
+        { "mark": 0, "flaw": "wrong", "text": "The players are out of breath because rehearsals are tiring." },
+        { "mark": 0, "flaw": "wrong", "text": "The players do breathing exercises before they start." },
+        { "mark": 0, "flaw": "vague", "text": "Something special happens in the rehearsal." },
+        { "mark": 0, "flaw": "lifted", "text": "Sixty players finally breathe together." }
+      ]
+    }
+  ]
+}

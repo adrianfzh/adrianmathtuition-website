@@ -1,0 +1,376 @@
+{
+  "id": "nn07",
+  "kind": "non_narrative",
+  "title": "Once Upon a Fact",
+  "paragraphs": [
+    "I can tell you, in order, everything that happened to a mousedeer who tricked a row of crocodiles into forming a bridge. I heard the tale once, at the age of six, from an aunt who did all the voices. I cannot tell you a single date from the history chapter I revised last Thursday. Something is clearly unfair here, and I do not think it is my memory.",
+    "Teachers have always known this, even when timetables forget it. Tell a class that honesty matters, and thirty heads nod politely and remember nothing. Tell them about the boy who shouted about a wolf once too often, and they will carry it into old age. The lesson is identical. The packaging is not, and the mind, it seems, is fussy about packaging.",
+    "Why should a story stay when a fact slips away? One reason is that a story has an order. Each event causes the next, so remembering one part pulls the following part up after it, like links in a chain. A list of facts has no such chain; lose one, and nothing tugs it back. A story also makes pictures. We see the crocodiles lined up across the river, and what the mind has seen it keeps more readily than what it has merely been told. Then there is feeling: we worry for the mousedeer, we laugh when the trick works, and whatever moves us tends to be stored with care. A story is about someone, too, and we are naturally more interested in a character who wants something than in a number that wants nothing.",
+    "Stories also keep us guessing. We want to know what happens next, and that curiosity holds our attention in a way a fact rarely manages. They get passed on as well: a good story is retold at dinner, and every retelling presses it a little deeper. Finally, a story hands us the meaning along with the information. It does not simply report that pride is dangerous. It shows the proud character falling, so we understand why the fact matters.",
+    "None of this is an excuse to stop learning facts. It is a hint about how to learn them. A student can turn a process into a journey rather than memorising labelled arrows, following one drop of water from the sea to a cloud to a drain. Dates can be hung on the people who lived through them: ask what a shopkeeper or a schoolchild would have seen that year. A dry rule becomes easier to hold when it is tied to a small scene from one’s own life. It helps to explain a topic aloud to a friend, as if telling what happened. And when a fact refuses to stay, it is worth asking the question every story answers: what caused this, and what did it cause?",
+    "A warning is due. Stories are so easy to believe that a false one can travel a long way before a true fact has found its shoes. The friend-of-a-friend tale forwarded in a family chat sticks for exactly the same reasons the mousedeer does. So it is worth pausing over any story that fits together a little too neatly, and asking not only whether we remember it but whether it is so.",
+    "My aunt is older now and repeats herself. Last month she began the mousedeer story again, as though I had never heard it. I let her. I could have finished every sentence for her, voices and all. I still cannot tell you what happened in last Thursday’s chapter."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 1, the writer says, ‘Something is clearly unfair here, and I do not think it is my memory.’ What seems unfair to the writer, and what does the writer suggest is not to blame for it?",
+      "scheme": {
+        "answer": "It seems unfair that a story heard only once, years ago, is still remembered while facts revised a few days ago are forgotten [1]. The writer suggests that this is not because of a poor memory; the cause lies in the way the information was given [1].",
+        "points": [
+          "A story heard once long ago is remembered, but facts revised a few days ago are forgotten.",
+          "The writer’s memory is not at fault; the cause is the form the information came in."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "It is unfair that the writer remembers a story heard only once long ago but cannot remember dates revised a few days ago. The writer suggests that a bad memory is not the cause, but the way the information was given."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "A childhood tale told a single time has stayed, while last week’s history has gone. The writer thinks the fault is not in his or her ability to remember but in how the facts were presented."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer remembers a story heard only once many years ago but cannot remember the dates revised just a few days ago."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer suggests the problem is not a poor memory but the way the information was given."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The aunt was unfair because she told the story only once."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer has a very bad memory and forgets everything."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 2, what happens when a class is simply told that honesty matters?",
+      "scheme": {
+        "answer": "The students nod but do not remember it afterwards.",
+        "accept": [
+          "They appear to agree, then forget it."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The students nod politely but do not remember it afterwards."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "They seem to agree at the time, and then forget all about it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They remember it until they are old."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They argue with the teacher about it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They ask the teacher for a story instead."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the two lessons are exactly the same?",
+      "scheme": {
+        "answer": "identical"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "identical"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘identical’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "politely"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "fussy"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the writer says the mind ‘is fussy about packaging’. What does ‘packaging’ refer to here, and what does ‘fussy’ suggest about the mind?",
+      "scheme": {
+        "answer": "‘Packaging’ refers to the form in which a lesson is delivered, as a plain statement or as a story [1]. ‘Fussy’ suggests the mind is choosy: it keeps what comes in a form it likes (a story) and lets the rest go [1].",
+        "points": [
+          "‘Packaging’ = the form / way in which the lesson is delivered (plain statement or story).",
+          "‘Fussy’ = the mind is choosy; it keeps only what comes in a form it likes (a story)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "‘Packaging’ means the way the lesson is presented, either as a plain statement or as a story. ‘Fussy’ suggests the mind is choosy and only keeps things that come in the form it likes."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "It refers to how the message is delivered to us. The mind is picky, so it holds on to a lesson wrapped in a story and throws away the same lesson when it is just stated."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "‘Packaging’ refers to the way a lesson is presented, such as in a story or as a plain statement."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "‘Fussy’ suggests the mind is choosy and will keep only what comes in a form it likes."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "‘Packaging’ refers to the wrapping paper of a present, and the mind likes nice presents."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It means the mind cares about packaging."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain the warning the writer gives in Paragraph 6 and what the writer advises us to do.",
+      "scheme": {
+        "answer": "Untrue stories spread quickly and widely because stories are so readily believed [1], so we should stop and question whether a story is true, especially one that seems too perfect [1].",
+        "points": [
+          "Untrue stories spread fast and far because stories are readily believed.",
+          "We should stop and check whether a story is true (especially one that seems too perfect)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The warning is that untrue stories spread very fast and far because people accept stories so readily. The writer advises us to stop and question whether a story is really true, especially if it sounds too perfect."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Lies told as stories get around quickly since we trust stories without thinking. We ought to slow down and check the truth of any tale that seems suspiciously tidy."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Untrue stories can spread very quickly because people accept stories so readily."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "We should stop and check whether a story is really true, especially when it seems too perfect."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Stories are so easy to believe that a false one can travel a long way before a true fact has found its shoes."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "We should stop telling stories because all of them are false."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, the writer says, ‘I could have finished every sentence for her, voices and all.’ What does this show about the mousedeer story?",
+      "scheme": {
+        "answer": "The writer still remembers the story completely, down to the way each character sounded.",
+        "accept": [
+          "Every detail of the story, even how it was told, has stayed in the writer’s memory."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer still remembers the story perfectly, even how each character sounded."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Every detail of the tale, including the way the aunt acted it out, is still in the writer’s memory after all these years."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer is rude and likes to interrupt the aunt."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer finds the story boring and wants it to end quickly."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The writer knows the aunt very well."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "What is the writer’s main purpose in this article?",
+      "options": [
+        {
+          "label": "A",
+          "text": "To prove that facts are less important than stories"
+        },
+        {
+          "label": "B",
+          "text": "To complain that history lessons are badly taught"
+        },
+        {
+          "label": "C",
+          "text": "To retell a favourite tale from childhood"
+        },
+        {
+          "label": "D",
+          "text": "To explain why stories are memorable and how learners can use this"
+        }
+      ],
+      "scheme": {
+        "answer": "To explain why stories are memorable and how learners can use this"
+      },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise why stories stay in the memory and how a student can use this to remember facts.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "The events of a story cause one another, so one part brings back the next.",
+          "A story makes pictures in the mind, and what is seen is kept.",
+          "A story stirs feelings, and what moves us is remembered.",
+          "A story is about a character, and people interest us.",
+          "Wanting to know what happens next holds our attention.",
+          "Stories are retold, and each retelling fixes them more firmly.",
+          "A story shows why the information matters (it gives the meaning).",
+          "Turn a process into a journey.",
+          "Attach dates to the people who lived through them.",
+          "Tie a rule to a scene from one’s own life.",
+          "Explain a topic aloud to a friend, as if telling what happened.",
+          "Ask what caused a fact and what it led to."
+        ],
+        "answer": "Stories are remembered because their events cause one another, so each part recalls the next. They create mental pictures, stir our emotions and involve characters we care about. Curiosity about the ending keeps us attentive, retelling strengthens the memory, and a story shows why its message matters. Students can therefore turn a process into a journey, connect dates to people of that time, link rules to their own experiences, explain topics aloud to friends, and ask about causes and effects."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11
+          ],
+          "text": "Stories stay because each event leads to the next, so one part reminds us of the following part. They form pictures in our minds, make us feel emotions and have characters we care about. We pay attention as we want to know the ending, and retelling makes us remember more. Students can turn a process into a journey, link dates to people living then, connect rules to their own lives and explain topics to a friend aloud."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            2,
+            5,
+            7,
+            9,
+            11
+          ],
+          "text": "We remember stories because they let us see pictures in our heads. Stories also keep our attention since we are curious about what will happen next. A story also shows us why a lesson matters instead of just stating it. Students can use this by linking dates to the people who lived at that time, imagining what they saw. They can also explain a topic out loud to a friend, like telling what happened."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            3,
+            10
+          ],
+          "text": "Stories are much easier to remember than facts, and this is true for almost everyone. There are many reasons why stories are so powerful. One of them is that they make us feel emotions like worry and joy. Students should make use of stories when they study so that learning is less boring and more effective. For instance, they can connect a rule to something that happened in their own lives."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "The writer remembers a tale about a mousedeer and crocodiles told by an aunt but cannot remember dates from a history chapter. Teachers know that a class forgets when told honesty matters but remembers the boy who shouted about a wolf. However, false stories spread easily in family chats, so we should check whether a story is true. The aunt recently told the mousedeer story again."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            1,
+            2,
+            8,
+            12
+          ],
+          "text": "Each event causes the next, so remembering one part pulls the following part up after it, like links in a chain. A story also makes pictures, and what the mind has seen it keeps more readily than what it has merely been told. A student can turn a process into a journey rather than memorising labelled arrows. It is worth asking the question every story answers: what caused this, and what did it cause?"
+        }
+      ]
+    }
+  ]
+}

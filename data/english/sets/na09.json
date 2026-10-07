@@ -1,0 +1,607 @@
+{
+  "id": "na09",
+  "kind": "narrative",
+  "title": "Block 412 First",
+  "paragraphs": [
+    "The alarm went off at ten to four, and for a moment Hafiz could not remember what he had agreed to. Then he heard the kettle, and his mother’s slippers on the kitchen floor, and he remembered. His father’s knee was in a brace until December. Somebody had to push the trolley.",
+    "Downstairs, the void deck was lit like an empty stage. A van had left the bundles beside the letterboxes, bound with plastic straps. His mother cut the straps with a small blade and began to count, her lips moving. Hafiz yawned so widely that his jaw clicked. “Block 412 first,” she said. “Top floor down. And don’t let the gate bang — people are sleeping.”",
+    "He had imagined it would be easy. Paper weighs nothing; everybody knows that. But eighty newspapers together weighed about as much as his little sister, and by the third block the strap of the bag had dug a groove into his shoulder. His mother, a head shorter than he was, moved along the corridors ahead of him like water finding its way downhill — never hurrying, never stopping. She folded each paper in one motion and slid it through the cold bars of the gate so that it landed flat, with hardly a whisper.",
+    "Hafiz’s first one hit a shoe rack and scattered across somebody’s doorstep. He looked up, expecting a scolding. His mother only knelt, gathered the pages, squared them against her knee and set them down properly. “The uncle at number 118 likes his on the stool, not the floor,” she said. “His back is bad.” “How do you know?” “Eleven years,” she said, and walked on.",
+    "Eleven years. He did the sum without wanting to. She had started when he was three. All those mornings he had come to the table at half past six and found her there with his breakfast, her hair neatly tied, asking whether he had packed his PE shirt — she had already done this. He had thought she simply woke up early. He had never once asked for what.",
+    "At a flat on the sixth floor, a light was on. An old woman in a faded blouse was waiting behind the gate, and she took the paper straight from his mother’s hand. “This is your boy? So tall.” She pushed two packets of soya milk through the bars. “Every Saturday she gives,” his mother said in the lift, as if it needed explaining. Hafiz held the packets against his chest. After hours of metal gates and damp newsprint, they were the first warm thing he had touched all morning.",
+    "By the last block the sky had gone from black to the colour of weak tea. Birds had started up in the rain trees. His legs trembled on the stairs and his fingers were grey with ink, but something else had changed too: his papers were landing flat. Not all of them. Most.",
+    "They sat on the kerb beside the empty trolley and drank the soya milk. His mother looked at her watch. “Six-oh-five. Faster than with your father,” she said, and then, because praise did not come naturally to her, “Don’t tell him.” “Same time tomorrow?” Hafiz said. He had meant it to sound like a complaint. It came out as something else, and she heard it, and looked away towards the brightening road so that he would not see her face."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 1, why did Hafiz have to help his mother that morning?",
+      "scheme": {
+        "answer": "His father had hurt his knee and could not push the trolley, so someone had to take his place.",
+        "accept": [
+          "Because his father’s knee was in a brace and he could not do the round."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "His father's knee was injured so he could not push the trolley, and Hafiz had to do it instead."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "His father usually helped but he had a bad knee, so Hafiz took his place."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "His mother was sick and could not work."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He wanted to earn some pocket money."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Because he had agreed to do it."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the void deck is ‘lit like an empty stage’. What does this comparison suggest about the void deck at that hour?",
+      "scheme": {
+        "answer": "It was brightly lit but completely deserted, with nobody there to be seen.",
+        "accept": [
+          "The lights were on but there was no one around, as if the place were waiting for something to begin."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It was brightly lit but there was nobody there at all."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "All the lights were on but the place was deserted, like it was waiting for people to arrive."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "There was a concert going on at the void deck."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests how the void deck looked at that time."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "The void deck was lit like an empty stage."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘Don’t let the gate bang — people are sleeping’ (Paragraph 2). What does this instruction show about Hafiz’s mother?",
+      "scheme": {
+        "answer": "She is considerate of the residents and takes care not to disturb their sleep.",
+        "accept": [
+          "She thinks about the people she delivers to, not just about finishing the job."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She is considerate towards the residents and does not want to wake them up."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She cares about the people living there and not only about getting the job done."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She is a bossy person who likes to give orders."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She wants Hafiz to hurry up."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She is telling him something about the gate."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain why the work was harder than Hafiz had imagined (Paragraph 3).",
+      "scheme": {
+        "answer": "He had assumed newspapers were light, but a large number of them together made a heavy load [1], and carrying it soon hurt his shoulder [1].",
+        "points": [
+          "Many newspapers together were heavy, though he had thought they would be light.",
+          "Carrying the load was painful — the bag pressed hard into his shoulder."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He thought newspapers were light, but so many of them together were actually a heavy load. Carrying the bag also soon made his shoulder hurt."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "One paper is light but a big pile is not, which he had not expected. After a few blocks the bag was pressing painfully into him."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He did not expect that a big pile of newspapers would be so heavy."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The bag was hurting his shoulder after a while."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Paper weighs nothing, but eighty newspapers together weighed about as much as his little sister, and the strap of the bag had dug a groove into his shoulder."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He had to climb all the stairs because the lifts were not working."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "His mother moved ‘like water finding its way downhill’ (Paragraph 3). What does this comparison suggest about the way she worked?",
+      "scheme": {
+        "answer": "She moved smoothly at a steady pace, without rushing or pausing [1], and so naturally that she seemed to know where to go without having to think [1].",
+        "points": [
+          "Smooth, steady movement — no rush, no pause.",
+          "It came naturally / without effort or thought — she knew the route by heart."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She moved smoothly at a steady pace without rushing or pausing. It was also natural to her, like she did not have to think about where to go."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Her work flowed along evenly from door to door, and it looked effortless since she knew the route by heart."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She worked at a smooth and steady pace."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She knew the route so well that she did not need to think about where to go next."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was very slow and Hafiz had to wait for her."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that she worked in a certain way."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 3 tells you that each newspaper landed almost silently?",
+      "scheme": {
+        "answer": "whisper"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "whisper"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "“whisper”"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "flat"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "motion"
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 4, Hafiz looked up ‘expecting a scolding’. What does his mother’s response show about her?",
+      "scheme": {
+        "answer": "She was patient with him and did not blame him for a beginner’s mistake [1], and she cared that the job was done neatly and properly [1].",
+        "points": [
+          "She is patient / understanding with him — she does not blame him.",
+          "She takes pride in the work / wants it done properly — she tidies the paper and lays it down neatly herself."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She was patient with him and did not blame him for the mistake. She also cared about doing the job properly, because she tidied the paper and put it down neatly."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She understood that he was new and didn't get angry. She takes her work seriously too, so she made sure the customer still got a neat paper."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She is a patient mother who does not get angry over his mistake."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She takes pride in her job and wants every paper delivered neatly."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was too tired to scold him."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She picked up the newspaper from the floor."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "Paragraph 5 begins with the two-word sentence ‘Eleven years.’ What is the effect of this short sentence?",
+      "scheme": {
+        "answer": "It shows Hafiz stopping to take in, with a shock, how long his mother had been doing this work.",
+        "accept": [
+          "It makes the length of time stand out, showing that the fact is sinking in for him."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It shows that Hafiz is shocked and is taking in how long his mother has been doing this job."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "It makes the number stand out, so we feel the fact sinking into his mind that it is a very long time."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It tells us that Hafiz is eleven years old."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that Hafiz is bored and not interested in what she says."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It is short so it creates an effect and makes the reader want to read on."
+        }
+      ]
+    },
+    {
+      "n": "9",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what Hafiz realised about his mother’s mornings, and about himself (Paragraph 5).",
+      "scheme": {
+        "answer": "Every morning, before he saw her at breakfast, she had already finished a round of deliveries [1]; and he had taken this for granted, never wondering why she was up so early [1].",
+        "points": [
+          "Each morning she had already done the delivery work before he came to breakfast.",
+          "He had taken it for granted / had never been curious — he had not tried to find out why she was up."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He realised that every day before he saw her at breakfast she had already finished delivering newspapers. He also realised he took it for granted and was never curious why she got up so early."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "By the time he sat down to eat each day, she had been out working for hours. And he saw that he had not cared enough to find out the reason she rose so early."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He realised his mother had already completed her deliveries every morning before he ate breakfast."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He realised he had never bothered to find out why his mother was up so early."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "She had already done this. He had thought she simply woke up early. He had never once asked for what."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He realised that his mother woke up early because she liked to cook breakfast for him."
+        }
+      ]
+    },
+    {
+      "n": "10",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "‘They were the first warm thing he had touched all morning’ (Paragraph 6). Explain what the writer suggests by this.",
+      "scheme": {
+        "answer": "After a morning of handling cold gates and damp paper, the packets were pleasantly warm in his hands [1]; they also stood for the kindness of the old woman, which touched him [1].",
+        "points": [
+          "Literally: a welcome warmth after a cold, uncomfortable morning of work.",
+          "More deeply: the warmth of the old woman’s kindness / affection (towards his mother and him), which moved him."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The packets felt warm in his hands after a morning of touching cold gates and paper. It also suggests the kindness of the old woman, which touched him."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "It is about two kinds of warmth, the heat of the drink after the chilly work, and the caring of a customer who thought of them."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The soya milk was warm compared to the cold things he had been handling."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests he was touched by the old woman's kindness to them."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that Hafiz was hungry and wanted to drink the soya milk quickly."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "They were the first warm thing he had touched all morning."
+        }
+      ]
+    },
+    {
+      "n": "11",
+      "marks": 2,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Give two details from Paragraph 7 which show that morning was arriving.",
+      "scheme": {
+        "answer": "The sky had lightened from black to a pale colour [1], and the birds had begun to make noise in the trees [1].",
+        "points": [
+          "The sky had changed from black to a pale colour (‘the colour of weak tea’).",
+          "Birds had started up / begun to call in the trees."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The sky had become lighter, it was not black any more. The birds had also started to sing in the trees."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "It was getting brighter overhead and the birds were waking up and calling."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The birds had started making noise in the rain trees."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The sky was changing from black to a lighter colour. Also his legs were trembling."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "His legs trembled and his fingers were grey with ink."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It was the last block."
+        }
+      ]
+    },
+    {
+      "n": "12",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘Not all of them. Most’ (Paragraph 7). What do these words show about Hafiz’s work by the end of the round?",
+      "scheme": {
+        "answer": "He had improved and was now delivering most papers properly, though he was not yet perfect.",
+        "accept": [
+          "He was learning the skill — getting it right most of the time, but not always."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "He had improved a lot and could do it properly most of the time, but he was still not perfect."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "He was getting the hang of it, though he still got a few wrong."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was still throwing most of the papers badly."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He had not delivered all the newspapers and left most of them behind."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "They show that he was delivering the newspapers."
+        }
+      ]
+    },
+    {
+      "n": "13a",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "stem": "At the end of the story, Hafiz asks, ‘Same time tomorrow?’ (Paragraph 8).",
+      "text": "He ‘had meant it to sound like a complaint’ but ‘it came out as something else’. What did his question really show?",
+      "scheme": {
+        "answer": "That he was willing, even wanting, to come and help her again.",
+        "accept": [
+          "That he no longer minded the work and wanted to do it with her again."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It showed that he actually wanted to come and help her again the next day."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "It showed he did not mind the work any more and was willing to do it again with her."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It showed that he was complaining about waking up so early."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It showed that he had forgotten what time to wake up."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It showed that he was asking about tomorrow."
+        }
+      ]
+    },
+    {
+      "n": "13b",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "stem": "At the end of the story, Hafiz asks, ‘Same time tomorrow?’ (Paragraph 8).",
+      "text": "Why did his mother look away ‘so that he would not see her face’?",
+      "scheme": {
+        "answer": "She was moved by what he said and did not want him to see her emotion.",
+        "accept": [
+          "She was touched, perhaps close to tears, and she is not someone who shows her feelings."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She was touched that he wanted to come again and did not want him to see how emotional she was."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "His words moved her, and she is not the type to show her feelings, so she hid her face."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was angry with him for complaining."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was watching for the van on the road."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She looked away at the road."
+        }
+      ]
+    }
+  ]
+}

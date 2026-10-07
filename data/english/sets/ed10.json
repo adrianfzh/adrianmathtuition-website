@@ -1,0 +1,19 @@
+{
+  "id": "ed10",
+  "kind": "editing",
+  "about": "A football team that never wins",
+  "lines": [
+    {"text": "Our school football team has not won a single match in two years."},
+    {"text": "Most people would have gave up by now, but our players turn up", "wrong": "gave", "right": "given", "note": "Verb form: after 'would have' it is 'given', not 'gave'."},
+    {"text": "for training every Tuesday and Thursday without fail. The captain is a quiet"},
+    {"text": "boy which never shouts, yet everyone listens when he speaks. Last month, we", "wrong": "which", "right": "who", "accept": ["that"], "note": "'Which' is for things. A boy takes 'who'."},
+    {"text": "lost by six goals to a team from a neighbouring school. Nobody cry", "wrong": "cry", "right": "cried", "note": "Tense: the match was last month, so it is 'cried'."},
+    {"text": "or blamed the goalkeeper. Instead, the players shook hands with his opponents and", "wrong": "his", "right": "their", "note": "Pronoun: 'the players' is plural, so it is 'their'."},
+    {"text": "stayed behind to practise passing. Our coach says that losing teach us things", "wrong": "teach", "right": "teaches", "accept": ["taught"], "note": "Agreement: 'losing' is one thing, so it is 'teaches'."},
+    {"text": "that winning never could. We have learnt to be patience, to trust one", "wrong": "patience", "right": "patient", "note": "Word form: after 'to be' an adjective is needed — 'patient'."},
+    {"text": "another and to keep running until the whistle. We are also much fit than", "wrong": "fit", "right": "fitter", "note": "Comparative: before 'than' it is 'fitter'."},
+    {"text": "we were two years ago. A few classmates laugh at our results, but"},
+    {"text": "they have never watched us train. Whatever the score, I am proud with", "wrong": "with", "right": "of", "note": "Preposition: we are 'proud of' something."},
+    {"text": "this team, and I would not exchange it for any other."}
+  ]
+}

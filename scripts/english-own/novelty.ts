@@ -9,13 +9,14 @@
 //   • the set's own text (passage / visual text / editing lines): no run of 8 words shared,
 //     and under 2 % of its 5-word runs shared;
 //   • its questions: no run of 12 words shared (exam stock phrases are shorter than that).
-// Exit 1 when a set fails — it is rewritten, never shipped. Prints nothing from the bank.
+// Reads the set files in data/english/sets/ themselves (not the built file), so a writer can
+// check a set before it is built in. Exit 1 when a set fails — it is rewritten, never shipped. Prints nothing from the bank.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
 import { isEditing, visualWords, type OwnSet } from '../../src/lib/english-own';
-import { OWN_SETS } from '../../src/lib/english-own-data';
+import { readSets } from './build';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 function env(name: string): string {
@@ -52,7 +53,7 @@ async function main() {
   for (const b of bank) { const t = toks(b); grams(t, 5).forEach(g => g5.add(g)); grams(t, 8).forEach(g => g8.add(g)); grams(t, 12).forEach(g => g12.add(g)); }
   console.log(`bank: ${bank.length} rows read`);
   let bad = 0;
-  for (const s of OWN_SETS.filter(x => !only || only.includes(x.id))) {
+  for (const s of readSets().sets.filter(x => !only || only.includes(x.id))) {
     const t = toks(ownText(s));
     const five = grams(t, 5);
     const share5 = five.length ? five.filter(g => g5.has(g)).length / five.length : 0;

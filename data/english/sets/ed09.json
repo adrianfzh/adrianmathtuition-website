@@ -1,0 +1,70 @@
+{
+  "id": "ed09",
+  "kind": "editing",
+  "about": "Why people keep handwritten diaries",
+  "lines": [
+    {
+      "text": "In an age of screens, it may seem strange that anyone still keeps"
+    },
+    {
+      "text": "a diary on paper. Yet many people, young and old, continues to write",
+      "wrong": "continues",
+      "right": "continue",
+      "note": "Agreement: 'many people' is plural, so it is 'continue'."
+    },
+    {
+      "text": "in a notebook every night. Some say that writing by hand slows them"
+    },
+    {
+      "text": "down and helps them thinking more clearly. Others like knowing that nobody else",
+      "wrong": "thinking",
+      "right": "think",
+      "note": "Verb form: after 'helps them' the verb stays plain — 'think'."
+    },
+    {
+      "text": "can read his private thoughts. A paper diary cannot be hacked, and it",
+      "wrong": "his",
+      "right": "their",
+      "note": "Pronoun: 'others' is plural, so it is 'their'."
+    },
+    {
+      "text": "needs neither a password or a battery. There is also a simple pleasure",
+      "wrong": "or",
+      "right": "nor",
+      "note": "Connector: 'neither' is followed by 'nor'."
+    },
+    {
+      "text": "in choosing a pen and filling a clean page with one’s own handwrite.",
+      "wrong": "handwrite",
+      "right": "handwriting",
+      "note": "Word form: after 'one’s own' a noun is needed — 'handwriting'."
+    },
+    {
+      "text": "Years later, the pages become a record of who the writer once was."
+    },
+    {
+      "text": "My aunt has kept a diary since she is fourteen, and she owns",
+      "wrong": "is",
+      "right": "was",
+      "note": "Tense: she was fourteen in the past, so it is 'was'.",
+      "accept": [
+        "turned"
+      ]
+    },
+    {
+      "text": "more than thirty notebook today. She says that reading the oldest ones is",
+      "wrong": "notebook",
+      "right": "notebooks",
+      "note": "Plural: 'thirty' needs 'notebooks'."
+    },
+    {
+      "text": "like meeting a youngest version of herself. Typing may be faster, but for",
+      "wrong": "youngest",
+      "right": "younger",
+      "note": "Comparative: she is comparing two selves, so it is 'a younger version'."
+    },
+    {
+      "text": "people like her, nothing can replace the feel of ink on paper."
+    }
+  ]
+}

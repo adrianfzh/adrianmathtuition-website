@@ -1,0 +1,88 @@
+{
+  "id": "vt06",
+  "kind": "visual",
+  "title": "Byte Buddies Coding Club",
+  "format": "webpage",
+  "theme": "indigo",
+  "visual": [
+    { "t": "kicker", "text": "BYTE BUDDIES · SATURDAY CODING CLUB" },
+    { "t": "headline", "text": "Your child already loves games. Let them build one." },
+    { "t": "tagline", "text": "Free weekend coding for Primary 3 to 6, taught by teenagers who remember being beginners." },
+    { "t": "picture", "text": "A girl of about ten points excitedly at a laptop screen, where a cartoon cat she has made is jumping. Beside her, a teenage tutor sits back with his hands off the keyboard, smiling." },
+    { "t": "body", "text": "Byte Buddies is run by secondary school students who learnt to code the hard way: by getting stuck, a lot. That is why our tutors never take over the mouse. They ask questions, give hints and wait. Over eight Saturdays, your child will plan, build and share a simple game of their own — and learn that a mistake is just a puzzle to solve." },
+    { "t": "box", "title": "What parents ask us", "items": [
+      "Does my child need a laptop? No. We lend one.",
+      "Is it safe? A teacher-adviser is in the room at every session.",
+      "Will there be homework? Never.",
+      "What does it cost? Nothing."
+    ] },
+    { "t": "quote", "text": "“Kai used to give up the moment something went wrong. Last week he spent forty minutes fixing one bug and came home proud.” — Mdm Lim, parent of a Primary 4 pupil" },
+    { "t": "small", "text": "Saturdays, 10 am · Bishan Community Centre · next round begins 10 January" },
+    { "t": "button", "text": "Register your child — 20 places per round" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The webpage is written for parents rather than for children. Give one piece of evidence from the webpage that shows this.",
+      "scheme": { "answer": "It speaks to the reader about ‘your child’.", "accept": ["The box is titled ‘What parents ask us’.", "It quotes Mdm Lim, a parent.", "The button says ‘Register your child’.", "It answers worries that parents have, such as cost and safety."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It keeps saying 'your child', so it is talking to the parents." },
+        { "mark": 1, "flaw": "paraphrase", "text": "There is a box called 'What parents ask us'." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The person quoted is Mdm Lim, who is a parent of a pupil, not a child." },
+        { "mark": 0, "flaw": "wrong", "text": "It says the club is for Primary 3 to 6." },
+        { "mark": 0, "flaw": "wrong", "text": "The picture shows a girl of about ten using a laptop." },
+        { "mark": 0, "flaw": "vague", "text": "The language used is quite formal." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "visual",
+      "text": "In the picture, the tutor sits back ‘with his hands off the keyboard’. Which idea in the body text does this detail support?",
+      "scheme": { "answer": "The tutors never take over; they let the children do the work and solve the problems themselves.", "accept": ["‘our tutors never take over the mouse’", "The tutors only ask questions, give hints and wait."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It supports the idea that the tutors do not do the work for the children but let them figure it out on their own." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The idea that 'our tutors never take over the mouse'." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The tutors just give hints and wait while the child does the coding herself." },
+        { "mark": 0, "flaw": "wrong", "text": "The idea that the club lends a laptop to every child." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that the tutor does not know how to code." },
+        { "mark": 0, "flaw": "wrong", "text": "The idea that children already love games." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "inference",
+      "text": "The body text says children will ‘learn that a mistake is just a puzzle to solve’. What attitude does the club hope children will develop?",
+      "scheme": { "answer": "Not to be discouraged by their mistakes but to keep trying until they have worked out how to fix them.", "accept": ["To persevere when something goes wrong and to see errors as a challenge rather than a failure."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The club hopes children will not be discouraged by mistakes and will keep trying until they can fix them." },
+        { "mark": 1, "flaw": "paraphrase", "text": "To not give up when things go wrong, and to treat an error as a challenge instead of a failure." },
+        { "mark": 0, "flaw": "wrong", "text": "That children should never make any mistakes when they code." },
+        { "mark": 0, "flaw": "wrong", "text": "That children should play more puzzle games." },
+        { "mark": 0, "flaw": "vague", "text": "The club hopes children will have a good attitude." },
+        { "mark": 0, "flaw": "lifted", "text": "That a mistake is just a puzzle to solve." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the tagline suggests that the tutors will understand what it is like to be new to coding?",
+      "scheme": { "answer": "remember being beginners", "accept": ["who remember being beginners", "teenagers who remember being beginners", "being beginners"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "remember being beginners" },
+        { "mark": 1, "flaw": "paraphrase", "text": "'teenagers who remember being beginners'" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"who remember being beginners\"." },
+        { "mark": 0, "flaw": "wrong", "text": "Free weekend coding" },
+        { "mark": 0, "flaw": "wrong", "text": "for Primary 3 to 6" }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "visual",
+      "text": "What is the purpose of the box titled ‘What parents ask us’?",
+      "scheme": { "answer": "To remove the worries parents may have, such as cost, safety and equipment, so that they feel comfortable registering their child.", "accept": ["To reassure parents by answering the questions that might stop them from signing their child up."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "To clear the worries parents may have, like the cost and safety, so that they will be willing to register their child." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It reassures parents by answering the doubts that might stop them from signing up." },
+        { "mark": 0, "flaw": "wrong", "text": "To tell parents the time and place of the club." },
+        { "mark": 0, "flaw": "wrong", "text": "To show that parents ask too many questions." },
+        { "mark": 0, "flaw": "vague", "text": "To give some information." }
+      ]
+    }
+  ]
+}

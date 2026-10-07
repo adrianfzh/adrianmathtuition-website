@@ -1,0 +1,86 @@
+{
+  "id": "vt02",
+  "kind": "visual",
+  "title": "Walk to School Week",
+  "format": "poster",
+  "theme": "green",
+  "visual": [
+    { "t": "kicker", "text": "STUDENT COUNCIL · 14–18 JULY" },
+    { "t": "headline", "text": "The best ten minutes of your day are not in a car." },
+    { "t": "tagline", "text": "Walk to School Week — leave the back seat and use your feet." },
+    { "t": "picture", "text": "Four students in uniform stroll along a covered walkway, laughing and sharing a packet of biscuits. Behind them, a long line of cars waits outside the school gate." },
+    { "t": "body", "text": "Every morning, the road outside our gate fills with cars, and half of us arrive sleepy and silent. For one week, try something different. Get off the bus a stop early, or ask to be dropped at the park. Walk the rest with a friend. You will reach class awake, with a story to tell." },
+    { "t": "box", "title": "How it works", "items": [
+      "Collect a stamp card from your form teacher",
+      "Walk in on any morning and have it stamped at the gate before 7.20 am",
+      "Five stamps earn you a breakfast set from the canteen",
+      "The class with the most stamps chooses the music at Friday’s assembly"
+    ] },
+    { "t": "quote", "text": "“I used to scroll on my phone all the way to school. Now I walk with my neighbour, and we have actually become friends.” — Hui Min, Secondary 3" },
+    { "t": "small", "text": "Live too far away to walk? Join a Walking Bus from Block 204 or the MRT station, led by prefects, at 6.55 am." },
+    { "t": "button", "text": "Pick up your stamp card on Monday" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "visual",
+      "text": "How does the picture support the message of the poster?",
+      "scheme": { "answer": "It shows the students who walk laughing and enjoying one another’s company while the cars are stuck in a queue, so walking looks more pleasant than being driven.", "accept": ["It contrasts cheerful students on foot with a traffic jam at the gate, which makes walking seem the better way to come to school."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It shows the students who walk are happy and having fun together, while the cars are all stuck in a jam, so walking looks better than going by car." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The walkers are laughing with their friends but the cars behind cannot move, so it makes us feel walking is the nicer way to get to school." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that students should share their food with their friends." },
+        { "mark": 0, "flaw": "vague", "text": "The picture makes the poster more colourful and attractive." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that there are too many cars in Singapore." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Which phrase in the body text tells us that many students are not at their best when they reach school in the morning?",
+      "scheme": { "answer": "sleepy and silent", "accept": ["arrive sleepy and silent", "half of us arrive sleepy and silent"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "sleepy and silent" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is 'arrive sleepy and silent'." },
+        { "mark": 0, "flaw": "wrong", "text": "fills with cars" },
+        { "mark": 0, "flaw": "wrong", "text": "awake, with a story to tell" },
+        { "mark": 0, "flaw": "wrong", "text": "try something different" }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The poster is written for the students of one school. Give one piece of evidence from the poster that shows this.",
+      "scheme": { "answer": "It says ‘our gate’ and ‘half of us’, so the writer and the readers belong to the same school.", "accept": ["Stamp cards are collected from ‘your form teacher’.", "The rewards are a breakfast set from the canteen and choosing the music at Friday’s assembly.", "It quotes Hui Min, a Secondary 3 student.", "The Walking Bus is led by prefects.", "It is put up by the Student Council."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It uses 'our gate' and 'half of us', which shows the writer is talking to people in the same school." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Students have to collect the stamp card from their form teacher, and only students have form teachers." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The prize is a breakfast set from the school canteen." },
+        { "mark": 0, "flaw": "wrong", "text": "It says the best ten minutes of your day are not in a car." },
+        { "mark": 0, "flaw": "vague", "text": "The poster uses simple words that are easy to understand." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "visual",
+      "text": "Why does the poster include the information about the Walking Bus?",
+      "scheme": { "answer": "It shows students who live far away that they can still take part, by walking the last stretch in a group.", "accept": ["So that students who live too far to walk from home do not feel left out and have a way to join in."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "So that students who stay far from school can still join by walking part of the way with the group." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Some students cannot walk all the way from home, so this gives them a way to take part too and not be left out." },
+        { "mark": 0, "flaw": "wrong", "text": "To tell students that there is a new bus service to the school." },
+        { "mark": 0, "flaw": "vague", "text": "To give students more information about the week." },
+        { "mark": 0, "flaw": "wrong", "text": "To show that prefects are responsible students." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the headline: ‘The best ten minutes of your day are not in a car.’ What does it suggest about walking to school?",
+      "scheme": { "answer": "Walking to school can be the most enjoyable part of a student’s day, much better than sitting in a car.", "accept": ["A short walk to school is something to look forward to, and students who are driven miss out on it."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that walking to school is very enjoyable and can even be the best part of the whole day, better than being driven." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Students who sit in a car are missing out, because the short walk is actually the nicest time of their day." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that it takes exactly ten minutes to walk to school." },
+        { "mark": 0, "flaw": "lifted", "text": "The best ten minutes of your day are not in a car." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that cars are dangerous for students." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests something about how students travel to school." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "id": "nn08",
+  "kind": "non_narrative",
+  "title": "What the Queue Knows",
+  "paragraphs": [
+    "If you want to understand a country, skip the museums and go and stand in a queue. At half past twelve outside a popular chicken rice stall, a line of hungry strangers, shuffling forward like one long and patient animal, will tell you more about how people here treat one another than any guidebook.",
+    "A queue is a stranger invention than it looks. Nobody is paid to guard it, and no rule is pinned to the wall. Yet twenty people who have never met arrange themselves in order of arrival and stay that way. It is an agreement made without a word and renewed every minute, and it is fragile: it lasts only as long as each person in it chooses to keep it.",
+    "Consider what an orderly queue reveals about the people in it. First, they accept that everyone is equal: the man with the expensive watch waits behind the schoolboy in slippers, because all that counts is who came first. They also trust strangers, since nobody would wait calmly unless they believed the people behind would not push past. A queue shows patience too, for each person in it has agreed to put off what they want now for the sake of order. It shows that people will keep a rule when no one is watching, without a policeman or a fine in sight. And when a line parts to let an old woman with a walking stick go ahead, it shows that fairness here has room for kindness.",
+    "None of this happens by itself; a queue is kept alive by small acts. The first is to join at the back, however late you are running. The second is not to hold places for others: one student guarding a spot is harmless until five classmates arrive to claim it. Be ready when your turn comes, with your order decided and your money in your hand, because those behind you pay for every second you spend dithering. Keep up as the line moves, too, rather than leaving a widening gap while you stare at your phone. If you cannot tell where a line ends, ask instead of guessing in your own favour. And when someone does cut in, say so politely; glaring at the back of a head has never moved anyone.",
+    "Queues can make fools of us as well. Open a new bubble tea shop, and a line will form simply because a line has formed. People at the back often have no idea what is being sold at the front; they assume that anything so many others are waiting for must be worth having. Here the queue is no longer a way of sharing fairly. It is an advertisement that the customers kindly stand in themselves.",
+    "Watch, though, what happens when the agreement breaks. A man slips in near the front, and for a moment nobody says anything. The cutting in is one person’s small theft. The silence is worse, because it tells everyone watching that the rule has no defenders. Within minutes the line begins to bunch and fray, elbows come out, and twenty polite people become a crowd.",
+    "So the next time you find yourself in line with a tray in your hands, look along it. You are standing in something people built without tools, a small country in single file. And if the auntie in front of you turns round and says, ‘You go first, you only have one drink,’ you will know what kind of country it is."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer describes the line of strangers as ‘shuffling forward like one long and patient animal’. Explain what this comparison suggests about the people in the queue.",
+      "scheme": {
+        "answer": "They move together as if they were a single body, not separate people [1], and they move slowly and calmly, without fuss or complaint [1].",
+        "points": [
+          "They move together as one / act like a single body.",
+          "They move slowly and calmly, without fuss or complaint."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "It suggests that the people in the queue move together as if they were one body. It also suggests they move slowly and calmly without complaining." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The strangers act like a single creature instead of separate people, and they inch forward quietly and without any hurry." },
+        { "mark": 1, "flaw": "half", "text": "The people in the line move together like one single thing." },
+        { "mark": 1, "flaw": "half", "text": "The people are calm and do not mind moving slowly." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests the people are pushing each other like wild animals to get their food." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that animals also queue up for food." }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what the writer finds strange about the way a queue is formed (Paragraph 2).",
+      "scheme": {
+        "answer": "No one is in charge of a queue or forces people to form one [1], yet people who do not know one another line up by who came first, and keep to it, of their own accord [1].",
+        "points": [
+          "No one is in charge of it / nothing forces people to form it.",
+          "Yet people who do not know one another line up by who came first (and keep to it) of their own accord."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "There is no one in charge of a queue and nothing forcing people to form one. Even so, people who do not know each other line up according to who came first and keep to it." },
+        { "mark": 2, "flaw": "paraphrase", "text": "No guard or written notice makes people do it, but strangers still sort themselves out by who got there earlier and do not change places." },
+        { "mark": 1, "flaw": "half", "text": "There is nobody in charge to make people queue up." },
+        { "mark": 1, "flaw": "half", "text": "People who do not know one another line up according to who came first." },
+        { "mark": 0, "flaw": "lifted", "text": "Nobody is paid to guard it, and no rule is pinned to the wall. Yet twenty people who have never met arrange themselves in order of arrival and stay that way." },
+        { "mark": 0, "flaw": "wrong", "text": "A queue is strange because it was invented by a stranger a long time ago." }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 tells us that the agreement can easily be broken?",
+      "scheme": { "answer": "fragile" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "fragile" },
+        { "mark": 1, "flaw": "full", "text": "‘fragile’" },
+        { "mark": 0, "flaw": "wrong", "text": "renewed" },
+        { "mark": 0, "flaw": "wrong", "text": "stranger" }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 5, why do people at the back join the line outside a new shop without knowing what is being sold?",
+      "scheme": {
+        "answer": "They assume that something so many other people are waiting for must be worth having.",
+        "accept": [
+          "They think a long line means the thing at the end of it is good."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "They think that if so many people are waiting for it, it must be worth having." },
+        { "mark": 1, "flaw": "paraphrase", "text": "They believe a long line means the thing being sold is good." },
+        { "mark": 0, "flaw": "wrong", "text": "They want to buy bubble tea for their friends." },
+        { "mark": 0, "flaw": "wrong", "text": "They were told to queue up by the owner of the shop." },
+        { "mark": 0, "flaw": "vague", "text": "They just feel like joining it." }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, the writer says that the silence is ‘worse’ than the cutting in. Explain why the writer thinks so.",
+      "scheme": {
+        "answer": "The cutting in is only a small wrong done by one person [1], but the silence shows everyone that nobody will stand up for the rule, so the others stop keeping it and the queue breaks down [1].",
+        "points": [
+          "The cutting in is only a small wrong done by one person.",
+          "The silence shows everyone that nobody will stand up for the rule, so the others stop keeping it too / the queue breaks down."
+        ]
+      },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The cutting in is only one person doing a small wrong. The silence shows everybody that no one will stand up for the rule, so the others stop following it too and the queue breaks down." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One queue-jumper is a minor matter. But when nobody objects, the rest realise the rule is not protected, and soon they all push forward." },
+        { "mark": 1, "flaw": "half", "text": "Cutting in is only a small wrong done by one person." },
+        { "mark": 1, "flaw": "half", "text": "When nobody speaks up, everyone sees that no one will protect the rule, so they stop following it as well." },
+        { "mark": 0, "flaw": "wrong", "text": "Because it is rude to keep silent when someone talks to you in a queue." },
+        { "mark": 0, "flaw": "vague", "text": "Because silence is a bad thing." }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, what does the auntie’s remark suggest about ‘what kind of country it is’?",
+      "scheme": {
+        "answer": "It is a country where people are kind and considerate, and will give way to others even when they do not have to.",
+        "accept": [
+          "People there think of others and willingly let someone go ahead of them."
+        ]
+      },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests it is a country where people are kind and considerate, and will give way to others even when they do not have to." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The people there think of others and are willing to let someone go ahead of them out of goodwill." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests it is a country where older people are impatient with the young." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests it is a country where people only buy one drink at a time." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests it is a country with many queues." }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the writer’s attitude towards queues in this article?",
+      "options": [
+        { "label": "A", "text": "Annoyed that so much of daily life is spent waiting in line" },
+        { "label": "B", "text": "Amused by queues but sure that they are of no real importance" },
+        { "label": "C", "text": "Admiring of what an orderly queue shows about people, while aware that queues can be misused" },
+        { "label": "D", "text": "Worried that people here no longer know how to queue properly" }
+      ],
+      "scheme": { "answer": "Admiring of what an orderly queue shows about people, while aware that queues can be misused" },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise what an orderly queue shows about the people in it and what each person can do to keep a queue working.\n\nUse only Paragraphs 3 and 4.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "People accept that everyone is equal: only who came first counts.",
+          "They trust strangers (not to push past them).",
+          "They are patient: willing to put off what they want.",
+          "They keep a rule even when nobody is watching or enforcing it.",
+          "Their fairness leaves room for kindness (letting someone in need go ahead).",
+          "Join at the back, even when in a hurry.",
+          "Do not hold places for other people.",
+          "Be ready when your turn comes (order decided, money out).",
+          "Keep up with the line as it moves (no gaps).",
+          "Ask where the line ends when unsure.",
+          "Speak up politely when someone cuts in."
+        ],
+        "answer": "An orderly queue shows that people treat everyone as equal, trust those they do not know, can wait for what they want, obey rules unsupervised and make allowances for the weak. To keep one working, each person should start at the end, never reserve spots for friends, be prepared to order and pay, move forward promptly, check where the line finishes when unsure, and speak up courteously when someone jumps in."
+      },
+      "seeds": [
+        { "mark": 8, "flaw": "full", "hit": [1, 2, 3, 4, 6, 7, 8, 9, 10, 11], "text": "A proper queue shows that people see everyone as equal, because only arriving first matters. They trust people they do not know, are patient, and follow rules even when nobody is checking. To keep a queue working, we should go to the back, not keep places for friends, be ready with our order and money, move up when the line moves, ask where the line ends if unsure, and politely tell people who cut in." },
+        { "mark": 5, "flaw": "half", "hit": [1, 3, 6, 8, 11], "text": "A queue shows that people treat each other as equals, because the rich man waits behind the schoolboy. It also shows that people are patient and can wait for what they want. To keep a queue working, everyone should join at the back even when they are late. They should have their order and money ready when it is their turn. If somebody cuts the queue, they should tell the person politely." },
+        { "mark": 2, "flaw": "vague", "hit": [3, 6], "text": "Queues are very important in our society and they tell us many things about people. A good queue shows what kind of people we are, for example that we are patient. Everyone has a part to play to make sure the queue is good. We must all do the right thing, like going to the back of the line. If everyone does their part, queues will be better for all." },
+        { "mark": 0, "flaw": "wrong", "hit": [], "text": "Standing in a queue outside a chicken rice stall tells you more about a country than a guidebook. Nobody guards a queue, and it is a fragile agreement made without a word. Sometimes people join a queue at a new bubble tea shop without knowing what is sold there, so the queue becomes an advertisement. A queue is something people built without tools, like a small country in single file." },
+        { "mark": 4, "flaw": "lifted", "hit": [2, 4, 7, 9], "text": "They also trust strangers, since nobody would wait calmly unless they believed the people behind would not push past. It shows that people will keep a rule when no one is watching. The second is not to hold places for others: one student guarding a spot is harmless until five classmates arrive to claim it. Keep up as the line moves, too, rather than leaving a widening gap while you stare at your phone." }
+      ]
+    }
+  ]
+}

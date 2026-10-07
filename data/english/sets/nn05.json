@@ -1,0 +1,411 @@
+{
+  "id": "nn05",
+  "kind": "non_narrative",
+  "title": "The Habit of the Bench",
+  "paragraphs": [
+    "The bus stop outside my school is forty steps from the gate. The bus takes me two stops, a distance I could cover on foot in twelve minutes, and on most afternoons I wait nine minutes for it to arrive. I have done this sum many times, usually while waiting, and it has never once got me off the bench.",
+    "I am not alone on that bench. We have grown used to treating every journey as a problem to be solved in the fewest possible minutes. The phone in my pocket will happily plan the quickest route to anywhere, and it has never once suggested the pleasant one. Walking, in this way of thinking, is what happens when something has gone wrong: the bus is full, the rain has stopped the trains, or the fare card has run out of value.",
+    "Yet a short walk gives a good deal in return for its minutes. It is exercise that needs no special shoes, no fee and no appointment. After a day folded into a classroom chair, it loosens the body and clears a head stuffed with formulas. It gives the mind room to wander, and it is surprising how often a problem that would not move at a desk comes loose somewhere between two traffic lights. It is also dependable: a walk is never stuck in a jam and never sails past the stop because it is full.",
+    "The benefits do not end with the walker. On foot, you notice your own neighbourhood — which shop has changed hands, which tree is in flower, which uncle feeds the same cat every evening. You meet people instead of passing them behind glass, and a nod repeated every day slowly turns a stranger into a neighbour. Every short trip made on foot also frees a seat on a crowded bus for someone who needs it more. It adds nothing to the fumes that hang over the road. It even saves the fare, which is no small matter to anyone living on pocket money.",
+    "Nobody needs to give up wheels altogether. Begin by getting off one stop early and walking the rest of the way. Keep an umbrella and a pair of comfortable shoes ready, so that weather and blisters are no excuse. And walk with a friend when you can, since conversation shortens any road.",
+    "I admit the obvious objection. This is a hot, wet island, and there are afternoons when the air feels like soup and arriving anywhere dry is a victory. On those days, take the bus with my blessing. But be honest about the other days — the breezy ones, the after-rain ones — when the only thing stopping us is the habit of the bench.",
+    "Last week I finally did the sum with my feet. I walked past the bus stop, past the nine minutes of waiting, past a bakery I had not known existed, and reached my block just as the bus I would have taken pulled up beside me. We had arrived together. Only one of us had bought a curry puff on the way."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 1, the writer says the sum ‘has never once got me off the bench’. What does this tell us about what the writer knows and what the writer still does?",
+      "scheme": {
+        "answer": "The writer knows that walking would take no longer than waiting for and riding the bus [1], yet still sits and waits for the bus every time [1].",
+        "points": [
+          "The writer knows that walking would be about as quick as / no slower than taking the bus.",
+          "The writer still waits for the bus every time anyway."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The writer knows that walking would not take any longer than waiting for the bus and riding it. Even so, the writer still sits there and waits for the bus every time."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The writer has worked out that going on foot is just as quick, but never acts on it and carries on taking the bus as usual."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer knows that walking is actually just as fast as taking the bus."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer still chooses to sit and wait for the bus every time."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer is bad at mathematics and cannot do the sum."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The bench is broken and the writer cannot get off it."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 shows that the phone is very willing to plan the fastest route?",
+      "scheme": {
+        "answer": "happily"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "happily"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘happily’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "quickest"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "fewest"
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 2, the writer says the phone ‘has never once suggested the pleasant one’. What is the writer suggesting about the way we choose our routes?",
+      "scheme": {
+        "answer": "We think only about getting there fastest and never about whether the journey is enjoyable.",
+        "accept": [
+          "Speed is all that matters to us; a nice journey is not considered."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "We only think about getting there in the fastest way and never consider whether the journey is enjoyable."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Speed is all that counts to us, and whether the route is a nice one does not matter."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Phones often give the wrong directions."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "There are no pleasant routes left on the island."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The phone plans routes for us."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "From Paragraph 2, give one example of something that has ‘gone wrong’ and leaves a person with no choice but to walk.",
+      "scheme": {
+        "answer": "The bus is full.",
+        "accept": [
+          "The rain has stopped the trains.",
+          "The fare card has run out of value."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The bus is too full to get on."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "There is no more money left in the fare card."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The person wants to get some exercise."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The phone has run out of battery."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Something bad happened on the way."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 6, the writer says that on some afternoons ‘the air feels like soup’. What does this suggest about the air?",
+      "scheme": {
+        "answer": "It is very hot, thick and damp (humid).",
+        "accept": [
+          "The air feels warm, heavy and wet on the skin."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests the air is very hot, thick and humid."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The air is so warm and damp that it feels heavy on the skin."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The air smells of food from the stalls nearby."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The air is cold and fresh."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The weather is not good."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘But be honest about the other days — the breezy ones, the after-rain ones — when the only thing stopping us is the habit of the bench.’ In your own words, explain what the writer wants readers to admit about these days (Paragraph 6).",
+      "scheme": {
+        "answer": "On these days the weather is cool and comfortable enough for walking [1], so the only reason we do not walk is that we are used to waiting for the bus [1].",
+        "points": [
+          "The weather on these days is cool / comfortable enough for walking.",
+          "The only reason we do not walk is that we are used to waiting for the bus (routine, not need)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "On these days the weather is cool and comfortable for walking. So the real reason we do not walk is just that we are so used to waiting for the bus."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "When it is windy or has just rained, it is not too hot to go on foot. We should admit that we take the bus then only out of routine and not because we need to."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "On those days the weather is cool and comfortable enough for walking."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The only reason we do not walk is that we are so used to waiting for the bus."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "On the breezy ones and the after-rain ones, the only thing stopping us is the habit of the bench."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "On those days it is too hot and wet to walk, so we should take the bus."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 7, the writer ends with ‘Only one of us had bought a curry puff on the way.’ What point is the writer making about walking?",
+      "scheme": {
+        "answer": "Walking was just as fast as the bus, and it also gave the writer a pleasure or discovery that the bus ride could not.",
+        "accept": [
+          "Walking cost no extra time but gave more: the walker found and enjoyed something along the way."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "Walking got the writer home at the same time as the bus, but with something extra that the bus could not give."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The walk was just as fast, and the writer also discovered a bakery and got a snack, so walking gave more than riding."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The bus driver was hungry."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Walking makes people hungry, so it ends up costing more money."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The writer likes curry puffs."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Which of the following best describes the writer’s tone in this article?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Angry and impatient"
+        },
+        {
+          "label": "B",
+          "text": "Light-hearted but persuasive"
+        },
+        {
+          "label": "C",
+          "text": "Sad and regretful"
+        },
+        {
+          "label": "D",
+          "text": "Formal and scientific"
+        }
+      ],
+      "scheme": {
+        "answer": "Light-hearted but persuasive"
+      },
+      "seeds": []
+    },
+    {
+      "n": "9",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise the benefits of making short journeys on foot and how a person can start doing so.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "It is exercise that is free and needs no equipment or booking.",
+          "It loosens the body and clears the head after a day of sitting.",
+          "It lets the mind wander, so stubborn problems get solved.",
+          "It is dependable: no traffic jams, no full buses.",
+          "You notice your own neighbourhood.",
+          "You meet people, and strangers become neighbours.",
+          "It frees a seat on a crowded bus for someone else.",
+          "It adds no fumes to the air.",
+          "It saves the fare.",
+          "Get off one stop early and walk the rest.",
+          "Keep an umbrella and comfortable shoes ready.",
+          "Walk with a friend."
+        ],
+        "answer": "Walking is free exercise needing no equipment, and it relaxes the body and refreshes the mind after hours of sitting. It lets thoughts roam so problems get solved, and it is never delayed by traffic or full buses. Walkers notice their surroundings and befriend people they meet. They also leave bus seats for others, cause no pollution and save money. To start, alight one stop early, keep an umbrella and comfortable shoes handy, and walk with a friend."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          "text": "Walking is exercise that costs nothing and needs no equipment. It relaxes the body and clears the mind after sitting in class all day. It is reliable as there are no jams or full buses. Walkers notice things in their neighbourhood and get to know the people there. Walking does not pollute the air and saves bus fare. To start, get off the bus one stop earlier, keep an umbrella and good shoes ready, and walk with a friend."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            3,
+            5,
+            7,
+            9,
+            10
+          ],
+          "text": "When we walk, our minds are free to wander, so we may solve problems that we could not solve at a desk. We also notice more about our own neighbourhood, like new shops and flowering trees. Each person who walks leaves one more seat on a crowded bus for somebody else, and saves the bus fare too. A simple way to begin is to get off one stop early and walk the rest of the way."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            8,
+            12
+          ],
+          "text": "Walking is a very good habit and people today should really do it more often instead of always taking the bus for short distances. It has plenty of advantages for everybody. For example, it does not add fumes to the air. It is not difficult to start walking if we are willing to try. We can ask a friend to walk together with us, because talking makes the journey feel shorter."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "The bus stop is forty steps from the school gate and the writer waits nine minutes for a bus that goes two stops. People treat every journey as a problem to be solved quickly, and phones plan the quickest route. The island is hot and wet, so on some days we should take the bus. Last week the writer walked home, found a bakery and bought a curry puff, arriving together with the bus."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            1,
+            4,
+            6,
+            11
+          ],
+          "text": "It is exercise that needs no special shoes, no fee and no appointment. It is also dependable: a walk is never stuck in a jam and never sails past the stop because it is full. A nod repeated every day slowly turns a stranger into a neighbour. Keep an umbrella and a pair of comfortable shoes ready, so that weather and blisters are no excuse."
+        }
+      ]
+    }
+  ]
+}

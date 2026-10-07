@@ -150,7 +150,7 @@ async function main() {
         if (at % 10 === 0) { save(); process.stdout.write(`  ${at}/${todo.length}\r`); }
       }
     };
-    await Promise.all([...Array(5)].map(worker));
+    await Promise.all([...Array(8)].map(worker));
     save();
   }
   const verdict = report(rows);

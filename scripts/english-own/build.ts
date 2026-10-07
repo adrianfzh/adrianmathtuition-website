@@ -31,9 +31,14 @@ export function readSets(): { sets: OwnSet[]; problems: string[] } {
 export const merged = (sets: OwnSet[]): string => JSON.stringify({ sets }, null, 1) + '\n';
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const { sets, problems } = readSets();
+  const all = readSets();
+  // --sets ed03,ed04 — a writer checks only its own files while others are still writing theirs
+  const i = process.argv.indexOf('--sets');
+  const only = i >= 0 ? process.argv[i + 1].split(',') : null;
+  const sets = only ? all.sets.filter(s => only.includes(s.id)) : all.sets;
+  const problems = only ? all.problems.filter(p => only.some(id => p.startsWith(id + '.json'))) : all.problems;
   if (problems.length) { console.error(problems.join('\n')); process.exit(1); }
   const count = (k: string) => sets.filter(s => s.kind === k).length;
   console.log(`${sets.length} sets fit: editing ${count('editing')} · visual ${count('visual')} · narrative ${count('narrative')} · non-narrative ${count('non_narrative')}`);
-  if (!process.argv.includes('--check')) { fs.writeFileSync(OUT, merged(sets)); console.log('wrote data/english/own-sets.json'); }
+  if (!process.argv.includes('--check') && !only) { fs.writeFileSync(OUT, merged(sets)); console.log('wrote data/english/own-sets.json'); }
 }

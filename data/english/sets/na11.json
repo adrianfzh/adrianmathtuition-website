@@ -1,0 +1,573 @@
+{
+  "id": "na11",
+  "kind": "narrative",
+  "title": "Dry or Soup",
+  "paragraphs": [
+    "By my third week at the new school I had become very good at a certain blank look. I used it whenever my classmates dropped into Mandarin, which they did for jokes, for complaints about teachers and for anything else worth hearing. I would tilt my head, smile politely and wait, like a tourist who has wandered into the wrong queue.",
+    "It was a lie, of course. In the town across the Causeway where I had lived until June, Mandarin was what I had argued in, dreamed in and been scolded in. But on my first day here I had read a passage aloud in English, and a boy at the back had repeated my “three” — “tree” — just loudly enough. The laugh that followed was small. I carried it home anyway, like a stone in my shoe. That night I decided that if they were going to hear only one thing from me, it would be careful English, with every edge sanded off. When someone asked, I said my Chinese was “quite bad, actually”. After that it was easier to keep lying than to stop.",
+    "The noodle stall at the end of the canteen was run by a woman everyone called Auntie Lian. She had forearms like a baker’s and a ladle she used for pointing. On my first visit she asked me something rapid in Mandarin — dry or soup, I knew perfectly well — and I said, “Sorry, I don’t understand.” She looked at me for a second longer than was comfortable. Then she switched to English that was as short as mine was polished. “Dry. Soup. Which?”",
+    "After that I ordered with my finger. She served me without a word, but I felt her watching, the way you feel sun on the back of your neck.",
+    "The Thursday it happened, the queue was long and I was thinking about a Maths test. As she set my bowl on the counter, Auntie Lian said, quite softly and entirely in Mandarin, “Careful, I filled it to the top.” My hands, already reaching, slowed and took the bowl by its rim. I had done it before I knew I had done anything. Not a drop spilled.",
+    "I looked up. She was already ladling the next order, but one corner of her mouth had moved. I stood there with my ears burning, waiting for her to announce it to the whole queue. She did not. She said only, still in Mandarin and still not looking at me, “When I first came here from my village, I did not open my mouth for a year. People thought I was proud. I was only tired.” She tapped the ladle on the pot. “A shut mouth is heavier than this soup. Next!”",
+    "I should have walked away. Instead I heard my own voice thank her — in Mandarin, the first words of it I had spoken aloud at school in nineteen days. They came out rusty. She nodded as if I had merely paid.",
+    "I carried the bowl back to the table. Jia Le was in the middle of a story about his grandmother and a parking fine, and he had reached the part he could only tell in Mandarin. I knew the kind of sentence it was going to be. I felt the blank look rising to my face out of habit, the head already beginning its tilt. Then the ending came, and I laughed — too early, before anybody had translated a word.",
+    "Jia Le stopped. “I thought you couldn’t—” “I’m better at listening,” I said. It was not the whole truth yet. But it was nearer, and the soup, I noticed, had not gone cold."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the narrator waits ‘like a tourist who has wandered into the wrong queue’. What does this comparison suggest about how he tried to appear?",
+      "scheme": {
+        "answer": "He tried to look like a harmless outsider who had no idea what was being said around him.",
+        "accept": [
+          "He acted politely lost, as though the conversation had nothing to do with him."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "He tried to look like an outsider who had no idea what the others were saying."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "He acted lost in a polite way, as if the conversation had nothing to do with him."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He tried to look like he was on holiday and enjoying himself."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was standing in the wrong queue at the canteen."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "He would tilt his head, smile politely and wait, like a tourist who has wandered into the wrong queue."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Give two details from Paragraph 2 which show that Mandarin had been part of the narrator’s everyday life.",
+      "scheme": {
+        "answer": "Any two of the three details, 1 mark each.",
+        "points": [
+          "He had argued in Mandarin.",
+          "He had dreamed in Mandarin.",
+          "He had been scolded in Mandarin."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He used to argue in Mandarin and he even dreamed in it."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "When people told him off it was in Mandarin, and it was the language of his dreams too."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He was scolded in Mandarin. He also lived in a town across the Causeway."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He dreamed in Mandarin."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He read a passage aloud in class and he said his Chinese was quite bad."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "He knew the language last time."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "The narrator says of the laugh, ‘I carried it home anyway, like a stone in my shoe’ (Paragraph 2). What does this comparison suggest about the effect the laugh had on him?",
+      "scheme": {
+        "answer": "Although it was a little thing, it hurt him [1], and it stayed with him, bothering him long after it happened [1].",
+        "points": [
+          "It hurt / irritated him (even though it was small).",
+          "It would not go away — it kept bothering him long afterwards."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Even though it was a small thing, it hurt him. It also stayed with him and kept bothering him long after it happened."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The laugh was painful to him, and he was unable to shake it off. It nagged at him all the way home and after."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests that the laugh hurt his feelings."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests he could not forget the laugh and kept thinking about it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that he found the laugh funny too."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests there was a stone in his shoe which made it hard to walk home."
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what happened on the narrator’s first day and what he decided to do because of it (Paragraph 2).",
+      "scheme": {
+        "answer": "A classmate made fun of the way he pronounced an English word and others laughed [1], so he made up his mind to let them hear only faultless English from him [1].",
+        "points": [
+          "A classmate mocked / imitated his pronunciation (accent) and others laughed at him.",
+          "He resolved to speak only perfect, accent-free English in front of them (and to hide his Mandarin)."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "A classmate made fun of how he pronounced a word and the others laughed. So he made up his mind to speak only perfect English in front of them."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He was mocked for his accent in class. Because of that he resolved that his classmates would get nothing from him except faultless English, and he would hide his other language."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "A classmate made fun of his accent when he was reading and some others laughed."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He made up his mind to speak only perfect English in school."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "He had read a passage aloud in English, and a boy at the back had repeated his 'three' just loudly enough. He decided that if they were going to hear only one thing from him, it would be careful English, with every edge sanded off."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He could not understand the English passage, so he decided to speak Mandarin to his classmates."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "In Paragraph 3, what was Auntie Lian actually asking the narrator in Mandarin?",
+      "scheme": {
+        "answer": "Whether he wanted his noodles dry or in soup.",
+        "accept": [
+          "Dry or soup."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She was asking whether he wanted his noodles dry or with soup."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "If he preferred the dry kind or the soup kind."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was asking him which class he was from."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was asking if he could speak Mandarin."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She was asking him something very quickly."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 3 shows that Auntie Lian’s question was spoken very fast?",
+      "scheme": {
+        "answer": "rapid"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "rapid"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "“rapid”"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "short"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "polished"
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘She looked at me for a second longer than was comfortable’ (Paragraph 3). What does this suggest Auntie Lian was thinking?",
+      "scheme": {
+        "answer": "She did not quite believe that he could not understand Mandarin.",
+        "accept": [
+          "She suspected he was pretending."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "She did not really believe that he could not understand Mandarin."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "She suspected that he was only pretending."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She thought he was rude and wanted to scold him."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was trying to remember his order."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She was thinking about something."
+        }
+      ]
+    },
+    {
+      "n": "8",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 4, the narrator feels Auntie Lian watching ‘the way you feel sun on the back of your neck’. What does this comparison suggest about her watching?",
+      "scheme": {
+        "answer": "He could sense her gaze even without seeing it [1], and it was steady and made him uncomfortable [1].",
+        "points": [
+          "He was aware of it without looking / could sense it though he could not see it.",
+          "It was steady / constant and made him uneasy."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He could sense her watching him even without looking at her. It was also constant and it made him uncomfortable."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He did not need to turn round to know her eyes were on him, and the steady attention made him uneasy."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He knew she was watching even though he could not see her doing it."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Her watching was steady and it made him uncomfortable."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests the canteen was very hot."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests that she was watching him."
+        }
+      ]
+    },
+    {
+      "n": "9",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘I had done it before I knew I had done anything’ (Paragraph 5). Explain how the narrator gave himself away.",
+      "scheme": {
+        "answer": "He responded to her warning in Mandarin by taking the bowl more carefully [1], and he did it automatically, without thinking, which proved he had understood her [1].",
+        "points": [
+          "He acted on what she said in Mandarin — he slowed down and took the full bowl carefully (by the rim).",
+          "He did so automatically / without thinking, which proved he understood."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "When she warned him in Mandarin that the bowl was full, he took it more carefully. He did it automatically without thinking, which proved that he understood her."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He acted on her Mandarin words by slowing his hands and holding the rim. It was a reflex, so he had no time to pretend, and it showed he knew the language."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He took the bowl more carefully after she warned him in Mandarin that it was full."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He did something without thinking, so he had no chance to pretend he did not understand."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He replied to her in Mandarin by accident."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He spilled the soup on the counter."
+        }
+      ]
+    },
+    {
+      "n": "10",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 6, Auntie Lian tells the narrator about her first year after leaving her village. What was she trying to tell him by this?",
+      "scheme": {
+        "answer": "That she understood what he was doing, because she too had once kept silent in a new place [1], and that hiding like this is tiring and he need not go on doing it [1].",
+        "points": [
+          "She understood him / was not judging him — she had done the same when she was new.",
+          "Keeping silent / hiding is a tiring burden — a hint that he should stop."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "She was telling him she understood him because she also kept quiet when she was new. She was also hinting that hiding his language is tiring and he should stop."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She had been in his position once so she knew what he was going through, and she wanted him to see that staying silent is a heavy burden that is not worth carrying."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She wanted him to know that she understood, since she went through the same thing herself."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She was telling him that keeping silent is very tiring and he should not carry on."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was telling him that she was proud of her village."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "She was telling him to stop wasting time because the queue was long."
+        }
+      ]
+    },
+    {
+      "n": "11",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 7, the narrator says his Mandarin words ‘came out rusty’. What does the word ‘rusty’ suggest about them?",
+      "scheme": {
+        "answer": "They sounded stiff and awkward because he had not spoken Mandarin aloud for so long.",
+        "accept": [
+          "They did not come out smoothly, like something that has gone unused."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The words sounded stiff and awkward because he had not spoken Mandarin for a long time."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "They did not come out smoothly, since he was out of practice from not using the language."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that his Mandarin had always been very bad."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that he spoke the words angrily."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It suggests he said something in Mandarin."
+        }
+      ]
+    },
+    {
+      "n": "12",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, explain what the narrator was about to do out of habit, and what he did instead, when Jia Le reached the end of his story (Paragraph 8).",
+      "scheme": {
+        "answer": "He was about to put on his usual expression of not understanding [1], but he reacted to the joke immediately, which showed he had understood the Mandarin [1].",
+        "points": [
+          "He nearly put on his usual pretence of not understanding.",
+          "Instead he responded to the joke straight away, showing he had followed the Mandarin."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "He was about to put on his usual expression of not understanding. Instead he reacted to the joke immediately, which showed he understood the Mandarin."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "He almost pretended, as he always did, that the joke meant nothing to him. But he found it funny at once and showed it, so everyone could tell he had followed it."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He was about to pretend that he did not understand, like he usually did."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "He reacted to the joke immediately, showing that he understood the Mandarin."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "He felt the blank look rising to his face out of habit, the head already beginning its tilt. Then he laughed too early, before anybody had translated a word."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He was about to tell his own story, but he kept quiet and ate his noodles instead."
+        }
+      ]
+    },
+    {
+      "n": "13",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "‘It was not the whole truth yet. But it was nearer’ (Paragraph 9). What does this suggest about the narrator at the end of the story?",
+      "scheme": {
+        "answer": "He had begun to stop pretending, although he had not yet admitted everything.",
+        "accept": [
+          "He was moving towards being honest about himself, one step at a time."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "He had started to stop pretending, although he had not admitted everything yet."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "He was becoming more honest about himself, step by step."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He had decided to keep lying to his classmates."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "He told his classmates everything about himself."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "He said something to Jia Le."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "id": "na06",
+  "kind": "narrative",
+  "title": "Watch the Water",
+  "paragraphs": [
+    "Mei Lin had been given one job for the school holidays, and it was standing beside her at the kerb, gripping the strap of a backpack that was still creased from the shop. Her cousin Jian had landed four days ago from a town in the hills where, as far as she could tell, nothing had ever moved faster than a goat. Now six lanes of traffic roared past them like a river in flood, and he was looking at it with an expression she could not read.",
+    "“It’s easy,” she said, in the bright, slow voice she used for the neighbour’s toddler. “Red man, we wait. Green man, we walk. The numbers tell you how many seconds are left.” She pointed. He nodded. He had nodded at everything since the airport — at the lift, at the escalator, at the rice cooker that sang when it finished — and said almost nothing, and she had decided privately that there was not very much going on behind the nod.",
+    "The green man appeared. Mei Lin stepped off the kerb. Jian did not. She was a third of the way across before she realised she was alone, and had to trot back with her face burning while a row of motorcyclists watched from behind their visors. “Green means go,” she hissed. “Did you not see it?” “I saw,” he said. He was not looking at the lights at all. He was looking to the right, where a delivery van was nosing round the corner and into the crossing as the last walkers scattered out of its way.",
+    "“He isn’t supposed to do that,” Mei Lin said. “No,” Jian agreed mildly. “But he did.” They waited through a whole cycle. She tapped her foot and thought of her friends at the mall, of her bubble tea sweating on a table without her. He stood with his weight on his toes, as still as a heron in a canal, and watched: not the green man but the wheels, the drivers’ heads, the gap between the bus and the car behind it.",
+    "When the light changed again he said, “Now,” a full second before she would have moved, and took hold of her sleeve — not her hand; her sleeve, lightly, between two fingers. She almost shook him off. She was fifteen; she had crossed this road a thousand times with her eyes on her phone. But his grip, light as it was, had a kind of practised certainty, and she let it stay. They crossed at his pace, which was quicker than hers. He let go the instant her shoe touched the far kerb.",
+    "“You’ve done this before,” she said. It came out like an accusation. He shrugged. “Not this.” And then, because she kept looking at him, he told her in his careful, textbook English about the river at the bottom of his town: how the bridge washed away each rainy season, how the schoolchildren crossed on the stones, how for three years it had been his task to take his small sister over, holding her by the sleeve because her hands were always full of books. “The water doesn’t follow rules,” he said. “So you watch the water. Not the sign that says the water is safe.”",
+    "Mei Lin opened her mouth and found that her toddler voice had gone. She thought of the nodding, and of what she had assumed lay behind it, and something uncomfortable turned over in her stomach. “Who takes her across now?” she asked. Jian looked back at the road, at the six lanes roaring behind them. For the first time she could read his face perfectly. “She’s eleven,” he said. “She says she is big enough.”",
+    "They walked on towards the mall. At the next crossing, a small one with no lights, Mei Lin put her phone in her pocket, looked right, and held out her sleeve."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "inference",
+      "text": "In Paragraph 1, Jian is described as the ‘one job’ Mei Lin had been given. What does this way of describing him suggest about her attitude towards him?",
+      "scheme": { "answer": "She saw looking after him as a chore that had been forced on her, not as something she welcomed.", "accept": ["She thought of him as a duty or a burden rather than as company."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "She saw looking after him as a chore that was forced on her, and not something she was happy to do." },
+        { "mark": 1, "flaw": "paraphrase", "text": "To her, he was a burden and a duty rather than a cousin she wanted to spend time with." },
+        { "mark": 0, "flaw": "wrong", "text": "She was proud to have a holiday job and earn some money." },
+        { "mark": 0, "flaw": "wrong", "text": "She was excited to show her cousin around the city." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that she had one job to do." }
+      ]
+    },
+    {
+      "n": "2", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 1, the traffic ‘roared past them like a river in flood’. What does this comparison suggest about the traffic?",
+      "scheme": { "answer": "The traffic was heavy, loud and unending [1], and it was powerful and dangerous to step into [1].", "points": ["It was heavy / fast / loud / unending.", "It was powerful and dangerous — something that could sweep a person away."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The traffic was heavy, loud and never stopped coming. It was also powerful and dangerous, so anyone who stepped into it could be swept away." },
+        { "mark": 2, "flaw": "paraphrase", "text": "There were so many vehicles rushing by noisily without a break, and going into them would be as risky as walking into strong rushing water." },
+        { "mark": 1, "flaw": "half", "text": "There were a lot of vehicles going past loudly and without stopping." },
+        { "mark": 1, "flaw": "half", "text": "The traffic was dangerous and could harm anyone who stepped into it." },
+        { "mark": 0, "flaw": "wrong", "text": "It had rained heavily and the road was flooded with water." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests the traffic was like a river." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain what Mei Lin had decided about Jian and how this showed in the way she spoke to him (Paragraph 2).",
+      "scheme": { "answer": "She had concluded that he was not very clever and did not understand much [1], so she talked to him as if he were a very small child, in an over-cheerful and unhurried way [1].", "points": ["She had concluded that he was not very clever / did not think or understand much.", "She spoke to him as if he were a very small child — over-cheerfully and unhurriedly."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She had concluded that he was not very clever and did not understand much. So she talked to him as if he were a very small child, in an over-cheerful and unhurried way." },
+        { "mark": 2, "flaw": "paraphrase", "text": "In her mind her cousin was a bit dull with few thoughts in his head. Because of that she explained things to him in the babyish, extra cheerful way people talk to tiny kids." },
+        { "mark": 1, "flaw": "half", "text": "She concluded that her cousin was not very intelligent." },
+        { "mark": 1, "flaw": "half", "text": "She talked to him the way a person talks to a very small child." },
+        { "mark": 0, "flaw": "lifted", "text": "She used the bright, slow voice she used for the neighbour's toddler and decided privately that there was not very much going on behind the nod." },
+        { "mark": 0, "flaw": "wrong", "text": "She decided he was very rude because he refused to answer her, so she shouted at him." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "literal",
+      "text": "Why did Mei Lin have to ‘trot back’ to the kerb (Paragraph 3)?",
+      "scheme": { "answer": "Jian had not followed her; he was still standing on the kerb.", "accept": ["Jian had not crossed with her."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Jian had not followed her and was still standing on the kerb." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Her cousin stayed behind and did not cross the road with her." },
+        { "mark": 0, "flaw": "wrong", "text": "She had dropped her phone on the road." },
+        { "mark": 0, "flaw": "wrong", "text": "The motorcyclists shouted at her to go back." },
+        { "mark": 0, "flaw": "vague", "text": "Because she needed to go back to the kerb." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 3 shows that the people on the crossing hurried away in different directions?",
+      "scheme": { "answer": "scattered" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "scattered" },
+        { "mark": 1, "flaw": "full", "text": "‘Scattered’" },
+        { "mark": 0, "flaw": "wrong", "text": "nosing" },
+        { "mark": 0, "flaw": "wrong", "text": "hissed" }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘I saw,’ Jian said (Paragraph 3). Explain why he did not cross when the green man appeared.",
+      "scheme": { "answer": "He had noticed a van still turning into the crossing [1], and he judged that it was not safe to walk even though the signal said so [1].", "points": ["He had noticed the van still driving into the crossing.", "He judged it unsafe to walk even though the signal told them to — he went by what the vehicles were doing, not the light."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He had noticed a van that was still turning into the crossing. He judged that it was not safe to walk even though the green man was showing." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He was watching the vehicles and spotted one that had not stopped. For him the signal alone was not enough reason to believe it was safe." },
+        { "mark": 1, "flaw": "half", "text": "He saw that a van was still coming round the corner onto the crossing." },
+        { "mark": 1, "flaw": "half", "text": "He did not think it was safe yet, even though the signal said they could go." },
+        { "mark": 0, "flaw": "wrong", "text": "He did not understand what the green man meant." },
+        { "mark": 0, "flaw": "wrong", "text": "He was too frightened of the motorcyclists who were watching them." }
+      ]
+    },
+    {
+      "n": "7", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "Give two details from Paragraph 4 that show Mei Lin was impatient as they waited.",
+      "scheme": { "answer": "She tapped her foot [1] and her mind was on her friends and the drink waiting for her at the mall [1].", "points": ["She tapped her foot.", "She was thinking about her friends at the mall / her bubble tea waiting there without her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She tapped her foot, and she was thinking about her friends at the mall and her bubble tea waiting on the table." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Her foot kept tapping on the ground. Her mind was also on her friends and the drink she was missing." },
+        { "mark": 1, "flaw": "half", "text": "She tapped her foot while waiting." },
+        { "mark": 1, "flaw": "half", "text": "She kept thinking of her friends who were already at the mall." },
+        { "mark": 0, "flaw": "wrong", "text": "She trotted back with her face burning and hissed at Jian." },
+        { "mark": 0, "flaw": "vague", "text": "She did not like waiting." }
+      ]
+    },
+    {
+      "n": "8", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "Jian stood ‘as still as a heron in a canal’ (Paragraph 4). What does this comparison suggest about the way he waited?",
+      "scheme": { "answer": "He stood completely still but alert, patiently watching for exactly the right moment.", "accept": ["He was motionless and watchful, like a bird waiting to strike."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He stood completely still but alert, patiently watching for exactly the right moment." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He did not move at all, yet he was fully focused and ready, the way a bird waits before it catches a fish." },
+        { "mark": 0, "flaw": "wrong", "text": "He was frozen with fear and could not move his legs." },
+        { "mark": 0, "flaw": "wrong", "text": "He was tall and thin with long legs." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that he stood like a heron." }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "Jian’s grip had ‘a kind of practised certainty’ (Paragraph 5). What does this phrase suggest about Jian?",
+      "scheme": { "answer": "He had led someone across like this many times before [1], and he was completely sure of what he was doing [1].", "points": ["‘Practised’: he had done this many times before.", "‘Certainty’: he was confident / sure of what he was doing."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "It suggests he had led someone across like this many times before, and he was completely sure of what he was doing." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Guiding a person was something he was very used to, and he did it with full confidence and no doubt." },
+        { "mark": 1, "flaw": "half", "text": "He had done this kind of thing many times before." },
+        { "mark": 1, "flaw": "half", "text": "He was very confident about what he was doing." },
+        { "mark": 0, "flaw": "wrong", "text": "He was holding her so hard that it hurt her arm." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that he was holding her sleeve." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "‘The water doesn’t follow rules. So you watch the water. Not the sign that says the water is safe’ (Paragraph 6). In your own words, explain the lesson Jian had learnt from the river.",
+      "scheme": { "answer": "A danger does not always behave the way it is supposed to [1], so you must look at the real thing yourself instead of relying on a notice that says all is well [1].", "points": ["A danger is unpredictable / does not behave as it is supposed to.", "So you should look at the real thing yourself, rather than rely on a notice or signal telling you there is no risk."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "A danger does not always behave the way it is supposed to. So you must look at the real thing yourself instead of relying on a notice that tells you everything is fine." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Risky things are unpredictable and will not obey anybody. Therefore he learnt to trust his own eyes on the actual situation and not just believe what a board tells him." },
+        { "mark": 1, "flaw": "half", "text": "Dangerous things are unpredictable and do not behave as people expect." },
+        { "mark": 1, "flaw": "half", "text": "You should look at the actual situation yourself instead of depending on a notice." },
+        { "mark": 0, "flaw": "lifted", "text": "The water doesn't follow rules, so you watch the water and not the sign that says the water is safe." },
+        { "mark": 0, "flaw": "wrong", "text": "He learnt that rivers are too dangerous and children should never go near them." }
+      ]
+    },
+    {
+      "n": "11", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘For the first time she could read his face perfectly’ (Paragraph 7). What feeling did Mei Lin see in Jian’s face, and what was the reason for it?",
+      "scheme": { "answer": "She saw worry [1], because his little sister now has to cross the river by herself without him there to guide her [1].", "points": ["The feeling: worry / anxiety / fear (for his sister).", "The reason: his sister now crosses the river on her own, without him to guide her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She saw worry in his face, because his little sister now has to cross the river by herself without him there to guide her." },
+        { "mark": 2, "flaw": "paraphrase", "text": "He looked anxious. He used to bring his sister over the stones every day, but now nobody is holding her and she goes alone." },
+        { "mark": 1, "flaw": "half", "text": "He looked very worried." },
+        { "mark": 1, "flaw": "half", "text": "His sister now has to cross the river alone because he is not there to take her." },
+        { "mark": 0, "flaw": "wrong", "text": "He was terrified of the six lanes of traffic behind them." },
+        { "mark": 0, "flaw": "wrong", "text": "He was bored because his sister kept saying she was big enough." }
+      ]
+    },
+    {
+      "n": "12", "marks": 2, "type": "short", "skill": "inference",
+      "text": "What do Mei Lin’s actions at the crossing in Paragraph 8 show about how she had changed?",
+      "scheme": { "answer": "She now paid attention to the road herself instead of to her phone [1], and she had come to respect Jian enough to let him lead her across [1].", "points": ["She now pays attention to the road herself (phone away, looking for traffic).", "She now respects / trusts Jian and is willing to be led by him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She now paid attention to the road herself instead of to her phone, and she had come to respect Jian enough to let him lead her across." },
+        { "mark": 2, "flaw": "paraphrase", "text": "She had become a more careful person who checks for vehicles with her own eyes. She also trusted her cousin now and was willing to be guided by him." },
+        { "mark": 1, "flaw": "half", "text": "She had started to watch the road carefully herself instead of her phone." },
+        { "mark": 1, "flaw": "half", "text": "She now trusted and respected Jian and let him guide her." },
+        { "mark": 0, "flaw": "wrong", "text": "She had become afraid of crossing roads and did not want to go out any more." },
+        { "mark": 0, "flaw": "vague", "text": "She crossed the road with Jian." }
+      ]
+    }
+  ]
+}

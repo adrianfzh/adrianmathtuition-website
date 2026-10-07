@@ -1,0 +1,179 @@
+{
+  "id": "na05",
+  "kind": "narrative",
+  "title": "The Last Leg",
+  "paragraphs": [
+    "The stadium smelled of rain on hot rubber. I stood in the fourth lane with my toes behind the line, shaking out my hands, and tried not to look at the patch of track ten metres ahead where, a year ago, the baton had bounced once, twice, and rolled under the feet of a girl from another school.",
+    "Nobody had blamed me. That was the worst part. Coach had said, “It happens,” and my teammates had hugged me in a damp, kind knot, and for weeks afterwards people in the corridor were so gentle with me that I felt like a cracked plate everyone had agreed not to mention. I would have preferred shouting. Shouting ends.",
+    "This year Coach had put me on the last leg again. When the list went up, I went to her office with a speech about Mei Xuan being faster out of the bend. She listened to all of it, capping and uncapping her pen. “Are you asking me or telling me?” she said. “Asking.” “Then no.” She went back to her marking. That was the whole conversation, and I carried it around for a month like a splinter in my thumb.",
+    "The gun cracked. From where I stood, the first two legs were a smear of colours on the far side, and the announcer’s voice was a kite with its string cut, drifting somewhere above the noise. Then Mei Xuan came off the bend in third place, her face twisted with effort, and the whole world narrowed to the yellow tube in her right hand.",
+    "All season we had drilled it: start running when she hits the tape mark, do not look back, reach behind, trust. In practice my hand had been steady. Now I felt it tremble behind me like a leaf in a drain. Three strides. Four. Every part of me wanted to turn my head — just a glance, just to be sure — and I knew with perfect clearness that a glance was exactly how I had dropped it the last time.",
+    "I kept my eyes on the lane. “HAND!” Mei Xuan screamed, and the baton slapped into my palm so hard that it stung, and my fingers shut on it like a trap. I do not remember deciding to run. The straight came up to meet me. I passed one girl on the outside, her breath loud and ragged at my shoulder and then gone. The leader was a red vest four metres ahead, then three, and then there was no more track.",
+    "Second. By less than an arm. I bent over with my hands on my knees and waited for the old feeling to arrive, the cracked-plate feeling. It did not come. My team crashed into me from behind, shrieking, and this time the hug was not careful at all; somebody’s elbow caught my ear.",
+    "Coach was the last to walk over. She did not say well done. She looked at the baton, which I had not noticed I was still gripping, my knuckles pale around it, and held out her hand. I had to think about how to open my fingers. “Same leg next year,” she said, and this time I knew better than to ask."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 2, "type": "short", "skill": "inference",
+      "text": "In Paragraph 1, the narrator ‘tried not to look at the patch of track ten metres ahead’. Explain why.",
+      "scheme": { "answer": "That was the spot where she had dropped the baton the year before [1], and looking at it would bring back the painful memory and shake her nerve just before the race [1].", "points": ["It was the place where she had dropped the baton a year earlier.", "Looking at it would bring back that painful memory / upset her nerves before she ran."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "That was the place where she dropped the baton last year. Looking at it would bring back the painful memory and make her lose her nerve before the race." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Her mistake of letting the baton fall happened at that spot, so seeing it would remind her of the failure and make her even more nervous when she needed to be calm." },
+        { "mark": 1, "flaw": "half", "text": "It was the spot where she dropped the baton one year ago." },
+        { "mark": 1, "flaw": "half", "text": "Looking there would bring back a bad memory and make her more nervous for the race." },
+        { "mark": 0, "flaw": "wrong", "text": "That patch of track was wet from the rain and she was afraid of slipping." },
+        { "mark": 0, "flaw": "vague", "text": "She did not want to look at it." }
+      ]
+    },
+    {
+      "n": "2", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "The narrator says she ‘felt like a cracked plate everyone had agreed not to mention’ (Paragraph 2). What does this comparison suggest about how she felt and about how people behaved towards her?",
+      "scheme": { "answer": "She felt damaged, spoilt by her mistake [1], and everyone knew about it but carefully avoided speaking of it in front of her [1].", "points": ["She felt damaged / flawed / spoilt by her mistake.", "Everyone knew about it but carefully avoided talking about it in front of her."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She felt damaged and spoilt because of her mistake. Everyone knew about it but they carefully avoided talking about it in front of her." },
+        { "mark": 2, "flaw": "paraphrase", "text": "She saw herself as something flawed that was no longer perfect, and the people around her were all pretending not to notice the flaw, which was obvious to her." },
+        { "mark": 1, "flaw": "half", "text": "She felt that she was damaged and no longer good enough after her mistake." },
+        { "mark": 1, "flaw": "half", "text": "People all knew what happened but purposely did not talk about it when she was there." },
+        { "mark": 0, "flaw": "wrong", "text": "She broke a plate in the canteen and nobody scolded her for it." },
+        { "mark": 0, "flaw": "lifted", "text": "She felt like a cracked plate everyone had agreed not to mention." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "‘I would have preferred shouting. Shouting ends’ (Paragraph 2). In your own words, explain why the narrator would rather have been scolded.",
+      "scheme": { "answer": "A scolding would have been over and done with quickly [1], whereas the careful kindness dragged on for a long time and kept reminding her of her mistake [1].", "points": ["A scolding is soon over and done with.", "The careful kindness went on for a long time / did not stop, and kept reminding her of what she had done."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "A scolding would have been over and done with quickly. The careful kindness dragged on for a long time and kept reminding her of her mistake." },
+        { "mark": 2, "flaw": "paraphrase", "text": "If someone had yelled at her, it would be finished in a few minutes. Instead everyone treated her delicately for a very long time, so she could never forget what she did." },
+        { "mark": 1, "flaw": "half", "text": "Being scolded would be finished fast and then it is over." },
+        { "mark": 1, "flaw": "half", "text": "The way everyone was so careful around her went on for a very long time and kept reminding her of it." },
+        { "mark": 0, "flaw": "lifted", "text": "She would have preferred shouting because shouting ends, and people in the corridor were so gentle with her for weeks afterwards." },
+        { "mark": 0, "flaw": "wrong", "text": "Her teammates were always shouting at her, so she was used to it." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "literal",
+      "text": "What did the narrator go to Coach’s office to ask for (Paragraph 3)?",
+      "scheme": { "answer": "She asked for the last leg to be given to Mei Xuan instead of her.", "accept": ["She asked to be taken off the last leg."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "She asked Coach to let Mei Xuan run the last leg instead of her." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She wanted to be taken off the last leg of the relay." },
+        { "mark": 0, "flaw": "wrong", "text": "She asked Coach to let her run the last leg again." },
+        { "mark": 0, "flaw": "wrong", "text": "She asked for more training at the bend." },
+        { "mark": 0, "flaw": "vague", "text": "She went to ask about the list." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "The narrator carried the conversation around ‘like a splinter in my thumb’ (Paragraph 3). What does this comparison suggest?",
+      "scheme": { "answer": "Coach’s refusal kept bothering her all the time; she could not put it out of her mind.", "accept": ["It was a small but constant irritation that she could not ignore."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that Coach's refusal kept bothering her all the time and she could not put it out of her mind." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The conversation was a constant irritation to her. Every day it was there, annoying her, and she could not ignore it." },
+        { "mark": 0, "flaw": "wrong", "text": "She had a real splinter in her thumb which hurt when she held the baton." },
+        { "mark": 0, "flaw": "wrong", "text": "She forgot about the conversation very quickly." },
+        { "mark": 0, "flaw": "lifted", "text": "She carried it around for a month like a splinter in her thumb." }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 4, the announcer’s voice is described as ‘a kite with its string cut, drifting somewhere above the noise’. What does this description suggest about how the voice seemed to the narrator, and why?",
+      "scheme": { "answer": "The voice seemed far away and floating, not connected to her [1], because she was concentrating so hard on the race that she was not taking in what was said [1].", "points": ["The voice seemed distant / floating / unconnected to her.", "She was concentrating so hard on the race (or was so tense) that she did not take in the words."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The voice seemed far away and floating, not connected to her. This was because she was concentrating so hard on the race that she was not taking in what was said." },
+        { "mark": 2, "flaw": "paraphrase", "text": "To her the announcement was just a distant sound hanging in the air with no meaning. Her whole mind was on the coming baton, so the words did not reach her." },
+        { "mark": 1, "flaw": "half", "text": "The voice sounded distant and floating, as if it had nothing to do with her." },
+        { "mark": 1, "flaw": "half", "text": "She was focusing so hard on the race that she did not really listen to what was said." },
+        { "mark": 0, "flaw": "wrong", "text": "Someone was flying a kite above the stadium and the string broke." },
+        { "mark": 0, "flaw": "wrong", "text": "The announcer was speaking very loudly and clearly so that everyone could hear." }
+      ]
+    },
+    {
+      "n": "7", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 4 shows that the narrator’s attention shrank until she noticed only the baton?",
+      "scheme": { "answer": "narrowed" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "narrowed" },
+        { "mark": 1, "flaw": "full", "text": "The word is “narrowed”." },
+        { "mark": 0, "flaw": "wrong", "text": "twisted" },
+        { "mark": 0, "flaw": "wrong", "text": "drifting" }
+      ]
+    },
+    {
+      "n": "8", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain the struggle the narrator faced as she waited for the baton (Paragraph 5).",
+      "scheme": { "answer": "She felt a powerful urge to look round and check that the baton was coming [1], but she understood that doing precisely that had caused her mistake the year before [1].", "points": ["She had a strong urge to look round and check on the baton.", "She understood that looking round was the very thing that had caused her mistake the year before."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She had a strong urge to look round and check that the baton was coming. But she understood that doing this was the very thing that caused her mistake the year before." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Her whole body was telling her to peek behind to make sure. At the same time she was fully aware that peeking was the reason the baton fell in the previous race." },
+        { "mark": 1, "flaw": "half", "text": "She badly wanted to look behind her to check on the baton." },
+        { "mark": 1, "flaw": "half", "text": "She realised that looking behind was the reason for her mistake in the previous race." },
+        { "mark": 0, "flaw": "lifted", "text": "Every part of her wanted to turn her head, just a glance, just to be sure, and she knew with perfect clearness that a glance was exactly how she had dropped it the last time." },
+        { "mark": 0, "flaw": "wrong", "text": "She was struggling because Mei Xuan was running too slowly round the bend." }
+      ]
+    },
+    {
+      "n": "9", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 6, the narrator’s fingers ‘shut on it like a trap’. What does this comparison suggest about the way she took the baton?",
+      "scheme": { "answer": "She gripped it instantly and very tightly, so that there was no chance of it getting away.", "accept": ["She seized it at once and held it so firmly that it could not be dropped."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "She gripped it instantly and very tightly so that there was no chance of it getting away." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The moment it touched her she grabbed it firmly, and nothing could have made her let go." },
+        { "mark": 0, "flaw": "wrong", "text": "She felt trapped in her lane and could not move." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that she took the baton with her fingers." },
+        { "mark": 0, "flaw": "lifted", "text": "Her fingers shut on it like a trap." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "‘This time the hug was not careful at all’ (Paragraph 7). Give two details from Paragraph 7 that show this.",
+      "scheme": { "answer": "Any two of the three details, 1 mark each.", "points": ["Her teammates crashed into her from behind.", "They were shrieking.", "Somebody’s elbow hit her ear."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "Her teammates crashed into her from behind, and somebody's elbow hit her ear." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The team were screaming loudly as they hugged her, and one of them knocked her on the ear with an elbow." },
+        { "mark": 1, "flaw": "half", "text": "Her team crashed into her from the back." },
+        { "mark": 1, "flaw": "half", "text": "Someone's elbow hit her on the ear." },
+        { "mark": 0, "flaw": "wrong", "text": "Her teammates hugged her in a damp, kind knot and Coach said it happens." },
+        { "mark": 0, "flaw": "vague", "text": "They hugged her happily." }
+      ]
+    },
+    {
+      "n": "11", "marks": 1, "type": "short", "skill": "inference",
+      "text": "In Paragraph 7, the ‘cracked-plate feeling’ did not come, even though the team had not won. Why do you think it did not come?",
+      "scheme": { "answer": "This time she had taken the baton cleanly and run well, so she had put right last year’s mistake and did not feel a failure.", "accept": ["She had done her own part properly, so there was nothing for her to be ashamed of."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "This time she had taken the baton properly and run well, so she had made up for last year's mistake and did not feel like a failure." },
+        { "mark": 1, "flaw": "paraphrase", "text": "She did her own part without any error, so there was nothing for her to be ashamed of this year." },
+        { "mark": 0, "flaw": "wrong", "text": "Because her team had won the race." },
+        { "mark": 0, "flaw": "wrong", "text": "Because her teammates blamed her and shouted at her this time." },
+        { "mark": 0, "flaw": "vague", "text": "Because the feeling did not arrive this time." }
+      ]
+    },
+    {
+      "n": "12", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘I had to think about how to open my fingers’ (Paragraph 8). What does this tell you about the way the narrator had been holding the baton, and what does it show about her?",
+      "scheme": { "answer": "She had been gripping it so hard, for so long, that her hand had stiffened around it [1], which shows how desperately determined she was not to drop it again [1].", "points": ["She had been gripping it so hard / so long that her hand had stiffened around it.", "It shows how determined (or how afraid) she was not to drop the baton again."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "She had been gripping the baton so hard for so long that her hand had stiffened around it. It shows how determined she was not to drop it again." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Her fingers were locked on the baton because she squeezed it with all her strength through the whole run. This shows that not letting it fall a second time meant everything to her." },
+        { "mark": 1, "flaw": "half", "text": "She held the baton so tightly that her fingers had become stiff." },
+        { "mark": 1, "flaw": "half", "text": "She was very determined that she would not drop the baton again." },
+        { "mark": 0, "flaw": "wrong", "text": "She wanted to keep the baton for herself and refused to give it to Coach." },
+        { "mark": 0, "flaw": "vague", "text": "She was still holding the baton." }
+      ]
+    },
+    {
+      "n": "13", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘This time I knew better than to ask’ (Paragraph 8). What does this suggest about how the narrator’s attitude had changed since Paragraph 3?",
+      "scheme": { "answer": "She now accepted that the last leg was hers and no longer wanted to get out of running it.", "accept": ["She now trusted Coach’s decision and believed she could run the last leg."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "She now accepted that the last leg was hers and she no longer wanted to get out of running it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Earlier she tried to give the last leg away, but now she trusted Coach's decision and believed she could do it." },
+        { "mark": 0, "flaw": "wrong", "text": "She was still hoping that Mei Xuan would take the last leg next year." },
+        { "mark": 0, "flaw": "wrong", "text": "She had decided to leave the team." },
+        { "mark": 0, "flaw": "vague", "text": "She did not ask Coach anything this time." }
+      ]
+    }
+  ]
+}

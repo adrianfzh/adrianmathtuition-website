@@ -1,0 +1,376 @@
+{
+  "id": "nn04",
+  "kind": "non_narrative",
+  "title": "The Wrong Notes",
+  "paragraphs": [
+    "For the first three months, my violin sounded like a cat being asked to do its homework. My family were kind about it. My mother closed the kitchen door “to keep the heat in”; my brother discovered a sudden love of the public library. I did not blame them. I would have left too, if I had not been the one holding the bow.",
+    "Nobody warns you about this stage. On a screen, a musician walks on, lifts an instrument and pours out something beautiful, and it looks as natural as breathing. What we do not see are the years of scraping, squeaking and starting again that came first. So beginners, hearing the gap between the music in their heads and the noise in their hands, decide that they have no talent. The instrument goes back into its case, and there it stays.",
+    "That is a pity, because the frustration is not a sign that the learning has failed. It is the learning. An instrument teaches patience, for a difficult passage only comes right after it has been played slowly many, many times. It teaches a learner to break a big task into small ones, mastering a piece two bars at a time rather than all at once. It trains careful listening, since nobody can correct a wrong note without first hearing it. And it makes progress something a person can actually hear: the tune that was impossible in March is merely hard in June, which is proof that effort works.",
+    "The rewards reach beyond the practice room. A student who has learnt to keep going at the piano is less easily defeated by a page of algebra. Playing in a band or an orchestra teaches a person to fit in with others — to wait, to keep time, to be one part of something larger. Performing, even for three aunts in a living room, builds the nerve to stand up in front of people. Then there is the simple matter of comfort: after a bad day, twenty minutes with an instrument can settle the mind in a way that scrolling never does. And unlike most things we learn at fifteen, it can stay with us for life.",
+    "How, then, does a beginner survive the early months? Practise a little every day rather than a great deal once a week. Choose at least one piece you actually like, alongside the ones your teacher sets. And record yourself now and then, so that on a discouraging evening you can play back last month and hear how far you have come.",
+    "I will not pretend that the frustration ever disappears. It only moves. Once the easy pieces behave, harder ones arrive to misbehave in their place, and the cat comes back for more homework. What changes is how you feel about it. You stop hearing wrong notes as proof that you cannot play, and you start hearing them as directions: here, this bar, this is where the work is.",
+    "Last month my brother wandered past my room while I was practising and stopped. He stayed, leaning on the door frame, until the piece ended. He said nothing. He did not need to. He had not gone to the library."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer says the violin ‘sounded like a cat being asked to do its homework’. What does this comparison suggest about the sound?",
+      "scheme": {
+        "answer": "It was an unpleasant, screeching, whining noise that was painful to listen to.",
+        "accept": [
+          "The sound was harsh and complaining, not musical at all."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests the violin sounded terrible, like screeching and whining."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The sound was harsh and painful to listen to, like an animal complaining loudly."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It sounded soft and sweet like a kitten."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The family’s cat disliked the violin."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "It sounded like a cat doing its homework."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "In Paragraph 1, the writer’s mother closed the kitchen door ‘to keep the heat in’. What was her real reason for closing the door, and why did she give a different one?",
+      "scheme": {
+        "answer": "She really closed it to shut out the unpleasant sound of the violin [1], and she gave another reason so as not to hurt the writer’s feelings [1].",
+        "points": [
+          "Her real reason was to shut out the unpleasant sound of the violin.",
+          "She gave another reason to be kind / so as not to hurt the writer’s feelings."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "Her real reason was to block out the horrible sound of the violin. She gave an excuse because she did not want to hurt the writer’s feelings."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "She actually could not stand the noise of the practising, but she was being kind, so she pretended it was about something else to avoid upsetting her child."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She really closed the door so that she would not have to hear the awful violin."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "She made up an excuse because she did not want to hurt the writer’s feelings."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The kitchen was cold and she wanted to keep it warm for cooking."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "She had her own reasons for closing the door."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 suggests that beautiful music seems to flow out of the musician easily and in plenty?",
+      "scheme": {
+        "answer": "pours"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "pours"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘pours’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "lifts"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "walks"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 1,
+      "type": "short",
+      "skill": "literal",
+      "text": "According to Paragraph 6, what happens once ‘the easy pieces behave’?",
+      "scheme": {
+        "answer": "Harder pieces come along, and the learner struggles with those instead.",
+        "accept": [
+          "The learner moves on to more difficult music and the frustration starts again."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "More difficult pieces come along and the learner struggles with those instead."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The learner moves on to tougher music and starts making mistakes all over again."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The learner stops feeling frustrated for good."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The cat comes into the room to listen."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Something else happens after that."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "‘You stop hearing wrong notes as proof that you cannot play, and you start hearing them as directions.’ In your own words, explain how the learner’s view of mistakes changes (Paragraph 6).",
+      "scheme": {
+        "answer": "The learner no longer treats mistakes as evidence of having no ability [1], and instead sees them as showing which parts need more practice [1].",
+        "points": [
+          "Mistakes are no longer taken as evidence that the learner lacks ability.",
+          "Mistakes are seen as showing which parts to practise / where to improve."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The learner no longer thinks that making mistakes shows he or she has no ability. Instead, mistakes are seen as signs that point to the parts that need more practice."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Errors are not taken as evidence of being hopeless at music any more. They become useful, because they tell the learner exactly what to work on next."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The learner no longer believes that mistakes mean he or she has no ability in music."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The learner sees mistakes as showing which parts need more practice."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "You stop hearing wrong notes as proof that you cannot play, and you start hearing them as directions."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The learner stops making mistakes after a while and plays everything correctly."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "What does Paragraph 7 suggest about the writer’s playing now? Support your answer with one piece of evidence from the paragraph.",
+      "scheme": {
+        "answer": "The writer’s playing has improved and is now pleasant to listen to [1]. The brother stopped and stayed to listen until the piece ended / did not go off to the library [1].",
+        "points": [
+          "The playing has improved / is now pleasant to listen to.",
+          "Evidence: the brother stayed until the piece ended / did not go to the library."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The writer’s playing has improved and is now nice to listen to. We know this because the brother stayed at the door until the piece ended."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "The violin sounds good now. The evidence is that the brother did not escape to the library this time."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The writer plays much better now."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The brother stayed leaning on the door frame until the piece ended."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The writer has given up the violin because it was too hard."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "The brother told the writer that the playing was good."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "What is the writer’s main purpose in this article?",
+      "options": [
+        {
+          "label": "A",
+          "text": "To entertain readers with stories about a noisy family"
+        },
+        {
+          "label": "B",
+          "text": "To warn beginners that most people have no talent for music"
+        },
+        {
+          "label": "C",
+          "text": "To explain how famous musicians prepare for a performance"
+        },
+        {
+          "label": "D",
+          "text": "To encourage learners to keep going through the difficult early stage"
+        }
+      ],
+      "scheme": {
+        "answer": "To encourage learners to keep going through the difficult early stage"
+      },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise what learning a musical instrument gives a learner and how a beginner can get through the early months.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "It teaches patience (a hard passage needs slow repetition).",
+          "It teaches the learner to break a big task into small parts.",
+          "It trains careful listening.",
+          "Learners can hear their own progress, which shows that effort works.",
+          "The habit of keeping going carries over to schoolwork.",
+          "Playing in a group teaches a person to fit in / work with others.",
+          "Performing builds the confidence to face an audience.",
+          "Playing settles the mind after a bad day.",
+          "It can last a lifetime.",
+          "Practise a little every day.",
+          "Choose at least one piece you like.",
+          "Record yourself to hear how far you have come."
+        ],
+        "answer": "Learning an instrument builds patience, teaches learners to split big tasks into small ones, sharpens their listening and lets them hear their own improvement. The determination gained helps with schoolwork, group playing teaches cooperation, and performing gives confidence before an audience. Music also soothes the mind after a bad day and remains for life. Beginners should practise briefly every day, include a piece they enjoy, and record themselves to notice their progress."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            3,
+            5,
+            6,
+            7,
+            8,
+            10,
+            11,
+            12
+          ],
+          "text": "An instrument makes learners patient and teaches them to divide a big task into smaller parts. They also learn to listen carefully. A student who does not give up in music will not give up easily in schoolwork. Playing in a band teaches teamwork, performing gives courage to face a crowd, and playing calms us after a bad day. Beginners should practise a bit daily, pick a piece they like and record themselves to hear their improvement."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            1,
+            4,
+            6,
+            10,
+            12
+          ],
+          "text": "Learning an instrument trains us to be patient because difficult parts must be repeated slowly many times. We can also hear ourselves improving over the months, which shows that effort works. If we join a band or orchestra, we learn to cooperate with other people. To get through the beginning, a learner should practise for a short time every day instead of once a week, and record the playing sometimes to hear how much better it has become."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            8,
+            11
+          ],
+          "text": "Learning a musical instrument is a wonderful thing that is worth the trouble, and it helps people in many areas of life. Music is good for us. For example, playing for a while can calm a person down after a bad day. Beginners will find it hard at first but they must not give up. They should think of ways to make it more fun, such as choosing a piece that they really like."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "At first the writer’s violin sounded like a cat, so the mother closed the kitchen door and the brother went to the library. On screen, musicians make playing look as natural as breathing and we do not see their years of scraping. The frustration never disappears but moves to harder pieces, and wrong notes become directions. Last month the brother stayed at the door to listen until the piece ended."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            3,
+            7,
+            9,
+            10
+          ],
+          "text": "It trains careful listening, since nobody can correct a wrong note without first hearing it. Performing, even for three aunts in a living room, builds the nerve to stand up in front of people. And unlike most things we learn at fifteen, it can stay with us for life. Practise a little every day rather than a great deal once a week."
+        }
+      ]
+    }
+  ]
+}
