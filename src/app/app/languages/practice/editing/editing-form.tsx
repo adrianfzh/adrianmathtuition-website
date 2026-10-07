@@ -8,8 +8,8 @@ import type { EditingResult } from '@/lib/english-practice';
 const CARD = 'bg-white rounded-3xl border border-black/5 shadow-sm';
 type Result = { results: EditingResult[]; right: number; total: number };
 
-export default function EditingForm({ itemId, text, lines, nextHref }: {
-  itemId: string; text: string; lines: { label: string; where: string }[]; nextHref: string | null;
+export default function EditingForm({ itemId, text, rows, lines, nextHref }: {
+  itemId: string; text: string; rows: { label: string | null; text: string }[] | null; lines: { label: string; where: string }[]; nextHref: string | null;
 }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -38,7 +38,21 @@ export default function EditingForm({ itemId, text, lines, nextHref }: {
       </div>
 
       <div className={`${CARD} p-4`}>
-        <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900">{text}</p>
+        {rows ? (
+          <>
+            <p className="text-[13px] leading-snug text-gray-500 mb-2.5">The first and last lines are correct. Eight of the numbered lines have one wrong word each. Two have none.</p>
+            <div className="space-y-1.5">
+              {rows.map((r, i) => (
+                <div key={i} className="flex gap-2.5">
+                  <span aria-hidden className={`shrink-0 w-5 pt-[3px] text-right text-[12px] font-bold ${r.label ? 'text-violet-600' : 'text-transparent'}`}>{r.label ?? '·'}</span>
+                  <p className="flex-1 min-w-0 text-[15px] leading-relaxed text-gray-900">{r.text}</p>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900">{text}</p>
+        )}
       </div>
 
       <div className={`${CARD} p-4 space-y-2.5`}>

@@ -1,0 +1,374 @@
+{
+  "id": "nn01",
+  "kind": "non_narrative",
+  "title": "The Empty Half-Hour",
+  "paragraphs": [
+    "Ask any teenager what they fear most on a long bus ride, and the honest answer is rarely missing their stop. It is a flat battery. We have become so used to filling every spare minute with a screen that an empty half-hour now feels less like rest and more like a small emergency.",
+    "This is a recent change. A generation ago, waiting was simply part of the day. People stared out of windows, counted lamp posts and let their thoughts wander wherever they pleased. Nobody called this a skill. Yet researchers who study attention are beginning to suspect that we gave up something valuable when we gave up being bored.",
+    "Consider what the mind does when nothing is demanded of it. Left alone, it starts to tidy up. It sorts through the day’s events and stores what is worth keeping, which is why a lesson often makes more sense after a quiet walk than after another hour of revision. It also begins to make unexpected connections between ideas, and many writers and inventors say their best ones arrived in the shower or on a slow train rather than at a desk. Boredom pushes us to plan as well: an unoccupied mind drifts towards the future, rehearsing conversations and setting goals. Perhaps most importantly, sitting through a dull moment teaches patience. A person who can tolerate ten minutes of nothing is better prepared for the many worthwhile tasks, from learning an instrument to finishing a long book, that are not exciting at every step.",
+    "There is a social benefit too. A bored child in a room with other bored children will eventually invent a game, and in doing so will practise negotiating, compromising and leading. A child handed a tablet learns none of these. Even adults notice more about the people around them, and are more likely to start a conversation, when their hands are empty.",
+    "None of this means throwing away our phones. It means making deliberate room for idleness. Young people can begin by leaving one short journey a day unfilled, with the phone zipped inside the bag rather than held in the hand. They can switch off the notifications that tug at their attention every few minutes. They can keep a notebook nearby, so that a wandering thought has somewhere to land. And they can take up a slow hobby — baking, sketching, fishing — in which waiting is part of the pleasure. Families can help by agreeing on one screen-free hour each evening, which works only if the adults obey it as well.",
+    "The first few attempts will feel uncomfortable, even itchy. That discomfort is not a sign that something is wrong. It is the feeling of a mind stretching after sitting still for too long."
+  ],
+  "questions": [
+    {
+      "n": "1",
+      "marks": 1,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 1, the writer says an empty half-hour feels like ‘a small emergency’. What does this suggest about how people now react to having nothing to do?",
+      "scheme": {
+        "answer": "They feel anxious or panicky, and treat it as a problem that must be fixed at once instead of a chance to rest.",
+        "accept": [
+          "People become uneasy and rush to fill the time, as if something has gone wrong."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "It suggests people get anxious when they have nothing to do and feel they must fix it right away, instead of seeing it as a break."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "They panic a little and hurry to fill the time, as though something bad has happened."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "People call for help when their phone battery is flat."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "People do not like it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They feel rested and relaxed when they have nothing to do."
+        }
+      ]
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "own_words",
+      "text": "In your own words, describe how people a generation ago dealt with waiting (Paragraph 2).",
+      "scheme": {
+        "answer": "They accepted waiting as a normal part of life [1], and passed the time by looking at their surroundings and letting their minds drift freely [1].",
+        "points": [
+          "They accepted it as normal / an ordinary part of daily life.",
+          "They passed the time looking around them and letting their minds drift freely."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "They accepted waiting as a normal thing in daily life. They just looked at what was around them and allowed their minds to drift freely."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "To them it was nothing unusual, just how life was. They spent the time observing things outside and daydreaming about anything."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "They let their minds drift and daydreamed about anything they liked."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "Waiting was seen as a normal, everyday thing back then."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "Waiting was simply part of the day. People stared out of windows, counted lamp posts and let their thoughts wander wherever they pleased."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "They read books and newspapers while waiting because there were no phones."
+        }
+      ]
+    },
+    {
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "vocabulary",
+      "text": "Which one word in Paragraph 2 tells us that the researchers are not yet certain?",
+      "scheme": {
+        "answer": "suspect"
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "suspect"
+        },
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "‘suspect’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "valuable"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "recent"
+        }
+      ]
+    },
+    {
+      "n": "4",
+      "marks": 2,
+      "type": "short",
+      "skill": "inference",
+      "text": "From Paragraph 4, explain why the writer thinks a bored child gains more than ‘a child handed a tablet’.",
+      "scheme": {
+        "answer": "A bored child has to make up a game with the other children [1], and in doing so builds social skills such as bargaining, giving way and taking charge, which the child with a tablet does not practise [1].",
+        "points": [
+          "A bored child has to create his or her own game with other children.",
+          "Doing so builds social skills (bargaining, giving way, taking the lead) that a tablet does not teach."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The bored child has to come up with a game together with other children. This trains social skills like bargaining, giving in and taking charge, which a tablet cannot teach."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "With nothing to do, children make up their own play with one another, and through that they learn how to deal with people, such as settling disagreements and being a leader. A child on a tablet misses all this."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The bored child will make up a game with the others, but the child with the tablet will not."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The bored child learns skills for getting along with people."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Tablets are bad for children's eyes, so a bored child is healthier."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The bored child learns more things than the child with a tablet."
+        }
+      ]
+    },
+    {
+      "n": "5",
+      "marks": 1,
+      "type": "short",
+      "skill": "inference",
+      "text": "The screen-free hour ‘works only if the adults obey it as well’ (Paragraph 5). What is the writer implying about adults?",
+      "scheme": {
+        "answer": "Adults are just as attached to their screens and may break the rule themselves; children will not keep a rule their parents do not follow.",
+        "accept": [
+          "Adults also find it hard to put their phones down, so they must set the example."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The writer is implying that adults are just as hooked on their screens and may not follow the rule themselves, and children will not follow it if their parents don't."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "Grown-ups also struggle to put their phones away, so they need to set the example."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Adults are stricter than children."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Adults do not need a screen-free hour because they use screens for work."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "Adults must be there for it to work."
+        }
+      ]
+    },
+    {
+      "n": "6",
+      "marks": 2,
+      "type": "short",
+      "skill": "language_use",
+      "text": "In Paragraph 6, the writer compares the discomfort to ‘a mind stretching after sitting still for too long’. Explain what this comparison suggests about the discomfort of being bored.",
+      "scheme": {
+        "answer": "Like the ache of stretching a stiff body, the discomfort is natural and good for us, not harmful [1]; it shows the mind has been left unused for a long time and is starting to work properly again [1].",
+        "points": [
+          "The discomfort is natural and healthy / a good sign, not something harmful.",
+          "It shows the mind has been inactive (because of constant screens) and is beginning to work properly again."
+        ]
+      },
+      "seeds": [
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "It suggests the discomfort is normal and actually good for us, like stretching a stiff body. It also shows our minds have not been used properly for a long time and are starting to work again."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "Just as stiff muscles ache when you finally move them, the uneasy feeling is a healthy sign. It means the brain was idle for too long because of screens and is now waking up."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The discomfort is a good and natural thing, not something to worry about."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It suggests that our minds have been inactive for too long."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests that boredom is painful and we should avoid it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It suggests we should exercise and stretch more instead of sitting still."
+        }
+      ]
+    },
+    {
+      "n": "7",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "What is the writer’s main purpose in this article?",
+      "options": [
+        {
+          "label": "A",
+          "text": "To describe how people used to pass the time while waiting"
+        },
+        {
+          "label": "B",
+          "text": "To persuade readers to make room for boredom in their lives"
+        },
+        {
+          "label": "C",
+          "text": "To warn readers that phones are dangerous and should be given up"
+        },
+        {
+          "label": "D",
+          "text": "To explain how researchers study attention"
+        }
+      ],
+      "scheme": {
+        "answer": "To persuade readers to make room for boredom in their lives"
+      },
+      "seeds": []
+    },
+    {
+      "n": "8",
+      "marks": 15,
+      "type": "summary",
+      "skill": "summary",
+      "text": "Summarise the benefits of being bored and what young people can do to make room for it.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+      "scheme": {
+        "points": [
+          "The idle mind sorts through the day and stores what matters (so learning sinks in).",
+          "It links ideas in unexpected ways (creativity / new ideas).",
+          "It turns to the future: planning and setting goals.",
+          "It builds patience for worthwhile tasks that are not always exciting.",
+          "Bored children make up games together and so learn social skills.",
+          "People notice those around them more and are more likely to talk to them.",
+          "Leave one short journey a day without the phone (phone kept away).",
+          "Turn off notifications.",
+          "Keep a notebook close by for stray thoughts.",
+          "Take up a slow hobby where waiting is part of the enjoyment.",
+          "Agree on a screen-free hour at home with the family."
+        ],
+        "answer": "An idle mind organises the day’s experiences and keeps what matters. It joins ideas in surprising ways, looks ahead to make plans, and builds the patience that demanding tasks need. Bored children create games together and so learn to get along, while people pay more attention to those nearby. To allow this, the young can keep their phones away on one trip daily, silence alerts, carry a notebook for passing thoughts and pick up an unhurried pastime."
+      },
+      "seeds": [
+        {
+          "mark": 8,
+          "flaw": "full",
+          "hit": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
+          ],
+          "text": "An idle mind organises the day’s experiences and keeps what matters. It joins ideas in surprising ways, looks ahead to make plans, and builds the patience that demanding tasks need. Bored children create games together and so learn to get along, while people pay more attention to those nearby. To allow this, the young can keep their phones away on one trip daily, silence alerts, carry a notebook for passing thoughts and pick up an unhurried pastime."
+        },
+        {
+          "mark": 5,
+          "flaw": "half",
+          "hit": [
+            2,
+            4,
+            7,
+            8,
+            11
+          ],
+          "text": "Being bored is good because the mind comes up with fresh ideas by joining different thoughts together. It also trains us to be patient, which we need for long and difficult tasks. To be bored more often, young people should put their phones inside their bags for one short trip every day and turn off their notifications. Their families can also set aside one hour every evening when nobody uses a screen."
+        },
+        {
+          "mark": 2,
+          "flaw": "vague",
+          "hit": [
+            4,
+            10
+          ],
+          "text": "Boredom is very beneficial to all of us and we should not be afraid of it. It is really good for people in many different ways. One benefit is that it makes a person more patient. Young people should find ways to be bored more often, because this is important for them. For example, they can start a slow hobby such as baking or fishing where they have to wait."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "hit": [],
+          "text": "Teenagers today are afraid of their phone battery going flat on a long bus ride. In the past, people stared out of windows and counted lamp posts while they waited, and nobody thought this was a skill. Researchers who study attention now suspect that something valuable was lost. The first few attempts at being bored will feel uncomfortable and itchy, like a mind stretching."
+        },
+        {
+          "mark": 4,
+          "flaw": "lifted",
+          "hit": [
+            1,
+            3,
+            9,
+            10
+          ],
+          "text": "The mind sorts through the day’s events and stores what is worth keeping. An unoccupied mind drifts towards the future, rehearsing conversations and setting goals. Young people can keep a notebook nearby, so that a wandering thought has somewhere to land. They can take up a slow hobby in which waiting is part of the pleasure."
+        }
+      ]
+    }
+  ]
+}

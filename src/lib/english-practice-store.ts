@@ -1,112 +1,71 @@
-// English practice — the I/O half (service key; the language bank and the attempts table
-// have RLS with no policies). Pure rules live in lib/english-practice.ts.
-// SPEC-ENGLISH-PRACTICE.md. Nothing here returns a school, a year or a file name.
+// English practice — the I/O half. Pure rules live in lib/english-practice.ts.
+// SPEC-ENGLISH-PRACTICE.md.
+//
+// 7 Oct 2026: the page serves ONLY our own sets (lib/english-own-data.ts, written by us —
+// docs/HANDOFF-ENGLISH-BUILD.md step 1). The language bank is not read here at all: no school
+// or national passage, question or scheme reaches a student (docs/CONTENT-POLICY.md).
 import Anthropic from '@anthropic-ai/sdk';
 import { getSupabaseAdmin } from './supabase';
 import { sgtDayStartISO } from './sgt';
 import { anthropicText } from './claude-models';
 import {
-  DAILY_ENGLISH_MODEL_CAP, ENGLISH_CHECK_MODEL, ENGLISH_PRACTICE_LEVELS, READING_KINDS,
-  buildShortPrompt, buildSummaryPrompt, parseShortReply, parseSummaryReply, passageLabel, ruleShort, summaryContentMax,
-  toEditingSet, unitsOf, withinLimit,
-  type EditingSet, type ItemRow, type ShortVerdict, type SummaryVerdict, type Unit,
+  DAILY_ENGLISH_MODEL_CAP, ENGLISH_CHECK_MODEL,
+  buildShortPrompt, buildSummaryPrompt, parseShortReply, parseSummaryReply, ruleShort, summaryContentMax, withinLimit,
+  type EditingSet, type ShortVerdict, type SummaryVerdict, type Unit,
 } from './english-practice';
-
-const ITEM_COLS = 'id, section_kind, question_number, question_text, options, parts, total_marks, answer, text_id, level, national, answer_source, deleted_at';
-const IMAGE_BUCKET = 'language_images';
-
-function itemsQuery() {
-  return getSupabaseAdmin().from('language_items').select(ITEM_COLS)
-    .eq('subject', 'english').eq('national', false).is('deleted_at', null).eq('answer_source', 'mark_scheme')
-    .in('level', [...ENGLISH_PRACTICE_LEVELS]);
-}
+import { isEditing, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
+import { OWN_EDITING, OWN_READING, ownByUuid } from './english-own-data';
 
 // ── Editing ─────────────────────────────────────────────────────────────────
 export interface EditingListing { itemId: string; about: string }
 
-/** "… about Singapore’s mangroves." in the instructions → the passage's topic. */
-export function editingAbout(text: string): string {
-  const m = /\babout\s+([^.\n]{3,90})\./i.exec(text);
-  return m ? m[1].trim().replace(/^./, c => c.toUpperCase()) : 'A short passage';
-}
-
 export async function loadEditingList(): Promise<EditingListing[]> {
-  const { data, error } = await itemsQuery().eq('section_kind', 'editing').order('created_at', { ascending: true });
-  if (error) throw new Error(error.message);
-  return ((data ?? []) as ItemRow[]).map(toEditingSet).filter((s): s is EditingSet => !!s)
-    .map(s => ({ itemId: s.itemId, about: editingAbout(s.text) }));
+  return OWN_EDITING.map(s => ({ itemId: ownUuid(s.id), about: s.about }));
 }
 
 export async function loadEditingSet(id: string): Promise<EditingSet | null> {
-  const { data } = await itemsQuery().eq('section_kind', 'editing').eq('id', id).maybeSingle();
-  return data ? toEditingSet(data as ItemRow) : null;
+  const s = ownByUuid(id);
+  return s && isEditing(s) ? ownEditingSet(s) : null;
 }
 
 // ── Reading sets: one text and the questions on it ──────────────────────────
-interface TextRow { id: string; kind: string | null; title: string | null; text: string | null; image: string | null }
-export interface ReadingListing { textId: string; label: string; group: 'visual' | 'passage'; questions: number; marks: number; summary: boolean }
-export interface ReadingSet { textId: string; title: string | null; text: string; hasImage: boolean; units: Unit[] }
-
-async function loadTexts(ids: string[]): Promise<Map<string, TextRow>> {
-  const out = new Map<string, TextRow>();
-  for (let i = 0; i < ids.length; i += 150) {
-    const { data, error } = await getSupabaseAdmin().from('language_texts').select('id, kind, title, text, image')
-      .in('id', ids.slice(i, i + 150)).eq('national', false).is('deleted_at', null);
-    if (error) throw new Error(error.message);
-    for (const t of (data ?? []) as TextRow[]) out.set(t.id, t);
-  }
-  return out;
+export interface ReadingListing { textId: string; label: string; group: 'visual' | 'narrative' | 'non_narrative'; questions: number; marks: number; summary: boolean }
+export interface ReadingSet {
+  textId: string; title: string; group: ReadingListing['group'];
+  paragraphs: string[] | null;
+  visual: { format: string; theme: VisualTheme; blocks: VisualBlock[] } | null;
+  units: Unit[];
 }
 
-const byNumber = (a: Unit, b: Unit): number => (parseFloat(a.number) || 0) - (parseFloat(b.number) || 0) || a.number.localeCompare(b.number);
+const reading = (id: string): OwnReading | null => {
+  const s = ownByUuid(id);
+  return s && !isEditing(s) ? s : null;
+};
 
 export async function loadReadingList(): Promise<ReadingListing[]> {
-  const { data, error } = await itemsQuery().in('section_kind', [...READING_KINDS]).not('text_id', 'is', null).limit(3000);
-  if (error) throw new Error(error.message);
-  const groups = new Map<string, Unit[]>();
-  for (const r of (data ?? []) as ItemRow[]) {
-    const us = unitsOf(r);
-    if (us.length && r.text_id) groups.set(r.text_id, [...(groups.get(r.text_id) ?? []), ...us]);
-  }
-  const texts = await loadTexts([...groups.keys()]);
-  const out: ReadingListing[] = [];
-  for (const [textId, us] of groups) {
-    const t = texts.get(textId);
-    if (!t || (!t.text && !t.image)) continue;
-    const visual = us.every(u => u.sectionKind === 'visual_text');
-    out.push({ textId, label: passageLabel(t.title, t.text), group: visual ? 'visual' : 'passage', questions: us.length,
-      marks: us.reduce((s, u) => s + (u.kind === 'summary' ? 0 : u.marks), 0), summary: us.some(u => u.kind === 'summary') });
-  }
-  return out.sort((a, b) => a.label.localeCompare(b.label));
+  return OWN_READING.map(s => {
+    const us = ownUnits(s);
+    return { textId: ownUuid(s.id), label: s.title, group: s.kind, questions: us.length,
+      marks: us.reduce((n, u) => n + (u.kind === 'summary' ? 0 : u.marks), 0), summary: us.some(u => u.kind === 'summary') };
+  });
 }
 
 export async function loadReadingSet(textId: string): Promise<ReadingSet | null> {
-  const t = (await loadTexts([textId])).get(textId);
-  if (!t || (!t.text && !t.image)) return null;
-  const { data, error } = await itemsQuery().in('section_kind', [...READING_KINDS]).eq('text_id', textId);
-  if (error) throw new Error(error.message);
-  const units = ((data ?? []) as ItemRow[]).flatMap(unitsOf).sort(byNumber);
-  return units.length ? { textId, title: t.title, text: t.text ?? '', hasImage: !!t.image, units } : null;
+  const s = reading(textId);
+  if (!s) return null;
+  return {
+    textId: ownUuid(s.id), title: s.title, group: s.kind,
+    paragraphs: s.kind === 'visual' ? null : (s.paragraphs ?? []),
+    visual: s.kind === 'visual' ? { format: s.format ?? 'poster', theme: s.theme ?? 'teal', blocks: s.visual ?? [] } : null,
+    units: ownUnits(s),
+  };
 }
 
 /** One unit with its passage (for the check). */
 export async function loadUnit(itemId: string, key: string): Promise<{ unit: Unit; passage: string } | null> {
-  const { data } = await itemsQuery().eq('id', itemId).maybeSingle();
-  if (!data) return null;
-  const row = data as ItemRow;
-  const unit = unitsOf(row).find(u => u.key === key);
-  if (!unit) return null;
-  const t = row.text_id ? (await loadTexts([row.text_id])).get(row.text_id) : null;
-  return { unit, passage: t?.text ?? '' };
-}
-
-/** A text's picture, as bytes — its storage name carries the source, so it is never linked directly. */
-export async function loadTextImage(textId: string): Promise<{ bytes: ArrayBuffer; type: string } | null> {
-  const t = (await loadTexts([textId])).get(textId);
-  if (!t?.image) return null;
-  const { data, error } = await getSupabaseAdmin().storage.from(IMAGE_BUCKET).download(t.image);
-  if (error || !data) return null;
-  return { bytes: await data.arrayBuffer(), type: data.type || 'image/png' };
+  const s = reading(itemId);
+  const unit = s ? ownUnits(s).find(u => u.key === key) : undefined;
+  return s && unit ? { unit, passage: ownPassage(s) } : null;
 }
 
 // ── Attempts and the day's cap ──────────────────────────────────────────────
@@ -144,16 +103,24 @@ export type ShortCheck =
   | { state: 'marked'; verdict: ShortVerdict; usedModel: boolean }
   | { state: 'capped' } | { state: 'failed' };
 
-/** A short answer: the free rule first; a judgement goes to one reading against the scheme. */
-export async function checkShort(unit: Unit, answer: string, passage: string, identity: string): Promise<ShortCheck> {
+const ruled = (unit: Unit, right: boolean): ShortCheck =>
+  ({ state: 'marked', usedModel: false, verdict: { awarded: right ? unit.marks : 0, why: right ? 'That is the answer.' : 'That is not the answer.', missing: null } });
+
+/** The reading itself, with no cap and no log — the page's check and the bench (scripts/english-bench) share it. */
+export async function judgeShort(unit: Unit, answer: string, passage: string): Promise<ShortCheck> {
   const rule = ruleShort(unit, answer);
-  if (rule !== null) {
-    return { state: 'marked', usedModel: false, verdict: { awarded: rule ? unit.marks : 0, why: rule ? 'That is the answer.' : 'That is not the answer.', missing: null } };
-  }
-  if ((await modelChecksToday(identity).catch(() => DAILY_ENGLISH_MODEL_CAP)) >= DAILY_ENGLISH_MODEL_CAP) return { state: 'capped' };
+  if (rule !== null) return ruled(unit, rule);
   const text = await ask(buildShortPrompt(unit, answer, passage), 3000);
   const verdict = text ? parseShortReply(text, unit.marks) : null;
   return verdict ? { state: 'marked', verdict, usedModel: true } : { state: 'failed' };
+}
+
+/** A short answer: the free rule first; a judgement goes to one reading against the scheme. */
+export async function checkShort(unit: Unit, answer: string, passage: string, identity: string): Promise<ShortCheck> {
+  const rule = ruleShort(unit, answer);
+  if (rule !== null) return ruled(unit, rule);
+  if ((await modelChecksToday(identity).catch(() => DAILY_ENGLISH_MODEL_CAP)) >= DAILY_ENGLISH_MODEL_CAP) return { state: 'capped' };
+  return judgeShort(unit, answer, passage);
 }
 
 export type SummaryCheck =
@@ -162,6 +129,11 @@ export type SummaryCheck =
 
 export async function checkSummary(unit: Unit, answer: string, passage: string, identity: string): Promise<SummaryCheck> {
   if ((await modelChecksToday(identity).catch(() => DAILY_ENGLISH_MODEL_CAP)) >= DAILY_ENGLISH_MODEL_CAP) return { state: 'capped' };
+  return judgeSummary(unit, answer, passage);
+}
+
+/** The summary reading itself, with no cap — shared with the bench. */
+export async function judgeSummary(unit: Unit, answer: string, passage: string): Promise<SummaryCheck> {
   const text = await ask(buildSummaryPrompt(unit, withinLimit(answer), passage), 5000);
   const verdict = text ? parseSummaryReply(text, unit.scheme.points.length) : null;
   if (!verdict) return { state: 'failed' };

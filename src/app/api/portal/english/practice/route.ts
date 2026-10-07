@@ -1,7 +1,6 @@
-// /api/portal/english/practice — English practice from the language bank
-// (SPEC-ENGLISH-PRACTICE.md, 6 Oct 2026).
+// /api/portal/english/practice — English practice on our OWN sets
+// (SPEC-ENGLISH-PRACTICE.md; own content only since 7 Oct 2026 — lib/english-own-data.ts).
 //
-//   GET  ?image=<text id>                 → the text's picture (bytes; its storage name is never exposed)
 //   POST { editing: <item id>, answers }  → { results[], right, total }           marked by rule, no model
 //   POST { unit: <key>, answer }          → short answer:  { awarded, marks, line, why, missing, scheme }
 //                                           summary:       { content, contentMax, hit[], points[], language, words, over, scheme }
@@ -14,7 +13,7 @@ import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { englishPracticeOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { ENGLISH_ANSWER_MAX, SUMMARY_WORD_LIMIT, checkEditing, marksLine, parseUnitKey, schemeShown, wordCount } from '@/lib/english-practice';
-import { checkShort, checkSummary, loadEditingSet, loadTextImage, loadUnit, logAttempt } from '@/lib/english-practice-store';
+import { checkShort, checkSummary, loadEditingSet, loadUnit, logAttempt } from '@/lib/english-practice-store';
 
 export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,16 +25,6 @@ async function who(): Promise<string | null> {
   if (account) return portalIdentity(account);
   if (!(await viewingAsStudent()) && (await isNotesAuthed())) return 'admin';
   return null;
-}
-
-export async function GET(req: NextRequest) {
-  if (!(await who())) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
-  if (!(await englishPracticeOpen())) return NextResponse.json({ error: 'Not open yet.' }, { status: 403 });
-  const id = req.nextUrl.searchParams.get('image') ?? '';
-  if (!UUID.test(id)) return NextResponse.json({ error: 'bad request' }, { status: 400 });
-  const img = await loadTextImage(id);
-  if (!img) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return new NextResponse(img.bytes, { headers: { 'Content-Type': img.type, 'Cache-Control': 'private, max-age=3600' } });
 }
 
 export async function POST(req: NextRequest) {

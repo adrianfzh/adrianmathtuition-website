@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildShortPrompt, buildSummaryPrompt, checkEditing, editingAccepts, isTick, marksLine, parseShortReply, parseSummaryReply,
-  parseUnitKey, passageLabel, publicUnit, ruleShort, servable, summaryContentMax, toEditingSet, toScheme, unitsOf, withinLimit, wordCount,
+  parseUnitKey, passageLabel, publicUnit, ruleShort, schemeShown, servable, summaryContentMax, toEditingSet, toScheme, unitsOf, withinLimit, wordCount,
   type ItemRow,
 } from './english-practice';
 
@@ -139,5 +139,11 @@ describe('what the student reads', () => {
     expect(marksLine(0.5, 1)).toBe('0.5 of 1 mark');
     expect(passageLabel(null, 'Healthy oceans are essential to life on earth as they are at the heart')).toBe('Healthy oceans are essential to life on earth as …');
     expect(passageLabel('Voles', 'x')).toBe('Voles');
+  });
+});
+
+describe('what is shown after the check', () => {
+  it('carries no mark codes', () => {
+    expect(schemeShown({ answer: 'It was shut [1], so he lost his stall [1].', accept: [], points: [] }).answer).toBe('It was shut, so he lost his stall.');
   });
 });

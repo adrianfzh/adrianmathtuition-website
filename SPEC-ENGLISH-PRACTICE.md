@@ -1,22 +1,48 @@
-# English practice from the language bank
+# English practice — on our own passages
 
 Adrian, 6 Oct 2026: *"do all of step 5"* (after "can we do this now?" on the English plan). **Built
 the same day, CLOSED** — `ENGLISH_PRACTICE_OPEN_TO_STUDENTS = false`, Adrian's cookie only.
 
-## ⚠ Before this opens — a content-policy decision, not only a readiness one
+## Own content only (7 Oct 2026)
 
-`docs/CONTENT-POLICY.md` says the language bank is **grounding-only: nothing served**. This
-feature is the first thing that could serve it. Building it closed serves nothing. Opening it
-needs Adrian to say, in so many words, that school English questions may be served, and the
-policy doc changed in the same commit. Three things make English different from maths:
+Adrian, 7 Oct 2026: *"build english first"* — step 1 of `docs/HANDOFF-ENGLISH-BUILD.md`. The page
+now serves **only passages, questions and schemes we wrote ourselves**. It does not read the
+language bank at all, so no school or national text can reach a student, and opening it is no
+longer a content-policy decision. What it waits on: enough own sets (5 of 51 so far) and the bench
+on all of them.
 
-1. **The passages are other people's writing twice over** — a school paper reprinting a book
-   extract or a news article. A whole passage with all its questions is a large part of a paper
-   (rule 2: never a whole paper).
-2. **All but two papers came from a seller's compilation**; pictures carrying its stamp were
-   withheld at extraction, so some visual-text questions have words only.
-3. **The long-run answer is our own passages** (the twins direction): our own texts and
-   questions, checked the same way. Not built.
+- **A set** is one file in `data/english/sets/` — `ed..` editing (12 lines, 8 wrong words, 2 clean
+  lines), `vt..` visual text (drawn from blocks, 5 marks), `na..` narrative (20 marks), `nn..`
+  non-narrative (10 marks, then a summary with at least 8 points). Shapes and the checks:
+  `src/lib/english-own.ts` (`ownProblems`). Build: `npx tsx scripts/english-own/build.ts` →
+  `data/english/own-sets.json`, which the app reads. A test fails the push if the built file and the
+  folder differ, or any set has a problem.
+- **Each question carries seeded answers at a known mark** (full · paraphrase · half · wrong ·
+  lifted · vague) and a `skill` (literal · inference · own_words · vocabulary · language_use ·
+  evidence · visual · summary). Seeds are the bench's truth and never reach a page; the skill is for
+  the skill picture (step 4).
+- **Ours, checked**: `npx tsx scripts/english-own/novelty.ts` reads the bank and fails a set that
+  shares a run of 8 words (text) or 12 words (questions) with any banked row.
+- **Questions point at paragraphs, never line numbers** — lines move on a phone.
+- The writers' brief for a batch: `docs/english-own-brief.md`.
+
+## The bench (7 Oct 2026) — `npx tsx scripts/english-bench/run.ts`
+
+Runs on a Mac with the paid key; the same reading the page uses, no cap, nothing logged. About
+3 US cents a read. Verdicts are pure functions in `src/lib/english-bench.ts` (tested).
+
+| Check | What | Gate |
+|---|---|---|
+| Seeded | every seeded short answer read once | ≥ 90 % on the seeded mark, no gross miss (full for a 0, 0 for a full, 2+ marks away) |
+| Repeats | every fourth read twice | same mark ≥ 90 %, never 2 apart |
+| Padding | every fifth read again with empty words around it | unmoved ≥ 90 % |
+| Swapped | a full answer handed to a question half the set away | earns 0, ≥ 90 % |
+| Summary | every seeded summary, twice | content within 1 point ≥ 90 %, never 3 away |
+
+**Pilot, 7 Oct 2026** (`results/pilot-2026-10-07.json`, 3 reading sets, 220 reads): seeded 128/128 ·
+repeats 33/33 · padding 25/25 · swapped 24/24 · summary 10/10, every point agreed. Limits: few sets,
+and clean seeded answers written by the set's own writer — a HARD set (answers the way students
+write them) is still owed, and every new set is benched before it counts.
 
 ## What it is
 
@@ -25,17 +51,14 @@ policy doc changed in the same commit. Three things make English different from 
 | Tab | What the student does | How it is marked |
 |---|---|---|
 | Editing | the 12-line passage, a box per line (a word, or ✓) | by rule, no model: the scheme's word(s), a tick in any form schools write it |
-| Comprehension | a text, then each question with its own box and Check | the free rule when the answer is one exact thing; else ONE reading against the school's own scheme → marks, one line why, "Still needed", then "The scheme says" / "You wrote" |
+| Comprehension | a text, then each question with its own box and Check | the free rule when the answer is one exact thing; else ONE reading against the scheme → marks, one line why, "Still needed", then "The scheme says" / "You wrote" |
 | Visual text | the same, on a poster / webpage (its picture when one is stored) | the same |
 | Summary | the last question on a text, with a live word count | ONE reading: which of the scheme's points were made (content out of 8 at most) + one line on the wording. No language mark is invented |
 
 ## Red lines (held in `lib/english-practice.ts`, tested)
 
-- **Serve gate**: a school row (not national), not deleted, `answer_source = 'mark_scheme'`,
-  level `EL` / `EL_NA`. A unit with no scheme is not served — nothing is ever marked against an
-  answer of ours.
-- **No source**: no school, year, exam or file name in any page or reply. A picture is streamed
-  by text id (`GET ?image=`), because its storage name carries the school.
+- **Own content only**: the store reads `lib/english-own-data.ts` and nothing else. (The bank-row
+  gate `servable` / `unitsOf` / `toEditingSet` is still in the file and tested, unused by the page.)
 - **The scheme arrives only with the check** — `publicUnit` strips it from the page.
 - **The marker's notes stay out** (`marks_note` is never carried), except an editing line's own
   explanation, which is teaching.
@@ -65,7 +88,6 @@ policy doc changed in the same commit. Three things make English different from 
 
 ## Not done
 
-- A proper bench (seeded answers at known marks, as the science bench) — the gate before opening.
+- The bench on a hard set and on every new set (see The bench).
 - Marking history on the list (what was tried, what was right).
-- The editing passage keeps the paper's line breaks, which wrap on a phone.
-- Our own passages.
+- 46 more own sets (the bulk batch).

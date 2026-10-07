@@ -27,9 +27,11 @@ question to a student or to the public.
 - The language bank (`language_items` + `language_texts`, 6 Oct 2026) — English papers, the
   same posture: grounding-only, RLS with no policies, nothing served; answers only from the
   paper's own scheme (`SPEC-ESSAY-MARKING.md` §The language bank).
-  **6 Oct 2026:** a practice surface over it exists (`/app/languages/practice`,
-  `SPEC-ENGLISH-PRACTICE.md`) but is CLOSED — Adrian's cookie only. It serves nothing until Adrian
-  says school English questions may be served; that decision changes this paragraph in the same commit.
+  **7 Oct 2026:** the practice surface (`/app/languages/practice`, `SPEC-ENGLISH-PRACTICE.md`) no
+  longer reads this bank at all. It serves only passages, questions and schemes we wrote ourselves
+  (`data/english/sets/`); the bank guides their shape and nothing is copied —
+  `scripts/english-own/novelty.ts` fails any own set that shares a run of 8 words with a banked text.
+  The bank is back to grounding only. (The surface is still closed, for readiness, not for policy.)
 - Singapore's Copyright Act 2021 replaced closed "fair dealing" with open "fair
   use" judged on four factors (purpose and character; nature of the work; amount
   taken; effect on the market). "Research or study" keeps a safe harbour for a

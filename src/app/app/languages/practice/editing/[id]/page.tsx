@@ -21,6 +21,7 @@ export default async function EditingPage({ params }: { params: Promise<{ id: st
     <EditingForm
       itemId={set.itemId}
       text={set.text}
+      rows={set.rows ?? null}
       lines={set.lines.map(l => ({ label: l.label, where: l.where }))}
       nextHref={next ? `/app/languages/practice/editing/${next}` : null}
     />

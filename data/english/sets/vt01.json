@@ -1,0 +1,86 @@
+{
+  "id": "vt01",
+  "kind": "visual",
+  "title": "Skill Swap Saturdays",
+  "format": "webpage",
+  "theme": "teal",
+  "visual": [
+    { "t": "kicker", "text": "KAMPUNG CONNECT · YOUTH VOLUNTEER PROGRAMME" },
+    { "t": "headline", "text": "You know your phone. They know everything else." },
+    { "t": "tagline", "text": "Skill Swap Saturdays — where teenagers and seniors teach each other." },
+    { "t": "picture", "text": "A teenage boy and an elderly woman laugh over a phone. A half-finished rattan basket sits on the table between them." },
+    { "t": "body", "text": "Your grandmother can fold a ketupat in ten seconds. Can you? Spend one Saturday morning a month with a senior from your neighbourhood. You show them how to make a video call, pay a bill online and spot a scam message. They show you something no app can teach." },
+    { "t": "box", "title": "What one morning looks like", "items": [
+      "9.00 am — Kopi and introductions",
+      "9.30 am — You teach: one phone skill, one-to-one",
+      "10.30 am — They teach: cooking, weaving, repairs or dialect",
+      "11.30 am — Everyone shares what they learnt"
+    ] },
+    { "t": "quote", "text": "“I came to teach Mdm Goh how to pay with her phone. I left knowing how to sew on a button, and with an invitation to lunch every week.” — Irfan, 15" },
+    { "t": "small", "text": "No experience needed. Ages 13 to 18. Counts towards your Values in Action hours." },
+    { "t": "button", "text": "Sign up by 30 June — places are limited to 40 pairs" },
+    { "t": "small", "text": "Tampines West Community Library · every second Saturday of the month" }
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Look at the headline: ‘You know your phone. They know everything else.’ What does it suggest teenagers can gain from the programme?",
+      "scheme": { "answer": "Seniors have a great deal of knowledge and skills outside technology, and teenagers can learn these from them.", "accept": ["Teenagers can pick up many useful skills or life lessons from older people that they do not have themselves."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests that seniors know a lot of things other than technology, and teenagers can learn all these from them." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Teens are only good with phones, but the old folks have plenty of other skills to pass on to them." },
+        { "mark": 0, "flaw": "wrong", "text": "It suggests that teenagers can become better at using their phones." },
+        { "mark": 0, "flaw": "vague", "text": "They can gain a lot from joining the programme." },
+        { "mark": 0, "flaw": "wrong", "text": "Seniors do not know how to use phones." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "visual",
+      "text": "The webpage is written for teenagers. Give one piece of evidence from the webpage that shows this.",
+      "scheme": { "answer": "It says ‘Ages 13 to 18’.", "accept": ["It says the mornings count towards ‘Values in Action hours’, which students need.", "It speaks to the reader as ‘you’ who knows ‘your phone’ and has a ‘grandmother’.", "It quotes Irfan, who is 15.", "The picture shows a teenage boy as the volunteer."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It states that it is for ages 13 to 18." },
+        { "mark": 1, "flaw": "paraphrase", "text": "It mentions Values in Action hours, which only students have to collect." },
+        { "mark": 1, "flaw": "paraphrase", "text": "The person quoted, Irfan, is 15 years old, the same age as the readers." },
+        { "mark": 0, "flaw": "wrong", "text": "It is held at Tampines West Community Library." },
+        { "mark": 0, "flaw": "vague", "text": "The words used are simple and easy." }
+      ]
+    },
+    {
+      "n": "3", "marks": 1, "type": "short", "skill": "visual",
+      "text": "Why does the webpage include Irfan’s words?",
+      "scheme": { "answer": "Irfan is a real teenager who has taken part, so his words make the benefits believable and show the reader that someone like them enjoyed it.", "accept": ["To convince teenagers to join by showing what a volunteer of their age gained from it."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He is a teenager who actually joined, so readers will believe the programme is worth it because someone like them enjoyed it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "To persuade teens to sign up by showing a real volunteer their age who got something out of it." },
+        { "mark": 0, "flaw": "wrong", "text": "To tell us that Irfan knows how to sew a button." },
+        { "mark": 0, "flaw": "vague", "text": "To make the webpage more interesting." },
+        { "mark": 0, "flaw": "lifted", "text": "I came to teach Mdm Goh how to pay with her phone." }
+      ]
+    },
+    {
+      "n": "4", "marks": 1, "type": "short", "skill": "visual",
+      "text": "Which phrase in the sign-up button is meant to make the reader act quickly?",
+      "scheme": { "answer": "places are limited", "accept": ["places are limited to 40 pairs", "limited to 40 pairs", "by 30 June", "Sign up by 30 June"] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "places are limited" },
+        { "mark": 1, "flaw": "paraphrase", "text": "'limited to 40 pairs'" },
+        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"by 30 June\"." },
+        { "mark": 0, "flaw": "wrong", "text": "No experience needed" },
+        { "mark": 0, "flaw": "wrong", "text": "every second Saturday of the month" }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "‘They show you something no app can teach.’ What is the writer suggesting about the skills that seniors have?",
+      "scheme": { "answer": "Their skills are hands-on and personal, so they cannot be learnt from a phone or the internet — they are special and worth learning in person.", "accept": ["The skills are valuable because technology cannot replace them."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "The writer suggests their skills are special because you cannot get them from technology, only from the person." },
+        { "mark": 1, "flaw": "paraphrase", "text": "These are things you have to learn face to face from someone experienced, a phone cannot give you that, so they are precious." },
+        { "mark": 0, "flaw": "wrong", "text": "Seniors cannot use apps." },
+        { "mark": 0, "flaw": "vague", "text": "The seniors have skills." },
+        { "mark": 0, "flaw": "wrong", "text": "Apps are bad teachers and teenagers should stop using them." }
+      ]
+    }
+  ]
+}

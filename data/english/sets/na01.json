@@ -1,0 +1,181 @@
+{
+  "id": "na01",
+  "kind": "narrative",
+  "title": "The Last Evening at the Stall",
+  "paragraphs": [
+    "The shutters of the Block 216 market were already half down when Jun arrived, but his grandfather’s stall glowed at the far end like the last lit window on a dark street. Ah Gong sat on his low stool exactly as he had for forty-one years, a shoe clamped between his knees, as if tomorrow were an ordinary day.",
+    "It was not. A notice taped to every pillar announced that the market would close for upgrading at midnight. The new plan had space for a café, a pharmacy and a bubble tea shop. It had no space for a man who mended soles and cut keys.",
+    "“You’re late,” Ah Gong said without looking up. “Pass me the small hammer.” Jun passed it. He had practised a speech on the bus — about how sorry he was, about how unfair it all was — but the words dissolved the moment he saw his grandfather’s hands. They moved the way they always had, quick and certain, tapping tiny nails into leather as though the shoe were the only thing in the world that mattered.",
+    "Customers came in a steady trickle all evening. None of them, Jun noticed, seemed to need anything urgently. A woman brought a single sandal with a strap that was barely loose. A taxi driver wanted a spare key cut for a flat he had sold years ago. An old man simply stood there holding a perfectly good umbrella until Ah Gong took it from him, opened it, closed it, and solemnly handed it back. “No charge,” he said. The old man nodded, eyes bright, and shuffled away.",
+    "“Why did he bring an umbrella that isn’t broken?” Jun whispered. Ah Gong threaded a needle. “He didn’t come for the umbrella.”",
+    "Jun looked down the emptying corridor and finally understood. They had been arriving all night with their flimsy excuses, these neighbours, because none of them knew how to say goodbye to a man who had never once asked for thanks. His throat tightened. For years he had been faintly embarrassed by the stall — its smell of glue, its hand-painted sign, the way his classmates’ parents worked in offices with glass doors. Now he wished he could go back and shake that younger self by the shoulders.",
+    "At ten to midnight, Ah Gong switched off the grinding machine. The silence it left behind was enormous. He unhooked the wooden signboard, wiped it with his sleeve and, to Jun’s surprise, held it out to him. “Too heavy for me,” he said, though it plainly was not.",
+    "Jun took the sign in both arms. It was lighter than he expected and heavier than anything he had ever carried. Together they pulled the shutter down, and the old man walked out of the market without once looking back. Jun looked back for both of them."
+  ],
+  "questions": [
+    {
+      "n": "1", "marks": 1, "type": "short", "skill": "language_use",
+      "text": "In Paragraph 1, the stall is said to glow ‘like the last lit window on a dark street’. What does this comparison suggest about the stall?",
+      "scheme": { "answer": "It was the only stall still open, and it stood out as warm and welcoming in a market that was otherwise shut and dark.", "accept": ["It was the one bright, comforting place left when everything around it had closed."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "It suggests the stall was the only one still open and it looked warm and inviting while the rest of the market was dark and closed." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Everything else had shut, so his grandfather's stall was the one bright comforting spot left." },
+        { "mark": 0, "flaw": "wrong", "text": "The stall had a window with a lamp in it." },
+        { "mark": 0, "flaw": "vague", "text": "It suggests that the stall is bright." },
+        { "mark": 0, "flaw": "lifted", "text": "It glowed at the far end like the last lit window on a dark street." }
+      ]
+    },
+    {
+      "n": "2", "marks": 1, "type": "short", "skill": "inference",
+      "text": "Ah Gong sat ‘as if tomorrow were an ordinary day’ (Paragraph 1). What does this tell you about how he was behaving?",
+      "scheme": { "answer": "He carried on working calmly as he always did, without showing that this was his last day at the stall.", "accept": ["He acted as though nothing was changing, hiding the fact that the stall was about to close."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He was working calmly like on any other day and did not show that it was the last day of his stall." },
+        { "mark": 1, "flaw": "paraphrase", "text": "He behaved as though nothing was about to change even though the stall was closing for good." },
+        { "mark": 0, "flaw": "wrong", "text": "He did not know that the market was going to close." },
+        { "mark": 0, "flaw": "vague", "text": "He was sitting on his stool repairing a shoe." },
+        { "mark": 0, "flaw": "wrong", "text": "He was looking forward to tomorrow." }
+      ]
+    },
+    {
+      "n": "3", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain why the new plan for the market was bad news for Ah Gong (Paragraph 2).",
+      "scheme": { "answer": "The rebuilt market would hold only newer, more modern kinds of shops [1], and his old trade of repairing shoes and making keys was left out, so he would lose his stall [1].", "points": ["The rebuilt market would have only newer / more modern kinds of shops.", "There was no place in it for his kind of work (repairing shoes, making keys), so he would lose his stall."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "After the renovation the market would only have modern shops like cafes, and there was no room for an old-fashioned repair business like his, so he would have to stop working there." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The market was being redone for trendy new businesses. A shoe repairer and key maker was not included, which meant his stall was gone." },
+        { "mark": 1, "flaw": "half", "text": "He would not have a stall any more because his kind of work was not included." },
+        { "mark": 1, "flaw": "half", "text": "The market would be changed to have fashionable new shops instead." },
+        { "mark": 0, "flaw": "lifted", "text": "The new plan had space for a café, a pharmacy and a bubble tea shop. It had no space for a man who mended soles and cut keys." },
+        { "mark": 0, "flaw": "wrong", "text": "The market was closing at midnight so he had to work very late that night." }
+      ]
+    },
+    {
+      "n": "4a", "marks": 1, "type": "short", "skill": "literal",
+      "stem": "Jun ‘had practised a speech on the bus’ (Paragraph 3).",
+      "text": "What had he planned to tell his grandfather?",
+      "scheme": { "answer": "That he was sorry about the stall closing and that it was unfair.", "accept": ["How sorry he was and how unfair the closure was."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "He planned to say how sorry he was and how unfair it was that the stall had to close." },
+        { "mark": 1, "flaw": "paraphrase", "text": "That he felt bad for his grandfather and thought the whole thing was not fair." },
+        { "mark": 0, "flaw": "wrong", "text": "He wanted to apologise for being late." },
+        { "mark": 0, "flaw": "vague", "text": "He planned to give a speech to him." },
+        { "mark": 0, "flaw": "wrong", "text": "He planned to ask him to pass the small hammer." }
+      ]
+    },
+    {
+      "n": "4b", "marks": 1, "type": "short", "skill": "inference",
+      "stem": "Jun ‘had practised a speech on the bus’ (Paragraph 3).",
+      "text": "Why did he not give the speech in the end?",
+      "scheme": { "answer": "When he saw his grandfather working as steadily and surely as ever, the words seemed out of place and he could not say them.", "accept": ["His grandfather was calmly getting on with his work, not treating the evening as a tragedy, so the speech no longer fitted."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "Seeing his grandfather working steadily like always made the speech feel unnecessary, so he could not bring himself to say it." },
+        { "mark": 1, "flaw": "paraphrase", "text": "His grandfather was just getting on with the job calmly and was not upset, so Jun's sad words did not fit any more." },
+        { "mark": 0, "flaw": "wrong", "text": "His grandfather told him to keep quiet." },
+        { "mark": 0, "flaw": "wrong", "text": "He forgot the speech because he was late and in a rush." },
+        { "mark": 0, "flaw": "lifted", "text": "The words dissolved." }
+      ]
+    },
+    {
+      "n": "5", "marks": 1, "type": "short", "skill": "vocabulary",
+      "text": "Which one word in Paragraph 3 shows that the words Jun had prepared disappeared?",
+      "scheme": { "answer": "dissolved" },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "dissolved" },
+        { "mark": 1, "flaw": "full", "text": "“Dissolved”." },
+        { "mark": 0, "flaw": "wrong", "text": "practised" },
+        { "mark": 0, "flaw": "wrong", "text": "mattered" }
+      ]
+    },
+    {
+      "n": "6", "marks": 2, "type": "short", "skill": "evidence",
+      "text": "Jun noticed that none of the customers ‘seemed to need anything urgently’. Give two details from Paragraph 4 that support this.",
+      "scheme": { "answer": "Any two of the three details, 1 mark each.", "points": ["The woman’s sandal strap was only barely loose.", "The taxi driver wanted a key for a flat he had already sold years ago.", "The old man’s umbrella was perfectly good / not broken."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The sandal strap was hardly loose at all, and the taxi driver wanted a key for a flat that he no longer owned." },
+        { "mark": 2, "flaw": "paraphrase", "text": "One man's umbrella had nothing wrong with it. Another customer asked for a key to a home he sold long ago." },
+        { "mark": 1, "flaw": "half", "text": "The old man brought an umbrella that was not broken. Also, the customers came in a steady trickle." },
+        { "mark": 1, "flaw": "half", "text": "A woman's sandal only had a slightly loose strap." },
+        { "mark": 0, "flaw": "wrong", "text": "Customers came all evening and Ah Gong did not charge them." },
+        { "mark": 0, "flaw": "vague", "text": "They brought things to repair." }
+      ]
+    },
+    {
+      "n": "7", "marks": 2, "type": "short", "skill": "inference",
+      "text": "‘He didn’t come for the umbrella’ (Paragraph 5). Using Paragraphs 5 and 6, explain what Ah Gong meant.",
+      "scheme": { "answer": "The old man had really come to see Ah Gong one last time and say goodbye [1]; the umbrella was only an excuse, because he did not know how to say it directly [1].", "points": ["The man’s real reason was to see Ah Gong a last time / to say goodbye.", "The umbrella was just an excuse, because he could not say goodbye openly."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He meant that the old man actually came to say goodbye to him. The umbrella was just an excuse because he did not know how to say it straight." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The man wanted to visit Ah Gong one final time before the stall shut. Since he couldn't put that into words, he used the umbrella as a reason to come." },
+        { "mark": 1, "flaw": "half", "text": "The old man came to see Ah Gong for the last time." },
+        { "mark": 1, "flaw": "half", "text": "The umbrella was only an excuse to come to the stall." },
+        { "mark": 0, "flaw": "wrong", "text": "The old man came to get a key cut instead." },
+        { "mark": 0, "flaw": "wrong", "text": "He meant that the umbrella could not be repaired." }
+      ]
+    },
+    {
+      "n": "8", "marks": 2, "type": "short", "skill": "own_words",
+      "text": "In your own words, explain how Jun’s feelings about the stall changed (Paragraph 6).",
+      "scheme": { "answer": "In the past he had been a little ashamed of the stall [1]; now he regretted feeling that way and saw its worth [1].", "points": ["Before: he was slightly ashamed of it.", "Now: he regrets that / is angry with his younger self / values and is proud of the stall."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He used to feel a bit ashamed of his grandfather's stall. Now he regrets that and realises how much it means to people." },
+        { "mark": 2, "flaw": "paraphrase", "text": "Before, the stall made him feel slightly awkward in front of his friends. That night he became proud of it and was angry at himself for how he used to think." },
+        { "mark": 1, "flaw": "half", "text": "He now feels proud of the stall and what his grandfather did." },
+        { "mark": 1, "flaw": "half", "text": "In the past he felt a little ashamed of the stall." },
+        { "mark": 0, "flaw": "lifted", "text": "For years he had been faintly embarrassed by the stall. Now he wished he could go back and shake that younger self by the shoulders." },
+        { "mark": 0, "flaw": "wrong", "text": "He used to like the stall but now he finds it smelly and old." }
+      ]
+    },
+    {
+      "n": "9", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "‘The silence it left behind was enormous’ (Paragraph 7). What effect does the writer create by calling the silence ‘enormous’?",
+      "scheme": { "answer": "It stresses how striking the quiet was once the machine that had always been running stopped [1], and it suggests the great sense of loss — the stall’s working life had ended [1].", "points": ["It emphasises how noticeable / heavy the quiet was after the constant noise of the machine.", "It suggests the size of the loss or ending — the stall’s work was over for good."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "It shows how obvious the quiet felt after the machine that was always on stopped. It also makes the reader feel how big the loss was, since the stall had ended for good." },
+        { "mark": 2, "flaw": "paraphrase", "text": "The word makes the quiet seem huge and heavy because the noise had always been there, and it hints that something very important, forty-one years of work, was now finished." },
+        { "mark": 1, "flaw": "half", "text": "It emphasises that it became very, very quiet when the machine was switched off." },
+        { "mark": 1, "flaw": "half", "text": "It shows what a great loss it was that the stall's work was over." },
+        { "mark": 0, "flaw": "wrong", "text": "It shows that the market was a very big place." },
+        { "mark": 0, "flaw": "vague", "text": "It creates a good effect on the reader and makes it interesting." }
+      ]
+    },
+    {
+      "n": "10", "marks": 2, "type": "short", "skill": "inference",
+      "text": "Ah Gong said the sign was ‘too heavy’ for him, ‘though it plainly was not’ (Paragraph 7). Why do you think he gave it to Jun?",
+      "scheme": { "answer": "He wanted Jun to keep the sign, passing on the memory of the stall to him [1]; saying it was heavy let him do this without openly showing his feelings [1].", "points": ["He wanted Jun to have / keep it — handing the stall’s memory on to his grandson.", "The ‘too heavy’ excuse let him do so without showing emotion or saying it directly."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "He wanted Jun to keep the sign as a memory of the stall. He pretended it was heavy so that he would not have to show his feelings." },
+        { "mark": 2, "flaw": "paraphrase", "text": "It was his way of handing the stall's history down to his grandson. Calling it heavy was just a cover, because he is not a man who says such things out loud." },
+        { "mark": 1, "flaw": "half", "text": "He wanted his grandson to have the sign to remember the stall by." },
+        { "mark": 1, "flaw": "half", "text": "He made an excuse because he did not want to show he was emotional." },
+        { "mark": 0, "flaw": "wrong", "text": "He was old and weak and could not carry it himself." },
+        { "mark": 0, "flaw": "wrong", "text": "He wanted Jun to throw it away for him." }
+      ]
+    },
+    {
+      "n": "11", "marks": 2, "type": "short", "skill": "language_use",
+      "text": "The sign was ‘lighter than he expected and heavier than anything he had ever carried’ (Paragraph 8). Explain how it could be both.",
+      "scheme": { "answer": "It did not weigh much in his arms [1], but it carried great meaning — his grandfather’s forty-one years of work — so it felt heavy in his heart [1].", "points": ["Physically it weighed little.", "Emotionally it was heavy: it stood for his grandfather’s life’s work / a responsibility now passed to him."] },
+      "seeds": [
+        { "mark": 2, "flaw": "full", "text": "The sign itself did not weigh much. But it felt heavy to him because it stood for all the years his grandfather had worked at the stall." },
+        { "mark": 2, "flaw": "paraphrase", "text": "In his hands it was light, but in his heart it was heavy as it held his grandfather's whole working life and now he was the one looking after it." },
+        { "mark": 1, "flaw": "half", "text": "It was heavy with meaning because it represented his grandfather's forty-one years of work." },
+        { "mark": 1, "flaw": "half", "text": "The wooden sign was actually not heavy to lift." },
+        { "mark": 0, "flaw": "wrong", "text": "It was light at first but became heavier as he got tired of carrying it." },
+        { "mark": 0, "flaw": "lifted", "text": "It was lighter than he expected and heavier than anything he had ever carried." }
+      ]
+    },
+    {
+      "n": "12", "marks": 1, "type": "short", "skill": "inference",
+      "text": "‘Jun looked back for both of them’ (Paragraph 8). What does this suggest about the difference between Jun and his grandfather at that moment?",
+      "scheme": { "answer": "Ah Gong kept his feelings hidden and would not look, while Jun let himself feel the sadness and took a last look on his grandfather’s behalf.", "accept": ["His grandfather would not show how he felt, but Jun openly felt the loss for the two of them."] },
+      "seeds": [
+        { "mark": 1, "flaw": "full", "text": "His grandfather hid his feelings and refused to look, but Jun allowed himself to feel sad and looked one last time for his grandfather as well." },
+        { "mark": 1, "flaw": "paraphrase", "text": "Ah Gong would not show any emotion, whereas Jun openly felt the loss on behalf of them both." },
+        { "mark": 0, "flaw": "wrong", "text": "Jun was younger so he could turn his head more easily." },
+        { "mark": 0, "flaw": "vague", "text": "Jun looked back but his grandfather did not." },
+        { "mark": 0, "flaw": "wrong", "text": "Jun did not care about the stall but his grandfather did." }
+      ]
+    }
+  ]
+}

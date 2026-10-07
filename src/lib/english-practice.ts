@@ -79,6 +79,7 @@ export interface Unit {
   sectionKind: string;
   options: { label: string; text: string }[] | null;
   scheme: Scheme;
+  skill?: string;       // our own sets: what the question tests (lib/english-own OWN_SKILLS)
 }
 export type PublicUnit = Omit<Unit, 'scheme'>;
 
@@ -135,7 +136,7 @@ export function editingAccepts(schemeAnswer: string): { tick: boolean; words: st
 }
 
 export interface EditingLine { label: string; where: string; scheme: string; note: string | null }
-export interface EditingSet { itemId: string; text: string; lines: EditingLine[] }
+export interface EditingSet { itemId: string; text: string; lines: EditingLine[]; rows?: { label: string | null; text: string }[] }
 
 /** An editing item is servable only with its lines in `parts`, each carrying an answer. */
 export function toEditingSet(r: ItemRow): EditingSet | null {
@@ -183,7 +184,7 @@ export interface ShortVerdict { awarded: number; why: string; missing: string | 
 const clip = (s: string, n: number): string => (s.length > n ? s.slice(0, n) + ' …' : s);
 
 export function buildShortPrompt(u: Pick<Unit, 'stem' | 'text' | 'marks' | 'scheme'>, answer: string, passage: string): string {
-  return `You are marking ONE answer to an O-Level English comprehension question against the school's own mark scheme. The scheme is the only standard: award what it would award, no more and no less.
+  return `You are marking ONE answer to an O-Level English comprehension question against its mark scheme. The scheme is the only standard: award what it would award, no more and no less.
 
 THE PASSAGE (for reference only)
 <<<
@@ -241,7 +242,7 @@ export interface SummaryVerdict { hit: number[]; language: string }
 
 export function buildSummaryPrompt(u: Pick<Unit, 'text' | 'scheme'>, answer: string, passage: string): string {
   const pts = u.scheme.points.map((p, i) => `${i + 1}. ${p}`).join('\n');
-  return `You are marking the CONTENT of an O-Level English summary against the school's own list of points. The list is the only standard.
+  return `You are marking the CONTENT of an O-Level English summary against the mark scheme's list of points. The list is the only standard.
 
 THE PASSAGE
 <<<
@@ -292,7 +293,9 @@ export function marksLine(awarded: number, marks: number): string {
 
 /** The scheme as shown AFTER the check: the answer and what else is accepted. Never the marker's note. */
 export function schemeShown(s: Scheme): { answer: string | null; accept: string[]; points: string[] } {
-  return { answer: s.answer, accept: s.accept.slice(0, 6), points: s.points.slice(0, 12) };
+  // "[1]" is the marker's code, not the student's reading (CLAUDE.md §Readability).
+  const answer = s.answer ? s.answer.replace(/\s*\[\d+(?:\s*marks?)?\]/gi, '').replace(/\s+([.,;])/g, '$1').trim() : null;
+  return { answer: answer || null, accept: s.accept.slice(0, 6), points: s.points.slice(0, 12) };
 }
 
 /** A short label for a passage in a list — its title or first words, never its source. */

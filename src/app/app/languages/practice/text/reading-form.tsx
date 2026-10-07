@@ -5,6 +5,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { PublicUnit } from '@/lib/english-practice';
+import type { VisualBlock, VisualTheme } from '@/lib/english-own';
+import VisualText from './visual-text';
 
 const CARD = 'bg-white rounded-3xl border border-black/5 shadow-sm';
 const TAG = 'text-[11px] font-semibold uppercase tracking-wide mr-1.5';
@@ -77,11 +79,14 @@ function Question({ u, wordLimit }: { u: PublicUnit; wordLimit: number }) {
           </p>
           <p className="text-[14px] leading-snug text-gray-800">{res.why}</p>
           {res.missing && <p className="text-[14px] leading-snug text-gray-800"><span className={`${TAG} text-amber-700`}>Still needed</span>{res.missing}</p>}
-          {res.scheme.answer && <p className="text-[14px] leading-snug text-gray-800"><span className={`${TAG} text-emerald-700`}>The scheme says</span>{res.scheme.answer}</p>}
+          {/* one statement of the scheme, not two: its points when it lists them, else its answer */}
+          {res.scheme.points.length > 0 ? (
+            <div>
+              <p className={`${TAG} text-emerald-700`}>The scheme says</p>
+              <ul className="text-[14px] leading-snug text-gray-800 list-disc pl-5 mt-0.5">{res.scheme.points.map((p, i) => <li key={i}>{p}</li>)}</ul>
+            </div>
+          ) : res.scheme.answer && <p className="text-[14px] leading-snug text-gray-800"><span className={`${TAG} text-emerald-700`}>The scheme says</span>{res.scheme.answer}</p>}
           {res.scheme.accept.length > 0 && <p className="text-[13px] leading-snug text-gray-500">Also accepted: {res.scheme.accept.join(' · ')}</p>}
-          {res.scheme.points.length > 0 && (
-            <ul className="text-[14px] leading-snug text-gray-800 list-disc pl-5">{res.scheme.points.map((p, i) => <li key={i}>{p}</li>)}</ul>
-          )}
           <p className="text-[14px] leading-snug text-gray-600"><span className={`${TAG} text-gray-500`}>You wrote</span>{sent}</p>
         </div>
       )}
@@ -115,21 +120,29 @@ function Question({ u, wordLimit }: { u: PublicUnit; wordLimit: number }) {
   );
 }
 
-export default function ReadingForm({ title, text, imageSrc, units, backHref, wordLimit }: {
-  title: string | null; text: string; imageSrc: string | null; units: PublicUnit[]; backHref: string; wordLimit: number;
+export default function ReadingForm({ title, paragraphs, visual, units, backHref, wordLimit }: {
+  title: string; paragraphs: string[] | null; visual: { format: string; theme: VisualTheme; blocks: VisualBlock[] } | null;
+  units: PublicUnit[]; backHref: string; wordLimit: number;
 }) {
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
         <Link href={backHref} className="text-xs text-gray-500">‹ Practise</Link>
-        <h1 className="text-xl font-bold text-navy mt-1 leading-tight">{title || 'Read the text'}</h1>
+        <h1 className="text-xl font-bold text-navy mt-1 leading-tight">{title}</h1>
       </div>
 
-      <div className={`${CARD} p-4 space-y-3`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        {imageSrc && <img src={imageSrc} alt={title || 'The text'} className="w-full rounded-2xl border border-black/5" />}
-        {text && <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900">{text}</p>}
-      </div>
+      {visual && <VisualText format={visual.format} theme={visual.theme} blocks={visual.blocks} />}
+
+      {paragraphs && (
+        <div className={`${CARD} p-4 space-y-3`}>
+          {paragraphs.map((p, i) => (
+            <div key={i} className="flex gap-2.5">
+              <span aria-label={`Paragraph ${i + 1}`} className="shrink-0 w-5 pt-[3px] text-right text-[12px] font-semibold text-violet-500">{i + 1}</span>
+              <p className="flex-1 min-w-0 text-[15px] leading-relaxed text-gray-900">{p}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {units.map(u => <Question key={u.key} u={u} wordLimit={wordLimit} />)}
 

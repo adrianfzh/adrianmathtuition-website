@@ -1,6 +1,6 @@
-// /app/languages/practice — English practice from the language bank
-// (SPEC-ENGLISH-PRACTICE.md, 6 Oct 2026): editing passages, texts with their
-// questions, visual texts. A list only; nothing here names a school or a year.
+// /app/languages/practice — English practice on our OWN sets
+// (SPEC-ENGLISH-PRACTICE.md; own content only since 7 Oct 2026): editing passages,
+// texts with their questions, visual texts. A list only.
 // Closed: englishPracticeOpen() = Adrian's cookie until the switch flips.
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
@@ -28,7 +28,7 @@ function ReadingRows({ rows }: { rows: ReadingListing[] }) {
         <Link key={r.textId} href={`/app/languages/practice/text/${r.textId}`} className={ROW}>
           <span className="flex-1 min-w-0">
             <span className="block text-[15px] font-semibold text-navy leading-snug truncate">{r.label}</span>
-            <span className="block text-[12px] text-gray-500">{r.questions} question{r.questions === 1 ? '' : 's'}{r.summary ? ' · with a summary' : ''}</span>
+            <span className="block text-[12px] text-gray-500">{r.group === 'narrative' ? 'Story · ' : r.group === 'non_narrative' ? 'Article · ' : ''}{r.questions} question{r.questions === 1 ? '' : 's'}{r.summary ? ' · with a summary' : ''}</span>
           </span>
           <span className="shrink-0 text-gray-300 text-lg">›</span>
         </Link>
@@ -42,7 +42,7 @@ export default async function EnglishPracticePage({ searchParams }: { searchPara
   const t = (await searchParams).t;
   const tab: Tab = TABS.some(x => x.key === t) ? (t as Tab) : 'editing';
   const [editing, reading] = await Promise.all([loadEditingList().catch(() => []), loadReadingList().catch(() => [])]);
-  const passages = reading.filter(r => r.group === 'passage');
+  const passages = reading.filter(r => r.group !== 'visual');
   const visual = reading.filter(r => r.group === 'visual');
   const summaries = passages.filter(r => r.summary);
 

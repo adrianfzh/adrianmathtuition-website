@@ -1,0 +1,19 @@
+{
+  "id": "ed01",
+  "kind": "editing",
+  "about": "A bookshelf at the foot of a block",
+  "lines": [
+    { "text": "When Mdm Rosnah first placed a small bookshelf at the foot of her block," },
+    { "text": "she did not expect anyone to notice it. Within a month, however, the shelf has", "wrong": "has", "right": "had", "note": "Tense: the story is in the past, so it is 'had grown'." },
+    { "text": "grown into a corner library with more than three hundred book. Residents of", "wrong": "book", "right": "books", "note": "Plural: 'three hundred' needs 'books'." },
+    { "text": "all ages now drop by after dinner, and much of them have become regular", "wrong": "much", "right": "many", "note": "'Many' goes with people you can count; 'much' does not." },
+    { "text": "visitors. The rules are simple: take a book, read it, and return it when you" },
+    { "text": "are done. Nobody keeps a record, yet very few books have went missing so", "wrong": "went", "right": "gone", "note": "Verb form: after 'have' it is 'gone', not 'went'." },
+    { "text": "far. Mdm Rosnah believes that people behave good when they are trusted.", "wrong": "good", "right": "well", "note": "Word form: 'behave' is a verb, so it takes the adverb 'well'." },
+    { "text": "Last year, a group of students offered to help she sort the books by", "wrong": "she", "right": "her", "note": "Pronoun: after 'help' it is 'her'." },
+    { "text": "subject. They also painted the shelves and add a reading bench for the", "wrong": "add", "right": "added", "note": "Tense: 'painted … and added' — both verbs are in the past." },
+    { "text": "elderly. What began as one woman’s hobby is now a meeting place who brings", "wrong": "who", "right": "that", "accept": ["which"], "note": "'Who' is for people. A place takes 'that' or 'which'." },
+    { "text": "neighbours together. Similar shelves have since appeared at three other blocks" },
+    { "text": "in the estate, each one looked after by the people who live there." }
+  ]
+}

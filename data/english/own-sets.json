@@ -1,0 +1,1352 @@
+{
+ "sets": [
+  {
+   "id": "ed01",
+   "kind": "editing",
+   "about": "A bookshelf at the foot of a block",
+   "lines": [
+    {
+     "text": "When Mdm Rosnah first placed a small bookshelf at the foot of her block,"
+    },
+    {
+     "text": "she did not expect anyone to notice it. Within a month, however, the shelf has",
+     "wrong": "has",
+     "right": "had",
+     "note": "Tense: the story is in the past, so it is 'had grown'."
+    },
+    {
+     "text": "grown into a corner library with more than three hundred book. Residents of",
+     "wrong": "book",
+     "right": "books",
+     "note": "Plural: 'three hundred' needs 'books'."
+    },
+    {
+     "text": "all ages now drop by after dinner, and much of them have become regular",
+     "wrong": "much",
+     "right": "many",
+     "note": "'Many' goes with people you can count; 'much' does not."
+    },
+    {
+     "text": "visitors. The rules are simple: take a book, read it, and return it when you"
+    },
+    {
+     "text": "are done. Nobody keeps a record, yet very few books have went missing so",
+     "wrong": "went",
+     "right": "gone",
+     "note": "Verb form: after 'have' it is 'gone', not 'went'."
+    },
+    {
+     "text": "far. Mdm Rosnah believes that people behave good when they are trusted.",
+     "wrong": "good",
+     "right": "well",
+     "note": "Word form: 'behave' is a verb, so it takes the adverb 'well'."
+    },
+    {
+     "text": "Last year, a group of students offered to help she sort the books by",
+     "wrong": "she",
+     "right": "her",
+     "note": "Pronoun: after 'help' it is 'her'."
+    },
+    {
+     "text": "subject. They also painted the shelves and add a reading bench for the",
+     "wrong": "add",
+     "right": "added",
+     "note": "Tense: 'painted … and added' — both verbs are in the past."
+    },
+    {
+     "text": "elderly. What began as one woman’s hobby is now a meeting place who brings",
+     "wrong": "who",
+     "right": "that",
+     "accept": [
+      "which"
+     ],
+     "note": "'Who' is for people. A place takes 'that' or 'which'."
+    },
+    {
+     "text": "neighbours together. Similar shelves have since appeared at three other blocks"
+    },
+    {
+     "text": "in the estate, each one looked after by the people who live there."
+    }
+   ]
+  },
+  {
+   "id": "ed02",
+   "kind": "editing",
+   "about": "A monthly repair workshop",
+   "lines": [
+    {
+     "text": "On the first Sunday of every month, a community hall in Tampines turns"
+    },
+    {
+     "text": "into a workshop. Volunteers sit behind long tables and waits to repair",
+     "wrong": "waits",
+     "right": "wait",
+     "note": "Agreement: 'Volunteers' is plural, so 'sit … and wait'."
+    },
+    {
+     "text": "broken fans, kettles and toys that residents bring in. Nothing is threw",
+     "wrong": "threw",
+     "right": "thrown",
+     "note": "Verb form: after 'is' it is 'thrown', not 'threw'."
+    },
+    {
+     "text": "away until someone has tried to fix it. Most of the volunteers are retired"
+    },
+    {
+     "text": "technicians, but a few are students who simply enjoy take things apart.",
+     "wrong": "take",
+     "right": "taking",
+     "note": "Verb form: 'enjoy' is followed by '-ing'."
+    },
+    {
+     "text": "Each repair is free, and visitors are encouraged to stay and watch how"
+    },
+    {
+     "text": "the work is done. Mr Lim, which started the sessions, says the aim is not",
+     "wrong": "which",
+     "right": "who",
+     "note": "'Which' is for things. A person takes 'who'."
+    },
+    {
+     "text": "only to save money. He wants people to think careful before they replace",
+     "wrong": "careful",
+     "right": "carefully",
+     "note": "Word form: 'think' is a verb, so it takes the adverb 'carefully'."
+    },
+    {
+     "text": "something that still has years of use left on it. Last year alone, the",
+     "wrong": "on",
+     "right": "in",
+     "note": "Preposition: use is left 'in' a thing."
+    },
+    {
+     "text": "volunteers kept more than two thousand item out of the rubbish bin.",
+     "wrong": "item",
+     "right": "items",
+     "note": "Plural: 'two thousand' needs 'items'."
+    },
+    {
+     "text": "Many visitors leave with a working appliance and an new skill as well.",
+     "wrong": "an",
+     "right": "a",
+     "note": "Article: 'new' starts with a consonant sound, so it is 'a new skill'."
+    },
+    {
+     "text": "For Mr Lim, that second gift matters more than the first one does."
+    }
+   ]
+  },
+  {
+   "id": "na01",
+   "kind": "narrative",
+   "title": "The Last Evening at the Stall",
+   "paragraphs": [
+    "The shutters of the Block 216 market were already half down when Jun arrived, but his grandfather’s stall glowed at the far end like the last lit window on a dark street. Ah Gong sat on his low stool exactly as he had for forty-one years, a shoe clamped between his knees, as if tomorrow were an ordinary day.",
+    "It was not. A notice taped to every pillar announced that the market would close for upgrading at midnight. The new plan had space for a café, a pharmacy and a bubble tea shop. It had no space for a man who mended soles and cut keys.",
+    "“You’re late,” Ah Gong said without looking up. “Pass me the small hammer.” Jun passed it. He had practised a speech on the bus — about how sorry he was, about how unfair it all was — but the words dissolved the moment he saw his grandfather’s hands. They moved the way they always had, quick and certain, tapping tiny nails into leather as though the shoe were the only thing in the world that mattered.",
+    "Customers came in a steady trickle all evening. None of them, Jun noticed, seemed to need anything urgently. A woman brought a single sandal with a strap that was barely loose. A taxi driver wanted a spare key cut for a flat he had sold years ago. An old man simply stood there holding a perfectly good umbrella until Ah Gong took it from him, opened it, closed it, and solemnly handed it back. “No charge,” he said. The old man nodded, eyes bright, and shuffled away.",
+    "“Why did he bring an umbrella that isn’t broken?” Jun whispered. Ah Gong threaded a needle. “He didn’t come for the umbrella.”",
+    "Jun looked down the emptying corridor and finally understood. They had been arriving all night with their flimsy excuses, these neighbours, because none of them knew how to say goodbye to a man who had never once asked for thanks. His throat tightened. For years he had been faintly embarrassed by the stall — its smell of glue, its hand-painted sign, the way his classmates’ parents worked in offices with glass doors. Now he wished he could go back and shake that younger self by the shoulders.",
+    "At ten to midnight, Ah Gong switched off the grinding machine. The silence it left behind was enormous. He unhooked the wooden signboard, wiped it with his sleeve and, to Jun’s surprise, held it out to him. “Too heavy for me,” he said, though it plainly was not.",
+    "Jun took the sign in both arms. It was lighter than he expected and heavier than anything he had ever carried. Together they pulled the shutter down, and the old man walked out of the market without once looking back. Jun looked back for both of them."
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "marks": 1,
+     "type": "short",
+     "skill": "language_use",
+     "text": "In Paragraph 1, the stall is said to glow ‘like the last lit window on a dark street’. What does this comparison suggest about the stall?",
+     "scheme": {
+      "answer": "It was the only stall still open, and it stood out as warm and welcoming in a market that was otherwise shut and dark.",
+      "accept": [
+       "It was the one bright, comforting place left when everything around it had closed."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "It suggests the stall was the only one still open and it looked warm and inviting while the rest of the market was dark and closed."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "Everything else had shut, so his grandfather's stall was the one bright comforting spot left."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "The stall had a window with a lamp in it."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "It suggests that the stall is bright."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "It glowed at the far end like the last lit window on a dark street."
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "marks": 1,
+     "type": "short",
+     "skill": "inference",
+     "text": "Ah Gong sat ‘as if tomorrow were an ordinary day’ (Paragraph 1). What does this tell you about how he was behaving?",
+     "scheme": {
+      "answer": "He carried on working calmly as he always did, without showing that this was his last day at the stall.",
+      "accept": [
+       "He acted as though nothing was changing, hiding the fact that the stall was about to close."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "He was working calmly like on any other day and did not show that it was the last day of his stall."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "He behaved as though nothing was about to change even though the stall was closing for good."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He did not know that the market was going to close."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "He was sitting on his stool repairing a shoe."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He was looking forward to tomorrow."
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "marks": 2,
+     "type": "short",
+     "skill": "own_words",
+     "text": "In your own words, explain why the new plan for the market was bad news for Ah Gong (Paragraph 2).",
+     "scheme": {
+      "answer": "The rebuilt market would hold only newer, more modern kinds of shops [1], and his old trade of repairing shoes and making keys was left out, so he would lose his stall [1].",
+      "points": [
+       "The rebuilt market would have only newer / more modern kinds of shops.",
+       "There was no place in it for his kind of work (repairing shoes, making keys), so he would lose his stall."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "After the renovation the market would only have modern shops like cafes, and there was no room for an old-fashioned repair business like his, so he would have to stop working there."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "The market was being redone for trendy new businesses. A shoe repairer and key maker was not included, which meant his stall was gone."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "He would not have a stall any more because his kind of work was not included."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The market would be changed to have fashionable new shops instead."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "The new plan had space for a café, a pharmacy and a bubble tea shop. It had no space for a man who mended soles and cut keys."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "The market was closing at midnight so he had to work very late that night."
+      }
+     ]
+    },
+    {
+     "n": "4a",
+     "marks": 1,
+     "type": "short",
+     "skill": "literal",
+     "stem": "Jun ‘had practised a speech on the bus’ (Paragraph 3).",
+     "text": "What had he planned to tell his grandfather?",
+     "scheme": {
+      "answer": "That he was sorry about the stall closing and that it was unfair.",
+      "accept": [
+       "How sorry he was and how unfair the closure was."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "He planned to say how sorry he was and how unfair it was that the stall had to close."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "That he felt bad for his grandfather and thought the whole thing was not fair."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He wanted to apologise for being late."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "He planned to give a speech to him."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He planned to ask him to pass the small hammer."
+      }
+     ]
+    },
+    {
+     "n": "4b",
+     "marks": 1,
+     "type": "short",
+     "skill": "inference",
+     "stem": "Jun ‘had practised a speech on the bus’ (Paragraph 3).",
+     "text": "Why did he not give the speech in the end?",
+     "scheme": {
+      "answer": "When he saw his grandfather working as steadily and surely as ever, the words seemed out of place and he could not say them.",
+      "accept": [
+       "His grandfather was calmly getting on with his work, not treating the evening as a tragedy, so the speech no longer fitted."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "Seeing his grandfather working steadily like always made the speech feel unnecessary, so he could not bring himself to say it."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "His grandfather was just getting on with the job calmly and was not upset, so Jun's sad words did not fit any more."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "His grandfather told him to keep quiet."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He forgot the speech because he was late and in a rush."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "The words dissolved."
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "marks": 1,
+     "type": "short",
+     "skill": "vocabulary",
+     "text": "Which one word in Paragraph 3 shows that the words Jun had prepared disappeared?",
+     "scheme": {
+      "answer": "dissolved"
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "dissolved"
+      },
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "“Dissolved”."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "practised"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "mattered"
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "marks": 2,
+     "type": "short",
+     "skill": "evidence",
+     "text": "Jun noticed that none of the customers ‘seemed to need anything urgently’. Give two details from Paragraph 4 that support this.",
+     "scheme": {
+      "answer": "Any two of the three details, 1 mark each.",
+      "points": [
+       "The woman’s sandal strap was only barely loose.",
+       "The taxi driver wanted a key for a flat he had already sold years ago.",
+       "The old man’s umbrella was perfectly good / not broken."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "The sandal strap was hardly loose at all, and the taxi driver wanted a key for a flat that he no longer owned."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "One man's umbrella had nothing wrong with it. Another customer asked for a key to a home he sold long ago."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The old man brought an umbrella that was not broken. Also, the customers came in a steady trickle."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "A woman's sandal only had a slightly loose strap."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Customers came all evening and Ah Gong did not charge them."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "They brought things to repair."
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "marks": 2,
+     "type": "short",
+     "skill": "inference",
+     "text": "‘He didn’t come for the umbrella’ (Paragraph 5). Using Paragraphs 5 and 6, explain what Ah Gong meant.",
+     "scheme": {
+      "answer": "The old man had really come to see Ah Gong one last time and say goodbye [1]; the umbrella was only an excuse, because he did not know how to say it directly [1].",
+      "points": [
+       "The man’s real reason was to see Ah Gong a last time / to say goodbye.",
+       "The umbrella was just an excuse, because he could not say goodbye openly."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "He meant that the old man actually came to say goodbye to him. The umbrella was just an excuse because he did not know how to say it straight."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "The man wanted to visit Ah Gong one final time before the stall shut. Since he couldn't put that into words, he used the umbrella as a reason to come."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The old man came to see Ah Gong for the last time."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The umbrella was only an excuse to come to the stall."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "The old man came to get a key cut instead."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He meant that the umbrella could not be repaired."
+      }
+     ]
+    },
+    {
+     "n": "8",
+     "marks": 2,
+     "type": "short",
+     "skill": "own_words",
+     "text": "In your own words, explain how Jun’s feelings about the stall changed (Paragraph 6).",
+     "scheme": {
+      "answer": "In the past he had been a little ashamed of the stall [1]; now he regretted feeling that way and saw its worth [1].",
+      "points": [
+       "Before: he was slightly ashamed of it.",
+       "Now: he regrets that / is angry with his younger self / values and is proud of the stall."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "He used to feel a bit ashamed of his grandfather's stall. Now he regrets that and realises how much it means to people."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "Before, the stall made him feel slightly awkward in front of his friends. That night he became proud of it and was angry at himself for how he used to think."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "He now feels proud of the stall and what his grandfather did."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "In the past he felt a little ashamed of the stall."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "For years he had been faintly embarrassed by the stall. Now he wished he could go back and shake that younger self by the shoulders."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He used to like the stall but now he finds it smelly and old."
+      }
+     ]
+    },
+    {
+     "n": "9",
+     "marks": 2,
+     "type": "short",
+     "skill": "language_use",
+     "text": "‘The silence it left behind was enormous’ (Paragraph 7). What effect does the writer create by calling the silence ‘enormous’?",
+     "scheme": {
+      "answer": "It stresses how striking the quiet was once the machine that had always been running stopped [1], and it suggests the great sense of loss — the stall’s working life had ended [1].",
+      "points": [
+       "It emphasises how noticeable / heavy the quiet was after the constant noise of the machine.",
+       "It suggests the size of the loss or ending — the stall’s work was over for good."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "It shows how obvious the quiet felt after the machine that was always on stopped. It also makes the reader feel how big the loss was, since the stall had ended for good."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "The word makes the quiet seem huge and heavy because the noise had always been there, and it hints that something very important, forty-one years of work, was now finished."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It emphasises that it became very, very quiet when the machine was switched off."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It shows what a great loss it was that the stall's work was over."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It shows that the market was a very big place."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "It creates a good effect on the reader and makes it interesting."
+      }
+     ]
+    },
+    {
+     "n": "10",
+     "marks": 2,
+     "type": "short",
+     "skill": "inference",
+     "text": "Ah Gong said the sign was ‘too heavy’ for him, ‘though it plainly was not’ (Paragraph 7). Why do you think he gave it to Jun?",
+     "scheme": {
+      "answer": "He wanted Jun to keep the sign, passing on the memory of the stall to him [1]; saying it was heavy let him do this without openly showing his feelings [1].",
+      "points": [
+       "He wanted Jun to have / keep it — handing the stall’s memory on to his grandson.",
+       "The ‘too heavy’ excuse let him do so without showing emotion or saying it directly."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "He wanted Jun to keep the sign as a memory of the stall. He pretended it was heavy so that he would not have to show his feelings."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "It was his way of handing the stall's history down to his grandson. Calling it heavy was just a cover, because he is not a man who says such things out loud."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "He wanted his grandson to have the sign to remember the stall by."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "He made an excuse because he did not want to show he was emotional."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He was old and weak and could not carry it himself."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "He wanted Jun to throw it away for him."
+      }
+     ]
+    },
+    {
+     "n": "11",
+     "marks": 2,
+     "type": "short",
+     "skill": "language_use",
+     "text": "The sign was ‘lighter than he expected and heavier than anything he had ever carried’ (Paragraph 8). Explain how it could be both.",
+     "scheme": {
+      "answer": "It did not weigh much in his arms [1], but it carried great meaning — his grandfather’s forty-one years of work — so it felt heavy in his heart [1].",
+      "points": [
+       "Physically it weighed little.",
+       "Emotionally it was heavy: it stood for his grandfather’s life’s work / a responsibility now passed to him."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "The sign itself did not weigh much. But it felt heavy to him because it stood for all the years his grandfather had worked at the stall."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "In his hands it was light, but in his heart it was heavy as it held his grandfather's whole working life and now he was the one looking after it."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It was heavy with meaning because it represented his grandfather's forty-one years of work."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The wooden sign was actually not heavy to lift."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It was light at first but became heavier as he got tired of carrying it."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "It was lighter than he expected and heavier than anything he had ever carried."
+      }
+     ]
+    },
+    {
+     "n": "12",
+     "marks": 1,
+     "type": "short",
+     "skill": "inference",
+     "text": "‘Jun looked back for both of them’ (Paragraph 8). What does this suggest about the difference between Jun and his grandfather at that moment?",
+     "scheme": {
+      "answer": "Ah Gong kept his feelings hidden and would not look, while Jun let himself feel the sadness and took a last look on his grandfather’s behalf.",
+      "accept": [
+       "His grandfather would not show how he felt, but Jun openly felt the loss for the two of them."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "His grandfather hid his feelings and refused to look, but Jun allowed himself to feel sad and looked one last time for his grandfather as well."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "Ah Gong would not show any emotion, whereas Jun openly felt the loss on behalf of them both."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Jun was younger so he could turn his head more easily."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "Jun looked back but his grandfather did not."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Jun did not care about the stall but his grandfather did."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "nn01",
+   "kind": "non_narrative",
+   "title": "The Empty Half-Hour",
+   "paragraphs": [
+    "Ask any teenager what they fear most on a long bus ride, and the honest answer is rarely missing their stop. It is a flat battery. We have become so used to filling every spare minute with a screen that an empty half-hour now feels less like rest and more like a small emergency.",
+    "This is a recent change. A generation ago, waiting was simply part of the day. People stared out of windows, counted lamp posts and let their thoughts wander wherever they pleased. Nobody called this a skill. Yet researchers who study attention are beginning to suspect that we gave up something valuable when we gave up being bored.",
+    "Consider what the mind does when nothing is demanded of it. Left alone, it starts to tidy up. It sorts through the day’s events and stores what is worth keeping, which is why a lesson often makes more sense after a quiet walk than after another hour of revision. It also begins to make unexpected connections between ideas, and many writers and inventors say their best ones arrived in the shower or on a slow train rather than at a desk. Boredom pushes us to plan as well: an unoccupied mind drifts towards the future, rehearsing conversations and setting goals. Perhaps most importantly, sitting through a dull moment teaches patience. A person who can tolerate ten minutes of nothing is better prepared for the many worthwhile tasks, from learning an instrument to finishing a long book, that are not exciting at every step.",
+    "There is a social benefit too. A bored child in a room with other bored children will eventually invent a game, and in doing so will practise negotiating, compromising and leading. A child handed a tablet learns none of these. Even adults notice more about the people around them, and are more likely to start a conversation, when their hands are empty.",
+    "None of this means throwing away our phones. It means making deliberate room for idleness. Young people can begin by leaving one short journey a day unfilled, with the phone zipped inside the bag rather than held in the hand. They can switch off the notifications that tug at their attention every few minutes. They can keep a notebook nearby, so that a wandering thought has somewhere to land. And they can take up a slow hobby — baking, sketching, fishing — in which waiting is part of the pleasure. Families can help by agreeing on one screen-free hour each evening, which works only if the adults obey it as well.",
+    "The first few attempts will feel uncomfortable, even itchy. That discomfort is not a sign that something is wrong. It is the feeling of a mind stretching after sitting still for too long."
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "marks": 1,
+     "type": "short",
+     "skill": "language_use",
+     "text": "In Paragraph 1, the writer says an empty half-hour feels like ‘a small emergency’. What does this suggest about how people now react to having nothing to do?",
+     "scheme": {
+      "answer": "They feel anxious or panicky, and treat it as a problem that must be fixed at once instead of a chance to rest.",
+      "accept": [
+       "People become uneasy and rush to fill the time, as if something has gone wrong."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "It suggests people get anxious when they have nothing to do and feel they must fix it right away, instead of seeing it as a break."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "They panic a little and hurry to fill the time, as though something bad has happened."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "People call for help when their phone battery is flat."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "People do not like it."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "They feel rested and relaxed when they have nothing to do."
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "marks": 2,
+     "type": "short",
+     "skill": "own_words",
+     "text": "In your own words, describe how people a generation ago dealt with waiting (Paragraph 2).",
+     "scheme": {
+      "answer": "They accepted waiting as a normal part of life [1], and passed the time by looking at their surroundings and letting their minds drift freely [1].",
+      "points": [
+       "They accepted it as normal / an ordinary part of daily life.",
+       "They passed the time looking around them and letting their minds drift freely."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "They accepted waiting as a normal thing in daily life. They just looked at what was around them and allowed their minds to drift freely."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "To them it was nothing unusual, just how life was. They spent the time observing things outside and daydreaming about anything."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "They let their minds drift and daydreamed about anything they liked."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "Waiting was seen as a normal, everyday thing back then."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "Waiting was simply part of the day. People stared out of windows, counted lamp posts and let their thoughts wander wherever they pleased."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "They read books and newspapers while waiting because there were no phones."
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "marks": 1,
+     "type": "short",
+     "skill": "vocabulary",
+     "text": "Which one word in Paragraph 2 tells us that the researchers are not yet certain?",
+     "scheme": {
+      "answer": "suspect"
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "suspect"
+      },
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "‘suspect’"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "valuable"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "recent"
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "marks": 2,
+     "type": "short",
+     "skill": "inference",
+     "text": "From Paragraph 4, explain why the writer thinks a bored child gains more than ‘a child handed a tablet’.",
+     "scheme": {
+      "answer": "A bored child has to make up a game with the other children [1], and in doing so builds social skills such as bargaining, giving way and taking charge, which the child with a tablet does not practise [1].",
+      "points": [
+       "A bored child has to create his or her own game with other children.",
+       "Doing so builds social skills (bargaining, giving way, taking the lead) that a tablet does not teach."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "The bored child has to come up with a game together with other children. This trains social skills like bargaining, giving in and taking charge, which a tablet cannot teach."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "With nothing to do, children make up their own play with one another, and through that they learn how to deal with people, such as settling disagreements and being a leader. A child on a tablet misses all this."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The bored child will make up a game with the others, but the child with the tablet will not."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The bored child learns skills for getting along with people."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Tablets are bad for children's eyes, so a bored child is healthier."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "The bored child learns more things than the child with a tablet."
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "marks": 1,
+     "type": "short",
+     "skill": "inference",
+     "text": "The screen-free hour ‘works only if the adults obey it as well’ (Paragraph 5). What is the writer implying about adults?",
+     "scheme": {
+      "answer": "Adults are just as attached to their screens and may break the rule themselves; children will not keep a rule their parents do not follow.",
+      "accept": [
+       "Adults also find it hard to put their phones down, so they must set the example."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "The writer is implying that adults are just as hooked on their screens and may not follow the rule themselves, and children will not follow it if their parents don't."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "Grown-ups also struggle to put their phones away, so they need to set the example."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Adults are stricter than children."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Adults do not need a screen-free hour because they use screens for work."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "Adults must be there for it to work."
+      }
+     ]
+    },
+    {
+     "n": "6",
+     "marks": 2,
+     "type": "short",
+     "skill": "language_use",
+     "text": "In Paragraph 6, the writer compares the discomfort to ‘a mind stretching after sitting still for too long’. Explain what this comparison suggests about the discomfort of being bored.",
+     "scheme": {
+      "answer": "Like the ache of stretching a stiff body, the discomfort is natural and good for us, not harmful [1]; it shows the mind has been left unused for a long time and is starting to work properly again [1].",
+      "points": [
+       "The discomfort is natural and healthy / a good sign, not something harmful.",
+       "It shows the mind has been inactive (because of constant screens) and is beginning to work properly again."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 2,
+       "flaw": "full",
+       "text": "It suggests the discomfort is normal and actually good for us, like stretching a stiff body. It also shows our minds have not been used properly for a long time and are starting to work again."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "Just as stiff muscles ache when you finally move them, the uneasy feeling is a healthy sign. It means the brain was idle for too long because of screens and is now waking up."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "The discomfort is a good and natural thing, not something to worry about."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It suggests that our minds have been inactive for too long."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It suggests that boredom is painful and we should avoid it."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It suggests we should exercise and stretch more instead of sitting still."
+      }
+     ]
+    },
+    {
+     "n": "7",
+     "marks": 1,
+     "type": "choice",
+     "skill": "inference",
+     "text": "What is the writer’s main purpose in this article?",
+     "options": [
+      {
+       "label": "A",
+       "text": "To describe how people used to pass the time while waiting"
+      },
+      {
+       "label": "B",
+       "text": "To persuade readers to make room for boredom in their lives"
+      },
+      {
+       "label": "C",
+       "text": "To warn readers that phones are dangerous and should be given up"
+      },
+      {
+       "label": "D",
+       "text": "To explain how researchers study attention"
+      }
+     ],
+     "scheme": {
+      "answer": "To persuade readers to make room for boredom in their lives"
+     },
+     "seeds": []
+    },
+    {
+     "n": "8",
+     "marks": 15,
+     "type": "summary",
+     "skill": "summary",
+     "text": "Summarise the benefits of being bored and what young people can do to make room for it.\n\nUse only Paragraphs 3 to 5.\n\nWrite in full sentences, in your own words as far as you can. Use 80 words at most.",
+     "scheme": {
+      "points": [
+       "The idle mind sorts through the day and stores what matters (so learning sinks in).",
+       "It links ideas in unexpected ways (creativity / new ideas).",
+       "It turns to the future: planning and setting goals.",
+       "It builds patience for worthwhile tasks that are not always exciting.",
+       "Bored children make up games together and so learn social skills.",
+       "People notice those around them more and are more likely to talk to them.",
+       "Leave one short journey a day without the phone (phone kept away).",
+       "Turn off notifications.",
+       "Keep a notebook close by for stray thoughts.",
+       "Take up a slow hobby where waiting is part of the enjoyment.",
+       "Agree on a screen-free hour at home with the family."
+      ],
+      "answer": "An idle mind organises the day’s experiences and keeps what matters. It joins ideas in surprising ways, looks ahead to make plans, and builds the patience that demanding tasks need. Bored children create games together and so learn to get along, while people pay more attention to those nearby. To allow this, the young can keep their phones away on one trip daily, silence alerts, carry a notebook for passing thoughts and pick up an unhurried pastime."
+     },
+     "seeds": [
+      {
+       "mark": 8,
+       "flaw": "full",
+       "hit": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+       ],
+       "text": "An idle mind organises the day’s experiences and keeps what matters. It joins ideas in surprising ways, looks ahead to make plans, and builds the patience that demanding tasks need. Bored children create games together and so learn to get along, while people pay more attention to those nearby. To allow this, the young can keep their phones away on one trip daily, silence alerts, carry a notebook for passing thoughts and pick up an unhurried pastime."
+      },
+      {
+       "mark": 5,
+       "flaw": "half",
+       "hit": [
+        2,
+        4,
+        7,
+        8,
+        11
+       ],
+       "text": "Being bored is good because the mind comes up with fresh ideas by joining different thoughts together. It also trains us to be patient, which we need for long and difficult tasks. To be bored more often, young people should put their phones inside their bags for one short trip every day and turn off their notifications. Their families can also set aside one hour every evening when nobody uses a screen."
+      },
+      {
+       "mark": 2,
+       "flaw": "vague",
+       "hit": [
+        4,
+        10
+       ],
+       "text": "Boredom is very beneficial to all of us and we should not be afraid of it. It is really good for people in many different ways. One benefit is that it makes a person more patient. Young people should find ways to be bored more often, because this is important for them. For example, they can start a slow hobby such as baking or fishing where they have to wait."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "hit": [],
+       "text": "Teenagers today are afraid of their phone battery going flat on a long bus ride. In the past, people stared out of windows and counted lamp posts while they waited, and nobody thought this was a skill. Researchers who study attention now suspect that something valuable was lost. The first few attempts at being bored will feel uncomfortable and itchy, like a mind stretching."
+      },
+      {
+       "mark": 4,
+       "flaw": "lifted",
+       "hit": [
+        1,
+        3,
+        9,
+        10
+       ],
+       "text": "The mind sorts through the day’s events and stores what is worth keeping. An unoccupied mind drifts towards the future, rehearsing conversations and setting goals. Young people can keep a notebook nearby, so that a wandering thought has somewhere to land. They can take up a slow hobby in which waiting is part of the pleasure."
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "vt01",
+   "kind": "visual",
+   "title": "Skill Swap Saturdays",
+   "format": "webpage",
+   "theme": "teal",
+   "visual": [
+    {
+     "t": "kicker",
+     "text": "KAMPUNG CONNECT · YOUTH VOLUNTEER PROGRAMME"
+    },
+    {
+     "t": "headline",
+     "text": "You know your phone. They know everything else."
+    },
+    {
+     "t": "tagline",
+     "text": "Skill Swap Saturdays — where teenagers and seniors teach each other."
+    },
+    {
+     "t": "picture",
+     "text": "A teenage boy and an elderly woman laugh over a phone. A half-finished rattan basket sits on the table between them."
+    },
+    {
+     "t": "body",
+     "text": "Your grandmother can fold a ketupat in ten seconds. Can you? Spend one Saturday morning a month with a senior from your neighbourhood. You show them how to make a video call, pay a bill online and spot a scam message. They show you something no app can teach."
+    },
+    {
+     "t": "box",
+     "title": "What one morning looks like",
+     "items": [
+      "9.00 am — Kopi and introductions",
+      "9.30 am — You teach: one phone skill, one-to-one",
+      "10.30 am — They teach: cooking, weaving, repairs or dialect",
+      "11.30 am — Everyone shares what they learnt"
+     ]
+    },
+    {
+     "t": "quote",
+     "text": "“I came to teach Mdm Goh how to pay with her phone. I left knowing how to sew on a button, and with an invitation to lunch every week.” — Irfan, 15"
+    },
+    {
+     "t": "small",
+     "text": "No experience needed. Ages 13 to 18. Counts towards your Values in Action hours."
+    },
+    {
+     "t": "button",
+     "text": "Sign up by 30 June — places are limited to 40 pairs"
+    },
+    {
+     "t": "small",
+     "text": "Tampines West Community Library · every second Saturday of the month"
+    }
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "marks": 1,
+     "type": "short",
+     "skill": "inference",
+     "text": "Look at the headline: ‘You know your phone. They know everything else.’ What does it suggest teenagers can gain from the programme?",
+     "scheme": {
+      "answer": "Seniors have a great deal of knowledge and skills outside technology, and teenagers can learn these from them.",
+      "accept": [
+       "Teenagers can pick up many useful skills or life lessons from older people that they do not have themselves."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "It suggests that seniors know a lot of things other than technology, and teenagers can learn all these from them."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "Teens are only good with phones, but the old folks have plenty of other skills to pass on to them."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It suggests that teenagers can become better at using their phones."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "They can gain a lot from joining the programme."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Seniors do not know how to use phones."
+      }
+     ]
+    },
+    {
+     "n": "2",
+     "marks": 1,
+     "type": "short",
+     "skill": "visual",
+     "text": "The webpage is written for teenagers. Give one piece of evidence from the webpage that shows this.",
+     "scheme": {
+      "answer": "It says ‘Ages 13 to 18’.",
+      "accept": [
+       "It says the mornings count towards ‘Values in Action hours’, which students need.",
+       "It speaks to the reader as ‘you’ who knows ‘your phone’ and has a ‘grandmother’.",
+       "It quotes Irfan, who is 15.",
+       "The picture shows a teenage boy as the volunteer."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "It states that it is for ages 13 to 18."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "It mentions Values in Action hours, which only students have to collect."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "The person quoted, Irfan, is 15 years old, the same age as the readers."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "It is held at Tampines West Community Library."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "The words used are simple and easy."
+      }
+     ]
+    },
+    {
+     "n": "3",
+     "marks": 1,
+     "type": "short",
+     "skill": "visual",
+     "text": "Why does the webpage include Irfan’s words?",
+     "scheme": {
+      "answer": "Irfan is a real teenager who has taken part, so his words make the benefits believable and show the reader that someone like them enjoyed it.",
+      "accept": [
+       "To convince teenagers to join by showing what a volunteer of their age gained from it."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "He is a teenager who actually joined, so readers will believe the programme is worth it because someone like them enjoyed it."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "To persuade teens to sign up by showing a real volunteer their age who got something out of it."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "To tell us that Irfan knows how to sew a button."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "To make the webpage more interesting."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "I came to teach Mdm Goh how to pay with her phone."
+      }
+     ]
+    },
+    {
+     "n": "4",
+     "marks": 1,
+     "type": "short",
+     "skill": "visual",
+     "text": "Which phrase in the sign-up button is meant to make the reader act quickly?",
+     "scheme": {
+      "answer": "places are limited",
+      "accept": [
+       "places are limited to 40 pairs",
+       "limited to 40 pairs",
+       "by 30 June",
+       "Sign up by 30 June"
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "places are limited"
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "'limited to 40 pairs'"
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "The phrase is \"by 30 June\"."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "No experience needed"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "every second Saturday of the month"
+      }
+     ]
+    },
+    {
+     "n": "5",
+     "marks": 1,
+     "type": "short",
+     "skill": "language_use",
+     "text": "‘They show you something no app can teach.’ What is the writer suggesting about the skills that seniors have?",
+     "scheme": {
+      "answer": "Their skills are hands-on and personal, so they cannot be learnt from a phone or the internet — they are special and worth learning in person.",
+      "accept": [
+       "The skills are valuable because technology cannot replace them."
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "The writer suggests their skills are special because you cannot get them from technology, only from the person."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "These are things you have to learn face to face from someone experienced, a phone cannot give you that, so they are precious."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Seniors cannot use apps."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "The seniors have skills."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Apps are bad teachers and teenagers should stop using them."
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

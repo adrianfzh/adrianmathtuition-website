@@ -15,14 +15,13 @@ export default async function ReadingPage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const set = UUID.test(id) ? await loadReadingSet(id).catch(() => null) : null;
   if (!set) redirect('/app/languages/practice?t=passages');
-  const visual = set.units.every(u => u.sectionKind === 'visual_text');
   return (
     <ReadingForm
       title={set.title}
-      text={set.text}
-      imageSrc={set.hasImage ? `/api/portal/english/practice?image=${set.textId}` : null}
+      paragraphs={set.paragraphs}
+      visual={set.visual}
       units={set.units.map(publicUnit)}
-      backHref={`/app/languages/practice?t=${visual ? 'visual' : 'passages'}`}
+      backHref={`/app/languages/practice?t=${set.group === 'visual' ? 'visual' : 'passages'}`}
       wordLimit={SUMMARY_WORD_LIMIT}
     />
   );
