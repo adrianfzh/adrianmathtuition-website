@@ -145,8 +145,8 @@ const policies = [
       <>
         <p>
           To teach your child we keep your contact details, lesson and payment records, and the schoolwork
-          handed in with our marking and feedback. We use these only for tuition, and to improve our teaching
-          and marking. We never sell them or use them for advertising.
+          handed in with our marking and feedback. We use these to teach your child, and to make our teaching
+          and marking better. We never sell them or use them for advertising.
         </p>
         <p>
           By registering, you agree to this on your child&apos;s behalf. The full details, and how to see,

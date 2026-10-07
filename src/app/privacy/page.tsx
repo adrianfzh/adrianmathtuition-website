@@ -27,12 +27,12 @@ export default function PrivacyPage() {
         <h1 className="text-2xl font-bold text-navy mb-1">Privacy at AdrianMath</h1>
         <p className="text-sm text-gray-500 mb-4">{POLICY_VERSION_LABEL} · Adrian&apos;s Math Tuition, Singapore</p>
 
-        {/* What changed in this version — the app's one-time note links here (#changed). */}
+        {/* What changed in this version (#changed). */}
         <div id="changed" className="mb-8 rounded-2xl border border-[hsl(43,80%,80%)] bg-[hsl(45,100%,94%)] px-4 py-3 scroll-mt-6">
           <p className="text-sm font-bold text-navy">Updated October 2026 — what changed</p>
           <ul className="mt-1 list-disc pl-5 text-[14px] leading-relaxed text-gray-700">
-            <li>We now say that we use what we keep to improve our teaching and marking, as well as for tuition.</li>
-            <li>We now say plainly that the outside services we use may not use your child&apos;s work for their own purposes.</li>
+            <li>We use your child&apos;s work to teach your child, and to make our teaching and marking better.</li>
+            <li>The outside services we use are not allowed to use your child&apos;s work for themselves.</li>
             <li>Nothing new is collected, and nothing is sold or shared for advertising.</li>
           </ul>
         </div>
@@ -65,10 +65,10 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p className={p}>
-          We do not sell your child&apos;s data or show advertising. We use it only for tuition, and to
-          improve our teaching and marking. Marking and feedback are produced with the help of AI
-          services that Adrian checks; the outside services we use are not permitted to use your
-          child&apos;s work for their own purposes.
+          We do not sell your child&apos;s data or show advertising. We use your child&apos;s work to
+          teach your child, and to make our teaching and marking better. Marking and feedback are
+          produced with the help of AI services that Adrian checks; the outside services we use are not
+          allowed to use your child&apos;s work for themselves.
         </p>
 
         <h2 className={h2}>Who else handles it</h2>
@@ -111,7 +111,7 @@ export default function PrivacyPage() {
         <h2 className={h2}>Changes to this page</h2>
         <p className={p}>
           We may update this page from time to time. The version and date are at the top, with a
-          short note of what changed, and the app shows a note when it does.
+          short note of what changed.
         </p>
 
         <h2 className={h2}>Contact</h2>

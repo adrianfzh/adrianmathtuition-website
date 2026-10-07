@@ -15,13 +15,15 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, tuition = false, showSuggestions = false,
+  email, displayName, level, telegramChatId, telegramLinked, tuition = false, showSuggestions = false, privacyTag = null,
 }: {
   email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
   /** A tuition student (linked to Adrian's roster) — sees the "When your lessons end" note. */
   tuition?: boolean;
   /** 💡 Suggestions — the row to /app/suggestions, when the switch is open for them. */
   showSuggestions?: boolean;
+  /** "Updated October 2026" beside the Privacy row for a month after /privacy changes; null = no tag. */
+  privacyTag?: string | null;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -156,7 +158,11 @@ export default function SettingsClient({
           <a href="/privacy" target="_blank" className="text-navy underline underline-offset-2">privacy policy</a>.
         </p>
         <a href="/privacy" target="_blank" className="flex items-center justify-between rounded-xl border border-black/10 px-3.5 py-2.5 mb-3 text-sm font-semibold text-navy hover:bg-navy/5 transition-colors">
-          <span>🔒 Privacy page</span><span className="text-gray-300 text-lg" aria-hidden>›</span>
+          <span className="flex items-center gap-2">
+            🔒 Privacy page
+            {privacyTag && <span className="rounded-full bg-amber-100 text-amber-800 text-[11px] font-semibold px-2 py-0.5">{privacyTag}</span>}
+          </span>
+          <span className="text-gray-300 text-lg" aria-hidden>›</span>
         </a>
         <div className="flex flex-wrap gap-2">
           <a href="/api/portal/marked-papers-zip" className="inline-block text-sm font-semibold text-navy border border-navy/30 rounded-xl px-4 py-2 hover:bg-navy/5 transition-colors">

@@ -4,6 +4,8 @@ import { currentAccount } from '@/lib/portal-auth';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import SettingsClient from './SettingsClient';
 import { suggestionsOpen } from '@/lib/portal-beta';
+import { privacyUpdatedTag } from '@/lib/portal-consent';
+import { sgtTodayISO } from '@/lib/sgt';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,7 @@ export default async function SettingsPage() {
       telegramLinked={tg === 'linked'}
       tuition={Boolean(account.airtable_student_id?.trim())}
       showSuggestions={suggest}
+      privacyTag={privacyUpdatedTag(sgtTodayISO())}
     />
   );
 }

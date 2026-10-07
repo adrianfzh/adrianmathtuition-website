@@ -15,9 +15,11 @@
 > child's work for their own purposes" (the old "these tools are not permitted to train on your child's work"
 > read as a promise that no model is ever trained on the work, which is no longer true: Adrian is building his
 > own page reader from marked pages, names removed); (3) a "what changed" box at the top (`#changed`) and a
-> "Changes to this page" section. Told to existing accounts by the app's one-time card
-> (`lib/portal-announcement.ts`, id `2026-10-privacy-v3`, until 7 Nov 2026) and a 🔒 Privacy page row in
-> Settings. `/terms` gained "Your Child's Information", so the PARENT agrees to the data use at registration.
+> "Changes to this page" section. No Home card (built, then dropped the same day — Adrian: "do C"): the change is told by the page's own
+> box and a small "Updated October 2026" tag beside the 🔒 Privacy page row in Settings until 7 Nov 2026
+> (`lib/portal-consent.ts privacyUpdatedTag`). Wording made plainer the same day: "We use your child's work to
+> teach your child, and to make our teaching and marking better" / "not allowed to use your child's work for
+> themselves". `/terms` gained "Your Child's Information", so the PARENT agrees to the data use at registration.
 > Basis as understood (not legal advice): PDPC's 2024 AI guidelines — the business-improvement exception
 > covers using data already held to develop or improve one's own systems. STILL OPEN: the page says accounts
 > are opened "only with a parent's or guardian's consent" while every `consent_record` says
