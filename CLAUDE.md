@@ -13,7 +13,7 @@ Every session and subagent loads this file on start, so its size and our habits 
 - **(a) Report once.** Background/batch agents report ONCE at the end (or on a real blocker) — no per-batch progress messages to the main session. A coordinator collects sub-results silently and sends one summary.
 - **(b) One topic per session.** Start a fresh session for unrelated work.
 - **(c) Model per agent.** Haiku/Sonnet for search, counting, formatting, screenshot checks; Opus for writing, checking, marking rules and judgement. Medium effort by default.
-- **(d) Bulk jobs off the interactive session** — the Fly worker lanes or the cloud credit.
+- **(d) Bulk jobs off the interactive session, and on the plan** — the Fly worker's plan lanes, `plan_reads`, or the cloud credit. **Never the paid key (API) for a bench, batch, check or re-crop without Adrian's yes to a stated price first** (Adrian, 7 Oct 2026: *"wait, we should not be using API"* … *"all on plan"*). Detail: `docs/FANOUT.md` §9a (d).
 - **(e) Don't re-read big files** — use the library index (`scripts/library-index.ts`), `grep`, and targeted line ranges.
 - **Keep CLAUDE.md lean** — detail goes to `docs/`, never back here.
 
