@@ -46,6 +46,10 @@ Talk to Adrian in plain, short words. No jargon.
 - **7 Oct 2026 — marks shown for Geography (Adrian: "show marks"); eight 9-mark questions listed and benched;
   C History essays started** on the humanities reader (`hist_evaluate`), y01–y09 being written.
 
+- **7 Oct 2026 — C History essays listed:** 18 questions (y01–y09) on the humanities reader; plan-only checks
+  plus a live-reader pass on y05 and y07. Next: D practice by skill. Still owed before the switch opens: the
+  live-reader bench on the Social Studies case studies s12–s40, Geography g05–g20 and History y01–y04, y06, y08, y09.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps
