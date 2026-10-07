@@ -19,7 +19,7 @@ export default function SuggestLink() {
   };
   return (
     <Link href="/app/suggestions" onClick={seen}
-      className="relative inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100 active:scale-95 transition">
+      className="relative inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 sm:px-2.5 py-1 text-xs font-semibold text-amber-900 hover:bg-amber-100 active:scale-95 transition">
       <span aria-hidden>💡</span>Suggestions
       {fresh && (
         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5" aria-label="New">

@@ -172,7 +172,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
           </div>
           {/* Tight on a phone (360–390 px holds the name, Invite, two words and the icon). */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-4 shrink-0">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
             {/* 💡 Suggestions sits in the bar, beside Invite and Settings — it belongs to no
                 subject (Adrian, 7 Oct 2026: "put the word Suggestions"). Sign out became an
