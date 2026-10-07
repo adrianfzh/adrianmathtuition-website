@@ -186,7 +186,22 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   (`data/humanities/geography/diagrams.json`: `shows` + what each letter marks). Sets g21–g23, 15 questions,
 >   blind-marked on the plan 70/70 with the checker's notes applied. **Geography: 23 sets, 103 point-marked
 >   questions.**
-> - **Still to build:** maps and photographs
+> - **What the syllabus asks for (read from SEAB's 2279 syllabus for 2026, 7 Oct 2026).** There is **no
+>   topographical map reading** — no contours, grid references or bearings anywhere in the document. The
+>   resources a candidate must interpret are: tabular data · text extracts · landscape photographs · aerial
+>   photographs and satellite images · scatter graphs and best-fit lines · simple and comparative line graphs ·
+>   simple and comparative bar graphs · pie charts · sketch maps · dot maps · choropleth maps · flow line maps ·
+>   proportional symbol maps · isoline maps · cartoons · wind roses · diagrams (schematic, block). Map skills:
+>   compass direction, longitude and latitude, scales and symbols. Its Appendix A level table for the 9-mark
+>   question is the one `geo_evaluate` follows.
+>   Built so far from that list: tables, line and bar graphs, climate graphs, diagrams, and two world maps.
+>   **Drawable from a question's own numbers and not built yet:** pie charts, scatter graphs with a best-fit
+>   line, wind roses, and the six kinds of thematic map (for a made-up "Country X").
+> - **World maps (7 Oct 2026).** `scripts/humanities-maps/world-maps.mjs` draws them from Natural Earth's
+>   public-domain land outlines (the `world-atlas` package, needed only when the script runs — the site ships
+>   plain SVG): where tropical cyclones form and travel, and the three latitude zones. Set g24, three
+>   questions; checked by the shape checker and by eye, not blind-marked and not through the live reader.
+> - **Still to build:** photographs, satellite images and cartoons
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 > **C — HISTORY ESSAYS STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "go ahead with history essays".

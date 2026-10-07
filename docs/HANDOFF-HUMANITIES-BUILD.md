@@ -56,6 +56,10 @@ Talk to Adrian in plain, short words. No jargon.
 - **7 Oct 2026 — twelve Geography diagrams drawn and listed** (g21–g23, 15 questions). Left for Geography:
   maps and photographs (photographs need a source — USGS / NASA public-domain material is the first place to look).
 
+- **7 Oct 2026 — the syllabus read for what figures it wants** (no topographical maps; the list is in
+  SPEC-HUMANITIES.md §B); two world maps drawn from Natural Earth (g24). Next figures that can be drawn from
+  numbers: pie charts, scatter graphs, wind roses, the six thematic maps of a made-up country.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

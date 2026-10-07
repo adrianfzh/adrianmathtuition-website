@@ -119,5 +119,25 @@
    "3": "low waves travelling fast across the deep ocean",
    "4": "the waves slow down and grow tall in the shallow water near the coast"
   }
+ },
+ {
+  "key": "world-latitude-zones",
+  "title": "The world's temperature zones by latitude",
+  "shows": "A world map with the continents outlined. Five lines of latitude are drawn and named: the Equator across the middle, the Tropic of Cancer and the Tropic of Capricorn on either side of it, and the Arctic Circle and the Antarctic Circle near the top and bottom. The map is shaded in three zones. The zone between the two Tropics is marked A. The two zones between a Tropic and a polar circle are both marked B. The two zones beyond the polar circles are both marked C.",
+  "letters": {
+   "A": "the tropical zone, between the Tropic of Cancer and the Tropic of Capricorn",
+   "B": "the temperate zones, between a Tropic and a polar circle",
+   "C": "the polar zones, beyond the Arctic Circle and the Antarctic Circle"
+  }
+ },
+ {
+  "key": "world-cyclone-zones",
+  "title": "Where tropical cyclones form and the paths they take",
+  "shows": "A world map with land and sea, the Equator, the Tropic of Cancer and the Tropic of Capricorn. Areas of sea where tropical cyclones form are shaded. All the shaded areas are over oceans. They lie on both sides of the Equator, roughly between 5 and 30 degrees north and south, around the two Tropics. No area along the Equator itself is shaded. There are shaded areas in the North Atlantic, the eastern and western North Pacific, the northern Indian Ocean, the southern Indian Ocean and the south-west Pacific near Australia. There is none in the South Atlantic or off the west coast of South America. Arrows show the usual paths: each starts by moving west, then curves away from the Equator, towards the north in the northern half of the world and towards the south in the southern half, often towards a coast.",
+  "letters": {
+   "A": "the shaded area in the North Atlantic, with an arrow curving towards North America",
+   "B": "the shaded area in the western North Pacific, with an arrow curving towards East Asia",
+   "C": "the shaded area in the southern Indian Ocean, with an arrow curving south towards Madagascar"
+  }
  }
 ]

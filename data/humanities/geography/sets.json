@@ -7237,5 +7237,178 @@
     ]
    }
   ]
+ },
+ {
+  "id": "g24",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Reading maps: the world",
+  "issue": "Reading world maps of temperature zones and tropical cyclones",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g24-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe where tropical cyclones form.",
+    "diagram": {
+     "key": "world-cyclone-zones",
+     "caption": "Fig. 1: Where tropical cyclones form (shaded) and the paths they usually take (arrows)"
+    },
+    "rules": [
+     "Describe only. A reason why cyclones form there earns nothing.",
+     "Naming one shaded area alone is not a point; saying they form north and south of the Equator, with an example, is."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "They form over the oceans, not over land."
+     },
+     {
+      "id": "b",
+      "text": "They form in the tropics, between about 5 and 30 degrees north and south of the Equator."
+     },
+     {
+      "id": "c",
+      "text": "None form along the Equator itself."
+     },
+     {
+      "id": "d",
+      "text": "They form in both halves of the world, for example in the North Atlantic (A), the western North Pacific (B) and the southern Indian Ocean (C)."
+     },
+     {
+      "id": "e",
+      "text": "None form in the South Atlantic or off the west coast of South America."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tropical cyclones are very strong storms with heavy rain and fast winds. They can destroy houses and cause floods."
+     },
+     {
+      "level": 1,
+      "text": "Tropical cyclones form over the sea and not on land."
+     },
+     {
+      "level": 2,
+      "text": "Tropical cyclones form over the sea and not on land. They are found in the tropics, between about 5 and 30 degrees north and south of the Equator."
+     },
+     {
+      "level": 3,
+      "text": "Tropical cyclones form over the sea and not on land. They are found in the tropics, between about 5 and 30 degrees north and south of the Equator. There are none right along the Equator."
+     }
+    ]
+   },
+   {
+    "id": "g24-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe the paths that tropical cyclones usually take.",
+    "diagram": {
+     "key": "world-cyclone-zones",
+     "caption": "Fig. 1: Where tropical cyclones form (shaded) and the paths they usually take (arrows)"
+    },
+    "rules": [
+     "Describe only. A reason for the path earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "They first move towards the west."
+     },
+     {
+      "id": "b",
+      "text": "They then curve away from the Equator, towards the poles."
+     },
+     {
+      "id": "c",
+      "text": "North of the Equator they turn north; south of the Equator they turn south."
+     },
+     {
+      "id": "d",
+      "text": "Many paths head towards a coast, such as from A towards North America or from B towards East Asia."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The arrows show the cyclones. There are six arrows on the map and they are in the shaded parts."
+     },
+     {
+      "level": 1,
+      "text": "The cyclones start by moving to the west."
+     },
+     {
+      "level": 2,
+      "text": "The cyclones start by moving to the west. After that they bend away from the Equator."
+     },
+     {
+      "level": 3,
+      "text": "The cyclones start by moving to the west. After that they bend away from the Equator. Many of them move towards a coast, like the one at A that heads for North America."
+     }
+    ]
+   },
+   {
+    "id": "g24-q3",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. Name the two lines of latitude on either side of zone A, and describe how temperature changes from zone A to zone C.",
+    "diagram": {
+     "key": "world-latitude-zones",
+     "caption": "Fig. 1: Three zones of the world by latitude"
+    },
+    "rules": [
+     "Both lines must be named for the first point.",
+     "Describe only. A reason for the change earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Zone A lies between the Tropic of Cancer and the Tropic of Capricorn."
+     },
+     {
+      "id": "b",
+      "text": "Zone A is the hottest zone, with high temperatures all year."
+     },
+     {
+      "id": "c",
+      "text": "Temperature falls as latitude increases, from zone A through zone B to zone C."
+     },
+     {
+      "id": "d",
+      "text": "Zone C is the coldest zone."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Zone A is in the middle of the map and zone C is at the top and the bottom. Zone B is between them."
+     },
+     {
+      "level": 1,
+      "text": "The two lines are the Tropic of Cancer and the Tropic of Capricorn."
+     },
+     {
+      "level": 2,
+      "text": "The two lines are the Tropic of Cancer and the Tropic of Capricorn. Zone A is the hottest, and it is hot there all year."
+     },
+     {
+      "level": 3,
+      "text": "The two lines are the Tropic of Cancer and the Tropic of Capricorn. Zone A is the hottest, and it is hot there all year. It gets colder as you go to higher latitudes, through zone B to zone C."
+     }
+    ]
+   }
+  ]
  }
 ]
