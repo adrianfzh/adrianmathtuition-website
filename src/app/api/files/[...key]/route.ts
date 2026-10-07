@@ -12,7 +12,8 @@
 //                             got the URL)
 //       handins|clippings|assignments/<identity>/…   identity matches the session
 //     Everything else (uploads/, inbox/) is Adrian-only.
-//   • Nobody else: 401, never a redirect (this serves <img src> and PDF viewers).
+//   • Nobody else: 401, never a redirect (this serves <img src> and PDF viewers) — except a
+//     signed-out PAGE navigation, which goes to /admin/open to sign in (lib/file-door, 7 Oct 2026).
 //
 // Streams the object with its content type, `inline` under its own filename,
 // private no-store caching. Legacy Vercel Blob URLs are NOT served here — they
@@ -23,6 +24,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { isValidKey, ownerOf, downloadStudentFile, contentTypeFor } from '@/lib/student-files';
+import { isPageNavigation, openDoorUrl } from '@/lib/file-door';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -73,7 +75,17 @@ export async function GET(req: NextRequest, ctx: { params: Promise<{ key: string
   if (!isValidKey(key)) return deny(404);
 
   const allowed = verifyAdminAuth(req) || await studentMayRead(key);
-  if (!allowed) return deny(401);
+  if (!allowed) {
+    // A PERSON opening the link in a tab with no session at all (the "🖼 Images" button
+    // under a marking message, inside Telegram's browser — Adrian, 7 Oct 2026: "I don't
+    // have permissions to view?") is sent to sign in and comes straight back to the file.
+    // An <img>, a PDF viewer or a fetch still gets the plain 401; so does a signed-in
+    // student asking for a file that is not theirs.
+    if (isPageNavigation(req.headers) && !(await sessionAccount().catch(() => null))) {
+      return NextResponse.redirect(new URL(openDoorUrl(req.nextUrl.pathname), req.nextUrl.origin), 302);
+    }
+    return deny(401);
+  }
 
   let blob: Blob;
   try { blob = await downloadStudentFile(key); }
