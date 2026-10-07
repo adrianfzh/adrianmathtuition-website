@@ -321,7 +321,7 @@ export async function humanitiesOpen(): Promise<boolean> {
 
 // 💡 Suggestions (5 Oct 2026, Adrian: "a suggestion button … students can suggest
 // what they need for their exams, if reasonable and helpful - i will try to add it").
-// A quiet row on Home + Settings opens /app/suggestions — one box, Stay anonymous,
+// A link in the top bar (beside Invite and Settings, 7 Oct 2026 — not a subject's page) and a row in Settings open /app/suggestions — one box, Stay anonymous,
 // Submit (lib/suggestions.ts, POST /api/portal/suggestions, /admin/suggestions). CLOSED: Adrian's cookie and the
 // demo student see it. Flip to true to show it to every student.
 export const SUGGESTIONS_OPEN_TO_STUDENTS = false;

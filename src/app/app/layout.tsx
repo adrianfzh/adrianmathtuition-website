@@ -12,7 +12,7 @@ import TabBeacon from '@/components/TabBeacon';
 import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen, suggestionsOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
 import { inviteLinkFor } from '@/lib/portal-join';
@@ -122,12 +122,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // below are what its highlight ring measures — keep them on both the desktop
   // links and the mobile tabs, since only one set is on screen at a time.
   // Independent lookups — run them in parallel, not one after the other.
-  const [pendingWork, surfaces, scienceOpen, languagesOpen, humanitiesIsOpen] = await Promise.all([
+  const [pendingWork, surfaces, scienceOpen, languagesOpen, humanitiesIsOpen, suggestVisible] = await Promise.all([
     pendingAssignmentCountForSession(),
     portalSurfaces(),
     scienceMarkingOpen(),
     essayMarkingOpen(),
     humanitiesOpen(),
+    suggestionsOpen().catch(() => false),
   ]);
   // 🧪 The Science family's own bottom menu (SPEC-SCIENCE-MARKING.md, 10 Sep
   // 2026) — marking first, nothing else yet: Home · Hand in · Papers. The tab
@@ -171,6 +172,14 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </div>
           <div className="flex items-center gap-4">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
+            {/* 💡 Suggestions sits in the bar, beside Invite and Settings — it belongs to no
+                subject (Adrian, 7 Oct 2026). The word from sm up; the bulb alone on a phone,
+                where the bar has no room for a fourth word. */}
+            {suggestVisible && (
+              <Link href="/app/suggestions" aria-label="Suggestions" title="Suggestions" className="text-sm text-gray-600 hover:text-navy inline-flex items-center gap-1">
+                <span aria-hidden>💡</span><span className="hidden sm:inline">Suggestions</span>
+              </Link>
+            )}
             <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
             <SignOutButton />
           </div>

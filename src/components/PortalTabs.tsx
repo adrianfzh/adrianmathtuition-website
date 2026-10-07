@@ -54,6 +54,9 @@ export function familyOfPath(pathname: string): SubjectFamily {
 /** The Math | Science | Languages switcher under the top bar — each family tab only when its door is open. */
 export function FamilySwitch({ science = true, languages = false, humanities = false }: { science?: boolean; languages?: boolean; humanities?: boolean }) {
   const pathname = usePathname();
+  // Not a subject's page (Adrian, 7 Oct 2026, on Suggestions: "it's not specific to math"):
+  // no subject is lit there, so the switcher is not shown.
+  if (/^\/app\/(suggestions|settings)(\/|$)/.test(pathname)) return null;
   const family = familyOfPath(pathname);
   const many = [science, languages, humanities].filter(Boolean).length >= 3;
   const btn = (on: boolean) => `flex-1 text-center ${many ? 'text-[13px] px-2' : 'text-sm px-4'} font-semibold rounded-full py-1.5 transition select-none active:scale-95 ${
