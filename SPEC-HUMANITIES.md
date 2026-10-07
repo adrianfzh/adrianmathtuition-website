@@ -176,7 +176,9 @@ levels off; consistency passes; the truth-free checks pass.
 | `h2-history-2026-10-03` — History source questions (`--subject history`) | 35/35 | 9/9 | 22/22 | US$3.06 |
 | `h2-structured-2026-10-03` — structured response (`--kind structured`) | 21/21 | 6/6 | 10/10 | US$1.47 |
 | `a1-pilot-2026-10-07` — the first case study, s11 (`--sets s11`, every source in view) | 19/19 | 5/5 | 16/16 | US$2.14 |
+| `b-geo-pilot-2026-10-07` — Geography, 8 point-marked questions (`--subject geography`; truth = the marks) | 37/38, the miss one mark off | 10/10 | 15/15 | US$2.05 |
 
+- The Geography miss was ours, not the reader's: a "zero" answer (people stay near volcanoes because they were born there) is a valid reason, and the reader credited it as an unlisted point. The seeded answer was replaced.
 - The one miss: a reliability answer that trusts the source from its content alone,
   written as Level 2, read as 1–2.
 - Still owed: the repeat reads were the same day. A days-apart repeat is a later run.

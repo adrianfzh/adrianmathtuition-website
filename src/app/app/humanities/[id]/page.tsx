@@ -163,7 +163,8 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      {report && report.gap?.length > 0 && (
+      {/* A point-marked answer already lists the points to add. */}
+      {report && !points && report.gap?.length > 0 && (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">What a top answer does</p>
           <ul className="space-y-1.5">
