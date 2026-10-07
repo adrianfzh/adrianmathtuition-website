@@ -15,6 +15,7 @@ import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
 import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen, suggestionsOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
+import SuggestLink from './suggest-link';
 import { inviteLinkFor } from '@/lib/portal-join';
 import { pendingAssignmentCountForSession } from '@/lib/portal-assignments';
 import ViewAsToggle from './view-as-toggle';
@@ -177,7 +178,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
                 subject (Adrian, 7 Oct 2026: "put the word Suggestions"). Sign out became an
                 icon to make room for it on a phone. */}
             {suggestVisible && (
-              <Link href="/app/suggestions" className="text-sm text-gray-600 hover:text-navy">Suggestions</Link>
+              <SuggestLink />
             )}
             {/* Settings is the gear on a phone (Adrian, 7 Oct 2026: "the top bar is very crowded"); the word from sm up. */}
             <Link href="/app/settings" data-tour="settings" aria-label="Settings" title="Settings" className="text-sm text-gray-600 hover:text-navy inline-flex items-center justify-center">
