@@ -216,6 +216,10 @@ Vars are in `.env.local` (trim quotes/trailing newline before interpolating — 
 - In desktop-app sessions with Adrian at the machine, the in-app file card is enough — don't double-send unless he asks.
 - "don't send" / "no telegram" for the turn skips it.
 
+## 🖱 When Adrian has to do it by hand — exact steps (Adrian, 6–7 Oct 2026)
+
+Adrian, 7 Oct 2026: *"tell me exactly what to do"* · *"Tell me the exact steps to set up run pod"* · *"give me the url for settings > environment variables"* (6 Oct). Why: he does these between lessons, in consoles he rarely opens (Twilio, Meta, RunPod, Supabase, Vercel), and every vague step costs a round trip. **Numbered steps, one action each: the exact link, the button's words, what he should see after. A command = one line in its own box that pastes and runs as is, and which window to paste it into. End with what to send back** ("paste the line that starts with …", "a screenshot of …"). Never ask him to paste a password, key or token into the chat.
+
 ## Architecture
 
 Next.js App Router (`src/app/`) with TypeScript. API routes in `src/app/api/*/route.ts`. Shared components in `src/`. Deployed on Vercel. The Telegram/WhatsApp bot is a SEPARATE repo (`~/dev/adrianmath-telegram-math-bot`, Fly.io — **a push to its `main` AUTO-DEPLOYS** via `.github/workflows/fly-deploy.yml`: the Checks job (`npm test` + model/content gates) must go green first, and a red check SKIPS the deploy silently, so look at `gh run list -R adrianfzh/adrianmath-telegram-bot` after pushing; `npm run deploy` is only the manual fallback).
