@@ -68,6 +68,23 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
+## 🧭 Learning it the first time — the gap after "self-revision" (Adrian, 7 Oct 2026) — NOTED, not designed, not built
+
+Adrian: *"Right now our set up is very good for students to self revise if they already somewhat
+know their work"*. The app checks and practises (mark → what went wrong → a sheet on it, twins, set
+papers). It does not yet teach a student from zero. What a weaker student needs and does not have:
+
+- **A learning path per topic** — short explanation → worked example → a guided try → practice;
+  one step unlocks the next. (Related: `SPEC-TEACHING-CYCLE.md`, parked; `docs/LESSONS.md`.)
+- **Finding the earlier gap** — a student who keeps failing a skill is tested on the skill beneath
+  it and sent there first. (Related: `SPEC-REMEDIATION.md`, parked.)
+- **Open the two helpers already built** — "Stuck? Next step" and the ▶ one-minute explanation —
+  once Adrian is happy with them (both closed).
+- **A "start here" per student**, from what their marked work shows.
+
+Matters most for lower levels and for anyone using the app without lessons. Not started: on
+7 Oct 2026 the Humanities, English and WhatsApp builds are running. Needs a design talk first.
+
 ## 🏅 Reward stickers on marked papers — characters that level up (Adrian, 6 Oct 2026) — DESIGN, not built
 
 Adrian: "are we able to put like 'stickers' if students did well? like how teachers will put stickers … make it fun";
