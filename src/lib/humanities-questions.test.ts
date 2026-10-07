@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { stripEvidence } from './humanities-bench';
-import { allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
+import { caseStudyProblems, quotedPieces } from './humanities-case-study';
+import { caseStudies, isCaseStudy, SS_THEMES, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
 
 describe('the humanities bank', () => {
-  it('Social Studies source-based: 30 questions, five per source skill', () => {
-    const sets = setsFor('social-studies', 'source');
+  it('Social Studies single questions: 30, five per source skill', () => {
+    const sets = setsFor('social-studies', 'source').filter(s => !isCaseStudy(s));
     const all = sets.flatMap(s => s.questions);
     expect(all.length).toBe(30);
     for (const skill of SOURCE_SKILLS) expect(all.filter(q => q.skill === skill).length).toBe(5);
@@ -29,15 +30,17 @@ describe('the humanities bank', () => {
 
   it('every question id is unique across the three files', () => {
     const all = allSets().flatMap(s => s.questions);
-    expect(all.length).toBe(55);
-    expect(new Set(all.map(q => q.id)).size).toBe(55);
+    expect(all.length).toBe(55 + caseStudies().length * 5);
+    expect(new Set(all.map(q => q.id)).size).toBe(all.length);
     expect(new Set(allSets().map(s => s.id)).size).toBe(allSets().length);
   });
 
   it('the bench can take one subject or one kind at a time', () => {
     expect(seededAnswers({ subject: 'history' }).length).toBe(35);
     expect(seededAnswers({ kind: 'structured' }).length).toBe(21);
-    expect(seededAnswers({ subject: 'social-studies', kind: 'source' }).length).toBe(46);
+    const inCaseStudies = caseStudies().flatMap(s => s.questions).flatMap(q => q.seeded ?? []).length;
+    expect(seededAnswers({ subject: 'social-studies', kind: 'source' }).length).toBe(46 + inCaseStudies);
+    expect(seededAnswers({ sets: ['s01'] }).length).toBe(12);
   });
 
   it('a structured question is read by its own rules and tags', () => {
@@ -74,7 +77,7 @@ describe('the humanities bank', () => {
       const max = levelsMax(q.skill);
       expect(q.seeded.map(s => s.level).sort(), q.id).toEqual(Array.from({ length: max }, (_, i) => i + 1));
     }
-    expect(seededAnswers().length).toBe(102);
+    expect(seededAnswers().filter(a => !questionById(a.questionId)!.set.background).length).toBe(102);
   });
 
   it('the model answer of a seeded question is its top answer', () => {
@@ -87,5 +90,42 @@ describe('the humanities bank', () => {
     expect(levelsMax('sr_explain')).toBe(3);
     for (const s of HUMANITIES_SKILLS.filter(k => k !== 'inference' && k !== 'sr_explain')) expect(levelsMax(s)).toBe(4);
     expect(CLAIM_TAGS.map(t => t.key)).toEqual(['from_source', 'not_supported', 'uses_context', 'evaluates']);
+  });
+});
+
+describe('the Social Studies case studies (A1)', () => {
+  it('every case study is fit to list', () => {
+    expect(caseStudies().length).toBeGreaterThan(0);
+    expect(caseStudies().flatMap(caseStudyProblems)).toEqual([]);
+  });
+
+  it('a case study is 35 marks, read with every source in view', () => {
+    for (const set of caseStudies()) {
+      expect(set.questions.reduce((n, q) => n + (q.marks ?? 0), 0), set.id).toBe(35);
+      const ctx = questionById(set.questions[0].id)!;
+      expect(ctx.inView.length, set.id).toBe(set.sources.length);
+      expect(ctx.sources.length, set.id).toBe(set.questions[0].sources.length);
+    }
+    // A single question keeps only its named sources in view.
+    const single = questionById('s01-q1')!;
+    expect(single.inView).toEqual(single.sources);
+  });
+
+  it('the three issues stay within two sets of each other', () => {
+    const n = SS_THEMES.map(t => caseStudies().filter(s => s.theme === t).length);
+    if (caseStudies().length >= 6) expect(Math.max(...n) - Math.min(...n)).toBeLessThanOrEqual(2);
+  });
+
+  it('the checker catches a quotation that is not in the sources, and a wrong shape', () => {
+    const set = structuredClone(caseStudies()[0]);
+    set.questions[1].seeded![1].text += " B also says 'the council never listens to us'.";
+    set.questions[4].marks = 8;
+    const problems = caseStudyProblems(set).join(' | ');
+    expect(problems).toMatch(/quotes 'the council never listens to us'/);
+    expect(problems).toMatch(/question 5 is not the 10-mark/);
+  });
+
+  it('an apostrophe inside a word is not a quotation mark', () => {
+    expect(quotedPieces("The resident's bill changed: 'Only my bill has changed'. It doesn't help.")).toEqual(['Only my bill has changed']);
   });
 });

@@ -17,6 +17,13 @@ Talk to Adrian in plain, short words. No jargon.
 - The bench passed for all three built parts (SPEC §4). Its limits are written there.
 - Geography, History essays, Literature: nothing built.
 
+## Progress
+
+- **7 Oct 2026 — A2 built; A1 groundwork built, the batch not yet run.** The Your skills card is on
+  Humanities Home. Case studies have their own file, page shape, checker and brief
+  (`docs/humanities/case-study-brief.md` — the 30-set plan s11–s40 is there). s11 is written.
+  Still to do for A1: write s12–s40 (the batch — Adrian is told the cost first), bench, list.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

@@ -1,0 +1,107 @@
+[
+ {
+  "id": "s11",
+  "theme": "citizenship",
+  "title": "Residents vote on the upgrading budget",
+  "issue": "Has letting residents vote on the budget led to better decisions for the estate?",
+  "background": "A town council set aside $500,000 of its yearly improvement budget for residents to decide. Residents proposed projects. Every household could then vote, online or at a booth beside the market, over two weeks in March.\n\nThe three projects with the most votes were built: a covered walkway, a fitness corner and a new playground. About one in seven households voted. The council is now deciding whether to hold the vote again next year with a bigger sum.\n\nStudy the sources to find out whether letting residents vote has led to better decisions for the estate.",
+  "sources": [
+   {
+    "id": "A",
+    "provenance": "A poster by the town council, put up at lift lobbies before the vote.",
+    "text": "Your estate. Your say.\nThis year YOU decide how $500,000 is spent.\nPropose a project. Vote for three. Every household has one vote.\nThe projects with the most votes will be built. It is that simple.\nVoting is open 1–14 March, online or at the booth beside the market."
+   },
+   {
+    "id": "B",
+    "provenance": "A resident who proposed the covered walkway, speaking at a residents' meeting after the results were announced.",
+    "text": "For six years we asked for a covered walkway from Block 214 to the bus stop. Nothing happened. This time we knocked on doors, got our neighbours to vote, and it came first. For once the people who use the path decided, not an office that has never walked it in the rain."
+   },
+   {
+    "id": "C",
+    "provenance": "A letter from an elderly resident to the town council, a month after the vote.",
+    "text": "I am 78 and I do not use a smartphone. I learnt about the vote only when I saw workmen at the playground. The booth was at the market for two weeks, but nobody told us at Block 230. The blocks with young families and big chat groups got what they wanted. Our broken ramp, which wheelchair users need every day, got 41 votes and nothing."
+   },
+   {
+    "id": "D",
+    "provenance": "From the town council's yearly report to residents, published three months after the vote.",
+    "text": "The budget vote was a great success. 2,140 households took part, far more than attend our meetings in a whole year. All three winning projects were completed on time and within budget. Residents have told us they feel heard. We plan to double the sum next year."
+   },
+   {
+    "id": "E",
+    "provenance": "From a study by university researchers, who surveyed 600 households in the estate after the vote.",
+    "text": "One in seven households voted. Among households with children, one in four voted; among residents aged 70 and above, one in twenty. The three winning projects were all within 300 metres of the blocks that voted most. Yet 68% of those surveyed, including many who did not vote, said the vote was a fairer way to decide than before. Most asked for paper voting forms next time."
+   },
+   {
+    "id": "F",
+    "provenance": "An engineer who works for the town council, interviewed for a community newsletter.",
+    "text": "The walkway and the fitness corner are well used. But the vote cannot see everything. The ramp at Block 230 and the old water pipes under Block 208 are urgent, and they will never win a popularity contest. If all the budget went to a vote, the things nobody notices until they fail would be left out. A vote is good for choosing between nice things, not for deciding what is necessary."
+   }
+  ],
+  "questions": [
+   {
+    "id": "s11-q1",
+    "skill": "inference",
+    "marks": 5,
+    "sources": ["A"],
+    "question": "Study Source A. What is the message of this poster? Explain your answer.",
+    "seeded": [
+     { "level": 1, "text": "Source A tells me that residents can vote from 1 to 14 March, online or at the booth beside the market, and that every household has one vote." },
+     { "level": 2, "text": "The message is that residents now have real power over how the money for the estate is spent." },
+     { "level": 3, "text": "The message is that residents now have real power over how the money for the estate is spent. The poster says 'This year YOU decide how $500,000 is spent' and promises 'The projects with the most votes will be built'. The capital letters and the firm promise show that the choice belongs to the residents and not to the council. It is speaking to every household in the estate. It wants them to believe that their vote counts, so that they take part." }
+    ]
+   },
+   {
+    "id": "s11-q2",
+    "skill": "comparison",
+    "marks": 6,
+    "sources": ["B", "C"],
+    "question": "Study Sources B and C. How similar are these two sources? Explain your answer.",
+    "seeded": [
+     { "level": 1, "text": "Source B is a resident speaking at a meeting and Source C is a letter from an elderly resident. Both are about the vote on the budget." },
+     { "level": 2, "text": "They are similar in showing that residents who organised their neighbours got their project. B says 'we knocked on doors, got our neighbours to vote, and it came first'. C says 'The blocks with young families and big chat groups got what they wanted'." },
+     { "level": 3, "text": "They are similar in showing that residents who organised their neighbours got their project. B says 'we knocked on doors, got our neighbours to vote, and it came first'. C says 'The blocks with young families and big chat groups got what they wanted'. They are different on whether the vote gave residents a say. B says 'the people who use the path decided'. C says 'I learnt about the vote only when I saw workmen at the playground', so the writer had no say at all." },
+     { "level": 4, "text": "They are similar in showing that residents who organised their neighbours got their project. B says 'we knocked on doors, got our neighbours to vote, and it came first'. C says 'The blocks with young families and big chat groups got what they wanted'. They are different on whether the vote gave residents a say. B says 'the people who use the path decided'. C says 'I learnt about the vote only when I saw workmen at the playground', so the writer had no say at all. They also differ in purpose. B is proud and wants the meeting to see the vote as a win for ordinary residents, so the speaker sets 'the people who use the path' against 'an office that has never walked it in the rain'. C is upset and wants the council to see who was left out, so the letter points to the 'broken ramp' that 'got 41 votes and nothing'." }
+    ]
+   },
+   {
+    "id": "s11-q3",
+    "skill": "reliability",
+    "marks": 7,
+    "sources": ["D"],
+    "question": "Study Source D. How reliable is this source as evidence that the vote was a success? Explain your answer.",
+    "seeded": [
+     { "level": 1, "text": "Source D is reliable because it is from the yearly report of the town council. The town council ran the vote, so it knows what happened." },
+     { "level": 2, "text": "Source D is reliable. It says '2,140 households took part' and 'All three winning projects were completed on time and within budget'. These are clear facts and figures, so it shows the vote was a success." },
+     { "level": 3, "text": "Source D is not fully reliable. It calls the vote 'a great success' because '2,140 households took part'. But Source E says only 'One in seven households voted', and among residents aged 70 and above only 'one in twenty'. D also says 'Residents have told us they feel heard', yet the writer of Source C 'learnt about the vote only when I saw workmen at the playground'. The check shows that D is right about the number but leaves out how few and how uneven the voters were. So it cannot be fully trusted as evidence of success." },
+     { "level": 4, "text": "Source D is not fully reliable. It calls the vote 'a great success' because '2,140 households took part'. But Source E says only 'One in seven households voted', and among residents aged 70 and above only 'one in twenty'. D also says 'Residents have told us they feel heard', yet the writer of Source C 'learnt about the vote only when I saw workmen at the playground'. The check shows that D is right about the number but leaves out how few and how uneven the voters were. D is also the council reporting on its own scheme to the residents it serves. It wants them to back the plan to 'double the sum next year', so it picks the good news and the word 'great'. That purpose makes it weak evidence that the vote was a success. Only its point that the projects were built can be trusted, because Source F agrees that the walkway and the fitness corner 'are well used'." }
+    ]
+   },
+   {
+    "id": "s11-q4",
+    "skill": "usefulness",
+    "marks": 7,
+    "sources": ["E"],
+    "question": "Study Source E. How useful is this source in helping you understand whether the vote led to better decisions for the estate? Explain your answer.",
+    "seeded": [
+     { "level": 1, "text": "Source E is useful because it is a study by university researchers and it is about the vote." },
+     { "level": 2, "text": "Source E is useful. It shows that the vote did not speak for the whole estate: 'Among households with children, one in four voted; among residents aged 70 and above, one in twenty'. So the decisions followed what some groups wanted." },
+     { "level": 3, "text": "Source E is useful. It shows that the vote did not speak for the whole estate: 'Among households with children, one in four voted; among residents aged 70 and above, one in twenty'. So the decisions followed what some groups wanted. It is limited. It tells us who voted, not whether the projects chosen were good ones. It says nothing about what the estate needed most, such as repairs, and the question is about better decisions." },
+     { "level": 4, "text": "Source E is useful. It shows that the vote did not speak for the whole estate: 'Among households with children, one in four voted; among residents aged 70 and above, one in twenty'. So the decisions followed what some groups wanted. It can be trusted. The researchers are not part of the council, they 'surveyed 600 households', and they report both a weakness and a strength: the winners were 'within 300 metres of the blocks that voted most', yet 68% called the vote 'a fairer way to decide than before'. Source C supports it: an elderly writer says 'nobody told us at Block 230'. It is limited in one way. It tells us who voted, not whether the projects were what the estate needed most. So it is very useful for showing whose wishes the decisions followed, and less useful for judging the projects themselves." }
+    ]
+   },
+   {
+    "id": "s11-q5",
+    "skill": "how_far",
+    "marks": 10,
+    "sources": ["A", "B", "C", "D", "E", "F"],
+    "question": "'Letting residents vote on the budget led to better decisions for the estate.' Using the sources in this case study, explain how far you would agree with this statement.",
+    "seeded": [
+     { "level": 1, "text": "I agree because residents know their estate best, so they should decide how the money is spent. Voting is fair." },
+     { "level": 2, "text": "I agree. Source B shows the vote got something done that residents had wanted for years: 'For six years we asked for a covered walkway' and this time 'it came first'. Source D also agrees. It says 'All three winning projects were completed on time and within budget', so the decisions were carried out well." },
+     { "level": 3, "text": "I agree to some extent. Source B shows the vote got something done that residents had wanted for years: 'For six years we asked for a covered walkway' and this time 'it came first'. Source D also agrees. It says 'All three winning projects were completed on time and within budget', so the decisions were carried out well. Source C disagrees. The writer 'learnt about the vote only when I saw workmen at the playground', and the ramp that 'wheelchair users need every day' got nothing, so a real need was missed. Source F also disagrees: urgent repairs 'will never win a popularity contest', so a vote leaves out what is necessary." },
+     { "level": 4, "text": "Source B shows the vote got something done that residents had wanted for years: 'For six years we asked for a covered walkway' and this time 'it came first'. Source D also agrees. It says 'All three winning projects were completed on time and within budget', so the decisions were carried out well. Source C disagrees. The writer 'learnt about the vote only when I saw workmen at the playground', and the ramp that 'wheelchair users need every day' got nothing, so a real need was missed. Source F also disagrees: urgent repairs 'will never win a popularity contest', so a vote leaves out what is necessary. The sources that disagree are stronger. D is the council praising its own scheme, and B speaks for the group that won. C is only one resident, but Source E backs the letter: among residents aged 70 and above only 'one in twenty' voted, and the winners were 'within 300 metres of the blocks that voted most'. F is an engineer who knows the estate and still grants that the new projects 'are well used', so that view is balanced. So I agree only to a small extent: the vote chose things residents liked, but better decisions would also have covered the needs of those who did not vote." }
+    ]
+   }
+  ]
+ }
+]

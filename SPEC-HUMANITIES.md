@@ -84,6 +84,25 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - Humanities Home has a tab per subject (`?s=history`).
 > - Bench per subject: `--subject history` and `--kind structured`. Both passed (§4).
 
+> **A1 + A2 STARTED 7 Oct 2026 (preview only, switch closed)** — Adrian: "do #1 to #5 / and let's do
+> geography next / then history essays / and then practice by skill" (`docs/HANDOFF-HUMANITIES-BUILD.md`).
+> - **Case studies (A1).** A set with a `background` in `data/humanities/social-studies/case-studies.json`
+>   is a full case study: Background Information, Sources A–E/F, five questions marked 5 · 6 · 7 · 7 · 10,
+>   the last the "how far" question. The marks show beside the question; the report is still a level.
+>   A case-study question is answered — and read by the marker — with EVERY source of the set in view
+>   (`QuestionInContext.inView`); the background rides in the marker's issue line. Shape rules +
+>   word-for-word quotation check: `lib/humanities-case-study.ts` (`scripts/humanities-bench/check-set.ts`
+>   for a draft). The brief and the 30-set plan (s11–s40, ten per issue): `docs/humanities/case-study-brief.md`.
+>   s11 is written as the worked example. The bench takes `--sets s11,…`.
+> - **The skill picture (A2).** `lib/humanities-skills.ts skillPicture` — per skill: answers read, the
+>   usual level over the newest five (lower middle, so it never flatters), weakest first; "practise this"
+>   at two or more levels below the top. The **Your skills** card on Humanities Home, per subject tab;
+>   a line opens the next unanswered question of that skill.
+> - **Noticed in the bank, for Adrian:** "Are you surprised by Source X?" is the commonest Q3/Q4 type in
+>   the banked Social Studies papers (47 rows) and "Does Source X prove Source Y wrong?" is next (19).
+>   We have no scheme named for "surprised"; our case studies use the six schemes we have (a "prove
+>   wrong" question sits under reliability). A seventh scheme is his call.
+
 ## 4. The bench — built like the science bench
 
 No marked scripts are needed.

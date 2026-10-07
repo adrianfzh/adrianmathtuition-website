@@ -36,7 +36,7 @@ export const HUMANITIES_LIST_COLUMNS =
 
 export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error'>;
 
-/** A student's own answers, newest first. */
+/** A student's own answers, newest first. Home asks for many: "done" ticks and the skill picture need them all. */
 export async function loadHumanitiesFor(identity: string, limit = 30): Promise<HumanitiesListRow[]> {
   const sb = getSupabaseAdmin();
   const { data, error } = await sb.from('humanities_runs').select(HUMANITIES_LIST_COLUMNS)

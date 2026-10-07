@@ -51,6 +51,8 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const model = modelAnswer(ctx.question);
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
+  // A case study is a run of five: offer the next one.
+  const next = ctx.set.background ? ctx.set.questions[ctx.set.questions.findIndex(q => q.id === ctx.question.id) + 1] : undefined;
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -141,7 +143,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
 
       <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
         <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
-        <div className="mt-3"><SourceCards sources={ctx.sources} /></div>
+        <div className="mt-3"><SourceCards sources={ctx.inView} /></div>
       </details>
 
       {report && model && (
@@ -149,6 +151,16 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           <summary className="text-sm font-semibold text-navy cursor-pointer">See a top-level answer</summary>
           <p className="text-[15px] text-gray-800 leading-relaxed mt-3 whitespace-pre-line">{model}</p>
         </details>
+      )}
+
+      {next && (
+        <Link href={`/app/humanities/q/${next.id}`} className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3.5 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+          <span className="flex-1 min-w-0">
+            <span className="block text-[12px] font-semibold text-amber-800">Next in this case study</span>
+            <span className="block text-sm text-navy">{next.question}</span>
+          </span>
+          <span className="shrink-0 text-gray-400">›</span>
+        </Link>
       )}
 
       {report && (

@@ -9,7 +9,8 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { setsFor, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { skillPicture, skillLineText } from '@/lib/humanities-skills';
 import { loadHumanitiesFor } from '@/lib/humanities-runs';
 import { AnswerCard } from './answer-cards';
 import { skillLabel } from './skills';
@@ -29,12 +30,17 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
   const subject: HumanitiesSubject = (await searchParams).s === 'history' ? 'history' : 'social-studies';
   const account = await currentAccount();
   const sid = portalIdentity(account);
-  const runs = await loadHumanitiesFor(sid);
+  const runs = await loadHumanitiesFor(sid, 500);
   const answered = new Set(runs.map(r => r.question_id));
-  const sourceSets = setsFor(subject, 'source');
+  const allSource = setsFor(subject, 'source');
+  const caseStudies = allSource.filter(isCaseStudy);
+  const sourceSets = allSource.filter(s => !isCaseStudy(s));
+  // The skill picture (A2): this subject's read answers, weakest skill first.
+  const skills = skillPicture(runs.filter(r => r.subject === subject));
+  const nextOf = (skill: string) => questionsBySkill(skill).find(c => c.set.subject === subject && !answered.has(c.question.id))?.question.id;
   const structuredSets = setsFor(subject, 'structured');
   // One issue open at a time: the first with a question still to do. Ten open cards was a very long page.
-  const sets = [...sourceSets, ...structuredSets];
+  const sets = [...caseStudies, ...sourceSets, ...structuredSets];
   const openId = (sets.find(set => set.questions.some(q => !answered.has(q.id))) ?? sets[0])?.id;
 
   const setCard = (set: HumanitiesSet) => (
@@ -54,7 +60,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
             <Link href={`/app/humanities/q/${q.id}`} className="flex items-center gap-3 py-2.5 hover:bg-amber-50/60 -mx-2 px-2 rounded-xl transition">
               <span className="flex-1 min-w-0">
                 <span className="block text-[12px] font-semibold text-amber-800">{skillLabel(q.skill)}</span>
-                <span className="block text-sm text-navy">{q.question}</span>
+                <span className="block text-sm text-navy">{q.question}{q.marks ? <span className="text-gray-500"> [{q.marks}]</span> : null}</span>
               </span>
               {answered.has(q.id) && <span className="shrink-0 text-[11px] text-emerald-700 font-semibold">Done</span>}
               <span className="shrink-0 text-gray-400">›</span>
@@ -103,9 +109,53 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         ))}
       </div>
 
+      {skills.length > 0 && (
+        <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your skills</h2>
+          <ul className="mt-1 divide-y divide-black/5">
+            {skills.map(l => {
+              const next = nextOf(l.skill);
+              const row = (
+                <>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-sm font-bold text-navy">{skillLabel(l.skill)}</span>
+                    <span className={`block text-[13px] ${l.standing === 'practise' ? 'text-amber-800 font-semibold' : 'text-gray-600'}`}>{skillLineText(l)}</span>
+                  </span>
+                  <span className="shrink-0 text-[12px] text-gray-400">{l.answered} {l.answered === 1 ? 'answer' : 'answers'}</span>
+                  {next && <span className="shrink-0 text-gray-400">›</span>}
+                </>
+              );
+              return (
+                <li key={l.skill}>
+                  {next
+                    ? <Link href={`/app/humanities/q/${next}`} className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-xl hover:bg-amber-50/60 transition">{row}</Link>
+                    : <div className="flex items-center gap-3 py-2.5">{row}</div>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {caseStudies.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Case studies</h2>
+          <p className="text-[12px] text-gray-500">Five questions on one set of sources, as in the exam. Do one, or all five.</p>
+          {SS_THEMES.map(theme => {
+            const list = caseStudies.filter(s => s.theme === theme);
+            return list.length > 0 && (
+              <div key={theme} className="space-y-2">
+                <h3 className="text-[13px] font-semibold text-navy pt-1">{SS_THEME_NAME[theme]}</h3>
+                {list.map(setCard)}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {sourceSets.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Source-based questions</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">{caseStudies.length > 0 ? 'Single questions' : 'Source-based questions'}</h2>
           {subject === 'history' && (
             <p className="text-[12px] text-gray-500">These sources are written for practice. They are not real documents.</p>
           )}

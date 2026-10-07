@@ -2,10 +2,15 @@
 // our OWN source sets and questions, and the level scheme each skill is read
 // against. Three files of sets — Social Studies source-based, Social Studies
 // structured response, History source-based — and one file of schemes. Pure.
+// A1 (7 Oct 2026): a fourth file, the Social Studies CASE STUDIES — the exam's
+// shape: Background Information, Sources A–E/F, five linked questions (35 marks)
+// ending with the 10-mark "how far" question. A case study is a set with a
+// `background`; its questions are answered with every source of the set in view.
 // Nothing here is a school's paper (docs/CONTENT-POLICY.md).
 import schemesJson from '../../data/humanities/social-studies/schemes.json';
 import setsJson from '../../data/humanities/social-studies/sets.json';
 import structuredJson from '../../data/humanities/social-studies/structured.json';
+import caseStudiesJson from '../../data/humanities/social-studies/case-studies.json';
 import historyJson from '../../data/humanities/history/sets.json';
 
 export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'how_far' | 'sr_explain' | 'sr_weigh';
@@ -19,6 +24,15 @@ export type HumanitiesSubject = 'social-studies' | 'history';
 export type HumanitiesKind = 'source' | 'structured';
 export const SUBJECT_NAME: Record<HumanitiesSubject, string> = { 'social-studies': 'Social Studies', history: 'History' };
 
+/** The three issues of the Social Studies syllabus. */
+export type SsTheme = 'citizenship' | 'diversity' | 'globalised';
+export const SS_THEMES: readonly SsTheme[] = ['citizenship', 'diversity', 'globalised'];
+export const SS_THEME_NAME: Record<SsTheme, string> = {
+  citizenship: 'Citizenship and governance',
+  diversity: 'Living in a diverse society',
+  globalised: 'Being part of a globalised world',
+};
+
 export interface HumanitiesSource { id: string; provenance: string; text: string }
 export interface SeededAnswer { level: number; text: string }
 export interface HumanitiesQuestion {
@@ -26,6 +40,8 @@ export interface HumanitiesQuestion {
   skill: HumanitiesSkill;
   sources: string[];
   question: string;
+  /** The exam's marks for this question — a case study only. Shown beside the question; the report still gives a level, never a mark. */
+  marks?: number;
   seeded?: SeededAnswer[];
   model?: string;
 }
@@ -35,9 +51,13 @@ export interface HumanitiesSet {
   kind: HumanitiesKind;
   title: string;
   issue: string;
+  /** Background Information — present on a case study, and only there. */
+  background?: string;
+  theme?: SsTheme;
   sources: HumanitiesSource[];
   questions: HumanitiesQuestion[];
 }
+export const isCaseStudy = (set: Pick<HumanitiesSet, 'background'>): boolean => !!set.background;
 export interface SchemeLevel { level: number; does: string }
 export interface HumanitiesScheme {
   label: string;
@@ -50,7 +70,7 @@ export interface HumanitiesScheme {
 export interface ClaimTag { key: string; label: string; meaning: string }
 
 type RawSet = Omit<HumanitiesSet, 'subject' | 'kind'> & Partial<Pick<HumanitiesSet, 'subject' | 'kind'>>;
-const SETS: HumanitiesSet[] = [setsJson, structuredJson, historyJson]
+const SETS: HumanitiesSet[] = [setsJson, caseStudiesJson, structuredJson, historyJson]
   .flatMap(f => f as unknown as RawSet[])
   .map(s => ({ ...s, subject: s.subject ?? 'social-studies', kind: s.kind ?? 'source' }));
 const FILE = schemesJson as unknown as {
@@ -71,6 +91,8 @@ export function rulesFor(skill: string): string[] { return isStructured(skill) ?
 export function tagsFor(skill: string): ClaimTag[] { return isStructured(skill) ? FILE.structured.tags : FILE.tags; }
 
 export function allSets(): HumanitiesSet[] { return SETS; }
+/** The Social Studies case studies, in file order. */
+export function caseStudies(): HumanitiesSet[] { return SETS.filter(isCaseStudy); }
 export function setsFor(subject: HumanitiesSubject, kind?: HumanitiesKind): HumanitiesSet[] {
   return SETS.filter(s => s.subject === subject && (!kind || s.kind === kind));
 }
@@ -90,6 +112,12 @@ export interface QuestionInContext {
   question: HumanitiesQuestion;
   /** The sources the question names, in the set's order. */
   sources: HumanitiesSource[];
+  /**
+   * The sources in view while answering, and what the reader is given: the named
+   * ones, or — in a case study — every source of the set (a student cross-refers
+   * to any of them, as in the exam).
+   */
+  inView: HumanitiesSource[];
   scheme: HumanitiesScheme;
 }
 
@@ -99,7 +127,8 @@ export function questionById(id: string): QuestionInContext | null {
     if (!question) continue;
     const scheme = schemeFor(question.skill);
     if (!scheme) return null;
-    return { set, question, sources: set.sources.filter(s => question.sources.includes(s.id)), scheme };
+    const sources = set.sources.filter(s => question.sources.includes(s.id));
+    return { set, question, sources, inView: isCaseStudy(set) ? set.sources : sources, scheme };
   }
   return null;
 }
@@ -123,9 +152,10 @@ export function modelAnswer(q: HumanitiesQuestion): string | null {
 
 /** Every seeded answer in the bank, with the question it belongs to — the bench's input. */
 export interface SeededRow { questionId: string; subject: HumanitiesSubject; kind: HumanitiesKind; skill: HumanitiesSkill; level: number; text: string }
-export function seededAnswers(only?: { subject?: HumanitiesSubject; kind?: HumanitiesKind }): SeededRow[] {
+export function seededAnswers(only?: { subject?: HumanitiesSubject; kind?: HumanitiesKind; sets?: string[] }): SeededRow[] {
   const out: SeededRow[] = [];
   for (const set of SETS) {
+    if (only?.sets && !only.sets.includes(set.id)) continue;
     if (only?.subject && set.subject !== only.subject) continue;
     if (only?.kind && set.kind !== only.kind) continue;
     for (const q of set.questions) for (const s of q.seeded ?? []) {

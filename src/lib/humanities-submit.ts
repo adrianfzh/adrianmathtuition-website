@@ -69,8 +69,10 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
       body: JSON.stringify({
         runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',
         subject: SUBJECT_NAME[ctx.set.subject], kind: ctx.set.kind, skill: ctx.question.skill,
-        issue: ctx.set.issue, question: ctx.question.question,
-        sources: ctx.sources.map(x => ({ id: x.id, provenance: x.provenance, text: x.text })),
+        // A case study's Background Information rides with the issue line: the bot's prompt has one slot for both.
+        issue: ctx.set.background ? `${ctx.set.issue}\n\nBACKGROUND INFORMATION\n${ctx.set.background}` : ctx.set.issue,
+        question: ctx.question.question,
+        sources: ctx.inView.map(x => ({ id: x.id, provenance: x.provenance, text: x.text })),
         scheme: { label: ctx.scheme.label, levels: ctx.scheme.levels, note: ctx.scheme.note ?? null, slips: ctx.scheme.slips, lifts: ctx.scheme.lifts },
         rules: rulesFor(ctx.question.skill), tags: tagsFor(ctx.question.skill),
       }),
