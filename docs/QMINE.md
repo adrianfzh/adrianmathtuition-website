@@ -1,7 +1,8 @@
 # QMINE — student-demand mining (spec)
 
-> Owner: the `question-mine-daily` Claude Code scheduled task (Mac A,
-> **Mon & Thu 7:00am SGT**). Doctrine: [CLAUDE.md → Building doctrine]. This
+> Owner: the Fly worker (bot `worker/fly/jobs.sh job_question_mine`, switch `question-mine`,
+> **Mon & Thu 7:00am SGT**) since 7 Oct 2026 — the Mac task went silent 7 Sep. On the worker the keys
+> are environment variables, not `.env.local` (the job tells the session so). Doctrine: [CLAUDE.md → Building doctrine]. This
 > file is the spec the task follows verbatim (step 1 of the recipe). Created
 > 2026-08-28 as daily (Adrian: "instead of weekly, make it more frequent");
 > same day dialed to twice-weekly (Adrian: "daily is too frequent") and pinned
