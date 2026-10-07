@@ -172,6 +172,10 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   (`schemes.geo_evaluate`: describes · explains mostly one side · both sides in depth and an argued
 >   judgement), by the own-knowledge rules and tags. The page shows the level and that level's marks band
 >   ("Level 2 of 3 · 4 to 6 marks of 9") — a band, because the reader settles a level, not a mark within it.
+>   **Eight questions, two a cluster (e01–e04).** Plan-only checks: all 24 seeded answers placed blind at their
+>   level, every top answer's judgement argued; every real example fact-checked against public sources on
+>   7 Oct 2026 (no wrong fact; eleven lines made more exact — the Marina Barrage, the Paris Agreement, the
+>   carbon tax, Haiti's buildings …).
 > - **Still to build:** maps, photographs and diagrams
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 

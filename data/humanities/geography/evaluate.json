@@ -10,7 +10,7 @@
    {
     "id": "Extract",
     "provenance": "A starting point for your answer",
-    "text": "Tourism brings jobs and income to many destinations. It can also damage the natural places that visitors come to see."
+    "text": "Tourism brings jobs and income to many destinations. It can also damage the natural places that visitors come to see, so destinations look for ways to manage it."
    }
   ],
   "questions": [
@@ -33,7 +33,219 @@
      },
      {
       "level": 3,
-      "text": "Tourism brings large economic benefits. It creates many jobs. For example, in Bali many local people work in hotels and restaurants and as tour guides, so they earn a steady income and can support their families. Tourists also spend money on food and souvenirs, which brings income to local shops and stalls.\n\nHowever, tourism can badly harm the environment. For example, at Maya Bay in Thailand, thousands of visitors came each day and the anchors of their boats broke much of the coral. The damage was so serious that the bay was closed in 2018 so that the reef could recover. This shows that too many visitors can destroy the natural place itself.\n\nI agree only to some extent. The economic benefits depend on the environment. If the reef or the beach is destroyed, tourists stop coming and the jobs are lost too, as the closure of Maya Bay shows. So the benefits outweigh the harm only where visitor numbers are controlled and the place is protected. Where they are not, the harm is greater in the long run, because it removes the reason tourists come."
+      "text": "Tourism brings large economic benefits. It creates many jobs. For example, in Bali many local people work in hotels and restaurants and as tour guides, so they earn a steady income and can support their families. Tourists also spend money on food and souvenirs, which brings income to local shops and stalls.\n\nHowever, tourism can badly harm the environment. For example, at Maya Bay in Thailand, thousands of visitors came each day and the anchors of their boats broke much of the coral. The damage was so serious that the bay was closed in 2018 so that the reef could recover. This shows that too many visitors can destroy the natural place itself.\n\nI agree only to some extent. The economic benefits depend on the environment. If the reef or the beach is destroyed, the attraction is lost and the jobs go with it. Maya Bay had to stay closed for more than three years. So the benefits outweigh the harm only where visitor numbers are controlled and the place is protected. Where they are not, the harm is greater in the long run, because it removes the reason tourists come."
+     }
+    ]
+   },
+   {
+    "id": "e01-b",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'Limiting the number of visitors does more than ecotourism to make tourism sustainable.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Limiting visitors means fewer people, so there is less damage and less litter. Ecotourism is when tourists care for nature and local people get jobs. Both are good, but limiting visitors is better because it protects the place."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Limiting the number of visitors protects a place directly. For example, Maya Bay in Thailand was closed in 2018 because crowds of visitors and their boats had damaged the coral. When it reopened in 2022, only a limited number of visitors were allowed in at a time and boats could no longer enter the bay. With fewer people and no anchors, the coral has room to grow back, so the bay can go on receiving tourists in future.\n\nEcotourism also helps because tourists learn to care for nature. However, limiting visitors does more."
+     },
+     {
+      "level": 3,
+      "text": "Limiting the number of visitors protects a place directly. For example, Maya Bay in Thailand was closed in 2018 because crowds of visitors and their boats had damaged the coral. When it reopened in 2022, only a limited number of visitors were allowed in at a time and boats could no longer enter the bay. With fewer people and no anchors, the coral has room to grow back, so the bay can go on receiving tourists in future.\n\nHowever, ecotourism also makes tourism sustainable, in a different way. For example, Costa Rica has protected large areas of land, including rainforest, in national parks and reserves. Visitors pay entrance fees and hire local guides to see the wildlife. The forest earns money for local people while it is still standing, so they have a reason to protect it instead of clearing it. A limit on numbers alone gives local people little of this income.\n\nI agree only to some extent. A limit works fastest where a small place is already being damaged by crowds, as at Maya Bay, because it removes the cause at once. But a limit only reduces harm. It does not pay for protection or win the support of local people. Ecotourism does both, so it lasts longer. A limit matters more for a place that is already overcrowded, while ecotourism matters more in the long run, and the two work best together."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "e02",
+  "subject": "geography",
+  "kind": "structured",
+  "cluster": "everyday",
+  "title": "Sustainable neighbourhoods: who and what makes them work",
+  "issue": "Weighing who does more for a neighbourhood, and what nature areas bring",
+  "sources": [
+   {
+    "id": "Extract",
+    "provenance": "A starting point for your answer",
+    "text": "A sustainable neighbourhood stays clean, green and pleasant for the people who live there now and in the future. The government, the residents and the nature areas in a neighbourhood all play a part."
+   }
+  ],
+  "questions": [
+   {
+    "id": "e02-a",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'The government does more than individuals to make neighbourhoods sustainable.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. The government builds parks and gives recycling bins. It also makes rules. Individuals can recycle, save water and not litter. The government has more money, so it does more than individuals."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. The government can plan and pay for things that no resident could build. For example, in Singapore the government built park connectors that link parks and housing estates across the island. Residents can walk or cycle to a park, a market or a train station along a green path instead of driving. This cuts the use of cars and gives people a pleasant place to exercise, so the neighbourhood is both greener and healthier to live in.\n\nIndividuals also play a part because they can recycle and keep the estate clean. However, the government does more."
+     },
+     {
+      "level": 3,
+      "text": "The government can plan and pay for things that no resident could build. For example, in Singapore the government built park connectors that link parks and housing estates across the island. Residents can walk or cycle to a park, a market or a train station along a green path instead of driving. This cuts the use of cars and gives people a pleasant place to exercise, so the neighbourhood is both greener and healthier to live in.\n\nHowever, what the government provides works only if individuals use it well. For example, Singapore gives every housing block a blue recycling bin. Many residents throw food and liquid waste into these bins, so the paper and plastic inside become dirty and cannot be recycled. The bins are there, but much of what goes in cannot be recycled. Individuals also do things the government cannot do for them. In community gardens, residents plant and care for the greenery themselves, and they get to know their neighbours while doing it.\n\nI agree to a large extent, but not fully. The government matters more at the start, because only it has the land, the money and the power to build parks and set up recycling for a whole town. After that, individuals decide whether these efforts succeed, as the dirty recycling bins show. So the government does more to make a sustainable neighbourhood possible, but residents do more to keep it that way day by day."
+     }
+    ]
+   },
+   {
+    "id": "e02-b",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'Nature areas in a neighbourhood bring more benefits than problems.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Nature areas give shade and fresh air, and people can exercise and relax there. The problems are wild animals, mosquitoes and fallen leaves. There are more benefits than problems, so nature areas are good."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Nature areas bring many benefits to residents. For example, at Bishan-Ang Mo Kio Park in Singapore, a concrete canal was turned into a natural river with plants along its banks. Residents nearby can jog, cycle and play beside the river, which keeps them healthy and lowers stress. In heavy rain the river can spread over the low ground of the park, so the water is held there instead of flooding the homes around it. The plants and water also draw birds and other wildlife that people enjoy seeing.\n\nNature areas do bring problems, such as wild animals coming near homes. However, the benefits are greater."
+     },
+     {
+      "level": 3,
+      "text": "Nature areas bring many benefits to residents. For example, at Bishan-Ang Mo Kio Park in Singapore, a concrete canal was turned into a natural river with plants along its banks. Residents nearby can jog, cycle and play beside the river, which keeps them healthy and lowers stress. In heavy rain the river can spread over the low ground of the park, so the water is held there instead of flooding the homes around it.\n\nHowever, nature areas also bring problems, because wild animals do not stay inside them. For example, long-tailed macaques from Singapore's nature reserves enter nearby homes to look for food, and they snatch food and bags from people. Wild boars have also wandered into housing estates and injured people. Residents who live beside these areas can feel unsafe, and some no longer welcome the wildlife.\n\nI agree to a large extent. The benefits reach most residents on most days, while the problems affect mainly the homes closest to the nature area, and only some of the time. The problems can also be reduced. Many of them start when people feed wild animals, which teaches the animals to come to humans for food. This is why feeding wildlife is against the law in Singapore. The benefits are hard to get in any other way, but the problems can be managed, so the benefits are greater as long as residents learn how to live beside wildlife."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "e03",
+  "subject": "geography",
+  "kind": "structured",
+  "cluster": "climate",
+  "title": "Climate: slowing the change, living with it, facing the storms",
+  "issue": "Weighing the ways people respond to climate change and tropical cyclones",
+  "sources": [
+   {
+    "id": "Extract",
+    "provenance": "A starting point for your answer",
+    "text": "The climate is changing, and many countries already face rising seas and stronger storms. Countries can try to slow the change, get ready to live with it, and protect their people from extreme weather such as tropical cyclones."
+   }
+  ],
+  "questions": [
+   {
+    "id": "e03-a",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'Reducing greenhouse gas emissions matters more than adapting to climate change.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Countries can reduce greenhouse gases by using less fossil fuel and more solar energy. They can also adapt by building sea walls and growing different crops. Reducing emissions is more important because it slows global warming."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Reducing greenhouse gas emissions deals with the cause of climate change. For example, Singapore started a carbon tax in 2019. The biggest polluters, such as power stations and large factories, must pay for every tonne of greenhouse gases they give out. This pushes them to use less fossil fuel and to switch to cleaner energy, so fewer gases are added to the air and less heat is trapped. In the Paris Agreement of 2015, almost every country agreed to keep the rise in world temperature well below 2 degrees Celsius, and each set its own plan to cut emissions.\n\nCountries can also adapt to climate change by building sea walls. However, reducing emissions matters more."
+     },
+     {
+      "level": 3,
+      "text": "Reducing greenhouse gas emissions deals with the cause of climate change. For example, Singapore started a carbon tax in 2019. The biggest polluters, such as power stations and large factories, must pay for every tonne of greenhouse gases they give out. This pushes them to use less fossil fuel and to switch to cleaner energy, so fewer gases are added to the air and less heat is trapped. In the Paris Agreement of 2015, almost every country agreed to keep the rise in world temperature well below 2 degrees Celsius, and each set its own plan to cut emissions.\n\nHowever, adapting protects people from changes that are already happening. For example, the Marina Barrage in Singapore is a dam across the Marina Channel, where the rivers of the city meet the sea. It keeps seawater out. In heavy rain its gates let rainwater flow out at low tide, and its pumps push water out when the tide is high. This protects low-lying parts of the city, such as Chinatown, from floods. The Netherlands built the Delta Works, a set of dams and storm barriers, to keep the sea out of its low land. These defences keep people safe now, whatever other countries do.\n\nI agree to some extent. In the long run, reducing emissions matters more, because adapting has limits. If the sea keeps rising, walls must keep getting higher and more costly, and poorer countries cannot afford them. But the gases already in the air will keep warming the Earth for many years, and one country cannot stop this alone. So adapting matters more for keeping people safe today, while reducing emissions matters more for keeping the problem small enough to adapt to. Countries need both, but only cutting emissions solves the problem itself."
+     }
+    ]
+   },
+   {
+    "id": "e03-b",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'Preparing people does more than building defences to protect them from tropical cyclones.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. People can be prepared with warnings, drills and shelters. Defences are things like sea walls and strong houses. Cyclones bring strong winds, heavy rain and storm surges. Preparing people is better because they will know what to do."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Preparing people moves them out of danger before the cyclone arrives. For example, a cyclone that struck Bangladesh in 1970 killed hundreds of thousands of people, because most had no warning and nowhere safe to go. Since then, Bangladesh has built many raised cyclone shelters and trained volunteers to carry warnings from village to village. When a cyclone approaches, large numbers of people move into the shelters before the storm surge comes. Far fewer people now die in cyclones there.\n\nDefences such as sea walls also protect people from cyclones. However, preparing people does more."
+     },
+     {
+      "level": 3,
+      "text": "Preparing people moves them out of danger before the cyclone arrives. For example, a cyclone that struck Bangladesh in 1970 killed hundreds of thousands of people, because most had no warning and nowhere safe to go. Since then, Bangladesh has built many raised cyclone shelters and trained volunteers to carry warnings from village to village. When a cyclone approaches, large numbers of people move into the shelters before the storm surge comes. Far fewer people now die in cyclones there.\n\nHowever, defences protect things that preparing people cannot. Sea walls and levees hold back the storm surge, so homes, roads and farms are not flooded and people still have somewhere to live after the storm. They also protect people who cannot leave in time. For example, levees keep the sea and the river out of the low-lying city of New Orleans in the United States. But defences can fail. When Hurricane Katrina struck in 2005, the levees broke, most of the city was flooded and more than a thousand people died.\n\nI agree to a large extent. Preparing people does more to save lives, because it works even when the storm is stronger than expected. Defences are built for a storm of a certain size, and a bigger one can break them, as Katrina showed. Preparing people, with warnings and shelters, is often cheaper than building defences along a whole coast, so poorer countries such as Bangladesh can afford more of it. Defences do more to protect property. Since the first aim is to keep people alive, preparing people matters more, and defences are best used together with it, not in place of it."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "e04",
+  "subject": "geography",
+  "kind": "structured",
+  "cluster": "tectonics",
+  "title": "Tectonics: living with earthquakes and volcanoes",
+  "issue": "Weighing ways to reduce deaths, and the benefits and risks of living near volcanoes",
+  "sources": [
+   {
+    "id": "Extract",
+    "provenance": "A starting point for your answer",
+    "text": "Earthquakes and volcanic eruptions can kill many people, yet millions live in the places where they happen. Countries reduce the danger in different ways, through how they build and how they prepare their people."
+   }
+  ],
+  "questions": [
+   {
+    "id": "e04-a",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'Earthquake-resistant buildings do more than preparing people to reduce deaths from earthquakes.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Strong buildings do not fall down in an earthquake. People can also be prepared with drills, emergency kits and warnings. Many people die in earthquakes. Buildings are more important because people stay inside them."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Most deaths in an earthquake happen when buildings collapse on the people inside. For example, when an earthquake struck Haiti in 2010, many buildings in the capital, Port-au-Prince, were poorly built, with little steel to strengthen them. They fell within seconds, and more than a hundred thousand people died. Earthquake-resistant buildings have strong steel frames and foundations that absorb the shaking, so they sway but stay standing. The people inside are not crushed and can walk out afterwards.\n\nPreparing people with drills also helps to reduce deaths. However, earthquake-resistant buildings do more."
+     },
+     {
+      "level": 3,
+      "text": "Most deaths in an earthquake happen when buildings collapse on the people inside. For example, when an earthquake struck Haiti in 2010, many buildings in the capital, Port-au-Prince, were poorly built, with little steel to strengthen them. They fell within seconds, and more than a hundred thousand people died. Earthquake-resistant buildings have strong steel frames and foundations that absorb the shaking, so they sway but stay standing and the people inside are not crushed.\n\nHowever, strong buildings cannot protect people from everything an earthquake brings. For example, in the Tohoku earthquake in Japan in 2011, most buildings stayed standing through very strong shaking. Most of the people who died were killed by the tsunami that followed, not by falling buildings. Japan holds earthquake and tsunami drills every year, and warnings were sent out within minutes. Many people in coastal towns knew they had to run to high ground at once, and this saved their lives.\n\nI agree to a large extent. The shaking gives almost no warning, so there is no time for people to act. Only a strong building can keep them alive in that moment, which is why so many died in Haiti. Preparing people matters more for the dangers that come afterwards, such as a tsunami or fires, when there are minutes to get away. So buildings do more against the earthquake itself, but a country on the coast needs prepared people as well."
+     }
+    ]
+   },
+   {
+    "id": "e04-b",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'The benefits of living near volcanoes outweigh the risks.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Volcanoes give fertile soil, tourists and geothermal energy. The risks are lava, ash and hot gases that can kill people and destroy houses. But many people still live there, so the benefits outweigh the risks."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Living near a volcano brings benefits that last for many years. For example, the ash from Mount Merapi in Indonesia has broken down into soil that is rich in minerals. Farmers on its slopes can grow rice and vegetables with good harvests year after year, so they earn a steady income and can feed their families. This is why so many people live close to the volcano. In Iceland, heat from under the ground is used to produce electricity and to warm most homes, which gives people cheap and clean energy.\n\nThere are risks, because an eruption can kill people. However, the benefits are greater."
+     },
+     {
+      "level": 3,
+      "text": "Living near a volcano brings benefits that last for many years. For example, the ash from Mount Merapi in Indonesia has broken down into soil that is rich in minerals. Farmers on its slopes can grow rice and vegetables with good harvests year after year, so they earn a steady income and can feed their families. In Iceland, heat from under the ground is used to produce electricity and to warm most homes, which gives people cheap and clean energy.\n\nHowever, the risks are severe. For example, when Mount Merapi erupted in 2010, clouds of hot gas and ash rushed down its slopes and buried villages. More than 300 people were killed, and hundreds of thousands had to leave their homes. Farms and livestock were destroyed, so the same people who gained from the soil lost their income as well.\n\nI agree to a large extent. The benefits come every year, while a large eruption is rare. The risk to life can also be reduced. Scientists watch volcanoes such as Merapi closely, and in 2010 very many people were moved away before the worst of the eruption, which saved many lives. So the benefits outweigh the risks where a volcano is watched and people leave when they are told to. Where there is no warning, or people will not leave their farms, one eruption can take away everything the volcano gave, and the risks are greater."
      }
     ]
    }
