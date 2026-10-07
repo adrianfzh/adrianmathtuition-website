@@ -7,7 +7,8 @@ import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
-import { loadHumanitiesRun } from '@/lib/humanities-runs';
+import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
+import { nextOfSkill } from '@/lib/humanities-practice';
 import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard } from '../sources';
@@ -64,6 +65,9 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
   // A case study is a run of five: offer the next one.
   const next = ctx.set.background ? ctx.set.questions[ctx.set.questions.findIndex(q => q.id === ctx.question.id) + 1] : undefined;
+  // Practice by skill: the next question of this skill the student has not answered.
+  const mine = admin ? [] : await loadHumanitiesFor(sid, 500);
+  const more = admin ? null : nextOfSkill(ctx.set.subject, run.skill, new Set(mine.map(r => r.question_id)), ctx.question.id);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -210,6 +214,16 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           <span className="flex-1 min-w-0">
             <span className="block text-[12px] font-semibold text-amber-800">Next in this case study</span>
             <span className="block text-sm text-navy">{next.question}</span>
+          </span>
+          <span className="shrink-0 text-gray-400">›</span>
+        </Link>
+      )}
+
+      {report && more && (
+        <Link href={`/app/humanities/q/${more}`} className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3.5 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+          <span className="flex-1 min-w-0">
+            <span className="block text-[12px] font-semibold text-amber-800">More practice</span>
+            <span className="block text-sm text-navy">Another {skillLabel(run.skill)} question</span>
           </span>
           <span className="shrink-0 text-gray-400">›</span>
         </Link>

@@ -200,6 +200,16 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **D — PRACTICE BY SKILL BUILT 7 Oct 2026 (preview only, switch closed).** Adrian: "then do practice by skill".
+> - Home's **Practise a skill** card (it replaces "Your skills"): every skill of the subject on the tab, the
+>   weakest first, then the ones not tried — a levelled skill shows its usual level, a point-marked one
+>   (Geography) its share of the marks ("about 6 marks in 10"), each with how many are left to do.
+> - `/app/humanities/practice?s=<subject>&skill=<skill>`: the next five questions of that skill, taken one set
+>   at a time so a run moves across topics, the unanswered first; the level ladder folded at the top.
+> - A feedback page offers **More practice** — the next unanswered question of the same skill.
+> - `lib/humanities-practice.ts` (pure, tested): `skillStandings` · `practiceRun` · `nextOfSkill`. No new
+>   marking, no new route; it reads the levels and marks already on `humanities_runs`.
+
 ## 4. The bench — built like the science bench
 
 No marked scripts are needed.

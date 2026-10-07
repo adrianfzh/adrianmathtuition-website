@@ -9,8 +9,9 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { setsFor, isCaseStudy, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, POINTS_SKILLS, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
 import { skillPicture, skillLineText } from '@/lib/humanities-skills';
+import { skillStandings, shareText } from '@/lib/humanities-practice';
 import { loadHumanitiesFor } from '@/lib/humanities-runs';
 import { AnswerCard } from './answer-cards';
 import { skillLabel } from './skills';
@@ -19,6 +20,7 @@ export const dynamic = 'force-dynamic';
 
 const H = SURFACES.humanities;
 const HOME_LIMIT = 3;
+const isPointSkill = (k: string) => (POINTS_SKILLS as readonly string[]).includes(k);
 
 const TABS: { key: HumanitiesSubject; label: string }[] = [
   { key: 'social-studies', label: 'Social Studies' },
@@ -38,10 +40,12 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
   const caseStudies = allSource.filter(isCaseStudy);
   const sourceSets = allSource.filter(s => !isCaseStudy(s));
   // The skill picture (A2): this subject's read answers, weakest skill first.
-  // Geography is point-marked, not levelled: its picture comes with practice by skill (D).
-  const skills = subject === 'geography' ? [] : skillPicture(runs.filter(r => r.subject === subject));
+  // Practice by skill (D): every skill of the subject, the weakest first. A levelled skill shows its usual
+  // level; a point-marked one (Geography) shows its share of the marks.
+  const mine = runs.filter(r => r.subject === subject);
+  const skills = skillPicture(mine.filter(r => !isPointSkill(r.skill)));
+  const standings = skillStandings(subject, mine);
   const pointSets = setsFor(subject, 'points');
-  const nextOf = (skill: string) => questionsBySkill(skill).find(c => c.set.subject === subject && !answered.has(c.question.id))?.question.id;
   const structuredSets = setsFor(subject, 'structured');
   // One issue open at a time: the first with a question still to do. Ten open cards was a very long page.
   const sets = [...caseStudies, ...sourceSets, ...structuredSets, ...pointSets];
@@ -115,27 +119,25 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         ))}
       </div>
 
-      {skills.length > 0 && (
+      {standings.length > 0 && (
         <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your skills</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Practise a skill</h2>
+          <p className="text-[12px] text-gray-500 mt-0.5">Five questions of one kind. {standings[0].share != null ? 'Your weakest is first.' : 'Pick one to begin.'}</p>
           <ul className="mt-1 divide-y divide-black/5">
-            {skills.map(l => {
-              const next = nextOf(l.skill);
-              const row = (
-                <>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm font-bold text-navy">{skillLabel(l.skill)}</span>
-                    <span className={`block text-[13px] ${l.standing === 'practise' ? 'text-amber-800 font-semibold' : 'text-gray-600'}`}>{skillLineText(l)}</span>
-                  </span>
-                  <span className="shrink-0 text-[12px] text-gray-400">{l.answered} {l.answered === 1 ? 'answer' : 'answers'}</span>
-                  {next && <span className="shrink-0 text-gray-400">›</span>}
-                </>
-              );
+            {standings.map(st => {
+              const line = skills.find(l => l.skill === st.skill);
+              const weak = line?.standing === 'practise' || (isPointSkill(st.skill) && st.share != null && st.share < 0.5);
+              const text = st.share == null ? 'Not tried yet' : isPointSkill(st.skill) ? shareText(st.share) : line ? skillLineText(line) : '';
               return (
-                <li key={l.skill}>
-                  {next
-                    ? <Link href={`/app/humanities/q/${next}`} className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-xl hover:bg-amber-50/60 transition">{row}</Link>
-                    : <div className="flex items-center gap-3 py-2.5">{row}</div>}
+                <li key={st.skill}>
+                  <Link href={`/app/humanities/practice?s=${subject}&skill=${st.skill}`} className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-xl hover:bg-amber-50/60 transition">
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-bold text-navy">{skillLabel(st.skill)}</span>
+                      <span className={`block text-[13px] ${weak ? 'text-amber-800 font-semibold' : 'text-gray-600'}`}>{text}</span>
+                    </span>
+                    <span className="shrink-0 text-[12px] text-gray-400">{st.left} to do</span>
+                    <span className="shrink-0 text-gray-400">›</span>
+                  </Link>
                 </li>
               );
             })}

@@ -50,6 +50,9 @@ Talk to Adrian in plain, short words. No jargon.
   plus a live-reader pass on y05 and y07. Next: D practice by skill. Still owed before the switch opens: the
   live-reader bench on the Social Studies case studies s12–s40, Geography g05–g20 and History y01–y04, y06, y08, y09.
 
+- **7 Oct 2026 — D practice by skill built.** Everything in Adrian's order is now built except A5 (photo
+  hand-in, waiting on the handwriting reader) and Geography's maps / photographs / diagrams.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

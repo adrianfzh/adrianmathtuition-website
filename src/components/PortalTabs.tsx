@@ -29,7 +29,7 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/app/languages') return pathname === '/app/languages';
   // Humanities Home also owns its question pages; Answers owns a report (/app/humanities/<id>).
   // Examples and the timed paper being sat are Home's too; a handed-in paper (/paper/<id>) is an answer.
-  const humHome = /^\/app\/humanities(\/(q\/.*|examples|paper|paper\/sit))?$/.test(pathname);
+  const humHome = /^\/app\/humanities(\/(q\/.*|examples|practice|paper|paper\/sit))?$/.test(pathname);
   if (href === '/app/humanities') return humHome;
   if (href === '/app/humanities/answers') return pathname.startsWith('/app/humanities/') && !humHome;
   // A science paper's page (/app/science/marking/<id>) belongs to the Science Papers tab.
