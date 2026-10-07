@@ -171,15 +171,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
           </div>
           {/* Tight on a phone (360–390 px holds the name, Invite, two words and the icon). */}
-          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
             {/* 💡 Suggestions sits in the bar, beside Invite and Settings — it belongs to no
                 subject (Adrian, 7 Oct 2026: "put the word Suggestions"). Sign out became an
                 icon to make room for it on a phone. */}
             {suggestVisible && (
-              <Link href="/app/suggestions" className="text-[13px] sm:text-sm text-gray-600 hover:text-navy">Suggestions</Link>
+              <Link href="/app/suggestions" className="text-sm text-gray-600 hover:text-navy">Suggestions</Link>
             )}
-            <Link href="/app/settings" data-tour="settings" className="text-[13px] sm:text-sm text-gray-600 hover:text-navy">Settings</Link>
+            {/* Settings is the gear on a phone (Adrian, 7 Oct 2026: "the top bar is very crowded"); the word from sm up. */}
+            <Link href="/app/settings" data-tour="settings" aria-label="Settings" title="Settings" className="text-sm text-gray-600 hover:text-navy inline-flex items-center justify-center">
+              <svg viewBox="0 0 24 24" className="w-5 h-5 sm:hidden" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
+              <span className="hidden sm:inline">Settings</span>
+            </Link>
             <SignOutButton />
           </div>
         </div>
