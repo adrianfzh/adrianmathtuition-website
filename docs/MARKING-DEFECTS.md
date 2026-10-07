@@ -702,3 +702,36 @@ On 84 stored pages the gated pen drew 48 arrows as before, re-aimed 16, withheld
 strip is tried, at the smaller on-page size (`PEN_NOTE_LEFT=0`), bot `9e109cf`. The page check before release
 (SPEC-RED-PEN.md, `PAGE_GATE=watch`) went in with them.
 
+
+# 7 Oct 2026 — marking-fix (Adrian's own reports first: pen_reports 7, 9, 10, 14, 16, 22; then the reader's third return of F66)
+
+Two sessions (a worker restart at 08:32 cut the first). Bench pages: Alessi AM 2025 P1 (`5d88b1ed`), Rainie TKGS 2025 AM P2
+(`c6d20db0`), Khoo EM 2025 P1 (`f23ad3cc`), Alexis AM TKGS P1 (`c1c3f68c`), Eva O-Level 2020 EM P1 (`241e8b56`),
+Isabelle EM 2021 P2 (`d4792e5a`).
+
+| # | What the page showed | Layer | Cause | Fix |
+|---|---|---|---|---|
+| F81 | The score chip read "M1 M1 M0 M0 A0" but only some ticks carried a code — "isn't really helpful? because the M1 M0 isn't all shown at the ticks" (pen_reports 7, his decision: keep the row, code every line) | pen (symbols) | a code was drawn only where the marker tagged the line and the seat was free | bot `af4531f`: every line that earns or loses a mark shows its code beside its ✓ or ✗; the chip keeps its row. Cases `rainie-tkgs25p2-p4-codes-on-lines-partial`, `alessi-am25p1-p1-half-cross-and-codes`; live check `codes-beside-their-lines` |
+| F82 | A plain ✓ on a line that is right method on a wrong carried value (pen_reports 14, his decision: "option A – but make more parallel") | pen (symbols) | no glyph for "half right" | bot `af4531f`: the HALF-CROSS — a tick with one short stroke across its long arm, parallel to its short arm — on the first line that uses the wrong earlier value; marks unchanged. Cases `alessi-am25p1-p1-half-cross-and-codes`, `khoo-em25p1-p13-half-cross`; live check `carried-tick-is-half-cross` |
+| F83 | Long brown notes written on a slant — "why are the brown annotations slanted?" (pen_reports 10, his decision: slight or straight for long lines) | pen (layout) | every margin note took up to ±2.5° whatever its length | bot `af4531f`: lean scaled to length — ±2.5° short, ±1° medium, ±0.4° long or stacked. Live check `long-note-nearly-straight` |
+| F62 (rebuilt) | A column headed "From your line" that started a fresh method (pen_reports 22, "ship all" — the 3 Oct proposal had no branch) | pen rule | the rule was never on a branch | bot `5e4d155`: the column always carries on from something she wrote; when her method could not get there the page shows the full solution instead. `test/marking-fix-1007.test.js` |
+| F84 | A red underline and a nearly level red arrow side by side under one line — "ugly"; a second arrow from "incorrect from previous line" across the next line (pen_reports 9) | pen (placement) | the underline and the label's leader were decided separately | bot `4a86651`: one red line at a slip, not two — no long level arrow beside an underlined line; a carried-value note with no ring has no arrow. Case `alexis-tkgs-p1-p4-underline-or-arrow`; live check `underline-or-arrow` |
+| — | The ✗ and "should be 1586" 270 px from the ringed slip (pen_reports 16) | pen (placement) | fixed already by F74/F76 and the 6 Oct evening seats | no code change; pinned by case `eva-ol20p1-p12-cross-just-after-the-ring` (`cross-beside-its-ring`), bot `4a86651` |
+| F85 | ✓ on the printed word "Answer" — `repeat ×3` (F25, F63, F66): her last working line "≈ 28.5 %" ends just before the printed "Answer" of the same row and its ✓ is drawn on the "r" (Isabelle EM 2021 P2 p2 Q2(b); Khoo EM 2025 P1 p5 Q9 — both drawn AFTER F66) | pen (placement) | three causes so far (answer-rule mask, a nudge onto print, a slide along print); this time the small italic print never fills a quarter of a column, so the ink guard called the square clear | bot `1a3ce41`: **general check — replaces the patches F25, F63, F66**. The pen tests each ✓/✗ it is about to draw: when the square just past the line's OWN end already held ink, a mark moved past it no longer stands beside its line → tucked against its own line when that is clear paper, else a bare ✓ on a row whose Answer line is marked is not drawn, else kept and COUNTED. Live check `mark-beside-its-own-line` (fails when a mark is kept past foreign ink; detail counts tucked / left out); `PEN_MARK_GATE=0` turns it off. Cases `isabelle-em21p2-p2-tick-on-answer-third-time`, `khoo-em25p1-p5-tick-on-answer-third-time` (bench check `no-mark-on-print`) |
+
+**Not a failed fix:** the reader saw F74 (ticks on a line that runs to the paper's edge) again on Alexis TKGS P2 p13, p5 and
+TKGS P1 p7 — all three drawn 11:20–11:30 on 6 Oct, BEFORE F74's 12:14 push.
+
+**Opened as proposals (his wording reports 12, 13, 18 and the layout report 17):** `false-rule-not-equals`,
+`asked-for-not-the-number`, `blank-in-exam-write-something`, `no-hint-beside-the-solution` (with before/after pictures) —
+bot `docs/PROPOSALS.md`.
+
+**Needs his decision (pen_reports 19):** the ✓ B1 beside a crossed-out scribble at the foot of Xinmin Chem p7 is Q3(d)'s
+third tick, boxed there by the page-reading step — a reading miss of WHERE the line is, not pen code.
+
+**Left for the next run** (the reader's 7 Oct list, causes as the reader wrote them): a ✗ label drawn twice, the first copy
+cut off (Khoo EM p2 Q3, Rainie Set 1 p5 Q5(c)); arrows through her writing (7 pages — the arrow gate checks marks, not her
+ink); ✓ and ✗ on one Answer line (Sophie P2 p10, Isabelle p1); marks on print or inside her line (Khoo EM p5 "y =", Isabelle
+p2 "% increase ✓ ="); joint spaces after a typeset letter ("y -intercept", "A 's", "n th"); raw caret "10ˆ1⁰" in a strip
+note; strip note one token a line (Nicole P2 p8); clipped text (Sophie p8 reason, Nicole P1 p6 footer under the credit);
+figure label over the axis label (Rainie p14); pen_reports 23 and 24 (science style — their bench cases are not on `main` yet).
