@@ -192,6 +192,13 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   brief and topic plan `docs/humanities/history-essay-brief.md` (y01–y09: Hitler's rise · Versailles · the
 >   League · Japan · war in Europe · the defeats of Germany and Japan · the Cold War's origins · Korea · the
 >   Cold War's end). Home's History tab lists them under **Essays**.
+> - **18 essay questions listed (y01–y09, two a set).** Plan-only checks: all 72 seeded essays placed blind at
+>   their level; a historian's read and a web fact check of every date, name and figure — no wrong fact, and
+>   about twenty statements that were too strong or left something out, all revised (hyperinflation and the
+>   Ruhr, Article 231, the Suez claim, Japan's notice to the League, the Soviet entry against Japan in August
+>   1945, which Soviet moves came before the Truman Doctrine, y05-b's second factor now Hitler's aims over
+>   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
+>   through the live reader.
 
 ## 4. The bench — built like the science bench
 
