@@ -173,11 +173,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-4">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
             {/* 💡 Suggestions sits in the bar, beside Invite and Settings — it belongs to no
-                subject (Adrian, 7 Oct 2026). The word from sm up; the bulb alone on a phone,
+                subject (Adrian, 7 Oct 2026). The word on a wide screen; the bulb alone on a phone or tablet,
                 where the bar has no room for a fourth word. */}
             {suggestVisible && (
               <Link href="/app/suggestions" aria-label="Suggestions" title="Suggestions" className="text-sm text-gray-600 hover:text-navy inline-flex items-center gap-1">
-                <span aria-hidden>💡</span><span className="hidden sm:inline">Suggestions</span>
+                <span aria-hidden>💡</span><span className="hidden lg:inline">Suggestions</span>
               </Link>
             )}
             <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
