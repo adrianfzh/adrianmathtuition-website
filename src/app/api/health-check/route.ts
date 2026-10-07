@@ -655,6 +655,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📜 The Humanities timed paper (7 Oct 2026, SPEC-HUMANITIES.md §A4): its hand-in door.
+    timed('portal-humanities-paper', async () => {
+      const r = await fetch(`${base}/api/portal/humanities/paper`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 🧭 ✍️ The JC H2 drills (5 Oct 2026, SPEC-H2-TOOLS.md): both routes behind a session.
     timed('portal-h2-methods', async () => {
       const r = await fetch(`${base}/api/portal/h2/methods?area=integration`, { redirect: 'manual', signal: T(10000) });

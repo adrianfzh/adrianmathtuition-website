@@ -7,6 +7,7 @@ export const SKILL_LABEL: Record<string, string> = {
   reliability: 'Reliability',
   usefulness: 'Usefulness',
   purpose: 'Purpose',
+  surprise: 'Are you surprised?',
   how_far: 'How far do the sources support…',
   sr_explain: 'Explain two ways',
   sr_weigh: 'Do you agree?',

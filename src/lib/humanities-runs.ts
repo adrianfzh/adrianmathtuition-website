@@ -28,11 +28,13 @@ export interface HumanitiesRunRow {
   calibration_set: string | null;
   truth_level: number | null;
   cost_usd: number | null;
+  paper_id: string | null;
+  paper_minutes: number | null;
 }
 
 /** The list columns — never the answer text, the report or the reads. */
 export const HUMANITIES_LIST_COLUMNS =
-  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd';
+  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes';
 
 export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error'>;
 
@@ -58,6 +60,17 @@ export async function loadHumanitiesRun(id: string, scope: string | { admin: tru
   const { data, error } = await q.maybeSingle();
   if (error) throw new Error(error.message);
   return (data as HumanitiesRunRow | null) ?? null;
+}
+
+/** The answers of one timed paper. A student identity scopes it; `{ admin: true }` = Adrian's view. */
+export async function loadHumanitiesPaper(paperId: string, scope: string | { admin: true } | null): Promise<HumanitiesListRow[]> {
+  if (!scope) return [];
+  const sb = getSupabaseAdmin();
+  let q = sb.from('humanities_runs').select(HUMANITIES_LIST_COLUMNS).eq('paper_id', paperId).order('created_at', { ascending: true });
+  if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return (data ?? []) as unknown as HumanitiesListRow[];
 }
 
 /** Every answer, newest first — the admin list; `set` narrows it to one bench run. */

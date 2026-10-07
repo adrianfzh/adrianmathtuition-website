@@ -8,7 +8,8 @@ describe('the humanities bank', () => {
     const sets = setsFor('social-studies', 'source').filter(s => !isCaseStudy(s));
     const all = sets.flatMap(s => s.questions);
     expect(all.length).toBe(30);
-    for (const skill of SOURCE_SKILLS) expect(all.filter(q => q.skill === skill).length).toBe(5);
+    // 'surprise' lives in the case studies only.
+    for (const skill of SOURCE_SKILLS.filter(k => k !== 'surprise')) expect(all.filter(q => q.skill === skill).length).toBe(5);
   });
 
   it('H2: five structured sets (two parts each) and five History source sets', () => {

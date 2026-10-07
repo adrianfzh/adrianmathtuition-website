@@ -43,7 +43,7 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
           <div className="mt-3"><SourceCards sources={others} /></div>
         </details>
       )}
-      {ctx.set.subject === 'history' && (
+      {(ctx.set.subject === 'history' || caseStudy) && (
         <p className="text-[12px] text-gray-500 px-1">These sources are written for practice. They are not real documents.</p>
       )}
       {ctx.set.kind === 'structured' && (

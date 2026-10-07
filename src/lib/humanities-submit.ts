@@ -22,6 +22,9 @@ export interface HumanitiesSubmission {
   calibrationSet?: string | null;
   /** The bench's truth: the level the answer was written at. */
   truthLevel?: number | null;
+  /** A timed paper's answers share one id; minutes = how long the paper took. */
+  paperId?: string | null;
+  paperMinutes?: number | null;
 }
 
 export type SubmitOutcome =
@@ -57,6 +60,7 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
     source: s.source ?? 'app',
     calibration_set: s.calibrationSet ?? null,
     truth_level: s.truthLevel ?? null,
+    ...(s.paperId ? { paper_id: s.paperId, paper_minutes: s.paperMinutes ?? null } : {}),
   }).select('id').single();
   if (error || !row) return { ok: false, status: 500, error: error?.message ?? 'Could not save the answer.' };
 

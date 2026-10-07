@@ -321,6 +321,22 @@ the question; a conclusion that says "both are important" and stops.
 
 ---
 
+## 8. "Are you surprised?" (added 7 Oct 2026 — Adrian: "do it")
+
+Asks: "Having read Source X, are you surprised by Source Y?" The commonest Question 3/4 in the banked papers.
+
+| Level | What the answer does |
+|---|---|
+| 1 | Says surprised or not with no real reason, or from the type of source or who made it. |
+| 2 | Uses only ONE of the two sources, usually the one asked about: explains it and gives a stand. |
+| 3 | Compares what the TWO sources say on the same point, supported from both, with a stand. |
+| 4 | Level 3, and explains WHY the source says it (who made it, for whom, what they wanted) or checks it against a third source. The stand follows from that. |
+
+- The stand is about the source the question asks about.
+- A top answer often ends "not surprised after all": the purpose explains the difference.
+- School schemes split Level 3 into one-sided and two-sided, and some put the third-source check below
+  purpose. Ours keeps four levels, like the other skills.
+
 ## What I need Adrian to decide
 
 1. **Level counts.** Inference has 3 levels; the rest have 4; structured response (a)

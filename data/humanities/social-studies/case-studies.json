@@ -807,28 +807,29 @@
    },
    {
     "id": "s15-q3",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
-     "D"
+     "D",
+     "E"
     ],
-    "question": "Study Source D. How reliable is this source as evidence that the ban was the best way to keep footpaths safe? Explain your answer.",
+    "question": "Study Sources D and E. Having read Source E, are you surprised by Source D? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source D is reliable because it is from a spokesperson for the transport ministry. The ministry made the ban, so it knows the facts."
+      "text": "I am not surprised. Source D is a statement from the transport ministry, and a ministry will always say that its own ban worked."
      },
      {
       "level": 2,
-      "text": "Source D is reliable. It says 'accidents with e-scooters on footpaths fell from 114 to 9' and 'Nine in ten people we surveyed say they feel safer walking'. These are clear figures, so it shows the ban was the best way to keep footpaths safe."
+      "text": "I am not surprised by Source D. Source D says that after the ban accidents with e-scooters on footpaths 'fell from 114 to 9'. That is a very big fall. So it makes sense for Source D to say the ban has done what it was meant to do."
      },
      {
       "level": 3,
-      "text": "Source D is not fully reliable. It says the ban 'has done what it was meant to do' because footpath accidents 'fell from 114 to 9'. Source E gives the same figures, so that part is true. But D also says 'No other step could have made footpaths safe so quickly'. E shows that in two towns with a speed limit and cameras, 'footpath accidents had already fallen by half'. D also leaves out that accidents on roads 'rose from 21 to 58'. The check shows that D is right that footpaths are safer, but it goes too far in saying no other step could have helped. So it cannot be fully trusted as evidence that the ban was the best way."
+      "text": "I am surprised by Source D. Both sources are about whether the ban was the only way to make footpaths safe. Source D says 'No other step could have made footpaths safe so quickly'. But Source E found that two towns had tried a speed limit checked by cameras in the year before the ban, and 'There, footpath accidents had already fallen by half'. So Source E shows that another step was already working, while Source D says there was none. The two do not match on this point, so Source D is surprising."
      },
      {
       "level": 4,
-      "text": "Source D is not fully reliable. It says the ban 'has done what it was meant to do' because footpath accidents 'fell from 114 to 9'. Source E gives the same figures, so that part is true. But D also says 'No other step could have made footpaths safe so quickly'. E shows that in two towns with a speed limit and cameras, 'footpath accidents had already fallen by half'. D also leaves out that accidents on roads 'rose from 21 to 58'. The check shows that D is right that footpaths are safer, but it goes too far in saying no other step could have helped. D is also the ministry speaking to the press about its own ban, six months on, when riders were still unhappy. It wants the public to believe the ban was the only choice, so it gives its best figure and a promise that cycling paths 'will be doubled'. That purpose makes it weak evidence that a ban was the best way. Only the fall in footpath accidents can be trusted, because the researchers counted the same, and Source B says an elderly woman now 'goes to the market on her own again'."
+      "text": "At first I am surprised by Source D. Both sources are about whether the ban was the only way to make footpaths safe. Source D says 'No other step could have made footpaths safe so quickly'. But Source E found that two towns had tried a speed limit checked by cameras in the year before the ban, and 'There, footpath accidents had already fallen by half'. So Source E shows that another step was already working, while Source D says there was none. The two do not match on this point. But Source D is 'A spokesperson for the transport ministry', and the ministry brought in the ban. It is speaking to the press six months later, after riders had lost pay. The ministry wants the public to believe that it made the right choice. So it gives the fall in accidents on footpaths and leaves out the speed limit that had worked in two towns. A ministry defending its own ban would say this. So I am not surprised after all by Source D."
      }
     ]
    },
@@ -1016,28 +1017,29 @@
    },
    {
     "id": "s16-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
-     "D"
+     "D",
+     "E"
     ],
-    "question": "Study Source D. How reliable is this source as evidence that a law against smoking at windows is not needed? Explain your answer.",
+    "question": "Study Sources D and E. Having read Source E, are you surprised by Source D? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source D is reliable because it is from a ministry spokesperson. The ministry deals with these complaints, so it knows best."
+      "text": "I am not surprised. Source D is from a ministry spokesperson, and a spokesperson always defends what the ministry is already doing."
      },
      {
       "level": 2,
-      "text": "Source D is reliable. It says 'Mediation works: seven in ten cases that reach our community mediation centres end with an agreement'. It also explains that an officer 'would have to watch or film a private home'. These are clear reasons, so it shows that a law is not needed."
+      "text": "I am not surprised by Source D. Source D says 'Mediation works' and that 'seven in ten cases that reach our community mediation centres end with an agreement'. Seven in ten is a high number. So it makes sense for Source D to say that neighbours can settle smoke problems without a law."
      },
      {
       "level": 3,
-      "text": "Source D is not fully reliable. It says 'Mediation works' because 'seven in ten cases' end with an agreement. Source E gives the same figure, so that part is true. But E adds that 'only one case in five went ahead, because both sides must agree to attend'. So most residents who ask for mediation never get it. Source B shows this. The neighbour 'said it is his home and his right', and the officer said 'there was nothing more to be done'. The check shows that D is right about the cases that reach mediation but leaves out the many that never do. So it cannot be fully trusted as evidence that a law is not needed."
+      "text": "I am surprised by Source D. Both sources are about how well mediation works for neighbours troubled by smoke. Source D says 'Mediation works'. But Source E found that of those who asked for mediation 'only one case in five went ahead, because both sides must agree to attend'. So Source E shows that most residents who ask for mediation never get it, while Source D says it works. The two do not match on this point, so Source D is surprising."
      },
      {
       "level": 4,
-      "text": "Source D is not fully reliable. It says 'Mediation works' because 'seven in ten cases' end with an agreement. Source E gives the same figure, so that part is true. But E adds that 'only one case in five went ahead, because both sides must agree to attend'. So most residents who ask for mediation never get it. Source B shows this. The neighbour 'said it is his home and his right', and the officer said 'there was nothing more to be done'. The check shows that D is right about the cases that reach mediation but leaves out the many that never do. D is also a ministry spokesperson answering residents who want the ministry to act. A law would give the ministry the hard job of enforcing it, so the speaker has a reason to make the present way look good enough. That purpose makes D weak evidence that a law is not needed. Only its point that a law would be hard to enforce can be trusted, because E found that even among those who support a law, 'fewer than half said they would be willing to report a neighbour'."
+      "text": "At first I am surprised by Source D. Both sources are about how well mediation works for neighbours troubled by smoke. Source D says 'Mediation works'. But Source E found that of those who asked for mediation 'only one case in five went ahead, because both sides must agree to attend'. So Source E shows that most residents who ask for mediation never get it, while Source D says it works. The two do not match on this point. But Source D is 'A ministry spokesperson, replying to questions from residents at a public forum in May', when the ministry was asking for views on a law. The ministry does not want a law, because it would be hard to enforce. So the spokesperson wants residents to accept mediation instead. That is why Source D counts only the 'cases that reach our community mediation centres' and leaves out the cases that never start. Both sources give the same seven in ten. Source D has picked the figure that suits the ministry. So I am not surprised after all by Source D."
      }
     ]
    },
@@ -1372,28 +1374,29 @@
    },
    {
     "id": "s18-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
+     "C",
      "F"
     ],
-    "question": "Study Source F. How reliable is this source as evidence of what people think about the plan? Explain your answer.",
+    "question": "Study Sources C and F. Having read Source C, are you surprised by Source F? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source F is reliable because it is from the planning agency. The agency collected the feedback, so it knows what people said."
+      "text": "I am not surprised. Source F is a summary by the planning agency, and an agency will always say that people like its plan."
      },
      {
       "level": 2,
-      "text": "Source F is reliable. It says 'We received 2,300 responses' and 'A clear majority supported new homes on the site'. It gives a number and a clear result, so it shows that people support the plan."
+      "text": "I am not surprised by Source F. Source F says 'A clear majority supported new homes on the site'. A clear majority means more than half of those who wrote in. So it makes sense for Source F to say that the plan has support."
      },
      {
       "level": 3,
-      "text": "Source F is not fully reliable. It says only that 'Some residents asked us to keep the old hall'. But Source C says 'Already 4,100 people have signed our petition', which is more than all the responses F counts. F also says 'Most stallholders welcomed a modern market'. Source B, a stallholder, does say 'A new market with cooling would help', but adds that 'nobody has told us the new rent'. The check shows that F is right that some people want the plan, but it makes the worries look smaller than they are. So it cannot be fully trusted as evidence of what people think."
+      "text": "I am surprised by Source F. Both sources are about how many people want the old hall kept. Source C says 'Already 4,100 people have signed our petition' to keep the hall. But Source F says only that 'Some residents asked us to keep the old hall', out of '2,300 responses'. So Source C shows that thousands want the hall kept, while Source F makes them sound few. The two do not match on this point, so Source F is surprising."
      },
      {
       "level": 4,
-      "text": "Source F is not fully reliable. It says only that 'Some residents asked us to keep the old hall'. But Source C says 'Already 4,100 people have signed our petition', which is more than all the responses F counts. F also says 'Most stallholders welcomed a modern market'. Source B, a stallholder, does say 'A new market with cooling would help', but adds that 'nobody has told us the new rent'. The check shows that F is right that some people want the plan, but it makes the worries look smaller than they are. So it cannot be fully trusted as evidence of what people think. F is also the agency reporting on feedback to its own plan. It wants residents to accept that the matter is settled, so it gives no figure for its 'clear majority' and ends with a promise of 'photographs and a display'. That purpose makes it weak evidence of what people think. Only its point that new homes have support can be trusted, because the writer of Source D has 'waited four years for a flat'."
+      "text": "At first I am surprised by Source F. Both sources are about how many people want the old hall kept. Source C says 'Already 4,100 people have signed our petition' to keep the hall. But Source F says only that 'Some residents asked us to keep the old hall', out of '2,300 responses'. So Source C shows that thousands want the hall kept, while Source F makes them sound few. The two do not match on this point. But Source F is 'From the planning agency, in its summary of the public feedback', and the agency is the one that proposed pulling the hall down to build flats. It wants residents to believe the public is behind the plan, so that the plan can go ahead. So it writes 'A clear majority' and 'Some residents' and gives no number for each side. It does not mention the petition at all. An agency that wants its own plan to pass would write the summary this way. So I am not surprised after all by Source F."
      }
     ]
    },
@@ -2088,28 +2091,29 @@
    },
    {
     "id": "s22-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
+     "C",
      "D"
     ],
-    "question": "Study Source D. How reliable is this source as evidence that the new rules are working well? Explain your answer.",
+    "question": "Study Sources C and D. Having read Source C, are you surprised by Source D? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source D is reliable because it is a report from the town council. The town council runs the bookings, so it knows what happened."
+      "text": "I am not surprised. Source D is a report by the town council, and a town council will always say its own rules are good."
      },
      {
       "level": 2,
-      "text": "Source D is reliable. It says 'complaints about noise fell from 96 to 31' and 'Not one booking was turned away'. These are clear facts and figures, so it shows the rules are working well."
+      "text": "I am not surprised by Source D. Source D says that 'complaints about noise fell from 96 to 31'. That is a big fall in six months. So it makes sense for Source D to say the rules are working very well."
      },
      {
       "level": 3,
-      "text": "Source D is not fully reliable. It says the rules 'are working very well' and that 'Not one booking was turned away'. But Source E says that of the 38 families who held a wake, '14 were moved to a different block', and the writer of Source C was told to use 'the smaller space at Block 318'. D also says 'complaints about noise fell from 96 to 31', yet in Source E several residents 'had stopped complaining because they did not think it would change anything'. The check shows that the figures in D may be true but they hide the families who were moved and the residents who gave up. So it cannot be fully trusted as evidence that the rules are working well."
+      "text": "I am surprised by Source D. Both sources are about whether every family can use the void deck when it needs to. Source D says 'Not one booking was turned away' and that sharing is now 'smooth and fair'. But in Source C a family holding a wake found its void deck already booked for a wedding, and 'The office told us to use the smaller space at Block 318, far from our own lift'. So Source C shows a family in grief sent away from its own block, while Source D says sharing is smooth and fair. The two do not match on this point, so Source D is surprising."
      },
      {
       "level": 4,
-      "text": "Source D is not fully reliable. It says the rules 'are working very well' and that 'Not one booking was turned away'. But Source E says that of the 38 families who held a wake, '14 were moved to a different block', and the writer of Source C was told to use 'the smaller space at Block 318'. D also says 'complaints about noise fell from 96 to 31', yet in Source E several residents 'had stopped complaining because they did not think it would change anything'. The check shows that the figures in D may be true but they hide the families who were moved and the residents who gave up. So it cannot be fully trusted as evidence that the rules are working well. D is also the town council reporting on its own rules to the residents. It wants them to accept its plan to 'extend the rules to every block next year', so it gives only the good news. That purpose makes it weak evidence. Only its point about noise can be partly trusted, because Source E agrees that the notice made 'Seven in ten households' more willing to put up with noise."
+      "text": "At first I am surprised by Source D. Both sources are about whether every family can use the void deck when it needs to. Source D says 'Not one booking was turned away' and that sharing is now 'smooth and fair'. But in Source C a family holding a wake found its void deck already booked for a wedding, and 'The office told us to use the smaller space at Block 318, far from our own lift'. So Source C shows a family in grief sent away from its own block, while Source D says sharing is smooth and fair. The two do not match on this point. But Source D is 'From a report by the town council to residents', and the council made the rules. It has decided to keep them, as it says 'We will extend the rules to every block next year'. It wants residents to accept that decision. So it counts a family moved to another block as a booking that was not turned away, and it leaves out how that family felt. A council that wants to extend its own rules would report them this way. So I am not surprised after all by Source D."
      }
     ]
    },
@@ -2777,28 +2781,29 @@
    },
    {
     "id": "s27-q3",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
-     "D"
+     "D",
+     "E"
     ],
-    "question": "Study Source D. How reliable is this source as evidence that hiding names has made hiring fairer? Explain your answer.",
+    "question": "Study Sources D and E. Having read Source E, are you surprised by Source D? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source D is reliable because it is a report by the business association that ran the trial. The association saw all the results, so it knows what happened."
+      "text": "I am not surprised. Source D is a report by a business association, and reports like this always say good things."
      },
      {
       "level": 2,
-      "text": "Source D is reliable. It says '3,200 applications were read with the name covered' and 'Applicants from every community were called for interviews in greater numbers than before'. These are clear facts from the trial, so it shows that hiding names made hiring fairer."
+      "text": "I am not surprised by Source D. Source D says 'Applicants from every community were called for interviews in greater numbers than before'. More interviews for everyone is a good result. So it makes sense for Source D to call the trial a success."
      },
      {
       "level": 3,
-      "text": "Source D is not fully reliable. It calls the trial 'a clear success' because applicants 'were called for interviews in greater numbers than before'. Source E agrees on this point: interview calls for applicants from minority communities rose from '18 of every 100' to 27. But Source E also says 'the share of job offers going to these applicants hardly moved'. D says nothing about job offers. E adds that 'Six firms left the trial early', which D also leaves out. The check shows that D is right about interviews but leaves out that the jobs themselves still went to much the same people. So it cannot be fully trusted as evidence that hiring became fairer."
+      "text": "I am surprised by Source D. Both sources are about how much the trial helped applicants from every community. Source D says 'The trial was a clear success'. But Source E found that 'the share of job offers going to these applicants hardly moved, from 16 of every 100 to 17'. So Source E shows that applicants from minority communities got almost no more jobs, while Source D calls the trial a clear success. The two do not match on this point, so Source D is surprising."
      },
      {
       "level": 4,
-      "text": "Source D is not fully reliable. It calls the trial 'a clear success' because applicants 'were called for interviews in greater numbers than before'. Source E agrees on this point: interview calls for applicants from minority communities rose from '18 of every 100' to 27. But Source E also says 'the share of job offers going to these applicants hardly moved'. D says nothing about job offers. E adds that 'Six firms left the trial early', which D also leaves out. The check shows that D is right about interviews but leaves out that the jobs themselves still went to much the same people. So it cannot be fully trusted as evidence that hiring became fairer. D is also the association reporting on its own trial to its member firms. It wants them to 'adopt covered forms from next year', so it picks the good news and the word 'clear'. That purpose makes it weak evidence that hiring is now fairer. Only its point about interviews can be trusted, because the job seeker in Source B found the same: with the name covered, 'four called me'."
+      "text": "At first I am surprised by Source D. Both sources are about how much the trial helped applicants from every community. Source D says 'The trial was a clear success'. But Source E found that 'the share of job offers going to these applicants hardly moved, from 16 of every 100 to 17'. So Source E shows that applicants from minority communities got almost no more jobs, while Source D calls the trial a clear success. The two do not match on this point. But Source D is 'From the report of the business association to its member firms', and the association ran the trial. It wants its members to take up covered forms, as it says 'We urge all members to adopt covered forms from next year'. So it reports the interview calls, which did rise, and says nothing about job offers, which did not. Source E agrees that interview calls rose, so Source D is not false. It has chosen the good half. An association that wants its members to follow its own trial would do that. So I am not surprised after all by Source D."
      }
     ]
    },
@@ -2986,28 +2991,29 @@
    },
    {
     "id": "s28-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
+     "D",
      "E"
     ],
-    "question": "Study Source E. How reliable is this source as evidence that shared classes have been good for all pupils? Explain your answer.",
+    "question": "Study Sources D and E. Having read Source D, are you surprised by Source E? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source E is reliable because it is the review written by the school. The school teaches these pupils every day, so it knows how the classes went."
+      "text": "I am not surprised. Source E is a review written by the school, and a school will always praise itself."
      },
      {
       "level": 2,
-      "text": "Source E is reliable. It says '19 improved their marks in English and mathematics' and 'The average marks of the other pupils stayed the same'. These are clear figures, so it shows that shared classes were good for all pupils."
+      "text": "I am not surprised by Source E. Source E says that among the 24 pupils with special needs '19 improved their marks in English and mathematics'. That is most of them. So it makes sense for Source E to say shared classes have been a success."
      },
      {
       "level": 3,
-      "text": "Source E is not fully reliable. It says 'The average marks of the other pupils stayed the same', and Source F agrees that 'Test marks for the other pupils did not fall'. But E calls shared classes 'a success' and leaves out how often help was missing. Source F found that 'Only one lesson in five had a support officer', and that without one pupils with special needs spent 'about half as much' time on their work. A teacher in Source D says that in those lessons 'Somebody loses out each time'. The check shows that E is right about marks but leaves out the lessons that did not work. So it cannot be fully trusted as evidence that shared classes were good for all pupils."
+      "text": "I am surprised by Source E. Both sources are about how well shared classes work for pupils with special needs. Source E says 'Shared classes have been a success'. But the teacher in Source D says that most lessons have no support officer, and 'Somebody loses out each time, and often it is the pupil the plan was meant for'. So Source D shows these pupils often losing out, while Source E says the classes are a success. The two do not match on this point, so Source E is surprising."
      },
      {
       "level": 4,
-      "text": "Source E is not fully reliable. It says 'The average marks of the other pupils stayed the same', and Source F agrees that 'Test marks for the other pupils did not fall'. But E calls shared classes 'a success' and leaves out how often help was missing. Source F found that 'Only one lesson in five had a support officer', and that without one pupils with special needs spent 'about half as much' time on their work. A teacher in Source D says that in those lessons 'Somebody loses out each time'. The check shows that E is right about marks but leaves out the lessons that did not work. So it cannot be fully trusted as evidence that shared classes were good for all pupils. E is also the school reviewing its own plan for the parents it serves. It hopes 'to welcome more families next year', so it picks the good figures and says nothing about the shortage of support officers. That purpose makes it weak evidence that every pupil gained. Only its figures on marks can be trusted, because the researchers in Source F found the same."
+      "text": "At first I am surprised by Source E. Both sources are about how well shared classes work for pupils with special needs. Source E says 'Shared classes have been a success'. But the teacher in Source D says that most lessons have no support officer, and 'Somebody loses out each time, and often it is the pupil the plan was meant for'. So Source D shows these pupils often losing out, while Source E says the classes are a success. The two do not match on this point. But Source E is 'From the review of shared classes written by the school, sent to all parents after two years'. The school closed the learning room, so it is judging its own decision. It wants parents to trust that decision, and it wants new pupils, as it hopes 'to welcome more families next year'. So it gives the marks and attendance that went up and leaves out the lessons where the teacher is alone. A school writing to parents about its own change would do this. So I am not surprised after all by Source E."
      }
     ]
    },
@@ -3493,28 +3499,29 @@
    },
    {
     "id": "s31-q3",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
-     "D"
+     "D",
+     "E"
     ],
-    "question": "Study Source D. How reliable is this source as evidence that the chain has been good for the neighbourhood? Explain your answer.",
+    "question": "Study Sources D and E. Having read Source E, are you surprised by Source D? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source D is reliable because it is a statement from a spokesperson for the chain. The chain runs the store, so it knows the numbers."
+      "text": "I am not surprised. Source D is a statement from the chain, and a company always says good things about itself."
      },
      {
       "level": 2,
-      "text": "Source D is reliable. It says 'We serve 4,000 shoppers a day' and 'We created 60 jobs, and most went to people living nearby'. These are clear facts and figures, so it shows the chain has been good for the neighbourhood."
+      "text": "I am not surprised by Source D. Source D says 'We created 60 jobs, and most went to people living nearby'. A large new store needs many workers. So it makes sense for Source D to say the store has been welcomed."
      },
      {
       "level": 3,
-      "text": "Source D is not fully reliable. It says 'Our prices are lower on everyday goods', and Source E agrees that a basket of goods 'cost 9% less at the chain than at the old shops'. But D also says 'We created 60 jobs, and most went to people living nearby'. Source E found that 'only 22 live in the neighbourhood' and that 41 of the 60 work part-time. D says the store was 'welcomed warmly', yet in E most older residents 'had fewer people to talk to on the street than before'. The check shows that D is right about prices but stretches the truth about jobs and leaves out what was lost. So it cannot be fully trusted as evidence that the chain has been good for the neighbourhood."
+      "text": "I am surprised by Source D. Both sources are about the jobs the store gave to people in the neighbourhood. Source D says 'We created 60 jobs, and most went to people living nearby'. But Source E checked the staff records and found that of the 60 workers 'only 22 live in the neighbourhood'. So Source E shows that fewer than half the workers live nearby, while Source D says most do. The two do not match on this point, so Source D is surprising."
      },
      {
       "level": 4,
-      "text": "Source D is not fully reliable. It says 'Our prices are lower on everyday goods', and Source E agrees that a basket of goods 'cost 9% less at the chain than at the old shops'. But D also says 'We created 60 jobs, and most went to people living nearby'. Source E found that 'only 22 live in the neighbourhood' and that 41 of the 60 work part-time. D says the store was 'welcomed warmly', yet in E most older residents 'had fewer people to talk to on the street than before'. The check shows that D is right about prices but stretches the truth about jobs and leaves out what was lost. So it cannot be fully trusted as evidence that the chain has been good for the neighbourhood. D is also the chain speaking about its own store to the press. It plans 'to open three more stores in Singapore next year', so it wants the public to see the first store as a welcome guest. That is why it picks the big numbers and the word 'proud'. That purpose makes it weak evidence. Only its claim about lower prices can be trusted, because the resident in Source B also found milk at 'forty cents less than before'."
+      "text": "At first I am surprised by Source D. Both sources are about the jobs the store gave to people in the neighbourhood. Source D says 'We created 60 jobs, and most went to people living nearby'. But Source E checked the staff records and found that of the 60 workers 'only 22 live in the neighbourhood'. So Source E shows that fewer than half the workers live nearby, while Source D says most do. The two do not match on this point. But Source D is 'From a statement to the press by a spokesperson for the chain', six months after the store opened. The job of a spokesperson is to make the chain look good in the news. The chain also says 'we plan to open three more stores in Singapore next year', so it needs other neighbourhoods to welcome it. So it says most jobs went to people nearby and gives no figure. A chain that wants to grow would say this. So I am not surprised after all by Source D."
      }
     ]
    },
@@ -4058,28 +4065,29 @@
    },
    {
     "id": "s34-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
+     "B",
      "F"
     ],
-    "question": "Study Source F. How reliable is this source as evidence that overseas pop concerts help local musicians? Explain your answer.",
+    "question": "Study Sources B and F. Having read Source B, are you surprised by Source F? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source F is reliable because it comes from a concert promoter. The promoter runs the concerts, so it knows the music business."
+      "text": "I am not surprised. Source F is from a concert promoter, and people in business always say their business is good for everyone."
      },
      {
       "level": 2,
-      "text": "Source F is reliable. It says 'Every overseas star we bring in has a local act opening the show' and that these acts 'play to 40,000 people in one night'. These are clear facts, so it shows the concerts help local musicians."
+      "text": "I am not surprised by Source F. Source F says 'Every overseas star we bring in has a local act opening the show'. A local act that opens a big show is heard by a very large crowd. So it makes sense for Source F to say the concerts help local music."
      },
      {
       "level": 3,
-      "text": "Source F is not fully reliable. It says 'Local musicians have never had more chances than they have today'. Source E partly agrees, as 'the number of local songs released each year has doubled in five years'. But Source B says 'Venues here now ask us to pay to play', and that band played to only '30 people'. Source E also found that 'Only 12% of listeners could name three local musicians'. The check shows that F is right that there is more local music, but wrong to suggest that local musicians are doing well. So it cannot be fully trusted."
+      "text": "I am surprised by Source F. Both sources are about the chances local musicians have now that overseas acts draw the crowds. Source F says 'Local musicians have never had more chances than they have today'. But the drummer in Source B says 'Venues here now ask us to pay to play, because they earn more from tribute nights for foreign acts'. So Source B shows a local band losing chances to play, while Source F says chances have never been greater. The two do not match on this point, so Source F is surprising."
      },
      {
       "level": 4,
-      "text": "Source F is not fully reliable. It says 'Local musicians have never had more chances than they have today'. Source E partly agrees, as 'the number of local songs released each year has doubled in five years'. But Source B says 'Venues here now ask us to pay to play', and that band played to only '30 people'. Source E also found that 'Only 12% of listeners could name three local musicians'. The check shows that F is right that there is more local music, but wrong to suggest that local musicians are doing well. F is also a promoter speaking to business reporters after a sold-out weekend. The promoter earns money from overseas concerts and wants the public to see them as good for everyone, so the speech talks only of the few opening acts and calls the concerts 'the best thing that has happened to local music'. That purpose makes it weak evidence. Only its point that a big concert can help can be trusted a little, because Source C says that in such a week 'my local nights fill up too'."
+      "text": "At first I am surprised by Source F. Both sources are about the chances local musicians have now that overseas acts draw the crowds. Source F says 'Local musicians have never had more chances than they have today'. But the drummer in Source B says 'Venues here now ask us to pay to play, because they earn more from tribute nights for foreign acts'. So Source B shows a local band losing chances to play, while Source F says chances have never been greater. The two do not match on this point. But Source F is 'A spokesperson for a concert promoter, speaking to business reporters after a sold-out weekend of concerts by an overseas pop group'. The promoter earns its money from overseas concerts. It wants the public to see these concerts as good for Singapore and not as a threat to local music. So the spokesperson talks only about the few local acts that open a big show, and says nothing about small bands like the one in Source B. A promoter defending its own business would say this. So I am not surprised after all by Source F."
      }
     ]
    },
@@ -4418,28 +4426,29 @@
    },
    {
     "id": "s36-q4",
-    "skill": "reliability",
+    "skill": "surprise",
     "marks": 7,
     "sources": [
-     "E"
+     "E",
+     "F"
     ],
-    "question": "Study Source E. How reliable is this source as evidence that people are now safe from overseas scammers? Explain your answer.",
+    "question": "Study Sources E and F. Having read Source F, are you surprised by Source E? Explain your answer.",
     "seeded": [
      {
       "level": 1,
-      "text": "Source E is reliable because it is a speech by a ministry spokesperson. The ministry is in charge of the measures, so it has the facts."
+      "text": "I am not surprised. Source E is from a ministry spokesperson, and a ministry always says its measures have worked."
      },
      {
       "level": 2,
-      "text": "Source E is reliable. It says 'Scam calls have fallen by more than half' and 'Millions of fake calls are blocked every month before your phone even rings'. These are strong figures, so it shows people are now safe."
+      "text": "I am not surprised by Source E. Source E says 'Millions of fake calls are blocked every month before your phone even rings'. If the calls never reach people, the callers cannot trick them. So it makes sense for Source E to say the measures have worked."
      },
      {
       "level": 3,
-      "text": "Source E is not fully reliable. It says 'Scam calls have fallen by more than half', and Source D agrees that reports of scam phone calls 'fell by 55%'. But E also says 'Our people are now safe from overseas scam callers'. Source D shows the total sum lost 'fell only slightly', and the speaker in Source B lost '$38,000' to a caller even though 'I saw the plus sign'. The check shows that E is right about the number of calls but wrong to say that people are safe. So it cannot be fully trusted."
+      "text": "I am surprised by Source E. Both sources are about whether people are now safe from scammers overseas. Source E says 'Our people are now safe from overseas scam callers' and 'Today that door is shut'. But the bank officer in Source F says the gangs 'moved to chat apps, video calls and fake websites', and 'Last month one customer lost the savings of thirty years to a caller on a chat app'. So Source F shows people still losing their savings to scammers overseas, while Source E says they are safe. The two do not match on this point, so Source E is surprising."
      },
      {
       "level": 4,
-      "text": "Source E is not fully reliable. It says 'Scam calls have fallen by more than half', and Source D agrees that reports of scam phone calls 'fell by 55%'. But E also says 'Our people are now safe from overseas scam callers'. Source D shows the total sum lost 'fell only slightly', and the speaker in Source B lost '$38,000' to a caller even though 'I saw the plus sign'. The check shows that E is right about the number of calls but wrong to say that people are safe. E is also the ministry speaking about its own measures at a community event, one year on. It wants the public to believe the measures 'have worked' and that the ministry has done its job, so it picks the one figure that fell and says nothing about chat apps. That purpose makes it weak evidence that people are safe. Only its claim about calls can be trusted, because Source C also says 'Since the blocking started I get maybe one a month'."
+      "text": "At first I am surprised by Source E. Both sources are about whether people are now safe from scammers overseas. Source E says 'Our people are now safe from overseas scam callers' and 'Today that door is shut'. But the bank officer in Source F says the gangs 'moved to chat apps, video calls and fake websites', and 'Last month one customer lost the savings of thirty years to a caller on a chat app'. So Source F shows people still losing their savings to scammers overseas, while Source E says they are safe. The two do not match on this point. But Source E is 'A ministry spokesperson, speaking at a community event one year after the blocking began'. The spokesperson is there to show the public that the measures were worth it, and to make people feel safe. So Source E speaks only of 'overseas scam callers' on the phone, where Source F agrees that blocking helps, and says nothing about chat apps. A spokesperson marking one year of the measures would say this. So I am not surprised after all by Source E."
      }
     ]
    },

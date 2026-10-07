@@ -13,9 +13,9 @@ import structuredJson from '../../data/humanities/social-studies/structured.json
 import caseStudiesJson from '../../data/humanities/social-studies/case-studies.json';
 import historyJson from '../../data/humanities/history/sets.json';
 
-export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'how_far' | 'sr_explain' | 'sr_weigh';
-/** The six source skills — Social Studies and History share them. */
-export const SOURCE_SKILLS: readonly HumanitiesSkill[] = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose', 'how_far'];
+export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh';
+/** The source skills — Social Studies and History share them. 'surprise' joined on 7 Oct 2026 (Adrian: "do it"). */
+export const SOURCE_SKILLS: readonly HumanitiesSkill[] = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose', 'surprise', 'how_far'];
 /** The two structured-response parts (Social Studies): answered from own knowledge. */
 export const STRUCTURED_SKILLS: readonly HumanitiesSkill[] = ['sr_explain', 'sr_weigh'];
 export const HUMANITIES_SKILLS: readonly HumanitiesSkill[] = [...SOURCE_SKILLS, ...STRUCTURED_SKILLS];

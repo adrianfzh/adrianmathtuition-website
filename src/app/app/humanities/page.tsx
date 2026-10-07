@@ -141,6 +141,14 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Case studies</h2>
           <p className="text-[12px] text-gray-500">Five questions on one set of sources, as in the exam. Do one, or all five.</p>
+          <p className="text-[12px] text-gray-500">These sources are written for practice. They are not real documents.</p>
+          <Link href="/app/humanities/paper" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-bold text-navy">Timed paper</span>
+              <span className="block text-[12px] text-gray-500">1 h 45 min · one case study and one structured-response set</span>
+            </span>
+            <span className="shrink-0 text-gray-400">›</span>
+          </Link>
           {SS_THEMES.map(theme => {
             const list = caseStudies.filter(s => s.theme === theme);
             return list.length > 0 && (
@@ -167,6 +175,13 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Structured response</h2>
           <p className="text-[12px] text-gray-500">No sources to read. Answer from what you have learnt.</p>
+          <Link href="/app/humanities/examples" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-bold text-navy">Examples to use</span>
+              <span className="block text-[12px] text-gray-500">Real examples for each issue, and what each one shows</span>
+            </span>
+            <span className="shrink-0 text-gray-400">›</span>
+          </Link>
           {structuredSets.map(setCard)}
         </div>
       )}

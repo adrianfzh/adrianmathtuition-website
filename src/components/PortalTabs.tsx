@@ -28,8 +28,10 @@ function isActive(pathname: string, href: string): boolean {
   if (href === '/app/science') return pathname === '/app/science';
   if (href === '/app/languages') return pathname === '/app/languages';
   // Humanities Home also owns its question pages; Answers owns a report (/app/humanities/<id>).
-  if (href === '/app/humanities') return pathname === '/app/humanities' || pathname.startsWith('/app/humanities/q/');
-  if (href === '/app/humanities/answers') return pathname.startsWith('/app/humanities/') && !pathname.startsWith('/app/humanities/q/');
+  // Examples and the timed paper being sat are Home's too; a handed-in paper (/paper/<id>) is an answer.
+  const humHome = /^\/app\/humanities(\/(q\/.*|examples|paper|paper\/sit))?$/.test(pathname);
+  if (href === '/app/humanities') return humHome;
+  if (href === '/app/humanities/answers') return pathname.startsWith('/app/humanities/') && !humHome;
   // A science paper's page (/app/science/marking/<id>) belongs to the Science Papers tab.
   if (href === '/app/science/papers') return pathname === href || pathname.startsWith(href + '/') || pathname.startsWith('/app/science/marking/');
   return pathname === href || pathname.startsWith(href + '/');

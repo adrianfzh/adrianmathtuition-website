@@ -16,7 +16,7 @@ export function quotedPieces(answer: string): string[] {
 }
 
 const Q14_MARKS = [5, 6, 7];
-const Q14_SKILLS = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose'];
+const Q14_SKILLS = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose', 'surprise'];
 // Never on a student page (CLAUDE.md): the tutor's name, a model's name.
 const BANNED = /\b(adrian|claude|opus|sonnet|haiku|gemini|chatgpt|ai model)\b/i;
 
@@ -53,10 +53,10 @@ export function caseStudyProblems(set: HumanitiesSet): string[] {
   for (const q of first4) {
     if (!Q14_SKILLS.includes(q.skill)) bad(`${q.id}: skill ${q.skill} is not a question 1–4 skill`);
     if (!Q14_MARKS.includes(q.marks ?? 0)) bad(`${q.id}: ${q.marks} marks (5, 6 or 7)`);
-    if (q.skill === 'comparison' && q.sources.length !== 2) bad(`${q.id}: a comparison names two sources`);
+    if ((q.skill === 'comparison' || q.skill === 'surprise') && q.sources.length !== 2) bad(`${q.id}: a ${q.skill} question names two sources`);
     // "Does Source D prove Source C wrong?" is a reliability question that names two.
     if (q.skill === 'reliability' && q.sources.length > 2) bad(`${q.id}: names ${q.sources.length} sources (1 or 2)`);
-    if (q.skill !== 'comparison' && q.skill !== 'reliability' && q.sources.length !== 1) bad(`${q.id}: names ${q.sources.length} sources (1)`);
+    if (q.skill !== 'comparison' && q.skill !== 'surprise' && q.skill !== 'reliability' && q.sources.length !== 1) bad(`${q.id}: names ${q.sources.length} sources (1)`);
   }
   if (new Set(first4.map(q => q.skill)).size < 3) bad('questions 1–4 test fewer than three skills');
   const named = new Set(first4.flatMap(q => q.sources));

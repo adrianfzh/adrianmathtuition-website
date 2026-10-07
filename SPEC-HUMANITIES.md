@@ -114,6 +114,24 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   We have no scheme named for "surprised"; our case studies use the six schemes we have (a "prove
 >   wrong" question sits under reliability). A seventh scheme is his call.
 
+> **7 Oct 2026, later — the "surprised" scheme, A3 and A4 (preview only, switch closed).**
+> - **"Are you surprised?" (`surprise`)** — Adrian: "do it". Four levels in `schemes.json`: L1 a stand from the
+>   type of source or no reason · L2 one source only · L3 the two sources compared on the same point, with a
+>   stand · L4 that, plus WHY the source says it (maker, audience, aim) or a third-source check. Written from
+>   the pattern common to the banked school schemes, in our own words. Nine case studies had their
+>   reliability question replaced by a "surprised" one (s15 s16 s18 s22 s27 s28 s31 s34 s36); the 36 seeded
+>   answers were placed blind on the plan (36/36). Not through the live reader yet.
+> - **A3 — Examples to use** (`/app/humanities/examples`): 24 real Singapore examples, eight per issue, each
+>   with its facts one per line and "what it shows". Fact-checked against public sources on 7 Oct 2026
+>   (five lines corrected). `data/humanities/social-studies/examples.json`.
+> - **A4 — Timed paper** (`/app/humanities/paper`): 1 h 45 min, one case study [35] + one structured set
+>   [15]; the paper offered is the one the student has done least of. A clock, the sources one tap away,
+>   drafts kept on the device; time up does not lock the paper. Hand-in = one `humanities_runs` row per
+>   answered part, sharing `paper_id`. The result page gives a level per part — **no mark out of 50**
+>   (§5); Adrian is asked once whether that stays.
+> - Case-study pages now carry the line History already had: "These sources are written for practice.
+>   They are not real documents."
+
 ## 4. The bench — built like the science bench
 
 No marked scripts are needed.

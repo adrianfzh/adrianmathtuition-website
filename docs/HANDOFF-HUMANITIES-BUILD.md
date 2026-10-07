@@ -27,6 +27,10 @@ Talk to Adrian in plain, short words. No jargon.
   for Adrian). Plan-only checks done (Adrian's word); the real bench on s12–s40 is still owed before the
   switch opens — SPEC-HUMANITIES.md, the A1 note. Next: A3 (example bank), then A4 (timed paper).
 
+- **7 Oct 2026, later — the "surprised" scheme, A3 (examples) and A4 (timed paper) built**, preview only.
+  Next: A5 waits on the handwriting reader; then B Geography, C History essays, D practice by skill.
+  Owed before the switch opens: the live-reader bench on s12–s40 and the "surprised" questions.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

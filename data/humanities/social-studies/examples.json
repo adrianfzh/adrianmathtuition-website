@@ -1,0 +1,358 @@
+{
+ "checked": "2026-10-07",
+ "examples": [
+  {
+   "id": "cpf",
+   "theme": "citizenship",
+   "name": "Central Provident Fund (CPF)",
+   "what": [
+    "Workers and their employers put part of each month's pay into the worker's CPF account.",
+    "The savings pay for retirement, a home and medical bills."
+   ],
+   "shows": "The government makes people save for their own needs, so the cost is shared between the person, the employer and the state.",
+   "use": [
+    "how a government meets needs",
+    "individual responsibility",
+    "trade-offs"
+   ]
+  },
+  {
+   "id": "medishield",
+   "theme": "citizenship",
+   "name": "MediShield Life",
+   "what": [
+    "A national health insurance scheme that began in 2015.",
+    "It covers every citizen and permanent resident for life, including those who are already ill.",
+    "It helps to pay large hospital bills."
+   ],
+   "shows": "The government spreads the cost of serious illness across everyone, so no one is left without cover.",
+   "use": [
+    "healthcare",
+    "how a government meets needs",
+    "sharing costs"
+   ]
+  },
+  {
+   "id": "erp",
+   "theme": "citizenship",
+   "name": "Electronic Road Pricing (ERP)",
+   "what": [
+    "Since 1998, drivers pay a charge when they use busy roads at peak hours.",
+    "The charge is higher when the road is more crowded."
+   ],
+   "shows": "A policy can serve most people and still cost some people more: smoother roads for all, a higher cost for drivers.",
+   "use": [
+    "trade-offs",
+    "deciding what is good for society"
+   ]
+  },
+  {
+   "id": "newater",
+   "theme": "citizenship",
+   "name": "NEWater",
+   "what": [
+    "Used water is cleaned to a very high standard and used again.",
+    "The first NEWater plants opened in 2003.",
+    "It makes Singapore less dependent on rain and on water bought from abroad."
+   ],
+   "shows": "A government has to plan many years ahead for needs that are not urgent yet.",
+   "use": [
+    "planning for the future",
+    "good governance",
+    "managing resources"
+   ]
+  },
+  {
+   "id": "reach",
+   "theme": "citizenship",
+   "name": "REACH",
+   "what": [
+    "The government's feedback unit. It started in 1985 and was renamed REACH in 2006.",
+    "It gathers views on policies through dialogues, surveys and online channels."
+   ],
+   "shows": "Citizens can shape policies by giving feedback, and the government has set up a channel to hear them.",
+   "use": [
+    "citizens taking part",
+    "how citizens contribute",
+    "government listening"
+   ]
+  },
+  {
+   "id": "osc",
+   "theme": "citizenship",
+   "name": "Our Singapore Conversation",
+   "what": [
+    "A national series of dialogues held in 2012 and 2013.",
+    "More than 47,000 people took part and spoke about the future they wanted for the country."
+   ],
+   "shows": "Ordinary citizens were asked for their views before plans were made, so they had a part in setting priorities.",
+   "use": [
+    "citizens taking part",
+    "how citizens contribute"
+   ]
+  },
+  {
+   "id": "ffth",
+   "theme": "citizenship",
+   "name": "Food from the Heart",
+   "what": [
+    "A charity started in 2003.",
+    "Its volunteers collect unsold bread from bakeries and hotels and bring it to welfare homes and needy families.",
+    "It also gives out monthly food packs."
+   ],
+   "shows": "An organised group can meet a need that the government does not cover directly, by bringing many volunteers and donors together.",
+   "use": [
+    "organised groups",
+    "how citizens contribute",
+    "individuals and groups"
+   ]
+  },
+  {
+   "id": "workfare",
+   "theme": "citizenship",
+   "name": "Workfare Income Supplement",
+   "what": [
+    "Since 2007, lower-wage Singaporean workers get a top-up from the government in cash and in CPF savings.",
+    "Older workers get more.",
+    "They get it only if they are working."
+   ],
+   "shows": "Help can be designed to reward work, so that people are supported without becoming dependent on aid.",
+   "use": [
+    "helping the needy",
+    "trade-offs",
+    "how a government meets needs"
+   ]
+  },
+  {
+   "id": "eip",
+   "theme": "diversity",
+   "name": "Ethnic Integration Policy",
+   "what": [
+    "Since 1989, each public housing block and neighbourhood has a limit on the share of flats that each ethnic group can own."
+   ],
+   "shows": "The policy keeps people of different races living side by side, so that daily contact can build understanding.",
+   "use": [
+    "government policies for harmony",
+    "common spaces",
+    "managing diversity"
+   ]
+  },
+  {
+   "id": "rhd",
+   "theme": "diversity",
+   "name": "Racial Harmony Day",
+   "what": [
+    "Schools mark it on 21 July each year, the date of the 1964 racial riots.",
+    "Students learn about one another's food, dress and customs."
+   ],
+   "shows": "Shared experiences from a young age help people to see other cultures as familiar and not strange.",
+   "use": [
+    "shared experiences",
+    "building understanding",
+    "role of schools"
+   ]
+  },
+  {
+   "id": "ircc",
+   "theme": "diversity",
+   "name": "Harmony Circles (formerly IRCCs)",
+   "what": [
+    "Inter-Racial Confidence Circles were set up in 2002 in every constituency.",
+    "Leaders of different races and religions meet, visit one another's places of worship and stand together in a crisis.",
+    "Since 2022 they are called Racial and Religious Harmony Circles."
+   ],
+   "shows": "Trust built in calm times lets community leaders calm tensions quickly when something goes wrong.",
+   "use": [
+    "government policies for harmony",
+    "community leaders",
+    "responding to tension"
+   ]
+  },
+  {
+   "id": "pcmr",
+   "theme": "diversity",
+   "name": "Presidential Council for Minority Rights",
+   "what": [
+    "Set up in 1970.",
+    "It checks new laws and reports to Parliament if a law would disadvantage a racial or religious community."
+   ],
+   "shows": "Minorities are protected by a safeguard in the law-making process itself.",
+   "use": [
+    "protecting minorities",
+    "government policies for harmony"
+   ]
+  },
+  {
+   "id": "grc",
+   "theme": "diversity",
+   "name": "Group Representation Constituency (GRC)",
+   "what": [
+    "Since 1988, candidates in a GRC stand for election as a team.",
+    "Each team must have at least one member from a minority community."
+   ],
+   "shows": "The system makes sure minority communities always have a voice in Parliament.",
+   "use": [
+    "protecting minorities",
+    "political representation"
+   ]
+  },
+  {
+   "id": "shg",
+   "theme": "diversity",
+   "name": "Self-help groups",
+   "what": [
+    "CDAC, Yayasan MENDAKI, SINDA and the Eurasian Association each serve one community.",
+    "They run low-cost tuition and give bursaries and help to families in need."
+   ],
+   "shows": "A group that shares a family's language and customs can reach it more easily. Some ask whether help by community keeps people apart.",
+   "use": [
+    "helping the needy",
+    "managing diversity",
+    "both sides of an argument"
+   ]
+  },
+  {
+   "id": "mrha",
+   "theme": "diversity",
+   "name": "Maintenance of Religious Harmony Act",
+   "what": [
+    "Passed in 1990.",
+    "It lets the Minister for Home Affairs issue a restraining order against a religious leader or member who stirs up ill-will between religious groups."
+   ],
+   "shows": "The law sets a firm limit, so that words that could divide people of different faiths can be stopped early.",
+   "use": [
+    "government policies for harmony",
+    "limits on speech",
+    "responding to tension"
+   ]
+  },
+  {
+   "id": "nic",
+   "theme": "diversity",
+   "name": "National Integration Council",
+   "what": [
+    "Set up in 2009 to help newcomers and locals mix.",
+    "New citizens go through the Singapore Citizenship Journey, where they learn about the country's history and meet people in their community."
+   ],
+   "shows": "Integration is helped along by programmes that bring newcomers and locals together, and both sides have a part to play.",
+   "use": [
+    "immigrants fitting in",
+    "newcomers and locals",
+    "government policies for harmony"
+   ]
+  },
+  {
+   "id": "fta",
+   "theme": "globalised",
+   "name": "Free trade agreements",
+   "what": [
+    "Singapore has signed more than 20 free trade agreements with other countries and regions.",
+    "They lower taxes on goods traded between the partners."
+   ],
+   "shows": "Open trade gives firms here more customers abroad and gives people here more goods at lower prices.",
+   "use": [
+    "economic effects of globalisation",
+    "benefits for a country"
+   ]
+  },
+  {
+   "id": "skillsfuture",
+   "theme": "globalised",
+   "name": "SkillsFuture",
+   "what": [
+    "A national movement to help people keep learning through life.",
+    "From January 2016, Singaporeans aged 25 and above received $500 in credit to pay for approved courses."
+   ],
+   "shows": "Workers must keep learning to stay employable when jobs change or move abroad, and the government helps them to do so.",
+   "use": [
+    "workers and globalisation",
+    "responding to competition",
+    "government support"
+   ]
+  },
+  {
+   "id": "fcf",
+   "theme": "globalised",
+   "name": "Fair Consideration Framework",
+   "what": [
+    "Since 2014, employers must consider Singaporeans fairly for jobs.",
+    "They must advertise a job opening on the national jobs portal before they apply to hire a foreign professional."
+   ],
+   "shows": "A country can stay open to foreign talent and still protect a fair chance for its own workers.",
+   "use": [
+    "workers and globalisation",
+    "foreign talent",
+    "trade-offs"
+   ]
+  },
+  {
+   "id": "hawker",
+   "theme": "globalised",
+   "name": "Hawker culture on the UNESCO list",
+   "what": [
+    "In December 2020, Singapore's hawker culture was added to UNESCO's list of intangible cultural heritage."
+   ],
+   "shows": "A country can take steps to protect its own culture even as global brands and foreign food become common.",
+   "use": [
+    "cultural effects of globalisation",
+    "keeping local culture"
+   ]
+  },
+  {
+   "id": "nasilemak",
+   "theme": "globalised",
+   "name": "A global chain with a local menu",
+   "what": [
+    "In 2017, McDonald's in Singapore sold a nasi lemak burger.",
+    "Global chains often change their menus to suit local tastes."
+   ],
+   "shows": "Globalisation does not only replace local culture. Foreign and local ideas can mix into something new.",
+   "use": [
+    "cultural effects of globalisation",
+    "both sides of an argument"
+   ]
+  },
+  {
+   "id": "ji",
+   "theme": "globalised",
+   "name": "The Jemaah Islamiyah plot",
+   "what": [
+    "In December 2001, Singapore arrested members of a regional terror network, Jemaah Islamiyah.",
+    "They had planned to bomb embassies and other targets here."
+   ],
+   "shows": "Terror groups work across borders, so a small open country faces threats that begin outside it.",
+   "use": [
+    "security in a globalised world",
+    "terrorism"
+   ]
+  },
+  {
+   "id": "sgsecure",
+   "theme": "globalised",
+   "name": "SGSecure",
+   "what": [
+    "A national movement launched in 2016.",
+    "It trains the public to stay alert, stay united and stay strong if a terror attack happens."
+   ],
+   "shows": "Security is not left to the government alone. Every person is asked to play a part.",
+   "use": [
+    "security in a globalised world",
+    "role of citizens",
+    "terrorism"
+   ]
+  },
+  {
+   "id": "singhealth",
+   "theme": "globalised",
+   "name": "The SingHealth data breach",
+   "what": [
+    "In 2018, hackers stole the personal data of about 1.5 million patients from SingHealth, a public healthcare group."
+   ],
+   "shows": "Being connected to the world through the internet brings new dangers, and attackers can strike from anywhere.",
+   "use": [
+    "security in a globalised world",
+    "cyber threats"
+   ]
+  }
+ ]
+}
