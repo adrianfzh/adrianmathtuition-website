@@ -129,6 +129,7 @@ levels off; consistency passes; the truth-free checks pass.
 | `h1-hard-2026-10-02` — 90 student-like answers for sets 5–10 (`--hard`) | 89/90, the miss one level off | 23/23 | 31/31 | US$6.56 |
 | `h2-history-2026-10-03` — History source questions (`--subject history`) | 35/35 | 9/9 | 22/22 | US$3.06 |
 | `h2-structured-2026-10-03` — structured response (`--kind structured`) | 21/21 | 6/6 | 10/10 | US$1.47 |
+| `a1-pilot-2026-10-07` — the first case study, s11 (`--sets s11`, every source in view) | 19/19 | 5/5 | 16/16 | US$2.14 |
 
 - The one miss: a reliability answer that trusts the source from its content alone,
   written as Level 2, read as 1–2.
