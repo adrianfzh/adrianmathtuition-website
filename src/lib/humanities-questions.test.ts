@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { stripEvidence } from './humanities-bench';
 import { caseStudyProblems, quotedPieces } from './humanities-case-study';
-import { caseStudies, isCaseStudy, SS_THEMES, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
+import { geographyProblems } from './humanities-geography';
+import { caseStudies, isCaseStudy, SS_THEMES, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
 
 describe('the humanities bank', () => {
   it('Social Studies single questions: 30, five per source skill', () => {
@@ -31,7 +32,7 @@ describe('the humanities bank', () => {
 
   it('every question id is unique across the three files', () => {
     const all = allSets().flatMap(s => s.questions);
-    expect(all.length).toBe(55 + caseStudies().length * 5);
+    expect(all.length).toBe(55 + caseStudies().length * 5 + setsFor('geography').flatMap(s => s.questions).length);
     expect(new Set(all.map(q => q.id)).size).toBe(all.length);
     expect(new Set(allSets().map(s => s.id)).size).toBe(allSets().length);
   });
@@ -62,7 +63,7 @@ describe('the humanities bank', () => {
       const ctx = questionById(q.id);
       expect(ctx, q.id).not.toBeNull();
       expect(ctx!.sources.length, q.id).toBe(q.sources.length);
-      expect(schemeFor(q.skill), q.id).not.toBeNull();
+      if (!isPointsQuestion(q)) expect(schemeFor(q.skill), q.id).not.toBeNull();
     }
   });
 
@@ -74,11 +75,11 @@ describe('the humanities bank', () => {
 
   it('a seeded question has one answer at every level of its scheme', () => {
     for (const set of allSets()) for (const q of set.questions) {
-      if (!q.seeded) continue;
+      if (!q.seeded || isPointsQuestion(q)) continue;
       const max = levelsMax(q.skill);
       expect(q.seeded.map(s => s.level).sort(), q.id).toEqual(Array.from({ length: max }, (_, i) => i + 1));
     }
-    expect(seededAnswers().filter(a => !questionById(a.questionId)!.set.background).length).toBe(102);
+    expect(seededAnswers().filter(a => a.subject !== 'geography' && !questionById(a.questionId)!.set.background).length).toBe(102);
   });
 
   it('the model answer of a seeded question is its top answer', () => {
@@ -128,5 +129,35 @@ describe('the Social Studies case studies (A1)', () => {
 
   it('an apostrophe inside a word is not a quotation mark', () => {
     expect(quotedPieces("The resident's bill changed: 'Only my bill has changed'. It doesn't help.")).toEqual(['Only my bill has changed']);
+  });
+});
+
+describe('Geography, point-marked (B)', () => {
+  it('every Geography set is fit to list', () => {
+    expect(setsFor('geography').length).toBeGreaterThan(0);
+    expect(setsFor('geography').flatMap(geographyProblems)).toEqual([]);
+  });
+
+  it('a point-marked question tops out at its marks, and its seeded answers run from 0', () => {
+    const ctx = questionById('g01-q1')!;
+    expect(ctx.set.kind).toBe('points');
+    expect(maxOf(ctx.question)).toBe(4);
+    expect(ctx.scheme.levels).toEqual([]);
+    expect(ctx.question.seeded!.map(s => s.level)).toEqual([0, 1, 2, 3, 4]);
+    expect(maxOf(questionById('s01-q1')!.question)).toBe(4);
+    expect(maxOf(questionById('s11-q1')!.question)).toBe(3);
+    expect(seededAnswers({ subject: 'geography' }).length).toBeGreaterThan(30);
+  });
+
+  it('a data table reaches the reader as plain lines', () => {
+    const t = questionById('g01-q2')!.question.table!;
+    expect(tableText(t).split('\n')[0]).toBe('Year | Arrivals (millions)');
+    expect(tableText(t)).toMatch(/2019 \| 8\.1/);
+  });
+
+  it('the checker catches points that cannot reach full marks', () => {
+    const set = structuredClone(setsFor('geography')[0]);
+    set.questions[0].marks = 6; set.questions[0].points = set.questions[0].points!.slice(0, 2);
+    expect(geographyProblems(set).join(' | ')).toMatch(/reach only 4 of 6 marks/);
   });
 });

@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import { questionById, isCaseStudy } from '@/lib/humanities-questions';
 import { MAX_WORDS } from '@/lib/humanities-submit';
-import { SourceCards, BackgroundCard } from '../../sources';
+import { SourceCards, BackgroundCard, DataTableCard } from '../../sources';
 import { skillLabel } from '../../skills';
 import AnswerForm from './answer-form';
 
@@ -21,7 +21,7 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <Link href={ctx.set.subject === 'history' ? '/app/humanities?s=history' : '/app/humanities'} className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>
+      <Link href={ctx.set.subject === 'social-studies' ? '/app/humanities' : `/app/humanities?s=${ctx.set.subject}`} className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>
       <div>
         <p className="text-[12px] font-semibold text-amber-800">
           {caseStudy && `Question ${nth} of ${ctx.set.questions.length} · `}{skillLabel(ctx.question.skill)}
@@ -30,7 +30,8 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
         <p className="text-sm text-gray-600 mt-1">{ctx.set.issue}</p>
       </div>
       {ctx.set.background && <BackgroundCard text={ctx.set.background} open={nth === 1} />}
-      <SourceCards sources={ctx.sources} />
+      {ctx.sources.length > 0 && <SourceCards sources={ctx.sources} />}
+      {ctx.question.table && <DataTableCard table={ctx.question.table} />}
       {others.length > 0 && (
         <details className="group bg-white/60 rounded-3xl p-4 border border-black/5">
           <summary className="flex items-center cursor-pointer list-none [&::-webkit-details-marker]:hidden">

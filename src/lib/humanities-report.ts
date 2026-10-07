@@ -13,7 +13,22 @@ export interface HumanitiesClaim {
   note?: string | null;
 }
 
+/** One creditable point as the reader judged it (a point-marked answer). */
+export interface PointCredit {
+  /** The point's id in the question's list, or 'other' for a valid point not on it. */
+  id: string;
+  credit: number;
+  /** The student's own words that make the point. */
+  quote: string | null;
+  note?: string | null;
+  /** 'other' only: the point, in a few words. */
+  text?: string | null;
+}
+
 export interface HumanitiesReport {
+  /** 'points' on a point-marked answer: `level` and its range then hold MARKS (0 … levels_max). */
+  marking?: 'points';
+  points?: PointCredit[];
   /** The level the reads settled on. */
   level: number;
   level_lo: number;
@@ -26,6 +41,17 @@ export interface HumanitiesReport {
   gap: string[];
   /** One line for Adrian. */
   summary?: string | null;
+}
+
+/** "3 of 4 marks", or "2–3 of 4 marks" when the reads differed. */
+export function marksLabel(lo: number, hi: number, max: number): string {
+  const a = Math.min(lo, hi), b = Math.max(lo, hi);
+  return `${a === b ? a : `${a}–${b}`} of ${max} ${max === 1 ? 'mark' : 'marks'}`;
+}
+
+/** The credited points as claims, so the answer can be shown with them marked. */
+export function pointClaims(points: PointCredit[] | undefined): HumanitiesClaim[] {
+  return (points ?? []).filter(p => p.credit > 0 && p.quote).map(p => ({ quote: p.quote as string, tag: p.credit >= 2 ? 'developed' : 'point', note: p.note ?? null }));
 }
 
 /** "Level 2–3 of 4", or "Level 3 of 4" when the reads agreed. */

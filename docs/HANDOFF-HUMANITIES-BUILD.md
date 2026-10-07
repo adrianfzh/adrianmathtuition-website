@@ -31,6 +31,10 @@ Talk to Adrian in plain, short words. No jargon.
   Next: A5 waits on the handwriting reader; then B Geography, C History essays, D practice by skill.
   Owed before the switch opens: the live-reader bench on s12–s40 and the "surprised" questions.
 
+- **7 Oct 2026, night — B Geography started:** s23 rewritten and listed (30 case studies). The bot reads
+  point-marked answers; the website has a Geography tab with 8 pilot questions and a points feedback page.
+  Next for B: Adrian's word on showing marks; then the question batch, figures and the 9-mark question.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

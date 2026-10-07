@@ -5,12 +5,12 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { humanitiesOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun } from '@/lib/humanities-runs';
-import { questionById, modelAnswer, ALL_TAGS, tagsFor } from '@/lib/humanities-questions';
-import { levelLabel, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
-import { SourceCards } from '../sources';
+import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion } from '@/lib/humanities-questions';
+import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
+import { SourceCards, DataTableCard } from '../sources';
 import { skillLabel } from '../skills';
 import RunPoll from './run-poll';
 
@@ -28,8 +28,11 @@ const TAG_STYLE: Record<string, { mark: string; chip: string }> = {
   link: { mark: 'bg-emerald-100 decoration-emerald-500', chip: 'bg-emerald-100 text-emerald-800' },
   not_explained: { mark: 'bg-rose-100 decoration-rose-500', chip: 'bg-rose-100 text-rose-800' },
   weighs: { mark: 'bg-violet-100 decoration-violet-500', chip: 'bg-violet-100 text-violet-800' },
+  // Point-marked (Geography): a point made, and a point made and developed.
+  developed: { mark: 'bg-emerald-100 decoration-emerald-500', chip: 'bg-emerald-100 text-emerald-800' },
 };
-const tagLabel = (k: string) => ALL_TAGS.find(t => t.key === k)?.label ?? k;
+const POINT_TAGS = [{ key: 'point', label: 'A point' }, { key: 'developed', label: 'A developed point' }];
+const tagLabel = (k: string, points = false) => (points ? POINT_TAGS.find(t => t.key === k)?.label : undefined) ?? ALL_TAGS.find(t => t.key === k)?.label ?? k;
 
 export default async function HumanitiesRunPage({ params }: { params: Promise<{ id: string }> }) {
   if (!(await humanitiesOpen())) redirect('/app');
@@ -46,8 +49,16 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const inFlight = run.status === 'queued' || run.status === 'marking';
   const report = run.report;
   const max = run.levels_max ?? ctx.scheme.levels.length;
-  const segs = report ? segmentAnswer(run.answer_text, report.claims ?? []) : [{ text: run.answer_text, claim: null }];
-  const usedTags = tagsFor(run.skill).filter(t => report?.claims?.some(c => c.tag === t.key));
+  // A point-marked answer (Geography): credits per point; the level fields hold marks.
+  const points = isPointsQuestion(ctx.question);
+  const claims = points ? pointClaims(report?.points) : report?.claims ?? [];
+  const showMark = admin || GEOGRAPHY_MARKS_OPEN_TO_STUDENTS;
+  const credited = new Map((report?.points ?? []).filter(p => p.id !== 'other').map(p => [p.id, p]));
+  const made = (ctx.question.points ?? []).filter(p => (credited.get(p.id)?.credit ?? 0) > 0);
+  const extra = (report?.points ?? []).filter(p => p.id === 'other' && p.credit > 0);
+  const toAdd = (ctx.question.points ?? []).filter(p => (credited.get(p.id)?.credit ?? 0) === 0).slice(0, 3);
+  const segs = report ? segmentAnswer(run.answer_text, claims) : [{ text: run.answer_text, claim: null }];
+  const usedTags = (points ? POINT_TAGS : tagsFor(run.skill)).filter(t => claims.some(c => c.tag === t.key));
   const model = modelAnswer(ctx.question);
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
@@ -75,9 +86,11 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
       {report && (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm space-y-3">
           <div>
-            <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Where this answer sits</p>
-            <p className="text-2xl font-bold text-navy">{levelLabel(report.level_lo, report.level_hi, max)}</p>
-            {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{humanitiesStatusLine('held')}</p>}
+            <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">{points && !showMark ? 'Your feedback' : 'Where this answer sits'}</p>
+            {points
+              ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(report.level_lo, report.level_hi, max)}</p>
+              : <p className="text-2xl font-bold text-navy">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
+            {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{points ? 'The reads did not fully agree on this one. Use the points below.' : humanitiesStatusLine('held')}</p>}
           </div>
           {report.lift && (
             <div className="bg-amber-50 border border-amber-100 rounded-2xl px-3 py-2.5">
@@ -102,11 +115,11 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
             ? <mark key={i} className={`rounded px-0.5 text-inherit underline decoration-2 underline-offset-4 ${TAG_STYLE[s.claim.tag]?.mark ?? 'bg-gray-100'}`}>{s.text}</mark>
             : <span key={i}>{s.text}</span>)}
         </p>
-        {report && report.claims?.length > 0 && (
+        {report && claims.length > 0 && (
           <ul className="mt-4 space-y-2 border-t border-black/5 pt-3">
             {segs.filter(s => s.claim).map((s, i) => (
               <li key={i} className="text-[13px] leading-snug">
-                <span className={`inline-block text-[11px] font-semibold rounded-full px-2 py-0.5 mr-1.5 ${TAG_STYLE[s.claim!.tag]?.chip ?? 'bg-gray-100 text-gray-700'}`}>{tagLabel(s.claim!.tag)}</span>
+                <span className={`inline-block text-[11px] font-semibold rounded-full px-2 py-0.5 mr-1.5 ${TAG_STYLE[s.claim!.tag]?.chip ?? 'bg-gray-100 text-gray-700'}`}>{tagLabel(s.claim!.tag, points)}</span>
                 <span className="text-gray-500">“{s.text.length > 70 ? s.text.slice(0, 67) + '…' : s.text}”</span>
                 {s.claim!.note && <span className="block text-gray-800 mt-0.5">{s.claim!.note}</span>}
               </li>
@@ -114,6 +127,41 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           </ul>
         )}
       </div>
+
+      {report && points && (
+        <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm space-y-3">
+          {(made.length > 0 || extra.length > 0) && (
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Points you made</p>
+              <ul className="space-y-2">
+                {made.map(p => {
+                  const c = credited.get(p.id)!;
+                  return (
+                    <li key={p.id} className="text-[15px] leading-snug">
+                      <span className="text-emerald-700 font-bold">✓ </span><span className="text-gray-800">{p.text}</span>
+                      {c.credit >= 2 && <span className="ml-1.5 text-[11px] font-semibold rounded-full px-2 py-0.5 bg-emerald-100 text-emerald-800">developed</span>}
+                      {c.credit === 1 && ctx.question.develop && p.develop && <span className="block text-[13px] text-amber-800 mt-0.5">Develop it: {p.develop}.</span>}
+                    </li>
+                  );
+                })}
+                {extra.map((p, i) => (
+                  <li key={`o${i}`} className="text-[15px] leading-snug">
+                    <span className="text-emerald-700 font-bold">✓ </span><span className="text-gray-800">{p.text || 'Another valid point'}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {toAdd.length > 0 && (
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400 mb-1.5">Points you could add</p>
+              <ul className="space-y-1.5">
+                {toAdd.map(p => <li key={p.id} className="text-[15px] text-gray-800 leading-snug"><span className="text-gray-400">○ </span>{p.text}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
 
       {report && report.gap?.length > 0 && (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
@@ -124,7 +172,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      {report && (
+      {report && !points && (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
           <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400 mb-2">The levels for {ctx.scheme.label.toLowerCase()}</p>
           <ol className="space-y-1.5">
@@ -141,14 +189,16 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         </div>
       )}
 
-      <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-        <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
-        <div className="mt-3"><SourceCards sources={ctx.inView} /></div>
-      </details>
+      {points ? ctx.question.table && <DataTableCard table={ctx.question.table} /> : (
+        <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+          <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
+          <div className="mt-3"><SourceCards sources={ctx.inView} /></div>
+        </details>
+      )}
 
       {report && model && (
         <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
-          <summary className="text-sm font-semibold text-navy cursor-pointer">See a top-level answer</summary>
+          <summary className="text-sm font-semibold text-navy cursor-pointer">{points ? 'See a full answer' : 'See a top-level answer'}</summary>
           <p className="text-[15px] text-gray-800 leading-relaxed mt-3 whitespace-pre-line">{model}</p>
         </details>
       )}

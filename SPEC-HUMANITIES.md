@@ -132,6 +132,23 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - Case-study pages now carry the line History already had: "These sources are written for practice.
 >   They are not real documents."
 
+> **B — GEOGRAPHY STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "let's go do geography".
+> - **Point-marked.** A Geography question carries its own creditable points (`points[]`), its marks, a
+>   command word, and whether developing a point earns a second mark (`develop`) — the convention in the
+>   banked school schemes ("1 mark for each …, a maximum of 1 additional mark for further development").
+>   No level scheme. A data table rides on the question (`table`) and reaches the reader as text.
+> - **The reader** (bot `ai/humanities-marker.js`, `kind: 'points'`, deployed 7 Oct 2026): a credit per point
+>   (0 · 1 · 2), each credited point shown in the student's own words; a valid point not on the list may be
+>   credited as "other" (two at most); the total is counted in code and capped. Two blind reads, a third
+>   when they differ. The row's level fields hold MARKS (0 … max); `report.marking = 'points'`.
+> - **The page.** Home's Geography tab → a question → feedback: the lift, the answer with each point
+>   marked, "Points you made" (and "Develop it: …"), "Points you could add", a full answer. **The mark
+>   itself shows only when `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` is true (closed — Adrian decides) or to Adrian.**
+> - **First set: 8 own questions** (two per cluster: everyday life, tourism, climate, tectonics), text and
+>   one data table — no maps, graphs or photographs yet. 38 seeded answers, each written to earn an exact mark.
+> - **Still to build:** figures (maps, graphs, photographs — the figure library first), the 9-mark question
+>   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
+
 ## 4. The bench — built like the science bench
 
 No marked scripts are needed.

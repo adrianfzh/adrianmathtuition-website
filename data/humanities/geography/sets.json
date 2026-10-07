@@ -1,0 +1,508 @@
+[
+ {
+  "id": "g01",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tourism",
+  "title": "Tourism",
+  "issue": "Tourism and the places it reaches",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g01-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how tourism can benefit the economy of a tourist destination.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Tourism creates jobs for local people.",
+      "develop": "the kinds of jobs (hotel staff, guides, drivers) or that they earn an income"
+     },
+     {
+      "id": "b",
+      "text": "Tourism supports other local businesses that supply it.",
+      "develop": "farmers, fishermen or craftsmen selling to hotels and restaurants"
+     },
+     {
+      "id": "c",
+      "text": "Tourists spend money, which brings income into the destination.",
+      "develop": "spending on food, lodging, transport or souvenirs; earns foreign exchange"
+     },
+     {
+      "id": "d",
+      "text": "The government collects more tax revenue.",
+      "develop": "used to build roads, airports, schools or hospitals"
+     },
+     {
+      "id": "e",
+      "text": "Infrastructure built for tourists also serves local people and businesses.",
+      "develop": "airports, roads, electricity or water supply"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tourism is very good for a country because many people like to travel and see new places."
+     },
+     {
+      "level": 1,
+      "text": "Tourism creates jobs for local people in the destination."
+     },
+     {
+      "level": 2,
+      "text": "Tourism creates jobs for local people in the destination. Tourists also spend money there, so more income comes in."
+     },
+     {
+      "level": 3,
+      "text": "Tourism creates jobs for local people. For example, hotels need receptionists and cleaners, and tour companies need guides, so these people earn an income. Tourists also spend money there, so more income comes in."
+     },
+     {
+      "level": 4,
+      "text": "Tourism creates jobs for local people. For example, hotels need receptionists and cleaners, and tour companies need guides, so these people earn an income. Tourists also spend money in the destination. They pay for food, rooms and souvenirs in foreign currency, so the country earns foreign exchange."
+     }
+    ]
+   },
+   {
+    "id": "g01-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe the changes in international visitor arrivals from 2016 to 2023.",
+    "table": {
+     "caption": "Table 1: International visitor arrivals to Country X, 2016 to 2023",
+     "columns": [
+      "Year",
+      "Arrivals (millions)"
+     ],
+     "rows": [
+      [
+       "2016",
+       "6.2"
+      ],
+      [
+       "2017",
+       "6.8"
+      ],
+      [
+       "2018",
+       "7.5"
+      ],
+      [
+       "2019",
+       "8.1"
+      ],
+      [
+       "2020",
+       "2.0"
+      ],
+      [
+       "2021",
+       "1.1"
+      ],
+      [
+       "2022",
+       "4.6"
+      ],
+      [
+       "2023",
+       "7.2"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Overall, arrivals increased from 2016 to 2023.",
+      "develop": "from 6.2 million to 7.2 million, a rise of 1.0 million"
+     },
+     {
+      "id": "b",
+      "text": "Arrivals rose from 2016 to 2019.",
+      "develop": "from 6.2 million to a peak of 8.1 million"
+     },
+     {
+      "id": "c",
+      "text": "Arrivals fell sharply from 2019 to 2021.",
+      "develop": "from 8.1 million to 1.1 million, the lowest; the biggest drop was 2019 to 2020"
+     },
+     {
+      "id": "d",
+      "text": "Arrivals rose again from 2021 to 2023.",
+      "develop": "from 1.1 million to 7.2 million, still below the 2019 peak"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Many people could not travel because of the pandemic, so tourism was badly affected and hotels lost money."
+     },
+     {
+      "level": 1,
+      "text": "Visitor arrivals went up from 2016 to 2019."
+     },
+     {
+      "level": 2,
+      "text": "Visitor arrivals went up from 2016 to 2019. After that they fell sharply from 2019 to 2021."
+     },
+     {
+      "level": 3,
+      "text": "Visitor arrivals went up from 2016 to 2019, from 6.2 million to a peak of 8.1 million. After that they fell sharply from 2019 to 2021."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g02",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Climate",
+  "issue": "Weather and climate",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g02-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain why places near the equator have higher temperatures than places near the poles.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Near the equator the sun's rays strike the surface at a high angle.",
+      "develop": "the energy is concentrated on a small area, so the surface heats up more"
+     },
+     {
+      "id": "b",
+      "text": "Near the poles the sun's rays strike at a low angle.",
+      "develop": "the same energy is spread over a larger area, so the surface heats up less"
+     },
+     {
+      "id": "c",
+      "text": "Near the poles the rays pass through a thicker layer of atmosphere.",
+      "develop": "more energy is absorbed, scattered or reflected before it reaches the surface"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The equator is hot and the poles are cold because the equator is in the middle of the Earth and has summer all year."
+     },
+     {
+      "level": 1,
+      "text": "Near the equator the sun's rays hit the ground at a high angle, almost straight down."
+     },
+     {
+      "level": 2,
+      "text": "Near the equator the sun's rays hit the ground at a high angle, almost straight down. This means the heat is concentrated on a small area, so the ground heats up more."
+     },
+     {
+      "level": 3,
+      "text": "Near the equator the sun's rays hit the ground at a high angle, almost straight down. This means the heat is concentrated on a small area, so the ground heats up more. Near the poles the rays hit at a low angle."
+     },
+     {
+      "level": 4,
+      "text": "Near the equator the sun's rays hit the ground at a high angle, almost straight down. This means the heat is concentrated on a small area, so the ground heats up more. Near the poles the rays hit at a low angle. The same amount of heat is spread over a larger area, so each part of the ground gets less heat."
+     }
+    ]
+   },
+   {
+    "id": "g02-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how convectional rain forms.",
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The sun heats the ground strongly, and the ground warms the air above it."
+     },
+     {
+      "id": "b",
+      "text": "The warm air expands, becomes less dense and rises."
+     },
+     {
+      "id": "c",
+      "text": "As the air rises it cools, and water vapour condenses to form clouds."
+     },
+     {
+      "id": "d",
+      "text": "The water droplets grow larger and heavier and fall as rain."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Convectional rain is rain that falls in hot places like Singapore, usually in the afternoon."
+     },
+     {
+      "level": 1,
+      "text": "The sun heats the ground strongly and the ground heats the air above it."
+     },
+     {
+      "level": 2,
+      "text": "The sun heats the ground strongly and the ground heats the air above it. The warm air becomes less dense and rises."
+     },
+     {
+      "level": 3,
+      "text": "The sun heats the ground strongly and the ground heats the air above it. The warm air becomes less dense and rises. As it rises it cools, and the water vapour condenses to form clouds."
+     },
+     {
+      "level": 4,
+      "text": "The sun heats the ground strongly and the ground heats the air above it. The warm air becomes less dense and rises. As it rises it cools, and the water vapour condenses to form clouds. The water droplets in the clouds get bigger and heavier until they fall as rain."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g03",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Tectonics",
+  "issue": "Earthquakes and volcanoes",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g03-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how an earthquake can cause a tsunami.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "An earthquake under the sea floor makes part of the sea floor move suddenly up or down."
+     },
+     {
+      "id": "b",
+      "text": "This pushes up (displaces) a large volume of sea water above it, forming waves."
+     },
+     {
+      "id": "c",
+      "text": "The waves travel very fast across the open ocean, with a low height."
+     },
+     {
+      "id": "d",
+      "text": "Near the coast the water is shallower, so the waves slow down and grow much taller before they hit the shore."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tsunami is a very big wave that destroys buildings and kills many people living near the sea."
+     },
+     {
+      "level": 1,
+      "text": "An earthquake under the sea makes the sea floor suddenly move upwards."
+     },
+     {
+      "level": 2,
+      "text": "An earthquake under the sea makes the sea floor suddenly move upwards. This pushes up a huge amount of sea water above it and forms waves."
+     },
+     {
+      "level": 3,
+      "text": "An earthquake under the sea makes the sea floor suddenly move upwards. This pushes up a huge amount of sea water above it and forms waves. The waves move very fast across the open sea and are not high there."
+     },
+     {
+      "level": 4,
+      "text": "An earthquake under the sea makes the sea floor suddenly move upwards. This pushes up a huge amount of sea water above it and forms waves. The waves move very fast across the open sea and are not high there. When they reach shallow water near the coast, they slow down and become much taller, then crash onto the shore."
+     }
+    ]
+   },
+   {
+    "id": "g03-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two reasons why people continue to live in areas near volcanoes.",
+    "points": [
+     {
+      "id": "a",
+      "text": "The soil near volcanoes is fertile.",
+      "develop": "lava and ash break down into soil rich in minerals, so crops grow well and farmers get high yields"
+     },
+     {
+      "id": "b",
+      "text": "Volcanic areas provide geothermal energy.",
+      "develop": "heat from underground makes steam that drives turbines to produce electricity"
+     },
+     {
+      "id": "c",
+      "text": "Volcanoes attract tourists.",
+      "develop": "visitors come for the scenery or hot springs, giving local people jobs and income"
+     },
+     {
+      "id": "d",
+      "text": "Volcanic areas have valuable minerals or building materials.",
+      "develop": "sulphur or other minerals can be mined and sold"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "People live near volcanoes because they were born there and they are used to the danger."
+     },
+     {
+      "level": 1,
+      "text": "The soil near volcanoes is very fertile."
+     },
+     {
+      "level": 2,
+      "text": "The soil near volcanoes is very fertile. Volcanoes also attract tourists."
+     },
+     {
+      "level": 3,
+      "text": "The soil near volcanoes is very fertile. The lava and ash break down into soil that is rich in minerals, so farmers can grow more crops. Volcanoes also attract tourists."
+     },
+     {
+      "level": 4,
+      "text": "The soil near volcanoes is very fertile. The lava and ash break down into soil that is rich in minerals, so farmers can grow more crops. Volcanoes also attract tourists. Visitors come to see the crater and bathe in hot springs, so local people can earn money as guides or by running guesthouses."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g04",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Geography in everyday life",
+  "issue": "Neighbourhoods and finding things out",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g04-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how green spaces in a neighbourhood can benefit the residents.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Green spaces give residents room for exercise and recreation.",
+      "develop": "jogging, cycling or playing, which keeps them physically healthy"
+     },
+     {
+      "id": "b",
+      "text": "Green spaces help residents relax.",
+      "develop": "being among nature lowers stress and improves mental well-being"
+     },
+     {
+      "id": "c",
+      "text": "Trees and plants cool the neighbourhood.",
+      "develop": "they give shade and cool the air, so it is more comfortable"
+     },
+     {
+      "id": "d",
+      "text": "Green spaces are places where residents meet.",
+      "develop": "neighbours get to know one another and feel they belong"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Green spaces are parks and gardens. Singapore has many of them and they look beautiful."
+     },
+     {
+      "level": 1,
+      "text": "Residents can use green spaces to exercise and play."
+     },
+     {
+      "level": 2,
+      "text": "Residents can use green spaces to exercise and play. For example, they can jog or cycle in the park, which keeps them physically healthy."
+     },
+     {
+      "level": 3,
+      "text": "Residents can use green spaces to exercise and play. For example, they can jog or cycle in the park, which keeps them physically healthy. The trees also cool the neighbourhood."
+     }
+    ]
+   },
+   {
+    "id": "g04-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "A student wants to find out how satisfied residents are with their neighbourhood park. Describe how the student could use a questionnaire to collect reliable data.",
+    "rules": [
+     "Each step earns credit once. A step needs its purpose or enough detail to be carried out."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Use closed-ended questions or a rating scale, so the answers can be counted and compared."
+     },
+     {
+      "id": "b",
+      "text": "Choose respondents with a sampling method, such as every fifth person, to avoid bias."
+     },
+     {
+      "id": "c",
+      "text": "Survey a large enough number of residents, so the results represent the neighbourhood."
+     },
+     {
+      "id": "d",
+      "text": "Carry out the survey at different times of the day or on different days, to reach different groups of users."
+     },
+     {
+      "id": "e",
+      "text": "Test the questionnaire on a few people first, or word the questions clearly and neutrally."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The student can go to the park and look at how many people are there and whether they look happy."
+     },
+     {
+      "level": 1,
+      "text": "The student can ask residents to rate the park from 1 to 5, so the answers can be counted and compared."
+     },
+     {
+      "level": 2,
+      "text": "The student can ask residents to rate the park from 1 to 5, so the answers can be counted and compared. To avoid bias, the student can ask every fifth person who walks past."
+     },
+     {
+      "level": 3,
+      "text": "The student can ask residents to rate the park from 1 to 5, so the answers can be counted and compared. To avoid bias, the student can ask every fifth person who walks past. The student should survey many residents, such as 50, so the results represent the neighbourhood."
+     },
+     {
+      "level": 4,
+      "text": "The student can ask residents to rate the park from 1 to 5, so the answers can be counted and compared. To avoid bias, the student can ask every fifth person who walks past. The student should survey many residents, such as 50, so the results represent the neighbourhood. The survey should be done in the morning and in the evening, on weekdays and weekends, so that different groups of users are included."
+     }
+    ]
+   }
+  ]
+ }
+]

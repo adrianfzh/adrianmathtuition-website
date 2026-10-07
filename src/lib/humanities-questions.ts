@@ -12,17 +12,24 @@ import setsJson from '../../data/humanities/social-studies/sets.json';
 import structuredJson from '../../data/humanities/social-studies/structured.json';
 import caseStudiesJson from '../../data/humanities/social-studies/case-studies.json';
 import historyJson from '../../data/humanities/history/sets.json';
+import geographyJson from '../../data/humanities/geography/sets.json';
 
-export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh';
+export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh' | 'geo_describe' | 'geo_explain';
 /** The source skills — Social Studies and History share them. 'surprise' joined on 7 Oct 2026 (Adrian: "do it"). */
 export const SOURCE_SKILLS: readonly HumanitiesSkill[] = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose', 'surprise', 'how_far'];
 /** The two structured-response parts (Social Studies): answered from own knowledge. */
 export const STRUCTURED_SKILLS: readonly HumanitiesSkill[] = ['sr_explain', 'sr_weigh'];
+/** Geography's point-marked parts (B, 7 Oct 2026): no level scheme — each question carries its own creditable points. */
+export const POINTS_SKILLS: readonly HumanitiesSkill[] = ['geo_describe', 'geo_explain'];
 export const HUMANITIES_SKILLS: readonly HumanitiesSkill[] = [...SOURCE_SKILLS, ...STRUCTURED_SKILLS];
 
-export type HumanitiesSubject = 'social-studies' | 'history';
-export type HumanitiesKind = 'source' | 'structured';
-export const SUBJECT_NAME: Record<HumanitiesSubject, string> = { 'social-studies': 'Social Studies', history: 'History' };
+export type HumanitiesSubject = 'social-studies' | 'history' | 'geography';
+export type HumanitiesKind = 'source' | 'structured' | 'points';
+export const SUBJECT_NAME: Record<HumanitiesSubject, string> = { 'social-studies': 'Social Studies', history: 'History', geography: 'Geography' };
+/** Geography's clusters (the elective paper's three sections, with Geography in Everyday Life first). */
+export type GeoCluster = 'everyday' | 'tourism' | 'climate' | 'tectonics';
+export const GEO_CLUSTERS: readonly GeoCluster[] = ['everyday', 'tourism', 'climate', 'tectonics'];
+export const GEO_CLUSTER_NAME: Record<GeoCluster, string> = { everyday: 'Geography in everyday life', tourism: 'Tourism', climate: 'Climate', tectonics: 'Tectonics' };
 
 /** The three issues of the Social Studies syllabus. */
 export type SsTheme = 'citizenship' | 'diversity' | 'globalised';
@@ -34,7 +41,12 @@ export const SS_THEME_NAME: Record<SsTheme, string> = {
 };
 
 export interface HumanitiesSource { id: string; provenance: string; text: string }
+/** A seeded answer: `level` is the level it was written at — or, on a point-marked question, the marks. */
 export interface SeededAnswer { level: number; text: string }
+/** One creditable point of a point-marked question; `develop` = what earns the second mark for it. */
+export interface CreditPoint { id: string; text: string; develop?: string }
+/** A small data table a Geography question gives ("Table 1"). */
+export interface DataTable { caption: string; columns: string[]; rows: string[][] }
 export interface HumanitiesQuestion {
   id: string;
   skill: HumanitiesSkill;
@@ -44,7 +56,17 @@ export interface HumanitiesQuestion {
   marks?: number;
   seeded?: SeededAnswer[];
   model?: string;
+  // ── point-marked (Geography) ──
+  /** The command word: describe · explain · … */
+  command?: string;
+  /** The creditable points. One mark each; a second for developing it when `develop` is true. Capped at `marks`. */
+  points?: CreditPoint[];
+  develop?: boolean;
+  /** Extra rules for this question's marking, sent to the reader. */
+  rules?: string[];
+  table?: DataTable;
 }
+export const isPointsQuestion = (q: Pick<HumanitiesQuestion, 'points'>): boolean => Array.isArray(q.points) && q.points.length > 0;
 export interface HumanitiesSet {
   id: string;
   subject: HumanitiesSubject;
@@ -54,6 +76,7 @@ export interface HumanitiesSet {
   /** Background Information — present on a case study, and only there. */
   background?: string;
   theme?: SsTheme;
+  cluster?: GeoCluster;
   sources: HumanitiesSource[];
   questions: HumanitiesQuestion[];
 }
@@ -70,7 +93,7 @@ export interface HumanitiesScheme {
 export interface ClaimTag { key: string; label: string; meaning: string }
 
 type RawSet = Omit<HumanitiesSet, 'subject' | 'kind'> & Partial<Pick<HumanitiesSet, 'subject' | 'kind'>>;
-const SETS: HumanitiesSet[] = [setsJson, caseStudiesJson, structuredJson, historyJson]
+const SETS: HumanitiesSet[] = [setsJson, caseStudiesJson, structuredJson, historyJson, geographyJson]
   .flatMap(f => f as unknown as RawSet[])
   .map(s => ({ ...s, subject: s.subject ?? 'social-studies', kind: s.kind ?? 'source' }));
 const FILE = schemesJson as unknown as {
@@ -125,7 +148,10 @@ export function questionById(id: string): QuestionInContext | null {
   for (const set of SETS) {
     const question = set.questions.find(q => q.id === id);
     if (!question) continue;
-    const scheme = schemeFor(question.skill);
+    // A point-marked question has no level scheme; it carries a bare one so the shape holds.
+    const scheme = schemeFor(question.skill) ?? (isPointsQuestion(question)
+      ? { label: question.command ? question.command[0].toUpperCase() + question.command.slice(1) : 'Geography', asks: '', levels: [], lifts: [], slips: [] }
+      : null);
     if (!scheme) return null;
     const sources = set.sources.filter(s => question.sources.includes(s.id));
     return { set, question, sources, inView: isCaseStudy(set) ? set.sources : sources, scheme };
@@ -141,6 +167,16 @@ export function questionsBySkill(skill: string): QuestionInContext[] {
     if (ctx) out.push(ctx);
   }
   return out;
+}
+
+/** The top of a question's scale: its marks when point-marked, else the top level of its skill's scheme. */
+export function maxOf(q: HumanitiesQuestion): number {
+  return isPointsQuestion(q) ? q.marks ?? 0 : levelsMax(q.skill);
+}
+
+/** A data table as plain lines — what the reader is given. */
+export function tableText(t: DataTable): string {
+  return [t.columns.join(' | '), ...t.rows.map(r => r.join(' | '))].join('\n');
 }
 
 /** The answer shown folded under the report: the written model, or the top seeded answer. */

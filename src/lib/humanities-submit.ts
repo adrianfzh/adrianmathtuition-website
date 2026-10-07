@@ -4,7 +4,7 @@
 // (data/humanities/…); the bot receives them WITH the answer and knows nothing
 // about the subject itself. Server-only.
 import { getSupabaseAdmin } from './supabase';
-import { questionById, levelsMax, rulesFor, tagsFor, SCHEME_VERSION, SUBJECT_NAME } from './humanities-questions';
+import { questionById, maxOf, isPointsQuestion, tableText, rulesFor, tagsFor, SCHEME_VERSION, SUBJECT_NAME } from './humanities-questions';
 import { wordCount } from './humanities-report';
 
 /** Answers a student may hand in per Singapore day. */
@@ -44,7 +44,8 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
   const botSecret = process.env.BOT_INTERNAL_SECRET;
   if (!botBase || !botSecret) return { ok: false, status: 503, error: 'Feedback is temporarily unavailable.' };
 
-  const max = levelsMax(ctx.question.skill);
+  const max = maxOf(ctx.question);
+  const q = ctx.question;
   const sb = getSupabaseAdmin();
   const { data: row, error } = await sb.from('humanities_runs').insert({
     airtable_student_id: s.identity,
@@ -70,7 +71,14 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
     const r = await fetch(`${botBase}/api/humanities-mark`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      // A point-marked part (Geography) sends its creditable points in place of a level scheme.
+      body: JSON.stringify(isPointsQuestion(q) ? {
+        runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',
+        subject: SUBJECT_NAME[ctx.set.subject], kind: 'points', skill: q.skill,
+        issue: ctx.set.issue, question: q.question,
+        sources: q.table ? [{ id: q.table.caption, provenance: '', text: tableText(q.table) }] : [],
+        points: { max, develop: !!q.develop, command: q.command ?? 'explain', list: q.points, rules: q.rules ?? [] },
+      } : {
         runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',
         subject: SUBJECT_NAME[ctx.set.subject], kind: ctx.set.kind, skill: ctx.question.skill,
         // A case study's Background Information rides with the issue line: the bot's prompt has one slot for both.

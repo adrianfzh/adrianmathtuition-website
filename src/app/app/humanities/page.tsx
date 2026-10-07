@@ -9,7 +9,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
 import { skillPicture, skillLineText } from '@/lib/humanities-skills';
 import { loadHumanitiesFor } from '@/lib/humanities-runs';
 import { AnswerCard } from './answer-cards';
@@ -23,11 +23,13 @@ const HOME_LIMIT = 3;
 const TABS: { key: HumanitiesSubject; label: string }[] = [
   { key: 'social-studies', label: 'Social Studies' },
   { key: 'history', label: 'History' },
+  { key: 'geography', label: 'Geography' },
 ];
 
 export default async function HumanitiesPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   if (!(await humanitiesOpen())) redirect('/app');
-  const subject: HumanitiesSubject = (await searchParams).s === 'history' ? 'history' : 'social-studies';
+  const s = (await searchParams).s;
+  const subject: HumanitiesSubject = s === 'history' ? 'history' : s === 'geography' ? 'geography' : 'social-studies';
   const account = await currentAccount();
   const sid = portalIdentity(account);
   const runs = await loadHumanitiesFor(sid, 500);
@@ -36,11 +38,13 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
   const caseStudies = allSource.filter(isCaseStudy);
   const sourceSets = allSource.filter(s => !isCaseStudy(s));
   // The skill picture (A2): this subject's read answers, weakest skill first.
-  const skills = skillPicture(runs.filter(r => r.subject === subject));
+  // Geography is point-marked, not levelled: its picture comes with practice by skill (D).
+  const skills = subject === 'geography' ? [] : skillPicture(runs.filter(r => r.subject === subject));
+  const pointSets = setsFor(subject, 'points');
   const nextOf = (skill: string) => questionsBySkill(skill).find(c => c.set.subject === subject && !answered.has(c.question.id))?.question.id;
   const structuredSets = setsFor(subject, 'structured');
   // One issue open at a time: the first with a question still to do. Ten open cards was a very long page.
-  const sets = [...caseStudies, ...sourceSets, ...structuredSets];
+  const sets = [...caseStudies, ...sourceSets, ...structuredSets, ...pointSets];
   const openId = (sets.find(set => set.questions.some(q => !answered.has(q.id))) ?? sets[0])?.id;
 
   const setCard = (set: HumanitiesSet) => (
@@ -79,7 +83,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         </span>
         <div>
           <h1 className="text-xl font-bold text-navy leading-tight">Humanities</h1>
-          <p className="text-[12px] text-gray-500">Social Studies · History</p>
+          <p className="text-[12px] text-gray-500">Social Studies · History · Geography</p>
         </div>
       </div>
 
@@ -102,7 +106,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
       <div role="tablist" className="flex gap-1 bg-black/5 rounded-2xl p-1">
         {TABS.map(t => (
           <Link key={t.key} role="tab" aria-selected={t.key === subject}
-            href={t.key === 'history' ? '/app/humanities?s=history' : '/app/humanities'}
+            href={t.key === 'social-studies' ? '/app/humanities' : `/app/humanities?s=${t.key}`}
             className={`flex-1 text-center text-sm font-semibold rounded-xl py-1.5 transition ${t.key === subject ? 'bg-white text-navy shadow-sm' : 'text-gray-500'}`}>
             {t.label}
           </Link>
@@ -168,6 +172,14 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
             <p className="text-[12px] text-gray-500">These sources are written for practice. They are not real documents.</p>
           )}
           {sourceSets.map(setCard)}
+        </div>
+      )}
+
+      {pointSets.length > 0 && (
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Short questions</h2>
+          <p className="text-[12px] text-gray-500">Answer from what you have learnt. One clear point a sentence.</p>
+          {GEO_CLUSTERS.map(c => pointSets.filter(x => x.cluster === c)).flat().map(setCard)}
         </div>
       )}
 
