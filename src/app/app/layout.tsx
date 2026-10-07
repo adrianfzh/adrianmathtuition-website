@@ -165,20 +165,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     // to the portal shell, inherited by everything inside it.
     <div className="min-h-screen bg-[hsl(45,100%,98%)] [-webkit-tap-highlight-color:transparent]">
       <nav className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-5">
-            <Link href="/app" className="font-display font-bold text-navy tracking-tight">AdrianMath</Link>
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-5 min-w-0">
+            <Link href="/app" className="font-display font-bold text-navy tracking-tight text-[15px] sm:text-base">AdrianMath</Link>
             <DesktopLinks items={desktopLinks} scienceItems={scienceTabs} languageItems={languageTabs} humanityItems={humanityTabs} pendingWork={pendingWork} />
           </div>
-          <div className="flex items-center gap-3 sm:gap-4">
+          {/* Tight on a phone (360–390 px holds the name, Invite, two words and the icon). */}
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0">
             {inviteRef && <InviteFriend link={inviteLinkFor(inviteRef)} tuition={inviteTuition} />}
             {/* 💡 Suggestions sits in the bar, beside Invite and Settings — it belongs to no
                 subject (Adrian, 7 Oct 2026: "put the word Suggestions"). Sign out became an
                 icon to make room for it on a phone. */}
             {suggestVisible && (
-              <Link href="/app/suggestions" className="text-sm text-gray-600 hover:text-navy">Suggestions</Link>
+              <Link href="/app/suggestions" className="text-[13px] sm:text-sm text-gray-600 hover:text-navy">Suggestions</Link>
             )}
-            <Link href="/app/settings" data-tour="settings" className="text-sm text-gray-600 hover:text-navy">Settings</Link>
+            <Link href="/app/settings" data-tour="settings" className="text-[13px] sm:text-sm text-gray-600 hover:text-navy">Settings</Link>
             <SignOutButton />
           </div>
         </div>

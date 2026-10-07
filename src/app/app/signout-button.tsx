@@ -13,7 +13,7 @@ export default function SignOutButton() {
       }}
       aria-label="Sign out"
       title="Sign out"
-      className="text-gray-500 hover:text-navy transition-colors inline-flex items-center justify-center w-8 h-8 -mr-1.5 rounded-full hover:bg-navy/5"
+      className="text-gray-500 hover:text-navy transition-colors inline-flex items-center justify-center w-7 h-8 -mr-1 rounded-full hover:bg-navy/5"
     >
       {/* The usual "log out" sign — a door with an arrow leaving it (Adrian, 7 Oct 2026:
           "replace with an easily recognizable icon", so the bar has room for the word
