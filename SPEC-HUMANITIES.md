@@ -250,6 +250,7 @@ levels off; consistency passes; the truth-free checks pass.
 | `b-geo-pilot-2026-10-07` — Geography, 8 point-marked questions (`--subject geography`; truth = the marks) | 37/38, the miss one mark off | 10/10 | 15/15 | US$2.05 |
 | `b-geo-9mark-2026-10-07` — Geography, the eight 9-mark questions (`--subject geography --kind structured`) | 24/24 | 6/6 | 12/12 | US$2.18 |
 | `c-hist-essay-2026-10-07` — History essays, sets y05 and y07 (`--sets y05,y07`) | 16/16 | 4/4 | 7/7 | US$1.50 |
+| `b-geo-diagrams-2026-10-07` — Geography, the climate diagram set g23 (the diagram reaches the reader as words) | 23/23 | 6/6 | 9/9 | US$1.34 |
 
 - The Geography miss was ours, not the reader's: a "zero" answer (people stay near volcanoes because they were born there) is a valid reason, and the reader credited it as an unlisted point. The seeded answer was replaced.
 - The one miss: a reliability answer that trusts the source from its content alone,
