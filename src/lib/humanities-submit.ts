@@ -4,7 +4,7 @@
 // (data/humanities/…); the bot receives them WITH the answer and knows nothing
 // about the subject itself. Server-only.
 import { getSupabaseAdmin } from './supabase';
-import { questionById, maxOf, isPointsQuestion, tableText, rulesFor, tagsFor, SCHEME_VERSION, SUBJECT_NAME } from './humanities-questions';
+import { questionById, maxOf, isPointsQuestion, tableText, diagramByKey, diagramText, rulesFor, tagsFor, SCHEME_VERSION, SUBJECT_NAME } from './humanities-questions';
 import { wordCount } from './humanities-report';
 
 /** Answers a student may hand in per Singapore day. */
@@ -76,7 +76,10 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
         runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',
         subject: SUBJECT_NAME[ctx.set.subject], kind: 'points', skill: q.skill,
         issue: ctx.set.issue, question: q.question,
-        sources: q.table ? [{ id: q.table.caption, provenance: '', text: tableText(q.table) }] : [],
+        sources: [
+          ...(q.table ? [{ id: q.table.caption, provenance: '', text: tableText(q.table) }] : []),
+          ...(q.diagram && diagramByKey(q.diagram.key) ? [{ id: q.diagram.caption, provenance: '', text: diagramText(diagramByKey(q.diagram.key)!) }] : []),
+        ],
         points: { max, develop: !!q.develop, command: q.command ?? 'explain', list: q.points, rules: q.rules ?? [] },
       } : {
         runId: row.id, answer, studentName: s.studentName, source: s.source ?? 'app',

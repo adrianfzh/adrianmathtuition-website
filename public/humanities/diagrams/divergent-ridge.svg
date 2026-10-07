@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <rect width="340" height="220" fill="#fff"/>
+  <defs>
+    <marker id="hn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1e2a4a"/></marker>
+  </defs>
+  <rect x="10" y="28" width="320" height="110" fill="#9cc7e0"/>
+  <rect x="10" y="136" width="320" height="76" fill="#e9a66b"/>
+  <!-- rising magma -->
+  <path d="M140 212 Q160 180 162 136 L156 92 L184 92 L178 136 Q180 180 200 212 Z" fill="#c0442d"/>
+  <!-- plates with the ridge -->
+  <path d="M10 108 L104 108 L146 78 L158 86 L163 136 L10 136 Z" fill="#8a8f9c" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M330 108 L236 108 L194 78 L182 86 L177 136 L330 136 Z" fill="#8a8f9c" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+  <rect x="10" y="28" width="320" height="184" fill="none" stroke="#1e2a4a" stroke-width="1.2"/>
+  <!-- arrows -->
+  <line x1="170" y1="204" x2="170" y2="150" stroke="#1e2a4a" stroke-width="2" marker-end="url(#hn)"/>
+  <line x1="92" y1="122" x2="34" y2="122" stroke="#1e2a4a" stroke-width="2" marker-end="url(#hn)"/>
+  <line x1="226" y1="122" x2="270" y2="122" stroke="#1e2a4a" stroke-width="2" marker-end="url(#hn)"/>
+  <text x="40" y="62" font-size="11" fill="#1e2a4a">sea</text>
+  <text x="40" y="180" font-size="11" fill="#1e2a4a">mantle</text>
+  <line x1="126" y1="56" x2="146" y2="80" stroke="#1e2a4a" stroke-width="1.2"/>
+  <line x1="228" y1="174" x2="186" y2="174" stroke="#1e2a4a" stroke-width="1.2"/>
+  <g font-size="11" font-weight="700" text-anchor="middle" fill="#fff">
+    <circle cx="121" cy="50" r="8" fill="#1e2a4a"/><text x="121" y="54">A</text>
+    <circle cx="236" cy="174" r="8" fill="#1e2a4a"/><text x="236" y="178">B</text>
+    <circle cx="296" cy="122" r="8" fill="#1e2a4a"/><text x="296" y="126">C</text>
+  </g>
+</svg>

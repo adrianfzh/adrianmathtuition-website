@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 240" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1e2a4a"/></marker></defs>
+<rect x="0" y="0" width="340" height="240" fill="#fff"/>
+<rect x="0" y="170" width="340" height="70" fill="#cdb58a"/>
+<line x1="0" y1="170" x2="340" y2="170" stroke="#1e2a4a" stroke-width="1.2"/>
+<ellipse cx="150" cy="24" rx="20" ry="9" fill="#dfe5ea"/><ellipse cx="172" cy="16" rx="18" ry="9" fill="#dfe5ea"/><ellipse cx="166" cy="30" rx="14" ry="6" fill="#dfe5ea"/>
+<path d="M48,170 Q130.96,142.28 161,44 L179,44 Q209.04,142.28 292,170 Z" fill="#8a8f9c" stroke="#1e2a4a" stroke-width="1"/>
+<path d="M70,170 Q138,147.12 162,66 L178,66 Q202,147.12 270,170 Z" fill="#e6d9bd" stroke="#1e2a4a" stroke-width="1"/>
+<path d="M92,170 Q145.04,151.96 163,88 L177,88 Q194.96,151.96 248,170 Z" fill="#8a8f9c" stroke="#1e2a4a" stroke-width="1"/>
+<path d="M114,170 Q152.07999999999998,156.8 164,110 L176,110 Q187.92000000000002,156.8 226,170 Z" fill="#e6d9bd" stroke="#1e2a4a" stroke-width="1"/>
+<path d="M136,170 Q159.12,161.64 165,132 L175,132 Q180.88,161.64 204,170 Z" fill="#8a8f9c" stroke="#1e2a4a" stroke-width="1"/>
+<path d="M161,43 L165,54 L175,54 L179,43 Z" fill="#fff" stroke="none"/>
+<path d="M161,44 L165,54 L175,54 L179,44" fill="none" stroke="#1e2a4a" stroke-width="1.2"/>
+<ellipse cx="170" cy="214" rx="62" ry="17" fill="#c0442d" stroke="#1e2a4a" stroke-width="1.2"/>
+<rect x="166.5" y="54" width="7" height="146" fill="#c0442d"/>
+<line x1="166.5" y1="54" x2="166.5" y2="198" stroke="#1e2a4a" stroke-width="0.8"/><line x1="173.5" y1="54" x2="173.5" y2="198" stroke="#1e2a4a" stroke-width="0.8"/>
+<text x="8" y="165" font-size="10" fill="#1e2a4a" text-anchor="start">ground</text>
+<line x1="214" y1="30" x2="172" y2="48" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="172" cy="48" r="1.6" fill="#1e2a4a"/><circle cx="214" cy="30" r="8" fill="#1e2a4a"/><text x="214" y="33.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">A</text>
+<line x1="226" y1="150" x2="171" y2="150" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="171" cy="150" r="1.6" fill="#1e2a4a"/><circle cx="226" cy="150" r="8" fill="#1e2a4a"/><text x="226" y="153.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">B</text>
+<line x1="58" y1="112" x2="112" y2="138" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="112" cy="138" r="1.6" fill="#1e2a4a"/><circle cx="58" cy="112" r="8" fill="#1e2a4a"/><text x="58" y="115.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">C</text>
+<line x1="58" y1="112" x2="131" y2="150" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="131" cy="150" r="1.6" fill="#1e2a4a"/><circle cx="58" cy="112" r="8" fill="#1e2a4a"/><text x="58" y="115.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">C</text>
+<line x1="272" y1="214" x2="225" y2="214" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="225" cy="214" r="1.6" fill="#1e2a4a"/><circle cx="272" cy="214" r="8" fill="#1e2a4a"/><text x="272" y="217.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">D</text>
+</svg>

@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { stripEvidence } from './humanities-bench';
 import { caseStudyProblems, quotedPieces } from './humanities-case-study';
 import { geographyProblems } from './humanities-geography';
-import { caseStudies, isCaseStudy, SS_THEMES, geoEvaluateBand, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
+import fs from 'node:fs';
+import path from 'node:path';
+import { allDiagrams, diagramText, caseStudies, isCaseStudy, SS_THEMES, geoEvaluateBand, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
 
 describe('the humanities bank', () => {
   it('Social Studies single questions: 30, five per source skill', () => {
@@ -201,5 +203,25 @@ describe('the History essay', () => {
         for (const s of q.seeded!) expect(s.text.split(/\s+/).length, q.id).toBeLessThanOrEqual(450);
       }
     }
+  });
+});
+
+describe('Geography diagrams', () => {
+  it('every diagram in the bank has its drawing and its words for the reader', () => {
+    for (const d of allDiagrams()) {
+      const file = path.join(__dirname, '../../public/humanities/diagrams', `${d.key}.svg`);
+      expect(fs.existsSync(file), d.key).toBe(true);
+      const svg = fs.readFileSync(file, 'utf8');
+      expect(svg, d.key).toMatch(/<svg[^>]+viewBox=/);
+      expect(svg, d.key).not.toMatch(/<script|<image|href=/i);
+      expect(d.shows.split(/\s+/).length, d.key).toBeGreaterThan(15);
+      // Every letter the words name is drawn, and every drawn letter is named.
+      for (const k of Object.keys(d.letters ?? {})) expect(svg, `${d.key} letter ${k}`).toMatch(new RegExp(`>\\s*${k}\\s*<`));
+      expect(diagramText(d)).toMatch(/^\(A labelled diagram/);
+    }
+  });
+  it('every question that shows a diagram names one in the bank', () => {
+    const keys = new Set(allDiagrams().map(d => d.key));
+    for (const set of setsFor('geography', 'points')) for (const q of set.questions) if (q.diagram) expect(keys.has(q.diagram.key), q.id).toBe(true);
   });
 });

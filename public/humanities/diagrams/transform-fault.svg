@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <rect width="340" height="220" fill="#fff"/>
+  <defs>
+    <marker id="hn" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1e2a4a"/></marker>
+  </defs>
+  <!-- block: top, front, side -->
+  <path d="M30 150 L270 150 L320 60 L80 60 Z" fill="#cdb58a" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M30 150 L270 150 L270 200 L30 200 Z" fill="#b89f72" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M270 150 L320 60 L320 110 L270 200 Z" fill="#a48c62" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- road, cut and offset by the fault -->
+  <g stroke="#5a5f6b" stroke-width="5">
+    <line x1="63.3" y1="90" x2="183.3" y2="90"/>
+    <line x1="166.7" y1="120" x2="286.7" y2="120"/>
+  </g>
+  <g stroke="#fff" stroke-width="1" stroke-dasharray="5 4">
+    <line x1="65" y1="90" x2="182" y2="90"/>
+    <line x1="168" y1="120" x2="286" y2="120"/>
+  </g>
+  <!-- fault -->
+  <path d="M150 200 L150 150 L200 60" fill="none" stroke="#1e2a4a" stroke-width="2"/>
+  <!-- plate movement -->
+  <line x1="112" y1="140" x2="130" y2="107.6" stroke="#1e2a4a" stroke-width="2" marker-end="url(#hn)"/>
+  <line x1="262" y1="74" x2="244" y2="106.4" stroke="#1e2a4a" stroke-width="2" marker-end="url(#hn)"/>
+  <text x="44" y="141" font-size="11" fill="#1e2a4a">Plate X</text>
+  <text x="208" y="141" font-size="11" fill="#1e2a4a">Plate Y</text>
+  <text x="92" y="82" font-size="10" fill="#1e2a4a">road</text>
+  <g font-size="11" font-weight="700" text-anchor="middle" fill="#fff">
+    <circle cx="192" cy="74.4" r="8" fill="#1e2a4a"/><text x="192" y="78.4">A</text>
+  </g>
+</svg>

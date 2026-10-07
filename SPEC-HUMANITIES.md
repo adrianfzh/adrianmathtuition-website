@@ -176,7 +176,17 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   level, every top answer's judgement argued; every real example fact-checked against public sources on
 >   7 Oct 2026 (no wrong fact; eleven lines made more exact — the Marina Barrage, the Paris Agreement, the
 >   carbon tax, Haiti's buildings …).
-> - **Still to build:** maps, photographs and diagrams
+> - **Diagrams (7 Oct 2026, Adrian: "let's do what we can for the diagrams").** Twelve of our own line drawings,
+>   written as SVG to one set of drawing rules (`docs/humanities/geography-brief.md` §Diagrams) and kept in
+>   `public/humanities/diagrams/`: the Earth's layers · convection currents · a spreading ridge · a transform
+>   fault · a subduction zone · fold mountains · a stratovolcano · the stages of a tsunami · relief rain ·
+>   convectional rain · a sea breeze · the greenhouse effect. Each was rendered to a picture and looked at by its
+>   writer and again by the orchestrating session; one was checked on a phone-width page. A question carries
+>   `diagram: {key, caption}`; the reader, which cannot see a picture, is given the diagram in words
+>   (`data/humanities/geography/diagrams.json`: `shows` + what each letter marks). Sets g21–g23, 15 questions,
+>   blind-marked on the plan 70/70 with the checker's notes applied. **Geography: 23 sets, 103 point-marked
+>   questions.**
+> - **Still to build:** maps and photographs
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 > **C — HISTORY ESSAYS STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "go ahead with history essays".

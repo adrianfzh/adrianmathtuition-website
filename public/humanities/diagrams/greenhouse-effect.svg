@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#c0442d"/></marker>
+    <marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#2c6e8f"/></marker>
+    <marker id="as" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#d99a1c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="340" height="220" fill="#fff"/>
+  <rect x="0" y="78" width="340" height="24" fill="#dfe5ea"/>
+  <g fill="#1e2a4a"><circle cx="12" cy="86" r="1.6"/><circle cx="22" cy="95" r="1.6"/>
+<circle cx="34" cy="86" r="1.6"/><circle cx="44" cy="95" r="1.6"/>
+<circle cx="58" cy="86" r="1.6"/><circle cx="68" cy="95" r="1.6"/>
+<circle cx="80" cy="86" r="1.6"/><circle cx="90" cy="95" r="1.6"/>
+<circle cx="104" cy="86" r="1.6"/><circle cx="114" cy="95" r="1.6"/>
+<circle cx="126" cy="86" r="1.6"/><circle cx="136" cy="95" r="1.6"/>
+<circle cx="150" cy="86" r="1.6"/><circle cx="160" cy="95" r="1.6"/>
+<circle cx="172" cy="86" r="1.6"/><circle cx="182" cy="95" r="1.6"/>
+<circle cx="196" cy="86" r="1.6"/><circle cx="206" cy="95" r="1.6"/>
+<circle cx="218" cy="86" r="1.6"/><circle cx="228" cy="95" r="1.6"/>
+<circle cx="242" cy="86" r="1.6"/><circle cx="252" cy="95" r="1.6"/>
+<circle cx="264" cy="86" r="1.6"/><circle cx="274" cy="95" r="1.6"/>
+<circle cx="288" cy="86" r="1.6"/><circle cx="298" cy="95" r="1.6"/>
+<circle cx="310" cy="86" r="1.6"/><circle cx="320" cy="95" r="1.6"/>
+<circle cx="330" cy="86" r="1.6"/><circle cx="340" cy="95" r="1.6"/></g>
+  <rect x="0" y="190" width="340" height="30" fill="#cdb58a"/>
+  <line x1="0" y1="190" x2="340" y2="190" stroke="#1e2a4a" stroke-width="1.2"/>
+  <g stroke="#d99a1c" stroke-width="1.6" stroke-linecap="round"><circle cx="34" cy="32" r="13" fill="#f6c544"/><line x1="34" y1="15" x2="34" y2="10" transform="rotate(0 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(45 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(90 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(135 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(180 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(225 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(270 34 32)"/>
+<line x1="34" y1="15" x2="34" y2="10" transform="rotate(315 34 32)"/></g>
+  <line x1="46" y1="56" x2="88" y2="184" stroke="#d99a1c" stroke-width="2" marker-end="url(#as)"/>
+  <line x1="136" y1="188" x2="136" y2="108" stroke="#c0442d" stroke-width="2" marker-end="url(#aw)"/>
+  <path d="M150,100 Q178,104 190,184" stroke="#c0442d" stroke-width="2" fill="none" marker-end="url(#aw)"/>
+  <line x1="240" y1="188" x2="240" y2="28" stroke="#c0442d" stroke-width="2" marker-end="url(#aw)"/>
+  <text x="330" y="24" font-size="11" fill="#1e2a4a" text-anchor="end">space</text>
+  <text x="332" y="118" font-size="10" fill="#1e2a4a" text-anchor="end">greenhouse gases</text>
+  <text x="170" y="209" font-size="11" fill="#1e2a4a" text-anchor="middle">Earth's surface</text>
+  <circle cx="84" cy="130" r="8" fill="#1e2a4a"/><text x="84" y="134" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">A</text>
+  <circle cx="122" cy="148" r="8" fill="#1e2a4a"/><text x="122" y="152" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">B</text>
+  <circle cx="200" cy="140" r="8" fill="#1e2a4a"/><text x="200" y="144" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">C</text>
+  <circle cx="254" cy="50" r="8" fill="#1e2a4a"/><text x="254" y="54" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">D</text>
+</svg>

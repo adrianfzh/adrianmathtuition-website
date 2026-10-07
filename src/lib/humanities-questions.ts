@@ -15,6 +15,7 @@ import historyJson from '../../data/humanities/history/sets.json';
 import historyEssaysJson from '../../data/humanities/history/essays.json';
 import geographyJson from '../../data/humanities/geography/sets.json';
 import geoEvaluateJson from '../../data/humanities/geography/evaluate.json';
+import diagramsJson from '../../data/humanities/geography/diagrams.json';
 
 export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh' | 'geo_describe' | 'geo_explain' | 'geo_evaluate' | 'hist_evaluate';
 /** The source skills — Social Studies and History share them. 'surprise' joined on 7 Oct 2026 (Adrian: "do it"). */
@@ -47,6 +48,21 @@ export interface HumanitiesSource { id: string; provenance: string; text: string
 export interface SeededAnswer { level: number; text: string }
 /** One creditable point of a point-marked question; `develop` = what earns the second mark for it. */
 export interface CreditPoint { id: string; text: string; develop?: string }
+/**
+ * A drawn diagram a Geography question shows ("Fig. 1") — our own line drawing, kept as
+ * public/humanities/diagrams/<key>.svg. The reader cannot see a picture, so each diagram
+ * carries `shows`: what is drawn and what each letter marks, in words.
+ */
+export interface GeoDiagram { key: string; title: string; shows: string; letters?: Record<string, string> }
+const DIAGRAMS = diagramsJson as unknown as GeoDiagram[];
+export function allDiagrams(): GeoDiagram[] { return DIAGRAMS; }
+export function diagramByKey(key: string): GeoDiagram | null { return DIAGRAMS.find(d => d.key === key) ?? null; }
+/** The diagram as words — what the reader is given in place of the picture. */
+export function diagramText(d: GeoDiagram): string {
+  const letters = Object.entries(d.letters ?? {}).map(([k, v]) => `${k} marks ${v}.`).join(' ');
+  return `(A labelled diagram shown to the student.) ${d.shows}${letters ? ` ${letters}` : ''}`;
+}
+
 /** A small data table a Geography question gives ("Table 1"). */
 export interface DataTable {
   caption: string; columns: string[]; rows: string[][];
@@ -71,6 +87,8 @@ export interface HumanitiesQuestion {
   /** Extra rules for this question's marking, sent to the reader. */
   rules?: string[];
   table?: DataTable;
+  /** A drawn diagram shown with the question: its key in the diagram bank and its caption ("Fig. 1: …"). */
+  diagram?: { key: string; caption: string };
 }
 export const isPointsQuestion = (q: Pick<HumanitiesQuestion, 'points'>): boolean => Array.isArray(q.points) && q.points.length > 0;
 export interface HumanitiesSet {

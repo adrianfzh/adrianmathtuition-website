@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 200" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1e2a4a"/></marker></defs>
+<rect x="0" y="0" width="340" height="200" fill="#fff"/>
+<rect x="0" y="140" width="340" height="60" fill="#e9a66b"/>
+<path d="M0,95 L92,95 L112,72 L124,78 L140,48 L152,58 L170,26 L186,54 L200,44 L216,74 L228,68 L248,95 L340,95 L340,150 L240,150 Q170,178 100,150 L0,150 Z" fill="#cdb58a" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M0,108 L84,108 C104,108 108,84 122,88 S136,62 150,70 S162,44 170,44 S180,66 192,64 S206,58 214,84 S232,108 256,108 L340,108" fill="none" stroke="#1e2a4a" stroke-width="1.2" opacity="0.55"/>
+<path d="M104,120 C116,119 118,100 130,102 S146,82 156,88 S164,66 170,66 S178,86 186,84 S202,80 210,100 S224,119 236,120" fill="none" stroke="#1e2a4a" stroke-width="1.2" opacity="0.55"/>
+<path d="M170,26 L170,165" fill="none" stroke="#1e2a4a" stroke-width="1.2" stroke-dasharray="4 3"/>
+<text x="8" y="126" font-size="10" fill="#1e2a4a" text-anchor="start">continental plate</text>
+<line x1="20" y1="138" x2="78" y2="138" stroke="#1e2a4a" stroke-width="2" marker-end="url(#ah)"/>
+<text x="332" y="126" font-size="10" fill="#1e2a4a" text-anchor="end">continental plate</text>
+<line x1="320" y1="138" x2="262" y2="138" stroke="#1e2a4a" stroke-width="2" marker-end="url(#ah)"/>
+<text x="170" y="190" font-size="10" fill="#1e2a4a" text-anchor="middle">mantle</text>
+<line x1="150" y1="134" x2="150" y2="108" stroke="#1e2a4a" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="190" y1="134" x2="190" y2="108" stroke="#1e2a4a" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="252" y1="34" x2="196" y2="50" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="196" cy="50" r="1.6" fill="#1e2a4a"/><circle cx="252" cy="34" r="8" fill="#1e2a4a"/><text x="252" y="37.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">A</text>
+</svg>

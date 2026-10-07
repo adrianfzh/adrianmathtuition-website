@@ -53,6 +53,9 @@ Talk to Adrian in plain, short words. No jargon.
 - **7 Oct 2026 — D practice by skill built.** Everything in Adrian's order is now built except A5 (photo
   hand-in, waiting on the handwriting reader) and Geography's maps / photographs / diagrams.
 
+- **7 Oct 2026 — twelve Geography diagrams drawn and listed** (g21–g23, 15 questions). Left for Geography:
+  maps and photographs (photographs need a source — USGS / NASA public-domain material is the first place to look).
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

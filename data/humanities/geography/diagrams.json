@@ -1,0 +1,123 @@
+[
+ {
+  "key": "relief-rain",
+  "title": "Relief rain and the rain shadow",
+  "shows": "A side view of a mountain with the sea on its left. A blue arrow labelled 'wind' blows from over the sea towards the mountain, and a second blue arrow shows the air moving up the left-hand slope, the slope facing the sea. A cloud sits above this slope near the top and rain falls from it onto the slope. On the right-hand slope, away from the sea, two red arrows show air sinking down the slope; there is no cloud and no rain on that side. Word labels: 'wind', 'sea', 'mountain'. Letter A is on the slope facing the sea, B is in the cloud, C is on the slope away from the sea.",
+  "letters": {
+   "A": "the windward side of the mountain (the slope facing the wind from the sea), where the air rises and the rain falls",
+   "B": "the cloud formed where the rising air has cooled and its water vapour has condensed",
+   "C": "the leeward side of the mountain (the rain shadow), where dry air sinks and warms and little rain falls"
+  }
+ },
+ {
+  "key": "convectional-rain",
+  "title": "How convectional rain forms",
+  "shows": "A side view of flat ground with the sun in the top left corner. Three yellow arrows run from the sun down to the ground. To the right, three red arrows point straight up from the ground towards the base of a tall, large cloud. Under the right-hand part of the cloud, many lines of heavy rain fall to the ground. Word label: 'ground'. Numbers in circles: 1 beside the sun's rays reaching the ground, 2 beside the red arrows rising from the ground, 3 in the cloud, 4 beside the rain.",
+  "letters": {
+   "1": "the sun's rays heating the ground strongly, which warms the air above it",
+   "2": "the warm air expanding, becoming less dense and rising",
+   "3": "the rising air cooling and its water vapour condensing to form a tall cloud",
+   "4": "the water droplets growing large and heavy and falling as heavy rain"
+  }
+ },
+ {
+  "key": "sea-breeze",
+  "title": "A sea breeze at a coast in the day",
+  "shows": "A side view of a coast with the land on the left and the sea on the right, and the sun in the sky above the land. The land is labelled 'land 32 °C' and the sea is labelled 'sea 27 °C'. Four arrows make a loop turning clockwise: a red arrow rises from the land; a red arrow high up runs from above the land to above the sea; a blue arrow sinks towards the sea; and a blue arrow just above the surface runs from the sea to the land. Letter A is on the low arrow from the sea to the land, B is beside the arrow rising from the land. Pressure is not labelled.",
+  "letters": {
+   "A": "the sea breeze: cooler air moving near the surface from the sea (higher pressure) to the land (lower pressure)",
+   "B": "warm air rising over the hotter land, which leaves low pressure over the land"
+  }
+ },
+ {
+  "key": "greenhouse-effect",
+  "title": "The greenhouse effect",
+  "shows": "A side view from the Earth's surface at the bottom up to space at the top, with the sun in the top left corner. A grey dotted band across the middle is labelled 'greenhouse gases'. A yellow arrow runs from the sun down through the band to the surface. A red arrow rises from the surface and stops at the band. A red arrow curves from the band back down to the surface. A red arrow rises from the surface straight through the band and out to space. Word labels: 'space', 'greenhouse gases', 'Earth's surface'. Letter A is on the yellow arrow from the sun, B on the red arrow rising to the band, C on the red arrow curving back down, D on the red arrow going out to space.",
+  "letters": {
+   "A": "shortwave radiation from the Sun passing through the atmosphere and reaching the Earth's surface",
+   "B": "longwave radiation (heat) given off by the warmed surface of the Earth",
+   "C": "longwave radiation absorbed by greenhouse gases and sent back down to the surface",
+   "D": "longwave radiation that escapes to space"
+  }
+ },
+ {
+  "key": "earth-layers",
+  "title": "The layers of the Earth",
+  "shows": "A cut-away drawing of the Earth. The Earth is a round globe with blue sea and brown land on its surface. A quarter of it (the top right) has been cut away to show the inside as four layers, one inside the other. A is the thin outermost layer at the surface. B is the thick layer below it, the thickest of the four. C is the next layer in, around the centre. D is the small ball-shaped layer at the very centre. Each layer is a different colour. There are no word labels, only the letters A, B, C and D.",
+  "letters": {
+   "A": "the crust (the thin outermost layer)",
+   "B": "the mantle (the thick layer below the crust)",
+   "C": "the outer core",
+   "D": "the inner core (at the centre)"
+  }
+ },
+ {
+  "key": "convection-currents",
+  "title": "Convection currents in the mantle",
+  "shows": "A cross-section through the top part of the Earth. At the bottom is a band labelled \"core (very hot)\". Above it is a thick layer labelled \"mantle\". At the top are two plates, A on the left and B on the right, with a narrow gap between them filled with red magma. In the mantle there are two loops of arrows, one under each plate. In each loop, red arrows show hot material rising from just above the core in the middle of the drawing, up towards the gap between the plates, then spreading sideways under the plate, away from the gap. Blue arrows then show the material sinking at the outer side and flowing back along the top of the core towards the middle. The loop on the left is marked C. Above the plates, a dark arrow over plate A points left and a dark arrow over plate B points right, showing the two plates moving apart.",
+  "letters": {
+   "A": "the plate on the left, moving to the left",
+   "B": "the plate on the right, moving to the right",
+   "C": "a convection current in the mantle (the loop of rising, spreading and sinking mantle material)"
+  }
+ },
+ {
+  "key": "divergent-ridge",
+  "title": "A divergent boundary between two oceanic plates",
+  "shows": "A cross-section under the sea. At the top is the sea (labelled \"sea\"). Below it are two grey oceanic plates, one on the left and one on the right, with a gap between them in the middle. A dark arrow on the left plate points left and a dark arrow on the right plate points right: the plates are moving apart. Next to the gap, the sea floor on both sides rises into a raised ridge with a small dip in the middle; the ridge is marked A. Below the plates is the mantle (labelled \"mantle\"). Red magma, marked B, rises from the mantle up through the gap between the plates to the sea floor, with an arrow pointing up. The plate on the right is marked C.",
+  "letters": {
+   "A": "the mid-ocean ridge (the raised sea floor on both sides of the gap)",
+   "B": "magma rising from the mantle into the gap between the plates",
+   "C": "the oceanic plate on the right, moving to the right, away from the other plate"
+  }
+ },
+ {
+  "key": "transform-fault",
+  "title": "A transform boundary",
+  "shows": "A block diagram of a piece of the Earth's crust, seen from above at an angle, so the flat land on top and two cut sides can be seen. A straight line, marked A, runs across the top from the front to the back and down the front side, splitting the block into two plates: \"Plate X\" on the left and \"Plate Y\" on the right. An arrow on Plate X points towards the back of the block. An arrow on Plate Y points towards the front. So the two plates are sliding past each other in opposite directions along line A. A road crosses the land from left to right, but it is broken at line A: the part on Plate X lies further back than the part on Plate Y, so the two parts no longer meet. The land is flat on both plates; no mountains, volcanoes or magma are drawn.",
+  "letters": {
+   "A": "the fault (the transform plate boundary) between Plate X and Plate Y"
+  }
+ },
+ {
+  "key": "subduction-zone",
+  "title": "Oceanic plate meeting a continental plate",
+  "shows": "A cross-section of a convergent plate boundary. On the left is the sea, with an oceanic plate (labelled \"oceanic plate\") under it; an arrow shows it moving right, towards the land. On the right is a thicker continental plate (labelled \"continental plate\") with land above sea level; an arrow shows it moving left, towards the sea. Where the two plates meet, the oceanic plate bends and slopes down under the continental plate into the mantle (labelled \"mantle\"); an arrow beside it points down the slope. Where the oceanic plate bends down there is a deep, narrow dip in the sea floor at the edge of the land, marked A (the ocean trench). The sinking part of the oceanic plate is marked B. From the sinking plate, deep in the mantle, a red line of magma rises (an arrow points up) through the mantle and the continental plate, marked C. It reaches the surface at a cone-shaped volcano on the continental plate, with a small cloud of ash above it, marked D. The words \"trench\", \"subduction\", \"magma\" and \"volcano\" are not printed.",
+  "letters": {
+   "A": "the ocean trench — the deep dip in the sea floor where the oceanic plate bends down under the continental plate",
+   "B": "the oceanic plate sinking (subducting) under the continental plate into the mantle",
+   "C": "magma rising from the mantle above the sinking plate, through the continental plate",
+   "D": "a volcano on the continental plate"
+  }
+ },
+ {
+  "key": "fold-mountains",
+  "title": "Two continental plates colliding",
+  "shows": "A cross-section of a convergent plate boundary between two continental plates, both labelled \"continental plate\", lying on the mantle (labelled \"mantle\"). A large arrow on the left plate points right and a large arrow on the right plate points left, so the plates move towards each other. Neither plate goes down into the mantle. Where they meet (a dashed line marks the join) the crust is thicker and is pushed up into a range of high, jagged peaks; two small arrows point upwards under the peaks. Lines inside the crust are flat away from the join and bent into wavy folds under the peaks, showing the rock layers squeezed and folded. The range of peaks is marked A. There is no sea, no magma and no volcano. The words \"fold mountains\" are not printed.",
+  "letters": {
+   "A": "fold mountains — the crust squeezed, folded and pushed up where the two continental plates collide"
+  }
+ },
+ {
+  "key": "stratovolcano",
+  "title": "Cross-section of a volcano",
+  "shows": "A cross-section of a stratovolcano standing on the ground (labelled \"ground\"). It is a tall cone with steep sides that get steeper towards the top. At the top is a bowl-shaped opening, marked A (the crater), with a cloud of ash above it. A narrow red pipe runs straight up the middle of the volcano from below the ground to the opening at the top, marked B (the vent). The inside of the cone is drawn as bands of two colours, one after another, lying along the slopes, marked C (alternating layers of ash and lava). Below the ground, under the volcano, is a large red oval pool joined to the bottom of the pipe, marked D (the magma chamber). The words \"crater\", \"vent\", \"ash\", \"lava\" and \"magma chamber\" are not printed.",
+  "letters": {
+   "A": "the crater — the bowl-shaped opening at the top of the volcano",
+   "B": "the vent — the pipe through which magma rises from the magma chamber to the crater",
+   "C": "alternating layers of ash and lava that make up the cone",
+   "D": "the magma chamber under the volcano"
+  }
+ },
+ {
+  "key": "tsunami-stages",
+  "title": "From the sea floor to the coast",
+  "shows": "A side view from the deep ocean (labelled \"deep ocean\") on the left to the coast (labelled \"coast\", with a small house on the land) on the right. The sea floor (labelled \"sea floor\") is deep and flat on the left and slopes up to the coast, so the water is shallow near the land. Stage 1, under the sea floor on the left: a red star marks an earthquake, and a block of the sea floor between two dashed lines (faults) has been lifted up; an arrow points up. Stage 2, directly above it: the sea surface bulges upwards; an arrow in the water points up. Stage 3, over the deep ocean: a line of low, widely spaced waves; a long arrow under them points towards the coast. Stage 4, in the shallow water next to the coast: the waves get taller and closer together, ending in one very tall wave about to reach the land; the arrow under them points towards the coast and is much shorter than the one at stage 3. The numbers 1 to 4 are in circles. The words \"earthquake\", \"tsunami\", \"fast\" and \"slow\" are not printed.",
+  "letters": {
+   "1": "an earthquake under the sea floor suddenly lifts part of the sea floor",
+   "2": "the sea water above the lifted sea floor is pushed up (displaced)",
+   "3": "low waves travelling fast across the deep ocean",
+   "4": "the waves slow down and grow tall in the shallow water near the coast"
+  }
+ }
+]

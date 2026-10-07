@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+  <defs>
+    <marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#c0442d"/></marker>
+    <marker id="ac" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#2c6e8f"/></marker>
+    <marker id="as" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#d99a1c"/></marker>
+  </defs>
+  <rect x="0" y="0" width="340" height="220" fill="#fff"/>
+  <rect x="0" y="186" width="340" height="34" fill="#cdb58a"/>
+  <line x1="0" y1="186" x2="340" y2="186" stroke="#1e2a4a" stroke-width="1.2"/>
+  <g stroke="#d99a1c" stroke-width="1.6" stroke-linecap="round"><circle cx="38" cy="36" r="13" fill="#f6c544"/><line x1="38" y1="19" x2="38" y2="14" transform="rotate(0 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(45 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(90 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(135 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(180 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(225 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(270 38 36)"/>
+<line x1="38" y1="19" x2="38" y2="14" transform="rotate(315 38 36)"/></g>
+  <g stroke="#d99a1c" stroke-width="1.6">
+    <line x1="48" y1="62" x2="72" y2="180" marker-end="url(#as)"/>
+    <line x1="60" y1="54" x2="104" y2="180" marker-end="url(#as)"/>
+    <line x1="68" y1="44" x2="136" y2="180" marker-end="url(#as)"/>
+  </g>
+  <path d="M168,112 a16,16 0 0 1 2,-30 a17,17 0 0 1 10,-28 a22,22 0 0 1 34,-22 a26,26 0 0 1 46,2 a22,22 0 0 1 30,26 a17,17 0 0 1 8,28 a15,15 0 0 1 -6,24 Z" fill="#dfe5ea" stroke="#1e2a4a" stroke-width="1.2"/>
+  <g stroke="#c0442d" stroke-width="2">
+    <line x1="166" y1="180" x2="166" y2="122" marker-end="url(#aw)"/>
+    <line x1="186" y1="180" x2="186" y2="122" marker-end="url(#aw)"/>
+    <line x1="206" y1="180" x2="206" y2="122" marker-end="url(#aw)"/>
+  </g>
+  <g stroke="#5b8fb9" stroke-width="1.8" stroke-linecap="round">
+    <line x1="244" y1="120" x2="240" y2="136"/><line x1="258" y1="120" x2="254" y2="136"/><line x1="272" y1="120" x2="268" y2="136"/><line x1="286" y1="120" x2="282" y2="136"/><line x1="300" y1="120" x2="296" y2="136"/>
+    <line x1="240" y1="142" x2="236" y2="158"/><line x1="254" y1="142" x2="250" y2="158"/><line x1="268" y1="142" x2="264" y2="158"/><line x1="282" y1="142" x2="278" y2="158"/><line x1="296" y1="142" x2="292" y2="158"/>
+    <line x1="236" y1="164" x2="232" y2="180"/><line x1="250" y1="164" x2="246" y2="180"/><line x1="264" y1="164" x2="260" y2="180"/><line x1="278" y1="164" x2="274" y2="180"/><line x1="292" y1="164" x2="288" y2="180"/>
+  </g>
+  <text x="170" y="207" font-size="11" fill="#1e2a4a" text-anchor="middle">ground</text>
+  <circle cx="40" cy="150" r="8" fill="#1e2a4a"/><text x="40" y="154" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">1</text>
+  <line x1="48" y1="150" x2="64" y2="150" stroke="#1e2a4a" stroke-width="1"/>
+  <circle cx="146" cy="152" r="8" fill="#1e2a4a"/><text x="146" y="156" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">2</text>
+  <circle cx="236" cy="66" r="8" fill="#1e2a4a"/><text x="236" y="70" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">3</text>
+  <circle cx="318" cy="150" r="8" fill="#1e2a4a"/><text x="318" y="154" font-size="11" font-weight="700" fill="#fff" text-anchor="middle">4</text>
+  <line x1="310" y1="150" x2="300" y2="150" stroke="#1e2a4a" stroke-width="1"/>
+</svg>

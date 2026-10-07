@@ -6344,5 +6344,898 @@
     ]
    }
   ]
+ },
+ {
+  "id": "g21",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Reading diagrams: plates",
+  "issue": "Reading diagrams of the Earth's layers, convection currents and plate boundaries",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g21-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1, then name the layers marked A and B and describe one feature of each.",
+    "rules": [
+     "One mark for each correct name and one mark for one feature of that layer.",
+     "A second feature of the same layer earns nothing more."
+    ],
+    "diagram": {
+     "key": "earth-layers",
+     "caption": "Fig. 1: A cut-away of the Earth"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Layer A is the crust."
+     },
+     {
+      "id": "b",
+      "text": "The crust is the thinnest layer, only a few kilometres to about 70 kilometres thick."
+     },
+     {
+      "id": "c",
+      "text": "The crust is solid rock; together with the top of the mantle it is broken into tectonic plates."
+     },
+     {
+      "id": "d",
+      "text": "Layer B is the mantle."
+     },
+     {
+      "id": "e",
+      "text": "The mantle is the thickest layer, about 2900 kilometres thick."
+     },
+     {
+      "id": "f",
+      "text": "The mantle is very hot rock that is mostly solid but can flow slowly."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The Earth is made of four layers and each one is different. Fig. 1 shows them with the letters A to D."
+     },
+     {
+      "level": 1,
+      "text": "A is the crust."
+     },
+     {
+      "level": 2,
+      "text": "A is the crust. It is the thinnest layer of the Earth."
+     },
+     {
+      "level": 3,
+      "text": "A is the crust. It is the thinnest layer of the Earth. B is the mantle."
+     },
+     {
+      "level": 4,
+      "text": "A is the crust. It is the thinnest layer of the Earth. B is the mantle. It is the thickest of all the layers."
+     }
+    ]
+   },
+   {
+    "id": "g21-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, explain how the movement marked C makes plates A and B move apart.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "diagram": {
+     "key": "convection-currents",
+     "caption": "Fig. 1: A cross-section through part of the Earth"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Heat from the core heats the mantle material just above it."
+     },
+     {
+      "id": "b",
+      "text": "The heated mantle material expands, becomes less dense and rises towards the crust."
+     },
+     {
+      "id": "c",
+      "text": "Below the plates the material spreads sideways and drags the plates above along with it, so A and B move apart."
+     },
+     {
+      "id": "d",
+      "text": "As it moves away from the heat, the material cools, becomes denser and sinks."
+     },
+     {
+      "id": "e",
+      "text": "Near the core it is heated again, so the movement keeps going round as a convection current."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "C is in the mantle and it goes round in a loop. Plates A and B are moving away from each other, which is what the arrows on top show."
+     },
+     {
+      "level": 1,
+      "text": "The core is very hot, so it heats up the mantle rock that is just above it."
+     },
+     {
+      "level": 2,
+      "text": "The core is very hot, so it heats up the mantle rock that is just above it. This hot rock expands and gets less dense, so it rises up towards the crust."
+     },
+     {
+      "level": 3,
+      "text": "The core is very hot, so it heats up the mantle rock that is just above it. This hot rock expands and gets less dense, so it rises up towards the crust. When it gets to the bottom of the plates it spreads out to the two sides and pulls plates A and B along with it, so they move away from each other."
+     },
+     {
+      "level": 4,
+      "text": "The core is very hot, so it heats up the mantle rock that is just above it. This hot rock expands and gets less dense, so it rises up towards the crust. When it gets to the bottom of the plates it spreads out to the two sides and pulls plates A and B along with it, so they move away from each other. After that the rock cools down, gets denser and sinks back down."
+     }
+    ]
+   },
+   {
+    "id": "g21-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, name the landform marked A and explain how it forms.",
+    "rules": [
+     "One mark for naming A. Each step in how it forms earns credit once."
+    ],
+    "diagram": {
+     "key": "divergent-ridge",
+     "caption": "Fig. 1: A plate boundary under the sea"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "A is a mid-ocean ridge (an oceanic ridge)."
+     },
+     {
+      "id": "b",
+      "text": "Two oceanic plates move apart from each other (they diverge)."
+     },
+     {
+      "id": "c",
+      "text": "Magma (B) rises from the mantle to fill the gap between the plates."
+     },
+     {
+      "id": "d",
+      "text": "The magma cools and hardens to form new oceanic crust (new sea floor)."
+     },
+     {
+      "id": "e",
+      "text": "Over time more and more new rock builds up into a long raised ridge of undersea mountains."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A is an ocean trench. It is found on the sea floor and the water there is very deep."
+     },
+     {
+      "level": 1,
+      "text": "A is a mid-ocean ridge."
+     },
+     {
+      "level": 2,
+      "text": "A is a mid-ocean ridge. It forms where two oceanic plates are moving away from each other."
+     },
+     {
+      "level": 3,
+      "text": "A is a mid-ocean ridge. It forms where two oceanic plates are moving away from each other. Magma comes up from the mantle into the gap between the two plates."
+     },
+     {
+      "level": 4,
+      "text": "A is a mid-ocean ridge. It forms where two oceanic plates are moving away from each other. Magma comes up from the mantle into the gap between the two plates. The magma then cools and hardens into new sea floor rock."
+     }
+    ]
+   },
+   {
+    "id": "g21-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe what is happening at this plate boundary.",
+    "rules": [
+     "Describe only what the figure shows. A reason earns nothing."
+    ],
+    "diagram": {
+     "key": "transform-fault",
+     "caption": "Fig. 1: A plate boundary seen from above"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Plate X and Plate Y slide past each other in opposite directions."
+     },
+     {
+      "id": "b",
+      "text": "The boundary between the plates is a fault (A), a long crack through the crust."
+     },
+     {
+      "id": "c",
+      "text": "The road that crosses the boundary has been broken, and its two parts no longer line up."
+     },
+     {
+      "id": "d",
+      "text": "The land on both sides stays level, with no mountains or volcanoes formed."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Fig. 1 shows a plate boundary. There are two plates, X and Y, and there is a road on top of them."
+     },
+     {
+      "level": 1,
+      "text": "Plate X and Plate Y are sliding past each other, going in opposite directions."
+     },
+     {
+      "level": 2,
+      "text": "Plate X and Plate Y are sliding past each other, going in opposite directions. The road that used to go straight across has been cut into two parts, and the two parts do not join up any more."
+     },
+     {
+      "level": 3,
+      "text": "Plate X and Plate Y are sliding past each other, going in opposite directions. The road that used to go straight across has been cut into two parts, and the two parts do not join up any more. The line A between the two plates is a fault, which is a long crack going down through the crust."
+     }
+    ]
+   },
+   {
+    "id": "g21-q5",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, explain why earthquakes happen along the line marked A.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "diagram": {
+     "key": "transform-fault",
+     "caption": "Fig. 1: A plate boundary seen from above"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Plate X and Plate Y move past each other in opposite directions along the fault."
+     },
+     {
+      "id": "b",
+      "text": "The rocks on the two sides are rough, so friction makes the plates get stuck (lock) against each other."
+     },
+     {
+      "id": "c",
+      "text": "The plates keep trying to move, so stress builds up in the rocks along the fault."
+     },
+     {
+      "id": "d",
+      "text": "When the stress becomes greater than the friction, the rocks slip suddenly and release the stored energy as seismic waves that shake the ground."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "An earthquake is when the ground shakes very strongly and buildings can fall down. Line A is where earthquakes happen in Fig. 1."
+     },
+     {
+      "level": 1,
+      "text": "Plate X and Plate Y are moving past each other in opposite ways along A."
+     },
+     {
+      "level": 2,
+      "text": "Plate X and Plate Y are moving past each other in opposite ways along A. The edges of the plates are rough, so friction makes them get stuck together."
+     },
+     {
+      "level": 3,
+      "text": "Plate X and Plate Y are moving past each other in opposite ways along A. The edges of the plates are rough, so friction makes them get stuck together. The plates still keep trying to move, so more and more stress builds up in the rocks."
+     },
+     {
+      "level": 4,
+      "text": "Plate X and Plate Y are moving past each other in opposite ways along A. The edges of the plates are rough, so friction makes them get stuck together. The plates still keep trying to move, so more and more stress builds up in the rocks. In the end the stress is too much for the friction and the rocks suddenly slip, and the energy is let out as seismic waves which make the ground shake."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g22",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Reading diagrams: hazards",
+  "issue": "Reading diagrams of plate boundaries, a volcano and a tsunami",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g22-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. Name the feature marked A and explain how it forms.",
+    "diagram": {
+     "key": "subduction-zone",
+     "caption": "Fig. 1: A plate boundary"
+    },
+    "rules": [
+     "Naming the feature earns one mark; each step in how it forms earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "A is an ocean trench (oceanic trench)."
+     },
+     {
+      "id": "b",
+      "text": "An oceanic plate and a continental plate move towards each other (converge)."
+     },
+     {
+      "id": "c",
+      "text": "The oceanic plate is denser than the continental plate, so it sinks (subducts) under it."
+     },
+     {
+      "id": "d",
+      "text": "A deep, narrow dip forms in the sea floor where the oceanic plate bends downwards."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A is a part of the sea floor that lies between the sea and the land. Plates are large pieces of the Earth's crust."
+     },
+     {
+      "level": 1,
+      "text": "A is an ocean trench."
+     },
+     {
+      "level": 2,
+      "text": "A is an ocean trench. It is found where an oceanic plate and a continental plate are moving towards each other."
+     },
+     {
+      "level": 3,
+      "text": "A is an ocean trench. It is found where an oceanic plate and a continental plate are moving towards each other. The oceanic plate is denser, so it sinks under the continental plate."
+     }
+    ]
+   },
+   {
+    "id": "g22-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, explain how the volcano marked D is formed.",
+    "diagram": {
+     "key": "subduction-zone",
+     "caption": "Fig. 1: A plate boundary"
+    },
+    "rules": [
+     "Each step in the process earns credit once.",
+     "Accept that the sinking plate melts, or that water from the plate makes the mantle above it melt."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The oceanic plate (B) sinks (subducts) under the continental plate into the mantle."
+     },
+     {
+      "id": "b",
+      "text": "As the plate sinks into the hot mantle, magma forms."
+     },
+     {
+      "id": "c",
+      "text": "The magma (C) is less dense than the rock around it, so it rises through cracks in the continental crust."
+     },
+     {
+      "id": "d",
+      "text": "The magma reaches the surface and erupts as lava."
+     },
+     {
+      "id": "e",
+      "text": "The lava and ash cool and harden, building up over many eruptions into a volcano."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "D is a volcano on the continental plate. Volcanoes are dangerous to the people who live near them."
+     },
+     {
+      "level": 1,
+      "text": "The oceanic plate at B sinks under the continental plate."
+     },
+     {
+      "level": 2,
+      "text": "The oceanic plate at B sinks under the continental plate. As it goes deeper into the hot mantle, the plate melts and forms magma."
+     },
+     {
+      "level": 3,
+      "text": "The oceanic plate at B sinks under the continental plate. As it goes deeper into the hot mantle, the plate melts and forms magma. The magma at C is lighter than the rock around it, so it rises up through cracks in the continental plate."
+     },
+     {
+      "level": 4,
+      "text": "The oceanic plate at B sinks under the continental plate. As it goes deeper into the hot mantle, the plate melts and forms magma. The magma at C is lighter than the rock around it, so it rises up through cracks in the continental plate. It erupts at the surface as lava."
+     }
+    ]
+   },
+   {
+    "id": "g22-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. Name the landform marked A and explain how it forms.",
+    "diagram": {
+     "key": "fold-mountains",
+     "caption": "Fig. 1: Two plates meeting"
+    },
+    "rules": [
+     "Naming the feature earns one mark; each step in how it forms earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "A is fold mountains (a fold mountain range)."
+     },
+     {
+      "id": "b",
+      "text": "Two continental plates move towards each other and collide."
+     },
+     {
+      "id": "c",
+      "text": "The two plates have a similar density (both are too light to sink), so neither sinks into the mantle."
+     },
+     {
+      "id": "d",
+      "text": "The rock layers between them are squeezed (compressed), so they fold and are pushed upwards."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A is a very high place on the land where the weather is cold. Many people like to climb it."
+     },
+     {
+      "level": 1,
+      "text": "A is fold mountains."
+     },
+     {
+      "level": 2,
+      "text": "A is fold mountains. They form when two continental plates move towards each other and collide."
+     },
+     {
+      "level": 3,
+      "text": "A is fold mountains. They form when two continental plates move towards each other and collide. The layers of rock between them are squeezed, so they bend and are pushed upwards."
+     }
+    ]
+   },
+   {
+    "id": "g22-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe the features of the volcano shown.",
+    "diagram": {
+     "key": "stratovolcano",
+     "caption": "Fig. 1: A cross-section of a volcano"
+    },
+    "rules": [
+     "Describe only. Saying how the volcano was formed earns nothing.",
+     "A feature may be named or clearly described; the letter alone earns nothing.",
+     "The channel up the middle may be called the vent or the pipe."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "It is a tall cone with steep sides."
+     },
+     {
+      "id": "b",
+      "text": "It is made of alternating layers of ash and lava (C)."
+     },
+     {
+      "id": "c",
+      "text": "It has a crater at the top (A)."
+     },
+     {
+      "id": "d",
+      "text": "A vent (pipe) runs up through the middle of the volcano to the crater (B)."
+     },
+     {
+      "id": "e",
+      "text": "There is a magma chamber under the volcano (D)."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Fig. 1 shows a volcano. Volcanoes are found near plate boundaries and an eruption can harm people."
+     },
+     {
+      "level": 1,
+      "text": "The volcano has steep sides."
+     },
+     {
+      "level": 2,
+      "text": "The volcano has steep sides. It is made of layers of ash and lava, one on top of another."
+     },
+     {
+      "level": 3,
+      "text": "The volcano has steep sides. It is made of layers of ash and lava, one on top of another. There is a crater at the top, marked A."
+     },
+     {
+      "level": 4,
+      "text": "The volcano has steep sides. It is made of layers of ash and lava, one on top of another. There is a crater at the top, marked A. Under the volcano there is a magma chamber, marked D."
+     }
+    ]
+   },
+   {
+    "id": "g22-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe what happens at each of the stages 1 to 4 as a tsunami forms and reaches the coast.",
+    "diagram": {
+     "key": "tsunami-stages",
+     "caption": "Fig. 1: From the deep ocean to the coast"
+    },
+    "rules": [
+     "Each stage earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Stage 1: an earthquake under the sea floor makes part of the sea floor move up suddenly."
+     },
+     {
+      "id": "b",
+      "text": "Stage 2: the sea water above it is pushed up (displaced), forming waves."
+     },
+     {
+      "id": "c",
+      "text": "Stage 3: the waves travel very fast across the deep ocean, with a low height."
+     },
+     {
+      "id": "d",
+      "text": "Stage 4: in the shallow water near the coast the waves slow down and grow much taller."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tsunami is a hazard that comes from the sea. It can flood houses like the one in Fig. 1 and many people may die."
+     },
+     {
+      "level": 1,
+      "text": "At stage 1 an earthquake happens under the sea floor and part of the sea floor is suddenly lifted up."
+     },
+     {
+      "level": 2,
+      "text": "At stage 1 an earthquake happens under the sea floor and part of the sea floor is suddenly lifted up. At stage 2 the sea water above it is pushed up."
+     },
+     {
+      "level": 3,
+      "text": "At stage 1 an earthquake happens under the sea floor and part of the sea floor is suddenly lifted up. At stage 2 the sea water above it is pushed up. At stage 3 the waves move very fast across the deep ocean, but they are low."
+     },
+     {
+      "level": 4,
+      "text": "At stage 1 an earthquake happens under the sea floor and part of the sea floor is suddenly lifted up. At stage 2 the sea water above it is pushed up. At stage 3 the waves move very fast across the deep ocean, but they are low. At stage 4 the water is shallow near the coast, so the waves slow down and become much taller."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g23",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Reading diagrams: weather and climate",
+  "issue": "Using a diagram to explain relief rain, convectional rain, a sea breeze and the greenhouse effect",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g23-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. Explain why a lot of rain falls on the side of the mountain marked A.",
+    "diagram": {
+     "key": "relief-rain",
+     "caption": "Fig. 1: Air moving over a mountain beside the sea"
+    },
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The wind brings moist air from the sea to the mountain."
+     },
+     {
+      "id": "b",
+      "text": "The mountain forces the air to rise up the slope at A, the windward side."
+     },
+     {
+      "id": "c",
+      "text": "As the air rises, it cools."
+     },
+     {
+      "id": "d",
+      "text": "The water vapour in the air condenses into water droplets, forming the cloud at B."
+     },
+     {
+      "id": "e",
+      "text": "The droplets grow larger and heavier and fall as rain on side A."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A is the side of the mountain next to the sea. The picture shows a cloud above it and rain coming down, so it is a wet place."
+     },
+     {
+      "level": 1,
+      "text": "The wind blows damp air in from the sea towards the mountain."
+     },
+     {
+      "level": 2,
+      "text": "The wind blows damp air in from the sea towards the mountain. When this air reaches the mountain it cannot go through, so it is pushed up the slope at A."
+     },
+     {
+      "level": 3,
+      "text": "The wind blows damp air in from the sea towards the mountain. When this air reaches the mountain it cannot go through, so it is pushed up the slope at A. As the air gets higher it becomes cooler."
+     },
+     {
+      "level": 4,
+      "text": "The wind blows damp air in from the sea towards the mountain. When this air reaches the mountain it cannot go through, so it is pushed up the slope at A. As the air gets higher it becomes cooler. The water vapour in it then condenses into tiny drops of water, and these make the cloud at B."
+     }
+    ]
+   },
+   {
+    "id": "g23-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, explain why the side of the mountain marked C receives little rain.",
+    "diagram": {
+     "key": "relief-rain",
+     "caption": "Fig. 1: Air moving over a mountain beside the sea"
+    },
+    "rules": [
+     "Explain only. Saying that C is dry or has no cloud earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The air has already lost most of its moisture as rain on side A."
+     },
+     {
+      "id": "b",
+      "text": "At C the air sinks down the slope."
+     },
+     {
+      "id": "c",
+      "text": "As the air sinks, it warms up."
+     },
+     {
+      "id": "d",
+      "text": "The warmer air can hold more water vapour, so the vapour does not condense and no cloud forms."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "C is on the far side of the mountain, away from the sea. In the picture there is no cloud above C and no rain is drawn there, so it is dry."
+     },
+     {
+      "level": 1,
+      "text": "By the time the air gets over the top it has already dropped most of its water as rain on side A."
+     },
+     {
+      "level": 2,
+      "text": "By the time the air gets over the top it has already dropped most of its water as rain on side A. At C the air is going down the slope."
+     },
+     {
+      "level": 3,
+      "text": "By the time the air gets over the top it has already dropped most of its water as rain on side A. At C the air is going down the slope. Air that sinks like this gets warmer."
+     }
+    ]
+   },
+   {
+    "id": "g23-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, explain why the air rises at stage 2 and why a cloud forms at stage 3.",
+    "diagram": {
+     "key": "convectional-rain",
+     "caption": "Fig. 1: Four stages in a day with heavy rain"
+    },
+    "rules": [
+     "Each step earns credit once. Naming a stage without explaining it earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "At stage 1 the sun heats the ground, and the ground warms the air above it."
+     },
+     {
+      "id": "b",
+      "text": "The warm air expands and becomes less dense, so it rises."
+     },
+     {
+      "id": "c",
+      "text": "As the air rises, it cools."
+     },
+     {
+      "id": "d",
+      "text": "The water vapour in the cooled air condenses into water droplets, which form the cloud."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "At stage 2 the arrows show the air going up, and at stage 3 there is a very big cloud in the sky. After that it rains heavily at stage 4."
+     },
+     {
+      "level": 1,
+      "text": "At stage 1 the sun makes the ground very hot, and the hot ground heats the air just above it."
+     },
+     {
+      "level": 2,
+      "text": "At stage 1 the sun makes the ground very hot, and the hot ground heats the air just above it. This heated air becomes lighter, or less dense, than the air around it, so it goes up at stage 2."
+     },
+     {
+      "level": 3,
+      "text": "At stage 1 the sun makes the ground very hot, and the hot ground heats the air just above it. This heated air becomes lighter, or less dense, than the air around it, so it goes up at stage 2. Higher up, the air cools down."
+     }
+    ]
+   },
+   {
+    "id": "g23-q4",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1, which shows a coast during the day. Explain why the air at A moves in the direction shown.",
+    "diagram": {
+     "key": "sea-breeze",
+     "caption": "Fig. 1: Air movement at a coast during the day"
+    },
+    "rules": [
+     "Each step earns credit once. Saying only that the wind blows from the sea to the land earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "In the day the land heats up faster than the sea, so the land is hotter (32 °C against 27 °C)."
+     },
+     {
+      "id": "b",
+      "text": "The air above the land is warmed and rises, as shown at B."
+     },
+     {
+      "id": "c",
+      "text": "The rising air leaves an area of low pressure over the land."
+     },
+     {
+      "id": "d",
+      "text": "The air over the sea is cooler and denser, so the pressure over the sea is higher."
+     },
+     {
+      "id": "e",
+      "text": "Air moves from higher pressure to lower pressure, so it moves from the sea to the land."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Arrow A shows the wind blowing from the sea on to the land. This happens at the coast in the day and it makes the beach feel windy."
+     },
+     {
+      "level": 1,
+      "text": "In the day the land heats up more quickly than the sea, which is why the land is 32 °C but the sea is only 27 °C."
+     },
+     {
+      "level": 2,
+      "text": "In the day the land heats up more quickly than the sea, which is why the land is 32 °C but the sea is only 27 °C. The hot land heats the air above it and this air goes up, which is what B shows."
+     },
+     {
+      "level": 3,
+      "text": "In the day the land heats up more quickly than the sea, which is why the land is 32 °C but the sea is only 27 °C. The hot land heats the air above it and this air goes up, which is what B shows. This leaves low pressure over the land."
+     },
+     {
+      "level": 4,
+      "text": "In the day the land heats up more quickly than the sea, which is why the land is 32 °C but the sea is only 27 °C. The hot land heats the air above it and this air goes up, which is what B shows. This leaves low pressure over the land. Air always moves from a place of higher pressure to a place of lower pressure, so it blows in from the sea towards the land."
+     }
+    ]
+   },
+   {
+    "id": "g23-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. Describe what each of the arrows A, B, C and D shows.",
+    "diagram": {
+     "key": "greenhouse-effect",
+     "caption": "Fig. 1: Energy moving between the Sun, the Earth and space"
+    },
+    "rules": [
+     "Saying only which way an arrow points earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "A is shortwave radiation from the Sun passing through the atmosphere to the Earth's surface."
+     },
+     {
+      "id": "b",
+      "text": "B is longwave radiation (heat) given off by the warmed surface of the Earth."
+     },
+     {
+      "id": "c",
+      "text": "C is longwave radiation that greenhouse gases have absorbed and sent back down to the surface."
+     },
+     {
+      "id": "d",
+      "text": "D is longwave radiation that escapes to space."
+     },
+     {
+      "id": "e",
+      "text": "The heat sent back down at C keeps the Earth's surface and lower atmosphere warm."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The arrows show the greenhouse effect, which is when the Earth acts like a greenhouse. Arrows A and C point downwards and arrows B and D point upwards."
+     },
+     {
+      "level": 1,
+      "text": "A is shortwave radiation from the Sun. It passes through the atmosphere and reaches the ground."
+     },
+     {
+      "level": 2,
+      "text": "A is shortwave radiation from the Sun. It passes through the atmosphere and reaches the ground. B is longwave radiation, which is heat, that the warmed ground gives off."
+     },
+     {
+      "level": 3,
+      "text": "A is shortwave radiation from the Sun. It passes through the atmosphere and reaches the ground. B is longwave radiation, which is heat, that the warmed ground gives off. C is some of this heat that the greenhouse gases took in and then sent back down to the ground."
+     },
+     {
+      "level": 4,
+      "text": "A is shortwave radiation from the Sun. It passes through the atmosphere and reaches the ground. B is longwave radiation, which is heat, that the warmed ground gives off. C is some of this heat that the greenhouse gases took in and then sent back down to the ground. D is the heat that is not trapped and goes out into space."
+     }
+    ]
+   }
+  ]
  }
 ]

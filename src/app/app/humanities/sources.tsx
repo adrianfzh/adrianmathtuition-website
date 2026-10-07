@@ -3,6 +3,17 @@
 import type { HumanitiesSource, DataTable } from '@/lib/humanities-questions';
 import { DataChart } from './charts';
 
+/** A drawn diagram a Geography question shows — our own line drawing. */
+export function DiagramCard({ diagram }: { diagram: { key: string; caption: string } }) {
+  return (
+    <figure className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+      <figcaption className="text-sm font-bold text-navy">{diagram.caption}</figcaption>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/humanities/diagrams/${diagram.key}.svg`} alt={diagram.caption} className="w-full h-auto mt-2" />
+    </figure>
+  );
+}
+
 /** A small data table a Geography question gives. */
 export function DataTableCard({ table }: { table: DataTable }) {
   if (table.figure) return <DataChart table={table} kind={table.figure} />;

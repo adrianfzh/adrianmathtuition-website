@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif">
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 Z" fill="#1e2a4a"/></marker></defs>
+<rect x="0" y="0" width="340" height="220" fill="#fff"/>
+<path d="M0,172 L38,172 L42,160 L82,160 L86,172 L175,172 L230,140 L275,90 L296,68 L312,60 L340,56 L340,220 L0,220 Z" fill="#cdb58a"/>
+<path d="M0,74 L30,74 Q62,48 94,74 Q106,81 118,74 Q130,67 142,74 Q154,81 166,74 Q178,67 190,74 Q200,82 210,74 Q220,62 230,72 Q236,78 242,70 C250,56 256,38 272,36 C284,36 290,48 290,60 L296,68 L275,90 L230,140 L175,172 L86,172 L82,160 L42,160 L38,172 L0,172 Z" fill="#9cc7e0"/>
+<path d="M0,74 L30,74 Q62,48 94,74 Q106,81 118,74 Q130,67 142,74 Q154,81 166,74 Q178,67 190,74 Q200,82 210,74 Q220,62 230,72 Q236,78 242,70 C250,56 256,38 272,36 C284,36 290,48 290,60 L296,68" fill="none" stroke="#1e2a4a" stroke-width="1.2"/>
+<path d="M0,172 L38,172 L42,160 L82,160 L86,172 L175,172 L230,140 L275,90 L296,68 L312,60 L340,56" fill="none" stroke="#1e2a4a" stroke-width="1.2" stroke-linejoin="round"/>
+<path d="M40,166 L34,214 M84,166 L90,214" stroke="#1e2a4a" stroke-width="1.2" stroke-dasharray="4 3" fill="none"/>
+<path d="M62,193 l3,6 l7,-2 l-4,6 l5,5 l-7,0 l-1,7 l-4,-6 l-6,3 l2,-7 l-6,-4 l7,-1 Z" fill="#c0442d" stroke="#1e2a4a" stroke-width="0.8"/>
+<rect x="318" y="46" width="14" height="12" fill="#fff" stroke="#1e2a4a" stroke-width="1.2"/><path d="M315,46 L325,37 L335,46 Z" fill="#c0442d" stroke="#1e2a4a" stroke-width="1"/>
+<line x1="62" y1="188" x2="62" y2="165" stroke="#1e2a4a" stroke-width="1.8" marker-end="url(#ah)"/>
+<line x1="62" y1="140" x2="62" y2="90" stroke="#1e2a4a" stroke-width="1.8" marker-end="url(#ah)"/>
+<line x1="105" y1="100" x2="190" y2="100" stroke="#1e2a4a" stroke-width="1.8" marker-end="url(#ah)"/>
+<line x1="226" y1="100" x2="250" y2="100" stroke="#1e2a4a" stroke-width="1.8" marker-end="url(#ah)"/>
+<text x="140" y="135" font-size="10" fill="#1e2a4a" text-anchor="middle">deep ocean</text>
+<text x="140" y="190" font-size="10" fill="#1e2a4a" text-anchor="middle">sea floor</text>
+<text x="314" y="84" font-size="10" fill="#1e2a4a" text-anchor="middle">coast</text>
+<line x1="104" y1="204" x2="75" y2="203" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="75" cy="203" r="1.6" fill="#1e2a4a"/><circle cx="104" cy="204" r="8" fill="#1e2a4a"/><text x="104" y="207.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">1</text>
+<line x1="62" y1="38" x2="62" y2="60" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="62" cy="60" r="1.6" fill="#1e2a4a"/><circle cx="62" cy="38" r="8" fill="#1e2a4a"/><text x="62" y="41.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">2</text>
+<line x1="154" y1="48" x2="154" y2="72" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="154" cy="72" r="1.6" fill="#1e2a4a"/><circle cx="154" cy="48" r="8" fill="#1e2a4a"/><text x="154" y="51.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">3</text>
+<line x1="238" y1="24" x2="262" y2="40" stroke="#1e2a4a" stroke-width="1.2"/><circle cx="262" cy="40" r="1.6" fill="#1e2a4a"/><circle cx="238" cy="24" r="8" fill="#1e2a4a"/><text x="238" y="27.6" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">4</text>
+</svg>

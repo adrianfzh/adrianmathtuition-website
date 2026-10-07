@@ -114,3 +114,35 @@ and two questions `eNN-a`, `eNN-b`: `skill: "geo_evaluate"`, `marks: 9`, `source
   and what happened — only facts you are certain of), then a judgement that is argued, not just stated.
   Level 2 = one side explained properly with its example, the other side only stated, a bare judgement.
   Level 1 = points listed with no explanation. Short paragraphs; 330 words at most; no quotation marks.
+
+## Diagrams (added 7 Oct 2026)
+
+A question may show one of our own **drawn diagrams**: `"diagram": {"key": "<key>", "caption": "Fig. 1: …"}`,
+with "Study Fig. 1 …" / "Using Fig. 1, …" in the question. A diagram is three things:
+
+1. `public/humanities/diagrams/<key>.svg` — the drawing.
+2. An entry in `data/humanities/geography/diagrams.json`: `{key, title, shows, letters}`. `shows` says in
+   plain words everything that is drawn (the reader cannot see the picture); `letters` maps each letter
+   on the drawing (A, B, C …) to what it marks. Never give the answer away in the caption.
+3. Questions that use it, point-marked as usual. A question may ask the student to name what a letter marks
+   and explain how it forms; its points say which letter is which.
+
+**Drawing rules** (so every diagram looks like one family and reads on a phone):
+
+- `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 220">` (height may be 200 to 260). No `<script>`,
+  no `<image>`, no links, no external fonts. `font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif"`.
+- Text is at least `font-size="10"`; a letter label is a navy circle (r 8) with a white bold letter in it,
+  placed ON or right beside the feature, with a thin leader line if it sits outside.
+- Colours: text and outlines `#1e2a4a`; sea `#9cc7e0`; land and continental crust `#cdb58a`; oceanic crust
+  `#8a8f9c`; mantle `#e9a66b`; magma and lava `#c0442d`; cloud `#dfe5ea`; rain `#5b8fb9`; warm air arrows
+  `#c0442d`; cool air arrows `#2c6e8f`; vegetation `#7fa66a`. White background (`<rect>` fill `#fff`).
+- Arrows show movement and have arrowheads (`<marker>`). Line width 1.2 to 2.
+- No title inside the drawing (the caption is on the page). Word labels only where a question does not ask
+  the student to name the thing; otherwise use a letter.
+- It must be CORRECT Geography as the Singapore syllabus teaches it, and simple: a student should see the
+  idea in three seconds.
+
+**Look at it.** Render the SVG to a PNG and open the PNG to check it with your own eyes:
+`node -e "require('sharp')('public/humanities/diagrams/<key>.svg',{density:220}).png().toFile('/tmp/<key>.png')"`
+then read the PNG. Fix overlaps, clipped text, letters off their feature, arrows pointing the wrong way.
+Repeat until it is clean.

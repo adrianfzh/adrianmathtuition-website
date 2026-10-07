@@ -2,7 +2,7 @@
 // 7 Oct 2026). Pure: the unit test runs it over the bank, and
 // scripts/humanities-bench/check-set.ts runs it over a draft. It checks the
 // SHAPE — whether a seeded answer earns its marks is the bench's job.
-import { GEO_CLUSTERS, POINTS_SKILLS, type HumanitiesSet } from './humanities-questions';
+import { GEO_CLUSTERS, POINTS_SKILLS, diagramByKey, type HumanitiesSet } from './humanities-questions';
 import { figureProblem } from './humanities-chart';
 
 const words = (t: string): number => (t.trim() ? t.trim().split(/\s+/).length : 0);
@@ -36,7 +36,11 @@ export function geographyProblems(set: HumanitiesSet): string[] {
     // The points must be able to reach full marks, with at least one to spare for choice.
     const reach = pts.length * (q.develop ? 2 : 1);
     if (reach < marks) at(`the points reach only ${reach} of ${marks} marks`);
-    if (/\btable\b|fig\./i.test(q.question) && !q.table) at('the question names a table or figure it does not carry');
+    if (/\btable\b|fig\./i.test(q.question) && !q.table && !q.diagram) at('the question names a table or figure it does not carry');
+    if (q.diagram) {
+      if (!diagramByKey(q.diagram.key)) at(`diagram ${q.diagram.key} is not in the diagram bank`);
+      if (!/^Fig\. \d+:/.test(q.diagram.caption)) at('diagram caption is not "Fig. N: …"');
+    }
     if (q.table) {
       if (!(q.table.figure ? /^Fig\. \d+:/ : /^Table \d+:/).test(q.table.caption)) at(`caption is not "${q.table.figure ? 'Fig.' : 'Table'} N: …"`);
       const fp = q.table.figure ? figureProblem(q.table, q.table.figure) : null;
