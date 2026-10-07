@@ -206,6 +206,7 @@ ${answer}
 
 RULES
 - Same meaning in different words earns the mark. A paraphrase is not wrong.
+- The student has never seen the scheme. An answer that happens to match the scheme's own wording is simply right; "own words" only rules out words lifted from the PASSAGE.
 - If the question says "in your own words", words lifted straight from the passage for the key idea do not earn the mark.
 - If the question asks for a word or a phrase from the passage, extra words that change or blur the answer do not earn it.
 - A blank, an answer to a different question, or a vague answer with no key idea earns 0.

@@ -154,7 +154,8 @@ async function main() {
     save();
   }
   const verdict = report(rows);
-  save(verdict);
+  // --report-only never writes: a report on SOME sets must not drop the other sets' rows from the file
+  if (!reportOnly) save(verdict);
   process.exit(verdict.pass ? 0 : 1);
 }
 main().catch(e => { console.error(e); process.exit(2); });

@@ -1,0 +1,136 @@
+
+English Practise bench — batch-2026-10-07 — 2496/2496 read, 2349 by the model (about US$70.47)
+
+FAIL  SEEDED    1454/1459 on the seeded mark (100%) · gross misses 2 · unread 0
+FAIL  REPEATS   367/370 the same mark twice (99%) · two apart 1
+FAIL  PADDING   286/287 unmoved (100%)
+PASS  SWAPPED   268/270 earned nothing (99%)
+PASS  SUMMARY   110/110 within one point (100%) · three away 0 · point by point 100%
+
+By kind of answer: full 291/292 · paraphrase 263/263 · wrong 470/470 · vague 160/160 · half 206/208 · lifted 64/66
+By skill:          inference 441/444 · literal 113/113 · own_words 196/198 · language_use 423/423 · vocabulary 88/88 · evidence 66/66 · visual 127/127
+
+Off the mark:
+  na03 Q3 [swapped/swapped] seeded 0/2, read 1 — “He had been tense with fear from the moment it became dark, but holding the hand made him ” — You correctly identified fear, but missed that the comparison shows his heart pounding hard and fast.
+  na05 Q3 [seeded/full] seeded 2/2, read 0 — “A scolding would have been over and done with quickly. The careful kindness dragged on for” — You copied the mark scheme's wording directly instead of using your own words as required.
+  na05 Q3 [repeat/full] seeded 0 (first read)/2, read 2 — “A scolding would have been over and done with quickly. The careful kindness dragged on for” — You captured both ideas: scolding ends quickly, while the gentle kindness lingered and kept reminding her of her mistake.
+  na05 Q3 [padding/full] seeded 0 (first read)/2, read 2 — “I have read the text carefully and I will now write my answer to this question. A scolding” — You correctly explained both that scolding ends quickly and that kindness dragged on reminding her of the mistake.
+  nn02 Q6 [seeded/half] seeded 1/2, read 2 — “Typing is faster, but that does not mean we should stop handwriting, just like we do not s” — both
+  nn02 Q6 [repeat/half] seeded 2 (first read)/2, read 1 — “Typing is faster, but that does not mean we should stop handwriting, just like we do not s” — first idea only
+  nn05 Q6 [seeded/lifted] seeded 0/2, read 1 — “On the breezy ones and the after-rain ones, the only thing stopping us is the habit of the” — habit only, weather lifted
+  nn08 Q5 [seeded/half] seeded 1/2, read 2 — “When nobody speaks up, everyone sees that no one will protect the rule, so they stop follo” — both ideas
+  nn08 Q5 [repeat/half] seeded 2 (first read)/2, read 1 — “When nobody speaks up, everyone sees that no one will protect the rule, so they stop follo” — silence point only
+  vt06 Q3 [seeded/lifted] seeded 0/1, read 1 — “That a mistake is just a puzzle to solve.” — marked
+  vt08 Q4 [swapped/swapped] seeded 0/1, read 1 — “no shushing” — marked
+  summary nn02 [full] seeded points [1,2,3,5,6,7,8,9,10,11] · read [1,2,3,5,6,7,8,9,10,11]
+  summary nn02 [full] seeded points [1,2,3,5,6,7,8,9,10,11] · read [1,2,3,5,6,7,8,9,10,11]
+  summary nn02 [half] seeded points [2,4,6,9,10] · read [2,4,6,9,10]
+  summary nn02 [half] seeded points [2,4,6,9,10] · read [2,4,6,9,10]
+  summary nn02 [vague] seeded points [3,11] · read [3,11]
+  summary nn02 [vague] seeded points [3,11] · read [3,11]
+  summary nn02 [wrong] seeded points [] · read []
+  summary nn02 [wrong] seeded points [] · read []
+  summary nn02 [lifted] seeded points [5,7,9,10] · read [5,7,9,10]
+  summary nn02 [lifted] seeded points [5,7,9,10] · read [5,7,9,10]
+  summary nn03 [full] seeded points [1,2,3,4,5,6,7,9,10,12] · read [1,2,3,4,5,6,7,9,10,12]
+  summary nn03 [full] seeded points [1,2,3,4,5,6,7,9,10,12] · read [1,2,3,4,5,6,7,9,10,12]
+  summary nn03 [half] seeded points [2,4,6,8,11] · read [2,4,6,8,11]
+  summary nn03 [half] seeded points [2,4,6,8,11] · read [2,4,6,8,11]
+  summary nn03 [vague] seeded points [3,12] · read [3,12]
+  summary nn03 [vague] seeded points [3,12] · read [3,12]
+  summary nn03 [wrong] seeded points [] · read []
+  summary nn03 [wrong] seeded points [] · read []
+  summary nn03 [lifted] seeded points [1,3,7,10] · read [1,3,7,10]
+  summary nn03 [lifted] seeded points [1,3,7,10] · read [1,3,7,10]
+  summary nn04 [full] seeded points [1,2,3,5,6,7,8,10,11,12] · read [1,2,3,5,6,7,8,10,11,12]
+  summary nn04 [full] seeded points [1,2,3,5,6,7,8,10,11,12] · read [1,2,3,5,6,7,8,10,11,12]
+  summary nn04 [half] seeded points [1,4,6,10,12] · read [1,4,6,10,12]
+  summary nn04 [half] seeded points [1,4,6,10,12] · read [1,4,6,10,12]
+  summary nn04 [vague] seeded points [8,11] · read [8,11]
+  summary nn04 [vague] seeded points [8,11] · read [8,11]
+  summary nn04 [wrong] seeded points [] · read []
+  summary nn04 [wrong] seeded points [] · read []
+  summary nn04 [lifted] seeded points [3,7,9,10] · read [3,7,9,10]
+  summary nn04 [lifted] seeded points [3,7,9,10] · read [3,7,9,10]
+  summary nn05 [full] seeded points [1,2,4,5,6,8,9,10,11,12] · read [1,2,4,5,6,8,9,10,11,12]
+  summary nn05 [full] seeded points [1,2,4,5,6,8,9,10,11,12] · read [1,2,4,5,6,8,9,10,11,12]
+  summary nn05 [half] seeded points [3,5,7,9,10] · read [3,5,7,9,10]
+  summary nn05 [half] seeded points [3,5,7,9,10] · read [3,5,7,9,10]
+  summary nn05 [vague] seeded points [8,12] · read [8,12]
+  summary nn05 [vague] seeded points [8,12] · read [8,12]
+  summary nn05 [wrong] seeded points [] · read []
+  summary nn05 [wrong] seeded points [] · read []
+  summary nn05 [lifted] seeded points [1,4,6,11] · read [1,4,6,11]
+  summary nn05 [lifted] seeded points [1,4,6,11] · read [1,4,6,11]
+  summary nn06 [full] seeded points [1,2,4,5,6,7,8,9,10,11] · read [1,2,4,5,6,7,8,9,10,11]
+  summary nn06 [full] seeded points [1,2,4,5,6,7,8,9,10,11] · read [1,2,4,5,6,7,8,9,10,11]
+  summary nn06 [half] seeded points [2,3,6,8,10] · read [2,3,6,8,10]
+  summary nn06 [half] seeded points [2,3,6,8,10] · read [2,3,6,8,10]
+  summary nn06 [vague] seeded points [1,11] · read [1,11]
+  summary nn06 [vague] seeded points [1,11] · read [1,11]
+  summary nn06 [wrong] seeded points [] · read []
+  summary nn06 [wrong] seeded points [] · read []
+  summary nn06 [lifted] seeded points [4,7,9,10] · read [4,7,9,10]
+  summary nn06 [lifted] seeded points [4,7,9,10] · read [4,7,9,10]
+  summary nn07 [full] seeded points [1,2,3,4,5,6,8,9,10,11] · read [1,2,3,4,5,6,8,9,10,11]
+  summary nn07 [full] seeded points [1,2,3,4,5,6,8,9,10,11] · read [1,2,3,4,5,6,8,9,10,11]
+  summary nn07 [half] seeded points [2,5,7,9,11] · read [2,5,7,9,11]
+  summary nn07 [half] seeded points [2,5,7,9,11] · read [2,5,7,9,11]
+  summary nn07 [vague] seeded points [3,10] · read [3,10]
+  summary nn07 [vague] seeded points [3,10] · read [3,10]
+  summary nn07 [wrong] seeded points [] · read []
+  summary nn07 [wrong] seeded points [] · read []
+  summary nn07 [lifted] seeded points [1,2,8,12] · read [1,2,8,12]
+  summary nn07 [lifted] seeded points [1,2,8,12] · read [1,2,8,12]
+  summary nn08 [full] seeded points [1,2,3,4,6,7,8,9,10,11] · read [1,2,3,4,6,7,8,9,10,11]
+  summary nn08 [full] seeded points [1,2,3,4,6,7,8,9,10,11] · read [1,2,3,4,6,7,8,9,10,11]
+  summary nn08 [half] seeded points [1,3,6,8,11] · read [1,3,6,8,11]
+  summary nn08 [half] seeded points [1,3,6,8,11] · read [1,3,6,8,11]
+  summary nn08 [vague] seeded points [3,6] · read [3,6]
+  summary nn08 [vague] seeded points [3,6] · read [3,6]
+  summary nn08 [wrong] seeded points [] · read []
+  summary nn08 [wrong] seeded points [] · read []
+  summary nn08 [lifted] seeded points [2,4,7,9] · read [2,4,7,9]
+  summary nn08 [lifted] seeded points [2,4,7,9] · read [2,4,7,9]
+  summary nn09 [full] seeded points [1,2,4,5,6,7,8,9,11,12] · read [1,2,4,5,6,7,8,9,11,12]
+  summary nn09 [full] seeded points [1,2,4,5,6,7,8,9,11,12] · read [1,2,4,5,6,7,8,9,11,12]
+  summary nn09 [half] seeded points [1,2,7,8,10] · read [1,2,7,8,10]
+  summary nn09 [half] seeded points [1,2,7,8,10] · read [1,2,7,8,10]
+  summary nn09 [vague] seeded points [4,9] · read [4,9]
+  summary nn09 [vague] seeded points [4,9] · read [4,9]
+  summary nn09 [wrong] seeded points [] · read []
+  summary nn09 [wrong] seeded points [] · read []
+  summary nn09 [lifted] seeded points [3,5,8,11] · read [3,5,8,11]
+  summary nn09 [lifted] seeded points [3,5,8,11] · read [3,5,8,11]
+  summary nn10 [full] seeded points [1,2,3,4,5,7,8,9,10,11] · read [1,2,3,4,5,7,8,9,10,11]
+  summary nn10 [full] seeded points [1,2,3,4,5,7,8,9,10,11] · read [1,2,3,4,5,7,8,9,10,11]
+  summary nn10 [half] seeded points [1,3,7,8,10] · read [1,3,7,8,10]
+  summary nn10 [half] seeded points [1,3,7,8,10] · read [1,3,7,8,10]
+  summary nn10 [vague] seeded points [2,11] · read [2,11]
+  summary nn10 [vague] seeded points [2,11] · read [2,11]
+  summary nn10 [wrong] seeded points [] · read []
+  summary nn10 [wrong] seeded points [] · read []
+  summary nn10 [lifted] seeded points [1,5,9,10] · read [1,5,9,10]
+  summary nn10 [lifted] seeded points [1,5,9,10] · read [1,5,9,10]
+  summary nn11 [full] seeded points [1,2,3,4,5,6,8,9,10,12] · read [1,2,3,4,5,6,8,9,10,12]
+  summary nn11 [full] seeded points [1,2,3,4,5,6,8,9,10,12] · read [1,2,3,4,5,6,8,9,10,12]
+  summary nn11 [half] seeded points [1,4,6,8,11] · read [1,4,6,8,11]
+  summary nn11 [half] seeded points [1,4,6,8,11] · read [1,4,6,8,11]
+  summary nn11 [vague] seeded points [5,9] · read [5,9]
+  summary nn11 [vague] seeded points [5,9] · read [5,9]
+  summary nn11 [wrong] seeded points [] · read []
+  summary nn11 [wrong] seeded points [] · read []
+  summary nn11 [lifted] seeded points [2,3,7,10] · read [2,3,7,10]
+  summary nn11 [lifted] seeded points [2,3,7,10] · read [2,3,7,10]
+  summary nn12 [full] seeded points [1,2,3,4,5,7,8,9,10,12] · read [1,2,3,4,5,7,8,9,10,12]
+  summary nn12 [full] seeded points [1,2,3,4,5,7,8,9,10,12] · read [1,2,3,4,5,7,8,9,10,12]
+  summary nn12 [half] seeded points [1,3,7,9,11] · read [1,3,7,9,11]
+  summary nn12 [half] seeded points [1,3,7,9,11] · read [1,3,7,9,11]
+  summary nn12 [vague] seeded points [5,8] · read [5,8]
+  summary nn12 [vague] seeded points [5,8] · read [5,8]
+  summary nn12 [wrong] seeded points [] · read []
+  summary nn12 [wrong] seeded points [] · read []
+  summary nn12 [lifted] seeded points [2,4,10,11] · read [2,4,10,11]
+  summary nn12 [lifted] seeded points [2,4,10,11] · read [2,4,10,11]
+
+THE BENCH DOES NOT PASS.

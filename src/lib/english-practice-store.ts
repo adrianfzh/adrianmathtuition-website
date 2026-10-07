@@ -83,7 +83,14 @@ export async function logAttempt(row: { identity: string; itemId: string; unit: 
   if (error) console.error('[english-practice] attempt insert failed:', error.message);
 }
 
+// Adrian, 7 Oct 2026: "we should not be using API" … "all on plan". The paid key is OFF for this
+// check unless ENGLISH_CHECK_USE_API=1 is set on purpose. With it off, a judgement answer comes
+// back "could not check" (editing, choices and exact words are marked by rule and still work);
+// the plan-billed reader that replaces this call is not built yet (SPEC-ENGLISH-PRACTICE.md).
+export const englishCheckOnApi = (): boolean => process.env.ENGLISH_CHECK_USE_API === '1';
+
 async function ask(prompt: string, maxTokens: number): Promise<string | null> {
+  if (!englishCheckOnApi()) return null;
   try {
     const msg = await new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }).messages.create({
       model: ENGLISH_CHECK_MODEL, max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }],
