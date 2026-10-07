@@ -740,3 +740,24 @@ ink); ✓ and ✗ on one Answer line (Sophie P2 p10, Isabelle p1); marks on prin
 p2 "% increase ✓ ="); joint spaces after a typeset letter ("y -intercept", "A 's", "n th"); raw caret "10ˆ1⁰" in a strip
 note; strip note one token a line (Nicole P2 p8); clipped text (Sophie p8 reason, Nicole P1 p6 footer under the credit);
 figure label over the axis label (Rainie p14); pen_reports 23 and 24 (science style — their bench cases are not on `main` yet).
+
+
+# 8 Oct 2026 — marking-fix (the reader's findings of 8 Oct: 8 papers, 39 pages, ~80 findings; no new pen_reports)
+
+Bench pages: Eva O-Level 2024 EM P1 (`17ce34cc`), Alexis EM Zhonghua P1 (`acb6e5c5`), Isabelle AM Prelim Set 5 P2
+(`aef649b9`), Rainie AM Set 1 P2 (`b869223d` — the only paper drawn after every 7 Oct fix), Nicole H2 2025 P2 (`814aa318`).
+
+| # | What the page showed | Layer | Cause | Fix |
+|---|---|---|---|---|
+| F91 | A Venn that read INVERTED: shade "both" + "neither", but on Eva's grey, shadowed photo the unshaded crescents showed the dark photo and looked shaded, the light-grey shaded regions looked blank — the opposite of its caption (Eva O-Level 2024 P1 p10 Q17(a)) | pen (figures) | every margin figure was drawn straight onto the photo, nothing behind its unshaded regions | bot `4b54d75`: a figure seated on the photo sits on its own white panel (every family, both seats). New live check `figure-on-paper`. Case `eva-ol24p1-p10-venn-on-paper` (FAIL before, PASS after) |
+| F92 | A note's last line one short token alone — "…giving 120" over "g." (Alexis EM Zhonghua P1 p11 Q17(b), SPEC §2.6); maths broken beside a relation — "(and at t =" over "0, v = 1 − 1 = 0)" (Isabelle AM Prelim Set 5 P2 p15 Q8(c); F61's class) | pen (wrap) | the greedy wrap filled each line and broke wherever the next token did not fit | bot `c1bd59e`: no break beside a relation (or an operator inside maths, or a true minus) — the tail of the line goes down with it; a lone short last token takes the word before it along. `test/marking-fix-1008.test.js` (fails before, passes after); pins `alexis-emzh-p1-p11-unit-alone-on-last-line`, `isabelle-amset5p2-p15-maths-broken-at-equals` |
+| F93 | "Q9(c)(ii) – from line ①" on the copy she received, and no ① anywhere on the page (Rainie AM Set 1 P2 p15 — drawn after every 7 Oct fix; Sophie EM 2025 P2 p5 the day before) | pen (line numbers) | the line's number was cached ON the shared annotation by the bare page's draw; the with-solutions draw found it there and skipped drawing the badge | bot `9355ee5`: the number is kept per draw. Case `rainie-amset1p2-p15-from-line-1-without-1` (FAIL before, PASS after). Sophie p5 and Nicole P1 p11 have no with-solutions copy — another cause, still open |
+| F94 | A dash beside maths read as a minus — "p(1) = 19(1) − 28 = −9 - you never equated" read "−9 −" (Rainie AM Set 1 P2 p2); "incomplete answer – c = 1 or c = 3/5 – the line …" (Nicole H2 P2 p3); units as italic maths run onto the number — "1cm² : 0.16km²", "0.4km = 40000cm" (Alexis EM Zhonghua P1 p4) | pen (symbols) | F70 handled a dash BETWEEN two expressions only; autoTexProse pulled a dash next to maths INTO the span, and the wrap could part the dash from its maths; a unit with a power matched the maths-token rule | bot `a60d758`: after maths a lone dash is "; ", before maths (after a word) ": " — on the whole line before autoTex, at the wrap's tokens and in the runs; a two-letter unit (cm, km, kg…) with or without its power is a word, apart from its number ("2m", "12m²", "m²" stay maths). Cases `rainie-amset1p2-p2-dash-after-maths`, `nicole-h2-25p2-p3-dash-beside-maths`, `alexis-emzh-p1-p4-units-as-italic-maths` (each FAIL before, PASS after); F70's own case and test kept green |
+| — | Reader's pull gap: `parts[].model_answer` and `corrections` not copied, so "the read wrote none" could not be told from "the pen dropped it" (W7) | reader tooling | — | bot `059aa3e` |
+
+**No longer reproduces on today's pen (stored placement redrawn 8 Oct, no fix):** chem Beatty 2026 P2 p13 "…form insoluble
+silv." (the box now reads in full and (d)(ii) names the missing point); Eva O-Level 2024 P1 p17's ① box cut at the bottom.
+
+**Not failed fixes:** F88 "head said twice" on Alexis p4 and F90's code over "390" on Eva p9 were drawn before those pushes.
+F74 (marks at the paper's edge) seen again on Rainie AM Set 1 P2 p7/p15 after its fix — residue, carried in the marks-at-
+nothing class below, not reverted (its cases hold).
