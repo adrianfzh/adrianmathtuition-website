@@ -94,6 +94,17 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   word-for-word quotation check: `lib/humanities-case-study.ts` (`scripts/humanities-bench/check-set.ts`
 >   for a draft). The brief and the 30-set plan (s11–s40, ten per issue): `docs/humanities/case-study-brief.md`.
 >   s11 is written as the worked example. The bench takes `--sets s11,…`.
+> - **29 case studies listed on the preview (7 Oct 2026, evening):** s11 + 28 written by six writers on the
+>   plan (citizenship 10 · diversity 9 · globalised 10). Adrian: "Do plan only checks" — so s12–s40 have had
+>   the shape-and-quote checker, a read of the sensitive sets, and a **blind placement on the plan**: five
+>   fresh readers saw only the question, sources and level table and placed all 559 seeded answers at the
+>   written level (559/559). Its limit: within a question each higher answer contains the one below, so a
+>   reader can partly rank by length. **The real bench (the live reader, about US$30–43) has NOT been run
+>   on s12–s40 — it is owed before the switch opens.** Only s11 has been through it.
+> - **Held: s23** (mixing races in each block) — `data/humanities/social-studies/held/s23.json`, not loaded.
+>   It sits on the real housing rule and its start year with "the housing authority" speaking made-up
+>   figures. Adrian decides. Also his call: "a ministry spokesperson" with made-up figures on a real kind
+>   of policy (s12 water price, s15 e-scooters, s17 retirement age, s20 fines, s36 scam calls).
 > - **The skill picture (A2).** `lib/humanities-skills.ts skillPicture` — per skill: answers read, the
 >   usual level over the newest five (lower middle, so it never flatters), weakest first; "practise this"
 >   at two or more levels below the top. The **Your skills** card on Humanities Home, per subject tab;

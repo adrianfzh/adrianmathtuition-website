@@ -23,6 +23,9 @@ Talk to Adrian in plain, short words. No jargon.
   Humanities Home. Case studies have their own file, page shape, checker and brief
   (`docs/humanities/case-study-brief.md` — the 30-set plan s11–s40 is there). s11 is written.
   Still to do for A1: write s12–s40 (the batch — Adrian is told the cost first), bench, list.
+- **7 Oct 2026, evening — A1 written and listed on the preview: 29 case studies** (s11–s40 less s23, held
+  for Adrian). Plan-only checks done (Adrian's word); the real bench on s12–s40 is still owed before the
+  switch opens — SPEC-HUMANITIES.md, the A1 note. Next: A3 (example bank), then A4 (timed paper).
 
 ## The order Adrian asked for
 
