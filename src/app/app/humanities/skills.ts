@@ -13,6 +13,7 @@ export const SKILL_LABEL: Record<string, string> = {
   geo_describe: 'Describe',
   geo_explain: 'Explain',
   geo_evaluate: 'To what extent…',
+  hist_evaluate: 'Essay',
   sr_weigh: 'Do you agree?',
 };
 export const skillLabel = (k: string): string => SKILL_LABEL[k] ?? k;

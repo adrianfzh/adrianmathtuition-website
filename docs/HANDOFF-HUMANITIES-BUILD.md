@@ -43,6 +43,9 @@ Talk to Adrian in plain, short words. No jargon.
   two panels). Next for B: maps / photographs / diagrams, the 9-mark question, and the live-reader bench
   on g05–g20 (API money — Adrian's word). Then C History essays, D practice by skill.
 
+- **7 Oct 2026 — marks shown for Geography (Adrian: "show marks"); eight 9-mark questions listed and benched;
+  C History essays started** on the humanities reader (`hist_evaluate`), y01–y09 being written.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

@@ -1,0 +1,45 @@
+[
+ {
+  "id": "y01",
+  "subject": "history",
+  "kind": "structured",
+  "title": "Hitler's rise to power",
+  "issue": "Why Hitler came to power in Germany by 1933",
+  "sources": [
+   {
+    "id": "Extract",
+    "provenance": "A starting point for your answer",
+    "text": "In 1928 the Nazi Party was a small party on the edge of German politics. In January 1933 its leader, Adolf Hitler, became Chancellor of Germany."
+   }
+  ],
+  "questions": [
+   {
+    "id": "y01-a",
+    "skill": "hist_evaluate",
+    "marks": 10,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'The Great Depression was the main reason for Hitler's rise to power.' How far do you agree with this statement? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. The Great Depression started in 1929 when the Wall Street Crash happened in America. Many Germans lost their jobs and became very poor. Hitler was also a good speaker and the Nazis used propaganda. The Weimar government was weak. So there were many reasons for Hitler's rise to power."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. The Great Depression made many Germans turn to Hitler. After the Wall Street Crash in 1929, American banks recalled their loans to Germany, and German businesses closed. By 1932 about six million Germans were unemployed. The Weimar government seemed unable to help, so desperate people looked for a party that promised strong action. Hitler promised work and bread. As a result the Nazis grew from 12 seats in the Reichstag in 1928 to 230 seats in July 1932, the largest party. This shows the Depression gave Hitler the mass support he needed to rise to power. Hitler was also a good speaker, which helped him."
+     },
+     {
+      "level": 3,
+      "text": "The Great Depression was an important reason. After the Wall Street Crash in 1929, American banks recalled their loans to Germany, and German businesses closed. By 1932 about six million Germans were unemployed. The Weimar government seemed unable to help, so desperate people looked for a party that promised strong action. Hitler promised work and bread. As a result the Nazis grew from 12 seats in the Reichstag in 1928 to 230 seats in July 1932, the largest party. This shows the Depression gave Hitler the mass support he needed.\n\nHowever, the weakness of the Weimar system also helped Hitler. Proportional representation meant that no party won a majority, so governments were weak coalitions that could not agree on how to deal with the crisis. From 1930 the Chancellors ruled by emergency decree under Article 48, so Germans lost faith in democracy. In January 1933 the politicians around President Hindenburg, such as von Papen, persuaded him to appoint Hitler as Chancellor because they thought they could control him. This shows that the failings of the Weimar system and its leaders opened the door for Hitler.\n\nSo both the Great Depression and the weakness of the Weimar system were reasons for Hitler's rise to power."
+     },
+     {
+      "level": 4,
+      "text": "The Great Depression was an important reason. After the Wall Street Crash in 1929, American banks recalled their loans to Germany, and German businesses closed. By 1932 about six million Germans were unemployed. The Weimar government seemed unable to help, so desperate people looked for a party that promised strong action. Hitler promised work and bread. As a result the Nazis grew from 12 seats in the Reichstag in 1928 to 230 seats in July 1932, the largest party. This shows the Depression gave Hitler the mass support he needed.\n\nHowever, the weakness of the Weimar system also helped Hitler. Proportional representation meant that no party won a majority, so governments were weak coalitions that could not agree on how to deal with the crisis. From 1930 the Chancellors ruled by emergency decree under Article 48, so Germans lost faith in democracy. In January 1933 the politicians around President Hindenburg, such as von Papen, persuaded him to appoint Hitler as Chancellor because they thought they could control him. This shows that the failings of the Weimar system and its leaders opened the door for Hitler.\n\nI agree to a large extent that the Great Depression was the main reason. The weaknesses of the Weimar system had been there since 1919, yet in 1928, when times were good, the Nazis won only 12 seats. It was the Depression that turned those weaknesses into a crisis and turned the Nazis into the largest party. Without that mass support, Hindenburg and von Papen would have had no reason to offer Hitler the chancellorship. So the Depression was the main reason, because it made the other factor matter."
+     }
+    ]
+   }
+  ]
+ }
+]

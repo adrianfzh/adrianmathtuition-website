@@ -179,6 +179,20 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - **Still to build:** maps, photographs and diagrams
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
+> **C — HISTORY ESSAYS STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "go ahead with history essays".
+> - **On the humanities reader, not the Languages essay marker** (a change from the hand-over note, made in the
+>   open): the 10-mark essay is a levels-of-response answer from own knowledge — the same shape as Social
+>   Studies' "Do you agree?" and Geography's 9-mark question, which this reader already marks and benches. It
+>   keeps History on one tab, one report page and one bench. The Languages marker scores language bands, which
+>   this essay is not marked on.
+> - **`hist_evaluate`** (`schemes.json`): four levels in our own words after the pattern common to the banked
+>   school schemes — L1 identifies or describes · L2 explains one side · L3 explains the given factor and
+>   another · L4 that, plus a conclusion that weighs them. History shows the level, never a mark (§5).
+> - `data/humanities/history/essays.json`, sets `yNN` (an extract + two questions, four seeded essays each);
+>   brief and topic plan `docs/humanities/history-essay-brief.md` (y01–y09: Hitler's rise · Versailles · the
+>   League · Japan · war in Europe · the defeats of Germany and Japan · the Cold War's origins · Korea · the
+>   Cold War's end). Home's History tab lists them under **Essays**.
+
 ## 4. The bench — built like the science bench
 
 No marked scripts are needed.

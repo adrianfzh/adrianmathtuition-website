@@ -576,6 +576,49 @@
     "an example that is named but not used",
     "a conclusion that only repeats the answer"
    ]
+  },
+  "hist_evaluate": {
+   "label": "Essay: how far do you agree?",
+   "asks": "'[A statement naming one factor.]' How far do you agree with this statement? Explain your answer.",
+   "levels": [
+    {
+     "level": 1,
+     "does": "Identifies or describes factors or events. Tells what happened without explaining how it led to the outcome in the question."
+    },
+    {
+     "level": 2,
+     "does": "Explains ONE side properly — the given factor OR another factor — with specific evidence and how it led to the outcome."
+    },
+    {
+     "level": 3,
+     "does": "Explains BOTH sides properly: the given factor AND at least one other, each with specific evidence and its link to the outcome."
+    },
+    {
+     "level": 4,
+     "does": "Level 3, then a conclusion that weighs the factors on a stated basis: which mattered more, and why."
+    }
+   ],
+   "note": "A conclusion that only repeats one side, or says all the factors mattered, stays at Level 3. Specific evidence means a named event, date, figure, policy or person.",
+   "lifts": [
+    {
+     "from": 1,
+     "how": "Take the factor in the question. Give one specific piece of evidence and say how it led to the outcome."
+    },
+    {
+     "from": 2,
+     "how": "Explain another factor the same way, with its own evidence and its own link to the outcome."
+    },
+    {
+     "from": 3,
+     "how": "End by weighing them. Say which mattered more and on what basis — for example, one made the other possible."
+    }
+   ],
+   "slips": [
+    "telling the story with no link to the question",
+    "one factor only",
+    "evidence that is named but not used",
+    "a conclusion that only repeats the body"
+   ]
   }
  },
  "structured": {

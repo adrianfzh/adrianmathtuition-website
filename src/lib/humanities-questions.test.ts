@@ -20,7 +20,7 @@ describe('the humanities bank', () => {
       expect(set.questions.map(q => q.skill)).toEqual(['sr_explain', 'sr_weigh']);
       expect(set.sources.length).toBe(1);
     }
-    const hist = setsFor('history');
+    const hist = setsFor('history', 'source');
     expect(hist.length).toBe(5);
     for (const set of hist) {
       expect(set.kind).toBe('source');
@@ -32,13 +32,13 @@ describe('the humanities bank', () => {
 
   it('every question id is unique across the three files', () => {
     const all = allSets().flatMap(s => s.questions);
-    expect(all.length).toBe(55 + caseStudies().length * 5 + setsFor('geography').flatMap(s => s.questions).length);
+    expect(all.length).toBe(55 + caseStudies().length * 5 + [...setsFor('geography'), ...setsFor('history', 'structured')].flatMap(s => s.questions).length);
     expect(new Set(all.map(q => q.id)).size).toBe(all.length);
     expect(new Set(allSets().map(s => s.id)).size).toBe(allSets().length);
   });
 
   it('the bench can take one subject or one kind at a time', () => {
-    expect(seededAnswers({ subject: 'history' }).length).toBe(35);
+    expect(seededAnswers({ subject: 'history', kind: 'source' }).length).toBe(35);
     expect(seededAnswers({ subject: 'social-studies', kind: 'structured' }).length).toBe(21);
     const inCaseStudies = caseStudies().flatMap(s => s.questions).flatMap(q => q.seeded ?? []).length;
     expect(seededAnswers({ subject: 'social-studies', kind: 'source' }).length).toBe(46 + inCaseStudies);
@@ -79,7 +79,7 @@ describe('the humanities bank', () => {
       const max = levelsMax(q.skill);
       expect(q.seeded.map(s => s.level).sort(), q.id).toEqual(Array.from({ length: max }, (_, i) => i + 1));
     }
-    expect(seededAnswers().filter(a => a.subject !== 'geography' && !questionById(a.questionId)!.set.background).length).toBe(102);
+    expect(seededAnswers().filter(a => a.subject !== 'geography' && a.skill !== 'hist_evaluate' && !questionById(a.questionId)!.set.background).length).toBe(102);
   });
 
   it('the model answer of a seeded question is its top answer', () => {
@@ -183,5 +183,23 @@ describe("Geography's 9-mark question", () => {
     expect(geoEvaluateBand(1, 1)).toBe('1 to 3 marks');
     expect(geoEvaluateBand(2, 3)).toBe('4 to 9 marks');
     expect(geoEvaluateBand(3, 3)).toBe('7 to 9 marks');
+  });
+});
+
+describe('the History essay', () => {
+  it('is read on four levels, from own knowledge, and never shows a mark band', () => {
+    const sets = setsFor('history', 'structured');
+    expect(sets.length).toBeGreaterThan(0);
+    for (const set of sets) {
+      expect(set.sources.length, set.id).toBe(1);
+      for (const q of set.questions) {
+        expect(q.skill, q.id).toBe('hist_evaluate');
+        expect(levelsMax(q.skill)).toBe(4);
+        expect(isStructured(q.skill)).toBe(true);
+        expect(q.seeded!.map(s => s.level), q.id).toEqual([1, 2, 3, 4]);
+        expect(q.question, q.id).toMatch(/^['‘].+['’] How far do you agree with this statement\? Explain your answer\.$/);
+        for (const s of q.seeded!) expect(s.text.split(/\s+/).length, q.id).toBeLessThanOrEqual(450);
+      }
+    }
   });
 });

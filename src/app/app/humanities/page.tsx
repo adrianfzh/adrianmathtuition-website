@@ -201,7 +201,15 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      {structuredSets.length > 0 && subject !== 'geography' && (
+      {structuredSets.length > 0 && subject === 'history' && (
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Essays</h2>
+          <p className="text-[12px] text-gray-500">Explain the factor in the question, then another. Use dates, names and events. End by weighing them.</p>
+          {structuredSets.map(setCard)}
+        </div>
+      )}
+
+      {structuredSets.length > 0 && subject === 'social-studies' && (
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Structured response</h2>
           <p className="text-[12px] text-gray-500">No sources to read. Answer from what you have learnt.</p>
