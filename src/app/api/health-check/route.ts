@@ -546,6 +546,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🔎 "Is this the <paper>?" (7 Oct 2026): the student's answer door stays behind sign-in.
+    timed('confirm-paper', async () => {
+      const r = await fetch(`${base}/api/portal/marking/confirm-paper`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (signed-out), got HTTP ${r.status}`);
+      return 'gated';
+    }),
     timed('practice-again-request', async () => {
       const r = await fetch(`${base}/api/portal/practice-again/request`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

@@ -31,6 +31,8 @@ import { followUpDepthOf } from '@/lib/sheet-queue';
 import { displayPaperName } from '@/lib/paper-display-name';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
+import PaperUnsure from '../PaperUnsure';
+import { unsurePaper } from '@/lib/paper-unsure';
 import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
 import PaperNote from '../PaperNote';
@@ -236,6 +238,13 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           <Link href={`/app/marking/${supersededBy}`} className="font-semibold underline underline-offset-2">Open the current marking</Link>
         </p>
       )}
+
+      {/* 🔎 Marked from the working alone, the paper not confirmed (7 Oct 2026,
+          lib/paper-unsure): ask the student, offer the re-mark and the re-hand-in. */}
+      {(() => {
+        const unsure = !isAdmin && !supersededBy ? unsurePaper((row as { result_json?: unknown }).result_json) : null;
+        return unsure ? <PaperUnsure runId={paper.id} label={unsure.label} submitHref={isScience ? '/app/science/submit' : '/app/submit'} /> : null;
+      })()}
 
       {/* The same three-day line the card carries (lib/paper-notice.ts) — a
           student who opens the paper straight from a link still reads it. */}

@@ -118,6 +118,36 @@ The desk's detail view shows one chip from this: **"Grounded on: GCE 2021 AM P1 
 - **Backfill 5 Oct 2026:** 15 papers queued (14 student-work sources, 1 attached PDF) + 4 schemes; 46 of the 89 papers the first pass could not name are named now. Numbers in `docs/EXTRACTION-QUEUE.md` §1d.
 - **Content policy:** these are school papers students hold lawfully; banked like the other school papers and served only under `docs/CONTENT-POLICY.md` (the twins direction applies). The student's handwriting never enters the bank, and the file holding it is deleted after extraction.
 
+### ⑥ A name that does not say, pages with no printed questions (7 Oct 2026)
+
+Adrian, on Nicole's "nicole 2025 Paper 1" — 17 pages of a TYS answer booklet, marked 77/90 on
+the marker's own guess of the marks while the bank held the paper (GCE 2025 H2 P1, 100 marks):
+*"shouldn't system be able to tell that it's tys 2025 paper 1? or at least check?"* … *"build it …
+and don't have to ask me, if unsure, just mark like what it's doing now — without questions found
+— then put a message to the user, and give an option to reupload/remark"*.
+
+- **The guess** (bot `lib/paper-recognise.js candidatesFor`): a name with a year and a paper
+  number but no exam and no school may be the NATIONAL paper of that year — at the level typed,
+  else at the student's own level (JC → H2; a both-maths student → A Math, then E Math).
+- **The check** (`workingAgreement`, pure): the guess is never trusted as it stands. The paper is
+  marked as before, from the working alone; that marking is then compared with the bank's copy of
+  the guessed paper. Agreed = at least six questions answered, none the paper does not have, and
+  her parts are the paper's on nine in ten questions and the SAME set on four in five (a paper
+  without parts, E Math P1, is told by the numbers printed in its questions instead). On Nicole's
+  two papers the right paper fitted 12/12 and 10/10; nine wrong papers fitted at most 9.
+- **Agreed** → before anything is released the run takes the paper's name (`… · H2 TYS`,
+  `paper_match.candidate.confirmed = 'working'`), the library attaches the paper, and it is
+  marked ONCE MORE against it (`announceQueuedResult` in `handlers/webchat.js`; Telegram says
+  "🔎 Not released yet — the working matches …"). One extra marking, one correct release.
+- **Not agreed** → released as marked, stamped `paper_match.candidate.unsure`. The student's
+  paper page asks *"Is this the 2025 A-Level H2 Maths Paper 1?"* (`app/marking/PaperUnsure.tsx`,
+  rule `lib/paper-unsure.ts`): **Yes — mark it again** (`POST /api/portal/marking/confirm-paper`
+  renames the run and queues the re-mark; a failed hand-over puts the row back), **No** (not asked
+  again), or **Hand it in again with the question paper**. Adrian is not asked.
+- A specimen's answers are never paired with the real paper (`paper-library chooseRows`): for H2
+  2025 the library's only "solutions" file was the SPECIMEN's, filed under the same key.
+- Off switch: `PAPER_RECOGNISE=0` on the bot. Health check `confirm-paper` (401 signed out).
+
 ## Checkpoints (what stays human)
 
 - Adrian vets the marking at the desk exactly as now; the chip tells him what it was grounded on, and **Detach** on the chip re-queues the run with `paper_match.source='none'` forced (one click, reversible).
