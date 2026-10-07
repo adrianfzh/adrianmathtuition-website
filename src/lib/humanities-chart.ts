@@ -5,9 +5,10 @@ import type { DataTable } from './humanities-questions';
 
 export type FigureKind = 'bar' | 'line' | 'climate';
 
-/** A round top for an axis and the ticks up to it: 0 … top in 4 or 5 even steps. */
-export function niceAxis(maxValue: number, minValue = 0): { min: number; max: number; ticks: number[] } {
-  const lo = Math.min(0, minValue);
+/** A round top (and bottom) for an axis and the ticks between: 4 or 5 even steps. */
+export function niceAxis(maxValue: number, minValue = 0, fromZero = true): { min: number; max: number; ticks: number[] } {
+  // A bar graph starts at zero. A line graph may start near its lowest value, so close lines stay apart.
+  const lo = fromZero ? Math.min(0, minValue) : minValue;
   const span = Math.max(maxValue - lo, 1e-9);
   const raw = span / 4;
   const mag = 10 ** Math.floor(Math.log10(raw));

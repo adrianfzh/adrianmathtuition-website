@@ -181,7 +181,8 @@ export function maxOf(q: HumanitiesQuestion): number {
 /** A data table as plain lines — what the reader is given. */
 export function tableText(t: DataTable): string {
   const lines = [t.columns.join(' | '), ...t.rows.map(r => r.join(' | '))].join('\n');
-  return t.figure ? `(Shown to the student as a ${t.figure === 'climate' ? 'climate graph: rainfall bars and a temperature line' : `${t.figure} graph`}, with every value printed on it.)\n${lines}` : lines;
+  const shown = t.figure === 'climate' ? 'a climate graph (a temperature line above rainfall bars)' : `a ${t.figure} graph`;
+  return t.figure ? `(Shown to the student as ${shown}, with every value printed on it.)\n${lines}` : lines;
 }
 
 /** The answer shown folded under the report: the written model, or the top seeded answer. */

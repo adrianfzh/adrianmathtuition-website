@@ -4317,5 +4317,2032 @@
     ]
    }
   ]
+ },
+ {
+  "id": "g17",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Reading graphs: neighbourhoods",
+  "issue": "Describing, comparing and giving reasons for survey and count data about a neighbourhood shown in bar and line graphs",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g17-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the residents of Neighbourhood X travel to work.",
+    "table": {
+     "caption": "Fig. 1: Main way of travelling to work of 200 residents surveyed in Neighbourhood X",
+     "columns": [
+      "Way of travelling",
+      "Residents (%)"
+     ],
+     "rows": [
+      [
+       "MRT",
+       "40"
+      ],
+      [
+       "Bus",
+       "27"
+      ],
+      [
+       "Car",
+       "19"
+      ],
+      [
+       "Walking",
+       "9"
+      ],
+      [
+       "Cycling",
+       "5"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only.",
+     "Numbers of residents worked out from the percentages count as accurate figures."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The MRT is the most common way of travelling to work.",
+      "develop": "40% of the residents surveyed"
+     },
+     {
+      "id": "b",
+      "text": "Most residents use public transport, taking the MRT and the bus together.",
+      "develop": "40% and 27%, which is 67% in all"
+     },
+     {
+      "id": "c",
+      "text": "Cycling is the least common way of travelling to work.",
+      "develop": "only 5% of the residents surveyed"
+     },
+     {
+      "id": "d",
+      "text": "The car comes third, used by fewer residents than the bus but more than walking.",
+      "develop": "19%, against 27% for the bus and 9% for walking"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph is about how people in Neighbourhood X go to work. Getting to work is important because people have to reach their workplace on time every day."
+     },
+     {
+      "level": 1,
+      "text": "The MRT is the most common way that residents get to work."
+     },
+     {
+      "level": 2,
+      "text": "The MRT is the most common way that residents get to work. Cycling is the least common way."
+     },
+     {
+      "level": 3,
+      "text": "The MRT is the most common way that residents get to work, as 40% of them take it. Cycling is the least common way."
+     }
+    ]
+   },
+   {
+    "id": "g17-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the number of people in the park changes during the day.",
+    "table": {
+     "caption": "Fig. 1: Number of people counted in the park of Neighbourhood X at different times on one Saturday",
+     "columns": [
+      "Time",
+      "Number of people"
+     ],
+     "rows": [
+      [
+       "6 am",
+       "45"
+      ],
+      [
+       "8 am",
+       "120"
+      ],
+      [
+       "10 am",
+       "60"
+      ],
+      [
+       "12 noon",
+       "20"
+      ],
+      [
+       "2 pm",
+       "15"
+      ],
+      [
+       "4 pm",
+       "50"
+      ],
+      [
+       "6 pm",
+       "140"
+      ],
+      [
+       "8 pm",
+       "70"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period, and is developed by accurate figures. Point e needs both busy times named.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The number of people rises in the early morning, from 6 am to 8 am.",
+      "develop": "from 45 to 120 people"
+     },
+     {
+      "id": "b",
+      "text": "The number of people falls from 8 am to 2 pm.",
+      "develop": "from 120 to 15 people, the lowest of the day"
+     },
+     {
+      "id": "c",
+      "text": "The number of people rises from 2 pm to 6 pm.",
+      "develop": "from 15 to 140 people, the highest of the day"
+     },
+     {
+      "id": "d",
+      "text": "The number of people falls from 6 pm to 8 pm.",
+      "develop": "from 140 to 70 people, which is half"
+     },
+     {
+      "id": "e",
+      "text": "The park has two busy times, one in the morning and one in the evening.",
+      "develop": "120 people at 8 am and 140 at 6 pm, so the evening is busier by 20 people"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph shows the number of people in the park at different times on a Saturday. A park is a place where residents can exercise and meet their neighbours."
+     },
+     {
+      "level": 1,
+      "text": "The number of people in the park goes up from 6 am to 8 am."
+     },
+     {
+      "level": 2,
+      "text": "The number of people in the park goes up from 6 am to 8 am. After that it goes down from 8 am to 2 pm."
+     },
+     {
+      "level": 3,
+      "text": "The number of people in the park goes up from 6 am to 8 am, from 45 to 120 people. After that it goes down from 8 am to 2 pm."
+     },
+     {
+      "level": 4,
+      "text": "The number of people in the park goes up from 6 am to 8 am, from 45 to 120 people. After that it goes down from 8 am to 2 pm, from 120 to only 15 people."
+     }
+    ]
+   },
+   {
+    "id": "g17-q3",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, compare the changes in the population of Neighbourhood X and Neighbourhood Z from 2000 to 2025.",
+    "table": {
+     "caption": "Fig. 1: Population of Neighbourhood X and Neighbourhood Z in City Y, 2000 to 2025",
+     "columns": [
+      "Year",
+      "Neighbourhood X (thousands)",
+      "Neighbourhood Z (thousands)"
+     ],
+     "rows": [
+      [
+       "2000",
+       "42",
+       "5"
+      ],
+      [
+       "2005",
+       "40",
+       "12"
+      ],
+      [
+       "2010",
+       "37",
+       "22"
+      ],
+      [
+       "2015",
+       "33",
+       "33"
+      ],
+      [
+       "2020",
+       "30",
+       "41"
+      ],
+      [
+       "2025",
+       "28",
+       "46"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing. A point is developed by accurate figures for both neighbourhoods.",
+     "A point must compare the two neighbourhoods. A correct trend for one alone earns 1 mark. At most 2 marks when only one of the two is described.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The population of Neighbourhood X fell, while the population of Neighbourhood Z rose.",
+      "develop": "X from 42 thousand to 28 thousand; Z from 5 thousand to 46 thousand"
+     },
+     {
+      "id": "b",
+      "text": "At first Neighbourhood X had more people than Z, but by the end Z had more than X.",
+      "develop": "42 thousand against 5 thousand in 2000, or 28 thousand against 46 thousand in 2025, or the two were equal at 33 thousand in 2015"
+     },
+     {
+      "id": "c",
+      "text": "The population of Neighbourhood Z changed much more than that of Neighbourhood X.",
+      "develop": "Z changed by 41 thousand but X by only 14 thousand"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph shows the number of people living in two neighbourhoods of City Y over many years. Some neighbourhoods in a city are older and some are newer."
+     },
+     {
+      "level": 1,
+      "text": "The number of people in Neighbourhood X went down, but the number in Neighbourhood Z went up."
+     },
+     {
+      "level": 2,
+      "text": "The number of people in Neighbourhood X went down, but the number in Neighbourhood Z went up. Neighbourhood X was the bigger one at the start, but Neighbourhood Z was the bigger one at the end."
+     },
+     {
+      "level": 3,
+      "text": "The number of people in Neighbourhood X went down from 42 thousand to 28 thousand, but the number in Neighbourhood Z went up from 5 thousand to 46 thousand. Neighbourhood X was the bigger one at the start, but Neighbourhood Z was the bigger one at the end."
+     },
+     {
+      "level": 4,
+      "text": "The number of people in Neighbourhood X went down from 42 thousand to 28 thousand, but the number in Neighbourhood Z went up from 5 thousand to 46 thousand. Neighbourhood X was the bigger one at the start, but Neighbourhood Z was the bigger one at the end. The two had the same number, 33 thousand, in 2015."
+     }
+    ]
+   },
+   {
+    "id": "g17-q4",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, suggest why residents who live nearer the park visit it more often than those who live farther away.",
+    "table": {
+     "caption": "Fig. 1: Residents of Neighbourhood X who visit the park at least once a week, by distance of their home from the park",
+     "columns": [
+      "Distance from the park",
+      "Residents who visit weekly (%)"
+     ],
+     "rows": [
+      [
+       "Under 200 m",
+       "72"
+      ],
+      [
+       "200 to 400 m",
+       "55"
+      ],
+      [
+       "400 to 600 m",
+       "34"
+      ],
+      [
+       "600 to 800 m",
+       "20"
+      ],
+      [
+       "Over 800 m",
+       "11"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "A point is a reason. Describing the graph without giving a reason earns nothing.",
+     "A reason is developed by explaining it further or by figures from the graph that support it. The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Residents who live near need little time and effort to reach the park.",
+      "develop": "a short walk, so they can go often; 72% of those under 200 m away visit weekly"
+     },
+     {
+      "id": "b",
+      "text": "Residents who live far away may have another park or open space nearer to their home.",
+      "develop": "they go there instead; only 11% of those over 800 m away visit weekly"
+     },
+     {
+      "id": "c",
+      "text": "Residents who live near pass the park in their daily routine.",
+      "develop": "on the way to the bus stop or shops, so they know it well and feel it is their own place"
+     },
+     {
+      "id": "d",
+      "text": "A longer walk puts off the elderly and families with young children.",
+      "develop": "they tire easily or must cross roads; the share falls with every 200 m, from 55% to 34% to 20%"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "72% of the residents who live less than 200 m from the park visit it every week, but only 11% of those who live more than 800 m away do. The percentage gets smaller as the distance gets bigger."
+     },
+     {
+      "level": 1,
+      "text": "People who live near the park can get to it quickly and without much effort."
+     },
+     {
+      "level": 2,
+      "text": "People who live near the park can get to it quickly and without much effort. It is only a short walk, so they can go many times, and 72% of those living less than 200 m away go every week."
+     },
+     {
+      "level": 3,
+      "text": "People who live near the park can get to it quickly and without much effort. It is only a short walk, so they can go many times, and 72% of those living less than 200 m away go every week. People who live far away may have a different park that is closer to their home."
+     },
+     {
+      "level": 4,
+      "text": "People who live near the park can get to it quickly and without much effort. It is only a short walk, so they can go many times, and 72% of those living less than 200 m away go every week. People who live far away may have a different park that is closer to their home. They go to that one instead, which is why only 11% of those living more than 800 m away come every week."
+     }
+    ]
+   },
+   {
+    "id": "g17-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the changes in the length of cycling paths in Neighbourhood X from 2014 to 2024.",
+    "table": {
+     "caption": "Fig. 1: Total length of cycling paths in Neighbourhood X, 2014 to 2024",
+     "columns": [
+      "Year",
+      "Length (km)"
+     ],
+     "rows": [
+      [
+       "2014",
+       "2"
+      ],
+      [
+       "2016",
+       "3"
+      ],
+      [
+       "2018",
+       "5"
+      ],
+      [
+       "2020",
+       "9"
+      ],
+      [
+       "2022",
+       "14"
+      ],
+      [
+       "2024",
+       "16"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period. It is developed by accurate figures from the graph.",
+     "The same figures earn development once only.",
+     "The fastest growth may be given as 2018 to 2022 or as 2020 to 2022."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Overall, the length of cycling paths increased from 2014 to 2024.",
+      "develop": "from 2 km to 16 km, a rise of 14 km, or eight times as long"
+     },
+     {
+      "id": "b",
+      "text": "The length increased slowly from 2014 to 2018.",
+      "develop": "from 2 km to 5 km, only 3 km in four years"
+     },
+     {
+      "id": "c",
+      "text": "The length increased fastest from 2018 to 2022.",
+      "develop": "from 5 km to 14 km, a rise of 9 km"
+     },
+     {
+      "id": "d",
+      "text": "The increase slowed down from 2022 to 2024.",
+      "develop": "from 14 km to 16 km, only 2 km more"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph is about the cycling paths in Neighbourhood X. Cycling paths let people ride away from the cars on the road, and cycling is good for health."
+     },
+     {
+      "level": 1,
+      "text": "The length of cycling paths went up from 2014 to 2024."
+     },
+     {
+      "level": 2,
+      "text": "The length of cycling paths went up from 2014 to 2024. It went up fastest between 2018 and 2022."
+     },
+     {
+      "level": 3,
+      "text": "The length of cycling paths went up from 2014 to 2024, from 2 km to 16 km. It went up fastest between 2018 and 2022."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g18",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tourism",
+  "title": "Reading graphs: tourism",
+  "issue": "Describing, comparing and giving reasons for tourism data about a country and a town shown in bar and line graphs",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g18-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe where the international visitors to Country X came from.",
+    "table": {
+     "caption": "Fig. 1: International visitor arrivals to Country X in one year, by the region the visitors came from",
+     "columns": [
+      "Region",
+      "Arrivals (millions)"
+     ],
+     "rows": [
+      [
+       "Asia",
+       "5.4"
+      ],
+      [
+       "Europe",
+       "2.7"
+      ],
+      [
+       "North America",
+       "1.2"
+      ],
+      [
+       "Oceania",
+       "0.9"
+      ],
+      [
+       "Africa",
+       "0.3"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The most visitors came from Asia.",
+      "develop": "5.4 million arrivals"
+     },
+     {
+      "id": "b",
+      "text": "Europe sent the second largest number of visitors.",
+      "develop": "2.7 million, which is half the number from Asia"
+     },
+     {
+      "id": "c",
+      "text": "The fewest visitors came from Africa.",
+      "develop": "only 0.3 million arrivals"
+     },
+     {
+      "id": "d",
+      "text": "Asia sent more visitors than all the other regions put together.",
+      "develop": "5.4 million against 5.1 million for the other four regions"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph shows the regions that visitors to Country X come from. Tourists travel to other countries to relax and to see new things."
+     },
+     {
+      "level": 1,
+      "text": "Asia was the region that the most visitors came from."
+     },
+     {
+      "level": 2,
+      "text": "Asia was the region that the most visitors came from. Africa was the region that the fewest came from."
+     },
+     {
+      "level": 3,
+      "text": "Asia was the region that the most visitors came from, with 5.4 million arrivals. Africa was the region that the fewest came from."
+     }
+    ]
+   },
+   {
+    "id": "g18-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the changes in the number of hotel rooms in Town Y from 1990 to 2020.",
+    "table": {
+     "caption": "Fig. 1: Number of hotel rooms in Town Y, 1990 to 2020",
+     "columns": [
+      "Year",
+      "Hotel rooms"
+     ],
+     "rows": [
+      [
+       "1990",
+       "400"
+      ],
+      [
+       "1995",
+       "600"
+      ],
+      [
+       "2000",
+       "1500"
+      ],
+      [
+       "2005",
+       "3200"
+      ],
+      [
+       "2010",
+       "4800"
+      ],
+      [
+       "2015",
+       "5000"
+      ],
+      [
+       "2020",
+       "4700"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period. It is developed by accurate figures from the graph.",
+     "The same figures earn development once only.",
+     "The rise from 2010 to 2015 may be called slow or small: both are accepted."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Overall, the number of hotel rooms increased from 1990 to 2020.",
+      "develop": "from 400 to 4700 rooms, a rise of 4300"
+     },
+     {
+      "id": "b",
+      "text": "The number of rooms increased slowly from 1990 to 1995.",
+      "develop": "from 400 to 600 rooms, only 200 more"
+     },
+     {
+      "id": "c",
+      "text": "The number of rooms increased quickly from 1995 to 2010.",
+      "develop": "from 600 to 4800 rooms, a rise of 4200"
+     },
+     {
+      "id": "d",
+      "text": "The number of rooms hardly changed from 2010 to 2015.",
+      "develop": "from 4800 to 5000 rooms, the highest number"
+     },
+     {
+      "id": "e",
+      "text": "The number of rooms fell slightly from 2015 to 2020.",
+      "develop": "from 5000 to 4700 rooms, a fall of 300"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph shows the hotel rooms in Town Y over thirty years. Hotels are found in tourist towns because visitors need a place to stay at night."
+     },
+     {
+      "level": 1,
+      "text": "The number of hotel rooms went up quickly from 1995 to 2010."
+     },
+     {
+      "level": 2,
+      "text": "The number of hotel rooms went up quickly from 1995 to 2010. It went down a little from 2015 to 2020."
+     },
+     {
+      "level": 3,
+      "text": "The number of hotel rooms went up quickly from 1995 to 2010, from 600 to 4800 rooms. It went down a little from 2015 to 2020."
+     },
+     {
+      "level": 4,
+      "text": "The number of hotel rooms went up quickly from 1995 to 2010, from 600 to 4800 rooms. It went down a little from 2015 to 2020, from 5000 to 4700 rooms."
+     }
+    ]
+   },
+   {
+    "id": "g18-q3",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, compare the changes in the number of international visitors and domestic visitors to Town Y from 2009 to 2019.",
+    "table": {
+     "caption": "Fig. 1: International and domestic visitors to Town Y, 2009 to 2019",
+     "columns": [
+      "Year",
+      "International visitors (thousands)",
+      "Domestic visitors (thousands)"
+     ],
+     "rows": [
+      [
+       "2009",
+       "40",
+       "150"
+      ],
+      [
+       "2011",
+       "65",
+       "160"
+      ],
+      [
+       "2013",
+       "110",
+       "165"
+      ],
+      [
+       "2015",
+       "180",
+       "170"
+      ],
+      [
+       "2017",
+       "260",
+       "172"
+      ],
+      [
+       "2019",
+       "330",
+       "175"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing. A point is developed by accurate figures for both kinds of visitors.",
+     "A point must compare the two kinds of visitors. A correct trend for one alone earns 1 mark. At most 2 marks when only one of the two is described.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Both international and domestic visitors increased from 2009 to 2019.",
+      "develop": "international from 40 thousand to 330 thousand; domestic from 150 thousand to 175 thousand"
+     },
+     {
+      "id": "b",
+      "text": "International visitors increased much more than domestic visitors.",
+      "develop": "a rise of 290 thousand against a rise of only 25 thousand"
+     },
+     {
+      "id": "c",
+      "text": "At first there were more domestic than international visitors, but later there were more international visitors.",
+      "develop": "150 thousand against 40 thousand in 2009, or international ahead from 2015 with 180 thousand against 170 thousand"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph shows two kinds of visitors to Town Y. International visitors come from other countries and domestic visitors live in the same country as Town Y."
+     },
+     {
+      "level": 1,
+      "text": "At the start there were more domestic visitors than international visitors, but later on there were more international visitors than domestic ones."
+     },
+     {
+      "level": 2,
+      "text": "At the start there were more domestic visitors than international visitors, but later on there were more international visitors than domestic ones. Both kinds of visitors went up over the ten years."
+     },
+     {
+      "level": 3,
+      "text": "At the start there were more domestic visitors than international visitors, but later on there were more international visitors than domestic ones. International visitors moved ahead in 2015, with 180 thousand against 170 thousand domestic visitors. Both kinds of visitors went up over the ten years."
+     },
+     {
+      "level": 4,
+      "text": "At the start there were more domestic visitors than international visitors, but later on there were more international visitors than domestic ones. International visitors moved ahead in 2015, with 180 thousand against 170 thousand domestic visitors. Both kinds of visitors went up over the ten years. International visitors went from 40 thousand to 330 thousand and domestic visitors went from 150 thousand to 175 thousand."
+     }
+    ]
+   },
+   {
+    "id": "g18-q4",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, suggest two reasons why far more visitors come to Town Y from June to August than in the other months.",
+    "table": {
+     "caption": "Fig. 1: Visitor arrivals to Town Y, a seaside town, in each month of one year",
+     "columns": [
+      "Month",
+      "Arrivals (thousands)"
+     ],
+     "rows": [
+      [
+       "Jan",
+       "12"
+      ],
+      [
+       "Feb",
+       "14"
+      ],
+      [
+       "Mar",
+       "20"
+      ],
+      [
+       "Apr",
+       "31"
+      ],
+      [
+       "May",
+       "45"
+      ],
+      [
+       "Jun",
+       "68"
+      ],
+      [
+       "Jul",
+       "82"
+      ],
+      [
+       "Aug",
+       "80"
+      ],
+      [
+       "Sep",
+       "50"
+      ],
+      [
+       "Oct",
+       "28"
+      ],
+      [
+       "Nov",
+       "15"
+      ],
+      [
+       "Dec",
+       "13"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "A point is a reason. Describing the graph without giving a reason earns nothing.",
+     "A reason is developed by explaining it further or by figures from the graph that support it. The same figures earn development once only.",
+     "The question asks for two. Credit the best two only, each developed for a second mark.",
+     "Summer, the warmest months or the dry season are all accepted for June to August."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "June to August is summer in Town Y, so the weather is warm and sunny.",
+      "develop": "people can swim and sunbathe at the beach; arrivals peak at 82 thousand in July"
+     },
+     {
+      "id": "b",
+      "text": "Schools have a long holiday in these months.",
+      "develop": "families with children are free to travel; about 80 thousand arrive in August"
+     },
+     {
+      "id": "c",
+      "text": "Festivals and events are held in these months to attract visitors.",
+      "develop": "a music or food festival draws people who would not come only for the beach"
+     },
+     {
+      "id": "d",
+      "text": "More flights, ferries and attractions run in these months.",
+      "develop": "the town is easier to reach and has more to do; many attractions close when only 12 thousand come in January"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The number of visitors is highest in July, with 82 thousand, and lowest in January, with 12 thousand. So the middle of the year is the busiest time for Town Y."
+     },
+     {
+      "level": 1,
+      "text": "June to August is summer in Town Y, so the weather is warm."
+     },
+     {
+      "level": 2,
+      "text": "June to August is summer in Town Y, so the weather is warm. People can swim in the sea and lie on the beach, so arrivals reach 82 thousand in July."
+     },
+     {
+      "level": 3,
+      "text": "June to August is summer in Town Y, so the weather is warm. People can swim in the sea and lie on the beach, so arrivals reach 82 thousand in July. Schools also have a long holiday in these months."
+     },
+     {
+      "level": 4,
+      "text": "June to August is summer in Town Y, so the weather is warm. People can swim in the sea and lie on the beach, so arrivals reach 82 thousand in July. Schools also have a long holiday in these months. Families with children are free to travel then, which is why 80 thousand visitors still come in August."
+     }
+    ]
+   },
+   {
+    "id": "g18-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe what visitors to Town Y spend their money on.",
+    "table": {
+     "caption": "Fig. 1: What visitors to Town Y spend their money on, as a share of their total spending",
+     "columns": [
+      "Item",
+      "Share of spending (%)"
+     ],
+     "rows": [
+      [
+       "Accommodation",
+       "35"
+      ],
+      [
+       "Food and drinks",
+       "25"
+      ],
+      [
+       "Shopping",
+       "18"
+      ],
+      [
+       "Local transport",
+       "12"
+      ],
+      [
+       "Tours and attractions",
+       "10"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Visitors spend the largest share of their money on accommodation.",
+      "develop": "35% of their spending"
+     },
+     {
+      "id": "b",
+      "text": "Accommodation and food and drinks together take up more than half of the spending.",
+      "develop": "35% and 25%, which is 60% in all"
+     },
+     {
+      "id": "c",
+      "text": "Visitors spend the smallest share on tours and attractions.",
+      "develop": "only 10% of their spending"
+     },
+     {
+      "id": "d",
+      "text": "Shopping takes the third largest share, more than local transport.",
+      "develop": "18% against 12% for local transport"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph is about the money that visitors spend in Town Y. Tourists bring money into a town when they visit it, and this helps the town to earn income."
+     },
+     {
+      "level": 1,
+      "text": "The biggest share of the visitors' money goes to accommodation."
+     },
+     {
+      "level": 2,
+      "text": "The biggest share of the visitors' money goes to accommodation. The smallest share goes to tours and attractions."
+     },
+     {
+      "level": 3,
+      "text": "The biggest share of the visitors' money goes to accommodation, which takes 35%. The smallest share goes to tours and attractions."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g19",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Reading graphs: climate",
+  "issue": "Reading climate graphs, bar graphs and line graphs about temperature and rainfall",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g19-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the temperature and the rainfall of City A through the year.",
+    "table": {
+     "caption": "Fig. 1: Mean monthly temperature and rainfall in City A",
+     "columns": [
+      "Month",
+      "Temperature (°C)",
+      "Rainfall (mm)"
+     ],
+     "rows": [
+      [
+       "Jan",
+       "26.4",
+       "240"
+      ],
+      [
+       "Feb",
+       "26.9",
+       "160"
+      ],
+      [
+       "Mar",
+       "27.3",
+       "180"
+      ],
+      [
+       "Apr",
+       "27.7",
+       "170"
+      ],
+      [
+       "May",
+       "27.9",
+       "165"
+      ],
+      [
+       "Jun",
+       "27.8",
+       "150"
+      ],
+      [
+       "Jul",
+       "27.5",
+       "155"
+      ],
+      [
+       "Aug",
+       "27.4",
+       "175"
+      ],
+      [
+       "Sep",
+       "27.3",
+       "170"
+      ],
+      [
+       "Oct",
+       "27.2",
+       "195"
+      ],
+      [
+       "Nov",
+       "26.8",
+       "255"
+      ],
+      [
+       "Dec",
+       "26.5",
+       "290"
+      ]
+     ],
+     "figure": "climate"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "At most 2 marks when only temperature or only rainfall is described.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The temperature is high in every month of the year.",
+      "develop": "between 26.4 °C and 27.9 °C in every month"
+     },
+     {
+      "id": "b",
+      "text": "The temperature changes very little through the year, so the yearly range is small.",
+      "develop": "a range of only 1.5 °C, from 26.4 °C in January to 27.9 °C in May"
+     },
+     {
+      "id": "c",
+      "text": "Rain falls in every month, so there is no dry month.",
+      "develop": "even the driest month, June, has 150 mm"
+     },
+     {
+      "id": "d",
+      "text": "Rainfall is highest at the end and the start of the year, from November to January.",
+      "develop": "December is the wettest month with 290 mm; November has 255 mm and January 240 mm"
+     },
+     {
+      "id": "e",
+      "text": "The total rainfall for the year is high.",
+      "develop": "about 2305 mm in the year"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "City A is near the Equator. The sun is overhead there, so the air is heated, rises and cools, and the water vapour condenses."
+     },
+     {
+      "level": 1,
+      "text": "The temperature is high in all the months of the year."
+     },
+     {
+      "level": 2,
+      "text": "The temperature is high in all the months of the year. Every month is between 26.4 °C and 27.9 °C."
+     },
+     {
+      "level": 3,
+      "text": "The temperature is high in all the months of the year. Every month is between 26.4 °C and 27.9 °C. There is rain in every month, so no month is dry."
+     },
+     {
+      "level": 4,
+      "text": "The temperature is high in all the months of the year. Every month is between 26.4 °C and 27.9 °C. There is rain in every month, so no month is dry. Even June, the driest month, gets 150 mm."
+     }
+    ]
+   },
+   {
+    "id": "g19-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the rainfall in City B changes through the year.",
+    "table": {
+     "caption": "Fig. 1: Mean monthly temperature and rainfall in City B",
+     "columns": [
+      "Month",
+      "Temperature (°C)",
+      "Rainfall (mm)"
+     ],
+     "rows": [
+      [
+       "Jan",
+       "24.5",
+       "2"
+      ],
+      [
+       "Feb",
+       "25.2",
+       "1"
+      ],
+      [
+       "Mar",
+       "27.3",
+       "4"
+      ],
+      [
+       "Apr",
+       "29.1",
+       "12"
+      ],
+      [
+       "May",
+       "30.4",
+       "45"
+      ],
+      [
+       "Jun",
+       "29.3",
+       "480"
+      ],
+      [
+       "Jul",
+       "27.8",
+       "650"
+      ],
+      [
+       "Aug",
+       "27.4",
+       "520"
+      ],
+      [
+       "Sep",
+       "27.7",
+       "310"
+      ],
+      [
+       "Oct",
+       "28.6",
+       "85"
+      ],
+      [
+       "Nov",
+       "27.4",
+       "14"
+      ],
+      [
+       "Dec",
+       "25.6",
+       "5"
+      ]
+     ],
+     "figure": "climate"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "Only rainfall earns credit. A point needs a direction or a level and a period. It is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Rainfall is very low from November to April.",
+      "develop": "under 15 mm in each of these months; the lowest is 1 mm in February"
+     },
+     {
+      "id": "b",
+      "text": "Rainfall rises sharply from May to July.",
+      "develop": "from 45 mm in May to a peak of 650 mm in July"
+     },
+     {
+      "id": "c",
+      "text": "Rainfall falls after July.",
+      "develop": "from 650 mm in July to 14 mm in November"
+     },
+     {
+      "id": "d",
+      "text": "Most of the rain falls in a wet season of four months, from June to September.",
+      "develop": "these four months have 1960 mm out of 2128 mm for the year; each has more than 300 mm"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Winds that blow from the sea carry moist air. The air rises over the land and cools, and this gives rain."
+     },
+     {
+      "level": 1,
+      "text": "There is very little rain from November to April."
+     },
+     {
+      "level": 2,
+      "text": "There is very little rain from November to April. Then the rainfall goes up sharply from May to July."
+     },
+     {
+      "level": 3,
+      "text": "There is very little rain from November to April. Then the rainfall goes up sharply from May to July, from 45 mm to a peak of 650 mm."
+     }
+    ]
+   },
+   {
+    "id": "g19-q3",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the temperature in City C changes through the year.",
+    "table": {
+     "caption": "Fig. 1: Mean monthly temperature and rainfall in City C",
+     "columns": [
+      "Month",
+      "Temperature (°C)",
+      "Rainfall (mm)"
+     ],
+     "rows": [
+      [
+       "Jan",
+       "1.5",
+       "52"
+      ],
+      [
+       "Feb",
+       "2.4",
+       "41"
+      ],
+      [
+       "Mar",
+       "5.6",
+       "46"
+      ],
+      [
+       "Apr",
+       "9.3",
+       "44"
+      ],
+      [
+       "May",
+       "13.8",
+       "55"
+      ],
+      [
+       "Jun",
+       "16.9",
+       "62"
+      ],
+      [
+       "Jul",
+       "18.7",
+       "68"
+      ],
+      [
+       "Aug",
+       "18.2",
+       "71"
+      ],
+      [
+       "Sep",
+       "14.9",
+       "60"
+      ],
+      [
+       "Oct",
+       "10.4",
+       "64"
+      ],
+      [
+       "Nov",
+       "5.8",
+       "61"
+      ],
+      [
+       "Dec",
+       "2.6",
+       "58"
+      ]
+     ],
+     "figure": "climate"
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "Only temperature earns credit. A point needs a direction or a level and a period. It is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The temperature is low at the start and the end of the year, from December to February.",
+      "develop": "under 3 °C in each of these months; the lowest is 1.5 °C in January"
+     },
+     {
+      "id": "b",
+      "text": "The temperature rises from January to July.",
+      "develop": "from 1.5 °C in January to a peak of 18.7 °C in July"
+     },
+     {
+      "id": "c",
+      "text": "The temperature falls from July to December.",
+      "develop": "from 18.7 °C in July to 2.6 °C in December"
+     },
+     {
+      "id": "d",
+      "text": "The temperature changes a lot through the year, so the yearly range is large.",
+      "develop": "a range of 17.2 °C, between 18.7 °C in July and 1.5 °C in January"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "City C is far from the Equator. The sun's rays reach it at a low angle and are spread over a larger area."
+     },
+     {
+      "level": 1,
+      "text": "The temperature goes up from January to July."
+     },
+     {
+      "level": 2,
+      "text": "The temperature goes up from January to July. Then it goes down from July to December."
+     },
+     {
+      "level": 3,
+      "text": "The temperature goes up from January to July. Then it goes down from July to December, from 18.7 °C to 2.6 °C."
+     }
+    ]
+   },
+   {
+    "id": "g19-q4",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, compare the changes in the mean temperature of City P and City Q from the 1960s to the 2010s.",
+    "table": {
+     "caption": "Fig. 1: Mean yearly temperature in City P and City Q, by decade",
+     "columns": [
+      "Decade",
+      "City P (°C)",
+      "City Q (°C)"
+     ],
+     "rows": [
+      [
+       "1960s",
+       "26.4",
+       "25.9"
+      ],
+      [
+       "1970s",
+       "26.5",
+       "25.8"
+      ],
+      [
+       "1980s",
+       "26.8",
+       "26.0"
+      ],
+      [
+       "1990s",
+       "27.1",
+       "26.2"
+      ],
+      [
+       "2000s",
+       "27.4",
+       "26.3"
+      ],
+      [
+       "2010s",
+       "27.8",
+       "26.5"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "A point must say something about both cities. A statement about one city alone earns nothing.",
+     "A point is developed by accurate figures for both cities.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The temperature rose overall in both cities.",
+      "develop": "City P from 26.4 °C to 27.8 °C and City Q from 25.9 °C to 26.5 °C"
+     },
+     {
+      "id": "b",
+      "text": "The temperature rose more in City P than in City Q.",
+      "develop": "a rise of 1.4 °C in City P but only 0.6 °C in City Q"
+     },
+     {
+      "id": "c",
+      "text": "City P was warmer than City Q in every decade.",
+      "develop": "figures for both cities in one decade, such as 27.8 °C and 26.5 °C in the 2010s"
+     },
+     {
+      "id": "d",
+      "text": "City P rose in every decade, but City Q fell once before it rose.",
+      "develop": "City Q fell from 25.9 °C to 25.8 °C in the 1970s, while City P rose from 26.4 °C to 26.5 °C"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Burning fossil fuels gives off greenhouse gases such as carbon dioxide, and these gases trap heat in the air."
+     },
+     {
+      "level": 1,
+      "text": "The temperature went up over the period in both City P and City Q."
+     },
+     {
+      "level": 2,
+      "text": "The temperature went up over the period in both City P and City Q. City P went from 26.4 °C to 27.8 °C and City Q went from 25.9 °C to 26.5 °C."
+     },
+     {
+      "level": 3,
+      "text": "The temperature went up over the period in both City P and City Q. City P went from 26.4 °C to 27.8 °C and City Q went from 25.9 °C to 26.5 °C. The rise was bigger in City P than in City Q."
+     },
+     {
+      "level": 4,
+      "text": "The temperature went up over the period in both City P and City Q. City P went from 26.4 °C to 27.8 °C and City Q went from 25.9 °C to 26.5 °C. The rise was bigger in City P than in City Q. City P went up by 1.4 °C but City Q went up by only 0.6 °C."
+     }
+    ]
+   },
+   {
+    "id": "g19-q5",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, explain why the wind at this coast blows from the sea in the afternoon and from the land late at night.",
+    "table": {
+     "caption": "Fig. 1: Temperature of the land and of the sea at a coast over one day",
+     "columns": [
+      "Time",
+      "Land (°C)",
+      "Sea (°C)"
+     ],
+     "rows": [
+      [
+       "00:00",
+       "24",
+       "27"
+      ],
+      [
+       "03:00",
+       "22",
+       "26.5"
+      ],
+      [
+       "06:00",
+       "21",
+       "26"
+      ],
+      [
+       "09:00",
+       "26",
+       "26.5"
+      ],
+      [
+       "12:00",
+       "32",
+       "27.5"
+      ],
+      [
+       "15:00",
+       "34",
+       "28"
+      ],
+      [
+       "18:00",
+       "30",
+       "28"
+      ],
+      [
+       "21:00",
+       "26",
+       "27.5"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Points a and b need the link from temperature to rising air or to air pressure. Saying only which is hotter earns nothing.",
+     "A point is developed by accurate figures from the graph that support it.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "In the afternoon the land is hotter than the sea, so air over the land rises, pressure is lower there and wind blows in from the sea.",
+      "develop": "at 15:00 the land is 34 °C and the sea is 28 °C (or the figures at 12:00 or 18:00)"
+     },
+     {
+      "id": "b",
+      "text": "Late at night the land is cooler than the sea, so pressure is lower over the sea and wind blows out from the land.",
+      "develop": "at 03:00 the land is 22 °C and the sea is 26.5 °C (or the figures at 00:00 or 06:00)"
+     },
+     {
+      "id": "c",
+      "text": "The land heats up and cools down faster than the sea.",
+      "develop": "the land changes by 13 °C in the day (21 °C to 34 °C) but the sea by only 2 °C (26 °C to 28 °C)"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A wind from the sea is called a sea breeze and a wind from the land is called a land breeze. They are felt by people who live at the coast."
+     },
+     {
+      "level": 1,
+      "text": "In the afternoon the land is hotter than the sea. The air over the land rises, so the pressure is lower over the land, and the wind blows from the sea to the land."
+     },
+     {
+      "level": 2,
+      "text": "In the afternoon the land is hotter than the sea. At 15:00 the land is 34 °C but the sea is only 28 °C. The air over the land rises, so the pressure is lower over the land, and the wind blows from the sea to the land."
+     },
+     {
+      "level": 3,
+      "text": "In the afternoon the land is hotter than the sea. At 15:00 the land is 34 °C but the sea is only 28 °C. The air over the land rises, so the pressure is lower over the land, and the wind blows from the sea to the land. Late at night the land is cooler than the sea, so the pressure is lower over the sea and the wind blows from the land to the sea."
+     },
+     {
+      "level": 4,
+      "text": "In the afternoon the land is hotter than the sea. At 15:00 the land is 34 °C but the sea is only 28 °C. The air over the land rises, so the pressure is lower over the land, and the wind blows from the sea to the land. Late at night the land is cooler than the sea. At 03:00 the land is 22 °C but the sea is 26.5 °C. So the pressure is lower over the sea and the wind blows from the land to the sea."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g20",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Reading graphs: tectonic hazards",
+  "issue": "Reading bar graphs and line graphs about earthquakes, volcanoes and being prepared",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g20-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the number of earthquakes in Region Y changes with magnitude.",
+    "table": {
+     "caption": "Fig. 1: Earthquakes recorded in Region Y in ten years, by magnitude",
+     "columns": [
+      "Magnitude",
+      "Number of earthquakes"
+     ],
+     "rows": [
+      [
+       "4.0–4.9",
+       "1240"
+      ],
+      [
+       "5.0–5.9",
+       "310"
+      ],
+      [
+       "6.0–6.9",
+       "42"
+      ],
+      [
+       "7.0–7.9",
+       "5"
+      ],
+      [
+       "8.0 and above",
+       "1"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "The general pattern is point a and is credited once. Points b and c need the band to be named.",
+     "A point is developed by accurate figures from the graph."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The higher the magnitude, the fewer earthquakes there are.",
+      "develop": "figures for at least two bands, such as 1240 at 4.0–4.9 and 1 at 8.0 and above"
+     },
+     {
+      "id": "b",
+      "text": "Most of the earthquakes are in the weakest band, magnitude 4.0–4.9.",
+      "develop": "1240 out of 1598, or four times as many as the next band (310)"
+     },
+     {
+      "id": "c",
+      "text": "Earthquakes of magnitude 7.0 and above are very rare.",
+      "develop": "only 6 in ten years (5 and 1)"
+     },
+     {
+      "id": "d",
+      "text": "The biggest drop in number is between the two weakest bands.",
+      "develop": "from 1240 to 310, a drop of 930"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Earthquakes happen when stress builds up in the rocks where plates meet and the energy is suddenly released."
+     },
+     {
+      "level": 1,
+      "text": "The stronger the earthquake, the fewer of them there were."
+     },
+     {
+      "level": 2,
+      "text": "The stronger the earthquake, the fewer of them there were. There were 1240 of magnitude 4.0–4.9 but only 42 of magnitude 6.0–6.9."
+     },
+     {
+      "level": 3,
+      "text": "The stronger the earthquake, the fewer of them there were. There were 1240 of magnitude 4.0–4.9 but only 42 of magnitude 6.0–6.9. Earthquakes of magnitude 7.0 and above were very rare."
+     }
+    ]
+   },
+   {
+    "id": "g20-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the number of deaths changes with distance from the epicentre.",
+    "table": {
+     "caption": "Fig. 1: Deaths in an earthquake in Country X, by distance from the epicentre",
+     "columns": [
+      "Distance from epicentre (km)",
+      "Deaths"
+     ],
+     "rows": [
+      [
+       "0–10",
+       "4200"
+      ],
+      [
+       "10–20",
+       "2600"
+      ],
+      [
+       "20–30",
+       "900"
+      ],
+      [
+       "30–40",
+       "350"
+      ],
+      [
+       "40–50",
+       "120"
+      ],
+      [
+       "50–60",
+       "30"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The number of deaths falls as the distance from the epicentre increases.",
+      "develop": "from 4200 within 10 km to 30 at 50–60 km"
+     },
+     {
+      "id": "b",
+      "text": "The fall is fastest in the first 30 km.",
+      "develop": "from 4200 at 0–10 km to 900 at 20–30 km, a drop of 3300"
+     },
+     {
+      "id": "c",
+      "text": "Beyond 30 km the number of deaths is low and falls slowly.",
+      "develop": "from 350 at 30–40 km to 30 at 50–60 km"
+     },
+     {
+      "id": "d",
+      "text": "Most of the deaths are within 20 km of the epicentre.",
+      "develop": "6800 out of 8200 deaths (4200 and 2600)"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The epicentre is the point on the ground right above the focus. The graph shows how many people died at different distances from it."
+     },
+     {
+      "level": 1,
+      "text": "The number of deaths goes down as the distance from the epicentre goes up."
+     },
+     {
+      "level": 2,
+      "text": "The number of deaths goes down as the distance from the epicentre goes up, from 4200 within 10 km to only 30 at 50–60 km."
+     },
+     {
+      "level": 3,
+      "text": "The number of deaths goes down as the distance from the epicentre goes up, from 4200 within 10 km to only 30 at 50–60 km. The number drops fastest in the first 30 km."
+     }
+    ]
+   },
+   {
+    "id": "g20-q3",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, compare the share of urban households and of rural households that were prepared from 2014 to 2024.",
+    "table": {
+     "caption": "Fig. 1: Households in Country X with an emergency kit and an evacuation plan",
+     "columns": [
+      "Year",
+      "Urban (%)",
+      "Rural (%)"
+     ],
+     "rows": [
+      [
+       "2014",
+       "22",
+       "15"
+      ],
+      [
+       "2016",
+       "25",
+       "16"
+      ],
+      [
+       "2018",
+       "48",
+       "24"
+      ],
+      [
+       "2020",
+       "55",
+       "27"
+      ],
+      [
+       "2022",
+       "61",
+       "33"
+      ],
+      [
+       "2024",
+       "66",
+       "38"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "A point must say something about both groups. A statement about one group alone earns nothing.",
+     "A point is developed by accurate figures for both groups.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The share that was prepared rose for both urban and rural households.",
+      "develop": "urban from 22% to 66% and rural from 15% to 38%"
+     },
+     {
+      "id": "b",
+      "text": "The urban share was higher than the rural share in every year.",
+      "develop": "figures for both in one year, such as 48% and 24% in 2018"
+     },
+     {
+      "id": "c",
+      "text": "The urban share rose more than the rural share, so the gap grew.",
+      "develop": "a rise of 44 percentage points against 23; or the gap grew from 7 to 28"
+     },
+     {
+      "id": "d",
+      "text": "Both rose fastest between 2016 and 2018.",
+      "develop": "urban from 25% to 48% and rural from 16% to 24%"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Some households keep an emergency kit with water, food, a torch and a radio, so that they are ready when an earthquake strikes."
+     },
+     {
+      "level": 1,
+      "text": "In every year a bigger share of urban households than of rural households were prepared."
+     },
+     {
+      "level": 2,
+      "text": "In every year a bigger share of urban households than of rural households were prepared. The share went up for both groups from 2014 to 2024."
+     },
+     {
+      "level": 3,
+      "text": "In every year a bigger share of urban households than of rural households were prepared. The share went up for both groups from 2014 to 2024. Urban went from 22% to 66% and rural went from 15% to 38%."
+     },
+     {
+      "level": 4,
+      "text": "In every year a bigger share of urban households than of rural households were prepared. In 2018, for example, it was 48% of urban households and 24% of rural households. The share went up for both groups from 2014 to 2024. Urban went from 22% to 66% and rural went from 15% to 38%."
+     }
+    ]
+   },
+   {
+    "id": "g20-q4",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, suggest two reasons why fewer people died in earthquakes in Country X in later decades.",
+    "table": {
+     "caption": "Fig. 1: Deaths from earthquakes in Country X, by decade (a similar number of strong earthquakes struck in each decade)",
+     "columns": [
+      "Decade",
+      "Deaths"
+     ],
+     "rows": [
+      [
+       "1970s",
+       "12400"
+      ],
+      [
+       "1980s",
+       "9800"
+      ],
+      [
+       "1990s",
+       "5200"
+      ],
+      [
+       "2000s",
+       "2100"
+      ],
+      [
+       "2010s",
+       "600"
+      ]
+     ],
+     "figure": "bar"
+    },
+    "rules": [
+     "A point is developed by saying how it saves lives, or by figures from the graph that show the fall in deaths.",
+     "Figures from the graph can develop one point only.",
+     "Only describing the fall in deaths, with no reason, earns nothing.",
+     "The same figures earn development once only.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Buildings are built or strengthened to stand up to shaking, so fewer collapse on people.",
+      "develop": "how: steel bars, base isolation, stricter building rules; or figures showing the fall (12 400 in the 1970s to 600 in the 2010s)"
+     },
+     {
+      "id": "b",
+      "text": "People practise earthquake drills, so they know how to protect themselves.",
+      "develop": "drop, cover and hold on; knowing the way out and where to gather; or figures showing the fall"
+     },
+     {
+      "id": "c",
+      "text": "Warning systems tell people to take cover or to move away from the coast before the danger arrives.",
+      "develop": "alerts by phone or siren; a tsunami warning gives time to reach high ground; or figures showing the fall"
+     },
+     {
+      "id": "d",
+      "text": "Rescue teams and hospitals are better trained and equipped, so more trapped and injured people are saved.",
+      "develop": "search dogs, machines to lift rubble, quick medical care; or figures showing the fall"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Earthquakes happen when plates move and energy is suddenly released. Country X is near a plate boundary, so it has many earthquakes."
+     },
+     {
+      "level": 1,
+      "text": "Buildings in Country X may now be built to stand up to shaking, so fewer of them fall on people."
+     },
+     {
+      "level": 2,
+      "text": "Buildings in Country X may now be built to stand up to shaking, so fewer of them fall on people. This fits the graph, where deaths fell from 12 400 in the 1970s to 600 in the 2010s."
+     },
+     {
+      "level": 3,
+      "text": "Buildings in Country X may now be built to stand up to shaking, so fewer of them fall on people. This fits the graph, where deaths fell from 12 400 in the 1970s to 600 in the 2010s. People may also practise earthquake drills, so they know how to protect themselves."
+     },
+     {
+      "level": 4,
+      "text": "Buildings in Country X may now be built to stand up to shaking, so fewer of them fall on people. This fits the graph, where deaths fell from 12 400 in the 1970s to 600 in the 2010s. People may also practise earthquake drills, so they know how to protect themselves. For example, they learn to drop under a table, cover the head and hold on."
+     }
+    ]
+   },
+   {
+    "id": "g20-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the number of small earthquakes changed in the 14 days before the eruption.",
+    "table": {
+     "caption": "Fig. 1: Small earthquakes recorded each day near Volcano V before it erupted",
+     "columns": [
+      "Days before the eruption",
+      "Earthquakes in the day"
+     ],
+     "rows": [
+      [
+       "14",
+       "3"
+      ],
+      [
+       "12",
+       "4"
+      ],
+      [
+       "10",
+       "4"
+      ],
+      [
+       "8",
+       "9"
+      ],
+      [
+       "6",
+       "21"
+      ],
+      [
+       "4",
+       "48"
+      ],
+      [
+       "2",
+       "96"
+      ],
+      [
+       "1",
+       "140"
+      ]
+     ],
+     "figure": "line"
+    },
+    "rules": [
+     "Describe only. A reason earns nothing.",
+     "A point is developed by accurate figures from the graph.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Overall, the number of small earthquakes each day rose as the eruption came nearer.",
+      "develop": "from 3 a day 14 days before to 140 a day 1 day before"
+     },
+     {
+      "id": "b",
+      "text": "The number stayed low from 14 days to 10 days before the eruption.",
+      "develop": "only 3 or 4 a day"
+     },
+     {
+      "id": "c",
+      "text": "The number rose very sharply in the last 6 days.",
+      "develop": "from 21 a day 6 days before to 140 a day 1 day before"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Magma rising inside a volcano cracks the rocks around it, and this makes the ground shake."
+     },
+     {
+      "level": 1,
+      "text": "The number of small earthquakes each day went up as the eruption got nearer."
+     },
+     {
+      "level": 2,
+      "text": "The number of small earthquakes each day went up as the eruption got nearer. At first, from 14 days to 10 days before, the number stayed low."
+     },
+     {
+      "level": 3,
+      "text": "The number of small earthquakes each day went up as the eruption got nearer. At first, from 14 days to 10 days before, the number stayed low, at only 3 or 4 a day."
+     }
+    ]
+   }
+  ]
  }
 ]

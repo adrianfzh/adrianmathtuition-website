@@ -157,7 +157,13 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - **Figures from the question's own numbers (7 Oct 2026):** `table.figure = 'bar' | 'line' | 'climate'` draws
 >   the table as "Fig. 1" (`app/humanities/charts.tsx`, geometry `lib/humanities-chart.ts`), every value printed
 >   on it; the reader gets the same numbers. g01-q2 is the first (a line graph). The bot's figure library has no
->   bar, line or climate graph, so these are drawn on the page.
+>   bar, line or climate graph, so these are drawn on the page. A climate graph is two panels on one month
+>   axis (the temperature line above the rainfall bars); a line graph's axis may start near its lowest value;
+>   two lines are numbered above and below by which is higher at each point.
+> - **Graph sets g17–g20 (20 questions, one "Reading graphs" set a cluster; three climate graphs):** written on
+>   the plan, blind-marked 91/91, the checker's notes applied ("the same figures earn development once only",
+>   accepted wordings, g20-q2 drawn as bars). Geography now stands at **20 sets, 88 questions**. Not through
+>   the live reader yet.
 > - **Still to build:** maps, photographs and diagrams, the 9-mark question
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 

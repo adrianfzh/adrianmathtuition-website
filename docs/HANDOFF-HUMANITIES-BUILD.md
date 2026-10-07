@@ -39,6 +39,10 @@ Talk to Adrian in plain, short words. No jargon.
   built** (bar, line, climate — drawn from the question's numbers). Adrian has seen the with-mark and
   without-mark pictures; his word on `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` is still owed.
 
+- **7 Oct 2026, late — graph sets g17–g20 listed** (20 sets, 88 Geography questions; climate graphs drawn as
+  two panels). Next for B: maps / photographs / diagrams, the 9-mark question, and the live-reader bench
+  on g05–g20 (API money — Adrian's word). Then C History essays, D practice by skill.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps
