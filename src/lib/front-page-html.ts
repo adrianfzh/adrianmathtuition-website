@@ -240,8 +240,8 @@ export function paperBar(input: FrontPageInput): { html: string; lost: number } 
   // the red segment keeps room for its label however small the loss; the green for its own
   const redPct = Math.min(88, Math.max(13, (lost / max) * 100));
   const keptPct = Math.round((100 - redPct) * 100) / 100;
-  const html = `<div class="pbar" role="img" aria-label="${awarded} of ${max} marks kept, ${lost} lost">
-    <span class="pbar-kept" style="width:${keptPct}%"><b>${awarded}</b> kept</span><span class="pbar-lost" style="width:${Math.round(redPct * 100) / 100}%"><b>${lost}</b> lost</span>
+  const html = `<div class="pbar" role="img" aria-label="${awarded} of ${max} marks earned, ${lost} lost">
+    <span class="pbar-kept" style="width:${keptPct}%"><b>${awarded}</b> earned</span><span class="pbar-lost" style="width:${Math.round(redPct * 100) / 100}%"><b>${lost}</b> lost</span>
   </div>
   <svg class="pzoom" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true"><polygon points="${keptPct},0 100,0 100,10 0,10"/><line x1="${keptPct}" y1="0" x2="0" y2="10"/><line x1="100" y1="0" x2="100" y2="10"/></svg>`;
   return { html, lost };

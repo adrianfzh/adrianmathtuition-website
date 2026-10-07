@@ -672,9 +672,9 @@ describe('the whole-paper bar, zoomed into the lost marks', () => {
     { question: 'Q2', lost: 1, max: 2 }, { question: 'Q5', lost: 1, max: 1 }, { question: 'Q6', lost: 1, max: 2 },
     { question: 'Q7', lost: 1, max: 3 }, { question: 'Q13', lost: 1, max: 2 },
   ];
-  it('one bar: marks kept in green, marks lost in red, then the rows, then the rest', () => {
+  it('one bar: marks earned in green, marks lost in red, then the rows, then the rest', () => {
     const h = frontPageHtml({ ...base, awarded: 80, max: 90, worstQuestions: five });
-    expect(h).toContain('<b>80</b> kept');
+    expect(h).toContain('<b>80</b> earned');
     expect(h).toContain('<b>10</b> lost');
     expect(h).toContain('The 10 marks you lost, question by question.');
     expect(h).toContain('and <b>5</b> more marks across other questions');   // 10 lost, 5 listed → 5 elsewhere
