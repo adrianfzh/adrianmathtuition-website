@@ -50,3 +50,22 @@ describe('the example bank (A3)', () => {
     }
   });
 });
+
+import { niceAxis, tickLabel, chartData, figureProblem } from './humanities-chart';
+describe('Geography figures', () => {
+  it('an axis ends on a round number, in four or five even steps', () => {
+    expect(niceAxis(8.1)).toEqual({ min: 0, max: 10, ticks: [0, 2.5, 5, 7.5, 10] });
+    expect(niceAxis(312).ticks).toEqual([0, 100, 200, 300, 400]);
+    expect(niceAxis(27, 24).max).toBe(30);
+    expect(niceAxis(12, -8).min).toBe(-10);
+    expect(tickLabel(1200)).toBe('1,200');
+    expect(tickLabel(-5)).toBe('−5');
+  });
+  it('a table becomes categories and number series; a figure must fit its kind', () => {
+    const t = { caption: 'Fig. 1: x', columns: ['Month', 'Temperature (°C)', 'Rainfall (mm)'], rows: [['Jan', '26', '240'], ['Feb', '27', '160'], ['Mar', '27', '1,180']] };
+    expect(chartData(t)!.series[1].values).toEqual([240, 160, 1180]);
+    expect(figureProblem(t, 'climate')).toBeNull();
+    expect(figureProblem(t, 'bar')).toMatch(/one column/);
+    expect(figureProblem({ ...t, rows: [['Jan', 'hot', '1']] }, 'line')).toMatch(/numbers/);
+  });
+});

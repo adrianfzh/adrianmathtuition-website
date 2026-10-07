@@ -3,6 +3,7 @@
 // scripts/humanities-bench/check-set.ts runs it over a draft. It checks the
 // SHAPE — whether a seeded answer earns its marks is the bench's job.
 import { GEO_CLUSTERS, POINTS_SKILLS, type HumanitiesSet } from './humanities-questions';
+import { figureProblem } from './humanities-chart';
 
 const words = (t: string): number => (t.trim() ? t.trim().split(/\s+/).length : 0);
 const BANNED = /\b(adrian|claude|opus|sonnet|haiku|gemini|chatgpt|ai model)\b/i;
@@ -35,9 +36,11 @@ export function geographyProblems(set: HumanitiesSet): string[] {
     // The points must be able to reach full marks, with at least one to spare for choice.
     const reach = pts.length * (q.develop ? 2 : 1);
     if (reach < marks) at(`the points reach only ${reach} of ${marks} marks`);
-    if (/table|fig\./i.test(q.question) && !q.table) at('the question names a table or figure it does not carry');
+    if (/\btable\b|fig\./i.test(q.question) && !q.table) at('the question names a table or figure it does not carry');
     if (q.table) {
-      if (!/^Table \d+:/.test(q.table.caption)) at('table caption is not "Table N: …"');
+      if (!(q.table.figure ? /^Fig\. \d+:/ : /^Table \d+:/).test(q.table.caption)) at(`caption is not "${q.table.figure ? 'Fig.' : 'Table'} N: …"`);
+      const fp = q.table.figure ? figureProblem(q.table, q.table.figure) : null;
+      if (fp) at(fp);
       if (q.table.rows.some(r => r.length !== q.table!.columns.length)) at('a table row does not match the columns');
     }
     const levels = (q.seeded ?? []).map(s => s.level).sort((a, b) => a - b);

@@ -146,7 +146,19 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   itself shows only when `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` is true (closed — Adrian decides) or to Adrian.**
 > - **First set: 8 own questions** (two per cluster: everyday life, tourism, climate, tectonics), text and
 >   one data table — no maps, graphs or photographs yet. 38 seeded answers, each written to earn an exact mark.
-> - **Still to build:** figures (maps, graphs, photographs — the figure library first), the 9-mark question
+> - **The batch (7 Oct 2026, night): 16 sets, 68 questions** — g05–g16 written by four writers on the plan to
+>   `docs/humanities/geography-brief.md` (three sets a cluster). Plan-only checks, as Adrian asked: the shape
+>   checker; a blind marking of all 274 seeded answers by fresh readers (274/274 at the written mark); and a
+>   subject check that found about fifteen loose or wrong lines, all fixed (a mis-ranked table figure, the
+>   tsunami sensors, subduction melting, storm surge, "fastest" for "largest" …). "Explain two ways" questions
+>   carry the rule "credit the best two only". **Not through the live reader yet** (only the 8 pilot questions are).
+>   Known soft spots, left as they are: a two-column table question can reach full marks from one column
+>   (g10-q2); g12-q1 and g11-q3 can reach full marks without the step that names the key word.
+> - **Figures from the question's own numbers (7 Oct 2026):** `table.figure = 'bar' | 'line' | 'climate'` draws
+>   the table as "Fig. 1" (`app/humanities/charts.tsx`, geometry `lib/humanities-chart.ts`), every value printed
+>   on it; the reader gets the same numbers. g01-q2 is the first (a line graph). The bot's figure library has no
+>   bar, line or climate graph, so these are drawn on the page.
+> - **Still to build:** maps, photographs and diagrams, the 9-mark question
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 ## 4. The bench — built like the science bench

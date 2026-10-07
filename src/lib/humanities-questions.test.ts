@@ -151,7 +151,8 @@ describe('Geography, point-marked (B)', () => {
 
   it('a data table reaches the reader as plain lines', () => {
     const t = questionById('g01-q2')!.question.table!;
-    expect(tableText(t).split('\n')[0]).toBe('Year | Arrivals (millions)');
+    expect(tableText(t)).toMatch(/^\(Shown to the student as a line graph/);
+    expect(tableText(t)).toMatch(/Year \| Arrivals \(millions\)/);
     expect(tableText(t)).toMatch(/2019 \| 8\.1/);
   });
 

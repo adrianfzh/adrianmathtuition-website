@@ -73,9 +73,9 @@
     "marks": 3,
     "develop": true,
     "sources": [],
-    "question": "Using Table 1, describe the changes in international visitor arrivals from 2016 to 2023.",
+    "question": "Using Fig. 1, describe the changes in international visitor arrivals from 2016 to 2023.",
     "table": {
-     "caption": "Table 1: International visitor arrivals to Country X, 2016 to 2023",
+     "caption": "Fig. 1: International visitor arrivals to Country X, 2016 to 2023",
      "columns": [
       "Year",
       "Arrivals (millions)"
@@ -113,11 +113,12 @@
        "2023",
        "7.2"
       ]
-     ]
+     ],
+     "figure": "line"
     },
     "rules": [
      "Describe only. A reason for a change earns nothing.",
-     "A point needs a direction and a period. It is developed by accurate figures from the table."
+     "A point needs a direction and a period. It is developed by accurate figures from the graph."
     ],
     "points": [
      {
@@ -500,6 +501,3818 @@
      {
       "level": 4,
       "text": "The student can ask residents to rate the park from 1 to 5, so the answers can be counted and compared. To avoid bias, the student can ask every fifth person who walks past. The student should survey many residents, such as 50, so the results represent the neighbourhood. The survey should be done in the morning and in the evening, on weekdays and weekends, so that different groups of users are included."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g05",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Neighbourhoods and sense of place",
+  "issue": "How people come to know, use and feel for the neighbourhood they live in",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g05-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how people develop a sense of place for their neighbourhood.",
+    "points": [
+     {
+      "id": "a",
+      "text": "People visit the same everyday places again and again.",
+      "develop": "the place becomes familiar and memories of it build up, so it comes to mean something to them"
+     },
+     {
+      "id": "b",
+      "text": "Landmarks in the neighbourhood stand out and are easy to recognise.",
+      "develop": "people use them to find their way or to meet, or they come to stand for the neighbourhood"
+     },
+     {
+      "id": "c",
+      "text": "People meet and talk with other people at these places.",
+      "develop": "they make friends with neighbours or stallholders and feel that they belong there"
+     },
+     {
+      "id": "d",
+      "text": "People take part in special events held in the neighbourhood.",
+      "develop": "festivals or celebrations leave strong memories that are tied to the place"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A sense of place is important and every neighbourhood in Singapore has many blocks of flats and shops."
+     },
+     {
+      "level": 1,
+      "text": "People go to the same places in their neighbourhood over and over, like the coffee shop downstairs."
+     },
+     {
+      "level": 2,
+      "text": "People go to the same places in their neighbourhood over and over, like the coffee shop downstairs. After many visits they know the place well and have many memories of it, so it starts to mean something to them."
+     },
+     {
+      "level": 3,
+      "text": "People go to the same places in their neighbourhood over and over, like the coffee shop downstairs. After many visits they know the place well and have many memories of it, so it starts to mean something to them. They also chat with other people when they are there."
+     },
+     {
+      "level": 4,
+      "text": "People go to the same places in their neighbourhood over and over, like the coffee shop downstairs. After many visits they know the place well and have many memories of it, so it starts to mean something to them. They also chat with other people when they are there. They become friends with the neighbours and the stall owners, so they feel they are part of the neighbourhood."
+     }
+    ]
+   },
+   {
+    "id": "g05-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which people's activities can harm a nature area in their neighbourhood.",
+    "rules": [
+     "Credit two ways at most, each up to 2 marks.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Visitors who walk off the paths trample the plants.",
+      "develop": "the soil is pressed down hard, so water cannot soak in and plants grow poorly or die"
+     },
+     {
+      "id": "b",
+      "text": "Visitors leave litter behind.",
+      "develop": "animals may eat it or get trapped in it, or it pollutes the streams and ponds"
+     },
+     {
+      "id": "c",
+      "text": "Noise made by visitors disturbs the wildlife.",
+      "develop": "animals are frightened away, or their feeding and breeding are upset"
+     },
+     {
+      "id": "d",
+      "text": "Visitors feed the wild animals.",
+      "develop": "the animals come to depend on people for food, or become bold and aggressive"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A nature area has many trees and animals, and people like to go there on weekends to take photographs."
+     },
+     {
+      "level": 1,
+      "text": "Some visitors throw their rubbish on the ground in the nature area."
+     },
+     {
+      "level": 2,
+      "text": "Some visitors throw their rubbish on the ground in the nature area. Some visitors also give food to the monkeys and birds."
+     },
+     {
+      "level": 3,
+      "text": "Some visitors throw their rubbish on the ground in the nature area. Animals may swallow the plastic or get stuck in it. Some visitors also give food to the monkeys and birds."
+     },
+     {
+      "level": 4,
+      "text": "Some visitors throw their rubbish on the ground in the nature area. Animals may swallow the plastic or get stuck in it. Some visitors also give food to the monkeys and birds. The animals then stop finding their own food and wait for people to feed them."
+     }
+    ]
+   },
+   {
+    "id": "g05-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain why a town centre has more shops and services than a neighbourhood centre.",
+    "points": [
+     {
+      "id": "a",
+      "text": "A town centre serves the residents of the whole town, a much larger number of people.",
+      "develop": "there are enough customers to support shops that need many of them, such as a department store or a cinema"
+     },
+     {
+      "id": "b",
+      "text": "A town centre is well connected by public transport.",
+      "develop": "an MRT station or bus interchange lets people from every part of the town reach it easily"
+     },
+     {
+      "id": "c",
+      "text": "A neighbourhood centre meets only the daily needs of the residents living close by.",
+      "develop": "things bought often, such as food and groceries, so a few small shops are enough"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A town centre is in the middle of the town and it is a very crowded place, especially on weekends."
+     },
+     {
+      "level": 1,
+      "text": "A town centre is used by people from the whole town, which is many more people than one neighbourhood."
+     },
+     {
+      "level": 2,
+      "text": "A town centre is used by people from the whole town, which is many more people than one neighbourhood. With so many customers, shops like a big department store or a cinema can get enough business to stay open."
+     },
+     {
+      "level": 3,
+      "text": "A town centre is used by people from the whole town, which is many more people than one neighbourhood. With so many customers, shops like a big department store or a cinema can get enough business to stay open. The town centre also has good public transport links."
+     }
+    ]
+   },
+   {
+    "id": "g05-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe the differences between the two age groups in the places that mean the most to them.",
+    "table": {
+     "caption": "Table 1: The place in Neighbourhood X that means the most to residents, by age group (% of each group)",
+     "columns": [
+      "Place",
+      "Aged under 30 (%)",
+      "Aged 60 and above (%)"
+     ],
+     "rows": [
+      [
+       "Hawker centre",
+       "18",
+       "34"
+      ],
+      [
+       "Playground and park",
+       "26",
+       "12"
+      ],
+      [
+       "Shopping mall",
+       "30",
+       "6"
+      ],
+      [
+       "Community club",
+       "8",
+       "22"
+      ],
+      [
+       "Place of worship",
+       "6",
+       "20"
+      ],
+      [
+       "Sports hall",
+       "12",
+       "6"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a difference earns nothing.",
+     "A point must compare the two groups. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The shopping mall was named far more often by the younger group than by the older group.",
+      "develop": "30% against 6%; it was the top choice of the younger group"
+     },
+     {
+      "id": "b",
+      "text": "The hawker centre was named more often by the older group than by the younger group.",
+      "develop": "34% against 18%; it was the top choice of the older group"
+     },
+     {
+      "id": "c",
+      "text": "The community club or the place of worship was named more often by the older group.",
+      "develop": "22% against 8% for the community club, or 20% against 6% for the place of worship"
+     },
+     {
+      "id": "d",
+      "text": "The playground and park or the sports hall was named more often by the younger group.",
+      "develop": "26% against 12% for the playground and park, or 12% against 6% for the sports hall"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Old people like to eat at the hawker centre because the food there is cheap and they can meet their friends."
+     },
+     {
+      "level": 1,
+      "text": "More of the residents aged 60 and above chose the hawker centre than the residents under 30."
+     },
+     {
+      "level": 2,
+      "text": "More of the residents aged 60 and above chose the hawker centre than the residents under 30. It was 34% of the older group but only 18% of the younger group."
+     },
+     {
+      "level": 3,
+      "text": "More of the residents aged 60 and above chose the hawker centre than the residents under 30. It was 34% of the older group but only 18% of the younger group. The shopping mall was chosen by many more of the under 30 group than the older group."
+     },
+     {
+      "level": 4,
+      "text": "More of the residents aged 60 and above chose the hawker centre than the residents under 30. It was 34% of the older group but only 18% of the younger group. The shopping mall was chosen by many more of the under 30 group than the older group. It was 30% for the under 30 group and just 6% for those aged 60 and above."
+     }
+    ]
+   },
+   {
+    "id": "g05-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Suggest three reasons why two people who live in the same neighbourhood may have a different sense of place for it.",
+    "rules": [
+     "Each different reason earns 1 mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "They have had different experiences there, some pleasant and some unpleasant."
+     },
+     {
+      "id": "b",
+      "text": "One has lived there much longer than the other."
+     },
+     {
+      "id": "c",
+      "text": "They use different places in the neighbourhood in their daily routines."
+     },
+     {
+      "id": "d",
+      "text": "One knows many of the people living there and the other knows few."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Sense of place is how a person feels about a place. Everybody in a neighbourhood has a sense of place for it."
+     },
+     {
+      "level": 1,
+      "text": "One of them may have stayed in the neighbourhood for many more years than the other."
+     },
+     {
+      "level": 2,
+      "text": "One of them may have stayed in the neighbourhood for many more years than the other. They may also go to different parts of it every day, for example one goes to the school and the other goes to the market."
+     },
+     {
+      "level": 3,
+      "text": "One of them may have stayed in the neighbourhood for many more years than the other. They may also go to different parts of it every day, for example one goes to the school and the other goes to the market. One of them may have lots of friends among the neighbours while the other hardly knows anybody there."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g06",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Sustainable neighbourhoods, hazards and resilience",
+  "issue": "Keeping a neighbourhood sustainable, and ready for fires and traffic hazards",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g06-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which a neighbourhood can be made more environmentally sustainable.",
+    "rules": [
+     "Credit two ways at most, each up to 2 marks.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Recycling bins are provided near every block.",
+      "develop": "paper, plastic and cans are recycled, so less waste is burnt or sent to the landfill"
+     },
+     {
+      "id": "b",
+      "text": "Energy-saving features are used in the blocks and common areas.",
+      "develop": "LED lights or solar panels on the roofs, so less electricity from fossil fuels is used"
+     },
+     {
+      "id": "c",
+      "text": "Rainwater is collected and reused.",
+      "develop": "it is used to wash common areas or water plants, so less treated water is used"
+     },
+     {
+      "id": "d",
+      "text": "Trees and green spaces are kept or added.",
+      "develop": "they give wildlife a home, or shade and cool the neighbourhood"
+     },
+     {
+      "id": "e",
+      "text": "Footpaths, cycling paths and public transport are placed close to homes.",
+      "develop": "residents make fewer car trips, so less fuel is burnt and the air is less polluted"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A sustainable neighbourhood is one that is good for the future, so the government should build more of them."
+     },
+     {
+      "level": 1,
+      "text": "Recycling bins can be placed at the foot of every block."
+     },
+     {
+      "level": 2,
+      "text": "Recycling bins can be placed at the foot of every block. Rainwater can also be collected from the roofs and used again."
+     },
+     {
+      "level": 3,
+      "text": "Recycling bins can be placed at the foot of every block. Residents put their paper, cans and plastic bottles there to be recycled, so less rubbish has to be burnt. Rainwater can also be collected from the roofs and used again."
+     },
+     {
+      "level": 4,
+      "text": "Recycling bins can be placed at the foot of every block. Residents put their paper, cans and plastic bottles there to be recycled, so less rubbish has to be burnt. Rainwater can also be collected from the roofs and used again. It can be used for washing the void decks, so less treated tap water is needed."
+     }
+    ]
+   },
+   {
+    "id": "g06-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which residents can make their neighbourhood more resilient to hazards such as fires.",
+    "rules": [
+     "Credit two ways at most, each up to 2 marks.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Residents learn emergency skills.",
+      "develop": "first aid, CPR or using a fire extinguisher, so they can act before the emergency services arrive"
+     },
+     {
+      "id": "b",
+      "text": "Residents get to know their neighbours.",
+      "develop": "they look out for one another and help those who need it, such as the elderly, in an emergency"
+     },
+     {
+      "id": "c",
+      "text": "Residents form volunteer teams to respond to emergencies.",
+      "develop": "each member has a role, such as guiding people out, so the response is quick and orderly"
+     },
+     {
+      "id": "d",
+      "text": "Residents keep corridors and staircases clear of clutter.",
+      "develop": "people can escape quickly and firefighters can reach the fire"
+     },
+     {
+      "id": "e",
+      "text": "Residents take part in emergency drills.",
+      "develop": "they know the escape routes and what to do, so they stay calm"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Fires are very dangerous hazards and a resilient neighbourhood is one that is strong when fires happen."
+     },
+     {
+      "level": 1,
+      "text": "Residents can go for courses to pick up emergency skills."
+     },
+     {
+      "level": 2,
+      "text": "Residents can go for courses to pick up emergency skills. They can also make the effort to know the people living around them."
+     },
+     {
+      "level": 3,
+      "text": "Residents can go for courses to pick up emergency skills. They learn how to use a fire extinguisher and do first aid, so they can start helping before the fire engine comes. They can also make the effort to know the people living around them."
+     },
+     {
+      "level": 4,
+      "text": "Residents can go for courses to pick up emergency skills. They learn how to use a fire extinguisher and do first aid, so they can start helping before the fire engine comes. They can also make the effort to know the people living around them. Then when something happens they will check on each other, like helping an old neighbour who lives alone to get out."
+     }
+    ]
+   },
+   {
+    "id": "g06-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how a fire in a block of flats can affect the residents.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Residents may be injured or killed.",
+      "develop": "from burns or from breathing in smoke"
+     },
+     {
+      "id": "b",
+      "text": "Homes and belongings are damaged or destroyed.",
+      "develop": "families must move out for a time, or pay a lot to repair and replace things"
+     },
+     {
+      "id": "c",
+      "text": "Shared services in the block are disrupted.",
+      "develop": "lifts, electricity or water supply may be cut off until repairs are done"
+     },
+     {
+      "id": "d",
+      "text": "Residents suffer fear and stress.",
+      "develop": "they feel unsafe at home or are upset for a long time afterwards"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A fire in a block of flats can start from a charging device or from cooking that is left alone in the kitchen."
+     },
+     {
+      "level": 1,
+      "text": "The fire can burn people's flats and the things inside them."
+     },
+     {
+      "level": 2,
+      "text": "The fire can burn people's flats and the things inside them. The families may have to stay somewhere else for a while until the flat is fixed."
+     },
+     {
+      "level": 3,
+      "text": "The fire can burn people's flats and the things inside them. The families may have to stay somewhere else for a while until the flat is fixed. Some residents may also get hurt or even die."
+     }
+    ]
+   },
+   {
+    "id": "g06-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe the changes in the two types of fire in City Y from 2018 to 2024.",
+    "table": {
+     "caption": "Table 1: Fires in residential estates in City Y, 2018 to 2024",
+     "columns": [
+      "Year",
+      "Rubbish chute and bin fires",
+      "Fires involving electric bicycles and scooters"
+     ],
+     "rows": [
+      [
+       "2018",
+       "620",
+       "20"
+      ],
+      [
+       "2019",
+       "590",
+       "45"
+      ],
+      [
+       "2020",
+       "540",
+       "70"
+      ],
+      [
+       "2021",
+       "500",
+       "60"
+      ],
+      [
+       "2022",
+       "430",
+       "85"
+      ],
+      [
+       "2023",
+       "410",
+       "110"
+      ],
+      [
+       "2024",
+       "360",
+       "140"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period, or a comparison. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Rubbish chute and bin fires fell every year from 2018 to 2024.",
+      "develop": "from 620 to 360, a fall of 260"
+     },
+     {
+      "id": "b",
+      "text": "Fires involving electric bicycles and scooters rose overall from 2018 to 2024.",
+      "develop": "from 20 to 140, seven times as many"
+     },
+     {
+      "id": "c",
+      "text": "Fires involving electric bicycles and scooters fell only once, from 2020 to 2021.",
+      "develop": "from 70 to 60"
+     },
+     {
+      "id": "d",
+      "text": "The gap between the two types of fire narrowed.",
+      "develop": "from 600 in 2018 to 220 in 2024"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "More people are buying electric scooters now and they charge them overnight, which is why the fires happen."
+     },
+     {
+      "level": 1,
+      "text": "The number of rubbish chute and bin fires went down every year from 2018 to 2024."
+     },
+     {
+      "level": 2,
+      "text": "The number of rubbish chute and bin fires went down every year from 2018 to 2024. It dropped from 620 to 360."
+     },
+     {
+      "level": 3,
+      "text": "The number of rubbish chute and bin fires went down every year from 2018 to 2024. It dropped from 620 to 360. The fires from electric bicycles and scooters increased overall in the same period."
+     },
+     {
+      "level": 4,
+      "text": "The number of rubbish chute and bin fires went down every year from 2018 to 2024. It dropped from 620 to 360. The fires from electric bicycles and scooters increased overall in the same period. They went up from 20 to 140."
+     }
+    ]
+   },
+   {
+    "id": "g06-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Suggest three ways in which the roads in a neighbourhood could be changed to make them safer for elderly pedestrians.",
+    "rules": [
+     "Each different way earns 1 mark.",
+     "A way must be a change to the roads or crossings. Advice to pedestrians or drivers earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Lower the speed limit, so drivers have more time to stop."
+     },
+     {
+      "id": "b",
+      "text": "Build road humps or make the lanes narrower, so drivers are forced to slow down."
+     },
+     {
+      "id": "c",
+      "text": "Give a longer green man time at traffic lights, so slow walkers can finish crossing."
+     },
+     {
+      "id": "d",
+      "text": "Add a resting island in the middle of the road, so pedestrians can cross in two stages."
+     },
+     {
+      "id": "e",
+      "text": "Add more crossings, or barriers that stop people crossing at dangerous spots."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Elderly people walk slowly and their eyesight is weaker, so roads are more dangerous for them than for younger people."
+     },
+     {
+      "level": 1,
+      "text": "The green man at the traffic light can stay on longer so that old people who walk slowly have enough time to get across."
+     },
+     {
+      "level": 2,
+      "text": "The green man at the traffic light can stay on longer so that old people who walk slowly have enough time to get across. Humps can be built on the road so that cars must go slowly over them."
+     },
+     {
+      "level": 3,
+      "text": "The green man at the traffic light can stay on longer so that old people who walk slowly have enough time to get across. Humps can be built on the road so that cars must go slowly over them. A small island can be built in the middle of the road so that old people can cross half the road, rest, and then cross the other half."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g07",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Fieldwork: collecting and presenting data",
+  "issue": "How to sample, collect, present and judge data in a neighbourhood investigation",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g07-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain why choosing residents by random sampling gives fairer, more representative results than asking only the people who are easiest to reach.",
+    "points": [
+     {
+      "id": "a",
+      "text": "In random sampling every resident has an equal chance of being chosen.",
+      "develop": "the student's own choices do not decide who is asked, so there is less bias"
+     },
+     {
+      "id": "b",
+      "text": "Asking the people who are easiest to reach can leave out some groups of residents.",
+      "develop": "a survey at the market on a weekday morning misses students and working adults, so the results do not represent all residents"
+     },
+     {
+      "id": "c",
+      "text": "A random sample is likely to include residents of different ages and groups.",
+      "develop": "so the sample is more representative of all the residents in the neighbourhood"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Sampling means choosing some of the residents to ask, because a neighbourhood has too many residents."
+     },
+     {
+      "level": 1,
+      "text": "With random sampling, each resident is just as likely to be picked as any other resident."
+     },
+     {
+      "level": 2,
+      "text": "With random sampling, each resident is just as likely to be picked as any other resident. The student does not get to pick who to ask, so the results are less biased."
+     },
+     {
+      "level": 3,
+      "text": "With random sampling, each resident is just as likely to be picked as any other resident. The student does not get to pick who to ask, so the results are less biased. If the student only asks whoever is nearby, some kinds of residents might be left out."
+     }
+    ]
+   },
+   {
+    "id": "g07-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two advantages of using closed-ended questions in a questionnaire.",
+    "rules": [
+     "Credit two advantages at most, each up to 2 marks.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "They are quick and easy for respondents to answer.",
+      "develop": "respondents only tick a box, so more people are willing to finish the questionnaire"
+     },
+     {
+      "id": "b",
+      "text": "The answers are easy to count.",
+      "develop": "they can be turned into totals or percentages and shown in a graph"
+     },
+     {
+      "id": "c",
+      "text": "Every respondent chooses from the same set of answers.",
+      "develop": "the answers of different people or groups can be compared fairly"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Closed-ended questions are questions with choices given, and a questionnaire can have many questions like these."
+     },
+     {
+      "level": 1,
+      "text": "Closed-ended questions do not take long for people to answer."
+     },
+     {
+      "level": 2,
+      "text": "Closed-ended questions do not take long for people to answer. The answers are also simple for the student to count up."
+     },
+     {
+      "level": 3,
+      "text": "Closed-ended questions do not take long for people to answer. They only need to tick one box, so more people will agree to complete the whole survey. The answers are also simple for the student to count up."
+     },
+     {
+      "level": 4,
+      "text": "Closed-ended questions do not take long for people to answer. They only need to tick one box, so more people will agree to complete the whole survey. The answers are also simple for the student to count up. The student can work out the percentage for each choice and draw a graph."
+     }
+    ]
+   },
+   {
+    "id": "g07-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two reasons why the data from a student's questionnaire survey in a neighbourhood may not be reliable.",
+    "rules": [
+     "Credit two reasons at most, each up to 2 marks.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The sample is too small.",
+      "develop": "a few unusual answers change the result a lot, or it does not represent the residents"
+     },
+     {
+      "id": "b",
+      "text": "The questions are unclear or leading.",
+      "develop": "respondents understand them differently, or are pushed towards one answer"
+     },
+     {
+      "id": "c",
+      "text": "Respondents may not answer truthfully or carefully.",
+      "develop": "they are in a hurry, or give the answer they think the student wants"
+     },
+     {
+      "id": "d",
+      "text": "The student makes mistakes when recording the answers.",
+      "develop": "ticking the wrong box or miscounting the tallies, so the totals are wrong"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Reliable data is data that can be trusted, so the student must work hard to collect reliable data."
+     },
+     {
+      "level": 1,
+      "text": "The student may have asked too few people."
+     },
+     {
+      "level": 2,
+      "text": "The student may have asked too few people. Some of the questions may also be badly worded and not clear."
+     },
+     {
+      "level": 3,
+      "text": "The student may have asked too few people. If only ten people are asked, one or two strange answers will change the results a lot. Some of the questions may also be badly worded and not clear."
+     },
+     {
+      "level": 4,
+      "text": "The student may have asked too few people. If only ten people are asked, one or two strange answers will change the results a lot. Some of the questions may also be badly worded and not clear. Then different people will take the question to mean different things."
+     }
+    ]
+   },
+   {
+    "id": "g07-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the number of people at the two sites changes during the day.",
+    "table": {
+     "caption": "Table 1: Number of people counted in 10 minutes at two sites in Neighbourhood X on one Saturday",
+     "columns": [
+      "Time",
+      "Hawker centre",
+      "Park"
+     ],
+     "rows": [
+      [
+       "7 am",
+       "62",
+       "48"
+      ],
+      [
+       "9 am",
+       "35",
+       "20"
+      ],
+      [
+       "12 noon",
+       "118",
+       "6"
+      ],
+      [
+       "3 pm",
+       "30",
+       "9"
+      ],
+      [
+       "6 pm",
+       "96",
+       "55"
+      ],
+      [
+       "9 pm",
+       "41",
+       "27"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The hawker centre is busiest at 12 noon.",
+      "develop": "118 people; it is also busy at 7 am (62) and 6 pm (96)"
+     },
+     {
+      "id": "b",
+      "text": "The hawker centre is quietest at 3 pm.",
+      "develop": "30 people"
+     },
+     {
+      "id": "c",
+      "text": "The park is busiest in the early morning and the early evening.",
+      "develop": "48 people at 7 am and 55 at 6 pm"
+     },
+     {
+      "id": "d",
+      "text": "The park is quietest around the middle of the day.",
+      "develop": "6 people at 12 noon, or 9 at 3 pm"
+     },
+     {
+      "id": "e",
+      "text": "The hawker centre has more people than the park at every time.",
+      "develop": "at 12 noon, 118 against 6, the biggest gap"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "People go to the hawker centre to eat and to the park to exercise, so the two places are used for different things."
+     },
+     {
+      "level": 1,
+      "text": "The hawker centre has the most people at 12 noon."
+     },
+     {
+      "level": 2,
+      "text": "The hawker centre has the most people at 12 noon, when 118 people were counted."
+     },
+     {
+      "level": 3,
+      "text": "The hawker centre has the most people at 12 noon, when 118 people were counted. The park has the most people early in the morning and early in the evening."
+     },
+     {
+      "level": 4,
+      "text": "The hawker centre has the most people at 12 noon, when 118 people were counted. The park has the most people early in the morning and early in the evening. There were 48 people at 7 am and 55 people at 6 pm."
+     }
+    ]
+   },
+   {
+    "id": "g07-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "A student asked 100 residents how they usually travel to the town centre: on foot, by bicycle, by bus, by MRT or by car. Suggest the type of graph that would best present the results and give reasons for your choice.",
+    "rules": [
+     "Credit the choice of graph once, and reasons for it. How to draw the graph neatly earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "A pie chart or a bar graph is suitable."
+     },
+     {
+      "id": "b",
+      "text": "The data is in separate categories, not a change over time."
+     },
+     {
+      "id": "c",
+      "text": "A pie chart shows each category's share of the whole, or the bars of a bar graph let the categories be compared by height."
+     },
+     {
+      "id": "d",
+      "text": "It is easy to see at a glance which category is the largest and which is the smallest."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The student should use a line graph, because a graph makes the results look clearer than writing them out in words."
+     },
+     {
+      "level": 1,
+      "text": "The student should use a pie chart."
+     },
+     {
+      "level": 2,
+      "text": "The student should use a pie chart. Each slice shows what share of the 100 residents travel in that way."
+     },
+     {
+      "level": 3,
+      "text": "The student should use a pie chart. Each slice shows what share of the 100 residents travel in that way. The results are in separate groups like bus and car, and they are not something that changes over time."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g08",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tourism",
+  "title": "Why tourism has grown",
+  "issue": "Why more people travel today, and the different reasons they travel",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g08-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which changes in transport have helped international tourism to grow.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Aircraft are faster, so travelling takes less time.",
+      "develop": "a journey that once took days or weeks by ship now takes hours, so far places can be visited even on a short holiday"
+     },
+     {
+      "id": "b",
+      "text": "Aircraft are larger and carry more passengers on each flight.",
+      "develop": "the cost of a flight is shared by more passengers, so each ticket costs less"
+     },
+     {
+      "id": "c",
+      "text": "Budget airlines offer low fares.",
+      "develop": "they cut costs (no free meals or baggage), so people with lower incomes can afford to fly"
+     },
+     {
+      "id": "d",
+      "text": "There are more air routes and airports, so more places can be reached.",
+      "develop": "direct flights to many more cities, with no need to change planes"
+     },
+     {
+      "id": "e",
+      "text": "Land transport within destinations has improved.",
+      "develop": "expressways or high-speed trains let tourists move easily between attractions"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Transport is how people get from one place to another. Tourists use transport when they go on a holiday overseas."
+     },
+     {
+      "level": 1,
+      "text": "Planes today fly much faster than in the past, so a trip takes less time."
+     },
+     {
+      "level": 2,
+      "text": "Planes today fly much faster than in the past, so a trip takes less time. Budget airlines also sell cheap tickets."
+     },
+     {
+      "level": 3,
+      "text": "Planes today fly much faster than in the past, so a trip takes less time. Long ago people took weeks to sail to another continent, but now it takes less than a day, so they can go to a faraway country even with only one week of holiday. Budget airlines also sell cheap tickets."
+     },
+     {
+      "level": 4,
+      "text": "Planes today fly much faster than in the past, so a trip takes less time. Long ago people took weeks to sail to another continent, but now it takes less than a day, so they can go to a faraway country even with only one week of holiday. Budget airlines also sell cheap tickets. They keep prices low by not giving free meals or free check-in bags, so people who earn less can now pay for a flight too."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g08-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the purposes of visits to Country X changed from 2005 to 2020.",
+    "table": {
+     "caption": "Table 1: International visitors to Country X by main purpose of visit, 2005 and 2020",
+     "columns": [
+      "Main purpose of visit",
+      "2005 (% of visitors)",
+      "2020 (% of visitors)"
+     ],
+     "rows": [
+      [
+       "Holiday and leisure",
+       "52",
+       "60"
+      ],
+      [
+       "Business",
+       "22",
+       "12"
+      ],
+      [
+       "Visiting friends and relatives",
+       "15",
+       "14"
+      ],
+      [
+       "Medical treatment",
+       "3",
+       "8"
+      ],
+      [
+       "Education",
+       "5",
+       "4"
+      ],
+      [
+       "Others",
+       "3",
+       "2"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Holiday and leisure was the most common purpose in both years.",
+      "develop": "52% in 2005 and 60% in 2020, more than half of all visitors and far more than any other purpose"
+     },
+     {
+      "id": "b",
+      "text": "The share of visitors coming for holiday and leisure increased.",
+      "develop": "from 52% to 60%, a rise of 8 percentage points"
+     },
+     {
+      "id": "c",
+      "text": "The share of visitors coming for business decreased.",
+      "develop": "from 22% to 12%, the biggest fall, almost halved"
+     },
+     {
+      "id": "d",
+      "text": "The share of visitors coming for medical treatment increased.",
+      "develop": "from 3% to 8%, more than double"
+     },
+     {
+      "id": "e",
+      "text": "The shares for visiting friends and relatives and for education changed very little.",
+      "develop": "15% to 14%, and 5% to 4%, a fall of only 1 percentage point each"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Table 1 shows why visitors came to Country X in 2005 and in 2020. There are six purposes and the numbers are given in percentages."
+     },
+     {
+      "level": 1,
+      "text": "The share of visitors who came for business went down from 2005 to 2020."
+     },
+     {
+      "level": 2,
+      "text": "The share of visitors who came for business went down from 2005 to 2020. The share who came for medical treatment went up."
+     },
+     {
+      "level": 3,
+      "text": "The share of visitors who came for business went down from 2005 to 2020, from 22% to 12%. The share who came for medical treatment went up."
+     },
+     {
+      "level": 4,
+      "text": "The share of visitors who came for business went down from 2005 to 2020, from 22% to 12%. The share who came for medical treatment went up from 3% to 8%, which is more than double."
+     }
+    ]
+   },
+   {
+    "id": "g08-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two reasons, other than changes in transport, why more people are able to travel overseas today than in the past.",
+    "rules": [
+     "Transport reasons (faster planes, cheaper flights) earn nothing here.",
+     "The question is about being able to travel. Wanting to travel earns nothing.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "People earn more, so they have higher disposable incomes.",
+      "develop": "more money is left after paying for needs such as food and housing, which can be spent on holidays"
+     },
+     {
+      "id": "b",
+      "text": "People have more leisure time.",
+      "develop": "paid annual leave, a five-day work week or long weekends give time for trips"
+     },
+     {
+      "id": "c",
+      "text": "Online booking makes it easier to arrange a trip.",
+      "develop": "people compare prices and book flights and rooms themselves, without a travel agent"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Travelling overseas is very popular nowadays. Many people go to other countries during the school holidays."
+     },
+     {
+      "level": 1,
+      "text": "People earn more money today than people did in the past."
+     },
+     {
+      "level": 2,
+      "text": "People earn more money today than people did in the past. They also get more time off from work."
+     },
+     {
+      "level": 3,
+      "text": "People earn more money today than people did in the past. After they pay for things they need like food and rent, they still have money left over which they can use for a holiday. They also get more time off from work."
+     },
+     {
+      "level": 4,
+      "text": "People earn more money today than people did in the past. After they pay for things they need like food and rent, they still have money left over which they can use for a holiday. They also get more time off from work. Many workers are given paid leave every year and work only five days a week, so they can go away for a week or take a short trip over a long weekend."
+     }
+    ]
+   },
+   {
+    "id": "g08-q4",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain why people want to travel for leisure.",
+    "rules": [
+     "The question is about wanting to travel. Being able to travel (money, time off, cheap flights) earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "People travel to relax and rest from work or study.",
+      "develop": "a break from daily routine and stress, so they return feeling refreshed"
+     },
+     {
+      "id": "b",
+      "text": "People travel to discover new places and cultures.",
+      "develop": "seeing famous sights, tasting the food or joining festivals that are different from home"
+     },
+     {
+      "id": "c",
+      "text": "People travel for personal growth or to challenge themselves.",
+      "develop": "learning a new skill such as diving or climbing, or gaining confidence"
+     },
+     {
+      "id": "d",
+      "text": "People travel to spend time with family or friends.",
+      "develop": "shared experiences away from home bring them closer together"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "People want to travel for leisure because travelling is something they like to do, and many of them go overseas every year."
+     },
+     {
+      "level": 1,
+      "text": "People travel so that they can take a rest from their work or school."
+     },
+     {
+      "level": 2,
+      "text": "People travel so that they can take a rest from their work or school. A holiday lets them get away from the stress of their daily routine, so they come back feeling fresh."
+     },
+     {
+      "level": 3,
+      "text": "People travel so that they can take a rest from their work or school. A holiday lets them get away from the stress of their daily routine, so they come back feeling fresh. Some people also want to see places that are new to them."
+     }
+    ]
+   },
+   {
+    "id": "g08-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Suggest three reasons why some people travel to another country for medical treatment.",
+    "rules": [
+     "Each different reason earns one mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The treatment costs less there than in their home country."
+     },
+     {
+      "id": "b",
+      "text": "The other country has better doctors, hospitals or medical equipment."
+     },
+     {
+      "id": "c",
+      "text": "The waiting time for treatment is shorter there."
+     },
+     {
+      "id": "d",
+      "text": "The treatment they need is not available in their home country."
+     },
+     {
+      "id": "e",
+      "text": "They can rest and recover in a pleasant place, or have a holiday on the same trip."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Medical tourism means going to another country to see a doctor. It is one kind of tourism."
+     },
+     {
+      "level": 1,
+      "text": "The same treatment may be cheaper in the other country than at home."
+     },
+     {
+      "level": 2,
+      "text": "The same treatment may be cheaper in the other country than at home. The hospitals there may also have more skilled doctors and more modern machines."
+     },
+     {
+      "level": 3,
+      "text": "The same treatment may be cheaper in the other country than at home. The hospitals there may also have more skilled doctors and more modern machines. Patients may not need to wait as long for an operation there."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g09",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tourism",
+  "title": "The impacts of tourism",
+  "issue": "How tourism affects the people, culture and environment of a destination",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g09-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which tourism can harm the natural environment of a destination.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Tourists leave litter, which pollutes the place.",
+      "develop": "plastic bottles and bags left on beaches or trails wash into the sea or rivers and harm animals"
+     },
+     {
+      "id": "b",
+      "text": "Land is cleared to build hotels, resorts and roads.",
+      "develop": "forests or mangroves are removed, so animals lose their habitats"
+     },
+     {
+      "id": "c",
+      "text": "Tourists damage coral reefs or plants.",
+      "develop": "stepping on or touching corals, boat anchors breaking them, or trampling plants off the trails"
+     },
+     {
+      "id": "d",
+      "text": "Hotels and resorts release waste water that pollutes the sea or rivers.",
+      "develop": "untreated sewage lowers the water quality and harms fish and corals"
+     },
+     {
+      "id": "e",
+      "text": "Vehicles and boats carrying tourists release exhaust gases that pollute the air at the destination.",
+      "develop": "burning fuel also gives off carbon dioxide, which adds to climate change and harms places such as coral reefs"
+     },
+     {
+      "id": "f",
+      "text": "Tourist facilities use large amounts of fresh water.",
+      "develop": "hotels, swimming pools and golf courses draw so much that rivers or groundwater run low"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tourism affects the environment in many ways. The natural environment means things like forests and beaches, and it is important to a country."
+     },
+     {
+      "level": 1,
+      "text": "Tourists leave rubbish behind at the places they visit, which makes these places dirty."
+     },
+     {
+      "level": 2,
+      "text": "Tourists leave rubbish behind at the places they visit, which makes these places dirty. Land is also cleared so that hotels and resorts can be built."
+     },
+     {
+      "level": 3,
+      "text": "Tourists leave rubbish behind at the places they visit, which makes these places dirty. For example, plastic bottles and bags are left on the beach and get washed into the sea, where turtles and fish may eat them and die. Land is also cleared so that hotels and resorts can be built."
+     },
+     {
+      "level": 4,
+      "text": "Tourists leave rubbish behind at the places they visit, which makes these places dirty. For example, plastic bottles and bags are left on the beach and get washed into the sea, where turtles and fish may eat them and die. Land is also cleared so that hotels and resorts can be built. Forests are cut down to make space, so the animals that lived in them lose their homes."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g09-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the number of tourism jobs in Town Y changes over the year.",
+    "table": {
+     "caption": "Table 1: Number of people working in tourism jobs in Town Y, a seaside town in Country X, in one year",
+     "columns": [
+      "Months",
+      "Tourism jobs"
+     ],
+     "rows": [
+      [
+       "January to February",
+       "1200"
+      ],
+      [
+       "March to April",
+       "1500"
+      ],
+      [
+       "May to June",
+       "3800"
+      ],
+      [
+       "July to August",
+       "5600"
+      ],
+      [
+       "September to October",
+       "2900"
+      ],
+      [
+       "November to December",
+       "1300"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and the months. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The number of jobs rises from January–February to July–August.",
+      "develop": "from 1200 to 5600"
+     },
+     {
+      "id": "b",
+      "text": "The number of jobs falls from July–August to November–December.",
+      "develop": "from 5600 to 1300"
+     },
+     {
+      "id": "c",
+      "text": "The number of jobs is highest in July–August and lowest in January–February.",
+      "develop": "5600 against 1200, a difference of 4400, or more than four times as many"
+     },
+     {
+      "id": "d",
+      "text": "The largest rise is between March–April and May–June.",
+      "develop": "from 1500 to 3800, a rise of 2300"
+     },
+     {
+      "id": "e",
+      "text": "The largest fall is between July–August and September–October.",
+      "develop": "from 5600 to 2900, a fall of 2700"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The table shows the number of tourism jobs in Town Y for every two months of the year. Tourism jobs are jobs like hotel workers and tour guides."
+     },
+     {
+      "level": 1,
+      "text": "The number of tourism jobs goes up from January–February to July–August."
+     },
+     {
+      "level": 2,
+      "text": "The number of tourism jobs goes up from January–February to July–August, from 1200 to 5600."
+     },
+     {
+      "level": 3,
+      "text": "The number of tourism jobs goes up from January–February to July–August, from 1200 to 5600. After that it goes down from July–August to November–December."
+     }
+    ]
+   },
+   {
+    "id": "g09-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which tourism can bring disadvantages to the local people of a destination.",
+    "rules": [
+     "The question is about local people. Harm to nature alone earns nothing.",
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The cost of living rises for local people.",
+      "develop": "prices of goods, land or housing go up because tourists and tourism businesses can pay more, so locals struggle to afford them"
+     },
+     {
+      "id": "b",
+      "text": "Many tourism jobs are seasonal.",
+      "develop": "in the off-peak months fewer workers are needed, so they lose their jobs or income"
+     },
+     {
+      "id": "c",
+      "text": "Local culture is changed to suit tourists.",
+      "develop": "dances or rituals are shortened and staged as shows for money, so they lose their meaning"
+     },
+     {
+      "id": "d",
+      "text": "The place becomes crowded and congested.",
+      "develop": "roads and public transport are packed with tourists, so daily life is slower and less pleasant for residents"
+     },
+     {
+      "id": "e",
+      "text": "Much of the money earned leaves the destination.",
+      "develop": "hotels and tour companies are owned by foreign firms, so profits go overseas and locals gain little"
+     },
+     {
+      "id": "f",
+      "text": "Local people come to depend too much on tourism.",
+      "develop": "a disaster or disease outbreak keeps tourists away, so many people lose their income at once"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Local people are the people who live at the destination. Tourists visit their town and take many photographs of it."
+     },
+     {
+      "level": 1,
+      "text": "Things become more expensive for the local people."
+     },
+     {
+      "level": 2,
+      "text": "Things become more expensive for the local people. Also, many of the jobs in tourism last for only part of the year."
+     },
+     {
+      "level": 3,
+      "text": "Things become more expensive for the local people. Shops and landlords raise their prices because tourists are willing to pay more, so the locals find it hard to afford food and rent. Also, many of the jobs in tourism last for only part of the year."
+     },
+     {
+      "level": 4,
+      "text": "Things become more expensive for the local people. Shops and landlords raise their prices because tourists are willing to pay more, so the locals find it hard to afford food and rent. Also, many of the jobs in tourism last for only part of the year. In the quiet months, hotels and tour companies need fewer workers, so these workers are sent home and have no pay."
+     }
+    ]
+   },
+   {
+    "id": "g09-q4",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how tourism can help to protect the culture and heritage of a destination.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Money from tourists pays for looking after historic buildings and sites.",
+      "develop": "entrance fees pay for repairs, so old buildings are restored rather than left to decay or torn down"
+     },
+     {
+      "id": "b",
+      "text": "Tourism gives local people a reason to keep customs, crafts and performances alive.",
+      "develop": "they can earn from performing or selling crafts, so young people learn these skills"
+     },
+     {
+      "id": "c",
+      "text": "Local people take more pride in their own culture.",
+      "develop": "seeing that visitors are interested makes them value it and pass it on to their children"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Culture and heritage are things like old buildings, festivals and traditional food. Every country has its own culture and heritage."
+     },
+     {
+      "level": 1,
+      "text": "The money that tourists pay can be used to take care of old buildings."
+     },
+     {
+      "level": 2,
+      "text": "The money that tourists pay can be used to take care of old buildings. For example, the entrance fees to an old temple can pay for repairs, so it is fixed up and not left to fall apart."
+     },
+     {
+      "level": 3,
+      "text": "The money that tourists pay can be used to take care of old buildings. For example, the entrance fees to an old temple can pay for repairs, so it is fixed up and not left to fall apart. Tourism also gives the local people a reason to carry on with their traditional crafts and dances."
+     }
+    ]
+   },
+   {
+    "id": "g09-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Suggest three ways in which tourism can help to conserve the natural environment of a destination.",
+    "rules": [
+     "Each different way earns one mark."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Entrance fees or other money from tourists pay for conservation work, such as rangers or protecting wildlife."
+     },
+     {
+      "id": "b",
+      "text": "Governments set aside natural areas as parks or reserves, because nature is what attracts the tourists."
+     },
+     {
+      "id": "c",
+      "text": "Local people earn from tourism, so they have less need to log, hunt or clear land."
+     },
+     {
+      "id": "d",
+      "text": "Tourists and local people learn about nature and become more aware of the need to protect it."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tourism brings many visitors to places with beautiful nature such as rainforests and coral reefs."
+     },
+     {
+      "level": 1,
+      "text": "The entrance fees that tourists pay at a park can be used to pay for protecting the animals there."
+     },
+     {
+      "level": 2,
+      "text": "The entrance fees that tourists pay at a park can be used to pay for protecting the animals there. The government is also more willing to turn forests into nature reserves, because the nature is what brings the tourists in."
+     },
+     {
+      "level": 3,
+      "text": "The entrance fees that tourists pay at a park can be used to pay for protecting the animals there. The government is also more willing to turn forests into nature reserves, because the nature is what brings the tourists in. Villagers can work as nature guides, so they no longer need to cut down trees or hunt animals for a living."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g10",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tourism",
+  "title": "Sustainable tourism",
+  "issue": "Keeping tourism sustainable, and what governments, communities and tourists can do",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g10-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which the government of a country can make tourism more sustainable.",
+    "points": [
+     {
+      "id": "a",
+      "text": "The government can limit the number of visitors to a place.",
+      "develop": "a daily cap or permits, or closing the place for a time, so it is not overcrowded or worn out"
+     },
+     {
+      "id": "b",
+      "text": "The government can set up protected areas such as national parks.",
+      "develop": "laws ban building, hunting or fishing inside them, and rangers enforce the laws"
+     },
+     {
+      "id": "c",
+      "text": "The government can control where and how hotels and resorts are built.",
+      "develop": "building is allowed only in certain zones, away from sensitive areas, or with limits on height and waste"
+     },
+     {
+      "id": "d",
+      "text": "The government can charge tourists a fee or tax and use it for conservation.",
+      "develop": "the money pays for cleaning up, repairing damage or looking after sites"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Sustainable tourism means tourism that can carry on for a long time. The government is in charge of running the country."
+     },
+     {
+      "level": 1,
+      "text": "The government can limit how many tourists are allowed into a place."
+     },
+     {
+      "level": 2,
+      "text": "The government can limit how many tourists are allowed into a place. It can also turn some areas into national parks that are protected."
+     },
+     {
+      "level": 3,
+      "text": "The government can limit how many tourists are allowed into a place. For example, only a fixed number of people may enter each day, so the place does not get too crowded and worn out. It can also turn some areas into national parks that are protected."
+     },
+     {
+      "level": 4,
+      "text": "The government can limit how many tourists are allowed into a place. For example, only a fixed number of people may enter each day, so the place does not get too crowded and worn out. It can also turn some areas into national parks that are protected. Inside the park the law does not allow anyone to build or hunt, and rangers check that people obey."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g10-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the number of visitors and the live coral cover at Bay Z changed from 2014 to 2022.",
+    "table": {
+     "caption": "Table 1: Visitors per day and live coral cover at Bay Z, Country X, 2014 to 2022",
+     "columns": [
+      "Year",
+      "Visitors per day",
+      "Live coral cover (%)"
+     ],
+     "rows": [
+      [
+       "2014",
+       "2000",
+       "60"
+      ],
+      [
+       "2016",
+       "3500",
+       "48"
+      ],
+      [
+       "2018",
+       "5000",
+       "30"
+      ],
+      [
+       "2020",
+       "1500",
+       "34"
+      ],
+      [
+       "2022",
+       "1500",
+       "42"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction and a period. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The number of visitors per day rose from 2014 to 2018.",
+      "develop": "from 2000 to 5000"
+     },
+     {
+      "id": "b",
+      "text": "The number of visitors per day fell from 2018 to 2020.",
+      "develop": "from 5000 to 1500, and it stayed at 1500 until 2022"
+     },
+     {
+      "id": "c",
+      "text": "Live coral cover fell from 2014 to 2018.",
+      "develop": "from 60% to 30%, which is half"
+     },
+     {
+      "id": "d",
+      "text": "Live coral cover rose from 2018 to 2022.",
+      "develop": "from 30% to 42%, still below the 60% of 2014"
+     },
+     {
+      "id": "e",
+      "text": "After visitor numbers fell and stayed low, coral cover rose.",
+      "develop": "figures from both columns for the same years"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The table gives the year, the number of visitors per day and the percentage of live coral cover at Bay Z."
+     },
+     {
+      "level": 1,
+      "text": "The number of visitors each day went up from 2014 to 2018."
+     },
+     {
+      "level": 2,
+      "text": "The number of visitors each day went up from 2014 to 2018, from 2000 to 5000."
+     },
+     {
+      "level": 3,
+      "text": "The number of visitors each day went up from 2014 to 2018, from 2000 to 5000. Then the number of visitors dropped from 2018 to 2020."
+     },
+     {
+      "level": 4,
+      "text": "The number of visitors each day went up from 2014 to 2018, from 2000 to 5000. Then the number of visitors dropped from 2018 to 2020, from 5000 to 1500 a day, and it was still 1500 in 2022."
+     }
+    ]
+   },
+   {
+    "id": "g10-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which tourists can help to make tourism sustainable when they visit a destination.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Tourists can respect the customs of the local people.",
+      "develop": "dressing properly at religious sites, or asking before taking photographs of people"
+     },
+     {
+      "id": "b",
+      "text": "Tourists can spend their money at locally owned businesses.",
+      "develop": "staying in family-run guesthouses or eating at local stalls, so the money goes to local people"
+     },
+     {
+      "id": "c",
+      "text": "Tourists can avoid damaging the natural environment.",
+      "develop": "not littering, not touching corals or feeding wildlife, and keeping to marked trails"
+     },
+     {
+      "id": "d",
+      "text": "Tourists can use less water and energy.",
+      "develop": "reusing towels, taking shorter showers or switching off the air-conditioning when they go out"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tourists should be responsible when they go on holiday, because it is important to behave well in another country."
+     },
+     {
+      "level": 1,
+      "text": "Tourists can respect the customs of the people who live there."
+     },
+     {
+      "level": 2,
+      "text": "Tourists can respect the customs of the people who live there. They can also choose to spend their money at businesses owned by locals."
+     },
+     {
+      "level": 3,
+      "text": "Tourists can respect the customs of the people who live there. For example, they should cover their shoulders and knees when they enter a temple, and ask first before they take photos of people. They can also choose to spend their money at businesses owned by locals."
+     },
+     {
+      "level": 4,
+      "text": "Tourists can respect the customs of the people who live there. For example, they should cover their shoulders and knees when they enter a temple, and ask first before they take photos of people. They can also choose to spend their money at businesses owned by locals. If they stay in a family-run guesthouse and eat at local food stalls, the money they spend goes to the people who live there."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g10-q4",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how community-based tourism can benefit the local people.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Local people earn income directly from tourists.",
+      "develop": "they run the homestays and work as guides themselves, so the money stays in the community and does not go to outside companies"
+     },
+     {
+      "id": "b",
+      "text": "Local people have a say in how tourism is run.",
+      "develop": "they decide how many tourists come and which activities are offered, so tourism fits their way of life"
+     },
+     {
+      "id": "c",
+      "text": "Local culture and skills are kept alive.",
+      "develop": "tourists join in cooking, farming or crafts, so these skills are valued and passed on"
+     },
+     {
+      "id": "d",
+      "text": "Earnings are used to improve facilities for the whole community.",
+      "develop": "a shared fund pays for a school, clean water or a clinic"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Community-based tourism is tourism that takes place in a village or a small community. Tourists go there to visit."
+     },
+     {
+      "level": 1,
+      "text": "The local people earn money directly from the tourists."
+     },
+     {
+      "level": 2,
+      "text": "The local people earn money directly from the tourists. They run the homestays and work as the guides themselves, so the money stays in the village and does not go to companies from outside."
+     },
+     {
+      "level": 3,
+      "text": "The local people earn money directly from the tourists. They run the homestays and work as the guides themselves, so the money stays in the village and does not go to companies from outside. The villagers also get to decide how tourism is run in their village."
+     }
+    ]
+   },
+   {
+    "id": "g10-q5",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Compare ecotourism with mass tourism.",
+    "rules": [
+     "Each point must say something about both kinds of tourism. A statement about one kind alone earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Ecotourism involves small groups of visitors, while mass tourism involves very large numbers."
+     },
+     {
+      "id": "b",
+      "text": "Ecotourism aims to cause little harm to the natural environment, while mass tourism often damages it through large-scale development."
+     },
+     {
+      "id": "c",
+      "text": "Ecotourists visit natural areas to learn about nature, while mass tourists mostly visit popular resorts or cities to relax and be entertained."
+     },
+     {
+      "id": "d",
+      "text": "Ecotourism uses small, simple lodges, while mass tourism uses large hotels and resorts."
+     },
+     {
+      "id": "e",
+      "text": "In ecotourism more of the money goes to the local community, while in mass tourism much goes to large outside companies."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Ecotourism is one kind of tourism and mass tourism is another kind. I think ecotourism is the better one."
+     },
+     {
+      "level": 1,
+      "text": "Ecotourism has small groups of visitors but mass tourism has very large numbers of visitors."
+     },
+     {
+      "level": 2,
+      "text": "Ecotourism has small groups of visitors but mass tourism has very large numbers of visitors. Ecotourists stay in small and simple lodges, while mass tourists stay in big hotels and resorts."
+     },
+     {
+      "level": 3,
+      "text": "Ecotourism has small groups of visitors but mass tourism has very large numbers of visitors. Ecotourists stay in small and simple lodges, while mass tourists stay in big hotels and resorts. Ecotourism tries to do little harm to nature, whereas mass tourism often damages nature when large resorts are built."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g11",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Temperature, rainfall, winds and monsoons",
+  "issue": "What decides temperature and rainfall, and how breezes and monsoon winds blow",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g11-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain why a place on the coast has a smaller yearly range of temperature than a place far inland.",
+    "points": [
+     {
+      "id": "a",
+      "text": "In summer the sea heats up more slowly than the land.",
+      "develop": "the air over the sea is cooler and cools the coast, so coastal summers are cooler"
+     },
+     {
+      "id": "b",
+      "text": "In winter the sea cools down more slowly than the land.",
+      "develop": "the sea is warmer than the land and warms the air at the coast, so coastal winters are milder"
+     },
+     {
+      "id": "c",
+      "text": "A place far inland is too far away for the sea to affect its temperature.",
+      "develop": "the land heats up and cools down quickly, so summers are hot and winters are cold"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Coastal places are beside the sea and inland places are far from it, so their temperatures are not the same through the year."
+     },
+     {
+      "level": 1,
+      "text": "In summer the sea heats up more slowly than the land."
+     },
+     {
+      "level": 2,
+      "text": "In summer the sea heats up more slowly than the land. So the air over the sea stays cooler and it cools the coast, and summers at the coast are not so hot."
+     },
+     {
+      "level": 3,
+      "text": "In summer the sea heats up more slowly than the land. So the air over the sea stays cooler and it cools the coast, and summers at the coast are not so hot. In winter the sea loses its heat more slowly than the land."
+     },
+     {
+      "level": 4,
+      "text": "In summer the sea heats up more slowly than the land. So the air over the sea stays cooler and it cools the coast, and summers at the coast are not so hot. In winter the sea loses its heat more slowly than the land. The sea is then warmer than the land and it warms the air at the coast, so winters there are mild."
+     }
+    ]
+   },
+   {
+    "id": "g11-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how relief rain forms.",
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Moist air blows from the sea towards a mountain or highland."
+     },
+     {
+      "id": "b",
+      "text": "The air is forced to rise up the windward side of the mountain."
+     },
+     {
+      "id": "c",
+      "text": "As the air rises it cools, and water vapour condenses to form clouds."
+     },
+     {
+      "id": "d",
+      "text": "Rain falls on the windward side of the mountain."
+     },
+     {
+      "id": "e",
+      "text": "The air sinks down the leeward side, warms up and is dry, so little rain falls there."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Relief rain is one of the types of rain. It can be very heavy and can last for a long time."
+     },
+     {
+      "level": 1,
+      "text": "Wind carrying a lot of moisture blows from the sea towards a mountain."
+     },
+     {
+      "level": 2,
+      "text": "Wind carrying a lot of moisture blows from the sea towards a mountain. The mountain is in the way, so the air is pushed up the side that faces the wind."
+     },
+     {
+      "level": 3,
+      "text": "Wind carrying a lot of moisture blows from the sea towards a mountain. The mountain is in the way, so the air is pushed up the side that faces the wind. As it goes up it gets colder and the water vapour condenses into clouds."
+     },
+     {
+      "level": 4,
+      "text": "Wind carrying a lot of moisture blows from the sea towards a mountain. The mountain is in the way, so the air is pushed up the side that faces the wind. As it goes up it gets colder and the water vapour condenses into clouds. Rain then falls on that side of the mountain."
+     }
+    ]
+   },
+   {
+    "id": "g11-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how the north-east monsoon winds form during the northern hemisphere winter.",
+    "rules": [
+     "Each step earns credit once. Low or high pressure needs its cause to earn the step."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The land in central Asia is very cold, so the cold air sinks and forms high pressure there."
+     },
+     {
+      "id": "b",
+      "text": "It is summer in Australia, so the heated air rises and forms low pressure there."
+     },
+     {
+      "id": "c",
+      "text": "Air moves from the high pressure over Asia towards the low pressure over Australia."
+     },
+     {
+      "id": "d",
+      "text": "The Coriolis effect turns the winds to the right in the northern hemisphere, so they blow from the north-east."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The north-east monsoon is a seasonal wind. It blows for a few months every year and then the wind changes direction."
+     },
+     {
+      "level": 1,
+      "text": "At that time the land in central Asia is very cold. The cold air sinks, so the pressure there is high."
+     },
+     {
+      "level": 2,
+      "text": "At that time the land in central Asia is very cold. The cold air sinks, so the pressure there is high. Australia is having its summer then, so the hot air there rises and the pressure is low."
+     },
+     {
+      "level": 3,
+      "text": "At that time the land in central Asia is very cold. The cold air sinks, so the pressure there is high. Australia is having its summer then, so the hot air there rises and the pressure is low. So air moves from Asia, where the pressure is high, to Australia, where it is low."
+     }
+    ]
+   },
+   {
+    "id": "g11-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how rainfall in City Y changes through the year.",
+    "table": {
+     "caption": "Table 1: Mean monthly rainfall in City Y",
+     "columns": [
+      "Month",
+      "Rainfall (mm)"
+     ],
+     "rows": [
+      [
+       "January",
+       "20"
+      ],
+      [
+       "March",
+       "35"
+      ],
+      [
+       "May",
+       "150"
+      ],
+      [
+       "July",
+       "420"
+      ],
+      [
+       "September",
+       "280"
+      ],
+      [
+       "November",
+       "40"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point needs a direction or a level and a period. It is developed by accurate figures from the table.",
+     "The table shows alternate months. 'Highest' and 'lowest' mean of the months shown."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Rainfall is low from January to March.",
+      "develop": "only 20 mm in January and 35 mm in March"
+     },
+     {
+      "id": "b",
+      "text": "Rainfall rises sharply from March to July.",
+      "develop": "from 35 mm to a peak of 420 mm in July"
+     },
+     {
+      "id": "c",
+      "text": "Rainfall falls from July to November.",
+      "develop": "from 420 mm to 40 mm"
+     },
+     {
+      "id": "d",
+      "text": "Rainfall is very uneven, with a clear wet season and a clear dry season.",
+      "develop": "the wettest month, July, has 420 mm and the driest, January, has 20 mm, a difference of 400 mm"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Monsoon winds blow moist air from the sea to City Y, and this air rises and cools to give rain."
+     },
+     {
+      "level": 1,
+      "text": "Rainfall goes up sharply from March to July."
+     },
+     {
+      "level": 2,
+      "text": "Rainfall goes up sharply from March to July. After that it goes down from July to November."
+     },
+     {
+      "level": 3,
+      "text": "Rainfall goes up sharply from March to July, from 35 mm to a peak of 420 mm. After that it goes down from July to November."
+     }
+    ]
+   },
+   {
+    "id": "g11-q5",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Compare a sea breeze with a land breeze.",
+    "rules": [
+     "A point must say something about both breezes. A statement about one breeze alone earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "A sea breeze blows from the sea to the land, but a land breeze blows from the land to the sea."
+     },
+     {
+      "id": "b",
+      "text": "A sea breeze blows in the day, but a land breeze blows at night."
+     },
+     {
+      "id": "c",
+      "text": "In a sea breeze the land is warmer than the sea, but in a land breeze the land is cooler than the sea."
+     },
+     {
+      "id": "d",
+      "text": "In a sea breeze the air pressure is lower over the land, but in a land breeze it is lower over the sea."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A breeze is a light wind. People at the beach feel more comfortable when there is a breeze."
+     },
+     {
+      "level": 1,
+      "text": "A sea breeze moves from the sea onto the land, while a land breeze moves from the land out to the sea."
+     },
+     {
+      "level": 2,
+      "text": "A sea breeze moves from the sea onto the land, while a land breeze moves from the land out to the sea. A sea breeze happens in the daytime, while a land breeze happens at night."
+     },
+     {
+      "level": 3,
+      "text": "A sea breeze moves from the sea onto the land, while a land breeze moves from the land out to the sea. A sea breeze happens in the daytime, while a land breeze happens at night. During a sea breeze the land is hotter than the sea, but during a land breeze the land is cooler than the sea."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g12",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Climate change: causes and effects",
+  "issue": "Why the climate is changing and what the change does",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g12-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how the enhanced greenhouse effect makes the Earth warmer.",
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words.",
+     "Accept 'trap heat' or 'absorb the heat' for the step about greenhouse gases."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Shortwave radiation from the sun passes through the atmosphere and heats the Earth's surface."
+     },
+     {
+      "id": "b",
+      "text": "The warmed surface gives off longwave radiation (heat)."
+     },
+     {
+      "id": "c",
+      "text": "Greenhouse gases in the atmosphere absorb some of this longwave radiation and send part of it back to the surface, keeping the Earth warm."
+     },
+     {
+      "id": "d",
+      "text": "Human activities add more greenhouse gases, such as carbon dioxide and methane, to the atmosphere."
+     },
+     {
+      "id": "e",
+      "text": "With more greenhouse gases, more heat is trapped and less escapes to space, so temperatures rise."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The enhanced greenhouse effect is when the Earth gets hotter and hotter. It is also called global warming."
+     },
+     {
+      "level": 1,
+      "text": "Energy from the sun comes through the atmosphere as shortwave radiation and warms the ground."
+     },
+     {
+      "level": 2,
+      "text": "Energy from the sun comes through the atmosphere as shortwave radiation and warms the ground. The warm ground then sends out heat as longwave radiation."
+     },
+     {
+      "level": 3,
+      "text": "Energy from the sun comes through the atmosphere as shortwave radiation and warms the ground. The warm ground then sends out heat as longwave radiation. Gases like carbon dioxide in the air take in some of this longwave radiation, which keeps the Earth warm."
+     },
+     {
+      "level": 4,
+      "text": "Energy from the sun comes through the atmosphere as shortwave radiation and warms the ground. The warm ground then sends out heat as longwave radiation. Gases like carbon dioxide in the air take in some of this longwave radiation, which keeps the Earth warm. People have put more of these gases into the air by what they do."
+     }
+    ]
+   },
+   {
+    "id": "g12-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how human activities increase the amount of greenhouse gases in the atmosphere.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Burning fossil fuels releases carbon dioxide.",
+      "develop": "coal, oil or natural gas is burnt for energy in power stations, factories or vehicles"
+     },
+     {
+      "id": "b",
+      "text": "Clearing forests increases carbon dioxide in the atmosphere.",
+      "develop": "fewer trees take in carbon dioxide for photosynthesis, or burning the trees releases the carbon stored in them"
+     },
+     {
+      "id": "c",
+      "text": "Growing rice in flooded fields releases methane.",
+      "develop": "bacteria break down dead plant matter in the waterlogged soil"
+     },
+     {
+      "id": "d",
+      "text": "Rearing cattle releases methane.",
+      "develop": "cattle give off methane as they digest their food, and more demand for beef and milk means more cattle"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Humans cause a lot of pollution and this is bad for the Earth, so everyone should take better care of the environment."
+     },
+     {
+      "level": 1,
+      "text": "Burning fossil fuels gives off carbon dioxide."
+     },
+     {
+      "level": 2,
+      "text": "Burning fossil fuels gives off carbon dioxide. Coal, oil and natural gas are burnt in power stations and in cars to get energy."
+     },
+     {
+      "level": 3,
+      "text": "Burning fossil fuels gives off carbon dioxide. Coal, oil and natural gas are burnt in power stations and in cars to get energy. Cutting down forests also adds to the carbon dioxide in the air."
+     },
+     {
+      "level": 4,
+      "text": "Burning fossil fuels gives off carbon dioxide. Coal, oil and natural gas are burnt in power stations and in cars to get energy. Cutting down forests also adds to the carbon dioxide in the air. With fewer trees, less carbon dioxide is taken in for photosynthesis."
+     }
+    ]
+   },
+   {
+    "id": "g12-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how a large volcanic eruption can cool the Earth for a short time.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The eruption sends large amounts of sulphur dioxide high into the atmosphere."
+     },
+     {
+      "id": "b",
+      "text": "The sulphur dioxide reacts with water vapour to form tiny sulphur-based particles."
+     },
+     {
+      "id": "c",
+      "text": "These particles reflect some of the sun's energy back to space."
+     },
+     {
+      "id": "d",
+      "text": "Less of the sun's energy reaches the Earth's surface, so temperatures fall."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A volcanic eruption is when hot lava comes out of a volcano. It is dangerous for the people who live nearby."
+     },
+     {
+      "level": 1,
+      "text": "A big eruption throws a lot of sulphur dioxide gas high up into the atmosphere."
+     },
+     {
+      "level": 2,
+      "text": "A big eruption throws a lot of sulphur dioxide gas high up into the atmosphere. The gas reacts with water vapour in the air and makes very small particles."
+     },
+     {
+      "level": 3,
+      "text": "A big eruption throws a lot of sulphur dioxide gas high up into the atmosphere. The gas reacts with water vapour in the air and makes very small particles. These particles bounce some of the sun's energy back out to space."
+     }
+    ]
+   },
+   {
+    "id": "g12-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe the changes in mean annual temperature and in the area covered by glaciers in Country X from 1980 to 2020.",
+    "table": {
+     "caption": "Table 1: Mean annual temperature and area covered by glaciers in Country X, 1980 to 2020",
+     "columns": [
+      "Year",
+      "Mean annual temperature (°C)",
+      "Area covered by glaciers (km²)"
+     ],
+     "rows": [
+      [
+       "1980",
+       "14.1",
+       "520"
+      ],
+      [
+       "1990",
+       "14.2",
+       "505"
+      ],
+      [
+       "2000",
+       "14.5",
+       "470"
+      ],
+      [
+       "2010",
+       "14.9",
+       "410"
+      ],
+      [
+       "2020",
+       "15.4",
+       "330"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change, or a link between the two columns, earns nothing.",
+     "A point needs a direction and a period. It is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Mean annual temperature rose from 1980 to 2020.",
+      "develop": "from 14.1 °C to 15.4 °C, a rise of 1.3 °C"
+     },
+     {
+      "id": "b",
+      "text": "Temperature rose faster in the later years than in the earlier years.",
+      "develop": "by 0.1 °C from 1980 to 1990 but by 0.5 °C from 2010 to 2020"
+     },
+     {
+      "id": "c",
+      "text": "The area covered by glaciers fell from 1980 to 2020.",
+      "develop": "from 520 km² to 330 km², a fall of 190 km²"
+     },
+     {
+      "id": "d",
+      "text": "The glaciers shrank faster in the later years than in the earlier years.",
+      "develop": "by 15 km² from 1980 to 1990 but by 80 km² from 2010 to 2020"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Greenhouse gases trap heat, and ice melts when it is heated, which is a problem for Country X."
+     },
+     {
+      "level": 1,
+      "text": "The mean temperature went up from 1980 to 2020."
+     },
+     {
+      "level": 2,
+      "text": "The mean temperature went up from 1980 to 2020. The area of glaciers got smaller from 1980 to 2020."
+     },
+     {
+      "level": 3,
+      "text": "The mean temperature went up from 1980 to 2020, from 14.1 °C to 15.4 °C. The area of glaciers got smaller from 1980 to 2020."
+     },
+     {
+      "level": 4,
+      "text": "The mean temperature went up from 1980 to 2020, from 14.1 °C to 15.4 °C. The area of glaciers got smaller from 1980 to 2020, from 520 km² to 330 km²."
+     }
+    ]
+   },
+   {
+    "id": "g12-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Suggest how a rising sea level may affect people living on a low-lying island.",
+    "rules": [
+     "Effects on people only. A cause of the rise in sea level earns nothing.",
+     "The same consequence is credited once, even when it follows from two points."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Low land near the coast may be flooded or lost to the sea.",
+      "develop": "homes, roads or farmland are damaged, or people have to move away"
+     },
+     {
+      "id": "b",
+      "text": "Seawater may get into the soil and the groundwater.",
+      "develop": "crops cannot grow in salty soil, or well water becomes too salty to drink"
+     },
+     {
+      "id": "c",
+      "text": "Waves may reach further inland and wear away the coast.",
+      "develop": "beaches are lost, or buildings near the shore are damaged"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The sea level is rising because ice at the poles is melting, and this is caused by global warming."
+     },
+     {
+      "level": 1,
+      "text": "The sea may cover the low land near the coast."
+     },
+     {
+      "level": 2,
+      "text": "The sea may cover the low land near the coast. Houses and roads there would be damaged, so families would have to move away."
+     },
+     {
+      "level": 3,
+      "text": "The sea may cover the low land near the coast. Houses and roads there would be damaged, so families would have to move away. Sea water can also get into the soil and the wells."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g13",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Tropical cyclones and climate responses",
+  "issue": "How tropical cyclones form and harm, and how people respond to climate change",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g13-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how a tropical cyclone forms.",
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The ocean is very warm (at least 26.5 °C), so much water evaporates and the air above is warm and moist."
+     },
+     {
+      "id": "b",
+      "text": "The warm, moist air rises, leaving low pressure at the sea surface."
+     },
+     {
+      "id": "c",
+      "text": "As the air rises it cools and water vapour condenses into large clouds, giving out heat."
+     },
+     {
+      "id": "d",
+      "text": "Air from the surroundings rushes in towards the low pressure, giving strong winds."
+     },
+     {
+      "id": "e",
+      "text": "The Coriolis effect makes the winds spin around the centre."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tropical cyclone is a very big storm with strong winds and heavy rain. It is also called a typhoon or a hurricane."
+     },
+     {
+      "level": 1,
+      "text": "The sea is very warm, at least 26.5 °C, so a lot of water evaporates and the air above it is warm and wet."
+     },
+     {
+      "level": 2,
+      "text": "The sea is very warm, at least 26.5 °C, so a lot of water evaporates and the air above it is warm and wet. This warm, wet air goes up and leaves low pressure near the sea surface."
+     },
+     {
+      "level": 3,
+      "text": "The sea is very warm, at least 26.5 °C, so a lot of water evaporates and the air above it is warm and wet. This warm, wet air goes up and leaves low pressure near the sea surface. As it goes up it cools and the water vapour condenses into huge clouds, which gives out heat."
+     },
+     {
+      "level": 4,
+      "text": "The sea is very warm, at least 26.5 °C, so a lot of water evaporates and the air above it is warm and wet. This warm, wet air goes up and leaves low pressure near the sea surface. As it goes up it cools and the water vapour condenses into huge clouds, which gives out heat. Air from all around rushes in towards the low pressure, and this makes strong winds."
+     }
+    ]
+   },
+   {
+    "id": "g13-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which a tropical cyclone can cause damage to a coastal area.",
+    "points": [
+     {
+      "id": "a",
+      "text": "The strong winds cause damage.",
+      "develop": "they tear off roofs, uproot trees or bring down power lines, or flying objects injure people"
+     },
+     {
+      "id": "b",
+      "text": "A storm surge hits the coast.",
+      "develop": "strong onshore winds pile seawater up against the coast and the very low pressure lets the sea surface rise, so seawater floods low-lying areas"
+     },
+     {
+      "id": "c",
+      "text": "Heavy rain causes floods.",
+      "develop": "rivers overflow, and homes or crops are destroyed"
+     },
+     {
+      "id": "d",
+      "text": "Heavy rain sets off landslides on slopes.",
+      "develop": "the soil is soaked and slides down, burying houses or roads"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Tropical cyclones are very dangerous, and many places near warm seas get them every year."
+     },
+     {
+      "level": 1,
+      "text": "The very strong winds cause damage."
+     },
+     {
+      "level": 2,
+      "text": "The very strong winds cause damage. They can rip the roofs off houses and pull trees out of the ground."
+     },
+     {
+      "level": 3,
+      "text": "The very strong winds cause damage. They can rip the roofs off houses and pull trees out of the ground. The cyclone also causes a storm surge at the coast."
+     },
+     {
+      "level": 4,
+      "text": "The very strong winds cause damage. They can rip the roofs off houses and pull trees out of the ground. The cyclone also causes a storm surge at the coast. The winds push sea water onto the land, so the low areas near the sea are flooded."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g13-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how a country can help to slow down climate change.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Use renewable energy in place of fossil fuels.",
+      "develop": "solar, wind or hydropower makes electricity without giving off carbon dioxide"
+     },
+     {
+      "id": "b",
+      "text": "Use energy more efficiently.",
+      "develop": "energy-saving appliances or buildings need less electricity, so less fuel is burnt"
+     },
+     {
+      "id": "c",
+      "text": "Get people to use public transport, electric vehicles or bicycles.",
+      "develop": "fewer petrol and diesel vehicles on the road, so less fuel is burnt"
+     },
+     {
+      "id": "d",
+      "text": "Put a tax or price on carbon emissions.",
+      "develop": "companies pay for what they emit, so they find ways to emit less"
+     },
+     {
+      "id": "e",
+      "text": "Plant trees and protect forests.",
+      "develop": "trees take in carbon dioxide from the air"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Climate change is a serious problem, so every country must work together and do something about it quickly."
+     },
+     {
+      "level": 1,
+      "text": "The country can switch to renewable energy and stop depending on fossil fuels."
+     },
+     {
+      "level": 2,
+      "text": "The country can switch to renewable energy and stop depending on fossil fuels. Solar panels and wind turbines make electricity without giving off carbon dioxide."
+     },
+     {
+      "level": 3,
+      "text": "The country can switch to renewable energy and stop depending on fossil fuels. Solar panels and wind turbines make electricity without giving off carbon dioxide. It can also get more people to take buses and trains."
+     }
+    ]
+   },
+   {
+    "id": "g13-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe the changes in the tropical cyclones that reached Country X from the 1980s to the 2010s.",
+    "table": {
+     "caption": "Table 1: Tropical cyclones that reached Country X, by decade",
+     "columns": [
+      "Decade",
+      "All tropical cyclones",
+      "Very strong tropical cyclones"
+     ],
+     "rows": [
+      [
+       "1980s",
+       "42",
+       "6"
+      ],
+      [
+       "1990s",
+       "40",
+       "8"
+      ],
+      [
+       "2000s",
+       "43",
+       "11"
+      ],
+      [
+       "2010s",
+       "41",
+       "15"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point is developed by accurate figures from the table.",
+     "The point about the rise getting bigger needs that idea in words: more each decade."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The total number of cyclones stayed about the same.",
+      "develop": "between 40 and 43 in every decade"
+     },
+     {
+      "id": "b",
+      "text": "The number of very strong cyclones rose in every decade.",
+      "develop": "from 6 in the 1980s to 15 in the 2010s, more than double"
+     },
+     {
+      "id": "c",
+      "text": "Very strong cyclones made up a growing share of all the cyclones.",
+      "develop": "6 out of 42 in the 1980s but 15 out of 41 in the 2010s"
+     },
+     {
+      "id": "d",
+      "text": "The number of very strong cyclones rose by more each decade.",
+      "develop": "by 2, then by 3, then by 4"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The sea is getting warmer because of climate change, and a warm sea gives a cyclone more energy."
+     },
+     {
+      "level": 1,
+      "text": "The number of very strong cyclones went up in every decade."
+     },
+     {
+      "level": 2,
+      "text": "The number of very strong cyclones went up in every decade, from 6 in the 1980s to 15 in the 2010s."
+     },
+     {
+      "level": 3,
+      "text": "The number of very strong cyclones went up in every decade, from 6 in the 1980s to 15 in the 2010s. The total number of cyclones did not change much."
+     }
+    ]
+   },
+   {
+    "id": "g13-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "A low-lying coastal city expects a higher sea level and heavier rainstorms in future. Suggest how the city can adapt to these changes.",
+    "rules": [
+     "Adaptation only. Cutting greenhouse gases is mitigation and earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Build sea walls or other barriers along the coast.",
+      "develop": "they keep seawater and high waves from flooding the land behind"
+     },
+     {
+      "id": "b",
+      "text": "Plant or restore mangroves along the coast.",
+      "develop": "their roots and trunks slow down the waves, so there is less erosion and flooding"
+     },
+     {
+      "id": "c",
+      "text": "Widen and deepen drains and canals, or build ponds and tanks to hold rainwater.",
+      "develop": "more rainwater is carried away or stored, so streets do not flood"
+     },
+     {
+      "id": "d",
+      "text": "Build new land, roads and buildings at a higher level.",
+      "develop": "they stay above the higher sea level"
+     },
+     {
+      "id": "e",
+      "text": "Set up flood warnings and evacuation plans.",
+      "develop": "people have time to move to a safe place"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The city should cut its carbon emissions by burning less fossil fuel, so that the climate stops changing."
+     },
+     {
+      "level": 1,
+      "text": "The city can build sea walls along its coast."
+     },
+     {
+      "level": 2,
+      "text": "The city can build sea walls along its coast. These keep the sea water out of the land behind them when the sea is higher."
+     },
+     {
+      "level": 3,
+      "text": "The city can build sea walls along its coast. These keep the sea water out of the land behind them when the sea is higher. It can also make its drains wider and deeper."
+     },
+     {
+      "level": 4,
+      "text": "The city can build sea walls along its coast. These keep the sea water out of the land behind them when the sea is higher. It can also make its drains wider and deeper. Then more rainwater can flow away during a storm and the streets do not flood."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g14",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Plates and plate boundaries",
+  "issue": "How plates move and what forms where they meet",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g14-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how convection currents in the mantle cause tectonic plates to move.",
+    "rules": [
+     "Each step in the process earns credit once. The steps need not use these exact words."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Heat from the core warms the mantle material, which becomes less dense and rises."
+     },
+     {
+      "id": "b",
+      "text": "Near the crust the rising material spreads out sideways beneath the plates."
+     },
+     {
+      "id": "c",
+      "text": "The sideways flow drags the plates above along with it."
+     },
+     {
+      "id": "d",
+      "text": "The material cools, becomes denser and sinks, and is then heated again."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Convection currents are movements inside the mantle. The plates sit on top of the mantle and they move a few centimetres every year."
+     },
+     {
+      "level": 1,
+      "text": "Heat from the core warms the rock in the mantle, so it gets less dense and rises."
+     },
+     {
+      "level": 2,
+      "text": "Heat from the core warms the rock in the mantle, so it gets less dense and rises. When it gets near the crust it spreads out sideways under the plates."
+     },
+     {
+      "level": 3,
+      "text": "Heat from the core warms the rock in the mantle, so it gets less dense and rises. When it gets near the crust it spreads out sideways under the plates. As it flows sideways it drags the plates above along with it."
+     },
+     {
+      "level": 4,
+      "text": "Heat from the core warms the rock in the mantle, so it gets less dense and rises. When it gets near the crust it spreads out sideways under the plates. As it flows sideways it drags the plates above along with it. The rock then cools, gets denser and sinks back down, where it is heated once more."
+     }
+    ]
+   },
+   {
+    "id": "g14-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how fold mountains form where two continental plates meet.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Two continental plates move towards each other and collide."
+     },
+     {
+      "id": "b",
+      "text": "Both plates have a low density, so neither sinks beneath the other."
+     },
+     {
+      "id": "c",
+      "text": "The rocks between the plates are compressed, so the layers buckle and fold."
+     },
+     {
+      "id": "d",
+      "text": "The folded layers are pushed upwards to form high fold mountains, such as the Himalayas."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Fold mountains are very tall mountains with snow at the top. They take millions of years to form."
+     },
+     {
+      "level": 1,
+      "text": "Two continental plates move towards each other and crash together."
+     },
+     {
+      "level": 2,
+      "text": "Two continental plates move towards each other and crash together. Both plates are too light to sink into the mantle, so neither one goes under the other."
+     },
+     {
+      "level": 3,
+      "text": "Two continental plates move towards each other and crash together. Both plates are too light to sink into the mantle, so neither one goes under the other. The rocks caught between them are squeezed, and the layers bend into folds."
+     },
+     {
+      "level": 4,
+      "text": "Two continental plates move towards each other and crash together. Both plates are too light to sink into the mantle, so neither one goes under the other. The rocks caught between them are squeezed, and the layers bend into folds. The folded layers are forced upwards and make high mountains like the Himalayas."
+     }
+    ]
+   },
+   {
+    "id": "g14-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how an ocean trench and volcanoes form where an oceanic plate meets a continental plate.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The oceanic plate is denser, so it sinks (subducts) beneath the continental plate."
+     },
+     {
+      "id": "b",
+      "text": "A deep ocean trench forms where the oceanic plate bends downwards."
+     },
+     {
+      "id": "c",
+      "text": "As the plate sinks into the hot mantle, magma forms."
+     },
+     {
+      "id": "d",
+      "text": "The magma rises through cracks in the crust and erupts at the surface to build volcanoes."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A trench is a very deep part of the ocean and the volcanoes are found on the land beside it. They are both at a convergent boundary."
+     },
+     {
+      "level": 1,
+      "text": "The oceanic plate is denser, so it goes down under the continental plate."
+     },
+     {
+      "level": 2,
+      "text": "The oceanic plate is denser, so it goes down under the continental plate. A deep trench is made in the sea floor at the place where the plate bends downwards."
+     },
+     {
+      "level": 3,
+      "text": "The oceanic plate is denser, so it goes down under the continental plate. A deep trench is made in the sea floor at the place where the plate bends downwards. The plate that goes down gets into the hot mantle and melts into magma."
+     },
+     {
+      "level": 4,
+      "text": "The oceanic plate is denser, so it goes down under the continental plate. A deep trench is made in the sea floor at the place where the plate bends downwards. The plate that goes down gets into the hot mantle and melts into magma. The magma moves up through cracks in the continental plate and erupts on the surface, which builds up volcanoes."
+     }
+    ]
+   },
+   {
+    "id": "g14-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the age of the sea-floor rock changes with distance from the mid-ocean ridge.",
+    "table": {
+     "caption": "Table 1: Age of sea-floor rock at different positions across a mid-ocean ridge",
+     "columns": [
+      "Position",
+      "Age of rock (million years)"
+     ],
+     "rows": [
+      [
+       "600 km west of the ridge",
+       "24"
+      ],
+      [
+       "400 km west of the ridge",
+       "16"
+      ],
+      [
+       "200 km west of the ridge",
+       "8"
+      ],
+      [
+       "At the ridge",
+       "0"
+      ],
+      [
+       "200 km east of the ridge",
+       "8"
+      ],
+      [
+       "400 km east of the ridge",
+       "16"
+      ],
+      [
+       "600 km east of the ridge",
+       "24"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for the pattern earns nothing.",
+     "A point is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The rock is older the further it is from the ridge.",
+      "develop": "from 0 million years at the ridge to 24 million years at 600 km"
+     },
+     {
+      "id": "b",
+      "text": "The pattern is the same on both sides of the ridge.",
+      "develop": "for example 16 million years at 400 km on both the west and the east"
+     },
+     {
+      "id": "c",
+      "text": "The age rises by an even amount with distance.",
+      "develop": "8 million years older for every 200 km"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The table shows the distance from the ridge and the age of the rock. The plates are moving apart there because of convection currents in the mantle."
+     },
+     {
+      "level": 1,
+      "text": "The rock gets older the further it is from the ridge."
+     },
+     {
+      "level": 2,
+      "text": "The rock gets older the further it is from the ridge. It is 0 million years old at the ridge and 24 million years old at 600 km away."
+     },
+     {
+      "level": 3,
+      "text": "The rock gets older the further it is from the ridge. It is 0 million years old at the ridge and 24 million years old at 600 km away. The pattern is the same on the west side and the east side."
+     }
+    ]
+   },
+   {
+    "id": "g14-q5",
+    "skill": "geo_describe",
+    "command": "compare",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Compare oceanic crust and continental crust.",
+    "rules": [
+     "A point must compare the two kinds of crust. A statement about one kind only earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Oceanic crust is thinner than continental crust."
+     },
+     {
+      "id": "b",
+      "text": "Oceanic crust is denser than continental crust."
+     },
+     {
+      "id": "c",
+      "text": "Oceanic crust is mostly basalt, while continental crust is mostly granite."
+     },
+     {
+      "id": "d",
+      "text": "Oceanic crust is younger than continental crust."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The crust is the outer layer of the Earth. It is broken into plates that move very slowly."
+     },
+     {
+      "level": 1,
+      "text": "Oceanic crust is thinner than continental crust."
+     },
+     {
+      "level": 2,
+      "text": "Oceanic crust is thinner than continental crust. Oceanic crust is also the denser of the two."
+     },
+     {
+      "level": 3,
+      "text": "Oceanic crust is thinner than continental crust. Oceanic crust is also the denser of the two. Oceanic crust is made mostly of basalt but continental crust is made mostly of granite."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g15",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Earthquakes, volcanoes and their effects",
+  "issue": "How earthquakes and volcanoes happen and what they do to people",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g15-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how an earthquake happens at a plate boundary.",
+    "rules": [
+     "Each step in the process earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Plates moving against each other get stuck because of friction."
+     },
+     {
+      "id": "b",
+      "text": "Stress builds up in the rocks over time."
+     },
+     {
+      "id": "c",
+      "text": "When the stress is too great, the rocks suddenly slip or break along a fault."
+     },
+     {
+      "id": "d",
+      "text": "Energy is released as seismic waves, which spread out from the focus and shake the ground."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "An earthquake is when the ground shakes. It is measured on a scale and can happen at any time of the day."
+     },
+     {
+      "level": 1,
+      "text": "Plates that are moving against each other get stuck because of friction."
+     },
+     {
+      "level": 2,
+      "text": "Plates that are moving against each other get stuck because of friction. Stress slowly builds up in the rocks."
+     },
+     {
+      "level": 3,
+      "text": "Plates that are moving against each other get stuck because of friction. Stress slowly builds up in the rocks. When the stress becomes too much, the rocks suddenly slip along a fault."
+     },
+     {
+      "level": 4,
+      "text": "Plates that are moving against each other get stuck because of friction. Stress slowly builds up in the rocks. When the stress becomes too much, the rocks suddenly slip along a fault. This lets out energy as seismic waves, which travel outwards from the focus and shake the ground."
+     }
+    ]
+   },
+   {
+    "id": "g15-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two reasons why one earthquake may cause many more deaths than another earthquake of the same magnitude.",
+    "points": [
+     {
+      "id": "a",
+      "text": "The focus of the earthquake is shallow.",
+      "develop": "the seismic waves lose less energy before reaching the surface, so the shaking is stronger"
+     },
+     {
+      "id": "b",
+      "text": "The earthquake happens in or near a densely populated area.",
+      "develop": "more people live in the area that shakes, so more are hurt or killed when buildings fall"
+     },
+     {
+      "id": "c",
+      "text": "The earthquake happens at night.",
+      "develop": "most people are asleep indoors and cannot get out in time"
+     },
+     {
+      "id": "d",
+      "text": "The buildings are poorly built.",
+      "develop": "they collapse easily and trap or crush the people inside"
+     },
+     {
+      "id": "e",
+      "text": "The people are not prepared for an earthquake.",
+      "develop": "with no drills or warnings they do not know what to do or where to go"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Earthquakes can kill many people. Some earthquakes are more serious than others, and the damage is different in each country."
+     },
+     {
+      "level": 1,
+      "text": "More people die if the earthquake hits a crowded city."
+     },
+     {
+      "level": 2,
+      "text": "More people die if the earthquake hits a crowded city. More people also die if the earthquake happens at night."
+     },
+     {
+      "level": 3,
+      "text": "More people die if the earthquake hits a crowded city. There are many people living close together in the area that shakes, so more of them are hurt when buildings fall. More people also die if the earthquake happens at night."
+     },
+     {
+      "level": 4,
+      "text": "More people die if the earthquake hits a crowded city. There are many people living close together in the area that shakes, so more of them are hurt when buildings fall. More people also die if the earthquake happens at night. Most people are asleep indoors then, so they cannot get out in time."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g15-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Explain why a stratovolcano is tall with steep sides.",
+    "rules": [
+     "Each idea earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Its lava is high in silica, so it is thick and sticky (viscous)."
+     },
+     {
+      "id": "b",
+      "text": "The lava flows slowly and hardens before it travels far, giving steep sides."
+     },
+     {
+      "id": "c",
+      "text": "Explosive eruptions throw out ash and rock that fall close to the vent and pile up."
+     },
+     {
+      "id": "d",
+      "text": "Layers of ash and lava build up over many eruptions into a tall cone."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A stratovolcano is tall and has steep sides, and it looks like a cone. Many of them are found around the Pacific Ocean."
+     },
+     {
+      "level": 1,
+      "text": "The lava is thick and sticky because it has a lot of silica."
+     },
+     {
+      "level": 2,
+      "text": "The lava is thick and sticky because it has a lot of silica. It moves slowly and hardens before it gets far from the vent, which makes the sides steep."
+     },
+     {
+      "level": 3,
+      "text": "The lava is thick and sticky because it has a lot of silica. It moves slowly and hardens before it gets far from the vent, which makes the sides steep. After many eruptions, layers of ash and lava pile up on top of one another into a tall cone."
+     }
+    ]
+   },
+   {
+    "id": "g15-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how the number of earthquakes and the number of deaths change as magnitude increases.",
+    "table": {
+     "caption": "Table 1: Earthquakes in Country X by magnitude, 2014 to 2023",
+     "columns": [
+      "Magnitude",
+      "Number of earthquakes",
+      "Deaths"
+     ],
+     "rows": [
+      [
+       "3.0 to 3.9",
+       "1250",
+       "0"
+      ],
+      [
+       "4.0 to 4.9",
+       "310",
+       "0"
+      ],
+      [
+       "5.0 to 5.9",
+       "42",
+       "12"
+      ],
+      [
+       "6.0 to 6.9",
+       "6",
+       "240"
+      ],
+      [
+       "7.0 and above",
+       "1",
+       "1900"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The number of earthquakes falls as magnitude increases.",
+      "develop": "from 1250 at magnitude 3.0 to 3.9 to 1 at 7.0 and above"
+     },
+     {
+      "id": "b",
+      "text": "The number of deaths rises as magnitude increases.",
+      "develop": "from 0 at magnitude 3.0 to 4.9 to 1900 at 7.0 and above"
+     },
+     {
+      "id": "c",
+      "text": "Earthquakes below magnitude 5.0 caused no deaths.",
+      "develop": "1560 earthquakes of magnitude 3.0 to 4.9 and 0 deaths"
+     },
+     {
+      "id": "d",
+      "text": "Deaths rise most sharply at the highest magnitudes.",
+      "develop": "from 240 to 1900, a rise of 1660 deaths, the largest increase"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The table shows the earthquakes in Country X over ten years. Earthquakes happen there because the plates under the country are moving."
+     },
+     {
+      "level": 1,
+      "text": "There are fewer earthquakes as the magnitude gets higher."
+     },
+     {
+      "level": 2,
+      "text": "There are fewer earthquakes as the magnitude gets higher. The number of deaths goes up as the magnitude gets higher."
+     },
+     {
+      "level": 3,
+      "text": "There are fewer earthquakes as the magnitude gets higher, from 1250 at magnitude 3.0 to 3.9 down to only 1 at 7.0 and above. The number of deaths goes up as the magnitude gets higher."
+     }
+    ]
+   },
+   {
+    "id": "g15-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Describe the harmful effects of a volcanic eruption on people living near the volcano.",
+    "rules": [
+     "A point is one effect of the eruption. It is developed by saying what this does to people, their homes or their work."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Pyroclastic flows of hot gas, ash and rock rush down the slopes.",
+      "develop": "they move too fast to escape and burn or kill people in their path"
+     },
+     {
+      "id": "b",
+      "text": "Ash mixes with rainwater or melted snow to form mudflows (lahars).",
+      "develop": "these bury villages and sweep away houses and bridges"
+     },
+     {
+      "id": "c",
+      "text": "Falling ash covers homes and farmland.",
+      "develop": "roofs collapse under the weight, crops are ruined, or people have trouble breathing"
+     },
+     {
+      "id": "d",
+      "text": "Lava flows burn or bury buildings and farmland.",
+      "develop": "people are left homeless, or farmers lose their land and income"
+     },
+     {
+      "id": "e",
+      "text": "Poisonous gases such as sulphur dioxide are given out.",
+      "develop": "people nearby have breathing problems"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A volcano erupts when magma comes out from the vent. Some volcanoes are active and some are dormant."
+     },
+     {
+      "level": 1,
+      "text": "Ash falls from the eruption and covers the houses and fields around the volcano."
+     },
+     {
+      "level": 2,
+      "text": "Ash falls from the eruption and covers the houses and fields around the volcano. Lava also flows down the volcano and burns the buildings in its way."
+     },
+     {
+      "level": 3,
+      "text": "Ash falls from the eruption and covers the houses and fields around the volcano. The ash is heavy, so roofs can cave in, and it ruins the crops in the fields. Lava also flows down the volcano and burns the buildings in its way."
+     },
+     {
+      "level": 4,
+      "text": "Ash falls from the eruption and covers the houses and fields around the volcano. The ash is heavy, so roofs can cave in, and it ruins the crops in the fields. Lava also flows down the volcano and burns the buildings in its way. The families who lived there are left with no home to go back to."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g16",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Preparing for and responding to hazards",
+  "issue": "How people get ready for tectonic hazards and respond to them",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g16-q1",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which a country can prepare its people for an earthquake.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Hold regular earthquake drills in schools and workplaces.",
+      "develop": "people practise taking cover or evacuating, so they act quickly and calmly in a real earthquake"
+     },
+     {
+      "id": "b",
+      "text": "Teach households to keep an emergency kit.",
+      "develop": "food, water and first aid supplies let them survive until help arrives"
+     },
+     {
+      "id": "c",
+      "text": "Plan evacuation routes and shelters and make them known.",
+      "develop": "people know where to go and can reach a safe open place quickly"
+     },
+     {
+      "id": "d",
+      "text": "Set up a system that sends earthquake alerts to phones, television and radio.",
+      "develop": "people get a few seconds to take cover before the strongest shaking"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A country must be ready for earthquakes because they are dangerous. People should be careful and stay safe when one happens."
+     },
+     {
+      "level": 1,
+      "text": "The country can hold earthquake drills in schools and offices."
+     },
+     {
+      "level": 2,
+      "text": "The country can hold earthquake drills in schools and offices. It can also teach families to keep an emergency kit at home."
+     },
+     {
+      "level": 3,
+      "text": "The country can hold earthquake drills in schools and offices. People practise getting under a table and holding on, so they do the right thing quickly in a real earthquake instead of panicking. It can also teach families to keep an emergency kit at home."
+     },
+     {
+      "level": 4,
+      "text": "The country can hold earthquake drills in schools and offices. People practise getting under a table and holding on, so they do the right thing quickly in a real earthquake instead of panicking. It can also teach families to keep an emergency kit at home. The kit has food, water and a first aid box, so the family can last for a few days until help comes."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g16-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain two ways in which a building can be designed to stay standing during an earthquake.",
+    "points": [
+     {
+      "id": "a",
+      "text": "Put base isolators, such as rubber bearings, between the building and the ground.",
+      "develop": "they absorb the shaking, so less movement passes into the building"
+     },
+     {
+      "id": "b",
+      "text": "Strengthen walls and columns with steel bars or cross-bracing.",
+      "develop": "steel bars let the concrete bend a little without snapping, or bracing stops the frame twisting out of shape, so the building does not collapse"
+     },
+     {
+      "id": "c",
+      "text": "Build deep foundations that reach solid rock.",
+      "develop": "the building is held firmly and is less likely to tilt or sink"
+     },
+     {
+      "id": "d",
+      "text": "Fit a heavy damper or counterweight near the top of a tall building.",
+      "develop": "it moves against the sway and reduces how far the building swings"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Buildings in earthquake areas should be made well so that they do not fall down. This keeps the people inside safe."
+     },
+     {
+      "level": 1,
+      "text": "Rubber pads can be placed under the building, between it and the ground."
+     },
+     {
+      "level": 2,
+      "text": "Rubber pads can be placed under the building, between it and the ground. Steel bars can be put inside the concrete walls and pillars."
+     },
+     {
+      "level": 3,
+      "text": "Rubber pads can be placed under the building, between it and the ground. The rubber soaks up the shaking, so less of it reaches the building above. Steel bars can be put inside the concrete walls and pillars."
+     },
+     {
+      "level": 4,
+      "text": "Rubber pads can be placed under the building, between it and the ground. The rubber soaks up the shaking, so less of it reaches the building above. Steel bars can be put inside the concrete walls and pillars. The steel lets the building bend and sway a little without cracking apart."
+     }
+    ],
+    "rules": [
+     "The question asks for two. Credit the best two only, each developed for a second mark."
+    ]
+   },
+   {
+    "id": "g16-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Explain how a tsunami warning system helps to save lives.",
+    "rules": [
+     "Each step earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Seismometers detect an undersea earthquake, and sea-floor sensors linked to buoys detect a sudden change in sea level."
+     },
+     {
+      "id": "b",
+      "text": "A warning centre sends alerts to coastal areas by sirens, phones, television or radio."
+     },
+     {
+      "id": "c",
+      "text": "People have time to move inland or to higher ground before the waves arrive."
+     },
+     {
+      "id": "d",
+      "text": "People who have practised drills know what the warning means and which route to take."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tsunami warning system is used in countries that are near the sea. It is important because tsunamis are dangerous and kill many people."
+     },
+     {
+      "level": 1,
+      "text": "Sensors on the sea floor pick up an earthquake or a sudden change in the sea level."
+     },
+     {
+      "level": 2,
+      "text": "Sensors on the sea floor pick up an earthquake or a sudden change in the sea level. The warning centre then sends alerts to the coast through sirens, phones and television."
+     },
+     {
+      "level": 3,
+      "text": "Sensors on the sea floor pick up an earthquake or a sudden change in the sea level. The warning centre then sends alerts to the coast through sirens, phones and television. This gives people time to get to higher ground before the waves reach them."
+     }
+    ]
+   },
+   {
+    "id": "g16-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Table 1, describe how earthquake preparedness among households in City Y changed from 2015 to 2023.",
+    "table": {
+     "caption": "Table 1: Households in City Y that had taken each preparedness step, 2015 and 2023",
+     "columns": [
+      "Preparedness step",
+      "2015 (%)",
+      "2023 (%)"
+     ],
+     "rows": [
+      [
+       "Keep an emergency kit",
+       "22",
+       "61"
+      ],
+      [
+       "Know the evacuation route",
+       "35",
+       "71"
+      ],
+      [
+       "Have taken part in a drill",
+       "40",
+       "74"
+      ],
+      [
+       "Have secured heavy furniture",
+       "12",
+       "19"
+      ],
+      [
+       "Have earthquake insurance",
+       "9",
+       "8"
+      ]
+     ]
+    },
+    "rules": [
+     "Describe only. A reason for a change earns nothing.",
+     "A point is developed by accurate figures from the table."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The share of households rose for most of the steps.",
+      "develop": "four of the five steps rose, for example knowing the evacuation route from 35% to 71%"
+     },
+     {
+      "id": "b",
+      "text": "The largest rise was in keeping an emergency kit.",
+      "develop": "from 22% to 61%, a rise of 39 percentage points"
+     },
+     {
+      "id": "c",
+      "text": "Securing heavy furniture rose the least of the steps that rose.",
+      "develop": "from 12% to 19%"
+     },
+     {
+      "id": "d",
+      "text": "Having earthquake insurance fell slightly.",
+      "develop": "from 9% to 8%"
+     },
+     {
+      "id": "e",
+      "text": "Taking part in a drill was the most common step in both years.",
+      "develop": "40% in 2015 and 74% in 2023"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The table shows what households in City Y did to get ready for earthquakes. The government should encourage them because earthquakes are dangerous."
+     },
+     {
+      "level": 1,
+      "text": "More households had taken most of the steps in 2023 than in 2015."
+     },
+     {
+      "level": 2,
+      "text": "More households had taken most of the steps in 2023 than in 2015. The biggest rise was in keeping an emergency kit."
+     },
+     {
+      "level": 3,
+      "text": "More households had taken most of the steps in 2023 than in 2015. The biggest rise was in keeping an emergency kit. It went up from 22% to 61%."
+     },
+     {
+      "level": 4,
+      "text": "More households had taken most of the steps in 2023 than in 2015. The biggest rise was in keeping an emergency kit. It went up from 22% to 61%. The share with earthquake insurance fell slightly."
+     }
+    ]
+   },
+   {
+    "id": "g16-q5",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Suggest why it can be difficult to get help to survivors in the first days after a strong earthquake.",
+    "rules": [
+     "Each reason earns credit once."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Roads, bridges or airports are damaged or blocked, so rescue vehicles and supplies cannot get through."
+     },
+     {
+      "id": "b",
+      "text": "Telephone lines and electricity are cut, so it is hard to find out where help is needed."
+     },
+     {
+      "id": "c",
+      "text": "Aftershocks can bring down damaged buildings, which puts rescuers in danger."
+     },
+     {
+      "id": "d",
+      "text": "Hospitals are damaged or have too many injured people to treat."
+     },
+     {
+      "id": "e",
+      "text": "There are not enough trained rescuers or equipment, so the area waits for outside help."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "After a strong earthquake many people are trapped and need help. The rescuers must work fast because it is an emergency."
+     },
+     {
+      "level": 1,
+      "text": "Roads and bridges may be broken or blocked, so trucks cannot get in."
+     },
+     {
+      "level": 2,
+      "text": "Roads and bridges may be broken or blocked, so trucks cannot get in. Phone lines and electricity may be down, so nobody knows which places need help most."
+     },
+     {
+      "level": 3,
+      "text": "Roads and bridges may be broken or blocked, so trucks cannot get in. Phone lines and electricity may be down, so nobody knows which places need help most. Aftershocks can bring down more buildings, so it is dangerous for rescuers to go in."
      }
     ]
    }

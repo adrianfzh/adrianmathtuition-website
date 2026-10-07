@@ -1,9 +1,11 @@
 // The sources a question is read against — shown on the question page and again
 // (folded) on the report, so the student never has to go back to compare.
 import type { HumanitiesSource, DataTable } from '@/lib/humanities-questions';
+import { DataChart } from './charts';
 
 /** A small data table a Geography question gives. */
 export function DataTableCard({ table }: { table: DataTable }) {
+  if (table.figure) return <DataChart table={table} kind={table.figure} />;
   return (
     <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
       <p className="text-sm font-bold text-navy">{table.caption}</p>

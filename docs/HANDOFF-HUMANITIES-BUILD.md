@@ -35,6 +35,10 @@ Talk to Adrian in plain, short words. No jargon.
   point-marked answers; the website has a Geography tab with 8 pilot questions and a points feedback page.
   Next for B: Adrian's word on showing marks; then the question batch, figures and the 9-mark question.
 
+- **7 Oct 2026, late — Geography batch listed (16 sets, 68 questions, plan-only checks) and graph figures
+  built** (bar, line, climate — drawn from the question's numbers). Adrian has seen the with-mark and
+  without-mark pictures; his word on `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` is still owed.
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

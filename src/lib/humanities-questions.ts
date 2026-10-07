@@ -46,7 +46,11 @@ export interface SeededAnswer { level: number; text: string }
 /** One creditable point of a point-marked question; `develop` = what earns the second mark for it. */
 export interface CreditPoint { id: string; text: string; develop?: string }
 /** A small data table a Geography question gives ("Table 1"). */
-export interface DataTable { caption: string; columns: string[]; rows: string[][] }
+export interface DataTable {
+  caption: string; columns: string[]; rows: string[][];
+  /** Draw the table as a figure ("Fig. 1") instead of showing it as a table. The reader still gets the numbers. */
+  figure?: 'bar' | 'line' | 'climate';
+}
 export interface HumanitiesQuestion {
   id: string;
   skill: HumanitiesSkill;
@@ -176,7 +180,8 @@ export function maxOf(q: HumanitiesQuestion): number {
 
 /** A data table as plain lines — what the reader is given. */
 export function tableText(t: DataTable): string {
-  return [t.columns.join(' | '), ...t.rows.map(r => r.join(' | '))].join('\n');
+  const lines = [t.columns.join(' | '), ...t.rows.map(r => r.join(' | '))].join('\n');
+  return t.figure ? `(Shown to the student as a ${t.figure === 'climate' ? 'climate graph: rainfall bars and a temperature line' : `${t.figure} graph`}, with every value printed on it.)\n${lines}` : lines;
 }
 
 /** The answer shown folded under the report: the written model, or the top seeded answer. */

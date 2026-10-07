@@ -9,7 +9,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { setsFor, isCaseStudy, questionsBySkill, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
 import { skillPicture, skillLineText } from '@/lib/humanities-skills';
 import { loadHumanitiesFor } from '@/lib/humanities-runs';
 import { AnswerCard } from './answer-cards';
@@ -179,7 +179,15 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Short questions</h2>
           <p className="text-[12px] text-gray-500">Answer from what you have learnt. One clear point a sentence.</p>
-          {GEO_CLUSTERS.map(c => pointSets.filter(x => x.cluster === c)).flat().map(setCard)}
+          {GEO_CLUSTERS.map(c => {
+            const list = pointSets.filter(x => x.cluster === c);
+            return list.length > 0 && (
+              <div key={c} className="space-y-2">
+                <h3 className="text-[13px] font-semibold text-navy pt-1">{GEO_CLUSTER_NAME[c]}</h3>
+                {list.map(setCard)}
+              </div>
+            );
+          })}
         </div>
       )}
 
