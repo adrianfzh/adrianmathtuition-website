@@ -1,0 +1,42 @@
+[
+ {
+  "id": "e01",
+  "subject": "geography",
+  "kind": "structured",
+  "cluster": "tourism",
+  "title": "Tourism: benefits and harm",
+  "issue": "Weighing what tourism brings and what it costs",
+  "sources": [
+   {
+    "id": "Extract",
+    "provenance": "A starting point for your answer",
+    "text": "Tourism brings jobs and income to many destinations. It can also damage the natural places that visitors come to see."
+   }
+  ],
+  "questions": [
+   {
+    "id": "e01-a",
+    "skill": "geo_evaluate",
+    "marks": 9,
+    "sources": [
+     "Extract"
+    ],
+    "question": "'The economic benefits of tourism outweigh its harm to the environment.' To what extent do you agree? Explain your answer.",
+    "seeded": [
+     {
+      "level": 1,
+      "text": "I agree. Tourism gives people jobs and the country earns money. It also causes pollution and damages coral reefs. But money is more important, so the benefits outweigh the harm."
+     },
+     {
+      "level": 2,
+      "text": "I agree to a large extent. Tourism creates many jobs. For example, in Bali many local people work in hotels and restaurants and as tour guides, so they earn a steady income and can support their families. Tourists also spend money on food and souvenirs, which brings income to local shops and stalls. Tourism does harm the environment because it causes pollution. However, the benefits are greater."
+     },
+     {
+      "level": 3,
+      "text": "Tourism brings large economic benefits. It creates many jobs. For example, in Bali many local people work in hotels and restaurants and as tour guides, so they earn a steady income and can support their families. Tourists also spend money on food and souvenirs, which brings income to local shops and stalls.\n\nHowever, tourism can badly harm the environment. For example, at Maya Bay in Thailand, thousands of visitors came each day and the anchors of their boats broke much of the coral. The damage was so serious that the bay was closed in 2018 so that the reef could recover. This shows that too many visitors can destroy the natural place itself.\n\nI agree only to some extent. The economic benefits depend on the environment. If the reef or the beach is destroyed, tourists stop coming and the jobs are lost too, as the closure of Maya Bay shows. So the benefits outweigh the harm only where visitor numbers are controlled and the place is protected. Where they are not, the harm is greater in the long run, because it removes the reason tourists come."
+     }
+    ]
+   }
+  ]
+ }
+]

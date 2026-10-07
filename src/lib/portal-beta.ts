@@ -310,10 +310,10 @@ export const HUMANITIES_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_
 
 // 🌏 Geography marks (7 Oct 2026, SPEC-HUMANITIES.md §B). Geography is point-marked, so it
 // CAN show a real mark ("3 of 4 marks") — unlike Social Studies and History, which show a
-// level and never a mark. Adrian decides before a student sees a number: while this is
-// false the report shows which points were made and which to add, with no total. Adrian's
-// own view shows the mark either way.
-export const GEOGRAPHY_MARKS_OPEN_TO_STUDENTS = false;
+// level and never a mark. While this is false the report shows which points were made and
+// which to add, with no total. **Opened 7 Oct 2026 — Adrian, after seeing both pictures:
+// "show marks".** The 9-mark question shows its level and that level's marks band.
+export const GEOGRAPHY_MARKS_OPEN_TO_STUDENTS = true;
 
 export async function humanitiesOpen(): Promise<boolean> {
   if (HUMANITIES_OPEN_TO_STUDENTS) return true;

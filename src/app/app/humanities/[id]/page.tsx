@@ -8,7 +8,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun } from '@/lib/humanities-runs';
-import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion } from '@/lib/humanities-questions';
+import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard } from '../sources';
 import { skillLabel } from '../skills';
@@ -90,6 +90,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
             {points
               ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(report.level_lo, report.level_hi, max)}</p>
               : <p className="text-2xl font-bold text-navy">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
+            {run.skill === 'geo_evaluate' && showMark && <p className="text-[15px] font-semibold text-amber-800">{geoEvaluateBand(report.level_lo, report.level_hi)} of 9</p>}
             {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{points ? 'The reads did not fully agree on this one. Use the points below.' : humanitiesStatusLine('held')}</p>}
           </div>
           {report.lift && (

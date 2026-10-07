@@ -35,7 +35,7 @@ Adrian, 1 Oct 2026: "gate keep science practice first", then "make sure future s
 | `H2_SKETCH_CHECK_OPEN_TO_STUDENTS` | closed (built 5 Oct 2026) | 📈 Check my sketch — the graph-sketch checker (JC students; a row in the Practice tab's "JC drills") |
 | `EXAM_PREP_OPEN_TO_STUDENTS` | closed | ⏱ Timed set + the exam card's door |
 | `NOTES_OPEN_TO_STUDENTS`, `PRACTICE_PICKER_OPEN_TO_STUDENTS`, `LAST_LESSON_OPEN_TO_STUDENTS`, `MARK_SUBJECT_OPEN_TO_STUDENTS` | closed | the marking-only beta's held-back surfaces |
-| `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` | closed | 🌏 Whether a Geography feedback page shows the mark ("3 of 4 marks"). Closed = the points made and the points to add, no total. Adrian's own view shows the mark either way. Sits inside `HUMANITIES_OPEN_TO_STUDENTS` (7 Oct 2026) |
+| `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS` | **open** | 🌏 A Geography feedback page shows the mark ("3 of 4 marks"; the 9-mark question shows its level and that level's marks band). Opened 7 Oct 2026 — Adrian, after seeing both pictures: "show marks". Sits inside `HUMANITIES_OPEN_TO_STUDENTS`, which is still closed |
 | `FIND_OPEN_TO_STUDENTS`, `PRACTICE_PHOTO_OPEN_TO_STUDENTS`, `PROOF_LADDER_OPEN_TO_STUDENTS` | **open** | Find a question · Practice photo · 🤔 Stuck? Next step (opened 1 Oct 2026) |
 
 The table is a snapshot; the file is the truth. When you add a switch, add a row. When Adrian

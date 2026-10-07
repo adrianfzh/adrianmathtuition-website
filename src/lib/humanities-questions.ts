@@ -13,8 +13,9 @@ import structuredJson from '../../data/humanities/social-studies/structured.json
 import caseStudiesJson from '../../data/humanities/social-studies/case-studies.json';
 import historyJson from '../../data/humanities/history/sets.json';
 import geographyJson from '../../data/humanities/geography/sets.json';
+import geoEvaluateJson from '../../data/humanities/geography/evaluate.json';
 
-export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh' | 'geo_describe' | 'geo_explain';
+export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh' | 'geo_describe' | 'geo_explain' | 'geo_evaluate';
 /** The source skills — Social Studies and History share them. 'surprise' joined on 7 Oct 2026 (Adrian: "do it"). */
 export const SOURCE_SKILLS: readonly HumanitiesSkill[] = ['inference', 'comparison', 'reliability', 'usefulness', 'purpose', 'surprise', 'how_far'];
 /** The two structured-response parts (Social Studies): answered from own knowledge. */
@@ -97,7 +98,7 @@ export interface HumanitiesScheme {
 export interface ClaimTag { key: string; label: string; meaning: string }
 
 type RawSet = Omit<HumanitiesSet, 'subject' | 'kind'> & Partial<Pick<HumanitiesSet, 'subject' | 'kind'>>;
-const SETS: HumanitiesSet[] = [setsJson, caseStudiesJson, structuredJson, historyJson, geographyJson]
+const SETS: HumanitiesSet[] = [setsJson, caseStudiesJson, structuredJson, historyJson, geographyJson, geoEvaluateJson]
   .flatMap(f => f as unknown as RawSet[])
   .map(s => ({ ...s, subject: s.subject ?? 'social-studies', kind: s.kind ?? 'source' }));
 const FILE = schemesJson as unknown as {
@@ -113,7 +114,13 @@ export const CLAIM_TAGS: ClaimTag[] = FILE.tags;
 /** Every tag a report can carry, source-based and structured. */
 export const ALL_TAGS: ClaimTag[] = [...FILE.tags, ...FILE.structured.tags];
 
-export const isStructured = (skill: string): boolean => (STRUCTURED_SKILLS as readonly string[]).includes(skill);
+/** Answered from own knowledge, read by the structured rules and tags: the two Social Studies parts and Geography's 9-mark question. */
+export const isStructured = (skill: string): boolean => (STRUCTURED_SKILLS as readonly string[]).includes(skill) || skill === 'geo_evaluate';
+/** Geography's 9-mark question: its marks follow its level — Level 1 is 1–3, Level 2 is 4–6, Level 3 is 7–9. */
+export function geoEvaluateBand(lo: number, hi: number): string {
+  const a = Math.min(lo, hi), b = Math.max(lo, hi);
+  return `${a * 3 - 2} to ${b * 3} marks`;
+}
 export function rulesFor(skill: string): string[] { return isStructured(skill) ? FILE.structured.rules : FILE.rules; }
 export function tagsFor(skill: string): ClaimTag[] { return isStructured(skill) ? FILE.structured.tags : FILE.tags; }
 

@@ -164,7 +164,15 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   the plan, blind-marked 91/91, the checker's notes applied ("the same figures earn development once only",
 >   accepted wordings, g20-q2 drawn as bars). Geography now stands at **20 sets, 88 questions**. Not through
 >   the live reader yet.
-> - **Still to build:** maps, photographs and diagrams, the 9-mark question
+> - **Marks shown (7 Oct 2026, Adrian: "show marks").** `GEOGRAPHY_MARKS_OPEN_TO_STUDENTS = true`: a point-marked
+>   answer shows "3 of 4 marks". Social Studies and History still show a level and never a mark (§5).
+> - **The 9-mark question (7 Oct 2026, Adrian: "do the 9-mark question").** `data/humanities/geography/evaluate.json`,
+>   sets `eNN` (`kind: 'structured'`, an extract, questions of skill `geo_evaluate`): "'Statement.' To what
+>   extent do you agree?" Read on three levels in our own words after SEAB's published generic table
+>   (`schemes.geo_evaluate`: describes · explains mostly one side · both sides in depth and an argued
+>   judgement), by the own-knowledge rules and tags. The page shows the level and that level's marks band
+>   ("Level 2 of 3 · 4 to 6 marks of 9") — a band, because the reader settles a level, not a mark within it.
+> - **Still to build:** maps, photographs and diagrams
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 ## 4. The bench — built like the science bench

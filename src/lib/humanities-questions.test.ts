@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { stripEvidence } from './humanities-bench';
 import { caseStudyProblems, quotedPieces } from './humanities-case-study';
 import { geographyProblems } from './humanities-geography';
-import { caseStudies, isCaseStudy, SS_THEMES, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
+import { caseStudies, isCaseStudy, SS_THEMES, geoEvaluateBand, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
 
 describe('the humanities bank', () => {
   it('Social Studies single questions: 30, five per source skill', () => {
@@ -39,7 +39,7 @@ describe('the humanities bank', () => {
 
   it('the bench can take one subject or one kind at a time', () => {
     expect(seededAnswers({ subject: 'history' }).length).toBe(35);
-    expect(seededAnswers({ kind: 'structured' }).length).toBe(21);
+    expect(seededAnswers({ subject: 'social-studies', kind: 'structured' }).length).toBe(21);
     const inCaseStudies = caseStudies().flatMap(s => s.questions).flatMap(q => q.seeded ?? []).length;
     expect(seededAnswers({ subject: 'social-studies', kind: 'source' }).length).toBe(46 + inCaseStudies);
     expect(seededAnswers({ sets: ['s01'] }).length).toBe(12);
@@ -134,8 +134,8 @@ describe('the Social Studies case studies (A1)', () => {
 
 describe('Geography, point-marked (B)', () => {
   it('every Geography set is fit to list', () => {
-    expect(setsFor('geography').length).toBeGreaterThan(0);
-    expect(setsFor('geography').flatMap(geographyProblems)).toEqual([]);
+    expect(setsFor('geography', 'points').length).toBeGreaterThan(0);
+    expect(setsFor('geography', 'points').flatMap(geographyProblems)).toEqual([]);
   });
 
   it('a point-marked question tops out at its marks, and its seeded answers run from 0', () => {
@@ -157,8 +157,31 @@ describe('Geography, point-marked (B)', () => {
   });
 
   it('the checker catches points that cannot reach full marks', () => {
-    const set = structuredClone(setsFor('geography')[0]);
+    const set = structuredClone(setsFor('geography', 'points')[0]);
     set.questions[0].marks = 6; set.questions[0].points = set.questions[0].points!.slice(0, 2);
     expect(geographyProblems(set).join(' | ')).toMatch(/reach only 4 of 6 marks/);
+  });
+});
+
+describe("Geography's 9-mark question", () => {
+  it('is read on three levels, from own knowledge, and each set has an extract', () => {
+    const sets = setsFor('geography', 'structured');
+    expect(sets.length).toBeGreaterThan(0);
+    for (const set of sets) {
+      expect(set.sources.length, set.id).toBe(1);
+      for (const q of set.questions) {
+        expect(q.skill).toBe('geo_evaluate');
+        expect(q.marks).toBe(9);
+        expect(levelsMax(q.skill)).toBe(3);
+        expect(isStructured(q.skill)).toBe(true);
+        expect(q.seeded!.map(s => s.level)).toEqual([1, 2, 3]);
+        expect(q.question).toMatch(/^['‘].+['’] (To what extent|How far) do you agree\? Explain your answer\.$/);
+      }
+    }
+  });
+  it('the marks band follows the level', () => {
+    expect(geoEvaluateBand(1, 1)).toBe('1 to 3 marks');
+    expect(geoEvaluateBand(2, 3)).toBe('4 to 9 marks');
+    expect(geoEvaluateBand(3, 3)).toBe('7 to 9 marks');
   });
 });

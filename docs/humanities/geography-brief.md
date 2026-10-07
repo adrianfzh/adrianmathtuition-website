@@ -97,3 +97,20 @@ file). Do not edit `sets.json`, do not commit, do not push. Report once, at the 
 | g14 | tectonics | Plates, their movement and plate boundaries |
 | g15 | tectonics | Earthquakes, volcanoes and their effects |
 | g16 | tectonics | Living with tectonic hazards: preparing and responding |
+
+## The 9-mark question (added 7 Oct 2026)
+
+A separate file, `data/humanities/geography/evaluate.json`: sets `eNN` with `subject: "geography"`,
+`kind: "structured"`, a `cluster`, a `title`, an `issue`, ONE source `{id: "Extract", provenance: "A
+starting point for your answer", text: <two plain sentences that set up the debate, taking no side>}`,
+and two questions `eNN-a`, `eNN-b`: `skill: "geo_evaluate"`, `marks: 9`, `sources: ["Extract"]`.
+
+- The question: a statement in single quotation marks, then "To what extent do you agree? Explain your
+  answer." It weighs two things the syllabus teaches (two strategies, two causes, benefits against costs).
+- Read on the level table `schemes.geo_evaluate` in `data/humanities/social-studies/schemes.json`
+  (Level 1 describes · Level 2 explains, mostly one side · Level 3 both sides in depth and an argued judgement).
+- `seeded`: one answer at each of Levels 1, 2 and 3, each sitting exactly at its level. Level 3 is shown to
+  students as the model answer: both sides explained with a REAL, well-known, correct example each (a place
+  and what happened — only facts you are certain of), then a judgement that is argued, not just stated.
+  Level 2 = one side explained properly with its example, the other side only stated, a bare judgement.
+  Level 1 = points listed with no explanation. Short paragraphs; 330 words at most; no quotation marks.

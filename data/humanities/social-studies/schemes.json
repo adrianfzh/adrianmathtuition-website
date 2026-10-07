@@ -541,6 +541,41 @@
      }
     ]
    }
+  },
+  "geo_evaluate": {
+   "label": "Evaluate",
+   "asks": "'[A statement.]' To what extent do you agree? Explain your answer. — the 9-mark question",
+   "levels": [
+    {
+     "level": 1,
+     "does": "Describes or lists. The points are few, general or not explained. A stand, if there is one, has no support."
+    },
+    {
+     "level": 2,
+     "does": "Explains with some detail or an example, but mostly for one side — or covers both sides thinly. The judgement is stated, not argued."
+    },
+    {
+     "level": 3,
+     "does": "Explains both sides in depth, each with a real example and how it leads to the result. Reaches a judgement that is argued: which matters more, or when, and why."
+    }
+   ],
+   "note": "The marks follow the level: Level 1 is 1 to 3, Level 2 is 4 to 6, Level 3 is 7 to 9.",
+   "lifts": [
+    {
+     "from": 1,
+     "how": "Explain each point. Say how or why, and name a real place as an example."
+    },
+    {
+     "from": 2,
+     "how": "Explain the other side just as fully. Then weigh the two: say which matters more and why."
+    }
+   ],
+   "slips": [
+    "many points listed, none explained",
+    "one side only",
+    "an example that is named but not used",
+    "a conclusion that only repeats the answer"
+   ]
   }
  },
  "structured": {

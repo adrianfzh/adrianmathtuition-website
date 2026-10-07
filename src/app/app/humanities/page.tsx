@@ -89,8 +89,10 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
 
       <div className="bg-amber-50 border border-amber-100 rounded-3xl px-4 py-3 text-sm text-gray-700 space-y-1">
         <p>Pick a question. Read what comes with it. Type your answer.</p>
-        <p>In about a minute you get a level, and the one thing that would lift it.</p>
-        <p className="text-[12px] text-gray-500">This is feedback, not a mark. Ask your teacher about any doubt.</p>
+        {subject === 'geography'
+          ? <p>In about a minute you get your marks, the points you made and the points to add.</p>
+          : <><p>In about a minute you get a level, and the one thing that would lift it.</p>
+            <p className="text-[12px] text-gray-500">This is feedback, not a mark. Ask your teacher about any doubt.</p></>}
       </div>
 
       {runs.length > 0 && (
@@ -191,7 +193,15 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         </div>
       )}
 
-      {structuredSets.length > 0 && (
+      {structuredSets.length > 0 && subject === 'geography' && (
+        <div className="space-y-2">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">9-mark questions</h2>
+          <p className="text-[12px] text-gray-500">Explain both sides with real examples. Then weigh them and give your judgement.</p>
+          {structuredSets.map(setCard)}
+        </div>
+      )}
+
+      {structuredSets.length > 0 && subject !== 'geography' && (
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Structured response</h2>
           <p className="text-[12px] text-gray-500">No sources to read. Answer from what you have learnt.</p>
