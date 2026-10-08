@@ -1,0 +1,19 @@
+{
+  "id": "ed17",
+  "kind": "editing",
+  "about": "A wallet under the bus-stop bench",
+  "lines": [
+    {"text": "On my way home yesterday, I noticed something brown lying under the bus-stop bench."},
+    {"text": "It was an old leather wallet, and it look as if someone had dropped", "wrong": "look", "right": "looked", "kind": "past", "note": "Tense: the story is in the past, so it is 'looked'."},
+    {"text": "it only minutes before. Inside were fifty dollars, a few card and a photograph", "wrong": "card", "right": "cards", "kind": "number", "note": "Plural: 'a few' needs 'cards'."},
+    {"text": "of two small children. There was also a identity card with an address in", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'identity' starts with a vowel sound, so it is 'an identity card'."},
+    {"text": "my own estate. I decided to return the wallet myself instead of leaving it there."},
+    {"text": "The owner’s flat were on the ninth floor of a block near the market.", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'the owner’s flat' is one thing, so it is 'was'."},
+    {"text": "An elderly man opened the door slow and stared at me without saying anything.", "wrong": "slow", "right": "slowly", "kind": "adverb", "note": "Word form: 'opened' is a verb, so it takes the adverb 'slowly'."},
+    {"text": "When I held up the wallet, his face changed at once. He told me"},
+    {"text": "that he had searched every shop he visited that morning. He thank me again", "wrong": "thank", "right": "thanked", "kind": "past", "note": "Tense: the story is in the past, so it is 'thanked'."},
+    {"text": "and again, and he tried to give I ten dollars as a reward.", "wrong": "I", "right": "me", "kind": "pronoun", "note": "Pronoun: after 'give' it is 'me'."},
+    {"text": "I refused the money, but his wife insisted that I take two orange home.", "wrong": "orange", "right": "oranges", "kind": "number", "note": "Plural: 'two' needs 'oranges'."},
+    {"text": "They were the sweetest oranges I have ever eaten."}
+  ]
+}

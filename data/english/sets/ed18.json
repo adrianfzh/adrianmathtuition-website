@@ -1,0 +1,19 @@
+{
+  "id": "ed18",
+  "kind": "editing",
+  "about": "Sports day at the stadium",
+  "lines": [
+    {"text": "Every July, our school holds its sports day at the stadium near the river."},
+    {"text": "This year, more than nine hundred student took part in the events.", "wrong": "student", "right": "students", "kind": "number", "note": "Plural: 'nine hundred' needs 'students'."},
+    {"text": "The day began with a march past, and each class carry a banner it", "wrong": "carry", "right": "carried", "kind": "past", "note": "Tense: 'began' is in the past, so it is 'carried'."},
+    {"text": "had painted the week before. My class chose a eagle as our symbol", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'eagle' starts with a vowel sound, so it is 'an eagle'."},
+    {"text": "because we wanted to look fierce. The first race of the morning was the"},
+    {"text": "hundred-metre sprint. Our fastest runner, Daniel, were nervous because he had lost last", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'our fastest runner' is one person, so it is 'was'."},
+    {"text": "year. When the whistle blew, he ran so quick that nobody could catch him.", "wrong": "quick", "right": "quickly", "kind": "adverb", "note": "Word form: 'ran' is a verb, so it takes the adverb 'quickly'."},
+    {"text": "The whole class jumped up and cheer until our throats were sore.", "wrong": "cheer", "right": "cheered", "kind": "past", "note": "Tense: 'jumped up and cheered' — both verbs are in the past."},
+    {"text": "In the afternoon, the teachers ran a relay against the parents and lost badly."},
+    {"text": "The best moment came at the end, when both of our relay team won.", "wrong": "team", "right": "teams", "kind": "number", "note": "Plural: 'both' needs 'teams'."},
+    {"text": "My classmates still talks about that day whenever we pass the stadium.", "wrong": "talks", "right": "talk", "kind": "agreement", "note": "Agreement: 'my classmates' is plural, so it is 'talk'."},
+    {"text": "Next year we hope to win the tug-of-war as well."}
+  ]
+}

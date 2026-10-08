@@ -104,11 +104,15 @@ describe('editing by difficulty (8 Oct 2026)', () => {
     const { EDIT_KIND_WEIGHT } = await import('./english-own');
     for (const s of OWN_EDITING) for (const l of s.lines) if (l.wrong) expect(l.kind && l.kind in EDIT_KIND_WEIGHT, `${s.id}: ${l.wrong}`).toBe(true);
   });
-  it('the level comes from the tags: 4 easier, 6 standard, 5 harder', async () => {
+  it('the level comes from the tags: 6 easier, 15 standard, 6 harder — and the levels are far apart', async () => {
     const { OWN_EDITING } = await import('./english-own-data');
     const { editingLevel, editingScore } = await import('./english-own');
     const count = (n: number) => OWN_EDITING.filter(s => editingLevel(s) === n).length;
-    expect([count(1), count(2), count(3)]).toEqual([4, 6, 5]);
+    expect([count(1), count(2), count(3)]).toEqual([6, 15, 6]);
+    const scores = (n: number) => OWN_EDITING.filter(s => editingLevel(s) === n).map(editingScore);
+    expect(Math.max(...scores(1))).toBeLessThanOrEqual(10);
+    expect(Math.min(...scores(2))).toBeGreaterThanOrEqual(13);
+    expect(Math.min(...scores(3))).toBeGreaterThanOrEqual(22);
     for (const s of OWN_EDITING) { expect(editingScore(s)).toBeGreaterThanOrEqual(8); expect(editingScore(s)).toBeLessThanOrEqual(24); }
   });
   it('the next passage is one not done yet, in order', async () => {

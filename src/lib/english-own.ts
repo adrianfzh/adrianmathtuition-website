@@ -37,15 +37,16 @@ export type EditKind = keyof typeof EDIT_KIND_WEIGHT;
 export interface OwnEditLine { text: string; wrong?: string; right?: string; kind?: EditKind; accept?: string[]; note?: string }
 export type EditLevel = 1 | 2 | 3;
 export const EDIT_LEVELS: readonly { level: EditLevel; name: string; sub: string }[] = [
-  { level: 1, name: 'Easier', sub: 'Mostly endings, a / an and was / were' },
+  { level: 1, name: 'Easier', sub: 'Endings, a / an, was / were' },
   { level: 2, name: 'Standard', sub: 'A mix, as in the exam' },
-  { level: 3, name: 'Harder', sub: 'More connectors, prepositions and tenses' },
+  { level: 3, name: 'Harder', sub: 'Connectors, prepositions, word forms, tenses' },
 ];
 /** A passage's eight errors, weighed: 8 (all plain) to 24 (all from meaning). */
 export const editingScore = (s: Pick<OwnEditing, 'lines'>): number =>
   s.lines.reduce((n, l) => n + (l.wrong && l.kind ? EDIT_KIND_WEIGHT[l.kind] ?? 0 : 0), 0);
 /** The level is worked out from the tagged errors, never guessed when a page is served. */
-export const editingLevel = (s: Pick<OwnEditing, 'lines'>): EditLevel => { const n = editingScore(s); return n <= 14 ? 1 : n <= 16 ? 2 : 3; };
+/** Easier = written to be plainly easy (12 or less) · Harder = written to be plainly hard (18 or more) · Standard = the exam's own mix. */
+export const editingLevel = (s: Pick<OwnEditing, 'lines'>): EditLevel => { const n = editingScore(s); return n <= 12 ? 1 : n <= 17 ? 2 : 3; };
 
 /**
  * Which passage comes next at a level: one not done yet, in the sets' own order; when every one

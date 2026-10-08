@@ -1,0 +1,19 @@
+{
+  "id": "ed21",
+  "kind": "editing",
+  "about": "A visit to the fire station",
+  "lines": [
+    {"text": "Last Saturday, my scout group visited the fire station near our school."},
+    {"text": "A firefighter named Mr Hakim welcome us at the gate and showed us around.", "wrong": "welcome", "right": "welcomed", "kind": "past", "note": "Tense: 'welcomed … and showed' — both verbs are in the past."},
+    {"text": "First, we saw the three fire engine that the station uses every day.", "wrong": "engine", "right": "engines", "kind": "number", "note": "Plural: 'three' needs 'engines'."},
+    {"text": "Each engine carry enough water to fill a small swimming pool.", "wrong": "carry", "right": "carries", "kind": "agreement", "note": "Agreement: 'each engine' is one thing, so it is 'carries'."},
+    {"text": "Mr Hakim then let us try on a helmet, which was heavier than"},
+    {"text": "it looked. He explained that a firefighter must get dressed in under a minute."},
+    {"text": "When a alarm rings, the crew slide down the pole to save time.", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'alarm' starts with a vowel sound, so it is 'an alarm'."},
+    {"text": "We also learnt how to use an extinguisher, and every scout were given a", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'every scout' takes a singular verb, so it is 'was'."},
+    {"text": "turn. I aimed the hose bad at first and sprayed my own shoes.", "wrong": "bad", "right": "badly", "kind": "adverb", "note": "Word form: 'aimed' is a verb, so it takes the adverb 'badly'."},
+    {"text": "Before we left, Mr Hakim remind us never to leave a stove unattended.", "wrong": "remind", "right": "reminded", "kind": "past", "note": "Tense: the visit is in the past, so it is 'reminded'."},
+    {"text": "He also gave each of us two sticker with the emergency number on them.", "wrong": "sticker", "right": "stickers", "kind": "number", "note": "Plural: 'two' needs 'stickers'."},
+    {"text": "I have stuck mine on the fridge at home."}
+  ]
+}

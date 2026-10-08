@@ -1,0 +1,19 @@
+{
+  "id": "ed20",
+  "kind": "editing",
+  "about": "A hamster in the classroom",
+  "lines": [
+    {"text": "At the start of the year, our form teacher brought a hamster to class."},
+    {"text": "She said that looking after a animal would teach us to be responsible.", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'animal' starts with a vowel sound, so it is 'an animal'."},
+    {"text": "We named the hamster Pepper, and we take turns to feed it every morning."},
+    {"text": "Pepper sleep for most of the day in a small house made of", "wrong": "sleep", "right": "sleeps", "kind": "agreement", "note": "Agreement: 'Pepper' is one animal, so it is 'sleeps'."},
+    {"text": "cardboard. In the afternoon, it wakes up and runs on its wheel for hour.", "wrong": "hour", "right": "hours", "kind": "number", "note": "Plural: it runs for a long time, so it is 'for hours'."},
+    {"text": "Last month, Pepper escape from its cage during a science lesson.", "wrong": "escape", "right": "escaped", "kind": "past", "note": "Tense: 'last month' is in the past, so it is 'escaped'."},
+    {"text": "The whole class searched the room careful, looking under every desk and bag.", "wrong": "careful", "right": "carefully", "kind": "adverb", "note": "Word form: 'searched' is a verb, so it takes the adverb 'carefully'."},
+    {"text": "After twenty minute, somebody heard a scratching sound inside the teacher’s cupboard.", "wrong": "minute", "right": "minutes", "kind": "number", "note": "Plural: 'twenty' needs 'minutes'."},
+    {"text": "Pepper had climbed into a box of old worksheets and fallen asleep there."},
+    {"text": "Since that day, two of we check the cage door before every lesson.", "wrong": "we", "right": "us", "kind": "pronoun", "note": "Pronoun: after 'of' it is 'us'."},
+    {"text": "Our teacher were right: we have all become more careful and more patient.", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'our teacher' is one person, so it is 'was'."},
+    {"text": "Pepper, of course, has learnt nothing at all."}
+  ]
+}

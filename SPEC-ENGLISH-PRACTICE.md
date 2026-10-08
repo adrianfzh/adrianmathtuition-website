@@ -8,7 +8,7 @@ the same day, CLOSED** — `ENGLISH_PRACTICE_OPEN_TO_STUDENTS = false`, Adrian's
 Adrian, 7 Oct 2026: *"build english first"* — step 1 of `docs/HANDOFF-ENGLISH-BUILD.md`. The page
 now serves **only passages, questions and schemes we wrote ourselves**. It does not read the
 language bank at all, so no school or national text can reach a student, and opening it is no
-longer a content-policy decision. What it waits on: the bench on all 51 own sets (written 7 Oct 2026) and a hard set.
+longer a content-policy decision. What it waits on: the bench on all 51 own sets (written 7 Oct 2026) and a hard set. (63 sets since 8 Oct 2026: 12 more editing passages, marked by rule.)
 
 - **A set** is one file in `data/english/sets/` — `ed..` editing (12 lines, 8 wrong words, 2 clean
   lines), `vt..` visual text (drawn from blocks, 5 marks), `na..` narrative (20 marks), `nn..`
@@ -45,11 +45,12 @@ immediate feedback when they submit"*.
   agreement, a missing -ed) · 2 = needs the sentence's grammar (participle, adverb, pronoun,
   who / which, verb form, comparison, much / many, a / the) · 3 = needs the meaning of the lines
   around it (connector, preposition, noun or adjective, the passage's tense). A passage's eight
-  weights add to its score; ≤ 14 Easier, 15–16 Standard, ≥ 17 Harder. A set with an untagged
+  weights add to its score; ≤ 12 Easier, 13–17 Standard, ≥ 18 Harder. A set with an untagged
   error does not build.
-- **Today: 4 Easier, 6 Standard, 5 Harder — and the spread is narrow (13 to 17 of a possible
-  8 to 24)**, because all 15 were written to one brief. For the levels to feel different, about 6
-  more passages written to be plainly easy (score ≤ 11) and 6 plainly hard (≥ 20) are needed.
+- **Today: 6 Easier (scores 9–10), 15 Standard (13–17), 6 Harder (22–23).** The first 15
+  (`ed01`–`ed15`) were written to one brief and all sit in Standard. `ed16`–`ed21` were written to
+  be plainly easy (seven or eight errors of weight 1) and `ed22`–`ed27` plainly hard (six or seven
+  of weight 3) the same day, at Adrian's session's word, so the three levels are far apart.
 - The kinds also feed the skill picture (hand-over step 4: editing by error kind).
 - `editing/[id]` still opens one named passage (for a direct link); nothing lists it.
 

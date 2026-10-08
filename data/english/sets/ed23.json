@@ -1,0 +1,19 @@
+{
+  "id": "ed23",
+  "kind": "editing",
+  "about": "A grandfather who wrote letters",
+  "lines": [
+    {"text": "My grandfather wrote a letter to his sister in Ipoh every month for sixty years."},
+    {"text": "He never trusted the telephone, because he owned one for most of that time.", "wrong": "because", "right": "although", "kind": "connector", "accept": ["though"], "note": "Connector: owning a telephone and not trusting it is a contrast, so it is 'although'."},
+    {"text": "Each letter took him an entire evening. He would sit by the window"},
+    {"text": "on a fountain pen and a dictionary, choosing every word with great care.", "wrong": "on", "right": "with", "kind": "preposition", "note": "Preposition: he sits 'with' the things he uses."},
+    {"text": "As a child, I find this habit strange, since a message could be", "wrong": "find", "right": "found", "kind": "tense", "note": "Tense: 'as a child' is in the past, so it is 'found'."},
+    {"text": "sent in seconds. It was only after his dead that I understood. Among", "wrong": "dead", "right": "death", "kind": "word_class", "note": "Word form: after 'his' a noun is needed — 'death'."},
+    {"text": "his belongings was a biscuit tin holding every reply his sister had ever wrote.", "wrong": "wrote", "right": "written", "kind": "participle", "note": "Verb form: after 'had ever' it is 'written'."},
+    {"text": "The letters were arranged by year and tied with string. Reading them, I"},
+    {"text": "discovered a brother and sister who has shared every joy and every worry", "wrong": "has", "right": "had", "kind": "tense", "note": "Tense: the story is in the past, so it is 'had shared'."},
+    {"text": "across four hundred kilometres. A telephone call ends, and a letter can be", "wrong": "and", "right": "but", "kind": "connector", "accept": ["yet", "whereas", "while"], "note": "Connector: a call that ends and a letter that lasts are a contrast, so it is 'but'."},
+    {"text": "read again and again. I have since begun write to my own cousin,", "wrong": "write", "right": "writing", "kind": "verb_form", "note": "Verb form: after 'begun' it is 'writing'."},
+    {"text": "and the first reply arrived last week in a biscuit-coloured envelope."}
+  ]
+}

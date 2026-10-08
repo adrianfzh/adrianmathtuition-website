@@ -1,0 +1,19 @@
+{
+  "id": "ed25",
+  "kind": "editing",
+  "about": "Learning to swim at fifteen",
+  "lines": [
+    {"text": "I was fifteen when I finally admitted that I could not swim."},
+    {"text": "Until then, I had hidden the fact with excuses, so my friends suspected nothing."},
+    {"text": "Everything changed when my school announces a kayaking camp for the whole level.", "wrong": "announces", "right": "announced", "kind": "tense", "note": "Tense: the story is in the past, so it is 'announced'."},
+    {"text": "I joined a class at the public pool, ashamed for being the", "wrong": "for", "right": "of", "kind": "preposition", "note": "Preposition: we are 'ashamed of' something."},
+    {"text": "oldest beginner there. My instructor, a patience woman named Mrs Devi, never laughed.", "wrong": "patience", "right": "patient", "kind": "word_class", "note": "Word form: before 'woman' an adjective is needed — 'patient'."},
+    {"text": "She simply asked me to float. I sank at once, because she made", "wrong": "because", "right": "but", "kind": "connector", "accept": ["yet", "and"], "note": "Connector: she carried on in spite of the failure — a contrast, 'but'."},
+    {"text": "me try again. By the third week, I could cross the pool without stop.", "wrong": "stop", "right": "stopping", "kind": "verb_form", "note": "Verb form: after 'without' it is 'stopping'."},
+    {"text": "What I remember most is not the swimming itself but the relief of"},
+    {"text": "no longer having a secret. At the camp, my confident grew with every stroke.", "wrong": "confident", "right": "confidence", "kind": "word_class", "note": "Word form: after 'my' a noun is needed — 'confidence'."},
+    {"text": "Mrs Devi had told me that fear shrinks whenever you faced it.", "wrong": "faced", "right": "face", "kind": "tense", "note": "Tense: this is a general truth, so it is 'face'."},
+    {"text": "She was right. I still swim every Saturday, since I no longer need lessons.", "wrong": "since", "right": "although", "kind": "connector", "accept": ["though"], "note": "Connector: swimming on without needing lessons is a contrast, so it is 'although'."},
+    {"text": "Next year, I plan to teach my younger brother myself."}
+  ]
+}

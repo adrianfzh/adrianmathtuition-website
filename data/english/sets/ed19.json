@@ -1,0 +1,19 @@
+{
+  "id": "ed19",
+  "kind": "editing",
+  "about": "Sharing an umbrella in the rain",
+  "lines": [
+    {"text": "The rain started just as I stepped out of the lift this morning."},
+    {"text": "I had left my umbrella in school, so I wait under the shelter", "wrong": "wait", "right": "waited", "kind": "past", "note": "Tense: the story is in the past, so it is 'waited'."},
+    {"text": "with a dozen other people. Two small boy were splashing in a puddle while", "wrong": "boy", "right": "boys", "kind": "number", "note": "Plural: 'two' needs 'boys'."},
+    {"text": "their mother tried to keep them dry. An old man beside me were reading", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'an old man' is one person, so it is 'was'."},
+    {"text": "a newspaper as if nothing unusual was happening. After ten minutes, the rain grew"},
+    {"text": "heavier, and I began to worry about being late. Then a woman which lived", "wrong": "which", "right": "who", "kind": "relative", "accept": ["that"], "note": "Relative pronoun: a woman is a person, so it is 'who'."},
+    {"text": "on my floor came down with a huge umbrella. She offered to share it"},
+    {"text": "with me, and we walk to the bus stop together under it.", "wrong": "walk", "right": "walked", "kind": "past", "note": "Tense: 'offered … and we walked' — the story is in the past."},
+    {"text": "She told me that she takes the same bus every day at a hour", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'hour' starts with a vowel sound, so it is 'an hour'."},
+    {"text": "when most people are still asleep. My shoes was soaked by the time we", "wrong": "was", "right": "were", "kind": "agreement", "note": "Agreement: 'my shoes' is plural, so it is 'were'."},
+    {"text": "arrived, but I reached school on time. I thanked her polite and promised to", "wrong": "polite", "right": "politely", "kind": "adverb", "note": "Word form: 'thanked' is a verb, so it takes the adverb 'politely'."},
+    {"text": "carry my own umbrella every day from now on."}
+  ]
+}

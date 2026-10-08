@@ -1,0 +1,19 @@
+{
+  "id": "ed27",
+  "kind": "editing",
+  "about": "The last night of a night market",
+  "lines": [
+    {"text": "The night market at Lorong Bayu closed for good last Sunday."},
+    {"text": "It had run every weekend since forty years, long before the flats around", "wrong": "since", "right": "for", "kind": "preposition", "note": "Preposition: 'for' goes with a length of time; 'since' needs a starting point."},
+    {"text": "it were built. On the final evening, hundreds of former customers came to"},
+    {"text": "say goodbye. Mr Tan, who has sold grilled corn there since he was a", "wrong": "has", "right": "had", "kind": "tense", "note": "Tense: the market has closed and the story is in the past, so it is 'had sold'."},
+    {"text": "teenager, gave away his last fifty cobs for free. Some stallholders were cheerful,"},
+    {"text": "so others wept openly as they packed their goods for the last time.", "wrong": "so", "right": "but", "kind": "connector", "accept": ["while", "yet", "whereas"], "note": "Connector: the two groups contrast, so it is 'but'."},
+    {"text": "The close was not caused by falling crowds. The land is needed for", "wrong": "close", "right": "closure", "kind": "word_class", "accept": ["closing"], "note": "Word form: after 'the' a noun is needed here — 'closure'."},
+    {"text": "a new train line that will short many residents’ journeys to work. Few", "wrong": "short", "right": "shorten", "kind": "word_class", "note": "Word form: after 'will' a verb is needed — 'shorten'."},
+    {"text": "people disagree with the plan, yet many feel that something has been lose.", "wrong": "lose", "right": "lost", "kind": "participle", "note": "Verb form: after 'has been' it is 'lost'."},
+    {"text": "A market is more than a place to shop. It is which neighbours", "wrong": "which", "right": "where", "kind": "relative", "note": "Relative word: a market is a place, so it is 'where'."},
+    {"text": "meet without an appointment and children learn to bargain. Despite the stalls", "wrong": "Despite", "right": "Although", "kind": "connector", "accept": ["Though", "While"], "note": "Connector: before a full clause it is 'although'; 'despite' needs a noun."},
+    {"text": "are gone, the smell of grilled corn will stay with us for years."}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ed24",
+  "kind": "editing",
+  "about": "A town that switched off its lamps",
+  "lines": [
+    {"text": "Three years ago, a small coastal town decided to switch off half its street lamps."},
+    {"text": "The council’s aim was to save money, so the result surprised everyone. Within", "wrong": "so", "right": "but", "kind": "connector", "accept": ["yet"], "note": "Connector: the result was not what the council aimed for — a contrast, 'but'."},
+    {"text": "months, residents reported that they are sleeping better than they had in years.", "wrong": "are", "right": "were", "kind": "tense", "note": "Tense: 'reported' is in the past, so it is 'were sleeping'."},
+    {"text": "Birds that had avoided the town for decades returned to nest along the shore."},
+    {"text": "Most striking of all was the night sky. Children who had grown up"},
+    {"text": "under an orange glow could now see thousands of stars by the first time.", "wrong": "by", "right": "for", "kind": "preposition", "note": "Preposition: it is 'for the first time'."},
+    {"text": "Not everyone was convince. Some shopkeepers feared that darker streets would invite crime,", "wrong": "convince", "right": "convinced", "kind": "participle", "note": "Verb form: after 'was' it is 'convinced'."},
+    {"text": "despite police records showed no increase in the two years that followed.", "wrong": "despite", "right": "although", "kind": "connector", "accept": ["though", "but", "yet"], "note": "Connector: before a full clause it is 'although'; 'despite' needs a noun."},
+    {"text": "Other towns have since copied the idea, drawn by the save in electricity", "wrong": "save", "right": "savings", "kind": "word_class", "accept": ["saving"], "note": "Word form: after 'the' a noun is needed — 'savings'."},
+    {"text": "bills. The lesson is not that light is harm, but that we often", "wrong": "harm", "right": "harmful", "kind": "word_class", "note": "Word form: after 'is' an adjective is needed — 'harmful'."},
+    {"text": "use far more from it than we need. Darkness, it turns out,", "wrong": "from", "right": "of", "kind": "preposition", "note": "Preposition: it is 'more of it'."},
+    {"text": "is something worth protecting, and it costs nothing at all."}
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "id": "ed26",
+  "kind": "editing",
+  "about": "Why boredom is good for children",
+  "lines": [
+    {"text": "Parents today go to great lengths to make sure their children are never bored."},
+    {"text": "Weekends are filled by tuition, music lessons and sports, leaving hardly a free hour.", "wrong": "by", "right": "with", "kind": "preposition", "note": "Preposition: a day is 'filled with' activities."},
+    {"text": "Psychologists, however, have begun to argue that boredom was useful. A child", "wrong": "was", "right": "is", "kind": "tense", "note": "Tense: this is a general claim, so it is 'is useful'."},
+    {"text": "with nothing to do is forced to invention a game, tell a story", "wrong": "invention", "right": "invent", "kind": "word_class", "note": "Word form: after 'to' a verb is needed — 'invent'."},
+    {"text": "or simply think. These are the moments in which imagination grows. In one"},
+    {"text": "study, adults who were given a dull task first later produced more original ideas"},
+    {"text": "as those who were not. Boredom also teaches patience, because a child who", "wrong": "as", "right": "than", "kind": "comparison", "note": "Comparison: after 'more' it is 'than'."},
+    {"text": "is entertain every minute never learns to wait. Lessons and sports are not", "wrong": "entertain", "right": "entertained", "kind": "participle", "note": "Verb form: after 'is' it is 'entertained'."},
+    {"text": "harmful, so a timetable still needs some empty space in it. The next", "wrong": "so", "right": "but", "kind": "connector", "accept": ["yet"], "note": "Connector: the second idea limits the first — a contrast, 'but'."},
+    {"text": "time a child complains for having nothing to do, a wise parent might", "wrong": "for", "right": "of", "kind": "preposition", "accept": ["about"], "note": "Preposition: we 'complain of' or 'about' something."},
+    {"text": "resist the urge to help. The complain usually lasts ten minutes; the game", "wrong": "complain", "right": "complaint", "kind": "word_class", "note": "Word form: after 'the' a noun is needed — 'complaint'."},
+    {"text": "that follows it can last the whole afternoon."}
+  ]
+}

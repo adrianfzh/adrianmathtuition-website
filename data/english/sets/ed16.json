@@ -1,0 +1,19 @@
+{
+  "id": "ed16",
+  "kind": "editing",
+  "about": "A new stall in the school canteen",
+  "lines": [
+    {"text": "Our school canteen has had the same six stalls for as long as anyone remembers."},
+    {"text": "Last term, however, a seventh stall open beside the drinks counter, and it", "wrong": "open", "right": "opened", "kind": "past", "note": "Tense: 'last term' is in the past, so it is 'opened'."},
+    {"text": "quickly became the most popular one. The stall sells only three dish: noodle soup,", "wrong": "dish", "right": "dishes", "kind": "number", "note": "Plural: 'three' needs 'dishes'."},
+    {"text": "fried rice and a vegetable wrap. The owner, Mdm Lee, cook everything herself", "wrong": "cook", "right": "cooks", "kind": "agreement", "note": "Agreement: 'the owner' is one person, so it is 'cooks'."},
+    {"text": "and arrives at six every morning to prepare the ingredients. Her prices are low,"},
+    {"text": "and she always gives an extra spoonful to students who look hungry. During recess,"},
+    {"text": "the queue for her stall are longer than all the other queues put together.", "wrong": "are", "right": "is", "kind": "agreement", "note": "Agreement: 'the queue' is one thing, so it is 'is'."},
+    {"text": "Some students even skip their snack so that they can buy a early lunch", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'early' starts with a vowel sound, so it is 'an early lunch'."},
+    {"text": "from her. Mdm Lee remembers the names of almost every student, and she greets them warm", "wrong": "warm", "right": "warmly", "kind": "adverb", "note": "Word form: 'greets' is a verb, so it takes the adverb 'warmly'."},
+    {"text": "each day. Last week, two teacher joined the queue for the first time.", "wrong": "teacher", "right": "teachers", "kind": "number", "note": "Plural: 'two' needs 'teachers'."},
+    {"text": "They ordered the noodle soup and finish every drop before the bell rang.", "wrong": "finish", "right": "finished", "kind": "past", "note": "Tense: 'ordered … and finished' — both verbs are in the past."},
+    {"text": "Mdm Lee only smiled and said that good food needs no advertisement."}
+  ]
+}

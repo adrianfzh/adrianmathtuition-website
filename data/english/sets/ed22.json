@@ -1,0 +1,19 @@
+{
+  "id": "ed22",
+  "kind": "editing",
+  "about": "Why we forget a name so quickly",
+  "lines": [
+    {"text": "Most of us have met someone at a party and forgotten the name within seconds."},
+    {"text": "Scientists say this is not a sign for a poor memory. A name, unlike", "wrong": "for", "right": "of", "kind": "preposition", "note": "Preposition: it is 'a sign of' something."},
+    {"text": "a job or a hobby, tells us nothing about the person, although the brain", "wrong": "although", "right": "so", "kind": "connector", "accept": ["and"], "note": "Connector: having little to attach the name to is a result, so it is 'so'."},
+    {"text": "has little to attach it to. We are also busy thinking about what to"},
+    {"text": "say next, which leaves little attend for the introduction itself. Researchers have", "wrong": "attend", "right": "attention", "kind": "word_class", "note": "Word form: after 'little' a noun is needed — 'attention'."},
+    {"text": "found that people who repeat a name aloud remembered it far more often.", "wrong": "remembered", "right": "remember", "kind": "tense", "note": "Tense: this is a general fact, so it is 'remember'."},
+    {"text": "Linking the name with something familiar is also helpful. If you meet a"},
+    {"text": "Mr Baker, you might picture him hold a loaf of bread. Such images,", "wrong": "hold", "right": "holding", "kind": "verb_form", "note": "Verb form: after 'picture him' it is 'holding'."},
+    {"text": "however silly, stay in the mind longer as the sound of a word.", "wrong": "as", "right": "than", "kind": "comparison", "note": "Comparison: after 'longer' it is 'than'."},
+    {"text": "Writing the name down shortly after the meeting is equally effect. Above all,", "wrong": "effect", "right": "effective", "kind": "word_class", "note": "Word form: after 'is equally' an adjective is needed — 'effective'."},
+    {"text": "nobody should be afraid from asking a new acquaintance to say it again.", "wrong": "from", "right": "of", "kind": "preposition", "note": "Preposition: we are 'afraid of' doing something."},
+    {"text": "Most people are simply pleased that you cared enough to ask."}
+  ]
+}
