@@ -7244,7 +7244,7 @@
   "kind": "points",
   "cluster": "climate",
   "title": "Reading maps: the world",
-  "issue": "Reading world maps of temperature zones and tropical cyclones",
+  "issue": "Reading world maps of latitude zones, tropical cyclones and plate boundaries",
   "sources": [],
   "questions": [
    {
@@ -7406,6 +7406,114 @@
      {
       "level": 3,
       "text": "The two lines are the Tropic of Cancer and the Tropic of Capricorn. Zone A is the hottest, and it is hot there all year. It gets colder as you go to higher latitudes, through zone B to zone C."
+     }
+    ]
+   },
+   {
+    "id": "g24-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. The red lines are the boundaries between tectonic plates. Describe where the plate boundaries are found.",
+    "diagram": {
+     "key": "world-plate-boundaries",
+     "caption": "Fig. 1: Lines on the Earth's surface"
+    },
+    "rules": [
+     "Describe only. A reason for where the boundaries are earns nothing."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Many boundaries run along the edges of continents, such as the west coast of North and South America."
+     },
+     {
+      "id": "b",
+      "text": "Some boundaries run through the middle of oceans, such as D in the Atlantic Ocean."
+     },
+     {
+      "id": "c",
+      "text": "The boundaries form long, joined-up lines that divide the Earth's surface into plates."
+     },
+     {
+      "id": "d",
+      "text": "A ring of boundaries surrounds the Pacific Ocean, around plate A."
+     },
+     {
+      "id": "e",
+      "text": "There are no boundaries in the middle of a plate, such as the middle of plate A."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The map shows the world with red lines on it. Tectonic plates are big pieces of the Earth and they move very slowly."
+     },
+     {
+      "level": 1,
+      "text": "Many of the boundaries follow the edges of continents, like the west coast of South America."
+     },
+     {
+      "level": 2,
+      "text": "Many of the boundaries follow the edges of continents, like the west coast of South America. Others go through the middle of oceans, like D in the Atlantic."
+     },
+     {
+      "level": 3,
+      "text": "Many of the boundaries follow the edges of continents, like the west coast of South America. Others go through the middle of oceans, like D in the Atlantic. There is a ring of boundaries all the way round the Pacific Ocean."
+     }
+    ]
+   },
+   {
+    "id": "g24-q5",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Study Fig. 1. The red lines are the boundaries between tectonic plates. Explain why most earthquakes and volcanoes are found along these lines.",
+    "diagram": {
+     "key": "world-plate-boundaries",
+     "caption": "Fig. 1: Lines on the Earth's surface"
+    },
+    "rules": [
+     "Each step earns credit once. Naming the lines as plate boundaries is given in the question and earns nothing by itself."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "At a boundary two plates meet and move: apart, towards each other, or past each other."
+     },
+     {
+      "id": "b",
+      "text": "As the plates push or slide against each other, stress builds up in the rock and is suddenly released as an earthquake."
+     },
+     {
+      "id": "c",
+      "text": "Magma can rise to the surface where plates move apart or where one plate sinks under another, forming volcanoes."
+     },
+     {
+      "id": "d",
+      "text": "In the middle of a plate there is little movement, so earthquakes and volcanoes are few there."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Earthquakes and volcanoes are natural hazards. They are dangerous and many people can die when they happen."
+     },
+     {
+      "level": 1,
+      "text": "The red lines are where two plates meet, and the plates there are moving towards each other, apart or past each other."
+     },
+     {
+      "level": 2,
+      "text": "The red lines are where two plates meet, and the plates there are moving towards each other, apart or past each other. When they push or rub against each other, stress builds up in the rocks and is let go suddenly as an earthquake."
+     },
+     {
+      "level": 3,
+      "text": "The red lines are where two plates meet, and the plates there are moving towards each other, apart or past each other. When they push or rub against each other, stress builds up in the rocks and is let go suddenly as an earthquake. Magma can also come up where plates pull apart or where one plate goes under another, and this makes volcanoes."
      }
     ]
    }

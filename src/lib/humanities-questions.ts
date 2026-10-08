@@ -67,7 +67,7 @@ export function diagramText(d: GeoDiagram): string {
 export interface DataTable {
   caption: string; columns: string[]; rows: string[][];
   /** Draw the table as a figure ("Fig. 1") instead of showing it as a table. The reader still gets the numbers. */
-  figure?: 'bar' | 'line' | 'climate';
+  figure?: 'bar' | 'line' | 'climate' | 'pie' | 'scatter' | 'windrose' | 'choropleth' | 'dots' | 'symbols' | 'flows' | 'isolines';
 }
 export interface HumanitiesQuestion {
   id: string;
@@ -207,7 +207,13 @@ export function maxOf(q: HumanitiesQuestion): number {
 /** A data table as plain lines — what the reader is given. */
 export function tableText(t: DataTable): string {
   const lines = [t.columns.join(' | '), ...t.rows.map(r => r.join(' | '))].join('\n');
-  const shown = t.figure === 'climate' ? 'a climate graph (a temperature line above rainfall bars)' : `a ${t.figure} graph`;
+  const SHOWN: Record<string, string> = {
+    climate: 'a climate graph (a temperature line above rainfall bars)', pie: 'a pie chart', scatter: 'a scatter graph with a line of best fit',
+    windrose: 'a wind rose (each bar points to where the wind blows from)', choropleth: 'a shaded (choropleth) map of Country X, darker where the value is higher',
+    dots: 'a dot map of Country X', symbols: 'a proportional symbol map of Country X (a bigger circle for a bigger value)',
+    flows: 'a flow line map of Country X (a thicker arrow for a bigger flow, from the first region to the second)', isolines: 'an isoline map of Country X (lines joining places of equal value)',
+  };
+  const shown = (t.figure && SHOWN[t.figure]) || `a ${t.figure} graph`;
   return t.figure ? `(Shown to the student as ${shown}, with every value printed on it.)\n${lines}` : lines;
 }
 

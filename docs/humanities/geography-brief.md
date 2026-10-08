@@ -146,3 +146,29 @@ with "Study Fig. 1 …" / "Using Fig. 1, …" in the question. A diagram is thre
 `node -e "require('sharp')('public/humanities/diagrams/<key>.svg',{density:220}).png().toFile('/tmp/<key>.png')"`
 then read the PNG. Fix overlaps, clipped text, letters off their feature, arrows pointing the wrong way.
 Repeat until it is clean.
+
+## More figures from numbers (added 8 Oct 2026)
+
+Beyond `bar`, `line` and `climate`, a `table` may carry one of these `figure` kinds. Each is drawn from
+the table and the reader is given the same numbers. Captions start "Fig. 1: …".
+
+- `pie` — first column the categories, ONE column of 2 to 6 positive numbers (shares or counts). The
+  percentages are printed on the slices and the numbers beside the key.
+- `scatter` — first column a label for each place (A, B, C …), then TWO number columns (x, then y),
+  5 to 14 rows. The points and a line of best fit are drawn; the numbers are NOT printed on the graph,
+  so questions ask about the relationship (positive or negative, strong or weak, the odd one out) and
+  may read approximate values from the axes.
+- `windrose` — exactly eight rows `N, NE, E, SE, S, SW, W, NW` in that order and ONE number column
+  (days, or % of the time). Each bar points to where the wind blows FROM.
+- Five maps of the made-up **Country X**, an island with seven regions: `North West`, `North`,
+  `North East`, `Central`, `West`, `South`, `South East` (Central is in the middle; the map has a
+  north arrow and a 50 km scale bar). Use these names exactly.
+  - `choropleth` — one row per region and ONE number column. Shaded in four classes with a key.
+  - `dots` — one row per region and ONE number column. "1 dot = N" is printed.
+  - `symbols` — one row per region and ONE number column. A circle sized by the number, number printed.
+  - `flows` — THREE columns: from-region, to-region, a number; 2 to 6 rows. An arrow per row, thicker
+    for a bigger number, number printed.
+  - `isolines` — one row per region and ONE number column (the value at the middle of that region).
+    Lines of equal value are drawn across the island. Make the numbers follow a clear trend across
+    the island (say, falling from west to east) so the lines run smoothly.
+- Nothing is invented about a real place: Country X, Town Y, Station Z.
