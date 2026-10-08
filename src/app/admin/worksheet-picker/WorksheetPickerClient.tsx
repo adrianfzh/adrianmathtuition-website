@@ -38,12 +38,39 @@ function excerpt(q: PickQuestion, n = 150): string {
   return clean.length > n ? clean.slice(0, n - 1) + '…' : clean;
 }
 
+// ── The whole question (stem, figures, parts with marks, the [Ans:] line) ────
+// Shared by the card's "Show full question" fold and the solution viewer.
+function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
+  const parts = flatParts(q.parts);
+  return (
+    <div className="leading-relaxed text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: size }}>
+      {q.stem && <div className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(q.stem) }} />}
+      {q.images.map((u) => <img key={u} src={u} alt="" className="max-w-[80%] block mx-auto my-2" />)}
+      {parts.map(({ labels, part, depth }) => (
+        <div key={labels.join('.')} className="mt-1.5" style={{ marginLeft: depth * 18 }}>
+          {part.imagesBefore.map((u) => <img key={u} src={u} alt="" className="max-w-[70%] block my-2" />)}
+          {(part.text || part.marks) && (
+            <div className="flex gap-2">
+              <span className="shrink-0 w-10">{partLabel(labels)}</span>
+              <span className="flex-1 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(part.text) }} />
+              {part.marks && <span className="shrink-0 text-slate-600">[{part.marks}]</span>}
+            </div>
+          )}
+          {part.imagesAfter.map((u) => <img key={u} src={u} alt="" className="max-w-[70%] block my-2" />)}
+        </div>
+      ))}
+      {ansLine(q) && <div className="mt-2 text-right" style={{ color: '#843C0C' }} dangerouslySetInnerHTML={{ __html: `[Ans: ${mathHtml(ansLine(q))}]` }} />}
+    </div>
+  );
+}
+
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
 function Card({ q, index, col, onMove, onOpen, overlay = false }: {
   q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onOpen: (id: string) => void; overlay?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
+  const [full, setFull] = useState(false);
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform), transition, touchAction: 'none',
     opacity: isDragging && !overlay ? 0.35 : 1,
@@ -58,8 +85,11 @@ function Card({ q, index, col, onMove, onOpen, overlay = false }: {
           {q.marks != null && <span className="shrink-0">[{q.marks}]</span>}
           {q.images.length + q.parts.reduce((s, p) => s + p.imagesBefore.length + p.imagesAfter.length, 0) > 0 && <span title="has a figure">🖼</span>}
         </div>
-        <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />
-        <div className="mt-1.5 flex gap-2">
+        {full
+          ? <div className="mt-1 pr-1"><QuestionBody q={q} size={13} /></div>
+          : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
+        <div className="mt-1.5 flex gap-3">
+          <button onClick={() => setFull((v) => !v)} className="text-[12px] font-semibold text-slate-700 hover:underline">{full ? 'Hide full question' : 'Show full question'}</button>
           <button onClick={() => onOpen(q.id)} className="text-[12px] font-semibold text-indigo-700 hover:underline">Question + solution</button>
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Remove'}
@@ -99,24 +129,7 @@ function Viewer({ q, onClose }: { q: PickQuestion; onClose: () => void }) {
           <div className="text-xs text-slate-500">{q.provenance}{q.marks != null ? ` · ${q.marks} marks` : ''}{q.topics.length ? ` · ${q.topics.join(', ')}` : ''}</div>
           <button onClick={onClose} className="text-slate-500 hover:text-slate-800 text-lg px-2">✕</button>
         </div>
-        <div className="px-5 py-4 text-[14px] leading-relaxed text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-          {q.stem && <div className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(q.stem) }} />}
-          {q.images.map((u) => <img key={u} src={u} alt="" className="max-w-[80%] block mx-auto my-2" />)}
-          {parts.map(({ labels, part, depth }) => (
-            <div key={labels.join('.')} className="mt-1.5" style={{ marginLeft: depth * 18 }}>
-              {part.imagesBefore.map((u) => <img key={u} src={u} alt="" className="max-w-[70%] block my-2" />)}
-              {(part.text || part.marks) && (
-                <div className="flex gap-2">
-                  <span className="shrink-0 w-10">{partLabel(labels)}</span>
-                  <span className="flex-1 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(part.text) }} />
-                  {part.marks && <span className="shrink-0 text-slate-600">[{part.marks}]</span>}
-                </div>
-              )}
-              {part.imagesAfter.map((u) => <img key={u} src={u} alt="" className="max-w-[70%] block my-2" />)}
-            </div>
-          ))}
-          {ansLine(q) && <div className="mt-2 text-right" style={{ color: '#843C0C' }} dangerouslySetInnerHTML={{ __html: `[Ans: ${mathHtml(ansLine(q))}]` }} />}
-        </div>
+        <div className="px-5 py-4"><QuestionBody q={q} /></div>
         <div className="px-5 pb-8">
           <h3 className="text-xs font-bold tracking-widest text-slate-500 uppercase border-b border-slate-200 pb-1 mb-3">Worked solution</h3>
           <div className="text-[14px] text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
