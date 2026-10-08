@@ -225,3 +225,31 @@ export function questionMarkdown(q: PickQuestion): string {
 export function fileStem(title: string): string {
   return (title.replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() || 'Worksheet').slice(0, 80);
 }
+
+/** The Practice shelf folder (Dropbox/Apps/AdrianMathNotes/Practice/<LEVEL>) for
+ *  a set of bank levels: JC1/JC2 → JC, AM/S3_AM/AM_NA → AM, EM/S3_EM/EM_NA → EM,
+ *  S1… / S2… → S1 / S2 (lib/notes-list dropboxFolderFor slugs). The most common
+ *  folder wins; null when nothing maps. */
+export const PRACTICE_FOLDERS = ['JC', 'AM', 'EM', 'S2', 'S1'] as const;
+export type PracticeFolder = (typeof PRACTICE_FOLDERS)[number];
+
+export function practiceFolderOf(level: string | null | undefined): PracticeFolder | null {
+  const l = (level ?? '').toUpperCase();
+  if (/^JC/.test(l)) return 'JC';
+  if (/(^|_)AM(_|$)/.test(l)) return 'AM';
+  if (/(^|_)EM(_|$)/.test(l)) return 'EM';
+  if (/^S2/.test(l)) return 'S2';
+  if (/^S1/.test(l)) return 'S1';
+  return null;
+}
+
+export function practiceFolderFor(levels: (string | null | undefined)[]): PracticeFolder | null {
+  const tally = new Map<PracticeFolder, number>();
+  for (const l of levels) {
+    const f = practiceFolderOf(l);
+    if (f) tally.set(f, (tally.get(f) ?? 0) + 1);
+  }
+  let best: PracticeFolder | null = null;
+  for (const [f, n] of tally) if (best === null || n > (tally.get(best) ?? 0)) best = f;
+  return best;
+}

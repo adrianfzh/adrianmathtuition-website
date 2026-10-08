@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fromDetail, ansLine, workingLines, parseIds, questionMarkdown, flatParts, fileStem, isShownAnswer } from './pick-worksheet';
+import { fromDetail, ansLine, workingLines, parseIds, questionMarkdown, flatParts, fileStem, isShownAnswer, practiceFolderFor } from './pick-worksheet';
 
 const detail = {
   id: '11111111-1111-1111-1111-111111111111',
@@ -84,5 +84,16 @@ describe('parseIds / flatParts / fileStem', () => {
   });
   it('fileStem strips path characters', () => {
     expect(fileStem('H2: Area / Volume?')).toBe('H2 Area Volume');
+  });
+});
+
+describe('practiceFolderFor', () => {
+  it('maps bank levels onto the Practice shelf folders, most common first', () => {
+    expect(practiceFolderFor(['JC2', 'JC1', 'JC2'])).toBe('JC');
+    expect(practiceFolderFor(['S3_AM', 'AM_NA'])).toBe('AM');
+    expect(practiceFolderFor(['S3_EM', 'EM', 'AM'])).toBe('EM');
+    expect(practiceFolderFor(['S2_NA'])).toBe('S2');
+    expect(practiceFolderFor(['S1_NT'])).toBe('S1');
+    expect(practiceFolderFor([null, 'weird'])).toBeNull();
   });
 });

@@ -25,7 +25,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import SolutionText from '@/components/SolutionText';
-import { fromDetail, flatParts, partLabel, partKey, ansLine, parseIds, fileStem, type PickQuestion, type DetailRow } from '@/lib/pick-worksheet';
+import { fromDetail, flatParts, partLabel, partKey, ansLine, parseIds, fileStem, practiceFolderFor, PRACTICE_FOLDERS, type PracticeFolder, type PickQuestion, type DetailRow } from '@/lib/pick-worksheet';
 
 type Col = 'cands' | 'picked';
 type Toast = { msg: string; kind: 'ok' | 'err' };
@@ -167,6 +167,11 @@ export default function WorksheetPickerClient() {
   const [busy, setBusy] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [docxUrl, setDocxUrl] = useState<string | null>(null);
+  const [docxBlob, setDocxBlob] = useState<Blob | null>(null);
+  const [folder, setFolder] = useState<PracticeFolder | ''>('');
+  const [fileName, setFileName] = useState('');
+  const [filing, setFiling] = useState(false);
+  const [filed, setFiled] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -225,7 +230,7 @@ export default function WorksheetPickerClient() {
       next.splice(index ?? next.length, 0, id);
       return next;
     });
-    setPdfUrl(null); setDocxUrl(null);
+    setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cands, picked]);
 
@@ -283,7 +288,11 @@ export default function WorksheetPickerClient() {
       setBusy('Building the DOCX…');
       const { buildPickWorksheetDocx } = await import('@/lib/pick-worksheet-docx');
       const blob = await buildPickWorksheetDocx({ title: title.trim(), subtitle: subtitle.trim(), questions: qs, workingSpace });
+      setDocxBlob(blob);
       setDocxUrl(URL.createObjectURL(blob));
+      setFiled([]);
+      if (!folder) setFolder(practiceFolderFor(qs.map((q) => q.level)) ?? 'JC');
+      if (!fileName) setFileName(fileStem(title.trim()));
       setBusy('Rendering the PDF…');
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -297,6 +306,26 @@ export default function WorksheetPickerClient() {
     } catch (e) {
       say((e as Error).message, 'err');
     } finally { setBusy(null); }
+  }
+
+  /** Both files onto the kiosk's Practice shelf (Dropbox/Apps/AdrianMathNotes/Practice/<folder>). */
+  async function fileToDropbox() {
+    if (!docxBlob || !pdfUrl || !folder) { say('Build the files first', 'err'); return; }
+    setFiling(true);
+    try {
+      const pdfRes = await fetch(pdfUrl);
+      if (!pdfRes.ok) throw new Error(`Could not read the PDF (HTTP ${pdfRes.status})`);
+      const fd = new FormData();
+      fd.set('folder', folder);
+      fd.set('name', fileStem(fileName || title));
+      fd.set('docx', new File([docxBlob], 'sheet.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+      fd.set('pdf', new File([await pdfRes.blob()], 'sheet.pdf', { type: 'application/pdf' }));
+      const r = await fetch('/api/admin/worksheet-picker/file', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setFiled((d.filed as { path: string }[]).map((f) => f.path));
+      say(d.errors?.length ? `Filed with a problem: ${d.errors.join('; ')}` : `Filed to ${d.folder}`, d.errors?.length ? 'err' : 'ok');
+    } catch (e) { say((e as Error).message, 'err'); } finally { setFiling(false); }
   }
 
   function shareLink() {
@@ -371,6 +400,17 @@ export default function WorksheetPickerClient() {
             {docxUrl && <a href={docxUrl} download={`${fileStem(title)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
             <button onClick={shareLink} disabled={!picked.length} className="text-sm text-slate-600 underline disabled:opacity-40 ml-auto">Copy link to this selection</button>
           </div>
+          {docxBlob && pdfUrl && (
+            <div className="max-w-6xl mx-auto mt-2 flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-slate-600">File to Dropbox Practice/</span>
+              <select value={folder} onChange={(e) => setFolder(e.target.value as PracticeFolder)} className="border border-slate-300 rounded-lg px-2 py-1 text-sm">
+                {PRACTICE_FOLDERS.map((f) => <option key={f} value={f}>{f}</option>)}
+              </select>
+              <input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="file name" className="flex-1 min-w-[200px] border border-slate-300 rounded-lg px-3 py-1 text-sm" />
+              <button onClick={fileToDropbox} disabled={filing || !!filed.length} className="bg-emerald-600 text-white font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-40">{filing ? 'Filing…' : filed.length ? 'Filed ✓' : 'File .docx + .pdf'}</button>
+              {filed.length > 0 && <span className="text-xs text-slate-500 truncate" title={filed.join('\n')}>{filed.map((p) => p.split('/').pop()).join(' · ')}</span>}
+            </div>
+          )}
         </div>
 
         {toast && <div className={`fixed top-3 right-3 z-50 text-sm px-3 py-2 rounded-lg shadow ${toast.kind === 'ok' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>{toast.msg}</div>}
