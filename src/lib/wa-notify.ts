@@ -38,6 +38,27 @@ export function invoiceReadyValues(inv: InvoiceForWa, secret: string, nowMs: num
   return [inv.month, inv.studentName, amount.toFixed(2), due, inv.paymentRef, code];
 }
 
+export type PaymentForWa = {
+  studentName: string; month: string; finalAmount: number; paymentAmount?: unknown;
+  isFullPayment?: unknown; isOverpayment?: unknown; correction?: unknown;
+};
+
+/**
+ * The three values of the bot's `payment_received` template: amount, student, month.
+ * Only for an invoice paid IN FULL — the message ends "No further action is needed", which
+ * is not true of a part payment, and a correction or a payment-with-credit has its own
+ * explanation in the e-mail. Null for everything else. Pure.
+ */
+export function paymentReceivedValues(p: PaymentForWa): string[] | null {
+  // Callers send these as true/false or as the words 'true'/'false' (a form, a query string).
+  const yes = (v: unknown) => v === true || v === 'true';
+  if (!yes(p.isFullPayment) || yes(p.isOverpayment) || yes(p.correction)) return null;
+  const paid = Number(p.paymentAmount);
+  const amount = paid > 0 ? paid : Number(p.finalAmount);
+  if (!(amount > 0) || !p.studentName || !p.month) return null;
+  return [amount.toFixed(2), p.studentName, p.month];
+}
+
 export async function sendWhatsAppTemplate(
   template: 'invoice_ready' | 'payment_received' | 'paper_marked' | 'progress_note',
   msg: { to: string; values: string[]; studentId?: string; ref?: string },
