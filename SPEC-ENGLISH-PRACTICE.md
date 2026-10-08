@@ -37,11 +37,17 @@ immediate feedback when they submit"*.
   *"why not one line at a time when asking?"* — the ten answer boxes sat in a card far below the
   passage). `/app/languages/practice/editing?level=N` picks the passage. The whole passage stays on
   the screen (a wrong word is spotted from the lines around it); the line being asked is
-  highlighted; the question is a bar fixed just above the bottom menu, or above the keyboard when
-  it is open (`visualViewport`), so there is no scrolling between passage and answer. Type the
-  word or tap ✓ → Submit or Enter → right or wrong with the right word and why, at once →
-  Next line (Enter again). A line already answered shows its result under it. After line 10 the
-  passage is handed in (the attempt is stored as before), the score shows, then **Next passage**.
+  highlighted, and **its answer box sits inside the highlight, right under the line**, so there is
+  no scrolling between passage and answer. Type the word or tap ✓ → Submit or Enter → right or
+  wrong with the right word and why, at once → Next line (Enter again; the keyboard stays up).
+  A line already answered shows its result under it. After line 10 the passage is handed in (the
+  attempt is stored as before), the score shows, then **Next passage**.
+  *Tried first and dropped:* a question bar fixed to the foot of the screen. On an iPhone (the
+  simulator, 8 Oct 2026) opening the keyboard slid the first lines off the top of the screen, where
+  they could not be scrolled back; steering the page with `visualViewport` made it worse. With the
+  box under its line the phone itself keeps the two together above the keyboard.
+  *Not seen yet:* the new layout with a real phone keyboard open — the simulator stopped showing
+  its keyboard. Adrian to try one passage on his phone.
   Per-line marking is `POST { editing, line, answer }` — the same rule, nothing stored.
 - **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
   order; once all are done, the one done longest ago; never the one just finished
