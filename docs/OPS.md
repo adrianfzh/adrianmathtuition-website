@@ -475,7 +475,7 @@ jobs there are together with the toggles for accounts … have a page just for t
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
   `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
   `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `worksheets`, `proposals`,
-  `flagjudge`, `flag-review`, `plan-reads` (✍️ the answer reader, 7 Oct 2026 — reads the `plan_reads` queue every minute; health-check `plan-reads` alarms when an answer waits over 20 minutes). `prune`, the disk check and the after-restart recovery are never
+  `flagjudge`, `flag-review`, `plan-reads` (✍️ the answer reader, 7 Oct 2026 — reads the `plan_reads` queue every minute; health-check `plan-reads` alarms when an answer waits over 20 minutes; since 8 Oct 2026 it also reads the essay marker's reads, kind `essay-read`, model `opus`, up to three rows at once). `prune`, the disk check and the after-restart recovery are never
   switchable (they keep the worker alive).
 - **Every one obeys since 5 Oct 2026** (Adrian: "fix switches page so it stops every job"). The
   scheduler gate written on 2 Oct sat on an unmerged bot branch, so until then only the jobs that

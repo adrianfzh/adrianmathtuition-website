@@ -353,7 +353,8 @@ by hand); a `job_runs` stamp for the bot's essay lane; the switch row
 1. **Seeded bench.** A clean essay with known slips planted in it — truth by construction.
    `src/lib/essay-seeding.ts` (pure/tested), `scripts/essay-calibration/seeded.ts`, starter set
    `scripts/essay-calibration/sets/seeded-starter/` (12 plants). Gate: ≥ 90 % of plants found,
-   ≥ 80 % of those with the right code, few marks elsewhere. Two hand-ins a run (about 70 cents).
+   ≥ 80 % of those with the right code, few marks elsewhere. Two hand-ins a run (on the plan since
+   8 Oct 2026 — §On the plan).
 2. **A second read that is not the first read again.** Even reads band FIRST from a whole read,
    then list slips; odd reads keep the old order. `ESSAY_SECOND_MODEL` (bot, unset = same model)
    puts the second read on another model.
@@ -362,6 +363,80 @@ by hand); a `job_runs` stamp for the bot's essay lane; the switch row
 4. **Confirmed marks.** Each mark carries `confirmed` — another read marked overlapping words.
    The read shown is the best-backed one. An unconfirmed mark is a dotted underline, "one to check".
 5. **Best fit.** The "lower band unless…" rule is gone; the prompt uses SEAB best-fit wording.
+
+## On the plan, not the paid key (8 Oct 2026)
+
+Adrian, 7 Oct 2026: *"we should not be using API"* … *"all on plan"*. The essay marker was the
+last English reader on the paid key (about 30 US cents an essay). It is off it.
+
+- **Each read is a row in `plan_reads`** (kind `essay-read`, model alias `opus`), queued by the BOT
+  (`lib/essay-plan.js`, called from `ai/essay-marker.js`) and read by the Fly worker's one-minute
+  lane (bot `scripts/plan-reads.js`): one `claude -p`, no tools, an empty directory. The prompt is
+  the same words as before — the marker's instructions, then the question and the essay.
+- **Nothing else changed**: two reads, a third when they differ by a band, the belt on every read
+  (`lib/essay-report.js`), held when three reads are apart, released at once when they agree.
+- **Speed**: a few minutes an essay (about 40 seconds a read once the worker is awake, longer when
+  the bot has to start it). The hand-in form says "a few minutes"; the essay page already waits.
+- **The lane grew for it**: an `opus` row may take 8 minutes (others 3); a reply may be 60,000
+  characters (a full read is about 5,000–7,000; the old 8,000 cap would have cut a long one); up
+  to three rows are read at once, so an essay's two reads do not queue behind each other.
+- **A bot restart in the middle** does not lose or re-read an essay: a read is found again by its
+  ref (`<essay id>:<pass>`), and 20 seconds after it starts the bot picks up every essay left at
+  "marking" in the last three hours.
+- **Cost on the row**: `model` = `plan:opus`, tokens and `cost_usd` 0.
+- **The paid path** is still in the code behind the bot's `ESSAY_USE_API=1`, unset everywhere
+  (a test pins that the plan path returns before the paid client is made). Do not set it without
+  Adrian's word.
+- **Alarm**: the website's health-check `plan-reads` — a read waiting over 20 minutes.
+
+## The bench on the plan (8 Oct 2026)
+
+`scripts/essay-calibration/plan-bench.ts` — no paid key, and no deployed bot needed:
+
+1. `npx tsx scripts/essay-calibration/plan-bench.ts export <jobs.json>` writes every hand-in as
+   the payload the bot receives (the same rubric, codes and guidance as `lib/essay-submit.ts`).
+2. In the bot repo, `node scripts/essay-bench-local.js <jobs.json> <marked.json>` marks each with
+   the real marker (two reads, a third, the belt) — each read one `claude -p` on plan usage, the
+   same arguments the Fly lane uses.
+3. `… plan-bench.ts score <marked.json>` scores with the pure functions the unit tests pin and
+   writes `scripts/essay-calibration/results/plan-<date>.json`.
+
+`run.ts` and `seeded.ts` still work through the real door (the admin hand-in) and are on the plan
+too, now that the bot is.
+
+| Check | What | Gate (the spec's own) |
+|---|---|---|
+| Seeded slips | each `sets/seeded-*`: the clean essay once, the seeded essay twice | ≥ 90 % of planted slips found, ≥ 80 % of those with the right code, few marks elsewhere — on both hand-ins |
+| Bands | each `sets/bands-*`: essays written to sit in a known band on each criterion | every one in its band, or one band away |
+| Same essay twice | every band essay and every seeded essay handed in twice | the bands agree in ≥ 90 % of pairs, never two apart |
+
+**The run, 8 Oct 2026** (`results/plan-2026-10-08.json`; 21 hand-ins, 46 reads, all on the plan,
+about 100 seconds a hand-in, none held, none failed, the belt dropped nothing):
+
+| Check | Result | Gate | |
+|---|---|---|---|
+| Seeded slips — story (`seeded-starter`) | found 12/12 and 12/12 · right code 12/12 · extra marks 0 and 1 | ≥ 90 % · ≥ 80 % | pass |
+| Seeded slips — argument (`seeded-argument`) | found 12/12 twice · right code 12/12 · extra 1 | the same | pass |
+| Seeded slips — e-mail (`seeded-email`) | found 12/12 twice · right code 11/12 ("every days" marked with no code, both times) · extra 0 | the same | pass |
+| Bands (`bands-starter`, 6 essays × 2 criteria × 2 hand-ins) | 12 in the known band, 12 one band away, 0 further | none two bands away | pass |
+| Same essay twice (9 essays, 18 band pairs) | 18/18 the same band | ≥ 90 %, never two apart | pass |
+
+**Passes by the spec's gates.** What the numbers also say, and the gates do not:
+
+- **Every miss is one band HIGH, never low.** Content read a band above the design on four of six
+  essays (band 4 → 5, band 3 → 4, the mixed essay 4 → 5); language was exact on four of six.
+- **The bottom is not pulled apart.** The band-1 essay and the band-2 essay both came back C2 L2
+  (8–12). The order of the other five is right.
+- **The two criteria do move apart**: the essay written strong on content and weak on language
+  came back C5 L3, not two equal bands.
+- **Limits.** The band essays are ours, written to a band by the same family of model that reads
+  them — that is fit to our own design, not to an examiner. The ranking test (a class set with a
+  teacher's marks) has still not run; real marked essays are owed by Adrian. Six essays, one prompt.
+- **A slip of the bench's own**: clean essays carry 1–4 marks (the noise floor) — the clean
+  argument essay got 4.
+
+The first live essay through the deployed bot and the queue is recorded in
+`docs/HANDOFF-ENGLISH-BUILD.md`.
 
 ## Open before essays open — the hedge lines (5 Oct 2026)
 

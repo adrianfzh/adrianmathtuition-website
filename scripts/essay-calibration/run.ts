@@ -21,7 +21,9 @@
 // anchor fit (anchor bands vs the app's). The verdict is printed and written to
 // <set-dir>/results.json. --report-only recomputes from the ids in results.json.
 //
-// Auth: ADMIN_PASSWORD from .env.local (Bearer). Cost: about 35 cents per hand-in.
+// Auth: ADMIN_PASSWORD from .env.local (Bearer). The bot reads ON THE PLAN since 8 Oct 2026
+// (no paid call; a hand-in takes a few minutes). To run a set with no deployed bot at all, use
+// plan-bench.ts beside this file.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -89,7 +91,7 @@ if (!reportOnly) {
   }
   // Wait for the marker.
   const pending = () => results.handins.filter(h => !h.status || h.status === 'queued' || h.status === 'marking');
-  for (let i = 0; i < 120 && pending().length; i++) {
+  for (let i = 0; i < 360 && pending().length; i++) {   // up to an hour: the plan reader takes minutes, not seconds
     await sleep(10000);
     for (const h of pending()) {
       const row = await fetchRow(h.id);
