@@ -489,6 +489,9 @@ export async function englishFormatsOpen(): Promise<boolean> {
  *   interaction  the same page's Part 2 — three prompts asked and answered aloud
  */
 export const ENGLISH_LISTENING_OPEN_TO_STUDENTS = false;
+// ⚠️ BEFORE EITHER ORAL SWITCH IS FLIPPED (Adrian, 8 Oct 2026: "only remind to put in privacy when opens up"):
+// the privacy page needs a line about voice recordings and how long they are kept (suggested 30 days),
+// and the consent wording must cover a child's voice. docs/SWITCHES.md, SPEC-ENGLISH-ORAL-LISTENING.md.
 export const ENGLISH_ORAL_OPEN_TO_STUDENTS = false;
 export const ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS = false;
 export const ENGLISH_SPEAKING_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;

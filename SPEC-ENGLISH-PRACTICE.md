@@ -33,10 +33,16 @@ immediate feedback when they submit"*.
 
 - **No list of titles.** The Editing tab shows three levels (Easier · Standard · Harder, each with
   "n of m done") and **Start** (`editing/editing-start.tsx`).
-- **One passage at a time**: `/app/languages/practice/editing?level=N` picks the passage, whole on
-  the screen (a wrong word is spotted from the lines around it — "one by one" is read as one
-  PASSAGE at a time; told to Adrian as a reading). Submit → the score, then each line ✓/✗ with the
-  right word and why, at once (by rule). **Next passage** comes back to the same address.
+- **One passage, asked ONE LINE AT A TIME** (Adrian, 8 Oct 2026, after seeing the first build:
+  *"why not one line at a time when asking?"* — the ten answer boxes sat in a card far below the
+  passage). `/app/languages/practice/editing?level=N` picks the passage. The whole passage stays on
+  the screen (a wrong word is spotted from the lines around it); the line being asked is
+  highlighted; the question is a bar fixed just above the bottom menu, or above the keyboard when
+  it is open (`visualViewport`), so there is no scrolling between passage and answer. Type the
+  word or tap ✓ → Submit or Enter → right or wrong with the right word and why, at once →
+  Next line (Enter again). A line already answered shows its result under it. After line 10 the
+  passage is handed in (the attempt is stored as before), the score shows, then **Next passage**.
+  Per-line marking is `POST { editing, line, answer }` — the same rule, nothing stored.
 - **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
   order; once all are done, the one done longest ago; never the one just finished
   (`nextEditing`, tested; done = an `english_practice_attempts` row of kind `editing`).

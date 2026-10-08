@@ -1,7 +1,8 @@
 // /api/portal/english/practice — English practice on our OWN sets
 // (SPEC-ENGLISH-PRACTICE.md; own content only since 7 Oct 2026 — lib/english-own-data.ts).
 //
-//   POST { editing: <item id>, answers }  → { results[], right, total }           marked by rule, no model
+//   POST { editing: <item id>, answers }  → { results[], right, total }           marked by rule, no model; the attempt is stored
+//   POST { editing: <item id>, line, answer } → { result }                         one line as the student goes; nothing stored
 //   POST { unit: <key>, answer }          → short answer:  { awarded, marks, line, why, missing, scheme }
 //                                           summary:       { content, contentMax, hit[], points[], language, words, over, scheme }
 //        The scheme is in the reply only — never in a page before the check.
@@ -70,11 +71,19 @@ export async function POST(req: NextRequest) {
   const identity = await who();
   if (!identity) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
   if (!(await englishPracticeOpen())) return NextResponse.json({ error: 'Not open yet.' }, { status: 403 });
-  const body = (await req.json().catch(() => ({}))) as { editing?: unknown; answers?: unknown; unit?: unknown; answer?: unknown };
+  const body = (await req.json().catch(() => ({}))) as { editing?: unknown; answers?: unknown; line?: unknown; unit?: unknown; answer?: unknown };
 
   // — an editing passage: every line by rule —
   if (body.editing !== undefined) {
     const id = String(body.editing ?? '');
+    // — one line of it, as the student goes (8 Oct 2026: one line at a time): the same rule, nothing stored —
+    if (UUID.test(id) && typeof body.line === 'string') {
+      const one = await loadEditingSet(id);
+      const line = one?.lines.find(l => l.label === body.line);
+      if (!one || !line) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      const r = checkEditing({ ...one, lines: [line] }, { [line.label]: body.answer }).results[0];
+      return NextResponse.json({ result: r });
+    }
     if (!UUID.test(id) || !body.answers || typeof body.answers !== 'object') return NextResponse.json({ error: 'bad request' }, { status: 400 });
     const set = await loadEditingSet(id);
     if (!set) return NextResponse.json({ error: 'Not found' }, { status: 404 });

@@ -112,6 +112,16 @@ Nothing is scheduled. Listening is instant. An oral report is picked up by the w
 - Caps: 6 oral reports a student a day (`DAILY_ORAL_CAP`); a recording is at most 2:00 / 1:30 and
   4 MB.
 
+## ⚠️ Before oral opens to students (Adrian, 8 Oct 2026)
+
+Adrian: *"for oral, only remind to put in privacy when opens up. we are not opening up oral now"*.
+Oral stays closed and the privacy page is NOT changed now. On the day either oral switch is
+flipped, in the same change:
+
+1. The privacy page gets a line saying a student's **voice recordings** are kept, and **for how
+   long** (suggested: 30 days, then only the words are kept — the deleting is not built yet).
+2. The consent wording at sign-up covers **a child's voice**.
+
 ## Switches (`src/lib/portal-beta.ts`, all `false`)
 
 `ENGLISH_LISTENING_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_OPEN_TO_STUDENTS` (Part 1) ·
