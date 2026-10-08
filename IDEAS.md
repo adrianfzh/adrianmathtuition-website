@@ -97,6 +97,10 @@ product — an edit to the doctrine is to be proposed in the open at the design 
 Matters most for lower levels and for anyone using the app without lessons. Not started: on
 7 Oct 2026 the Humanities, English and WhatsApp builds are running. Needs a design talk first.
 
+**8 Oct 2026 — design talk held → [`SPEC-SELF-LEARNING.md`](SPEC-SELF-LEARNING.md).** Built first as a required
+companion to the tuition; the hook is the student's next school test (enter the test → paper →
+revise what the marking shows → next paper, a decent mark by paper 3). Design only, nothing built.
+
 ## 🏅 Reward stickers on marked papers — characters that level up (Adrian, 6 Oct 2026) — DESIGN, not built
 
 Adrian: "are we able to put like 'stickers' if students did well? like how teachers will put stickers … make it fun";

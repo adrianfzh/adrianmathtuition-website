@@ -43,6 +43,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | Student app (App Store) · public launch · the company · tutor tools | [`SPEC-STUDENT-APP.md`](SPEC-STUDENT-APP.md) · [`SPEC-PUBLIC-LAUNCH.md`](SPEC-PUBLIC-LAUNCH.md) · [`SPEC-COMPANY.md`](SPEC-COMPANY.md) · [`SPEC-TUTOR-TOOLS.md`](SPEC-TUTOR-TOOLS.md) |
 | Teaching cycle · section bank · remediation (parked) | [`SPEC-TEACHING-CYCLE.md`](SPEC-TEACHING-CYCLE.md) · [`SPEC-SECTION-BANK.md`](SPEC-SECTION-BANK.md) · [`SPEC-REMEDIATION.md`](SPEC-REMEDIATION.md) |
 | "From Adrian" assigned work | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
+| Ready for the next test (self-learning loop, companion first; topic maps) | [`SPEC-SELF-LEARNING.md`](SPEC-SELF-LEARNING.md) |
 | Animated lessons, ▶ one-minute explanation, voice, characters, stickers | [`docs/LESSONS.md`](docs/LESSONS.md) |
 | Paper match at hand-in · missing questions at hand-in | [`SPEC-PAPER-MATCH.md`](SPEC-PAPER-MATCH.md) · [`SPEC-HANDIN-COMPLETENESS.md`](SPEC-HANDIN-COMPLETENESS.md) |
 | Chat solver bank grounding | [`SPEC-SOLVER-BANK-GROUNDING.md`](SPEC-SOLVER-BANK-GROUNDING.md) |
