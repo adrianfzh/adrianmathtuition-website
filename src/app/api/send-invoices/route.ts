@@ -14,6 +14,7 @@ import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { checkDelivery, alertVerificationBlind } from '@/lib/resend-verify';
+import { invoiceReadyValues, sendWhatsAppTemplate } from '@/lib/wa-notify';
 import { waDigits, waDisplay } from '@/lib/wa-number';
 import { formatDueDate, formatMoney, amountDueHtml, paymentHtml, type PriorBalanceForEmail } from '@/lib/invoice-email-format';
 import { adhocDatesText } from '@/lib/adhoc-billing';
@@ -615,7 +616,7 @@ export async function POST(req: NextRequest) {
       ...new Set(invoiceRecords.map((r: any) => r.fields['Student']?.[0]).filter(Boolean)),
     ] as string[];
     const studentsData = studentIds.length
-      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Level&fields[]=Subjects&fields[]=Subject Level`)
+      ? await airtableRequestAll('Students', `?filterByFormula=OR(${studentIds.map((id) => `RECORD_ID()='${id}'`).join(',')})&fields[]=Student Name&fields[]=Parent Email&fields[]=Parent Name&fields[]=Parent Contact&fields[]=Level&fields[]=Subjects&fields[]=Subject Level`)
       : { records: [] };
     const studentsById: Record<string, any> = Object.fromEntries(
       studentsData.records.map((r: any) => [r.id, r.fields])
@@ -776,6 +777,12 @@ export async function POST(req: NextRequest) {
         studentName: invoice.studentName,
         month: invoice.month,
         isFirstInvoice,
+        // The same invoice on WhatsApp (8 Oct 2026) — asked of the bot after the e-mail is delivered.
+        wa: {
+          to: String(student['Parent Contact'] || ''),
+          studentId,
+          values: invoiceReadyValues(invoice, process.env.SIGNUP_SECRET || ''),
+        },
       });
     }
 
@@ -798,6 +805,7 @@ export async function POST(req: NextRequest) {
     // and alarm ONCE for the batch rather than 58 times.
     let verifyBlind = '';
     let unverifiedCount = 0;
+    let waSent = 0;   // invoices also announced on WhatsApp
     const errors: any[] = [];
     const sentDetails: { studentName: string; month: string; isFirstInvoice: boolean }[] = [];
     const invoiceIds = Array.from(invoiceMap.keys());
@@ -848,6 +856,12 @@ export async function POST(req: NextRequest) {
         });
         sentCount++;
         const sentMeta = invoiceMap.get(invoiceId);
+        // WhatsApp too — the bot decides (its switch, test mode, the parent's START). Off by
+        // default; never throws, and the e-mail above stands whatever it answers.
+        if (sentMeta?.wa?.to && sentMeta.wa.values) {
+          const wa = await sendWhatsAppTemplate('invoice_ready', { to: sentMeta.wa.to, values: sentMeta.wa.values, studentId: sentMeta.wa.studentId, ref: invoiceId });
+          if (wa.sent) waSent++;
+        }
         if (sentMeta) {
           sentDetails.push({
             studentName: sentMeta.studentName,
@@ -938,7 +952,7 @@ export async function POST(req: NextRequest) {
     if (notify) {
       await notify_money(
         `${summaryHeader} \u2014 ${currentMonth}\n\n` +
-          `Delivered: ${sentCount} | Not delivered: ${failedCount}` +
+          `Delivered: ${sentCount} | Not delivered: ${failedCount}${waSent ? ` | Also on WhatsApp: ${waSent}` : ''}` +
           (sentLines ? `\n\n${sentLines}` : '') +
           (failedCount > 0
             ? `\n\n\u26a0\ufe0f NOT delivered (fix + resend):\n${failedLines}`
@@ -950,7 +964,7 @@ export async function POST(req: NextRequest) {
     await flagHeld(currentMonth);
 
     await logJobRun(jobName, failedCount === 0, `sent ${sentCount}, failed ${failedCount}, held ${heldForReview.length}`);
-    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails, held: heldForReview.length });
+    return NextResponse.json({ sent: sentCount, failed: failedCount, errors, total: emails.length, sentDetails, held: heldForReview.length, whatsapp: waSent });
   } catch (err: any) {
     console.error('[send-invoices] Unhandled error:', err);
     return NextResponse.json({ error: 'Internal server error', details: err.message }, { status: 500 });
