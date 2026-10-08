@@ -46,9 +46,26 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
   without his word): the paid call is off; judged answers queue in `plan_reads` and the Fly worker
   reads them (SPEC-ENGLISH-PRACTICE.md §On the plan). **Never run a bench or batch on the paid key
   without asking him first.** The batch bench was finished on the plan: 1454/1459 seeded.
-- Still owed on step 2: a re-read of the one fixed gross miss, a HARD set, one end-to-end test of
-  the queue on the preview once the worker lane is deployed.
-- Not started: steps 3–8.
+- **Step 2 is done (8 Oct 2026).** Hard set 55/57, no gross miss; the two fixed misses re-read
+  correctly (99/99); the page clicked through at phone width — an instant "which word" check, and
+  a handed-in answer marked by the plan reader in about a minute. Numbers and limits:
+  SPEC-ENGLISH-PRACTICE.md §The bench. The Languages practice PAGES now belong to the listening /
+  oral session (it is rebuilding the editing flow) — this build owns the checker, the bench, the
+  sets and the queue lane, and does not edit `src/app/app/languages/practice`.
+- **Next — step 3, for a FRESH session (8 Oct 2026):** essay marking onto the plan, then its bench.
+  - Today the essay marker is the bot's `ai/essay-marker.js` on the paid key (two Opus reads, a
+    third when they differ, about 30 US cents an essay; `POST /api/essay-mark`). Adrian: "all on
+    plan". Move the READS to the `plan_reads` queue (`src/lib/plan-reads.ts`, bot
+    `scripts/plan-reads.js` — model alias `opus` is allowed; a new `kind`), keep the belt
+    (`lib/essay-report.js`) and the agree-two-reads rule as they are, and keep the paid path only
+    behind an env switch that is unset. An essay prompt is long — check the row size and the
+    reader's 3-minute timeout.
+  - Then the bench, all on the plan: the seeded-slip set that exists
+    (`scripts/essay-calibration/seeded.ts`, `sets/seeded-starter/`), seeded essays by band, and the
+    same essay read twice. Never the paid key without Adrian's clear yes.
+  - Read first: `SPEC-ESSAY-MARKING.md`, `SPEC-ENGLISH-PRACTICE.md` §On the plan, the bot's
+    `worker/fly/README.md` §Plan reads.
+- Not started: steps 4–8.
 
 ## Listening and oral — built 8 Oct 2026 (steps 7 and 8), all closed
 

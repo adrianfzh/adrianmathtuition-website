@@ -102,6 +102,18 @@ read once as "copied the scheme" — is answered by a rule added to the prompt t
 re-read. The other — a lifted line given the mark on a "what attitude" question (vt06 Q3) — stands.
 The plan sheets hold many answers in one reading, where the page reads one at a time.
 
+**The hard set, 8 Oct 2026** (`scripts/english-bench/hard-answers.json`, `run.ts --hard`,
+`results/hard-2026-10-08.json`; all on the plan): 57 answers written the way students write them —
+spelling slips, Singlish, a right idea buried in waffle, half an idea in clumsy words, a near miss,
+passage words lightly changed, a summary in note form — over 5 sets, each read twice.
+Seeded 55/57 (96 %), no gross miss · repeats 56/57 · summary 4/4. **Passes.** Both misses are
+half-idea answers read half a mark or a mark low (na01 Q7, nn01 Q6) — the checker leans strict on a
+clumsy half answer, never generous.
+
+**The re-read, 8 Oct 2026** (`results/reread-2026-10-08.json`, sets na05 + vt06, with the rule
+"an answer in the scheme's own words is right"): seeded 99/99 · repeats 25/25 · padding 20/20 ·
+swapped 18/18. Both of the batch's gross misses now read correctly. **Passes.**
+
 **Pilot, 7 Oct 2026** (`results/pilot-2026-10-07.json`, 3 reading sets, 220 reads): seeded 128/128 ·
 repeats 33/33 · padding 25/25 · swapped 24/24 · summary 10/10, every point agreed. Limits: few sets,
 and clean seeded answers written by the set's own writer — a HARD set (answers the way students
