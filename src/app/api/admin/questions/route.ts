@@ -31,6 +31,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
 import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
+import { fromDetail, ansLine, type DetailRow } from '@/lib/pick-worksheet';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -281,6 +282,20 @@ export async function GET(req: NextRequest) {
     if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
     const [flagged, gate] = await Promise.all([openFlagPaths(supa, [id]), solutionImageGateFor([id])]);
     return NextResponse.json({ question: detail(row, flagged, gate) });
+  }
+
+  // ── several questions in full, in the order asked (the worksheet picker) ──
+  const idsParam = p.get('ids');
+  if (idsParam) {
+    const ids = [...new Set(idsParam.split(',').map((s) => s.trim()).filter((s) => /^[0-9a-f-]{36}$/.test(s)))].slice(0, 60);
+    if (!ids.length) return NextResponse.json({ error: 'ids= needs uuids' }, { status: 400 });
+    const { data, error } = await supa.from('questions').select('*').in('id', ids).is('deleted_at', null);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const [flagged, gate] = await Promise.all([openFlagPaths(supa, ids), solutionImageGateFor(ids)]);
+    const byId = new Map((data ?? []).map((row) => [row.id as string, row as Row]));
+    const questions = ids.map((qid) => byId.get(qid)).filter((r): r is Row => !!r).map((row) => detail(row, flagged, gate));
+    const missing = ids.filter((qid) => !byId.has(qid));
+    return NextResponse.json({ questions, missing });
   }
 
   // ── a whole paper, in reading order ───────────────────────────────────────
@@ -726,7 +741,7 @@ export async function POST(req: NextRequest) {
   if (body.action === 'worksheet') {
     const ids = (Array.isArray(body.ids) ? body.ids : [])
       .filter((x): x is string => typeof x === 'string' && /^[0-9a-f-]{36}$/.test(x))
-      .slice(0, 20);
+      .slice(0, 40);
     if (!ids.length) return NextResponse.json({ error: 'ids[] required' }, { status: 400 });
     const { data, error } = await supa
       .from('questions')
@@ -748,22 +763,31 @@ export async function POST(req: NextRequest) {
       if (row.has_image && !figureUrl && !clean) {
         warnings.push(`Q${row.question_number ?? '?'} (${row.school ?? 'bank'}): image not watermark-clean — printed without its figure`);
       }
+      // The plain sheet prints ONE [Ans:] line per question built the picker's
+      // way (shown/proved parts left out, top-level answer as the fallback).
+      const plainAns = body.style === 'plain' ? ansLine(fromDetail(detail(row) as unknown as DetailRow)) : null;
       questions.push({
         id: qid,
         markdown: flat.text,
         marks: (row.total_marks as number | null) ?? null,
         figureUrl,
         imageUrls,
-        answer: flat.answer || ((row.answer as string | null) ?? '') || '—',
+        answer: plainAns !== null ? plainAns : (flat.answer || ((row.answer as string | null) ?? '') || '—'),
       });
     }
     if (!questions.length) return NextResponse.json({ error: 'no usable questions' }, { status: 400 });
-    const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 60) : 'Selected Questions';
+    const title = typeof body.title === 'string' && body.title.trim() ? body.title.trim().slice(0, 80) : 'Selected Questions';
     const dateLabel = new Date().toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Singapore' });
+    // style:'plain' = the create-worksheet skill's regular format (navy title,
+    // italic subtitle, one orange [Ans:] line per question) — the worksheet
+    // picker's Done button. The branded masthead stays the default.
+    const plain = body.style === 'plain';
+    const subtitle = typeof body.subtitle === 'string' ? body.subtitle.trim().slice(0, 120) : '';
     try {
       const pdf = await renderBotWorksheetPDF({
         title, levelLabel: 'Custom', topic: title, tier: null, dateLabel, questions, answers: body.answers === true,
         workspace: body.workspace !== false,
+        ...(plain ? { plain: { subtitle }, answersInline: body.answers !== false } : {}),
       });
       const blob = await storeBankFile(`custom-worksheets/${Date.now()}.pdf`, pdf, 'application/pdf');
       return NextResponse.json({ url: blob.url, count: questions.length, warnings });

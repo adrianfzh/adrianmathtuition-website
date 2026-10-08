@@ -40,8 +40,18 @@ function buildHead(): string {
   // a path — katex is listed in next.config serverExternalPackages so it stays a
   // real Node require on Vercel, and this guard keeps a bundled build from taking
   // the whole route down (5 Sep 2026: every /api/admin/questions action 500'd).
-  const resolved: unknown = require.resolve('katex/package.json');
-  const pkgDir = typeof resolved === 'string' ? path.dirname(resolved) : path.join(process.cwd(), 'node_modules', 'katex');
+  // Turbopack returns a STRING that is not a path either
+  // ("[externals]/katex/package.json [external] (…)"), so check the resolved
+  // directory really holds the stylesheet before trusting it. NOTE `next dev`
+  // (Turbopack) also rewrites the cwd fallback to "[project]/node_modules/…",
+  // so every Puppeteer PDF route 500s under the dev server (8 Oct 2026) —
+  // verify PDF routes against `next build` + `next start` (launch.json
+  // "Next.js Prod"), which is what Vercel runs.
+  let resolved: unknown = null;
+  try { resolved = require.resolve('katex/package.json'); } catch { /* bundled: fall back below */ }
+  const cwdDir = path.join(process.cwd(), 'node_modules', 'katex');
+  let pkgDir = typeof resolved === 'string' ? path.dirname(resolved) : cwdDir;
+  if (!fs.existsSync(path.join(pkgDir, 'dist', 'katex.min.css'))) pkgDir = cwdDir;
   const distDir = path.join(pkgDir, 'dist');
   const fontsDir = path.join(distDir, 'fonts');
 

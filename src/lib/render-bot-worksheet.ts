@@ -98,6 +98,19 @@ export interface BotWorksheetInput {
   answers: boolean;
   /** Marks-proportional working space under each question (default). False = compact question list. */
   workspace?: boolean;
+  /**
+   * The create-worksheet skill's REGULAR format (Adrian, 4 Oct 2026: "don't
+   * want the new format, just give me a regular format worksheet"): a navy
+   * centred title and an italic subtitle instead of the branded masthead, no
+   * name bar and no footer. Used by the worksheet picker.
+   */
+  plain?: { subtitle: string };
+  /**
+   * One orange right-aligned `[Ans: …]` line at the END of each question —
+   * the house sheet (worksheet_lib.py); never per part. `answers` (the
+   * separate Answers page) is ignored when this is set.
+   */
+  answersInline?: boolean;
 }
 
 function esc(s: string): string {
@@ -124,7 +137,7 @@ function partSpaceMm(marks: number): number {
 }
 
 /** One question's body: figures, then the markdown, then the marks tag. */
-function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true): string {
+function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, answersInline = false): string {
   const figures = [
     ...(q.figureUrl ? [q.figureUrl] : []),
     ...(q.figureUrl ? [] : q.imageUrls),
@@ -178,11 +191,20 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true):
     ? (/<\/p>\s*$/.test(body) ? body.replace(/<\/p>(\s*)$/, `${marksTag}</p>$1`) : body + marksTag)
     : body;
 
+  // The inline answer line: markdown through the same stash/restore as the
+  // question so its maths typesets; an empty answer (a proof) prints nothing.
+  let ansLine = '';
+  if (answersInline && q.answer.trim() && q.answer.trim() !== '—') {
+    const a = protectWorksheetHtml(q.answer.trim());
+    const inner = restoreWorksheetHtml(mdToHtml(a.src), a.stash).replace(/^<p>|<\/p>$/g, '');
+    ansLine = `<div class="ws-ans">[Ans: ${inner}]</div>`;
+  }
+
   return `
     <li class="ws-q">
       <span class="ws-qnum">${index + 1}.</span>
       <div class="ws-q-body">${figures}${withMarks}</div>
-      ${space}
+      ${space}${ansLine}
     </li>`;
 }
 
@@ -203,7 +225,8 @@ function answersHtml(questions: BotWorksheetQuestion[]): string {
 }
 
 export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
-  const { levelLabel, topic, tier, dateLabel, questions, answers, workspace = true } = input;
+  const { levelLabel, topic, tier, dateLabel, questions, workspace = true, plain, answersInline = false } = input;
+  const answers = input.answers && !answersInline;
   const tierBit = tier && tier !== 'mixed' ? `${tier} · ` : '';
   const totalMarks = questions.reduce((s, q) => s + (q.marks ?? 0), 0);
 
@@ -277,13 +300,23 @@ ${katexInlineHead()}
   .ws-anum{position:absolute;left:-18pt;top:0;font-weight:700;color:#111}
   .ws-a-body p{margin:0}
 
+  /* Inline answer line (plain sheets): orange, right-aligned, after the working space. */
+  .ws-ans{text-align:right;color:${ANSWER_ORANGE};margin:2pt 0 6pt;clear:both}
+  .ws-ans .katex{color:${ANSWER_ORANGE}}
+  /* Regular format header: navy centred title, italic subtitle. */
+  .ws-plain-title{text-align:center;color:${NAVY};font-weight:700;font-size:12pt;margin-bottom:2pt}
+  .ws-plain-sub{text-align:center;font-style:italic;font-size:10pt;margin-bottom:10pt}
+  /* A plain sheet has no masthead to fill page 1: let the FIRST question flow
+     under the title instead of bumping whole to page 2 and leaving a title-only
+     page (8 Oct 2026). Later questions keep the one-question-per-page rule. */
+  body.ws-plain .ws-q:first-child{break-inside:auto}
   .ws-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;display:flex;justify-content:space-between;font-size:8pt}
   .ws-foot-brand{color:${NAVY};font-weight:700;letter-spacing:.12em}
   .ws-foot-url{color:#6E6E6E}
 </style>
 </head>
-<body class="${workspace ? '' : 'ws-compact'}">
-  <div class="ws-header">
+<body class="${[workspace ? '' : 'ws-compact', plain ? 'ws-plain' : ''].filter(Boolean).join(' ')}">
+  ${plain ? `<div class="ws-plain-title">${esc(input.title)}</div><div class="ws-plain-sub">${esc(plain.subtitle)}</div>` : `<div class="ws-header">
     <div class="ws-brand">ADRIAN&rsquo;S MATH TUITION</div>
     <div class="ws-line2">
       <span class="ws-lvl">${esc(levelLabel.toUpperCase())}</span>
@@ -295,16 +328,16 @@ ${katexInlineHead()}
       <span class="ws-datemeta">${esc(tierBit)}${esc(dateLabel)}${totalMarks > 0 ? ` · ${totalMarks} marks` : ''}</span>
       <span>Date: ______________</span>
     </div>
-  </div>
+  </div>`}
 
   <ol class="ws-questions">
-${questions.map((q, i) => questionHtml(q, i, workspace)).join('\n')}
+${questions.map((q, i) => questionHtml(q, i, workspace, answersInline)).join('\n')}
   </ol>
 
-  <div class="ws-footer">
+  ${plain ? '' : `<div class="ws-footer">
     <span class="ws-foot-brand">Adrian&rsquo;s Math Tuition</span>
     <span class="ws-foot-url">adrianmathtuition.com</span>
-  </div>
+  </div>`}
 ${answers ? answersHtml(questions) : ''}
 ${katexAutoRenderScript()}
 </body>
