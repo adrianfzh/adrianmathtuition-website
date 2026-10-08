@@ -126,7 +126,7 @@ export default function EditingForm({ itemId, text, rows, lines, nextHref, level
                     )}
                     <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); if (phase === 'ask') void submit(value); else void next(); }}>
                       <input ref={input} value={value} onChange={e => { if (phase === 'ask') setValue(e.target.value); }} aria-label={`Line ${line.label}`}
-                        placeholder={`Line ${line.label}: the correct word`} maxLength={40} autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint={phase === 'ask' ? 'send' : 'next'}
+                        placeholder="Correct word" maxLength={40} autoCapitalize="off" autoCorrect="off" spellCheck={false} enterKeyHint={phase === 'ask' ? 'send' : 'next'}
                         className={`flex-1 min-w-0 rounded-xl border px-3 py-2.5 text-[16px] text-gray-900 focus:outline-none focus:border-violet-600 ${phase === 'shown' && shown ? (shown.ok ? 'border-emerald-300 bg-emerald-50' : 'border-red-300 bg-red-50') : 'border-violet-300 bg-white'}`} />
                       {phase === 'ask' ? (
                         <>
