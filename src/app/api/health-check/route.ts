@@ -1,4 +1,5 @@
 import { stuckReads, waitingPlanReads } from '@/lib/plan-reads';
+import { settleOpenHumanities } from '@/lib/humanities-settle-run';
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { createHmac } from 'crypto';
@@ -372,6 +373,8 @@ export async function GET(req: NextRequest) {
     // plan_reads (7 Oct 2026, "all on plan"): an answer handed in for checking is read by the Fly
     // worker's one-minute lane. One still waiting after 20 minutes means that lane is not running.
     timed('plan-reads', async () => {
+      // A Humanities answer is settled when it is looked at; this look means none waits on a page being open.
+      await settleOpenHumanities({}, 40).catch(() => 0);
       const rows = await waitingPlanReads();
       const stuck = stuckReads(rows, Date.now());
       if (stuck > 0) throw new Error(`${stuck} answer(s) have waited over 20 minutes for the plan reader (worker lane plan-reads)`);

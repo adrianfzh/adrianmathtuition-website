@@ -42,7 +42,7 @@ export default async function HumanitiesPaperResultPage({ params }: { params: Pr
         <p className="text-[12px] font-semibold text-amber-800">Timed paper{minutes ? ` · ${minutesLabel(minutes)}` : ''}</p>
         <h1 className="text-xl font-bold text-navy leading-snug">{paper.caseStudy.title}</h1>
       </div>
-      {inFlight && <p className="text-sm text-gray-700 bg-amber-50 border border-amber-100 rounded-2xl px-3 py-2">Your answers are being read. Each takes about a minute.</p>}
+      {inFlight && <p className="text-sm text-gray-700 bg-amber-50 border border-amber-100 rounded-2xl px-3 py-2">Your answers are being read. They fill in here over the next few minutes.</p>}
 
       {(['A', 'B'] as const).map(sec => (
         <div key={sec} className="space-y-2">

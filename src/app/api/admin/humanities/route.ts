@@ -1,8 +1,8 @@
 // /api/admin/humanities — Adrian's view of every humanities answer, and the
 // bench's door (SPEC-HUMANITIES.md §4, 2 Oct 2026).
 //   GET                 → { runs: [...] }  newest first, list columns only (?set= one bench run)
-//   GET ?id=<uuid>      → { run }          the whole row, reads included
-//   POST { questionId, answer, calibrationSet, label?, truthLevel? }
+//   GET ?id=<uuid>      → { run }          the whole row, reads included (settled first if its plan reads are back)
+//   POST { questionId, answer, calibrationSet, label?, truthLevel?, model? }   (model: sonnet|opus — the bench compares the two)
 //                       → { id }           a bench hand-in: read exactly as a student's
 //                                          would be, filed under the set, in no student's list
 // Bearer ADMIN_PASSWORD or the admin session cookie; the health-check probes the 401.
@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { loadAllHumanities, loadHumanitiesRun } from '@/lib/humanities-runs';
 import { submitHumanities } from '@/lib/humanities-submit';
+import { isPlanModel } from '@/lib/humanities-settle-run';
 
 export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -35,6 +36,7 @@ export async function POST(req: NextRequest) {
   if (!set) return NextResponse.json({ error: 'calibrationSet required' }, { status: 400 });
   const label = String((body as { label?: unknown }).label ?? '').trim().slice(0, 80) || null;
   const truth = Number((body as { truthLevel?: unknown }).truthLevel);
+  const model = (body as { model?: unknown }).model;
   const out = await submitHumanities({
     identity: `calib:${set}`,
     studentName: label,
@@ -43,6 +45,7 @@ export async function POST(req: NextRequest) {
     source: 'calibration',
     calibrationSet: set,
     truthLevel: Number.isInteger(truth) && truth > 0 ? truth : null,
+    ...(isPlanModel(model) ? { model } : {}),
   });
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status });
   return NextResponse.json({ id: out.id, state: 'queued' });

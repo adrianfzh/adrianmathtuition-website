@@ -3,7 +3,15 @@
 // construction, no marked scripts.
 //
 //   npx tsx scripts/humanities-bench/run.ts [--name h1-YYYY-MM-DD] [--base URL] [--report-only] [--limit N] [--hard]
-//                                            [--subject social-studies|history] [--kind source|structured] [--sets s11,s12]
+//                                            [--subject social-studies|history|geography] [--kind source|structured|points] [--sets s11,s12]
+//                                            [--model sonnet|opus] [--batch 20] [--no-extras]
+//
+// ON THE PLAN (8 Oct 2026): every answer is read through plan_reads by the Fly worker's one-minute
+// lane — no paid key, no cost. It is slow (the lane reads one at a time), so the script only needs
+// patience: it hands in --batch answers at a time, looks every 15 seconds, saves as it goes, and
+// picks up where it stopped when run again. Until the code is promoted, --base must be the preview
+// (https://adrianmath-dev.vercel.app). --model picks the plan reader for this run (to compare two).
+// --no-extras reads the seeded answers only (no repeats, no truth-free variants).
 //
 // --subject / --kind narrow the seeded answers to one bench (H2: a bench per subject).
 // --sets narrows them to the named sets (A1: new case studies are benched before they are listed).
@@ -44,7 +52,10 @@ const hard = args.includes('--hard');
 const subject = (opt('--subject', '') || undefined) as HumanitiesSubject | undefined;
 const kind = (opt('--kind', '') || undefined) as HumanitiesKind | undefined;
 const sets = opt('--sets', '') ? opt('--sets', '').split(',').map(s => s.trim()).filter(Boolean) : undefined;
-const BATCH = 6;
+const BATCH = Math.max(2, Number(opt('--batch', '20')) || 20);
+const model = opt('--model', '');
+const noExtras = args.includes('--no-extras');
+const POLL_MS = 15_000;
 const pw = env('ADMIN_PASSWORD');
 if (!pw) { console.error('ADMIN_PASSWORD missing'); process.exit(2); }
 const H = { Authorization: `Bearer ${pw}`, 'Content-Type': 'application/json' };
@@ -54,7 +65,9 @@ type Kind = 'seeded' | 'repeat' | VariantKind;
 interface Row {
   key: string; kind: Kind; questionId: string; skill: string; text: string;
   truth?: number; baseKey?: string;
-  id?: string; status?: string; level?: number | null; lo?: number | null; hi?: number | null; cost?: number | null; held_reason?: string | null;
+  id?: string; status?: string; level?: number | null; lo?: number | null; hi?: number | null; held_reason?: string | null;
+  /** Seconds from hand-in to the settled row, and how many reads it took. */
+  secs?: number | null; reads?: number | null;
 }
 
 function plan(): Row[] {
@@ -65,6 +78,7 @@ function plan(): Row[] {
   if (limit) seeds = seeds.slice(0, limit);
   const rows: Row[] = seeds.map(s => ({ key: `seed:${s.questionId}:L${s.level}${s.flaw ? ':' + s.flaw : ''}`, kind: 'seeded', questionId: s.questionId, skill: s.skill, text: s.text, truth: s.level }));
   const seedRows = [...rows];
+  if (noExtras) return rows;
   seedRows.forEach((r, i) => {
     if (i % 4 === 0) rows.push({ ...r, key: `repeat:${r.key}`, kind: 'repeat', baseKey: r.key });
     if (i % 6 === 1) rows.push({ ...r, key: `pad:${r.key}`, kind: 'padding', baseKey: r.key, text: padAnswer(r.text) });
@@ -94,15 +108,15 @@ function plan(): Row[] {
 const resultsDir = path.join(HERE, 'results');
 fs.mkdirSync(resultsDir, { recursive: true });
 const resultsPath = path.join(resultsDir, `${name}.json`);
-const results: { name: string; base: string; rows: Row[]; verdict?: unknown } =
-  fs.existsSync(resultsPath) ? JSON.parse(fs.readFileSync(resultsPath, 'utf8')) : { name, base, rows: plan() };
+const results: { name: string; base: string; model?: string; rows: Row[]; verdict?: unknown } =
+  fs.existsSync(resultsPath) ? JSON.parse(fs.readFileSync(resultsPath, 'utf8')) : { name, base, ...(model ? { model } : {}), rows: plan() };
 const save = () => fs.writeFileSync(resultsPath, JSON.stringify(results, null, 1));
 const done = (r: Row) => r.status === 'marked' || r.status === 'held' || r.status === 'failed';
 
 async function handIn(r: Row) {
   const res = await fetch(`${base}/api/admin/humanities`, {
     method: 'POST', headers: H,
-    body: JSON.stringify({ questionId: r.questionId, answer: r.text, calibrationSet: name, label: r.key, truthLevel: r.kind === 'seeded' || r.kind === 'repeat' ? r.truth : null }),
+    body: JSON.stringify({ questionId: r.questionId, answer: r.text, calibrationSet: name, label: r.key, truthLevel: r.kind === 'seeded' || r.kind === 'repeat' ? r.truth : null, ...(results.model ? { model: results.model } : {}) }),
   });
   const j = await res.json().catch(() => ({}));
   if (!res.ok) { r.status = 'failed'; r.held_reason = `hand-in ${res.status} ${j.error || ''}`; return; }
@@ -113,7 +127,8 @@ async function refresh(r: Row) {
   const res = await fetch(`${base}/api/admin/humanities?id=${r.id}`, { headers: H });
   const e = (await res.json().catch(() => ({}))).run;
   if (!e) return;
-  r.status = e.status; r.level = e.level; r.lo = e.level_lo; r.hi = e.level_hi; r.cost = e.cost_usd; r.held_reason = e.held_reason || e.error || null;
+  r.status = e.status; r.level = e.level; r.lo = e.level_lo; r.hi = e.level_hi; r.held_reason = e.held_reason || e.error || null;
+  if (e.marked_at) { r.secs = Math.round((Date.parse(e.marked_at) - Date.parse(e.created_at)) / 1000); r.reads = Array.isArray(e.reads) ? e.reads.length : null; }
 }
 
 async function main() {
@@ -123,17 +138,20 @@ async function main() {
       const flying = results.rows.filter(r => r.id && !done(r));
       if (!batch.length && !flying.length) break;
       if (flying.length < BATCH) { await Promise.all(batch.slice(0, BATCH - flying.length).map(handIn)); save(); }
-      for (let i = 0; i < 60; i++) {
-        await sleep(5000);
+      for (let i = 0; i < 40; i++) {
+        await sleep(POLL_MS);
         const open = results.rows.filter(r => r.id && !done(r));
-        await Promise.all(open.map(refresh)); save();
+        // A few at a time: each look settles the run on the website.
+        for (let k = 0; k < open.length; k += 5) await Promise.all(open.slice(k, k + 5).map(r => refresh(r).catch(() => {})));
+        save();
         if (results.rows.filter(r => r.id && !done(r)).length <= BATCH / 2) break;
       }
       const n = results.rows.filter(done).length;
       console.log(`${n}/${results.rows.length} read`);
     }
   } else {
-    await Promise.all(results.rows.map(refresh)); save();
+    for (let k = 0; k < results.rows.length; k += 5) await Promise.all(results.rows.slice(k, k + 5).map(r => refresh(r).catch(() => {})));
+    save();
   }
 
   const by = new Map(results.rows.map(r => [r.key, r]));
@@ -143,15 +161,17 @@ async function main() {
   const cv = consistencyVerdict(results.rows.filter(r => r.kind === 'repeat').map(r => ({ first: lvl(by.get(r.baseKey!)), second: lvl(r) })));
   const variants = results.rows.filter(r => r.kind === 'padding' || r.kind === 'evidence_removed' || r.kind === 'supported_added');
   const tv = truthFreeVerdict(variants.map(r => ({ kind: r.kind as VariantKind, base: lvl(by.get(r.baseKey!)), variant: lvl(r) })));
-  const cost = results.rows.reduce((s, r) => s + Number(r.cost || 0), 0);
+  const timed = results.rows.filter(r => r.secs != null).map(r => r.secs as number).sort((a, b) => a - b);
+  const reads = results.rows.reduce((n, r) => n + Number(r.reads || 0), 0);
+  const median = timed.length ? timed[Math.floor(timed.length / 2)] : null;
   const held = results.rows.filter(r => r.status === 'held').length;
   const failed = results.rows.filter(r => r.status === 'failed').length;
   const bySkill: Record<string, { n: number; right: number }> = {};
   for (const r of seeded) { const k = (bySkill[r.skill] ??= { n: 0, right: 0 }); k.n++; if (lvl(r) === r.truth) k.right++; }
-  results.verdict = { seeded: sv, bySkill, consistency: cv, truthFree: tv, held, failed, cost_usd: Number(cost.toFixed(2)) };
+  results.verdict = { seeded: sv, bySkill, consistency: cv, truthFree: tv, held, failed, model: results.model ?? 'the site default', reads, median_secs: median };
   save();
 
-  console.log(`\nHumanities bench · ${name} · ${results.rows.length} answers · US$${cost.toFixed(2)}`);
+  console.log(`\nHumanities bench · ${name} · ${results.rows.length} answers · on the plan (${results.model ?? 'the site default'}) · ${reads} reads · median ${median ?? '–'}s an answer`);
   console.log(`Seeded:      ${sv.right}/${sv.n} at the written level (${Math.round(sv.rate * 100)}% of those read) · one off ${sv.oneOff} · two off ${sv.twoOff} · not settled ${sv.unread} → ${sv.pass ? 'PASS' : 'FAIL'}`);
   for (const [k, v] of Object.entries(bySkill)) console.log(`   ${k.padEnd(12)} ${v.right}/${v.n}`);
   console.log(`Consistency: ${cv.same}/${cv.n} the same level twice · two apart ${cv.twoApart} · not settled ${cv.unread} → ${cv.pass ? 'PASS' : 'FAIL'}`);

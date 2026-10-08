@@ -1,8 +1,14 @@
 // humanities_runs — the rows behind the Humanities family (SPEC-HUMANITIES.md,
 // 2 Oct 2026). Service-key reads scoped by the portal identity: a row that is
 // not the student's simply does not come back.
+// The reads come back on the plan queue, so every loader that a page or a poll uses first
+// SETTLES what is still in flight (lib/humanities-settle-run) — looking at an answer is what
+// finishes it.
 import { getSupabaseAdmin } from './supabase';
 import type { HumanitiesReport, HumanitiesStatus } from './humanities-report';
+import { settleHumanitiesRun, settleOpenHumanities } from './humanities-settle-run';
+
+const flying = (status: string): boolean => status === 'queued' || status === 'marking';
 
 export interface HumanitiesRunRow {
   id: string;
@@ -40,6 +46,7 @@ export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' 
 
 /** A student's own answers, newest first. Home asks for many: "done" ticks and the skill picture need them all. */
 export async function loadHumanitiesFor(identity: string, limit = 30): Promise<HumanitiesListRow[]> {
+  await settleOpenHumanities({ identity });
   const sb = getSupabaseAdmin();
   const { data, error } = await sb.from('humanities_runs').select(HUMANITIES_LIST_COLUMNS)
     .eq('airtable_student_id', identity).order('created_at', { ascending: false }).limit(limit);
@@ -55,16 +62,23 @@ export async function loadHumanitiesFor(identity: string, limit = 30): Promise<H
 export async function loadHumanitiesRun(id: string, scope: string | { admin: true } | null): Promise<HumanitiesRunRow | null> {
   if (!scope) return null;
   const sb = getSupabaseAdmin();
-  let q = sb.from('humanities_runs').select('*').eq('id', id);
-  if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);
-  const { data, error } = await q.maybeSingle();
-  if (error) throw new Error(error.message);
-  return (data as HumanitiesRunRow | null) ?? null;
+  const read = async () => {
+    let q = sb.from('humanities_runs').select('*').eq('id', id);
+    if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);
+    const { data, error } = await q.maybeSingle();
+    if (error) throw new Error(error.message);
+    return (data as HumanitiesRunRow | null) ?? null;
+  };
+  const row = await read();
+  if (!row || !flying(row.status)) return row;
+  await settleHumanitiesRun(id);
+  return read();
 }
 
 /** The answers of one timed paper. A student identity scopes it; `{ admin: true }` = Adrian's view. */
 export async function loadHumanitiesPaper(paperId: string, scope: string | { admin: true } | null): Promise<HumanitiesListRow[]> {
   if (!scope) return [];
+  await settleOpenHumanities({ paperId, ...(typeof scope === 'string' ? { identity: scope } : {}) });
   const sb = getSupabaseAdmin();
   let q = sb.from('humanities_runs').select(HUMANITIES_LIST_COLUMNS).eq('paper_id', paperId).order('created_at', { ascending: true });
   if (typeof scope === 'string') q = q.eq('airtable_student_id', scope);

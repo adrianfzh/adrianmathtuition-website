@@ -1,12 +1,10 @@
 // /api/portal/humanities — a student's typed humanities answer (SPEC-HUMANITIES.md, 2 Oct 2026).
 //
-//   POST { questionId, answer } → { id }   the row is inserted QUEUED and the bot is
-//                                          pinged with the answer, the sources, the
-//                                          question and the level scheme (the website
-//                                          owns all three — lib/humanities-submit); the
-//                                          bot reads it twice and writes the row; the
-//                                          report page polls it.
-//   GET ?id=<uuid>              → the row  (their own only)
+//   POST { questionId, answer } → { id }   the row is inserted QUEUED and two reads of it
+//                                          go on the plan queue (lib/humanities-submit);
+//                                          the run is settled when they are back, each
+//                                          time it is looked at (lib/humanities-settle-run).
+//   GET ?id=<uuid>              → the row  (their own only; settled first)
 //   GET                         → the list (their own, newest first)
 //
 // Anonymous → 401 (the health-check probes this). The door is humanitiesOpen():

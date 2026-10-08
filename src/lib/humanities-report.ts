@@ -96,8 +96,8 @@ export function segmentAnswer(answer: string, claims: HumanitiesClaim[]): Answer
 
 export function humanitiesStatusLine(status: HumanitiesStatus): string {
   switch (status) {
-    case 'queued': return 'Handed in. It is being read now.';
-    case 'marking': return 'Being read — about a minute.';
+    case 'queued': return 'Handed in. Your feedback will show here in a few minutes.';
+    case 'marking': return 'Being read — a few minutes.';
     case 'held': return 'The two reads did not agree on the level, so the range below is wide. Use the tags and the lift.';
     case 'failed': return 'This one could not be read. Hand it in again.';
     default: return '';

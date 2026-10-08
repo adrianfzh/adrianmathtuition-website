@@ -1,6 +1,6 @@
 'use client';
 // While an answer is queued or being read, refresh every few seconds so the
-// feedback appears without a tap (the bot writes the row in the background).
+// feedback appears without a tap (the reads come back on the plan queue; each refresh settles the run).
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
