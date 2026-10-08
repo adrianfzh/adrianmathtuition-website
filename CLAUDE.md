@@ -11,8 +11,8 @@ Adrian's math tuition website on Vercel. Next.js 16 App Router + TypeScript + Ta
 
 Every session and subagent loads this file on start, so its size and our habits are the bill. Detail + examples: [`docs/FANOUT.md`](docs/FANOUT.md) §9a.
 - **(a) Report once.** Background/batch agents report ONCE at the end (or on a real blocker) — no per-batch progress messages to the main session. A coordinator collects sub-results silently and sends one summary.
-- **(b) One topic per session.** Start a fresh session for unrelated work.
-- **(c) Model per agent.** Haiku/Sonnet for search, counting, formatting, screenshot checks; Opus for writing, checking, marking rules and judgement. Medium effort by default.
+- **(b) One topic per session.** Start a fresh session for unrelated work. **When Adrian raises a third unrelated topic in one session, say so in one line and offer a fresh session** — do not wait to be asked (8 Oct 2026: one session ran ~25 topics; every message re-read all of it).
+- **(c) Model per agent.** Haiku/Sonnet for search, counting, formatting, screenshot checks; Opus for writing, checking, marking rules and judgement. Medium effort by default. **Before a job of more than ~5 lookups, queries or screenshots, hand it to a Sonnet or Haiku subagent (`model:` on the Agent call) — do not do it yourself on the main model.** What was measured, and where the small model must NOT be used: `docs/FANOUT.md` §9a.
 - **(d) Bulk jobs off the interactive session** — the Fly worker lanes or the cloud credit.
 - **(e) Don't re-read big files** — use the library index (`scripts/library-index.ts`), `grep`, and targeted line ranges.
 - **Keep CLAUDE.md lean** — detail goes to `docs/`, never back here.
