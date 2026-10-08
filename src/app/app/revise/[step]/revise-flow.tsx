@@ -36,7 +36,7 @@ function Working({ br, taps, reasons }: { br: Brackets; taps: number; reasons: b
   const now = n > 0 ? ps[n - 1] : null;
   return (
     <div>
-      <Rainbow br={br} arrows={building ? n : ps.length} />
+      <Rainbow br={br} arrows={building ? n : ps.length} active={building ? n : 0} />
       <div className="space-y-2 -mt-3">
         {n > 0 && (
           <div>
