@@ -16,14 +16,16 @@
           "do": [
             { "do": "write", "text": "title" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-01-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-01-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-01-b1.timing.json"
         },
         {
           "say": "Where does the curve turn? How low does it go? Can it ever hit zero? One rewrite answers all three. Let's go.",
           "do": [
             { "do": "write", "text": "promise" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-01-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-01-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-01-b2.timing.json"
         }
       ]
     },
@@ -37,21 +39,24 @@
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-02-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-02-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-02-b1.timing.json"
         },
         {
           "say": "Now write the same curve as x minus two, all squared, minus four. See it? Lowest point two comma minus four, smallest value minus four. Just sitting there.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-02-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-02-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-02-b2.timing.json"
         },
         {
           "say": "So how do we get from the first form to the second? That is the rewrite. That is this whole lesson.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-02-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-02-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-02-b3.timing.json"
         }
       ]
     },
@@ -77,29 +82,33 @@
         {
           "say": "Watch the curve. This is y equals x squared, the basic parabola, turning point at the origin. Every quadratic we ever meet is this curve, moved about. So what moves it?",
           "do": [],
-          "audio": "/lessons/quadratic-functions-am/scene-03-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-03-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-03-b1.timing.json"
         },
         {
           "say": "Replace x by x minus two, and the whole curve slides two to the right. Turning point now two comma zero. Same shape, just shifted. That's all the bracket does.",
           "do": [
-            { "do": "morph", "state": 1, "at": 0.15 }
+            { "do": "morph", "state": 1, "on": "slides" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-03-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-03-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-03-b2.timing.json"
         },
         {
           "say": "Now what happens if we take four away? The whole curve drops by four. Turning point falls to two comma minus four. The number on the end just lifts or drops. Nothing more.",
           "do": [
-            { "do": "morph", "state": 2, "at": 0.15 }
+            { "do": "morph", "state": 2, "on": "drops" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-03-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-03-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-03-b3.timing.json"
         },
         {
           "say": "And a minus in front? It flips upside down. Now it peaks at two comma three, a maximum. So the completed-square form is just a record of the moves. That's it.",
           "do": [
-            { "do": "morph", "state": 3, "at": 0.12 },
-            { "do": "write", "text": "caption", "at": 0.55 }
+            { "do": "morph", "state": 3, "on": "flips" },
+            { "do": "write", "text": "caption", "on": "So the" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-03-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-03-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-03-b4.timing.json"
         }
       ]
     },
@@ -135,9 +144,10 @@
           "say": "Here's the form every answer ends in: y equals a, bracket x minus h, all squared, plus k. In plain words: a curve, slid across by h, lifted by k.",
           "do": [
             { "do": "write", "text": "intro" },
-            { "do": "write", "text": "expression", "at": 0.3 }
+            { "do": "write", "text": "expression", "on": "y equals" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-04-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-04-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-04-b1.timing.json"
         },
         {
           "say": "Three letters. What does each one tell us about the curve? Let's name them, one at a time.",
@@ -146,34 +156,38 @@
             { "do": "highlight", "token": "sq", "at": 0.5 },
             { "do": "highlight", "token": "k", "at": 0.7 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-04-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-04-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-04-b2.timing.json"
         },
         {
           "say": "The a says which way it opens. Positive a: upwards, so the turning point is a minimum. Negative a: downwards, a maximum. Sign of a, shape of the curve. Easy.",
           "do": [
-            { "do": "highlight", "token": "a" },
-            { "do": "reveal", "callout": 0, "at": 0.1 },
-            { "do": "mark", "kind": "circle", "token": "a", "at": 0.35 }
+            { "do": "highlight", "token": "a", "on": "The a" },
+            { "do": "reveal", "callout": 0, "on": "which way" },
+            { "do": "mark", "kind": "circle", "token": "a", "on": "Positive" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-04-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-04-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-04-b3.timing.json"
         },
         {
           "say": "The h is the x-coordinate of the turning point. Careful here, this is where the sign bites. x plus three, all squared, means h is minus three, not three. The bracket always reads x minus h.",
           "do": [
-            { "do": "highlight", "token": "sq" },
-            { "do": "reveal", "callout": 1, "at": 0.1 },
-            { "do": "mark", "kind": "underline", "token": "sq", "at": 0.45 }
+            { "do": "highlight", "token": "sq", "on": "The h" },
+            { "do": "reveal", "callout": 1, "on": "x-coordinate" },
+            { "do": "mark", "kind": "underline", "token": "sq", "on": "x plus three" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-04-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-04-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-04-b4.timing.json"
         },
         {
           "say": "And k? The maximum or minimum value of y. Put them together: turning point h comma k. We read it straight off. No working at all.",
           "do": [
-            { "do": "highlight", "token": "k" },
-            { "do": "reveal", "callout": 2, "at": 0.1 },
-            { "do": "mark", "kind": "box", "token": "k", "at": 0.4 }
+            { "do": "highlight", "token": "k", "on": "And k" },
+            { "do": "reveal", "callout": 2, "on": "The maximum" },
+            { "do": "mark", "kind": "box", "token": "k", "on": "Put them" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-04-b5.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-04-b5.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-04-b5.timing.json"
         }
       ]
     },
@@ -220,53 +234,59 @@
           "say": "Here's the recipe. Express x squared minus three x plus two in completed-square form. Where do we start? Just copy the expression down. Step one done.",
           "do": [
             { "do": "write", "text": "intro" },
-            { "do": "write", "token": "lhs", "at": 0.5 }
+            { "do": "write", "token": "lhs", "on": "copy" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b1.timing.json"
         },
         {
           "say": "Now, what number makes a perfect square? Take the coefficient of x, minus three. Halve it: minus three over two. Square it: nine over four. Half it, square it.",
           "do": [
-            { "do": "note", "text": "half it: $-\\tfrac{3}{2}$ · square it: $\\tfrac{9}{4}$", "near": "lhs", "at": 0.25 }
+            { "do": "note", "text": "half it: $-\\tfrac{3}{2}$ · square it: $\\tfrac{9}{4}$", "near": "lhs", "on": "Halve it" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b2.timing.json"
         },
         {
           "say": "Can we just add nine over four? No, that changes the expression. So we add it AND subtract it, in the same breath. Value unchanged. That's the whole trick.",
           "do": [
-            { "do": "write", "token": "sq", "at": 0.05 },
-            { "do": "write", "token": "magic", "at": 0.45 },
-            { "do": "write", "token": "tail", "at": 0.7 },
-            { "do": "highlight", "token": "magic", "at": 0.75 }
+            { "do": "write", "token": "sq", "on": "add it" },
+            { "do": "write", "token": "magic", "on": "subtract it" },
+            { "do": "write", "token": "tail", "on": "Value" },
+            { "do": "highlight", "token": "magic", "on": "unchanged" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b3.timing.json"
         },
         {
           "say": "Now look at the first three terms. What are they? A perfect square: x minus three over two, all squared. In plain words: the bracket is x, minus half the coefficient.",
           "do": [
-            { "do": "mark", "kind": "underline", "token": "sq", "at": 0.1 },
-            { "do": "focus", "token": "sq", "at": 0.15, "hold": 2.4 },
-            { "do": "move", "from": "sq", "at": 0.6 }
+            { "do": "mark", "kind": "underline", "token": "sq", "on": "first three" },
+            { "do": "focus", "token": "sq", "hold": 2.4, "on": "What are" },
+            { "do": "move", "from": "sq", "on": "x minus three" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b4.timing.json"
         },
         {
           "say": "Don't believe me? Expand that bracket. We get exactly those three terms back. The minus nine over four and the plus two are the leftovers.",
           "do": [
             { "do": "reveal", "step": 1, "at": 0.02 },
-            { "do": "move", "from": "magic", "at": 0.55 }
+            { "do": "move", "from": "magic", "on": "The minus nine" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b5.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b5.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b5.timing.json"
         },
         {
           "say": "Tidy the leftovers: minus nine over four plus two is minus a quarter. Turning point, straight off: three over two, minus a quarter. A minimum, since it opens upwards. See? That's all it is.",
           "do": [
-            { "do": "write", "step": 2, "at": 0.05 },
-            { "do": "highlight", "token": "k", "at": 0.6 },
-            { "do": "mark", "kind": "box", "token": "k", "at": 0.65 },
-            { "do": "focus", "token": "k", "at": 0.7, "hold": 2 }
+            { "do": "write", "step": 2, "on": "is minus a" },
+            { "do": "highlight", "token": "k", "on": "Turning point" },
+            { "do": "mark", "kind": "box", "token": "k", "on": "three over two" },
+            { "do": "focus", "token": "k", "hold": 2, "on": "A minimum" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-05-b6.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-05-b6.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-05-b6.timing.json"
         }
       ]
     },
@@ -322,47 +342,52 @@
           "say": "Now the coefficient of x squared isn't one, it's two. Does the recipe still work? Only when x squared has a one in front. So what do we do? Make it one.",
           "do": [
             { "do": "write", "text": "intro" },
-            { "do": "write", "token": "lhs5", "at": 0.45 }
+            { "do": "write", "token": "lhs5", "on": "Does the recipe" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-06-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-06-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-06-b1.timing.json"
         },
         {
           "say": "Factorize the two out of every term. Every term, not just the first, or the last one gets left behind. Inside the bracket: x squared plus five over two x, plus a half.",
           "do": [
-            { "do": "write", "token": "two", "at": 0.1 },
-            { "do": "highlight", "token": "two", "at": 0.15 },
-            { "do": "write", "token": "inner", "at": 0.4 },
-            { "do": "mark", "kind": "circle", "token": "two", "at": 0.75 }
+            { "do": "write", "token": "two", "on": "the two" },
+            { "do": "highlight", "token": "two", "on": "out of" },
+            { "do": "mark", "kind": "circle", "token": "two", "on": "Every term" },
+            { "do": "write", "token": "inner", "on": "Inside the bracket" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-06-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-06-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-06-b2.timing.json"
         },
         {
           "say": "Now complete the square inside the bracket, exactly as before. Half of five over two is five over four. Square it: twenty-five over sixteen. Add it, subtract it, same breath.",
           "do": [
-            { "do": "write", "step": 1, "at": 0.25 },
-            { "do": "mark", "kind": "underline", "token": "sq", "at": 0.7 }
+            { "do": "write", "step": 1, "on": "Half of" },
+            { "do": "mark", "kind": "underline", "token": "sq", "on": "Add it" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-06-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-06-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-06-b3.timing.json"
         },
         {
           "say": "The first three terms fold into x plus five over four, all squared. Tidy the leftovers: minus twenty-five over sixteen plus a half, that's eight over sixteen, gives minus seventeen over sixteen.",
           "do": [
             { "do": "reveal", "step": 2, "at": 0.02 },
-            { "do": "move", "from": "sq", "at": 0.1 },
-            { "do": "write", "token": "c16", "at": 0.6 },
-            { "do": "highlight", "token": "c16", "at": 0.8 }
+            { "do": "move", "from": "sq", "on": "fold into" },
+            { "do": "write", "token": "c16", "on": "gives minus seventeen" },
+            { "do": "highlight", "token": "c16", "on": "seventeen over" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-06-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-06-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-06-b4.timing.json"
         },
         {
           "say": "One more step, the one most people skip: multiply the two back into both terms, not just the bracket. Minus seventeen over sixteen becomes minus seventeen over eight. Turning point: minus five over four, minus seventeen over eight.",
           "do": [
             { "do": "reveal", "step": 3, "at": 0.02 },
-            { "do": "move", "from": "c16", "at": 0.35 },
-            { "do": "mark", "kind": "box", "token": "ans5", "at": 0.7 },
-            { "do": "focus", "token": "ans5", "at": 0.72, "hold": 2.2 }
+            { "do": "move", "from": "c16", "on": "becomes" },
+            { "do": "mark", "kind": "box", "token": "ans5", "on": "Turning point" },
+            { "do": "focus", "token": "ans5", "hold": 2.2, "on": "minus five" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-06-b5.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-06-b5.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-06-b5.timing.json"
         }
       ]
     },
@@ -408,40 +433,44 @@
           "say": "A negative in front? Same recipe. Factorize minus four out of every term. Watch the signs: the minus travels with it, so every sign inside flips.",
           "do": [
             { "do": "write", "text": "intro" },
-            { "do": "write", "token": "lhs6", "at": 0.35 },
-            { "do": "write", "token": "neg", "at": 0.6 },
-            { "do": "highlight", "token": "neg", "at": 0.65 }
+            { "do": "write", "token": "lhs6", "on": "Same recipe" },
+            { "do": "write", "token": "neg", "on": "minus four" },
+            { "do": "highlight", "token": "neg", "on": "Watch the signs" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-07-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-07-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-07-b1.timing.json"
         },
         {
           "say": "So every term inside the bracket comes out positive: x squared plus six x plus thirty-five over four.",
           "do": [
-            { "do": "write", "token": "inner6", "at": 0.1 },
-            { "do": "mark", "kind": "underline", "token": "inner6", "at": 0.6 }
+            { "do": "write", "token": "inner6", "on": "inside the bracket" },
+            { "do": "mark", "kind": "underline", "token": "inner6", "on": "x squared" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-07-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-07-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-07-b2.timing.json"
         },
         {
           "say": "Inside the bracket: half of six is three, three squared is nine. Add and subtract nine, and the first three terms fold into x plus three, all squared. Then minus nine plus thirty-five over four is minus a quarter.",
           "do": [
-            { "do": "write", "step": 1, "at": 0.1 },
-            { "do": "highlight", "token": "sq", "at": 0.55 },
-            { "do": "highlight", "token": "q", "at": 0.85 }
+            { "do": "write", "step": 1, "on": "fold into" },
+            { "do": "highlight", "token": "sq", "on": "x plus three" },
+            { "do": "highlight", "token": "q", "on": "minus a quarter" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-07-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-07-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-07-b3.timing.json"
         },
         {
           "say": "Multiply minus four back in: minus four times minus a quarter is plus one. Maximum point: minus three comma one. Opens downwards, and h is minus three because the bracket says x plus three. That's it.",
           "do": [
             { "do": "reveal", "step": 2, "at": 0.02 },
-            { "do": "move", "from": "sq", "at": 0.08 },
-            { "do": "move", "from": "q", "at": 0.3 },
-            { "do": "mark", "kind": "circle", "token": "ans6", "at": 0.5 },
-            { "do": "focus", "token": "ans6", "at": 0.52, "hold": 2 },
-            { "do": "note", "text": "$h = -3$: the bracket says $x + 3$", "near": "ans6", "at": 0.7 }
+            { "do": "move", "from": "sq", "on": "back in" },
+            { "do": "move", "from": "q", "on": "is plus one" },
+            { "do": "mark", "kind": "circle", "token": "ans6", "on": "Maximum point" },
+            { "do": "focus", "token": "ans6", "hold": 2, "on": "minus three" },
+            { "do": "note", "text": "$h = -3$: the bracket says $x + 3$", "near": "ans6", "on": "h is minus" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-07-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-07-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-07-b4.timing.json"
         }
       ]
     },
@@ -457,7 +486,8 @@
           "do": [
             { "do": "write", "text": "prompt" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-08-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-08-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-08-b1.timing.json"
         }
       ]
     },
@@ -501,38 +531,42 @@
           "say": "Now the other exam favourite: show a quadratic is always positive. How? Same recipe. Half of minus four is minus two; square it, four. Add four and subtract four.",
           "do": [
             { "do": "write", "text": "intro" },
-            { "do": "write", "token": "lhs8", "at": 0.3 },
-            { "do": "write", "token": "sq", "at": 0.6 },
-            { "do": "write", "token": "magic8", "at": 0.8 }
+            { "do": "write", "token": "lhs8", "on": "Same recipe" },
+            { "do": "write", "token": "sq", "on": "Add four" },
+            { "do": "write", "token": "magic8", "on": "subtract four" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-09-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-09-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-09-b1.timing.json"
         },
         {
           "say": "The first three terms fold into x minus two, all squared. Then minus four plus seven is three. So the expression is x minus two, all squared, plus three.",
           "do": [
             { "do": "reveal", "step": 1, "at": 0.02 },
-            { "do": "move", "from": "sq", "at": 0.1 },
-            { "do": "write", "token": "three", "at": 0.55 },
-            { "do": "highlight", "token": "three", "at": 0.8 }
+            { "do": "move", "from": "sq", "on": "fold into" },
+            { "do": "write", "token": "three", "on": "is three" },
+            { "do": "highlight", "token": "three", "on": "plus three" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-09-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-09-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-09-b2.timing.json"
         },
         {
           "say": "So why is that always positive? Here's the proof. A square can never be negative, so x minus two, all squared, is at least zero.",
           "do": [
-            { "do": "write", "token": "nonneg", "at": 0.3 },
-            { "do": "mark", "kind": "underline", "token": "nonneg", "at": 0.7 }
+            { "do": "write", "token": "nonneg", "on": "A square" },
+            { "do": "mark", "kind": "underline", "token": "nonneg", "on": "at least zero" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-09-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-09-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-09-b3.timing.json"
         },
         {
           "say": "Add three, and the whole thing is at least three, which is bigger than zero. That one line is the whole proof. Plain words: a square plus a positive number stays positive. Examiners want exactly that line.",
           "do": [
-            { "do": "write", "token": "proof", "at": 0.1 },
-            { "do": "mark", "kind": "box", "token": "proof", "at": 0.55 },
-            { "do": "focus", "step": 2, "at": 0.6, "hold": 2.4 }
+            { "do": "write", "token": "proof", "on": "Add three" },
+            { "do": "mark", "kind": "box", "token": "proof", "on": "That one line" },
+            { "do": "focus", "step": 2, "hold": 2.4, "on": "whole proof" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-09-b4.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-09-b4.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-09-b4.timing.json"
         }
       ]
     },
@@ -546,21 +580,24 @@
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-10-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-10-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-10-b1.timing.json"
         },
         {
           "say": "Why both? Miss either one and the proof collapses. In picture terms: the curve opens upwards, and its lowest point sits above the x-axis. Both, or nothing.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-10-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-10-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-10-b2.timing.json"
         },
         {
           "say": "Exams flip it too: never greater than four means a negative a, with k equal to four. Same two lights, upside down.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-10-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-10-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-10-b3.timing.json"
         }
       ]
     },
@@ -574,21 +611,24 @@
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-11-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-11-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-11-b1.timing.json"
         },
         {
           "say": "So which number is the minimum value? Minus four, the y-coordinate. Writing two is the classic slip: x equals two is only where it happens, not how low.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-11-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-11-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-11-b2.timing.json"
         },
         {
           "say": "So we say the whole sentence: minimum value minus four, when x equals two. Both halves, every time. Easy marks, once you say it in full.",
           "do": [
             { "do": "write", "text": "text", "para": 2 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-11-b3.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-11-b3.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-11-b3.timing.json"
         }
       ]
     },
@@ -604,7 +644,8 @@
           "do": [
             { "do": "write", "text": "prompt" }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-12-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-12-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-12-b1.timing.json"
         }
       ]
     },
@@ -618,14 +659,16 @@
           "do": [
             { "do": "write", "text": "text", "para": 0 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-13-b1.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-13-b1.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-13-b1.timing.json"
         },
         {
           "say": "One rewrite answers every classic: turning points, greatest and least values, always-positive proofs, and every word problem about a greatest height. Go make it automatic. You've got this.",
           "do": [
             { "do": "write", "text": "text", "para": 1 }
           ],
-          "audio": "/lessons/quadratic-functions-am/scene-13-b2.mp3"
+          "audio": "/lessons/quadratic-functions-am/scene-13-b2.mp3",
+          "timing": "/lessons/quadratic-functions-am/scene-13-b2.timing.json"
         }
       ]
     }

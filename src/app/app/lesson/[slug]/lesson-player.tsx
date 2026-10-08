@@ -79,7 +79,7 @@ import {
   type ResolvedCheckScene, type StepToken, type TitleScene,
 } from '@/lib/lesson-script';
 import {
-  PLAYBACK_RATES, alignShownToSpoken, buildSpeechTrack, isBlockMarkdown, rateLabel, scaleBeat,
+  PLAYBACK_RATES, alignShownToSpoken, buildSpeechTrack, handWriteS, isBlockMarkdown, rateLabel, scaleBeat,
   speechStatesAt, speechWeight, splitProse, wordsLitAt,
   type PlaybackRate, type SpeechTrack, type SpeechState, type Window as SpeechWindow,
 } from '@/lib/lesson-speech';
@@ -1101,7 +1101,14 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
           // …but the chalk HAND writes at the beat's pace whether or not there
           // is a voice, so it gets its own fraction: how far into this
           // sentence's share of the clip (or the silent beat) we are.
-          const p = cur.states[i] === 'speaking' ? cur.progress.toFixed(3) : '0';
+          // It writes at a HAND's pace and is done (handWriteS) — it used to
+          // stretch every sentence to the end of its share of the clip, so the
+          // board was still writing a thing long after the voice had said it.
+          const w = windows[i];
+          const lead = track ? CURSOR_LEAD_S : 0;
+          const p = cur.states[i] === 'speaking'
+            ? Math.min(1, Math.max(0, (t - (w.start - lead)) / Math.max(0.05, Math.min(w.end - w.start, handWriteS(Number(el.dataset.w) || 1))))).toFixed(3)
+            : '0';
           if (el.style.getPropertyValue('--lsn-p') !== p) el.style.setProperty('--lsn-p', p);
         });
       }
@@ -1178,7 +1185,12 @@ function useBeatDirector({ cardRef, scene, sceneIdx, step, done, pacing, locked,
     const startN = firedRef.current.key === posKey ? firedRef.current.n : 0;
     if (startN === 0) emit('lsn:beat', { actions: total, backwards });
     if (total === 0) return;
-    const times = timeline.map(x => x.at);
+    let times = timeline.map(x => x.at);
+    // Word cues (`on`) are re-read off the LIVE clip once its length (and its
+    // timing sidecar, when it has one) is known: the static times above are the
+    // words' estimated shares; these are where the voice really is.
+    const cued = hasBeats(scene) && timeline.some(x => typeof x.action.on === 'string');
+    let trackKey = '';
     const entered = performance.now();
     let n = startN;
     let raf = 0;
@@ -1198,6 +1210,13 @@ function useBeatDirector({ cardRef, scene, sceneIdx, step, done, pacing, locked,
       }
       if (c && c.scene === sceneIdx && c.step === step) {
         clipElapsed = c.elapsed;
+        if (cued && c.duration) {
+          const key = `${c.duration}:${c.timing ? 'sc' : 'pr'}`;
+          if (key !== trackKey) {
+            trackKey = key;
+            times = beatTimeline(scene, step, buildSpeechTrack(c.text, c.duration, c.timing)).map(x => x.at);
+          }
+        }
         frac = c.duration ? Math.min(1, c.elapsed / c.duration) : 0;
         if (!c.playing && c.duration && c.elapsed >= c.duration - 0.05) frac = 1;
       } else if (pacing !== 'manual') {
@@ -1208,7 +1227,7 @@ function useBeatDirector({ cardRef, scene, sceneIdx, step, done, pacing, locked,
       }
       const k = firedCountAt(times, frac);
       if (k > n) {
-        for (let j = n; j < k; j++) emit('lsn:action', { index: j, kind: timeline[j].action.do, at: timeline[j].at, frac, clipElapsed, source: clipElapsed !== null ? 'clip' : pacing === 'manual' ? 'tap' : 'timer' });
+        for (let j = n; j < k; j++) emit('lsn:action', { index: j, kind: timeline[j].action.do, at: times[j], on: timeline[j].action.on ?? null, frac, clipElapsed, source: clipElapsed !== null ? 'clip' : pacing === 'manual' ? 'tap' : 'timer' });
         n = k;
         setFiredState({ key: posKey, n });
       }
@@ -1216,7 +1235,7 @@ function useBeatDirector({ cardRef, scene, sceneIdx, step, done, pacing, locked,
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [beat, done, sceneIdx, step, posKey, timeline, pacing, locked, reduced, rate, clip, beatClock, cardRef]);
+  }, [beat, done, scene, sceneIdx, step, posKey, timeline, pacing, locked, reduced, rate, clip, beatClock, cardRef]);
 
   return firedState.key === posKey ? firedState.n : 0;
 }
@@ -1320,7 +1339,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, onClose }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, clip = false, onClose }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1342,6 +1361,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   doneText?: string;
   /** Start in ▶ Auto — a clip plays like a video from the first frame (the one-minute explanation). */
   startAuto?: boolean;
+  /** A one-concept clip (script.kind === 'clip'): the working is set LARGE for a phone and the lines are spaced so an arc has room. */
+  clip?: boolean;
   /** Played inside an overlay (▶ Watch it): ‹ and the closer call this instead of following a link. */
   onClose?: () => void;
 }) {
@@ -1635,7 +1656,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   useFitToBoard(cardRef, themed, `${sceneIdx}:${step}:${faceReady}:${done}`);
 
   return (
-    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined}
+    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
       data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
       <style>{PLAYER_CSS}</style>
       {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
@@ -1977,6 +1998,14 @@ const PLAYER_CSS = `
    hand-drawn marks live in these gaps. */
 [data-lsn-themed] .lsn-tokrow { column-gap: 0.5rem; row-gap: 0.55rem; }
 [data-lsn-themed] .lsn-steps > * + * { margin-top: 1rem; }
+/* A clip: one concept on a phone board. The working is the whole picture, so it
+   is set large, and the lines stand apart so an arc over or under a row has
+   its own air (never across the heading or the next line). */
+[data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45); }
+[data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; }
+[data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
+[data-lsn-clip] .lsn-steps > * + * { margin-top: 2.5rem; }
+[data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
 [data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
 /* Content sits in the UPPER part of the board with comfortable margins — a
    short scene should not float in the middle of a tall empty slate. */
@@ -2041,6 +2070,8 @@ const PLAYER_CSS = `
 .lsn-marks path[data-mark="underline"] { stroke: var(--lsn-mark-underline, var(--lsn-pen, hsl(40, 85%, 52%))); }
 .lsn-marks path[data-mark="circle"] { stroke: var(--lsn-mark-circle, var(--lsn-pen, hsl(40, 85%, 52%))); }
 .lsn-marks path[data-mark="box"] { stroke: var(--lsn-mark-box, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-marks path[data-mark="arc"] { stroke: var(--lsn-mark-arc, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-marks path[data-mark="arc-under"] { stroke: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
 [data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.4; opacity: 0.96;
   -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;

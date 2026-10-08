@@ -169,3 +169,35 @@ export function parseArgs(argv) {
   }
   return out;
 }
+
+// ── JSON writer (the same as generate-narration.mjs's, which predates this export): 2-space indent, short leaf objects/arrays inline (the hand style of data/lessons/*.json) ──
+
+const INLINE_MAX = 120;
+function isPrimitive(v) { return v === null || typeof v !== 'object'; }
+function inlineable(v) {
+  if (Array.isArray(v)) return v.every(isPrimitive);
+  if (isPrimitive(v)) return true;
+  return Object.values(v).every(x => isPrimitive(x) || (Array.isArray(x) && x.every(isPrimitive)));
+}
+function inlineJson(v) {
+  if (Array.isArray(v)) return `[${v.map(inlineJson).join(', ')}]`;
+  if (isPrimitive(v)) return JSON.stringify(v);
+  const entries = Object.entries(v).filter(([, x]) => x !== undefined);
+  return entries.length === 0 ? '{}' : `{ ${entries.map(([k, x]) => `${JSON.stringify(k)}: ${inlineJson(x)}`).join(', ')} }`;
+}
+export function formatJson(v, indent = 0) {
+  const pad = '  '.repeat(indent);
+  const padIn = '  '.repeat(indent + 1);
+  if (isPrimitive(v)) return JSON.stringify(v);
+  if (inlineable(v)) {
+    const one = inlineJson(v);
+    if (one.length <= INLINE_MAX) return one;
+  }
+  if (Array.isArray(v)) {
+    if (v.length === 0) return '[]';
+    return `[\n${v.map(x => padIn + formatJson(x, indent + 1)).join(',\n')}\n${pad}]`;
+  }
+  const entries = Object.entries(v).filter(([, x]) => x !== undefined);
+  if (entries.length === 0) return '{}';
+  return `{\n${entries.map(([k, x]) => `${padIn}${JSON.stringify(k)}: ${formatJson(x, indent + 1)}`).join(',\n')}\n${pad}}`;
+}

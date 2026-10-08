@@ -44,7 +44,7 @@
 //
 // Pure module (repo testing policy): no I/O, no React.
 
-import { splitParagraphs } from './lesson-speech';
+import { buildSpeechTrack, cueFraction, cueWordIndex, splitParagraphs, type SpeechTrack } from './lesson-speech';
 import {
   hasBeats, type Beat, type BeatAction, type BeatTarget, type CharacterPose, type ClearScope, type MarkKind,
   type PlayScene, type Scene, type StickerKind,
@@ -99,20 +99,43 @@ export function targetKeys(scene: Scene | PlayScene, t: BeatTarget): ElementKey[
 
 // ── Timing ───────────────────────────────────────────────────────────────────
 
+/** A beat's spoken length when no clip says otherwise (s at 1×): the voice's measured ~2.6 words a second. */
+export function estimateSayS(say: string): number {
+  return Math.max(1, say.trim().split(/\s+/).filter(Boolean).length / 2.6);
+}
+
 /** Unspecified actions after the last explicit `at` spread up to here. */
 const DEFAULT_TAIL = 0.7;
 
 /**
- * The firing fraction of every action in a beat, in listed order. Explicit
- * `at`s stand (clamped 0‥1); a run of unspecified actions interpolates between
- * its explicit neighbours — from 0 (the clip's first frame) when nothing
- * explicit precedes it, to 0.7 when nothing follows. Non-decreasing by
- * construction when the explicit values are (the validator insists).
+ * The firing fraction of every action in a beat, in listed order.
+ *
+ * A WORD CUE (`on`) is the exact one: the action fires as the voice reaches
+ * that word of `say`. Its moment is read off `track` — the clip's speech track,
+ * built from its timing sidecar when it has one (exact word times) and from
+ * the words' speaking weights when it does not (the default here, when no
+ * track is handed in: what the silent Auto beat and the verifier use).
+ *
+ * Without a cue: an explicit `at` stands (clamped 0‥1); a run of unspecified
+ * actions interpolates between its timed neighbours — from 0 (the clip's
+ * first frame) when nothing timed precedes it, to 0.7 when nothing follows.
+ * Non-decreasing by construction.
  */
-export function resolveActionTimes(actions: readonly BeatAction[]): number[] {
+export function resolveActionTimes(actions: readonly BeatAction[], say?: string, track?: SpeechTrack | null): number[] {
   const n = actions.length;
   const out: number[] = new Array(n).fill(0);
-  const explicit = actions.map(a => (typeof a.at === 'number' && Number.isFinite(a.at) ? Math.min(1, Math.max(0, a.at)) : null));
+  const cued = say !== undefined && actions.some(a => typeof a.on === 'string');
+  const tr = cued ? (track ?? buildSpeechTrack(say as string, estimateSayS(say as string), null)) : null;
+  let cueFrom = 0;
+  const explicit = actions.map(a => {
+    if (tr && typeof a.on === 'string') {
+      const idx = cueWordIndex(say as string, a.on, cueFrom);
+      const f = idx >= 0 ? cueFraction(tr, idx) : null;
+      if (idx >= 0) cueFrom = idx;
+      if (f !== null) return f;
+    }
+    return typeof a.at === 'number' && Number.isFinite(a.at) ? Math.min(1, Math.max(0, a.at)) : null;
+  });
   let i = 0;
   while (i < n) {
     if (explicit[i] !== null) { out[i] = explicit[i] as number; i++; continue; }
@@ -121,7 +144,7 @@ export function resolveActionTimes(actions: readonly BeatAction[]): number[] {
     const len = j - i;
     const hasLeft = i > 0;
     const left = hasLeft ? out[i - 1] : 0;
-    const right = j < n ? (explicit[j] as number) : DEFAULT_TAIL;
+    const right = j < n ? (explicit[j] as number) : Math.max(DEFAULT_TAIL, left);
     const span = Math.max(0, right - left);
     for (let k = 0; k < len; k++) {
       // From the clip's first frame when nothing precedes; strictly between two neighbours otherwise.
@@ -422,13 +445,13 @@ export function proseGroup(scene: Scene | PlayScene, key: ElementKey): ProseGrou
   // line whose square flies in during one beat can still have its note read
   // by the beat that reveals the line proper.
   for (const [beat, b] of scene.beats.entries()) {
-    const times = resolveActionTimes(b.do);
+    const times = resolveActionTimes(b.do, b.say);
     for (const [j, a] of b.do.entries()) {
       if ((a.do === 'write' || a.do === 'reveal') && targetKeys(scene, a).includes(key)) return { beat, at: times[j] };
     }
   }
   for (const [beat, b] of scene.beats.entries()) {
-    const times = resolveActionTimes(b.do);
+    const times = resolveActionTimes(b.do, b.say);
     for (const [j, a] of b.do.entries()) {
       if (actionShows(scene, a, key)) return { beat, at: times[j] };
     }
@@ -437,10 +460,10 @@ export function proseGroup(scene: Scene | PlayScene, key: ElementKey): ProseGrou
 }
 
 /** A beat's own actions with their resolved times — what the director watches. */
-export function beatTimeline(scene: PlayScene, beat: number): { action: BeatAction; at: number }[] {
+export function beatTimeline(scene: PlayScene, beat: number, track?: SpeechTrack | null): { action: BeatAction; at: number }[] {
   if (!hasBeats(scene)) return [];
   const b = scene.beats[beat];
   if (!b) return [];
-  const times = resolveActionTimes(b.do);
+  const times = resolveActionTimes(b.do, b.say, track);
   return b.do.map((action, j) => ({ action, at: times[j] }));
 }

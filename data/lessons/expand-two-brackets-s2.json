@@ -1,0 +1,109 @@
+{
+  "slug": "expand-two-brackets-s2",
+  "title": "Expand two brackets",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Expand two brackets",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(" },
+            { "tex": "x", "id": "a" },
+            { "tex": "+\\,3", "id": "b" },
+            { "tex": ")\\,(" },
+            { "tex": "x", "id": "c" },
+            { "tex": "-\\,2\\,)", "id": "d" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2", "id": "p1" },
+            { "tex": "-\\,2x", "id": "p2" },
+            { "tex": "+\\,3x", "id": "p3" },
+            { "tex": "-\\,6", "id": "p4" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2 + x - 6", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand x plus three, times x minus two.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Every term in the first bracket multiplies every term in the second. Two terms times two terms gives four products.",
+          "do": [
+            { "do": "highlight", "token": ["a", "b"], "on": "first bracket" },
+            { "do": "highlight", "token": ["c", "d"], "on": "second" }
+          ]
+        },
+        {
+          "say": "Start with the first x. x times x is x squared.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["a", "c"], "on": "x times" },
+            { "do": "write", "token": "p1", "on": "x squared" }
+          ]
+        },
+        {
+          "say": "Next, x times minus two is minus two x.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["a", "d"], "on": "x times" },
+            { "do": "write", "token": "p2", "on": "minus two x" }
+          ]
+        },
+        {
+          "say": "Now the three. Three times x is plus three x.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["b", "c"], "on": "Three times" },
+            { "do": "write", "token": "p3", "on": "plus three x" }
+          ]
+        },
+        {
+          "say": "Three times minus two is minus six. A plus times a minus gives a minus.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["b", "d"], "on": "Three times" },
+            { "do": "write", "token": "p4", "on": "minus six" }
+          ]
+        },
+        {
+          "say": "Minus two x and plus three x are like terms. Add them to get plus x.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["p2", "p3"], "on": "like terms" },
+            { "do": "note", "text": "$-2x + 3x = x$", "near": "p2", "on": "Add them" }
+          ]
+        },
+        {
+          "say": "The answer is x squared, plus x, minus six.",
+          "do": [
+            { "do": "write", "step": 2, "on": "x squared" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "minus six" }
+          ]
+        },
+        {
+          "say": "Four products first. Then collect the like terms.",
+          "do": []
+        }
+      ],
+      "verify": [
+        { "expr": "(x + 3)(x - 2)", "equiv": "x^2 - 2x + 3x - 6" },
+        { "expr": "x^2 - 2x + 3x - 6", "equiv": "x^2 + x - 6" },
+        { "expr": "-2x + 3x", "equiv": "x" },
+        { "expr": "3 * -2", "equals": -6 }
+      ]
+    }
+  ]
+}

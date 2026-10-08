@@ -404,3 +404,64 @@ export function wordsLitAt(words: TimedSpan[], t: number, lead = 0): number {
   for (const w of words) { if (t >= w.start - lead) n++; else break; }
   return n;
 }
+
+// ── Word cues: "fire this when the voice says THAT word" ─────────────────────
+//
+// An action in a beat may name the word it belongs to (`on: "squared"`)
+// instead of guessing a fraction of the clip (`at`). The word is found in the
+// beat's own `say`; its moment comes from the clip's timing sidecar when there
+// is one (exact), else from the word's share of the sentence by speaking weight
+// (close — and never a guess the author has to maintain).
+
+/** A word as the matcher sees it: lower-case letters and digits only. */
+export function cueKey(word: string): string {
+  return word.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+/** The narration's words, exactly as the timing sidecar and the speech track count them. */
+export function spokenWords(say: string): string[] {
+  return splitProse(say).flat().flatMap(tokens);
+}
+
+/**
+ * The index (into `spokenWords(say)`) of the first word of the cue phrase, at
+ * or after `from`. A cue is one word or a short run of consecutive words;
+ * punctuation and case are ignored. −1 when the voice never says it.
+ */
+export function cueWordIndex(say: string, on: string, from = 0): number {
+  const words = spokenWords(say).map(cueKey);
+  const phrase = on.split(/\s+/).map(cueKey).filter(Boolean);
+  if (phrase.length === 0) return -1;
+  for (let i = Math.max(0, from); i + phrase.length <= words.length; i++) {
+    if (phrase.every((p, j) => words[i + j] === p)) return i;
+  }
+  return -1;
+}
+
+/** Every word of a track in order (the sentences flattened). */
+export function trackWords(track: SpeechTrack): TimedSpan[] {
+  return track.sentences.flatMap(s => s.words);
+}
+
+/** A cued action starts this far BEFORE its word (s) — the thing is on the board as the word is heard. */
+export const CUE_LEAD_S = 0.15;
+
+/**
+ * The fraction of the clip at which word `index` starts, pulled `lead` seconds
+ * earlier. Null when the index is off the track.
+ */
+export function cueFraction(track: SpeechTrack, index: number, lead = CUE_LEAD_S): number | null {
+  const w = trackWords(track)[index];
+  if (!w || !(track.duration > 0)) return null;
+  return Math.min(1, Math.max(0, (w.start - lead) / track.duration));
+}
+
+/**
+ * How long the chalk hand takes over a written sentence (s at 1×), from its
+ * speaking weight: a brisk hand, about twenty letters a second, never under
+ * half a second. The hand is DONE then — it does not stretch to the end of the
+ * clip — so the board holds the finished words while the voice explains them.
+ */
+export function handWriteS(weight: number): number {
+  return Math.max(0.5, weight * 0.05);
+}

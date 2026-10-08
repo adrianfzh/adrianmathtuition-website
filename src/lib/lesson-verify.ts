@@ -22,7 +22,7 @@
 // pi. They go through evalExpr's own parser — nothing is ever eval'd.
 
 import { hasBeats, sceneNarration, type LessonScript, type Scene, type GraphMorphScene, type CheckScene } from './lesson-script';
-import { lineKey, paragraphCount, resolveActionTimes, sceneTargets, sceneTokens, targetKeys, tokKey } from './lesson-beats';
+import { estimateSayS, lineKey, paragraphCount, resolveActionTimes, sceneTargets, sceneTokens, targetKeys, tokKey } from './lesson-beats';
 import { getTopicsForPaperLevel } from './canonical-topics';
 import { usableCheckAnswer, type CheckQuestionRow } from './lesson-load';
 import { practiceEligibility } from './portal-find';
@@ -493,11 +493,15 @@ export function craftIssues(script: LessonScript): Issue[] {
     out.push(issue('error', 'topic', `"${script.topic}" is not a canonical ${script.level} topic (lib/canonical-topics.ts) — must match verbatim`));
   }
 
+  // A clip (one concept, about a minute) has its own shape — clipIssues owns it.
+  const clip = script.kind === 'clip';
   const n = script.scenes.length;
-  if (n < MIN_SCENES || n > MAX_SCENES) out.push(issue('warn', 'scenes', `${n} scenes — the pilot shape is ${MIN_SCENES}–${MAX_SCENES}`));
-  if (script.scenes[0]?.type !== 'title') out.push(issue('warn', 'scenes[0]', 'open on a title scene'));
-  const last = script.scenes[n - 1];
-  if (last && last.type !== 'caption') out.push(issue('warn', `scenes[${n - 1}]`, 'close on a caption — the closer is what they carry away (never end on a check)'));
+  if (!clip) {
+    if (n < MIN_SCENES || n > MAX_SCENES) out.push(issue('warn', 'scenes', `${n} scenes — the pilot shape is ${MIN_SCENES}–${MAX_SCENES}`));
+    if (script.scenes[0]?.type !== 'title') out.push(issue('warn', 'scenes[0]', 'open on a title scene'));
+    const last = script.scenes[n - 1];
+    if (last && last.type !== 'caption') out.push(issue('warn', `scenes[${n - 1}]`, 'close on a caption — the closer is what they carry away (never end on a check)'));
+  }
 
   for (const f of plainTextFields(script)) {
     if (f.text && f.text.includes('$')) out.push(issue('error', f.where, 'renders as plain text — no $…$ math here (rewrite in words, or use the intro/text field)'));
@@ -554,6 +558,7 @@ export function craftIssues(script: LessonScript): Issue[] {
     }
   });
 
+  if (clip) return out;
   if (checkIdx.length === 0) out.push(issue('warn', 'scenes', 'no check scene — a lesson without a pause-predict never finds out what landed'));
   if (checkIdx.length > 3) out.push(issue('warn', 'scenes', `${checkIdx.length} checks — two is the shape (each costs a daily grade slot)`));
   if (checkIdx.length > 0 && checkIdx[0] < 4) out.push(issue('warn', `scenes[${checkIdx[0]}]`, 'first check arrives before scene 4 — teach the move (worked steps) before testing it'));
@@ -633,7 +638,7 @@ export function narrationIssues(script: LessonScript, opts: { require?: boolean 
         const where = `scenes[${i}].beats[${k}].say`;
         if (/[$\\]/.test(b.say)) out.push(issue('error', where, 'contains $ or a backslash — narration is spoken English, no TeX'));
         const words = wordCount(b.say);
-        if (words < NARRATION_MIN_WORDS) out.push(issue('warn', where, `${words} words — too thin to carry a beat`));
+        if (words < (script.kind === 'clip' ? CLIP_BEAT_MIN_WORDS : NARRATION_MIN_WORDS)) out.push(issue('warn', where, `${words} words — too thin to carry a beat`));
         if (words > BEAT_MAX_WORDS) out.push(issue('warn', where, `${words} words — a beat is one idea (≤ ~${BEAT_MAX_WORDS}); split it and cue the actions to the halves`));
       });
       return;
@@ -657,6 +662,107 @@ export function narrationIssues(script: LessonScript, opts: { require?: boolean 
       if (words > NARRATION_MAX_WORDS) out.push(issue('warn', where, `${words} words — over ~35 s spoken; split the idea or trim`));
     }
   });
+  return out;
+}
+
+// ── The voice says the step plainly (Adrian, 8 Oct 2026) ─────────────────────
+
+/** Warm-up, cheering and filler: words that explain nothing. */
+const FILLER: [RegExp, string][] = [
+  [/^(hi|hello|welcome|okay|ok|so|now|well|right|alright)[,.!]/i, 'opens on a warm-up word — start with the step'],
+  [/\b(today we|in this (lesson|video|clip)|let's (go|begin|start|dive)|here's the (recipe|trick|thing)|let me show)\b/i, 'announces instead of doing — say the step'],
+  [/\b(see\?|see it\?|right\?|simple, right|easy\.|easy marks|that's (it|all it is)\.|just sitting there|you've got this|don't believe me|hmm\b|nothing more\.|no working at all)/i, 'a cheer or a filler line — it explains nothing; cut it'],
+  [/\b(as you can see|on the screen|on the board|shown here|look at the screen)\b/i, 'restates the screen — the board already shows it; say what we do and why'],
+];
+
+/**
+ * "The content of the voice is not good. Some content does not explain
+ * directly." — the rules a spoken line is held to (docs/LESSONS.md § Narration):
+ * no question the voice then answers itself, no warm-up or cheering, no
+ * pointing at the screen. A warning on a clip; information on an older long
+ * lesson (its clips were recorded before the rule).
+ */
+export function directIssues(script: LessonScript): Issue[] {
+  const out: Issue[] = [];
+  const sev: Severity = script.kind === 'clip' ? 'warn' : 'info';
+  script.scenes.forEach((s, i) => {
+    if (!hasBeats(s) || s.type === 'check') return;
+    s.beats.forEach((b, k) => {
+      const where = `scenes[${i}].beats[${k}].say`;
+      if (b.say.includes('?')) out.push(issue(sev, where, 'asks a question — say the step, then the reason; no rhetorical questions'));
+      for (const [re, why] of FILLER) if (re.test(b.say.trim())) out.push(issue(sev, where, why));
+    });
+  });
+  return out;
+}
+
+// ── A clip: one concept, about a minute ──────────────────────────────────────
+
+export const CLIP_MAX_SCENES = 2;
+export const CLIP_MAX_WORDS = 170;          // ≈ 65 s of voice at the measured 2.6 words a second
+export const CLIP_BEAT_MAX_WORDS = 24;
+export const CLIP_BEAT_MIN_WORDS = 4;
+/** Things that APPEAR in one beat (write / reveal / move / morph / note). */
+export const BEAT_MAX_APPEAR = 2;
+/** Two actions closer than this (s, at the voice's pace) move at once. */
+export const MIN_ACTION_GAP_S = 0.45;
+
+const APPEARS = new Set(['write', 'reveal', 'move', 'morph', 'note']);
+
+/**
+ * "One thing moves at a time, and it is the thing being spoken about."
+ * Per beat: at most BEAT_MAX_APPEAR things appear; no two actions fire within
+ * MIN_ACTION_GAP_S of each other (the board queues them, so the second would
+ * land late); on a clip every action after the first is cued to a WORD (`on`),
+ * never a guessed fraction. Warnings on a clip, information on a long lesson.
+ */
+export function motionIssues(script: LessonScript): Issue[] {
+  const out: Issue[] = [];
+  const clip = script.kind === 'clip';
+  const sev: Severity = clip ? 'warn' : 'info';
+  script.scenes.forEach((s, i) => {
+    if (!hasBeats(s) || s.type === 'check') return;
+    s.beats.forEach((b, k) => {
+      const where = `scenes[${i}].beats[${k}]`;
+      const appear = b.do.filter(a => APPEARS.has(a.do)).length;
+      if (appear > BEAT_MAX_APPEAR) out.push(issue(sev, where, `${appear} things appear in one beat — one idea, one new thing (two at most); split the beat`));
+      const times = resolveActionTimes(b.do, b.say);
+      const secs = estimateSayS(b.say);
+      // A pose or a sticker rides along with its beat; it is not a second thing on the board.
+      const moving = b.do.map((a, j) => ({ a, j, t: times[j] * secs })).filter(x => x.a.do !== 'character' && x.a.do !== 'sticker' && x.a.do !== 'clear');
+      for (let m = 1; m < moving.length; m++) {
+        const gap = moving[m].t - moving[m - 1].t;
+        if (gap < MIN_ACTION_GAP_S) out.push(issue(sev, `${where}.do[${moving[m].j}]`, `fires ${gap.toFixed(2)} s after the action before it — two things would move at once; cue it to a later word`));
+      }
+      if (clip) b.do.forEach((a, j) => {
+        if (a.at !== undefined && a.at > 0) out.push(issue('warn', `${where}.do[${j}]`, 'timed by a guessed fraction (at) — cue it to the word the voice says (on)'));
+      });
+    });
+  });
+  return out;
+}
+
+/** The shape of a clip (script.kind === 'clip'); empty for a long lesson. */
+export function clipIssues(script: LessonScript): Issue[] {
+  if (script.kind !== 'clip') return [];
+  const out: Issue[] = [];
+  const n = script.scenes.length;
+  if (n > CLIP_MAX_SCENES) out.push(issue('warn', 'scenes', `${n} scenes — a clip is ONE concept on one board (≤ ${CLIP_MAX_SCENES})`));
+  if (script.theme !== 'chalk') out.push(issue('warn', 'theme', 'a clip plays on the chalk board — set "theme": "chalk"'));
+  if (script.minutes !== 1) out.push(issue('warn', 'minutes', 'a clip is about one minute — set "minutes": 1'));
+  let words = 0;
+  script.scenes.forEach((s, i) => {
+    const at = `scenes[${i}]`;
+    if (s.type === 'check') out.push(issue('error', at, 'a clip carries no check — it explains one thing and stops'));
+    if (!hasBeats(s)) { out.push(issue('error', at, 'every scene of a clip is cut into beats')); return; }
+    s.beats.forEach((b, k) => {
+      const w = wordCount(b.say);
+      words += w;
+      if (w > CLIP_BEAT_MAX_WORDS) out.push(issue('warn', `${at}.beats[${k}].say`, `${w} words — in a clip a beat is one short step (≤ ${CLIP_BEAT_MAX_WORDS})`));
+    });
+  });
+  if (words > CLIP_MAX_WORDS) out.push(issue('warn', 'scenes', `${words} spoken words — over about a minute; one concept, cut the rest (≤ ${CLIP_MAX_WORDS})`));
+  else out.push(issue('info', 'clip', `${words} spoken words ≈ ${Math.round(words / 2.6 + 0.65 * script.scenes.reduce((p, s) => p + (hasBeats(s) ? s.beats.length : 0), 0))} s with the breaths between beats`));
   return out;
 }
 
@@ -714,7 +820,7 @@ export function beatIssues(script: LessonScript): Issue[] {
     s.beats.forEach((b, k) => {
       const where = `${at}.beats[${k}]`;
       if (b.do.length === 0) out.push(issue('info', where, 'say-only beat (nothing moves while it speaks)'));
-      const times = resolveActionTimes(b.do);
+      const times = resolveActionTimes(b.do, b.say);
       b.do.forEach((a, j) => {
         kinds.add(a.do);
         if (times[j] > 0.9) out.push(issue('warn', `${where}.do[${j}]`, `at ${times[j].toFixed(2)} fires in the clip's last tenth — cue it earlier or move it to the next beat`));

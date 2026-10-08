@@ -21,7 +21,7 @@
 //
 // Pure module: no I/O, no React.
 
-import type { LessonTheme, MarkKind } from './lesson-script';
+import { MARK_KINDS, type LessonTheme, type MarkKind } from './lesson-script';
 
 /**
  * What is drawn at the point the hand is writing.
@@ -204,7 +204,7 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     hl: { amber: '#fef3c7', sky: '#e0f2fe', rose: '#ffe4e6', emerald: '#d1fae5' },
     // The slide's marks were all one amber — keeping them equal to the pen is
     // what makes an unthemed script render byte-identically.
-    mark: { underline: 'hsl(40, 85%, 52%)', circle: 'hsl(40, 85%, 52%)', box: 'hsl(40, 85%, 52%)' },
+    mark: { underline: 'hsl(40, 85%, 52%)', circle: 'hsl(40, 85%, 52%)', box: 'hsl(40, 85%, 52%)', arc: 'hsl(40, 85%, 52%)', 'arc-under': 'hsl(40, 85%, 52%)' },
     chip: {
       amber: { bg: '#fffbeb', border: '#fde68a', text: '#78350f' },
       sky: { bg: '#f0f9ff', border: '#bae6fd', text: '#0c4a6e' },
@@ -252,7 +252,7 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     hl: { amber: CHALK_YELLOW, sky: CHALK_CYAN, rose: CHALK_PINK, emerald: CHALK_GREEN },
     // Pointing / attention / the answer — one colour each, so a boarded answer
     // never reads as another underline.
-    mark: { underline: CHALK_CYAN, circle: CHALK_YELLOW, box: CHALK_PINK },
+    mark: { underline: CHALK_CYAN, circle: CHALK_YELLOW, box: CHALK_PINK, arc: CHALK_YELLOW, 'arc-under': CHALK_CYAN },
     chip: {
       amber: { bg: 'rgba(255, 229, 138, 0.10)', border: 'rgba(255, 229, 138, 0.38)', text: '#f8e7bb' },
       sky: { bg: 'rgba(157, 229, 245, 0.10)', border: 'rgba(157, 229, 245, 0.38)', text: '#d3f0f8' },
@@ -288,7 +288,7 @@ export const THEME_TOKENS: Record<LessonTheme, ThemeTokens> = {
     curve: 'hsl(220, 60%, 20%)',
     ghost: '#c5cbd8',
     hl: { amber: '#a4700a', sky: '#0b6f96', rose: '#a81d45', emerald: '#0a7150' },
-    mark: { underline: '#0b6f96', circle: 'hsl(40, 80%, 42%)', box: '#a81d45' },
+    mark: { underline: '#0b6f96', circle: 'hsl(40, 80%, 42%)', box: '#a81d45', arc: 'hsl(40, 80%, 42%)', 'arc-under': '#0b6f96' },
     chip: {
       amber: { bg: 'rgba(255, 251, 235, 0.9)', border: '#fde68a', text: '#78350f' },
       sky: { bg: 'rgba(240, 249, 255, 0.9)', border: '#bae6fd', text: '#0c4a6e' },
@@ -392,7 +392,7 @@ export function themeCssVars(theme: LessonTheme): Record<string, string> {
     '--lsn-ribbon': t.ribbon,
     '--lsn-ribbon-lit': t.ribbonLit,
   };
-  for (const kind of ['underline', 'circle', 'box'] as const) vars[`--lsn-mark-${kind}`] = t.mark[kind];
+  for (const kind of MARK_KINDS) vars[`--lsn-mark-${kind}`] = t.mark[kind];
   for (const tone of ['amber', 'sky', 'rose', 'emerald'] as const) {
     vars[`--lsn-hl-${tone}`] = t.hl[tone];
     vars[`--lsn-chip-${tone}-bg`] = t.chip[tone].bg;

@@ -85,9 +85,9 @@ the first only after the move has been shown in worked steps, never two in a row
   narration into ≤ 40-word ideas — `{ "say": …, "do": [actions] }` — and cue
   each beat's actions to ITS clip (`write` a token / line / paragraph, `reveal`,
   `highlight`, `move` the FLIP, `morph` a graph state, `mark` underline /
-  circle / box, `note` a handwritten aside, `focus`, `clear`), with `at` = the
-  fraction of the sentence where the object should move. Say the thing, then
-  move the thing. Give every token the pen touches an `id`. A check keeps one
+  circle / box / arc, `note` a handwritten aside, `focus`, `clear`), each with
+  `on` = the WORD of the beat's `say` it belongs to (§ 3b; `at`, a guessed
+  fraction, is the older way). Say the thing, then move the thing. Give every token the pen touches an `id`. A check keeps one
   beat (the lead-in). A beat scene carries NO `narration` / `audio` — they
   derive. Set `"theme": "chalk"` for the board look (the exemplar is
   `data/lessons/quadratic-functions-am.json`).
@@ -118,56 +118,54 @@ the first only after the move has been shown in worked steps, never two in a row
 - `level` = bank level (AM/EM/JC/S1/S2); `topic` = the EXACT canonical string
   from `lib/canonical-topics.ts`; `slug` = `<topic-kebab>-<level>`.
 
-## 3b. The engagement pass — clear and engaging, no story (Adrian, 1 Oct 2026)
+## 3b. The voice says the step plainly (Adrian, 8 Oct 2026)
 
-Adrian watched 洋葱学园's factorisation video and, after reading a story-framed draft,
-said: *"there isn't a need to have a story. do like what the bilibili video did, explain
-in a clear and engaging manner → voice is important, and the flow and style of the
-video."* Onion has no plot: a cheerful young narrator, one idea at a time, a question
-before each reveal, a plain-words line after each formula, the trap named before the
-student falls in, a quick "see? that's all it is" after the hard bit. Warm and quick,
-never a lecture. We do that writing pass with a model, in this session, plan-billed —
-never the API.
+Adrian: *"The content of the voice is not good. Some content does not explain directly.
+Need clear direct explanation, and simple but effective animation."* This replaces the
+1 Oct "engagement pass" — its question-before-every-reveal and relief lines are what he
+was hearing. Write every beat's `say` to these rules (full text + three before/after
+lines: docs/LESSONS.md § Narration):
 
-After § 3's draft validates and BEFORE § 4, rewrite every beat's `say` through this pass.
-The beat count and every `at` stay as they are — the manner lands as sentences inside
-the existing beats, never as new beats.
+- **What we do, then why.** The step first ("Add nine over four."), the reason second,
+  in its own short sentence ("Then subtract it, so the value does not change.").
+- **Short sentences, one idea each.** ≤ 24 words a beat in a clip, ≤ 40 in a long lesson.
+- **No warm-up.** No "Hi", "Today we learn", "Here's the recipe", "Let's go".
+- **No rhetorical questions.** If the voice would answer it itself, say the answer.
+- **No cheering, no filler.** No "Simple, right?", "See?", "Easy.", "That's it."
+- **Do not restate the screen.** No "as you can see". The board shows the line; the
+  voice says what was done and why.
+- **The trap in one plain sentence, at the step where it bites.**
+- **No story, no plot.** The maths is the only thing on the board.
+- **Nothing added to the claims** — § 1's notes are still the only source.
+- **Singapore register**: everyday words a parent would not wince at.
+- No student-facing text names a model or names Adrian.
 
-**The Onion manner — concrete rules**
+`verify-lesson` flags the mechanical half (`directIssues`): a `?`, a warm-up opener, a
+cheer, pointing at the screen.
 
-- (a) **A question before every reveal.** The beat that reveals a step, a form or an
-  answer is preceded by the question it answers — "so what do we do with this?", "where
-  is its lowest point?", "why is that always positive?" — in the beat before, or as the
-  first sentence of the reveal itself.
-- (b) **Plain words after every formula.** A beat that states a formula or a form ends
-  with a restatement in everyday words, ≤ 12 words ("a curve, slid across by h, lifted
-  by k").
-- (c) **Name the trap BEFORE it bites.** The sign in the bracket, the term left outside
-  the factor, the multiply-back, the "value not the x" slip — each is called out in the
-  sentence before the step where a student would make it, never only after.
-- (d) **Relief after every hard step.** One short beat of relief once the hard bit is
-  done — "see? that's all it is", "and that's it", "five little moves" — then move on.
-- (e) **A cheerful, quick voice.** Short sentences. Present tense. "We" and "let's", not
-  "you must". No exclamation marks in a row, no "guys".
-- (f) **No plot.** No story frame, no mascot storyline, no invented situation (no
-  battery, no bubble tea, no MRT gantry). The maths is the only thing on the board.
+**Animation — one thing moves at a time, and it is the thing being spoken about.**
 
-**What stays from before**
+- **Cue every action after a beat's first to its WORD:** `"on": "x squared"` — a word or
+  short run of words of that beat's own `say`. Not `at` (a guessed fraction).
+- **One new thing per beat** (two at most), each on its own word, the words at least half
+  a second apart. If two things must appear, that is usually two beats.
+- **One pointing gesture at most** beside it (an arc, an underline, a box).
+- `mark` kinds `arc` / `arc-under` join two tokens ("this times that").
+- No character and no stickers unless Adrian asks for them on that clip.
 
-- **Light lines land on the maths or on the teacher only** — "the step most people skip",
-  "yes, that one again" — never on a student, and never on a mistake a real student made
-  (the one-minute explanation replays a real student's own line — it gets warmth only).
-- **Singapore register.** Everyday words a parent would not wince at; read it aloud, and
-  if it would embarrass Adrian in front of a parent, cut it.
-- **Nothing added to the claims.** The pass may change words, order and tone; it may not
-  add a fact, a formula or a number § 1's notes do not carry — § 4's verifier still runs
-  on the result, and every `verify` assertion must still hold.
-- **Which model.** English scripts: **Claude Opus 5.5** in this session (it holds the
-  Singapore register and the O-Level content; the plan lane makes it free). A 华文 script
-  (the Languages family, later): a Chinese-trained model — Qwen3-Max or DeepSeek — then
-  the same verifier. No model's rewrite goes to clips unsupervised: **Adrian reads three
-  beats before the clips are generated (§ 7) — the opening beat, the trap beat and the
-  closer.**
+## 3c. A clip — one concept in about a minute (Adrian, 8 Oct 2026)
+
+*"the video must be very short, one concept at a time."* Set `"kind": "clip"`,
+`"theme": "chalk"`, `"minutes": 1`.
+
+- ONE `equation-steps` scene, no title scene, no check, no caption paragraphs. A short
+  `heading` (the concept's name) and the working.
+- 7–10 beats, ≤ 24 words each, ≤ 170 words in all.
+- ≤ 6 tokens a line, ≤ 4 lines — it must read on a 358 px board at the clip's larger size.
+- § 1 (approved notes) and § 2 (checks) do not apply to a clip Adrian asks for by name;
+  every number on the board still gets a `verify` assertion.
+- The exemplar is `data/lessons/expand-two-brackets-s2.json`.
+- **Look at it on a phone-sized screen before calling it done.**
 
 ## 4. Verify until clean
 
@@ -192,12 +190,13 @@ npx tsc --noEmit
 ## 6. Preview
 
 Voice clips first (idempotent; MiniMax `English_FriendlyPerson` is the default since
-1 Oct 2026 — no `--voice` needed; after an engagement pass delete the lesson's old clips,
-they belong to the old words):
+1 Oct 2026 — no `--voice` needed; after a rewrite of the `say` lines delete the lesson's old
+clips, they belong to the old words):
 
 ```bash
-node scripts/lessons/generate-narration.mjs <slug>            # writes beats[].audio
+node scripts/lessons/generate-narration.mjs <slug>            # writes beats[].audio  (PAID — ask Adrian first, say roughly how much)
 node scripts/lessons/generate-narration.mjs <slug> --verify   # ASR round-trip, ≥ 85 % a clip
+node scripts/lessons/align-narration.mjs <slug> --report      # free, local: times every word → the sidecars the `on` cues read
 ```
 
 Commit + push to `dev` per repo policy (three code files + the JSON together),

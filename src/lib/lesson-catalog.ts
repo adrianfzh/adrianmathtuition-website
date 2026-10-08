@@ -38,6 +38,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Completing the Square',
     minutes: 8,
   },
+  {
+    slug: 'expand-two-brackets-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Expand two brackets',
+    minutes: 1,
+  },
 ];
 
 /**

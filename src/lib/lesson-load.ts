@@ -11,6 +11,7 @@
 
 import binomialTheoremAm from '../../data/lessons/binomial-theorem-am.json';
 import quadraticFunctionsAm from '../../data/lessons/quadratic-functions-am.json';
+import expandTwoBracketsS2 from '../../data/lessons/expand-two-brackets-s2.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -21,6 +22,7 @@ import { questionMarkdown, totalMarksOf, questionStructured, type BankQuestion }
 const RAW_SCRIPTS: Record<string, unknown> = {
   'binomial-theorem-am': binomialTheoremAm,
   'quadratic-functions-am': quadraticFunctionsAm,
+  'expand-two-brackets-s2': expandTwoBracketsS2,
 };
 
 /**

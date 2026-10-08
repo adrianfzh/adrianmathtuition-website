@@ -45,7 +45,7 @@
 // Pure module (repo testing policy): no I/O, no React — importable from the
 // client player, the server page, API routes and vitest alike.
 
-import { splitParagraphs } from './lesson-speech';
+import { cueWordIndex, splitParagraphs } from './lesson-speech';
 
 /** Highlight / callout tones — the portal's soft tint palette. */
 export const LESSON_TONES = ['amber', 'sky', 'rose', 'emerald'] as const;
@@ -154,7 +154,15 @@ export type LessonTheme = (typeof LESSON_THEMES)[number];
 export const PROSE_FIELDS = ['title', 'promise', 'heading', 'intro', 'text', 'caption', 'prompt', 'expression'] as const;
 export type ProseField = (typeof PROSE_FIELDS)[number];
 
-export const MARK_KINDS = ['underline', 'circle', 'box'] as const;
+/** `arc` / `arc-under` link TWO tokens with a curved line (over / under the row) —
+ *  "this times that" when expanding brackets. The others wrap the tokens named. */
+/** Longest word cue (`on`) an action may carry. */
+export const CUE_MAX_CHARS = 60;
+
+export const LESSON_KINDS = ['lesson', 'clip'] as const;
+export type LessonKind = (typeof LESSON_KINDS)[number];
+
+export const MARK_KINDS = ['underline', 'circle', 'box', 'arc', 'arc-under'] as const;
 export type MarkKind = (typeof MARK_KINDS)[number];
 
 /** What `clear` wipes: the pen layer (marks + notes + focus, the default), one
@@ -208,7 +216,14 @@ export interface BeatTarget {
 /** `at` — fraction (0‥1) into the beat's clip at which the action fires.
  *  Estimated by the author; unspecified actions spread across the clip's
  *  first part in listed order (lib/lesson-beats.resolveActionTimes). */
-interface Timed { at?: number }
+interface Timed {
+  at?: number;
+  /** A word (or a short run of words) of the beat's own `say`: the action fires
+   *  as the voice reaches it — exact with a timing sidecar, by the word's share
+   *  of the sentence without one. Preferred over `at`; never both. Cues are
+   *  looked for in listed order, so a repeated word resolves to its next use. */
+  on?: string;
+}
 
 export type BeatAction =
   /** The target appears by DRAW-ON (a pen sweep in the chalk/paper themes). */
@@ -307,6 +322,9 @@ export interface LessonScript {
   topic: string;
   /** Honest estimate shown on entry points ("4 min"). */
   minutes: number;
+  /** `clip` = ONE concept in about a minute (a single board, no checks, opens
+   *  playing) — the unit Adrian asked for on 8 Oct 2026. Default `lesson`. */
+  kind?: LessonKind;
   /** The stage's look (default `slide` — the original card, untouched). */
   theme?: LessonTheme;
   /** The cartoon teacher at the board's corner (default `none`; the player also
@@ -574,6 +592,10 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
   if (a.at !== undefined && (!finiteNumber(a.at) || a.at < 0 || a.at > 1)) {
     errors.push(`${where}: at must be a fraction 0…1 of the clip (got ${String(a.at)})`);
   }
+  if (a.on !== undefined) {
+    if (!nonEmptyString(a.on) || a.on.trim().length > CUE_MAX_CHARS) errors.push(`${where}: on must be a word or short phrase of the beat's say (≤ ${CUE_MAX_CHARS} chars)`);
+    if (a.at !== undefined) errors.push(`${where}: give an action "on" (a spoken word) or "at" (a fraction), never both`);
+  }
   const tokens = (field: string) => {
     const list = tokenList(a[field]);
     if (!list) { errors.push(`${where}: ${field} must be a token id or a non-empty list of ids`); return; }
@@ -604,6 +626,7 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
     case 'mark':
       if (!(MARK_KINDS as readonly unknown[]).includes(a.kind)) errors.push(`${where}: kind must be one of ${MARK_KINDS.join('/')}`);
       tokens('token');
+      if ((a.kind === 'arc' || a.kind === 'arc-under') && tokenList(a.token)?.length !== 2) errors.push(`${where}: an arc joins exactly two tokens — token: ["from", "to"]`);
       break;
     case 'note':
       if (!nonEmptyString(a.text)) errors.push(`${where}: note needs text`);
@@ -660,9 +683,18 @@ function validateBeats(scene: Record<string, unknown>, scope: BeatScope | null, 
     if (scope === null) return; // the scene body failed — references cannot be judged
     let lastAt = -1;
     let stickers = 0;
+    let cueFrom = 0;
     b.do.forEach((action, j) => {
       const aAt = `${bAt}.do[${j}]`;
       validateAction(action, scope, aAt, errors);
+      if (isRecord(action) && nonEmptyString(action.on) && typeof b.say === 'string') {
+        const idx = cueWordIndex(b.say, action.on, cueFrom);
+        if (idx < 0) {
+          errors.push(cueWordIndex(b.say, action.on) < 0
+            ? `${aAt}: on "${action.on}" is not said in this beat — a cue must be words of the beat's own say`
+            : `${aAt}: on "${action.on}" is said BEFORE the cue of the action above it — actions fire in listed order`);
+        } else cueFrom = idx;
+      }
       if (isRecord(action) && finiteNumber(action.at)) {
         if (action.at < lastAt) errors.push(`${aAt}: at ${action.at} runs backwards — actions fire in listed order, so at must not decrease within a beat`);
         lastAt = Math.max(lastAt, action.at);
@@ -879,6 +911,9 @@ export function validateLessonScript(input: unknown): ValidationResult {
   if (!nonEmptyString(input.topic)) errors.push('topic is required');
   if (!finiteNumber(input.minutes) || input.minutes <= 0 || input.minutes > 60) {
     errors.push('minutes must be a number between 1 and 60');
+  }
+  if (input.kind !== undefined && !(LESSON_KINDS as readonly unknown[]).includes(input.kind)) {
+    errors.push(`kind must be one of ${LESSON_KINDS.join('/')} (got "${String(input.kind)}")`);
   }
   if (input.theme !== undefined && !(LESSON_THEMES as readonly unknown[]).includes(input.theme)) {
     errors.push(`theme must be one of ${LESSON_THEMES.join('/')} (got "${String(input.theme)}")`);

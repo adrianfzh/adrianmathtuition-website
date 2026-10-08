@@ -80,6 +80,9 @@ script.scenes.forEach((s, i) => {
 issues.push(...V.craftIssues(script));
 issues.push(...V.narrationIssues(script, { require: Boolean(args['require-narration']) }));
 issues.push(...V.beatIssues(script));
+issues.push(...V.directIssues(script));
+issues.push(...V.motionIssues(script));
+issues.push(...V.clipIssues(script));
 
 // 7. checks against the bank
 const qids = checkQids(script);

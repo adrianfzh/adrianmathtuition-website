@@ -17,7 +17,8 @@ Lessons live: `binomial-theorem-am` (pilot, narrated + clips — per-step
 narration, the slide theme: the backward-compatibility control),
 `quadratic-functions-am` ("Completing the Square" — re-cut into **43 beats on
 the chalk theme** on 2026-09-04, 43 clips; the proof lesson for § The beat
-model below).
+model below; re-cued to spoken words on 8 Oct 2026), `expand-two-brackets-s2`
+(the first one-concept **clip**, 8 Oct 2026 — § A clip).
 
 > **2026-09-04 — the beat model + the chalk theme.** Adrian: "narration goes
 > with the animation" — the JensenMath look (a board, handwritten words that
@@ -42,6 +43,31 @@ model below).
 > board), and a calm, even slate with crisp chalk at sizes that fit a phone
 > (§ The slate, re-cut · § Sizes). Still additive: `slide` is byte-unchanged
 > — proved again by a screenshot diff of the binomial pilot.
+
+## ▶ A clip — ONE concept in about a minute (8 Oct 2026)
+
+Adrian: *"the video must be very short, one concept at a time"* — wanted as instant help
+before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson script with
+`"kind": "clip"`:
+
+- **One board, one concept, no check.** One `equation-steps` scene (two at most) on the
+  chalk theme, ≤ 170 spoken words (≈ 65 s), beats ≤ 24 words, `minutes: 1`. `clipIssues`
+  holds the shape; the long-lesson craft rules (8–16 scenes, title first, two checks) do
+  not apply.
+- **Opens playing**, like a video (`startAuto`), kicker "Clip · 1 min", closer "Now try
+  one". The page passes `clip` to the player, which sets `data-lsn-clip`: the working is
+  1.45× the lesson size (24.5 px on a 390 px phone) and the lines stand 2.5 rem apart so
+  an arc has its own air.
+- **Simple, effective animation:** one thing moves at a time and it is the thing being
+  spoken about. No character, no stickers, no prose paragraphs on the board — the maths
+  and one short heading. Every action after a beat's first is cued to a word (`on`).
+- **The first one: `expand-two-brackets-s2`** — Sec 2, $(x+3)(x-2)$: an arc from one term
+  to another as the voice says "x times x", the product appears as it is named, like
+  terms underlined, the answer boxed. 9 beats, 106 words, about 45 s.
+  `/app/lesson/expand-two-brackets-s2`, admin-only like every lesson. **Silent until
+  Adrian gives the word for the voice** (it plays on the Auto timers, paced to the
+  words); then `generate-narration` → `align-narration` → commit.
+- **Authoring one:** the author-lesson skill § 3c.
 
 ## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board
 
@@ -327,6 +353,7 @@ sized like a thumb (~64–96 px on a phone), beside the line it is about or at a
 | Telemetry | `src/app/api/portal/lesson-event/route.ts` | `lesson:<slug>:scene:<n>` / `:done` / `:narrated` in `portal_event_log`. |
 | Verification (pure) | `src/lib/lesson-verify.ts` (+ `.test.ts`) | Every rule the gate applies, unit-tested. |
 | Authoring tools | `scripts/lessons/*.mjs` | Pull notes · pick checks · verify · register · generate narration. |
+| Word timing | `scripts/lessons/align-narration.mjs` | Times every spoken word of every clip (ffmpeg, from the clip's pauses) → the `.timing.json` sidecars the word cues read. `--report` prints the drift. |
 | Skill | `.claude/skills/author-lesson/SKILL.md` | The procedure a session follows. |
 
 ## Authoring a lesson (phase 2)
@@ -353,8 +380,9 @@ node scripts/lessons/register-lesson.mjs quadratic-functions-am
 npx vitest run src/lib/lesson src/lib/notebook && npx tsc --noEmit
 
 # 6. voice clips (idempotent; MiniMax English_FriendlyPerson by default, no --voice needed;
-#    see § Regenerating audio). After an engagement pass (the skill's § 3b) delete the old
-#    clips first — they belong to the old words — then re-run, then --verify.
+#    see § Regenerating audio). After the `say` lines are rewritten (the skill's § 3b) delete the
+#    old clips first — they belong to the old words — then re-run, then --verify, then time
+#    the words (free, local): node scripts/lessons/align-narration.mjs <slug> --report
 node scripts/lessons/generate-narration.mjs quadratic-functions-am
 node scripts/lessons/generate-narration.mjs quadratic-functions-am --verify
 
@@ -501,7 +529,7 @@ exactly one beat, the lead-in).
 | `highlight` | `token: "id"` or a list | A pulse on the token (scale + a halo in the pen colour). |
 | `move` | `from: "id"` | The moved-term FLIP: the earlier token flies onto the later line that declared `from: "id"`. A `from` token **with** a `move` waits for it; one **without** flies the moment its line is shown (the original behaviour). |
 | `morph` | `state: i` | graph-morph: the curve eases to `states[i]` (state 0 holds from entry). |
-| `mark` | `kind` + `token(s)` | A hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
+| `mark` | `kind` + `token(s)` | **`arc` / `arc-under`** (8 Oct 2026): a curved line with an arrowhead from the first token to the second, over or under the row — "this times that" when expanding brackets; exactly two tokens; yellow over, cyan under on the slate. Otherwise a hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
 | `note` | `text` (+ `near: "id"`) | A handwritten aside in the pen colour. Its SLOT is laid out from mount — under the token row of the line `near` sits in (equation-steps / annotate), else in the margin under the working — and drawn on when the action fires: never positioned over other glyphs, never a layout shift. ≤ 140 chars. |
 | `focus` | same targets as `write` (+ `hold` s, default 2.2) | **The dim IS the pointing** (2026-09-06): everything but the target drops to 45 % and the target lifts a hair (`brightness(1.1)`); released after `hold` ÷ rate. It used to also scale the board ≤ 1.14×, and that is what pushed a phone board's content off its own right edge and cut the top off — a scale > 1 on a wrapper that crops can only ever crop, so the transform is gone. |
 | `clear` | `what` (default `pen`) | Wipes marks + notes + focus; `board` also wipes everything written (a second worked example on the same board). |
@@ -537,6 +565,55 @@ vitest suite before it can ship.
   explicit `step: n` reveal, not the beat whose flight showed the line first.
   Static prose (no action) is never walked — it sits at full ink.
 
+### Word cues — the board moves on the word (8 Oct 2026)
+
+Adrian: *"The voice and the animation is not synchronized perfectly yet."* The cause was
+not the audio: a beat's clip and its first action already start in the same frame. It was
+everything AFTER the first frame of a beat —
+
+1. **Every later action fired at a guessed fraction of the clip** (`at: 0.6`). The author
+   guessed where in the sentence the word would fall; the voice's pauses made the guess
+   wrong. Measured on "Completing the Square", 65 actions against the moment the voice
+   starts the word each belongs to: **1.5 s off on average (half of them more than
+   1.0 s, the worst 8.6 s); 51 of 65 more than half a second out.**
+2. **The chalk hand stretched each written sentence to the END of its share of the clip**,
+   so the board was still writing a line seconds after the voice had said it.
+3. **Two things could draw at once** when two actions fired close together.
+
+The fixes, all in the engine, so every clip gets them:
+
+- **`on` — a word cue.** An action names the word (or short run of words) of its beat's
+  own `say` that it belongs to: `{ "do": "write", "token": "p1", "on": "x squared" }`.
+  It fires `CUE_LEAD_S` (0.15 s) before the voice starts that word, so the thing is on
+  the board as the word is heard. Cues are looked for in listed order (a repeated word
+  resolves to its next use); the validator refuses a cue the beat never says, cues out of
+  spoken order, and `on` together with `at`. **Use `on` for every action after a beat's
+  first; `at` is the old way and the verifier flags it on a clip.**
+- **Where the word's time comes from.** The clip's **timing sidecar** (§ Timing
+  sidecars) when it has one — exact. Without one, the word's share of the sentence by
+  speaking weight (`buildSpeechTrack`) — an estimate, but the engine's, not the author's.
+  The player re-reads the times off the live clip once its length and sidecar are known
+  (`useBeatDirector`); Auto and Manual use the estimate.
+- **After the fix, same 65 actions:** every one fires 0.15 s before its word (the head
+  start, on purpose), none more than that — and in a real phone-sized browser playing
+  the voice, 50 of them logged firing 0.13–0.15 s before their word. With no sidecar (the estimate) 0.36 s on
+  average, worst 1.1 s. The word times themselves: the first word after every pause is
+  exact; a word inside a stretch of speech is good to about a tenth of a second.
+- **Sidecars are made locally, free:** `node scripts/lessons/align-narration.mjs <slug>`
+  — ffmpeg hears exactly where the voice pauses; the beat's own `say` is dealt out to
+  the stretches of speech between the pauses, each word taking its share by length. No
+  speech model is needed (whisper.cpp's own word times were tried and drifted by seconds
+  on a third of the clips; when `whisper-cli` is installed it is asked only which word
+  follows each pause). Run it after every `generate-narration`. `--report` prints how far from its word each cued
+  action fires; `--report --against <git ref>` adds what the script at that commit did.
+- **The hand is brisk and then done** (`handWriteS` in `lib/lesson-speech.ts`): about
+  twenty letters a second, never under half a second, and it stops — it no longer
+  stretches to the end of the clip.
+- **One thing moves at a time** (`lesson-board.tsx`): the drawing queue carries across
+  actions, so a thing fired while the one before is still drawing waits its turn (at most
+  450 ms). `motionIssues` warns about a beat where more than two things appear or two
+  actions land within 0.45 s of each other.
+
 ### Exact vs estimated
 
 - **Exact — every beat boundary.** A beat's clip starts and its `at: 0`
@@ -561,6 +638,8 @@ vitest suite before it can ship.
 - **One idea per beat, ≤ ~40 words** (the verifier warns above; the proof
   lesson averages 26). If a sentence names two things that should move at
   two moments, cut it into two beats — that makes both moments exact.
+- **Cue every action to its WORD** — `on: "subtract it"` (§ Word cues). The
+  `at` fractions below are the older way, still valid in the two long lessons.
 - **Say the thing, then move the thing.** Put `at` where the voice reaches the
   object: "add that number and subtract it" → `write token: "sq"` at 0.05,
   `write token: "magic"` at 0.45. Anything the voice names first goes at 0.
@@ -880,25 +959,46 @@ mismatches, off-site URLs). Invalid scripts fail the vitest suite before they
 can ship; at runtime an invalid file simply 404s. The author-side `verify`
 list is ignored by the validator and the player.
 
-## Narration — authoring rules (Adrian's teaching voice)
+## Narration — the voice says the step plainly (Adrian, 8 Oct 2026)
 
-- **Plain, warm, one idea per beat.** Short sentences. It is the caption read
-  aloud by a tutor, not an essay — the captions stay on screen regardless.
-- **Say the maths the way a teacher says it aloud.** "five choose three",
-  "two to the power five minus r", "three x, all cubed", "n C r on your
-  calculator", "x to the minus r". Never `$…$`, `\frac`, `^`, `_`, `{}` — the
-  validator rejects them.
-- **Per-step arrays on every multi-step scene.** The voice for a step starts
-  the moment that line / state / callout appears. A whole-scene string on a
-  multi-step scene still works (the player spreads the steps evenly across the
-  clip) but is coarser — use it for single-step scenes.
-- **Check scenes narrate the lead-in only** — "Your turn — pause here and work
-  it out …" — **never the answer** (a test greps the check narration for the
-  answer digit and number-word).
-- Name the source when it is real ("a real O-Level question, from the 2023 GCE
-  paper") — it is part of the trust.
-- Keep an entry under ~75 words: the pilot's 31 beats run 4–28 s at 1.7–3.1
-  words/s (2.5 overall), 1,034 words → 7.0 min of voice.
+Adrian, after watching the lessons: *"The content of the voice is not good. Some content
+does not explain directly. Need clear direct explanation, and simple but effective
+animation."* These rules replace the 1 Oct "engagement pass" (a question before every
+reveal, a relief line after every hard step) — that pass is what put *"Simple, right?"*
+and *"See? That's all it is."* into the voice. `directIssues` in `lib/lesson-verify.ts`
+checks the mechanical half (a warning on a clip, a note on an older lesson).
+
+**Each beat: what we do, then why.**
+
+- **Say the step first.** "Add nine over four." The reason comes second, in its own
+  short sentence: "Then subtract it, so the value does not change."
+- **Short sentences.** One idea each. A beat is ≤ 24 words in a clip, ≤ 40 in a long
+  lesson.
+- **No warm-up.** No "Hi", "Today we learn", "Here's the recipe", "Let's go". The first
+  word of the clip is the first word of the maths.
+- **No question the voice answers itself.** "Can we just add nine over four? No…" →
+  say the answer. A `?` in a spoken line is flagged.
+- **No cheering and no filler.** No "Simple, right?", "See?", "Easy.", "That's it.",
+  "You've got this."
+- **Do not read out the screen.** Never "as you can see", "on the board". The board
+  shows the line; the voice says what was done to get it and why.
+- **Name the trap in one plain sentence, at the step where it bites.** "A plus times a
+  minus gives a minus." Not a warning speech before it.
+- **Say the maths the way a teacher says it aloud.** "x squared", "minus two x",
+  "three over two", "x minus two, all squared". Never `$…$`, `\frac`, `^`, `_`, `{}` —
+  the validator rejects them.
+- **Check scenes narrate the lead-in only**, never the answer (a test greps for it).
+- **No story, no mascot plot.** (Unchanged from 1 Oct — the maths is the only thing on
+  the board.)
+
+**Three lines from "Completing the Square", before and after** (the committed clips still
+say the "before" words; the lesson is re-voiced when Adrian gives the word):
+
+| Before | After |
+|---|---|
+| "Look at y equals x squared minus four x. Simple, right? So, where is its lowest point? What is its smallest value? Hmm. We can't tell." | "Take y equals x squared minus four x. This form does not show the lowest point of the curve." |
+| "Can we just add nine over four? No, that changes the expression. So we add it AND subtract it, in the same breath. Value unchanged. That's the whole trick." | "Add nine over four to make a perfect square. Then subtract nine over four, so the value does not change." |
+| "Tidy the leftovers: minus nine over four plus two is minus a quarter. Turning point, straight off: three over two, minus a quarter. A minimum, since it opens upwards. See? That's all it is." | "Minus nine over four plus two is minus a quarter. So the turning point is three over two, minus a quarter. It is a minimum, because the curve opens upwards." |
 
 ## Regenerating audio
 
@@ -1077,11 +1177,13 @@ accepted trade for keeping every control on one row.
 ## Timing sidecars — the contract (2026-09-03)
 
 A sidecar times one clip's words so the cursor and the ribbon follow the
-voice exactly instead of proportionally. **No sidecars exist yet** — which
-provider produces them (Gemini's audio understanding with timestamps, a
-forced aligner such as whisperX/aeneas over the committed MP3, or Adrian's
-own recording tool) is Adrian's decision; the player ships the fallback and
-this contract so that decision is a script, not a player change.
+voice exactly instead of proportionally — and, since 8 Oct 2026, so a board
+action cued to a word (`on`, § Word cues) fires on that word. **Made by
+`scripts/lessons/align-narration.mjs`** (ffmpeg on this Mac — the clip's own
+pauses; free, nothing leaves the machine): one `scene-NN-bK.timing.json` beside every beat clip,
+`words` only, stamped into `beats[].timing`. The one-minute explanation and
+Watch-it clips are voiced on the server at view time and have no sidecar —
+their cues use the estimated share.
 
 - **File:** `public/lessons/<slug>/scene-NN[-K].timing.json`, beside the
   clip it times, and **declared** in the scene's `timing` field (same shape

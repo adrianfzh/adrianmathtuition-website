@@ -141,7 +141,7 @@ type Box = { x0: number; y0: number; x1: number; y1: number };
 const wob = (k: number, amp = 1.4) => Math.sin(k * 1.7) * amp + Math.cos(k * 0.9) * amp * 0.6;
 
 /** The path for a mark around a box, in board coordinates. */
-export function markPath(kind: BoardMark['kind'], b: Box): string {
+export function markPath(kind: Exclude<BoardMark['kind'], 'arc' | 'arc-under'>, b: Box): string {
   const pts: [number, number][] = [];
   if (kind === 'underline') {
     for (let k = 0; k <= 24; k++) { const t = k / 24; pts.push([b.x0 - 2 + t * (b.x1 - b.x0 + 4), b.y1 + 3.5 + wob(k, 1)]); }
@@ -163,6 +163,28 @@ export function markPath(kind: BoardMark['kind'], b: Box): string {
   return 'M' + pts.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L');
 }
 
+/**
+ * An arc from one token to another, over the row (or under it) — "this times
+ * that". It leaves the middle of the first token's edge and lands on the
+ * second's with a small arrowhead, so the eye is carried from one to the other.
+ */
+export function arcPath(a: Box, b: Box, under: boolean): string {
+  const x0 = (a.x0 + a.x1) / 2, x1 = (b.x0 + b.x1) / 2;
+  const y = under ? Math.max(a.y1, b.y1) + 2 : Math.min(a.y0, b.y0) - 2;
+  const dir = under ? 1 : -1;
+  // Taller for a longer reach, so two arcs from one token nest instead of crossing.
+  const h = Math.min(34, 10 + Math.abs(x1 - x0) * 0.14);
+  const pts: [number, number][] = [];
+  for (let k = 0; k <= 28; k++) {
+    const t = k / 28;
+    pts.push([x0 + (x1 - x0) * t, y + dir * h * 4 * t * (1 - t) + (k > 0 && k < 28 ? wob(k, 0.5) : 0)]);
+  }
+  const [ex, ey] = pts[pts.length - 1];
+  const back = x1 >= x0 ? -1 : 1;
+  const head = `M${(ex + back * 6).toFixed(1)} ${(ey + dir * 1.5).toFixed(1)} L${ex.toFixed(1)} ${ey.toFixed(1)} L${(ex + back * 0.5).toFixed(1)} ${(ey + dir * 7).toFixed(1)}`;
+  return 'M' + pts.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L') + ' ' + head;
+}
+
 // ── The layer ────────────────────────────────────────────────────────────────
 
 /** Sweep duration for a written element (ms at 1×): pen speed over its width. */
@@ -178,6 +200,8 @@ const CLIP_SHUT = 'inset(-0.35em -0.25em -0.4em 100%)';
 const CLIP_OPEN = 'inset(-0.35em -0.25em -0.4em -0.2em)';
 const WIPE_SHUT = 'inset(-0.1em -0.1em 100% -0.1em)';
 const WIPE_OPEN = 'inset(-0.1em -0.1em -0.2em -0.1em)';
+/** The longest a newly fired thing waits for the one before it to finish drawing (ms at 1×). */
+const QUEUE_MAX_WAIT_MS = 450;
 /** How long typeset maths takes to chalk-dust in (ms at 1×) — the CSS keyframe's length. */
 const DUST_MS = 560;
 
@@ -264,6 +288,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
   const marksDrawn = useRef<Map<number, SVGPathElement>>(new Map());
   const focusTimer = useRef(0);
   const focusSeq = useRef(-1);
+  const busyUntil = useRef(0);                           // when the thing now drawing is done (performance.now ms)
   const rateRef = useRef(rate);
   useEffect(() => { rateRef.current = rate; });
 
@@ -283,14 +308,24 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     return box;
   }, []);
 
+  // A mark's path from fresh measurements: an arc joins its two tokens, the rest wrap their union.
+  const pathOf = useCallback((m: BoardMark): string | null => {
+    if (m.kind === 'arc' || m.kind === 'arc-under') {
+      const a = boxOf([m.tokens[0]]), b = boxOf([m.tokens[1]]);
+      return a && b ? arcPath(a, b, m.kind === 'arc-under') : null;
+    }
+    const box = boxOf(m.tokens);
+    return box ? markPath(m.kind, box) : null;
+  }, [boxOf]);
+
   // Redraw every mark's path from fresh measurements (no animation).
   const redrawMarks = useCallback((marks: BoardMark[]) => {
     for (const m of marks) {
       const path = marksDrawn.current.get(m.seq);
-      const box = boxOf(m.tokens);
-      if (path && box) path.setAttribute('d', markPath(m.kind, box));
+      const d = pathOf(m);
+      if (path && d) path.setAttribute('d', d);
     }
-  }, [boxOf]);
+  }, [pathOf]);
 
   // ── The diff: what changed since the last commit, animated now ──
   useIsoLayoutEffect(() => {
@@ -302,7 +337,11 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     const now = performance.now();
     const onNow = Array.from(zoom.querySelectorAll<HTMLElement>('[data-key].lsn-el.on'));
     const nextOn = new Set(onNow.map(el => el.dataset.key as string));
-    let cursor = now;
+    // ONE THING MOVES AT A TIME: the queue carries over from the last commit,
+    // so a thing fired while the one before it is still drawing waits its turn
+    // (never longer than QUEUE_MAX_WAIT_MS — past that, staying with the voice
+    // matters more than the queue).
+    let cursor = Math.min(Math.max(now, busyUntil.current), now + scaleBeat(QUEUE_MAX_WAIT_MS, r));
     for (const el of onNow) {
       const key = el.dataset.key as string;
       if (onRef.current.has(key)) continue;
@@ -354,6 +393,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       }
     }
     onRef.current = nextOn;
+    busyUntil.current = cursor;
 
     // 2. Pulses.
     const pulses = board.pulses;
@@ -381,10 +421,10 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       let markCursor = Math.max(now, cursor);
       for (const m of board.marks) {
         if (marksDrawn.current.has(m.seq)) continue;
-        const box = boxOf(m.tokens);
-        if (!box) continue;
+        const d = pathOf(m);
+        if (!d) continue;
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', markPath(m.kind, box));
+        path.setAttribute('d', d);
         path.setAttribute('data-mark', m.kind);
         path.setAttribute('data-mark-tokens', m.tokens.join(' '));   // which glyphs it belongs to (debug + the browser check)
         svg.appendChild(path);
@@ -397,6 +437,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         path.animate([{ strokeDashoffset: L }, { strokeDashoffset: 0 }], { duration: dur, delay, easing: 'ease-in-out', fill: 'both' });
         pen.add({ start: now + delay, end: now + delay + dur, at: (p) => { const pt = path.getPointAtLength(p * L); return { x: pt.x, y: pt.y }; } });
         markCursor = now + delay + dur + 80;
+        busyUntil.current = markCursor;
       }
     }
 
