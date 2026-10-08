@@ -184,6 +184,24 @@ test-gated in both repos, reported by the Sunday doc-sweep), and these rules sta
   Medium effort by default; high only where the table says so.
 - **(d) Bulk jobs go to the Fly worker lanes or the cloud credit**, never an
   interactive session (twins, extraction, sweeps, re-files, backfills).
+  **And they run on the plan, never the paid key by default (7 Oct 2026).** The bot has
+  said this since 16 Jul (bot `CLAUDE.md` rule 8: "plan-billed whenever possible; if the
+  API is needed, tell Adrian BEFORE running, with a rough cost"), but website sessions do
+  not read it. On 7 Oct three website sessions started paid-key work on their own: the
+  English bench spent about US$40 before he stopped it (*"wait, we should not be using
+  API"* … *"all on plan"*); the Social Studies bench (*"We can go ahead if it's on the
+  plan. Why is bench on api?"* … *"Do plan only checks"*); a figure re-crop offered at
+  about US$50 (*"wait, the recrop run is using API? not plan?"*). He said the same on 26,
+  28 and 30 Sep. Why: the plan is already paid for; every dollar on the key is extra, and
+  he wants to decide it.
+  - Benches, writing batches, checks, re-crops, backfills → on the plan: agents in this
+    session, the Fly worker's plan lanes, or a `plan_reads` job (`SPEC-ENGLISH-PRACTICE.md`
+    §On the plan).
+  - A script that CAN call the key keeps that path behind a switch that is off
+    (`ENGLISH_CHECK_USE_API=1` is the pattern) and says so in its first lines.
+  - The key is right only for what must answer live (a student's read, the marker,
+    payment parsing) or an unattended run the plan cannot cover. A NEW use of it gets his
+    yes to a stated price BEFORE the first call — not after the batch has started.
 - **(e) Don't re-read big files.** Ask the library index
   (`npx tsx scripts/library-index.ts --q "…"`), `grep`, and read line ranges; never
   cat a 100 KB doc or JSON dump to find one fact. Hand an agent the exact paths and
