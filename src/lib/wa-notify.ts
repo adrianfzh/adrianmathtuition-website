@@ -8,6 +8,7 @@
 // Never throws and never holds up what called it: an invoice e-mail that went
 // out stays sent whatever WhatsApp does.
 import { signViewToken } from './view-token';
+import { botInternalSecret } from './bot-secret';
 
 export type WaResult = { sent: boolean; reason?: string };
 
@@ -42,7 +43,7 @@ export async function sendWhatsAppTemplate(
   msg: { to: string; values: string[]; studentId?: string; ref?: string },
 ): Promise<WaResult> {
   const base = (process.env.BOT_BASE_URL || '').trim().replace(/\/$/, '');
-  const secret = process.env.BOT_INTERNAL_SECRET || '';
+  const secret = botInternalSecret() || '';
   if (!base || !secret || !msg.to) return { sent: false, reason: 'not-configured' };
   try {
     const r = await fetch(`${base}/api/internal/wa-send`, {
