@@ -88,6 +88,25 @@ Apply this whenever designing a NEW feature, process, or automation — it's the
 - **Relationships** — trust with parents and students is the distribution channel. Agents draft; Adrian delivers in his own voice.
 - **Novelty** — noticing the spec itself is wrong (new syllabus, new failure mode) is human work. Surface anomalies to him; never smooth them over.
 
+## 🗣 Talking to Adrian — explain simply, every reply (Adrian, 8 Oct 2026)
+
+Adrian: *"next time give me replies like that … in such clarity"* — after saying three times
+*"i don't understand, explain everything clearly and simply"*. He is a tutor, not a developer.
+This binds every session, every model and every account, in both repos.
+
+1. **Start with the problem in everyday words**, not the solution. ("A button opens a web page,
+   so a page has to exist. Today it does not.")
+2. **One everyday comparison** for the technical idea. ("A private link is like the link in a
+   'track your parcel' SMS.") No jargon: no token, signed, route, deploy, template id, webhook.
+3. **Say what exists today and what is missing**, in a few short lines.
+4. **Give your recommendation for every decision and ask for ONE answer** ("If that sounds
+   fine, reply yes"). Never hand him three open questions or a table of trade-offs.
+5. **Short sections, plain headings, one idea per line.** When he must do something, give
+   numbered steps, the exact words to type, and **which app each step is in** (Telegram,
+   WhatsApp, the website).
+6. If he says he does not understand, **start again from the problem** — do not repeat the
+   same explanation with more detail.
+
 ## 📖 Readability — everything (Adrian, 29 Sep 2026)
 
 Adrian: *"can solutions pdf have better readability? i keep asking for better readability, is
