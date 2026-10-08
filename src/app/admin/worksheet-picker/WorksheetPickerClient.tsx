@@ -66,11 +66,12 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
 
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
-function Card({ q, index, col, onMove, onOpen, overlay = false }: {
-  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onOpen: (id: string) => void; overlay?: boolean;
+function Card({ q, index, col, onMove, overlay = false }: {
+  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; overlay?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
   const [full, setFull] = useState(false);
+  const [sol, setSol] = useState(false);
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform), transition, touchAction: 'none',
     opacity: isDragging && !overlay ? 0.35 : 1,
@@ -85,12 +86,13 @@ function Card({ q, index, col, onMove, onOpen, overlay = false }: {
           {q.marks != null && <span className="shrink-0">[{q.marks}]</span>}
           {q.images.length + q.parts.reduce((s, p) => s + p.imagesBefore.length + p.imagesAfter.length, 0) > 0 && <span title="has a figure">🖼</span>}
         </div>
-        {full
+        {full || sol
           ? <div className="mt-1 pr-1"><QuestionBody q={q} size={13} /></div>
           : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
+        {sol && <SolutionBlock q={q} />}
         <div className="mt-1.5 flex gap-3">
-          <button onClick={() => setFull((v) => !v)} className="text-[12px] font-semibold text-slate-700 hover:underline">{full ? 'Hide full question' : 'Show full question'}</button>
-          <button onClick={() => onOpen(q.id)} className="text-[12px] font-semibold text-indigo-700 hover:underline">Question + solution</button>
+          <button onClick={() => { setFull((v) => !v); if (full) setSol(false); }} className="text-[12px] font-semibold text-slate-700 hover:underline">{full || sol ? 'Hide question' : 'Full question'}</button>
+          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution' : 'Solution'}</button>
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Remove'}
           </button>
@@ -100,8 +102,8 @@ function Card({ q, index, col, onMove, onOpen, overlay = false }: {
   );
 }
 
-function Column({ col, title, items, onMove, onOpen, empty }: {
-  col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; onOpen: (id: string) => void; empty: string;
+function Column({ col, title, items, onMove, empty }: {
+  col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; empty: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col });
   return (
@@ -109,7 +111,7 @@ function Column({ col, title, items, onMove, onOpen, empty }: {
       <h2 className="text-sm font-bold text-slate-700 mb-2">{title} <span className="text-slate-400 font-normal">({items.length}{col === 'picked' && items.length ? ` · ${items.reduce((s, q) => s + (q.marks ?? 0), 0)} marks` : ''})</span></h2>
       <SortableContext id={col} items={items.map((q) => q.id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className={`flex flex-col gap-2 min-h-[140px] rounded-xl p-2 border-2 border-dashed ${isOver ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-slate-50/60'}`}>
-          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} onOpen={onOpen} />)}
+          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} />)}
           {!items.length && <div className="text-xs text-slate-400 text-center py-8">{empty}</div>}
         </div>
       </SortableContext>
@@ -117,22 +119,14 @@ function Column({ col, title, items, onMove, onOpen, empty }: {
   );
 }
 
-// ── The question + solution viewer ───────────────────────────────────────────
-
-function Viewer({ q, onClose }: { q: PickQuestion; onClose: () => void }) {
+// ── The worked solution, readable (lib/solution-readability through SolutionText) ──
+function SolutionBlock({ q }: { q: PickQuestion }) {
   const parts = flatParts(q.parts);
   const hasPartSolutions = Object.keys(q.partSolutions).length > 0;
   return (
-    <div className="fixed inset-0 z-40 bg-black/30 flex justify-end" onClick={onClose}>
-      <div className="w-full max-w-2xl h-full bg-white overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="sticky top-0 bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between">
-          <div className="text-xs text-slate-500">{q.provenance}{q.marks != null ? ` · ${q.marks} marks` : ''}{q.topics.length ? ` · ${q.topics.join(', ')}` : ''}</div>
-          <button onClick={onClose} className="text-slate-500 hover:text-slate-800 text-lg px-2">✕</button>
-        </div>
-        <div className="px-5 py-4"><QuestionBody q={q} /></div>
-        <div className="px-5 pb-8">
-          <h3 className="text-xs font-bold tracking-widest text-slate-500 uppercase border-b border-slate-200 pb-1 mb-3">Worked solution</h3>
-          <div className="text-[14px] text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+    <div className="mt-3 pt-2 border-t border-slate-200">
+      <h3 className="text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-2">Worked solution</h3>
+      <div className="text-[13px] text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             {hasPartSolutions ? (
               parts.filter(({ labels }) => q.partSolutions[partKey(labels)]).map(({ labels }) => (
                 <div key={labels.join('.')} className="mb-4">
@@ -145,9 +139,7 @@ function Viewer({ q, onClose }: { q: PickQuestion; onClose: () => void }) {
             ) : (
               <div className="text-slate-400 italic">No worked solution on file{ansLine(q) ? ' — the answer line above is all the bank holds.' : '.'}</div>
             )}
-            {q.solutionImages.map((u) => <img key={u} src={u} alt="solution" className="max-w-full block my-2" />)}
-          </div>
-        </div>
+        {q.solutionImages.map((u) => <img key={u} src={u} alt="solution" className="max-w-full block my-2" />)}
       </div>
     </div>
   );
@@ -169,7 +161,6 @@ export default function WorksheetPickerClient() {
   const [picked, setPicked] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
-  const [open, setOpen] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
   type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null };
@@ -405,13 +396,12 @@ export default function WorksheetPickerClient() {
   const candQs = cands.map((id) => byId.get(id)!).filter(Boolean);
   const pickQs = picked.map((id) => byId.get(id)!).filter(Boolean);
   const active = activeId ? byId.get(activeId) : null;
-  const openQ = open ? byId.get(open) : null;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="max-w-6xl mx-auto px-4 pt-12 pb-24">
         <h1 className="text-xl font-bold mb-1">Worksheet picker</h1>
-        <p className="text-sm text-slate-500 mb-4">Candidates on the left, the worksheet on the right. Drag between them (or tap Add / Remove), reorder on the right, open any card to read the question and its worked solution, then press Done.</p>
+        <p className="text-sm text-slate-500 mb-4">Candidates on the left, the worksheet on the right. Drag between them (or tap Add / Remove), reorder on the right, unfold any card to read the whole question or its worked solution, then press Done.</p>
 
         <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end mb-4 bg-white border border-slate-200 rounded-xl p-3">
           <label className="text-xs text-slate-500">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-0.5 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-900" /></label>
@@ -458,10 +448,10 @@ export default function WorksheetPickerClient() {
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
           <div className="flex flex-col md:flex-row gap-4">
-            <Column col="cands" title="Candidates" items={candQs} onMove={move} onOpen={setOpen} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
-            <Column col="picked" title="Worksheet" items={pickQs} onMove={move} onOpen={setOpen} empty="Drag questions here, in print order" />
+            <Column col="cands" title="Candidates" items={candQs} onMove={move} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
+            <Column col="picked" title="Worksheet" items={pickQs} onMove={move} empty="Drag questions here, in print order" />
           </div>
-          <DragOverlay>{active ? <div className="w-80"><Card q={active} index={0} col="cands" onMove={() => {}} onOpen={() => {}} overlay /></div> : null}</DragOverlay>
+          <DragOverlay>{active ? <div className="w-80"><Card q={active} index={0} col="cands" onMove={() => {}} overlay /></div> : null}</DragOverlay>
         </DndContext>
 
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200 backdrop-blur px-4 py-3">
@@ -486,7 +476,6 @@ export default function WorksheetPickerClient() {
         </div>
 
         {toast && <div className={`fixed top-3 right-3 z-50 text-sm px-3 py-2 rounded-lg shadow ${toast.kind === 'ok' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>{toast.msg}</div>}
-        {openQ && <Viewer q={openQ} onClose={() => setOpen(null)} />}
       </div>
     </div>
   );
