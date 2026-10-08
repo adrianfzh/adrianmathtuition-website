@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { invoiceReadyValues, shortDue } from './wa-notify';
+import { invoiceReadyValues, paymentReceivedValues, shortDue } from './wa-notify';
 import { verifyViewToken } from './view-token';
 
 const SECRET = 'test-signup-secret';
@@ -32,5 +32,37 @@ describe('the WhatsApp "invoice ready" message', () => {
     expect(shortDue('2026-12-31')).toBe('31 Dec');
     expect(shortDue('7 November')).toBe('7 November');
     expect(shortDue(undefined)).toBe('');
+  });
+});
+
+describe('the WhatsApp "payment received" message', () => {
+  const P = { studentName: 'Marcus Tan', month: 'November 2026', finalAmount: 480, paymentAmount: 480, isFullPayment: true };
+
+  it('gives amount, student, month for an invoice paid in full', () => {
+    expect(paymentReceivedValues(P)).toEqual(['480.00', 'Marcus Tan', 'November 2026']);
+    // No amount passed (the "mark fully paid" button) → the invoice's own amount.
+    expect(paymentReceivedValues({ ...P, paymentAmount: undefined })).toEqual(['480.00', 'Marcus Tan', 'November 2026']);
+  });
+
+  it('says nothing for a part payment — "no further action is needed" would be untrue', () => {
+    expect(paymentReceivedValues({ ...P, isFullPayment: false, paymentAmount: 200 })).toBeNull();
+    expect(paymentReceivedValues({ ...P, isFullPayment: undefined })).toBeNull();
+  });
+
+  it('says nothing for a correction or a payment with credit — the e-mail explains those', () => {
+    expect(paymentReceivedValues({ ...P, correction: true })).toBeNull();
+    expect(paymentReceivedValues({ ...P, isOverpayment: true })).toBeNull();
+  });
+
+  it('reads true/false sent as words the same way', () => {
+    expect(paymentReceivedValues({ ...P, isFullPayment: 'true' })).toEqual(['480.00', 'Marcus Tan', 'November 2026']);
+    expect(paymentReceivedValues({ ...P, isFullPayment: 'false' })).toBeNull();
+    expect(paymentReceivedValues({ ...P, isOverpayment: 'true' })).toBeNull();
+    expect(paymentReceivedValues({ ...P, correction: 'false' })).toEqual(['480.00', 'Marcus Tan', 'November 2026']);
+  });
+
+  it('says nothing without an amount or a name', () => {
+    expect(paymentReceivedValues({ ...P, paymentAmount: 0, finalAmount: 0 })).toBeNull();
+    expect(paymentReceivedValues({ ...P, studentName: '' })).toBeNull();
   });
 });

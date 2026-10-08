@@ -3,6 +3,7 @@ import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequest } from '@/lib/airtable';
 import { generateInvoicePDF } from '@/lib/generate-pdf';
 import { buildRegisterUrl } from '@/lib/invoice-register-url';
+import { paymentReceivedValues, sendWhatsAppTemplate } from '@/lib/wa-notify';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 
 export const runtime = 'nodejs';
@@ -267,6 +268,14 @@ export async function POST(req: NextRequest) {
 
   if (status === 'failed') {
     return NextResponse.json({ error: errorMsg }, { status: 500 });
+  }
+
+  // The same news on WhatsApp (8 Oct 2026), for an invoice paid in full. The bot decides — its
+  // switch (off by default), test mode, the parent's START. Never throws; the receipt stands.
+  const waValues = paymentReceivedValues({ studentName, month, finalAmount, paymentAmount, isFullPayment, isOverpayment, correction });
+  const parentContact = String(student.fields['Parent Contact'] || '');
+  if (waValues && parentContact) {
+    await sendWhatsAppTemplate('payment_received', { to: parentContact, values: waValues, studentId, ref: invoiceId });
   }
   return NextResponse.json({ success: true, resendId });
 }
