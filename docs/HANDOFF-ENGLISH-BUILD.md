@@ -15,7 +15,7 @@ Talk to Adrian in plain, short words. No jargon.
 
 | Part | State | Switch |
 |---|---|---|
-| Essay marking (English + 中文), with our own guidance in the marker | built | `ESSAY_MARKING_OPEN_TO_STUDENTS` |
+| Essay marking (English + 中文), with our own guidance in the marker; reads on the plan (bot push owed) | built | `ESSAY_MARKING_OPEN_TO_STUDENTS` |
 | Formats guide for Situational Writing | built | `ENGLISH_FORMATS_OPEN_TO_STUDENTS` |
 | Practise: editing · comprehension · visual text · summary, each answer checked against the scheme | built | `ENGLISH_PRACTICE_OPEN_TO_STUDENTS` |
 | Listening (Paper 3) · Oral (Paper 4), on our own recordings, pictures and prompts | built 8 Oct 2026 | `ENGLISH_LISTENING_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS` |
@@ -52,19 +52,24 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
   SPEC-ENGLISH-PRACTICE.md §The bench. The Languages practice PAGES now belong to the listening /
   oral session (it is rebuilding the editing flow) — this build owns the checker, the bench, the
   sets and the queue lane, and does not edit `src/app/app/languages/practice`.
-- **Next — step 3, for a FRESH session (8 Oct 2026):** essay marking onto the plan, then its bench.
-  - Today the essay marker is the bot's `ai/essay-marker.js` on the paid key (two Opus reads, a
-    third when they differ, about 30 US cents an essay; `POST /api/essay-mark`). Adrian: "all on
-    plan". Move the READS to the `plan_reads` queue (`src/lib/plan-reads.ts`, bot
-    `scripts/plan-reads.js` — model alias `opus` is allowed; a new `kind`), keep the belt
-    (`lib/essay-report.js`) and the agree-two-reads rule as they are, and keep the paid path only
-    behind an env switch that is unset. An essay prompt is long — check the row size and the
-    reader's 3-minute timeout.
-  - Then the bench, all on the plan: the seeded-slip set that exists
-    (`scripts/essay-calibration/seeded.ts`, `sets/seeded-starter/`), seeded essays by band, and the
-    same essay read twice. Never the paid key without Adrian's clear yes.
-  - Read first: `SPEC-ESSAY-MARKING.md`, `SPEC-ENGLISH-PRACTICE.md` §On the plan, the bot's
-    `worker/fly/README.md` §Plan reads.
+- **Step 3 (8 Oct 2026): essay marking is on the plan, and its bench has run.**
+  - The bot queues each essay read in `plan_reads` (kind `essay-read`, model alias `opus`;
+    bot `lib/essay-plan.js`) and the Fly worker reads it. Two reads, a third when they differ, the
+    belt — all unchanged. The paid path is only behind the bot's `ESSAY_USE_API=1`, unset.
+    Detail: SPEC-ESSAY-MARKING.md §On the plan.
+  - **The bench, all on the plan** (`scripts/essay-calibration/plan-bench.ts` + bot
+    `scripts/essay-bench-local.js`; `results/plan-2026-10-08.json`): seeded slips 36/36 found on
+    every hand-in, right code 35/36 · bands 12 exact + 12 one band away of 24, none further · the
+    same essay twice 18/18. **Passes by the spec's gates.** Every miss is one band high, and the
+    band-1 and band-2 essays both read as band 2 — SPEC-ESSAY-MARKING.md §The bench on the plan.
+  - **STILL OWED: the bot commit is not live.** It is committed in
+    `~/dev/adrianmath-telegram-math-bot-2` (`main`, "Essay marking reads on the plan…") but the
+    push — which puts the bot live — was stopped by the session's safety check and needs Adrian's
+    word. Until it is pushed, the live bot still marks essays on the paid key. After the push:
+    hand one essay in on the preview (`/app/languages/submit`), check its `essay_runs.model` is
+    `plan:opus` and `cost_usd` 0, and write the result here.
+  - Still owed before essays open: a class set with a teacher's marks (the ranking test), more
+    band essays on other prompts and for Situational Writing, and Adrian's look at the hedge lines.
 - Not started: steps 4–8.
 
 ## Listening and oral — built 8 Oct 2026 (steps 7 and 8), all closed

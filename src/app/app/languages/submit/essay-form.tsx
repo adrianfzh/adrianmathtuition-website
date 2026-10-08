@@ -83,7 +83,7 @@ export default function EssayForm({ kinds, slotUsed }: { kinds: KindOption[]; sl
         {busy ? 'Handing in…' : 'Hand in for marking'}
       </button>
       <p className="text-[12px] text-gray-500 px-1">
-        It is read twice, to be sure, and comes back in a minute or two: every slip marked on your own words, the
+        It is read twice, to be sure, and comes back in a few minutes: every slip marked on your own words, the
         three habits to fix first, whether it answered the question, and a band range — never a mark out of 30.
       </p>
     </div>

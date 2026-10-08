@@ -11,7 +11,9 @@
 // marks are the noise floor) and the seeded essay once; the marker should find
 // every planted slip, give it the planted code, and mark little else
 // (src/lib/essay-seeding.ts — the same functions the unit tests pin).
-// Writes <set-dir>/seeded-results.json. Cost: about 35 cents a hand-in.
+// Writes <set-dir>/seeded-results.json. The bot reads ON THE PLAN since 8 Oct 2026 (no paid
+// call; a hand-in takes a few minutes). plan-bench.ts beside this file runs every seeded set
+// with no deployed bot at all.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,7 +41,7 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 const set = JSON.parse(fs.readFileSync(path.join(setDir, 'set.json'), 'utf8'));
 const clean = fs.readFileSync(path.join(setDir, set.clean), 'utf8').trim();
-const { text: seeded, spans } = applyPlants(clean, set.plants as Plant[]);   // throws on a bad set, before any money is spent
+const { text: seeded, spans } = applyPlants(clean, set.plants as Plant[]);   // throws on a bad set, before anything is handed in
 
 const resultsPath = path.join(setDir, 'seeded-results.json');
 type Which = 'clean' | 'seeded' | 'seeded2';
@@ -76,7 +78,7 @@ if (!reportOnly) {
   }
 }
 const pending = () => results.rows.filter(r => !r.status || r.status === 'queued' || r.status === 'marking');
-for (let i = 0; i < (reportOnly ? 1 : 120) && (i === 0 || pending().length); i++) {
+for (let i = 0; i < (reportOnly ? 1 : 360) && (i === 0 || pending().length); i++) {
   if (i) await sleep(10000);
   for (const r of (i ? pending() : results.rows)) await refresh(r);
   save();

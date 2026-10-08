@@ -1,0 +1,4208 @@
+{
+ "at": "2026-10-08T10:59:21.728Z",
+ "billing": "plan",
+ "handins": 21,
+ "held": 0,
+ "failed": 0,
+ "reads": 46,
+ "dropped": 0,
+ "seeded": {
+  "pass": true,
+  "sets": [
+   {
+    "set": "seeded-argument",
+    "cleanStatus": "marked",
+    "cleanMarks": 4,
+    "cleanRange": {
+     "min": 24,
+     "max": 28,
+     "out_of": 30
+    },
+    "first": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 12,
+     "extra": 1,
+     "missed": [],
+     "wrongCode": [],
+     "range": {
+      "min": 20,
+      "max": 24,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "second": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 12,
+     "extra": 1,
+     "missed": [],
+     "wrongCode": [],
+     "range": {
+      "min": 20,
+      "max": 24,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "statuses": [
+     "marked",
+     "marked"
+    ],
+    "pass": true
+   },
+   {
+    "set": "seeded-email",
+    "cleanStatus": "marked",
+    "cleanMarks": 3,
+    "cleanRange": {
+     "min": 26,
+     "max": 30,
+     "out_of": 30
+    },
+    "first": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 11,
+     "extra": 0,
+     "missed": [],
+     "wrongCode": [
+      "would see the books every days: planted word_form, marked no code"
+     ],
+     "range": {
+      "min": 16,
+      "max": 20,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "second": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 11,
+     "extra": 0,
+     "missed": [],
+     "wrongCode": [
+      "would see the books every days: planted word_form, marked no code"
+     ],
+     "range": {
+      "min": 16,
+      "max": 20,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "statuses": [
+     "marked",
+     "marked"
+    ],
+    "pass": true
+   },
+   {
+    "set": "seeded-starter",
+    "cleanStatus": "marked",
+    "cleanMarks": 1,
+    "cleanRange": {
+     "min": 24,
+     "max": 28,
+     "out_of": 30
+    },
+    "first": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 12,
+     "extra": 0,
+     "missed": [],
+     "wrongCode": [],
+     "range": {
+      "min": 20,
+      "max": 24,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "second": {
+     "found": 12,
+     "planted": 12,
+     "rightCode": 12,
+     "extra": 1,
+     "missed": [],
+     "wrongCode": [],
+     "range": {
+      "min": 20,
+      "max": 24,
+      "out_of": 30
+     },
+     "pass": true,
+     "reasons": []
+    },
+    "statuses": [
+     "marked",
+     "marked"
+    ],
+    "pass": true
+   }
+  ]
+ },
+ "bands": {
+  "n": 24,
+  "exact": 12,
+  "offByOne": 12,
+  "offByMore": 0,
+  "pass": true,
+  "essays": [
+   {
+    "essay": "band 5",
+    "known": "C5 L5",
+    "first": "C5 L5 (26–30)",
+    "second": "C5 L5 (26–30)"
+   },
+   {
+    "essay": "band 4",
+    "known": "C4 L4",
+    "first": "C5 L4 (22–26)",
+    "second": "C5 L4 (22–26)"
+   },
+   {
+    "essay": "band 3",
+    "known": "C3 L3",
+    "first": "C4 L3 (16–20)",
+    "second": "C4 L3 (16–20)"
+   },
+   {
+    "essay": "band 2",
+    "known": "C2 L2",
+    "first": "C2 L2 (8–12)",
+    "second": "C2 L2 (8–12)"
+   },
+   {
+    "essay": "band 1",
+    "known": "C1 L1",
+    "first": "C2 L2 (8–12)",
+    "second": "C2 L2 (8–12)"
+   },
+   {
+    "essay": "content 4, language 2",
+    "known": "C4 L2",
+    "first": "C5 L3 (18–22)",
+    "second": "C5 L3 (18–22)"
+   }
+  ]
+ },
+ "twice": {
+  "pairs": 18,
+  "agree": 18,
+  "offByOne": 0,
+  "offByMore": 0,
+  "rate": 1,
+  "pass": true
+ },
+ "pass": true,
+ "marked": [
+  {
+   "key": "seeded-argument/seeded#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "\"I agree that some young people spend too much time on their phones, but I do not think the phone itself is the problem\" — a clear stand, with examples and the other side answered, but \"too much\" is never explained."
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "Controlled sentences such as \"If we manage that, the phone will remain a servant and never become a master\" sit beside basic slips like \"Many adults complains\" and \"is also useful tool\"."
+    },
+    "total": {
+     "min": 20,
+     "max": 24,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "sva": 1,
+    "word_form": 1,
+    "tense": 1,
+    "collocation": 1,
+    "article": 1,
+    "comma_splice": 1,
+    "preposition": 1,
+    "register": 1,
+    "fragment": 1,
+    "off_task": 1,
+    "punctuation": 1,
+    "spelling": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 20,
+    "max": 24,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 21,
+     "code": "sva",
+     "quote": "Many adults complains",
+     "confirmed": true
+    },
+    {
+     "start": 251,
+     "end": 272,
+     "code": "word_form",
+     "quote": "a great deal of times",
+     "confirmed": true
+    },
+    {
+     "start": 325,
+     "end": 356,
+     "code": "tense",
+     "quote": "one video quickly became twenty",
+     "confirmed": true
+    },
+    {
+     "start": 589,
+     "end": 614,
+     "code": "collocation",
+     "quote": "do more careless mistakes",
+     "confirmed": true
+    },
+    {
+     "start": 650,
+     "end": 669,
+     "code": "article",
+     "quote": "is also useful tool",
+     "confirmed": true
+    },
+    {
+     "start": 790,
+     "end": 803,
+     "code": "comma_splice",
+     "quote": "homes, nobody",
+     "confirmed": true
+    },
+    {
+     "start": 895,
+     "end": 910,
+     "code": "preposition",
+     "quote": "listen the news",
+     "confirmed": true
+    },
+    {
+     "start": 1070,
+     "end": 1108,
+     "code": "register",
+     "quote": "That idea is super dumb, to be honest.",
+     "confirmed": true
+    },
+    {
+     "start": 1301,
+     "end": 1319,
+     "code": "fragment",
+     "quote": "now. While parents",
+     "confirmed": true
+    },
+    {
+     "start": 1354,
+     "end": 1389,
+     "code": "off_task",
+     "quote": "What, then, should young people do?",
+     "confirmed": false
+    },
+    {
+     "start": 1501,
+     "end": 1511,
+     "code": "punctuation",
+     "quote": "ten oclock",
+     "confirmed": true
+    },
+    {
+     "start": 1655,
+     "end": 1661,
+     "code": "spelling",
+     "quote": "anxios",
+     "confirmed": true
+    },
+    {
+     "start": 1873,
+     "end": 1892,
+     "code": "vague",
+     "quote": "in this day and age",
+     "confirmed": true
+    }
+   ],
+   "secs": 92
+  },
+  {
+   "key": "seeded-argument/seeded#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "\"I agree that some young people spend too much time on their phones, but I do not think the phone itself is the problem\" — a clear stand with examples on both sides, though the last paragraphs drift to solutions."
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "\"A ban may work during lessons, but it does not teach us how to control ourselves\" — controlled, varied sentences and clear links between paragraphs, with basic slips such as \"Many adults complains\" and \"is also useful tool\"."
+    },
+    "total": {
+     "min": 20,
+     "max": 24,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "sva": 1,
+    "word_form": 1,
+    "tense": 1,
+    "collocation": 1,
+    "article": 1,
+    "comma_splice": 1,
+    "preposition": 1,
+    "register": 1,
+    "fragment": 2,
+    "off_task": 1,
+    "punctuation": 1,
+    "spelling": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 20,
+    "max": 24,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 21,
+     "code": "sva",
+     "quote": "Many adults complains",
+     "confirmed": true
+    },
+    {
+     "start": 251,
+     "end": 272,
+     "code": "word_form",
+     "quote": "a great deal of times",
+     "confirmed": true
+    },
+    {
+     "start": 325,
+     "end": 356,
+     "code": "tense",
+     "quote": "one video quickly became twenty",
+     "confirmed": true
+    },
+    {
+     "start": 589,
+     "end": 614,
+     "code": "collocation",
+     "quote": "do more careless mistakes",
+     "confirmed": true
+    },
+    {
+     "start": 650,
+     "end": 669,
+     "code": "article",
+     "quote": "is also useful tool",
+     "confirmed": true
+    },
+    {
+     "start": 790,
+     "end": 803,
+     "code": "comma_splice",
+     "quote": "homes, nobody",
+     "confirmed": true
+    },
+    {
+     "start": 895,
+     "end": 910,
+     "code": "preposition",
+     "quote": "listen the news",
+     "confirmed": true
+    },
+    {
+     "start": 1083,
+     "end": 1107,
+     "code": "register",
+     "quote": "super dumb, to be honest",
+     "confirmed": true
+    },
+    {
+     "start": 1273,
+     "end": 1288,
+     "code": "fragment",
+     "quote": "Better to learn",
+     "confirmed": true
+    },
+    {
+     "start": 1301,
+     "end": 1311,
+     "code": "fragment",
+     "quote": "now. While",
+     "confirmed": true
+    },
+    {
+     "start": 1354,
+     "end": 1389,
+     "code": "off_task",
+     "quote": "What, then, should young people do?",
+     "confirmed": false
+    },
+    {
+     "start": 1501,
+     "end": 1511,
+     "code": "punctuation",
+     "quote": "ten oclock",
+     "confirmed": true
+    },
+    {
+     "start": 1655,
+     "end": 1661,
+     "code": "spelling",
+     "quote": "anxios",
+     "confirmed": true
+    },
+    {
+     "start": 1873,
+     "end": 1892,
+     "code": "vague",
+     "quote": "in this day and age",
+     "confirmed": true
+    }
+   ],
+   "secs": 101
+  },
+  {
+   "key": "seeded-argument/clean",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "\"Some people argue that schools should ban phones completely.\" Both sides are covered with some examples, but two paragraphs move to bans and solutions, and 'too much' is never explained."
+    },
+    "language": {
+     "band": 5,
+     "min": 17,
+     "max": 20,
+     "descriptors": [
+      "Coherent and cohesive presentation of ideas across the whole of the response",
+      "Effective use of ambitious vocabulary and grammar structures",
+      "Complex vocabulary, grammar, punctuation and spelling used accurately"
+     ],
+     "evidence": "\"My cousin once told me that he had planned to revise for an hour and had spent the whole evening scrolling instead.\" Accurate throughout, with controlled complex sentences and clear links between paragraphs."
+    },
+    "total": {
+     "min": 24,
+     "max": 28,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4,
+     4
+    ],
+    "language": [
+     4,
+     5,
+     5
+    ]
+   },
+   "code_counts": {
+    "off_task": 3,
+    "vague": 1
+   },
+   "reads": 3,
+   "dropped": 0,
+   "total": {
+    "min": 24,
+    "max": 28,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 81,
+     "end": 134,
+     "code": "off_task",
+     "quote": "some young people spend too much time on their phones",
+     "confirmed": true
+    },
+    {
+     "start": 546,
+     "end": 625,
+     "code": "vague",
+     "quote": "Teachers have noticed that tired students make more careless mistakes in class.",
+     "confirmed": true
+    },
+    {
+     "start": 1019,
+     "end": 1079,
+     "code": "off_task",
+     "quote": "Some people argue that schools should ban phones completely.",
+     "confirmed": true
+    },
+    {
+     "start": 1358,
+     "end": 1393,
+     "code": "off_task",
+     "quote": "What, then, should young people do?",
+     "confirmed": true
+    }
+   ],
+   "secs": 131
+  },
+  {
+   "key": "seeded-email/clean",
+   "status": "marked",
+   "bands": {
+    "task_fulfilment": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All points addressed and developed in detail",
+      "Purpose, audience and context fully and clearly addressed",
+      "Ideas consistently supported by given information"
+     ],
+     "evidence": "\"We would therefore only need funds for the two shelves, which cost about three hundred dollars in total.\" — all four points are covered with specific detail for the principal, though the benefits are the least developed."
+    },
+    "language": {
+     "band": 5,
+     "min": 17,
+     "max": 20,
+     "descriptors": [
+      "Coherent and cohesive presentation of ideas across the whole of the response",
+      "Effective use of ambitious vocabulary and grammar structures",
+      "Complex vocabulary, grammar, punctuation and spelling used accurately"
+     ],
+     "evidence": "\"A small corner in the canteen would bring books to the place where students already gather.\" — accurate, controlled and well linked throughout, although the vocabulary stays plain rather than ambitious."
+    },
+    "total": {
+     "min": 26,
+     "max": 30,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "task_fulfilment": [
+     5,
+     5
+    ],
+    "language": [
+     5,
+     5
+    ]
+   },
+   "code_counts": {
+    "tense": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 26,
+    "max": 30,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 1150,
+     "end": 1165,
+     "code": "tense",
+     "quote": "can be borrowed",
+     "confirmed": false
+    },
+    {
+     "start": 1431,
+     "end": 1456,
+     "code": "vague",
+     "quote": "would see books every day",
+     "confirmed": false
+    },
+    {
+     "start": 1458,
+     "end": 1541,
+     "code": null,
+     "quote": "Secondly, the donation drive would teach students to share what they no longer use.",
+     "confirmed": true
+    }
+   ],
+   "secs": 75
+  },
+  {
+   "key": "seeded-email/seeded#1",
+   "status": "marked",
+   "bands": {
+    "task_fulfilment": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All points addressed with one or more developed in detail",
+      "Purpose, audience and context clearly addressed",
+      "Ideas generally supported by given information"
+     ],
+     "evidence": "All four points are covered and the cost is detailed (\"Mrs Devi, has aggreed to give us one hundred older books\"), but the benefits get one sentence each and \"like a ton of books\" breaks the formal tone."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "Ideas are well ordered and meaning is always clear, but basic slips recur in about half the sentences, e.g. \"many students finishes\" and \"Therefore only funds for the two shelves.\""
+    },
+    "total": {
+     "min": 16,
+     "max": 20,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "task_fulfilment": [
+     4,
+     4
+    ],
+    "language": [
+     3,
+     3
+    ]
+   },
+   "code_counts": {
+    "tense": 1,
+    "sva": 2,
+    "preposition": 1,
+    "comma_splice": 1,
+    "register": 1,
+    "word_form": 1,
+    "vague": 1,
+    "spelling": 1,
+    "punctuation": 1,
+    "fragment": 2
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 16,
+    "max": 20,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 140,
+     "end": 156,
+     "code": "tense",
+     "quote": "would encouraged",
+     "confirmed": true
+    },
+    {
+     "start": 224,
+     "end": 246,
+     "code": "sva",
+     "quote": "many students finishes",
+     "confirmed": true
+    },
+    {
+     "start": 364,
+     "end": 377,
+     "code": "preposition",
+     "quote": "wait the bell",
+     "confirmed": true
+    },
+    {
+     "start": 401,
+     "end": 423,
+     "code": "comma_splice",
+     "quote": "fourth floor, very few",
+     "confirmed": true
+    },
+    {
+     "start": 663,
+     "end": 673,
+     "code": "sva",
+     "quote": "nobody use",
+     "confirmed": true
+    },
+    {
+     "start": 698,
+     "end": 717,
+     "code": "register",
+     "quote": "like a ton of books",
+     "confirmed": true
+    },
+    {
+     "start": 888,
+     "end": 912,
+     "code": "word_form",
+     "quote": "keep the corner tidyness",
+     "confirmed": true
+    },
+    {
+     "start": 915,
+     "end": 952,
+     "code": "vague",
+     "quote": "The cost would be low, which is nice.",
+     "confirmed": true
+    },
+    {
+     "start": 989,
+     "end": 996,
+     "code": "spelling",
+     "quote": "aggreed",
+     "confirmed": true
+    },
+    {
+     "start": 1106,
+     "end": 1111,
+     "code": "punctuation",
+     "quote": "march",
+     "confirmed": true
+    },
+    {
+     "start": 1243,
+     "end": 1284,
+     "code": "fragment",
+     "quote": "Therefore only funds for the two shelves.",
+     "confirmed": true
+    },
+    {
+     "start": 1285,
+     "end": 1322,
+     "code": "fragment",
+     "quote": "About three hundred dollars in total.",
+     "confirmed": true
+    },
+    {
+     "start": 1451,
+     "end": 1461,
+     "code": null,
+     "quote": "every days",
+     "confirmed": true
+    }
+   ],
+   "secs": 87
+  },
+  {
+   "key": "seeded-email/seeded#2",
+   "status": "marked",
+   "bands": {
+    "task_fulfilment": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All points addressed with one or more developed in detail",
+      "Purpose, audience and context clearly addressed",
+      "Ideas generally supported by given information"
+     ],
+     "evidence": "All four points are covered with specific detail (\"Mrs Devi, has aggreed to give us one hundred older books\"), but the benefits are brief and \"The shelves could hold like a ton of books\" breaks the formal tone."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "Well organised and always clear, but basic slips recur throughout: \"many students finishes\", \"would encouraged\", \"Therefore only funds for the two shelves.\""
+    },
+    "total": {
+     "min": 16,
+     "max": 20,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "task_fulfilment": [
+     4,
+     4
+    ],
+    "language": [
+     3,
+     3
+    ]
+   },
+   "code_counts": {
+    "tense": 1,
+    "sva": 2,
+    "preposition": 1,
+    "comma_splice": 1,
+    "register": 1,
+    "word_form": 1,
+    "vague": 1,
+    "spelling": 1,
+    "punctuation": 1,
+    "fragment": 2
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 16,
+    "max": 20,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 140,
+     "end": 156,
+     "code": "tense",
+     "quote": "would encouraged",
+     "confirmed": true
+    },
+    {
+     "start": 224,
+     "end": 246,
+     "code": "sva",
+     "quote": "many students finishes",
+     "confirmed": true
+    },
+    {
+     "start": 364,
+     "end": 377,
+     "code": "preposition",
+     "quote": "wait the bell",
+     "confirmed": true
+    },
+    {
+     "start": 401,
+     "end": 423,
+     "code": "comma_splice",
+     "quote": "fourth floor, very few",
+     "confirmed": true
+    },
+    {
+     "start": 663,
+     "end": 673,
+     "code": "sva",
+     "quote": "nobody use",
+     "confirmed": true
+    },
+    {
+     "start": 698,
+     "end": 717,
+     "code": "register",
+     "quote": "like a ton of books",
+     "confirmed": true
+    },
+    {
+     "start": 888,
+     "end": 912,
+     "code": "word_form",
+     "quote": "keep the corner tidyness",
+     "confirmed": true
+    },
+    {
+     "start": 936,
+     "end": 951,
+     "code": "vague",
+     "quote": ", which is nice",
+     "confirmed": true
+    },
+    {
+     "start": 989,
+     "end": 996,
+     "code": "spelling",
+     "quote": "aggreed",
+     "confirmed": true
+    },
+    {
+     "start": 1106,
+     "end": 1111,
+     "code": "punctuation",
+     "quote": "march",
+     "confirmed": true
+    },
+    {
+     "start": 1243,
+     "end": 1284,
+     "code": "fragment",
+     "quote": "Therefore only funds for the two shelves.",
+     "confirmed": true
+    },
+    {
+     "start": 1285,
+     "end": 1322,
+     "code": "fragment",
+     "quote": "About three hundred dollars in total.",
+     "confirmed": true
+    },
+    {
+     "start": 1451,
+     "end": 1461,
+     "code": null,
+     "quote": "every days",
+     "confirmed": true
+    }
+   ],
+   "secs": 92
+  },
+  {
+   "key": "seeded-starter/seeded#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "Every part of the question is covered and the rescue is told in detail, but the feeling and the change get one line each: \"I felt shame of what I had believed about him.\""
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "Clear, well-linked paragraphs and mostly accurate sentences, with basic verb slips such as \"his hands was shaking\" and a broken sentence, \"Since that day, greeting Mr Tan every morning.\""
+    },
+    "total": {
+     "min": 20,
+     "max": 24,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "tense": 2,
+    "comma_splice": 1,
+    "preposition": 1,
+    "article": 1,
+    "sva": 2,
+    "spelling": 2,
+    "word_form": 1,
+    "fragment": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 20,
+    "max": 24,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 81,
+     "end": 95,
+     "code": "tense",
+     "quote": "He never smile",
+     "confirmed": true
+    },
+    {
+     "start": 328,
+     "end": 337,
+     "code": "tense",
+     "quote": "overflows",
+     "confirmed": true
+    },
+    {
+     "start": 463,
+     "end": 479,
+     "code": "comma_splice",
+     "quote": "quickly, the dog",
+     "confirmed": true
+    },
+    {
+     "start": 543,
+     "end": 565,
+     "code": "preposition",
+     "quote": "afraid for the current",
+     "confirmed": true
+    },
+    {
+     "start": 631,
+     "end": 657,
+     "code": "article",
+     "quote": "carrying long wooden plank",
+     "confirmed": true
+    },
+    {
+     "start": 873,
+     "end": 894,
+     "code": "sva",
+     "quote": "his hands was shaking",
+     "confirmed": true
+    },
+    {
+     "start": 931,
+     "end": 943,
+     "code": "sva",
+     "quote": "It belong to",
+     "confirmed": true
+    },
+    {
+     "start": 1112,
+     "end": 1122,
+     "code": "spelling",
+     "quote": "hesistated",
+     "confirmed": true
+    },
+    {
+     "start": 1163,
+     "end": 1178,
+     "code": "word_form",
+     "quote": "I felt shame of",
+     "confirmed": true
+    },
+    {
+     "start": 1295,
+     "end": 1303,
+     "code": "spelling",
+     "quote": "suprised",
+     "confirmed": true
+    },
+    {
+     "start": 1534,
+     "end": 1580,
+     "code": "fragment",
+     "quote": "Since that day, greeting Mr Tan every morning.",
+     "confirmed": true
+    },
+    {
+     "start": 1629,
+     "end": 1663,
+     "code": "vague",
+     "quote": "a cold heart at the end of the day",
+     "confirmed": true
+    }
+   ],
+   "secs": 86
+  },
+  {
+   "key": "seeded-starter/seeded#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "Belief, event, realisation and change are all there and the canal explanation is a strong turn, but the feeling is covered in one line: \"I felt shame of what I had believed about him.\""
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "Clear, well-linked paragraphs and controlled sentences such as \"He had not hesistated for a second, while I had only watched\", but basic verb slips recur (\"his hands was shaking\", \"He never smile\")."
+    },
+    "total": {
+     "min": 20,
+     "max": 24,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "tense": 2,
+    "comma_splice": 1,
+    "preposition": 1,
+    "article": 1,
+    "sva": 2,
+    "spelling": 2,
+    "word_form": 1,
+    "pronoun_ref": 1,
+    "fragment": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 20,
+    "max": 24,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 81,
+     "end": 95,
+     "code": "tense",
+     "quote": "He never smile",
+     "confirmed": true
+    },
+    {
+     "start": 328,
+     "end": 337,
+     "code": "tense",
+     "quote": "overflows",
+     "confirmed": true
+    },
+    {
+     "start": 442,
+     "end": 493,
+     "code": "comma_splice",
+     "quote": "The water was rising quickly, the dog was shivering",
+     "confirmed": true
+    },
+    {
+     "start": 543,
+     "end": 565,
+     "code": "preposition",
+     "quote": "afraid for the current",
+     "confirmed": true
+    },
+    {
+     "start": 631,
+     "end": 657,
+     "code": "article",
+     "quote": "carrying long wooden plank",
+     "confirmed": true
+    },
+    {
+     "start": 873,
+     "end": 894,
+     "code": "sva",
+     "quote": "his hands was shaking",
+     "confirmed": true
+    },
+    {
+     "start": 931,
+     "end": 943,
+     "code": "sva",
+     "quote": "It belong to",
+     "confirmed": true
+    },
+    {
+     "start": 1112,
+     "end": 1122,
+     "code": "spelling",
+     "quote": "hesistated",
+     "confirmed": true
+    },
+    {
+     "start": 1163,
+     "end": 1178,
+     "code": "word_form",
+     "quote": "I felt shame of",
+     "confirmed": true
+    },
+    {
+     "start": 1295,
+     "end": 1303,
+     "code": "spelling",
+     "quote": "suprised",
+     "confirmed": true
+    },
+    {
+     "start": 1493,
+     "end": 1532,
+     "code": "pronoun_ref",
+     "quote": "He had been the one who pulled him out.",
+     "confirmed": false
+    },
+    {
+     "start": 1534,
+     "end": 1580,
+     "code": "fragment",
+     "quote": "Since that day, greeting Mr Tan every morning.",
+     "confirmed": true
+    },
+    {
+     "start": 1629,
+     "end": 1663,
+     "code": "vague",
+     "quote": "a cold heart at the end of the day",
+     "confirmed": true
+    }
+   ],
+   "secs": 94
+  },
+  {
+   "key": "seeded-starter/clean",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "\"He told me that he shouted at children only when they played near the canal, because a boy had fallen into it many years ago\" — the belief, the event, the realisation and the change are all there and developed, and the opening is explained"
+    },
+    "language": {
+     "band": 5,
+     "min": 17,
+     "max": 20,
+     "descriptors": [
+      "Coherent and cohesive presentation of ideas across the whole of the response",
+      "Effective use of ambitious vocabulary and grammar structures",
+      "Complex vocabulary, grammar, punctuation and spelling used accurately"
+     ],
+     "evidence": "\"He had not hesitated for a second, while I had only watched.\" — controlled, varied sentences that are almost error-free and linked across the whole piece, though the vocabulary is plain rather than ambitious."
+    },
+    "total": {
+     "min": 24,
+     "max": 28,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     4,
+     4
+    ],
+    "language": [
+     5,
+     5,
+     5
+    ]
+   },
+   "code_counts": {
+    "pronoun_ref": 1
+   },
+   "reads": 3,
+   "dropped": 0,
+   "total": {
+    "min": 24,
+    "max": 28,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 1504,
+     "end": 1543,
+     "code": "pronoun_ref",
+     "quote": "He had been the one who pulled him out.",
+     "confirmed": true
+    }
+   ],
+   "secs": 107
+  },
+  {
+   "key": "bands-starter/b5.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"She had kept one pen and her calculator for herself and pushed everything else towards me\" — the act, its smallness and its lasting effect are all developed in detail."
+    },
+    "language": {
+     "band": 5,
+     "min": 17,
+     "max": 20,
+     "descriptors": [
+      "Coherent and cohesive presentation of ideas across the whole of the response",
+      "Effective use of ambitious vocabulary and grammar structures",
+      "Complex vocabulary, grammar, punctuation and spelling used accurately"
+     ],
+     "evidence": "\"I was not certain that I would have, and that uncertainty stayed with me far longer than the examination result did.\" — complex sentences controlled accurately from start to finish."
+    },
+    "total": {
+     "min": 26,
+     "max": 30,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     5
+    ],
+    "language": [
+     5,
+     5
+    ]
+   },
+   "code_counts": {},
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 26,
+    "max": 30,
+    "out_of": 30
+   },
+   "marks": [],
+   "secs": 50
+  },
+  {
+   "key": "bands-starter/b5.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"I was not certain that I would have, and that uncertainty stayed with me far longer than the examination result did.\" — the act, its effect and the lasting change are all developed in detail."
+    },
+    "language": {
+     "band": 5,
+     "min": 17,
+     "max": 20,
+     "descriptors": [
+      "Coherent and cohesive presentation of ideas across the whole of the response",
+      "Effective use of ambitious vocabulary and grammar structures",
+      "Complex vocabulary, grammar, punctuation and spelling used accurately"
+     ],
+     "evidence": "\"She had kept one pen and her calculator for herself and pushed everything else towards me, as casually as if she were passing the salt.\" — complex structures used accurately, with ideas linked across the whole piece."
+    },
+    "total": {
+     "min": 26,
+     "max": 30,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     5
+    ],
+    "language": [
+     5,
+     5
+    ]
+   },
+   "code_counts": {},
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 26,
+    "max": 30,
+    "out_of": 30
+   },
+   "marks": [],
+   "secs": 54
+  },
+  {
+   "key": "bands-starter/b4.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"Two dollars was a small amount, but to her it was probably a meal.\" — the small act and its big effect are both developed in detail, through to \"I greet the cleaners in my school every morning\"."
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "\"She just opened her small purse, took out a two-dollar note and pressed it into my hand.\" — accurate, well-linked and clear throughout, but the words and sentence patterns stay safe rather than ambitious."
+    },
+    "total": {
+     "min": 22,
+     "max": 26,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     5
+    ],
+    "language": [
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "tense": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 22,
+    "max": 26,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 405,
+     "end": 435,
+     "code": null,
+     "quote": "I had no coins with me as well",
+     "confirmed": true
+    },
+    {
+     "start": 1769,
+     "end": 1788,
+     "code": "tense",
+     "quote": "Since then, I greet",
+     "confirmed": true
+    }
+   ],
+   "secs": 73
+  },
+  {
+   "key": "bands-starter/b3.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "The act, the difference and the passing-on are all there ('I remembered what Jun Wei did, so I waved at him'), but each is told briefly rather than developed in detail."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "The story is clear and in order, but simple wording and repeated tense slips such as 'I stood there holding my plate and I feel very awkward' hold it back."
+    },
+    "total": {
+     "min": 16,
+     "max": 20,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     3,
+     3
+    ]
+   },
+   "code_counts": {
+    "vague": 1,
+    "tense": 6,
+    "sva": 1,
+    "comma_splice": 2,
+    "register": 2
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 16,
+    "max": 20,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 50,
+     "code": "vague",
+     "quote": "A small act of kindness can make a big difference.",
+     "confirmed": false
+    },
+    {
+     "start": 292,
+     "end": 308,
+     "code": "tense",
+     "quote": "but I walk alone",
+     "confirmed": true
+    },
+    {
+     "start": 390,
+     "end": 414,
+     "code": "sva",
+     "quote": "students who was talking",
+     "confirmed": true
+    },
+    {
+     "start": 464,
+     "end": 483,
+     "code": "tense",
+     "quote": "I feel very awkward",
+     "confirmed": true
+    },
+    {
+     "start": 500,
+     "end": 516,
+     "code": null,
+     "quote": "one of the table",
+     "confirmed": true
+    },
+    {
+     "start": 591,
+     "end": 608,
+     "code": "tense",
+     "quote": "so I can sit down",
+     "confirmed": true
+    },
+    {
+     "start": 767,
+     "end": 786,
+     "code": "comma_splice",
+     "quote": "football, I started",
+     "confirmed": true
+    },
+    {
+     "start": 951,
+     "end": 967,
+     "code": "tense",
+     "quote": "I begin to enjoy",
+     "confirmed": true
+    },
+    {
+     "start": 993,
+     "end": 1023,
+     "code": "tense",
+     "quote": "if he did not call me that day",
+     "confirmed": true
+    },
+    {
+     "start": 1025,
+     "end": 1046,
+     "code": "tense",
+     "quote": "I will be very lonely",
+     "confirmed": true
+    },
+    {
+     "start": 1243,
+     "end": 1257,
+     "code": "comma_splice",
+     "quote": "thing, it made",
+     "confirmed": true
+    },
+    {
+     "start": 1472,
+     "end": 1494,
+     "code": "register",
+     "quote": "just like me last time",
+     "confirmed": true
+    },
+    {
+     "start": 1576,
+     "end": 1600,
+     "code": "register",
+     "quote": "In conclusion, we should",
+     "confirmed": true
+    }
+   ],
+   "secs": 86
+  },
+  {
+   "key": "bands-starter/b3.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 4,
+     "min": 7,
+     "max": 8,
+     "descriptors": [
+      "All aspects of the task are addressed with some development"
+     ],
+     "evidence": "\"He just said one sentence and moved his bag. But for me it was a very big thing\" — the act and its effect are both there, with some development but little detail of feeling."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "\"I think if he did not call me that day, I will be very lonely for a long time\" — meaning is clear and the order is logical, but verbs keep slipping out of the past and sentences are mostly simple."
+    },
+    "total": {
+     "min": 16,
+     "max": 20,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     4
+    ],
+    "language": [
+     3,
+     3
+    ]
+   },
+   "code_counts": {
+    "tense": 6,
+    "sva": 1,
+    "comma_splice": 2,
+    "vague": 1,
+    "register": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 16,
+    "max": 20,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 292,
+     "end": 308,
+     "code": "tense",
+     "quote": "but I walk alone",
+     "confirmed": true
+    },
+    {
+     "start": 390,
+     "end": 414,
+     "code": "sva",
+     "quote": "students who was talking",
+     "confirmed": true
+    },
+    {
+     "start": 460,
+     "end": 483,
+     "code": "tense",
+     "quote": "and I feel very awkward",
+     "confirmed": true
+    },
+    {
+     "start": 500,
+     "end": 516,
+     "code": null,
+     "quote": "one of the table",
+     "confirmed": true
+    },
+    {
+     "start": 591,
+     "end": 608,
+     "code": "tense",
+     "quote": "so I can sit down",
+     "confirmed": true
+    },
+    {
+     "start": 767,
+     "end": 786,
+     "code": "comma_splice",
+     "quote": "football, I started",
+     "confirmed": true
+    },
+    {
+     "start": 951,
+     "end": 967,
+     "code": "tense",
+     "quote": "I begin to enjoy",
+     "confirmed": true
+    },
+    {
+     "start": 993,
+     "end": 1014,
+     "code": "tense",
+     "quote": "if he did not call me",
+     "confirmed": true
+    },
+    {
+     "start": 1025,
+     "end": 1046,
+     "code": "tense",
+     "quote": "I will be very lonely",
+     "confirmed": true
+    },
+    {
+     "start": 1232,
+     "end": 1242,
+     "code": "vague",
+     "quote": "a very big",
+     "confirmed": true
+    },
+    {
+     "start": 1243,
+     "end": 1257,
+     "code": "comma_splice",
+     "quote": "thing, it made",
+     "confirmed": true
+    },
+    {
+     "start": 1472,
+     "end": 1494,
+     "code": null,
+     "quote": "just like me last time",
+     "confirmed": true
+    },
+    {
+     "start": 1576,
+     "end": 1593,
+     "code": "register",
+     "quote": "In conclusion, we",
+     "confirmed": true
+    }
+   ],
+   "secs": 94
+  },
+  {
+   "key": "bands-starter/b4.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"The next week, I went back to the same bus stop at the same time with the money and a packet of biscuits.\" — the act and the difference it made are both developed in detail."
+    },
+    "language": {
+     "band": 4,
+     "min": 13,
+     "max": 16,
+     "descriptors": [
+      "Coherent presentation of ideas with some cohesion between paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey shades of meaning",
+      "Vocabulary, grammar, punctuation and spelling used mostly accurately"
+     ],
+     "evidence": "\"I stood at the bus stop feeling helpless and a little afraid, as the sky was getting dark.\" — accurate and well linked throughout, but the words and sentence patterns stay safe rather than ambitious."
+    },
+    "total": {
+     "min": 22,
+     "max": 26,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     4,
+     5
+    ],
+    "language": [
+     4,
+     4,
+     4
+    ]
+   },
+   "code_counts": {
+    "tense": 1
+   },
+   "reads": 3,
+   "dropped": 0,
+   "total": {
+    "min": 22,
+    "max": 26,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 428,
+     "end": 435,
+     "code": null,
+     "quote": "as well",
+     "confirmed": true
+    },
+    {
+     "start": 1781,
+     "end": 1788,
+     "code": "tense",
+     "quote": "I greet",
+     "confirmed": true
+    }
+   ],
+   "secs": 112
+  },
+  {
+   "key": "bands-starter/b1.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 2,
+     "min": 3,
+     "max": 4,
+     "descriptors": [
+      "Some aspects of the task are addressed"
+     ],
+     "evidence": "\"Last time my friend he no have money for buy food so I give.\" The kind act is told in one sentence, the big difference is never shown, and the essay is far too short."
+    },
+    "language": {
+     "band": 2,
+     "min": 5,
+     "max": 8,
+     "descriptors": [
+      "Some ideas coherently presented with attempts at achieving cohesion",
+      "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+      "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+     ],
+     "evidence": "\"He very happy then he say thank.\" The meaning is clear, but the sentences are simple and most have a missing verb or the wrong tense."
+    },
+    "total": {
+     "min": 8,
+     "max": 12,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     2,
+     2
+    ],
+    "language": [
+     2,
+     2
+    ]
+   },
+   "code_counts": {
+    "length": 1,
+    "article": 2,
+    "tense": 7,
+    "sva": 5,
+    "fragment": 5,
+    "preposition": 1,
+    "word_form": 3,
+    "paragraph": 1,
+    "off_task": 1,
+    "spelling": 1,
+    "vague": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 8,
+    "max": 12,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 8,
+     "code": "length",
+     "quote": "Kindness",
+     "confirmed": true
+    },
+    {
+     "start": 9,
+     "end": 22,
+     "code": "article",
+     "quote": "is good thing",
+     "confirmed": true
+    },
+    {
+     "start": 34,
+     "end": 43,
+     "code": "tense",
+     "quote": "must kind",
+     "confirmed": true
+    },
+    {
+     "start": 45,
+     "end": 65,
+     "code": "sva",
+     "quote": "My mother always say",
+     "confirmed": true
+    },
+    {
+     "start": 89,
+     "end": 112,
+     "code": "fragment",
+     "quote": "people kind to you back",
+     "confirmed": true
+    },
+    {
+     "start": 115,
+     "end": 124,
+     "code": null,
+     "quote": "Last time",
+     "confirmed": true
+    },
+    {
+     "start": 125,
+     "end": 137,
+     "code": null,
+     "quote": "my friend he",
+     "confirmed": true
+    },
+    {
+     "start": 138,
+     "end": 151,
+     "code": "tense",
+     "quote": "no have money",
+     "confirmed": true
+    },
+    {
+     "start": 152,
+     "end": 164,
+     "code": "preposition",
+     "quote": "for buy food",
+     "confirmed": true
+    },
+    {
+     "start": 165,
+     "end": 174,
+     "code": "tense",
+     "quote": "so I give",
+     "confirmed": true
+    },
+    {
+     "start": 176,
+     "end": 189,
+     "code": "fragment",
+     "quote": "He very happy",
+     "confirmed": true
+    },
+    {
+     "start": 195,
+     "end": 201,
+     "code": "tense",
+     "quote": "he say",
+     "confirmed": true
+    },
+    {
+     "start": 202,
+     "end": 208,
+     "code": "word_form",
+     "quote": "thank.",
+     "confirmed": true
+    },
+    {
+     "start": 209,
+     "end": 219,
+     "code": "paragraph",
+     "quote": "After that",
+     "confirmed": false
+    },
+    {
+     "start": 220,
+     "end": 236,
+     "code": "tense",
+     "quote": "we play football",
+     "confirmed": true
+    },
+    {
+     "start": 268,
+     "end": 279,
+     "code": "tense",
+     "quote": "my team win",
+     "confirmed": true
+    },
+    {
+     "start": 280,
+     "end": 290,
+     "code": "word_form",
+     "quote": "three goal",
+     "confirmed": true
+    },
+    {
+     "start": 292,
+     "end": 317,
+     "code": "off_task",
+     "quote": "I like football very much",
+     "confirmed": true
+    },
+    {
+     "start": 318,
+     "end": 332,
+     "code": null,
+     "quote": "because is fun",
+     "confirmed": true
+    },
+    {
+     "start": 337,
+     "end": 352,
+     "code": null,
+     "quote": "can make friend",
+     "confirmed": true
+    },
+    {
+     "start": 391,
+     "end": 404,
+     "code": "sva",
+     "quote": "he score many",
+     "confirmed": true
+    },
+    {
+     "start": 407,
+     "end": 415,
+     "code": "spelling",
+     "quote": "Sometime",
+     "confirmed": true
+    },
+    {
+     "start": 416,
+     "end": 431,
+     "code": "fragment",
+     "quote": "people not kind",
+     "confirmed": true
+    },
+    {
+     "start": 436,
+     "end": 443,
+     "code": "fragment",
+     "quote": "I angry",
+     "confirmed": true
+    },
+    {
+     "start": 450,
+     "end": 463,
+     "code": null,
+     "quote": "my brother he",
+     "confirmed": true
+    },
+    {
+     "start": 464,
+     "end": 477,
+     "code": "sva",
+     "quote": "take my thing",
+     "confirmed": true
+    },
+    {
+     "start": 478,
+     "end": 487,
+     "code": null,
+     "quote": "never ask",
+     "confirmed": true
+    },
+    {
+     "start": 493,
+     "end": 519,
+     "code": "sva",
+     "quote": "my mother say must forgive",
+     "confirmed": true
+    },
+    {
+     "start": 525,
+     "end": 538,
+     "code": "sva",
+     "quote": "kindness make",
+     "confirmed": true
+    },
+    {
+     "start": 539,
+     "end": 552,
+     "code": "word_form",
+     "quote": "big different",
+     "confirmed": true
+    },
+    {
+     "start": 553,
+     "end": 568,
+     "code": null,
+     "quote": "because is good",
+     "confirmed": true
+    },
+    {
+     "start": 573,
+     "end": 588,
+     "code": "fragment",
+     "quote": "everybody happy",
+     "confirmed": true
+    },
+    {
+     "start": 590,
+     "end": 601,
+     "code": "tense",
+     "quote": "I will kind",
+     "confirmed": true
+    },
+    {
+     "start": 628,
+     "end": 652,
+     "code": "vague",
+     "quote": "That is all for my story",
+     "confirmed": true
+    },
+    {
+     "start": 653,
+     "end": 671,
+     "code": "article",
+     "quote": "about the kindness",
+     "confirmed": true
+    }
+   ],
+   "secs": 142
+  },
+  {
+   "key": "bands-starter/b2.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 2,
+     "min": 3,
+     "max": 4,
+     "descriptors": [
+      "Some aspects of the task are addressed"
+     ],
+     "evidence": "\"That is the small act of kindness that I remember.\" — the kindness is told in a few lines, the big difference is never shown, and the essay is well short of the word range."
+    },
+    "language": {
+     "band": 2,
+     "min": 5,
+     "max": 8,
+     "descriptors": [
+      "Some ideas coherently presented with attempts at achieving cohesion",
+      "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+      "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+     ],
+     "evidence": "\"Then one auntie she see me and she share her umbrella with me.\" — simple sentences whose meaning is clear, but the tense is wrong in almost every one."
+    },
+    "total": {
+     "min": 8,
+     "max": 12,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     2,
+     2
+    ],
+    "language": [
+     2,
+     2
+    ]
+   },
+   "code_counts": {
+    "length": 1,
+    "tense": 23,
+    "word_form": 1,
+    "collocation": 1,
+    "article": 7,
+    "preposition": 1,
+    "punctuation": 1,
+    "off_task": 2,
+    "sva": 2,
+    "spelling": 2
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 8,
+    "max": 12,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 7,
+     "code": "length",
+     "quote": "One day",
+     "confirmed": false
+    },
+    {
+     "start": 8,
+     "end": 26,
+     "code": "tense",
+     "quote": "I was go to school",
+     "confirmed": true
+    },
+    {
+     "start": 35,
+     "end": 54,
+     "code": "tense",
+     "quote": "That day is raining",
+     "confirmed": true
+    },
+    {
+     "start": 55,
+     "end": 65,
+     "code": "word_form",
+     "quote": "very heavy",
+     "confirmed": true
+    },
+    {
+     "start": 70,
+     "end": 87,
+     "code": "tense",
+     "quote": "I forget to bring",
+     "confirmed": true
+    },
+    {
+     "start": 108,
+     "end": 130,
+     "code": "collocation",
+     "quote": "come down from the bus",
+     "confirmed": true
+    },
+    {
+     "start": 131,
+     "end": 157,
+     "code": null,
+     "quote": "my uniform all wet already",
+     "confirmed": true
+    },
+    {
+     "start": 182,
+     "end": 188,
+     "code": "tense",
+     "quote": "I have",
+     "confirmed": true
+    },
+    {
+     "start": 189,
+     "end": 205,
+     "code": "article",
+     "quote": "test on that day",
+     "confirmed": true
+    },
+    {
+     "start": 210,
+     "end": 232,
+     "code": "tense",
+     "quote": "my paper will wet also",
+     "confirmed": true
+    },
+    {
+     "start": 240,
+     "end": 254,
+     "code": null,
+     "quote": "one auntie she",
+     "confirmed": true
+    },
+    {
+     "start": 255,
+     "end": 261,
+     "code": "tense",
+     "quote": "see me",
+     "confirmed": true
+    },
+    {
+     "start": 266,
+     "end": 288,
+     "code": "tense",
+     "quote": "she share her umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 298,
+     "end": 314,
+     "code": "tense",
+     "quote": "She walk with me",
+     "confirmed": true
+    },
+    {
+     "start": 315,
+     "end": 336,
+     "code": "preposition",
+     "quote": "until the school gate",
+     "confirmed": true
+    },
+    {
+     "start": 338,
+     "end": 353,
+     "code": "tense",
+     "quote": "I say thank you",
+     "confirmed": true
+    },
+    {
+     "start": 365,
+     "end": 372,
+     "code": "tense",
+     "quote": "she say",
+     "confirmed": true
+    },
+    {
+     "start": 373,
+     "end": 383,
+     "code": "punctuation",
+     "quote": "never mind",
+     "confirmed": true
+    },
+    {
+     "start": 385,
+     "end": 402,
+     "code": "tense",
+     "quote": "She is very kind.",
+     "confirmed": true
+    },
+    {
+     "start": 438,
+     "end": 454,
+     "code": "tense",
+     "quote": "I go to my class",
+     "confirmed": true
+    },
+    {
+     "start": 466,
+     "end": 487,
+     "code": "tense",
+     "quote": "ask me why you so wet",
+     "confirmed": true
+    },
+    {
+     "start": 492,
+     "end": 502,
+     "code": "tense",
+     "quote": "I tell him",
+     "confirmed": true
+    },
+    {
+     "start": 519,
+     "end": 531,
+     "code": "article",
+     "quote": "Then teacher",
+     "confirmed": true
+    },
+    {
+     "start": 532,
+     "end": 539,
+     "code": "tense",
+     "quote": "come in",
+     "confirmed": true
+    },
+    {
+     "start": 544,
+     "end": 558,
+     "code": "tense",
+     "quote": "we do the test",
+     "confirmed": true
+    },
+    {
+     "start": 560,
+     "end": 583,
+     "code": "off_task",
+     "quote": "The test was very hard.",
+     "confirmed": true
+    },
+    {
+     "start": 584,
+     "end": 605,
+     "code": "tense",
+     "quote": "I think I cannot pass",
+     "confirmed": true
+    },
+    {
+     "start": 616,
+     "end": 627,
+     "code": "tense",
+     "quote": "never study",
+     "confirmed": true
+    },
+    {
+     "start": 628,
+     "end": 644,
+     "code": "article",
+     "quote": "the chapter five",
+     "confirmed": true
+    },
+    {
+     "start": 661,
+     "end": 677,
+     "code": "tense",
+     "quote": "we go for recess",
+     "confirmed": true
+    },
+    {
+     "start": 682,
+     "end": 695,
+     "code": "tense",
+     "quote": "I eat noodles",
+     "confirmed": true
+    },
+    {
+     "start": 712,
+     "end": 733,
+     "code": "sva",
+     "quote": "The noodles was nice.",
+     "confirmed": true
+    },
+    {
+     "start": 735,
+     "end": 749,
+     "code": "tense",
+     "quote": "When I go home",
+     "confirmed": true
+    },
+    {
+     "start": 750,
+     "end": 766,
+     "code": "tense",
+     "quote": "I tell my mother",
+     "confirmed": true
+    },
+    {
+     "start": 785,
+     "end": 798,
+     "code": "tense",
+     "quote": "My mother say",
+     "confirmed": true
+    },
+    {
+     "start": 810,
+     "end": 824,
+     "code": "article",
+     "quote": "is good person",
+     "confirmed": true
+    },
+    {
+     "start": 839,
+     "end": 860,
+     "code": "article",
+     "quote": "I must bring umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 871,
+     "end": 892,
+     "code": "article",
+     "quote": "always bring umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 903,
+     "end": 911,
+     "code": "spelling",
+     "quote": "everyday",
+     "confirmed": true
+    },
+    {
+     "start": 913,
+     "end": 921,
+     "code": "spelling",
+     "quote": "Sometime",
+     "confirmed": true
+    },
+    {
+     "start": 938,
+     "end": 952,
+     "code": null,
+     "quote": "I still bring.",
+     "confirmed": true
+    },
+    {
+     "start": 992,
+     "end": 1012,
+     "code": "sva",
+     "quote": "it make people happy",
+     "confirmed": true
+    },
+    {
+     "start": 1050,
+     "end": 1064,
+     "code": "article",
+     "quote": "very bad place",
+     "confirmed": true
+    },
+    {
+     "start": 1114,
+     "end": 1164,
+     "code": "off_task",
+     "quote": "That is the small act of kindness that I remember.",
+     "confirmed": true
+    }
+   ],
+   "secs": 146
+  },
+  {
+   "key": "bands-starter/b2.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 2,
+     "min": 3,
+     "max": 4,
+     "descriptors": [
+      "Some aspects of the task are addressed"
+     ],
+     "evidence": "The act is told ('she share her umbrella with me') but the big difference is never shown, a paragraph drifts to 'The noodles was nice', and the essay is well short of the word range."
+    },
+    "language": {
+     "band": 2,
+     "min": 5,
+     "max": 8,
+     "descriptors": [
+      "Some ideas coherently presented with attempts at achieving cohesion",
+      "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+      "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+     ],
+     "evidence": "Simple sentences with meaning usually clear but errors in most of them, e.g. 'Then one auntie she see me and she share her umbrella with me.'"
+    },
+    "total": {
+     "min": 8,
+     "max": 12,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     2,
+     2
+    ],
+    "language": [
+     2,
+     2
+    ]
+   },
+   "code_counts": {
+    "tense": 24,
+    "word_form": 1,
+    "article": 7,
+    "preposition": 1,
+    "punctuation": 2,
+    "off_task": 2,
+    "sva": 2,
+    "vague": 1,
+    "spelling": 2,
+    "length": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 8,
+    "max": 12,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 8,
+     "end": 26,
+     "code": "tense",
+     "quote": "I was go to school",
+     "confirmed": true
+    },
+    {
+     "start": 35,
+     "end": 54,
+     "code": "tense",
+     "quote": "That day is raining",
+     "confirmed": true
+    },
+    {
+     "start": 55,
+     "end": 65,
+     "code": "word_form",
+     "quote": "very heavy",
+     "confirmed": true
+    },
+    {
+     "start": 70,
+     "end": 87,
+     "code": "tense",
+     "quote": "I forget to bring",
+     "confirmed": true
+    },
+    {
+     "start": 106,
+     "end": 130,
+     "code": "tense",
+     "quote": "I come down from the bus",
+     "confirmed": true
+    },
+    {
+     "start": 131,
+     "end": 157,
+     "code": null,
+     "quote": "my uniform all wet already",
+     "confirmed": true
+    },
+    {
+     "start": 174,
+     "end": 188,
+     "code": "tense",
+     "quote": "because I have",
+     "confirmed": true
+    },
+    {
+     "start": 189,
+     "end": 205,
+     "code": "article",
+     "quote": "test on that day",
+     "confirmed": true
+    },
+    {
+     "start": 210,
+     "end": 232,
+     "code": "tense",
+     "quote": "my paper will wet also",
+     "confirmed": true
+    },
+    {
+     "start": 240,
+     "end": 254,
+     "code": null,
+     "quote": "one auntie she",
+     "confirmed": true
+    },
+    {
+     "start": 255,
+     "end": 261,
+     "code": "tense",
+     "quote": "see me",
+     "confirmed": true
+    },
+    {
+     "start": 266,
+     "end": 288,
+     "code": "tense",
+     "quote": "she share her umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 298,
+     "end": 314,
+     "code": "tense",
+     "quote": "She walk with me",
+     "confirmed": true
+    },
+    {
+     "start": 315,
+     "end": 336,
+     "code": "preposition",
+     "quote": "until the school gate",
+     "confirmed": true
+    },
+    {
+     "start": 338,
+     "end": 353,
+     "code": "tense",
+     "quote": "I say thank you",
+     "confirmed": true
+    },
+    {
+     "start": 365,
+     "end": 372,
+     "code": "tense",
+     "quote": "she say",
+     "confirmed": true
+    },
+    {
+     "start": 373,
+     "end": 383,
+     "code": "punctuation",
+     "quote": "never mind",
+     "confirmed": true
+    },
+    {
+     "start": 385,
+     "end": 401,
+     "code": "tense",
+     "quote": "She is very kind",
+     "confirmed": true
+    },
+    {
+     "start": 438,
+     "end": 454,
+     "code": "tense",
+     "quote": "I go to my class",
+     "confirmed": true
+    },
+    {
+     "start": 456,
+     "end": 472,
+     "code": "tense",
+     "quote": "My friend ask me",
+     "confirmed": true
+    },
+    {
+     "start": 473,
+     "end": 487,
+     "code": null,
+     "quote": "why you so wet",
+     "confirmed": true
+    },
+    {
+     "start": 492,
+     "end": 502,
+     "code": "tense",
+     "quote": "I tell him",
+     "confirmed": true
+    },
+    {
+     "start": 519,
+     "end": 531,
+     "code": "article",
+     "quote": "Then teacher",
+     "confirmed": true
+    },
+    {
+     "start": 532,
+     "end": 539,
+     "code": "tense",
+     "quote": "come in",
+     "confirmed": true
+    },
+    {
+     "start": 544,
+     "end": 558,
+     "code": "tense",
+     "quote": "we do the test",
+     "confirmed": true
+    },
+    {
+     "start": 560,
+     "end": 583,
+     "code": "off_task",
+     "quote": "The test was very hard.",
+     "confirmed": true
+    },
+    {
+     "start": 584,
+     "end": 605,
+     "code": "tense",
+     "quote": "I think I cannot pass",
+     "confirmed": true
+    },
+    {
+     "start": 614,
+     "end": 627,
+     "code": "tense",
+     "quote": "I never study",
+     "confirmed": true
+    },
+    {
+     "start": 628,
+     "end": 644,
+     "code": "article",
+     "quote": "the chapter five",
+     "confirmed": true
+    },
+    {
+     "start": 661,
+     "end": 677,
+     "code": "tense",
+     "quote": "we go for recess",
+     "confirmed": true
+    },
+    {
+     "start": 682,
+     "end": 695,
+     "code": "tense",
+     "quote": "I eat noodles",
+     "confirmed": true
+    },
+    {
+     "start": 712,
+     "end": 727,
+     "code": "sva",
+     "quote": "The noodles was",
+     "confirmed": true
+    },
+    {
+     "start": 728,
+     "end": 732,
+     "code": "vague",
+     "quote": "nice",
+     "confirmed": true
+    },
+    {
+     "start": 735,
+     "end": 749,
+     "code": "tense",
+     "quote": "When I go home",
+     "confirmed": true
+    },
+    {
+     "start": 750,
+     "end": 766,
+     "code": "tense",
+     "quote": "I tell my mother",
+     "confirmed": true
+    },
+    {
+     "start": 785,
+     "end": 798,
+     "code": "tense",
+     "quote": "My mother say",
+     "confirmed": true
+    },
+    {
+     "start": 810,
+     "end": 824,
+     "code": "article",
+     "quote": "is good person",
+     "confirmed": true
+    },
+    {
+     "start": 839,
+     "end": 860,
+     "code": "article",
+     "quote": "I must bring umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 869,
+     "end": 892,
+     "code": "article",
+     "quote": "I always bring umbrella",
+     "confirmed": true
+    },
+    {
+     "start": 903,
+     "end": 911,
+     "code": "spelling",
+     "quote": "everyday",
+     "confirmed": true
+    },
+    {
+     "start": 913,
+     "end": 921,
+     "code": "spelling",
+     "quote": "Sometime",
+     "confirmed": true
+    },
+    {
+     "start": 938,
+     "end": 951,
+     "code": null,
+     "quote": "I still bring",
+     "confirmed": true
+    },
+    {
+     "start": 992,
+     "end": 1012,
+     "code": "sva",
+     "quote": "it make people happy",
+     "confirmed": true
+    },
+    {
+     "start": 1014,
+     "end": 1041,
+     "code": "punctuation",
+     "quote": "If nobody is kind the world",
+     "confirmed": true
+    },
+    {
+     "start": 1050,
+     "end": 1064,
+     "code": "article",
+     "quote": "very bad place",
+     "confirmed": true
+    },
+    {
+     "start": 1066,
+     "end": 1113,
+     "code": "off_task",
+     "quote": "So we must be kind to everyone like the auntie.",
+     "confirmed": false
+    },
+    {
+     "start": 1114,
+     "end": 1164,
+     "code": "length",
+     "quote": "That is the small act of kindness that I remember.",
+     "confirmed": true
+    }
+   ],
+   "secs": 155
+  },
+  {
+   "key": "bands-starter/b1.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 2,
+     "min": 3,
+     "max": 4,
+     "descriptors": [
+      "Some aspects of the task are addressed"
+     ],
+     "evidence": "The act of kindness is one line, \"so I give\", and the \"big difference\" is only claimed (\"because is good and everybody happy\"); the rest is football, and the essay is far too short."
+    },
+    "language": {
+     "band": 2,
+     "min": 5,
+     "max": 8,
+     "descriptors": [
+      "Some ideas coherently presented with attempts at achieving cohesion",
+      "Mostly simple vocabulary and grammar structures used; meaning is usually clear",
+      "Vocabulary, grammar, punctuation and spelling used with varying degrees of accuracy"
+     ],
+     "evidence": "\"Last time my friend he no have money for buy food so I give\" — the meaning is clear and the order is easy to follow, but the words are simple and almost every sentence has a verb missing or in the wrong form."
+    },
+    "total": {
+     "min": 8,
+     "max": 12,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     2,
+     2
+    ],
+    "language": [
+     2,
+     2
+    ]
+   },
+   "code_counts": {
+    "article": 2,
+    "fragment": 7,
+    "sva": 5,
+    "vague": 2,
+    "tense": 5,
+    "preposition": 1,
+    "off_task": 2,
+    "word_form": 3,
+    "spelling": 1,
+    "collocation": 1,
+    "length": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 8,
+    "max": 12,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 22,
+     "code": "article",
+     "quote": "Kindness is good thing",
+     "confirmed": true
+    },
+    {
+     "start": 24,
+     "end": 43,
+     "code": "fragment",
+     "quote": "Everybody must kind",
+     "confirmed": true
+    },
+    {
+     "start": 45,
+     "end": 65,
+     "code": "sva",
+     "quote": "My mother always say",
+     "confirmed": true
+    },
+    {
+     "start": 89,
+     "end": 112,
+     "code": "fragment",
+     "quote": "people kind to you back",
+     "confirmed": true
+    },
+    {
+     "start": 115,
+     "end": 124,
+     "code": "vague",
+     "quote": "Last time",
+     "confirmed": true
+    },
+    {
+     "start": 125,
+     "end": 137,
+     "code": null,
+     "quote": "my friend he",
+     "confirmed": true
+    },
+    {
+     "start": 138,
+     "end": 151,
+     "code": "tense",
+     "quote": "no have money",
+     "confirmed": true
+    },
+    {
+     "start": 152,
+     "end": 164,
+     "code": "preposition",
+     "quote": "for buy food",
+     "confirmed": true
+    },
+    {
+     "start": 165,
+     "end": 174,
+     "code": "tense",
+     "quote": "so I give",
+     "confirmed": true
+    },
+    {
+     "start": 176,
+     "end": 189,
+     "code": "fragment",
+     "quote": "He very happy",
+     "confirmed": true
+    },
+    {
+     "start": 195,
+     "end": 207,
+     "code": "tense",
+     "quote": "he say thank",
+     "confirmed": true
+    },
+    {
+     "start": 209,
+     "end": 219,
+     "code": "off_task",
+     "quote": "After that",
+     "confirmed": true
+    },
+    {
+     "start": 220,
+     "end": 236,
+     "code": "tense",
+     "quote": "we play football",
+     "confirmed": true
+    },
+    {
+     "start": 268,
+     "end": 279,
+     "code": "tense",
+     "quote": "my team win",
+     "confirmed": true
+    },
+    {
+     "start": 280,
+     "end": 290,
+     "code": "word_form",
+     "quote": "three goal",
+     "confirmed": true
+    },
+    {
+     "start": 318,
+     "end": 332,
+     "code": null,
+     "quote": "because is fun",
+     "confirmed": true
+    },
+    {
+     "start": 337,
+     "end": 352,
+     "code": "word_form",
+     "quote": "can make friend",
+     "confirmed": true
+    },
+    {
+     "start": 354,
+     "end": 386,
+     "code": "off_task",
+     "quote": "My favourite player is very fast",
+     "confirmed": true
+    },
+    {
+     "start": 391,
+     "end": 404,
+     "code": "sva",
+     "quote": "he score many",
+     "confirmed": true
+    },
+    {
+     "start": 407,
+     "end": 415,
+     "code": "spelling",
+     "quote": "Sometime",
+     "confirmed": true
+    },
+    {
+     "start": 416,
+     "end": 431,
+     "code": "fragment",
+     "quote": "people not kind",
+     "confirmed": true
+    },
+    {
+     "start": 436,
+     "end": 443,
+     "code": "fragment",
+     "quote": "I angry",
+     "confirmed": true
+    },
+    {
+     "start": 450,
+     "end": 463,
+     "code": null,
+     "quote": "my brother he",
+     "confirmed": true
+    },
+    {
+     "start": 464,
+     "end": 477,
+     "code": "sva",
+     "quote": "take my thing",
+     "confirmed": true
+    },
+    {
+     "start": 478,
+     "end": 487,
+     "code": "collocation",
+     "quote": "never ask",
+     "confirmed": true
+    },
+    {
+     "start": 489,
+     "end": 519,
+     "code": "sva",
+     "quote": "But my mother say must forgive",
+     "confirmed": true
+    },
+    {
+     "start": 525,
+     "end": 538,
+     "code": "sva",
+     "quote": "kindness make",
+     "confirmed": true
+    },
+    {
+     "start": 539,
+     "end": 552,
+     "code": "word_form",
+     "quote": "big different",
+     "confirmed": true
+    },
+    {
+     "start": 553,
+     "end": 568,
+     "code": null,
+     "quote": "because is good",
+     "confirmed": true
+    },
+    {
+     "start": 573,
+     "end": 588,
+     "code": "fragment",
+     "quote": "everybody happy",
+     "confirmed": true
+    },
+    {
+     "start": 590,
+     "end": 601,
+     "code": "fragment",
+     "quote": "I will kind",
+     "confirmed": true
+    },
+    {
+     "start": 612,
+     "end": 626,
+     "code": "article",
+     "quote": "in future also",
+     "confirmed": false
+    },
+    {
+     "start": 628,
+     "end": 652,
+     "code": "vague",
+     "quote": "That is all for my story",
+     "confirmed": true
+    },
+    {
+     "start": 653,
+     "end": 671,
+     "code": "length",
+     "quote": "about the kindness",
+     "confirmed": true
+    }
+   ],
+   "secs": 144
+  },
+  {
+   "key": "bands-starter/b42.txt#2",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"I see that the big difference was not only the job. Is that somebody sit with my father when he feel useless\" — the act, its effect and its meaning are all developed with telling detail."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "\"He just bring two cup of coffee and sit down beside my father.\" — clear and well ordered, but simple structures and verbs left in the present throughout a past story."
+    },
+    "total": {
+     "min": 18,
+     "max": 22,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     5,
+     5
+    ],
+    "language": [
+     3,
+     3
+    ]
+   },
+   "code_counts": {
+    "preposition": 3,
+    "tense": 33,
+    "punctuation": 2,
+    "collocation": 3,
+    "article": 3,
+    "word_form": 1,
+    "comma_splice": 3,
+    "fragment": 1
+   },
+   "reads": 2,
+   "dropped": 0,
+   "total": {
+    "min": 18,
+    "max": 22,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 24,
+     "code": "preposition",
+     "quote": "When I was Secondary Two",
+     "confirmed": true
+    },
+    {
+     "start": 25,
+     "end": 37,
+     "code": "tense",
+     "quote": "I learn that",
+     "confirmed": true
+    },
+    {
+     "start": 70,
+     "end": 89,
+     "code": "punctuation",
+     "quote": "a person whole year",
+     "confirmed": true
+    },
+    {
+     "start": 91,
+     "end": 116,
+     "code": "tense",
+     "quote": "This is what happen to me",
+     "confirmed": true
+    },
+    {
+     "start": 121,
+     "end": 139,
+     "code": "collocation",
+     "quote": "my neighbour uncle",
+     "confirmed": false
+    },
+    {
+     "start": 142,
+     "end": 161,
+     "code": "preposition",
+     "quote": "That time my father",
+     "confirmed": true
+    },
+    {
+     "start": 176,
+     "end": 188,
+     "code": "tense",
+     "quote": "He was drive",
+     "confirmed": true
+    },
+    {
+     "start": 189,
+     "end": 208,
+     "code": "article",
+     "quote": "lorry for a company",
+     "confirmed": true
+    },
+    {
+     "start": 232,
+     "end": 254,
+     "code": "tense",
+     "quote": "the company close down",
+     "confirmed": true
+    },
+    {
+     "start": 285,
+     "end": 308,
+     "code": "tense",
+     "quote": "My mother start to cook",
+     "confirmed": true
+    },
+    {
+     "start": 323,
+     "end": 352,
+     "code": "tense",
+     "quote": "my father sit at the corridor",
+     "confirmed": true
+    },
+    {
+     "start": 367,
+     "end": 390,
+     "code": "tense",
+     "quote": "and look at the carpark",
+     "confirmed": true
+    },
+    {
+     "start": 392,
+     "end": 403,
+     "code": "word_form",
+     "quote": "I was worry",
+     "confirmed": true
+    },
+    {
+     "start": 408,
+     "end": 420,
+     "code": "tense",
+     "quote": "I don't know",
+     "confirmed": true
+    },
+    {
+     "start": 428,
+     "end": 452,
+     "code": "comma_splice",
+     "quote": "help, I am only fourteen",
+     "confirmed": true
+    },
+    {
+     "start": 470,
+     "end": 490,
+     "code": "tense",
+     "quote": "Uncle Rahim, he stay",
+     "confirmed": true
+    },
+    {
+     "start": 491,
+     "end": 507,
+     "code": "preposition",
+     "quote": "at the next door",
+     "confirmed": true
+    },
+    {
+     "start": 527,
+     "end": 544,
+     "code": "tense",
+     "quote": "we only say hello",
+     "confirmed": true
+    },
+    {
+     "start": 558,
+     "end": 574,
+     "code": "tense",
+     "quote": "he see my father",
+     "confirmed": true
+    },
+    {
+     "start": 613,
+     "end": 625,
+     "code": null,
+     "quote": "any question",
+     "confirmed": true
+    },
+    {
+     "start": 627,
+     "end": 640,
+     "code": "tense",
+     "quote": "He just bring",
+     "confirmed": true
+    },
+    {
+     "start": 641,
+     "end": 658,
+     "code": null,
+     "quote": "two cup of coffee",
+     "confirmed": true
+    },
+    {
+     "start": 659,
+     "end": 678,
+     "code": "tense",
+     "quote": "and sit down beside",
+     "confirmed": true
+    },
+    {
+     "start": 690,
+     "end": 710,
+     "code": "tense",
+     "quote": "They never talk much",
+     "confirmed": true
+    },
+    {
+     "start": 729,
+     "end": 742,
+     "code": "tense",
+     "quote": "he come again",
+     "confirmed": true
+    },
+    {
+     "start": 767,
+     "end": 798,
+     "code": "comma_splice",
+     "quote": "It was only coffee, it cost him",
+     "confirmed": true
+    },
+    {
+     "start": 837,
+     "end": 860,
+     "code": "tense",
+     "quote": "my father start to talk",
+     "confirmed": true
+    },
+    {
+     "start": 869,
+     "end": 888,
+     "code": "tense",
+     "quote": "He tell Uncle Rahim",
+     "confirmed": true
+    },
+    {
+     "start": 915,
+     "end": 942,
+     "code": "tense",
+     "quote": "how he scared he is too old",
+     "confirmed": true
+    },
+    {
+     "start": 943,
+     "end": 958,
+     "code": "article",
+     "quote": "to find new job",
+     "confirmed": true
+    },
+    {
+     "start": 960,
+     "end": 978,
+     "code": "tense",
+     "quote": "Uncle Rahim listen",
+     "confirmed": true
+    },
+    {
+     "start": 980,
+     "end": 991,
+     "code": "tense",
+     "quote": "Then he say",
+     "confirmed": true
+    },
+    {
+     "start": 992,
+     "end": 1010,
+     "code": "punctuation",
+     "quote": "his cousin company",
+     "confirmed": true
+    },
+    {
+     "start": 1011,
+     "end": 1024,
+     "code": "tense",
+     "quote": "need a driver",
+     "confirmed": true
+    },
+    {
+     "start": 1029,
+     "end": 1046,
+     "code": "comma_splice",
+     "quote": "delivery, the pay",
+     "confirmed": true
+    },
+    {
+     "start": 1047,
+     "end": 1077,
+     "code": "tense",
+     "quote": "is not high but is honest work",
+     "confirmed": true
+    },
+    {
+     "start": 1079,
+     "end": 1104,
+     "code": "tense",
+     "quote": "He write the phone number",
+     "confirmed": true
+    },
+    {
+     "start": 1135,
+     "end": 1150,
+     "code": "collocation",
+     "quote": "was shy to call",
+     "confirmed": false
+    },
+    {
+     "start": 1165,
+     "end": 1183,
+     "code": "tense",
+     "quote": "the cup just stand",
+     "confirmed": true
+    },
+    {
+     "start": 1209,
+     "end": 1227,
+     "code": "tense",
+     "quote": "I look at that cup",
+     "confirmed": true
+    },
+    {
+     "start": 1239,
+     "end": 1255,
+     "code": "tense",
+     "quote": "I do my homework",
+     "confirmed": true
+    },
+    {
+     "start": 1268,
+     "end": 1284,
+     "code": null,
+     "quote": "my mother and me",
+     "confirmed": true
+    },
+    {
+     "start": 1285,
+     "end": 1301,
+     "code": "tense",
+     "quote": "push him to call",
+     "confirmed": true
+    },
+    {
+     "start": 1373,
+     "end": 1396,
+     "code": "tense",
+     "quote": "My father whistle again",
+     "confirmed": true
+    },
+    {
+     "start": 1397,
+     "end": 1419,
+     "code": "collocation",
+     "quote": "when he wear his shoes",
+     "confirmed": true
+    },
+    {
+     "start": 1436,
+     "end": 1456,
+     "code": "tense",
+     "quote": "My mother cook curry",
+     "confirmed": true
+    },
+    {
+     "start": 1467,
+     "end": 1486,
+     "code": "tense",
+     "quote": "and ask me to bring",
+     "confirmed": true
+    },
+    {
+     "start": 1512,
+     "end": 1522,
+     "code": "tense",
+     "quote": "I see that",
+     "confirmed": true
+    },
+    {
+     "start": 1564,
+     "end": 1584,
+     "code": "fragment",
+     "quote": "Is that somebody sit",
+     "confirmed": true
+    },
+    {
+     "start": 1600,
+     "end": 1620,
+     "code": "tense",
+     "quote": "when he feel useless",
+     "confirmed": true
+    },
+    {
+     "start": 1718,
+     "end": 1732,
+     "code": "article",
+     "quote": "some neighbour",
+     "confirmed": true
+    },
+    {
+     "start": 1822,
+     "end": 1833,
+     "code": null,
+     "quote": "five minute",
+     "confirmed": true
+    },
+    {
+     "start": 1835,
+     "end": 1856,
+     "code": "tense",
+     "quote": "like Uncle Rahim give",
+     "confirmed": true
+    }
+   ],
+   "secs": 166
+  },
+  {
+   "key": "bands-starter/b42.txt#1",
+   "status": "marked",
+   "bands": {
+    "content": {
+     "band": 5,
+     "min": 9,
+     "max": 10,
+     "descriptors": [
+      "All aspects of the task are fully addressed and developed in detail"
+     ],
+     "evidence": "\"I see that the big difference was not only the job\" — the act and its effect are both explained, but key moments, such as the two days before the call, are told briefly rather than developed."
+    },
+    "language": {
+     "band": 3,
+     "min": 9,
+     "max": 12,
+     "descriptors": [
+      "Most ideas coherently presented with some cohesion within paragraphs",
+      "Vocabulary and grammar structures sufficiently varied to convey intended meaning",
+      "Vocabulary, grammar, punctuation and spelling often used accurately"
+     ],
+     "evidence": "\"He just bring two cup of coffee and sit down beside my father\" — the meaning is always clear and the paragraphs follow in a sensible order, but the verbs are in the wrong tense in almost every sentence."
+    },
+    "total": {
+     "min": 18,
+     "max": 22,
+     "out_of": 30
+    }
+   },
+   "held_reason": null,
+   "error": null,
+   "spread": {
+    "content": [
+     4,
+     5,
+     5
+    ],
+    "language": [
+     3,
+     3,
+     2
+    ]
+   },
+   "code_counts": {
+    "preposition": 3,
+    "tense": 36,
+    "punctuation": 2,
+    "collocation": 2,
+    "article": 3,
+    "word_form": 1,
+    "comma_splice": 3
+   },
+   "reads": 3,
+   "dropped": 0,
+   "total": {
+    "min": 18,
+    "max": 22,
+    "out_of": 30
+   },
+   "marks": [
+    {
+     "start": 0,
+     "end": 24,
+     "code": "preposition",
+     "quote": "When I was Secondary Two",
+     "confirmed": true
+    },
+    {
+     "start": 25,
+     "end": 37,
+     "code": "tense",
+     "quote": "I learn that",
+     "confirmed": true
+    },
+    {
+     "start": 70,
+     "end": 89,
+     "code": "punctuation",
+     "quote": "a person whole year",
+     "confirmed": true
+    },
+    {
+     "start": 99,
+     "end": 116,
+     "code": "tense",
+     "quote": "what happen to me",
+     "confirmed": true
+    },
+    {
+     "start": 121,
+     "end": 139,
+     "code": "collocation",
+     "quote": "my neighbour uncle",
+     "confirmed": true
+    },
+    {
+     "start": 142,
+     "end": 161,
+     "code": "preposition",
+     "quote": "That time my father",
+     "confirmed": true
+    },
+    {
+     "start": 179,
+     "end": 188,
+     "code": "tense",
+     "quote": "was drive",
+     "confirmed": true
+    },
+    {
+     "start": 189,
+     "end": 208,
+     "code": "article",
+     "quote": "lorry for a company",
+     "confirmed": true
+    },
+    {
+     "start": 232,
+     "end": 254,
+     "code": "tense",
+     "quote": "the company close down",
+     "confirmed": true
+    },
+    {
+     "start": 285,
+     "end": 308,
+     "code": "tense",
+     "quote": "My mother start to cook",
+     "confirmed": true
+    },
+    {
+     "start": 323,
+     "end": 339,
+     "code": "tense",
+     "quote": "my father sit at",
+     "confirmed": true
+    },
+    {
+     "start": 367,
+     "end": 390,
+     "code": "tense",
+     "quote": "and look at the carpark",
+     "confirmed": true
+    },
+    {
+     "start": 392,
+     "end": 403,
+     "code": "word_form",
+     "quote": "I was worry",
+     "confirmed": true
+    },
+    {
+     "start": 408,
+     "end": 420,
+     "code": "tense",
+     "quote": "I don't know",
+     "confirmed": true
+    },
+    {
+     "start": 428,
+     "end": 435,
+     "code": "comma_splice",
+     "quote": "help, I",
+     "confirmed": true
+    },
+    {
+     "start": 436,
+     "end": 452,
+     "code": "tense",
+     "quote": "am only fourteen",
+     "confirmed": true
+    },
+    {
+     "start": 483,
+     "end": 490,
+     "code": "tense",
+     "quote": "he stay",
+     "confirmed": true
+    },
+    {
+     "start": 491,
+     "end": 507,
+     "code": "preposition",
+     "quote": "at the next door",
+     "confirmed": true
+    },
+    {
+     "start": 527,
+     "end": 544,
+     "code": "tense",
+     "quote": "we only say hello",
+     "confirmed": true
+    },
+    {
+     "start": 558,
+     "end": 574,
+     "code": "tense",
+     "quote": "he see my father",
+     "confirmed": true
+    },
+    {
+     "start": 613,
+     "end": 625,
+     "code": null,
+     "quote": "any question",
+     "confirmed": true
+    },
+    {
+     "start": 627,
+     "end": 640,
+     "code": "tense",
+     "quote": "He just bring",
+     "confirmed": true
+    },
+    {
+     "start": 641,
+     "end": 658,
+     "code": null,
+     "quote": "two cup of coffee",
+     "confirmed": true
+    },
+    {
+     "start": 659,
+     "end": 678,
+     "code": "tense",
+     "quote": "and sit down beside",
+     "confirmed": true
+    },
+    {
+     "start": 690,
+     "end": 710,
+     "code": "tense",
+     "quote": "They never talk much",
+     "confirmed": true
+    },
+    {
+     "start": 729,
+     "end": 742,
+     "code": "tense",
+     "quote": "he come again",
+     "confirmed": true
+    },
+    {
+     "start": 779,
+     "end": 789,
+     "code": "comma_splice",
+     "quote": "coffee, it",
+     "confirmed": true
+    },
+    {
+     "start": 837,
+     "end": 860,
+     "code": "tense",
+     "quote": "my father start to talk",
+     "confirmed": true
+    },
+    {
+     "start": 869,
+     "end": 888,
+     "code": "tense",
+     "quote": "He tell Uncle Rahim",
+     "confirmed": true
+    },
+    {
+     "start": 919,
+     "end": 928,
+     "code": "tense",
+     "quote": "he scared",
+     "confirmed": true
+    },
+    {
+     "start": 929,
+     "end": 942,
+     "code": "tense",
+     "quote": "he is too old",
+     "confirmed": true
+    },
+    {
+     "start": 946,
+     "end": 958,
+     "code": "article",
+     "quote": "find new job",
+     "confirmed": true
+    },
+    {
+     "start": 960,
+     "end": 978,
+     "code": "tense",
+     "quote": "Uncle Rahim listen",
+     "confirmed": true
+    },
+    {
+     "start": 980,
+     "end": 991,
+     "code": "tense",
+     "quote": "Then he say",
+     "confirmed": true
+    },
+    {
+     "start": 992,
+     "end": 1010,
+     "code": "punctuation",
+     "quote": "his cousin company",
+     "confirmed": true
+    },
+    {
+     "start": 1011,
+     "end": 1024,
+     "code": "tense",
+     "quote": "need a driver",
+     "confirmed": true
+    },
+    {
+     "start": 1029,
+     "end": 1042,
+     "code": "comma_splice",
+     "quote": "delivery, the",
+     "confirmed": true
+    },
+    {
+     "start": 1047,
+     "end": 1058,
+     "code": "tense",
+     "quote": "is not high",
+     "confirmed": true
+    },
+    {
+     "start": 1059,
+     "end": 1077,
+     "code": null,
+     "quote": "but is honest work",
+     "confirmed": true
+    },
+    {
+     "start": 1079,
+     "end": 1087,
+     "code": "tense",
+     "quote": "He write",
+     "confirmed": true
+    },
+    {
+     "start": 1165,
+     "end": 1183,
+     "code": "tense",
+     "quote": "the cup just stand",
+     "confirmed": true
+    },
+    {
+     "start": 1209,
+     "end": 1227,
+     "code": "tense",
+     "quote": "I look at that cup",
+     "confirmed": true
+    },
+    {
+     "start": 1239,
+     "end": 1255,
+     "code": "tense",
+     "quote": "I do my homework",
+     "confirmed": true
+    },
+    {
+     "start": 1268,
+     "end": 1284,
+     "code": null,
+     "quote": "my mother and me",
+     "confirmed": true
+    },
+    {
+     "start": 1285,
+     "end": 1301,
+     "code": "tense",
+     "quote": "push him to call",
+     "confirmed": true
+    },
+    {
+     "start": 1373,
+     "end": 1396,
+     "code": "tense",
+     "quote": "My father whistle again",
+     "confirmed": true
+    },
+    {
+     "start": 1405,
+     "end": 1419,
+     "code": "collocation",
+     "quote": "wear his shoes",
+     "confirmed": true
+    },
+    {
+     "start": 1436,
+     "end": 1456,
+     "code": "tense",
+     "quote": "My mother cook curry",
+     "confirmed": true
+    },
+    {
+     "start": 1467,
+     "end": 1486,
+     "code": "tense",
+     "quote": "and ask me to bring",
+     "confirmed": true
+    },
+    {
+     "start": 1512,
+     "end": 1522,
+     "code": "tense",
+     "quote": "I see that",
+     "confirmed": true
+    },
+    {
+     "start": 1564,
+     "end": 1571,
+     "code": null,
+     "quote": "Is that",
+     "confirmed": true
+    },
+    {
+     "start": 1572,
+     "end": 1589,
+     "code": "tense",
+     "quote": "somebody sit with",
+     "confirmed": true
+    },
+    {
+     "start": 1600,
+     "end": 1620,
+     "code": "tense",
+     "quote": "when he feel useless",
+     "confirmed": true
+    },
+    {
+     "start": 1718,
+     "end": 1732,
+     "code": "article",
+     "quote": "some neighbour",
+     "confirmed": true
+    },
+    {
+     "start": 1822,
+     "end": 1833,
+     "code": null,
+     "quote": "five minute",
+     "confirmed": true
+    },
+    {
+     "start": 1840,
+     "end": 1856,
+     "code": "tense",
+     "quote": "Uncle Rahim give",
+     "confirmed": true
+    }
+   ],
+   "secs": 252
+  }
+ ]
+}

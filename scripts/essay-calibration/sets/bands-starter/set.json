@@ -1,0 +1,15 @@
+{
+  "name": "bands-starter",
+  "kind": "continuous_writing",
+  "question": "Write about a time when a small act of kindness made a big difference.",
+  "level": "Sec 4",
+  "note": "Six essays written by us to sit in a known band on each criterion (8 Oct 2026). Truth by design, not by an examiner: the gate is the spec's anchor fit — the known band, or one band away. b42 is strong on content and weak on language on purpose, so the two criteria are shown to move apart.",
+  "essays": [
+    { "file": "b5.txt", "label": "band 5", "anchor": { "content": 5, "language": 5 } },
+    { "file": "b4.txt", "label": "band 4", "anchor": { "content": 4, "language": 4 } },
+    { "file": "b3.txt", "label": "band 3", "anchor": { "content": 3, "language": 3 } },
+    { "file": "b2.txt", "label": "band 2", "anchor": { "content": 2, "language": 2 } },
+    { "file": "b1.txt", "label": "band 1", "anchor": { "content": 1, "language": 1 } },
+    { "file": "b42.txt", "label": "content 4, language 2", "anchor": { "content": 4, "language": 2 } }
+  ]
+}
