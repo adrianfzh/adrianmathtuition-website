@@ -510,6 +510,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (bad token), got HTTP ${r.status}`);
       return 'token gate up';
     }),
+    // 🔗 The private link behind a WhatsApp "View" button (8 Oct 2026): no login,
+    // so a forged token must be refused with the plain "no longer works" page.
+    timed('view-link', async () => {
+      const r = await fetch(`${base}/v/irecFORGED12345678.zzz.AAAAAAAAAAAAAAAAAAAAAA`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (bad token), got HTTP ${r.status}`);
+      return 'token gate up';
+    }),
     // 🗓 The roll-up cron behind it (16 Sep 2026): it reads every family's
     // opt-out months and names them, so an open door would hand a stranger the
     // roster. It fires every morning and answers shouldSendRollup() itself.
