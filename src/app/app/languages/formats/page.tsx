@@ -4,9 +4,7 @@
 // cookie only until ENGLISH_FORMATS_OPEN_TO_STUDENTS flips. Data: lib/english-formats.ts.
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { ENGLISH_FORMATS_OPEN_TO_STUDENTS, essayMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { englishFormatsOpen, essayMarkingOpen } from '@/lib/portal-beta';
 import { BEFORE_WRITING, COMMON_SLIPS, FORMATS, PAIRS, WHAT_SCORES } from '@/lib/english-formats';
 import { Marked, STUDY_CARD, StudyHeader } from '../../science/study-bits';
 
@@ -29,8 +27,7 @@ function Steps({ lines }: { lines: readonly string[] }) {
 
 export default async function EnglishFormatsPage() {
   if (!(await essayMarkingOpen())) redirect('/app');
-  const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
-  if (!ENGLISH_FORMATS_OPEN_TO_STUDENTS && !isAdmin) redirect('/app/languages');
+  if (!(await englishFormatsOpen())) redirect('/app/languages');
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <StudyHeader tile="bg-violet-600" icon="book" title="Formats" sub="Situational writing · 30 marks · 250–350 words" />

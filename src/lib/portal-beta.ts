@@ -460,9 +460,23 @@ export const ENGLISH_FORMATS_OPEN_TO_STUDENTS = false;
  * (docs/CONTENT-POLICY.md).
  */
 export const ENGLISH_PRACTICE_OPEN_TO_STUDENTS = false;
+/** Adrian's cookie, or the preview student (8 Oct 2026 — he opens the preview on his phone as that student). */
+async function englishPreviewer(): Promise<boolean> {
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    if (acct && ESSAY_PREVIEW_IDENTITIES.includes(portalIdentity(acct))) return true;
+  } catch { /* closed */ }
+  return false;
+}
 export async function englishPracticeOpen(): Promise<boolean> {
   if (ENGLISH_PRACTICE_OPEN_TO_STUDENTS) return true;
-  return !(await viewingAsStudent()) && (await isNotesAuthed());
+  return englishPreviewer();
+}
+export async function englishFormatsOpen(): Promise<boolean> {
+  if (ENGLISH_FORMATS_OPEN_TO_STUDENTS) return true;
+  return englishPreviewer();
 }
 
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the

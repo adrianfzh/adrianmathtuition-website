@@ -4,9 +4,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { cookies } from 'next/headers';
-import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { ENGLISH_FORMATS_OPEN_TO_STUDENTS, englishPracticeOpen, essayMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { englishFormatsOpen, englishPracticeOpen, essayMarkingOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadEssaysFor } from '@/lib/essay-runs';
@@ -27,8 +25,7 @@ export default async function LanguagesPage() {
   const essays = await loadEssaysFor(sid);
   const inFlight = essays.filter(e => e.status === 'queued' || e.status === 'marking' || e.status === 'held');
   const done = essays.filter(e => e.status === 'marked');
-  const formatsOpen = ENGLISH_FORMATS_OPEN_TO_STUDENTS
-    || (verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent()));
+  const formatsOpen = await englishFormatsOpen();
   const practiceOpen = await englishPracticeOpen();
   const trend = trendFor(essays.map(e => ({ marked_at: e.marked_at, created_at: e.created_at, code_counts: e.code_counts })));
 
