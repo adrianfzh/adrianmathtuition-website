@@ -108,6 +108,10 @@ This binds every session, every model and every account, in both repos.
    WhatsApp, the website).
 6. If he says he does not understand, **start again from the problem** — do not repeat the
    same explanation with more detail.
+7. **End with what happens next** (Adrian, 8 Oct 2026: *"it works, pdf opens. what's next?"* —
+   about ten times in six sessions on 7–8 Oct). The last line of a reply that finishes a step
+   says what you will do next, or the ONE thing you need from him. If a website change is on
+   the test site only, say so and end with *"To put it live, reply promote."*
 
 ## 📖 Readability — everything (Adrian, 29 Sep 2026)
 
