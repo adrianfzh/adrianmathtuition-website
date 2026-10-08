@@ -46,8 +46,12 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
   without his word): the paid call is off; judged answers queue in `plan_reads` and the Fly worker
   reads them (SPEC-ENGLISH-PRACTICE.md §On the plan). **Never run a bench or batch on the paid key
   without asking him first.** The batch bench was finished on the plan: 1454/1459 seeded.
-- Still owed on step 2: a re-read of the one fixed gross miss, a HARD set, one end-to-end test of
-  the queue on the preview once the worker lane is deployed.
+- **Step 2 is done (8 Oct 2026).** Hard set 55/57, no gross miss; the two fixed misses re-read
+  correctly (99/99); the page clicked through at phone width — an instant "which word" check, and
+  a handed-in answer marked by the plan reader in about a minute. Numbers and limits:
+  SPEC-ENGLISH-PRACTICE.md §The bench. The Languages practice PAGES now belong to the listening /
+  oral session (it is rebuilding the editing flow) — this build owns the checker, the bench, the
+  sets and the queue lane, and does not edit `src/app/app/languages/practice`.
 - Not started: steps 3–8.
 
 ## Listening and oral — built 8 Oct 2026 (steps 7 and 8), all closed

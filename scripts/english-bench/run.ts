@@ -41,6 +41,11 @@ const name = opt('--name', `e1-${new Date().toISOString().slice(0, 10)}`);
 const only = opt('--sets', '') ? opt('--sets', '').split(',').map(s => s.trim()) : null;
 const limit = Number(opt('--limit', '0'));
 const reportOnly = args.includes('--report-only');
+// --plan-only: write the rows to read and stop — the reading is then done on the plan (plan.ts), not the paid key
+const planOnly = args.includes('--plan-only');
+// --hard: read scripts/english-bench/hard-answers.json instead of the sets' own seeds — answers written the
+// way students write them, each read twice
+const hard = args.includes('--hard');
 const OUT = path.join(HERE, 'results', `${name}.json`);
 
 type Kind = 'seeded' | 'repeat' | 'padding' | 'swapped' | 'summary' | 'summary_repeat';
@@ -50,7 +55,24 @@ interface Row {
   awarded?: number | null; hit?: number[] | null; usedModel?: boolean; why?: string; done?: boolean;
 }
 
+function hardPlan(): Row[] {
+  const rows: Row[] = [];
+  const list = JSON.parse(fs.readFileSync(path.join(HERE, 'hard-answers.json'), 'utf8')).answers as { set: string; n: string; mark: number; flaw: string; text: string; hit?: number[] }[];
+  list.forEach((a, i) => {
+    const s = OWN_READING.find(x => x.id === a.set);
+    const u = s ? ownUnits(s).find(x => x.number === a.n) : undefined;
+    if (!s || !u) throw new Error(`hard-answers.json: no question ${a.set} Q${a.n}`);
+    if (only && !only.includes(a.set)) return;
+    const summary = u.kind === 'summary';
+    const base: Row = { key: `hard:${a.set}:${a.n}:${i}`, kind: summary ? 'summary' : 'seeded', setId: a.set, unit: a.n, skill: u.skill ?? '', flaw: a.flaw, text: a.text,
+      truth: a.mark, max: summary ? summaryContentMax(u.scheme) : u.marks, ...(summary ? { truthHit: a.hit ?? [] } : {}) };
+    rows.push(base, { ...base, key: `again:${base.key}`, kind: summary ? 'summary_repeat' : 'repeat', baseKey: base.key });
+  });
+  return rows;
+}
+
 function plan(): Row[] {
+  if (hard) return hardPlan();
   const rows: Row[] = [];
   const sets: OwnReading[] = OWN_READING.filter(s => !only || only.includes(s.id));
   for (const s of sets) {
@@ -98,13 +120,14 @@ function report(rows: Row[]) {
   const unitOf = (r: Row): Unit | undefined => OWN_READING.flatMap(s => (s.id === r.setId ? ownUnits(s) : [])).find(u => u.number === r.unit);
   const uv = summaryVerdict(sums.map(r => ({ truthHit: r.truthHit ?? [], hit: r.done ? (r.hit ?? null) : null, max: r.max })), i => unitOf(sums[i])?.scheme.points.length ?? 0);
   const model = rows.filter(r => r.done && r.usedModel).length;
+  const paid = rows.filter(r => r.done && r.usedModel && (r as Row & { by?: string }).by !== 'plan').length;   // plan reads cost no money
 
   const line = (label: string, ok: boolean, text: string) => console.log(`${ok ? 'PASS' : 'FAIL'}  ${label.padEnd(9)} ${text}`);
-  console.log(`\nEnglish Practise bench — ${name} — ${rows.filter(r => r.done).length}/${rows.length} read, ${model} by the model (about US$${(model * 0.03).toFixed(2)})\n`);
+  console.log(`\nEnglish Practise bench — ${name} — ${rows.filter(r => r.done).length}/${rows.length} read, ${model} judged (${model - paid} on the plan, ${paid} on the paid key${paid ? `, about US$${(paid * 0.03).toFixed(2)}` : ''})\n`);
   line('SEEDED', sv.pass, `${sv.right}/${sv.read} on the seeded mark (${pct(sv.rate)}) · gross misses ${sv.gross} · unread ${sv.unread}`);
   line('REPEATS', rv.pass, `${rv.same}/${rv.n} the same mark twice (${pct(rv.rate)}) · two apart ${rv.farApart}`);
-  line('PADDING', pv.pass, `${pv.same}/${pv.n} unmoved (${pct(pv.rate)})`);
-  line('SWAPPED', wv.pass, `${wv.zero}/${wv.n} earned nothing (${pct(wv.rate)})`);
+  if (pv.n) line('PADDING', pv.pass, `${pv.same}/${pv.n} unmoved (${pct(pv.rate)})`);
+  if (wv.n) line('SWAPPED', wv.pass, `${wv.zero}/${wv.n} earned nothing (${pct(wv.rate)})`);
   if (sums.length) line('SUMMARY', uv.pass, `${uv.within1}/${uv.read} within one point (${pct(uv.rate)}) · three away ${uv.far} · point by point ${pct(uv.pointsAgree)}`);
 
   const flaws = [...new Set(seeded.map(r => r.flaw))];
@@ -116,7 +139,8 @@ function report(rows: Row[]) {
   if (off.length) console.log('\nOff the mark:');
   for (const r of off) console.log(`  ${r.setId} Q${r.unit} [${r.kind}/${r.flaw}] seeded ${r.kind === 'repeat' || r.kind === 'padding' ? by.get(r.baseKey!)?.awarded + ' (first read)' : r.truth}/${r.max}, read ${r.awarded} — “${r.text.slice(0, 90)}” — ${r.why ?? ''}`);
   for (const r of sums.filter(x => x.done)) console.log(`  summary ${r.setId} [${r.flaw}] seeded points ${JSON.stringify(r.truthHit)} · read ${JSON.stringify(r.hit)}`);
-  const pass = sv.pass && rv.pass && pv.pass && wv.pass && (!sums.length || uv.pass);
+  const none = (n: number) => n === 0;   // a check with no rows (a --hard or one-kind run) is not a failure
+  const pass = sv.pass && rv.pass && (none(pv.n) || pv.pass) && (none(wv.n) || wv.pass) && (!sums.length || uv.pass);
   console.log(`\n${pass ? 'THE BENCH PASSES.' : 'THE BENCH DOES NOT PASS.'}`);
   return { pass, seeded: sv, repeats: rv, padding: pv, swapped: wv, summary: sums.length ? uv : null };
 }
@@ -124,7 +148,9 @@ function report(rows: Row[]) {
 async function main() {
   const rows = load();
   const save = (verdict?: unknown) => fs.writeFileSync(OUT, JSON.stringify({ name, model: process.env.ENGLISH_CHECK_MODEL || 'claude-sonnet-5', at: new Date().toISOString(), verdict, rows }, null, 1));
+  if (planOnly) { save(); console.log(`${rows.length} rows written to results/${name}.json (${rows.filter(r => !r.done).length} to read) — now plan.ts export`); return; }
   if (!reportOnly) {
+    if (process.env.ENGLISH_CHECK_USE_API !== '1') { console.error('The paid key is off (Adrian, 7 Oct 2026: "all on plan"). Use --plan-only + plan.ts, or --report-only.'); process.exit(2); }
     if (!process.env.ANTHROPIC_API_KEY) { console.error('ANTHROPIC_API_KEY missing'); process.exit(2); }
     const { judgeShort, judgeSummary } = await import('../../src/lib/english-practice-store');
     const sets = new Map(OWN_READING.map(s => [s.id, { passage: ownPassage(s), units: new Map(ownUnits(s).map(u => [u.number, u])) }]));
