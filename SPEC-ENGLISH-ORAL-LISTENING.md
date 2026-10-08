@@ -95,6 +95,11 @@ The band tables are in `data/rubrics/english-1184-oral.json`, word for word from
   it with his own voice, the privacy page says recordings of a student's voice are kept, and the
   retention rule below is agreed.
 
+- **Silence must never become words.** Given a silent recording, the transcriber once returned a
+  fluent 560-word speech (8 Oct 2026). Two guards: the phone measures the microphone's level and
+  refuses a recording with no sound in it; the server treats words that could not have been said in
+  the time (over about 4.5 a second), or that loop, as nothing heard (`plausibleSpeech`, tested).
+
 ## 4. Trigger
 
 Nothing is scheduled. Listening is instant. An oral report is picked up by the worker's one-minute
@@ -118,6 +123,18 @@ preview student. They sit inside the Languages family, itself closed.
 - **Standard**: the SEAB tables. Delivery is an examiner's ear; the app does not stand in for it.
 - **Novelty**: a report whose quotes the belt had to drop, or a recording with no words in it, is
   shown as such — never smoothed into a band.
+
+## First trial (8 Oct 2026, on the preview site, a made-up student voice)
+
+- Listening: plays, counts the plays, marks by the key, shows the spelling note and the script.
+- Oral Part 1: a 43-second answer with planted slips came back word for word, slips kept, in about
+  5 seconds; the feedback arrived in under a minute, twice, Band 3 both times, and every quote was
+  the student's own words (the belt dropped nothing).
+- Oral Part 2: the same speech given to all three prompts was told "the points are linked to a
+  question nobody asked you".
+- How it was tested: puppeteer at phone size as the preview student, with `getUserMedia` replaced
+  by a stream that plays a sound file. Chrome's own fake microphone gave silence — do not trust it.
+- NOT tested: a real microphone on a real iPhone, a real student's accent, a noisy room.
 
 ## Not built
 
