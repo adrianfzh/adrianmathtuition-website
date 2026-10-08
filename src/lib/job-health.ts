@@ -133,7 +133,10 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   // Copies + reads back the student tables and Airtable, opens sample files.
   'backup-check':      { kind: 'monthly', day: 4, graceDays: 1, label: '4th 3am' },
   // 🗄 Nightly file backup (5 Oct 2026) — vercel.json "30 18 * * *" UTC = 2:30am SGT; stamps every run.
-  'file-backup':       { kind: 'interval', hours: 36, label: 'daily 2:30am' },
+  // Five runs a night since 8 Oct 2026: one 3.5-minute run copies about 1 GB, and by October more
+  // than that arrived each day (paper library, student files, figures) — 5,110 files had waited
+  // over two days and the hub's Backups light went red. A run with nothing left to copy is quick.
+  'file-backup':       { kind: 'interval', hours: 36, label: 'nightly 2:30–6:30am, hourly' },
   // Closes an enrollment the morning after its End Date passes, and drops the
   // student to Inactive when it was their last one. Runs (and stamps) every day,
   // most days with nothing due — so silence here means the job is dead, not quiet.

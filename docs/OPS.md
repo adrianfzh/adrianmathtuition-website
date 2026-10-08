@@ -564,7 +564,13 @@ First run 5 Oct 2026: 3,502 rows from 18 tables and 4,686 Airtable records from
 | Dropbox | Dropbox's version history | — |
 | Both repos | GitHub + the Macs' clones + the Fly worker's clone | — |
 
-### 🗄 `file-backup` — nightly 02:30 SGT (`30 18 * * *` UTC), 5 Oct 2026
+### 🗄 `file-backup` — nightly, hourly 02:30–06:30 SGT (`30 18-22 * * *` UTC), 5 Oct 2026
+
+> **Five runs a night since 8 Oct 2026.** One run has 3.5 minutes and copies about 1 GB. By 8 Oct
+> more than that was arriving each day, 5,110 files had waited over two days, and the run reported
+> FAILED (the hub's Backups light, and `health-check` → `ops-jobs`). A run with nothing left to copy
+> ends in seconds. To clear a backlog by hand: call the route with the admin bearer and
+> `?concurrency=10` until its line no longer says "still to copy".
 
 Route `/api/cron/file-backup`; rules `lib/file-backup.ts` (pure, tested); copying
 `lib/file-backup-store.ts`; SQL `migrations/file_backup_ledger.sql` (applied to BOTH
