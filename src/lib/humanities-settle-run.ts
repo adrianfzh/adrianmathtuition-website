@@ -6,7 +6,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { enqueuePlanRead } from './plan-reads';
 import { questionById } from './humanities-questions';
-import { buildHumanitiesPayload, humanitiesPrompt, readContext, type HumanitiesPayload } from './humanities-prompt';
+import { buildHumanitiesPayload, humanitiesPrompt, readContext, payloadMaterial, type HumanitiesPayload } from './humanities-prompt';
 import { parseReadReply, validateRead, validatePointsRead, nextStep, buildReport, buildPointsReport, telegramLine, type PassState, type Checked } from './humanities-settle';
 import { sendTelegram } from './telegram';
 
@@ -31,9 +31,10 @@ export async function enqueueHumanitiesRead(run: { id: string; identity: string 
 
 function check(payload: HumanitiesPayload, raw: Record<string, unknown> | null): Checked {
   const c = readContext(payload);
+  const material = payloadMaterial(payload);
   return c.points
-    ? validatePointsRead(raw, { answer: payload.answer, points: payload.points?.list ?? [], max: c.max, develop: !!payload.points?.develop })
-    : validateRead(raw, { answer: payload.answer, levelsMax: c.max, tags: c.tags });
+    ? validatePointsRead(raw, { answer: payload.answer, points: payload.points?.list ?? [], max: c.max, develop: !!payload.points?.develop, material })
+    : validateRead(raw, { answer: payload.answer, levelsMax: c.max, tags: c.tags, material });
 }
 
 /**

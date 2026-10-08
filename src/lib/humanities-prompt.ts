@@ -51,6 +51,11 @@ export function readContext(p: HumanitiesPayload): { points: boolean; max: numbe
   return { points, max: points ? Number(p.points?.max) || 0 : (p.scheme?.levels ?? []).length, tags: (p.tags ?? []).map(t => t.key) };
 }
 
+/** The question's own words — its sources, data, question and the answer. A figure quoted from here is not a mark for the answer. */
+export function payloadMaterial(p: HumanitiesPayload): string {
+  return [p.issue, p.question, p.answer, ...(p.sources ?? []).map(x => `${x.provenance ?? ''} ${x.text}`), ...(p.points?.list ?? []).map(x => `${x.text} ${x.develop ?? ''}`)].filter(Boolean).join('\n');
+}
+
 /** The whole prompt for one read. Read 1 goes claim by claim; read 2 reads whole first (the two orders the bench was run on). */
 export function humanitiesPrompt(p: HumanitiesPayload, pass: number): string {
   return `${buildSystemPrompt(p)}\n\n${buildUserMessage(p, { pass })}`;

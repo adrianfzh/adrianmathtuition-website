@@ -1,7 +1,7 @@
 // Ported from the bot's test/humanities-report.test.js (the belt and the prompt moved to the
 // website with the plan reader, 8 Oct 2026), plus the queue's own rules: nextStep and parseReadReply.
 import { describe, it, expect } from 'vitest';
-import { validateRead, agreeReads, buildReport, pickShownRead, telegramLine, validatePointsRead, buildPointsReport, parseReadReply, nextStep, type CleanRead, type PassState } from './humanities-settle';
+import { validateRead, agreeReads, buildReport, pickShownRead, telegramLine, validatePointsRead, buildPointsReport, parseReadReply, nextStep, speaksInMarks, type CleanRead, type PassState } from './humanities-settle';
 import { buildSystemPrompt, buildUserMessage, humanitiesPrompt, buildHumanitiesPayload, readContext, type HumanitiesPayload } from './humanities-prompt';
 import { allSets, questionById, isPointsQuestion } from './humanities-questions';
 
@@ -179,6 +179,25 @@ describe('parseReadReply — the plan reader sends raw text', () => {
     expect(parseReadReply('[1,2]')).toBeNull();
     expect(parseReadReply('{"level": }')).toBeNull();
     expect(parseReadReply(null)).toBeNull();
+  });
+});
+
+describe('two things the full bench of 8 Oct 2026 found', () => {
+  it('a reader that corrects itself writes two objects — the last whole one is the read', () => {
+    const reply = '{\n "points": [{"id":"b","credit":1,"quote":"x {y}"}],\n "lift": "first"\n}\n\nCorrection: point b is wrong. This is the corrected object:\n\n{\n "points": [{"id":"b","credit":0,"quote":""}],\n "lift": "second"\n}';
+    expect(parseReadReply(reply)!.lift).toBe('second');
+    expect(parseReadReply('{"lift":"only"} and then a broken one {"lift": ')!.lift).toBe('only');
+  });
+  it('a figure quoted from the sources is not a mark for the answer', () => {
+    const material = 'Source E: pupils in the scheme scored 11 marks lower on average.';
+    const lift = 'Use Source E, which says scheme pupils scored 11 marks lower, and say why.';
+    expect(speaksInMarks(lift)).toBe(true);
+    expect(speaksInMarks(lift, material)).toBe(false);
+    expect(speaksInMarks('This would earn 3 marks, though E says 11 marks lower.', material)).toBe(true);
+    expect(speaksInMarks('You would get 3/4.', material)).toBe(true);
+    expect(validateRead({ level: 2, lift }, { ...ctx, material }).read).toBeTruthy();
+    expect(validateRead({ level: 2, lift }, ctx).read).toBeNull();
+    expect(validateRead({ level: 2, lift: 'Worth 2 marks more.' }, { ...ctx, material }).read).toBeNull();
   });
 });
 

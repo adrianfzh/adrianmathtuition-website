@@ -9,6 +9,20 @@ import type { HumanitiesClaim, HumanitiesReport, PointCredit } from './humanitie
 // "3/4", "2 marks", "[5]" — a read that speaks in marks is cleaned or refused.
 const MARK_RE = /\b\d+\s*\/\s*\d+\b|\b\d+\s*marks?\b|\[\s*\d+\s*\]/i;
 export const hasMark = (s: unknown): boolean => MARK_RE.test(String(s || ''));
+const flat = (s: unknown): string => String(s || '').replace(/\s+/g, ' ').toLowerCase();
+/**
+ * Does a line to the student speak in marks? A figure that is IN the question's own material is
+ * not a mark for the answer: a source that says pupils "scored 11 marks lower" may be quoted
+ * (the full bench, 8 Oct 2026 — every read of s29-q5 was refused for naming that figure).
+ */
+export function speaksInMarks(s: unknown, material?: string): boolean {
+  const text = String(s || '');
+  const found = text.match(new RegExp(MARK_RE.source, 'gi'));
+  if (!found) return false;
+  if (!material) return true;
+  const m = flat(material);
+  return found.some(f => !m.includes(flat(f)));
+}
 const clip = (s: unknown, n: number): string => { const t = String(s || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; };
 
 /** One read that passed the belt. On a point-marked answer `level` IS the marks, so one rule settles both. */
@@ -34,18 +48,34 @@ export function parseReadReply(text: string | null | undefined): Record<string, 
   const t = String(text ?? '');
   const a = t.indexOf('{'), b = t.lastIndexOf('}');
   if (a < 0 || b <= a) return null;
-  const slice = t.slice(a, b + 1);
-  for (const candidate of [slice, slice.replace(/,\s*([}\]])/g, '$1')]) {
-    try {
-      const v = JSON.parse(candidate);
-      if (v && typeof v === 'object' && !Array.isArray(v)) return v as Record<string, unknown>;
-    } catch { /* next */ }
+  const tryParse = (slice: string): Record<string, unknown> | null => {
+    for (const candidate of [slice, slice.replace(/,\s*([}\]])/g, '$1')]) {
+      try {
+        const v = JSON.parse(candidate);
+        if (v && typeof v === 'object' && !Array.isArray(v)) return v as Record<string, unknown>;
+      } catch { /* next */ }
+    }
+    return null;
+  };
+  const whole = tryParse(t.slice(a, b + 1));
+  if (whole) return whole;
+  // A reader that corrects itself writes its object twice ("Correction: … the corrected object:").
+  // Take the LAST whole object in the reply.
+  const objects: string[] = [];
+  let depth = 0, start = -1, inString = false, escaped = false;
+  for (let i = a; i <= b; i++) {
+    const ch = t[i];
+    if (inString) { if (escaped) escaped = false; else if (ch === '\\') escaped = true; else if (ch === '"') inString = false; continue; }
+    if (ch === '"' && depth > 0) inString = true;
+    else if (ch === '{') { if (depth++ === 0) start = i; }
+    else if (ch === '}' && depth > 0 && --depth === 0 && start >= 0) { objects.push(t.slice(start, i + 1)); start = -1; }
   }
+  for (const o of objects.reverse()) { const v = tryParse(o); if (v) return v; }
   return null;
 }
 
 /** Check one raw read. read is null when it cannot be used (no level, no lift, or it speaks in marks). */
-export function validateRead(raw: Raw, { answer, levelsMax, tags }: { answer: string; levelsMax: number; tags: string[] }): Checked {
+export function validateRead(raw: Raw, { answer, levelsMax, tags, material }: { answer: string; levelsMax: number; tags: string[]; material?: string }): Checked {
   const problems: string[] = [];
   const dropped: string[] = [];
   if (!raw || typeof raw !== 'object') return { read: null, problems: ['not an object'], dropped };
@@ -53,7 +83,7 @@ export function validateRead(raw: Raw, { answer, levelsMax, tags }: { answer: st
   if (!Number.isInteger(level) || level < 1 || level > levelsMax) problems.push(`level ${raw.level} is not 1..${levelsMax}`);
   const lift = clip(raw.lift, 260);
   if (!lift) problems.push('no lift');
-  else if (hasMark(lift)) problems.push('the lift speaks in marks');
+  else if (speaksInMarks(lift, material)) problems.push('the lift speaks in marks');
 
   const tagSet = new Set(tags || []);
   const claims: HumanitiesClaim[] = [];
@@ -66,9 +96,9 @@ export function validateRead(raw: Raw, { answer, levelsMax, tags }: { answer: st
     if (!tagSet.has(tag)) { dropped.push(`unknown tag ${tag}`); continue; }
     if (claims.some(k => k.quote.includes(quote) || quote.includes(k.quote))) { dropped.push(`overlaps: ${clip(quote, 60)}`); continue; }
     const note = clip(c.note, 200);
-    claims.push({ quote, tag, note: note && !hasMark(note) ? note : null });
+    claims.push({ quote, tag, note: note && !speaksInMarks(note, material) ? note : null });
   }
-  const gap = (Array.isArray(raw.gap) ? raw.gap : []).map(g => clip(g, 220)).filter(g => g && !hasMark(g)).slice(0, 2);
+  const gap = (Array.isArray(raw.gap) ? raw.gap : []).map(g => clip(g, 220)).filter(g => g && !speaksInMarks(g, material)).slice(0, 2);
   const summary = clip(raw.summary, 240) || null;
   if (problems.length) return { read: null, problems, dropped };
   return { read: { level, claims, lift, gap, summary }, problems, dropped };
@@ -118,7 +148,7 @@ export function buildReport(reads: CleanRead[], agreement: Agreement, levelsMax:
  * Check one raw points read. read.level IS the marks (0..max), so the same agreeReads settles it.
  * The total is counted from the per-point credits, never taken from the reader's own sum.
  */
-export function validatePointsRead(raw: Raw, { answer, points, max, develop }: { answer: string; points: { id: string }[]; max: number; develop: boolean }): Checked {
+export function validatePointsRead(raw: Raw, { answer, points, max, develop, material }: { answer: string; points: { id: string }[]; max: number; develop: boolean; material?: string }): Checked {
   const problems: string[] = [];
   const dropped: string[] = [];
   if (!raw || typeof raw !== 'object') return { read: null, problems: ['not an object'], dropped };
@@ -126,7 +156,7 @@ export function validatePointsRead(raw: Raw, { answer, points, max, develop }: {
   const text = String(answer || '');
   const lift = clip(raw.lift, 260);
   if (!lift) problems.push('no lift');
-  else if (hasMark(lift)) problems.push('the lift speaks in marks');
+  else if (speaksInMarks(lift, material)) problems.push('the lift speaks in marks');
   const top = develop ? 2 : 1;
   const credits: PointCredit[] = [];
   let others = 0;
@@ -145,9 +175,9 @@ export function validatePointsRead(raw: Raw, { answer, points, max, develop }: {
     if (isOther && credit > 0 && ++others > 2) { dropped.push('more than two unlisted points'); continue; }
     if (isOther && credit === 0) continue;
     const note = clip(c.note, 200);
-    credits.push({ id, credit, quote: credit > 0 ? quote : null, note: note && !hasMark(note) ? note : null, ...(isOther ? { text: clip(c.text, 160) || null } : {}) });
+    credits.push({ id, credit, quote: credit > 0 ? quote : null, note: note && !speaksInMarks(note, material) ? note : null, ...(isOther ? { text: clip(c.text, 160) || null } : {}) });
   }
-  const gap = (Array.isArray(raw.gap) ? raw.gap : []).map(g => clip(g, 220)).filter(g => g && !hasMark(g)).slice(0, 2);
+  const gap = (Array.isArray(raw.gap) ? raw.gap : []).map(g => clip(g, 220)).filter(g => g && !speaksInMarks(g, material)).slice(0, 2);
   const summary = clip(raw.summary, 240) || null;
   if (problems.length) return { read: null, problems, dropped };
   const marks = Math.min(Number(max) || 0, credits.reduce((n, c) => n + c.credit, 0));
