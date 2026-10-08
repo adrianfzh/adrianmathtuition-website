@@ -2,7 +2,7 @@
 //
 // Adrian, 8 Oct 2026, of the list of every message the system sends him: "are there duplicates
 // or redundant ones or ones that are not useful? if there are, we can remove them" — and to the
-// list put to him: "Yes". Each line is one family that no longer sends. The work behind it
+// list put to him: "yes, remove the 12 and move the messages". Each line is one family that no longer sends. The work behind it
 // carries on, and its numbers are in ☀️ the morning brief (bot repo docs/MORNING-BRIEF.md
 // §Switched off, which holds the record and his words). The code that builds each message stays.
 //

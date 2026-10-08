@@ -3,6 +3,9 @@
 // Queries Airtable for S4 and JC2 students with June Revision 2026 = 'No Response'
 // and sends a Telegram alert to Adrian to follow up.
 // Remove after June 2026.
+// OFF THE SCHEDULE since 8 Oct 2026 (Adrian: "yes, remove the 12" — written for June 2026, out of
+// date). The route stays; to run it again add { "path": "/api/june-revision-followup", "schedule":
+// "0 1 25 5 *" } back to vercel.json (and bring the dates up to the new year first).
 
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';

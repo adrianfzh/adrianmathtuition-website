@@ -52,6 +52,7 @@ Writers:
   docs/SCHEDULE.md), `progress-notes` (the Fly worker, 17:05 SGT daily — 📝 the student
   card's progress note; switch `progress-notes`),
   `morning-brief` (the Fly worker, 07:45 SGT daily — ☀️ the one morning message, bot `docs/MORNING-BRIEF.md`; switch `morning-brief`),
+  `model-check` (the bot, 09:00 on Mondays of even ISO weeks — its result is read by the morning brief; no message of its own since 8 Oct 2026),
   `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
   their paper, grouped and checked against `paper_library` + the bank,
   `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
@@ -595,3 +596,16 @@ two-day stall alarm. The organisation now stores about 54 GB (live + copies) aga
 Pro plan's 100 GB included. A run started with large past papers in flight once ran into
 Vercel's 300 s limit — a batch now starts only with 45 s to spare.
 
+
+## 🔕 Messages switched off (Adrian, 8 Oct 2026)
+
+Adrian, of a list of duplicate, redundant and unused messages: **"yes, remove the 12 and move
+the messages"** — with the condition *"staff give a summary every day - readability matters"*
+(the morning brief is what he relies on instead). On this site four families no longer send;
+the work behind each carries on and the morning brief carries the numbers. The list is
+`src/lib/quiet-messages.ts` — **delete a line to turn that message back on**:
+`handin-queued` (📥 / 🕒 "handed in … queued"), `scan-line` (📠 queued · 🏷 tagged · 📁 filed),
+`find-review-empty` (the Find-a-question digest on a day with no finds), `desk-reminder`
+(🗂 "N marked papers waiting" at 08:00). Fault lines in the same places still send ("couldn't
+tag", "still not filed", "auto-queue failed"). The June revision follow-up left the schedule the
+same day (the route is kept). The full record: bot repo `docs/MORNING-BRIEF.md` §The remove list.
