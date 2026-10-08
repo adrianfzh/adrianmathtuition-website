@@ -5,15 +5,15 @@
   "lines": [
     {"text": "Most of us step into a lift every day without thinking about it."},
     {"text": "We press a button, the doors close, and we arrive safely at our"},
-    {"text": "floor. This simple journey depend on the work of technicians like Mr Rahim,", "wrong": "depend", "right": "depends", "note": "Agreement: 'this simple journey' is one thing, so it is 'depends'."},
-    {"text": "who has been repair lifts for nearly twenty years. Every month, he checks", "wrong": "repair", "right": "repairing", "note": "Verb form: after 'has been' it is 'repairing'."},
-    {"text": "every lift in the estate and climbs into the dark shaft above them.", "wrong": "them", "right": "it", "note": "Pronoun: 'every lift' is singular, so it is 'it'."},
-    {"text": "He oils the cables, tests the brakes and replaces any part who looks", "wrong": "who", "right": "that", "accept": ["which"], "note": "'Who' is for people. A part takes 'that' or 'which'."},
+    {"text": "floor. This simple journey depend on the work of technicians like Mr Rahim,", "wrong": "depend", "right": "depends", "kind": "agreement", "note": "Agreement: 'this simple journey' is one thing, so it is 'depends'."},
+    {"text": "who has been repair lifts for nearly twenty years. Every month, he checks", "wrong": "repair", "right": "repairing", "kind": "verb_form", "note": "Verb form: after 'has been' it is 'repairing'."},
+    {"text": "every lift in the estate and climbs into the dark shaft above them.", "wrong": "them", "right": "it", "kind": "pronoun", "note": "Pronoun: 'every lift' is singular, so it is 'it'."},
+    {"text": "He oils the cables, tests the brakes and replaces any part who looks", "wrong": "who", "right": "that", "kind": "relative", "accept": ["which"], "note": "'Who' is for people. A part takes 'that' or 'which'."},
     {"text": "worn. The job is dirty and tiring, and it often continues after dark."},
-    {"text": "When residents are trapped inside, he must reach them as quick as he can.", "wrong": "quick", "right": "quickly", "note": "Word form: 'reach' is a verb, so it takes the adverb 'quickly'."},
-    {"text": "Once, he free a frightened child who had been stuck for an hour.", "wrong": "free", "right": "freed", "note": "Tense: it happened once in the past, so it is 'freed'."},
-    {"text": "Mr Rahim admits that few people thank him, because he does not mind.", "wrong": "because", "right": "but", "accept": ["yet", "although", "though"], "note": "Connector: the two ideas contrast, so it is 'but', not 'because'."},
-    {"text": "He says there is no best reward than knowing that thousands of his", "wrong": "best", "right": "better", "accept": ["greater"], "note": "Comparative: before 'than' it is 'better', not 'best'."},
+    {"text": "When residents are trapped inside, he must reach them as quick as he can.", "wrong": "quick", "right": "quickly", "kind": "adverb", "note": "Word form: 'reach' is a verb, so it takes the adverb 'quickly'."},
+    {"text": "Once, he free a frightened child who had been stuck for an hour.", "wrong": "free", "right": "freed", "kind": "participle", "note": "Tense: it happened once in the past, so it is 'freed'."},
+    {"text": "Mr Rahim admits that few people thank him, because he does not mind.", "wrong": "because", "right": "but", "kind": "connector", "accept": ["yet", "although", "though"], "note": "Connector: the two ideas contrast, so it is 'but', not 'because'."},
+    {"text": "He says there is no best reward than knowing that thousands of his", "wrong": "best", "right": "better", "kind": "comparison", "accept": ["greater"], "note": "Comparative: before 'than' it is 'better', not 'best'."},
     {"text": "neighbours travel up and down safely because of his careful work."}
   ]
 }

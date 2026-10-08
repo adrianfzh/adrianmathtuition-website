@@ -13,20 +13,36 @@ import {
   buildShortPrompt, buildSummaryPrompt, parseShortReply, parseSummaryReply, ruleShort, summaryContentMax, withinLimit,
   type EditingSet, type ShortVerdict, type SummaryVerdict, type Unit,
 } from './english-practice';
-import { isEditing, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
+import { editingLevel, isEditing, nextEditing, type EditLevel, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
 import { OWN_EDITING, OWN_READING, ownByUuid } from './english-own-data';
 import { enqueuePlanRead, getPlanRead, planReadsFor, planReadsSince, setPlanReadMeta, type PlanRead } from './plan-reads';
 
 // ── Editing ─────────────────────────────────────────────────────────────────
-export interface EditingListing { itemId: string; about: string }
+export interface EditingListing { itemId: string; about: string; level: EditLevel }
 
 export async function loadEditingList(): Promise<EditingListing[]> {
-  return OWN_EDITING.map(s => ({ itemId: ownUuid(s.id), about: s.about }));
+  return OWN_EDITING.map(s => ({ itemId: ownUuid(s.id), about: s.about, level: editingLevel(s) }));
 }
 
 export async function loadEditingSet(id: string): Promise<EditingSet | null> {
   const s = ownByUuid(id);
   return s && isEditing(s) ? ownEditingSet(s) : null;
+}
+
+/** When this person last handed in each editing passage (item id → ISO). */
+export async function editingDoneAt(identity: string): Promise<Record<string, string>> {
+  const { data } = await getSupabaseAdmin().from('english_practice_attempts').select('item_id, created_at')
+    .eq('identity', identity).eq('kind', 'editing').order('created_at', { ascending: false }).limit(400);
+  const out: Record<string, string> = {};
+  for (const r of (data ?? []) as { item_id: string; created_at: string }[]) if (!out[r.item_id]) out[r.item_id] = r.created_at;
+  return out;
+}
+
+/** The passage to serve next at a level, and how far through the level this person is. */
+export async function nextEditingFor(identity: string, level: EditLevel, after?: string | null): Promise<{ itemId: string | null; done: number; total: number }> {
+  const ids = (await loadEditingList()).filter(e => e.level === level).map(e => e.itemId);
+  const doneAt = await editingDoneAt(identity).catch(() => ({} as Record<string, string>));
+  return { itemId: nextEditing(ids, doneAt, after), done: ids.filter(id => doneAt[id]).length, total: ids.length };
 }
 
 // ── Reading sets: one text and the questions on it ──────────────────────────

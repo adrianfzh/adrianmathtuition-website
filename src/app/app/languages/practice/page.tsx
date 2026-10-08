@@ -5,7 +5,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { englishPracticeOpen } from '@/lib/portal-beta';
-import { loadEditingList, loadReadingList, type ReadingListing } from '@/lib/english-practice-store';
+import { editingDoneAt, loadEditingList, loadReadingList, type ReadingListing } from '@/lib/english-practice-store';
+import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
+import { EDIT_LEVELS } from '@/lib/english-own';
+import EditingStart from './editing/editing-start';
 import { STUDY_CARD, StudyHeader } from '../../science/study-bits';
 
 export const dynamic = 'force-dynamic';
@@ -45,6 +48,13 @@ export default async function EnglishPracticePage({ searchParams }: { searchPara
   const passages = reading.filter(r => r.group !== 'visual');
   const visual = reading.filter(r => r.group === 'visual');
   const summaries = passages.filter(r => r.summary);
+  // editing starts from a level, not a list: how many passages each level has, and how many are done
+  const account = tab === 'editing' ? await sessionAccount().catch(() => null) : null;
+  const doneAt = tab === 'editing' ? await editingDoneAt(account ? portalIdentity(account) : 'admin').catch(() => ({} as Record<string, string>)) : {};
+  const levels = EDIT_LEVELS.map(l => {
+    const ids = editing.filter(e => e.level === l.level).map(e => e.itemId);
+    return { level: l.level, name: l.name, sub: l.sub, total: ids.length, done: ids.filter(id => doneAt[id]).length };
+  }).filter(l => l.total > 0);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -61,18 +71,10 @@ export default async function EnglishPracticePage({ searchParams }: { searchPara
 
       {tab === 'editing' && (
         <section className={`${STUDY_CARD} px-4 py-3`} aria-label="Editing">
-          <h2 className={HEAD}>Editing · 10 marks each</h2>
+          <h2 className={HEAD}>Editing · 10 marks a passage</h2>
           <p className="text-[13px] text-gray-500 mt-0.5">Twelve lines. Find the wrong word in eight of them.</p>
-          <div className="divide-y divide-gray-100 mt-1">
-            {editing.map((e, i) => (
-              <Link key={e.itemId} href={`/app/languages/practice/editing/${e.itemId}`} className={ROW}>
-                <span className="shrink-0 w-7 h-7 rounded-full bg-violet-100 text-violet-800 text-[12px] font-bold flex items-center justify-center" aria-hidden>{i + 1}</span>
-                <span className="flex-1 min-w-0 text-[15px] font-semibold text-navy leading-snug truncate">{e.about}</span>
-                <span className="shrink-0 text-gray-300 text-lg">›</span>
-              </Link>
-            ))}
-            {editing.length === 0 && <p className="py-3 text-[14px] text-gray-500">Nothing here yet.</p>}
-          </div>
+          <p className="text-[13px] text-gray-500">Choose how hard, then start. The passages come one at a time.</p>
+          {editing.length > 0 ? <EditingStart levels={levels} /> : <p className="py-3 text-[14px] text-gray-500">Nothing here yet.</p>}
         </section>
       )}
 

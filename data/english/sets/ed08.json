@@ -4,16 +4,16 @@
   "about": "A podcast of a grandmother’s stories",
   "lines": [
     {"text": "My classmate Farah has always loved listening to her grandmother talk about the"},
-    {"text": "past. Last December, she decide to record these stories before they were forgotten.", "wrong": "decide", "right": "decided", "note": "Tense: 'last December' is in the past, so it is 'decided'."},
-    {"text": "Using only a phone and a cheap microphone, she began a podcast for hers", "wrong": "hers", "right": "her", "note": "Pronoun: before a noun ('family') it is 'her', not 'hers'."},
+    {"text": "past. Last December, she decide to record these stories before they were forgotten.", "wrong": "decide", "right": "decided", "kind": "past", "note": "Tense: 'last December' is in the past, so it is 'decided'."},
+    {"text": "Using only a phone and a cheap microphone, she began a podcast for hers", "wrong": "hers", "right": "her", "kind": "pronoun", "note": "Pronoun: before a noun ('family') it is 'her', not 'hers'."},
     {"text": "family. In each episode, her grandmother describes a different part of her childhood,"},
-    {"text": "such as washing clothes at a public tap or sell cakes to neighbours.", "wrong": "sell", "right": "selling", "note": "Verb form: it matches 'washing' — 'washing … or selling'."},
-    {"text": "Farah edits every recording herself, who takes her about three hours. At first,", "wrong": "who", "right": "which", "note": "'Who' is for people. The editing takes 'which'."},
+    {"text": "such as washing clothes at a public tap or sell cakes to neighbours.", "wrong": "sell", "right": "selling", "kind": "verb_form", "note": "Verb form: it matches 'washing' — 'washing … or selling'."},
+    {"text": "Farah edits every recording herself, who takes her about three hours. At first,", "wrong": "who", "right": "which", "kind": "relative", "note": "'Who' is for people. The editing takes 'which'."},
     {"text": "only her cousins listened. Then a teacher shared the link with the whole"},
-    {"text": "school, and the episodes was soon heard in many other homes. Some listeners", "wrong": "was", "right": "were", "note": "Agreement: 'the episodes' is plural, so it is 'were'."},
-    {"text": "have written to say that the stories remind them about their own grandparents.", "wrong": "about", "right": "of", "note": "Preposition: something 'reminds you of' a person."},
-    {"text": "Farah’s grandmother, who is eighty, finds all this attention rather amused. She says", "wrong": "amused", "right": "amusing", "note": "Word form: the attention is 'amusing'; a person feels 'amused'."},
-    {"text": "her life was ordinary, so Farah believes ordinary lives are worth remembering too.", "wrong": "so", "right": "but", "accept": ["yet"], "note": "Connector: Farah disagrees, so it is 'but', not 'so'."},
+    {"text": "school, and the episodes was soon heard in many other homes. Some listeners", "wrong": "was", "right": "were", "kind": "agreement", "note": "Agreement: 'the episodes' is plural, so it is 'were'."},
+    {"text": "have written to say that the stories remind them about their own grandparents.", "wrong": "about", "right": "of", "kind": "preposition", "note": "Preposition: something 'reminds you of' a person."},
+    {"text": "Farah’s grandmother, who is eighty, finds all this attention rather amused. She says", "wrong": "amused", "right": "amusing", "kind": "word_class", "note": "Word form: the attention is 'amusing'; a person feels 'amused'."},
+    {"text": "her life was ordinary, so Farah believes ordinary lives are worth remembering too.", "wrong": "so", "right": "but", "kind": "connector", "accept": ["yet"], "note": "Connector: Farah disagrees, so it is 'but', not 'so'."},
     {"text": "She plans to keep recording for as long as the stories last."}
   ]
 }

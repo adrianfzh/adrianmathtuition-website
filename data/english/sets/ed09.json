@@ -9,7 +9,7 @@
     {
       "text": "a diary on paper. Yet many people, young and old, continues to write",
       "wrong": "continues",
-      "right": "continue",
+      "right": "continue", "kind": "agreement",
       "note": "Agreement: 'many people' is plural, so it is 'continue'."
     },
     {
@@ -18,25 +18,25 @@
     {
       "text": "down and helps them thinking more clearly. Others like knowing that nobody else",
       "wrong": "thinking",
-      "right": "think",
+      "right": "think", "kind": "verb_form",
       "note": "Verb form: after 'helps them' the verb stays plain — 'think'."
     },
     {
       "text": "can read his private thoughts. A paper diary cannot be hacked, and it",
       "wrong": "his",
-      "right": "their",
+      "right": "their", "kind": "pronoun",
       "note": "Pronoun: 'others' is plural, so it is 'their'."
     },
     {
       "text": "needs neither a password or a battery. There is also a simple pleasure",
       "wrong": "or",
-      "right": "nor",
+      "right": "nor", "kind": "connector",
       "note": "Connector: 'neither' is followed by 'nor'."
     },
     {
       "text": "in choosing a pen and filling a clean page with one’s own handwrite.",
       "wrong": "handwrite",
-      "right": "handwriting",
+      "right": "handwriting", "kind": "word_class",
       "note": "Word form: after 'one’s own' a noun is needed — 'handwriting'."
     },
     {
@@ -45,7 +45,7 @@
     {
       "text": "My aunt has kept a diary since she is fourteen, and she owns",
       "wrong": "is",
-      "right": "was",
+      "right": "was", "kind": "tense",
       "note": "Tense: she was fourteen in the past, so it is 'was'.",
       "accept": [
         "turned"
@@ -54,13 +54,13 @@
     {
       "text": "more than thirty notebook today. She says that reading the oldest ones is",
       "wrong": "notebook",
-      "right": "notebooks",
+      "right": "notebooks", "kind": "number",
       "note": "Plural: 'thirty' needs 'notebooks'."
     },
     {
       "text": "like meeting a youngest version of herself. Typing may be faster, but for",
       "wrong": "youngest",
-      "right": "younger",
+      "right": "younger", "kind": "comparison",
       "note": "Comparative: she is comparing two selves, so it is 'a younger version'."
     },
     {

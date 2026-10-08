@@ -4,16 +4,16 @@
   "about": "A clock repairer and his shop",
   "lines": [
     {"text": "In a narrow shop below an old block of flats, Mr Tan repairs"},
-    {"text": "clocks and watches. He learnt the trade from his father, which opened the", "wrong": "which", "right": "who", "note": "'Which' is for things. A person takes 'who'."},
-    {"text": "shop more than fifty years ago. In those days, a clock were an", "wrong": "were", "right": "was", "note": "Agreement: 'a clock' is one thing, so it is 'was'."},
-    {"text": "expensive thing, and families would rather mend one than buying another. Mr Tan", "wrong": "buying", "right": "buy", "note": "Verb form: 'would rather mend … than buy' — both verbs stay plain."},
+    {"text": "clocks and watches. He learnt the trade from his father, which opened the", "wrong": "which", "right": "who", "kind": "relative", "note": "'Which' is for things. A person takes 'who'."},
+    {"text": "shop more than fifty years ago. In those days, a clock were an", "wrong": "were", "right": "was", "kind": "agreement", "note": "Agreement: 'a clock' is one thing, so it is 'was'."},
+    {"text": "expensive thing, and families would rather mend one than buying another. Mr Tan", "wrong": "buying", "right": "buy", "kind": "verb_form", "note": "Verb form: 'would rather mend … than buy' — both verbs stay plain."},
     {"text": "still uses his father’s tools, which he keeps in a wooden drawer."},
-    {"text": "Each repair demands great patient, for some parts are smaller than a grain", "wrong": "patient", "right": "patience", "note": "Word form: after 'great' a noun is needed — 'patience'."},
-    {"text": "of rice. He often works for many hour under a bright lamp, and", "wrong": "hour", "right": "hours", "note": "Plural: 'many' needs 'hours'."},
+    {"text": "Each repair demands great patient, for some parts are smaller than a grain", "wrong": "patient", "right": "patience", "kind": "word_class", "note": "Word form: after 'great' a noun is needed — 'patience'."},
+    {"text": "of rice. He often works for many hour under a bright lamp, and", "wrong": "hour", "right": "hours", "kind": "number", "note": "Plural: 'many' needs 'hours'."},
     {"text": "he never hurries. Customers are fewer these days, since most people simply replace"},
-    {"text": "a watch when it stopped working. Even so, a few regulars continue to", "wrong": "stopped", "right": "stops", "note": "Tense: this is what people do nowadays, so it is 'stops'."},
-    {"text": "bring him clocks that have been in his families for generations. He treats", "wrong": "his", "right": "their", "note": "Pronoun: the families belong to the regulars, so it is 'their'."},
-    {"text": "each one in great care. Mr Tan knows that his shop may close", "wrong": "in", "right": "with", "note": "Preposition: we treat something 'with' care."},
+    {"text": "a watch when it stopped working. Even so, a few regulars continue to", "wrong": "stopped", "right": "stops", "kind": "tense", "note": "Tense: this is what people do nowadays, so it is 'stops'."},
+    {"text": "bring him clocks that have been in his families for generations. He treats", "wrong": "his", "right": "their", "kind": "pronoun", "note": "Pronoun: the families belong to the regulars, so it is 'their'."},
+    {"text": "each one in great care. Mr Tan knows that his shop may close", "wrong": "in", "right": "with", "kind": "preposition", "note": "Preposition: we treat something 'with' care."},
     {"text": "one day, but he intends to keep every clock ticking until then."}
   ]
 }

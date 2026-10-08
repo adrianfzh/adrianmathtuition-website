@@ -25,6 +25,34 @@ longer a content-policy decision. What it waits on: the bench on all 51 own sets
 - **Questions point at paragraphs, never line numbers** — lines move on a phone.
 - The writers' brief for a batch: `docs/english-own-brief.md`.
 
+## Editing starts from a difficulty, one passage at a time (8 Oct 2026)
+
+Adrian, 8 Oct 2026: *"we shouldn't list questions like that … they should select difficulty, then
+start, then questions will be shown one by one, and they can type in their responses, and get
+immediate feedback when they submit"*.
+
+- **No list of titles.** The Editing tab shows three levels (Easier · Standard · Harder, each with
+  "n of m done") and **Start** (`editing/editing-start.tsx`).
+- **One passage at a time**: `/app/languages/practice/editing?level=N` picks the passage, whole on
+  the screen (a wrong word is spotted from the lines around it — "one by one" is read as one
+  PASSAGE at a time; told to Adrian as a reading). Submit → the score, then each line ✓/✗ with the
+  right word and why, at once (by rule). **Next passage** comes back to the same address.
+- **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
+  order; once all are done, the one done longest ago; never the one just finished
+  (`nextEditing`, tested; done = an `english_practice_attempts` row of kind `editing`).
+- **Difficulty is a property of the set.** Every error line carries a `kind`; each kind has a
+  weight (`EDIT_KIND_WEIGHT` in `lib/english-own.ts`): 1 = seen in the word itself (number, a / an,
+  agreement, a missing -ed) · 2 = needs the sentence's grammar (participle, adverb, pronoun,
+  who / which, verb form, comparison, much / many, a / the) · 3 = needs the meaning of the lines
+  around it (connector, preposition, noun or adjective, the passage's tense). A passage's eight
+  weights add to its score; ≤ 14 Easier, 15–16 Standard, ≥ 17 Harder. A set with an untagged
+  error does not build.
+- **Today: 4 Easier, 6 Standard, 5 Harder — and the spread is narrow (13 to 17 of a possible
+  8 to 24)**, because all 15 were written to one brief. For the levels to feel different, about 6
+  more passages written to be plainly easy (score ≤ 11) and 6 plainly hard (≥ 20) are needed.
+- The kinds also feed the skill picture (hand-over step 4: editing by error kind).
+- `editing/[id]` still opens one named passage (for a direct link); nothing lists it.
+
 ## On the plan, not the paid key (7 Oct 2026)
 
 Adrian, 7 Oct 2026: *"we should not be using API"* … *"all on plan"* … (to a queue with marks in a
@@ -85,7 +113,7 @@ write them) is still owed, and every new set is benched before it counts.
 
 | Tab | What the student does | How it is marked |
 |---|---|---|
-| Editing | the 12-line passage, a box per line (a word, or ✓) | by rule, no model: the scheme's word(s), a tick in any form schools write it |
+| Editing | choose a level, Start, then one 12-line passage at a time, a box per line (a word, or ✓) | by rule, no model: the scheme's word(s), a tick in any form schools write it |
 | Comprehension | a text, then each question with its own box and Check | the free rule when the answer is one exact thing; else ONE reading against the scheme → marks, one line why, "Still needed", then "The scheme says" / "You wrote" |
 | Visual text | the same, on a poster / webpage (its picture when one is stored) | the same |
 | Summary | the last question on a text, with a live word count | ONE reading: which of the scheme's points were made (content out of 8 at most) + one line on the wording. No language mark is invented |

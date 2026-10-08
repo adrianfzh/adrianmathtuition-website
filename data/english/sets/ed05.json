@@ -5,15 +5,15 @@
   "lines": [
     {"text": "One rainy morning, a small bird flew into our classroom window and fell"},
     {"text": "to the floor. Our form teacher picked it up gently and placed it"},
-    {"text": "in a shoebox lined with tissue paper. She told we that the bird", "wrong": "we", "right": "us", "note": "Pronoun: after 'told' it is 'us', not 'we'."},
-    {"text": "was only stunned and needed a quiet place to rest. Nobody are allowed", "wrong": "are", "right": "was", "note": "Agreement and tense: 'nobody' is singular and the story is in the past, so it is 'was'."},
-    {"text": "to touch it, although many of us wanted to. During recess, we search", "wrong": "search", "right": "searched", "note": "Tense: the story is in the past, so it is 'searched'."},
-    {"text": "the library for book about caring for wild birds. We learnt that feeding", "wrong": "book", "right": "books", "note": "Plural: there is no 'a', so it is 'books'."},
-    {"text": "bread to a bird can harmed it, so we offered water instead. By", "wrong": "harmed", "right": "harm", "note": "Verb form: after 'can' the verb stays plain — 'can harm'."},
-    {"text": "the afternoon, the bird was hopping around the box and chirping cheerful. Our", "wrong": "cheerful", "right": "cheerfully", "note": "Word form: 'chirping' is a verb, so it takes the adverb 'cheerfully'."},
-    {"text": "teacher carried the box to the field, and we all waited at silence.", "wrong": "at", "right": "in", "note": "Preposition: the phrase is 'in silence'."},
+    {"text": "in a shoebox lined with tissue paper. She told we that the bird", "wrong": "we", "right": "us", "kind": "pronoun", "note": "Pronoun: after 'told' it is 'us', not 'we'."},
+    {"text": "was only stunned and needed a quiet place to rest. Nobody are allowed", "wrong": "are", "right": "was", "kind": "tense", "note": "Agreement and tense: 'nobody' is singular and the story is in the past, so it is 'was'."},
+    {"text": "to touch it, although many of us wanted to. During recess, we search", "wrong": "search", "right": "searched", "kind": "past", "note": "Tense: the story is in the past, so it is 'searched'."},
+    {"text": "the library for book about caring for wild birds. We learnt that feeding", "wrong": "book", "right": "books", "kind": "number", "note": "Plural: there is no 'a', so it is 'books'."},
+    {"text": "bread to a bird can harmed it, so we offered water instead. By", "wrong": "harmed", "right": "harm", "kind": "verb_form", "note": "Verb form: after 'can' the verb stays plain — 'can harm'."},
+    {"text": "the afternoon, the bird was hopping around the box and chirping cheerful. Our", "wrong": "cheerful", "right": "cheerfully", "kind": "adverb", "note": "Word form: 'chirping' is a verb, so it takes the adverb 'cheerfully'."},
+    {"text": "teacher carried the box to the field, and we all waited at silence.", "wrong": "at", "right": "in", "kind": "preposition", "note": "Preposition: the phrase is 'in silence'."},
     {"text": "For a moment, the bird sat still. Then it spread its wings and"},
-    {"text": "flew to the nearest tree, who stood beside the school gate. That lesson", "wrong": "who", "right": "which", "note": "'Who' is for people. A tree takes 'which'."},
+    {"text": "flew to the nearest tree, who stood beside the school gate. That lesson", "wrong": "who", "right": "which", "kind": "relative", "note": "'Who' is for people. A tree takes 'which'."},
     {"text": "taught us more about kindness than any lecture could have done."}
   ]
 }

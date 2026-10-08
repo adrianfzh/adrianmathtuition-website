@@ -97,3 +97,32 @@ describe('a reading set', () => {
     for (const s of OWN_READING) for (const x of ownSeeds(s)) expect(x.unit?.itemId).toBe(ownUuid(s.id));
   });
 });
+
+describe('editing by difficulty (8 Oct 2026)', () => {
+  it('every error of every editing passage is tagged with its kind', async () => {
+    const { OWN_EDITING } = await import('./english-own-data');
+    const { EDIT_KIND_WEIGHT } = await import('./english-own');
+    for (const s of OWN_EDITING) for (const l of s.lines) if (l.wrong) expect(l.kind && l.kind in EDIT_KIND_WEIGHT, `${s.id}: ${l.wrong}`).toBe(true);
+  });
+  it('the level comes from the tags: 4 easier, 6 standard, 5 harder', async () => {
+    const { OWN_EDITING } = await import('./english-own-data');
+    const { editingLevel, editingScore } = await import('./english-own');
+    const count = (n: number) => OWN_EDITING.filter(s => editingLevel(s) === n).length;
+    expect([count(1), count(2), count(3)]).toEqual([4, 6, 5]);
+    for (const s of OWN_EDITING) { expect(editingScore(s)).toBeGreaterThanOrEqual(8); expect(editingScore(s)).toBeLessThanOrEqual(24); }
+  });
+  it('the next passage is one not done yet, in order', async () => {
+    const { nextEditing } = await import('./english-own');
+    expect(nextEditing(['a', 'b', 'c'], {})).toBe('a');
+    expect(nextEditing(['a', 'b', 'c'], { a: '2026-10-08T01:00:00Z' })).toBe('b');
+    expect(nextEditing(['a', 'b', 'c'], { a: '2026-10-08T01:00:00Z' }, 'b')).toBe('c');
+  });
+  it('a passage comes back only when the others are used up — the one done longest ago first', async () => {
+    const { nextEditing } = await import('./english-own');
+    const done = { a: '2026-10-08T03:00:00Z', b: '2026-10-08T01:00:00Z', c: '2026-10-08T02:00:00Z' };
+    expect(nextEditing(['a', 'b', 'c'], done)).toBe('b');
+    expect(nextEditing(['a', 'b', 'c'], done, 'b')).toBe('c');     // never the one just finished
+    expect(nextEditing(['a'], { a: '2026-10-08T03:00:00Z' }, 'a')).toBe('a');
+    expect(nextEditing([], {})).toBeNull();
+  });
+});

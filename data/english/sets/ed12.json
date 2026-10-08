@@ -4,15 +4,15 @@
   "about": "A neighbourhood cat and its feeders",
   "lines": [
     {"text": "Nobody knows exactly when the orange cat first appeared at the void deck"},
-    {"text": "of Block 12. It simply arrived one evening and choose a spot beside", "wrong": "choose", "right": "chose", "note": "Tense: 'arrived … and chose' — both verbs are in the past."},
-    {"text": "the letterboxes. Residents soon named the cat Biscuit because of it sandy colour.", "wrong": "it", "right": "its", "note": "Pronoun: the colour belongs to the cat, so it is 'its'."},
-    {"text": "Since then, an elderly man from the third floor have fed it every", "wrong": "have", "right": "has", "note": "Agreement: 'an elderly man' is one person, so it is 'has fed'."},
+    {"text": "of Block 12. It simply arrived one evening and choose a spot beside", "wrong": "choose", "right": "chose", "kind": "past", "note": "Tense: 'arrived … and chose' — both verbs are in the past."},
+    {"text": "the letterboxes. Residents soon named the cat Biscuit because of it sandy colour.", "wrong": "it", "right": "its", "kind": "pronoun", "note": "Pronoun: the colour belongs to the cat, so it is 'its'."},
+    {"text": "Since then, an elderly man from the third floor have fed it every", "wrong": "have", "right": "has", "kind": "agreement", "note": "Agreement: 'an elderly man' is one person, so it is 'has fed'."},
     {"text": "morning before he goes to the market. Other neighbours leave bowls of water"},
-    {"text": "and have even paid for the cat to be examine by a vet.", "wrong": "examine", "right": "examined", "note": "Verb form: after 'to be' it is 'examined'."},
-    {"text": "Not everyone is pleased, however. A few resident complain that stray animals bring", "wrong": "resident", "right": "residents", "note": "Plural: 'a few' needs 'residents'."},
-    {"text": "fleas and dirt. To settle the matter peaceful, the neighbours met and made", "wrong": "peaceful", "right": "peacefully", "note": "Word form: 'settle' is a verb, so it takes the adverb 'peacefully'."},
-    {"text": "a few rules. Food must be placed in one corner, but the bowls", "wrong": "but", "right": "and", "note": "Connector: this is a second rule, not a contrast, so it is 'and'."},
-    {"text": "must be washed daily. Biscuit, that seems unaware of the fuss, still sleeps", "wrong": "that", "right": "which", "accept": ["who"], "note": "Relative pronoun: after a comma it is 'which' (or 'who' for a pet), never 'that'."},
+    {"text": "and have even paid for the cat to be examine by a vet.", "wrong": "examine", "right": "examined", "kind": "past", "note": "Verb form: after 'to be' it is 'examined'."},
+    {"text": "Not everyone is pleased, however. A few resident complain that stray animals bring", "wrong": "resident", "right": "residents", "kind": "number", "note": "Plural: 'a few' needs 'residents'."},
+    {"text": "fleas and dirt. To settle the matter peaceful, the neighbours met and made", "wrong": "peaceful", "right": "peacefully", "kind": "adverb", "note": "Word form: 'settle' is a verb, so it takes the adverb 'peacefully'."},
+    {"text": "a few rules. Food must be placed in one corner, but the bowls", "wrong": "but", "right": "and", "kind": "connector", "note": "Connector: this is a second rule, not a contrast, so it is 'and'."},
+    {"text": "must be washed daily. Biscuit, that seems unaware of the fuss, still sleeps", "wrong": "that", "right": "which", "kind": "relative", "accept": ["who"], "note": "Relative pronoun: after a comma it is 'which' (or 'who' for a pet), never 'that'."},
     {"text": "on the same step every afternoon. Children stop to stroke it on their"},
     {"text": "way home, and even the unhappy neighbours have begun to smile."}
   ]

@@ -12,18 +12,21 @@
      "text": "she did not expect anyone to notice it. Within a month, however, the shelf has",
      "wrong": "has",
      "right": "had",
+     "kind": "tense",
      "note": "Tense: the story is in the past, so it is 'had grown'."
     },
     {
      "text": "grown into a corner library with more than three hundred book. Residents of",
      "wrong": "book",
      "right": "books",
+     "kind": "number",
      "note": "Plural: 'three hundred' needs 'books'."
     },
     {
      "text": "all ages now drop by after dinner, and much of them have become regular",
      "wrong": "much",
      "right": "many",
+     "kind": "quantity",
      "note": "'Many' goes with people you can count; 'much' does not."
     },
     {
@@ -33,30 +36,35 @@
      "text": "are done. Nobody keeps a record, yet very few books have went missing so",
      "wrong": "went",
      "right": "gone",
+     "kind": "participle",
      "note": "Verb form: after 'have' it is 'gone', not 'went'."
     },
     {
      "text": "far. Mdm Rosnah believes that people behave good when they are trusted.",
      "wrong": "good",
      "right": "well",
+     "kind": "adverb",
      "note": "Word form: 'behave' is a verb, so it takes the adverb 'well'."
     },
     {
      "text": "Last year, a group of students offered to help she sort the books by",
      "wrong": "she",
      "right": "her",
+     "kind": "pronoun",
      "note": "Pronoun: after 'help' it is 'her'."
     },
     {
      "text": "subject. They also painted the shelves and add a reading bench for the",
      "wrong": "add",
      "right": "added",
+     "kind": "past",
      "note": "Tense: 'painted … and added' — both verbs are in the past."
     },
     {
      "text": "elderly. What began as one woman’s hobby is now a meeting place who brings",
      "wrong": "who",
      "right": "that",
+     "kind": "relative",
      "accept": [
       "which"
      ],
@@ -82,12 +90,14 @@
      "text": "into a workshop. Volunteers sit behind long tables and waits to repair",
      "wrong": "waits",
      "right": "wait",
+     "kind": "agreement",
      "note": "Agreement: 'Volunteers' is plural, so 'sit … and wait'."
     },
     {
      "text": "broken fans, kettles and toys that residents bring in. Nothing is threw",
      "wrong": "threw",
      "right": "thrown",
+     "kind": "participle",
      "note": "Verb form: after 'is' it is 'thrown', not 'threw'."
     },
     {
@@ -97,6 +107,7 @@
      "text": "technicians, but a few are students who simply enjoy take things apart.",
      "wrong": "take",
      "right": "taking",
+     "kind": "verb_form",
      "note": "Verb form: 'enjoy' is followed by '-ing'."
     },
     {
@@ -106,30 +117,35 @@
      "text": "the work is done. Mr Lim, which started the sessions, says the aim is not",
      "wrong": "which",
      "right": "who",
+     "kind": "relative",
      "note": "'Which' is for things. A person takes 'who'."
     },
     {
      "text": "only to save money. He wants people to think careful before they replace",
      "wrong": "careful",
      "right": "carefully",
+     "kind": "adverb",
      "note": "Word form: 'think' is a verb, so it takes the adverb 'carefully'."
     },
     {
      "text": "something that still has years of use left on it. Last year alone, the",
      "wrong": "on",
      "right": "in",
+     "kind": "preposition",
      "note": "Preposition: use is left 'in' a thing."
     },
     {
      "text": "volunteers kept more than two thousand item out of the rubbish bin.",
      "wrong": "item",
      "right": "items",
+     "kind": "number",
      "note": "Plural: 'two thousand' needs 'items'."
     },
     {
      "text": "Many visitors leave with a working appliance and an new skill as well.",
      "wrong": "an",
      "right": "a",
+     "kind": "article",
      "note": "Article: 'new' starts with a consonant sound, so it is 'a new skill'."
     },
     {
@@ -149,12 +165,14 @@
      "text": "Three years ago, the flat roof were nothing more than bare grey concrete,",
      "wrong": "were",
      "right": "was",
+     "kind": "agreement",
      "note": "Agreement: 'the flat roof' is one thing, so it is 'was'."
     },
     {
      "text": "but a group of teachers decided to turn it into an garden. They",
      "wrong": "an",
      "right": "a",
+     "kind": "article",
      "note": "Article: 'garden' starts with a consonant sound, so it is 'a garden'."
     },
     {
@@ -164,24 +182,28 @@
      "text": "kinds of vegetables and herbs are grew there in long wooden boxes. Every",
      "wrong": "grew",
      "right": "grown",
+     "kind": "participle",
      "note": "Verb form: after 'are' it is 'grown', not 'grew'."
     },
     {
      "text": "morning, members of the Gardening Club water the plants careful before lessons begin.",
      "wrong": "careful",
      "right": "carefully",
+     "kind": "adverb",
      "note": "Word form: 'water' is a verb here, so it takes the adverb 'carefully'."
     },
     {
      "text": "They also check the leaves for snails, who can ruin a whole",
      "wrong": "who",
      "right": "which",
+     "kind": "relative",
      "note": "'Who' is for people. Snails take 'which'."
     },
     {
      "text": "crop overnight. The work is tiring, so nobody complains because the results are",
      "wrong": "so",
      "right": "but",
+     "kind": "connector",
      "accept": [
       "yet"
      ],
@@ -194,12 +216,14 @@
      "text": "teachers at a small stall. Several student have even started growing vegetables at",
      "wrong": "student",
      "right": "students",
+     "kind": "number",
      "note": "Plural: 'several' needs 'students'."
     },
     {
      "text": "home. Our principal says the garden has taught us most than any textbook",
      "wrong": "most",
      "right": "more",
+     "kind": "comparison",
      "note": "Comparative: before 'than' it is 'more', not 'most'."
     },
     {
@@ -219,6 +243,7 @@
      "text": "forty years. He sells only one dish, a bowl of fishball noodles, or",
      "wrong": "or",
      "right": "and",
+     "kind": "connector",
      "note": "Connector: he is adding a second fact, so it is 'and', not 'or'."
     },
     {
@@ -228,18 +253,21 @@
      "text": "he mixes fresh fish paste by hand and shape every ball himself. By",
      "wrong": "shape",
      "right": "shapes",
+     "kind": "number",
      "note": "Agreement: 'he mixes … and shapes' — both verbs go with 'he'."
     },
     {
      "text": "six o’clock, a queue has usually formed at front of the stall.",
      "wrong": "at",
      "right": "in",
+     "kind": "preposition",
      "note": "Preposition: the phrase is 'in front of'."
     },
     {
      "text": "Many of his customers first came as children and now bring its own",
      "wrong": "its",
      "right": "their",
+     "kind": "pronoun",
      "note": "Pronoun: 'customers' are people and plural, so it is 'their'."
     },
     {
@@ -249,18 +277,21 @@
      "text": "could have retire years ago, for his three sons all earn good salaries.",
      "wrong": "retire",
      "right": "retired",
+     "kind": "past",
      "note": "Verb form: after 'could have' it is 'retired'."
     },
     {
      "text": "However, he insists that cooking is good for him than resting at home.",
      "wrong": "good",
      "right": "better",
+     "kind": "comparison",
      "note": "Comparative: before 'than' it is 'better', not 'good'."
     },
     {
      "text": "Nobody in the family has yet agreed to take over a stall, so",
      "wrong": "a",
      "right": "the",
+     "kind": "article_the",
      "accept": [
       "his"
      ],
@@ -270,6 +301,7 @@
      "text": "he worries that the taste will disappear when he finally stopped working. For",
      "wrong": "stopped",
      "right": "stops",
+     "kind": "tense",
      "note": "Tense: this is about the future, so it is 'when he finally stops'."
     },
     {
@@ -292,42 +324,49 @@
      "text": "in a shoebox lined with tissue paper. She told we that the bird",
      "wrong": "we",
      "right": "us",
+     "kind": "pronoun",
      "note": "Pronoun: after 'told' it is 'us', not 'we'."
     },
     {
      "text": "was only stunned and needed a quiet place to rest. Nobody are allowed",
      "wrong": "are",
      "right": "was",
+     "kind": "tense",
      "note": "Agreement and tense: 'nobody' is singular and the story is in the past, so it is 'was'."
     },
     {
      "text": "to touch it, although many of us wanted to. During recess, we search",
      "wrong": "search",
      "right": "searched",
+     "kind": "past",
      "note": "Tense: the story is in the past, so it is 'searched'."
     },
     {
      "text": "the library for book about caring for wild birds. We learnt that feeding",
      "wrong": "book",
      "right": "books",
+     "kind": "number",
      "note": "Plural: there is no 'a', so it is 'books'."
     },
     {
      "text": "bread to a bird can harmed it, so we offered water instead. By",
      "wrong": "harmed",
      "right": "harm",
+     "kind": "verb_form",
      "note": "Verb form: after 'can' the verb stays plain — 'can harm'."
     },
     {
      "text": "the afternoon, the bird was hopping around the box and chirping cheerful. Our",
      "wrong": "cheerful",
      "right": "cheerfully",
+     "kind": "adverb",
      "note": "Word form: 'chirping' is a verb, so it takes the adverb 'cheerfully'."
     },
     {
      "text": "teacher carried the box to the field, and we all waited at silence.",
      "wrong": "at",
      "right": "in",
+     "kind": "preposition",
      "note": "Preposition: the phrase is 'in silence'."
     },
     {
@@ -337,6 +376,7 @@
      "text": "flew to the nearest tree, who stood beside the school gate. That lesson",
      "wrong": "who",
      "right": "which",
+     "kind": "relative",
      "note": "'Who' is for people. A tree takes 'which'."
     },
     {
@@ -356,18 +396,21 @@
      "text": "clocks and watches. He learnt the trade from his father, which opened the",
      "wrong": "which",
      "right": "who",
+     "kind": "relative",
      "note": "'Which' is for things. A person takes 'who'."
     },
     {
      "text": "shop more than fifty years ago. In those days, a clock were an",
      "wrong": "were",
      "right": "was",
+     "kind": "agreement",
      "note": "Agreement: 'a clock' is one thing, so it is 'was'."
     },
     {
      "text": "expensive thing, and families would rather mend one than buying another. Mr Tan",
      "wrong": "buying",
      "right": "buy",
+     "kind": "verb_form",
      "note": "Verb form: 'would rather mend … than buy' — both verbs stay plain."
     },
     {
@@ -377,12 +420,14 @@
      "text": "Each repair demands great patient, for some parts are smaller than a grain",
      "wrong": "patient",
      "right": "patience",
+     "kind": "word_class",
      "note": "Word form: after 'great' a noun is needed — 'patience'."
     },
     {
      "text": "of rice. He often works for many hour under a bright lamp, and",
      "wrong": "hour",
      "right": "hours",
+     "kind": "number",
      "note": "Plural: 'many' needs 'hours'."
     },
     {
@@ -392,18 +437,21 @@
      "text": "a watch when it stopped working. Even so, a few regulars continue to",
      "wrong": "stopped",
      "right": "stops",
+     "kind": "tense",
      "note": "Tense: this is what people do nowadays, so it is 'stops'."
     },
     {
      "text": "bring him clocks that have been in his families for generations. He treats",
      "wrong": "his",
      "right": "their",
+     "kind": "pronoun",
      "note": "Pronoun: the families belong to the regulars, so it is 'their'."
     },
     {
      "text": "each one in great care. Mr Tan knows that his shop may close",
      "wrong": "in",
      "right": "with",
+     "kind": "preposition",
      "note": "Preposition: we treat something 'with' care."
     },
     {
@@ -423,24 +471,28 @@
      "text": "place. The heat of the day is gone, and the path are lit",
      "wrong": "are",
      "right": "is",
+     "kind": "agreement",
      "note": "Agreement: 'the path' is one thing, so it is 'is lit'."
     },
     {
      "text": "by rows of soft yellow lamps. My father and I have cycle there",
      "wrong": "cycle",
      "right": "cycled",
+     "kind": "past",
      "note": "Verb form: after 'have' it is 'cycled'."
     },
     {
      "text": "every Friday night since I was twelve. We usually set off on nine",
      "wrong": "on",
      "right": "at",
+     "kind": "preposition",
      "note": "Preposition: a clock time takes 'at' — 'at nine o’clock'."
     },
     {
      "text": "o’clock, when most joggers have left. The route follows the canal for a hour",
      "wrong": "a",
      "right": "an",
+     "kind": "article",
      "note": "Article: 'hour' starts with a vowel sound, so it is 'an hour'."
     },
     {
@@ -450,6 +502,7 @@
      "text": "far out in the dark water. Cycling at night is peaceful, so it",
      "wrong": "so",
      "right": "but",
+     "kind": "connector",
      "accept": [
       "yet"
      ],
@@ -459,18 +512,21 @@
      "text": "also demands care. We wear bright vests and fix lights to our bicycle",
      "wrong": "bicycle",
      "right": "bicycles",
+     "kind": "number",
      "note": "Plural: there are two riders, so it is 'our bicycles'."
     },
     {
      "text": "so that other riders can see us clear. My father always reminds me",
      "wrong": "clear",
      "right": "clearly",
+     "kind": "adverb",
      "note": "Word form: 'see' is a verb, so it takes the adverb 'clearly'."
     },
     {
      "text": "to slow down at bends, where a careless cyclist once knocks him over.",
      "wrong": "knocks",
      "right": "knocked",
+     "kind": "tense",
      "note": "Tense: it happened once in the past, so it is 'knocked'."
     },
     {
@@ -493,12 +549,14 @@
      "text": "past. Last December, she decide to record these stories before they were forgotten.",
      "wrong": "decide",
      "right": "decided",
+     "kind": "past",
      "note": "Tense: 'last December' is in the past, so it is 'decided'."
     },
     {
      "text": "Using only a phone and a cheap microphone, she began a podcast for hers",
      "wrong": "hers",
      "right": "her",
+     "kind": "pronoun",
      "note": "Pronoun: before a noun ('family') it is 'her', not 'hers'."
     },
     {
@@ -508,12 +566,14 @@
      "text": "such as washing clothes at a public tap or sell cakes to neighbours.",
      "wrong": "sell",
      "right": "selling",
+     "kind": "verb_form",
      "note": "Verb form: it matches 'washing' — 'washing … or selling'."
     },
     {
      "text": "Farah edits every recording herself, who takes her about three hours. At first,",
      "wrong": "who",
      "right": "which",
+     "kind": "relative",
      "note": "'Who' is for people. The editing takes 'which'."
     },
     {
@@ -523,24 +583,28 @@
      "text": "school, and the episodes was soon heard in many other homes. Some listeners",
      "wrong": "was",
      "right": "were",
+     "kind": "agreement",
      "note": "Agreement: 'the episodes' is plural, so it is 'were'."
     },
     {
      "text": "have written to say that the stories remind them about their own grandparents.",
      "wrong": "about",
      "right": "of",
+     "kind": "preposition",
      "note": "Preposition: something 'reminds you of' a person."
     },
     {
      "text": "Farah’s grandmother, who is eighty, finds all this attention rather amused. She says",
      "wrong": "amused",
      "right": "amusing",
+     "kind": "word_class",
      "note": "Word form: the attention is 'amusing'; a person feels 'amused'."
     },
     {
      "text": "her life was ordinary, so Farah believes ordinary lives are worth remembering too.",
      "wrong": "so",
      "right": "but",
+     "kind": "connector",
      "accept": [
       "yet"
      ],
@@ -563,6 +627,7 @@
      "text": "a diary on paper. Yet many people, young and old, continues to write",
      "wrong": "continues",
      "right": "continue",
+     "kind": "agreement",
      "note": "Agreement: 'many people' is plural, so it is 'continue'."
     },
     {
@@ -572,24 +637,28 @@
      "text": "down and helps them thinking more clearly. Others like knowing that nobody else",
      "wrong": "thinking",
      "right": "think",
+     "kind": "verb_form",
      "note": "Verb form: after 'helps them' the verb stays plain — 'think'."
     },
     {
      "text": "can read his private thoughts. A paper diary cannot be hacked, and it",
      "wrong": "his",
      "right": "their",
+     "kind": "pronoun",
      "note": "Pronoun: 'others' is plural, so it is 'their'."
     },
     {
      "text": "needs neither a password or a battery. There is also a simple pleasure",
      "wrong": "or",
      "right": "nor",
+     "kind": "connector",
      "note": "Connector: 'neither' is followed by 'nor'."
     },
     {
      "text": "in choosing a pen and filling a clean page with one’s own handwrite.",
      "wrong": "handwrite",
      "right": "handwriting",
+     "kind": "word_class",
      "note": "Word form: after 'one’s own' a noun is needed — 'handwriting'."
     },
     {
@@ -599,6 +668,7 @@
      "text": "My aunt has kept a diary since she is fourteen, and she owns",
      "wrong": "is",
      "right": "was",
+     "kind": "tense",
      "note": "Tense: she was fourteen in the past, so it is 'was'.",
      "accept": [
       "turned"
@@ -608,12 +678,14 @@
      "text": "more than thirty notebook today. She says that reading the oldest ones is",
      "wrong": "notebook",
      "right": "notebooks",
+     "kind": "number",
      "note": "Plural: 'thirty' needs 'notebooks'."
     },
     {
      "text": "like meeting a youngest version of herself. Typing may be faster, but for",
      "wrong": "youngest",
      "right": "younger",
+     "kind": "comparison",
      "note": "Comparative: she is comparing two selves, so it is 'a younger version'."
     },
     {
@@ -633,6 +705,7 @@
      "text": "Most people would have gave up by now, but our players turn up",
      "wrong": "gave",
      "right": "given",
+     "kind": "participle",
      "note": "Verb form: after 'would have' it is 'given', not 'gave'."
     },
     {
@@ -642,6 +715,7 @@
      "text": "boy which never shouts, yet everyone listens when he speaks. Last month, we",
      "wrong": "which",
      "right": "who",
+     "kind": "relative",
      "accept": [
       "that"
      ],
@@ -651,18 +725,21 @@
      "text": "lost by six goals to a team from a neighbouring school. Nobody cry",
      "wrong": "cry",
      "right": "cried",
+     "kind": "past",
      "note": "Tense: the match was last month, so it is 'cried'."
     },
     {
      "text": "or blamed the goalkeeper. Instead, the players shook hands with his opponents and",
      "wrong": "his",
      "right": "their",
+     "kind": "pronoun",
      "note": "Pronoun: 'the players' is plural, so it is 'their'."
     },
     {
      "text": "stayed behind to practise passing. Our coach says that losing teach us things",
      "wrong": "teach",
      "right": "teaches",
+     "kind": "agreement",
      "accept": [
       "taught"
      ],
@@ -672,12 +749,14 @@
      "text": "that winning never could. We have learnt to be patience, to trust one",
      "wrong": "patience",
      "right": "patient",
+     "kind": "word_class",
      "note": "Word form: after 'to be' an adjective is needed — 'patient'."
     },
     {
      "text": "another and to keep running until the whistle. We are also much fit than",
      "wrong": "fit",
      "right": "fitter",
+     "kind": "comparison",
      "note": "Comparative: before 'than' it is 'fitter'."
     },
     {
@@ -687,6 +766,7 @@
      "text": "they have never watched us train. Whatever the score, I am proud with",
      "wrong": "with",
      "right": "of",
+     "kind": "preposition",
      "note": "Preposition: we are 'proud of' something."
     },
     {
@@ -709,24 +789,28 @@
      "text": "floor. This simple journey depend on the work of technicians like Mr Rahim,",
      "wrong": "depend",
      "right": "depends",
+     "kind": "agreement",
      "note": "Agreement: 'this simple journey' is one thing, so it is 'depends'."
     },
     {
      "text": "who has been repair lifts for nearly twenty years. Every month, he checks",
      "wrong": "repair",
      "right": "repairing",
+     "kind": "verb_form",
      "note": "Verb form: after 'has been' it is 'repairing'."
     },
     {
      "text": "every lift in the estate and climbs into the dark shaft above them.",
      "wrong": "them",
      "right": "it",
+     "kind": "pronoun",
      "note": "Pronoun: 'every lift' is singular, so it is 'it'."
     },
     {
      "text": "He oils the cables, tests the brakes and replaces any part who looks",
      "wrong": "who",
      "right": "that",
+     "kind": "relative",
      "accept": [
       "which"
      ],
@@ -739,18 +823,21 @@
      "text": "When residents are trapped inside, he must reach them as quick as he can.",
      "wrong": "quick",
      "right": "quickly",
+     "kind": "adverb",
      "note": "Word form: 'reach' is a verb, so it takes the adverb 'quickly'."
     },
     {
      "text": "Once, he free a frightened child who had been stuck for an hour.",
      "wrong": "free",
      "right": "freed",
+     "kind": "participle",
      "note": "Tense: it happened once in the past, so it is 'freed'."
     },
     {
      "text": "Mr Rahim admits that few people thank him, because he does not mind.",
      "wrong": "because",
      "right": "but",
+     "kind": "connector",
      "accept": [
       "yet",
       "although",
@@ -762,6 +849,7 @@
      "text": "He says there is no best reward than knowing that thousands of his",
      "wrong": "best",
      "right": "better",
+     "kind": "comparison",
      "accept": [
       "greater"
      ],
@@ -784,18 +872,21 @@
      "text": "of Block 12. It simply arrived one evening and choose a spot beside",
      "wrong": "choose",
      "right": "chose",
+     "kind": "past",
      "note": "Tense: 'arrived … and chose' — both verbs are in the past."
     },
     {
      "text": "the letterboxes. Residents soon named the cat Biscuit because of it sandy colour.",
      "wrong": "it",
      "right": "its",
+     "kind": "pronoun",
      "note": "Pronoun: the colour belongs to the cat, so it is 'its'."
     },
     {
      "text": "Since then, an elderly man from the third floor have fed it every",
      "wrong": "have",
      "right": "has",
+     "kind": "agreement",
      "note": "Agreement: 'an elderly man' is one person, so it is 'has fed'."
     },
     {
@@ -805,30 +896,35 @@
      "text": "and have even paid for the cat to be examine by a vet.",
      "wrong": "examine",
      "right": "examined",
+     "kind": "past",
      "note": "Verb form: after 'to be' it is 'examined'."
     },
     {
      "text": "Not everyone is pleased, however. A few resident complain that stray animals bring",
      "wrong": "resident",
      "right": "residents",
+     "kind": "number",
      "note": "Plural: 'a few' needs 'residents'."
     },
     {
      "text": "fleas and dirt. To settle the matter peaceful, the neighbours met and made",
      "wrong": "peaceful",
      "right": "peacefully",
+     "kind": "adverb",
      "note": "Word form: 'settle' is a verb, so it takes the adverb 'peacefully'."
     },
     {
      "text": "a few rules. Food must be placed in one corner, but the bowls",
      "wrong": "but",
      "right": "and",
+     "kind": "connector",
      "note": "Connector: this is a second rule, not a contrast, so it is 'and'."
     },
     {
      "text": "must be washed daily. Biscuit, that seems unaware of the fuss, still sleeps",
      "wrong": "that",
      "right": "which",
+     "kind": "relative",
      "accept": [
       "who"
      ],
@@ -857,6 +953,7 @@
      "text": "nervous. My first attempt was fried rice, which sound easy but was not.",
      "wrong": "sound",
      "right": "sounded",
+     "kind": "past",
      "accept": [
       "sounds"
      ],
@@ -866,12 +963,14 @@
      "text": "I added too many soy sauce, and the rice turned dark and salty.",
      "wrong": "many",
      "right": "much",
+     "kind": "quantity",
      "note": "'Much' goes with things you cannot count, like soy sauce."
     },
     {
      "text": "My brother ate it anyway, although he drank three glass of water afterwards.",
      "wrong": "glass",
      "right": "glasses",
+     "kind": "number",
      "note": "Plural: 'three' needs 'glasses'."
     },
     {
@@ -881,30 +980,35 @@
      "text": "She never measures anything, but each dish she makes taste exactly the same.",
      "wrong": "taste",
      "right": "tastes",
+     "kind": "agreement",
      "note": "Agreement: 'each dish' is singular, so it is 'tastes'."
     },
     {
      "text": "That day, she let I stir the pot while she explained each step slowly.",
      "wrong": "I",
      "right": "me",
+     "kind": "pronoun",
      "note": "Pronoun: after 'let' it is 'me', not 'I'."
     },
     {
      "text": "By the end of the holidays, I could prepared four dishes without help.",
      "wrong": "prepared",
      "right": "prepare",
+     "kind": "verb_form",
      "note": "Verb form: after 'could' the verb stays plain — 'prepare'."
     },
     {
      "text": "Cooking has also made me more grateful to the meals my parents make",
      "wrong": "to",
      "right": "for",
+     "kind": "preposition",
      "note": "Preposition: we are grateful 'for' a thing."
     },
     {
      "text": "after a long day at work. I am still a slowly cook, but",
      "wrong": "slowly",
      "right": "slow",
+     "kind": "adverb",
      "note": "Word form: 'cook' is a noun here, so it takes the adjective 'slow'."
     },
     {
@@ -924,12 +1028,14 @@
      "text": "She has drove the first bus out of the depot for eleven years.",
      "wrong": "drove",
      "right": "driven",
+     "kind": "participle",
      "note": "Verb form: after 'has' it is 'driven', not 'drove'."
     },
     {
      "text": "Her alarm rings at half past three, and she reach the depot by",
      "wrong": "reach",
      "right": "reaches",
+     "kind": "agreement",
      "note": "Agreement: 'she' takes 'reaches'."
     },
     {
@@ -939,6 +1045,7 @@
      "text": "The roads are almost empty at that hour, so the route is never",
      "wrong": "so",
      "right": "but",
+     "kind": "connector",
      "accept": [
       "yet"
      ],
@@ -948,6 +1055,7 @@
      "text": "lonely. Her earliest passengers are cleaners, nurses and bakers which start work before",
      "wrong": "which",
      "right": "who",
+     "kind": "relative",
      "accept": [
       "that"
      ],
@@ -957,18 +1065,21 @@
      "text": "dawn. She knows many of them by name and greets them warm.",
      "wrong": "warm",
      "right": "warmly",
+     "kind": "adverb",
      "note": "Word form: 'greets' is a verb, so it takes the adverb 'warmly'."
     },
     {
      "text": "One old man has brought her coffee every morning since many years.",
      "wrong": "since",
      "right": "for",
+     "kind": "preposition",
      "note": "Preposition: a length of time takes 'for'; 'since' needs a starting point."
     },
     {
      "text": "Last month, when a schoolboy leaves his wallet on a seat, she handed",
      "wrong": "leaves",
      "right": "left",
+     "kind": "tense",
      "note": "Tense: it happened last month, so it is 'left'."
     },
     {
@@ -978,6 +1089,7 @@
      "text": "than driving fast. By sunrise, she has already completed a entire trip, and",
      "wrong": "a",
      "right": "an",
+     "kind": "article",
      "note": "Article: 'entire' starts with a vowel sound, so it is 'an entire trip'."
     },
     {
@@ -997,24 +1109,28 @@
      "text": "The recycling drive was started two years ago by five student who were",
      "wrong": "student",
      "right": "students",
+     "kind": "number",
      "note": "Plural: 'five' needs 'students'."
     },
     {
      "text": "tired of seeing full rubbish bins. They place three large boxes near the",
      "wrong": "place",
      "right": "placed",
+     "kind": "past",
      "note": "Tense: 'placed … and asked' — both verbs are in the past."
     },
     {
      "text": "drink stall and asked his schoolmates to bring paper, cans and plastic bottles.",
      "wrong": "his",
      "right": "their",
+     "kind": "pronoun",
      "note": "Pronoun: 'they' is plural, so it is 'their schoolmates'."
     },
     {
      "text": "At first, the response was disappointed, and some people even threw food into",
      "wrong": "disappointed",
      "right": "disappointing",
+     "kind": "word_class",
      "note": "Word form: the response is 'disappointing'; a person feels 'disappointed'."
     },
     {
@@ -1024,6 +1140,7 @@
      "text": "posters and showed a video who explained where the school’s rubbish goes.",
      "wrong": "who",
      "right": "that",
+     "kind": "relative",
      "accept": [
       "which"
      ],
@@ -1033,6 +1150,7 @@
      "text": "Slowly, the boxes began to fill. Today, each class have its own monitor,",
      "wrong": "have",
      "right": "has",
+     "kind": "agreement",
      "note": "Agreement: 'each class' is singular, so it is 'has'."
     },
     {
@@ -1042,12 +1160,14 @@
      "text": "collects the more receives a small prize at the end of each term.",
      "wrong": "more",
      "right": "most",
+     "kind": "comparison",
      "note": "Superlative: among all the classes it is 'the most'."
     },
     {
      "text": "The founders have since graduated, but younger students have taken over of them.",
      "wrong": "of",
      "right": "from",
+     "kind": "preposition",
      "note": "Preposition: we take over 'from' someone."
     },
     {

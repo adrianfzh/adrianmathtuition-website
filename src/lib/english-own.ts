@@ -21,7 +21,44 @@ export type SeedFlaw = (typeof SEED_FLAWS)[number];
 export const VISUAL_THEMES = ['teal', 'amber', 'rose', 'indigo', 'green'] as const;
 export type VisualTheme = (typeof VISUAL_THEMES)[number];
 
-export interface OwnEditLine { text: string; wrong?: string; right?: string; accept?: string[]; note?: string }
+/**
+ * What kind of error a line carries, with how hard that kind is to spot (8 Oct 2026, Adrian:
+ * "they should select difficulty"). 1 = seen in the word itself (a missing -s, a / an, was / were,
+ * a missing -ed); 2 = needs the grammar of the sentence (a participle, an adverb, a pronoun,
+ * who / which, a verb form, a comparison); 3 = needs the MEANING of the lines around it (the right
+ * connector, the right preposition, noun or adjective, the tense the passage is in).
+ */
+export const EDIT_KIND_WEIGHT = {
+  number: 1, article: 1, agreement: 1, past: 1,
+  participle: 2, adverb: 2, pronoun: 2, relative: 2, verb_form: 2, comparison: 2, quantity: 2, article_the: 2,
+  connector: 3, preposition: 3, word_class: 3, tense: 3,
+} as const;
+export type EditKind = keyof typeof EDIT_KIND_WEIGHT;
+export interface OwnEditLine { text: string; wrong?: string; right?: string; kind?: EditKind; accept?: string[]; note?: string }
+export type EditLevel = 1 | 2 | 3;
+export const EDIT_LEVELS: readonly { level: EditLevel; name: string; sub: string }[] = [
+  { level: 1, name: 'Easier', sub: 'Mostly endings, a / an and was / were' },
+  { level: 2, name: 'Standard', sub: 'A mix, as in the exam' },
+  { level: 3, name: 'Harder', sub: 'More connectors, prepositions and tenses' },
+];
+/** A passage's eight errors, weighed: 8 (all plain) to 24 (all from meaning). */
+export const editingScore = (s: Pick<OwnEditing, 'lines'>): number =>
+  s.lines.reduce((n, l) => n + (l.wrong && l.kind ? EDIT_KIND_WEIGHT[l.kind] ?? 0 : 0), 0);
+/** The level is worked out from the tagged errors, never guessed when a page is served. */
+export const editingLevel = (s: Pick<OwnEditing, 'lines'>): EditLevel => { const n = editingScore(s); return n <= 14 ? 1 : n <= 16 ? 2 : 3; };
+
+/**
+ * Which passage comes next at a level: one not done yet, in the sets' own order; when every one
+ * is done, the one done longest ago. `doneAt` = id → the last time it was handed in (ISO).
+ * `skip` = the passage just finished, so "Next" never serves the same one twice in a row.
+ */
+export function nextEditing(ids: string[], doneAt: Record<string, string | undefined>, skip?: string | null): string | null {
+  const pool = ids.length > 1 ? ids.filter(id => id !== skip) : ids;
+  if (pool.length === 0) return null;
+  const fresh = pool.find(id => !doneAt[id]);
+  if (fresh) return fresh;
+  return [...pool].sort((a, b) => String(doneAt[a]).localeCompare(String(doneAt[b])))[0];
+}
 export interface OwnEditing { id: string; kind: 'editing'; about: string; lines: OwnEditLine[] }
 
 export type VisualBlock =
@@ -99,6 +136,7 @@ function editingProblems(s: OwnEditing): string[] {
     if (!l.right || /\s/.test(l.right.trim()) || l.right === l.wrong) out.push(`line ${i}: the right word is one word, not the wrong one`);
     if (/\s/.test(l.wrong) || wholeWordCount(l.text, l.wrong) !== 1) out.push(`line ${i}: "${l.wrong}" must stand exactly once in the line`);
     if (!l.note || l.note.length < 8) out.push(`line ${i}: a short note on why`);
+    if (!l.kind || !(l.kind in EDIT_KIND_WEIGHT)) out.push(`line ${i}: kind is one of ${Object.keys(EDIT_KIND_WEIGHT).join(', ')}`);
   });
   return out;
 }

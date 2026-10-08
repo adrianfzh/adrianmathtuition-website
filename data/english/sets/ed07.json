@@ -4,15 +4,15 @@
   "about": "Night cycling along a park connector",
   "lines": [
     {"text": "After the sun sets, the park connector near my home becomes a different"},
-    {"text": "place. The heat of the day is gone, and the path are lit", "wrong": "are", "right": "is", "note": "Agreement: 'the path' is one thing, so it is 'is lit'."},
-    {"text": "by rows of soft yellow lamps. My father and I have cycle there", "wrong": "cycle", "right": "cycled", "note": "Verb form: after 'have' it is 'cycled'."},
-    {"text": "every Friday night since I was twelve. We usually set off on nine", "wrong": "on", "right": "at", "note": "Preposition: a clock time takes 'at' — 'at nine o’clock'."},
-    {"text": "o’clock, when most joggers have left. The route follows the canal for a hour", "wrong": "a", "right": "an", "note": "Article: 'hour' starts with a vowel sound, so it is 'an hour'."},
+    {"text": "place. The heat of the day is gone, and the path are lit", "wrong": "are", "right": "is", "kind": "agreement", "note": "Agreement: 'the path' is one thing, so it is 'is lit'."},
+    {"text": "by rows of soft yellow lamps. My father and I have cycle there", "wrong": "cycle", "right": "cycled", "kind": "past", "note": "Verb form: after 'have' it is 'cycled'."},
+    {"text": "every Friday night since I was twelve. We usually set off on nine", "wrong": "on", "right": "at", "kind": "preposition", "note": "Preposition: a clock time takes 'at' — 'at nine o’clock'."},
+    {"text": "o’clock, when most joggers have left. The route follows the canal for a hour", "wrong": "a", "right": "an", "kind": "article", "note": "Article: 'hour' starts with a vowel sound, so it is 'an hour'."},
     {"text": "before it reaches the sea. On clear nights, we can see ships waiting"},
-    {"text": "far out in the dark water. Cycling at night is peaceful, so it", "wrong": "so", "right": "but", "accept": ["yet"], "note": "Connector: the two ideas contrast, so it is 'but', not 'so'."},
-    {"text": "also demands care. We wear bright vests and fix lights to our bicycle", "wrong": "bicycle", "right": "bicycles", "note": "Plural: there are two riders, so it is 'our bicycles'."},
-    {"text": "so that other riders can see us clear. My father always reminds me", "wrong": "clear", "right": "clearly", "note": "Word form: 'see' is a verb, so it takes the adverb 'clearly'."},
-    {"text": "to slow down at bends, where a careless cyclist once knocks him over.", "wrong": "knocks", "right": "knocked", "note": "Tense: it happened once in the past, so it is 'knocked'."},
+    {"text": "far out in the dark water. Cycling at night is peaceful, so it", "wrong": "so", "right": "but", "kind": "connector", "accept": ["yet"], "note": "Connector: the two ideas contrast, so it is 'but', not 'so'."},
+    {"text": "also demands care. We wear bright vests and fix lights to our bicycle", "wrong": "bicycle", "right": "bicycles", "kind": "number", "note": "Plural: there are two riders, so it is 'our bicycles'."},
+    {"text": "so that other riders can see us clear. My father always reminds me", "wrong": "clear", "right": "clearly", "kind": "adverb", "note": "Word form: 'see' is a verb, so it takes the adverb 'clearly'."},
+    {"text": "to slow down at bends, where a careless cyclist once knocks him over.", "wrong": "knocks", "right": "knocked", "kind": "tense", "note": "Tense: it happened once in the past, so it is 'knocked'."},
     {"text": "When we finally stop for a drink, I feel calmer than I have"},
     {"text": "all week, and I am already looking forward to the next ride."}
   ]

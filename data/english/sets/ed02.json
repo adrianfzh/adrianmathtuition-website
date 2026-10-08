@@ -4,16 +4,16 @@
   "about": "A monthly repair workshop",
   "lines": [
     { "text": "On the first Sunday of every month, a community hall in Tampines turns" },
-    { "text": "into a workshop. Volunteers sit behind long tables and waits to repair", "wrong": "waits", "right": "wait", "note": "Agreement: 'Volunteers' is plural, so 'sit … and wait'." },
-    { "text": "broken fans, kettles and toys that residents bring in. Nothing is threw", "wrong": "threw", "right": "thrown", "note": "Verb form: after 'is' it is 'thrown', not 'threw'." },
+    { "text": "into a workshop. Volunteers sit behind long tables and waits to repair", "wrong": "waits", "right": "wait", "kind": "agreement", "note": "Agreement: 'Volunteers' is plural, so 'sit … and wait'." },
+    { "text": "broken fans, kettles and toys that residents bring in. Nothing is threw", "wrong": "threw", "right": "thrown", "kind": "participle", "note": "Verb form: after 'is' it is 'thrown', not 'threw'." },
     { "text": "away until someone has tried to fix it. Most of the volunteers are retired" },
-    { "text": "technicians, but a few are students who simply enjoy take things apart.", "wrong": "take", "right": "taking", "note": "Verb form: 'enjoy' is followed by '-ing'." },
+    { "text": "technicians, but a few are students who simply enjoy take things apart.", "wrong": "take", "right": "taking", "kind": "verb_form", "note": "Verb form: 'enjoy' is followed by '-ing'." },
     { "text": "Each repair is free, and visitors are encouraged to stay and watch how" },
-    { "text": "the work is done. Mr Lim, which started the sessions, says the aim is not", "wrong": "which", "right": "who", "note": "'Which' is for things. A person takes 'who'." },
-    { "text": "only to save money. He wants people to think careful before they replace", "wrong": "careful", "right": "carefully", "note": "Word form: 'think' is a verb, so it takes the adverb 'carefully'." },
-    { "text": "something that still has years of use left on it. Last year alone, the", "wrong": "on", "right": "in", "note": "Preposition: use is left 'in' a thing." },
-    { "text": "volunteers kept more than two thousand item out of the rubbish bin.", "wrong": "item", "right": "items", "note": "Plural: 'two thousand' needs 'items'." },
-    { "text": "Many visitors leave with a working appliance and an new skill as well.", "wrong": "an", "right": "a", "note": "Article: 'new' starts with a consonant sound, so it is 'a new skill'." },
+    { "text": "the work is done. Mr Lim, which started the sessions, says the aim is not", "wrong": "which", "right": "who", "kind": "relative", "note": "'Which' is for things. A person takes 'who'." },
+    { "text": "only to save money. He wants people to think careful before they replace", "wrong": "careful", "right": "carefully", "kind": "adverb", "note": "Word form: 'think' is a verb, so it takes the adverb 'carefully'." },
+    { "text": "something that still has years of use left on it. Last year alone, the", "wrong": "on", "right": "in", "kind": "preposition", "note": "Preposition: use is left 'in' a thing." },
+    { "text": "volunteers kept more than two thousand item out of the rubbish bin.", "wrong": "item", "right": "items", "kind": "number", "note": "Plural: 'two thousand' needs 'items'." },
+    { "text": "Many visitors leave with a working appliance and an new skill as well.", "wrong": "an", "right": "a", "kind": "article", "note": "Article: 'new' starts with a consonant sound, so it is 'a new skill'." },
     { "text": "For Mr Lim, that second gift matters more than the first one does." }
   ]
 }
