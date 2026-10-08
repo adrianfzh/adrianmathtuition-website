@@ -16,6 +16,8 @@ level schemes are in [`docs/humanities/social-studies-level-schemes.md`](docs/hu
 >   `HUMANITIES_OPEN_TO_STUDENTS` (`false`; Adrian's cookie + the demo student see it).
 > - Marker: bot `ai/humanities-marker.js` + `lib/humanities-report.js`, `POST /api/humanities-mark` —
 >   two blind reads, a third when they differ, held when all differ. A level range, never a mark.
+>   **Since 8 Oct 2026 the reads run on the plan queue, written and settled by the website — §3b.**
+>   The bot's reader is the paid path, kept behind one switch that is unset.
 > - Routes: `/api/portal/humanities` (student), `/api/admin/humanities` (list + the bench's hand-in);
 >   table `humanities_runs`; one door `lib/humanities-submit.ts`.
 > - Bench: `npx tsx scripts/humanities-bench/run.ts --base <url>` (rules in `lib/humanities-bench.ts`).
@@ -246,6 +248,43 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - A feedback page offers **More practice** — the next unanswered question of the same skill.
 > - `lib/humanities-practice.ts` (pure, tested): `skillStandings` · `practiceRun` · `nextOfSkill`. No new
 >   marking, no new route; it reads the levels and marks already on `humanities_runs`.
+
+## 3b. The reader on the plan (8 Oct 2026)
+
+Adrian, 7 Oct 2026: *"we should not be using API"* … *"all on plan"*; 8 Oct: *"start humanities reader"*.
+The paid reader cost about 5 US cents an answer. Since 8 Oct 2026 a typed answer is read on **plan
+usage**, through the same `plan_reads` queue as the English checker. Website only — the Fly worker
+and the bot did not change.
+
+- **Hand-in** (`lib/humanities-submit.ts`): the `humanities_runs` row goes in `queued`, and TWO rows
+  go into `plan_reads` — `kind: 'humanities-read'`, `ref: <run id>:1` and `:2`, the two reading
+  orders (1 = claim by claim, 2 = the whole answer first). No tools, no pictures: words in, JSON out.
+- **The prompt** (`lib/humanities-prompt.ts`): the bot's `buildSystemPrompt` / `buildUserMessage`,
+  ported word for word — levels and points — and joined into one string. Checked on 8 Oct 2026
+  against the bot's own functions for every question in the bank, both orders: 698 prompts, 0 differ.
+  **Change a word of it and §4 must run again.**
+- **The belt** (`lib/humanities-settle.ts`, pure, tests ported from the bot): `validateRead`,
+  `validatePointsRead`, `agreeReads`, `buildReport`, `buildPointsReport`, a tolerant `parseReadReply`,
+  and `nextStep` — the bot's loop as one decision.
+- **Settle** (`lib/humanities-settle-run.ts settleHumanitiesRun`): nothing pushes a reply back, so a
+  run is settled **when it is looked at** while in flight. Two reads the same → `marked`. Different →
+  a third is queued. Three with no majority, or two levels wide → `held`. A read that failed or did
+  not pass the belt → one more, up to four; fewer than two usable → `failed`. The run's `claimed_at`
+  is a 20-second lease so only one looker writes.
+- **Who looks:** every loader in `lib/humanities-runs.ts` (the feedback page refreshes every 4
+  seconds; the timed paper's result page; Home; My answers; `GET /api/admin/humanities?id=`, which the
+  bench polls) and the `plan-reads` health check (`settleOpenHumanities`), so no answer waits on a
+  page being open.
+- **The model:** `HUMANITIES_PLAN_MODEL` in `lib/humanities-settle-run.ts` — chosen by the slice in §4.
+  The bench's admin hand-in may name `model: sonnet|opus` for one run; a student's hand-in cannot.
+- **Speed:** MEASURED-SPEED
+- **The paid path** is still in the code: `HUMANITIES_READ_USE_API=1` sends the answer to the bot's
+  `/api/humanities-mark` as before. **Unset everywhere. Do not set it without Adrian's word.**
+- **Limits:** the worker's lane reads one answer at a time, so a class handing in together waits in
+  line. Held and failed answers of real students ping Adrian on Telegram (`marking` topic); bench
+  answers do not. The alarm is the existing health check `plan-reads` (an answer waiting over 20 minutes).
+- **Words on the page:** "about a minute" became "a few minutes" (Home, the status line, the timed
+  paper's result page).
 
 ## 4. The bench — built like the science bench
 
