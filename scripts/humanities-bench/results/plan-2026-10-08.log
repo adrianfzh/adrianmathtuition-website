@@ -1,0 +1,111 @@
+2026-10-08T12:16:03.605Z start (sonnet) · login 1: 5h 38% 7d 24% (read 2026-10-08T12:06:01Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:14:09Z) · login 3: 5h 53% 7d 12% (read 2026-10-08T12:13:36Z)
+
+Humanities bench · plan-2026-10-08-ss-structured · 37 answers · on the plan (sonnet) · 74 reads · median 148s an answer
+Seeded:      21/21 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   sr_explain   9/9
+   sr_weigh     12/12
+Consistency: 6/6 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  10/10 held · broke 0 · not settled 0 → PASS
+   padding            4/4
+   supported_added    6/6
+Held 0 · failed 0
+2026-10-08T12:22:56.939Z after ss-structured · login 1: 5h 38% 7d 24% (read 2026-10-08T12:16:02Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:14:09Z) · login 3: 5h 56% 7d 12% (read 2026-10-08T12:17:31Z)
+
+Humanities bench · plan-2026-10-08-hist-source · 66 answers · on the plan (sonnet) · 135 reads · median 180s an answer
+Seeded:      35/35 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   comparison   8/8
+   usefulness   8/8
+   how_far      8/8
+   inference    3/3
+   reliability  4/4
+   purpose      4/4
+Consistency: 9/9 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  22/22 held · broke 0 · not settled 0 → PASS
+   padding            6/6
+   evidence_removed   8/8
+   supported_added    8/8
+Held 0 · failed 0
+2026-10-08T12:36:32.339Z after hist-source · login 1: 5h 39% 7d 24% (read 2026-10-08T12:26:02Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:25:45Z) · login 3: 5h 63% 7d 13% (read 2026-10-08T12:34:56Z)
+
+Humanities bench · plan-2026-10-08-geo-9mark · 42 answers · on the plan (sonnet) · 84 reads · median 148s an answer
+Seeded:      24/24 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   geo_evaluate 24/24
+Consistency: 6/6 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  12/12 held · broke 0 · not settled 0 → PASS
+   padding            4/4
+   supported_added    8/8
+Held 0 · failed 0
+2026-10-08T12:44:05.778Z after geo-9mark · login 1: 5h 39% 7d 24% (read 2026-10-08T12:37:53Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:25:45Z) · login 3: 5h 67% 7d 14% (read 2026-10-08T12:42:37Z)
+
+Humanities bench · plan-2026-10-08-hist-essays · 110 answers · on the plan (sonnet) · 220 reads · median 189s an answer
+Seeded:      72/72 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   hist_evaluate 72/72
+Consistency: 18/18 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  20/20 held · broke 0 · not settled 0 → PASS
+   padding            12/12
+   supported_added    8/8
+Held 0 · failed 0
+2026-10-08T13:07:34.080Z after hist-essays · login 1: 5h 40% 7d 24% (read 2026-10-08T13:03:52Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:56:02Z) · login 3: 5h 7% 7d 15% (read 2026-10-08T13:03:54Z)
+
+Humanities bench · plan-2026-10-08-ss-hard · 144 answers · on the plan (sonnet) · 294 reads · median 212s an answer
+Seeded:      89/90 at the written level (99% of those read) · one off 0 · two off 1 · not settled 0 → FAIL
+   comparison   14/15
+   usefulness   15/15
+   how_far      15/15
+   inference    15/15
+   reliability  15/15
+   purpose      15/15
+Consistency: 23/23 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  31/31 held · broke 0 · not settled 0 → PASS
+   padding            15/15
+   evidence_removed   8/8
+   supported_added    8/8
+Held 0 · failed 0
+
+Seeded answers not at their level:
+   seed:s09-q1:L4:messy  → marked 2 
+2026-10-08T13:41:59.466Z after ss-hard · login 1: 5h 2% 7d 25% (read 2026-10-08T13:34:54Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T13:31:24Z) · login 3: 5h 12% 7d 15% (read 2026-10-08T13:38:04Z)
+
+Humanities bench · plan-2026-10-08-geo-points · 773 answers · on the plan (sonnet) · 1556 reads · median 180s an answer
+Seeded:      534/538 at the written level (99% of those read) · one off 3 · two off 0 · not settled 1 → FAIL
+   geo_explain  311/311
+   geo_describe 223/227
+Consistency: 134/135 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  100/100 held · broke 0 · not settled 0 → PASS
+   padding            90/90
+   evidence_removed   2/2
+   supported_added    8/8
+Held 0 · failed 1
+
+Seeded answers not at their level:
+   seed:g05-q4:L0  → marked 1 
+   seed:g22-q4:L3  → marked 2–3 
+   seed:g22-q4:L4  → marked 3 
+   seed:g26-q3:L3  → failed – fewer than two usable reads
+2026-10-08T18:13:53.773Z after geo-points · login 1: 5h 8% 7d 27% (read 2026-10-08T18:11:16Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T18:02:06Z) · login 3: 5h 5% 7d 21% (read 2026-10-08T18:07:49Z)
+
+Humanities bench · plan-2026-10-08-ss-source · 900 answers · on the plan (sonnet) · 1831 reads · median 174s an answer
+Seeded:      618/624 at the written level (99% of those read) · one off 5 · two off 0 · not settled 1 → FAIL
+   comparison   128/128
+   usefulness   99/100
+   how_far      127/128
+   inference    72/72
+   reliability  63/64
+   purpose      95/96
+   surprise     34/36
+Consistency: 152/156 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  119/120 held · broke 0 · not settled 1 → FAIL
+   padding            103/104
+   evidence_removed   8/8
+   supported_added    8/8
+Held 0 · failed 2
+
+Seeded answers not at their level:
+   seed:s16-q4:L3  → marked 2 
+   seed:s20-q4:L2  → marked 1–2 
+   seed:s29-q3:L2  → marked 3 
+   seed:s29-q5:L2  → failed – fewer than two usable reads
+   seed:s30-q3:L2  → marked 2–3 
+   seed:s36-q4:L2  → marked 1 
+2026-10-08T21:12:15.821Z after ss-source · login 1: 5h 2% 7d 27% (read 2026-10-08T21:03:47Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T21:07:44Z) · login 3: 5h 67% 7d 31% (read 2026-10-08T21:11:53Z)
+DONE 2026-10-08T21:12:15Z

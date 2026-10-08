@@ -1,0 +1,82 @@
+2026-10-08T11:02:20.872Z before sonnet · login 1: 5h 33% 7d 22% (read 2026-10-08T11:00:11Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T10:56:13Z) · login 3: 5h 35% 7d 9% (read 2026-10-08T10:59:19Z)
+11/133 read
+21/133 read
+31/133 read
+41/133 read
+51/133 read
+61/133 read
+71/133 read
+81/133 read
+91/133 read
+101/133 read
+120/133 read
+124/133 read
+124/133 read
+125/133 read
+127/133 read
+128/133 read
+130/133 read
+132/133 read
+133/133 read
+
+Humanities bench · plan-slice-sonnet-2026-10-08 · 133 answers · on the plan (sonnet) · 268 reads · median 261s an answer
+Seeded:      82/82 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   purpose      4/4
+   comparison   4/4
+   usefulness   4/4
+   reliability  4/4
+   how_far      4/4
+   hist_evaluate 16/16
+   geo_explain  37/37
+   geo_describe 9/9
+Consistency: 21/21 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  30/30 held · broke 0 · not settled 0 → PASS
+   padding            14/14
+   evidence_removed   8/8
+   supported_added    8/8
+Held 0 · failed 0
+2026-10-08T11:49:45.583Z after sonnet / before opus · login 1: 5h 36% 7d 23% (read 2026-10-08T11:44:24Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T11:46:28Z) · login 3: 5h 42% 7d 11% (read 2026-10-08T11:45:08Z)
+10/133 read
+20/133 read
+30/133 read
+40/133 read
+51/133 read
+61/133 read
+71/133 read
+81/133 read
+91/133 read
+101/133 read
+112/133 read
+122/133 read
+124/133 read
+125/133 read
+126/133 read
+128/133 read
+130/133 read
+131/133 read
+131/133 read
+131/133 read
+131/133 read
+131/133 read
+131/133 read
+131/133 read
+131/133 read
+133/133 read
+
+Humanities bench · plan-slice-opus-2026-10-08 · 133 answers · on the plan (opus) · 266 reads · median 163s an answer
+Seeded:      82/82 at the written level (100% of those read) · one off 0 · two off 0 · not settled 0 → PASS
+   purpose      4/4
+   comparison   4/4
+   usefulness   4/4
+   reliability  4/4
+   how_far      4/4
+   hist_evaluate 16/16
+   geo_explain  37/37
+   geo_describe 9/9
+Consistency: 21/21 the same level twice · two apart 0 · not settled 0 → PASS
+Truth-free:  30/30 held · broke 0 · not settled 0 → PASS
+   padding            14/14
+   evidence_removed   8/8
+   supported_added    8/8
+Held 0 · failed 0
+2026-10-08T12:15:31.318Z after opus · login 1: 5h 38% 7d 24% (read 2026-10-08T12:06:01Z) · login 2 (off): 5h 0% 7d 0% (read 2026-10-08T12:14:09Z) · login 3: 5h 53% 7d 12% (read 2026-10-08T12:13:36Z)

@@ -333,7 +333,39 @@ levels off; consistency passes; the truth-free checks pass.
   23→24 %, 11→12 % over the opus slice — with other plan work running at the same time, so these are
   upper bounds: about 3 points (both logins together) for 268 reads.
 - **The full bench** (`bash scripts/humanities-bench/full-plan.sh`, seven runs `plan-2026-10-08-*`, every
-  seeded answer in the bank + the 90 hard ones, about 1,900 answers / 3,900 reads): FULL-BENCH-TABLE
+  seeded answer in the bank + the 90 hard ones), reader `sonnet`, 8–9 Oct 2026: 2,072 answers, 4,188
+  reads, about 9 hours of the worker's lane, no money.
+
+| Run (`plan-2026-10-08-…`) | Seeded | Consistency | Truth-free | Held / failed | Gate |
+|---|---|---|---|---|---|
+| `ss-structured` — Social Studies structured response | 21/21 | 6/6 | 10/10 | 0 / 0 | pass |
+| `hist-source` — History source questions | 35/35 | 9/9 | 22/22 | 0 / 0 | pass |
+| `geo-9mark` — Geography, the 9-mark questions | 24/24 | 6/6 | 12/12 | 0 / 0 | pass |
+| `hist-essays` — History essays, y01–y09 | 72/72 | 18/18 | 20/20 | 0 / 0 | pass |
+| `geo-points` — Geography, all 26 point-marked sets | 535/538, the three one mark off | 134/135 | 100/100 | 0 / 0 | pass |
+| `ss-source` — Social Studies, s01–s04 and the case studies s11–s40 | 619/624, the five one level off | 152/156 | 120/120 | 0 / 0 | pass |
+| `ss-hard` — the 90 student-like answers (`--hard`) | 89/90, **the miss two levels off** | 23/23 | 31/31 | 0 / 0 | **fails on that one answer** |
+| `ss-hard-opus` — the same 90 on `opus`, for comparison | 88/90, the two one level off | 23/23 | 31/31 | 0 / 0 | pass |
+
+- **In all:** 1,395 of 1,404 seeded answers at the written level (99.4 %), eight one off, one two off;
+  repeats 348/353; truth-free 315/315; nothing held, nothing failed. 43 answers needed a third read.
+- **The one answer two levels off — Adrian's to rule on.** `s09-q1`, the Level 4 "messy" comparison
+  answer: a clear difference, a purpose comparison, and a loosely worded similarity ("no cars change the
+  way customers come", from B's bus stop and C's families who stay for hours). `sonnet` says the
+  similarity is not in Source C and gives Level 2, every time (four reads). `opus` accepts it and gives
+  Level 4, every time (four reads). It is a real difference in strictness, not noise. If the answer
+  deserves the top level, the reader should be `opus` (one constant) and the six other runs repeated on
+  it; if the similarity is too loose, the seeded answer is mislabelled and `sonnet` passes everywhere.
+- **The misses one off** (`g05-q4` L0→1, `g22-q4` L3→2–3 and L4→3, `s16-q4` L3→2, `s20-q4` L2→1–2,
+  `s29-q3` L2→3, `s30-q3` L2→2–3, `s36-q4` L2→1) are inside the gate; none has been adjudicated.
+- **Two faults the bench found in the belt, fixed the same day** (`lib/humanities-settle.ts`, tested):
+  a reader that corrects itself writes its object twice — the last whole one is now taken (`g26-q3`);
+  and a source that itself speaks of marks ("scored 11 marks lower", `s29-q5`) made every lift look
+  like mark-talk — a figure that is in the question's own material is now allowed. The three answers
+  they had failed were read again and settled.
+- **The meter over the full bench:** login 1 24 → 27 %, login 3 12 → 31 % of the week, with other plan
+  work running beside it — so at most about 22 points across the two logins for 4,188 reads.
+- **Not yet done:** a days-apart repeat; a timed paper handed in by a signed-in student on this path.
 
 - The Geography miss was ours, not the reader's: a "zero" answer (people stay near volcanoes because they were born there) is a valid reason, and the reader credited it as an unlisted point. The seeded answer was replaced.
 - The one miss: a reliability answer that trusts the source from its content alone,

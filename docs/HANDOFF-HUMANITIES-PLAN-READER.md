@@ -4,7 +4,9 @@
 > how it works is `SPEC-HUMANITIES.md` §3b. The slice chose `sonnet` (82/82 · 21/21 · 30/30, the same
 > as `opus`). The full bench runs with `bash scripts/humanities-bench/full-plan.sh` (resumes; results
 > `scripts/humanities-bench/results/plan-2026-10-08-*.json`, log `plan-2026-10-08.log`); its table is
-> in `SPEC-HUMANITIES.md` §4. Still open: a timed paper handed in by a signed-in student on the new
+> in `SPEC-HUMANITIES.md` §4. **The full bench ran 8–9 Oct 2026: 1,395 of 1,404 seeded answers right, six
+> of seven runs pass; the hard set has one answer two levels off (`s09-q1`), where `sonnet` and `opus`
+> disagree — waiting for Adrian's ruling (§4).** Still open: a timed paper handed in by a signed-in student on the new
 > path (same door, not yet tried by hand), and a phone-width look at the pages (words only changed).
 
 For a FRESH session (the Humanities build session reached 90% of its window). Read
