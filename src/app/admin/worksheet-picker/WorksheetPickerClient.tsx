@@ -159,6 +159,10 @@ export default function WorksheetPickerClient() {
   const [open, setOpen] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
+  type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null };
+  const [picks, setPicks] = useState<Pick[]>([]);
+  const [pickId, setPickId] = useState<string | null>(params.get('pick'));
+  const [saving, setSaving] = useState(false);
   const [paste, setPaste] = useState('');
   const [searchQ, setSearchQ] = useState('');
   const [searchLevel, setSearchLevel] = useState('JC2');
@@ -214,11 +218,47 @@ export default function WorksheetPickerClient() {
   // The URL's ids load once, into the candidates column.
   const urlIds = useMemo(() => parseIds(params.get('ids')), [params]);
   const [seeded, setSeeded] = useState(false);
+  const loadPicks = useCallback(async () => {
+    try {
+      const r = await fetch('/api/admin/worksheet-picker/picks');
+      if (r.ok) setPicks(((await r.json()).picks ?? []) as Pick[]);
+    } catch { /* the list is a convenience */ }
+  }, []);
+  const openPick = useCallback(async (id: string) => {
+    try {
+      const r = await fetch(`/api/admin/worksheet-picker/picks?id=${encodeURIComponent(id)}`);
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      const pk = d.pick as Pick;
+      setTitle(pk.title); setSubtitle(pk.subtitle); setPickId(pk.id);
+      setCands([]); setPicked([]); setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
+      await loadIds(pk.question_ids);
+      const u = new URL(window.location.href); u.search = `?pick=${pk.id}`; window.history.replaceState(null, '', u.toString());
+    } catch (e) { say((e as Error).message, 'err'); }
+  }, [loadIds, say]);
   useEffect(() => {
     if (!authed || seeded) return;
     setSeeded(true);
+    void loadPicks();
     if (urlIds.length) void loadIds(urlIds);
-  }, [authed, seeded, urlIds, loadIds]);
+    else if (pickId) void openPick(pickId);
+  }, [authed, seeded, urlIds, loadIds, pickId, openPick, loadPicks]);
+
+  /** Save the worksheet column (or, before any picking, the candidates) as a selection to reopen later. */
+  async function saveSelection() {
+    const ids = picked.length ? picked : cands;
+    if (!ids.length) { say('Nothing to save yet', 'err'); return; }
+    setSaving(true);
+    try {
+      const r = await fetch('/api/admin/worksheet-picker/picks', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim() || 'Revision Practice', subtitle: subtitle.trim(), question_ids: ids, source: 'picker', note: picked.length ? 'Saved from the picker (worksheet column)' : 'Saved from the picker (candidates)' }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      setPickId(d.pick.id); await loadPicks(); say('Selection saved');
+    } catch (e) { say((e as Error).message, 'err'); } finally { setSaving(false); }
+  }
 
   const colOf = (id: string): Col | null => (picked.includes(id) ? 'picked' : cands.includes(id) ? 'cands' : null);
   const move = useCallback((id: string, to: Col, index?: number) => {
@@ -366,6 +406,24 @@ export default function WorksheetPickerClient() {
           <label className="text-xs text-slate-600 flex items-center gap-1.5 pb-1.5"><input type="checkbox" checked={workingSpace} onChange={(e) => setWorkingSpace(e.target.checked)} /> working space</label>
         </div>
 
+        <details open={!cands.length && !picked.length} className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
+          <summary className="cursor-pointer font-semibold text-slate-700">Recent selections <span className="font-normal text-slate-400">({picks.length})</span></summary>
+          {picks.length ? (
+            <ul className="mt-2 divide-y divide-slate-100">
+              {picks.map((pk) => (
+                <li key={pk.id} className={`py-2 flex flex-wrap items-center gap-x-3 gap-y-1 ${pk.id === pickId ? 'bg-indigo-50/60 -mx-2 px-2 rounded' : ''}`}>
+                  <button onClick={() => void openPick(pk.id)} className="font-semibold text-indigo-700 hover:underline text-left">{pk.title}</button>
+                  {pk.subtitle && <span className="text-slate-500">{pk.subtitle}</span>}
+                  <span className="text-xs text-slate-400">{pk.question_ids.length} questions · {new Date(pk.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · {pk.source}{pk.opened_at ? '' : ' · new'}</span>
+                  {pk.note && <span className="w-full text-xs text-slate-500">{pk.note}</span>}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-2 text-slate-500">No saved selections yet. A session saves one when it shortlists questions for you; Save selection (below) keeps your own.</p>
+          )}
+        </details>
+
         <details className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
           <summary className="cursor-pointer font-semibold text-slate-700">Add candidates (paste ids, or search the bank)</summary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -387,7 +445,7 @@ export default function WorksheetPickerClient() {
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
           <div className="flex flex-col md:flex-row gap-4">
-            <Column col="cands" title="Candidates" items={candQs} onMove={move} onOpen={setOpen} empty={urlIds.length ? 'All candidates are on the worksheet' : 'Open this page with ?ids=… or add candidates above'} />
+            <Column col="cands" title="Candidates" items={candQs} onMove={move} onOpen={setOpen} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
             <Column col="picked" title="Worksheet" items={pickQs} onMove={move} onOpen={setOpen} empty="Drag questions here, in print order" />
           </div>
           <DragOverlay>{active ? <div className="w-80"><Card q={active} index={0} col="cands" onMove={() => {}} onOpen={() => {}} overlay /></div> : null}</DragOverlay>
@@ -398,6 +456,7 @@ export default function WorksheetPickerClient() {
             <button onClick={done} disabled={!!busy || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build PDF + DOCX (${picked.length})`}</button>
             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-700 underline">Open PDF</a>}
             {docxUrl && <a href={docxUrl} download={`${fileStem(title)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
+            <button onClick={saveSelection} disabled={saving || (!picked.length && !cands.length)} className="text-sm text-slate-600 underline disabled:opacity-40">{saving ? 'Saving…' : 'Save selection'}</button>
             <button onClick={shareLink} disabled={!picked.length} className="text-sm text-slate-600 underline disabled:opacity-40 ml-auto">Copy link to this selection</button>
           </div>
           {docxBlob && pdfUrl && (
