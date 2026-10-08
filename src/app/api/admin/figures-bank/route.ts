@@ -62,6 +62,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { getScienceClient, scienceConfigured } from '@/lib/science-bank';
 import { swapFigureRef, RECROP_NOTE_PREFIX } from '@/lib/figure-recrop';
+import { cleanRecropReasons, recropRejectWhy } from '@/lib/recrop-reasons';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { inspectFigure } from '@/lib/figure-checks';
@@ -1350,7 +1351,14 @@ async function recropLanePost(body: Record<string, unknown>) {
   const path = String(body.path ?? '');
   if (!path) return NextResponse.json({ error: 'path required' }, { status: 400 });
   if (action === 'reject') {
-    const { error } = await sci.from('figure_recrops').update({ decision: 'rejected', decided_at: new Date().toISOString() }).eq('path', path).is('decision', null);
+    // his one-tap reasons ride on the row (what he rejects is how the cutter's checks get tightened)
+    const reasons = cleanRecropReasons(body.reasons);
+    let why: string | null = null;
+    if (reasons.length) {
+      const { data: was } = await sci.from('figure_recrops').select('why').eq('path', path).maybeSingle();
+      why = recropRejectWhy(reasons, (was?.why as string | null) ?? null);
+    }
+    const { error } = await sci.from('figure_recrops').update({ decision: 'rejected', decided_at: new Date().toISOString(), ...(why ? { why } : {}) }).eq('path', path).is('decision', null);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
