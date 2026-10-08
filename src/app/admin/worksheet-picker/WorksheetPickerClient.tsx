@@ -91,7 +91,6 @@ function Card({ q, index, col, onMove, overlay = false }: {
             original position"). */}
         <div className="mb-1.5 flex gap-3">
           <button onClick={() => { setFull((v) => !v); if (full) setSol(false); }} className="text-[12px] font-semibold text-slate-700 hover:underline">{full || sol ? 'Hide question ▴' : 'Full question ▾'}</button>
-          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Remove'}
           </button>
@@ -99,6 +98,11 @@ function Card({ q, index, col, onMove, overlay = false }: {
         {full || sol
           ? <div className="pr-1"><QuestionBody q={q} size={13} /></div>
           : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
+        {/* The solution's own dropdown sits UNDER the question (Adrian, 9 Oct 2026:
+            "put solution under the question"); the working unfolds below it. */}
+        <div className="mt-1.5">
+          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
+        </div>
         {sol && <SolutionBlock q={q} />}
       </div>
     </div>
