@@ -5,9 +5,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { MathMarkdown } from '@/lib/math-markdown';
 import {
-  answerTex, fiveResult, mark, parseBrackets, questionTex, setFor, working, FIVE, PASS_MARK,
-  type ReviseStep, type Slip, type Verdict, type WorkLine,
+  answerTex, fiveResult, mark, parseBrackets, pieces, questionTex, setFor, working, workingTaps, FIVE, PASS_MARK,
+  type Brackets, type ReviseStep, type Slip, type Verdict,
 } from '@/lib/revise-step';
+import { termBodyTex, termTex, termTexBracketed } from '@/lib/poly';
+import Rainbow, { ACTIVE } from './rainbow';
 
 type Phase = 'example' | 'try' | 'five' | 'end';
 
@@ -17,15 +19,42 @@ function Say({ text }: { text: string }) { return <MathMarkdown content={text} c
 
 function letterOf(question: string): string { return /[a-zA-Z]/.exec(question)?.[0] ?? 'x'; }
 
-function Working({ lines, shown, reasons }: { lines: WorkLine[]; shown: number; reasons: boolean }) {
+/**
+ * The working, built up a tap at a time: an arrow and its piece per tap, then
+ * the like terms added up. `taps` = how far it has got (0 = the question alone).
+ */
+function Working({ br, taps, reasons }: { br: Brackets; taps: number; reasons: boolean }) {
+  const ps = pieces(br);
+  const lines = working(br);
+  const n = Math.min(taps, ps.length);
+  const building = reasons && taps <= ps.length;
+  const piecesTex = ps.slice(0, n).map((p, i) => {
+    const t = p.product;
+    const body = i === 0 ? termTex(t) : `${t.coef < 0 ? '-' : '+'} ${termBodyTex(t)}`;
+    return building && i === n - 1 ? `\\textcolor{${ACTIVE}}{${body}}` : body;
+  }).join(' ');
+  const now = n > 0 ? ps[n - 1] : null;
   return (
-    <div className="space-y-2">
-      {lines.slice(0, shown).map((l, i) => (
-        <div key={i}>
-          <div className="text-lg text-slate-900"><Tex tex={l.tex} /></div>
-          {reasons && l.why && <div className="text-xs text-slate-400 leading-snug">{l.why}</div>}
-        </div>
-      ))}
+    <div>
+      <Rainbow br={br} arrows={building ? n : ps.length} />
+      <div className="space-y-2 -mt-3">
+        {n > 0 && (
+          <div>
+            <div className="text-lg text-slate-900"><Tex tex={`= ${piecesTex}`} /></div>
+            {building && now && (
+              <div className="text-xs text-slate-500 leading-snug">
+                Arrow {n}: <Tex tex={`${termTexBracketed(now.x)} \\times ${termTexBracketed(now.y)} = ${termTex(now.product)}`} />
+              </div>
+            )}
+          </div>
+        )}
+        {taps > ps.length && lines[2] && (
+          <div className="text-lg text-slate-900">
+            <Tex tex={lines[2].tex} />
+            {reasons && <span className="text-xs text-slate-500 ml-2">← {lines[2].why}</span>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -98,7 +127,7 @@ const QUIET = 'w-full rounded-2xl border border-slate-300 text-navy font-semibol
 export default function ReviseFlow({ step }: { step: ReviseStep }) {
   const [phase, setPhase] = useState<Phase>('example');
   const [attempt, setAttempt] = useState(0); // which five (0-based)
-  const [shown, setShown] = useState(1); // lines of working on screen
+  const [shown, setShown] = useState(0); // taps of working on screen
   const [typed, setTyped] = useState('');
   const [note, setNote] = useState<string | null>(null);
   const [verdict, setVerdict] = useState<Verdict | null>(null);
@@ -111,12 +140,12 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
   const set = useMemo(() => setFor(step, attempt), [step, attempt]);
   const question = phase === 'example' ? step.example : phase === 'try' ? step.tryOne : set[Math.min(n, FIVE - 1)];
   const br = useMemo(() => parseBrackets(question)!, [question]);
-  const lines = useMemo(() => working(br), [br]);
+  const taps = useMemo(() => workingTaps(br), [br]);
   const result = useMemo(() => fiveResult(slips), [slips]);
 
   useEffect(() => { window.scrollTo({ top: 0 }); }, [phase, n]);
 
-  const reset = () => { setTyped(''); setNote(null); setVerdict(null); setShown(1); setHelped(0); };
+  const reset = () => { setTyped(''); setNote(null); setVerdict(null); setShown(0); setHelped(0); };
   const go = (p: Phase) => { reset(); setPhase(p); };
 
   const check = () => {
@@ -154,13 +183,13 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
           </div>
           <div className="rounded-2xl bg-white border border-slate-200 px-4 py-4">
             <div className="text-xs font-semibold text-slate-500 mb-2">Example</div>
-            <Working lines={lines} shown={shown} reasons />
-            {shown >= lines.length && (
+            <Working br={br} taps={shown} reasons />
+            {shown >= taps && (
               <div className="mt-3 pt-3 border-t border-slate-100 text-lg"><b>Answer:</b> <Tex tex={answerTex(br)} /></div>
             )}
           </div>
-          {shown < lines.length
-            ? <button type="button" className={PRIMARY} onClick={() => setShown(shown + 1)}>Next line</button>
+          {shown < taps
+            ? <button type="button" className={PRIMARY} onClick={() => setShown(shown + 1)}>{shown === 0 ? 'Start' : 'Next step'}</button>
             : <button type="button" className={PRIMARY} onClick={() => go(attempt === 0 ? 'try' : 'five')}>{attempt === 0 ? 'Now try one' : 'Try a new five'}</button>}
         </section>
       )}
@@ -179,11 +208,9 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
               )}
             </div>
             <div className="text-sm text-slate-600">Expand and simplify</div>
-            <div className="text-xl text-slate-900 mt-1"><Tex tex={questionTex(br)} /></div>
-
-            {phase === 'try' && helped > 0 && !verdict && (
-              <div className="mt-3 pt-3 border-t border-slate-100"><Working lines={lines} shown={helped + 1} reasons /></div>
-            )}
+            {phase === 'try' && helped > 0 && !verdict
+              ? <Working br={br} taps={helped} reasons />
+              : <div className="text-xl text-slate-900 mt-1"><Tex tex={questionTex(br)} /></div>}
           </div>
 
           {!verdict && (
@@ -191,7 +218,7 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
               <AnswerBox question={question} value={typed} onChange={v => { setTyped(v); setNote(null); }} onCheck={check} note={note} />
               <div className="flex gap-2">
                 {phase === 'try' && (
-                  <button type="button" className={QUIET} disabled={helped + 1 >= lines.length} onClick={() => setHelped(helped + 1)}>
+                  <button type="button" className={QUIET} disabled={helped >= taps} onClick={() => setHelped(helped + 1)}>
                     Stuck? Next step
                   </button>
                 )}
@@ -215,7 +242,7 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
                 <div className="text-sm text-slate-800 mt-1"><Say text={verdict.slip.say} /></div>
               </div>
               <div className="bg-white rounded-xl border border-rose-100 px-3 py-3">
-                <Working lines={lines} shown={lines.length} reasons={false} />
+                <Working br={br} taps={taps} reasons={false} />
                 <div className="mt-2 pt-2 border-t border-slate-100"><b>Answer:</b> <Tex tex={answerTex(br)} /></div>
               </div>
             </div>

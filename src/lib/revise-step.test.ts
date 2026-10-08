@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
-  allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, setFor, working, FIVE,
+  allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, setFor, working, workingTaps, FIVE,
 } from './revise-step';
 import { REVISE_STEPS, reviseStepBySlug } from './revise-steps';
 
@@ -33,20 +33,20 @@ describe('revise-step — the working is derived from the brackets', () => {
     const br = parseBrackets('(x+3)(x-2)')!;
     expect(working(br).map(l => l.tex)).toEqual([
       '(x + 3)(x - 2)',
-      '= x(x - 2) + 3(x - 2)',
       '= x^{2} - 2x + 3x - 6',
       '= x^{2} + x - 6',
     ]);
     expect(answerTex(br)).toBe('x^{2} + x - 6');
   });
 
-  it('carries a minus in the first bracket into the split line', () => {
-    expect(working(parseBrackets('(2x-5)(3x-1)')!).map(l => l.tex)).toEqual([
+  it('writes one piece per arrow, in the order the arrows are numbered', () => {
+    const br = parseBrackets('(2x-5)(3x-1)')!;
+    expect(working(br).map(l => l.tex)).toEqual([
       '(2x - 5)(3x - 1)',
-      '= 2x(3x - 1) - 5(3x - 1)',
       '= 6x^{2} - 2x - 15x + 5',
       '= 6x^{2} - 17x + 5',
     ]);
+    expect(workingTaps(br)).toBe(5);
   });
 
   it('every line of every working equals the question', () => {

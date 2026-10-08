@@ -103,6 +103,10 @@ tested topic gets a harder next paper, and the aim moves up. Build after the bas
 One session = one step of the topic's map (§5). About 20 minutes.
 
 1. **Worked example**, shown one line a tap, with the idea in two lines at the top.
+   For expansion it is drawn **his way, the "Rainbow"** (Adrian, 9 Oct 2026, from his own
+   notes): a numbered arrow from each term of the first bracket to each term of the second,
+   one arrow and its piece per tap, then "← Add up like terms" (`revise/[step]/rainbow.tsx`).
+   The same picture is the help in "Try one" and the working under a wrong answer.
 2. **Try one**, with "Stuck? Next step" (built, open — `lib/proof-ladder.ts`).
 3. **Five on your own.** No help. The final answer is typed and checked at once.
    **Pass = 4 of 5.**

@@ -7,7 +7,7 @@
 // students actually make. No model call anywhere.
 
 import {
-  add, equal, isCollected, mul, mulTerm, parseExpr, polyOf, polyTex, scale, sub, sumTex, termBodyTex, termTex,
+  add, equal, isCollected, mul, mulTerm, parseExpr, polyOf, polyTex, scale, sub, sumTex, termTex,
   termTexBracketed, termsOf, type Poly, type Term,
 } from './poly';
 
@@ -56,26 +56,29 @@ export function expansion(br: Brackets): Poly { return mul(polyOf(br.a), polyOf(
 export interface WorkLine { tex: string; why?: string }
 
 /**
- * The working as one chain, a line per step:
- *   (x + 3)(x − 2) → x(x − 2) + 3(x − 2) → x² − 2x + 3x − 6 → x² + x − 6.
- * The last line is dropped when there is nothing to collect.
+ * The working the way Adrian teaches it (9 Oct 2026, his "Rainbow" example):
+ * an arrow from each term of the first bracket to each term of the second,
+ * numbered in the order they are multiplied, then
+ *   = x² − 2x + 3x − 6      (one piece per arrow)
+ *   = x² + x − 6            ← Add up like terms
+ * The arrows are drawn by the page over the question line; this is the chain
+ * under them. The last line is dropped when there is nothing to collect.
  */
 export function working(br: Brackets): WorkLine[] {
-  const second = `(${sumTex(br.b)})`;
-  const split = br.a.map((t, i) => {
-    const body = termBodyTex(t) === '1' ? '' : termBodyTex(t);
-    const sign = i === 0 ? (t.coef < 0 ? '-' : '') : (t.coef < 0 ? '- ' : '+ ');
-    return `${sign}${body}${second}`;
-  }).join(' ');
   const spread = pieces(br).map(p => p.product);
   const lines: WorkLine[] = [
     { tex: questionTex(br) },
-    { tex: `= ${split}`, why: 'Each term in the first bracket multiplies the whole second bracket.' },
-    { tex: `= ${sumTex(spread)}`, why: 'Expand each small bracket. Watch the signs.' },
+    { tex: `= ${sumTex(spread)}`, why: 'One piece for each arrow. Watch the signs.' },
   ];
   const final = polyTex(expansion(br));
-  if (final !== sumTex(spread)) lines.push({ tex: `= ${final}`, why: 'Collect the like terms.' });
+  if (final !== sumTex(spread)) lines.push({ tex: `= ${final}`, why: 'Add up like terms' });
   return lines;
+}
+
+/** How many taps the working takes: one per arrow, then one to add up like terms (when there are any). */
+export function workingTaps(br: Brackets): number {
+  const n = pieces(br).length;
+  return n + (working(br).length > 2 ? 1 : 0);
 }
 
 export function answerTex(br: Brackets): string { return polyTex(expansion(br)); }
