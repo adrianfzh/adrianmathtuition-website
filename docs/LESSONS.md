@@ -64,9 +64,9 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
 - **The first one: `expand-two-brackets-s2`** — Sec 2, $(x+3)(x-2)$: an arc from one term
   to another as the voice says "x times x", the product appears as it is named, like
   terms underlined, the answer boxed. 9 beats, 106 words, about 45 s.
-  `/app/lesson/expand-two-brackets-s2`, admin-only like every lesson. **Silent until
-  Adrian gives the word for the voice** (it plays on the Auto timers, paced to the
-  words); then `generate-narration` → `align-narration` → commit.
+  `/app/lesson/expand-two-brackets-s2`, admin-only like every lesson. **Voiced 9 Oct
+  2026** (Adrian: "yes"): nine clips, 0.7 min, 196 KB, each with its word timings —
+  tap 🔊 Voice; without it the clip plays on the Auto timers, paced to the words.
 - **Authoring one:** the author-lesson skill § 3c.
 
 ## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board

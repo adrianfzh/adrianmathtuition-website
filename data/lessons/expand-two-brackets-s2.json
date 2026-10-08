@@ -42,60 +42,78 @@
           "say": "Expand x plus three, times x minus two.",
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b1.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b1.timing.json"
         },
         {
           "say": "Every term in the first bracket multiplies every term in the second. Two terms times two terms gives four products.",
           "do": [
             { "do": "highlight", "token": ["a", "b"], "on": "first bracket" },
             { "do": "highlight", "token": ["c", "d"], "on": "second" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b2.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b2.timing.json"
         },
         {
           "say": "Start with the first x. x times x is x squared.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["a", "c"], "on": "x times" },
             { "do": "write", "token": "p1", "on": "x squared" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b3.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b3.timing.json"
         },
         {
           "say": "Next, x times minus two is minus two x.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["a", "d"], "on": "x times" },
             { "do": "write", "token": "p2", "on": "minus two x" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b4.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b4.timing.json"
         },
         {
           "say": "Now the three. Three times x is plus three x.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["b", "c"], "on": "Three times" },
             { "do": "write", "token": "p3", "on": "plus three x" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b5.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b5.timing.json"
         },
         {
           "say": "Three times minus two is minus six. A plus times a minus gives a minus.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["b", "d"], "on": "Three times" },
             { "do": "write", "token": "p4", "on": "minus six" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b6.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b6.timing.json"
         },
         {
           "say": "Minus two x and plus three x are like terms. Add them to get plus x.",
           "do": [
             { "do": "mark", "kind": "underline", "token": ["p2", "p3"], "on": "like terms" },
             { "do": "note", "text": "$-2x + 3x = x$", "near": "p2", "on": "Add them" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b7.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b7.timing.json"
         },
         {
           "say": "The answer is x squared, plus x, minus six.",
           "do": [
             { "do": "write", "step": 2, "on": "x squared" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "minus six" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b8.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b8.timing.json"
         },
         {
           "say": "Four products first. Then collect the like terms.",
-          "do": []
+          "do": [],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b9.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b9.timing.json"
         }
       ],
       "verify": [
