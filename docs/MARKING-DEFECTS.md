@@ -766,3 +766,20 @@ Isabelle EM Prelim Set 5 P2 p15 (e)'s box in (f)'s row and chem p2 (b)'s box in 
 **Not failed fixes:** F88 "head said twice" on Alexis p4 and F90's code over "390" on Eva p9 were drawn before those pushes.
 F74 (marks at the paper's edge) seen again on Rainie AM Set 1 P2 p7/p15 after its fix — residue, carried in the marks-at-
 nothing class below, not reverted (its cases hold).
+
+**Opened as proposals (8 Oct):** `step-not-where-the-marks-are` (W1 — a note opens with the step, never "The marks are for";
+the why-0 rule's own 30 Sep examples taught that opening), `corrections-in-plain-words` (W5 — "purple = your corrections:
+checked, but no marks", never "exam-ink" / "marked, not counted"), and the layout `tick-before-the-line` (P4 / F74 `repeat` —
+a mark with no clear paper at its line's end stands just before the line starts, level with it, instead of F74's seat above or
+below the end; sent with pictures).
+
+**Reported, the read (no change):** Isabelle AM Prelim Set 5 P2 p12 Q6(c) 7/7 with "(x+2)³" in her final answer where her
+working has (x+2)² — likely 1 mark, Adrian's call; Eva O-Level 2024 P1 p8 Q13(a) 2/2 with "equal chord equidistance" as the
+reason for OB = OA; Rainie AM Set 1 P2 p15 (i)'s B1 B1 credited on (ii)'s CA/CB lines; Rainie p1 the two A1 on "log₃x = 4"
+/ "log₃x = −1" with her answers bare; Nicole H2 P1 p6 ✓ beside struck-out lines (seen again on the redraw).
+
+**Left for the next run:** the ① orphans with another cause (Sophie EM P2 p5 — no with-solutions copy; Nicole H2 P1 p11 — box
+on the overflow sheet); marks on print / on her writing on pages drawn before F89/F90 (re-check on new pages); two ✗ for one
+lost mark (the slip's ✗ and the answer's ✗ A0 — a design question); "not attempted" chip on a part with a line of ink; W2
+said three times, W3 long strips, W4 "should be" on a carried value (carried-value-words shipped 6 Oct — still seen), W6 a
+lost sketch shown in words, W7 science model answer.
