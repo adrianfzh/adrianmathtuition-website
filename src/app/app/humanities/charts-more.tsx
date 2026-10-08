@@ -139,11 +139,6 @@ function CountryMap({ table, kind }: { table: DataTable; kind: 'choropleth' | 'd
     return (
       <Frame caption={table.caption} legend={<p className="mt-1 text-[12px] text-gray-700">A thicker arrow means a bigger number. {what} is printed on each arrow.</p>}>
         <Country names={false}>
-          {COUNTRY.regions.map(r => {
-            // The names sit away from the middle of the island, where the arrows meet.
-            const [x, y] = centroid(r.points), ox = x - 168, oy = y - 108, o = Math.hypot(ox, oy) || 1;
-            return <text key={r.name} x={x + (ox / o) * 16} y={y + (oy / o) * 16 + (o < 12 ? -26 : 3)} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={NAVY} {...HALO}>{r.name}</text>;
-          })}
           {flows.map((f, i) => {
             // Start a little out from the source's middle and stop short of the target's, so the arrowhead is clear;
             // shift sideways so a flow and its return flow sit side by side.
@@ -156,6 +151,11 @@ function CountryMap({ table, kind }: { table: DataTable; kind: 'choropleth' | 'd
                 <text x={lab[0]} y={lab[1] + 3} textAnchor="middle" fontSize={9.5} fontWeight={700} fill={NAVY} {...HALO}>{tickLabel(f.v)}</text>
               </g>
             );
+          })}
+          {COUNTRY.regions.map(r => {
+            // The names sit away from the middle of the island, where the arrows meet.
+            const [x, y] = centroid(r.points), ox = x - 168, oy = y - 108, o = Math.hypot(ox, oy) || 1;
+            return <text key={r.name} x={x + (ox / o) * 16} y={y + (oy / o) * 16 + (o < 12 ? 30 : 3)} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={NAVY} {...HALO}>{r.name}</text>;
           })}
         </Country>
       </Frame>
@@ -218,14 +218,14 @@ function CountryMap({ table, kind }: { table: DataTable; kind: 'choropleth' | 'd
         <g clipPath="url(#cx-land)">
           {lines.map(l => l.segments.map((s, i) => <line key={`${l.level}-${i}`} x1={s[0][0]} y1={s[0][1]} x2={s[1][0]} y2={s[1][1]} stroke={RED} strokeWidth={1.3} />))}
         </g>
+        {COUNTRY.regions.map(r => { const [x, y] = centroid(r.points); return <g key={r.name}><circle cx={x} cy={y} r={2.2} fill={NAVY} /><text x={x} y={y - 5} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={NAVY} {...HALO}>{r.name} {tickLabel(value(r.name))}</text></g>; })}
         {lines.map((l, li) => {
           // Print the level once near the bottom of the line, on two alternating rows so neighbours do not touch.
           const inside = l.segments.map(sg => sg[0]).filter(q => COUNTRY.regions.some(r => pointInPolygon(q, r.points)) && q[1] > 14);
-          const row = li % 2 ? 150 : 172;
+          const row = li % 2 ? 166 : 181;
           const p = inside.sort((u, v) => Math.abs(u[1] - row) - Math.abs(v[1] - row))[0];
           return p ? <text key={l.level} x={p[0]} y={p[1] + 3} textAnchor="middle" fontSize={8.5} fontWeight={700} fill={RED} {...HALO}>{tickLabel(l.level)}</text> : null;
         })}
-        {COUNTRY.regions.map(r => { const [x, y] = centroid(r.points); return <g key={r.name}><circle cx={x} cy={y} r={2.2} fill={NAVY} /><text x={x} y={y - 5} textAnchor="middle" fontSize={9.5} fontWeight={600} fill={NAVY} {...HALO}>{r.name} {tickLabel(value(r.name))}</text></g>; })}
       </Country>
     </Frame>
   );

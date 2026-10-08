@@ -7270,7 +7270,7 @@
      },
      {
       "id": "b",
-      "text": "They form in the tropics, between about 5 and 30 degrees north and south of the Equator."
+      "text": "They form in and near the tropics, between about 5 and 30 degrees north and south of the Equator."
      },
      {
       "id": "c",
@@ -7370,7 +7370,8 @@
     },
     "rules": [
      "Both lines must be named for the first point.",
-     "Describe only. A reason for the change earns nothing."
+     "Describe only. A reason for the change earns nothing.",
+     "At most 2 marks when the two lines of latitude are not named."
     ],
     "points": [
      {
@@ -7514,6 +7515,995 @@
      {
       "level": 3,
       "text": "The red lines are where two plates meet, and the plates there are moving towards each other, apart or past each other. When they push or rub against each other, stress builds up in the rocks and is let go suddenly as an earthquake. Magma can also come up where plates pull apart or where one plate goes under another, and this makes volcanoes."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g25",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Reading graphs: pie, scatter and wind rose",
+  "issue": "Describing and giving reasons for the patterns shown in pie charts, scatter graphs and a wind rose",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g25-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how visitors travelled to Town Y last year.",
+    "table": {
+     "caption": "Fig. 1: How visitors travelled to Town Y last year",
+     "columns": [
+      "Way of travel",
+      "Share of visitors (%)"
+     ],
+     "rows": [
+      [
+       "Air",
+       "45"
+      ],
+      [
+       "Coach",
+       "25"
+      ],
+      [
+       "Sea",
+       "20"
+      ],
+      [
+       "Train",
+       "10"
+      ]
+     ],
+     "figure": "pie"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the pie chart.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Air was the most common way of travelling to Town Y.",
+      "develop": "45% of the visitors, nearly half"
+     },
+     {
+      "id": "b",
+      "text": "The train was the least common way of travelling to Town Y.",
+      "develop": "only 10% of the visitors"
+     },
+     {
+      "id": "c",
+      "text": "Coach came second, a little ahead of sea.",
+      "develop": "25% by coach against 20% by sea"
+     },
+     {
+      "id": "d",
+      "text": "Air and coach together brought most of the visitors.",
+      "develop": "45% and 25%, which is 70% in all"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The pie chart is about the visitors who went to Town Y last year. Visitors are good for a town because they spend money in its hotels and shops."
+     },
+     {
+      "level": 1,
+      "text": "More visitors came to Town Y by air than by any other way."
+     },
+     {
+      "level": 2,
+      "text": "More visitors came to Town Y by air than by any other way. The train was used the least."
+     },
+     {
+      "level": 3,
+      "text": "More visitors came to Town Y by air than by any other way, as 45% of them flew in. The train was used the least."
+     }
+    ]
+   },
+   {
+    "id": "g25-q2",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, suggest why walking is the most common way that pupils travel to this school.",
+    "table": {
+     "caption": "Fig. 1: Main way of travelling to school of 300 pupils at a primary school in Neighbourhood X",
+     "columns": [
+      "Way of travelling",
+      "Pupils (%)"
+     ],
+     "rows": [
+      [
+       "Walking",
+       "50"
+      ],
+      [
+       "Bus",
+       "22"
+      ],
+      [
+       "Car",
+       "14"
+      ],
+      [
+       "Cycling",
+       "8"
+      ],
+      [
+       "MRT",
+       "6"
+      ]
+     ],
+     "figure": "pie"
+    },
+    "rules": [
+     "A point is a reason. Describing the pie chart without giving a reason earns nothing.",
+     "A reason is developed by explaining it further or by figures from the pie chart that support it.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Most pupils live near the school, so the distance is short enough to walk.",
+      "develop": "a neighbourhood school takes most of its pupils from the homes around it; half of the pupils (50%) walk"
+     },
+     {
+      "id": "b",
+      "text": "Walking is free, while the bus and the MRT cost a fare.",
+      "develop": "the family saves money every school day; only 22% take the bus and 6% the MRT"
+     },
+     {
+      "id": "c",
+      "text": "Covered walkways and safe crossings in the neighbourhood make walking easy and safe.",
+      "develop": "pupils stay dry when it rains, and parents are willing to let them walk on their own"
+     },
+     {
+      "id": "d",
+      "text": "For a short trip, walking takes no longer than waiting for a bus or sitting in a car in the traffic outside the school.",
+      "develop": "the wait or the jam can take longer than the walk itself; only 14% come by car"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Half of the pupils, 50%, walk to school, and this is the biggest slice of the pie chart. Only 6% of the pupils take the MRT, which is the smallest slice."
+     },
+     {
+      "level": 1,
+      "text": "Most of the pupils live close to the school, so it is only a short distance that they can walk."
+     },
+     {
+      "level": 2,
+      "text": "Most of the pupils live close to the school, so it is only a short distance that they can walk. A neighbourhood school takes most of its pupils from the blocks around it, and this fits the pie chart, where 50% of the pupils walk."
+     },
+     {
+      "level": 3,
+      "text": "Most of the pupils live close to the school, so it is only a short distance that they can walk. A neighbourhood school takes most of its pupils from the blocks around it, and this fits the pie chart, where 50% of the pupils walk. Walking also costs nothing, but the bus and the MRT need a fare."
+     },
+     {
+      "level": 4,
+      "text": "Most of the pupils live close to the school, so it is only a short distance that they can walk. A neighbourhood school takes most of its pupils from the blocks around it, and this fits the pie chart, where 50% of the pupils walk. Walking also costs nothing, but the bus and the MRT need a fare. The family saves money on every school day, which helps to explain why only 22% take the bus and 6% take the MRT."
+     }
+    ]
+   },
+   {
+    "id": "g25-q3",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the relationship between the distance of a street from the town centre and the number of shops on it.",
+    "table": {
+     "caption": "Fig. 1: Distance from the town centre and number of shops, for ten streets in Town Y",
+     "columns": [
+      "Street",
+      "Distance from the town centre (km)",
+      "Number of shops"
+     ],
+     "rows": [
+      [
+       "A",
+       "0.2",
+       "48"
+      ],
+      [
+       "B",
+       "0.5",
+       "41"
+      ],
+      [
+       "C",
+       "0.9",
+       "36"
+      ],
+      [
+       "D",
+       "1.4",
+       "30"
+      ],
+      [
+       "E",
+       "1.8",
+       "22"
+      ],
+      [
+       "F",
+       "2.3",
+       "19"
+      ],
+      [
+       "G",
+       "2.9",
+       "12"
+      ],
+      [
+       "H",
+       "3.4",
+       "10"
+      ],
+      [
+       "I",
+       "4.0",
+       "5"
+      ],
+      [
+       "J",
+       "4.6",
+       "3"
+      ]
+     ],
+     "figure": "scatter"
+    },
+    "rules": [
+     "Describe only. A reason for the relationship earns nothing.",
+     "The word 'negative' is not needed when the direction is clear (farther away, fewer shops).",
+     "Values are read from the axes, so they may be approximate: accept a distance within 0.2 km and a number of shops within 2 of the table.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "There is a negative relationship: the farther a street is from the town centre, the fewer shops it has.",
+      "develop": "two streets read from the graph, such as Street A, about 0.2 km away with about 48 shops, and Street J, about 4.6 km away with about 3 shops"
+     },
+     {
+      "id": "b",
+      "text": "The relationship is strong, because the points lie close to the line of best fit.",
+      "develop": "no street lies far from the line; every street that is farther out has fewer shops than the one before it"
+     },
+     {
+      "id": "c",
+      "text": "The number of shops falls more quickly near the town centre than farther out.",
+      "develop": "about 26 fewer shops between 0.2 km and 1.8 km, but only about 16 fewer between 2.3 km and 4.6 km"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph has a dot for each of the ten streets in Town Y. A town centre is the middle part of a town, where many people go."
+     },
+     {
+      "level": 1,
+      "text": "The farther a street is from the town centre, the fewer shops it has."
+     },
+     {
+      "level": 2,
+      "text": "The farther a street is from the town centre, the fewer shops it has. The dots are all close to the line of best fit, so this is a strong relationship."
+     },
+     {
+      "level": 3,
+      "text": "The farther a street is from the town centre, the fewer shops it has. For example, Street A is about 0.2 km away and has about 48 shops, but Street J is about 4.6 km away and has only about 3 shops. The dots are all close to the line of best fit, so this is a strong relationship."
+     }
+    ]
+   },
+   {
+    "id": "g25-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the relationship between the number of vehicles on a street and its noise level.",
+    "table": {
+     "caption": "Fig. 1: Number of vehicles and noise level measured by students on ten streets in Town Y",
+     "columns": [
+      "Street",
+      "Vehicles per hour",
+      "Noise level (dB)"
+     ],
+     "rows": [
+      [
+       "A",
+       "100",
+       "52"
+      ],
+      [
+       "B",
+       "200",
+       "55"
+      ],
+      [
+       "C",
+       "350",
+       "58"
+      ],
+      [
+       "D",
+       "500",
+       "62"
+      ],
+      [
+       "E",
+       "650",
+       "72"
+      ],
+      [
+       "F",
+       "800",
+       "67"
+      ],
+      [
+       "G",
+       "950",
+       "70"
+      ],
+      [
+       "H",
+       "1100",
+       "71"
+      ],
+      [
+       "I",
+       "1300",
+       "75"
+      ],
+      [
+       "J",
+       "1500",
+       "78"
+      ]
+     ],
+     "figure": "scatter"
+    },
+    "rules": [
+     "Describe only. A reason for the relationship earns nothing.",
+     "The word 'positive' is not needed when the direction is clear (more vehicles, more noise).",
+     "Values are read from the axes, so they may be approximate: accept vehicles within 50 and a noise level within 1 dB of the table.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "There is a positive relationship: the more vehicles a street has, the higher its noise level.",
+      "develop": "two streets read from the graph, such as Street A, about 100 vehicles per hour and about 52 dB, and Street J, about 1500 vehicles per hour and about 78 dB"
+     },
+     {
+      "id": "b",
+      "text": "The relationship is strong, because most of the points lie close to the line of best fit.",
+      "develop": "nine of the ten streets lie close to the line"
+     },
+     {
+      "id": "c",
+      "text": "Street E is the odd one out, with more noise than its number of vehicles would suggest.",
+      "develop": "about 650 vehicles per hour but about 72 dB, more than Street F (about 67 dB) or Street G (about 70 dB), which have more vehicles"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The graph is about ten streets in Town Y. Noise from traffic can disturb the people who live beside a road and make it hard for them to sleep."
+     },
+     {
+      "level": 1,
+      "text": "The more vehicles a street has, the higher its noise level is."
+     },
+     {
+      "level": 2,
+      "text": "The more vehicles a street has, the higher its noise level is. Street E does not fit the pattern, because it is noisier than expected for the number of vehicles it has."
+     },
+     {
+      "level": 3,
+      "text": "The more vehicles a street has, the higher its noise level is. For example, Street A has about 100 vehicles per hour and about 52 dB, but Street J has about 1500 vehicles per hour and about 78 dB. Street E does not fit the pattern, because it is noisier than expected for the number of vehicles it has."
+     },
+     {
+      "level": 4,
+      "text": "The more vehicles a street has, the higher its noise level is. For example, Street A has about 100 vehicles per hour and about 52 dB, but Street J has about 1500 vehicles per hour and about 78 dB. Street E does not fit the pattern, because it is noisier than expected for the number of vehicles it has. It has only about 650 vehicles per hour but about 72 dB, which is higher than Street G with about 950 vehicles per hour."
+     }
+    ]
+   },
+   {
+    "id": "g25-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe the directions that the wind blows from at Station Z over the year.",
+    "table": {
+     "caption": "Fig. 1: Wind directions at Station Z over one year",
+     "columns": [
+      "Direction",
+      "Number of days"
+     ],
+     "rows": [
+      [
+       "N",
+       "20"
+      ],
+      [
+       "NE",
+       "95"
+      ],
+      [
+       "E",
+       "40"
+      ],
+      [
+       "SE",
+       "25"
+      ],
+      [
+       "S",
+       "30"
+      ],
+      [
+       "SW",
+       "85"
+      ],
+      [
+       "W",
+       "45"
+      ],
+      [
+       "NW",
+       "25"
+      ]
+     ],
+     "figure": "windrose"
+    },
+    "rules": [
+     "Describe only. A reason for the winds earns nothing.",
+     "A direction is where the wind blows FROM. A wind said to blow 'to' or 'towards' that direction is wrong and earns nothing.",
+     "The prevailing wind is the direction with the most days. A point is developed by accurate figures from the wind rose.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The prevailing wind is from the north-east, the direction with the most days.",
+      "develop": "95 days of the year"
+     },
+     {
+      "id": "b",
+      "text": "The wind blows from the south-west second most often.",
+      "develop": "85 days, only 10 days fewer than the north-east"
+     },
+     {
+      "id": "c",
+      "text": "The wind blows least often from the north.",
+      "develop": "only 20 days of the year"
+     },
+     {
+      "id": "d",
+      "text": "Winds from the north-east and the south-west together blow on about half of the days of the year.",
+      "develop": "95 and 85 days, which is 180 of the 365 days"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A wind rose shows the wind at one place. Wind is moving air, and its direction can be found with a wind vane."
+     },
+     {
+      "level": 1,
+      "text": "The wind blows from the north-east more often than from any other direction, so this is the prevailing wind."
+     },
+     {
+      "level": 2,
+      "text": "The wind blows from the north-east more often than from any other direction, so this is the prevailing wind. The wind blows from the north the least often."
+     },
+     {
+      "level": 3,
+      "text": "The wind blows from the north-east more often than from any other direction, so this is the prevailing wind. It blows from there on 95 days of the year. The wind blows from the north the least often."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g26",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "everyday",
+  "title": "Reading maps: Country X",
+  "issue": "Describing and giving reasons for the patterns shown on five kinds of map of Country X: shaded, dot, sized-circle, flow-line and isoline maps",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g26-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the population density varies across Country X.",
+    "table": {
+     "caption": "Fig. 1: Population density in the regions of Country X",
+     "columns": [
+      "Region",
+      "People per square kilometre"
+     ],
+     "rows": [
+      [
+       "North West",
+       "80"
+      ],
+      [
+       "North",
+       "150"
+      ],
+      [
+       "North East",
+       "420"
+      ],
+      [
+       "Central",
+       "950"
+      ],
+      [
+       "West",
+       "60"
+      ],
+      [
+       "South",
+       "310"
+      ],
+      [
+       "South East",
+       "640"
+      ]
+     ],
+     "figure": "choropleth"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures. The range shown in the key for a region's shade counts as an accurate figure.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "The population density is highest in Central, in the middle of the country.",
+      "develop": "950 people per square kilometre"
+     },
+     {
+      "id": "b",
+      "text": "The population density is lowest in the west, in West and North West.",
+      "develop": "60 people per square kilometre in West and 80 in North West"
+     },
+     {
+      "id": "c",
+      "text": "The east of the country is more densely populated than the west.",
+      "develop": "420 in North East and 640 in South East, against 80 in North West and 60 in West"
+     },
+     {
+      "id": "d",
+      "text": "The population density is very uneven across the country.",
+      "develop": "Central (950) has about sixteen times the density of West (60)"
+     },
+     {
+      "id": "e",
+      "text": "South East has the second highest population density.",
+      "develop": "640 people per square kilometre, against 950 in Central"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The map shows Country X, which is an island with seven regions. Population density means the number of people living on each square kilometre of land."
+     },
+     {
+      "level": 1,
+      "text": "The population density is highest in Central, in the middle of the country."
+     },
+     {
+      "level": 2,
+      "text": "The population density is highest in Central, in the middle of the country. It is lowest in the west, in West and North West."
+     },
+     {
+      "level": 3,
+      "text": "The population density is highest in Central, in the middle of the country, at 950 people per square kilometre. It is lowest in the west, in West and North West."
+     },
+     {
+      "level": 4,
+      "text": "The population density is highest in Central, in the middle of the country, at 950 people per square kilometre. It is lowest in the west, in West and North West. West has only 60 people per square kilometre and North West has 80."
+     }
+    ]
+   },
+   {
+    "id": "g26-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe where the vegetable farms of Country X are found.",
+    "table": {
+     "caption": "Fig. 1: Vegetable farms in the regions of Country X",
+     "columns": [
+      "Region",
+      "Number of farms"
+     ],
+     "rows": [
+      [
+       "North West",
+       "120"
+      ],
+      [
+       "North",
+       "90"
+      ],
+      [
+       "North East",
+       "30"
+      ],
+      [
+       "Central",
+       "10"
+      ],
+      [
+       "West",
+       "160"
+      ],
+      [
+       "South",
+       "70"
+      ],
+      [
+       "South East",
+       "20"
+      ]
+     ],
+     "figure": "dots"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures. Numbers are worked out by counting dots, so they may be approximate: accept within 5 farms (one dot) of the table.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "West has more vegetable farms than any other region.",
+      "develop": "160 farms, out of 500 in the whole country"
+     },
+     {
+      "id": "b",
+      "text": "Central, in the middle of the country, has the fewest farms.",
+      "develop": "only 10 farms"
+     },
+     {
+      "id": "c",
+      "text": "More than half of the farms are in the west of the country, in West and North West together.",
+      "develop": "160 and 120 farms, which is 280 of the 500"
+     },
+     {
+      "id": "d",
+      "text": "There are few farms in the east of the country, in North East and South East.",
+      "develop": "30 farms in North East and 20 in South East"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The map uses dots to show the vegetable farms of Country X. A vegetable farm grows food such as leafy greens that are sold in the markets."
+     },
+     {
+      "level": 1,
+      "text": "West has the most vegetable farms of all the regions."
+     },
+     {
+      "level": 2,
+      "text": "West has the most vegetable farms of all the regions. Central has the fewest."
+     },
+     {
+      "level": 3,
+      "text": "West has the most vegetable farms of all the regions, with 160 farms. Central has the fewest."
+     }
+    ]
+   },
+   {
+    "id": "g26-q3",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the number of visitors varies across Country X.",
+    "table": {
+     "caption": "Fig. 1: Visitors to the regions of Country X in one year",
+     "columns": [
+      "Region",
+      "Visitors (thousands)"
+     ],
+     "rows": [
+      [
+       "North West",
+       "120"
+      ],
+      [
+       "North",
+       "60"
+      ],
+      [
+       "North East",
+       "480"
+      ],
+      [
+       "Central",
+       "900"
+      ],
+      [
+       "West",
+       "40"
+      ],
+      [
+       "South",
+       "210"
+      ],
+      [
+       "South East",
+       "650"
+      ]
+     ],
+     "figure": "symbols"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures from the map. Point c needs figures for both the east and the west.",
+     "The same figures earn development once only.",
+     "The number of visitors is printed in each circle, so figures must be exact."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Central, in the middle of the country, has the most visitors.",
+      "develop": "900 thousand visitors"
+     },
+     {
+      "id": "b",
+      "text": "West has the fewest visitors.",
+      "develop": "only 40 thousand visitors"
+     },
+     {
+      "id": "c",
+      "text": "The east of the country has many more visitors than the west.",
+      "develop": "480 thousand in North East and 650 thousand in South East, against 120 thousand in North West and 40 thousand in West"
+     },
+     {
+      "id": "d",
+      "text": "Most visitors go to just three regions: Central, South East and North East.",
+      "develop": "900, 650 and 480 thousand, which is 2030 thousand of the 2460 thousand in all"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The map has a circle in each region of Country X, and each circle is about visitors. Visitors are people who come to a place for a short time, for example on a holiday."
+     },
+     {
+      "level": 1,
+      "text": "The east of the country gets many more visitors than the west."
+     },
+     {
+      "level": 2,
+      "text": "The east of the country gets many more visitors than the west. The region with the most visitors is Central, in the middle."
+     },
+     {
+      "level": 3,
+      "text": "The east of the country gets many more visitors than the west. North East has 480 thousand and South East has 650 thousand, but North West has only 120 thousand and West has 40 thousand. The region with the most visitors is Central, in the middle."
+     }
+    ]
+   },
+   {
+    "id": "g26-q4",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, suggest why most of the workers who travel between regions each day go to Central.",
+    "table": {
+     "caption": "Fig. 1: Workers travelling between regions of Country X each day",
+     "columns": [
+      "From",
+      "To",
+      "Workers (thousands)"
+     ],
+     "rows": [
+      [
+       "South East",
+       "Central",
+       "85"
+      ],
+      [
+       "South",
+       "Central",
+       "60"
+      ],
+      [
+       "North",
+       "Central",
+       "45"
+      ],
+      [
+       "North East",
+       "Central",
+       "30"
+      ],
+      [
+       "West",
+       "Central",
+       "12"
+      ],
+      [
+       "Central",
+       "South East",
+       "20"
+      ]
+     ],
+     "figure": "flows"
+    },
+    "rules": [
+     "A point is a reason. Describing the map without giving a reason earns nothing.",
+     "A reason is developed by explaining it further or by figures from the map that support it.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "Most of the jobs, in offices, shops and services, are in Central.",
+      "develop": "workers from regions with fewer jobs must travel in; 232 thousand travel into Central each day but only 20 thousand travel out"
+     },
+     {
+      "id": "b",
+      "text": "Homes in Central cost too much or are too few, so many people who work there live in other regions.",
+      "develop": "land in the middle is wanted for offices and shops, so cheaper and bigger homes are found farther out"
+     },
+     {
+      "id": "c",
+      "text": "Roads and railway lines from the other regions lead to Central, so it is quick to reach each day.",
+      "develop": "the routes meet in the middle of the country, so the daily trip is short enough even from the edge of the island"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The biggest arrow goes from South East to Central, with 85 thousand workers each day. The smallest arrow is from West to Central, with 12 thousand workers."
+     },
+     {
+      "level": 1,
+      "text": "Central is the region where most of the offices and other jobs are found."
+     },
+     {
+      "level": 2,
+      "text": "Central is the region where most of the offices and other jobs are found. People in the regions with fewer jobs have to travel in to work, and this fits the map, where 232 thousand workers go into Central each day."
+     },
+     {
+      "level": 3,
+      "text": "Central is the region where most of the offices and other jobs are found. People in the regions with fewer jobs have to travel in to work, and this fits the map, where 232 thousand workers go into Central each day. Homes in Central may cost too much, so many of the people who work there live in another region."
+     },
+     {
+      "level": 4,
+      "text": "Central is the region where most of the offices and other jobs are found. People in the regions with fewer jobs have to travel in to work, and this fits the map, where 232 thousand workers go into Central each day. Homes in Central may cost too much, so many of the people who work there live in another region. The land in the middle is wanted for offices and shops, so a cheaper and bigger home is easier to find farther out."
+     }
+    ]
+   },
+   {
+    "id": "g26-q5",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using Fig. 1, describe how the yearly rainfall varies across Country X.",
+    "table": {
+     "caption": "Fig. 1: Yearly rainfall in Country X",
+     "columns": [
+      "Region",
+      "Rainfall (mm)"
+     ],
+     "rows": [
+      [
+       "North West",
+       "2600"
+      ],
+      [
+       "North",
+       "2200"
+      ],
+      [
+       "North East",
+       "1500"
+      ],
+      [
+       "Central",
+       "1900"
+      ],
+      [
+       "West",
+       "2900"
+      ],
+      [
+       "South",
+       "2300"
+      ],
+      [
+       "South East",
+       "1400"
+      ]
+     ],
+     "figure": "isolines"
+    },
+    "rules": [
+     "Describe only. A reason for a pattern earns nothing.",
+     "A point is developed by accurate figures. Values are read from the lines, so they may be approximate: accept within 200 mm of the table.",
+     "The same figures earn development once only."
+    ],
+    "points": [
+     {
+      "id": "a",
+      "text": "West is the wettest region.",
+      "develop": "about 2900 mm in the year"
+     },
+     {
+      "id": "b",
+      "text": "South East is the driest region.",
+      "develop": "about 1400 mm in the year"
+     },
+     {
+      "id": "c",
+      "text": "The rainfall decreases from the west of the country to the east.",
+      "develop": "from 2900 mm in West to 1900 mm in Central and 1400 mm in South East, or from 2600 mm in North West to 2200 mm in North and 1500 mm in North East"
+     },
+     {
+      "id": "d",
+      "text": "The difference across the country is large.",
+      "develop": "West has more than twice the rainfall of South East, a difference of 1500 mm"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The map has lines that join places with the same rainfall. Rainfall is measured in millimetres with a rain gauge."
+     },
+     {
+      "level": 1,
+      "text": "The rainfall gets less from the west of the country to the east."
+     },
+     {
+      "level": 2,
+      "text": "The rainfall gets less from the west of the country to the east. The wettest region is West."
+     },
+     {
+      "level": 3,
+      "text": "The rainfall gets less from the west of the country to the east. Along the north it goes from about 2600 mm in North West to 2200 mm in North and 1500 mm in North East. The wettest region is West."
+     },
+     {
+      "level": 4,
+      "text": "The rainfall gets less from the west of the country to the east. Along the north it goes from about 2600 mm in North West to 2200 mm in North and 1500 mm in North East. The wettest region is West, which gets about 2900 mm in the year."
      }
     ]
    }
