@@ -1,6 +1,6 @@
 # SPEC — Ready for the next test (the self-learning loop, companion first)
 
-*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: DESIGN — nothing built.**
+*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: step 1 of §11 built (admin only); the rest is design.**
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
@@ -211,6 +211,11 @@ never name a model · the app says "your tutor" or "we", never his name.
 ## 11. Build order — small steps, each shown to him first
 
 1. **One step on a phone**: "Expand two brackets", the §4 session, admin only.
+   **BUILT 9 Oct 2026** — `/app/revise/expand-two-brackets`, behind `REVISE_OPEN_TO_STUDENTS`
+   (closed; linked from nowhere). `lib/poly.ts` marks a typed expansion at once (the app
+   could not before); `lib/revise-step.ts` derives the working from the brackets and names
+   the slip behind a wrong answer; content in `lib/revise-steps.ts`. Nothing is saved yet —
+   attempts must be stored on our side before any student uses it.
 2. **Enter a test + the countdown + the two doors**, admin and the preview student.
 3. **A short paper from the tested topics**, and the topic-by-topic sorting after marking.
 4. **The other seven steps** of the first map (content: examples, more of our own questions).

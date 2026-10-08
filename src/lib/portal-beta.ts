@@ -542,6 +542,21 @@ export async function watchItVisible(): Promise<boolean> {
   return admin && !(await viewingAsStudent());
 }
 
+// 📗 Revise a topic in full — one revision step (SPEC-SELF-LEARNING.md §4, built
+// 9 Oct 2026, Adrian: "Build"): a worked example one line a tap → try one with
+// the next step on tap → five on your own, typed and checked at once, pass 4 of
+// 5. Step 1 of the build order: ONE step ("Expand two brackets") at
+// /app/revise/expand-two-brackets, linked from nowhere. ADMIN ONLY until Adrian
+// has gone through it on his phone — flip this to open it for every student.
+export const REVISE_OPEN_TO_STUDENTS = false;
+export async function reviseVisible(): Promise<boolean> {
+  if (REVISE_OPEN_TO_STUDENTS) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // 🪜 "Stuck? Next step" on a practice question (1 Oct 2026, from a student weak
 // at trig identity proofs): the bank working one line per tap, and "next step
 // from my line" on a photo of their working (lib/proof-ladder). ADMIN-ONLY plus
