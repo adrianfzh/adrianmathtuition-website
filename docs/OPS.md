@@ -51,6 +51,7 @@ Writers:
   that fills itself + one Telegram line per student, switch `lesson_end_line` →
   docs/SCHEDULE.md), `progress-notes` (the Fly worker, 17:05 SGT daily — 📝 the student
   card's progress note; switch `progress-notes`),
+  `morning-brief` (the Fly worker, 07:45 SGT daily — ☀️ the one morning message, bot `docs/MORNING-BRIEF.md`; switch `morning-brief`),
   `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
   their paper, grouped and checked against `paper_library` + the bank,
   `lib/missing-papers.ts`, one Telegram line; stamps even on a quiet week with
