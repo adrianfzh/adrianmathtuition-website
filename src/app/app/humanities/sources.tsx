@@ -2,6 +2,7 @@
 // (folded) on the report, so the student never has to go back to compare.
 import type { HumanitiesSource, DataTable } from '@/lib/humanities-questions';
 import { DataChart } from './charts';
+import { MoreChart } from './charts-more';
 
 /** A drawn diagram a Geography question shows — our own line drawing. */
 export function DiagramCard({ diagram }: { diagram: { key: string; caption: string } }) {
@@ -16,7 +17,8 @@ export function DiagramCard({ diagram }: { diagram: { key: string; caption: stri
 
 /** A small data table a Geography question gives. */
 export function DataTableCard({ table }: { table: DataTable }) {
-  if (table.figure) return <DataChart table={table} kind={table.figure} />;
+  if (table.figure === 'bar' || table.figure === 'line' || table.figure === 'climate') return <DataChart table={table} kind={table.figure} />;
+  if (table.figure) return <MoreChart table={table} kind={table.figure} />;
   return (
     <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
       <p className="text-sm font-bold text-navy">{table.caption}</p>

@@ -60,6 +60,10 @@ Talk to Adrian in plain, short words. No jargon.
   SPEC-HUMANITIES.md §B); two world maps drawn from Natural Earth (g24). Next figures that can be drawn from
   numbers: pie charts, scatter graphs, wind roses, the six thematic maps of a made-up country.
 
+- **8 Oct 2026 — pie, scatter, wind rose, five Country X maps and the plate-boundary map built** (g24–g26,
+  blind-marked 65/65, looked at on a phone). Geography stands at 26 sets / 118 questions + eight 9-mark
+  questions. Parked: photographs, satellite images, cartoons. Owed: the paid live-reader bench (Adrian's word).
+
 ## The order Adrian asked for
 
 ### A. Social Studies — five steps

@@ -201,7 +201,19 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   public-domain land outlines (the `world-atlas` package, needed only when the script runs — the site ships
 >   plain SVG): where tropical cyclones form and travel, and the three latitude zones. Set g24, three
 >   questions; checked by the shape checker and by eye, not blind-marked and not through the live reader.
-> - **Still to build:** photographs, satellite images and cartoons
+> - **The rest of the syllabus list that can be drawn from numbers (8 Oct 2026, Adrian: "do it for humanities").**
+>   `table.figure` gained `pie`, `scatter` (with its line of best fit), `windrose`, and five maps of the made-up
+>   **Country X** — `choropleth`, `dots`, `symbols`, `flows`, `isolines` (seven regions in
+>   `data/humanities/geography/country-x.json`; geometry in `lib/humanities-chart.ts`, drawing in
+>   `app/humanities/charts-more.tsx`). Sets g25 (pie, scatter, wind rose) and g26 (the five maps), ten questions.
+>   A third world map, **the plate boundaries**, drawn from Peter Bird's 2003 model (Open Data Commons
+>   Attribution — the credit is printed on the map), with two more questions in g24.
+>   Every new figure and all three world maps were looked at on a phone-width page and adjusted (label sizes,
+>   dot density, flow arrows, smooth isolines). g24–g26 were blind-marked on the plan: 65/65, the checker's
+>   notes on loose tolerances applied. **Geography: 26 sets, 118 point-marked questions.** Not through the
+>   live reader: g05–g22 and g24–g26 (paid; it waits for Adrian's own word).
+>   Not drawn: a sketch map (a hand-drawn local map), which is a one-off drawing and not a figure from numbers.
+> - **Still to build:** photographs, satellite images and cartoons (parked until the reader can look at pictures)
 >   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 > **C — HISTORY ESSAYS STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "go ahead with history essays".

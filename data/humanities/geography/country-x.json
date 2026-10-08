@@ -1,0 +1,14 @@
+{
+ "note": "Country X — a made-up island for Geography map questions. Seven regions that share their borders exactly. Coordinates are in a 340 by 200 drawing; north is up.",
+ "scaleKm": 50,
+ "scalePx": 60,
+ "regions": [
+  {"name": "North West", "points": [[30,105],[40,60],[90,30],[150,22],[120,80]]},
+  {"name": "North", "points": [[150,22],[210,30],[190,75],[120,80]]},
+  {"name": "North East", "points": [[210,30],[265,55],[300,95],[240,110],[190,75]]},
+  {"name": "Central", "points": [[120,80],[190,75],[240,110],[200,150],[170,125],[110,130]]},
+  {"name": "West", "points": [[30,105],[120,80],[110,130],[95,180],[55,150]]},
+  {"name": "South", "points": [[110,130],[170,125],[200,150],[205,190],[150,188],[95,180]]},
+  {"name": "South East", "points": [[240,110],[300,95],[295,140],[260,175],[205,190],[200,150]]}
+ ]
+}

@@ -3,7 +3,9 @@
 // scripts/humanities-bench/check-set.ts runs it over a draft. It checks the
 // SHAPE — whether a seeded answer earns its marks is the bench's job.
 import { GEO_CLUSTERS, POINTS_SKILLS, diagramByKey, type HumanitiesSet } from './humanities-questions';
-import { figureProblem } from './humanities-chart';
+import { figureProblem, moreFigureProblem } from './humanities-chart';
+import countryJson from '../../data/humanities/geography/country-x.json';
+const REGIONS = (countryJson as { regions: { name: string }[] }).regions.map(r => r.name);
 
 const words = (t: string): number => (t.trim() ? t.trim().split(/\s+/).length : 0);
 const BANNED = /\b(adrian|claude|opus|sonnet|haiku|gemini|chatgpt|ai model)\b/i;
@@ -43,7 +45,8 @@ export function geographyProblems(set: HumanitiesSet): string[] {
     }
     if (q.table) {
       if (!(q.table.figure ? /^Fig\. \d+:/ : /^Table \d+:/).test(q.table.caption)) at(`caption is not "${q.table.figure ? 'Fig.' : 'Table'} N: …"`);
-      const fp = q.table.figure ? figureProblem(q.table, q.table.figure) : null;
+      const f = q.table.figure;
+      const fp = !f ? null : f === 'bar' || f === 'line' || f === 'climate' ? figureProblem(q.table, f) : moreFigureProblem(q.table, f, REGIONS);
       if (fp) at(fp);
       if (q.table.rows.some(r => r.length !== q.table!.columns.length)) at('a table row does not match the columns');
     }

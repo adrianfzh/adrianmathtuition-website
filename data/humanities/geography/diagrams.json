@@ -139,5 +139,16 @@
    "B": "the shaded area in the western North Pacific, with an arrow curving towards East Asia",
    "C": "the shaded area in the southern Indian Ocean, with an arrow curving south towards Madagascar"
   }
+ },
+ {
+  "key": "world-plate-boundaries",
+  "title": "The world's plate boundaries",
+  "shows": "A world map with land and sea. Red lines show the boundaries between the Earth's tectonic plates. The lines are long and joined up, and they divide the surface into large pieces. Many lines run along the edges of continents, for example down the west coast of North and South America and along the islands of East and South-East Asia, so that a ring of boundaries surrounds the Pacific Ocean. Other lines run through the middle of oceans, for example one down the middle of the Atlantic Ocean from north to south. Large areas inside each piece, such as the middle of the Pacific Ocean, have no lines.",
+  "letters": {
+   "A": "the Pacific Plate, a large plate under the Pacific Ocean with boundaries all round it",
+   "B": "the Eurasian Plate",
+   "C": "the Australian Plate",
+   "D": "the plate boundary that runs down the middle of the Atlantic Ocean"
+  }
  }
 ]

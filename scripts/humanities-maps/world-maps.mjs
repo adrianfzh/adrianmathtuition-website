@@ -29,7 +29,7 @@ const box = (lon1, lon2, lat1, lat2) => {
   return 'M' + [...top, ...bot].join('L') + 'Z';
 };
 const letter = (lon, lat, ch, dx = 0, dy = 0) => { const [x, y] = proj([lon, lat]); return `<circle cx="${(x + dx).toFixed(1)}" cy="${(y + dy).toFixed(1)}" r="8" fill="${NAVY}"/><text x="${(x + dx).toFixed(1)}" y="${(y + dy + 3.6).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" ${FONT}>${ch}</text>`; };
-const lineLabel = (lat, text, lon = -176) => { const [x, y] = proj([lon, lat]); return `<text x="${(x + 2).toFixed(1)}" y="${(y - 2).toFixed(1)}" font-size="7.5" font-weight="600" fill="${NAVY}" stroke="#fff" stroke-width="2.2" paint-order="stroke" ${FONT}>${text}</text>`; };
+const lineLabel = (lat, text, lon = -176) => { const [x, y] = proj([lon, lat]); return `<text x="${(x + 2).toFixed(1)}" y="${(y - 2).toFixed(1)}" font-size="10" font-weight="600" fill="${NAVY}" stroke="#fff" stroke-width="2.6" paint-order="stroke" ${FONT}>${text}</text>`; };
 const track = pts => `<polyline points="${pts.map(([a, b]) => P(a, b)).join(' ')}" fill="none" stroke="${NAVY}" stroke-width="1.3" marker-end="url(#ah)"/>`;
 const head = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="${NAVY}"/></marker><clipPath id="globe"><path d="${gp({ type: 'Sphere' })}"/></clipPath></defs><rect width="${W}" height="${H}" fill="#fff"/>`;
 const sphere = fill => `<path d="${gp({ type: 'Sphere' })}" fill="${fill}" stroke="${NAVY}" stroke-width="1"/>`;
@@ -58,5 +58,19 @@ const maps = {
     + track([[91, 7], [88, 13], [89, 20]]) + track([[80, -10], [62, -14], [52, -20], [50, -27]]) + track([[175, -10], [160, -14], [154, -20], [158, -28]])
     + letter(-38, 26, 'A', 0, -9) + letter(165, 27, 'B', 0, -9) + letter(78, -24, 'C', 0, 12) + '</svg>',
 };
+// 4. The plate boundaries (optional third argument: the path to PB2002_boundaries.json —
+//    Peter Bird's 2003 model as GeoJSON, from github.com/fraxen/tectonicplates, Open Data Commons
+//    Attribution licence; the credit line is printed on the map).
+const platesFile = process.argv[3];
+if (platesFile) {
+  const pb = JSON.parse(fs.readFileSync(platesFile, 'utf8'));
+  // Every second point is plenty at this size.
+  const thin = { type: 'FeatureCollection', features: pb.features.map(f => ({ ...f, geometry: { ...f.geometry, coordinates: f.geometry.coordinates.filter((_, i, a) => i % 2 === 0 || i === a.length - 1) } })) };
+  maps['world-plate-boundaries'] = head + sphere(SEA) + landPath
+    + `<path d="${gp(thin)}" fill="none" stroke="#c0442d" stroke-width="1.3" stroke-linejoin="round"/>`
+    + `<path d="${gp({ type: 'Sphere' })}" fill="none" stroke="${NAVY}" stroke-width="1"/>`
+    + letter(-140, 5, 'A') + letter(85, 52, 'B') + letter(125, -32, 'C', 0, -4) + letter(-43, 16, 'D')
+    + `<text x="${W - 6}" y="${H - 2}" text-anchor="end" font-size="7" fill="${NAVY}" ${FONT}>Plate boundaries: P. Bird (2003), via H. Ahlenius, Nordpil</text>` + '</svg>';
+}
 const out = process.argv[2] || '.';
 for (const [k, svg] of Object.entries(maps)) { fs.writeFileSync(path.join(out, `${k}.svg`), svg); console.log(k, (svg.length / 1024).toFixed(0) + ' KB'); }

@@ -69,3 +69,59 @@ describe('Geography figures', () => {
     expect(figureProblem({ ...t, rows: [['Jan', 'hot', '1']] }, 'line')).toMatch(/numbers/);
   });
 });
+
+import { bestFit, pieSlices, pointInPolygon, dotsIn, dotValue, shadeClasses, classOf, isolines, isolineLevels, moreFigureProblem } from './humanities-chart';
+import country from '../../data/humanities/geography/country-x.json';
+describe('more Geography figures (pie, scatter, wind rose, maps of Country X)', () => {
+  const regions = (country as unknown as { regions: { name: string; points: [number, number][] }[] }).regions;
+  const names = regions.map(r => r.name);
+  const rows = (vals: number[]) => names.map((n, i) => [n, String(vals[i])]);
+
+  it('the best-fit line, pie slices and shade classes', () => {
+    expect(bestFit([[0, 1], [1, 3], [2, 5]])).toEqual({ slope: 2, intercept: 1 });
+    const s = pieSlices([45, 25, 20, 10]);
+    expect(s[0].share).toBeCloseTo(0.45);
+    expect(s[3].end).toBeCloseTo(Math.PI * 2);
+    const b = shadeClasses([80, 150, 420, 950, 60, 310, 640]);
+    expect(b).toEqual([0, 250, 500, 750]);
+    expect([60, 310, 640, 950].map(v => classOf(v, b))).toEqual([0, 1, 2, 3]);
+  });
+
+  it('Country X: seven regions that share their borders, dots stay inside their region', () => {
+    expect(names).toEqual(['North West', 'North', 'North East', 'Central', 'West', 'South', 'South East']);
+    // Every corner inside the island is used by at least two regions (no gaps between neighbours).
+    const count = new Map<string, number>();
+    for (const r of regions) for (const p of r.points) count.set(p.join(), (count.get(p.join()) ?? 0) + 1);
+    expect([...count.values()].filter(n => n >= 3).length).toBe(5);
+    for (const [k, r] of regions.entries()) {
+      const dots = dotsIn(r.points, 20, k + 1);
+      expect(dots.length, r.name).toBe(20);
+      for (const d of dots) expect(pointInPolygon(d, r.points), r.name).toBe(true);
+      expect(dotsIn(r.points, 20, k + 1)).toEqual(dots);
+    }
+    expect(dotValue(620)).toBe(20);
+    expect(dotValue(12)).toBe(1);
+  });
+
+  it('isolines: round levels between the lowest and highest value, each traced inside the map', () => {
+    const vals = [2600, 2200, 1500, 1900, 2900, 2300, 1400];
+    const levels = isolineLevels(vals);
+    expect(levels[0]).toBeGreaterThan(1400);
+    expect(levels[levels.length - 1]).toBeLessThan(2900);
+    expect(levels.length).toBeGreaterThanOrEqual(4);
+    const places = regions.map((r, i) => ({ at: [r.points.reduce((s, p) => s + p[0], 0) / r.points.length, r.points.reduce((s, p) => s + p[1], 0) / r.points.length] as [number, number], value: vals[i] }));
+    for (const l of isolines(places, levels, 340, 200)) expect(l.segments.length, String(l.level)).toBeGreaterThan(5);
+  });
+
+  it('a figure must fit its kind', () => {
+    const t = (columns: string[], r: string[][]) => ({ caption: 'Fig. 1: x', columns, rows: r });
+    expect(moreFigureProblem(t(['Region', 'People'], rows([1, 2, 3, 4, 5, 6, 7])), 'choropleth', names)).toBeNull();
+    expect(moreFigureProblem(t(['Region', 'People'], rows([1, 2, 3, 4, 5, 6, 7]).slice(1)), 'dots', names)).toMatch(/one row for each region/);
+    expect(moreFigureProblem(t(['From', 'To', 'n'], [['South', 'Central', '60'], ['North', 'Central', '45']]), 'flows', names)).toBeNull();
+    expect(moreFigureProblem(t(['From', 'To', 'n'], [['South', 'Atlantis', '60'], ['North', 'Central', '45']]), 'flows', names)).toMatch(/two regions/);
+    expect(moreFigureProblem(t(['Direction', 'Days'], ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'].map(d => [d, '10'])), 'windrose', names)).toBeNull();
+    expect(moreFigureProblem(t(['Direction', 'Days'], [['N', '10'], ['S', '5']]), 'windrose', names)).toMatch(/eight|N, NE/);
+    expect(moreFigureProblem(t(['Way', '%'], [['Air', '45'], ['Sea', '55']]), 'pie', names)).toBeNull();
+    expect(moreFigureProblem(t(['St', 'km', 'shops'], [['A', '1', '2']]), 'scatter', names)).toMatch(/5 to 14/);
+  });
+});

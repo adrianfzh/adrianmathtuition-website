@@ -11,12 +11,15 @@ import { airtableRequest } from '@/lib/airtable';
 import { displaySpanMonth } from '@/lib/invoice-month';
 import { invoiceReadyValues } from '@/lib/wa-notify';
 import { safeEqual } from '@/lib/safe-equal';
+import { botInternalSecret } from '@/lib/bot-secret';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  // Through the trimmed reader: the stored value ends in a newline, and an exact compare of an
+  // inbound header against the raw value can never match (lib/bot-secret.ts).
+  const secret = botInternalSecret();
   if (!secret || !safeEqual(req.headers.get('authorization') ?? '', `Bearer ${secret}`)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
