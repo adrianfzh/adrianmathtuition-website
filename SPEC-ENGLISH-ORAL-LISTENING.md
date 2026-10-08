@@ -83,7 +83,7 @@ The band tables are in `data/rubrics/english-1184-oral.json`, word for word from
 | Listening door | `POST /api/portal/english/listening` → `english_practice_attempts` kind `listening` |
 | Oral door | `POST|GET /api/portal/english/oral`, `src/lib/english-oral-store.ts`, table `english_oral_attempts` (`migrations/english_oral.sql`) |
 | The recording | private bucket, key `oral/<identity>/<attempt>/<n>.<ext>` (`lib/student-files`), readable only by its owner and Adrian; erased with the account |
-| Speech into words | Gemini on the Google key the site already has (the same call as the end-of-lesson voice note): `transcribeSpeech`. About half a US cent a two-minute recording. The words are written exactly as spoken, slips included |
+| Speech into words | **Prototype only — to be replaced before opening (§Speech into words without Google).** Gemini on the Google key the site already has (the same call as the end-of-lesson voice note): `transcribeSpeech`. About half a US cent a two-minute recording. The words are written exactly as spoken, slips included |
 | The reading | the plan queue (`plan_reads`, kind `english-oral`, model alias `opus`) — never the paid key |
 
 ## 3. Checkpoints
@@ -121,6 +121,9 @@ flipped, in the same change:
 1. The privacy page gets a line saying a student's **voice recordings** are kept, and **for how
    long** (suggested: 30 days, then only the words are kept — the deleting is not built yet).
 2. The consent wording at sign-up covers **a child's voice**.
+3. **Build the no-Google speech route first** (Whisper `small.en` on our own worker — §Speech into
+   words without Google, DECIDED). The Gemini call is the closed prototype only; Adrian does not
+   want to pay Google.
 
 ## Switches (`src/lib/portal-beta.ts`, all `false`)
 
@@ -173,11 +176,28 @@ poor microphone, 25 % faster, quiet with an echo — plus 30 seconds of silence 
 - Not tested: the phone's own speech recognition. It needs a real phone; on Android it sends the
   voice to Google anyway, and it is missing inside an installed app on an iPhone.
 
-**Recommended:** Whisper `small.en` on the Fly worker, in the same lane that already reads the
-words. No Google, no new key, no cost a recording, and the voice never leaves our own systems.
-The price: the words are no longer ready in five seconds, so "This is what we heard" moves from
-before the feedback to inside it, with a "some words are wrong" door that re-reads. Not built —
-it changes the student's steps and the worker's image, so it waits for a yes.
+### DECIDED (8 Oct 2026): Whisper `small.en` on our own worker — to be built when oral is about to open
+
+Chosen by the session Adrian made responsible for routine calls, after this comparison. **Not
+built now**, on purpose: Adrian has said oral is not opening now; the worker is carrying twins, the
+row finder and marking on one processor and ran out of memory once this week; and other sessions
+are changing the bot and the worker. The Gemini prototype stays as it is, closed.
+
+When it is built:
+
+- **Where:** the Fly worker, in the same `plan-reads` lane that already reads the words. The
+  worker's image gains the speech model; rolling that out restarts the worker, so time it when no
+  marking is running (memory `bot-deploys-kill-inflight-marking`).
+- **What changes for the student:** today the words show in about 5 seconds and the student fixes
+  a misheard word BEFORE the feedback. On the worker the words and the feedback arrive together a
+  few minutes later, so "This is what we heard" moves INSIDE the feedback, with a "some words are
+  wrong" door that takes the corrected words and reads again.
+- **Keep:** the silence guards (`plausibleSpeech`, the phone's level check) and Whisper's own
+  silence filter (`vad_filter`); words written exactly as spoken.
+- **Still to measure before it opens:**
+  1. a real Singapore student's voice (or Adrian's), three answers, both ways side by side;
+  2. time and memory on the worker itself for a two-minute answer — the one-to-two-minute figure
+     above is an estimate from a Mac, and the worker has already run short of memory once.
 
 ## Not built
 
