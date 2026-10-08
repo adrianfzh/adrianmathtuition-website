@@ -9,6 +9,7 @@
 // out stays sent whatever WhatsApp does.
 import { signViewToken } from './view-token';
 import { botInternalSecret } from './bot-secret';
+import { WA_UPDATES_LABEL } from './wa-updates-label';
 
 export type WaResult = { sent: boolean; reason?: string };
 
@@ -79,4 +80,20 @@ export async function sendWhatsAppTemplate(
   } catch (e) {
     return { sent: false, reason: e instanceof Error ? e.message : 'error' };
   }
+}
+
+/** A parent ticked the box → record the opt-in on the bot (the one writer of that record). Never throws. */
+export async function recordWhatsAppOptIn(msg: { phone: string; studentId?: string }): Promise<boolean> {
+  const base = (process.env.BOT_BASE_URL || '').trim().replace(/\/$/, '');
+  const secret = botInternalSecret() || '';
+  if (!base || !secret || !msg.phone) return false;
+  try {
+    const r = await fetch(`${base}/api/internal/wa-consent`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...msg, wording: WA_UPDATES_LABEL }),
+      signal: AbortSignal.timeout(8000),
+    });
+    return r.ok;
+  } catch { return false; }
 }

@@ -1,5 +1,6 @@
 import { createHmac } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { recordWhatsAppOptIn } from '@/lib/wa-notify';
 import { generateInvoicePDF, closeBrowser } from '@/lib/generate-pdf';
 import { sendTelegram, sendTelegramWithButtons } from '@/lib/telegram';
 // Every notification from this file belongs in the students topic (6 Sept 2026; falls back to the DM when unbound).
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
     trialLessonId, lockedStartDate,
     expires, sig, studentName, school, studentContact,
     parentName, parentContact, parentEmail, startDate, howHeard, referralType, referredBy,
-    referredById,
+    referredById, waUpdates,
   } = body;
 
   if (!slotId || !expires || !sig || !studentName || !parentName || !parentContact || !parentEmail || !startDate || !howHeard) {
@@ -196,6 +197,13 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({ fields: studentFields }),
     });
     const studentId = studentRecord.id;
+
+    // The optional "updates on WhatsApp" box (8 Oct 2026): ticked → the opt-in is recorded on
+    // the bot, so this family never has to send START. Not ticked → nothing. Never blocks a sign-up.
+    if (waUpdates === true) {
+      const kept = await recordWhatsAppOptIn({ phone: String(parentContact), studentId });
+      if (!kept) console.warn('[signup] WhatsApp opt-in ticked but not recorded for', studentId);
+    }
 
     // Step 2b: Link trial lesson to new student (non-fatal). The PATCH response
     // carries the full record, so capture the trial date here for the invoice

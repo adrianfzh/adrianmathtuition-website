@@ -1,6 +1,7 @@
 'use client';
 
 import Script from 'next/script';
+import { WA_UPDATES_LABEL } from '@/lib/wa-updates-label';
 import Link from 'next/link';
 import { Suspense, useEffect, useRef, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -244,6 +245,7 @@ function SignupContent() {
       referralType:   fd.get('referralType') || '',
       referredBy:     fd.get('referredBy')   || '',
       referredById:   refPrefill?.id         || '',
+      waUpdates:      fd.get('waUpdates') === 'on',
     };
 
     try {
@@ -565,6 +567,14 @@ function SignupContent() {
                       How Things Work
                     </a>{' '}
                     — Adrian&apos;s lesson policies on fees, replacements, and more.
+                  </label>
+                </div>
+
+                {/* WhatsApp updates — optional, never pre-ticked: a parent opts in, or does not. */}
+                <div className="flex items-start gap-3 p-4 bg-card border-[1.5px] border-border rounded-lg mb-6">
+                  <input type="checkbox" id="waUpdates" name="waUpdates" className="w-[18px] h-[18px] mt-0.5 flex-shrink-0 cursor-pointer accent-navy" />
+                  <label htmlFor="waUpdates" className="text-sm text-muted-foreground leading-[1.5] cursor-pointer">
+                    {WA_UPDATES_LABEL} <span className="whitespace-nowrap">(Optional)</span>
                   </label>
                 </div>
 
