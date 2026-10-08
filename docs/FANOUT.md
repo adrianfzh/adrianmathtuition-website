@@ -90,6 +90,25 @@ Two sessions never share a checkout. The second session works in
 `git status` shows edits you did not make, you are in the wrong folder: commit
 by pathspec, never stash or reset another session's work, and say so.
 
+**One session is the hub (Adrian, 8 Oct 2026).** *"actually why don't you just communicate with
+the worker and report back to me? it is tiring having to keep switching sessions"* — and four
+minutes later, when a session pasted another session's question to him: *"stop saying it, you are
+responsible, you do the report"*. That evening he still asked *"so i should talk to Self-learning
+app session directly?"* and *"Is the sorter fix and English build report back?"*. Why: four
+windows each asking their own questions cost him more attention than the work saved.
+- The session that starts or suggests another session or a background agent stays the one he
+  talks to. Message it, read its report, and bring him one short summary in the words of
+  `CLAUDE.md` "Talking to Adrian", with the one yes/no it needs.
+- Never paste another session's words to him. Rewrite them: what happened, what it means for
+  him, your recommendation.
+- Never tell him "ask that session" or "go to that window". Offer it only if he asks for detail.
+- A spawned session's brief says up front: report to the hub, not to Adrian; his decisions
+  arrive quoted through the hub; safe defaults while waiting.
+- When he asks "is X back?", answer from what you collected; if a session has gone quiet,
+  check on it before you answer.
+- You never approve for him. Spending, promotes, switches and deletions stay his — you carry
+  the question and bring back his answer.
+
 **Another Mac, another account.** A session on Mac A (or a cloud session) never
 shares a folder with this one, so the clone rule is moot there; it reads THIS
 file and `CLAUDE.md` after `git pull`, not this Mac's machine notes or any
