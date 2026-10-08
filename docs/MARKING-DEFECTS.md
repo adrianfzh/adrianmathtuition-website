@@ -784,3 +784,38 @@ reason for OB = OA; Rainie AM Set 1 P2 p15 (i)'s B1 B1 credited on (ii)'s CA/CB 
 on the overflow sheet); marks on print / on her writing on pages drawn before F89/F90 (re-check on new pages); two ✗ for one
 lost mark (the slip's ✗ and the answer's ✗ A0 — a design question); "not attempted" chip on a part with a line of ink; W2
 said three times, W3 long strips, W6 a lost sketch shown in words, W7 science model answer.
+
+
+# 9 Oct 2026 — marking-fix (the reader's findings of 9 Oct: 6 papers, 40 pages, ~70 findings; no new pen_reports)
+
+Every paper was drawn after all of 8 Oct's fixes, so each "seen again" was looked at as a return. One commit, bot `ff09b9c`
+(the classes share files); unit 4369/4369, pen bench 1078/1078 over 170 cases.
+
+| # | What was on the page | Layer | Cause | Fix |
+|---|---|---|---|---|
+| F100 | (bench) Nothing the reader found on a science page could be reproduced: the italic "cm³", the cut "contradicts …" label and the extra ticks all drew differently on the bench | bench tooling | `scripts/golden-pen.cjs` drew every page without the science-style step production runs (`lib/science-style` sciencePage) — chemistry and biology pages were benched in the maths style | bot `ff09b9c`: the bench runs the same step as production and `pen-dryrun`; the 11 science cases already on it stay green. **8 Oct's "no longer reproduces" notes on science pages were this blind spot, not proof.** |
+| F101 | More ✓ than marks on a science answer: "4 ✓ for 2" (chem 2020 P2 A2(a), A4(a)), "5 for 4 — the extra ✓ on the line the box calls too vague" (bio 2024 P2 Q3(b)(ii)) — nine pages | pen (science style) | a line the marker called correct but gave no mark code was ticked the maths way, beside the coded ticks | bot `ff09b9c`: on a points answer, once the coded lines account for every mark awarded, an uncoded correct line is left bare (per part where rows are filed, else per question; a part marked on working is untouched). No mark moves. New every-page check `ticks-within-marks`. Cases `sophie-chem20p2-p10-more-ticks-than-marks`, `sophie-chem20p2-p3-…`, `alexis-bio24p2-p8-…` (each FAIL before, PASS after) |
+| F102 | A note cut off mid-sentence: "contradicts pH 3 and no CH₂ group in the" (chem p16 B8(b)); "← bed, chairs (drilling included), bookshe" (Isabelle EM Chung Cheng P2 p20); "6n is more than 1 — a probability cannot be" (same paper p7) | pen (science style) + read cleaner | a lost point was chopped at 8 words; a step reason sliced at 40 letters; a verdict its writer cut to fit the word count was drawn as it came | bot `ff09b9c`: one or two words over is written whole, a real overrun is cut at a word and ends "…"; a reason up to 56 letters is kept whole; a verdict that ends on "be / the / of / and …" is dropped and the part's diagnosis speaks. Cases `sophie-chem20p2-p16-label-cut-mid-sentence` (FAIL before, PASS after), `isabelle-emccy25p2-p20-reason-cut-mid-word`; unit tests |
+| F103 | "find OQ, not QP – find OQ, not QP: OQ = OA + AQ …" (Alessi EM 2024 P1 p16 Q27(b)) — the head said twice, fourth sighting (F23, F53, F88) | pen (labels) | F88's general cut compares what two phrases SAY; it read the correction's vector arrows and bold type as words | bot `ff09b9c`: arrows, bars and bold are dress, not words — in the one comparison every said-twice rule and check uses. Case `alessi-em24p1-p16-head-said-twice-vectors`; unit test fails before |
+| F104 | "… = 3a − 2ma+" over "mb; then match it" — maths broken after its sign (same label; F92's second member) | pen (wrap) | a chain of single terms has no joint free of a sign, so F92 had nowhere to carry the tail | bot `ff09b9c`: the line never ends on the sign — the sign leads the next line. Unit test over 17 widths |
+| F105 | "dissolves in 100 𝑐𝑚³" — the unit in italics; "fully ( 30 g) … not ( 40 g)" (chem p12 B7(a) strip) — F94's class on a science page | pen (science text, wrap) | the chemistry text step set a unit on a power as a stray script; a "(" before a typeset number was its own word | bot `ff09b9c`: a unit on a power is a word ("cm³", "mol/dm³"); an opening bracket holds what it opens. Case `sophie-chem20p2-p12-unit-on-a-power-italic` |
+| F106 | ✓ on the "A" of the printed "Answer" (Isabelle EM Chung Cheng P2 p8 Q3(b)(ii)) — **`repeat` ×5** (F25, F63, F66, F85); ✓ on the printed question (Alessi EM 2024 P1 p2 Q4(b)) | pen (marks) | F85's gate tests a square smaller than a tick's long stroke, and small italic print never fills a quarter of a column; with no clear square it kept the mark | bot `ff09b9c`: the gate looks at the tick's tip, with the finer look; **a bare ✓ with no clear square beside its own line that would sit on print or on other writing is not drawn** (it carries no mark; counted in the watch-outs). Cases `isabelle-emccy25p2-p8-tick-on-printed-answer` (FAIL before, PASS after), `alessi-em24p1-p2-tick-on-the-printed-question`. Over the 170 bench pages 12 ticks are left out in all |
+| F107 | "Missing: … missing: …" — two points joined with different capitals (bio 2024 P2 Q9, Q1) | pen (science style) | the strip joined each lost point as its own sentence | bot `ff09b9c`: two missing points are one list under one "missing:"; every other sentence opens with a capital. Case `alexis-bio24p2-p19-missing-said-twice-over` |
+
+**Returns, not reverted:** R3/R4/R5/R1/R6 were residues of F88/F92/F94/F85/F98 — their own cases still hold, and each was
+closed further (F103–F106). R2, a code on her writing after F99: Alessi p6 Q11(b) — the placer boxed a 16-px fragment of the
+line, so the mark and its code were seated from the wrong place (the read's placement, not the pen); chem p6 A4(a) "B0 on
+molten" does not reproduce from the stored boxes.
+
+**Reported, the read (no change):** Alessi EM 2024 P1 p9 Q16 3/3 with $12499.98 ticked A1 (exact $12500.00; the pen's own
+note gives a second wrong value, 12499.99) — likely 1 mark; Isabelle EM Chung Cheng P2 p20 Q9(b) — "should be 79.60" beside
+her 108.60 while the From-line box makes it 104.60; Alexis Biology 2024 P2 p8 Q3(b)(ii) — a violet-ink line credited B1
+(and Alessi p12 Q23(b), a purple first line, chip "corrections 2/2"); Isabelle AM 2022 P2 p6 Q9(b) corrections — her
+consistent −2 ringed as the slip.
+
+**Left for the next run:** a CODED mark on other ink with no clear seat still stays (Alessi p3 Q6(c), the M1 ✓ on her "km"
+beside the pen's own drawn-in brackets — which seat it should take is a choice); science underline under the blank rule /
+through her words, ticks on her words, a verdict on her margin jotting (P4, P5, P7 — reproducible now; the underline check
+needs a finer look first); ticks at nothing (P6 — re-check after F101); notes in another part's space, the graph fix aimed at
+the wrong cross, ring on the wrong token, brackets round correct work for a missing dx (P3, P8–P10); awarded marks with no ✓
+(P13); leaders through her writing (P2, ten pages — the open proposal `arrows-round-her-writing`); wording W2, W5, W6, W8, W9.
