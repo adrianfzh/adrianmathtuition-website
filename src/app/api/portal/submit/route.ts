@@ -33,9 +33,13 @@ import { sgtTodayISO } from '@/lib/sgt';
 import { findDuplicate, duplicateMessage, type DuplicateMatch } from '@/lib/duplicate-handin';
 import { handinFingerprints, earlierHandins, fingerprintOf, logDuplicateHandin } from '@/lib/duplicate-handin-store';
 import { sendTelegram } from '@/lib/telegram';
+import { unlessQuiet } from '@/lib/quiet-messages';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
+// 📥 / 🕒 "handed in … queued" is switched off (Adrian, 8 Oct 2026 — lib/quiet-messages 'handin-queued'):
+// the marked-paper message for the same paper follows. The 🔁 and the "auto-queue failed" lines still go.
+const notify_queued = (text: string) => unlessQuiet('handin-queued', () => sendTelegram(text, 'marking'));
 import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { practiceAgainHandinName } from '@/lib/paper-display-name';
 import { portalIdentity } from '@/lib/portal-auth';
@@ -487,7 +491,7 @@ export async function POST(req: Request) {
   if (queuedFor) {
     // Waits for its day: no enqueue now, the midnight cron does it.
     const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
-    notify_marking(`🕒 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for ${dayWord(queuedFor, sgtTodayISO())} (the midnight queue sends it for marking).`).catch(() => {});
+    notify_queued(`🕒 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}, queued for ${dayWord(queuedFor, sgtTodayISO())} (the midnight queue sends it for marking).`).catch(() => {});
     return NextResponse.json({ ok: true, runId, queuedFor });
   }
   let queued = false;
@@ -501,7 +505,7 @@ export async function POST(req: Request) {
   if (queued) {
     const lane = scienceSubject ? `🧪 ${scienceSubject} · ` : '';
     const scheme = schemeUrls.length ? ' · answers/scheme attached by the student (this paper only)' : '';
-    notify_marking(
+    notify_queued(
       `📥 <b>${escapeTelegramHtml(who)}</b> handed in “${escapeTelegramHtml(paperName)}” — ` +
       `${lane}${photoUrls.length} page${photoUrls.length === 1 ? '' : 's'}${scheme}, queued for marking.`
     ).catch(() => {});

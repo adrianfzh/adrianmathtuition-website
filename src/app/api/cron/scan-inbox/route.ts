@@ -40,6 +40,7 @@ import { loadRoster } from '@/lib/roster';
 import { sweepAutoTag, type AutoTagResult } from '@/lib/auto-tag-sweep';
 import { sweepUnfiledPapers, fileCatchupLine, type FileCatchupResult } from '@/lib/file-catchup';
 import { sendTelegram } from '@/lib/telegram';
+import { unlessQuiet } from '@/lib/quiet-messages';
 import {
   buildScanPaperName, isPdf, isSettled, matchStudent, parseScanFilename, scanLine,
   type CoverReading, type RosterStudent, type ScanEntry,
@@ -199,7 +200,7 @@ export async function GET(req: NextRequest) {
         run_id: runId, renamed_to: renamedPath, pages: pages.length, processed_at: new Date().toISOString(),
       }).eq('id', row.id);
       const line = scanLine({ paperName: runName, fileName: e.name, student, readName, pages: pages.length, queued: true, etaMinutes: typeof q.etaMinutes === 'number' ? q.etaMinutes : null });
-      await sendTelegram(line, 'marking').catch(() => {});
+      await unlessQuiet('scan-line', () => sendTelegram(line, 'marking')).catch(() => {});   // switched off 8 Oct 2026 (lib/quiet-messages)
       item.action = line;
     } catch (err) {
       await fail((err as Error).message || String(err));

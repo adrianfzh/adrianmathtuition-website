@@ -19,6 +19,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
+import { isQuiet } from '@/lib/quiet-messages';
 import { sgtDaysAgoISO } from '@/lib/sgt';
 import {
   parseReviewBody, reviewCounts, reviewDigest, isReviewDate, isReviewVerdict, REVIEWED_BY,
@@ -209,7 +210,9 @@ export async function POST(req: NextRequest) {
     const counts = reviewCounts(day, all);
     const digest = reviewDigest(date, day, all) + (note ? `\n📝 ${note.replace(/&/g, '&amp;').replace(/</g, '&lt;')}` : '');
     let telegram = false;
-    try { telegram = await sendTelegram(digest, 'ops'); } catch { /* the digest is a courtesy; the review is stored */ }
+    // A day with no finds sends nothing (Adrian, 8 Oct 2026 — lib/quiet-messages 'find-review-empty').
+    const empty = counts.finds === 0 && !note;
+    try { telegram = empty && isQuiet('find-review-empty') ? false : await sendTelegram(digest, 'ops'); } catch { /* the digest is a courtesy; the review is stored */ }
     return NextResponse.json({ ok: true, updated, counts, digest, telegram });
   } catch (e) {
     return NextResponse.json({ ok: true, updated, error: `stored, but the digest failed: ${(e as Error).message}` });

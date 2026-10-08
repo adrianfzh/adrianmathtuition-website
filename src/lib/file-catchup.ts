@@ -25,6 +25,7 @@
 // lib/paper-folder.ts path rule, so the two cannot drift.
 import { getSupabaseAdmin } from './supabase';
 import { sendTelegram } from './telegram';
+import { unlessQuiet } from './quiet-messages';
 import { fetchOurFile, isOurFileUrl } from './student-files';
 import { uploadFile } from './dropbox';
 import { markedAiPath, paperFolder, RETURNED_NAME, type PaperRun } from './paper-folder';
@@ -202,7 +203,7 @@ export async function sweepUnfiledPapers({ dry = false, now = new Date() }: { dr
   // one line an hour after release and then once a day (the flag rides the run).
   try {
     const filedLine = filedAlertLine(out.items);
-    if (filedLine) await sendTelegram(filedLine, 'marking');
+    if (filedLine) await unlessQuiet('scan-line', () => sendTelegram(filedLine, 'marking'));   // 📁 "filed" switched off 8 Oct 2026; the "still not filed" alert below still goes
     const byId = new Map(picks.map(r => [r.id, r]));
     const due = out.items.filter(i => i.error && shouldAlertUnfiled(byId.get(i.runId) || { released_at: null }, now));
     if (due.length) {

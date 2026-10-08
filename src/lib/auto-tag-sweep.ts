@@ -23,6 +23,7 @@ import { getSupabaseAdmin } from './supabase';
 import { fetchOurFile } from './student-files';
 import { readScanCover } from './scan-reader';
 import { sendTelegram } from './telegram';
+import { unlessQuiet } from './quiet-messages';   // 🏷 "tagged" lines switched off 8 Oct 2026; "couldn't tag" still goes
 import { refileUntaggedFolder } from './refile-untagged';
 import { loadRoster } from './roster';
 import type { RosterStudent } from './scan-inbox';
@@ -102,7 +103,7 @@ export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: R
       if (byName.kind === 'tag') {
         if (dry) { item.action = `would tag → ${byName.student.name} (name)`; res.tagged++; continue; }
         item.action = await tagRun(run, byName.student, { at: now.toISOString(), by: 'name' });
-        if (item.action.startsWith('tagged')) { res.tagged++; await sendTelegram(autoTagLine({ paperName: run.paper_name, student: byName.student, by: 'name' }), 'marking').catch(() => {}); }
+        if (item.action.startsWith('tagged')) { res.tagged++; await unlessQuiet('scan-line', () => sendTelegram(autoTagLine({ paperName: run.paper_name, student: byName.student, by: 'name' }), 'marking')).catch(() => {}); }
         continue;
       }
       // The cover decides — once per run, a few per tick.
@@ -119,7 +120,7 @@ export async function sweepAutoTag(opts: { dry?: boolean; now?: Date; roster?: R
       const byCover = decideByCover(read.reading, byName.candidates);
       if (byCover.kind === 'tag') {
         item.action = await tagRun(run, byCover.student, { at: now.toISOString(), by: 'cover', read_name: byCover.readName, cover_tried: true });
-        if (item.action.startsWith('tagged')) { res.tagged++; await sendTelegram(autoTagLine({ paperName: run.paper_name, student: byCover.student, by: 'cover', readName: byCover.readName }), 'marking').catch(() => {}); }
+        if (item.action.startsWith('tagged')) { res.tagged++; await unlessQuiet('scan-line', () => sendTelegram(autoTagLine({ paperName: run.paper_name, student: byCover.student, by: 'cover', readName: byCover.readName }), 'marking')).catch(() => {}); }
         continue;
       }
       await stamp(run.id, { at: now.toISOString(), cover_tried: true, read_name: byCover.readName, reason: byCover.reason });

@@ -76,10 +76,6 @@
       "schedule": "0 2 15 * *"
     },
     {
-      "path": "/api/june-revision-followup",
-      "schedule": "0 1 25 5 *"
-    },
-    {
       "path": "/api/portal/practice-digest",
       "schedule": "30 13 * * *"
     },
