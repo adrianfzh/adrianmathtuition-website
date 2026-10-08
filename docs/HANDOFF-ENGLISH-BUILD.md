@@ -15,7 +15,7 @@ Talk to Adrian in plain, short words. No jargon.
 
 | Part | State | Switch |
 |---|---|---|
-| Essay marking (English + 中文), with our own guidance in the marker; reads on the plan (bot push owed) | built | `ESSAY_MARKING_OPEN_TO_STUDENTS` |
+| Essay marking (English + 中文), with our own guidance in the marker; reads on the plan | built | `ESSAY_MARKING_OPEN_TO_STUDENTS` |
 | Formats guide for Situational Writing | built | `ENGLISH_FORMATS_OPEN_TO_STUDENTS` |
 | Practise: editing · comprehension · visual text · summary, each answer checked against the scheme | built | `ENGLISH_PRACTICE_OPEN_TO_STUDENTS` |
 | Listening (Paper 3) · Oral (Paper 4), on our own recordings, pictures and prompts | built 8 Oct 2026 | `ENGLISH_LISTENING_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS` |
@@ -62,12 +62,11 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
     every hand-in, right code 35/36 · bands 12 exact + 12 one band away of 24, none further · the
     same essay twice 18/18. **Passes by the spec's gates.** Every miss is one band high, and the
     band-1 and band-2 essays both read as band 2 — SPEC-ESSAY-MARKING.md §The bench on the plan.
-  - **STILL OWED: the bot commit is not live.** It is committed in
-    `~/dev/adrianmath-telegram-math-bot-2` (`main`, "Essay marking reads on the plan…") but the
-    push — which puts the bot live — was stopped by the session's safety check and needs Adrian's
-    word. Until it is pushed, the live bot still marks essays on the paid key. After the push:
-    hand one essay in on the preview (`/app/languages/submit`), check its `essay_runs.model` is
-    `plan:opus` and `cost_usd` 0, and write the result here.
+  - **Live and checked end to end (8 Oct 2026).** Adrian pushed the bot himself (`0b04b43b`,
+    checks and deploy green). One essay handed in on the preview through the admin door
+    (`essay_runs` `1c2c76f2…`): marked in 2 min 54 s — the two reads queued together, read at the
+    same time by the Fly worker (38 s each), `model` `plan:opus`, `cost_usd` 0, bands C5 L4
+    (22–26), the same as the bench gave that essay. No paid call.
   - Still owed before essays open: a class set with a teacher's marks (the ranking test), more
     band essays on other prompts and for Situational Writing, and Adrian's look at the hedge lines.
 - Not started: steps 4–8.
