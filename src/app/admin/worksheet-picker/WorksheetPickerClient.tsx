@@ -86,17 +86,20 @@ function Card({ q, index, col, onMove, overlay = false }: {
           {q.marks != null && <span className="shrink-0">[{q.marks}]</span>}
           {q.images.length + q.parts.reduce((s, p) => s + p.imagesBefore.length + p.imagesAfter.length, 0) > 0 && <span title="has a figure">🖼</span>}
         </div>
-        {full || sol
-          ? <div className="mt-1 pr-1"><QuestionBody q={q} size={13} /></div>
-          : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
-        {sol && <SolutionBlock q={q} />}
-        <div className="mt-1.5 flex gap-3">
-          <button onClick={() => { setFull((v) => !v); if (full) setSol(false); }} className="text-[12px] font-semibold text-slate-700 hover:underline">{full || sol ? 'Hide question' : 'Full question'}</button>
-          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution' : 'Solution'}</button>
+        {/* The buttons stay ABOVE the content so they do not move when the
+            card unfolds (Adrian, 9 Oct 2026: "the dropdown remains at its
+            original position"). */}
+        <div className="mb-1.5 flex gap-3">
+          <button onClick={() => { setFull((v) => !v); if (full) setSol(false); }} className="text-[12px] font-semibold text-slate-700 hover:underline">{full || sol ? 'Hide question ▴' : 'Full question ▾'}</button>
+          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Remove'}
           </button>
         </div>
+        {full || sol
+          ? <div className="pr-1"><QuestionBody q={q} size={13} /></div>
+          : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
+        {sol && <SolutionBlock q={q} />}
       </div>
     </div>
   );
