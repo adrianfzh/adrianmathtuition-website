@@ -1,5 +1,12 @@
 # Hand-over — move the Humanities reader onto the plan (8 Oct 2026)
 
+> **BUILT 8 Oct 2026** — steps 1–3, 5 and 6 below are done and on dev (preview only, switch closed);
+> how it works is `SPEC-HUMANITIES.md` §3b. The slice chose `sonnet` (82/82 · 21/21 · 30/30, the same
+> as `opus`). The full bench runs with `bash scripts/humanities-bench/full-plan.sh` (resumes; results
+> `scripts/humanities-bench/results/plan-2026-10-08-*.json`, log `plan-2026-10-08.log`); its table is
+> in `SPEC-HUMANITIES.md` §4. Still open: a timed paper handed in by a signed-in student on the new
+> path (same door, not yet tried by hand), and a phone-width look at the pages (words only changed).
+
 For a FRESH session (the Humanities build session reached 90% of its window). Read
 [`SPEC-HUMANITIES.md`](../SPEC-HUMANITIES.md), then `SPEC-ENGLISH-PRACTICE.md` §On the plan and the bot's
 `worker/fly/README.md` §Plan reads. Talk to Adrian in plain, short words (CLAUDE.md §Talking to Adrian).

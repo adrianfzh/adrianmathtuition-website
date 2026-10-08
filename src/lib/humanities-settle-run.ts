@@ -12,7 +12,7 @@ import { sendTelegram } from './telegram';
 
 export const HUMANITIES_READ_KIND = 'humanities-read';
 /** The plan reader's model alias (plan_reads takes sonnet · opus · haiku). The bench in SPEC-HUMANITIES.md §4 chose it. */
-export const HUMANITIES_PLAN_MODEL: PlanModel = 'opus';
+export const HUMANITIES_PLAN_MODEL: PlanModel = 'sonnet';
 export type PlanModel = 'sonnet' | 'opus';
 export const isPlanModel = (m: unknown): m is PlanModel => m === 'sonnet' || m === 'opus';
 /** Only one settler writes at a time: the run's claimed_at is a short lease. */

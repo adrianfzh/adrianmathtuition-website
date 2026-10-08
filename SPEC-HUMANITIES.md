@@ -275,9 +275,12 @@ and the bot did not change.
   seconds; the timed paper's result page; Home; My answers; `GET /api/admin/humanities?id=`, which the
   bench polls) and the `plan-reads` health check (`settleOpenHumanities`), so no answer waits on a
   page being open.
-- **The model:** `HUMANITIES_PLAN_MODEL` in `lib/humanities-settle-run.ts` — chosen by the slice in §4.
+- **The model:** `HUMANITIES_PLAN_MODEL` in `lib/humanities-settle-run.ts` = `sonnet`, chosen by the slice in §4
+  (it matched `opus` answer for answer).
   The bench's admin hand-in may name `model: sonnet|opus` for one run; a student's hand-in cannot.
-- **Speed:** MEASURED-SPEED
+- **Speed (measured 8 Oct 2026, worker awake):** one answer alone, 91 seconds from hand-in to feedback
+  (two reads). In a queue the lane does about one read every 6–11 seconds, so an answer behind twenty
+  others waited about 3–4 minutes. Longer when the worker has to start first.
 - **The paid path** is still in the code: `HUMANITIES_READ_USE_API=1` sends the answer to the bot's
   `/api/humanities-mark` as before. **Unset everywhere. Do not set it without Adrian's word.**
 - **Limits:** the worker's lane reads one answer at a time, so a class handing in together waits in
@@ -317,6 +320,20 @@ levels off; consistency passes; the truth-free checks pass.
 | `b-geo-9mark-2026-10-07` — Geography, the eight 9-mark questions (`--subject geography --kind structured`) | 24/24 | 6/6 | 12/12 | US$2.18 |
 | `c-hist-essay-2026-10-07` — History essays, sets y05 and y07 (`--sets y05,y07`) | 16/16 | 4/4 | 7/7 | US$1.50 |
 | `b-geo-diagrams-2026-10-07` — Geography, the climate diagram set g23 (the diagram reaches the reader as words) | 23/23 | 6/6 | 9/9 | US$1.34 |
+
+**On the plan (8 Oct 2026) — the runs above were on the paid reader; these are the same checks through `plan_reads`, cost nothing:**
+
+| Run | Reader | Seeded | Consistency | Truth-free | Held / failed |
+|---|---|---|---|---|---|
+| `plan-slice-sonnet-2026-10-08` — s12, g06, g13, y02, y08 (133 answers, 268 reads) | sonnet | 82/82 | 21/21 | 30/30 | 0 / 0 |
+| `plan-slice-opus-2026-10-08` — the same 133 answers (266 reads) | opus | 82/82 | 21/21 | 30/30 | 0 / 0 |
+
+- **The model is `sonnet`**: on the slice it passed the gate and matched `opus` on every answer.
+- **The meter:** the weekly meters of the two logins moved 22→23 % and 9→11 % over the sonnet slice and
+  23→24 %, 11→12 % over the opus slice — with other plan work running at the same time, so these are
+  upper bounds: about 3 points (both logins together) for 268 reads.
+- **The full bench** (`bash scripts/humanities-bench/full-plan.sh`, seven runs `plan-2026-10-08-*`, every
+  seeded answer in the bank + the 90 hard ones, about 1,900 answers / 3,900 reads): FULL-BENCH-TABLE
 
 - The Geography miss was ours, not the reader's: a "zero" answer (people stay near volcanoes because they were born there) is a valid reason, and the reader credited it as an unlisted point. The seeded answer was replaced.
 - The one miss: a reliability answer that trusts the source from its content alone,
