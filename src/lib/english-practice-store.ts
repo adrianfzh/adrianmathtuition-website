@@ -76,7 +76,7 @@ export async function modelChecksToday(identity: string): Promise<number> {
   return count ?? 0;
 }
 
-export async function logAttempt(row: { identity: string; itemId: string; unit: string; kind: 'editing' | 'short' | 'choice' | 'summary'; answer: string; awarded: number | null; max: number; usedModel: boolean; result?: unknown }): Promise<void> {
+export async function logAttempt(row: { identity: string; itemId: string; unit: string; kind: 'editing' | 'short' | 'choice' | 'summary' | 'listening'; answer: string; awarded: number | null; max: number; usedModel: boolean; result?: unknown }): Promise<void> {
   const { error } = await getSupabaseAdmin().from('english_practice_attempts').insert({
     identity: row.identity, item_id: row.itemId, unit: row.unit, kind: row.kind, answer: row.answer.slice(0, 4000),
     awarded: row.awarded, max_marks: row.max, used_model: row.usedModel, result: row.result ?? null,

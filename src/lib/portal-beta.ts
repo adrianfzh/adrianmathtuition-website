@@ -479,6 +479,36 @@ export async function englishFormatsOpen(): Promise<boolean> {
   return englishPreviewer();
 }
 
+/**
+ * 🎧 English listening and 🎙 oral practice (8 Oct 2026, Adrian: "let's build both listening and
+ * oral"; SPEC-ENGLISH-ORAL-LISTENING.md) — Paper 3 and Paper 4 of syllabus 1184 on our own
+ * recordings, pictures and prompts. Three surfaces, three switches, all CLOSED: Adrian's cookie
+ * and the preview student see them. They sit inside the Languages family, itself closed.
+ *   listening    /app/languages/listening — play, answer, marked by the key on the spot
+ *   oral         /app/languages/oral, Part 1 — the planned response to a picture
+ *   interaction  the same page's Part 2 — three prompts asked and answered aloud
+ */
+export const ENGLISH_LISTENING_OPEN_TO_STUDENTS = false;
+export const ENGLISH_ORAL_OPEN_TO_STUDENTS = false;
+export const ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS = false;
+export const ENGLISH_SPEAKING_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+/** Pure: may this portal identity use a surface whose switch is `open`? (Adrian's cookie is asked separately.) */
+export function speakingAllowedFor(open: boolean, identity: string | null | undefined): boolean {
+  return open || (!!identity && ENGLISH_SPEAKING_PREVIEW_IDENTITIES.includes(identity));
+}
+async function speakingOpen(open: boolean): Promise<boolean> {
+  if (open) return true;
+  if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;
+  try {
+    const { sessionAccount, portalIdentity } = await import('./portal-auth');
+    const acct = await sessionAccount().catch(() => null);
+    return !!acct && speakingAllowedFor(open, portalIdentity(acct));
+  } catch { return false; }
+}
+export const englishListeningOpen = (): Promise<boolean> => speakingOpen(ENGLISH_LISTENING_OPEN_TO_STUDENTS);
+export const englishOralOpen = (): Promise<boolean> => speakingOpen(ENGLISH_ORAL_OPEN_TO_STUDENTS);
+export const englishOralInteractionOpen = (): Promise<boolean> => speakingOpen(ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS);
+
 // ▶ The one-minute explanation (1 Oct 2026): one lost-marks question replayed on the
 // chalk board from the marker's own steps (lib/explain-clip). ADMIN-ONLY until Adrian
 // has watched a few — flip this to open the door on every mistake card and on the

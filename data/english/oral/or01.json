@@ -1,0 +1,14 @@
+{
+  "id": "or01",
+  "kind": "oral",
+  "title": "A beach clean-up",
+  "picture": "/english/oral/or01.jpg",
+  "scene": "A sunny morning on a sandy beach. About ten people, mostly teenagers in T-shirts and shorts with a few adults behind them, are walking along the shore picking up litter. They wear gloves and carry large clear bags that are already full of rubbish. Three teenagers in front are smiling and laughing as they work. Plastic bottles and wrappers lie on the sand near the water. A large cargo ship is passing close to the shore.",
+  "imagePrompt": "A realistic photograph of a volunteer beach clean-up on a sunny morning on a tropical sandy beach in Singapore. About ten people of different ages, mostly Asian teenagers in plain coloured T-shirts with a few adults and one older man, pick up plastic litter using tongs and gloves and put it into large rubbish bags. Two teenagers carry a full bag together, smiling. Plastic bottles and wrappers lie along the tide line. Cargo ships far out at sea. Natural light, candid, documentary style, no text, no logos.",
+  "planned": "Would you take part in an activity like this? Why or why not?",
+  "interaction": [
+    "Some people say that young people today do not care enough about the environment. What is your view?",
+    "What can schools do to encourage students to look after public places?",
+    "Who should do more to keep Singapore clean: ordinary people or the government? Why?"
+  ]
+}

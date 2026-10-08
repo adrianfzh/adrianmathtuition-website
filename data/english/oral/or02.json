@@ -1,0 +1,14 @@
+{
+  "id": "or02",
+  "kind": "oral",
+  "title": "A family meal",
+  "picture": "/english/oral/or02.jpg",
+  "scene": "A family is sharing dinner at a round table in a busy hawker centre in the evening: a grandfather, a grandmother, a girl and two boys. Plates of food are in the middle of the table. Everyone is leaning in, talking and laughing as they help themselves to the food. Their mobile phones lie in a pile at the edge of the table, untouched. Other tables and food stalls can be seen behind them.",
+  "imagePrompt": "A realistic photograph of a three-generation Asian family sharing dinner at a round table in a busy Singapore hawker centre in the evening: two grandparents, two parents, a teenage girl and a younger boy. Plates of local food in the middle of the table. Everyone is talking and laughing, the grandmother is serving food onto the boy's plate. A small stack of mobile phones lies untouched at the edge of the table. Warm light, candid, documentary style, no text, no logos.",
+  "planned": "Would you enjoy a meal like this one? Why or why not?",
+  "interaction": [
+    "How has technology changed the way families spend time together?",
+    "Some people think that eating together as a family matters less today than it used to. What do you think?",
+    "What can young people do to stay close to the older members of their family?"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "ls04",
+  "kind": "listening",
+  "section": "B",
+  "title": "A talk about sleep",
+  "textType": "information",
+  "intro": "You will hear a talk about sleep given to a group of Secondary Four students by a school counsellor, Ms Lim. Complete the notes for questions 1 to 8. Write one or two words or a number for each answer. You will hear the recording once only.",
+  "names": { "a": "Ms Lim" },
+  "voices": {"a": "woman"},
+  "script": [
+    { "who": "a", "text": "Good afternoon. With the examinations eight weeks away, I want to talk about the one revision tool that costs nothing: sleep." },
+    { "who": "a", "text": "Let me begin with how much you need. Teenagers need between eight and ten hours a night. A survey of students in this school last year found that the average was only six and a half." },
+    { "who": "a", "text": "Why does this matter? While you sleep, your brain moves what you learnt during the day into long-term memory. If you cut your sleep short, you cut that process short. Students who stay up to study often remember less the next morning, not more." },
+    { "who": "a", "text": "So what gets in the way? The first problem is light. The blue light from a phone screen tells your brain that it is still daytime. I recommend putting your phone away one hour before bed, and charging it outside your bedroom, in the living room for example." },
+    { "who": "a", "text": "The second problem is caffeine. Bubble tea, coffee and energy drinks stay in your body for up to six hours. My advice is no caffeine after three in the afternoon." },
+    { "who": "a", "text": "The third problem is the weekend. Many of you sleep until noon on Sunday and then cannot fall asleep on Sunday night. Try to get up within one hour of your usual time, even at weekends." },
+    { "who": "a", "text": "What about naps? A short nap is fine. Keep it under twenty minutes, and take it before four o'clock, or it will steal from your night's sleep." },
+    { "who": "a", "text": "Finally, if you lie awake worrying, keep a notebook beside your bed. Write the worry down and tell yourself you will deal with it tomorrow. It sounds too simple, but it works for most people." },
+    { "who": "a", "text": "Sleep is not time taken away from revision. It is part of revision." }
+  ],
+  "questions": [
+    { "n": "1", "type": "fill", "heading": "How much sleep", "text": "Teenagers need eight to", "after": "hours a night.", "accept": ["ten", "10"], "why": "“Teenagers need between eight and ten hours a night.”" },
+    { "n": "2", "type": "fill", "text": "Average in last year's school survey:", "after": "hours.", "accept": ["six and a half", "6.5", "6 and a half", "6 1/2", "six and half"], "why": "The survey “found that the average was only six and a half.”" },
+    { "n": "3", "type": "fill", "heading": "Why it matters", "text": "During sleep, the day's learning moves into long-term", "after": ".", "accept": ["memory"], "why": "“Your brain moves what you learnt during the day into long-term memory.”" },
+    { "n": "4", "type": "fill", "heading": "What gets in the way", "text": "A phone's", "after": "light tells the brain it is still daytime.", "accept": ["blue"], "why": "“The blue light from a phone screen tells your brain that it is still daytime.”" },
+    { "n": "5", "type": "fill", "text": "Charge the phone outside the bedroom, for example in the", "after": ".", "accept": ["living room", "livingroom"], "why": "“Charging it outside your bedroom, in the living room for example.”" },
+    { "n": "6", "type": "fill", "text": "No caffeine after", "after": "in the afternoon.", "accept": ["three", "3", "3 pm", "3pm", "three o'clock", "3 o'clock", "three pm"], "why": "“My advice is no caffeine after three in the afternoon.”" },
+    { "n": "7", "type": "fill", "heading": "Naps and worries", "text": "Keep a nap under", "after": "minutes.", "accept": ["twenty", "20"], "why": "“Keep it under twenty minutes, and take it before four o'clock.”" },
+    { "n": "8", "type": "fill", "text": "Keep a", "after": "beside the bed and write the worry down.", "accept": ["notebook", "note book"], "why": "“If you lie awake worrying, keep a notebook beside your bed.”" }
+  ]
+}

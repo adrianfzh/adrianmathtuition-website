@@ -34,6 +34,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | Portal v2 (subjects, Practice list, finder tiers, Notebook) | [`SPEC-PORTAL-V2.md`](SPEC-PORTAL-V2.md) |
 | Pencil annotation | [`SPEC-ANNOTATE.md`](SPEC-ANNOTATE.md) §17 |
 | Subjects expansion · Humanities · Essays (English + 中文) | [`SPEC-SUBJECTS.md`](SPEC-SUBJECTS.md) · [`SPEC-HUMANITIES.md`](SPEC-HUMANITIES.md) · [`SPEC-ESSAY-MARKING.md`](SPEC-ESSAY-MARKING.md) |
+| English practice · listening + oral | [`SPEC-ENGLISH-PRACTICE.md`](SPEC-ENGLISH-PRACTICE.md) · [`SPEC-ENGLISH-ORAL-LISTENING.md`](SPEC-ENGLISH-ORAL-LISTENING.md) |
 | 🧭 Where students are stuck (`stuck-weekly`, `/admin/stuck`) | [`docs/AREAS.md`](docs/AREAS.md) row "Where students are stuck" |
 | When a student leaves (marked-papers zip, leaver notice) | [`docs/AREAS.md`](docs/AREAS.md) row "When a student leaves" |
 | 📌 Next lesson, progress note, students-first admin | [`SPEC-STUDENT-FIRST.md`](SPEC-STUDENT-FIRST.md) §15 |

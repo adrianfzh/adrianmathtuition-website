@@ -18,6 +18,7 @@ Talk to Adrian in plain, short words. No jargon.
 | Essay marking (English + 中文), with our own guidance in the marker | built | `ESSAY_MARKING_OPEN_TO_STUDENTS` |
 | Formats guide for Situational Writing | built | `ENGLISH_FORMATS_OPEN_TO_STUDENTS` |
 | Practise: editing · comprehension · visual text · summary, each answer checked against the scheme | built | `ENGLISH_PRACTICE_OPEN_TO_STUDENTS` |
+| Listening (Paper 3) · Oral (Paper 4), on our own recordings, pictures and prompts | built 8 Oct 2026 | `ENGLISH_LISTENING_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_OPEN_TO_STUDENTS` · `ENGLISH_ORAL_INTERACTION_OPEN_TO_STUDENTS` |
 | The language bank (`language_items` 846, `language_texts` 174: 528 comprehension, 132 visual text, 33 summary, 19 editing) | banked | grounding-only |
 
 The paper (syllabus 1184): Paper 1 = Editing 10 + Situational 30 + Continuous 30 · Paper 2 =
@@ -48,6 +49,18 @@ Paper 4 Oral (planned response + spoken interaction). No reading aloud.
 - Still owed on step 2: a re-read of the one fixed gross miss, a HARD set, one end-to-end test of
   the queue on the preview once the worker lane is deployed.
 - Not started: steps 3–8.
+
+## Listening and oral — built 8 Oct 2026 (steps 7 and 8), all closed
+
+Adrian, 8 Oct 2026: *"let's build both listening and oral"*. Spec and everything about them:
+[`SPEC-ENGLISH-ORAL-LISTENING.md`](../SPEC-ENGLISH-ORAL-LISTENING.md).
+
+- **Listening**: 4 own sets (one whole Paper 3), marked by the key. `data/english/listening/`.
+- **Oral**: 3 own sets (a generated picture, a prompt, three follow-up prompts), Part 1 and Part 2.
+  `data/english/oral/`. The words are read on the plan queue; the recording is a private file.
+- Still owed before any opening: Adrian tries oral with his own voice · the privacy page mentions
+  voice recordings · how long a recording is kept (recommended: 30 days) · a bench for the oral
+  reading (seeded transcripts at a known band) · more sets.
 
 ## What is missing — the build, in order
 

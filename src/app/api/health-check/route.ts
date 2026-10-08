@@ -347,6 +347,28 @@ export async function GET(req: NextRequest) {
       if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
       return `401 · page ${p.status}`;
     }),
+    // English listening + oral (8 Oct 2026, SPEC-ENGLISH-ORAL-LISTENING.md): the doors answer 401 to a
+    // stranger, the pages exist, and the first recording is really there to be played.
+    timed('portal-english-listening', async () => {
+      const r = await fetch(`${base}/api/portal/english/listening`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`anonymous POST answered ${r.status}, expected 401`);
+      const p = await fetch(`${base}/app/languages/listening`, { redirect: 'manual', signal: T(10000) });
+      if (p.status === 404) throw new Error('/app/languages/listening is missing');
+      if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
+      const a = await fetch(`${base}/english/listening/ls01.mp3`, { method: 'HEAD', signal: T(10000) });
+      if (!a.ok) throw new Error(`the first recording answered ${a.status}`);
+      return `401 · page ${p.status} · audio ${a.status}`;
+    }),
+    timed('portal-english-oral', async () => {
+      const r = await fetch(`${base}/api/portal/english/oral?attempt=x`, { signal: T(10000) });
+      if (r.status !== 401) throw new Error(`anonymous GET answered ${r.status}, expected 401`);
+      const p = await fetch(`${base}/app/languages/oral`, { redirect: 'manual', signal: T(10000) });
+      if (p.status === 404) throw new Error('/app/languages/oral is missing');
+      if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
+      const a = await fetch(`${base}/english/oral/or01.jpg`, { method: 'HEAD', signal: T(10000) });
+      if (!a.ok) throw new Error(`the first picture answered ${a.status}`);
+      return `401 · page ${p.status} · picture ${a.status}`;
+    }),
     // plan_reads (7 Oct 2026, "all on plan"): an answer handed in for checking is read by the Fly
     // worker's one-minute lane. One still waiting after 20 minutes means that lane is not running.
     timed('plan-reads', async () => {

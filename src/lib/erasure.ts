@@ -25,7 +25,14 @@ export const ERASE_BY_IDENTITY: readonly { table: string; column: string }[] = [
   { table: 'student_work_ink', column: 'identity' }, // their pen marks on worksheets / practice
   { table: 'portal_event_log', column: 'identity' }, // the app-use log
   { table: 'portal_suggestions', column: 'airtable_student_id' }, // 💡 their named suggestions (anonymous ones hold no identity)
+  // 8 Oct 2026 (English practice, listening and oral):
+  { table: 'english_practice_attempts', column: 'identity' }, // answers to our own English sets, listening included
+  { table: 'english_oral_attempts', column: 'identity' }, // what they said in oral practice + the report (the recordings: ERASE_FILE_PREFIXES)
+  { table: 'plan_reads', column: 'identity' }, // answers waiting for, or back from, the plan reader
 ];
+
+/** Private-file folders erased whole: `<root>/<identity>/…` holds nothing but this student's own files. */
+export const ERASE_FILE_PREFIXES: readonly string[] = ['clippings', 'assignments', 'oral'];
 
 /**
  * Deliberately KEPT: the marked papers and everything on them. `student_ink` is

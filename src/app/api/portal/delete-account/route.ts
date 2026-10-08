@@ -30,7 +30,7 @@ import { createSupabaseServer, createServiceClient } from '@/lib/supabase-server
 import { portalIdentity } from '@/lib/portal-auth';
 import { sendTelegram } from '@/lib/telegram';
 import { leaverNotice } from '@/lib/leaver-notice';
-import { ERASE_BY_IDENTITY, PHOTO_SHEET_KIND, photoSheetKeys } from '@/lib/erasure';
+import { ERASE_BY_IDENTITY, ERASE_FILE_PREFIXES, PHOTO_SHEET_KIND, photoSheetKeys } from '@/lib/erasure';
 import { removeStudentFiles } from '@/lib/student-files';
 
 export async function POST(req: NextRequest) {
@@ -90,7 +90,7 @@ export async function POST(req: NextRequest) {
     // The private store: every clipping and assignment worksheet under this
     // identity, whether or not a row still points at it. (Hand-in photos stay
     // with their marking runs — the same retention stance as the runs above.)
-    for (const prefix of [`clippings/${identity}`, `assignments/${identity}`]) {
+    for (const prefix of ERASE_FILE_PREFIXES.map(root => `${root}/${identity}`)) {
       try { await removeStudentFilesByPrefix(prefix); }
       catch (e) { console.error('[delete-account] student-files cleanup failed for', prefix, (e as Error).message); }
     }

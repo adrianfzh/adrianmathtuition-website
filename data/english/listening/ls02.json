@@ -1,0 +1,51 @@
+{
+  "id": "ls02",
+  "kind": "listening",
+  "section": "A",
+  "title": "Planning the class outing",
+  "textType": "conversation",
+  "intro": "You will hear two classmates, Priya and Wei Jie, planning a class outing for the end of term. Answer questions 1 to 7. You will hear the recording twice.",
+  "names": { "a": "Priya", "b": "Wei Jie" },
+  "voices": {"a": "girl", "b": "boy"},
+  "script": [
+    { "who": "a", "text": "Wei Jie, Mrs Tan wants our plan for the class outing by Friday. Have you looked at the four ideas the class voted for?" },
+    { "who": "b", "text": "I have. Shall we start with the kayaking at the reservoir? It got the most votes." },
+    { "who": "a", "text": "It did, but I rang the centre this morning. They take groups of twenty at most, and there are thirty-six of us. We would have to split the class and go on two different days." },
+    { "who": "b", "text": "Then that defeats the purpose. What about the escape room in town?" },
+    { "who": "a", "text": "I like it, honestly. But it is twenty-eight dollars each, and Mrs Tan said nobody should pay more than fifteen." },
+    { "who": "b", "text": "True. Some of us would simply stay at home. All right, the hike up Bukit Timah Hill. It is free." },
+    { "who": "a", "text": "It is free, and it is also the last week of November. It rains almost every afternoon then. If it pours, we have no back-up, and thirty-six people get soaked." },
+    { "who": "b", "text": "You sound like my mother. Fine. That leaves the cooking class at the community club." },
+    { "who": "a", "text": "I thought that one would be boring, but listen. The instructor puts us into teams of six, each team cooks one dish, and then everybody eats lunch together. It is twelve dollars each, including the ingredients." },
+    { "who": "b", "text": "And it is indoors, so the rain does not matter. Can they take all of us?" },
+    { "who": "a", "text": "Up to forty. The only problem is the date. They are full on the Friday we wanted. They can give us the Thursday instead, from ten until one." },
+    { "who": "b", "text": "Thursday is fine. The exams end on Wednesday. Do we need to bring anything?" },
+    { "who": "a", "text": "Just an apron and a container, in case there is food left over. Oh, and they need to know by Monday whether anyone cannot eat certain things." },
+    { "who": "b", "text": "I will make a form tonight and send it to the class chat. You write the plan for Mrs Tan." },
+    { "who": "a", "text": "Deal. And Wei Jie, put a deadline on the form this time. Last time half the class replied a week late." },
+    { "who": "b", "text": "Sunday night, nine o'clock. No reply, no lunch." }
+  ],
+  "bank": [
+    { "label": "A", "text": "It costs too much." },
+    { "label": "B", "text": "The class would have to be split up." },
+    { "label": "C", "text": "The weather may spoil it." },
+    { "label": "D", "text": "It is too far from the school." },
+    { "label": "E", "text": "The day they wanted is not free." },
+    { "label": "F", "text": "Most of the class find it boring." }
+  ],
+  "questions": [
+    { "n": "1", "type": "match", "heading": "Questions 1 to 4. What is the problem with each idea? Choose one letter for each. Two letters are not used.", "text": "Kayaking at the reservoir", "answer": "B", "why": "The centre takes twenty at most and there are thirty-six: “We would have to split the class.”" },
+    { "n": "2", "type": "match", "text": "The escape room", "answer": "A", "why": "It is twenty-eight dollars each, and nobody should pay more than fifteen." },
+    { "n": "3", "type": "match", "text": "The hike up Bukit Timah Hill", "answer": "C", "why": "“It rains almost every afternoon then. If it pours, we have no back-up.”" },
+    { "n": "4", "type": "match", "text": "The cooking class", "answer": "E", "why": "“They are full on the Friday we wanted.” Priya only thought it would be boring — she changed her mind." },
+    { "n": "5", "type": "choice", "heading": "Questions 5 to 7. Choose the correct answer.", "text": "How much will each student pay for the outing they choose?",
+      "options": [ { "label": "A", "text": "$12" }, { "label": "B", "text": "$15" }, { "label": "C", "text": "$28" }, { "label": "D", "text": "$36" } ],
+      "answer": "A", "why": "The cooking class “is twelve dollars each, including the ingredients.”" },
+    { "n": "6", "type": "choice", "text": "What must the community club be told by Monday?",
+      "options": [ { "label": "A", "text": "How many students are coming" }, { "label": "B", "text": "Which dish each team will cook" }, { "label": "C", "text": "Whether anyone cannot eat certain foods" }, { "label": "D", "text": "Who is bringing a container" } ],
+      "answer": "C", "why": "“They need to know by Monday whether anyone cannot eat certain things.”" },
+    { "n": "7", "type": "choice", "text": "What will Wei Jie do tonight?",
+      "options": [ { "label": "A", "text": "Write the plan for Mrs Tan" }, { "label": "B", "text": "Telephone the community club" }, { "label": "C", "text": "Reply to the class chat" }, { "label": "D", "text": "Make a form for the class" } ],
+      "answer": "D", "why": "Wei Jie says, “I will make a form tonight and send it to the class chat.” Priya writes the plan." }
+  ]
+}

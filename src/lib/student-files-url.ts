@@ -14,7 +14,8 @@ export const CANONICAL_ORIGIN = 'https://www.adrianmathtuition.com';
 
 // 'pages' (11 Sep 2026): a page Adrian pushed to many students at once — ONE
 // copy, readable by ANY logged-in student (his material, not a student's data).
-const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox', 'pages'] as const;
+// 'oral' (8 Oct 2026): a student's own spoken answers — oral/<identity>/<attempt>/<n>.<ext>.
+const ROOTS = ['runs', 'uploads', 'handins', 'clippings', 'assignments', 'inbox', 'pages', 'oral'] as const;
 type Root = typeof ROOTS[number];
 const SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._:()\- ]{0,120}$/;
 
@@ -87,7 +88,8 @@ export function ownerOf(key: string): FileOwner {
     case 'runs': return { kind: 'run', runId: second };
     case 'handins':
     case 'clippings':
-    case 'assignments': return { kind: 'student', identity: second };
+    case 'assignments':
+    case 'oral': return { kind: 'student', identity: second };
     case 'pages': return { kind: 'page' };
     default: return { kind: 'admin' };
   }
@@ -97,6 +99,7 @@ const TYPES: Record<string, string> = {
   pdf: 'application/pdf', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
   heic: 'image/heic', heif: 'image/heif', gif: 'image/gif',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  webm: 'audio/webm', m4a: 'audio/mp4', mp3: 'audio/mpeg', ogg: 'audio/ogg', wav: 'audio/wav',
 };
 export function contentTypeFor(key: string): string {
   const ext = (key.match(/\.([a-z0-9]{2,5})$/i)?.[1] || '').toLowerCase();
@@ -125,6 +128,8 @@ export const assignmentKey = (identity: string) => assertKey(`assignments/${iden
 /** One page for many students (send-page): a PDF or a picture under pages/. */
 export const pageKey = (filename?: string | null) => assertKey(`pages/${uuid()}.${safeExt(filename, ['pdf', 'jpg', 'jpeg', 'png', 'webp'], 'pdf')}`);
 export const inboxKey = (file: string) => assertKey(`inbox/${file}`);
+/** One spoken answer of an oral attempt (English Paper 4 practice). */
+export const oralKey = (identity: string, attempt: string, n: number, ext: string) => assertKey(`oral/${identity}/${attempt}/${n}.${ext}`);
 
 /** Every /api/files/ key URL found anywhere in a JSON-ish value (for deletes). */
 export function collectFileKeys(value: unknown): string[] {

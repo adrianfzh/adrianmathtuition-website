@@ -1,0 +1,37 @@
+{
+  "id": "ls01",
+  "kind": "listening",
+  "section": "A",
+  "title": "A morning at the community garden",
+  "textType": "recount",
+  "intro": "You will hear a student, Farah, telling her class about a morning she spent helping at a community garden. Answer questions 1 to 6. You will hear the recording twice.",
+  "names": { "a": "Farah" },
+  "voices": {"a": "girl"},
+  "script": [
+    { "who": "a", "text": "Good morning, everyone. Last month my aunt asked me to help at the community garden near her block in Tampines. To be honest, I only agreed because she promised me lunch afterwards. I imagined a few flower pots along a corridor. I was wrong. The garden was the size of two basketball courts, hidden behind a multi-storey car park, and there were already about twenty people working when we arrived at half past seven." },
+    { "who": "a", "text": "A retired bus driver called Mr Goh was in charge. He did not ask what I was good at. He simply handed me a pair of gloves and pointed at a pile of compost. For the first hour I carried buckets of it to the vegetable beds. It smelt terrible, my arms ached, and I kept checking my watch." },
+    { "who": "a", "text": "Things changed when Mr Goh showed me the lady's fingers. He explained that if you leave them on the plant for even two days too long, they turn hard and nobody can eat them. So someone has to check every plant, every morning. I had always thought vegetables just appeared in the supermarket. Suddenly I understood how much patience was behind one plate of food." },
+    { "who": "a", "text": "After that I stopped looking at my watch. I harvested a whole basket myself, and Mr Goh let me weigh it: almost three kilograms. The vegetables are not sold. Every Saturday the volunteers pack them into bags and leave them at the lift lobbies for elderly residents who live alone." },
+    { "who": "a", "text": "What surprised me most was not the garden. It was the people. Nobody was paid, nobody was forced, and yet they turned up at sunrise every week. I went for a free lunch. I have now been back three times, and my aunt has stopped offering to pay for the food." }
+  ],
+  "questions": [
+    { "n": "1", "type": "choice", "text": "Why did Farah agree to help at the garden?",
+      "options": [ { "label": "A", "text": "Her aunt offered to buy her lunch." }, { "label": "B", "text": "She wanted to learn how to grow vegetables." }, { "label": "C", "text": "Her school asked every student to volunteer." }, { "label": "D", "text": "She lived in the block beside the garden." } ],
+      "answer": "A", "why": "Farah says, “I only agreed because she promised me lunch afterwards.”" },
+    { "n": "2", "type": "choice", "text": "What did Farah expect the garden to be like?",
+      "options": [ { "label": "A", "text": "As large as two basketball courts" }, { "label": "B", "text": "A few flower pots along a corridor" }, { "label": "C", "text": "A plot on the roof of a car park" }, { "label": "D", "text": "A farm with twenty workers" } ],
+      "answer": "B", "why": "She says, “I imagined a few flower pots along a corridor. I was wrong.”" },
+    { "n": "3", "type": "choice", "text": "How did Farah feel during her first hour of work?",
+      "options": [ { "label": "A", "text": "Proud of how much she could carry" }, { "label": "B", "text": "Curious about how compost is made" }, { "label": "C", "text": "Nervous about making a mistake" }, { "label": "D", "text": "Eager for the work to end" } ],
+      "answer": "D", "why": "She says her arms ached and “I kept checking my watch” — she wanted the time to pass." },
+    { "n": "4", "type": "choice", "text": "What did the lady's fingers help Farah to understand?",
+      "options": [ { "label": "A", "text": "Vegetables grow best in compost." }, { "label": "B", "text": "Supermarkets sell vegetables that are too old." }, { "label": "C", "text": "Growing food takes careful attention every day." }, { "label": "D", "text": "Hard vegetables take longer to cook." } ],
+      "answer": "C", "why": "Someone has to check every plant, every morning, and she “understood how much patience was behind one plate of food.”" },
+    { "n": "5", "type": "choice", "text": "What happens to the vegetables from the garden?",
+      "options": [ { "label": "A", "text": "They are sold cheaply to residents." }, { "label": "B", "text": "They are given to elderly people who live alone." }, { "label": "C", "text": "They are cooked for the volunteers' lunch." }, { "label": "D", "text": "They are shared among the volunteers." } ],
+      "answer": "B", "why": "The volunteers “leave them at the lift lobbies for elderly residents who live alone.”" },
+    { "n": "6", "type": "choice", "text": "What impressed Farah most about the morning?",
+      "options": [ { "label": "A", "text": "The volunteers come every week without being asked." }, { "label": "B", "text": "The garden was far bigger than she expected." }, { "label": "C", "text": "She harvested almost three kilograms herself." }, { "label": "D", "text": "Mr Goh knew so much about plants." } ],
+      "answer": "A", "why": "She says what surprised her most “was the people. Nobody was paid, nobody was forced, and yet they turned up at sunrise every week.”" }
+  ]
+}

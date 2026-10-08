@@ -1,0 +1,753 @@
+{
+ "listening": [
+  {
+   "id": "ls01",
+   "kind": "listening",
+   "section": "A",
+   "title": "A morning at the community garden",
+   "textType": "recount",
+   "intro": "You will hear a student, Farah, telling her class about a morning she spent helping at a community garden. Answer questions 1 to 6. You will hear the recording twice.",
+   "names": {
+    "a": "Farah"
+   },
+   "voices": {
+    "a": "girl"
+   },
+   "script": [
+    {
+     "who": "a",
+     "text": "Good morning, everyone. Last month my aunt asked me to help at the community garden near her block in Tampines. To be honest, I only agreed because she promised me lunch afterwards. I imagined a few flower pots along a corridor. I was wrong. The garden was the size of two basketball courts, hidden behind a multi-storey car park, and there were already about twenty people working when we arrived at half past seven."
+    },
+    {
+     "who": "a",
+     "text": "A retired bus driver called Mr Goh was in charge. He did not ask what I was good at. He simply handed me a pair of gloves and pointed at a pile of compost. For the first hour I carried buckets of it to the vegetable beds. It smelt terrible, my arms ached, and I kept checking my watch."
+    },
+    {
+     "who": "a",
+     "text": "Things changed when Mr Goh showed me the lady's fingers. He explained that if you leave them on the plant for even two days too long, they turn hard and nobody can eat them. So someone has to check every plant, every morning. I had always thought vegetables just appeared in the supermarket. Suddenly I understood how much patience was behind one plate of food."
+    },
+    {
+     "who": "a",
+     "text": "After that I stopped looking at my watch. I harvested a whole basket myself, and Mr Goh let me weigh it: almost three kilograms. The vegetables are not sold. Every Saturday the volunteers pack them into bags and leave them at the lift lobbies for elderly residents who live alone."
+    },
+    {
+     "who": "a",
+     "text": "What surprised me most was not the garden. It was the people. Nobody was paid, nobody was forced, and yet they turned up at sunrise every week. I went for a free lunch. I have now been back three times, and my aunt has stopped offering to pay for the food."
+    }
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "type": "choice",
+     "text": "Why did Farah agree to help at the garden?",
+     "options": [
+      {
+       "label": "A",
+       "text": "Her aunt offered to buy her lunch."
+      },
+      {
+       "label": "B",
+       "text": "She wanted to learn how to grow vegetables."
+      },
+      {
+       "label": "C",
+       "text": "Her school asked every student to volunteer."
+      },
+      {
+       "label": "D",
+       "text": "She lived in the block beside the garden."
+      }
+     ],
+     "answer": "A",
+     "why": "Farah says, “I only agreed because she promised me lunch afterwards.”"
+    },
+    {
+     "n": "2",
+     "type": "choice",
+     "text": "What did Farah expect the garden to be like?",
+     "options": [
+      {
+       "label": "A",
+       "text": "As large as two basketball courts"
+      },
+      {
+       "label": "B",
+       "text": "A few flower pots along a corridor"
+      },
+      {
+       "label": "C",
+       "text": "A plot on the roof of a car park"
+      },
+      {
+       "label": "D",
+       "text": "A farm with twenty workers"
+      }
+     ],
+     "answer": "B",
+     "why": "She says, “I imagined a few flower pots along a corridor. I was wrong.”"
+    },
+    {
+     "n": "3",
+     "type": "choice",
+     "text": "How did Farah feel during her first hour of work?",
+     "options": [
+      {
+       "label": "A",
+       "text": "Proud of how much she could carry"
+      },
+      {
+       "label": "B",
+       "text": "Curious about how compost is made"
+      },
+      {
+       "label": "C",
+       "text": "Nervous about making a mistake"
+      },
+      {
+       "label": "D",
+       "text": "Eager for the work to end"
+      }
+     ],
+     "answer": "D",
+     "why": "She says her arms ached and “I kept checking my watch” — she wanted the time to pass."
+    },
+    {
+     "n": "4",
+     "type": "choice",
+     "text": "What did the lady's fingers help Farah to understand?",
+     "options": [
+      {
+       "label": "A",
+       "text": "Vegetables grow best in compost."
+      },
+      {
+       "label": "B",
+       "text": "Supermarkets sell vegetables that are too old."
+      },
+      {
+       "label": "C",
+       "text": "Growing food takes careful attention every day."
+      },
+      {
+       "label": "D",
+       "text": "Hard vegetables take longer to cook."
+      }
+     ],
+     "answer": "C",
+     "why": "Someone has to check every plant, every morning, and she “understood how much patience was behind one plate of food.”"
+    },
+    {
+     "n": "5",
+     "type": "choice",
+     "text": "What happens to the vegetables from the garden?",
+     "options": [
+      {
+       "label": "A",
+       "text": "They are sold cheaply to residents."
+      },
+      {
+       "label": "B",
+       "text": "They are given to elderly people who live alone."
+      },
+      {
+       "label": "C",
+       "text": "They are cooked for the volunteers' lunch."
+      },
+      {
+       "label": "D",
+       "text": "They are shared among the volunteers."
+      }
+     ],
+     "answer": "B",
+     "why": "The volunteers “leave them at the lift lobbies for elderly residents who live alone.”"
+    },
+    {
+     "n": "6",
+     "type": "choice",
+     "text": "What impressed Farah most about the morning?",
+     "options": [
+      {
+       "label": "A",
+       "text": "The volunteers come every week without being asked."
+      },
+      {
+       "label": "B",
+       "text": "The garden was far bigger than she expected."
+      },
+      {
+       "label": "C",
+       "text": "She harvested almost three kilograms herself."
+      },
+      {
+       "label": "D",
+       "text": "Mr Goh knew so much about plants."
+      }
+     ],
+     "answer": "A",
+     "why": "She says what surprised her most “was the people. Nobody was paid, nobody was forced, and yet they turned up at sunrise every week.”"
+    }
+   ]
+  },
+  {
+   "id": "ls02",
+   "kind": "listening",
+   "section": "A",
+   "title": "Planning the class outing",
+   "textType": "conversation",
+   "intro": "You will hear two classmates, Priya and Wei Jie, planning a class outing for the end of term. Answer questions 1 to 7. You will hear the recording twice.",
+   "names": {
+    "a": "Priya",
+    "b": "Wei Jie"
+   },
+   "voices": {
+    "a": "girl",
+    "b": "boy"
+   },
+   "script": [
+    {
+     "who": "a",
+     "text": "Wei Jie, Mrs Tan wants our plan for the class outing by Friday. Have you looked at the four ideas the class voted for?"
+    },
+    {
+     "who": "b",
+     "text": "I have. Shall we start with the kayaking at the reservoir? It got the most votes."
+    },
+    {
+     "who": "a",
+     "text": "It did, but I rang the centre this morning. They take groups of twenty at most, and there are thirty-six of us. We would have to split the class and go on two different days."
+    },
+    {
+     "who": "b",
+     "text": "Then that defeats the purpose. What about the escape room in town?"
+    },
+    {
+     "who": "a",
+     "text": "I like it, honestly. But it is twenty-eight dollars each, and Mrs Tan said nobody should pay more than fifteen."
+    },
+    {
+     "who": "b",
+     "text": "True. Some of us would simply stay at home. All right, the hike up Bukit Timah Hill. It is free."
+    },
+    {
+     "who": "a",
+     "text": "It is free, and it is also the last week of November. It rains almost every afternoon then. If it pours, we have no back-up, and thirty-six people get soaked."
+    },
+    {
+     "who": "b",
+     "text": "You sound like my mother. Fine. That leaves the cooking class at the community club."
+    },
+    {
+     "who": "a",
+     "text": "I thought that one would be boring, but listen. The instructor puts us into teams of six, each team cooks one dish, and then everybody eats lunch together. It is twelve dollars each, including the ingredients."
+    },
+    {
+     "who": "b",
+     "text": "And it is indoors, so the rain does not matter. Can they take all of us?"
+    },
+    {
+     "who": "a",
+     "text": "Up to forty. The only problem is the date. They are full on the Friday we wanted. They can give us the Thursday instead, from ten until one."
+    },
+    {
+     "who": "b",
+     "text": "Thursday is fine. The exams end on Wednesday. Do we need to bring anything?"
+    },
+    {
+     "who": "a",
+     "text": "Just an apron and a container, in case there is food left over. Oh, and they need to know by Monday whether anyone cannot eat certain things."
+    },
+    {
+     "who": "b",
+     "text": "I will make a form tonight and send it to the class chat. You write the plan for Mrs Tan."
+    },
+    {
+     "who": "a",
+     "text": "Deal. And Wei Jie, put a deadline on the form this time. Last time half the class replied a week late."
+    },
+    {
+     "who": "b",
+     "text": "Sunday night, nine o'clock. No reply, no lunch."
+    }
+   ],
+   "bank": [
+    {
+     "label": "A",
+     "text": "It costs too much."
+    },
+    {
+     "label": "B",
+     "text": "The class would have to be split up."
+    },
+    {
+     "label": "C",
+     "text": "The weather may spoil it."
+    },
+    {
+     "label": "D",
+     "text": "It is too far from the school."
+    },
+    {
+     "label": "E",
+     "text": "The day they wanted is not free."
+    },
+    {
+     "label": "F",
+     "text": "Most of the class find it boring."
+    }
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "type": "match",
+     "heading": "Questions 1 to 4. What is the problem with each idea? Choose one letter for each. Two letters are not used.",
+     "text": "Kayaking at the reservoir",
+     "answer": "B",
+     "why": "The centre takes twenty at most and there are thirty-six: “We would have to split the class.”"
+    },
+    {
+     "n": "2",
+     "type": "match",
+     "text": "The escape room",
+     "answer": "A",
+     "why": "It is twenty-eight dollars each, and nobody should pay more than fifteen."
+    },
+    {
+     "n": "3",
+     "type": "match",
+     "text": "The hike up Bukit Timah Hill",
+     "answer": "C",
+     "why": "“It rains almost every afternoon then. If it pours, we have no back-up.”"
+    },
+    {
+     "n": "4",
+     "type": "match",
+     "text": "The cooking class",
+     "answer": "E",
+     "why": "“They are full on the Friday we wanted.” Priya only thought it would be boring — she changed her mind."
+    },
+    {
+     "n": "5",
+     "type": "choice",
+     "heading": "Questions 5 to 7. Choose the correct answer.",
+     "text": "How much will each student pay for the outing they choose?",
+     "options": [
+      {
+       "label": "A",
+       "text": "$12"
+      },
+      {
+       "label": "B",
+       "text": "$15"
+      },
+      {
+       "label": "C",
+       "text": "$28"
+      },
+      {
+       "label": "D",
+       "text": "$36"
+      }
+     ],
+     "answer": "A",
+     "why": "The cooking class “is twelve dollars each, including the ingredients.”"
+    },
+    {
+     "n": "6",
+     "type": "choice",
+     "text": "What must the community club be told by Monday?",
+     "options": [
+      {
+       "label": "A",
+       "text": "How many students are coming"
+      },
+      {
+       "label": "B",
+       "text": "Which dish each team will cook"
+      },
+      {
+       "label": "C",
+       "text": "Whether anyone cannot eat certain foods"
+      },
+      {
+       "label": "D",
+       "text": "Who is bringing a container"
+      }
+     ],
+     "answer": "C",
+     "why": "“They need to know by Monday whether anyone cannot eat certain things.”"
+    },
+    {
+     "n": "7",
+     "type": "choice",
+     "text": "What will Wei Jie do tonight?",
+     "options": [
+      {
+       "label": "A",
+       "text": "Write the plan for Mrs Tan"
+      },
+      {
+       "label": "B",
+       "text": "Telephone the community club"
+      },
+      {
+       "label": "C",
+       "text": "Reply to the class chat"
+      },
+      {
+       "label": "D",
+       "text": "Make a form for the class"
+      }
+     ],
+     "answer": "D",
+     "why": "Wei Jie says, “I will make a form tonight and send it to the class chat.” Priya writes the plan."
+    }
+   ]
+  },
+  {
+   "id": "ls03",
+   "kind": "listening",
+   "section": "A",
+   "title": "The journey of a library book",
+   "textType": "explanation",
+   "intro": "You will hear part of a radio programme. A librarian, Mr Rahman, explains what happens to a library book after it is returned. Complete the flow chart and the fact box for questions 1 to 9. Write one or two words or a number for each answer. You will hear the recording twice.",
+   "names": {
+    "a": "Mr Rahman"
+   },
+   "voices": {
+    "a": "man"
+   },
+   "script": [
+    {
+     "who": "a",
+     "text": "Most people think that when you drop a book into the returns chute, a librarian picks it up and walks it back to the shelf. Twenty years ago that was true. Today the book goes on quite a journey, and almost nobody sees it."
+    },
+    {
+     "who": "a",
+     "text": "First, the book slides down the chute onto a moving belt. Every one of our books has a small tag inside the back cover. As the book passes under a reader, the tag is scanned, and in less than a second the book is removed from your account. That is why your phone can show the book as returned before you have even left the building."
+    },
+    {
+     "who": "a",
+     "text": "Second, the machine checks whether someone else is waiting for the book. If the book has been reserved, the belt pushes it into a red bin, and a member of staff sends it to the right branch that same evening."
+    },
+    {
+     "who": "a",
+     "text": "If nobody is waiting, the book moves to the third stage, which is sorting. The machine reads the tag again and sends the book into one of twelve bins. There is a bin for children's picture books, a bin for cookery, a bin for Chinese fiction, and so on."
+    },
+    {
+     "who": "a",
+     "text": "Fourth, each full bin is wheeled to its section by a robot trolley. The trolley follows a line of magnets under the carpet, so it never gets lost, although it does stop politely if a toddler stands in front of it."
+    },
+    {
+     "who": "a",
+     "text": "Only the last stage still needs a person. A shelver takes the books from the bin and puts each one back in its exact place. We have tried machines for this, but human hands are still faster."
+    },
+    {
+     "who": "a",
+     "text": "The whole journey takes about forty minutes. Our main branch handles roughly nine thousand books a day this way. And the most common thing we find left inside a returned book? Not money, sadly. It is receipts, usually from the supermarket."
+    }
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "type": "fill",
+     "heading": "The journey of a returned book",
+     "text": "Stage 1: the",
+     "after": "inside the back cover is scanned.",
+     "accept": [
+      "tag",
+      "small tag"
+     ],
+     "why": "“Every one of our books has a small tag inside the back cover … the tag is scanned.”"
+    },
+    {
+     "n": "2",
+     "type": "fill",
+     "text": "The book is removed from the borrower's",
+     "after": ".",
+     "accept": [
+      "account"
+     ],
+     "why": "“In less than a second the book is removed from your account.”"
+    },
+    {
+     "n": "3",
+     "type": "fill",
+     "text": "Stage 2: a reserved book is pushed into a",
+     "after": "bin.",
+     "accept": [
+      "red"
+     ],
+     "why": "“If the book has been reserved, the belt pushes it into a red bin.”"
+    },
+    {
+     "n": "4",
+     "type": "fill",
+     "text": "Stage 3: the book is sorted into one of",
+     "after": "bins.",
+     "accept": [
+      "twelve",
+      "12"
+     ],
+     "why": "The machine “sends the book into one of twelve bins.”"
+    },
+    {
+     "n": "5",
+     "type": "fill",
+     "text": "Stage 4: a robot trolley follows a line of",
+     "after": "under the carpet.",
+     "accept": [
+      "magnets",
+      "magnet"
+     ],
+     "why": "“The trolley follows a line of magnets under the carpet.”"
+    },
+    {
+     "n": "6",
+     "type": "fill",
+     "text": "Stage 5: a",
+     "after": "puts each book back in its place.",
+     "accept": [
+      "shelver",
+      "person",
+      "human"
+     ],
+     "why": "“Only the last stage still needs a person. A shelver takes the books from the bin.”"
+    },
+    {
+     "n": "7",
+     "type": "fill",
+     "heading": "Fact box",
+     "text": "The whole journey takes about",
+     "after": "minutes.",
+     "accept": [
+      "forty",
+      "40"
+     ],
+     "why": "“The whole journey takes about forty minutes.”"
+    },
+    {
+     "n": "8",
+     "type": "fill",
+     "text": "Books handled each day at the main branch: about",
+     "after": ".",
+     "accept": [
+      "nine thousand",
+      "9000",
+      "9 000",
+      "9k"
+     ],
+     "why": "“Our main branch handles roughly nine thousand books a day.”"
+    },
+    {
+     "n": "9",
+     "type": "fill",
+     "text": "Most common thing found inside returned books:",
+     "after": ".",
+     "accept": [
+      "receipts",
+      "receipt",
+      "supermarket receipts",
+      "supermarket receipt"
+     ],
+     "why": "“Not money, sadly. It is receipts, usually from the supermarket.”"
+    }
+   ]
+  },
+  {
+   "id": "ls04",
+   "kind": "listening",
+   "section": "B",
+   "title": "A talk about sleep",
+   "textType": "information",
+   "intro": "You will hear a talk about sleep given to a group of Secondary Four students by a school counsellor, Ms Lim. Complete the notes for questions 1 to 8. Write one or two words or a number for each answer. You will hear the recording once only.",
+   "names": {
+    "a": "Ms Lim"
+   },
+   "voices": {
+    "a": "woman"
+   },
+   "script": [
+    {
+     "who": "a",
+     "text": "Good afternoon. With the examinations eight weeks away, I want to talk about the one revision tool that costs nothing: sleep."
+    },
+    {
+     "who": "a",
+     "text": "Let me begin with how much you need. Teenagers need between eight and ten hours a night. A survey of students in this school last year found that the average was only six and a half."
+    },
+    {
+     "who": "a",
+     "text": "Why does this matter? While you sleep, your brain moves what you learnt during the day into long-term memory. If you cut your sleep short, you cut that process short. Students who stay up to study often remember less the next morning, not more."
+    },
+    {
+     "who": "a",
+     "text": "So what gets in the way? The first problem is light. The blue light from a phone screen tells your brain that it is still daytime. I recommend putting your phone away one hour before bed, and charging it outside your bedroom, in the living room for example."
+    },
+    {
+     "who": "a",
+     "text": "The second problem is caffeine. Bubble tea, coffee and energy drinks stay in your body for up to six hours. My advice is no caffeine after three in the afternoon."
+    },
+    {
+     "who": "a",
+     "text": "The third problem is the weekend. Many of you sleep until noon on Sunday and then cannot fall asleep on Sunday night. Try to get up within one hour of your usual time, even at weekends."
+    },
+    {
+     "who": "a",
+     "text": "What about naps? A short nap is fine. Keep it under twenty minutes, and take it before four o'clock, or it will steal from your night's sleep."
+    },
+    {
+     "who": "a",
+     "text": "Finally, if you lie awake worrying, keep a notebook beside your bed. Write the worry down and tell yourself you will deal with it tomorrow. It sounds too simple, but it works for most people."
+    },
+    {
+     "who": "a",
+     "text": "Sleep is not time taken away from revision. It is part of revision."
+    }
+   ],
+   "questions": [
+    {
+     "n": "1",
+     "type": "fill",
+     "heading": "How much sleep",
+     "text": "Teenagers need eight to",
+     "after": "hours a night.",
+     "accept": [
+      "ten",
+      "10"
+     ],
+     "why": "“Teenagers need between eight and ten hours a night.”"
+    },
+    {
+     "n": "2",
+     "type": "fill",
+     "text": "Average in last year's school survey:",
+     "after": "hours.",
+     "accept": [
+      "six and a half",
+      "6.5",
+      "6 and a half",
+      "6 1/2",
+      "six and half"
+     ],
+     "why": "The survey “found that the average was only six and a half.”"
+    },
+    {
+     "n": "3",
+     "type": "fill",
+     "heading": "Why it matters",
+     "text": "During sleep, the day's learning moves into long-term",
+     "after": ".",
+     "accept": [
+      "memory"
+     ],
+     "why": "“Your brain moves what you learnt during the day into long-term memory.”"
+    },
+    {
+     "n": "4",
+     "type": "fill",
+     "heading": "What gets in the way",
+     "text": "A phone's",
+     "after": "light tells the brain it is still daytime.",
+     "accept": [
+      "blue"
+     ],
+     "why": "“The blue light from a phone screen tells your brain that it is still daytime.”"
+    },
+    {
+     "n": "5",
+     "type": "fill",
+     "text": "Charge the phone outside the bedroom, for example in the",
+     "after": ".",
+     "accept": [
+      "living room",
+      "livingroom"
+     ],
+     "why": "“Charging it outside your bedroom, in the living room for example.”"
+    },
+    {
+     "n": "6",
+     "type": "fill",
+     "text": "No caffeine after",
+     "after": "in the afternoon.",
+     "accept": [
+      "three",
+      "3",
+      "3 pm",
+      "3pm",
+      "three o'clock",
+      "3 o'clock",
+      "three pm"
+     ],
+     "why": "“My advice is no caffeine after three in the afternoon.”"
+    },
+    {
+     "n": "7",
+     "type": "fill",
+     "heading": "Naps and worries",
+     "text": "Keep a nap under",
+     "after": "minutes.",
+     "accept": [
+      "twenty",
+      "20"
+     ],
+     "why": "“Keep it under twenty minutes, and take it before four o'clock.”"
+    },
+    {
+     "n": "8",
+     "type": "fill",
+     "text": "Keep a",
+     "after": "beside the bed and write the worry down.",
+     "accept": [
+      "notebook",
+      "note book"
+     ],
+     "why": "“If you lie awake worrying, keep a notebook beside your bed.”"
+    }
+   ]
+  }
+ ],
+ "oral": [
+  {
+   "id": "or01",
+   "kind": "oral",
+   "title": "A beach clean-up",
+   "picture": "/english/oral/or01.jpg",
+   "scene": "A sunny morning on a sandy beach. About ten people, mostly teenagers in T-shirts and shorts with a few adults behind them, are walking along the shore picking up litter. They wear gloves and carry large clear bags that are already full of rubbish. Three teenagers in front are smiling and laughing as they work. Plastic bottles and wrappers lie on the sand near the water. A large cargo ship is passing close to the shore.",
+   "imagePrompt": "A realistic photograph of a volunteer beach clean-up on a sunny morning on a tropical sandy beach in Singapore. About ten people of different ages, mostly Asian teenagers in plain coloured T-shirts with a few adults and one older man, pick up plastic litter using tongs and gloves and put it into large rubbish bags. Two teenagers carry a full bag together, smiling. Plastic bottles and wrappers lie along the tide line. Cargo ships far out at sea. Natural light, candid, documentary style, no text, no logos.",
+   "planned": "Would you take part in an activity like this? Why or why not?",
+   "interaction": [
+    "Some people say that young people today do not care enough about the environment. What is your view?",
+    "What can schools do to encourage students to look after public places?",
+    "Who should do more to keep Singapore clean: ordinary people or the government? Why?"
+   ]
+  },
+  {
+   "id": "or02",
+   "kind": "oral",
+   "title": "A family meal",
+   "picture": "/english/oral/or02.jpg",
+   "scene": "A family is sharing dinner at a round table in a busy hawker centre in the evening: a grandfather, a grandmother, a girl and two boys. Plates of food are in the middle of the table. Everyone is leaning in, talking and laughing as they help themselves to the food. Their mobile phones lie in a pile at the edge of the table, untouched. Other tables and food stalls can be seen behind them.",
+   "imagePrompt": "A realistic photograph of a three-generation Asian family sharing dinner at a round table in a busy Singapore hawker centre in the evening: two grandparents, two parents, a teenage girl and a younger boy. Plates of local food in the middle of the table. Everyone is talking and laughing, the grandmother is serving food onto the boy's plate. A small stack of mobile phones lies untouched at the edge of the table. Warm light, candid, documentary style, no text, no logos.",
+   "planned": "Would you enjoy a meal like this one? Why or why not?",
+   "interaction": [
+    "How has technology changed the way families spend time together?",
+    "Some people think that eating together as a family matters less today than it used to. What do you think?",
+    "What can young people do to stay close to the older members of their family?"
+   ]
+  },
+  {
+   "id": "or03",
+   "kind": "oral",
+   "title": "Trying something new",
+   "picture": "/english/oral/or03.jpg",
+   "scene": "An indoor rock-climbing wall in a sports hall. A girl in a white helmet and a harness is high up on the wall, reaching for the next hold and looking up. Below her, a boy holds her safety rope with one hand and points up to show her where to go. A taller boy beside him is pointing too, and other students stand close by, looking up and calling out to her.",
+   "imagePrompt": "A realistic wide photograph inside a Singapore secondary school sports hall with a tall indoor rock-climbing wall. A sixteen-year-old Singaporean Chinese girl in a white helmet, a climbing harness and a plain blue T-shirt is high up on the wall, three metres above the floor, reaching for the next hold with a slightly nervous expression, a safety rope running up from her harness. On the floor below, a sixteen-year-old Malay boy holds the other end of her rope with both hands, looking up. Beside him three Singaporean teenagers aged sixteen in plain sports T-shirts and shorts look up and cheer with raised arms. A male instructor points up at a hold. Bright indoor light, candid documentary style, no text, no logos.",
+   "planned": "Would you like to try an activity like this? Why or why not?",
+   "interaction": [
+    "Why are some people afraid to try new things?",
+    "Should schools make every student take part in outdoor activities? Why or why not?",
+    "Is it more important to win or to take part? Explain your view."
+   ]
+  }
+ ]
+}

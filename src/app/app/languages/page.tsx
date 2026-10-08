@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { englishFormatsOpen, englishPracticeOpen, essayMarkingOpen } from '@/lib/portal-beta';
+import { englishFormatsOpen, englishListeningOpen, englishOralInteractionOpen, englishOralOpen, englishPracticeOpen, essayMarkingOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { loadEssaysFor } from '@/lib/essay-runs';
@@ -27,6 +27,8 @@ export default async function LanguagesPage() {
   const done = essays.filter(e => e.status === 'marked');
   const formatsOpen = await englishFormatsOpen();
   const practiceOpen = await englishPracticeOpen();
+  const listeningOpen = await englishListeningOpen();
+  const oralOpen = (await englishOralOpen()) || (await englishOralInteractionOpen());
   const trend = trendFor(essays.map(e => ({ marked_at: e.marked_at, created_at: e.created_at, code_counts: e.code_counts })));
 
   return (
@@ -63,6 +65,34 @@ export default async function LanguagesPage() {
           <span className="flex-1 min-w-0">
             <span className="block text-[15px] font-semibold text-navy leading-tight">Practise</span>
             <span className="block text-[12px] text-gray-500">Editing, comprehension, visual text and summary</span>
+          </span>
+          <span className="shrink-0 text-gray-300 text-lg">›</span>
+        </Link>
+      )}
+
+      {listeningOpen && (
+        <Link
+          href="/app/languages/listening"
+          className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-black/5 shadow-sm hover:bg-violet-50/40 active:scale-[0.99] transition"
+        >
+          <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-violet-600 text-white text-[17px] shrink-0" aria-hidden>🎧</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[15px] font-semibold text-navy leading-tight">Listening</span>
+            <span className="block text-[12px] text-gray-500">Play a recording, answer, see what you missed</span>
+          </span>
+          <span className="shrink-0 text-gray-300 text-lg">›</span>
+        </Link>
+      )}
+
+      {oralOpen && (
+        <Link
+          href="/app/languages/oral"
+          className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-black/5 shadow-sm hover:bg-violet-50/40 active:scale-[0.99] transition"
+        >
+          <span className="flex items-center justify-center w-9 h-9 rounded-2xl bg-violet-600 text-white text-[17px] shrink-0" aria-hidden>🎙</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[15px] font-semibold text-navy leading-tight">Oral</span>
+            <span className="block text-[12px] text-gray-500">Speak on a picture, then get feedback on what you said</span>
           </span>
           <span className="shrink-0 text-gray-300 text-lg">›</span>
         </Link>

@@ -1,0 +1,14 @@
+{
+  "id": "or03",
+  "kind": "oral",
+  "title": "Trying something new",
+  "picture": "/english/oral/or03.jpg",
+  "scene": "An indoor rock-climbing wall in a sports hall. A girl in a white helmet and a harness is high up on the wall, reaching for the next hold and looking up. Below her, a boy holds her safety rope with one hand and points up to show her where to go. A taller boy beside him is pointing too, and other students stand close by, looking up and calling out to her.",
+  "imagePrompt": "A realistic wide photograph inside a Singapore secondary school sports hall with a tall indoor rock-climbing wall. A sixteen-year-old Singaporean Chinese girl in a white helmet, a climbing harness and a plain blue T-shirt is high up on the wall, three metres above the floor, reaching for the next hold with a slightly nervous expression, a safety rope running up from her harness. On the floor below, a sixteen-year-old Malay boy holds the other end of her rope with both hands, looking up. Beside him three Singaporean teenagers aged sixteen in plain sports T-shirts and shorts look up and cheer with raised arms. A male instructor points up at a hold. Bright indoor light, candid documentary style, no text, no logos.",
+  "planned": "Would you like to try an activity like this? Why or why not?",
+  "interaction": [
+    "Why are some people afraid to try new things?",
+    "Should schools make every student take part in outdoor activities? Why or why not?",
+    "Is it more important to win or to take part? Explain your view."
+  ]
+}

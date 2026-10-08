@@ -1,0 +1,29 @@
+{
+  "source": "docs/rubrics/1184_y26_sy.pdf — 1184 English Language GCE Ordinary Level Syllabus, Generic Band Descriptors, Paper 4. Transcribed word for word, 8 Oct 2026.",
+  "planned": {
+    "name": "Part 1: Planned Response — Response",
+    "outOf": 10,
+    "criteria": ["Development and organisation of ideas", "Expression of ideas"],
+    "bands": [
+      { "band": 5, "marks": [9, 10], "descriptors": ["A well-considered response which is well-developed and organised", "Uses a wide range of well-chosen vocabulary and structures"] },
+      { "band": 4, "marks": [7, 8], "descriptors": ["A thoughtful response which is generally well-developed and organised", "Uses a range of largely appropriate vocabulary and structures"] },
+      { "band": 3, "marks": [5, 6], "descriptors": ["Response has some development and organisation", "Some attempt at a range of vocabulary and structures"] },
+      { "band": 2, "marks": [3, 4], "descriptors": ["Ideas have simple development and organisation", "Simple vocabulary and structures used mostly appropriately"] },
+      { "band": 1, "marks": [1, 2], "descriptors": ["A slight attempt to address the topic", "A few examples of simple vocabulary and structures"] },
+      { "band": 0, "marks": [0, 0], "descriptors": ["No creditable response."] }
+    ]
+  },
+  "interaction": {
+    "name": "Part 2: Spoken Interaction",
+    "outOf": 15,
+    "criteria": ["Communication of perspective(s)", "Engagement in a discussion"],
+    "bands": [
+      { "band": 5, "marks": [13, 15], "descriptors": ["Offers well-considered responses with coherent and well-developed perspective(s)", "Uses a wide range of well-chosen vocabulary and structures; clear pronunciation", "Engages in a sustained discussion, sometimes moving beyond the prompts"] },
+      { "band": 4, "marks": [10, 12], "descriptors": ["Offers some thoughtful responses with generally well-developed perspective(s)", "Uses a range of largely appropriate vocabulary and structures; generally clear pronunciation", "Engages in a discussion by responding appropriately to the prompts"] },
+      { "band": 3, "marks": [7, 9], "descriptors": ["Offers perspective(s) with some development", "Some attempt at using a range of vocabulary and structures; intelligible pronunciation", "Engages in a discussion with some support and encouragement"] },
+      { "band": 2, "marks": [4, 6], "descriptors": ["Offers perspective(s) with simple development", "Simple vocabulary and structures used mostly appropriately; some control of pronunciation", "Engages in a discussion with support and encouragement"] },
+      { "band": 1, "marks": [1, 3], "descriptors": ["A slight attempt to address the topic", "A few examples of simple vocabulary and structures; pronunciation is intelligible at times", "A slight attempt to engage in a discussion"] },
+      { "band": 0, "marks": [0, 0], "descriptors": ["No creditable response."] }
+    ]
+  }
+}

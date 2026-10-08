@@ -1,0 +1,30 @@
+{
+  "id": "ls03",
+  "kind": "listening",
+  "section": "A",
+  "title": "The journey of a library book",
+  "textType": "explanation",
+  "intro": "You will hear part of a radio programme. A librarian, Mr Rahman, explains what happens to a library book after it is returned. Complete the flow chart and the fact box for questions 1 to 9. Write one or two words or a number for each answer. You will hear the recording twice.",
+  "names": { "a": "Mr Rahman" },
+  "voices": {"a": "man"},
+  "script": [
+    { "who": "a", "text": "Most people think that when you drop a book into the returns chute, a librarian picks it up and walks it back to the shelf. Twenty years ago that was true. Today the book goes on quite a journey, and almost nobody sees it." },
+    { "who": "a", "text": "First, the book slides down the chute onto a moving belt. Every one of our books has a small tag inside the back cover. As the book passes under a reader, the tag is scanned, and in less than a second the book is removed from your account. That is why your phone can show the book as returned before you have even left the building." },
+    { "who": "a", "text": "Second, the machine checks whether someone else is waiting for the book. If the book has been reserved, the belt pushes it into a red bin, and a member of staff sends it to the right branch that same evening." },
+    { "who": "a", "text": "If nobody is waiting, the book moves to the third stage, which is sorting. The machine reads the tag again and sends the book into one of twelve bins. There is a bin for children's picture books, a bin for cookery, a bin for Chinese fiction, and so on." },
+    { "who": "a", "text": "Fourth, each full bin is wheeled to its section by a robot trolley. The trolley follows a line of magnets under the carpet, so it never gets lost, although it does stop politely if a toddler stands in front of it." },
+    { "who": "a", "text": "Only the last stage still needs a person. A shelver takes the books from the bin and puts each one back in its exact place. We have tried machines for this, but human hands are still faster." },
+    { "who": "a", "text": "The whole journey takes about forty minutes. Our main branch handles roughly nine thousand books a day this way. And the most common thing we find left inside a returned book? Not money, sadly. It is receipts, usually from the supermarket." }
+  ],
+  "questions": [
+    { "n": "1", "type": "fill", "heading": "The journey of a returned book", "text": "Stage 1: the", "after": "inside the back cover is scanned.", "accept": ["tag", "small tag"], "why": "“Every one of our books has a small tag inside the back cover … the tag is scanned.”" },
+    { "n": "2", "type": "fill", "text": "The book is removed from the borrower's", "after": ".", "accept": ["account"], "why": "“In less than a second the book is removed from your account.”" },
+    { "n": "3", "type": "fill", "text": "Stage 2: a reserved book is pushed into a", "after": "bin.", "accept": ["red"], "why": "“If the book has been reserved, the belt pushes it into a red bin.”" },
+    { "n": "4", "type": "fill", "text": "Stage 3: the book is sorted into one of", "after": "bins.", "accept": ["twelve", "12"], "why": "The machine “sends the book into one of twelve bins.”" },
+    { "n": "5", "type": "fill", "text": "Stage 4: a robot trolley follows a line of", "after": "under the carpet.", "accept": ["magnets", "magnet"], "why": "“The trolley follows a line of magnets under the carpet.”" },
+    { "n": "6", "type": "fill", "text": "Stage 5: a", "after": "puts each book back in its place.", "accept": ["shelver", "person", "human"], "why": "“Only the last stage still needs a person. A shelver takes the books from the bin.”" },
+    { "n": "7", "type": "fill", "heading": "Fact box", "text": "The whole journey takes about", "after": "minutes.", "accept": ["forty", "40"], "why": "“The whole journey takes about forty minutes.”" },
+    { "n": "8", "type": "fill", "text": "Books handled each day at the main branch: about", "after": ".", "accept": ["nine thousand", "9000", "9 000", "9k"], "why": "“Our main branch handles roughly nine thousand books a day.”" },
+    { "n": "9", "type": "fill", "text": "Most common thing found inside returned books:", "after": ".", "accept": ["receipts", "receipt", "supermarket receipts", "supermarket receipt"], "why": "“Not money, sadly. It is receipts, usually from the supermarket.”" }
+  ]
+}
