@@ -83,14 +83,22 @@ export async function PATCH(req: NextRequest) {
   // caller says `force` (Restart does) — an autosave right after a reopen must
   // never be the thing that throws the picks away.
   const supa = getSupabaseAdmin();
-  const { data: cur } = await supa.from('worksheet_picks').select('state').eq('id', id).maybeSingle();
+  const { data: cur } = await supa.from('worksheet_picks').select('state, question_ids').eq('id', id).maybeSingle();
   const prev = (cur?.state ?? null) as { picked?: unknown[] } | null;
   const prevPicked = Array.isArray(prev?.picked) ? prev!.picked.length : 0;
   const nextPicked = state ? (state.picked as string[]).length : 0;
   if (prevPicked > 0 && nextPicked === 0 && body.force !== true) {
     return NextResponse.json({ ok: false, kept: true, state: prev }, { status: 200 });
   }
-  const { error } = await supa.from('worksheet_picks').update({ state, prev_state: cur?.state ?? null }).eq('id', id);
+  // Questions that reached the lists through Find join the selection's own id
+  // list, so the selection and its state never disagree about what belongs
+  // (9 Oct 2026: a restore that demanded membership threw a worksheet away).
+  const ownIds = Array.isArray(cur?.question_ids) ? (cur!.question_ids as string[]) : [];
+  const inState = state ? [...(state.cands as string[]), ...(state.picked as string[]), ...(state.removed as string[])] : [];
+  const question_ids = Array.from(new Set([...ownIds, ...inState]));
+  const patch: Record<string, unknown> = { state, prev_state: cur?.state ?? null };
+  if (question_ids.length > ownIds.length) patch.question_ids = question_ids;
+  const { error } = await supa.from('worksheet_picks').update(patch).eq('id', id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true, state });
 }
