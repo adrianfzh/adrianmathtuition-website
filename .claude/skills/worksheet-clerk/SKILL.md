@@ -102,7 +102,7 @@ Numbered list in chat, one block per question: rendered question text (markdown+
 
 Any number of questions can go into one worksheet; a typical set is 2–3 worked examples followed by 5–8 practice questions on the same skill, easiest first.
 
-**Arrangement:** after roles are assigned, confirm the order — restate the set as an ordered list ("WE1: #4, WE2: #1, then practice: #2, #6, #3, #7 — reorder?") and let Adrian shuffle by replying with a new order. Default order if he doesn't care: worked examples easiest-first, then practice easiest-first. (Drag-and-drop arrangement lives in the `/admin/worksheet-builder` web page; in chat, numbered reordering is the equivalent.)
+**Arrangement:** after roles are assigned, confirm the order — restate the set as an ordered list ("WE1: #4, WE2: #1, then practice: #2, #6, #3, #7 — reorder?") and let Adrian shuffle by replying with a new order. Default order if he doesn't care: worked examples easiest-first, then practice easiest-first. (Drag-and-drop arrangement lives in the `/admin/worksheet-picker` web page (the old worksheet builder was retired 9 Oct 2026); in chat, numbered reordering is the equivalent.)
 
 **Options to confirm before generating** (ask once, as one line, with defaults):
 - **Generated diagrams for explanations?** default **off** — QB question images are always embedded, but AI-drawn explanation diagrams only when enabled.

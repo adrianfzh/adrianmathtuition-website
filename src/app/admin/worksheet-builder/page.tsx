@@ -1,20 +1,9 @@
-import { Suspense } from 'react';
-import WorksheetBuilderClient from './WorksheetBuilderClient';
+// /admin/worksheet-builder — RETIRED 9 Oct 2026 (Adrian: "retire worksheet builder").
+// It picked questions by hand and wrote worked examples on the paid key, PDF only. The
+// worksheet picker does the hand-picking in his regular format (PDF + Word), and
+// /admin/worksheets (the /ws menu) writes worked sheets on the plan. A redirect, never a 404.
+import { redirect } from 'next/navigation';
 
-export const metadata = {
-  title: 'Worksheet Builder — Admin',
-};
-
-export default function WorksheetBuilderPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-500">Loading…</div>}>
-      <a
-        href="/admin"
-        style={{ position: 'fixed', top: 10, left: 10, zIndex: 50, color: '#64748b', textDecoration: 'none', fontSize: 14, fontWeight: 600, background: 'rgba(255,255,255,0.9)', padding: '4px 10px', borderRadius: 8 }}
-      >
-        ‹ Admin
-      </a>
-      <WorksheetBuilderClient />
-    </Suspense>
-  );
+export default function WorksheetBuilderRetired() {
+  redirect('/admin/worksheet-picker');
 }

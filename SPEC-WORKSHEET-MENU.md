@@ -165,7 +165,7 @@ checkpoint is the .docx he edits; nothing reaches a student from here.
 4. Worker: `scripts/worksheet-worker/{run.sh, WORKER_PROMPT.md, install.sh, plist}`. *(this PR; Adrian runs install.sh)*
 5. `prelim-paper`: honour `exclude` (slot pools re-normalised, fallbacks reported). *(this PR)*
 6. Follow-on: derive S1/S2 EOY blueprints (97 S2-P1, 80 S2-P2, 107 S1-P1, 78 S1-P2 papers in the bank) → Sec 2 EOY appears in kind 5.
-7. Later: Telegram Mini App on `/admin/worksheet-builder` for the topic form.
+7. ~~Later: Telegram Mini App on `/admin/worksheet-builder` for the topic form.~~ Done another way: `/admin/worksheets` is the `/ws` menu as a page (9 Oct 2026); `/admin/worksheet-builder` was retired the same day and redirects to the picker.
 8. **The same menu as a page — `/admin/worksheets`** (9 Oct 2026, Adrian: "can we create an page interface for /ws command in telegram? put in on admin page"). One screen, the five kinds, one **Make it**. `lib/ws-menu.ts buildWsRequest` is a port of the bot's `jobBody` / `runInstant` and its test holds the bodies the bot builds, so a job from the page is the same `worksheet_jobs` row (`requested_by` = his chat, `requested_text` "/ws") and the .docx reaches Telegram the same way. Door: `/api/admin/ws-menu`. Change the bot's body shape → change `lib/ws-menu.ts` and its test in the same breath. The page cannot wake a sleeping builder (the bot's `lib/fly-worker.js` key) — a job queued there waits for the next wake.
 
 ## Red lines

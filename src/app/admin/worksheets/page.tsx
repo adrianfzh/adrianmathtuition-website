@@ -9,8 +9,8 @@
 // back at once as a PDF; the other four are queued as a worksheet_jobs row and the
 // .docx arrives in Telegram when the builder has made it. The request is built on the
 // server by lib/ws-menu `buildWsRequest` (tested against the bot's own bodies) — this
-// file is only the form. Different from /admin/worksheet-builder (pick questions by
-// hand) and /admin/worksheet-picker (arrange a shortlist).
+// file is only the form. Different from /admin/worksheet-picker (choose and arrange the
+// questions by hand). The old /admin/worksheet-builder was retired 9 Oct 2026.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
