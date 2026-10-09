@@ -128,6 +128,7 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   at most a small grey code. Alternatives go AFTER the working, set apart.
 - **Asides and checks are quieter** (grey, smaller); the main line is not.
 - **Short, plain words.** Say what went wrong, then what to do. Fewer words wins a tie.
+- **For Adrian's eyes: a number or a picture first, not a paragraph** (Adrian, 6 Oct 2026: *"i want something visual, not wordy"*; 9 Oct, having to say it again: *"be visual - remember?"*). Admin pages, the morning brief and status reports lead with a big number in a tile, a bar, a tick or a small picture; words only label it. When he says "show me", send the picture — not a description of it.
 - **Look at the rendered thing** (PDF, page, phone screen) before calling it done — not the
   source text. A page that is correct but hard to read is NOT done.
 - **Fix at the source, keep the renderer's net.** Writers (gce-paper, the sheet worker, the
