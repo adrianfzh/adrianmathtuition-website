@@ -9,6 +9,7 @@ import { sendTelegram } from '@/lib/telegram';
 import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { groupNeeds, weeklyMessage } from '@/lib/figure-needs';
 import { listFigureNeeds } from '@/lib/figure-needs-store';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
     const msg = weeklyMessage(groups);
     const text = msg ? `${escapeTelegramHtml(msg)}\n\nhttps://www.adrianmathtuition.com/admin/generated?tab=figures` : null;
     const sent = !dry && text ? await sendTelegram(text) : false;
+    if (!dry && text) await fileForBrief({ family: 'figure-needs', label: 'Figures we need', body: text });
     const ready = groups.filter((g) => g.ready).length;
     if (!dry) await logJobRun('figure-needs-weekly', true, `${groups.length} shapes open, ${ready} ready to build${text ? (sent ? ', message sent' : ', message NOT sent') : ', nothing to say'}`, { shapes: groups.length, ready, sent });
     return NextResponse.json({ ok: true, dry, shapes: groups.length, ready, sent, message: msg });

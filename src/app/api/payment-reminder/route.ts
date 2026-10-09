@@ -3,10 +3,15 @@ import { safeEqual } from '@/lib/safe-equal';
 import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
-const notify_money = (text: string) => sendTelegram(text, 'money');
+const notify_money = async (text: string) => {
+  const sent = await sendTelegram(text, 'money');
+  await fileForBrief({ family: 'payment-reminder', label: 'Invoice run: mark payments', body: text });
+  return sent;
+};
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth, sgtTodayISO } from '@/lib/invoice-month';
 import { resolveRunMode, resolveTargetMonthLabel, jobNameFor, buildPaymentReminderMessage } from '@/lib/invoice-run-mode';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const runtime = 'nodejs';
 

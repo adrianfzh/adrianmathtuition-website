@@ -2,10 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
-const notify_money = (text: string) => sendTelegram(text, 'money');
+const notify_money = async (text: string) => {
+  const sent = await sendTelegram(text, 'money');
+  await fileForBrief({ family: 'invoice-reminder', label: 'Invoice run: check balances', body: text });
+  return sent;
+};
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getInvoiceMonth } from '@/lib/invoice-month';
 import { advanceRunNote } from '@/lib/year-end-billing';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const runtime = 'nodejs';
 

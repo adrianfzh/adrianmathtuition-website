@@ -22,6 +22,7 @@ import { consistencyReport, weeklyRollups } from '@/lib/consistency-set';
 import { consistencyLine } from '@/lib/shadow-diff';
 import { shadowLine } from '@/lib/shadow-read-report';
 import { loadShadowSummary } from '@/lib/shadow-read-store';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -120,7 +121,9 @@ export async function GET(req: NextRequest) {
       if (row) measure += `\n${job === 'backup-check' ? '🗄' : '🔒'} ${row.ok ? (job === 'backup-check' ? 'Backups checked: ok' : 'Leak test: ok — no student could see another\'s work') : String(row.summary || 'FAILED').slice(0, 160)}`;
     }
   } catch (e) { console.warn('[auto-release-report] safety lines skipped:', (e as Error).message); }
-  await sendTelegram(report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : ''), 'marking').catch(() => {});
+  const reportText = report.telegram + measure + (paused ? '\n⏸ Auto-release has been switched OFF — turn it back on from the desk when you are happy.' : '');
+  await sendTelegram(reportText, 'marking').catch(() => {});
+  await fileForBrief({ family: 'auto-release-report', label: 'Auto-release report', body: reportText });
   await logJobRun('auto-release-report', true, `${report.released} auto-released, ${report.changed} changed after${paused ? ' — PAUSED' : ''}`).catch(() => {});
   return NextResponse.json({ ok: true, ...report, paused });
 }

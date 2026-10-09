@@ -15,6 +15,7 @@ import { logJobRun } from '@/lib/job-log';
 import { sendTelegram } from '@/lib/telegram';
 import { buildWeeklyCost, weeklyCostMessage } from '@/lib/weekly-cost';
 import { loadWeeklyCost } from '@/lib/weekly-cost-store';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
     const message = weeklyCostMessage(w);
     if (!dry) {
       await sendTelegram(message, 'money').catch(() => {});
+      await fileForBrief({ family: 'weekly-cost', label: 'Weekly cost check', body: message });
       await logJobRun('weekly-cost', true, `${w.papers} papers, US$${w.avg ?? 0} a paper, ${w.savings.length} saving(s) ready`).catch(() => {});
     }
     return NextResponse.json({ ok: true, dry, message, summary: w });

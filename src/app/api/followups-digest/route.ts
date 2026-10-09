@@ -3,6 +3,7 @@ import { safeEqual } from '@/lib/safe-equal';
 import { airtableRequestAll } from '@/lib/airtable';
 import { sendTelegramWithButtons } from '@/lib/telegram';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const runtime = 'nodejs';
 
@@ -98,6 +99,8 @@ export async function GET(req: NextRequest) {
     } catch { /* waitlist section is best-effort */ }
 
     await sendTelegramWithButtons(parts.join('\n'), buttons);
+    // Filed for the morning brief too: one line there, this card with its buttons behind 📖 (direct chat only).
+    await fileForBrief({ family: 'followups', label: 'Parent follow-ups', gist: `${open.length} open${overdue.length ? `, ${overdue.length} overdue` : ''}${dueToday.length ? `, ${dueToday.length} due today` : ''}`, body: parts.join('\n'), buttons, dmOnly: true });
     return NextResponse.json({ ok: true, sent: true, open: open.length, overdue: overdue.length, dueToday: dueToday.length, later: later.length });
   } catch (e) {
     // Table not created yet → quiet no-op so the cron doesn't error daily.

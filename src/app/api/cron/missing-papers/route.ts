@@ -25,6 +25,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { sendTelegram } from '@/lib/telegram';
 import { runPaperFields } from '@/lib/extraction-inbox';
 import { groupMissingPapers, missingPapersLine, missingPaperKey, type MissingPaperRun, type MissingPaperGroup } from '@/lib/missing-papers';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -101,6 +102,7 @@ export async function GET(req: NextRequest) {
     const groups = candidates.filter((g) => !held.has(g.key));
     const line = missingPapersLine(groups);
     if (line) await sendTelegram(line, 'marking').catch(() => {});
+    if (line) await fileForBrief({ family: 'missing-papers', label: 'Papers we do not hold', body: line });
 
     const summary = groups.length
       ? `${groups.length} paper${groups.length === 1 ? '' : 's'} missing, ${groups.reduce((n, g) => n + g.count, 0)} hand-in${groups.reduce((n, g) => n + g.count, 0) === 1 ? '' : 's'}`

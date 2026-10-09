@@ -29,6 +29,7 @@ import { escapeTelegramHtml } from '@/lib/telegram-html';
 import { loadStuckInput } from '@/lib/stuck-store';
 import { buildStuckPicture, planMaterials, stuckMessage, twinFocusFor, SHEET_COUNT, WEEK_DAYS, type MaterialPlan, type PreparedMaterial } from '@/lib/stuck-picture';
 import { sendCallback, worksheetLevel } from '@/lib/stuck-send';
+import { fileForBrief } from '@/lib/staff-inbox';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -106,6 +107,7 @@ export async function GET(req: NextRequest) {
         [{ text: `Send to all ${m.groupStudents.length} in ${m.groupLabel}`, callback_data: sendCallback(reportId, i, 'all') }],
       ]);
       sent = await sendTelegramButtonsTo(escapeTelegramHtml(message), buttons, 'students');
+      await fileForBrief({ family: 'stuck-weekly', label: 'Where students are stuck', body: escapeTelegramHtml(message), buttons });
       await sb.from('stuck_reports').update({ telegram_sent: sent }).eq('id', reportId);
       const summary = `${picture.totals.asks} asks, ${picture.totals.losses} lost questions, ${picture.gaps.length} gaps, ${materials.filter((m) => m.ok).length} sheets ready${sent ? '' : ' — Telegram FAILED'}`;
       await logJobRun('stuck-weekly', sent, summary, { reportId });
