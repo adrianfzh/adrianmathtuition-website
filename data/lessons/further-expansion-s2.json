@@ -45,47 +45,61 @@
           "say": "Expand and simplify two, bracket A plus five, minus, bracket four A plus three, bracket two A minus seven.",
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b1.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b1.timing.json"
         },
         {
           "say": "Expand each part. Two times A plus five is two A plus ten.",
           "do": [
             { "do": "highlight", "token": "f", "on": "Two times" },
             { "do": "write", "token": "e1", "on": "two A plus ten" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b2.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b2.timing.json"
         },
         {
           "say": "Keep the minus sign, and put the second expansion inside a bracket.",
           "do": [
             { "do": "write", "token": "m1", "on": "minus sign" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b3.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b3.timing.json"
         },
         {
           "say": "Four A plus three, times two A minus seven, is eight A squared, minus twenty-eight A, plus six A, minus twenty-one.",
           "do": [
             { "do": "highlight", "token": "g", "on": "Four A" },
             { "do": "write", "token": "e2", "on": "eight A squared" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b4.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b4.timing.json"
         },
         {
           "say": "Note the minus sign in front of the bracket. It changes every sign inside.",
           "do": [
             { "do": "note", "text": "← Note the minus sign", "near": "e2", "on": "Note" },
             { "do": "mark", "kind": "circle", "token": "m1", "on": "in front" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b5.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b5.timing.json"
         },
         {
           "say": "Expand again: minus eight A squared, plus twenty-eight A, minus six A, plus twenty-one.",
           "do": [
             { "do": "write", "step": 2, "on": "minus eight" },
             { "do": "note", "text": "← Expand again", "near": "e3", "on": "twenty-eight" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b6.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b6.timing.json"
         },
         {
           "say": "Add up like terms. Two A plus twenty-eight A minus six A is twenty-four A. Ten plus twenty-one is thirty-one.",
           "do": [
             { "do": "mark", "kind": "underline", "token": "e3", "on": "like terms" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b7.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b7.timing.json"
         },
         {
           "say": "The answer is minus eight A squared, plus twenty-four A, plus thirty-one.",
@@ -93,7 +107,9 @@
             { "do": "write", "step": 3, "on": "minus eight" },
             { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "twenty-four" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "thirty-one" }
-          ]
+          ],
+          "audio": "/lessons/further-expansion-s2/scene-01-b8.mp3",
+          "timing": "/lessons/further-expansion-s2/scene-01-b8.timing.json"
         }
       ],
       "verify": [

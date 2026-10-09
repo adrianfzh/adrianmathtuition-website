@@ -75,8 +75,8 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   ①–④ (it replaced the first (x + 3)(x − 2) cut — the clip Adrian approved for quality);
   `number-in-front-s2` 2(p − 3q)(r + 3s), first two first; `further-expansion-s2`
   2(a + 5) − (4a + 3)(2a − 7), the minus sign in front of the second expansion;
-  `special-products-s2` (2p + 3q)² BY THE FORMULA, not the Rainbow. The last five are
-  written and checked, silent until the voice spend is approved.
+  `special-products-s2` (2p + 3q)² BY THE FORMULA, not the Rainbow. All six are voiced and
+  word-timed (the last five on 9 Oct 2026, Adrian: "yes to the voice").
 - **Numbered arrows:** `label` on an arc (`"label": "1"`) draws a small ringed number on the
   curve, toward the arrowhead, in a layer above every curve. **Margin words:** a `note`
   whose text is the notes' own words ("← Add up like terms") — in a clip a note carries no

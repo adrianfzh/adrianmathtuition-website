@@ -46,67 +46,87 @@
           "say": "Expand two, bracket P minus three Q, bracket R plus three S.",
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b1.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b1.timing.json"
         },
         {
           "say": "Three things are multiplied together. Do the first two first.",
           "do": [
             { "do": "highlight", "token": "k", "on": "first two" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b2.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b2.timing.json"
         },
         {
           "say": "Two times P is two P.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["k", "a"], "label": "1", "on": "Two times" },
             { "do": "write", "token": "m1", "on": "two P" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b3.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b3.timing.json"
         },
         {
           "say": "Two times minus three Q is minus six Q.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["k", "b"], "label": "2", "on": "Two times" },
             { "do": "write", "token": "m2", "on": "minus six Q" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b4.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b4.timing.json"
         },
         {
           "say": "The second bracket stays as it is.",
           "do": [
             { "do": "highlight", "token": ["c", "d"], "on": "stays" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b5.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b5.timing.json"
         },
         {
           "say": "Now expand the two brackets. Two P times R is two P R.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["m1", "c"], "label": "1", "on": "Two P times" },
             { "do": "write", "token": "p1", "on": "two P R" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b6.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b6.timing.json"
         },
         {
           "say": "Two P times three S is six P S.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["m1", "d"], "label": "2", "on": "Two P times" },
             { "do": "write", "token": "p2", "on": "six P S" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b7.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b7.timing.json"
         },
         {
           "say": "Minus six Q times R is minus six Q R.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["m2", "c"], "label": "3", "on": "Minus six Q times" },
             { "do": "write", "token": "p3", "on": "minus six Q R" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b8.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b8.timing.json"
         },
         {
           "say": "Minus six Q times three S is minus eighteen Q S.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["m2", "d"], "label": "4", "on": "Minus six Q times" },
             { "do": "write", "token": "p4", "on": "minus eighteen Q S" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b9.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b9.timing.json"
         },
         {
           "say": "There are no like terms to add, so this is the answer.",
           "do": [
             { "do": "mark", "kind": "underline", "token": ["p1", "p2", "p3", "p4"], "on": "answer" }
-          ]
+          ],
+          "audio": "/lessons/number-in-front-s2/scene-01-b10.mp3",
+          "timing": "/lessons/number-in-front-s2/scene-01-b10.timing.json"
         }
       ],
       "verify": [

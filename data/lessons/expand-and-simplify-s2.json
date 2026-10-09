@@ -41,53 +41,69 @@
           "say": "Expand and simplify four A, minus two, bracket four A plus five B.",
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b1.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b1.timing.json"
         },
         {
           "say": "The minus sign belongs to the two. So we multiply by minus two.",
           "do": [
             { "do": "highlight", "token": "k", "on": "belongs" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b2.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b2.timing.json"
         },
         {
           "say": "The four A in front stays.",
           "do": [
             { "do": "write", "token": "c0", "on": "four A" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b3.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b3.timing.json"
         },
         {
           "say": "Minus two times four A is minus eight A.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["k", "a"], "label": "1", "on": "Minus two times" },
             { "do": "write", "token": "p1", "on": "minus eight A" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b4.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b4.timing.json"
         },
         {
           "say": "Minus two times plus five B is minus ten B.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["k", "b"], "label": "2", "on": "Minus two times" },
             { "do": "write", "token": "p2", "on": "minus ten B" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b5.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b5.timing.json"
         },
         {
           "say": "That is the expansion. Now add up like terms.",
           "do": [
             { "do": "note", "text": "← Expand", "near": "p1", "on": "expansion" },
             { "do": "mark", "kind": "underline", "token": ["c0", "p1"], "on": "like terms" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b6.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b6.timing.json"
         },
         {
           "say": "Four A minus eight A is minus four A.",
           "do": [
             { "do": "write", "step": 2, "on": "minus four A" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b7.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b7.timing.json"
         },
         {
           "say": "The answer is minus four A, minus ten B.",
           "do": [
             { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "answer" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "minus ten B" }
-          ]
+          ],
+          "audio": "/lessons/expand-and-simplify-s2/scene-01-b8.mp3",
+          "timing": "/lessons/expand-and-simplify-s2/scene-01-b8.timing.json"
         }
       ],
       "verify": [

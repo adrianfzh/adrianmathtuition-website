@@ -42,48 +42,62 @@
           "say": "Expand A plus B, times A minus three B.",
           "do": [
             { "do": "write", "step": 0 }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b1.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b1.timing.json"
         },
         {
           "say": "Every term in the first bracket multiplies every term in the second. That makes four products.",
           "do": [
             { "do": "highlight", "token": ["a", "b"], "on": "first bracket" },
             { "do": "highlight", "token": ["c", "d"], "on": "second" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b2.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b2.timing.json"
         },
         {
           "say": "One: A times A is A squared.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["a", "c"], "label": "1", "on": "A times" },
             { "do": "write", "token": "p1", "on": "A squared" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b3.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b3.timing.json"
         },
         {
           "say": "Two: A times minus three B is minus three A B.",
           "do": [
             { "do": "mark", "kind": "arc", "token": ["a", "d"], "label": "2", "on": "A times" },
             { "do": "write", "token": "p2", "on": "minus three A" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b4.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b4.timing.json"
         },
         {
           "say": "Three: B times A is plus A B.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["b", "c"], "label": "3", "on": "B times" },
             { "do": "write", "token": "p3", "on": "plus A B" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b5.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b5.timing.json"
         },
         {
           "say": "Four: B times minus three B is minus three B squared.",
           "do": [
             { "do": "mark", "kind": "arc-under", "token": ["b", "d"], "label": "4", "on": "B times" },
             { "do": "write", "token": "p4", "on": "minus three B squared" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b6.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b6.timing.json"
         },
         {
           "say": "Minus three A B and plus A B are like terms. Together they make minus two A B.",
           "do": [
             { "do": "mark", "kind": "underline", "token": ["p2", "p3"], "on": "like terms" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b7.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b7.timing.json"
         },
         {
           "say": "The answer is A squared, minus two A B, minus three B squared.",
@@ -91,7 +105,9 @@
             { "do": "write", "step": 2, "on": "A squared" },
             { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "minus two" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "minus three B squared" }
-          ]
+          ],
+          "audio": "/lessons/expand-two-brackets-s2/scene-01-b8.mp3",
+          "timing": "/lessons/expand-two-brackets-s2/scene-01-b8.timing.json"
         }
       ],
       "verify": [
