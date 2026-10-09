@@ -666,6 +666,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🛠 Make a worksheet (9 Oct 2026): the door behind /admin/worksheets, the /ws menu as a page.
+    timed('admin-ws-menu', async () => {
+      const r = await fetch(`${base}/api/admin/ws-menu?level=AM`, { redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 📌 Next lesson (5 Oct 2026): the card, its items, the worksheet box, and the bot's door for the end-of-lesson line.
     timed('admin-next-lesson', async () => {
       const probes: [string, RequestInit][] = [
