@@ -190,7 +190,7 @@ export default function WorksheetsMenuPage() {
       <main className="min-h-screen bg-neutral-100 flex items-center justify-center p-6">
         <form className="bg-white rounded-xl shadow p-6 w-full max-w-xs space-y-3"
           onSubmit={async (e) => { e.preventDefault(); if (await loginAdminSession(pw)) setAuthed(true); }}>
-          <div className="font-semibold text-neutral-800">🛠 Make a worksheet</div>
+          <div className="font-semibold text-neutral-800">🛠 Worksheets</div>
           <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Admin password"
             className="w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm" />
           <button className="w-full bg-neutral-900 text-white rounded-lg py-2 text-sm">Enter</button>
@@ -209,7 +209,7 @@ export default function WorksheetsMenuPage() {
       <div className="max-w-2xl mx-auto space-y-4">
         <header className="flex items-center gap-3 px-1 pt-1">
           <a href="/admin" className="text-neutral-400 hover:text-neutral-600 text-sm">← Hub</a>
-          <h1 className="text-lg font-semibold text-neutral-900">🛠 Make a worksheet</h1>
+          <h1 className="text-lg font-semibold text-neutral-900">🛠 Worksheets</h1>
         </header>
 
         <Step n={step++} title="What do you want?">
@@ -225,6 +225,17 @@ export default function WorksheetsMenuPage() {
               </button>
             ))}
           </div>
+          {/* The one front door (9 Oct 2026, Adrian: "yes to both"): the five above are done for him;
+              this sixth opens the picker, where he chooses the questions. Its own tile is gone. */}
+          <div className="mt-4 text-sm text-neutral-500">Or choose the questions yourself</div>
+          <a href="/admin/worksheet-picker"
+            className="mt-2 flex items-center gap-3 rounded-xl bg-white p-3.5 ring-2 ring-indigo-300 active:bg-neutral-50">
+            <div className="flex-1">
+              <div className="font-semibold text-neutral-900">🧺 I will pick the questions myself</div>
+              <div className="mt-1 text-sm leading-snug text-neutral-600">Opens the picker. Drag the ones you want, read the solutions, press Done.</div>
+            </div>
+            <span aria-hidden className="text-lg text-indigo-600">→</span>
+          </a>
         </Step>
 
         {kind && kind !== 5 && (

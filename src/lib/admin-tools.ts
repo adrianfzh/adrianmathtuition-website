@@ -29,7 +29,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
     { label: 'Figure review', href: '/admin/figures', emoji: '🖼️' }, { label: 'Trap review', href: '/admin/pitfalls', emoji: '🎯' },
     { label: 'Topic cards', href: '/admin/topic-cards', emoji: '🗒️' }, { label: 'Notes', href: '/admin/notes', emoji: '🖨️' },
     { label: 'Prelim builder', href: '/admin/prelim-builder', emoji: '📄' }, { label: 'Print a paper', href: '/app/print', emoji: '🧾' },
-    { label: 'Make a worksheet', href: '/admin/worksheets', emoji: '🛠' }, { label: 'Worksheet picker', href: '/admin/worksheet-picker', emoji: '🧺' }, { label: 'Teaching decks', href: '/admin/lessons', emoji: '🎓' },
+    { label: 'Worksheets', href: '/admin/worksheets', emoji: '🛠' }, { label: 'Teaching decks', href: '/admin/lessons', emoji: '🎓' },
     { label: 'Curriculum', href: '/admin/curriculum', emoji: '🗺' }, { label: 'Paper library', href: '/admin/library', emoji: '🏛' },
   ] },
   { group: 'Money', links: [
