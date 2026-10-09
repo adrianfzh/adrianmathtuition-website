@@ -29,16 +29,22 @@ function esc(s: string): string {
 
 // ── fonts and the logo, inlined ─────────────────────────────────────────────
 
-function fontDir(pkg: string, probe: string): string {
+/** The package's files/ folder. The require.resolve calls are LITERAL strings on
+ *  purpose: a computed path makes Turbopack bundle every font file in the package
+ *  ("Unknown module type … .woff", the preview build of 9 Oct 2026). Same guard as
+ *  lib/katex-inline and tinosInlineStyle: a webpack module id falls back to cwd. */
+function fontDir(pkg: 'arimo' | 'gelasio'): string {
   let dir = path.join(process.cwd(), 'node_modules', '@fontsource', pkg, 'files');
   try {
-    const resolved: unknown = require.resolve(`@fontsource/${pkg}/files/${probe}`);
+    const resolved: unknown = pkg === 'arimo'
+      ? require.resolve('@fontsource/arimo/files/arimo-latin-400-normal.woff2')
+      : require.resolve('@fontsource/gelasio/files/gelasio-latin-700-normal.woff2');
     if (typeof resolved === 'string') dir = path.dirname(resolved);
   } catch { /* keep the cwd fallback */ }
   return dir;
 }
 
-const FACES: Array<[family: string, pkg: string, style: string, weight: number, file: string]> = [
+const FACES: Array<[family: string, pkg: 'arimo' | 'gelasio', style: string, weight: number, file: string]> = [
   ['Arimo', 'arimo', 'normal', 400, 'arimo-latin-400-normal.woff2'],
   ['Arimo', 'arimo', 'normal', 700, 'arimo-latin-700-normal.woff2'],
   ['Gelasio', 'gelasio', 'normal', 700, 'gelasio-latin-700-normal.woff2'],
@@ -49,7 +55,7 @@ export function brandFontFaces(): string {
   if (cachedFaces !== null) return cachedFaces;
   try {
     cachedFaces = FACES.map(([family, pkg, style, weight, file]) => {
-      const b64 = fs.readFileSync(path.join(fontDir(pkg, file), file)).toString('base64');
+      const b64 = fs.readFileSync(path.join(fontDir(pkg), file)).toString('base64');
       return `@font-face{font-family:${family};font-style:${style};font-weight:${weight};font-display:block;src:url(data:font/woff2;base64,${b64}) format("woff2")}`;
     }).join('\n');
   } catch (e) {
