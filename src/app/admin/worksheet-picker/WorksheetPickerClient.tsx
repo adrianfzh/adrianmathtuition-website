@@ -315,15 +315,19 @@ export default function WorksheetPickerClient() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       const pk = d.pick as Pick;
-      // A saved state counts only if every id in it belongs to this selection.
-      const own = new Set(pk.question_ids);
+      // A saved state counts when it holds ids at all. It may hold ids beyond the
+      // selection's own list — questions added through Find — so membership is
+      // NOT required (9 Oct 2026: that check threw away Adrian's 12-question
+      // worksheet because 4 search finds sat among the candidates). The autosave
+      // guard (stateFor) is what stops one selection's lists being saved under
+      // another's id.
       const raw = pk.state && Array.isArray(pk.state.cands) && Array.isArray(pk.state.picked) ? pk.state : null;
-      const st = raw && [...raw.cands, ...raw.picked].every((id) => own.has(id)) && (raw.cands.length + raw.picked.length) > 0 ? raw : null;
+      const st = raw && (raw.cands.length + raw.picked.length) > 0 ? raw : null;
       setStateFor(null);
       setTitle(st?.title || pk.title); setSubtitle(st?.subtitle ?? pk.subtitle); setPickId(pk.id);
       setCands([]); setPicked([]); setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
       setRestoredAt(st?.savedAt ?? null);
-      const rem = (st?.removed ?? []).filter((id) => own.has(id));
+      const rem = st?.removed ?? [];
       setRemoved(rem);
       if (st) {
         // Where you left off: the two columns as they were, in order; any of
