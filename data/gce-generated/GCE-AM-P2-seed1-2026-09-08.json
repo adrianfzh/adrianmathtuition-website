@@ -948,7 +948,7 @@
           },
           {
             "label": "(c)",
-            "text": "Hence find the exact value of $\\int_0^2 x^2\\mathrm{e}^{-x}\\,dx$.",
+            "text": "By choosing a suitable value of $k$, find the exact value of $\\int_0^2 x^2\\mathrm{e}^{-x}\\,dx$.",
             "marks": 2,
             "answer": "$2 - \\frac{10}{\\mathrm{e}^2}$"
           }
