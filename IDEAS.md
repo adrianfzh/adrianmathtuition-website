@@ -100,6 +100,9 @@ Matters most for lower levels and for anyone using the app without lessons. Not 
 **8 Oct 2026 — design talk held → [`SPEC-SELF-LEARNING.md`](SPEC-SELF-LEARNING.md).** Built first as a required
 companion to the tuition; the hook is the student's next school test (enter the test → paper →
 revise what the marking shows → next paper, a decent mark by paper 3). Design only, nothing built.
+**10 Oct 2026:** the LEARN path for Sec 2 expansion is BUILT (eleven steps from his notes, each with
+a voiced clip, admin only); REVISE from an uploaded paper is talked through, not built. The
+plan's top section is the current state.
 
 ## 🏅 Reward stickers on marked papers — characters that level up (Adrian, 6 Oct 2026) — DESIGN, not built
 

@@ -194,6 +194,7 @@ const WITH_FRACTIONS: LearnStep = {
     'Multiply the tops, multiply the bottoms, then simplify: ¼ × 4b = b.',
   ],
   trap: 'Multiply the fraction into every term, and simplify each piece.',
+  clipSlug: 'expansion-with-fractions-s2',
   // His Practice 3 a and c; d and the squares from Practice 4 and Assignment 1 are in the fives.
   example: '1/4(2a-4b)',
   tryOne: '5/2(6x+8y)',
@@ -243,6 +244,7 @@ const SPECIAL_PRODUCTS_MIXED: LearnStep = {
     'A square that is subtracted goes in a bracket first: every sign in it changes.',
   ],
   trap: 'A minus sign in front of a square changes every sign in its expansion.',
+  clipSlug: 'special-products-mixed-s2',
   example: {
     q: '(3a+1)+(3a-1)^2',
     lines: [
@@ -288,6 +290,7 @@ const USING_THE_IDENTITY: LearnStep = {
     'Know any two of them and the formula gives the third.',
   ],
   trap: 'Write the formula first. Then put in the two values you are given: 2ab is twice the value of ab.',
+  clipSlug: 'using-the-identity-s2',
   // His Example 5a, and Example 5b with ab given directly.
   example: sq('a', 'b', 30, -6, '+'),
   tryOne: sm('a', 'b', 9, 12, '-'),
@@ -313,6 +316,7 @@ const WITHOUT_A_CALCULATOR: LearnStep = {
     'Then it is a special product, and the formula does the rest.',
   ],
   trap: 'The middle term is twice the product of the two numbers: 2 × round number × small number.',
+  clipSlug: 'without-a-calculator-s2',
   // His Example 5c.
   example: evaluateSquare(399),
   tryOne: evaluateSquare(702),
@@ -338,6 +342,7 @@ const HENCE_QUESTIONS: LearnStep = {
     'Compare the numbers with the letters in part (a), and work out what each letter stands for.',
   ],
   trap: 'Compare the numbers with the letters first. Then use the answer to part (a) — do not multiply the big numbers out.',
+  clipSlug: 'hence-questions-s2',
   // His Practice 5b, Q3 and Q4.
   example: henceProduct(2018, 5),
   tryOne: henceSquare(300),

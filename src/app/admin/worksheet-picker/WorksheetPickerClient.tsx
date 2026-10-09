@@ -610,7 +610,14 @@ export default function WorksheetPickerClient() {
                   <button onClick={() => void openPick(pk.id)} className="font-semibold text-indigo-700 hover:underline text-left">{pk.title}</button>
                   {pk.subtitle && <span className="text-slate-500">{pk.subtitle}</span>}
                   <span className="text-xs text-slate-400">{pk.question_ids.length} questions · {new Date(pk.created_at).toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })} · {pk.source}{pk.opened_at ? '' : ' · new'}</span>
-                  {pk.note && <span className="w-full text-xs text-slate-500">{pk.note}</span>}
+                  {pk.note && (
+                    // The session's note is its working log, often a paragraph — one line
+                    // here, the rest behind "more" (Adrian, 9 Oct 2026: "super verbose").
+                    <details className="w-full text-xs text-slate-500">
+                      <summary className="cursor-pointer list-none truncate"><span className="text-slate-400">Note:</span> {pk.note.length > 140 ? `${pk.note.slice(0, 140).trimEnd()}… ` : pk.note}{pk.note.length > 140 && <span className="text-indigo-600">more</span>}</summary>
+                      {pk.note.length > 140 && <p className="mt-1 whitespace-pre-wrap">{pk.note}</p>}
+                    </details>
+                  )}
                 </li>
               ))}
             </ul>

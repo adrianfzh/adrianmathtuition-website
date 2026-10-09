@@ -846,6 +846,17 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       .in('id', qids);
     for (const q of qs ?? []) meta[q.id as string] = q as Row;
   }
+  // A few flags filed here belong to SCIENCE questions (the ingest check of 30 Sep–1 Oct
+  // wrote them to this project). The maths bank has no such row, so the card showed
+  // "? · ?", no picture and no question (Adrian, 9 Oct 2026: "what do you want me to do
+  // here?"). Look those up in the science bank and show its picture.
+  const fromScience = new Set<string>();
+  const missing = qids.filter((id) => !meta[id]);
+  if (missing.length && scienceConfigured()) {
+    const { data: sq } = await getScienceClient().from('questions')
+      .select('id, level, school, year, paper, question_number, question_text').in('id', missing);
+    for (const q of sq ?? []) { meta[q.id as string] = q as Row; fromScience.add(q.id as string); }
+  }
 
   // 🧹 Clean leaves a candidate under candidates/<path>; one listing per request.
   const candNames = await listCandidateNames(supa, slice.map((f) => obj(f.path as string)));
@@ -869,7 +880,7 @@ async function fitnessLaneGet(supa: SupabaseClient, sp: URLSearchParams) {
       level: q?.level ?? null, school: q?.school ?? null, year: q?.year ?? null,
       paper: q?.paper ?? null, qnum: q?.question_number ?? null,
       stem,
-      figureUrl: imgSrc(`${BUCKET}/${obj(path)}`),
+      figureUrl: fromScience.has(f.question_id as string) ? sciImgSrc(path) : imgSrc(`${BUCKET}/${obj(path)}`),
       severity, verdict, note,
       claimedBy: (f.claimed_by as string | null) ?? null,
       candidate,
