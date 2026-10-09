@@ -1,6 +1,6 @@
 # SPEC — Ready for the next test (the self-learning loop, companion first)
 
-*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (all eleven steps of his notes, admin only); REVISE and the test loop are design.**
+*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (all eleven steps of his notes, each opening on its own voiced clip; admin only); REVISE and the test loop are design.**
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
@@ -176,6 +176,34 @@ learn the topic), not revision clips."* Agreed the same day:
   Which rows may be shown is `docs/CONTENT-POLICY.md`.
 - So the loop in §1 reads: very weak → **Learn** (notes order) · shaky, a wrong question on
   a marked paper, the night before → **Revise** (exam questions first).
+
+## 4b. Revise from a paper the student uploads (Adrian, 9 Oct 2026) — TALKED THROUGH, not built
+
+Adrian: *"how about starting revise? the start should be take an example paper > go through
+the questions, see if we can come up with a worked solution for each of them"*, then: *"what
+i mean is > when a student uploads an exam paper > can we do that from scratch?"* and
+*"similar practice (2 for each question?)"*.
+
+The shape put to him (his yes is still awaited; the first step is a timed test on ONE real
+paper that is not in the bank, which he is to send):
+
+1. Read the photos into questions (the extraction that filled the bank).
+2. Check whether the bank already holds the paper (the hand-in paper match) — then most of
+   the work exists.
+3. Write a worked solution per question in his style; a second pass solves it blind, and a
+   solution is shown as certain only when the two agree — otherwise the app says so for that
+   question and does not guess.
+4. Two practice questions per question, PULLED from the bank by likeness (seconds, open to
+   students today as the practice photo) — a new one is written only when the bank has none.
+5. Every uploaded paper is kept, so the next student with the same paper gets it at once.
+
+Open: fast on the pay-per-use service (minutes, some cents to a couple of dollars a paper —
+a guess, to be measured) or queued on the plan (near no money, within the hour or by
+morning). Diagram questions are where reading goes wrong most. A typed answer can be marked
+at once only when it is an expression or a number (`lib/poly.ts`); a long question needs a
+photo and the ordinary marking. What the bank holds for Sec 2 (9 Oct 2026): 104 school
+papers from 2022 on, about 12 questions each; about 1 question in 4 has a full worked
+solution, 1 in 5 a twin of ours, 1 in 3 a diagram.
 
 ## 5. The topic map — the flow of learning
 
