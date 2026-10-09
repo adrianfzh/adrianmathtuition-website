@@ -1321,12 +1321,34 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
         }
       }
     };
-    fit();
+    // A CLIP sets its working large and on ONE row a line (a wrapped line of
+    // algebra reads as two lines of working): a row too wide for the board
+    // comes down as a whole (--lsn-row-scale), never below 0.6 of the clip size.
+    const fitClipRows = () => {
+      if (!card.closest('[data-lsn-clip]')) return;
+      for (const row of Array.from(card.querySelectorAll<HTMLElement>('.lsn-tokrow'))) {
+        row.style.removeProperty('--lsn-row-scale');
+        let scale = 1;
+        for (let i = 0; i < 4; i++) {
+          const toks = Array.from(row.querySelectorAll<HTMLElement>(':scope > .lsn-tok, :scope > [data-key]'));
+          if (toks.length === 0) break;
+          const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
+          const need = toks.reduce((w, t) => w + t.getBoundingClientRect().width, 0) + gap * (toks.length - 1);
+          const room = row.clientWidth;
+          if (!(need > room + 0.5) || room <= 0) break;
+          scale = Math.max(0.6, scale * (room / need) * 0.985);
+          row.style.setProperty('--lsn-row-scale', scale.toFixed(3));
+          if (scale <= 0.6) break;
+        }
+      }
+    };
+    const fitAll = () => { fit(); fitClipRows(); };
+    fitAll();
     lastWidth = card.clientWidth;
     // Re-fit on a real WIDTH change only: fitting changes the card's height,
     // and observing that would chase its own tail.
     const ro = typeof ResizeObserver !== 'undefined'
-      ? new ResizeObserver(() => { if (card.clientWidth !== lastWidth) { lastWidth = card.clientWidth; fit(); } })
+      ? new ResizeObserver(() => { if (card.clientWidth !== lastWidth) { lastWidth = card.clientWidth; fitAll(); } })
       : null;
     ro?.observe(card);
     let cancelled = false;
@@ -2017,8 +2039,9 @@ const PLAYER_CSS = `
 /* A clip: one concept on a phone board. The working is the whole picture, so it
    is set large, and the lines stand apart so an arc over or under a row has
    its own air (never across the heading or the next line). */
-[data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45); }
-[data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; }
+[data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45 * var(--lsn-row-scale, 1)); }
+[data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; flex-wrap: nowrap; }
+[data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
 [data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: 2.5rem; }
 [data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
