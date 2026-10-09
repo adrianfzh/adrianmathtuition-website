@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, type BankQuestion } from '@/lib/bank-question-markdown';
+import { studentRows } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
     id: string; total_marks?: number | null; figure_url?: string | null; has_solution?: boolean | null;
     school?: string | null; year?: number | null; paper?: string | null; question_number?: string | null; difficulty?: string | null;
   };
-  const questions = ((data || []) as Row[]).map((q) => {
+  const questions = studentRows((data || []) as Row[]).map((q) => {
     const { stem, parts } = questionStructured(q);
     const src = [q.school, q.year, q.paper, q.question_number ? `Q${q.question_number}` : null].filter(Boolean).join(' ');
     return {

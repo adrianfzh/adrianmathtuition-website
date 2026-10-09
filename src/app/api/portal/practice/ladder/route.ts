@@ -6,6 +6,7 @@ import { proofLadderAllowedFor } from '@/lib/portal-beta';
 import { ladderSteps, ladderSlice, ladderMarkdown } from '@/lib/proof-ladder';
 import { isNationalRow } from '@/lib/serve-gate';
 import { GATE_COLUMNS, studentRefusal } from '@/lib/serve-gate-store';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
   const admin = getSupabaseAdmin();
   const { data: q, error } = await admin
     .from('questions')
-    .select(`id, solution, answer, parts, ${GATE_COLUMNS}`)
+    .select(`id, solution, answer, parts, total_marks, ${GATE_COLUMNS}`)
     .eq('id', id)
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -42,6 +43,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'not found' }, { status: 404 });
   }
 
-  const slice = ladderSlice(ladderSteps(q), n);
+  // Part marks: the working of a hidden part is never a step (lib/part-syllabus.ts).
+  const view = studentRow(q, { assigned: true });
+  if (!view) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  const slice = ladderSlice(ladderSteps(view), n);
   return NextResponse.json({ markdown: ladderMarkdown(slice.steps), revealed: slice.revealed, total: slice.total, done: slice.done });
 }

@@ -31,6 +31,7 @@ import {
 import {
   mathAuthorBrief, mathSolverBrief, mathModeratorBrief, mathModels, scienceAuthorBrief, scienceSolveBrief, scienceCheckBrief, type SciPlan, type MathSeed,
 } from './twin-briefs';
+import { hasPartMarks } from './part-syllabus';
 
 const MATH_FIG_BUCKET = 'practice-figures';
 const SCI_FIG_BUCKET = 'question_images';
@@ -102,7 +103,8 @@ async function mathSeedAndPlan(id: string) {
   const sb = getSupabaseAdmin();
   const { data: src, error } = await sb.from('questions').select('id, level, school, year, paper, question_number, question_text, parts, answer, solution, total_marks, topics, difficulty, has_image, figure_url, image_url, deleted_at, ai_generated, twin_of').eq('id', id).maybeSingle();
   if (error) throw new Error(error.message);
-  if (!src || src.deleted_at) return null;
+  // A question with a part marked out of syllabus is never the model for a twin (lib/part-syllabus.ts).
+  if (!src || src.deleted_at || hasPartMarks(src.parts)) return null;
   const { data: filing } = await sb.from('question_subgroups').select('subgroup_id, is_primary, subgroups(id, name, topic, description)').eq('question_id', id);
   const subgroups = (filing ?? []).map((f: any) => ({ id: Number(f.subgroup_id), is_primary: !!f.is_primary, name: f.subgroups?.name ?? null, description: f.subgroups?.description ?? null }));
   const marks = Number(src.total_marks) || sumMarks(src as any);

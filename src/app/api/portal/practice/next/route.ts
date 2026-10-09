@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { questionMarkdown, questionStructured, totalMarksOf } from '@/lib/bank-question-markdown';
+import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceServeFor } from '@/lib/practice';
 import { isScienceLevel } from '@/lib/science-levels';
 import { scienceLevelCounts, scienceNext, toPayload } from '@/lib/science-bank';
 import { adaptiveFallbacks, parseAdaptiveLevel, parseSkill, resolveTopicPool, serveUnlevelled } from '@/lib/science-practice';
 import { scienceLevelsAllowedFor, scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 import { portalIdentity } from '@/lib/portal-auth';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 
@@ -84,21 +85,30 @@ export async function POST(req: NextRequest) {
 
   const scope = bankScope(level);
   const sg = subgroupId == null || subgroupId === '' ? NaN : Number(subgroupId);
-  const { data, error } = await getSupabaseAdmin().rpc('practice_next', {
-    p_level: scope.level,
-    p_qlevel: scope.qlevel,
-    p_topic: topic,
-    p_exclude: Array.isArray(exclude) ? exclude : [],
-    p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
-    p_subgroup: Number.isFinite(sg) && sg > 0 ? sg : null,
-    // Sub-group audience (lib/subgroup-visibility.ts): the RPC serves nothing
-    // from a sub-group this caller may not see, whatever subgroupId they post,
-    // and the topic mix skips questions filed only under such sub-groups.
-    ...rpcAudience(caller),
-  });
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-  const q = data?.[0];
+  // Part marks (lib/part-syllabus.ts): the pick goes through the one door. A question
+  // with too little left is skipped and the draw repeated — a few tries at most.
+  type Picked = BankQuestion & { id: string; total_marks: number | null; figure_url: string | null; has_solution: boolean };
+  const skip: string[] = Array.isArray(exclude) ? [...exclude] : [];
+  let q: Picked | null = null;
+  for (let attempt = 0; attempt < 4 && !q; attempt++) {
+    const { data, error } = await getSupabaseAdmin().rpc('practice_next', {
+      p_level: scope.level,
+      p_qlevel: scope.qlevel,
+      p_topic: topic,
+      p_exclude: skip,
+      p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
+      p_subgroup: Number.isFinite(sg) && sg > 0 ? sg : null,
+      // Sub-group audience (lib/subgroup-visibility.ts): the RPC serves nothing
+      // from a sub-group this caller may not see, whatever subgroupId they post,
+      // and the topic mix skips questions filed only under such sub-groups.
+      ...rpcAudience(caller),
+    });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    const raw = (data?.[0] ?? null) as Picked | null;
+    if (!raw) break;
+    q = studentRow(raw);
+    if (!q) skip.push(raw.id);
+  }
   if (!q) return NextResponse.json({ question: null });
 
   // Deliberately NOT exposing the originating school/paper to students —

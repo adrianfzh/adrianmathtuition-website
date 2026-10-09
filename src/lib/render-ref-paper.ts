@@ -14,6 +14,7 @@ import {
 } from '@/lib/print-paper';
 import type { PaperDef } from '@/lib/prelim-builder';
 import { setNumberFromTitle } from '@/lib/print-sets';
+import { studentRows } from './part-syllabus';
 
 /** The stored blueprint entry — the H2 P2 render reads its section_boundary for Section A/B. */
 function blueprintPaperFor(level: string, paper: string, shape: PaperShape): PaperDef | null {
@@ -46,7 +47,8 @@ export async function renderRefPaperPdf(sb: SupabaseClient, p: RefPaper): Promis
     .select('id, question_text, total_marks, parts, answer, has_image, image_url, figure_url, print_width_mm:gen_meta->figure->>print_width_mm')
     .in('id', p.refs.map((r) => r.id));
   if (error) return { error: error.message, status: 500 };
-  const byId = new Map((qRows as QbPrintRow[]).map((q) => [q.id, q]));
+  // Part marks: what prints is the student's row (lib/part-syllabus.ts); a question with too little left is skipped.
+  const byId = new Map(studentRows(qRows as QbPrintRow[]).map((q) => [q.id, q]));
 
   const questions: PrelimQuestion[] = [];
   for (const ref of p.refs) {

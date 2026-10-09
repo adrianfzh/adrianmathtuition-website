@@ -29,6 +29,7 @@ import {
 } from './lesson-script';
 import { practiceEligibility, type EligibilityRow } from './portal-find';
 import { questionMarkdown, totalMarksOf, questionStructured, type BankQuestion } from './bank-question-markdown';
+import { studentRow } from './part-syllabus';
 
 const RAW_SCRIPTS: Record<string, unknown> = {
   'binomial-theorem-am': binomialTheoremAm,
@@ -79,7 +80,8 @@ export type CheckQuestionRow = EligibilityRow & BankQuestion & {
  * carry a top-level `answer` — eligibility alone also admits solution-only
  * rows, but checkTypedAnswer needs the short official answer to compare with.
  */
-export function usableCheckAnswer(q: CheckQuestionRow | null | undefined): string | null {
+export function usableCheckAnswer(row: CheckQuestionRow | null | undefined): string | null {
+  const q = row ? studentRow(row) : null;   // part marks: the one door (lib/part-syllabus.ts)
   if (!q) return null;
   if (!practiceEligibility(q).ok) return null;
   const answer = typeof q.answer === 'string' ? q.answer.trim() : '';
@@ -93,8 +95,9 @@ export function usableCheckAnswer(q: CheckQuestionRow | null | undefined): strin
  */
 export function resolveCheckScene(
   scene: CheckScene,
-  q: CheckQuestionRow | null | undefined,
+  row: CheckQuestionRow | null | undefined,
 ): ResolvedCheckScene | SkippedCheckScene {
+  const q = row ? studentRow(row) : null;
   const answer = usableCheckAnswer(q);
   if (!q || !answer) return { type: 'check-skipped' };
   return {

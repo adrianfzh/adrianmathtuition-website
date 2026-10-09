@@ -238,6 +238,8 @@ async function brief() {
   mkdirSync(dir, { recursive: true });
   const [src] = await rest(env, `questions?select=id,level,school,year,exam_type,paper,question_number,question_text,parts,answer,solution,total_marks,topics,difficulty,has_image,figure_url,image_url,images&id=eq.${id}`);
   if (!src) throw new Error(`no question ${id}`);
+  // SPEC-PART-SYLLABUS.md: a question with a part marked out of syllabus is never the model for a twin.
+  if (/"legacy"\s*:\s*true/.test(JSON.stringify(src.parts ?? []))) throw new Error(`question ${id} has a part marked out of syllabus — not used as a twin seed`);
   const filing = await rest(env, `question_subgroups?select=subgroup_id,is_primary,confidence,subgroups(id,name,topic,description,level)&question_id=eq.${id}`);
   const subgroups = filing.map((f) => ({ id: f.subgroup_id, is_primary: f.is_primary, name: f.subgroups?.name, topic: f.subgroups?.topic, description: f.subgroups?.description }));
   const shape = shapeOf(src.level);

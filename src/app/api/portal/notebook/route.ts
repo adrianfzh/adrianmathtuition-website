@@ -24,6 +24,7 @@ import { imgSrc, isPlausibleImagePath } from '@/lib/kiosk-worksheet-images';
 import { rollupSolution } from '@/lib/solution-rollup';
 import { solutionImageAllowed } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,11 +73,13 @@ async function workedSolution(
   const none = { text: null, images: [] as string[] };
   if (!entry.variant_qb_id) return none;
   try {
-    const { data } = await svc
+    const { data: raw } = await svc
       .from('questions')
-      .select('solution, parts, solution_images')
+      .select('solution, parts, solution_images, total_marks, answer')
       .eq('id', entry.variant_qb_id)
       .single();
+    // Part marks: the student's row (lib/part-syllabus.ts) — a hidden part's working never shows.
+    const data = raw ? studentRow(raw, { assigned: true }) : null;
     // Rollup: post-canonicalisation the text may live only in parts[].solution.
     const sol = rollupSolution(data?.solution, data?.parts);
     const stored = Array.isArray(data?.solution_images)

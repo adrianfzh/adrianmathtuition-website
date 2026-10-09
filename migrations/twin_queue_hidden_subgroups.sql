@@ -1,5 +1,5 @@
 -- 9 Oct 2026 — a HIDDEN sub-skill is never asked for twins (Adrian: "yes to all three").
--- Runs on the MATHS project. NOT applied by the commit that added it — apply by hand.
+-- Runs on the MATHS project. Applied 9 Oct 2026 (by hand).
 --
 -- What leaked: `subgroups.visibility = 'hidden'` (lib/subgroup-visibility.ts) takes a sub-skill
 -- off the practice lists, the kiosk and Find, but the twins side never read the column. Live
@@ -20,8 +20,8 @@
 -- practice lists serve it. A question filed ONLY under closed sub-skills is not a seed at all
 -- (the practice lists never serve it either). An unfiled question is untouched (subgroup_id null).
 --
--- Columns, order and options are the same as migrations/twin_queue.sql, so CREATE OR REPLACE
--- keeps security_invoker and the grants.
+-- Columns and order are the same as migrations/twin_queue.sql, so CREATE OR REPLACE keeps the
+-- grants — but NOT security_invoker (see the ALTER VIEW after the view).
 create or replace view public.twin_queue as
 with drawn as (
   select question_id from public.student_attempts where attempted_at > now() - interval '90 days'
@@ -55,5 +55,8 @@ where q.deleted_at is null
   and q.ai_generated is not true
   -- filed, but only under closed sub-skills → not a seed
   and (p.question_id is not null or not exists (select 1 from public.question_subgroups qs where qs.question_id = q.id));
+
+-- CREATE OR REPLACE VIEW drops the option (seen when this file was applied on 9 Oct 2026) — set it again.
+alter view public.twin_queue set (security_invoker = true);
 
 comment on view public.twin_queue is 'SPEC-TWINS §9: school rows to twin. Order by draws_90d desc, then by sub-skill for the rest of the pool. text_len = 0 means the question lives only in its image (skip). A hidden sub-skill offers no seeds (9 Oct 2026).';

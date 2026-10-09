@@ -33,6 +33,7 @@ import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { fromDetail, ansLine, questionMarkdown, type DetailRow } from '@/lib/pick-worksheet';
 import { brandForLevels } from '@/lib/worksheet-brand';
+import { applyPartMark, likelyDependents, normLabel, parsePartRef, studentRows, studentView } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -150,6 +151,27 @@ function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: str
   });
 }
 
+/** Part marks (lib/part-syllabus.ts) for the ADMIN detail: which parts students never see
+ *  and why, and what they get instead. The parts themselves stay in the detail, greyed. */
+function partSyllabusOf(row: Row) {
+  const v = studentView(row);
+  const canMark = Array.isArray(row.parts) && row.parts.some((p) => p && typeof p === 'object');
+  if (!v.changed) return { canMark, hidden: [], needs: {}, marks: null, originalMarks: null, servable: true, notes: [] };
+  const needs: Record<string, string[]> = {};
+  const walk = (ps: unknown, prefix: string) => {
+    if (!Array.isArray(ps)) return;
+    ps.forEach((p, i) => {
+      if (!p || typeof p !== 'object') return;
+      const o = p as Record<string, unknown>;
+      const key = `${prefix}${normLabel(o.label) || `#${i + 1}`}`;
+      if (Array.isArray(o.needs) && o.needs.length) needs[key] = o.needs.map((n) => parsePartRef(n));
+      walk(o.subparts, `${key}.`);
+    });
+  };
+  walk(row.parts, '');
+  return { canMark, hidden: v.hidden, needs, marks: v.marks, originalMarks: v.originalMarks, servable: v.servable, notes: v.notes };
+}
+
 function card(row: Row) {
   return {
     id: row.id,
@@ -246,6 +268,7 @@ function detail(row: Row, flagged: Set<string> = new Set(), gate?: SolutionImage
       return !!n && flagged.has(n);
     }),
     questionMd: row.question_text ?? '',
+    partSyllabus: partSyllabusOf(row),
     parts: resolveParts(row.parts, gate, String(row.id ?? '')),
     solution: row.solution ?? null,
     answer: row.answer ?? null,
@@ -471,6 +494,28 @@ export async function POST(req: NextRequest) {
     const { data } = await supa.from('questions').select('*').eq('id', id).single();
     return data ? detail(data as Row, undefined, await solutionImageGateFor([id])) : null;
   };
+
+  // ── 🚫 one part out of syllabus (SPEC-PART-SYLLABUS.md) ─────────────────────
+  // { action:'part-syllabus', id, part:'(b)(ii)', legacy:true|false, reason?, needs?:[…] }
+  // Sets or clears the mark on ONE part inside `parts`; every other key on every
+  // part is written back exactly as read. Students stop seeing the part at once.
+  if (body.action === 'part-syllabus') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    if (!/^[0-9a-f-]{36}$/.test(id)) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: row, error } = await supa.from('questions').select('id, parts, total_marks, answer, solution').eq('id', id).maybeSingle();
+    if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
+    const res = applyPartMark(row as Row, {
+      part: typeof body.part === 'string' ? body.part : '',
+      legacy: typeof body.legacy === 'boolean' ? body.legacy : undefined,
+      reason: typeof body.reason === 'string' ? body.reason : undefined,
+      needs: Array.isArray(body.needs) ? body.needs.filter((x): x is string => typeof x === 'string') : undefined,
+    });
+    if (!res.ok) return NextResponse.json({ error: res.error }, { status: 400 });
+    const upd = await supa.from('questions').update({ parts: res.parts }).eq('id', id).select('id');
+    if (upd.error || !upd.data?.length) return NextResponse.json({ error: upd.error?.message || 'not saved' }, { status: 500 });
+    const part = typeof body.part === 'string' ? body.part : '';
+    return NextResponse.json({ ok: true, question: await freshDetail(id), check: body.legacy === true ? likelyDependents(row.parts, part) : [] });
+  }
 
   // ── ✨ clean: lift the white point on a faded scan ─────────────────────────
   // Photocopied graph paper arrives as ink on a grey haze. A white-point lift
@@ -876,7 +921,8 @@ export async function POST(req: NextRequest) {
       .select(`${LIST_COLUMNS}, parts, answer, images, image_watermark_status`)
       .in('id', ids);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
+    // Part marks: a sheet is for students — every row through the one door (lib/part-syllabus.ts).
+    const byId = new Map(studentRows((data ?? []) as Row[]).map((row) => [row.id as string, row]));
     const warnings: string[] = [];
     const questions: BotWorksheetQuestion[] = [];
     for (const qid of ids) {
@@ -979,10 +1025,11 @@ export async function POST(req: NextRequest) {
     if (!ids.length) return NextResponse.json({ error: 'ids[] required' }, { status: 400 });
     const { data, error } = await supa
       .from('questions')
-      .select('id, question_number, question_text, parts, solution, answer, solution_images')
+      .select('id, question_number, question_text, parts, solution, answer, solution_images, total_marks')
       .in('id', ids);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const byId = new Map((data ?? []).map((row) => [row.id as string, row]));
+    // Part marks: picked questions' solutions print for students — the one door (lib/part-syllabus.ts).
+    const byId = new Map(studentRows((data ?? []) as Row[]).map((row) => [row.id as string, row]));
     const ordered = ids.map(qid => byId.get(qid)).filter(Boolean) as Row[];
     const { items, missing } = solutionItemsFrom(ordered, await solutionImageGateFor(ids));
     if (!items.length) return NextResponse.json({ error: 'no questions found' }, { status: 400 });

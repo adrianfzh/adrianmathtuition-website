@@ -19,6 +19,7 @@ import { put } from '@vercel/blob';
 import { renderRevisePNG, RenderType, ReviseRenderInput } from '@/lib/render-revise';
 import { rollupSolution, rollupAnswer } from '@/lib/solution-rollup';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
+import { hasPartMarks, studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -74,12 +75,16 @@ export async function POST(req: NextRequest) {
   // pool). Sub-group name comes via the question_subgroups join table.
   // Explicit columns — select('*') dragged the 1536-dim embedding along
   // (~9.5KB of JSON, ~80% of the row payload) on every render fetch.
-  const { data: row, error: fetchErr } = await supabase
+  const { data: rawRow, error: fetchErr } = await supabase
     .from('questions')
     .select('question_image_url, question_with_answer_image_url, solution_image_url, topics, question_text, total_marks, answer, solution, parts')
     .eq('id', practice_question_id)
     .single();
 
+  // Part marks (lib/part-syllabus.ts): the picture is drawn from the student's row. A stored
+  // picture was drawn before the part was marked, so it is neither used nor replaced.
+  const partMarked = hasPartMarks(rawRow?.parts);
+  const row = rawRow ? studentRow(rawRow, { assigned: true }) : null;
   if (fetchErr || !row) {
     console.error('[render-revise] fetch failed:', fetchErr?.message);
     return NextResponse.json({ error: 'Practice question not found' }, { status: 404 });
@@ -120,7 +125,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Upload to Vercel Blob
-  const blobPath = `revise/${practice_question_id}/${rType}.png`;
+  const blobPath = `revise/${practice_question_id}/${rType}${partMarked ? '-sv' : ''}.png`;
   let blobUrl: string;
   try {
     const blob = await put(blobPath, png, {
@@ -134,6 +139,8 @@ export async function POST(req: NextRequest) {
     console.error('[render-revise] blob upload failed:', msg);
     return NextResponse.json({ error: 'Blob upload failed', detail: msg }, { status: 500 });
   }
+
+  if (partMarked) return NextResponse.json({ url: blobUrl });
 
   // Cache the URL in Supabase before returning — must await, or Vercel kills the function first
   const { data: updateData, error: updateErr } = await supabaseAdmin

@@ -26,6 +26,7 @@ import {
   type Preset,
   type SlotPick,
 } from '@/lib/prelim-builder';
+import { studentRows } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 
@@ -121,7 +122,8 @@ async function fetchCandidates(
   if (opts.excludeSchool) q = q.neq('school', opts.excludeSchool);
   const { data, error } = await q;
   if (error) throw new Error(`QB query failed (${opts.topic}): ${error.message}`);
-  return (data as QbRow[]).filter((r) => !opts.excludeIds.includes(r.id)).map(toCandidate);
+  // Part marks: candidates are judged as the student will see them (lib/part-syllabus.ts).
+  return studentRows(data as QbRow[]).filter((r) => !opts.excludeIds.includes(r.id)).map(toCandidate);
 }
 
 // GET — picker metadata: paper keys + shapes + presets (name, description,

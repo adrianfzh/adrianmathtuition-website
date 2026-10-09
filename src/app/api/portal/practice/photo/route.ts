@@ -29,6 +29,7 @@ import {
   type PhotoCountingClient, type SeedCandidate,
 } from '@/lib/practice-photo';
 import { pickShelfTwin, seenQuestionIds, shelfLedgerNote, type ShelfTwin } from '@/lib/practice-shelf';
+import { hasPartMarks } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -180,7 +181,8 @@ export async function POST(req: Request) {
       const rows: SeedRow[] = [];
       for (const f of (filings ?? []) as unknown as { questions: SeedRow | SeedRow[] | null }[]) {
         const q = Array.isArray(f.questions) ? f.questions[0] : f.questions;
-        if (q && practiceEligibility(q).ok) rows.push(q);
+        // A question with a part marked out of syllabus is never the model for a new one.
+        if (q && practiceEligibility(q).ok && !hasPartMarks(q.parts)) rows.push(q);
       }
       const { data: last } = await admin
         .from('generation_requests').select('source_question_id')

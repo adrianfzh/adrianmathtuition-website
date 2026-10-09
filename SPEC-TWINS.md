@@ -120,8 +120,8 @@ verified twin?) is the whole scheduler; the batch takes the top rows.
 re-creates the view so a seed's sub-skill is its best OPEN filing (`subgroups.visibility` 'all' or 'ip';
 'hidden' and any unknown value are closed) and a question filed only under hidden sub-skills is not a
 seed. `math_twin_units`, `twin.mjs queue`, the cloud door and the dashboard read the view, so none of
-them changes. **Written, not applied** — until it is run on the maths project the old view still
-offers hidden sub-skill 863's seeds. Science has no hidden sub-skills (`subgroups` there has no
+them changes. **Applied 9 Oct 2026** on the maths project (the file also re-sets the view's
+`security_invoker` option, which CREATE OR REPLACE VIEW had dropped). Science has no hidden sub-skills (`subgroups` there has no
 `visibility` column), so `science_twin_units` is unchanged.
 
 ## 6. The flip — per (level, topic), then everywhere

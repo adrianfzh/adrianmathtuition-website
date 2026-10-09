@@ -6,6 +6,7 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { createServiceClient } from '@/lib/supabase-server';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
 import { answerMarkdown, paperCodeFull, questionMarkdown, storageUrl, subjectName, type QbPrintRow } from '@/lib/print-paper';
+import { studentRows } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -42,7 +43,8 @@ export async function GET(req: NextRequest) {
       .select('id, question_text, total_marks, parts, answer, has_image, image_url')
       .in('id', ids);
     if (qErr) return NextResponse.json({ error: qErr.message }, { status: 500 });
-    const byId = new Map((rows as QbFull[]).map((r) => [r.id, r]));
+    // Part marks: what prints is the student's row (lib/part-syllabus.ts).
+    const byId = new Map(studentRows(rows as QbFull[]).map((r) => [r.id, r]));
 
     const questions: PrelimQuestion[] = [];
     for (const s of slots) {

@@ -21,6 +21,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { studentRows } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 180;
@@ -108,7 +109,8 @@ export async function POST(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   if (!qs || qs.length === 0) return NextResponse.json({ error: 'no candidate questions found' }, { status: 400 });
 
-  const briefs = qs.map((q, i) => questionBrief(q as Record<string, unknown>, i + 1)).join('\n\n---\n\n');
+  // Part marks: lesson content for students is proposed from the students' rows (lib/part-syllabus.ts).
+  const briefs = studentRows(qs as Record<string, unknown>[]).map((q, i) => questionBrief(q, i + 1)).join('\n\n---\n\n');
   const checklistBlock = checklist.length > 0
     ? `CONCEPT CHECKLIST (${level} / ${topics.join(' + ')}):\n- ${checklist.join('\n- ')}`
     : `CONCEPT CHECKLIST: none stored for this topic — infer the sub-skill checklist from the questions yourself and return ALL inferred concepts under "suggestedConcepts".`;

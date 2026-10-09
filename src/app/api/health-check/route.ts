@@ -1225,6 +1225,36 @@ export async function GET(req: NextRequest) {
   // or last finished in failure goes red HERE — which is what turns a silent 3:30am
   // no-show on the Mac into a Telegram at breakfast. Jobs that have never stamped
   // are skipped (visible on /admin/ops, never an alarm).
+  // Part marks (SPEC-PART-SYLLABUS.md): the one door still does its job on a built-in
+  // question (hidden part gone, total reduced, nothing of it left in what is sent on),
+  // and a count of live questions carrying a mark — with how many have fallen below the
+  // serving threshold, which is worth a look but not an alarm.
+  results.push(await timed('part-marks', async () => {
+    const { studentView } = await import('@/lib/part-syllabus');
+    const v = studentView({
+      total_marks: 10, answer: '(a) 1; (b) 2; (c) 3',
+      parts: [
+        { label: 'a', marks: 4, text: 'keep', answer: '1' },
+        { label: 'b', marks: 3, text: 'HIDDEN-PART', answer: '2', legacy: true, legacy_reason: 'check' },
+        { label: 'c', marks: 3, text: 'keep', answer: '3' },
+      ],
+    });
+    const labels = (v.row.parts as { label: string }[]).map((p) => p.label).join('');
+    if (labels !== 'ac' || v.row.total_marks !== 7 || JSON.stringify(v.row).includes('HIDDEN-PART') || v.row.answer !== '(a) 1; (c) 3') {
+      throw new Error('the part-marks door let a hidden part through');
+    }
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const sb = getSupabaseAdmin();
+    const [top, sub] = await Promise.all([
+      sb.from('questions').select('id, parts, total_marks').contains('parts', [{ legacy: true }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
+      sb.from('questions').select('id, parts, total_marks').contains('parts', [{ subparts: [{ legacy: true }] }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
+    ]);
+    if (top.error || sub.error) return 'door ok · count unavailable';
+    const rows = new Map([...(top.data ?? []), ...(sub.data ?? [])].map((r) => [r.id as string, r]));
+    const notServed = [...rows.values()].filter((r) => !studentView(r).servable).length;
+    return `door ok · ${rows.size} question(s) with a hidden part${notServed ? ` · ${notServed} with too little left (not served)` : ''}`;
+  }));
+
   results.push(await timed('ops-jobs', async () => {
     const { latestJobRuns } = await import('@/lib/job-log');
     const { staleJobs } = await import('@/lib/job-health');

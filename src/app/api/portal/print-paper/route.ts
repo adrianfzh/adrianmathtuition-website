@@ -66,6 +66,7 @@ import {
   type PaperDef,
   type Preset,
 } from '@/lib/prelim-builder';
+import { studentRows } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -150,7 +151,8 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: strin
     has_image: boolean | null; image_url: string | null; figure_url: string | null;
     image_watermark_status: string | null;
   };
-  const servable = await dropAudienceBlocked(data as unknown as Row[], opts.tagLevels, opts.topicsKey, opts.isIp);
+  // Part marks: candidates are the student's rows; too little left → not drawn (lib/part-syllabus.ts).
+  const servable = await dropAudienceBlocked(studentRows(data as unknown as Row[]), opts.tagLevels, opts.topicsKey, opts.isIp);
   return servable
     .filter(r => hasPrintableAnswer(r) && figureServable(r))
     .map(r => ({

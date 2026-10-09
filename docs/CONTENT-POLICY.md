@@ -44,6 +44,13 @@ question to a student or to the public.
 
 ## Two sides of the bank
 
+**One part out of syllabus (9 Oct 2026, `SPEC-PART-SYLLABUS.md`).** A part inside `parts` may be
+marked `legacy: true`. Every SERVING surface takes its rows through `lib/part-syllabus.ts`
+(`studentRow` / `studentRows`) so the part, its answer and its working never reach a student
+and the marks total drops; a question with too little left is not served at all. GROUNDING of a
+real paper keeps every part. `part-syllabus-surfaces.test.ts` fails when a new reader of the
+bank skips the door.
+
 **Grounding** — the marker (`paper_schemes` → attached library PDF → the bank →
 rules) and the chat solver read a question and its key to check a student's
 OWN work on a paper the student already holds. Nothing is copied to anyone.

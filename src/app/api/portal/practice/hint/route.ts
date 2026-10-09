@@ -7,6 +7,7 @@ import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
 import { HINT_MODEL, buildHintPrompt, normaliseHint, hintMarkdown } from '@/lib/practice-hint';
 import { hintWriteAllowed, HINT_LIMIT_MARKDOWN } from '@/lib/grade-limit';
 import { portalIdentity } from '@/lib/portal-auth';
+import { hasPartMarks, studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -33,12 +34,17 @@ export async function GET(req: NextRequest) {
   if (isScienceSubject(url.searchParams.get('subject'))) return NextResponse.json({ markdown: '' });
 
   const admin = getSupabaseAdmin();
-  const { data: q, error } = await admin
+  const { data: raw, error } = await admin
     .from('questions')
-    .select('id, level, topics, question_text, answer, solution, hint')
+    .select('id, level, topics, question_text, answer, solution, hint, parts, total_marks')
     .eq('id', id)
     .maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (!raw) return NextResponse.json({ error: 'not found' }, { status: 404 });
+  // Part marks (lib/part-syllabus.ts): the hint is written from the student's row, and a
+  // stored hint — written before the part was marked — is not used or replaced.
+  const marked = hasPartMarks(raw.parts);
+  const q = studentRow(raw, { assigned: true });
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
 
   if (typeof q.hint === 'string') return NextResponse.json({ markdown: hintMarkdown(q.hint), cached: true });
@@ -54,13 +60,13 @@ export async function GET(req: NextRequest) {
     await admin.from('portal_event_log').insert({ identity, kind: 'hint:write', detail: { questionId: q.id } }).then(() => {}, () => {});
   }
 
-  const hint = await writeHint(admin, q as HintRow);
+  const hint = await writeHint(admin, q as HintRow, !marked);
   return NextResponse.json({ markdown: hintMarkdown(hint), cached: false });
 }
 
 type HintRow = { id: string; level: string | null; topics: string[] | null; question_text: string; answer: string | null; solution: string | null };
 
-async function writeHint(admin: ReturnType<typeof getSupabaseAdmin>, q: HintRow): Promise<string> {
+async function writeHint(admin: ReturnType<typeof getSupabaseAdmin>, q: HintRow, store = true): Promise<string> {
   if (!process.env.ANTHROPIC_API_KEY) return '';
   try {
     const knowledge = await loadTeachingKnowledge(admin, {
@@ -77,7 +83,7 @@ async function writeHint(admin: ReturnType<typeof getSupabaseAdmin>, q: HintRow)
     const text = msg.content.filter(c => c.type === 'text').map(c => (c as { text: string }).text).join('\n');
     const hint = normaliseHint(text);
     // Cache even '' so a question with nothing to say is not re-asked.
-    await admin.from('questions').update({ hint }).eq('id', q.id);
+    if (store) await admin.from('questions').update({ hint }).eq('id', q.id);
     return hint;
   } catch (e) {
     console.error('[practice/hint] writer failed', e instanceof Error ? e.message : e);

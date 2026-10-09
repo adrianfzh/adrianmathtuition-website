@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { solutionMarkdown } from '@/lib/bank-question-markdown';
+import { solutionMarkdown, type BankQuestion } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { practiceAuth, scienceServeFor } from '@/lib/practice';
 import { scienceRowServable } from '@/lib/science-practice';
@@ -9,6 +9,7 @@ import { scienceEligible, scienceQuestion } from '@/lib/science-bank';
 import { isNationalRow } from '@/lib/serve-gate';
 import { tidyChemText } from '@/lib/chem-text';
 import { approvedDiagrams, diagramForQuestion } from '@/lib/science-diagram-library';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 
@@ -60,7 +61,8 @@ export async function GET(req: NextRequest) {
   }
   const { data, error } = await getSupabaseAdmin().rpc('practice_solution', { p_id: id });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  const q = data?.[0];
+  // Part marks: the student's row (lib/part-syllabus.ts) — a hidden part's answer and working never show.
+  const q = data?.[0] ? studentRow(data[0] as BankQuestion, { assigned: true }) : null;
   if (!q) return NextResponse.json({ error: 'not found' }, { status: 404 });
   // National rows are grounding-only (docs/CONTENT-POLICY.md): a student never
   // opens their worked solution by id (5 Oct 2026, lib/serve-gate.ts).

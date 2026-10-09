@@ -10,6 +10,7 @@ import {
   type FindCandidate, type FindFiling, type FindTier, type FindVerdict, type FindReference, type SimilarMatch,
 } from './portal-find';
 import { questionServableTo, type SubgroupAudienceRow } from './subgroup-visibility';
+import { studentRow } from './part-syllabus';
 
 export type FindViewer = { levels: string[]; isIp: boolean };
 
@@ -93,10 +94,13 @@ export async function enrichCandidates(
   if (error) throw new Error(`questions read failed: ${error.message}`);
   const byId = new Map(((rows ?? []) as QuestionRow[]).map((r) => [r.id, r]));
   for (const m of matches) {
-    const q = byId.get(m.id);
-    if (!q) { dropped.push({ id: m.id, reason: 'not in the bank' }); continue; }
-    const elig = practiceEligibility(q);
+    const raw = byId.get(m.id);
+    if (!raw) { dropped.push({ id: m.id, reason: 'not in the bank' }); continue; }
+    const elig = practiceEligibility(raw);
     if (!elig.ok) { dropped.push({ id: m.id, reason: elig.reason }); continue; }
+    // Part marks: the candidate is the student's row — marks and preview without a hidden part.
+    const q = studentRow(raw);
+    if (!q) { dropped.push({ id: m.id, reason: 'not in the current syllabus' }); continue; }
     const f = filings.get(m.id);
     if (!questionServableTo(f?.audience ?? [], viewer)) {
       dropped.push({ id: m.id, reason: 'not part of this student’s syllabus' });
@@ -132,11 +136,12 @@ export function summarise(c: FindCandidate): FindQuestionSummary {
 
 /** One bank question (a freshly generated one, or the review's read-back) as a summary; null when missing or not practice-eligible. */
 export async function loadQuestionSummary(admin: SupabaseClient, questionId: string): Promise<FindQuestionSummary | null> {
-  const [{ data: q }, filings] = await Promise.all([
+  const [{ data: raw }, filings] = await Promise.all([
     admin.from('questions').select(QUESTION_COLUMNS).eq('id', questionId).maybeSingle<QuestionRow>(),
     loadFilings(admin, [questionId]),
   ]);
-  if (!q || !practiceEligibility(q).ok) return null;
+  const q = raw && practiceEligibility(raw).ok ? studentRow(raw) : null;
+  if (!q) return null;
   return summarise(candidateFrom(q, previewOf(q), filings.get(questionId)));
 }
 

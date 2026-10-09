@@ -49,6 +49,7 @@ import H2Door from './h2-door';
 import { scienceLevelsFor } from '@/lib/science-levels';
 import { bankScope } from '@/lib/qb-levels';
 import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
+import { studentRow } from '@/lib/part-syllabus';
 
 /**
  * Sub-group audience gate for a deep-linked question (lib/subgroup-visibility
@@ -142,10 +143,12 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
       };
     } else {
       if (!a.question_id) redirect(`/app/assignments/${a.id}`);
-      const { data: q } = await getSupabaseAdmin()
+      const { data: raw } = await getSupabaseAdmin()
         .from('questions')
         .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer')
         .eq('id', a.question_id).maybeSingle();
+      // Part marks: the student's row (lib/part-syllabus.ts). On their own list it shows with what is left.
+      const q = raw ? studentRow(raw, { assigned: true }) : null;
       if (!q) notFound();
       const { stem, parts } = questionStructured(q);
       question = {
@@ -190,11 +193,13 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
   let qidBlocked: null | 'answer' | 'syllabus' = null;
   if (qid && !assignmentId) {
     if (!account) redirect('/login');
-    const { data: q } = await getSupabaseAdmin()
+    const { data: rawQ } = await getSupabaseAdmin()
       .from('questions')
       .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified, school, national, legacy_syllabus')
       .eq('id', qid)
       .maybeSingle();
+    // Part marks: the student's row; null when too little is left (practiceEligibility refuses it too).
+    const q = rawQ ? studentRow(rawQ) : null;
     if (q && practiceEligibility(q).ok && !(await qidAudienceOk(q.id, account))) {
       qidBlocked = 'syllabus';
     } else if (q && practiceEligibility(q).ok) {

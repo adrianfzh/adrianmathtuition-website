@@ -16,6 +16,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { buildPracticePdfHtml, practicePdfFilename } from '@/lib/practice-pdf';
 import { getBrowser } from '@/lib/generate-pdf';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const dynamic = 'force-dynamic';
 // Puppeteer cold start + KaTeX font fetch can push past the 10s default.
@@ -55,10 +56,13 @@ export async function GET(req: NextRequest) {
   let marksById: Record<string, number> | undefined;
   if (bankIds.length > 0) {
     try {
-      const { data: qRows, error } = await sb.from('questions').select('id, total_marks').in('id', bankIds);
+      const { data: qRows, error } = await sb.from('questions').select('id, total_marks, parts').in('id', bankIds);
       if (!error && qRows) {
         marksById = {};
-        for (const q of qRows as { id: string; total_marks: number | null }[]) {
+        // Part marks: the marks printed are the student's total (lib/part-syllabus.ts).
+        for (const raw of qRows as { id: string; total_marks: number | null; parts: unknown }[]) {
+          const q = studentRow(raw, { assigned: true });
+          if (!q) continue;
           if (typeof q.total_marks === 'number' && q.total_marks > 0) marksById[q.id] = q.total_marks;
         }
       }

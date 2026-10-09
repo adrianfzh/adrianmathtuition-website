@@ -15,6 +15,7 @@ import { assessCoverage } from '@/lib/paper-reconstruction';
 import {
   A_MATH_EXAM_TOPICS, EM_OWN_TOPICS, JC_TOPICS, S1_EXAM_TOPICS, S2_EXAM_TOPICS,
 } from '@/lib/canonical-topics';
+import { normLabel } from '@/lib/part-syllabus';
 
 /** Topic options per AI-pick level — flat canonical names (kiosk pool keys). */
 const AI_TOPIC_LISTS: Record<string, string[]> = {
@@ -111,6 +112,19 @@ type Detail = Card & {
   images: string[]; solutionImages: string[];
   // Figure edit history depth + which stem figures are queued for a redraw.
   canUndo: number; canRedo: number; flaggedFigures: string[];
+  // Part marks (SPEC-PART-SYLLABUS.md): which parts students never see, and what they get.
+  partSyllabus?: {
+    canMark: boolean;
+    hidden: { key: string; label: string; reason: string; via: 'marked' | 'parent' | 'needs' | 'emptied'; marks: number }[];
+    marks: number | null; originalMarks: number | null; servable: boolean; notes: string[];
+  };
+};
+const PART_NOTE: Record<string, string> = {
+  marks_unknown: 'a part has no marks, so the new total is a best guess',
+  answer_withheld: 'the answer line cannot be split by part, so students get no answer line',
+  solution_withheld: 'the worked solution cannot be split by part, so students get none',
+  solution_images_withheld: 'whole-question solution pictures are held back',
+  unknown_needs: 'a "needs" entry names a part that is not on this question',
 };
 type PaperMeta = { school: string; year: number; level?: string | null; paper?: string | null; examType?: string | null };
 type PaperRow = PaperMeta & {
@@ -809,12 +823,70 @@ export default function QuestionBankPage() {
     );
   }
 
-  const partBlock = (pt: Part, depth = 0, showSol = false) => (
+  // 🚫 One part out of syllabus (SPEC-PART-SYLLABUS.md). A marked part stays on this
+  // admin view, greyed, with its reason; students never see it.
+  const partTools = (q: Detail, key: string) => {
+    const ps = q.partSyllabus;
+    if (!ps?.canMark) return null;
+    const h = ps.hidden.find(x => x.key === key);
+    const btn: React.CSSProperties = { fontSize: 11.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 6, padding: '1px 7px', cursor: 'pointer', marginLeft: 6 };
+    const send = (extra: Record<string, unknown>, ok: (d: Record<string, unknown>) => string) =>
+      figureAction({ action: 'part-syllabus', id: q.id, part: key, ...extra }, `ps:${key}`, ok);
+    if (h) {
+      return (
+        <div style={{ fontSize: 12, color: C.warn, margin: '2px 0' }}>
+          Hidden from students — {h.reason}
+          {h.via === 'marked' && <button style={btn} disabled={!!figBusy} onClick={() => send({ legacy: false }, () => 'Shown to students again')}>Undo</button>}
+          {h.via === 'needs' && <button style={btn} disabled={!!figBusy} onClick={() => send({ needs: [] }, () => 'Shown to students again')}>Undo</button>}
+        </div>
+      );
+    }
+    return (
+      <span style={{ whiteSpace: 'nowrap' }}>
+        <button style={btn} disabled={!!figBusy} title="Students will not see this part; the marks total drops"
+          onClick={() => {
+            const reason = window.prompt('What in this part is out of syllabus? (a few words)');
+            if (!reason?.trim()) return;
+            send({ legacy: true, reason: reason.trim() }, d => {
+              const check = (d.check as { label: string }[] | undefined) ?? [];
+              return check.length ? `Hidden. Check ${check.map(c => c.label).join(', ')} — it may need this part` : 'Hidden from students';
+            });
+          }}>Out of syllabus</button>
+        {ps.hidden.length > 0 && (
+          <button style={btn} disabled={!!figBusy} title="This part cannot be done without a hidden part"
+            onClick={() => {
+              const need = window.prompt('Which hidden part does this one need? e.g. (b)(ii)', ps.hidden[0].label);
+              if (need?.trim()) send({ needs: [need.trim()] }, () => 'Hidden with the part it needs');
+            }}>Needs a hidden part</button>
+        )}
+      </span>
+    );
+  };
+  const partSyllabusLine = (q: Detail) => {
+    const ps = q.partSyllabus;
+    if (!ps?.hidden.length) return null;
+    return (
+      <div style={{ fontSize: 12.5, color: C.warn, background: C.flagBg, borderRadius: 8, padding: '4px 9px', margin: '6px 0' }}>
+        {ps.servable
+          ? <>Students see {ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks — {ps.hidden.filter(h => h.via !== 'parent').map(h => h.label).join(', ')} hidden.</>
+          : <>Too little is left ({ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks) — students are not given this question at all.</>}
+        {ps.notes.map(n => <div key={n}>Note: {PART_NOTE[n] ?? n}.</div>)}
+      </div>
+    );
+  };
+
+  const partBlock = (pt: Part, depth = 0, showSol = false, ctx?: { q: Detail; prefix: string }) => {
+    const key = ctx ? `${ctx.prefix}${normLabel(pt.label)}` : '';
+    const hiddenHere = !!ctx?.q.partSyllabus?.hidden.some(h => h.key === key && h.via !== 'emptied');
+    const parentHidden = !!ctx?.q.partSyllabus?.hidden.some(h => h.key === key && h.via === 'parent');
+    return (
     <div key={`${pt.label}-${depth}-${(pt.text || '').slice(0, 12)}`} style={{ marginLeft: depth * 14, marginTop: 8 }}>
-      <div style={{ fontSize: 14.5 }}>
+      {ctx && key && !parentHidden && ctx.q.partSyllabus?.hidden.some(h => h.key === key) && partTools(ctx.q, key)}
+      <div style={{ fontSize: 14.5, opacity: hiddenHere ? 0.45 : 1 }}>
         {pt.label && <strong>{pt.label} </strong>}
         {pt.text && <MathText text={pt.text} />}
         {pt.marks != null && <span style={{ float: 'right', color: C.muted }}>[{pt.marks}]</span>}
+        {ctx && key && !ctx.q.partSyllabus?.hidden.some(h => h.key === key) && partTools(ctx.q, key)}
       </div>
       {pt.image_url && <img src={pt.image_url} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
       {pt.image_url_after && <img src={pt.image_url_after} alt="" style={{ maxWidth: '100%', borderRadius: 8, margin: '6px 0' }} />}
@@ -829,9 +901,10 @@ export default function QuestionBankPage() {
       {showSol && pt.answer && (
         <div style={{ color: '#843C0C', fontSize: 13.5, margin: '2px 0' }}>Ans: <MathText text={pt.answer} /></div>
       )}
-      {(pt.subparts || []).map(sp => partBlock(sp, depth + 1, showSol))}
+      {(pt.subparts || []).map(sp => partBlock(sp, depth + 1, showSol, ctx && key ? { q: ctx.q, prefix: `${key}.` } : undefined))}
     </div>
-  );
+    );
+  };
 
   const isSolOpen = (qid: string) => !!solOpen[qid];
   const toggleSol = (qid: string) => setSolOpen(m => ({ ...m, [qid]: !m[qid] }));
@@ -945,7 +1018,8 @@ export default function QuestionBankPage() {
         </div>
       )}
       <div style={{ fontSize: 15, lineHeight: 1.55 }}><MathBlock text={openDetail.questionMd} /></div>
-      {openDetail.parts.map(pt => partBlock(pt, 0, isSolOpen(openDetail.id)))}
+      {partSyllabusLine(openDetail)}
+      {openDetail.parts.map(pt => partBlock(pt, 0, isSolOpen(openDetail.id), { q: openDetail, prefix: '' }))}
       <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         {solButton(openDetail)}
         {openDetail.topics.map(t => <span key={t} style={{ fontSize: 12, color: C.muted, background: C.bg, borderRadius: 999, padding: '2px 9px' }}>{t}</span>)}

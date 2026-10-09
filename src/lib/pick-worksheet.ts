@@ -11,6 +11,8 @@
 // each question, never per part; working space ∝ marks, 4 lines a mark with one
 // bonus line for a [1]; the school and year never printed.
 
+import { studentView } from './part-syllabus';
+
 export type PickPart = {
   label: string;
   text: string;
@@ -104,7 +106,13 @@ export function partLabel(labels: string[]): string {
   return labels.map((l) => `(${l})`).join('');
 }
 
-export function fromDetail(d: DetailRow): PickQuestion {
+export function fromDetail(input: DetailRow): PickQuestion {
+  // Part marks: the sheet is for students, so it is built from the student's row
+  // (lib/part-syllabus.ts). The admin detail view still shows the part, greyed.
+  const sv = studentView({ parts: input.parts, total_marks: input.marks ?? null, answer: input.answer ?? null, solution: input.solution ?? null });
+  const d: DetailRow = sv.changed
+    ? { ...input, parts: sv.row.parts, marks: sv.marks, answer: sv.row.answer, solution: sv.row.solution, solutionImages: [] }
+    : input;
   const rawParts = Array.isArray(d.parts) ? (d.parts as RawPart[]) : [];
   const parts = rawParts.filter((p) => p && typeof p === 'object' && (p.label || p.text)).map(toPart);
   const partSolutions: Record<string, string> = {};

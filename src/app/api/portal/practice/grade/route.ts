@@ -28,6 +28,7 @@ import { scienceRowServable } from '@/lib/science-practice';
 import { sciencePoolLevels } from '@/lib/science-levels';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -244,7 +245,11 @@ export async function POST(req: NextRequest) {
       // stays ungraded until it goes through the gates.
       return NextResponse.json({ error: 'This AI practice question isn’t gradable yet — check the solution instead' }, { status: 409 });
     }
-    q = data as GradeQuestion;
+    // Part marks: the marker is given the student's row, so a hidden part is neither
+    // expected nor counted and the total is the reduced one (lib/part-syllabus.ts).
+    const view = studentRow(data as GradeQuestion, { assigned: true });
+    if (!view) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+    q = view;
   }
 
   const weaknessTags = await topWeaknessTags(account.id, 3);

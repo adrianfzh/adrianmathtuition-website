@@ -16,6 +16,7 @@ import { sgtStartOfDayIso } from './portal-submit-limit';
 import { isOurRow } from './serving-policy';
 import { qbLevelsFor } from './qb-levels';
 import { allowedSubjects, type PaperSubject } from './portal-subjects';
+import { partMarksBlockServing, studentRow } from './part-syllabus';
 
 // ── Generation cap ───────────────────────────────────────────────────────────
 // Generated questions run the bot's full 4-gate worker (1–3 min of model time,
@@ -154,6 +155,8 @@ export function practiceEligibility(q: EligibilityRow, opts?: { schoolRowsRetire
   // the practice_next / practice_pool / kiosk_pool RPCs already skip; a
   // deep link or a finder match must not walk round that gate.
   if (q.legacy_syllabus === true) return { ok: false, reason: 'not in the current syllabus' };
+  // Part marks (lib/part-syllabus.ts): with its out-of-syllabus parts removed, too little is left.
+  if (partMarksBlockServing(q)) return { ok: false, reason: 'not in the current syllabus (too little left once its old-syllabus part is removed)' };
   if ((q.flagged_count ?? 0) >= 3) return { ok: false, reason: 'flagged by students' };
   if (q.ai_generated === true && q.verified !== true) return { ok: false, reason: 'AI question not yet verified' };
   if (opts?.schoolRowsRetired && !isOurRow(q.school)) return { ok: false, reason: 'school rows retired for this topic — ours only' };
@@ -592,7 +595,8 @@ export function resolveFindLevel(
  * an answer or solution — the bot's `questionPreview`, mirrored for the rows
  * the site reads itself (a generated question, the review's question text).
  */
-export function previewOf(row: { question_text?: string | null; parts?: unknown }, maxLen = 200): string {
+export function previewOf(input: { question_text?: string | null; parts?: unknown }, maxLen = 200): string {
+  const row = studentRow(input, { assigned: true }) ?? { question_text: input.question_text, parts: [] };   // a hidden part is never previewed
   const bits: string[] = [];
   const stem = typeof row.question_text === 'string' ? row.question_text.trim() : '';
   if (stem) bits.push(stem);

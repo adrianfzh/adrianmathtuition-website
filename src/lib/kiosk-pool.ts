@@ -24,6 +24,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { flattenParts, cropUrls, type Part } from './kiosk-worksheet-images';
 import { TIER_DIFFICULTY_VALUES, type Tier } from './practice-tiers';
+import { studentRows } from './part-syllabus';
 
 /** `questions.level` values servable per kiosk level token. */
 export const SEED_LEVELS: Record<string, string[]> = {
@@ -122,7 +123,8 @@ export async function fetchWorksheetPool(
   }
 
   const items: PoolItem[] = [];
-  for (const r of bankRes.data || []) {
+  // Part marks: every row through the one door before it can print (lib/part-syllabus.ts).
+  for (const r of studentRows((bankRes.data || []) as Record<string, unknown>[])) {
     const status = lookupFailed ? null : (statusById.get(r.id as string) ?? null);
     if (!figureServable({ has_image: r.has_image as boolean | null, figure_url: r.figure_url as string | null, image_watermark_status: status })) continue;
     if (!hasPrintableAnswer(r)) continue; // answers always print — answer-less questions don't serve

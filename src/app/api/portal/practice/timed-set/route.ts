@@ -37,6 +37,7 @@ import { DAILY_GRADE_CAP } from '@/lib/practice-grade';
 import {
   MAX_TOPICS_PER_SET, TIMED_SET_COUNTS, marksForTiming, normaliseCount, planSlots, timeLimitSeconds,
 } from '@/lib/timed-set';
+import { studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 30;
@@ -177,7 +178,11 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
         ...audience,
       });
       if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-      const q = (data?.[0] ?? null) as PracticeNextRow | null;
+      const raw = (data?.[0] ?? null) as PracticeNextRow | null;
+      // Part marks: the pick goes through the one door (lib/part-syllabus.ts). A question
+      // with too little left is passed over for this set.
+      const q = raw ? studentRow(raw) : null;
+      if (raw && !q) pickedIds.push(raw.id);
       if (q) { found = { q, topic: t }; break; }
     }
     if (!found) break;
