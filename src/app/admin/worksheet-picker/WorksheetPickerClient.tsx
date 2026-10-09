@@ -567,27 +567,27 @@ export default function WorksheetPickerClient() {
           )}
         </details>
 
-        <details className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
-          <summary className="cursor-pointer font-semibold text-slate-700">Add candidates (paste ids, or search the bank)</summary>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <div>
-              <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="uuid, uuid, …" rows={3} className="w-full border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono" />
-              <button onClick={addPasted} disabled={loading} className="mt-1 text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">Add ids</button>
-            </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex gap-2">
-                <select value={searchLevel} onChange={(e) => setSearchLevel(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs">{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
-                <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void runSearch(); }} placeholder="describe it: 'vectors in a real setting, a light ray off a mirror', 'reflection of a line in a plane', 'integration by parts twice'" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
-                <select value={searchCount} onChange={(e) => setSearchCount(Number(e.target.value))} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs" title="how many to pick">{[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}</select>
-              </div>
-              <div className="flex items-center gap-3">
-                <button onClick={runSearch} disabled={searching || loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">{searching ? 'Reading the bank… (20–40 s)' : 'Find → candidates'}</button>
-                {searchNote && <span className="text-xs text-slate-500">{searchNote}</span>}
-              </div>
-              <p className="text-[11px] text-slate-400">A model reads the bank questions whose topic, sub-skill or text matches your words and picks the ones that fit the description; each pick shows why.</p>
-            </div>
+        <div className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
+          <div className="font-semibold text-slate-700 mb-2">Find questions</div>
+          <div className="flex gap-2">
+            <select value={searchLevel} onChange={(e) => setSearchLevel(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs">{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
+            <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void runSearch(); }} placeholder="describe it: 'vectors in a real setting, a light ray off a mirror', 'reflection of a line in a plane', 'integration by parts twice'" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+            <select value={searchCount} onChange={(e) => setSearchCount(Number(e.target.value))} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs" title="how many to pick">{[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}</select>
+            <button onClick={runSearch} disabled={searching || loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50 whitespace-nowrap">{searching ? 'Reading the bank…' : 'Find → candidates'}</button>
           </div>
-        </details>
+          <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-400">
+            <span>A model reads the bank questions whose topic, sub-skill or text matches your words and picks the ones that fit; each pick shows why. 20–40 s.</span>
+            {searchNote && <span className="text-slate-500">{searchNote}</span>}
+          </div>
+          {/* For a session or script handing over a list — Adrian uses the search above. */}
+          <details className="mt-2">
+            <summary className="cursor-pointer text-[11px] text-slate-400">paste question ids</summary>
+            <div className="mt-1 flex gap-2 items-start">
+              <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="uuid, uuid, …" rows={2} className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono" />
+              <button onClick={addPasted} disabled={loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">Add ids</button>
+            </div>
+          </details>
+        </div>
 
         {loading && <div className="text-xs text-slate-500 mb-2">Loading questions…</div>}
 
