@@ -26,6 +26,13 @@
 //   pages     with working space, every question after the first starts on
 //             a fresh page — the GCE paper's rule (4375f32f, Adrian 9 Oct
 //             2026); a compact sheet flows on. The Python library does not.
+//   brand     OFF by default (Adrian, 9 Oct 2026: "default should not be in").
+//             `brand: 'colour' | 'mono'` swaps the title + subtitle for the
+//             series masthead of ADRIAN-STYLE.md §9 (lib/pick-worksheet-brand-docx
+//             over lib/worksheet-brand): masthead, Georgia topic, PRACTICE line,
+//             Name / Date, footer with Page x of y, running header from page 2;
+//             mono drains the orange [Ans:] to 404040. The series comes from the
+//             picked questions' levels; no design → the regular format.
 // Unit tests on the document.xml: lib/pick-worksheet-docx.test.ts.
 //
 // Browser-only: the OMML pipeline (lib/lesson-docx.ts) needs KaTeX's DOM output
@@ -39,6 +46,7 @@ import {
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer, blobToArrayBuffer } from './lesson-docx';
 import { ansLine, flatParts, workingLines, joinMultilineMath, type PickQuestion, type PickPart } from './pick-worksheet';
+import { brandForLevels, MONO_DRAIN, type BrandMode } from './worksheet-brand';
 
 const NAVY = '1F4E79';
 const ANSWER_ORANGE = '843C0C';
@@ -224,8 +232,12 @@ function listLevel(reference: string, fmt: 'letter' | 'roman', depth: number, st
 
 type Item = IParagraphOptions & { keepNext?: boolean };
 
-export async function buildPickWorksheetDocx(input: { title: string; subtitle: string; questions: PickQuestion[]; workingSpace?: boolean }): Promise<Blob> {
-  const { title, subtitle, questions, workingSpace = true } = input;
+export async function buildPickWorksheetDocx(input: { title: string; subtitle: string; questions: PickQuestion[]; workingSpace?: boolean; brand?: BrandMode }): Promise<Blob> {
+  const { title, subtitle, questions, workingSpace = true, brand = 'off' } = input;
+  // The brand switch: a series design for the picked levels, or the regular format.
+  const brandLv = brand !== 'off' ? brandForLevels(questions.map((q) => q.level)) : null;
+  const branded = brand !== 'off' && brandLv ? brand : null;
+  const ansColor = branded === 'mono' ? MONO_DRAIN : ANSWER_ORANGE;
   const reg = new OmmlRegistry();
   const items: Item[] = [];
   const numbering: NumberingEntry[] = [
@@ -254,9 +266,11 @@ export async function buildPickWorksheetDocx(input: { title: string; subtitle: s
     items.push(await figurePara(url));        // … and with the part below (keepNext inside)
   };
 
-  items.push({ alignment: AlignmentType.CENTER, spacing: { line: LAYOUT.line, after: 120 }, children: [new TextRun({ text: title, bold: true, size: 24, color: NAVY })] });
-  if (subtitle.trim()) {
-    items.push({ alignment: AlignmentType.CENTER, spacing: { line: LAYOUT.line, after: 160 }, children: [new TextRun({ text: subtitle.trim(), italics: true, size: 20 })] });
+  if (!branded) {
+    items.push({ alignment: AlignmentType.CENTER, spacing: { line: LAYOUT.line, after: 120 }, children: [new TextRun({ text: title, bold: true, size: 24, color: NAVY })] });
+    if (subtitle.trim()) {
+      items.push({ alignment: AlignmentType.CENTER, spacing: { line: LAYOUT.line, after: 160 }, children: [new TextRun({ text: subtitle.trim(), italics: true, size: 20 })] });
+    }
   }
 
   for (let qi = 0; qi < questions.length; qi++) {
@@ -355,23 +369,32 @@ export async function buildPickWorksheetDocx(input: { title: string; subtitle: s
         alignment: AlignmentType.RIGHT,
         spacing: { line: LAYOUT.line },
         children: [
-          new TextRun({ text: '[Ans: ', color: ANSWER_ORANGE }),
-          ...runs(ans, reg, { color: ANSWER_ORANGE }),
-          new TextRun({ text: ']', color: ANSWER_ORANGE }),
+          new TextRun({ text: '[Ans: ', color: ansColor }),
+          ...runs(ans, reg, { color: ansColor }),
+          new TextRun({ text: ']', color: ansColor }),
         ],
       });
     }
   }
 
+  // The masthead, title block and page furniture when the brand switch is on
+  // (lib/pick-worksheet-brand-docx); the regular sheet is untouched otherwise.
+  const parts = branded && brandLv
+    ? await (await import('./pick-worksheet-brand-docx')).brandDocxParts(branded, brandLv, title, subtitle.trim(), questions.length, questions.reduce((s, q) => s + (q.marks ?? 0), 0) || null)
+    : null;
   const doc = new Document({
     styles: { default: { document: { run: { size: LAYOUT.bodyHalfPt, font: 'Times New Roman' }, paragraph: { spacing: { line: LAYOUT.line, before: 0, after: 0 } } } } },
     numbering: { config: numbering },
     sections: [{
-      properties: { page: {
-        size: { width: 11906, height: 16838 },
-        margin: { top: CM(2), bottom: CM(1), left: CM(2.5), right: CM(2.5) },
-      } },
-      children: items.map((o) => new Paragraph(o)),
+      properties: {
+        page: {
+          size: { width: 11906, height: 16838 },
+          margin: parts ? parts.margin : { top: CM(2), bottom: CM(1), left: CM(2.5), right: CM(2.5) },
+        },
+        ...(parts ? { titlePage: true } : {}),
+      },
+      ...(parts ? { headers: parts.headers, footers: parts.footers } : {}),
+      children: [...(parts ? parts.top : []), ...items.map((o) => new Paragraph(o))],
     }],
   });
   const blob = await Packer.toBlob(doc);
