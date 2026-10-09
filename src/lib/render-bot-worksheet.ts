@@ -325,6 +325,11 @@ ${katexInlineHead()}
      first question flows under the title (never a title-only page 1). */
   .ws-q:first-child{break-inside:auto}
   body:not(.ws-compact) .ws-q + .ws-q{break-before:page;page-break-before:always}
+  /* On a page-per-question sheet the question block itself may break (between
+     its glued .ws-keep parts): an unbreakable-but-too-tall outer block made the
+     server's Chromium ignore the inner keep rules and cut anywhere — the preview
+     printed the [Ans:] line alone on a page while local Chrome did not (9 Oct 2026). */
+  body:not(.ws-compact) .ws-q{break-inside:auto}
 
   /* Inline answer line: ONE orange right-aligned [Ans: …] at the end of the question. */
   .ws-ans{text-align:right;color:${ANSWER_ORANGE};clear:both}
