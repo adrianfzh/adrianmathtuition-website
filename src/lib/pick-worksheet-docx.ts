@@ -17,7 +17,7 @@ import {
   convertMillimetersToTwip, LevelFormat, LevelSuffix,
 } from 'docx';
 import { splitMathInline, latexToOMML, OmmlRegistry, injectOmmlIntoDocxBuffer } from './lesson-docx';
-import { ansLine, flatParts, workingLines, type PickQuestion } from './pick-worksheet';
+import { ansLine, flatParts, workingLines, joinMultilineMath, type PickQuestion } from './pick-worksheet';
 
 const NAVY = '1F4E79';
 const ANSWER_ORANGE = '843C0C';
@@ -29,24 +29,6 @@ const P_TEXT_INDENT = convertMillimetersToTwip(20);   // "(a)" at 1.0 cm, text a
 const RIGHT_INDENT = convertMillimetersToTwip(14);  // a full last line still leaves the marks their tab (worksheet_lib)
 const FIG_MAX_PX = 302;               // 8 cm at 96 dpi (paper-layout rule: figures print small)
 const FIG_WIDE_PX = 378;              // 10 cm for a wide figure (aspect ≥ 1.5)
-
-function joinMultilineMath(text: string): string {
-  // A `$…$` that the bank broke over several lines never pairs; join it first.
-  const lines = text.split('\n');
-  const out: string[] = [];
-  let open = false; let buf = '';
-  for (const line of lines) {
-    const dollars = (line.match(/(?<!\\)\$/g) || []).length;
-    if (!open) {
-      if (dollars % 2 === 1) { open = true; buf = line; } else out.push(line);
-    } else {
-      buf += ' ' + line.trim();
-      if (dollars % 2 === 1) { open = false; out.push(buf); buf = ''; }
-    }
-  }
-  if (buf) out.push(buf);
-  return out.join('\n');
-}
 
 /** Inline markdown (bold) + $…$ maths → runs; maths becomes an OMML token. */
 function runs(text: string, reg: OmmlRegistry, opts: { color?: string; bold?: boolean; italics?: boolean } = {}): TextRun[] {

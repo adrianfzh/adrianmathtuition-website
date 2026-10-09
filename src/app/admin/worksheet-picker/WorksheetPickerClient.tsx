@@ -25,7 +25,7 @@ import 'katex/dist/katex.min.css';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import SolutionText from '@/components/SolutionText';
-import { fromDetail, flatParts, partLabel, partKey, ansLine, parseIds, fileStem, practiceFolderFor, PRACTICE_FOLDERS, type PracticeFolder, type PickQuestion, type DetailRow } from '@/lib/pick-worksheet';
+import { fromDetail, flatParts, partLabel, partKey, ansLine, parseIds, fileStem, practiceFolderFor, joinMultilineMath, PRACTICE_FOLDERS, type PracticeFolder, type PickQuestion, type DetailRow } from '@/lib/pick-worksheet';
 
 type Col = 'cands' | 'picked';
 type Toast = { msg: string; kind: 'ok' | 'err' };
@@ -37,7 +37,7 @@ const LEVELS = ['JC2', 'JC1', 'AM', 'EM', 'S3_AM', 'S3_EM', 'S2', 'S1'];
  *  "rendering errors": a stem cut mid-formula showed raw LaTeX). */
 function excerpt(q: PickQuestion, n = 150): string {
   const first = q.stem || (q.parts[0] ? `(${q.parts[0].label}) ${q.parts[0].text}` : '');
-  const clean = first.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+  const clean = joinMultilineMath(first).replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
   if (clean.length <= n) return clean;
   const tokens = clean.split(/(\$\$[^$]+\$\$|\$[^$\n]+\$)/g).filter(Boolean);
   let out = '';
@@ -54,7 +54,7 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
   const parts = flatParts(q.parts);
   return (
     <div className="leading-relaxed text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: size }}>
-      {q.stem && <div className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(q.stem) }} />}
+      {q.stem && <div className="mb-2 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(joinMultilineMath(q.stem)) }} />}
       {q.images.map((u) => <img key={u} src={u} alt="" className="max-w-[80%] block mx-auto my-2" />)}
       {parts.map(({ labels, part, depth }) => (
         <div key={labels.join('.')} className="mt-1.5" style={{ marginLeft: depth * 18 }}>
@@ -62,7 +62,7 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
           {(part.text || part.marks) && (
             <div className="flex gap-2">
               <span className="shrink-0 w-10">{partLabel(labels)}</span>
-              <span className="flex-1 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(part.text) }} />
+              <span className="flex-1 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: mathHtml(joinMultilineMath(part.text)) }} />
               {part.marks && <span className="shrink-0 text-slate-600">[{part.marks}]</span>}
             </div>
           )}

@@ -261,3 +261,36 @@ export function practiceFolderFor(levels: (string | null | undefined)[]): Practi
   for (const [f, n] of tally) if (best === null || n > (tally.get(best) ?? 0)) best = f;
   return best;
 }
+
+/**
+ * A `$…$` span the bank broke over several lines (a pmatrix typed one row per
+ * line — TMJC 2025 P1 Q10, 9 Oct 2026) never pairs in an inline renderer whose
+ * span cannot contain a newline. Join the lines of any unclosed `$` span (and
+ * of a `$$…$$` block) so the maths renders; prose lines are left alone.
+ */
+export function joinMultilineMath(text: string): string {
+  if (!text || !text.includes('\n')) return text;
+  const out: string[] = [];
+  let buf: string | null = null;
+  let display = false;
+  for (const line of text.split('\n')) {
+    if (buf === null) {
+      const dd = (line.match(/\$\$/g) || []).length;
+      const d = (line.replace(/\\\$/g, '').match(/\$/g) || []).length;
+      // Only a span whose open tail looks like TeX starts a join — "Costs $5 each."
+      // has an odd count too, and must stay a prose line.
+      const tail = line.slice(line.lastIndexOf('$') + 1);
+      const texTail = /[\\{}^_]|\\begin/.test(tail) || tail.trim() === '';
+      if (dd % 2 === 1 && texTail) { buf = line; display = true; continue; }
+      if (d % 2 === 1 && texTail) { buf = line; display = false; continue; }
+      out.push(line);
+    } else {
+      buf += ' ' + line.trim();
+      const dd = (line.match(/\$\$/g) || []).length;
+      const d = (line.replace(/\\\$/g, '').match(/\$/g) || []).length;
+      if ((display && dd % 2 === 1) || (!display && d % 2 === 1)) { out.push(buf); buf = null; }
+    }
+  }
+  if (buf !== null) out.push(buf);
+  return out.join('\n');
+}

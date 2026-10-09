@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { fromDetail, ansLine, workingLines, parseIds, questionMarkdown, flatParts, fileStem, isShownAnswer, practiceFolderFor } from './pick-worksheet';
+import { fromDetail, ansLine, workingLines, parseIds, questionMarkdown, flatParts, fileStem, isShownAnswer, practiceFolderFor, joinMultilineMath } from './pick-worksheet';
 
 const detail = {
   id: '11111111-1111-1111-1111-111111111111',
@@ -98,5 +98,18 @@ describe('practiceFolderFor', () => {
     expect(practiceFolderFor(['S2_NA'])).toBe('S2');
     expect(practiceFolderFor(['S1_NT'])).toBe('S1');
     expect(practiceFolderFor([null, 'weird'])).toBeNull();
+  });
+});
+
+describe('joinMultilineMath', () => {
+  it('joins a $…$ span typed over several lines (a pmatrix one row per line)', () => {
+    const src = 'The line $l:\\mathbf{r} = \\begin{pmatrix}\n2 \\\\\n1 \\\\\n\\end{pmatrix}$ where $\\lambda \\in \\mathbb{R}$.\nNext line.';
+    const out = joinMultilineMath(src);
+    expect(out.split('\n')).toHaveLength(2);
+    expect(out.startsWith('The line $l:\\mathbf{r} = \\begin{pmatrix} 2 \\\\ 1 \\\\ \\end{pmatrix}$ where')).toBe(true);
+  });
+  it('leaves prose and balanced lines alone', () => {
+    const src = 'Costs $5 each.\nFind $x$.';
+    expect(joinMultilineMath(src)).toBe(src);
   });
 });
