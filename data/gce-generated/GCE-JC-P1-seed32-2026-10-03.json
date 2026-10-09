@@ -1,0 +1,612 @@
+{
+"key": "GCE-JC-P1",
+"seed": 32,
+"set": 32,
+"variety": true,
+"models": {
+"author": "opus (the lead agent itself)",
+"solver": "opus (fresh agents, blind)"
+},
+"earlier_sets": [],
+"shape": {
+"subject": "Mathematics",
+"code": "9758",
+"level": "JC2",
+"setLevel": "JC",
+"exam": "A-Level",
+"cut": 2017,
+"duration": "3 hours",
+"standardYears": "school prelims 2024–2025",
+"additional": "List of Formulae (MF26)",
+"title": "H2 Mathematics · Prelim (Opus) · Paper 1"
+},
+"paperNo": 1,
+"total": 100,
+"sections": null,
+"prompt_version": "prelim-fable-1",
+"blueprint_derived_at": null,
+"generated_at": "2026-10-03",
+"questions": [
+{
+"pos": 1,
+"topic": "Equations",
+"target": 5,
+"accepted": true,
+"question": {
+"stem": "The curve $C$ has equation $y = ax^{3} + bx^{2} + cx + d$, where $a$, $b$, $c$ and $d$ are constants. $C$ passes through the origin $O$ and the point $(3, 8)$. A rotation of $180^{\\circ}$ about the point $(1, 2)$ maps $C$ onto itself.",
+"total_marks": 5,
+"topics": [
+"Equations"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"half-turn symmetry gives extra points",
+"solving a linear system"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 2,
+"text": "Explain why the points $(2, 4)$ and $(-1, -4)$ must lie on $C$.",
+"answer": "A half-turn about $(1,2)$ sends $(x, y)$ to $(2-x, 4-y)$; it sends $O$ to $(2,4)$ and $(3,8)$ to $(-1,-4)$, and since $C$ is mapped onto itself these images lie on $C$.",
+"solution": "A rotation of $180^{\\circ}$ about $(1,2)$ sends $(x, y)$ to $(2 - x,\\ 4 - y)$.\n$O(0,0)$ is sent to $(2 - 0,\\ 4 - 0) = (2, 4)$.\n$(3, 8)$ is sent to $(2 - 3,\\ 4 - 8) = (-1, -4)$.\n$C$ is mapped onto itself, so the image of every point of $C$ is on $C$.\nAnswer: $(2,4)$ and $(-1,-4)$ are the images of $O$ and $(3,8)$, so they lie on $C$."
+},
+{
+"label": "(b)",
+"marks": 3,
+"text": "Hence find the values of $a$, $b$, $c$ and $d$.",
+"answer": "$a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$, $d = 0$",
+"solution": "Through $O$: $d = 0$.\nThrough $(3,8)$: $27a + 9b + 3c = 8$.\nThrough $(2,4)$: $8a + 4b + 2c = 4$.\nThrough $(-1,-4)$: $-a + b - c = -4$.\nSolving (GC): $a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$.\nCheck $(3,8)$: $9 - 9 + 8 = 8$.\nAnswer: $a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$, $d = 0$"
+}
+],
+"answer": "(a) A half-turn about $(1,2)$ sends $(x, y)$ to $(2-x, 4-y)$; it sends $O$ to $(2,4)$ and $(3,8)$ to $(-1,-4)$, and since $C$ is mapped onto itself these images lie on $C$.; (b) $a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$, $d = 0$",
+"solution": "(a) A rotation of $180^{\\circ}$ about $(1,2)$ sends $(x, y)$ to $(2 - x,\\ 4 - y)$.\n$O(0,0)$ is sent to $(2 - 0,\\ 4 - 0) = (2, 4)$.\n$(3, 8)$ is sent to $(2 - 3,\\ 4 - 8) = (-1, -4)$.\n$C$ is mapped onto itself, so the image of every point of $C$ is on $C$.\nAnswer: $(2,4)$ and $(-1,-4)$ are the images of $O$ and $(3,8)$, so they lie on $C$.\n\n(b) Through $O$: $d = 0$.\nThrough $(3,8)$: $27a + 9b + 3c = 8$.\nThrough $(2,4)$: $8a + 4b + 2c = 4$.\nThrough $(-1,-4)$: $-a + b - c = -4$.\nSolving (GC): $a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$.\nCheck $(3,8)$: $9 - 9 + 8 = 8$.\nAnswer: $a = \\dfrac{1}{3}$, $b = -1$, $c = \\dfrac{8}{3}$, $d = 0$",
+"originality_note": "Built from the symmetry, not from given data points: two of the four conditions must be manufactured by the half-turn."
+}
+},
+{
+"pos": 2,
+"topic": "Maclaurin Series",
+"target": 6,
+"accepted": true,
+"question": {
+"stem": "In this question you may use expansions from the List of Formulae (MF26).",
+"total_marks": 6,
+"topics": [
+"Maclaurin Series"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"rewriting a quadratic as a quotient",
+"standard series of ln",
+"general coefficient"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 1,
+"text": "Show that $1 + x + x^{2} = \\dfrac{1 - x^{3}}{1 - x}$ for $x \\neq 1$.",
+"answer": "Shown",
+"solution": "$(1 - x)(1 + x + x^{2}) = 1 + x + x^{2} - x - x^{2} - x^{3} = 1 - x^{3}$.\nDivide by $1 - x$ (since $x \\neq 1$): $1 + x + x^{2} = \\dfrac{1 - x^{3}}{1 - x}$.\nAnswer: Shown"
+},
+{
+"label": "(b)",
+"marks": 3,
+"text": "Hence find the Maclaurin series for $\\ln(1 + x + x^{2})$, up to and including the term in $x^{6}$.",
+"answer": "$x + \\dfrac{x^{2}}{2} - \\dfrac{2x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} - \\dfrac{x^{6}}{3} + \\ldots$",
+"solution": "$\\ln(1 + x + x^{2}) = \\ln(1 - x^{3}) - \\ln(1 - x)$.\n$-\\ln(1 - x) = x + \\dfrac{x^{2}}{2} + \\dfrac{x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} + \\dfrac{x^{6}}{6} + \\ldots$\n$\\ln(1 - x^{3}) = -x^{3} - \\dfrac{x^{6}}{2} - \\ldots$\nCoefficient of $x^{3}$: $\\dfrac{1}{3} - 1 = -\\dfrac{2}{3}$.\nCoefficient of $x^{6}$: $\\dfrac{1}{6} - \\dfrac{1}{2} = -\\dfrac{1}{3}$.\nAnswer: $\\ln(1 + x + x^{2}) = x + \\dfrac{x^{2}}{2} - \\dfrac{2x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} - \\dfrac{x^{6}}{3} + \\ldots$"
+},
+{
+"label": "(c)",
+"marks": 2,
+"text": "Find the coefficient of $x^{2025}$ and the coefficient of $x^{2026}$ in the Maclaurin series for $\\ln(1 + x + x^{2})$.",
+"answer": "$-\\dfrac{2}{2025}$ and $\\dfrac{1}{2026}$",
+"solution": "$-\\ln(1 - x)$ gives $\\dfrac{x^{n}}{n}$ for every $n \\geq 1$.\n$\\ln(1 - x^{3})$ gives $-\\dfrac{x^{3m}}{m}$, only for powers that are multiples of 3.\n$2025 = 3 \\times 675$: coefficient $= \\dfrac{1}{2025} - \\dfrac{1}{675} = \\dfrac{1 - 3}{2025} = -\\dfrac{2}{2025}$.\n$2026$ is not a multiple of 3: coefficient $= \\dfrac{1}{2026}$.\nAnswer: coefficient of $x^{2025}$ is $-\\dfrac{2}{2025}$; coefficient of $x^{2026}$ is $\\dfrac{1}{2026}$"
+}
+],
+"answer": "(a) Shown; (b) $x + \\dfrac{x^{2}}{2} - \\dfrac{2x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} - \\dfrac{x^{6}}{3} + \\ldots$; (c) $-\\dfrac{2}{2025}$ and $\\dfrac{1}{2026}$",
+"solution": "(a) $(1 - x)(1 + x + x^{2}) = 1 + x + x^{2} - x - x^{2} - x^{3} = 1 - x^{3}$.\nDivide by $1 - x$ (since $x \\neq 1$): $1 + x + x^{2} = \\dfrac{1 - x^{3}}{1 - x}$.\nAnswer: Shown\n\n(b) $\\ln(1 + x + x^{2}) = \\ln(1 - x^{3}) - \\ln(1 - x)$.\n$-\\ln(1 - x) = x + \\dfrac{x^{2}}{2} + \\dfrac{x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} + \\dfrac{x^{6}}{6} + \\ldots$\n$\\ln(1 - x^{3}) = -x^{3} - \\dfrac{x^{6}}{2} - \\ldots$\nCoefficient of $x^{3}$: $\\dfrac{1}{3} - 1 = -\\dfrac{2}{3}$.\nCoefficient of $x^{6}$: $\\dfrac{1}{6} - \\dfrac{1}{2} = -\\dfrac{1}{3}$.\nAnswer: $\\ln(1 + x + x^{2}) = x + \\dfrac{x^{2}}{2} - \\dfrac{2x^{3}}{3} + \\dfrac{x^{4}}{4} + \\dfrac{x^{5}}{5} - \\dfrac{x^{6}}{3} + \\ldots$\n\n(c) $-\\ln(1 - x)$ gives $\\dfrac{x^{n}}{n}$ for every $n \\geq 1$.\n$\\ln(1 - x^{3})$ gives $-\\dfrac{x^{3m}}{m}$, only for powers that are multiples of 3.\n$2025 = 3 \\times 675$: coefficient $= \\dfrac{1}{2025} - \\dfrac{1}{675} = \\dfrac{1 - 3}{2025} = -\\dfrac{2}{2025}$.\n$2026$ is not a multiple of 3: coefficient $= \\dfrac{1}{2026}$.\nAnswer: coefficient of $x^{2025}$ is $-\\dfrac{2}{2025}$; coefficient of $x^{2026}$ is $\\dfrac{1}{2026}$",
+"originality_note": "The series is not found by differentiating: it comes from seeing 1+x+x^2 as a quotient, which then gives every coefficient."
+}
+},
+{
+"pos": 3,
+"topic": "Differentiation (Maximum and Minimum)",
+"target": 7,
+"accepted": true,
+"question": {
+"stem": "The point $A$ has coordinates $(0, a)$, where $a$ is a positive constant. The point $P$, with coordinates $(t, t^{2})$, lies on the curve $y = x^{2}$.",
+"total_marks": 7,
+"topics": [
+"Differentiation (Maximum and Minimum)"
+],
+"needs_figure": true,
+"figure_description": "A bowl: the curve y = x² drawn for about −1.6 ≤ x ≤ 1.6 with x- and y-axes and O at the origin, labelled y = x². A circular disc of radius 1 rests inside the bowl, touching the curve at two points placed symmetrically either side of the y-axis; its centre is on the y-axis and labelled A; one radius from A to a touching point is drawn and labelled 1. Nothing else is printed: no coordinates of A or of the touching points, no height, no dashed lines to the axes.",
+"skills": [
+"least distance from a point to a curve",
+"case split on a parameter",
+"applying the result to a physical fit"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 1,
+"text": "Show that $AP^{2} = t^{4} + (1 - 2a)t^{2} + a^{2}$.",
+"answer": "Shown",
+"solution": "$AP^{2} = (t - 0)^{2} + (t^{2} - a)^{2}$\n$= t^{2} + t^{4} - 2at^{2} + a^{2}$\n$= t^{4} + (1 - 2a)t^{2} + a^{2}$\nAnswer: Shown"
+},
+{
+"label": "(b)",
+"marks": 4,
+"text": "Use differentiation to find the least value of $AP$, in terms of $a$, in each of the cases $0 < a \\leq \\dfrac{1}{2}$ and $a > \\dfrac{1}{2}$.",
+"answer": "Least $AP = a$ when $0 < a \\leq \\dfrac{1}{2}$; least $AP = \\dfrac{\\sqrt{4a - 1}}{2}$ when $a > \\dfrac{1}{2}$",
+"solution": "Let $D = AP^{2}$. $\\dfrac{dD}{dt} = 4t^{3} + 2(1 - 2a)t = 2t\\left(2t^{2} + 1 - 2a\\right)$.\nCase $0 < a \\leq \\dfrac{1}{2}$: $2t^{2} + 1 - 2a > 0$ for $t \\neq 0$, so the only stationary value is at $t = 0$.\n$\\dfrac{dD}{dt} < 0$ for $t < 0$ and $\\dfrac{dD}{dt} > 0$ for $t > 0$, so $D$ is least at $t = 0$, giving $AP = \\sqrt{a^{2}} = a$.\n(At $a = \\dfrac{1}{2}$, $D = t^{4} + \\dfrac{1}{4}$ and $\\dfrac{d^{2}D}{dt^{2}} = 0$ at $t = 0$, so the second-derivative test is inconclusive; the sign of $\\dfrac{dD}{dt} = 4t^{3}$, negative then positive, still gives a minimum.)\nCase $a > \\dfrac{1}{2}$: stationary at $t = 0$ and at $t^{2} = \\dfrac{2a - 1}{2}$.\n$\\dfrac{d^{2}D}{dt^{2}} = 12t^{2} + 2(1 - 2a)$: at $t = 0$ it is $2(1 - 2a) < 0$ (maximum); at $t^{2} = \\dfrac{2a-1}{2}$ it is $6(2a - 1) + 2(1 - 2a) = 4(2a - 1) > 0$ (minimum).\nLeast $D = \\left(\\dfrac{2a-1}{2}\\right)^{2} - (2a - 1)\\cdot\\dfrac{2a-1}{2} + a^{2} = a^{2} - \\dfrac{(2a-1)^{2}}{4} = \\dfrac{4a - 1}{4}$.\nAnswer: least $AP = a$ when $0 < a \\leq \\dfrac{1}{2}$; least $AP = \\dfrac{\\sqrt{4a - 1}}{2}$ when $a > \\dfrac{1}{2}$"
+},
+{
+"label": "(c)",
+"marks": 2,
+"text": "The curve $y = x^{2}$ is the cross-section of a bowl. A circular disc of radius $1$, in the plane of this cross-section and with its centre on the $y$-axis, rests inside the bowl touching the curve. Using your answer to part (b), find the height of the centre of the disc above $O$, and explain why the disc does not touch the bowl at $O$.",
+"answer": "Height $\\dfrac{5}{4}$; the disc touches at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, not at $O$",
+"solution": "Let the centre be $(0, a)$. Resting and touching means the least distance from the centre to the curve is $1$.\nIf $a \\leq \\dfrac{1}{2}$, the least distance is $a \\leq \\dfrac{1}{2} < 1$, so the disc could not touch the curve. Hence $a > \\dfrac{1}{2}$.\n$\\dfrac{\\sqrt{4a - 1}}{2} = 1 \\Rightarrow 4a - 1 = 4 \\Rightarrow a = \\dfrac{5}{4}$.\nThe least distance then occurs at $t^{2} = \\dfrac{2a - 1}{2} = \\dfrac{3}{4}$, i.e. at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, not at $t = 0$.\nAt $O$ the distance is $\\dfrac{5}{4} > 1$, so the disc does not reach $O$.\nAnswer: the centre is $\\dfrac{5}{4}$ above $O$; the disc touches at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, and $O$ is $\\dfrac{5}{4} > 1$ from the centre",
+"figure": "c"
+}
+],
+"answer": "(a) Shown; (b) Least $AP = a$ when $0 < a \\leq \\dfrac{1}{2}$; least $AP = \\dfrac{\\sqrt{4a - 1}}{2}$ when $a > \\dfrac{1}{2}$; (c) Height $\\dfrac{5}{4}$; the disc touches at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, not at $O$",
+"solution": "(a) $AP^{2} = (t - 0)^{2} + (t^{2} - a)^{2}$\n$= t^{2} + t^{4} - 2at^{2} + a^{2}$\n$= t^{4} + (1 - 2a)t^{2} + a^{2}$\nAnswer: Shown\n\n(b) Let $D = AP^{2}$. $\\dfrac{dD}{dt} = 4t^{3} + 2(1 - 2a)t = 2t\\left(2t^{2} + 1 - 2a\\right)$.\nCase $0 < a \\leq \\dfrac{1}{2}$: $2t^{2} + 1 - 2a > 0$ for $t \\neq 0$, so the only stationary value is at $t = 0$.\n$\\dfrac{dD}{dt} < 0$ for $t < 0$ and $\\dfrac{dD}{dt} > 0$ for $t > 0$, so $D$ is least at $t = 0$, giving $AP = \\sqrt{a^{2}} = a$.\n(At $a = \\dfrac{1}{2}$, $D = t^{4} + \\dfrac{1}{4}$ and $\\dfrac{d^{2}D}{dt^{2}} = 0$ at $t = 0$, so the second-derivative test is inconclusive; the sign of $\\dfrac{dD}{dt} = 4t^{3}$, negative then positive, still gives a minimum.)\nCase $a > \\dfrac{1}{2}$: stationary at $t = 0$ and at $t^{2} = \\dfrac{2a - 1}{2}$.\n$\\dfrac{d^{2}D}{dt^{2}} = 12t^{2} + 2(1 - 2a)$: at $t = 0$ it is $2(1 - 2a) < 0$ (maximum); at $t^{2} = \\dfrac{2a-1}{2}$ it is $6(2a - 1) + 2(1 - 2a) = 4(2a - 1) > 0$ (minimum).\nLeast $D = \\left(\\dfrac{2a-1}{2}\\right)^{2} - (2a - 1)\\cdot\\dfrac{2a-1}{2} + a^{2} = a^{2} - \\dfrac{(2a-1)^{2}}{4} = \\dfrac{4a - 1}{4}$.\nAnswer: least $AP = a$ when $0 < a \\leq \\dfrac{1}{2}$; least $AP = \\dfrac{\\sqrt{4a - 1}}{2}$ when $a > \\dfrac{1}{2}$\n\n(c) Let the centre be $(0, a)$. Resting and touching means the least distance from the centre to the curve is $1$.\nIf $a \\leq \\dfrac{1}{2}$, the least distance is $a \\leq \\dfrac{1}{2} < 1$, so the disc could not touch the curve. Hence $a > \\dfrac{1}{2}$.\n$\\dfrac{\\sqrt{4a - 1}}{2} = 1 \\Rightarrow 4a - 1 = 4 \\Rightarrow a = \\dfrac{5}{4}$.\nThe least distance then occurs at $t^{2} = \\dfrac{2a - 1}{2} = \\dfrac{3}{4}$, i.e. at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, not at $t = 0$.\nAt $O$ the distance is $\\dfrac{5}{4} > 1$, so the disc does not reach $O$.\nAnswer: the centre is $\\dfrac{5}{4}$ above $O$; the disc touches at $\\left(\\pm\\dfrac{\\sqrt{3}}{2}, \\dfrac{3}{4}\\right)$, and $O$ is $\\dfrac{5}{4} > 1$ from the centre",
+"originality_note": "A ball-in-a-bowl fit: the case split at a = 1/2 is the idea (the curvature radius at the vertex), never stated to the candidate."
+}
+},
+{
+"pos": 4,
+"topic": "Complex Numbers",
+"target": 8,
+"accepted": true,
+"question": {
+"stem": "**Do not use a calculator in answering this question.**",
+"total_marks": 8,
+"topics": [
+"Complex Numbers"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"factorising z^4+4 into real quadratics",
+"reciprocal symmetry of a polynomial",
+"a Mobius substitution"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 3,
+"text": "Show that $z^{4} + 4 = (z^{2} + 2z + 2)(z^{2} - 2z + 2)$. Hence find the four roots of the equation $z^{4} + 4 = 0$, in the form $x + iy$.",
+"answer": "$1 + i$, $1 - i$, $-1 + i$, $-1 - i$",
+"solution": "$(z^{2} + 2 + 2z)(z^{2} + 2 - 2z) = (z^{2} + 2)^{2} - (2z)^{2} = z^{4} + 4z^{2} + 4 - 4z^{2} = z^{4} + 4$.\n$z^{2} + 2z + 2 = 0 \\Rightarrow z = \\dfrac{-2 \\pm \\sqrt{4 - 8}}{2} = -1 \\pm i$.\n$z^{2} - 2z + 2 = 0 \\Rightarrow z = \\dfrac{2 \\pm \\sqrt{4 - 8}}{2} = 1 \\pm i$.\nAnswer: $z = 1 + i,\\ 1 - i,\\ -1 + i,\\ -1 - i$"
+},
+{
+"label": "(b)",
+"marks": 2,
+"text": "The polynomial $P(w)$ is defined by $P(w) = (w - 1)^{4} + 4(w + 1)^{4}$. Show that $w = 0$ is not a root of $P(w) = 0$, and that if $w$ is a root of $P(w) = 0$ then so is $\\dfrac{1}{w}$.",
+"answer": "Shown",
+"solution": "$P(0) = 1 + 4 = 5 \\neq 0$.\n$P\\left(\\dfrac{1}{w}\\right) = \\left(\\dfrac{1 - w}{w}\\right)^{4} + 4\\left(\\dfrac{1 + w}{w}\\right)^{4} = \\dfrac{(w - 1)^{4} + 4(w + 1)^{4}}{w^{4}} = \\dfrac{P(w)}{w^{4}}$.\nSo if $P(w) = 0$ (with $w \\neq 0$) then $P\\left(\\dfrac{1}{w}\\right) = 0$.\nAnswer: Shown"
+},
+{
+"label": "(c)",
+"marks": 3,
+"text": "By considering $\\dfrac{w - 1}{w + 1}$, use your answer to part (a) to find the four roots of $P(w) = 0$, in the form $x + iy$.",
+"answer": "$-1 + 2i$, $-1 - 2i$, $-\\dfrac{1}{5} + \\dfrac{2}{5}i$, $-\\dfrac{1}{5} - \\dfrac{2}{5}i$",
+"solution": "$P(-1) = 16 \\neq 0$, so $w \\neq -1$ and $P(w) = 0 \\iff \\left(\\dfrac{w - 1}{w + 1}\\right)^{4} = -4$.\nSo $\\dfrac{w - 1}{w + 1} = z$ with $z \\in \\{1 \\pm i,\\ -1 \\pm i\\}$, giving $w = \\dfrac{1 + z}{1 - z}$.\n$z = 1 + i$: $w = \\dfrac{2 + i}{-i} = \\dfrac{(2 + i)i}{1} = -1 + 2i$.\n$z = 1 - i$: $w = \\dfrac{2 - i}{i} = -i(2 - i) = -1 - 2i$.\n$z = -1 + i$: $w = \\dfrac{i}{2 - i} = \\dfrac{i(2 + i)}{5} = -\\dfrac{1}{5} + \\dfrac{2}{5}i$.\n$z = -1 - i$: $w = \\dfrac{-i}{2 + i} = \\dfrac{-i(2 - i)}{5} = -\\dfrac{1}{5} - \\dfrac{2}{5}i$.\nCheck with (b): $\\dfrac{1}{-1 + 2i} = \\dfrac{-1 - 2i}{5}$.\nAnswer: $w = -1 + 2i,\\ -1 - 2i,\\ -\\dfrac{1}{5} + \\dfrac{2}{5}i,\\ -\\dfrac{1}{5} - \\dfrac{2}{5}i$"
+}
+],
+"answer": "(a) $1 + i$, $1 - i$, $-1 + i$, $-1 - i$; (b) Shown; (c) $-1 + 2i$, $-1 - 2i$, $-\\dfrac{1}{5} + \\dfrac{2}{5}i$, $-\\dfrac{1}{5} - \\dfrac{2}{5}i$",
+"solution": "(a) $(z^{2} + 2 + 2z)(z^{2} + 2 - 2z) = (z^{2} + 2)^{2} - (2z)^{2} = z^{4} + 4z^{2} + 4 - 4z^{2} = z^{4} + 4$.\n$z^{2} + 2z + 2 = 0 \\Rightarrow z = \\dfrac{-2 \\pm \\sqrt{4 - 8}}{2} = -1 \\pm i$.\n$z^{2} - 2z + 2 = 0 \\Rightarrow z = \\dfrac{2 \\pm \\sqrt{4 - 8}}{2} = 1 \\pm i$.\nAnswer: $z = 1 + i,\\ 1 - i,\\ -1 + i,\\ -1 - i$\n\n(b) $P(0) = 1 + 4 = 5 \\neq 0$.\n$P\\left(\\dfrac{1}{w}\\right) = \\left(\\dfrac{1 - w}{w}\\right)^{4} + 4\\left(\\dfrac{1 + w}{w}\\right)^{4} = \\dfrac{(w - 1)^{4} + 4(w + 1)^{4}}{w^{4}} = \\dfrac{P(w)}{w^{4}}$.\nSo if $P(w) = 0$ (with $w \\neq 0$) then $P\\left(\\dfrac{1}{w}\\right) = 0$.\nAnswer: Shown\n\n(c) $P(-1) = 16 \\neq 0$, so $w \\neq -1$ and $P(w) = 0 \\iff \\left(\\dfrac{w - 1}{w + 1}\\right)^{4} = -4$.\nSo $\\dfrac{w - 1}{w + 1} = z$ with $z \\in \\{1 \\pm i,\\ -1 \\pm i\\}$, giving $w = \\dfrac{1 + z}{1 - z}$.\n$z = 1 + i$: $w = \\dfrac{2 + i}{-i} = \\dfrac{(2 + i)i}{1} = -1 + 2i$.\n$z = 1 - i$: $w = \\dfrac{2 - i}{i} = -i(2 - i) = -1 - 2i$.\n$z = -1 + i$: $w = \\dfrac{i}{2 - i} = \\dfrac{i(2 + i)}{5} = -\\dfrac{1}{5} + \\dfrac{2}{5}i$.\n$z = -1 - i$: $w = \\dfrac{-i}{2 + i} = \\dfrac{-i(2 - i)}{5} = -\\dfrac{1}{5} - \\dfrac{2}{5}i$.\nCheck with (b): $\\dfrac{1}{-1 + 2i} = \\dfrac{-1 - 2i}{5}$.\nAnswer: $w = -1 + 2i,\\ -1 - 2i,\\ -\\dfrac{1}{5} + \\dfrac{2}{5}i,\\ -\\dfrac{1}{5} - \\dfrac{2}{5}i$",
+"originality_note": "A quartic that is z^4 = -4 in disguise; the reciprocal symmetry in (b) is a built-in check on (c)."
+}
+},
+{
+"pos": 5,
+"topic": "Series and Sequences",
+"target": 8,
+"accepted": true,
+"question": {
+"stem": "A sequence $u_{1}, u_{2}, u_{3}, \\ldots$ is defined by $u_{n+1} = 2u_{n}^{2} - 1$ for $n \\geq 1$.",
+"total_marks": 8,
+"topics": [
+"Series and Sequences"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"recurrence as angle doubling",
+"periodic sequence",
+"convergence argument"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 1,
+"text": "Find the values of $u_{1}$ for which the sequence is constant.",
+"answer": "$u_{1} = 1$ or $u_{1} = -\\dfrac{1}{2}$",
+"solution": "Constant means $u_{2} = u_{1}$: $2u_{1}^{2} - 1 = u_{1}$.\n$2u_{1}^{2} - u_{1} - 1 = 0 \\Rightarrow (2u_{1} + 1)(u_{1} - 1) = 0$.\nAnswer: $u_{1} = 1$ or $u_{1} = -\\dfrac{1}{2}$"
+},
+{
+"label": "(b)",
+"marks": 1,
+"text": "Show that if $u_{n} = \\cos\\alpha$ then $u_{n+1} = \\cos 2\\alpha$. Hence, given that $u_{1} = \\cos\\theta$, write down an expression for $u_{n}$ in terms of $\\theta$ and $n$.",
+"answer": "$u_{n} = \\cos\\left(2^{n-1}\\theta\\right)$",
+"solution": "$u_{n+1} = 2\\cos^{2}\\alpha - 1 = \\cos 2\\alpha$.\nEach step doubles the angle: $u_{1} = \\cos\\theta$, $u_{2} = \\cos 2\\theta$, $u_{3} = \\cos 4\\theta$, ...\nAnswer: $u_{n} = \\cos\\left(2^{n-1}\\theta\\right)$"
+},
+{
+"label": "(c)",
+"marks": 3,
+"text": "It is now given that $u_{1} = \\cos\\dfrac{2\\pi}{7}$. Show that $u_{4} = u_{1}$. Given also that $\\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7} + \\cos\\dfrac{6\\pi}{7} = -\\dfrac{1}{2}$, find the exact value of $\\displaystyle\\sum_{n=1}^{50} u_{n}$.",
+"answer": "$-\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$ or $-8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$ (either form accepted)",
+"solution": "$u_{4} = \\cos\\dfrac{16\\pi}{7} = \\cos\\left(\\dfrac{2\\pi}{7} + 2\\pi\\right) = \\cos\\dfrac{2\\pi}{7} = u_{1}$.\nSo the sequence repeats with period 3: $u_{1}, u_{2}, u_{3}, u_{1}, \\ldots$\n$u_{2} = \\cos\\dfrac{4\\pi}{7}$, $u_{3} = \\cos\\dfrac{8\\pi}{7} = \\cos\\left(2\\pi - \\dfrac{6\\pi}{7}\\right) = \\cos\\dfrac{6\\pi}{7}$.\nSo $u_{1} + u_{2} + u_{3} = -\\dfrac{1}{2}$.\n$50 = 3 \\times 16 + 2$: $\\displaystyle\\sum_{n=1}^{50} u_{n} = 16\\left(-\\dfrac{1}{2}\\right) + u_{1} + u_{2} = -8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$.\n$= -8 - \\dfrac{1}{2} - \\cos\\dfrac{6\\pi}{7} = -\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$ (about $-7.599$).\nAnswer: $-\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$, or $-8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$ (either form accepted)"
+},
+{
+"label": "(d)",
+"marks": 3,
+"text": "Show that if $u_{1} > 1$ then $u_{n+1} > u_{n}$ for all $n$, and explain why the sequence does not converge.",
+"answer": "$u_{n} > 1$ for all $n$ by induction; $u_{n+1} - u_{n} = (2u_{n} + 1)(u_{n} - 1) > 0$; a limit would satisfy $L = 2L^{2} - 1$, so $L = 1$ or $-\\dfrac{1}{2}$, but $L \\geq u_{2} > 1$, so there is no limit",
+"solution": "First, $u_{n} > 1$ for all $n$:\n$u_{1} > 1$, and if $u_{k} > 1$ then $u_{k+1} - 1 = 2(u_{k}^{2} - 1) = 2(u_{k} - 1)(u_{k} + 1) > 0$, so $u_{k+1} > 1$.\n$u_{n+1} - u_{n} = 2u_{n}^{2} - u_{n} - 1 = (2u_{n} + 1)(u_{n} - 1)$.\nSince $u_{n} > 1$, both factors are positive, so $u_{n+1} > u_{n}$ for all $n$.\nIf the sequence converged to $L$, then $L = 2L^{2} - 1$, so $L = 1$ or $L = -\\dfrac{1}{2}$.\nBut the terms increase, so $L \\geq u_{2} > u_{1} > 1$: a contradiction.\nAnswer: the sequence is strictly increasing and does not converge"
+}
+],
+"answer": "(a) $u_{1} = 1$ or $u_{1} = -\\dfrac{1}{2}$; (b) $u_{n} = \\cos\\left(2^{n-1}\\theta\\right)$; (c) $-\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$ or $-8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$ (either form accepted); (d) $u_{n} > 1$ for all $n$ by induction; $u_{n+1} - u_{n} = (2u_{n} + 1)(u_{n} - 1) > 0$; a limit would satisfy $L = 2L^{2} - 1$, so $L = 1$ or $-\\dfrac{1}{2}$, but $L \\geq u_{2} > 1$, so there is no limit",
+"solution": "(a) Constant means $u_{2} = u_{1}$: $2u_{1}^{2} - 1 = u_{1}$.\n$2u_{1}^{2} - u_{1} - 1 = 0 \\Rightarrow (2u_{1} + 1)(u_{1} - 1) = 0$.\nAnswer: $u_{1} = 1$ or $u_{1} = -\\dfrac{1}{2}$\n\n(b) $u_{n+1} = 2\\cos^{2}\\alpha - 1 = \\cos 2\\alpha$.\nEach step doubles the angle: $u_{1} = \\cos\\theta$, $u_{2} = \\cos 2\\theta$, $u_{3} = \\cos 4\\theta$, ...\nAnswer: $u_{n} = \\cos\\left(2^{n-1}\\theta\\right)$\n\n(c) $u_{4} = \\cos\\dfrac{16\\pi}{7} = \\cos\\left(\\dfrac{2\\pi}{7} + 2\\pi\\right) = \\cos\\dfrac{2\\pi}{7} = u_{1}$.\nSo the sequence repeats with period 3: $u_{1}, u_{2}, u_{3}, u_{1}, \\ldots$\n$u_{2} = \\cos\\dfrac{4\\pi}{7}$, $u_{3} = \\cos\\dfrac{8\\pi}{7} = \\cos\\left(2\\pi - \\dfrac{6\\pi}{7}\\right) = \\cos\\dfrac{6\\pi}{7}$.\nSo $u_{1} + u_{2} + u_{3} = -\\dfrac{1}{2}$.\n$50 = 3 \\times 16 + 2$: $\\displaystyle\\sum_{n=1}^{50} u_{n} = 16\\left(-\\dfrac{1}{2}\\right) + u_{1} + u_{2} = -8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$.\n$= -8 - \\dfrac{1}{2} - \\cos\\dfrac{6\\pi}{7} = -\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$ (about $-7.599$).\nAnswer: $-\\dfrac{17}{2} + \\cos\\dfrac{\\pi}{7}$, or $-8 + \\cos\\dfrac{2\\pi}{7} + \\cos\\dfrac{4\\pi}{7}$ (either form accepted)\n\n(d) First, $u_{n} > 1$ for all $n$:\n$u_{1} > 1$, and if $u_{k} > 1$ then $u_{k+1} - 1 = 2(u_{k}^{2} - 1) = 2(u_{k} - 1)(u_{k} + 1) > 0$, so $u_{k+1} > 1$.\n$u_{n+1} - u_{n} = 2u_{n}^{2} - u_{n} - 1 = (2u_{n} + 1)(u_{n} - 1)$.\nSince $u_{n} > 1$, both factors are positive, so $u_{n+1} > u_{n}$ for all $n$.\nIf the sequence converged to $L$, then $L = 2L^{2} - 1$, so $L = 1$ or $L = -\\dfrac{1}{2}$.\nBut the terms increase, so $L \\geq u_{2} > u_{1} > 1$: a contradiction.\nAnswer: the sequence is strictly increasing and does not converge",
+"originality_note": "Chebyshev doubling behind a plain recurrence; the candidate must see cos 2a and use 2^n mod 7."
+}
+},
+{
+"pos": 6,
+"topic": "Graphing Techniques",
+"target": 9,
+"accepted": true,
+"question": {
+"stem": "The function g is defined by $g(x) = \\dfrac{e^{x}}{x^{2}}$, for $x \\in \\mathbb{R}$, $x \\neq 0$.",
+"total_marks": 9,
+"topics": [
+"Graphing Techniques",
+"Differentiation (Maximum and Minimum)"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"counting intersections through one graph",
+"tangency as a stationary point"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 3,
+"text": "Find $g'(x)$. Hence find the exact coordinates of the stationary point of $y = g(x)$, and determine its nature.",
+"answer": "$g'(x) = \\dfrac{e^{x}(x - 2)}{x^{3}}$; minimum point $\\left(2, \\dfrac{e^{2}}{4}\\right)$",
+"solution": "$g'(x) = \\dfrac{x^{2}e^{x} - 2xe^{x}}{x^{4}} = \\dfrac{e^{x}(x - 2)}{x^{3}}$.\n$g'(x) = 0 \\Rightarrow x = 2$, $g(2) = \\dfrac{e^{2}}{4}$.\nFor $0 < x < 2$, $g'(x) < 0$; for $x > 2$, $g'(x) > 0$: a minimum.\nAnswer: $g'(x) = \\dfrac{e^{x}(x - 2)}{x^{3}}$; minimum point $\\left(2, \\dfrac{e^{2}}{4}\\right)$"
+},
+{
+"label": "(b)",
+"marks": 2,
+"text": "Sketch the graph of $y = g(x)$, stating the equations of any asymptotes.",
+"answer": "Asymptotes $x = 0$ and $y = 0$; graph sketch",
+"solution": "As $x \\to 0$, $g(x) \\to +\\infty$ from both sides: asymptote $x = 0$.\nAs $x \\to -\\infty$, $g(x) \\to 0^{+}$: asymptote $y = 0$.\nFor $x < 0$, $g'(x) > 0$: $g$ increases from $0$ to $+\\infty$.\nFor $x > 0$: decreases to the minimum $\\left(2, \\dfrac{e^{2}}{4}\\right)$, then increases without bound.\nAnswer: graph above the $x$-axis; asymptotes $x = 0$ and $y = 0$; minimum $\\left(2, \\dfrac{e^{2}}{4}\\right)$"
+},
+{
+"label": "(c)",
+"marks": 2,
+"text": "The curves $y = e^{x}$ and $y = kx^{2}$, where $k$ is a positive constant, touch each other. Find the exact value of $k$ and the coordinates of the point of contact.",
+"answer": "$k = \\dfrac{e^{2}}{4}$; point of contact $(2, e^{2})$",
+"solution": "Touching: $e^{x} = kx^{2}$ and $e^{x} = 2kx$ at the same $x$.\nSo $kx^{2} = 2kx$, and $x \\neq 0$ (since $e^{0} \\neq 0$), giving $x = 2$.\n$k = \\dfrac{e^{2}}{4}$ — the minimum value of $g$, where the line $y = k$ touches $y = g(x)$.\nAnswer: $k = \\dfrac{e^{2}}{4}$; point of contact $(2, e^{2})$"
+},
+{
+"label": "(d)",
+"marks": 2,
+"text": "State, with a reason, the number of points at which the curves $y = e^{x}$ and $y = kx^{2}$ meet when $0 < k < \\dfrac{e^{2}}{4}$, and when $k > \\dfrac{e^{2}}{4}$.",
+"answer": "1 point when $0 < k < \\dfrac{e^{2}}{4}$; 3 points when $k > \\dfrac{e^{2}}{4}$",
+"solution": "The curves meet where $e^{x} = kx^{2}$, i.e. where $g(x) = k$ ($x = 0$ is never a solution).\n$0 < k < \\dfrac{e^{2}}{4}$: the line $y = k$ meets $y = g(x)$ once (for $x < 0$) and misses the branch $x > 0$.\n$k > \\dfrac{e^{2}}{4}$: once for $x < 0$ and twice for $x > 0$.\nAnswer: 1 point when $0 < k < \\dfrac{e^{2}}{4}$; 3 points when $k > \\dfrac{e^{2}}{4}$"
+}
+],
+"answer": "(a) $g'(x) = \\dfrac{e^{x}(x - 2)}{x^{3}}$; minimum point $\\left(2, \\dfrac{e^{2}}{4}\\right)$; (b) Asymptotes $x = 0$ and $y = 0$; graph sketch; (c) $k = \\dfrac{e^{2}}{4}$; point of contact $(2, e^{2})$; (d) 1 point when $0 < k < \\dfrac{e^{2}}{4}$; 3 points when $k > \\dfrac{e^{2}}{4}$",
+"solution": "(a) $g'(x) = \\dfrac{x^{2}e^{x} - 2xe^{x}}{x^{4}} = \\dfrac{e^{x}(x - 2)}{x^{3}}$.\n$g'(x) = 0 \\Rightarrow x = 2$, $g(2) = \\dfrac{e^{2}}{4}$.\nFor $0 < x < 2$, $g'(x) < 0$; for $x > 2$, $g'(x) > 0$: a minimum.\nAnswer: $g'(x) = \\dfrac{e^{x}(x - 2)}{x^{3}}$; minimum point $\\left(2, \\dfrac{e^{2}}{4}\\right)$\n\n(b) As $x \\to 0$, $g(x) \\to +\\infty$ from both sides: asymptote $x = 0$.\nAs $x \\to -\\infty$, $g(x) \\to 0^{+}$: asymptote $y = 0$.\nFor $x < 0$, $g'(x) > 0$: $g$ increases from $0$ to $+\\infty$.\nFor $x > 0$: decreases to the minimum $\\left(2, \\dfrac{e^{2}}{4}\\right)$, then increases without bound.\nAnswer: graph above the $x$-axis; asymptotes $x = 0$ and $y = 0$; minimum $\\left(2, \\dfrac{e^{2}}{4}\\right)$\n\n(c) Touching: $e^{x} = kx^{2}$ and $e^{x} = 2kx$ at the same $x$.\nSo $kx^{2} = 2kx$, and $x \\neq 0$ (since $e^{0} \\neq 0$), giving $x = 2$.\n$k = \\dfrac{e^{2}}{4}$ — the minimum value of $g$, where the line $y = k$ touches $y = g(x)$.\nAnswer: $k = \\dfrac{e^{2}}{4}$; point of contact $(2, e^{2})$\n\n(d) The curves meet where $e^{x} = kx^{2}$, i.e. where $g(x) = k$ ($x = 0$ is never a solution).\n$0 < k < \\dfrac{e^{2}}{4}$: the line $y = k$ meets $y = g(x)$ once (for $x < 0$) and misses the branch $x > 0$.\n$k > \\dfrac{e^{2}}{4}$: once for $x < 0$ and twice for $x > 0$.\nAnswer: 1 point when $0 < k < \\dfrac{e^{2}}{4}$; 3 points when $k > \\dfrac{e^{2}}{4}$",
+"originality_note": "Two curves become one graph against a horizontal line; tangency is read as the minimum of g."
+}
+},
+{
+"pos": 7,
+"topic": "Integration (Differential Equations)",
+"target": 9,
+"accepted": true,
+"question": {
+"stem": "A curve $C$ lies in the region $x > 0$ and passes through the point $(2, 0)$. For every point $P(x, y)$ on $C$, the tangent to $C$ at $P$ meets the $y$-axis at the point $T$, where $T$ lies above the origin $O$ and $OT = OP$.",
+"total_marks": 9,
+"topics": [
+"Integration (Differential Equations)"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"a curve defined by a tangent property",
+"homogeneous substitution y = vx",
+"solving for the curve"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 2,
+"text": "Show that $y - x\\dfrac{dy}{dx} = \\sqrt{x^{2} + y^{2}}$.",
+"answer": "Shown",
+"solution": "Tangent at $P$: $Y - y = \\dfrac{dy}{dx}(X - x)$.\nAt $X = 0$: $Y = y - x\\dfrac{dy}{dx}$, so $OT = y - x\\dfrac{dy}{dx}$ ($T$ above $O$).\n$OP = \\sqrt{x^{2} + y^{2}}$, and $OT = OP$.\nAnswer: Shown"
+},
+{
+"label": "(b)",
+"marks": 2,
+"text": "Using the substitution $y = vx$, show that $x\\dfrac{dv}{dx} = -\\sqrt{1 + v^{2}}$.",
+"answer": "Shown",
+"solution": "$\\dfrac{dy}{dx} = v + x\\dfrac{dv}{dx}$.\nLHS: $vx - x\\left(v + x\\dfrac{dv}{dx}\\right) = -x^{2}\\dfrac{dv}{dx}$.\nRHS: $\\sqrt{x^{2} + v^{2}x^{2}} = x\\sqrt{1 + v^{2}}$ since $x > 0$.\nSo $-x^{2}\\dfrac{dv}{dx} = x\\sqrt{1 + v^{2}}$, i.e. $x\\dfrac{dv}{dx} = -\\sqrt{1 + v^{2}}$.\nAnswer: Shown"
+},
+{
+"label": "(c)",
+"marks": 1,
+"text": "Show that $\\dfrac{d}{dv}\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = \\dfrac{1}{\\sqrt{1 + v^{2}}}$.",
+"answer": "Shown",
+"solution": "$\\dfrac{d}{dv}\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = \\dfrac{1 + \\dfrac{v}{\\sqrt{1 + v^{2}}}}{v + \\sqrt{1 + v^{2}}}$\n$= \\dfrac{\\sqrt{1 + v^{2}} + v}{\\sqrt{1 + v^{2}}\\left(v + \\sqrt{1 + v^{2}}\\right)} = \\dfrac{1}{\\sqrt{1 + v^{2}}}$\nAnswer: Shown"
+},
+{
+"label": "(d)",
+"marks": 4,
+"text": "Hence solve the differential equation in part (b), and show that $C$ has equation $y = 1 - \\dfrac{x^{2}}{4}$.",
+"answer": "$\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = \\ln\\dfrac{2}{x}$, giving $y = 1 - \\dfrac{x^{2}}{4}$",
+"solution": "$\\displaystyle\\int \\dfrac{1}{\\sqrt{1 + v^{2}}}\\,dv = -\\int \\dfrac{1}{x}\\,dx$.\n$\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = -\\ln x + c$ (both logs of positive quantities).\nAt $(2, 0)$: $v = 0$, so $0 = -\\ln 2 + c$, $c = \\ln 2$.\n$v + \\sqrt{1 + v^{2}} = \\dfrac{2}{x}$, so $\\sqrt{1 + v^{2}} = \\dfrac{2}{x} - v$.\nSquaring: $1 + v^{2} = \\dfrac{4}{x^{2}} - \\dfrac{4v}{x} + v^{2}$, so $1 = \\dfrac{4}{x^{2}} - \\dfrac{4y}{x^{2}}$.\n$x^{2} = 4 - 4y$.\nAnswer: $y = 1 - \\dfrac{x^{2}}{4}$"
+}
+],
+"answer": "(a) Shown; (b) Shown; (c) Shown; (d) $\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = \\ln\\dfrac{2}{x}$, giving $y = 1 - \\dfrac{x^{2}}{4}$",
+"solution": "(a) Tangent at $P$: $Y - y = \\dfrac{dy}{dx}(X - x)$.\nAt $X = 0$: $Y = y - x\\dfrac{dy}{dx}$, so $OT = y - x\\dfrac{dy}{dx}$ ($T$ above $O$).\n$OP = \\sqrt{x^{2} + y^{2}}$, and $OT = OP$.\nAnswer: Shown\n\n(b) $\\dfrac{dy}{dx} = v + x\\dfrac{dv}{dx}$.\nLHS: $vx - x\\left(v + x\\dfrac{dv}{dx}\\right) = -x^{2}\\dfrac{dv}{dx}$.\nRHS: $\\sqrt{x^{2} + v^{2}x^{2}} = x\\sqrt{1 + v^{2}}$ since $x > 0$.\nSo $-x^{2}\\dfrac{dv}{dx} = x\\sqrt{1 + v^{2}}$, i.e. $x\\dfrac{dv}{dx} = -\\sqrt{1 + v^{2}}$.\nAnswer: Shown\n\n(c) $\\dfrac{d}{dv}\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = \\dfrac{1 + \\dfrac{v}{\\sqrt{1 + v^{2}}}}{v + \\sqrt{1 + v^{2}}}$\n$= \\dfrac{\\sqrt{1 + v^{2}} + v}{\\sqrt{1 + v^{2}}\\left(v + \\sqrt{1 + v^{2}}\\right)} = \\dfrac{1}{\\sqrt{1 + v^{2}}}$\nAnswer: Shown\n\n(d) $\\displaystyle\\int \\dfrac{1}{\\sqrt{1 + v^{2}}}\\,dv = -\\int \\dfrac{1}{x}\\,dx$.\n$\\ln\\left(v + \\sqrt{1 + v^{2}}\\right) = -\\ln x + c$ (both logs of positive quantities).\nAt $(2, 0)$: $v = 0$, so $0 = -\\ln 2 + c$, $c = \\ln 2$.\n$v + \\sqrt{1 + v^{2}} = \\dfrac{2}{x}$, so $\\sqrt{1 + v^{2}} = \\dfrac{2}{x} - v$.\nSquaring: $1 + v^{2} = \\dfrac{4}{x^{2}} - \\dfrac{4v}{x} + v^{2}$, so $1 = \\dfrac{4}{x^{2}} - \\dfrac{4y}{x^{2}}$.\n$x^{2} = 4 - 4y$.\nAnswer: $y = 1 - \\dfrac{x^{2}}{4}$",
+"originality_note": "A curve defined by a geometric tangent property (OT = OP, the focus-at-origin parabola), not a stated rate law."
+}
+},
+{
+"pos": 8,
+"topic": "Functions",
+"target": 10,
+"accepted": true,
+"question": {
+"stem": "The function f is defined for $x \\geq 0$ by\n$$f(x) = x(2 - x) \\text{ for } 0 \\leq x < 2, \\quad \\text{and} \\quad f(x + 2) = \\dfrac{1}{2}f(x) \\text{ for all } x \\geq 0.$$",
+"total_marks": 10,
+"topics": [
+"Functions",
+"Graphing Techniques",
+"Integration (Area and Volume)",
+"Inequalities"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"a self-similar function",
+"area as a geometric series",
+"inequality across the arches"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 2,
+"text": "Find $f(5)$ and $f(7.5)$.",
+"answer": "$f(5) = \\dfrac{1}{4}$, $f(7.5) = \\dfrac{3}{32}$",
+"solution": "$f(5) = \\dfrac{1}{2}f(3) = \\dfrac{1}{4}f(1) = \\dfrac{1}{4}(1)(1) = \\dfrac{1}{4}$.\n$f(7.5) = \\dfrac{1}{8}f(1.5) = \\dfrac{1}{8}(1.5)(0.5) = \\dfrac{3}{32}$.\nAnswer: $f(5) = \\dfrac{1}{4}$, $f(7.5) = \\dfrac{3}{32}$"
+},
+{
+"label": "(b)",
+"marks": 2,
+"text": "Sketch the graph of $y = f(x)$ for $0 \\leq x < 6$, giving the coordinates of the maximum points and of the points where the graph meets the $x$-axis.",
+"answer": "Three arches; maxima $(1, 1)$, $\\left(3, \\dfrac{1}{2}\\right)$, $\\left(5, \\dfrac{1}{4}\\right)$; meets the $x$-axis at $(0,0)$, $(2,0)$, $(4,0)$; open end at $(6,0)$ (not included)",
+"solution": "On $[2, 4)$: $f(x) = \\dfrac{1}{2}(x - 2)(4 - x)$; on $[4, 6)$: $f(x) = \\dfrac{1}{4}(x - 4)(6 - x)$.\nEach arch is the previous one moved 2 right and halved in height; $f(2) = f(4) = 0$, so the graph is continuous.\nThe sketch stops at $x = 6$, which is not included: draw an open circle at $(6, 0)$.\nAnswer: maxima $(1, 1)$, $\\left(3, \\dfrac{1}{2}\\right)$, $\\left(5, \\dfrac{1}{4}\\right)$; meets the $x$-axis at $(0,0)$, $(2,0)$, $(4,0)$; open end at $(6,0)$"
+},
+{
+"label": "(c)",
+"marks": 3,
+"text": "Find, in terms of $N$, the exact value of $\\displaystyle\\int_{0}^{2N} f(x)\\,dx$, where $N$ is a positive integer. State the value that this integral approaches as $N \\to \\infty$.",
+"answer": "$\\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$; approaches $\\dfrac{8}{3}$",
+"solution": "$\\displaystyle\\int_{0}^{2} x(2 - x)\\,dx = \\left[x^{2} - \\dfrac{x^{3}}{3}\\right]_{0}^{2} = \\dfrac{4}{3}$.\nOn $[2n - 2, 2n)$, $f(x) = \\left(\\dfrac{1}{2}\\right)^{n-1} f(x - 2n + 2)$, so that arch has area $\\dfrac{4}{3}\\left(\\dfrac{1}{2}\\right)^{n-1}$.\n$\\displaystyle\\int_{0}^{2N} f(x)\\,dx = \\dfrac{4}{3}\\cdot\\dfrac{1 - \\left(\\frac{1}{2}\\right)^{N}}{1 - \\frac{1}{2}} = \\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$.\nAs $N \\to \\infty$, $2^{-N} \\to 0$.\nAnswer: $\\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$, approaching $\\dfrac{8}{3}$"
+},
+{
+"label": "(d)",
+"marks": 3,
+"text": "Find, in exact form, the set of values of $x$ for which $f(x) \\geq \\dfrac{3}{8}$.",
+"answer": "$1 - \\dfrac{\\sqrt{10}}{4} \\leq x \\leq 1 + \\dfrac{\\sqrt{10}}{4}$ or $\\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}$",
+"solution": "For $x \\geq 4$, $f(x) \\leq \\dfrac{1}{4} < \\dfrac{3}{8}$: no solutions.\nOn $[0, 2)$: $x(2 - x) \\geq \\dfrac{3}{8} \\iff x^{2} - 2x + \\dfrac{3}{8} \\leq 0 \\iff 1 - \\sqrt{\\dfrac{5}{8}} \\leq x \\leq 1 + \\sqrt{\\dfrac{5}{8}}$, and $\\sqrt{\\dfrac{5}{8}} = \\dfrac{\\sqrt{10}}{4}$.\nOn $[2, 4)$: let $s = x - 2$; $\\dfrac{1}{2}s(2 - s) \\geq \\dfrac{3}{8} \\iff s^{2} - 2s + \\dfrac{3}{4} \\leq 0 \\iff \\dfrac{1}{2} \\leq s \\leq \\dfrac{3}{2}$.\nSo $\\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}$.\nAnswer: $\\left\\{x : 1 - \\dfrac{\\sqrt{10}}{4} \\leq x \\leq 1 + \\dfrac{\\sqrt{10}}{4}\\right\\} \\cup \\left\\{x : \\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}\\right\\}$"
+}
+],
+"answer": "(a) $f(5) = \\dfrac{1}{4}$, $f(7.5) = \\dfrac{3}{32}$; (b) Three arches; maxima $(1, 1)$, $\\left(3, \\dfrac{1}{2}\\right)$, $\\left(5, \\dfrac{1}{4}\\right)$; meets the $x$-axis at $(0,0)$, $(2,0)$, $(4,0)$; open end at $(6,0)$ (not included); (c) $\\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$; approaches $\\dfrac{8}{3}$; (d) $1 - \\dfrac{\\sqrt{10}}{4} \\leq x \\leq 1 + \\dfrac{\\sqrt{10}}{4}$ or $\\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}$",
+"solution": "(a) $f(5) = \\dfrac{1}{2}f(3) = \\dfrac{1}{4}f(1) = \\dfrac{1}{4}(1)(1) = \\dfrac{1}{4}$.\n$f(7.5) = \\dfrac{1}{8}f(1.5) = \\dfrac{1}{8}(1.5)(0.5) = \\dfrac{3}{32}$.\nAnswer: $f(5) = \\dfrac{1}{4}$, $f(7.5) = \\dfrac{3}{32}$\n\n(b) On $[2, 4)$: $f(x) = \\dfrac{1}{2}(x - 2)(4 - x)$; on $[4, 6)$: $f(x) = \\dfrac{1}{4}(x - 4)(6 - x)$.\nEach arch is the previous one moved 2 right and halved in height; $f(2) = f(4) = 0$, so the graph is continuous.\nThe sketch stops at $x = 6$, which is not included: draw an open circle at $(6, 0)$.\nAnswer: maxima $(1, 1)$, $\\left(3, \\dfrac{1}{2}\\right)$, $\\left(5, \\dfrac{1}{4}\\right)$; meets the $x$-axis at $(0,0)$, $(2,0)$, $(4,0)$; open end at $(6,0)$\n\n(c) $\\displaystyle\\int_{0}^{2} x(2 - x)\\,dx = \\left[x^{2} - \\dfrac{x^{3}}{3}\\right]_{0}^{2} = \\dfrac{4}{3}$.\nOn $[2n - 2, 2n)$, $f(x) = \\left(\\dfrac{1}{2}\\right)^{n-1} f(x - 2n + 2)$, so that arch has area $\\dfrac{4}{3}\\left(\\dfrac{1}{2}\\right)^{n-1}$.\n$\\displaystyle\\int_{0}^{2N} f(x)\\,dx = \\dfrac{4}{3}\\cdot\\dfrac{1 - \\left(\\frac{1}{2}\\right)^{N}}{1 - \\frac{1}{2}} = \\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$.\nAs $N \\to \\infty$, $2^{-N} \\to 0$.\nAnswer: $\\dfrac{8}{3}\\left(1 - 2^{-N}\\right)$, approaching $\\dfrac{8}{3}$\n\n(d) For $x \\geq 4$, $f(x) \\leq \\dfrac{1}{4} < \\dfrac{3}{8}$: no solutions.\nOn $[0, 2)$: $x(2 - x) \\geq \\dfrac{3}{8} \\iff x^{2} - 2x + \\dfrac{3}{8} \\leq 0 \\iff 1 - \\sqrt{\\dfrac{5}{8}} \\leq x \\leq 1 + \\sqrt{\\dfrac{5}{8}}$, and $\\sqrt{\\dfrac{5}{8}} = \\dfrac{\\sqrt{10}}{4}$.\nOn $[2, 4)$: let $s = x - 2$; $\\dfrac{1}{2}s(2 - s) \\geq \\dfrac{3}{8} \\iff s^{2} - 2s + \\dfrac{3}{4} \\leq 0 \\iff \\dfrac{1}{2} \\leq s \\leq \\dfrac{3}{2}$.\nSo $\\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}$.\nAnswer: $\\left\\{x : 1 - \\dfrac{\\sqrt{10}}{4} \\leq x \\leq 1 + \\dfrac{\\sqrt{10}}{4}\\right\\} \\cup \\left\\{x : \\dfrac{5}{2} \\leq x \\leq \\dfrac{7}{2}\\right\\}$",
+"originality_note": "A function defined by a scaling rule rather than a formula; its area is a GP and its inequality depends on which arch."
+}
+},
+{
+"pos": 9,
+"topic": "Integration (Area and Volume)",
+"target": 12,
+"accepted": true,
+"question": {
+"stem": "The function f is defined by $f(x) = xe^{x}$, for $x \\in \\mathbb{R}$, $x \\geq 0$. It is given that $f^{-1}(x)$ cannot be expressed in terms of standard functions.",
+"total_marks": 12,
+"topics": [
+"Functions",
+"Integration (Techniques)",
+"Integration (Area and Volume)"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"integrating an inverse with no formula",
+"area by complement",
+"volume by switching variables"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 2,
+"text": "Explain why $f^{-1}$ exists, and state the domain of $f^{-1}$.",
+"answer": "$f'(x) = (1 + x)e^{x} > 0$, so f is one-one; $D_{f^{-1}} = [0, \\infty)$",
+"solution": "$f'(x) = e^{x} + xe^{x} = (1 + x)e^{x} > 0$ for $x \\geq 0$, so f is strictly increasing, hence one-one, and $f^{-1}$ exists.\n$f(0) = 0$ and $f(x) \\to \\infty$ as $x \\to \\infty$, so $R_{f} = [0, \\infty)$.\nAnswer: $f^{-1}$ exists; $D_{f^{-1}} = R_{f} = [0, \\infty)$"
+},
+{
+"label": "(b)",
+"marks": 2,
+"text": "Sketch, on the same diagram, the graphs of $y = f(x)$ and $y = f^{-1}(x)$, and show algebraically that they meet only at $O$.",
+"answer": "Reflections of each other in $y = x$; $f(x) = x \\iff x(e^{x} - 1) = 0 \\iff x = 0$",
+"solution": "$y = f^{-1}(x)$ is the reflection of $y = f(x)$ in the line $y = x$; both start at $O$.\nf is increasing, so the graphs can meet only on $y = x$: $xe^{x} = x \\Rightarrow x(e^{x} - 1) = 0 \\Rightarrow x = 0$.\nAnswer: the graphs are mirror images in $y = x$ and meet only at $O(0,0)$"
+},
+{
+"label": "(c)",
+"marks": 4,
+"text": "Find $\\displaystyle\\int xe^{x}\\,dx$. Hence, by considering areas, find the exact value of $\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx$.",
+"answer": "$(x - 1)e^{x} + c$; $\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e - 1$",
+"solution": "By parts: $\\displaystyle\\int xe^{x}\\,dx = xe^{x} - \\int e^{x}\\,dx = (x - 1)e^{x} + c$.\n$f(1) = e$, so $f^{-1}(e) = 1$.\nThe rectangle $[0, e] \\times [0, 1]$ splits into the region under $y = f^{-1}(x)$ ($0 \\leq x \\leq e$) and the region between $y = f^{-1}(x)$ and the $y$-axis, which is $\\{(x, y): 0 \\leq y \\leq 1,\\ 0 \\leq x \\leq ye^{y}\\}$.\nArea of the second region $= \\displaystyle\\int_{0}^{1} ye^{y}\\,dy = \\left[(y - 1)e^{y}\\right]_{0}^{1} = 0 - (-1) = 1$.\n$\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e \\times 1 - 1$.\nAnswer: $\\displaystyle\\int xe^{x}\\,dx = (x - 1)e^{x} + c$; $\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e - 1$"
+},
+{
+"label": "(d)",
+"marks": 4,
+"text": "The region $R$ is bounded by the curve $y = f^{-1}(x)$, the $x$-axis and the line $x = e$. Find the exact volume of the solid generated when $R$ is rotated through $2\\pi$ radians about the $y$-axis.",
+"answer": "$\\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$",
+"solution": "$y = f^{-1}(x) \\iff x = ye^{y}$; $R$ is $0 \\leq y \\leq 1$, $ye^{y} \\leq x \\leq e$.\nVolume $= \\pi\\displaystyle\\int_{0}^{1}\\left(e^{2} - y^{2}e^{2y}\\right)dy$.\n$\\displaystyle\\int y^{2}e^{2y}\\,dy = \\dfrac{y^{2}e^{2y}}{2} - \\int ye^{2y}\\,dy = \\dfrac{y^{2}e^{2y}}{2} - \\dfrac{ye^{2y}}{2} + \\dfrac{e^{2y}}{4} + c$.\n$\\displaystyle\\int_{0}^{1} y^{2}e^{2y}\\,dy = \\dfrac{e^{2}}{4} - \\dfrac{1}{4}$.\nVolume $= \\pi\\left(e^{2} - \\dfrac{e^{2} - 1}{4}\\right) = \\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$ (about $18.2$).\nAnswer: $\\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$"
+}
+],
+"answer": "(a) $f'(x) = (1 + x)e^{x} > 0$, so f is one-one; $D_{f^{-1}} = [0, \\infty)$; (b) Reflections of each other in $y = x$; $f(x) = x \\iff x(e^{x} - 1) = 0 \\iff x = 0$; (c) $(x - 1)e^{x} + c$; $\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e - 1$; (d) $\\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$",
+"solution": "(a) $f'(x) = e^{x} + xe^{x} = (1 + x)e^{x} > 0$ for $x \\geq 0$, so f is strictly increasing, hence one-one, and $f^{-1}$ exists.\n$f(0) = 0$ and $f(x) \\to \\infty$ as $x \\to \\infty$, so $R_{f} = [0, \\infty)$.\nAnswer: $f^{-1}$ exists; $D_{f^{-1}} = R_{f} = [0, \\infty)$\n\n(b) $y = f^{-1}(x)$ is the reflection of $y = f(x)$ in the line $y = x$; both start at $O$.\nf is increasing, so the graphs can meet only on $y = x$: $xe^{x} = x \\Rightarrow x(e^{x} - 1) = 0 \\Rightarrow x = 0$.\nAnswer: the graphs are mirror images in $y = x$ and meet only at $O(0,0)$\n\n(c) By parts: $\\displaystyle\\int xe^{x}\\,dx = xe^{x} - \\int e^{x}\\,dx = (x - 1)e^{x} + c$.\n$f(1) = e$, so $f^{-1}(e) = 1$.\nThe rectangle $[0, e] \\times [0, 1]$ splits into the region under $y = f^{-1}(x)$ ($0 \\leq x \\leq e$) and the region between $y = f^{-1}(x)$ and the $y$-axis, which is $\\{(x, y): 0 \\leq y \\leq 1,\\ 0 \\leq x \\leq ye^{y}\\}$.\nArea of the second region $= \\displaystyle\\int_{0}^{1} ye^{y}\\,dy = \\left[(y - 1)e^{y}\\right]_{0}^{1} = 0 - (-1) = 1$.\n$\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e \\times 1 - 1$.\nAnswer: $\\displaystyle\\int xe^{x}\\,dx = (x - 1)e^{x} + c$; $\\displaystyle\\int_{0}^{e} f^{-1}(x)\\,dx = e - 1$\n\n(d) $y = f^{-1}(x) \\iff x = ye^{y}$; $R$ is $0 \\leq y \\leq 1$, $ye^{y} \\leq x \\leq e$.\nVolume $= \\pi\\displaystyle\\int_{0}^{1}\\left(e^{2} - y^{2}e^{2y}\\right)dy$.\n$\\displaystyle\\int y^{2}e^{2y}\\,dy = \\dfrac{y^{2}e^{2y}}{2} - \\int ye^{2y}\\,dy = \\dfrac{y^{2}e^{2y}}{2} - \\dfrac{ye^{2y}}{2} + \\dfrac{e^{2y}}{4} + c$.\n$\\displaystyle\\int_{0}^{1} y^{2}e^{2y}\\,dy = \\dfrac{e^{2}}{4} - \\dfrac{1}{4}$.\nVolume $= \\pi\\left(e^{2} - \\dfrac{e^{2} - 1}{4}\\right) = \\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$ (about $18.2$).\nAnswer: $\\dfrac{\\pi\\left(3e^{2} + 1\\right)}{4}$",
+"originality_note": "The inverse has no formula, so every integral of it must be turned round to an integral of x e^x."
+}
+},
+{
+"pos": 10,
+"topic": "Vectors",
+"target": 12,
+"accepted": true,
+"question": {
+"stem": "The plane $\\Pi$ has equation $2x + y - 2z = 2$. A plane mirror lies in $\\Pi$. A small light source is at the point $A(3, 0, -1)$ and a sensor is at the point $B(5, 4, -3)$. A ray of light from $A$ reflects off the mirror at the point $R$ and travels to $B$. The ray follows the path $A \\to R \\to B$ of least total length among all paths $A \\to X \\to B$ with $X$ on $\\Pi$.",
+"total_marks": 12,
+"topics": [
+"Vectors"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"reflecting B in a plane",
+"shortest path through a mirror",
+"angle between a line and a plane"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 3,
+"text": "Find the coordinates of the foot $F$ of the perpendicular from $B$ to $\\Pi$, and the coordinates of the point $B'$, the reflection of $B$ in $\\Pi$.",
+"answer": "$F(1, 2, 1)$, $B'(-3, 0, 5)$",
+"solution": "Normal $\\mathbf{n} = (2, 1, -2)$. Line through $B$: $\\mathbf{r} = (5 + 2\\lambda,\\ 4 + \\lambda,\\ -3 - 2\\lambda)$.\n$2(5 + 2\\lambda) + (4 + \\lambda) - 2(-3 - 2\\lambda) = 2 \\Rightarrow 20 + 9\\lambda = 2 \\Rightarrow \\lambda = -2$.\n$F = (1, 2, 1)$.\n$\\overrightarrow{OB'} = 2\\overrightarrow{OF} - \\overrightarrow{OB} = (2 - 5,\\ 4 - 4,\\ 2 + 3) = (-3, 0, 5)$.\nAnswer: $F(1, 2, 1)$, $B'(-3, 0, 5)$"
+},
+{
+"label": "(b)",
+"marks": 1,
+"text": "Show that $A$ and $B$ lie on the same side of $\\Pi$.",
+"answer": "$2x + y - 2z - 2$ is $6$ at $A$ and $18$ at $B$, both positive",
+"solution": "At $A$: $6 + 0 + 2 - 2 = 6 > 0$.\nAt $B$: $10 + 4 + 6 - 2 = 18 > 0$.\nAnswer: same sign, so $A$ and $B$ are on the same side of $\\Pi$"
+},
+{
+"label": "(c)",
+"marks": 2,
+"text": "Explain why, for any point $X$ on $\\Pi$, $AX + XB \\geq AB'$, and state when equality holds.",
+"answer": "$XB = XB'$ since $\\Pi$ is the perpendicular bisector plane of $BB'$, so $AX + XB = AX + XB' \\geq AB'$; equality when $X$ lies on the segment $AB'$",
+"solution": "$\\Pi$ is perpendicular to $BB'$ and passes through its midpoint $F$, so every point $X$ on $\\Pi$ has $XB = XB'$.\nSo $AX + XB = AX + XB' \\geq AB'$ (a side of a triangle is at most the sum of the other two).\nEquality holds when $A$, $X$, $B'$ are collinear with $X$ between them.\nAnswer: $AX + XB = AX + XB' \\geq AB'$, with equality when $X$ is on the line segment $AB'$"
+},
+{
+"label": "(d)",
+"marks": 3,
+"text": "Hence find the coordinates of $R$ and the total length of the path $A \\to R \\to B$.",
+"answer": "$R\\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$; length $6\\sqrt{2}$",
+"solution": "$\\overrightarrow{AB'} = (-6, 0, 6)$; line $AB'$: $\\mathbf{r} = (3 - t,\\ 0,\\ -1 + t)$.\n$2(3 - t) + 0 - 2(-1 + t) = 2 \\Rightarrow 8 - 4t = 2 \\Rightarrow t = \\dfrac{3}{2}$ (between $A$ at $t = 0$ and $B'$ at $t = 6$).\n$R = \\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$.\nLength $= AB' = \\sqrt{36 + 0 + 36} = 6\\sqrt{2}$.\nAnswer: $R\\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$; total length $6\\sqrt{2}$"
+},
+{
+"label": "(e)",
+"marks": 3,
+"text": "Show that the lines $AR$ and $RB$ make the same acute angle with $\\Pi$, and find this angle.",
+"answer": "Both have $\\sin\\phi = \\dfrac{2\\sqrt{2}}{3}$; $\\phi = 70.5^{\\circ}$",
+"solution": "$\\overrightarrow{AR} = \\left(-\\dfrac{3}{2}, 0, \\dfrac{3}{2}\\right)$, parallel to $(-1, 0, 1)$.\n$\\overrightarrow{RB} = \\left(\\dfrac{7}{2}, 4, -\\dfrac{7}{2}\\right)$, parallel to $(7, 8, -7)$.\n$\\sin\\phi_{1} = \\dfrac{|(-1, 0, 1)\\cdot(2, 1, -2)|}{\\sqrt{2}\\times 3} = \\dfrac{4}{3\\sqrt{2}} = \\dfrac{2\\sqrt{2}}{3}$.\n$\\sin\\phi_{2} = \\dfrac{|(7, 8, -7)\\cdot(2, 1, -2)|}{\\sqrt{162}\\times 3} = \\dfrac{36}{27\\sqrt{2}} = \\dfrac{2\\sqrt{2}}{3}$.\n$\\phi = \\sin^{-1}\\dfrac{2\\sqrt{2}}{3} = 70.5^{\\circ}$ (1 d.p.).\nAnswer: both angles are $\\sin^{-1}\\dfrac{2\\sqrt{2}}{3} = 70.5^{\\circ}$"
+}
+],
+"answer": "(a) $F(1, 2, 1)$, $B'(-3, 0, 5)$; (b) $2x + y - 2z - 2$ is $6$ at $A$ and $18$ at $B$, both positive; (c) $XB = XB'$ since $\\Pi$ is the perpendicular bisector plane of $BB'$, so $AX + XB = AX + XB' \\geq AB'$; equality when $X$ lies on the segment $AB'$; (d) $R\\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$; length $6\\sqrt{2}$; (e) Both have $\\sin\\phi = \\dfrac{2\\sqrt{2}}{3}$; $\\phi = 70.5^{\\circ}$",
+"solution": "(a) Normal $\\mathbf{n} = (2, 1, -2)$. Line through $B$: $\\mathbf{r} = (5 + 2\\lambda,\\ 4 + \\lambda,\\ -3 - 2\\lambda)$.\n$2(5 + 2\\lambda) + (4 + \\lambda) - 2(-3 - 2\\lambda) = 2 \\Rightarrow 20 + 9\\lambda = 2 \\Rightarrow \\lambda = -2$.\n$F = (1, 2, 1)$.\n$\\overrightarrow{OB'} = 2\\overrightarrow{OF} - \\overrightarrow{OB} = (2 - 5,\\ 4 - 4,\\ 2 + 3) = (-3, 0, 5)$.\nAnswer: $F(1, 2, 1)$, $B'(-3, 0, 5)$\n\n(b) At $A$: $6 + 0 + 2 - 2 = 6 > 0$.\nAt $B$: $10 + 4 + 6 - 2 = 18 > 0$.\nAnswer: same sign, so $A$ and $B$ are on the same side of $\\Pi$\n\n(c) $\\Pi$ is perpendicular to $BB'$ and passes through its midpoint $F$, so every point $X$ on $\\Pi$ has $XB = XB'$.\nSo $AX + XB = AX + XB' \\geq AB'$ (a side of a triangle is at most the sum of the other two).\nEquality holds when $A$, $X$, $B'$ are collinear with $X$ between them.\nAnswer: $AX + XB = AX + XB' \\geq AB'$, with equality when $X$ is on the line segment $AB'$\n\n(d) $\\overrightarrow{AB'} = (-6, 0, 6)$; line $AB'$: $\\mathbf{r} = (3 - t,\\ 0,\\ -1 + t)$.\n$2(3 - t) + 0 - 2(-1 + t) = 2 \\Rightarrow 8 - 4t = 2 \\Rightarrow t = \\dfrac{3}{2}$ (between $A$ at $t = 0$ and $B'$ at $t = 6$).\n$R = \\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$.\nLength $= AB' = \\sqrt{36 + 0 + 36} = 6\\sqrt{2}$.\nAnswer: $R\\left(\\dfrac{3}{2}, 0, \\dfrac{1}{2}\\right)$; total length $6\\sqrt{2}$\n\n(e) $\\overrightarrow{AR} = \\left(-\\dfrac{3}{2}, 0, \\dfrac{3}{2}\\right)$, parallel to $(-1, 0, 1)$.\n$\\overrightarrow{RB} = \\left(\\dfrac{7}{2}, 4, -\\dfrac{7}{2}\\right)$, parallel to $(7, 8, -7)$.\n$\\sin\\phi_{1} = \\dfrac{|(-1, 0, 1)\\cdot(2, 1, -2)|}{\\sqrt{2}\\times 3} = \\dfrac{4}{3\\sqrt{2}} = \\dfrac{2\\sqrt{2}}{3}$.\n$\\sin\\phi_{2} = \\dfrac{|(7, 8, -7)\\cdot(2, 1, -2)|}{\\sqrt{162}\\times 3} = \\dfrac{36}{27\\sqrt{2}} = \\dfrac{2\\sqrt{2}}{3}$.\n$\\phi = \\sin^{-1}\\dfrac{2\\sqrt{2}}{3} = 70.5^{\\circ}$ (1 d.p.).\nAnswer: both angles are $\\sin^{-1}\\dfrac{2\\sqrt{2}}{3} = 70.5^{\\circ}$",
+"originality_note": "The shortest-path principle (reflect the target) turns a reflection law into ordinary line-plane work; (e) confirms the law."
+}
+},
+{
+"pos": 11,
+"topic": "Parametric Equations",
+"target": 14,
+"accepted": true,
+"question": {
+"stem": "The curve $C$ has equation $x^{3} + y^{3} = 3xy$. For each real value of $t$ with $t \\neq -1$, the line $y = tx$ meets $C$ at the origin $O$ and at a point $P$, called the point with parameter $t$. When $t = 0$, $P$ is the origin itself.",
+"total_marks": 14,
+"topics": [
+"Parametric Equations",
+"Differentiation (Tangents and Normals)",
+"Integration (Area and Volume)"
+],
+"needs_figure": false,
+"figure_description": "",
+"skills": [
+"parametrising a curve by lines through O",
+"symmetry t to 1/t",
+"oblique asymptote from x + y",
+"area under a parametric arc"
+],
+"parts": [
+{
+"label": "(a)",
+"marks": 1,
+"text": "Show that $P$ has coordinates $\\left(\\dfrac{3t}{1 + t^{3}}, \\dfrac{3t^{2}}{1 + t^{3}}\\right)$.",
+"answer": "Shown",
+"solution": "Substitute $y = tx$: $x^{3} + t^{3}x^{3} = 3tx^{2}$.\n$x^{2}\\left[(1 + t^{3})x - 3t\\right] = 0$, so $x = 0$ (at $O$) or $x = \\dfrac{3t}{1 + t^{3}}$.\nThen $y = tx = \\dfrac{3t^{2}}{1 + t^{3}}$.\nAnswer: Shown"
+},
+{
+"label": "(b)",
+"marks": 1,
+"text": "Show that, for $t \\neq 0$, the point with parameter $\\dfrac{1}{t}$ is the reflection in the line $y = x$ of the point with parameter $t$.",
+"answer": "Shown",
+"solution": "For $t \\neq 0$ (and $t \\neq -1$, so $\\dfrac{1}{t} \\neq -1$):\n$x\\!\\left(\\tfrac{1}{t}\\right) = \\dfrac{3/t}{1 + 1/t^{3}} = \\dfrac{3t^{2}}{t^{3} + 1} = y(t)$.\n$y\\!\\left(\\tfrac{1}{t}\\right) = \\dfrac{3/t^{2}}{1 + 1/t^{3}} = \\dfrac{3t}{t^{3} + 1} = x(t)$.\nSo the coordinates are swapped, which is reflection in $y = x$.\nAnswer: Shown"
+},
+{
+"label": "(c)",
+"marks": 4,
+"text": "Find $\\dfrac{dy}{dx}$ in terms of $t$. Hence find the exact coordinates of the point $H$, other than $O$, at which the tangent to $C$ is parallel to the $x$-axis, and use part (b) to write down the coordinates of the point $V$, other than $O$, at which the tangent to $C$ is parallel to the $y$-axis.",
+"answer": "$\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$; $H\\left(\\sqrt[3]{2}, \\sqrt[3]{4}\\right)$; $V\\left(\\sqrt[3]{4}, \\sqrt[3]{2}\\right)$",
+"solution": "$\\dfrac{dx}{dt} = \\dfrac{3(1 + t^{3}) - 9t^{3}}{(1 + t^{3})^{2}} = \\dfrac{3(1 - 2t^{3})}{(1 + t^{3})^{2}}$.\n$\\dfrac{dy}{dt} = \\dfrac{6t(1 + t^{3}) - 9t^{4}}{(1 + t^{3})^{2}} = \\dfrac{3t(2 - t^{3})}{(1 + t^{3})^{2}}$.\n$\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$.\nParallel to the $x$-axis, $t \\neq 0$: $t^{3} = 2$, $t = \\sqrt[3]{2}$: $x = \\dfrac{3\\sqrt[3]{2}}{3} = \\sqrt[3]{2}$, $y = \\dfrac{3\\sqrt[3]{4}}{3} = \\sqrt[3]{4}$.\nBy (b), reflecting $H$ in $y = x$ gives $V$ (parameter $\\dfrac{1}{\\sqrt[3]{2}}$, where $1 - 2t^{3} = 0$).\nAnswer: $\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$; $H\\left(\\sqrt[3]{2}, \\sqrt[3]{4}\\right)$; $V\\left(\\sqrt[3]{4}, \\sqrt[3]{2}\\right)$"
+},
+{
+"label": "(d)",
+"marks": 2,
+"text": "Show that $x + y = \\dfrac{3t}{t^{2} - t + 1}$. Hence find the equation of the asymptote of $C$.",
+"answer": "$x + y = -1$",
+"solution": "$x + y = \\dfrac{3t(1 + t)}{1 + t^{3}} = \\dfrac{3t(1 + t)}{(1 + t)(1 - t + t^{2})} = \\dfrac{3t}{t^{2} - t + 1}$ for $t \\neq -1$.\nAs $t \\to -1$, $|x| \\to \\infty$ and $x + y \\to \\dfrac{-3}{3} = -1$.\nSo the distance $\\dfrac{|x + y + 1|}{\\sqrt{2}}$ from $P$ to the line $x + y = -1$ tends to $0$.\nAnswer: the asymptote is $x + y = -1$"
+},
+{
+"label": "(e)",
+"marks": 2,
+"text": "Find the equation of the tangent to $C$ at the point where $t = 1$, and the exact distance between this tangent and the asymptote.",
+"answer": "$x + y = 3$; distance $2\\sqrt{2}$",
+"solution": "At $t = 1$: point $\\left(\\dfrac{3}{2}, \\dfrac{3}{2}\\right)$, $\\dfrac{dy}{dx} = \\dfrac{1(2 - 1)}{1 - 2} = -1$.\nTangent: $y - \\dfrac{3}{2} = -\\left(x - \\dfrac{3}{2}\\right)$, i.e. $x + y = 3$, parallel to $x + y = -1$.\nDistance $= \\dfrac{|3 - (-1)|}{\\sqrt{2}} = 2\\sqrt{2}$.\nAnswer: $x + y = 3$; distance $2\\sqrt{2}$"
+},
+{
+"label": "(f)",
+"marks": 4,
+"text": "The region $S$ is bounded by the $x$-axis, the line $x = \\sqrt[3]{4}$ and the arc of $C$ from $O$ to $V$ given by $0 \\leq t \\leq \\dfrac{1}{\\sqrt[3]{2}}$. Using the substitution $u = 1 + t^{3}$, find the exact area of $S$.",
+"answer": "$\\dfrac{1}{2}$",
+"solution": "On $0 \\leq t \\leq \\dfrac{1}{\\sqrt[3]{2}}$, $x$ increases from $0$ to $\\sqrt[3]{4}$ and $y \\geq 0$.\nArea $= \\displaystyle\\int_{0}^{1/\\sqrt[3]{2}} y\\dfrac{dx}{dt}\\,dt = \\int_{0}^{1/\\sqrt[3]{2}} \\dfrac{9t^{2}(1 - 2t^{3})}{(1 + t^{3})^{3}}\\,dt$.\n$u = 1 + t^{3}$, $du = 3t^{2}\\,dt$, $1 - 2t^{3} = 3 - 2u$; limits $u = 1$ to $u = \\dfrac{3}{2}$.\nArea $= \\displaystyle\\int_{1}^{3/2} \\dfrac{3(3 - 2u)}{u^{3}}\\,du = \\int_{1}^{3/2}\\left(9u^{-3} - 6u^{-2}\\right)du$.\n$= \\left[-\\dfrac{9}{2u^{2}} + \\dfrac{6}{u}\\right]_{1}^{3/2} = (-2 + 4) - \\left(-\\dfrac{9}{2} + 6\\right) = 2 - \\dfrac{3}{2}$.\nAnswer: $\\dfrac{1}{2}$"
+}
+],
+"answer": "(a) Shown; (b) Shown; (c) $\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$; $H\\left(\\sqrt[3]{2}, \\sqrt[3]{4}\\right)$; $V\\left(\\sqrt[3]{4}, \\sqrt[3]{2}\\right)$; (d) $x + y = -1$; (e) $x + y = 3$; distance $2\\sqrt{2}$; (f) $\\dfrac{1}{2}$",
+"solution": "(a) Substitute $y = tx$: $x^{3} + t^{3}x^{3} = 3tx^{2}$.\n$x^{2}\\left[(1 + t^{3})x - 3t\\right] = 0$, so $x = 0$ (at $O$) or $x = \\dfrac{3t}{1 + t^{3}}$.\nThen $y = tx = \\dfrac{3t^{2}}{1 + t^{3}}$.\nAnswer: Shown\n\n(b) For $t \\neq 0$ (and $t \\neq -1$, so $\\dfrac{1}{t} \\neq -1$):\n$x\\!\\left(\\tfrac{1}{t}\\right) = \\dfrac{3/t}{1 + 1/t^{3}} = \\dfrac{3t^{2}}{t^{3} + 1} = y(t)$.\n$y\\!\\left(\\tfrac{1}{t}\\right) = \\dfrac{3/t^{2}}{1 + 1/t^{3}} = \\dfrac{3t}{t^{3} + 1} = x(t)$.\nSo the coordinates are swapped, which is reflection in $y = x$.\nAnswer: Shown\n\n(c) $\\dfrac{dx}{dt} = \\dfrac{3(1 + t^{3}) - 9t^{3}}{(1 + t^{3})^{2}} = \\dfrac{3(1 - 2t^{3})}{(1 + t^{3})^{2}}$.\n$\\dfrac{dy}{dt} = \\dfrac{6t(1 + t^{3}) - 9t^{4}}{(1 + t^{3})^{2}} = \\dfrac{3t(2 - t^{3})}{(1 + t^{3})^{2}}$.\n$\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$.\nParallel to the $x$-axis, $t \\neq 0$: $t^{3} = 2$, $t = \\sqrt[3]{2}$: $x = \\dfrac{3\\sqrt[3]{2}}{3} = \\sqrt[3]{2}$, $y = \\dfrac{3\\sqrt[3]{4}}{3} = \\sqrt[3]{4}$.\nBy (b), reflecting $H$ in $y = x$ gives $V$ (parameter $\\dfrac{1}{\\sqrt[3]{2}}$, where $1 - 2t^{3} = 0$).\nAnswer: $\\dfrac{dy}{dx} = \\dfrac{t(2 - t^{3})}{1 - 2t^{3}}$; $H\\left(\\sqrt[3]{2}, \\sqrt[3]{4}\\right)$; $V\\left(\\sqrt[3]{4}, \\sqrt[3]{2}\\right)$\n\n(d) $x + y = \\dfrac{3t(1 + t)}{1 + t^{3}} = \\dfrac{3t(1 + t)}{(1 + t)(1 - t + t^{2})} = \\dfrac{3t}{t^{2} - t + 1}$ for $t \\neq -1$.\nAs $t \\to -1$, $|x| \\to \\infty$ and $x + y \\to \\dfrac{-3}{3} = -1$.\nSo the distance $\\dfrac{|x + y + 1|}{\\sqrt{2}}$ from $P$ to the line $x + y = -1$ tends to $0$.\nAnswer: the asymptote is $x + y = -1$\n\n(e) At $t = 1$: point $\\left(\\dfrac{3}{2}, \\dfrac{3}{2}\\right)$, $\\dfrac{dy}{dx} = \\dfrac{1(2 - 1)}{1 - 2} = -1$.\nTangent: $y - \\dfrac{3}{2} = -\\left(x - \\dfrac{3}{2}\\right)$, i.e. $x + y = 3$, parallel to $x + y = -1$.\nDistance $= \\dfrac{|3 - (-1)|}{\\sqrt{2}} = 2\\sqrt{2}$.\nAnswer: $x + y = 3$; distance $2\\sqrt{2}$\n\n(f) On $0 \\leq t \\leq \\dfrac{1}{\\sqrt[3]{2}}$, $x$ increases from $0$ to $\\sqrt[3]{4}$ and $y \\geq 0$.\nArea $= \\displaystyle\\int_{0}^{1/\\sqrt[3]{2}} y\\dfrac{dx}{dt}\\,dt = \\int_{0}^{1/\\sqrt[3]{2}} \\dfrac{9t^{2}(1 - 2t^{3})}{(1 + t^{3})^{3}}\\,dt$.\n$u = 1 + t^{3}$, $du = 3t^{2}\\,dt$, $1 - 2t^{3} = 3 - 2u$; limits $u = 1$ to $u = \\dfrac{3}{2}$.\nArea $= \\displaystyle\\int_{1}^{3/2} \\dfrac{3(3 - 2u)}{u^{3}}\\,du = \\int_{1}^{3/2}\\left(9u^{-3} - 6u^{-2}\\right)du$.\n$= \\left[-\\dfrac{9}{2u^{2}} + \\dfrac{6}{u}\\right]_{1}^{3/2} = (-2 + 4) - \\left(-\\dfrac{9}{2} + 6\\right) = 2 - \\dfrac{3}{2}$.\nAnswer: $\\dfrac{1}{2}$",
+"originality_note": "The folium of Descartes met through its mechanism (a pencil of lines through O); no parametric form is handed over."
+}
+}
+],
+"layout": {
+"page_per_question": true,
+"keep_part_with_space": true
+}
+}

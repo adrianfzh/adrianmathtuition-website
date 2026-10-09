@@ -1,0 +1,602 @@
+{
+ "key": "GCE-JC-P2",
+ "seed": 32,
+ "set": 32,
+ "variety": true,
+ "models": {
+  "author": "opus (the lead agent itself)",
+  "solver": "opus (fresh agents, blind)"
+ },
+ "earlier_sets": [],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "9758",
+  "level": "JC2",
+  "setLevel": "JC",
+  "exam": "A-Level",
+  "cut": 2017,
+  "duration": "3 hours",
+  "standardYears": "school prelims 2024–2025",
+  "additional": "List of Formulae (MF26)",
+  "title": "H2 Mathematics · Prelim (Opus) · Paper 2"
+ },
+ "paperNo": 2,
+ "total": 100,
+ "sections": {
+  "boundary": 5,
+  "a": "Section A: Pure Mathematics [40 marks]",
+  "b": "Section B: Probability and Statistics [60 marks]"
+ },
+ "prompt_version": "prelim-fable-1",
+ "blueprint_derived_at": null,
+ "generated_at": "2026-10-03",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Inequalities",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "**Do not use a calculator in answering this question.**\n\nA thin converging lens has focal length $10$ cm. An object is placed $u$ cm from the lens, where $u > 0$ and $u \\neq 10$. The image is formed $v$ cm from the lens, where $$\\dfrac{1}{u} + \\dfrac{1}{v} = \\dfrac{1}{10}.$$ The image is real, and can be caught on a screen on the far side of the lens, when $v > 0$. The image is $\\dfrac{|v|}{u}$ times the size of the object.",
+    "total_marks": 7,
+    "topics": [
+     "Inequalities"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "modulus inequality from a formula",
+     "rearranging a sum into a square"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "Show that $\\dfrac{|v|}{u} = \\dfrac{10}{|u - 10|}$.",
+      "answer": "Shown",
+      "solution": "$\\dfrac{1}{v} = \\dfrac{1}{10} - \\dfrac{1}{u} = \\dfrac{u - 10}{10u}$, so $v = \\dfrac{10u}{u - 10}$.\n$\\dfrac{|v|}{u} = \\dfrac{10u}{u\\,|u - 10|} = \\dfrac{10}{|u - 10|}$ (since $u > 0$).\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Find the set of values of $u$ for which the image is at least three times the size of the object.",
+      "answer": "$\\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3}$, $u \\neq 10$",
+      "solution": "$\\dfrac{10}{|u - 10|} \\geq 3$ with $u \\neq 10$.\nBoth sides positive: $|u - 10| \\leq \\dfrac{10}{3}$.\n$-\\dfrac{10}{3} \\leq u - 10 \\leq \\dfrac{10}{3}$, so $\\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3}$.\nAnswer: $\\left\\{u : \\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3},\\ u \\neq 10\\right\\}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Explain why a real image is formed only when $u > 10$. For a real image, show that $u + v - 40 = \\dfrac{(u - 20)^{2}}{u - 10}$. Hence show that the screen can never be less than $40$ cm from the object, and state the value of $u$ for which it is exactly $40$ cm.",
+      "answer": "$v = \\dfrac{10u}{u-10} > 0 \\iff u > 10$; $u + v \\geq 40$, with equality when $u = 20$",
+      "solution": "$v = \\dfrac{10u}{u - 10}$ with $10u > 0$, so $v > 0 \\iff u - 10 > 0 \\iff u > 10$.\n$u + v = u + \\dfrac{10u}{u - 10} = \\dfrac{u^{2} - 10u + 10u}{u - 10} = \\dfrac{u^{2}}{u - 10}$.\n$u + v - 40 = \\dfrac{u^{2} - 40u + 400}{u - 10} = \\dfrac{(u - 20)^{2}}{u - 10}$.\nFor $u > 10$: $(u - 20)^{2} \\geq 0$ and $u - 10 > 0$, so $u + v - 40 \\geq 0$.\nEquality only when $u = 20$ (then $v = 20$).\nAnswer: the object-to-screen distance $u + v \\geq 40$ cm, equal to $40$ cm only when $u = 20$"
+     }
+    ],
+    "answer": "(a) Shown; (b) $\\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3}$, $u \\neq 10$; (c) $v = \\dfrac{10u}{u-10} > 0 \\iff u > 10$; $u + v \\geq 40$, with equality when $u = 20$",
+    "solution": "(a) $\\dfrac{1}{v} = \\dfrac{1}{10} - \\dfrac{1}{u} = \\dfrac{u - 10}{10u}$, so $v = \\dfrac{10u}{u - 10}$.\n$\\dfrac{|v|}{u} = \\dfrac{10u}{u\\,|u - 10|} = \\dfrac{10}{|u - 10|}$ (since $u > 0$).\nAnswer: Shown\n\n(b) $\\dfrac{10}{|u - 10|} \\geq 3$ with $u \\neq 10$.\nBoth sides positive: $|u - 10| \\leq \\dfrac{10}{3}$.\n$-\\dfrac{10}{3} \\leq u - 10 \\leq \\dfrac{10}{3}$, so $\\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3}$.\nAnswer: $\\left\\{u : \\dfrac{20}{3} \\leq u \\leq \\dfrac{40}{3},\\ u \\neq 10\\right\\}$\n\n(c) $v = \\dfrac{10u}{u - 10}$ with $10u > 0$, so $v > 0 \\iff u - 10 > 0 \\iff u > 10$.\n$u + v = u + \\dfrac{10u}{u - 10} = \\dfrac{u^{2} - 10u + 10u}{u - 10} = \\dfrac{u^{2}}{u - 10}$.\n$u + v - 40 = \\dfrac{u^{2} - 40u + 400}{u - 10} = \\dfrac{(u - 20)^{2}}{u - 10}$.\nFor $u > 10$: $(u - 20)^{2} \\geq 0$ and $u - 10 > 0$, so $u + v - 40 \\geq 0$.\nEquality only when $u = 20$ (then $v = 20$).\nAnswer: the object-to-screen distance $u + v \\geq 40$ cm, equal to $40$ cm only when $u = 20$",
+    "originality_note": "Built from a lens: the size condition becomes a modulus inequality, and the least object-screen distance 4f is a perfect square, not a calculus minimum."
+   }
+  },
+  {
+   "pos": 2,
+   "topic": "APGP",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The amount of a certain drug in a patient's body halves every $6$ hours. A patient is given a dose of $D$ mg of the drug at regular intervals of $T$ hours, starting at time $0$. Let $r = 2^{-T/6}$, so that between doses the amount of drug in the body is multiplied by $r$.",
+    "total_marks": 9,
+    "topics": [
+     "APGP"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "accumulation as a geometric series",
+     "a loading dose",
+     "fitting a schedule inside a window"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that the amount of drug in the body immediately after the $n$th dose is $\\dfrac{D\\left(1 - r^{n}\\right)}{1 - r}$.",
+      "answer": "Shown",
+      "solution": "Just after dose 1: $D$.\nJust after dose 2: $Dr + D$.\nJust after dose $n$: $D + Dr + Dr^{2} + \\cdots + Dr^{n-1}$ (the first dose has decayed $n - 1$ times).\nThis is a GP with first term $D$, ratio $r$, $n$ terms: $\\dfrac{D\\left(1 - r^{n}\\right)}{1 - r}$.\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "For this part, $T = 6$ and $D = 100$. Find the least value of $n$ for which the amount immediately after the $n$th dose exceeds $195$ mg.",
+      "answer": "$n = 6$",
+      "solution": "$r = 2^{-1} = \\dfrac{1}{2}$; amount $= \\dfrac{100\\left(1 - 2^{-n}\\right)}{1/2} = 200\\left(1 - 2^{-n}\\right)$.\n$200\\left(1 - 2^{-n}\\right) > 195 \\iff 2^{-n} < 0.025 \\iff n > \\dfrac{\\ln 40}{\\ln 2} = 5.32$.\nCheck: $n = 5$ gives $193.75$; $n = 6$ gives $196.875$.\nAnswer: $n = 6$"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "To reach a steady level at once, a doctor gives a larger first dose of $L$ mg, followed by doses of $D$ mg every $T$ hours. $L$ is chosen so that the amount of drug immediately after every dose is the same. Show that $L = \\dfrac{D}{1 - r}$, and find $L$ when $T = 6$ and $D = 100$.",
+      "answer": "$L = \\dfrac{D}{1-r}$; $L = 200$",
+      "solution": "Just after dose 1: $L$. Just before dose 2: $rL$. Just after dose 2: $rL + D$.\nSame amount: $rL + D = L \\Rightarrow L(1 - r) = D \\Rightarrow L = \\dfrac{D}{1 - r}$.\nThen every later dose repeats this: $rL + D = L$ again.\n$T = 6$, $D = 100$: $L = \\dfrac{100}{1/2} = 200$.\nAnswer: $L = \\dfrac{D}{1 - r}$; $L = 200$ mg"
+     },
+     {
+      "label": "(d)",
+      "marks": 3,
+      "text": "The drug works only when there is at least $60$ mg in the body, and it is harmful when there is more than $200$ mg. The doctor uses the schedule in part (c), with $T$ a whole number of hours, so that the amount is never below $60$ mg and never above $200$ mg. Find the greatest possible value of $T$ and, for this value of $T$, the range of possible values of $D$, giving the bounds of this range correct to 1 decimal place.",
+      "answer": "$T = 10$; $130.5 \\leq D \\leq 137.0$ (unrounded $130.488 \\leq D \\leq 137.004$)",
+      "solution": "The amount is greatest just after a dose ($L$) and least just before a dose ($rL$).\nNeed $L \\leq 200$ and $rL \\geq 60$, which together need $r \\geq \\dfrac{60}{200} = 0.3$.\n$2^{-T/6} \\geq 0.3 \\iff T \\leq 6\\log_{2}\\dfrac{1}{0.3} = 10.42$, so the greatest whole $T$ is $10$.\n$T = 10$: $r = 2^{-5/3} = 0.31498$.\n$\\dfrac{D}{1 - r} \\leq 200 \\Rightarrow D \\leq 200(1 - r) = 137.004$.\n$\\dfrac{rD}{1 - r} \\geq 60 \\Rightarrow D \\geq \\dfrac{60(1 - r)}{r} = 130.488$.\nUnrounded: $130.488 \\leq D \\leq 137.004$.\nTo 1 d.p. the range must stay inside this: round the lower bound UP to $130.5$ and the upper bound down to $137.0$.\n(Rounding the lower bound to $130.4$ is not accepted: $D = 130.4$ gives less than $60$ mg.)\nAnswer: $T = 10$; $130.5 \\leq D \\leq 137.0$"
+     }
+    ],
+    "answer": "(a) Shown; (b) $n = 6$; (c) $L = \\dfrac{D}{1-r}$; $L = 200$; (d) $T = 10$; $130.5 \\leq D \\leq 137.0$ (unrounded $130.488 \\leq D \\leq 137.004$)",
+    "solution": "(a) Just after dose 1: $D$.\nJust after dose 2: $Dr + D$.\nJust after dose $n$: $D + Dr + Dr^{2} + \\cdots + Dr^{n-1}$ (the first dose has decayed $n - 1$ times).\nThis is a GP with first term $D$, ratio $r$, $n$ terms: $\\dfrac{D\\left(1 - r^{n}\\right)}{1 - r}$.\nAnswer: Shown\n\n(b) $r = 2^{-1} = \\dfrac{1}{2}$; amount $= \\dfrac{100\\left(1 - 2^{-n}\\right)}{1/2} = 200\\left(1 - 2^{-n}\\right)$.\n$200\\left(1 - 2^{-n}\\right) > 195 \\iff 2^{-n} < 0.025 \\iff n > \\dfrac{\\ln 40}{\\ln 2} = 5.32$.\nCheck: $n = 5$ gives $193.75$; $n = 6$ gives $196.875$.\nAnswer: $n = 6$\n\n(c) Just after dose 1: $L$. Just before dose 2: $rL$. Just after dose 2: $rL + D$.\nSame amount: $rL + D = L \\Rightarrow L(1 - r) = D \\Rightarrow L = \\dfrac{D}{1 - r}$.\nThen every later dose repeats this: $rL + D = L$ again.\n$T = 6$, $D = 100$: $L = \\dfrac{100}{1/2} = 200$.\nAnswer: $L = \\dfrac{D}{1 - r}$; $L = 200$ mg\n\n(d) The amount is greatest just after a dose ($L$) and least just before a dose ($rL$).\nNeed $L \\leq 200$ and $rL \\geq 60$, which together need $r \\geq \\dfrac{60}{200} = 0.3$.\n$2^{-T/6} \\geq 0.3 \\iff T \\leq 6\\log_{2}\\dfrac{1}{0.3} = 10.42$, so the greatest whole $T$ is $10$.\n$T = 10$: $r = 2^{-5/3} = 0.31498$.\n$\\dfrac{D}{1 - r} \\leq 200 \\Rightarrow D \\leq 200(1 - r) = 137.004$.\n$\\dfrac{rD}{1 - r} \\geq 60 \\Rightarrow D \\geq \\dfrac{60(1 - r)}{r} = 130.488$.\nUnrounded: $130.488 \\leq D \\leq 137.004$.\nTo 1 d.p. the range must stay inside this: round the lower bound UP to $130.5$ and the upper bound down to $137.0$.\n(Rounding the lower bound to $130.4$ is not accepted: $D = 130.4$ gives less than $60$ mg.)\nAnswer: $T = 10$; $130.5 \\leq D \\leq 137.0$",
+    "originality_note": "A dosing schedule: the peak-to-trough ratio is 1/r whatever the dose, so the window fixes T before it fixes D."
+   }
+  },
+  {
+   "pos": 3,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "In an engine, a crank $OA$ of length $3$ cm turns about a fixed point $O$. A rod $AB$ of length $5$ cm is joined to the crank at $A$, and its other end $B$ slides along a fixed straight line through $O$. Take $O$ as the origin and the line as the positive $x$-axis, so that $B$ is the point $(x, 0)$ with $x > 0$ and $A$ is the point $(3\\cos\\theta, 3\\sin\\theta)$, where $\\theta$ is the angle $AOB$ in radians. The crank turns so that $\\theta$ increases at a constant rate of $4$ radians per second.",
+    "total_marks": 11,
+    "topics": [
+     "Differentiation (Rates of Change)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "a length fixed by a linkage",
+     "chain rule with a constant angular rate",
+     "maximum rate from the GC"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Show that $x = 3\\cos\\theta + \\sqrt{25 - 9\\sin^{2}\\theta}$.",
+      "answer": "Shown",
+      "solution": "$AB = 5$: $(x - 3\\cos\\theta)^{2} + (0 - 3\\sin\\theta)^{2} = 25$.\n$x - 3\\cos\\theta = \\pm\\sqrt{25 - 9\\sin^{2}\\theta}$.\n$\\sqrt{25 - 9\\sin^{2}\\theta} \\geq 4 > 3 \\geq 3\\cos\\theta$, so the negative sign would make $x < 0$.\nSince $x > 0$: $x = 3\\cos\\theta + \\sqrt{25 - 9\\sin^{2}\\theta}$.\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 1,
+      "text": "Write down the greatest and least values of $x$.",
+      "answer": "Greatest $8$, least $2$",
+      "solution": "$\\theta = 0$: $x = 3 + 5 = 8$ ($O$, $A$, $B$ in a line with $A$ between).\n$\\theta = \\pi$: $x = -3 + 5 = 2$.\nAnswer: greatest $x = 8$, least $x = 2$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Find $\\dfrac{dx}{d\\theta}$. Hence find the rate at which $x$ is changing when $\\theta = \\dfrac{\\pi}{3}$.",
+      "answer": "$\\dfrac{dx}{d\\theta} = -3\\sin\\theta - \\dfrac{9\\sin\\theta\\cos\\theta}{\\sqrt{25 - 9\\sin^{2}\\theta}}$; $x$ decreasing at $14.0$ cm/s",
+      "solution": "$\\dfrac{dx}{d\\theta} = -3\\sin\\theta + \\dfrac{-18\\sin\\theta\\cos\\theta}{2\\sqrt{25 - 9\\sin^{2}\\theta}} = -3\\sin\\theta - \\dfrac{9\\sin\\theta\\cos\\theta}{\\sqrt{25 - 9\\sin^{2}\\theta}}$.\nAt $\\theta = \\dfrac{\\pi}{3}$: $\\sin\\theta = \\dfrac{\\sqrt{3}}{2}$, $\\cos\\theta = \\dfrac{1}{2}$, $25 - 9\\sin^{2}\\theta = \\dfrac{73}{4}$.\n$\\dfrac{dx}{d\\theta} = -\\dfrac{3\\sqrt{3}}{2} - \\dfrac{9\\sqrt{3}/4}{\\sqrt{73}/2} = -2.5981 - 0.9122 = -3.5103$.\n$\\dfrac{dx}{dt} = \\dfrac{dx}{d\\theta}\\cdot\\dfrac{d\\theta}{dt} = -3.5103 \\times 4 = -14.041$.\nAnswer: $x$ is decreasing at $14.0$ cm/s"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Show that when $\\theta = \\dfrac{\\pi}{2}$, $B$ is moving at the same speed as $A$.",
+      "answer": "Both $12$ cm/s",
+      "solution": "At $\\theta = \\dfrac{\\pi}{2}$: $\\dfrac{dx}{d\\theta} = -3(1) - 0 = -3$, so $\\dfrac{dx}{dt} = -12$: $B$ moves at $12$ cm/s.\n$A$ moves on a circle of radius $3$; the arc length is $s = 3\\theta$, so $\\dfrac{ds}{dt} = 3 \\times 4 = 12$ cm/s.\nAnswer: both move at $12$ cm/s"
+     },
+     {
+      "label": "(e)",
+      "marks": 3,
+      "text": "Using your graphing calculator, find the greatest speed of $B$ for $0 < \\theta < \\pi$ and the value of $\\theta$ at which it occurs. State the speed of $B$ when $\\theta = 0$ and when $\\theta = \\pi$, and explain in context why it takes this value.",
+      "answer": "Greatest speed $14.2$ cm/s at $\\theta = 1.14$; speed $0$ at $\\theta = 0$ and $\\pi$, where $x$ is greatest or least and $B$ turns back",
+      "solution": "Speed of $B = \\left|\\dfrac{dx}{dt}\\right| = 4\\left|\\dfrac{dx}{d\\theta}\\right|$.\nGC maximum of $\\left|\\dfrac{dx}{d\\theta}\\right|$ on $(0, \\pi)$: $3.5406$ at $\\theta = 1.1419$.\nGreatest speed $= 4 \\times 3.5406 = 14.163$ cm/s.\nAt $\\theta = 0$ and $\\theta = \\pi$, $\\sin\\theta = 0$ so $\\dfrac{dx}{d\\theta} = 0$: speed $0$.\nThese are where $x$ is greatest ($8$) and least ($2$): $B$ stops for an instant and turns back.\nAnswer: greatest speed $14.2$ cm/s at $\\theta = 1.14$ rad; speed $0$ at $\\theta = 0$ and $\\theta = \\pi$, the ends of $B$'s travel where it reverses"
+     }
+    ],
+    "answer": "(a) Shown; (b) Greatest $8$, least $2$; (c) $\\dfrac{dx}{d\\theta} = -3\\sin\\theta - \\dfrac{9\\sin\\theta\\cos\\theta}{\\sqrt{25 - 9\\sin^{2}\\theta}}$; $x$ decreasing at $14.0$ cm/s; (d) Both $12$ cm/s; (e) Greatest speed $14.2$ cm/s at $\\theta = 1.14$; speed $0$ at $\\theta = 0$ and $\\pi$, where $x$ is greatest or least and $B$ turns back",
+    "solution": "(a) $AB = 5$: $(x - 3\\cos\\theta)^{2} + (0 - 3\\sin\\theta)^{2} = 25$.\n$x - 3\\cos\\theta = \\pm\\sqrt{25 - 9\\sin^{2}\\theta}$.\n$\\sqrt{25 - 9\\sin^{2}\\theta} \\geq 4 > 3 \\geq 3\\cos\\theta$, so the negative sign would make $x < 0$.\nSince $x > 0$: $x = 3\\cos\\theta + \\sqrt{25 - 9\\sin^{2}\\theta}$.\nAnswer: Shown\n\n(b) $\\theta = 0$: $x = 3 + 5 = 8$ ($O$, $A$, $B$ in a line with $A$ between).\n$\\theta = \\pi$: $x = -3 + 5 = 2$.\nAnswer: greatest $x = 8$, least $x = 2$\n\n(c) $\\dfrac{dx}{d\\theta} = -3\\sin\\theta + \\dfrac{-18\\sin\\theta\\cos\\theta}{2\\sqrt{25 - 9\\sin^{2}\\theta}} = -3\\sin\\theta - \\dfrac{9\\sin\\theta\\cos\\theta}{\\sqrt{25 - 9\\sin^{2}\\theta}}$.\nAt $\\theta = \\dfrac{\\pi}{3}$: $\\sin\\theta = \\dfrac{\\sqrt{3}}{2}$, $\\cos\\theta = \\dfrac{1}{2}$, $25 - 9\\sin^{2}\\theta = \\dfrac{73}{4}$.\n$\\dfrac{dx}{d\\theta} = -\\dfrac{3\\sqrt{3}}{2} - \\dfrac{9\\sqrt{3}/4}{\\sqrt{73}/2} = -2.5981 - 0.9122 = -3.5103$.\n$\\dfrac{dx}{dt} = \\dfrac{dx}{d\\theta}\\cdot\\dfrac{d\\theta}{dt} = -3.5103 \\times 4 = -14.041$.\nAnswer: $x$ is decreasing at $14.0$ cm/s\n\n(d) At $\\theta = \\dfrac{\\pi}{2}$: $\\dfrac{dx}{d\\theta} = -3(1) - 0 = -3$, so $\\dfrac{dx}{dt} = -12$: $B$ moves at $12$ cm/s.\n$A$ moves on a circle of radius $3$; the arc length is $s = 3\\theta$, so $\\dfrac{ds}{dt} = 3 \\times 4 = 12$ cm/s.\nAnswer: both move at $12$ cm/s\n\n(e) Speed of $B = \\left|\\dfrac{dx}{dt}\\right| = 4\\left|\\dfrac{dx}{d\\theta}\\right|$.\nGC maximum of $\\left|\\dfrac{dx}{d\\theta}\\right|$ on $(0, \\pi)$: $3.5406$ at $\\theta = 1.1419$.\nGreatest speed $= 4 \\times 3.5406 = 14.163$ cm/s.\nAt $\\theta = 0$ and $\\theta = \\pi$, $\\sin\\theta = 0$ so $\\dfrac{dx}{d\\theta} = 0$: speed $0$.\nThese are where $x$ is greatest ($8$) and least ($2$): $B$ stops for an instant and turns back.\nAnswer: greatest speed $14.2$ cm/s at $\\theta = 1.14$ rad; speed $0$ at $\\theta = 0$ and $\\theta = \\pi$, the ends of $B$'s travel where it reverses",
+    "originality_note": "A crank and rod: the linkage fixes x(theta); B outruns A before the crank is vertical and stops dead at the ends of its stroke."
+   }
+  },
+  {
+   "pos": 4,
+   "topic": "Integration (Techniques)",
+   "target": 13,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "total_marks": 13,
+    "topics": [
+     "Integration (Techniques)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "substitution that reflects the interval",
+     "pairing an integral with its reflection",
+     "substitution t = cos x"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Use the substitution $u = a - x$ to show that, for a continuous function $h$ and a constant $a$, $$\\int_{0}^{a} h(x)\\,dx = \\int_{0}^{a} h(a - x)\\,dx.$$",
+      "answer": "Shown",
+      "solution": "$u = a - x$: $du = -dx$; $x = 0 \\to u = a$, $x = a \\to u = 0$.\n$\\displaystyle\\int_{0}^{a} h(a - x)\\,dx = \\int_{a}^{0} h(u)(-du) = \\int_{0}^{a} h(u)\\,du = \\int_{0}^{a} h(x)\\,dx$.\nAnswer: Shown"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Hence, without using a calculator, find the exact value of $$\\int_{0}^{\\frac{\\pi}{2}} \\dfrac{e^{\\sin x}}{e^{\\sin x} + e^{\\cos x}}\\,dx.$$",
+      "answer": "$\\dfrac{\\pi}{4}$",
+      "solution": "Let $I$ be the integral. With $a = \\dfrac{\\pi}{2}$: $\\sin\\left(\\dfrac{\\pi}{2} - x\\right) = \\cos x$, $\\cos\\left(\\dfrac{\\pi}{2} - x\\right) = \\sin x$.\nSo $I = \\displaystyle\\int_{0}^{\\frac{\\pi}{2}} \\dfrac{e^{\\cos x}}{e^{\\cos x} + e^{\\sin x}}\\,dx$.\nAdding: $2I = \\displaystyle\\int_{0}^{\\frac{\\pi}{2}} 1\\,dx = \\dfrac{\\pi}{2}$.\nAnswer: $\\dfrac{\\pi}{4}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Use the result of part (a) to show that, for a continuous function $g$, $$\\int_{0}^{\\pi} x\\,g(\\sin x)\\,dx = \\dfrac{\\pi}{2}\\int_{0}^{\\pi} g(\\sin x)\\,dx.$$",
+      "answer": "Shown",
+      "solution": "Let $J = \\displaystyle\\int_{0}^{\\pi} x\\,g(\\sin x)\\,dx$. Use (a) with $a = \\pi$, $\\sin(\\pi - x) = \\sin x$.\n$J = \\displaystyle\\int_{0}^{\\pi} (\\pi - x)\\,g(\\sin x)\\,dx = \\pi\\int_{0}^{\\pi} g(\\sin x)\\,dx - J$.\n$2J = \\pi\\displaystyle\\int_{0}^{\\pi} g(\\sin x)\\,dx$, so $J = \\dfrac{\\pi}{2}\\int_{0}^{\\pi} g(\\sin x)\\,dx$.\nAnswer: Shown"
+     },
+     {
+      "label": "(d)",
+      "marks": 4,
+      "text": "Use the substitution $t = \\cos x$ to find the exact value of $$\\int_{0}^{\\pi} \\dfrac{\\sin x}{3 + \\sin^{2} x}\\,dx.$$",
+      "answer": "$\\dfrac{1}{2}\\ln 3$",
+      "solution": "$3 + \\sin^{2}x = 4 - \\cos^{2}x = 4 - t^{2}$; $dt = -\\sin x\\,dx$; $x = 0 \\to t = 1$, $x = \\pi \\to t = -1$.\n$\\displaystyle\\int_{0}^{\\pi} \\dfrac{\\sin x}{3 + \\sin^{2}x}\\,dx = \\int_{1}^{-1} \\dfrac{-dt}{4 - t^{2}} = \\int_{-1}^{1} \\dfrac{dt}{4 - t^{2}}$.\n$= \\left[\\dfrac{1}{4}\\ln\\left(\\dfrac{2 + t}{2 - t}\\right)\\right]_{-1}^{1}$ (MF26).\n$= \\dfrac{1}{4}\\left(\\ln 3 - \\ln\\dfrac{1}{3}\\right) = \\dfrac{1}{4}(2\\ln 3) = \\dfrac{1}{2}\\ln 3$.\nAnswer: $\\dfrac{1}{2}\\ln 3$"
+     },
+     {
+      "label": "(e)",
+      "marks": 2,
+      "text": "Hence find the exact value of $\\displaystyle\\int_{0}^{\\pi} \\dfrac{x\\sin x}{3 + \\sin^{2} x}\\,dx$, and verify your answer using your graphing calculator.",
+      "answer": "$\\dfrac{\\pi}{4}\\ln 3$ ($\\approx 0.863$)",
+      "solution": "$\\dfrac{x\\sin x}{3 + \\sin^{2}x} = x\\,g(\\sin x)$ with $g(s) = \\dfrac{s}{3 + s^{2}}$.\nBy (c) and (d): $\\displaystyle\\int_{0}^{\\pi} \\dfrac{x\\sin x}{3 + \\sin^{2}x}\\,dx = \\dfrac{\\pi}{2}\\cdot\\dfrac{1}{2}\\ln 3 = \\dfrac{\\pi}{4}\\ln 3$.\n$\\dfrac{\\pi}{4}\\ln 3 = 0.86285$; GC numerical integral $= 0.86285$.\nAnswer: $\\dfrac{\\pi}{4}\\ln 3 \\approx 0.863$"
+     }
+    ],
+    "answer": "(a) Shown; (b) $\\dfrac{\\pi}{4}$; (c) Shown; (d) $\\dfrac{1}{2}\\ln 3$; (e) $\\dfrac{\\pi}{4}\\ln 3$ ($\\approx 0.863$)",
+    "solution": "(a) $u = a - x$: $du = -dx$; $x = 0 \\to u = a$, $x = a \\to u = 0$.\n$\\displaystyle\\int_{0}^{a} h(a - x)\\,dx = \\int_{a}^{0} h(u)(-du) = \\int_{0}^{a} h(u)\\,du = \\int_{0}^{a} h(x)\\,dx$.\nAnswer: Shown\n\n(b) Let $I$ be the integral. With $a = \\dfrac{\\pi}{2}$: $\\sin\\left(\\dfrac{\\pi}{2} - x\\right) = \\cos x$, $\\cos\\left(\\dfrac{\\pi}{2} - x\\right) = \\sin x$.\nSo $I = \\displaystyle\\int_{0}^{\\frac{\\pi}{2}} \\dfrac{e^{\\cos x}}{e^{\\cos x} + e^{\\sin x}}\\,dx$.\nAdding: $2I = \\displaystyle\\int_{0}^{\\frac{\\pi}{2}} 1\\,dx = \\dfrac{\\pi}{2}$.\nAnswer: $\\dfrac{\\pi}{4}$\n\n(c) Let $J = \\displaystyle\\int_{0}^{\\pi} x\\,g(\\sin x)\\,dx$. Use (a) with $a = \\pi$, $\\sin(\\pi - x) = \\sin x$.\n$J = \\displaystyle\\int_{0}^{\\pi} (\\pi - x)\\,g(\\sin x)\\,dx = \\pi\\int_{0}^{\\pi} g(\\sin x)\\,dx - J$.\n$2J = \\pi\\displaystyle\\int_{0}^{\\pi} g(\\sin x)\\,dx$, so $J = \\dfrac{\\pi}{2}\\int_{0}^{\\pi} g(\\sin x)\\,dx$.\nAnswer: Shown\n\n(d) $3 + \\sin^{2}x = 4 - \\cos^{2}x = 4 - t^{2}$; $dt = -\\sin x\\,dx$; $x = 0 \\to t = 1$, $x = \\pi \\to t = -1$.\n$\\displaystyle\\int_{0}^{\\pi} \\dfrac{\\sin x}{3 + \\sin^{2}x}\\,dx = \\int_{1}^{-1} \\dfrac{-dt}{4 - t^{2}} = \\int_{-1}^{1} \\dfrac{dt}{4 - t^{2}}$.\n$= \\left[\\dfrac{1}{4}\\ln\\left(\\dfrac{2 + t}{2 - t}\\right)\\right]_{-1}^{1}$ (MF26).\n$= \\dfrac{1}{4}\\left(\\ln 3 - \\ln\\dfrac{1}{3}\\right) = \\dfrac{1}{4}(2\\ln 3) = \\dfrac{1}{2}\\ln 3$.\nAnswer: $\\dfrac{1}{2}\\ln 3$\n\n(e) $\\dfrac{x\\sin x}{3 + \\sin^{2}x} = x\\,g(\\sin x)$ with $g(s) = \\dfrac{s}{3 + s^{2}}$.\nBy (c) and (d): $\\displaystyle\\int_{0}^{\\pi} \\dfrac{x\\sin x}{3 + \\sin^{2}x}\\,dx = \\dfrac{\\pi}{2}\\cdot\\dfrac{1}{2}\\ln 3 = \\dfrac{\\pi}{4}\\ln 3$.\n$\\dfrac{\\pi}{4}\\ln 3 = 0.86285$; GC numerical integral $= 0.86285$.\nAnswer: $\\dfrac{\\pi}{4}\\ln 3 \\approx 0.863$",
+    "originality_note": "Built from one mechanism, reflecting the interval x -> a - x: it kills an integral with no antiderivative and strips the x off x g(sin x)."
+   }
+  },
+  {
+   "pos": 5,
+   "topic": "Probability",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "Six people, consisting of three married couples, enter an empty lift on the ground floor. The lift goes up, stopping at each of floors $1$, $2$, $3$ and $4$, and each person leaves the lift at one of these four floors. Each person is equally likely to leave at any one of the four floors, independently of the other people.",
+    "total_marks": 7,
+    "topics": [
+     "Probability",
+     "Permutations and Combinations"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "counting outcomes as functions",
+     "independence between couples",
+     "covering every floor by complement"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "Find the number of different ways in which the six people can leave the lift.",
+      "answer": "$4096$",
+      "solution": "Each of the $6$ people chooses one of $4$ floors: $4^{6}$.\nAnswer: $4096$"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Find the probability that no couple leaves the lift at the same floor.",
+      "answer": "$\\dfrac{27}{64}$",
+      "solution": "For one couple: the wife's floor is any; the husband's is different with probability $\\dfrac{3}{4}$.\nThe three couples are independent: $\\left(\\dfrac{3}{4}\\right)^{3}$.\n(Count: $(4 \\times 3)^{3} = 1728$ out of $4096$.)\nAnswer: $\\dfrac{27}{64}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 4,
+      "text": "Given that no couple leaves the lift at the same floor, find the probability that at least one person leaves the lift at every floor.",
+      "answer": "$\\dfrac{19}{36}$",
+      "solution": "Given the condition, each couple uses an ordered pair of different floors: $12$ choices each, $12^{3} = 1728$ equally likely outcomes.\nOutcomes using only floors from a given set of $3$: $(3 \\times 2)^{3} = 216$; there are $4$ such sets.\nOutcomes using only a given set of $2$ floors: $(2 \\times 1)^{3} = 8$; there are $6$ such sets.\nSix people with no couple together use at least $2$ floors, so missing a floor: $4(216) - 6(8) = 816$.\nEvery floor used: $1728 - 816 = 912$.\nProbability $= \\dfrac{912}{1728} = \\dfrac{19}{36}$.\nAnswer: $\\dfrac{19}{36}$"
+     }
+    ],
+    "answer": "(a) $4096$; (b) $\\dfrac{27}{64}$; (c) $\\dfrac{19}{36}$",
+    "solution": "(a) Each of the $6$ people chooses one of $4$ floors: $4^{6}$.\nAnswer: $4096$\n\n(b) For one couple: the wife's floor is any; the husband's is different with probability $\\dfrac{3}{4}$.\nThe three couples are independent: $\\left(\\dfrac{3}{4}\\right)^{3}$.\n(Count: $(4 \\times 3)^{3} = 1728$ out of $4096$.)\nAnswer: $\\dfrac{27}{64}$\n\n(c) Given the condition, each couple uses an ordered pair of different floors: $12$ choices each, $12^{3} = 1728$ equally likely outcomes.\nOutcomes using only floors from a given set of $3$: $(3 \\times 2)^{3} = 216$; there are $4$ such sets.\nOutcomes using only a given set of $2$ floors: $(2 \\times 1)^{3} = 8$; there are $6$ such sets.\nSix people with no couple together use at least $2$ floors, so missing a floor: $4(216) - 6(8) = 816$.\nEvery floor used: $1728 - 816 = 912$.\nProbability $= \\dfrac{912}{1728} = \\dfrac{19}{36}$.\nAnswer: $\\dfrac{19}{36}$",
+    "originality_note": "A lift emptying over four floors: the condition 'no couple together' turns six people into three independent ordered pairs."
+   }
+  },
+  {
+   "pos": 6,
+   "topic": "Distributions (DRV)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "A teacher has marked the tests of a group of $4$ students. She hands the $4$ tests back at random, one to each student, so that all orders are equally likely. The random variable $X$ is the number of students who receive their own test.",
+    "total_marks": 8,
+    "topics": [
+     "Distributions (DRV)",
+     "Distributions (Sampling)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "fixed points of a random arrangement",
+     "E(X) and Var(X)",
+     "Central Limit Theorem"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "Explain why $P(X = 3) = 0$.",
+      "answer": "If 3 students have their own test, the 4th test left is the 4th student's own, so $X = 4$",
+      "solution": "If three students receive their own tests, the only test left is the fourth student's own.\nSo the fourth student also receives his own test, and $X = 4$, not $3$.\nAnswer: three correct forces the fourth to be correct, so $X = 3$ is impossible"
+     },
+     {
+      "label": "(b)",
+      "marks": 3,
+      "text": "Show that $P(X = 0) = \\dfrac{3}{8}$, and find the probability distribution of $X$.",
+      "answer": "$P(X=0)=\\dfrac{3}{8}$, $P(X=1)=\\dfrac{1}{3}$, $P(X=2)=\\dfrac{1}{4}$, $P(X=4)=\\dfrac{1}{24}$",
+      "solution": "There are $4! = 24$ equally likely orders.\n$X = 4$: $1$ order. $X = 2$: choose the two correct, $\\binom{4}{2} = 6$, the other two swap: $6$ orders.\n$X = 1$: choose the correct one ($4$), the other three all wrong ($2$ ways): $8$ orders.\n$X = 0$: $24 - 1 - 6 - 8 = 9$ orders, so $P(X = 0) = \\dfrac{9}{24} = \\dfrac{3}{8}$.\nAnswer: $P(X=0) = \\dfrac{3}{8}$, $P(X=1) = \\dfrac{1}{3}$, $P(X=2) = \\dfrac{1}{4}$, $P(X=3) = 0$, $P(X=4) = \\dfrac{1}{24}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "Find $E(X)$ and $\\text{Var}(X)$.",
+      "answer": "$E(X) = 1$, $\\text{Var}(X) = 1$",
+      "solution": "$E(X) = 0\\cdot\\dfrac{9}{24} + 1\\cdot\\dfrac{8}{24} + 2\\cdot\\dfrac{6}{24} + 4\\cdot\\dfrac{1}{24} = \\dfrac{24}{24} = 1$.\n$E(X^{2}) = \\dfrac{8}{24} + \\dfrac{24}{24} + \\dfrac{16}{24} = 2$.\n$\\text{Var}(X) = 2 - 1^{2} = 1$.\nAnswer: $E(X) = 1$, $\\text{Var}(X) = 1$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "The teacher hands back tests in this way, independently, every week for $40$ weeks. Find the probability that the mean number of students per week who receive their own test is more than $1.2$.",
+      "answer": "$0.103$",
+      "solution": "$n = 40$ is large, so by the Central Limit Theorem $\\bar{X} \\sim N\\left(1, \\dfrac{1}{40}\\right)$ approximately.\n$P(\\bar{X} > 1.2) = 0.10295$ (GC).\nAnswer: $0.103$"
+     }
+    ],
+    "answer": "(a) If 3 students have their own test, the 4th test left is the 4th student's own, so $X = 4$; (b) $P(X=0)=\\dfrac{3}{8}$, $P(X=1)=\\dfrac{1}{3}$, $P(X=2)=\\dfrac{1}{4}$, $P(X=4)=\\dfrac{1}{24}$; (c) $E(X) = 1$, $\\text{Var}(X) = 1$; (d) $0.103$",
+    "solution": "(a) If three students receive their own tests, the only test left is the fourth student's own.\nSo the fourth student also receives his own test, and $X = 4$, not $3$.\nAnswer: three correct forces the fourth to be correct, so $X = 3$ is impossible\n\n(b) There are $4! = 24$ equally likely orders.\n$X = 4$: $1$ order. $X = 2$: choose the two correct, $\\binom{4}{2} = 6$, the other two swap: $6$ orders.\n$X = 1$: choose the correct one ($4$), the other three all wrong ($2$ ways): $8$ orders.\n$X = 0$: $24 - 1 - 6 - 8 = 9$ orders, so $P(X = 0) = \\dfrac{9}{24} = \\dfrac{3}{8}$.\nAnswer: $P(X=0) = \\dfrac{3}{8}$, $P(X=1) = \\dfrac{1}{3}$, $P(X=2) = \\dfrac{1}{4}$, $P(X=3) = 0$, $P(X=4) = \\dfrac{1}{24}$\n\n(c) $E(X) = 0\\cdot\\dfrac{9}{24} + 1\\cdot\\dfrac{8}{24} + 2\\cdot\\dfrac{6}{24} + 4\\cdot\\dfrac{1}{24} = \\dfrac{24}{24} = 1$.\n$E(X^{2}) = \\dfrac{8}{24} + \\dfrac{24}{24} + \\dfrac{16}{24} = 2$.\n$\\text{Var}(X) = 2 - 1^{2} = 1$.\nAnswer: $E(X) = 1$, $\\text{Var}(X) = 1$\n\n(d) $n = 40$ is large, so by the Central Limit Theorem $\\bar{X} \\sim N\\left(1, \\dfrac{1}{40}\\right)$ approximately.\n$P(\\bar{X} > 1.2) = 0.10295$ (GC).\nAnswer: $0.103$",
+    "originality_note": "The number of students who get their own test back: X = 3 is impossible and the mean and variance are both 1."
+   }
+  },
+  {
+   "pos": 7,
+   "topic": "Distributions (Binomial)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "**In this question you should state the parameters of any distributions you use.**\n\nA test has $20$ multiple-choice questions, each with $4$ options of which exactly one is correct. Ali knows the correct answers to $k$ of the questions, and he always answers these $k$ questions correctly. He answers each of the remaining questions by choosing one of the $4$ options at random.",
+    "total_marks": 9,
+    "topics": [
+     "Distributions (Binomial)",
+     "Distributions (DRV)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "binomial for guessed answers only",
+     "least k to reach a probability",
+     "negative marking as a linear function"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "State, in context, one assumption needed for the number of questions Ali guesses correctly to be well modelled by a binomial distribution.",
+      "answer": "Whether one guess is correct is independent of whether any other guess is correct",
+      "solution": "Each guess must succeed independently of the other guesses (with the same probability $\\dfrac{1}{4}$).\nAnswer: whether a guessed question is correct is independent of the other guessed questions"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "For this part, $k = 8$. Find the probability that Ali gets at least $12$ questions correct.",
+      "answer": "$0.351$",
+      "solution": "Let $G$ be the number of guesses correct: $G \\sim B\\left(12, \\dfrac{1}{4}\\right)$.\nAt least $12$ correct $\\iff 8 + G \\geq 12 \\iff G \\geq 4$.\n$P(G \\geq 4) = 1 - P(G \\leq 3) = 1 - 0.64878 = 0.35122$.\nAnswer: $0.351$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "The pass mark is $12$ correct answers. Find the least value of $k$ for which the probability that Ali passes is at least $0.9$.",
+      "answer": "$k = 11$",
+      "solution": "With $k$ known, $G \\sim B\\left(20 - k, \\dfrac{1}{4}\\right)$ and Ali passes if $G \\geq 12 - k$.\n$k = 10$: $P(G \\geq 2)$ with $G \\sim B(10, 0.25)$: $0.75597 < 0.9$.\n$k = 11$: $P(G \\geq 1)$ with $G \\sim B(9, 0.25)$: $1 - 0.75^{9} = 0.92492 \\geq 0.9$.\nAnswer: least $k = 11$"
+     },
+     {
+      "label": "(d)",
+      "marks": 3,
+      "text": "The test is now marked with negative marking: $1$ mark for each correct answer and $-\\dfrac{1}{3}$ mark for each wrong answer. Show that the expected mark for a question that Ali guesses is $0$. For the case $k = 8$, find the expected value and the variance of Ali's total mark.",
+      "answer": "Expected mark per guess $0$; $E = 8$, $\\text{Var} = 4$",
+      "solution": "One guess: $1 \\times \\dfrac{1}{4} + \\left(-\\dfrac{1}{3}\\right) \\times \\dfrac{3}{4} = \\dfrac{1}{4} - \\dfrac{1}{4} = 0$.\nThe $8$ known questions always score $1$ mark each: they add $8$ to the mark and nothing to the variance.\n$k = 8$: total $S = 8 + G - \\dfrac{1}{3}(12 - G) = 4 + \\dfrac{4}{3}G$, $G \\sim B\\left(12, \\dfrac{1}{4}\\right)$.\n$E(S) = 4 + \\dfrac{4}{3}(3) = 8$.\n$\\text{Var}(S) = \\dfrac{16}{9}\\times 12 \\times \\dfrac{1}{4} \\times \\dfrac{3}{4} = \\dfrac{16}{9} \\times \\dfrac{9}{4} = 4$.\nAnswer: expected mark of a guess $= 0$; $E(S) = 8$, $\\text{Var}(S) = 4$"
+     }
+    ],
+    "answer": "(a) Whether one guess is correct is independent of whether any other guess is correct; (b) $0.351$; (c) $k = 11$; (d) Expected mark per guess $0$; $E = 8$, $\\text{Var} = 4$",
+    "solution": "(a) Each guess must succeed independently of the other guesses (with the same probability $\\dfrac{1}{4}$).\nAnswer: whether a guessed question is correct is independent of the other guessed questions\n\n(b) Let $G$ be the number of guesses correct: $G \\sim B\\left(12, \\dfrac{1}{4}\\right)$.\nAt least $12$ correct $\\iff 8 + G \\geq 12 \\iff G \\geq 4$.\n$P(G \\geq 4) = 1 - P(G \\leq 3) = 1 - 0.64878 = 0.35122$.\nAnswer: $0.351$\n\n(c) With $k$ known, $G \\sim B\\left(20 - k, \\dfrac{1}{4}\\right)$ and Ali passes if $G \\geq 12 - k$.\n$k = 10$: $P(G \\geq 2)$ with $G \\sim B(10, 0.25)$: $0.75597 < 0.9$.\n$k = 11$: $P(G \\geq 1)$ with $G \\sim B(9, 0.25)$: $1 - 0.75^{9} = 0.92492 \\geq 0.9$.\nAnswer: least $k = 11$\n\n(d) One guess: $1 \\times \\dfrac{1}{4} + \\left(-\\dfrac{1}{3}\\right) \\times \\dfrac{3}{4} = \\dfrac{1}{4} - \\dfrac{1}{4} = 0$.\nThe $8$ known questions always score $1$ mark each: they add $8$ to the mark and nothing to the variance.\n$k = 8$: total $S = 8 + G - \\dfrac{1}{3}(12 - G) = 4 + \\dfrac{4}{3}G$, $G \\sim B\\left(12, \\dfrac{1}{4}\\right)$.\n$E(S) = 4 + \\dfrac{4}{3}(3) = 8$.\n$\\text{Var}(S) = \\dfrac{16}{9}\\times 12 \\times \\dfrac{1}{4} \\times \\dfrac{3}{4} = \\dfrac{16}{9} \\times \\dfrac{9}{4} = 4$.\nAnswer: expected mark of a guess $= 0$; $E(S) = 8$, $\\text{Var}(S) = 4$",
+    "originality_note": "Only the guessed questions are binomial; the known ones shift it, and negative marking rescales it so guessing is a fair bet."
+   }
+  },
+  {
+   "pos": 8,
+   "topic": "Linear Regression",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A cup of coffee is left to cool in a room where the temperature is a steady $25\\,^{\\circ}\\text{C}$. Its temperature, $\\theta\\,^{\\circ}\\text{C}$, is measured $t$ minutes after it is poured. The results are shown in the table.\n$$\\begin{array}{|c|c|c|c|c|c|c|c|c|} \\hline t & 0 & 2 & 4 & 6 & 8 & 10 & 15 & 20 \\\\ \\hline \\theta & 90.0 & 81.2 & 74.6 & 67.3 & 62.5 & 57.0 & 48.1 & 40.8 \\\\ \\hline \\end{array}$$",
+    "total_marks": 10,
+    "topics": [
+     "Linear Regression"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "a transformation suggested by the physics",
+     "the limit a model predicts",
+     "interpolation and reliability"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 1,
+      "text": "Sketch a scatter diagram of the data.",
+      "answer": "Scatter diagram: $\\theta$ decreasing at a decreasing rate",
+      "solution": "Plot the $8$ points with $t$ from $0$ to $20$ and $\\theta$ from $40.8$ to $90.0$.\nThe points fall steeply at first, then less steeply (a curve, concave upwards).\nAnswer: scatter diagram, $\\theta$ decreasing at a decreasing rate"
+     },
+     {
+      "label": "(b)",
+      "marks": 2,
+      "text": "Find the product moment correlation coefficient between $t$ and $\\theta$. Explain why, although this value is close to $-1$, a linear model is not appropriate.",
+      "answer": "$r = -0.979$; the points curve, and a line predicts the coffee falling below room temperature (below $25\\,^{\\circ}\\text{C}$ after about $25$ minutes)",
+      "solution": "GC: $r = -0.97932$.\nThe scatter diagram shows a curve: $\\theta$ decreases at a decreasing rate.\nThe line $\\theta = 84.8 - 2.41t$ falls below $25$ when $t > 24.8$, but the coffee cannot cool below room temperature.\nAnswer: $r = -0.979$; the trend is curved and a straight line would predict temperatures below $25\\,^{\\circ}\\text{C}$"
+     },
+     {
+      "label": "(c)",
+      "marks": 3,
+      "text": "Newton's law of cooling suggests the model $\\theta - 25 = Ae^{-kt}$, where $A$ and $k$ are positive constants. By using a suitable transformation, find the product moment correlation coefficient for this model, correct to 4 decimal places, and estimate the values of $A$ and $k$.",
+      "answer": "$r = -0.9997$ (for $\\ln(\\theta - 25)$ against $t$); $A = 65.1$, $k = 0.0702$",
+      "solution": "$\\ln(\\theta - 25) = \\ln A - kt$: a straight line of $\\ln(\\theta - 25)$ against $t$.\nGC, regressing $\\ln(\\theta - 25)$ on $t$: $\\ln(\\theta - 25) = 4.1757 - 0.070214t$, $r = -0.999738$.\n$A = e^{4.1757} = 65.088$, $k = 0.070214$.\nAnswer: $r = -0.9997$ (4 d.p.); $A = 65.1$, $k = 0.0702$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Use the model in part (c) to estimate the time at which the temperature of the coffee is $60\\,^{\\circ}\\text{C}$. Comment on the reliability of your estimate.",
+      "answer": "$8.84$ minutes; reliable",
+      "solution": "$\\theta = 60$: $\\ln 35 = 4.1757 - 0.070214t$.\n$t = \\dfrac{4.1757 - 3.5553}{0.070214} = 8.8357$.\nReliable: $\\theta = 60$ lies within the data range (interpolation) and $|r| = 0.9997$ is very close to $1$.\nAnswer: $t = 8.84$ minutes; reliable"
+     },
+     {
+      "label": "(e)",
+      "marks": 2,
+      "text": "A student instead uses the model $\\ln\\theta = c + dt$, for which $r = -0.9963$, correct to 4 decimal places. With reference to what each model predicts for the temperature of the coffee after a long time, explain which of the two models is more suitable.",
+      "answer": "The model in (c): it predicts $\\theta \\to 25$ (room temperature); $\\ln\\theta = c + dt$ predicts $\\theta \\to 0$, which cannot happen in a $25\\,^{\\circ}\\text{C}$ room",
+      "solution": "Model (c): as $t \\to \\infty$, $Ae^{-kt} \\to 0$, so $\\theta \\to 25$, the room temperature, as it should.\nStudent's model: $\\theta = e^{c}e^{dt}$ with $d < 0$, so $\\theta \\to 0$: the coffee would cool to $0\\,^{\\circ}\\text{C}$, below the room temperature.\nModel (c) also has $|r|$ closer to $1$ ($0.9997 > 0.9963$).\nAnswer: the model in (c) is more suitable"
+     }
+    ],
+    "answer": "(a) Scatter diagram: $\\theta$ decreasing at a decreasing rate; (b) $r = -0.979$; the points curve, and a line predicts the coffee falling below room temperature (below $25\\,^{\\circ}\\text{C}$ after about $25$ minutes); (c) $r = -0.9997$ (for $\\ln(\\theta - 25)$ against $t$); $A = 65.1$, $k = 0.0702$; (d) $8.84$ minutes; reliable; (e) The model in (c): it predicts $\\theta \\to 25$ (room temperature); $\\ln\\theta = c + dt$ predicts $\\theta \\to 0$, which cannot happen in a $25\\,^{\\circ}\\text{C}$ room",
+    "solution": "(a) Plot the $8$ points with $t$ from $0$ to $20$ and $\\theta$ from $40.8$ to $90.0$.\nThe points fall steeply at first, then less steeply (a curve, concave upwards).\nAnswer: scatter diagram, $\\theta$ decreasing at a decreasing rate\n\n(b) GC: $r = -0.97932$.\nThe scatter diagram shows a curve: $\\theta$ decreases at a decreasing rate.\nThe line $\\theta = 84.8 - 2.41t$ falls below $25$ when $t > 24.8$, but the coffee cannot cool below room temperature.\nAnswer: $r = -0.979$; the trend is curved and a straight line would predict temperatures below $25\\,^{\\circ}\\text{C}$\n\n(c) $\\ln(\\theta - 25) = \\ln A - kt$: a straight line of $\\ln(\\theta - 25)$ against $t$.\nGC, regressing $\\ln(\\theta - 25)$ on $t$: $\\ln(\\theta - 25) = 4.1757 - 0.070214t$, $r = -0.999738$.\n$A = e^{4.1757} = 65.088$, $k = 0.070214$.\nAnswer: $r = -0.9997$ (4 d.p.); $A = 65.1$, $k = 0.0702$\n\n(d) $\\theta = 60$: $\\ln 35 = 4.1757 - 0.070214t$.\n$t = \\dfrac{4.1757 - 3.5553}{0.070214} = 8.8357$.\nReliable: $\\theta = 60$ lies within the data range (interpolation) and $|r| = 0.9997$ is very close to $1$.\nAnswer: $t = 8.84$ minutes; reliable\n\n(e) Model (c): as $t \\to \\infty$, $Ae^{-kt} \\to 0$, so $\\theta \\to 25$, the room temperature, as it should.\nStudent's model: $\\theta = e^{c}e^{dt}$ with $d < 0$, so $\\theta \\to 0$: the coffee would cool to $0\\,^{\\circ}\\text{C}$, below the room temperature.\nModel (c) also has $|r|$ closer to $1$ ($0.9997 > 0.9963$).\nAnswer: the model in (c) is more suitable",
+    "originality_note": "Cooling coffee: the right transformation uses the room temperature, and the wrong one is exposed by what it predicts in the long run, not by r."
+   }
+  },
+  {
+   "pos": 9,
+   "topic": "Hypothesis Testing",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "A ride-hailing company states that the mean waiting time for a car booked during the morning peak is $7$ minutes. A commuters' group believes that the mean waiting time is longer than this. The group records the waiting times, $x$ minutes, of a random sample of $60$ morning-peak bookings. The results are summarised by $$\\sum(x - 7) = 33.6 \\qquad \\text{and} \\qquad \\sum(x - 7)^{2} = 404.5.$$",
+    "total_marks": 12,
+    "topics": [
+     "Hypothesis Testing",
+     "Distributions (Sampling)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "unbiased estimates from coded data",
+     "one-tailed z-test",
+     "what a test does and does not show",
+     "one tail against two"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 2,
+      "text": "Find unbiased estimates of the population mean and variance of the waiting time.",
+      "answer": "$\\bar{x} = 7.56$, $s^{2} = 6.54$",
+      "solution": "$\\bar{x} = 7 + \\dfrac{33.6}{60} = 7.56$.\n$s^{2} = \\dfrac{1}{59}\\left(404.5 - \\dfrac{33.6^{2}}{60}\\right) = \\dfrac{1}{59}(404.5 - 18.816) = \\dfrac{385.684}{59} = 6.5370$.\nAnswer: $\\bar{x} = 7.56$, $s^{2} = 6.54$"
+     },
+     {
+      "label": "(b)",
+      "marks": 4,
+      "text": "Test, at the $5\\%$ level of significance, whether the group's belief is justified.",
+      "answer": "$p = 0.0449 < 0.05$: reject $H_0$; sufficient evidence that the mean waiting time is longer than 7 minutes",
+      "solution": "$H_{0}: \\mu = 7$, $H_{1}: \\mu > 7$, where $\\mu$ minutes is the population mean morning-peak waiting time.\nUnder $H_{0}$, since $n = 60$ is large, $\\bar{X} \\sim N\\left(7, \\dfrac{6.5370}{60}\\right)$ approximately by the Central Limit Theorem.\n$z = \\dfrac{7.56 - 7}{\\sqrt{6.5370/60}} = 1.6966$; $p$-value $= 0.044888$.\n$0.0449 < 0.05$, so reject $H_{0}$.\nAnswer: $p = 0.0449$; there is sufficient evidence at the $5\\%$ level that the mean waiting time is more than $7$ minutes"
+     },
+     {
+      "label": "(c)",
+      "marks": 1,
+      "text": "Explain why it was not necessary to assume that the waiting times are normally distributed in carrying out the test in part (b).",
+      "answer": "$n = 60$ is large, so $\\bar{X}$ is approximately normal by the Central Limit Theorem",
+      "solution": "The test uses the sample mean; with $n = 60$ large, the Central Limit Theorem makes $\\bar{X}$ approximately normal whatever the distribution of waiting times.\nAnswer: the sample is large, so by the CLT the sample mean is approximately normal"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "A newspaper reports the result of part (b) as: \\\"It is now proven that most morning-peak waiting times are longer than $7$ minutes.\\\" Give two reasons why this report is not justified.",
+      "answer": "The test is about the mean, not about individual waiting times or how many exceed 7; and a test gives evidence at a 5% level, not proof",
+      "solution": "The hypotheses concern the population mean waiting time, not the proportion of bookings that wait more than $7$ minutes; a mean above $7$ does not mean most waits exceed $7$.\nA significance test gives evidence at the $5\\%$ level; it does not prove anything (the result could be due to chance).\nAnswer: the test is about the mean, not 'most' waiting times; and it gives evidence, not proof"
+     },
+     {
+      "label": "(e)",
+      "marks": 3,
+      "text": "A second group tests, at the $5\\%$ level of significance, whether the mean waiting time differs from $7$ minutes, using a random sample of $60$ bookings with the same unbiased estimate of variance as in part (a). Find the set of values of the sample mean for which this group would not reject the company's statement. Hence explain why the first group's sample leads to a different conclusion in this test.",
+      "answer": "$6.35 < \\bar{x} < 7.65$ (non-strict $\\leq$ also accepted); $7.56$ lies in this set, so the two-tailed test does not reject $H_0$",
+      "solution": "$H_{0}: \\mu = 7$, $H_{1}: \\mu \\neq 7$; do not reject when $|z| < 1.9600$.\n$7 - 1.9600\\sqrt{\\dfrac{6.5370}{60}} < \\bar{x} < 7 + 1.9600\\sqrt{\\dfrac{6.5370}{60}}$: $6.3531 < \\bar{x} < 7.6469$.\n$7.56$ lies inside, so the two-tailed test would not reject $H_{0}$.\nThe $5\\%$ is split between two tails, so the evidence needed in the upper tail is stronger ($z = 1.70 < 1.96$).\nAnswer: $\\{\\bar{x} : 6.35 < \\bar{x} < 7.65\\}$ ($\\leq$ also accepted); the first group's mean $7.56$ is inside it, so this test would not reject the statement"
+     }
+    ],
+    "answer": "(a) $\\bar{x} = 7.56$, $s^{2} = 6.54$; (b) $p = 0.0449 < 0.05$: reject $H_0$; sufficient evidence that the mean waiting time is longer than 7 minutes; (c) $n = 60$ is large, so $\\bar{X}$ is approximately normal by the Central Limit Theorem; (d) The test is about the mean, not about individual waiting times or how many exceed 7; and a test gives evidence at a 5% level, not proof; (e) $6.35 < \\bar{x} < 7.65$ (non-strict $\\leq$ also accepted); $7.56$ lies in this set, so the two-tailed test does not reject $H_0$",
+    "solution": "(a) $\\bar{x} = 7 + \\dfrac{33.6}{60} = 7.56$.\n$s^{2} = \\dfrac{1}{59}\\left(404.5 - \\dfrac{33.6^{2}}{60}\\right) = \\dfrac{1}{59}(404.5 - 18.816) = \\dfrac{385.684}{59} = 6.5370$.\nAnswer: $\\bar{x} = 7.56$, $s^{2} = 6.54$\n\n(b) $H_{0}: \\mu = 7$, $H_{1}: \\mu > 7$, where $\\mu$ minutes is the population mean morning-peak waiting time.\nUnder $H_{0}$, since $n = 60$ is large, $\\bar{X} \\sim N\\left(7, \\dfrac{6.5370}{60}\\right)$ approximately by the Central Limit Theorem.\n$z = \\dfrac{7.56 - 7}{\\sqrt{6.5370/60}} = 1.6966$; $p$-value $= 0.044888$.\n$0.0449 < 0.05$, so reject $H_{0}$.\nAnswer: $p = 0.0449$; there is sufficient evidence at the $5\\%$ level that the mean waiting time is more than $7$ minutes\n\n(c) The test uses the sample mean; with $n = 60$ large, the Central Limit Theorem makes $\\bar{X}$ approximately normal whatever the distribution of waiting times.\nAnswer: the sample is large, so by the CLT the sample mean is approximately normal\n\n(d) The hypotheses concern the population mean waiting time, not the proportion of bookings that wait more than $7$ minutes; a mean above $7$ does not mean most waits exceed $7$.\nA significance test gives evidence at the $5\\%$ level; it does not prove anything (the result could be due to chance).\nAnswer: the test is about the mean, not 'most' waiting times; and it gives evidence, not proof\n\n(e) $H_{0}: \\mu = 7$, $H_{1}: \\mu \\neq 7$; do not reject when $|z| < 1.9600$.\n$7 - 1.9600\\sqrt{\\dfrac{6.5370}{60}} < \\bar{x} < 7 + 1.9600\\sqrt{\\dfrac{6.5370}{60}}$: $6.3531 < \\bar{x} < 7.6469$.\n$7.56$ lies inside, so the two-tailed test would not reject $H_{0}$.\nThe $5\\%$ is split between two tails, so the evidence needed in the upper tail is stronger ($z = 1.70 < 1.96$).\nAnswer: $\\{\\bar{x} : 6.35 < \\bar{x} < 7.65\\}$ ($\\leq$ also accepted); the first group's mean $7.56$ is inside it, so this test would not reject the statement",
+    "originality_note": "Waiting for a ride: the same sample rejects one-tailed and not two-tailed, and the candidate must say what the rejection does not mean."
+   }
+  },
+  {
+   "pos": 10,
+   "topic": "Distributions (Normal)",
+   "target": 14,
+   "accepted": true,
+   "question": {
+    "stem": "**In this question you should state the parameters of any distributions you use.**\n\nIn a workshop, steel pins are made to fit holes drilled in metal plates. The diameter of a pin, $X$ mm, has the distribution $N\\left(8.00, 0.03^{2}\\right)$ and the diameter of a hole, $Y$ mm, has the distribution $N\\left(8.10, 0.04^{2}\\right)$. A pin fits a hole if the diameter of the hole exceeds the diameter of the pin by more than $0.02$ mm but less than $0.20$ mm. The diameters of all pins and holes are independent.",
+    "total_marks": 14,
+    "topics": [
+     "Distributions (Normal)",
+     "Distributions (Binomial)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "skills": [
+     "the clearance as a difference of normals",
+     "dependence through a shared pin",
+     "choosing a mean and a spread to meet a target"
+    ],
+    "parts": [
+     {
+      "label": "(a)",
+      "marks": 3,
+      "text": "Find the probability that a randomly chosen pin fits a randomly chosen hole.",
+      "answer": "$0.922$",
+      "solution": "Clearance $C = Y - X \\sim N\\left(8.10 - 8.00,\\ 0.04^{2} + 0.03^{2}\\right) = N\\left(0.10, 0.05^{2}\\right)$.\n$P(0.02 < C < 0.20) = 0.92245$ (GC).\nAnswer: $0.922$"
+     },
+     {
+      "label": "(b)",
+      "marks": 1,
+      "text": "A bracket has two holes, and one pin must pass through both. Explain why the probability that a randomly chosen pin fits both of two randomly chosen holes is not the square of your answer to part (a).",
+      "answer": "Both clearances involve the same pin, so the two events are not independent",
+      "solution": "The two clearances $Y_{1} - X$ and $Y_{2} - X$ share the same pin diameter $X$.\nA pin that is too large for one hole is more likely to be too large for the other, so the events are not independent.\nAnswer: the events depend on the same pin, so they are not independent"
+     },
+     {
+      "label": "(c)",
+      "marks": 2,
+      "text": "Twelve randomly chosen pins are laid side by side, touching, in a straight groove $96.2$ mm long. Find the probability that they all fit in the groove.",
+      "answer": "$0.973$",
+      "solution": "Total width $W = X_{1} + \\cdots + X_{12} \\sim N\\left(12 \\times 8.00,\\ 12 \\times 0.03^{2}\\right) = N(96, 0.0108)$.\n$P(W < 96.2) = 0.97285$ (GC).\nAnswer: $0.973$"
+     },
+     {
+      "label": "(d)",
+      "marks": 2,
+      "text": "Twenty pins and twenty holes are chosen at random and put together in pairs. Find the probability that at least $18$ of the pairs fit.",
+      "answer": "$0.801$",
+      "solution": "Number of pairs that fit $F \\sim B(20, 0.92245)$, the pairs being independent.\n$P(F \\geq 18) = 1 - P(F \\leq 17) = 0.80084$ (GC).\nAnswer: $0.801$"
+     },
+     {
+      "label": "(e)",
+      "marks": 3,
+      "text": "The workshop can change the mean diameter of the holes to $\\mu$ mm, without changing the standard deviation. Find, with a reason, the value of $\\mu$ that makes the probability that a pin fits a hole as large as possible, and find this greatest probability.",
+      "answer": "$\\mu = 8.11$; $0.928$",
+      "solution": "Now $C \\sim N\\left(\\mu - 8.00, 0.05^{2}\\right)$; the interval $(0.02, 0.20)$ has a fixed width.\nA normal curve is symmetric and highest at its mean, so the probability is greatest when the mean is the midpoint $0.11$ of the interval.\n$\\mu - 8.00 = 0.11 \\Rightarrow \\mu = 8.11$.\n$P(0.02 < C < 0.20) = P(|Z| < 1.8) = 0.92814$.\nAnswer: $\\mu = 8.11$; greatest probability $0.928$"
+     },
+     {
+      "label": "(f)",
+      "marks": 3,
+      "text": "With $\\mu = 8.11$, the workshop wants the probability that a pin fits a hole to be at least $0.99$, by making the holes more precisely. Find the greatest standard deviation of the hole diameters that achieves this.",
+      "answer": "$0.0179$ mm",
+      "solution": "Let the hole standard deviation be $\\sigma$: $C \\sim N\\left(0.11,\\ 0.03^{2} + \\sigma^{2}\\right)$.\nNeed $P\\left(|Z| < \\dfrac{0.09}{\\sqrt{0.0009 + \\sigma^{2}}}\\right) \\geq 0.99$, so $\\dfrac{0.09}{\\sqrt{0.0009 + \\sigma^{2}}} \\geq 2.5758$.\n$\\sqrt{0.0009 + \\sigma^{2}} \\leq 0.034940 \\Rightarrow \\sigma^{2} \\leq 0.00032082$.\n$\\sigma \\leq 0.017911$.\nAnswer: greatest standard deviation $0.0179$ mm"
+     }
+    ],
+    "answer": "(a) $0.922$; (b) Both clearances involve the same pin, so the two events are not independent; (c) $0.973$; (d) $0.801$; (e) $\\mu = 8.11$; $0.928$; (f) $0.0179$ mm",
+    "solution": "(a) Clearance $C = Y - X \\sim N\\left(8.10 - 8.00,\\ 0.04^{2} + 0.03^{2}\\right) = N\\left(0.10, 0.05^{2}\\right)$.\n$P(0.02 < C < 0.20) = 0.92245$ (GC).\nAnswer: $0.922$\n\n(b) The two clearances $Y_{1} - X$ and $Y_{2} - X$ share the same pin diameter $X$.\nA pin that is too large for one hole is more likely to be too large for the other, so the events are not independent.\nAnswer: the events depend on the same pin, so they are not independent\n\n(c) Total width $W = X_{1} + \\cdots + X_{12} \\sim N\\left(12 \\times 8.00,\\ 12 \\times 0.03^{2}\\right) = N(96, 0.0108)$.\n$P(W < 96.2) = 0.97285$ (GC).\nAnswer: $0.973$\n\n(d) Number of pairs that fit $F \\sim B(20, 0.92245)$, the pairs being independent.\n$P(F \\geq 18) = 1 - P(F \\leq 17) = 0.80084$ (GC).\nAnswer: $0.801$\n\n(e) Now $C \\sim N\\left(\\mu - 8.00, 0.05^{2}\\right)$; the interval $(0.02, 0.20)$ has a fixed width.\nA normal curve is symmetric and highest at its mean, so the probability is greatest when the mean is the midpoint $0.11$ of the interval.\n$\\mu - 8.00 = 0.11 \\Rightarrow \\mu = 8.11$.\n$P(0.02 < C < 0.20) = P(|Z| < 1.8) = 0.92814$.\nAnswer: $\\mu = 8.11$; greatest probability $0.928$\n\n(f) Let the hole standard deviation be $\\sigma$: $C \\sim N\\left(0.11,\\ 0.03^{2} + \\sigma^{2}\\right)$.\nNeed $P\\left(|Z| < \\dfrac{0.09}{\\sqrt{0.0009 + \\sigma^{2}}}\\right) \\geq 0.99$, so $\\dfrac{0.09}{\\sqrt{0.0009 + \\sigma^{2}}} \\geq 2.5758$.\n$\\sqrt{0.0009 + \\sigma^{2}} \\leq 0.034940 \\Rightarrow \\sigma^{2} \\leq 0.00032082$.\n$\\sigma \\leq 0.017911$.\nAnswer: greatest standard deviation $0.0179$ mm",
+    "originality_note": "A pin and a hole: the fit is a difference of normals, a shared pin breaks independence, and the setter chooses the mean and the spread."
+   }
+  }
+ ],
+ "layout": {
+  "page_per_question": true,
+  "keep_part_with_space": true
+ }
+}
