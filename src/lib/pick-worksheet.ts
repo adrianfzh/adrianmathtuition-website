@@ -166,7 +166,10 @@ export function flatParts(parts: PickPart[], prefix: string[] = []): { labels: s
 
 /** A "shown" / "proved" answer is not an answer line. */
 export function isShownAnswer(a: string): boolean {
-  return /^\s*(shown|proved|proof|proven|n\.?a\.?|—|-|\[?(sketch|graph|diagram)\]?)\.?\s*$/i.test(a) || /^\s*shown\b/i.test(a);
+  return /^\s*(shown|proved|proof|proven|n\.?a\.?|—|-|\[?(sketch|graph|diagram)\]?)\.?\s*$/i.test(a)
+    || /^\s*shown\b/i.test(a)
+    // a bracketed placeholder only — "[Graph of hyperbola]", "[Sketch]" (9 Oct 2026)
+    || /^\s*\[[^\]]*\]\s*\.?\s*$/.test(a);
 }
 
 /**

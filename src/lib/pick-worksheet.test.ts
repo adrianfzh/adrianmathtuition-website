@@ -52,6 +52,8 @@ describe('ansLine', () => {
     expect(isShownAnswer('Shown')).toBe(true);
     expect(isShownAnswer('shown: $V = 4$')).toBe(true);
     expect(isShownAnswer('$4$')).toBe(false);
+    expect(isShownAnswer('[Graph of hyperbola]')).toBe(true);
+    expect(isShownAnswer('[Sketch]')).toBe(true);
   });
 });
 

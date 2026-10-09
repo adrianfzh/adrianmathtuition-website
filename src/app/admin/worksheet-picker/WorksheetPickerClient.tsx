@@ -70,7 +70,6 @@ function Card({ q, index, col, onMove, overlay = false }: {
   q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; overlay?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
-  const [full, setFull] = useState(false);
   const [sol, setSol] = useState(false);
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform), transition, touchAction: 'none',
@@ -89,20 +88,23 @@ function Card({ q, index, col, onMove, overlay = false }: {
         {/* The buttons stay ABOVE the content so they do not move when the
             card unfolds (Adrian, 9 Oct 2026: "the dropdown remains at its
             original position"). */}
+        {/* The whole question shows by default (Adrian, 9 Oct 2026: "just show
+            full question by default. solutions keep hidden"); the drag overlay
+            stays a one-line excerpt so the drag ghost is small. */}
         <div className="mb-1.5 flex gap-3">
-          <button onClick={() => { setFull((v) => !v); if (full) setSol(false); }} className="text-[12px] font-semibold text-slate-700 hover:underline">{full || sol ? 'Hide question ▴' : 'Full question ▾'}</button>
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Remove'}
           </button>
         </div>
-        {full || sol
-          ? <div className="pr-1"><QuestionBody q={q} size={13} /></div>
-          : <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />}
-        {/* The solution's own dropdown sits UNDER the question (Adrian, 9 Oct 2026:
-            "put solution under the question"); the working unfolds below it. */}
-        <div className="mt-1.5">
-          <button onClick={() => { setSol((v) => !v); if (!sol) setFull(true); }} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
-        </div>
+        {overlay
+          ? <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />
+          : <div className="pr-1"><QuestionBody q={q} size={13} /></div>}
+        {/* The solution's own dropdown sits UNDER the question; the working unfolds below it. */}
+        {!overlay && (
+          <div className="mt-1.5">
+            <button onClick={() => setSol((v) => !v)} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
+          </div>
+        )}
         {sol && <SolutionBlock q={q} />}
       </div>
     </div>
@@ -412,7 +414,7 @@ export default function WorksheetPickerClient() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="max-w-6xl mx-auto px-4 pt-12 pb-24">
         <h1 className="text-xl font-bold mb-1">Worksheet picker</h1>
-        <p className="text-sm text-slate-500 mb-4">Candidates on the left, the worksheet on the right. Drag between them (or tap Add / Remove), reorder on the right, unfold any card to read the whole question or its worked solution, then press Done.</p>
+        <p className="text-sm text-slate-500 mb-4">Candidates on the left, the worksheet on the right. Drag between them (or tap Add / Remove), reorder on the right, every card shows its whole question; unfold Solution for the working, then press Done.</p>
 
         <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end mb-4 bg-white border border-slate-200 rounded-xl p-3">
           <label className="text-xs text-slate-500">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-0.5 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-900" /></label>
