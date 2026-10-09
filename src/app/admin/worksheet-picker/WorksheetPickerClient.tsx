@@ -13,7 +13,7 @@
 // plain style) and the DOCX (lib/pick-worksheet-docx) from the SAME model
 // (lib/pick-worksheet), so the two files never differ.
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor,
@@ -50,7 +50,7 @@ function excerpt(q: PickQuestion, n = 150): string {
 
 // ── The whole question (stem, figures, parts with marks, the [Ans:] line) ────
 // Shared by the card's "Show full question" fold and the solution viewer.
-function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
+const QuestionBody = memo(function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
   const parts = flatParts(q.parts);
   return (
     <div className="leading-relaxed text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif', fontSize: size }}>
@@ -72,7 +72,7 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
       {ansLine(q) && <div className="mt-2 text-right" style={{ color: '#843C0C' }} dangerouslySetInnerHTML={{ __html: `[Ans: ${mathHtml(ansLine(q))}]` }} />}
     </div>
   );
-}
+});
 
 // ── The drag ghost: a plain card, no sortable hooks (a sortable component inside
 // DragOverlay re-registers forever → "Maximum update depth exceeded", 9 Oct 2026) ──
@@ -87,7 +87,7 @@ function GhostCard({ q }: { q: PickQuestion }) {
 
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
-function Card({ q, index, col, onMove, onDrop, reason }: {
+const Card = memo(function Card({ q, index, col, onMove, onDrop, reason }: {
   q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void; reason?: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
@@ -130,7 +130,7 @@ function Card({ q, index, col, onMove, onDrop, reason }: {
       </div>
     </div>
   );
-}
+});
 
 function Column({ col, title, items, onMove, onDrop, removedCount, onShowRemoved, reasons, empty }: {
   col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void;
@@ -182,6 +182,43 @@ function SolutionBlock({ q }: { q: PickQuestion }) {
   );
 }
 
+// ── The search box keeps its own state: typing must not re-render the cards ──
+function FindBox({ onFind, onAddIds, busy, note }: {
+  onFind: (q: string, level: string, count: number) => Promise<void>;
+  onAddIds: (text: string) => Promise<void>;
+  busy: boolean; note: string | null;
+}) {
+  const [q, setQ] = useState('');
+  const [level, setLevel] = useState('JC2');
+  const [count, setCount] = useState(10);
+  const [searching, setSearching] = useState(false);
+  const [paste, setPaste] = useState('');
+  const find = async () => { if (!q.trim() || searching) return; setSearching(true); try { await onFind(q.trim(), level, count); } finally { setSearching(false); } };
+  return (
+    <div className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
+      <div className="font-semibold text-slate-700 mb-2">Find questions</div>
+      <div className="flex gap-2">
+        <select value={level} onChange={(e) => setLevel(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs">{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
+        <input value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void find(); }} placeholder="describe it: 'vectors in a real setting, a light ray off a mirror', 'reflection of a line in a plane', 'integration by parts twice'" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
+        <select value={count} onChange={(e) => setCount(Number(e.target.value))} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs" title="how many to pick">{[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}</select>
+        <button onClick={find} disabled={searching || busy} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50 whitespace-nowrap">{searching ? 'Reading the bank…' : 'Find → candidates'}</button>
+      </div>
+      <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-400">
+        <span>A model reads the bank questions whose topic, sub-skill or text matches your words and picks the ones that fit; each pick shows why. 20–40 s.</span>
+        {note && <span className="text-slate-500">{note}</span>}
+      </div>
+      {/* For a session or script handing over a list — Adrian uses the search above. */}
+      <details className="mt-2">
+        <summary className="cursor-pointer text-[11px] text-slate-400">paste question ids</summary>
+        <div className="mt-1 flex gap-2 items-start">
+          <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="uuid, uuid, …" rows={2} className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono" />
+          <button onClick={() => { void onAddIds(paste).then(() => setPaste('')); }} disabled={busy} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">Add ids</button>
+        </div>
+      </details>
+    </div>
+  );
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 export default function WorksheetPickerClient() {
@@ -212,11 +249,6 @@ export default function WorksheetPickerClient() {
   const [picks, setPicks] = useState<Pick[]>([]);
   const [pickId, setPickId] = useState<string | null>(params.get('pick'));
   const [saving, setSaving] = useState(false);
-  const [paste, setPaste] = useState('');
-  const [searchQ, setSearchQ] = useState('');
-  const [searchLevel, setSearchLevel] = useState('JC2');
-  const [searchCount, setSearchCount] = useState(10);
-  const [searching, setSearching] = useState(false);
   const [searchNote, setSearchNote] = useState<string | null>(null);
   /** Why the model picked a card (describe-search), shown on the card. */
   const [reasons, setReasons] = useState<Record<string, string>>({});
@@ -385,20 +417,19 @@ export default function WorksheetPickerClient() {
     setPdfUrl(null); setDocxUrl(null);
   }
 
-  async function addPasted() {
-    const ids = parseIds(paste);
+  async function addPasted(text: string) {
+    const ids = parseIds(text);
     if (!ids.length) { say('No uuids found in the box', 'err'); return; }
-    await loadIds(ids); setPaste('');
+    await loadIds(ids);
   }
   /** Describe what you want in words; a model reads the bank's matching pool
    *  and picks — skills, settings, difficulty (Adrian, 9 Oct 2026). */
-  async function runSearch() {
-    if (!searchQ.trim()) return;
-    setSearching(true); setSearchNote(null);
+  async function runSearch(q: string, level: string, count: number) {
+    setSearchNote(null);
     try {
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'describe-search', q: searchQ.trim(), level: searchLevel, count: searchCount, exclude: [...cands, ...picked, ...removed] }),
+        body: JSON.stringify({ action: 'describe-search', q, level, count, exclude: [...cands, ...picked, ...removed] }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
@@ -409,7 +440,7 @@ export default function WorksheetPickerClient() {
       setReasons((cur) => ({ ...cur, ...Object.fromEntries(res.map((c) => [c.id, c.reason])) }));
       await loadIds(ids);
       say(`${ids.length} added to candidates`);
-    } catch (e) { say((e as Error).message, 'err'); } finally { setSearching(false); }
+    } catch (e) { say((e as Error).message, 'err'); }
   }
 
   async function done() {
@@ -567,27 +598,7 @@ export default function WorksheetPickerClient() {
           )}
         </details>
 
-        <div className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
-          <div className="font-semibold text-slate-700 mb-2">Find questions</div>
-          <div className="flex gap-2">
-            <select value={searchLevel} onChange={(e) => setSearchLevel(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs">{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
-            <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void runSearch(); }} placeholder="describe it: 'vectors in a real setting, a light ray off a mirror', 'reflection of a line in a plane', 'integration by parts twice'" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm" />
-            <select value={searchCount} onChange={(e) => setSearchCount(Number(e.target.value))} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs" title="how many to pick">{[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}</select>
-            <button onClick={runSearch} disabled={searching || loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50 whitespace-nowrap">{searching ? 'Reading the bank…' : 'Find → candidates'}</button>
-          </div>
-          <div className="mt-1 flex items-center gap-3 text-[11px] text-slate-400">
-            <span>A model reads the bank questions whose topic, sub-skill or text matches your words and picks the ones that fit; each pick shows why. 20–40 s.</span>
-            {searchNote && <span className="text-slate-500">{searchNote}</span>}
-          </div>
-          {/* For a session or script handing over a list — Adrian uses the search above. */}
-          <details className="mt-2">
-            <summary className="cursor-pointer text-[11px] text-slate-400">paste question ids</summary>
-            <div className="mt-1 flex gap-2 items-start">
-              <textarea value={paste} onChange={(e) => setPaste(e.target.value)} placeholder="uuid, uuid, …" rows={2} className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs font-mono" />
-              <button onClick={addPasted} disabled={loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">Add ids</button>
-            </div>
-          </details>
-        </div>
+        <FindBox onFind={runSearch} onAddIds={addPasted} busy={loading} note={searchNote} />
 
         {loading && <div className="text-xs text-slate-500 mb-2">Loading questions…</div>}
 
