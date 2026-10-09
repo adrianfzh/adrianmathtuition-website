@@ -17,12 +17,17 @@ if [ -z "${SOFFICE:-}" ]; then
   else SOFFICE="$(command -v soffice || command -v libreoffice || true)"; fi
 fi
 [ -n "$SOFFICE" ] || { echo "lo-pdf: no LibreOffice — install it, or set SOFFICE=<path to soffice>" >&2; exit 1; }
-SRC="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+ORIG="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PROFILE="$(mktemp -d)/lo"
 mkdir -p "$PROFILE/user/Scripts/python"
 cp "$HERE/lopdf.py" "$PROFILE/user/Scripts/python/lopdf.py"
-export LOPDF_SRC="$SRC" LOPDF_DST="${SRC%.docx}.pdf" LOPDF_SIZE="${2:-10}" LOPDF_LOG="$PROFILE/log.txt"
+# LibreOffice runs the lines of an aligned maths block together (it drops Word's w:br);
+# convert a PDF-only copy with one line per paragraph instead (9 Oct 2026). The PDF
+# still lands beside the ORIGINAL docx under its name.
+SPLIT_DIR="$(mktemp -d)"; SRC="$SPLIT_DIR/$(basename "$ORIG")"
+python3 "$HERE/lo-split-math.py" "$ORIG" "$SRC" || cp "$ORIG" "$SRC"
+export LOPDF_SRC="$SRC" LOPDF_DST="${ORIG%.docx}.pdf" LOPDF_SIZE="${2:-10}" LOPDF_LOG="$PROFILE/log.txt"
 [ "${LOPDF_VIA:-}" = convert ] || "$SOFFICE" --headless --norestore \
   "-env:UserInstallation=file://$PROFILE" \
   'vnd.sun.star.script:lopdf.py$main?language=Python&location=user' >/dev/null 2>&1 || true

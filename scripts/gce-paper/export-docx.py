@@ -913,6 +913,21 @@ def front_page(ws, paper, total):
     ws.page_break()
 
 
+def key_answer(q):
+    """The Answers-key line for a question: its own `answer`, else the parts' answers
+    joined as "(a) …; (b) …" (Set 3 page check, 9 Oct 2026: five AM P1 questions carried
+    their answers only on the parts and printed a blank key entry)."""
+    if q.get('answer'):
+        return q['answer']
+    out = []
+    for p in q.get('parts') or []:
+        leaves = p['subparts'] if p.get('subparts') else [p]
+        for x in leaves:
+            if x.get('answer'):
+                out.append(f"{x.get('label', '')} {x['answer']}".strip())
+    return ';  '.join(out)
+
+
 # ----------------------------------------------------------------- main ----
 
 def main():
@@ -986,6 +1001,11 @@ def main():
                   for p in (q.get('parts') or [])) or s['target']
         if got != s['target']:
             print(f"  ⚠ Q{s['pos']} parts sum to {got}, slot target {s['target']}")
+    # Every real GCE paper closes with this line under the last question's working space
+    # (Set 3 page check, 9 Oct 2026: the paper simply stopped).
+    end = ws.para([('text', 'END OF PAPER', {'bold': True})])
+    end.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    end.paragraph_format.space_before = Cm(0.6)
     page_numbers(ws.doc)
     size_math(ws.doc)
     join_math_runs(ws.doc)
@@ -1003,7 +1023,7 @@ def main():
     ws2.section('Answers')
     for s in slots:
         q = s.get('question') or s.get('draft')
-        p = ws2.para([('text', f"{s['pos']}\t", {'bold': True})] + segs(q.get('answer') or ''))
+        p = ws2.para([('text', f"{s['pos']}\t", {'bold': True})] + segs(key_answer(q)))
         p.paragraph_format.left_indent = Cm(Q_TEXT_CM)
         p.paragraph_format.first_line_indent = Cm(-Q_TEXT_CM)
         p.paragraph_format.tab_stops.add_tab_stop(Cm(Q_TEXT_CM))
