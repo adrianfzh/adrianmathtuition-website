@@ -310,6 +310,10 @@ ${katexInlineHead()}
      under the title instead of bumping whole to page 2 and leaving a title-only
      page (8 Oct 2026). Later questions keep the one-question-per-page rule. */
   body.ws-plain .ws-q:first-child{break-inside:auto}
+  /* With working space, every later question starts on a fresh page — the GCE
+     paper's rule, same as the Word file (Adrian, 9 Oct 2026: "the working spaces
+     and questions don't straddle across pages"). A compact sheet flows on. */
+  body.ws-plain:not(.ws-compact) .ws-q + .ws-q{break-before:page;page-break-before:always}
   .ws-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;display:flex;justify-content:space-between;font-size:8pt}
   .ws-foot-brand{color:${NAVY};font-weight:700;letter-spacing:.12em}
   .ws-foot-url{color:#6E6E6E}

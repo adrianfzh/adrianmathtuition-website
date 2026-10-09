@@ -229,7 +229,6 @@ export default function WorksheetPickerClient() {
 
   const [title, setTitle] = useState(params.get('title') ?? 'Revision Practice');
   const [subtitle, setSubtitle] = useState(params.get('subtitle') ?? '');
-  const [workingSpace, setWorkingSpace] = useState(true);
   const [byId, setById] = useState<Map<string, PickQuestion>>(new Map());
   const [cands, setCands] = useState<string[]>([]);
   const [picked, setPicked] = useState<string[]>([]);
@@ -457,7 +456,7 @@ export default function WorksheetPickerClient() {
    *  Practice shelf and send the .docx to Adrian's Telegram by itself, the way a
    *  /ws job does (Adrian, 9 Oct 2026: "can it also be saved in the same manner
    *  as for /ws?") — no second press. */
-  async function done() {
+  async function done(workingSpace = true) {
     if (!picked.length) { say('Drag some questions to the worksheet first', 'err'); return; }
     if (!title.trim()) { say('Give the sheet a title', 'err'); return; }
     setPdfUrl(null); setDocxUrl(null); setFiled([]); setFileFailed(false);
@@ -588,10 +587,9 @@ export default function WorksheetPickerClient() {
         <h1 className="text-xl font-bold mb-1">Worksheet picker</h1>
         <p className="text-sm text-slate-500 mb-4">Candidates on the left, the worksheet on the right. Drag between them (or tap Add / Remove), reorder on the right, every card shows its whole question; unfold Solution for the working, then press Done.</p>
 
-        <div className="grid gap-2 sm:grid-cols-[1fr_1fr_auto] items-end mb-4 bg-white border border-slate-200 rounded-xl p-3">
+        <div className="grid gap-2 sm:grid-cols-2 items-end mb-4 bg-white border border-slate-200 rounded-xl p-3">
           <label className="text-xs text-slate-500">Title<input value={title} onChange={(e) => setTitle(e.target.value)} className="mt-0.5 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-900" /></label>
           <label className="text-xs text-slate-500">Subtitle<input value={subtitle} onChange={(e) => setSubtitle(e.target.value)} placeholder="JC2 · Vectors (lines and planes)" className="mt-0.5 w-full border border-slate-300 rounded-lg px-3 py-1.5 text-sm text-slate-900" /></label>
-          <label className="text-xs text-slate-600 flex items-center gap-1.5 pb-1.5"><input type="checkbox" checked={workingSpace} onChange={(e) => setWorkingSpace(e.target.checked)} /> working space</label>
         </div>
 
         <details open={!cands.length && !picked.length} className="mb-4 bg-white border border-slate-200 rounded-xl p-3 text-sm">
@@ -635,7 +633,8 @@ export default function WorksheetPickerClient() {
             <span className="text-xs text-slate-400">.docx + .pdf · the .docx also goes to Telegram</span>
           </div>
           <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-3">
-            <button onClick={done} disabled={!!busy || filing || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build, file + send (${picked.length})`}</button>
+            <button onClick={() => done(true)} disabled={!!busy || filing || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build, file + send (${picked.length})`}</button>
+            <button onClick={() => done(false)} disabled={!!busy || filing || !picked.length} title="Questions only, no working space — a compact sheet" className="border border-indigo-600 text-indigo-700 font-semibold rounded-lg px-3 py-2 text-sm disabled:opacity-40">Done, no working space</button>
             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-700 underline">Open PDF</a>}
             {docxUrl && <a href={docxUrl} download={`${fileStem(fileNameShown)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
             {filed.length > 0 && <span className="text-xs text-emerald-700 truncate" title={filed.join('\n')}>Filed ✓ {filed.map((p) => p.split('/').pop()).join(' · ')}</span>}

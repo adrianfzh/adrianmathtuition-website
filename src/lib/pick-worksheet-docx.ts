@@ -131,10 +131,16 @@ export async function buildPickWorksheetDocx(input: { title: string; subtitle: s
     const hasParts = q.parts.length > 0;
     const stemMarks = !hasParts && q.marks ? q.marks : null;
     // "1." carries the first stem paragraph (or the first part when the stem is empty).
+    // With working space, every question after the first starts on a fresh page,
+    // the way the GCE papers are set (Adrian, 9 Oct 2026: "do it like how gce
+    // papers give working spaces — the working spaces and questions don't
+    // straddle across pages"): the slack lands at the foot of the page before,
+    // never inside a part. A compact sheet (no space) flows on.
     body.push(new Paragraph({
       numbering: { reference: 'q', level: 0 },
       indent: { right: RIGHT_INDENT },
-      spacing: { line: LINE_1_5, before: qi ? 120 : 0 },
+      spacing: { line: LINE_1_5, before: qi && !workingSpace ? 120 : 0 },
+      pageBreakBefore: workingSpace && qi > 0,
       keepNext: true,
       tabStops: [{ type: TabStopType.RIGHT, position: MARKS_TAB }],
       children: [
