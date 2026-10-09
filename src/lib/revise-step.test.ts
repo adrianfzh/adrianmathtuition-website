@@ -3,6 +3,7 @@ import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
   allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, questionTex, setFor, spreadTex, working, workingTaps, FIVE,
 } from './revise-step';
+import { lessonBySlug } from './lesson-catalog';
 import { REVISE_STEPS, reviseStepBySlug, reviseStepForClip } from './revise-steps';
 
 const tex = (s: string) => polyTex(parseExpr(s)!.poly);
@@ -158,5 +159,7 @@ describe('revise-step — the five', () => {
     expect(reviseStepBySlug('nope')).toBeNull();
     expect(reviseStepForClip('expand-two-brackets-s2')?.slug).toBe('expand-two-brackets');
     expect(reviseStepForClip('binomial-theorem-am')).toBeNull();
+    // A step's clip must be a lesson that exists.
+    for (const step of REVISE_STEPS) if (step.clipSlug) expect(lessonBySlug(step.clipSlug), step.clipSlug).not.toBeNull();
   });
 });

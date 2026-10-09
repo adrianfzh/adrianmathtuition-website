@@ -14,6 +14,7 @@ const EXPAND_ONE_BRACKET: ReviseStep = {
     'The term outside multiplies every term inside the bracket.',
     'When the term outside is negative, every sign inside changes.',
   ],
+  clipSlug: 'expand-one-bracket-s2',
   example: '2(a+3b)',
   tryOne: '5(2x-3)',
   // Each five climbs: a number outside → a minus inside → a negative outside → a letter outside → both.
@@ -59,6 +60,7 @@ const PERFECT_SQUARES: ReviseStep = {
     'A bracket squared is the bracket times itself: (a + b)² = (a + b)(a + b).',
     'The two middle pieces are the same, so the answer has twice that piece.',
   ],
+  // clipSlug 'perfect-squares-s2' exists but is silent until its voice is approved — join it then.
   example: '(x+3)^2',
   tryOne: '(x-4)^2',
   // Each five climbs: plus → minus → a number in front of x → both → two letters.
@@ -81,6 +83,7 @@ const DIFFERENCE_OF_SQUARES: ReviseStep = {
     'The two brackets are the same except for the sign in the middle.',
     'The two middle pieces cancel, leaving a square minus a square.',
   ],
+  // clipSlug 'difference-of-squares-s2': the same — join it when it has its voice.
   example: '(x+3)(x-3)',
   tryOne: '(x-6)(x+6)',
   // Each five climbs: plus first → minus first → a number in front of x → both → two letters.
