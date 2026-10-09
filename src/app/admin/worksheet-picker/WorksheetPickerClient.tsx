@@ -76,8 +76,8 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
 
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
-function Card({ q, index, col, onMove, overlay = false }: {
-  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; overlay?: boolean;
+function Card({ q, index, col, onMove, onDrop, overlay = false }: {
+  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void; overlay?: boolean;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
   const [sol, setSol] = useState(false);
@@ -103,8 +103,11 @@ function Card({ q, index, col, onMove, overlay = false }: {
             stays a one-line excerpt so the drag ghost is small. */}
         <div className="mb-1.5 flex gap-3">
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
-            {col === 'cands' ? 'Add →' : '← Remove'}
+            {col === 'cands' ? 'Add →' : '← Back to candidates'}
           </button>
+          {col === 'cands' && onDrop && (
+            <button onClick={() => onDrop(q.id)} className="text-[12px] font-semibold text-slate-400 hover:text-red-600 hover:underline ml-auto" title="Take this question off the candidates (it can be brought back)">✕ Remove</button>
+          )}
         </div>
         {overlay
           ? <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />
@@ -121,16 +124,19 @@ function Card({ q, index, col, onMove, overlay = false }: {
   );
 }
 
-function Column({ col, title, items, onMove, empty }: {
-  col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; empty: string;
+function Column({ col, title, items, onMove, onDrop, removedCount, onShowRemoved, empty }: {
+  col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void;
+  removedCount?: number; onShowRemoved?: () => void; empty: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col });
   return (
     <section className="flex-1 min-w-0">
-      <h2 className="text-sm font-bold text-slate-700 mb-2">{title} <span className="text-slate-400 font-normal">({items.length}{col === 'picked' && items.length ? ` · ${items.reduce((s, q) => s + (q.marks ?? 0), 0)} marks` : ''})</span></h2>
+      <h2 className="text-sm font-bold text-slate-700 mb-2">{title} <span className="text-slate-400 font-normal">({items.length}{col === 'picked' && items.length ? ` · ${items.reduce((s, q) => s + (q.marks ?? 0), 0)} marks` : ''})</span>
+        {!!removedCount && onShowRemoved && <button onClick={onShowRemoved} className="ml-3 text-xs font-normal text-slate-500 underline">{removedCount} removed · show</button>}
+      </h2>
       <SortableContext id={col} items={items.map((q) => q.id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className={`flex flex-col gap-2 min-h-[140px] rounded-xl p-2 border-2 border-dashed ${isOver ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-slate-50/60'}`}>
-          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} />)}
+          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} onDrop={onDrop} />)}
           {!items.length && <div className="text-xs text-slate-400 text-center py-8">{empty}</div>}
         </div>
       </SortableContext>
@@ -186,7 +192,8 @@ export default function WorksheetPickerClient() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  type PickState = { title: string; subtitle: string; cands: string[]; picked: string[]; savedAt?: string };
+  type PickState = { title: string; subtitle: string; cands: string[]; picked: string[]; removed?: string[]; savedAt?: string };
+  const [removed, setRemoved] = useState<string[]>([]);
   type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null; state?: PickState | null };
   const [restoredAt, setRestoredAt] = useState<string | null>(null);
   // Which saved selection the two columns currently belong to. null while a
@@ -272,10 +279,13 @@ export default function WorksheetPickerClient() {
       setTitle(st?.title || pk.title); setSubtitle(st?.subtitle ?? pk.subtitle); setPickId(pk.id);
       setCands([]); setPicked([]); setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
       setRestoredAt(st?.savedAt ?? null);
+      const rem = (st?.removed ?? []).filter((id) => own.has(id));
+      setRemoved(rem);
       if (st) {
         // Where you left off: the two columns as they were, in order; any of
-        // the selection's questions missing from the state go back to candidates.
-        const seen = new Set([...st.cands, ...st.picked]);
+        // the selection's questions missing from the state go back to candidates
+        // unless Adrian removed them.
+        const seen = new Set([...st.cands, ...st.picked, ...rem]);
         await loadIds([...st.cands, ...pk.question_ids.filter((id) => !seen.has(id))], 'cands');
         await loadIds(st.picked, 'picked');
       } else {
@@ -322,6 +332,18 @@ export default function WorksheetPickerClient() {
     setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cands, picked]);
+
+  /** Take a candidate off the left panel; "n removed · show" puts them all back. */
+  const dropCandidate = useCallback((id: string) => {
+    setCands((cur) => cur.filter((x) => x !== id));
+    setRemoved((cur) => (cur.includes(id) ? cur : [...cur, id]));
+  }, []);
+  const showRemoved = useCallback(async () => {
+    // Removed questions were never fetched on a restore, so load them (loadIds
+    // appends to the candidates and skips ids already in either column).
+    const ids = removed; setRemoved([]);
+    await loadIds(ids, 'cands');
+  }, [removed, loadIds]);
 
   function onDragStart(e: DragStartEvent) { setActiveId(String(e.active.id)); }
   function onDragOver(e: DragOverEvent) {
@@ -423,11 +445,11 @@ export default function WorksheetPickerClient() {
   // ad-hoc ?ids= page keeps it in this browser under the ids.
   const localKey = useMemo(() => (urlIds.length ? `picker:${urlIds.join(',')}` : null), [urlIds]);
   const [dirty, setDirty] = useState(false);
-  useEffect(() => { if (seeded) setDirty(true); /* any change after seeding */ }, [cands, picked, title, subtitle, seeded]);
+  useEffect(() => { if (seeded) setDirty(true); /* any change after seeding */ }, [cands, picked, removed, title, subtitle, seeded]);
   useEffect(() => {
     if (!dirty || loading) return;
     if (pickId && stateFor !== pickId) return;   // mid-switch: these lists are not this selection's
-    const st: PickState = { title, subtitle, cands, picked };
+    const st: PickState = { title, subtitle, cands, picked, removed };
     const t = setTimeout(() => {
       if (pickId) {
         fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: st }) }).catch(() => {});
@@ -436,7 +458,7 @@ export default function WorksheetPickerClient() {
       }
     }, 700);
     return () => clearTimeout(t);
-  }, [dirty, loading, title, subtitle, cands, picked, pickId, localKey, stateFor]);
+  }, [dirty, loading, title, subtitle, cands, picked, removed, pickId, localKey, stateFor]);
   // An ad-hoc page restores from the browser once its questions are in.
   const [localRestored, setLocalRestored] = useState(false);
   useEffect(() => {
@@ -447,7 +469,7 @@ export default function WorksheetPickerClient() {
       if (!raw) return;
       const st = JSON.parse(raw) as PickState;
       if (Array.isArray(st.cands) && Array.isArray(st.picked) && [...st.cands, ...st.picked].every((id) => byId.has(id))) {
-        setCands(st.cands); setPicked(st.picked); if (st.title) setTitle(st.title); setSubtitle(st.subtitle ?? ''); setRestoredAt(st.savedAt ?? null);
+        setCands(st.cands); setPicked(st.picked); setRemoved((st.removed ?? []).filter((id) => byId.has(id))); if (st.title) setTitle(st.title); setSubtitle(st.subtitle ?? ''); setRestoredAt(st.savedAt ?? null);
       }
     } catch { /* ignore */ }
   }, [seeded, localRestored, pickId, localKey, loading, byId]);
@@ -455,7 +477,7 @@ export default function WorksheetPickerClient() {
   /** Back to the selection as it was handed over: every question a candidate, nothing picked. */
   async function restart() {
     if (!window.confirm('Restart this selection? The worksheet column is emptied and every question goes back to candidates.')) return;
-    setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]); setRestoredAt(null);
+    setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]); setRestoredAt(null); setRemoved([]);
     if (pickId) {
       await fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: null, force: true }) }).catch(() => {});
       const pk = picks.find((p) => p.id === pickId);
@@ -544,7 +566,7 @@ export default function WorksheetPickerClient() {
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
           <div className="flex flex-col md:flex-row gap-4">
-            <Column col="cands" title="Candidates" items={candQs} onMove={move} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
+            <Column col="cands" title="Candidates" items={candQs} onMove={move} onDrop={dropCandidate} removedCount={removed.length} onShowRemoved={() => { void showRemoved(); }} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
             <Column col="picked" title="Worksheet" items={pickQs} onMove={move} empty="Drag questions here, in print order" />
           </div>
           <DragOverlay>{active ? <div className="w-80"><Card q={active} index={0} col="cands" onMove={() => {}} overlay /></div> : null}</DragOverlay>

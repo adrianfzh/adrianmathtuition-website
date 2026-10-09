@@ -71,6 +71,9 @@ export async function PATCH(req: NextRequest) {
       subtitle: typeof st.subtitle === 'string' ? st.subtitle.slice(0, 160) : '',
       cands: parseIds(Array.isArray(st.cands) ? st.cands.join(',') : '').slice(0, 80),
       picked: parseIds(Array.isArray(st.picked) ? st.picked.join(',') : '').slice(0, 80),
+      // Candidates Adrian took off the left panel (9 Oct 2026: "can I also delete
+      // the question in the left panel?"); they stay out until "show removed".
+      removed: parseIds(Array.isArray(st.removed) ? st.removed.join(',') : '').slice(0, 80),
       savedAt: new Date().toISOString(),
     };
   }
