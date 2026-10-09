@@ -123,10 +123,10 @@ export function brandMastheadHtml(input: BrandMastheadInput): { css: string; htm
   .bm-name{font-size:17pt;font-weight:700;color:${hex(band ? 'FFFFFF' : k.ink)}}
   .bm-name span{color:${hex(band ? k.bandMath : k.math)}}
   .bm-tuition{font-size:7.5pt;font-weight:700;letter-spacing:3pt;color:${hex(band ? k.pale : k.grey)}}
-  .bm-level{text-align:right;padding-right:3.5mm !important}
+  .bm td.bm-level{text-align:right;padding-right:3.5mm}
   .bm-level-line{font-size:${input.lv.levelLine.length <= 22 ? 10 : 9}pt;font-weight:700;color:${hex(band ? 'FFFFFF' : k.ink)}}
   .bm-site{font-size:8pt;color:${hex(band ? k.pale : k.grey)}}
-  .bm-block{text-align:center;${cfg.block ? `background:${hex(cfg.block)} !important;` : ''}${blockBorders}}
+  .bm td.bm-block{text-align:center;${cfg.block ? `background:${hex(cfg.block)};` : ''}${blockBorders}}
   .bm-tag{font-size:17pt;font-weight:700;letter-spacing:0.5pt;color:${hex(cfg.tagInk)}}
   .bm-small{font-size:7pt;font-weight:700;letter-spacing:2pt;color:${hex(cfg.tagInk)}}
   .bm-topic{font-family:Gelasio,Georgia,serif;font-size:19pt;font-weight:700;line-height:1.15;color:${hex(k.ink)};margin:12pt 0 1pt;${bar}}

@@ -142,7 +142,7 @@ describe('the brand header switch (lib/render-brand-masthead)', () => {
     expect(html).toMatch(/<b>PRACTICE<\/b>&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;2 questions&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;7 marks/);
     expect(html).toContain('Name <span>______');
     expect(html).toContain('.bm td{padding:8.5pt 0;vertical-align:middle;border:none;background:#1B2A4A;}');   // the navy band
-    expect(html).toContain('background:#E08A3A !important');                                                  // the orange block
+    expect(html).toContain('.bm td.bm-block{text-align:center;background:#E08A3A;}');                                                  // the orange block
     expect(html).toContain('@page{margin:24mm 25mm 17mm 25mm}');
     expect(html).toContain('@page :first{margin-top:20mm}');
     expect(html).toContain('font-family:Gelasio,Georgia,serif;font-size:19pt');

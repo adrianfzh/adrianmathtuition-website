@@ -28,6 +28,14 @@ sheet has ONE door:
 | Questions the bank picks for me, by topic (five kinds: questions-only, with worked examples, revision sheet, my own sheet with new practice, a paper) | `/admin/worksheets` or Telegram `/ws` | kinds 1 / 2 / 4 / 5: the Fly builder (`worksheet_jobs`, bot repo) | kind 3: `lib/render-bot-worksheet.ts`; the others: **Word in the cloud** on the Fly builder (`scripts/sheet-worker/ms_graph_pdf.py`), never LibreOffice |
 | A sheet that needs NEW questions written (nothing in the bank fits) | `create-worksheet` in a chat session (`worksheet_lib.py`), or `gce-paper` for a whole paper | the session writes it | Microsoft Word on this Mac (`scripts/sheet-worker/render_sheet.py export_pdf`), or the Fly builder's Word in the cloud — never LibreOffice (it ran aligned equations together and re-paginated 11 pages to 16, 18 Sep 2026) |
 
+- **The brand header is a switch, OFF by default** (9 Oct 2026, Adrian: "default should
+  not be in, but I will like them to be in later"): `/admin/worksheet-picker` and the
+  kind-3 instant sheet on `/admin/worksheets` carry "Brand header: Off | Colour | Black &
+  white" (remembered per browser). On = the series masthead of ADRIAN-STYLE.md §9 on both
+  files (`lib/worksheet-brand.ts` = `worksheet_brand.py`'s twin, incl. the new JC design);
+  off = the regular format, byte for byte. Kinds 1 / 2 / 4 / 5 and the Telegram `/ws` sheet
+  print their usual header (the queued builder runs the skills headless and takes no brand
+  flag yet).
 - **A cloud session (claude.ai/code) never builds a PDF itself** — it has no Word
   and LibreOffice is not faithful. It pushes the Word file or queues a
   `worksheet_jobs` row and lets the Fly builder export it.
