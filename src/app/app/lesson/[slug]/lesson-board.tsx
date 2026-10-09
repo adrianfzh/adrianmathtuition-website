@@ -174,13 +174,23 @@ export function arcPath(a: Box, b: Box, under: boolean): string {
   const y = under ? Math.max(a.y1, b.y1) + 3 : Math.min(a.y0, b.y0) - 3;
   const dir = under ? 1 : -1;
   // Taller for a longer reach, so two arcs from one token nest instead of crossing.
-  const h = Math.min(34, 10 + Math.abs(x1 - x0) * 0.14);
+  const h = Math.min(30, 10 + Math.abs(x1 - x0) * 0.13);
   const cx = (x0 + x1) / 2, cy = y + dir * 2 * h;       // the curve's peak sits h from the row
   // The arrowhead: two barbs swung ±27° off the direction the curve arrives in.
   const ang = Math.atan2(y - cy, x1 - cx);
   const barb = (t: number) => `${(x1 - 7.5 * Math.cos(ang + t)).toFixed(1)} ${(y - 7.5 * Math.sin(ang + t)).toFixed(1)}`;
   const f = (n: number) => n.toFixed(1);
   return `M${f(x0)} ${f(y)} Q${f(cx)} ${f(cy)} ${f(x1)} ${f(y)} M${barb(0.47)} L${f(x1)} ${f(y)} L${barb(-0.47)}`;
+}
+
+/** Where an arc's number sits: ON the curve, breaking the line (the same geometry as arcPath) — beyond the peak it ran into the row above. */
+export function arcLabelAt(a: Box, b: Box, under: boolean): { x: number; y: number } {
+  const x0 = (a.x0 + a.x1) / 2, x1 = (b.x0 + b.x1) / 2;
+  const y = under ? Math.max(a.y1, b.y1) + 3 : Math.min(a.y0, b.y0) - 3;
+  const h = Math.min(30, 10 + Math.abs(x1 - x0) * 0.13);
+  // Past the peak, toward the arrowhead: two arcs leaving one token end apart, so their numbers do too.
+  const t = 0.64;
+  return { x: x0 + (x1 - x0) * t, y: y + (under ? 1 : -1) * h * 4 * t * (1 - t) };
 }
 
 // ── The layer ────────────────────────────────────────────────────────────────
@@ -284,6 +294,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
   const onRef = useRef<Set<string>>(new Set());        // keys animated as shown
   const pulseRef = useRef(0);                            // pulses handled
   const marksDrawn = useRef<Map<number, SVGPathElement>>(new Map());
+  const labelsDrawn = useRef<Map<number, SVGGElement>>(new Map());
   const focusTimer = useRef(0);
   const focusSeq = useRef(-1);
   const busyUntil = useRef(0);                           // when the thing now drawing is done (performance.now ms)
@@ -316,14 +327,24 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     return box ? markPath(m.kind, box) : null;
   }, [boxOf]);
 
+  // An arc's number (①–④): a small ringed digit just beyond the peak.
+  const placeLabel = useCallback((m: BoardMark, g: SVGGElement) => {
+    const a = boxOf([m.tokens[0]]), b = boxOf([m.tokens[1]]);
+    if (!a || !b) return;
+    const at = arcLabelAt(a, b, m.kind === 'arc-under');
+    g.setAttribute('transform', `translate(${at.x.toFixed(1)} ${at.y.toFixed(1)})`);
+  }, [boxOf]);
+
   // Redraw every mark's path from fresh measurements (no animation).
   const redrawMarks = useCallback((marks: BoardMark[]) => {
     for (const m of marks) {
       const path = marksDrawn.current.get(m.seq);
       const d = pathOf(m);
       if (path && d) path.setAttribute('d', d);
+      const g = labelsDrawn.current.get(m.seq);
+      if (g) placeLabel(m, g);
     }
-  }, [pathOf]);
+  }, [pathOf, placeLabel]);
 
   // ── The diff: what changed since the last commit, animated now ──
   useIsoLayoutEffect(() => {
@@ -414,7 +435,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     if (svg) {
       const live = new Set(board.marks.map(m => m.seq));
       for (const [seq, path] of marksDrawn.current) {
-        if (!live.has(seq)) { path.remove(); marksDrawn.current.delete(seq); }
+        if (!live.has(seq)) { path.remove(); marksDrawn.current.delete(seq); labelsDrawn.current.get(seq)?.remove(); labelsDrawn.current.delete(seq); }
       }
       let markCursor = Math.max(now, cursor);
       for (const m of board.marks) {
@@ -425,8 +446,32 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         path.setAttribute('d', d);
         path.setAttribute('data-mark', m.kind);
         path.setAttribute('data-mark-tokens', m.tokens.join(' '));   // which glyphs it belongs to (debug + the browser check)
-        svg.appendChild(path);
+        // Numbers live in their own layer, kept last, so they stay on top of every curve
+        // (re-appending a number to lift it would restart its fade-in).
+        let layer = svg.querySelector<SVGGElement>(':scope > g.lsn-arc-labels');
+        if (!layer) {
+          layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+          layer.setAttribute('class', 'lsn-arc-labels');
+          svg.appendChild(layer);
+        }
+        svg.insertBefore(path, layer);
         marksDrawn.current.set(m.seq, path);
+        if (m.label && (m.kind === 'arc' || m.kind === 'arc-under')) {
+          const NS = 'http://www.w3.org/2000/svg';
+          const g = document.createElementNS(NS, 'g');
+          g.setAttribute('class', 'lsn-arc-label');
+          g.setAttribute('data-mark', m.kind);
+          const ring = document.createElementNS(NS, 'circle');
+          ring.setAttribute('r', '7.5');
+          const num = document.createElementNS(NS, 'text');
+          num.setAttribute('text-anchor', 'middle');
+          num.setAttribute('dominant-baseline', 'central');
+          num.textContent = m.label;
+          g.append(ring, num);
+          layer.appendChild(g);
+          labelsDrawn.current.set(m.seq, g);
+          placeLabel(m, g);
+        }
         if (reduced) continue;
         const L = path.getTotalLength();
         const dur = scaleBeat(Math.min(1100, Math.max(350, L * 1.6)), r);

@@ -13,8 +13,10 @@ import binomialTheoremAm from '../../data/lessons/binomial-theorem-am.json';
 import quadraticFunctionsAm from '../../data/lessons/quadratic-functions-am.json';
 import expandTwoBracketsS2 from '../../data/lessons/expand-two-brackets-s2.json';
 import expandOneBracketS2 from '../../data/lessons/expand-one-bracket-s2.json';
-import perfectSquaresS2 from '../../data/lessons/perfect-squares-s2.json';
-import differenceOfSquaresS2 from '../../data/lessons/difference-of-squares-s2.json';
+import expandAndSimplifyS2 from '../../data/lessons/expand-and-simplify-s2.json';
+import numberInFrontS2 from '../../data/lessons/number-in-front-s2.json';
+import furtherExpansionS2 from '../../data/lessons/further-expansion-s2.json';
+import specialProductsS2 from '../../data/lessons/special-products-s2.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -27,8 +29,10 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'quadratic-functions-am': quadraticFunctionsAm,
   'expand-two-brackets-s2': expandTwoBracketsS2,
   'expand-one-bracket-s2': expandOneBracketS2,
-  'perfect-squares-s2': perfectSquaresS2,
-  'difference-of-squares-s2': differenceOfSquaresS2,
+  'expand-and-simplify-s2': expandAndSimplifyS2,
+  'number-in-front-s2': numberInFrontS2,
+  'further-expansion-s2': furtherExpansionS2,
+  'special-products-s2': specialProductsS2,
 };
 
 /**

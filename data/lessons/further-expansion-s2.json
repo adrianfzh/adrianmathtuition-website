@@ -1,0 +1,108 @@
+{
+  "slug": "further-expansion-s2",
+  "title": "Further expansion",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Further expansion",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "2(a + 5)", "id": "f" },
+            { "tex": "-", "id": "m" },
+            { "tex": "(4a + 3)(2a - 7)", "id": "g" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "2a + 10", "id": "e1" },
+            { "tex": "-", "id": "m1" },
+            { "tex": "(8a^2 - 28a + 6a - 21)", "id": "e2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "2a + 10" },
+            { "tex": "-\\,8a^2 + 28a - 6a + 21", "id": "e3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "-8a^2 + 24a + 31", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand and simplify two, bracket A plus five, minus, bracket four A plus three, bracket two A minus seven.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Expand each part. Two times A plus five is two A plus ten.",
+          "do": [
+            { "do": "highlight", "token": "f", "on": "Two times" },
+            { "do": "write", "token": "e1", "on": "two A plus ten" }
+          ]
+        },
+        {
+          "say": "Keep the minus sign, and put the second expansion inside a bracket.",
+          "do": [
+            { "do": "write", "token": "m1", "on": "minus sign" }
+          ]
+        },
+        {
+          "say": "Four A plus three, times two A minus seven, is eight A squared, minus twenty-eight A, plus six A, minus twenty-one.",
+          "do": [
+            { "do": "highlight", "token": "g", "on": "Four A" },
+            { "do": "write", "token": "e2", "on": "eight A squared" }
+          ]
+        },
+        {
+          "say": "Note the minus sign in front of the bracket. It changes every sign inside.",
+          "do": [
+            { "do": "note", "text": "← Note the minus sign", "near": "e2", "on": "Note" },
+            { "do": "mark", "kind": "circle", "token": "m1", "on": "in front" }
+          ]
+        },
+        {
+          "say": "Expand again: minus eight A squared, plus twenty-eight A, minus six A, plus twenty-one.",
+          "do": [
+            { "do": "write", "step": 2, "on": "minus eight" },
+            { "do": "note", "text": "← Expand again", "near": "e3", "on": "twenty-eight" }
+          ]
+        },
+        {
+          "say": "Add up like terms. Two A plus twenty-eight A minus six A is twenty-four A. Ten plus twenty-one is thirty-one.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": "e3", "on": "like terms" }
+          ]
+        },
+        {
+          "say": "The answer is minus eight A squared, plus twenty-four A, plus thirty-one.",
+          "do": [
+            { "do": "write", "step": 3, "on": "minus eight" },
+            { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "twenty-four" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "thirty-one" }
+          ]
+        }
+      ],
+      "verify": [
+        { "expr": "(4a + 3)(2a - 7)", "equiv": "8a^2 - 28a + 6a - 21", "var": "a" },
+        { "expr": "2(a + 5) - (4a + 3)(2a - 7)", "equiv": "2a + 10 - 8a^2 + 28a - 6a + 21", "var": "a" },
+        { "expr": "2(a + 5) - (4a + 3)(2a - 7)", "equiv": "-8a^2 + 24a + 31", "var": "a" },
+        { "expr": "2 + 28 - 6", "equals": 24 },
+        { "expr": "10 + 21", "equals": 31 }
+      ]
+    }
+  ]
+}

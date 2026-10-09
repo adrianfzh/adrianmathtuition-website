@@ -237,7 +237,7 @@ export type BeatAction =
   /** graph-morph: ease the curve to states[state]. */
   | ({ do: 'morph'; state: number } & Timed)
   /** A hand-drawn underline / circle / box around one or more tokens. */
-  | ({ do: 'mark'; kind: MarkKind; token: string | string[] } & Timed)
+  | ({ do: 'mark'; kind: MarkKind; token: string | string[]; /** An arc's number, drawn at its peak (①–④ on the Rainbow): one or two characters. */ label?: string } & Timed)
   /** A handwritten aside (inline `$…$` allowed), beside a token or under the working. */
   | ({ do: 'note'; text: string; near?: string } & Timed)
   /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
@@ -627,6 +627,7 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       if (!(MARK_KINDS as readonly unknown[]).includes(a.kind)) errors.push(`${where}: kind must be one of ${MARK_KINDS.join('/')}`);
       tokens('token');
       if ((a.kind === 'arc' || a.kind === 'arc-under') && tokenList(a.token)?.length !== 2) errors.push(`${where}: an arc joins exactly two tokens — token: ["from", "to"]`);
+      if (a.label !== undefined && (typeof a.label !== 'string' || a.label.trim().length === 0 || a.label.trim().length > 2 || (a.kind !== 'arc' && a.kind !== 'arc-under'))) errors.push(`${where}: label is one or two characters, on an arc only`);
       break;
     case 'note':
       if (!nonEmptyString(a.text)) errors.push(`${where}: note needs text`);

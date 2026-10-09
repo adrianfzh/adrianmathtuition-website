@@ -174,7 +174,7 @@ export const FOCUS_HOLD_S = 2.2;
 
 // ── Board state ──────────────────────────────────────────────────────────────
 
-export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number }
+export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number; label?: string }
 export interface BoardNote { id: ElementKey; text: string; near: string | null; seq: number }
 export interface BoardPulse { tokens: string[]; seq: number }
 export interface BoardFocus { key: ElementKey; hold: number; seq: number }
@@ -287,7 +287,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       board.pulses.push({ tokens: asList(action.token), seq });
       break;
     case 'mark':
-      board.marks.push({ kind: action.kind, tokens: asList(action.token), seq });
+      board.marks.push({ kind: action.kind, tokens: asList(action.token), seq, ...(action.label ? { label: action.label.trim() } : {}) });
       break;
     case 'note': {
       const id = `note:${slot}`;

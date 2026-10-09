@@ -64,19 +64,25 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
 - **Simple, effective animation:** one thing moves at a time and it is the thing being
   spoken about. No character, no stickers, no prose paragraphs on the board — the maths
   and one short heading. Every action after a beat's first is cued to a word (`on`).
-- **The first one: `expand-two-brackets-s2`** — Sec 2, $(x+3)(x-2)$: an arc from one term
-  to another as the voice says "x times x", the product appears as it is named, like
-  terms underlined, the answer boxed. 9 beats, 106 words, about 45 s.
-  `/app/lesson/expand-two-brackets-s2`, admin-only like every lesson. **Voiced 9 Oct
-  2026** (Adrian: "yes"; his verdict the same day: "video is much better now. let's keep
-  to this quality" — this clip is the reference for the next ones): nine clips, 0.7 min, 196 KB, each with its word timings —
-  tap 🔊 Voice; without it the clip plays on the Auto timers, paced to the words.
-- **The second: `expand-one-bracket-s2`** (9 Oct 2026) — step 1 of the same chapter's map,
-  $2(a+3b)$ then $-2(a+3b)$: every sign inside changes. 9 beats, 80 words, voiced.
-- **Clips follow the Revise map, one per step** (Adrian, 9 Oct 2026: "we need one clear
-  path of development"): a clip is the first thing a revision step shows
-  (`lib/learn-steps.ts` `clipSlug`, owned by the Learn-step session) and has no door of
-  its own for students. This side makes clips only.
+- **Learning clips follow Adrian's own notes** (9 Oct 2026: "will you be able to build
+  according to these notes?" — `Dropbox/1 ONLINE LESSONS/1 NOTES/4 Notes S2 Math G3/S2 MATH
+  01 Algebra 1 Expansion.pdf`; the chapter order is `SPEC-SELF-LEARNING.md` §4a): HIS
+  example, HIS method, HIS margin words. One clip per learn step
+  (`lib/learn-steps.ts` `clipSlug`, owned by the Learn page's session); a clip has no door
+  of its own for students. "Revise" clips (worked exam questions) are a later, separate kind.
+- **The six so far** (Sec 2 Expansion): `expand-one-bracket-s2` 2(a + 3b) · voiced, live;
+  `expand-and-simplify-s2` 4a − 2(4a + 5b); `expand-two-brackets-s2` (a + b)(a − 3b), arrows
+  ①–④ (it replaced the first (x + 3)(x − 2) cut — the clip Adrian approved for quality);
+  `number-in-front-s2` 2(p − 3q)(r + 3s), first two first; `further-expansion-s2`
+  2(a + 5) − (4a + 3)(2a − 7), the minus sign in front of the second expansion;
+  `special-products-s2` (2p + 3q)² BY THE FORMULA, not the Rainbow. The last five are
+  written and checked, silent until the voice spend is approved.
+- **Numbered arrows:** `label` on an arc (`"label": "1"`) draws a small ringed number on the
+  curve, toward the arrowhead, in a layer above every curve. **Margin words:** a `note`
+  whose text is the notes' own words ("← Add up like terms") — in a clip a note carries no
+  "↳" prefix. **A long line shrinks to one row** (`--lsn-row-scale`, never under 0.6).
+- **Letters are written as capitals in `say`** ("A times A is A squared") so the voice
+  reads the letter's name, not the word "a".
 - **Authoring one:** the author-lesson skill § 3c.
 
 ## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board

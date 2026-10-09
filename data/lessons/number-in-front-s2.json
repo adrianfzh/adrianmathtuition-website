@@ -1,0 +1,120 @@
+{
+  "slug": "number-in-front-s2",
+  "title": "A number in front",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "A number in front",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "2", "id": "k" },
+            { "tex": "(" },
+            { "tex": "p", "id": "a" },
+            { "tex": "-\\,3q", "id": "b" },
+            { "tex": ")" },
+            { "tex": "(r + 3s)", "id": "r" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=\\,(" },
+            { "tex": "2p", "id": "m1" },
+            { "tex": "-\\,6q", "id": "m2" },
+            { "tex": ")\\,(" },
+            { "tex": "r", "id": "c" },
+            { "tex": "+\\,3s\\,)", "id": "d" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "2pr", "id": "p1" },
+            { "tex": "+\\,6ps", "id": "p2" },
+            { "tex": "-\\,6qr", "id": "p3" },
+            { "tex": "-\\,18qs", "id": "p4" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand two, bracket P minus three Q, bracket R plus three S.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Three things are multiplied together. Do the first two first.",
+          "do": [
+            { "do": "highlight", "token": "k", "on": "first two" }
+          ]
+        },
+        {
+          "say": "Two times P is two P.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "a"], "label": "1", "on": "Two times" },
+            { "do": "write", "token": "m1", "on": "two P" }
+          ]
+        },
+        {
+          "say": "Two times minus three Q is minus six Q.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "b"], "label": "2", "on": "Two times" },
+            { "do": "write", "token": "m2", "on": "minus six Q" }
+          ]
+        },
+        {
+          "say": "The second bracket stays as it is.",
+          "do": [
+            { "do": "highlight", "token": ["c", "d"], "on": "stays" }
+          ]
+        },
+        {
+          "say": "Now expand the two brackets. Two P times R is two P R.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["m1", "c"], "label": "1", "on": "Two P times" },
+            { "do": "write", "token": "p1", "on": "two P R" }
+          ]
+        },
+        {
+          "say": "Two P times three S is six P S.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["m1", "d"], "label": "2", "on": "Two P times" },
+            { "do": "write", "token": "p2", "on": "six P S" }
+          ]
+        },
+        {
+          "say": "Minus six Q times R is minus six Q R.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["m2", "c"], "label": "3", "on": "Minus six Q times" },
+            { "do": "write", "token": "p3", "on": "minus six Q R" }
+          ]
+        },
+        {
+          "say": "Minus six Q times three S is minus eighteen Q S.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["m2", "d"], "label": "4", "on": "Minus six Q times" },
+            { "do": "write", "token": "p4", "on": "minus eighteen Q S" }
+          ]
+        },
+        {
+          "say": "There are no like terms to add, so this is the answer.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["p1", "p2", "p3", "p4"], "on": "answer" }
+          ]
+        }
+      ],
+      "verify": [
+        { "expr": "2(p - 3*2)(5 + 3*7)", "equiv": "2*p*5 + 6*p*7 - 6*2*5 - 18*2*7", "var": "p" },
+        { "expr": "2(4 - 3q)(5 + 3*7)", "equiv": "2*4*5 + 6*4*7 - 6*q*5 - 18*q*7", "var": "q" },
+        { "expr": "2(4 - 3*2)(r + 3*7)", "equiv": "2*4*r + 6*4*7 - 6*2*r - 18*2*7", "var": "r" },
+        { "expr": "2(4 - 3*2)(5 + 3s)", "equiv": "2*4*5 + 6*4*s - 6*2*5 - 18*2*s", "var": "s" }
+      ]
+    }
+  ]
+}

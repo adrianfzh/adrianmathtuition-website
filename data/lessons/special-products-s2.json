@@ -1,0 +1,104 @@
+{
+  "slug": "special-products-s2",
+  "title": "Special products",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Special products",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(a + b)^2" },
+            { "tex": "=" },
+            { "tex": "a^2", "id": "fa" },
+            { "tex": "+\\,2ab", "id": "fm" },
+            { "tex": "+\\,b^2", "id": "fb" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "(2p + 3q)^2", "id": "q" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "(2p)^2", "id": "t1" },
+            { "tex": "+\\,2(2p)(3q)", "id": "t2" },
+            { "tex": "+\\,(3q)^2", "id": "t3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "4p^2 + 12pq + 9q^2", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "The formula: A plus B, all squared, is A squared, plus two A B, plus B squared.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Expand two P plus three Q, all squared.",
+          "do": [
+            { "do": "write", "step": 1 }
+          ]
+        },
+        {
+          "say": "Here, A is two P, and B is three Q.",
+          "do": [
+            { "do": "highlight", "token": "q", "on": "two P" }
+          ]
+        },
+        {
+          "say": "First, A squared: two P, all squared.",
+          "do": [
+            { "do": "highlight", "token": "fa", "on": "A squared" },
+            { "do": "write", "token": "t1", "on": "two P" }
+          ]
+        },
+        {
+          "say": "Next, two A B: two, times two P, times three Q.",
+          "do": [
+            { "do": "highlight", "token": "fm", "on": "two A B" },
+            { "do": "write", "token": "t2", "on": "times two P" }
+          ]
+        },
+        {
+          "say": "Last, B squared: three Q, all squared.",
+          "do": [
+            { "do": "highlight", "token": "fb", "on": "B squared" },
+            { "do": "write", "token": "t3", "on": "three Q" }
+          ]
+        },
+        {
+          "say": "Work out each term: four P squared, plus twelve P Q, plus nine Q squared.",
+          "do": [
+            { "do": "write", "step": 3, "on": "four P" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "nine Q" }
+          ]
+        },
+        {
+          "say": "Do not leave out the middle term, two A B.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": "t2", "on": "middle term" }
+          ]
+        }
+      ],
+      "verify": [
+        { "expr": "(2*3 + 3q)^2", "equiv": "(2*3)^2 + 2(2*3)(3q) + (3q)^2", "var": "q" },
+        { "expr": "(2*3 + 3q)^2", "equiv": "4*3^2 + 12*3*q + 9q^2", "var": "q" },
+        { "expr": "(2p + 3*5)^2", "equiv": "4p^2 + 12*p*5 + 9*5^2", "var": "p" }
+      ]
+    }
+  ]
+}

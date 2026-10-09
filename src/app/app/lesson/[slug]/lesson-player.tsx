@@ -2043,7 +2043,7 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; flex-wrap: nowrap; }
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
 [data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
-[data-lsn-clip] .lsn-steps > * + * { margin-top: 2.5rem; }
+[data-lsn-clip] .lsn-steps > * + * { margin-top: 2.8rem; }
 [data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
 [data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
 /* Content sits in the UPPER part of the board with comfortable margins — a
@@ -2113,6 +2113,16 @@ const PLAYER_CSS = `
 .lsn-marks path[data-mark="arc-under"] { stroke: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
 [data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.4; opacity: 0.96;
   -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px; }
+/* An arc's number: a small ringed digit in the arc's own colour, fading in with it. */
+/* (opacity only: a transform animation would override the SVG transform that places it) */
+@keyframes lsnLabelIn { from { opacity: 0; } to { opacity: 1; } }
+.lsn-arc-label { animation: lsnLabelIn 320ms ease both; }
+.lsn-arc-label circle { fill: var(--lsn-board, #2b3531); stroke-width: 1.3; stroke: var(--lsn-mark-arc, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-arc-label text { font: 600 10.5px/1 ui-sans-serif, system-ui, sans-serif; stroke: none; fill: var(--lsn-mark-arc, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-arc-label[data-mark="arc-under"] circle { stroke: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
+.lsn-arc-label[data-mark="arc-under"] text { fill: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
+/* In a clip a note is the notes' own margin words ("← Add up like terms"): no "↳" in front. */
+[data-lsn-clip] .lsn-note-row .lsn-note::before { content: none; }
 /* An arrow is a clean line: no chalk grain eating into it, a touch finer. */
 [data-lsn-theme="chalk"] .lsn-marks path[data-mark^="arc"] { -webkit-mask-image: none; mask-image: none; stroke-width: 2; opacity: 1; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;

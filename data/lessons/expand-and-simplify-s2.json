@@ -1,0 +1,100 @@
+{
+  "slug": "expand-and-simplify-s2",
+  "title": "Expand and simplify",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Expand and simplify",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "4a" },
+            { "tex": "-\\,2", "id": "k" },
+            { "tex": "(" },
+            { "tex": "4a", "id": "a" },
+            { "tex": "+\\,5b", "id": "b" },
+            { "tex": ")" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "4a", "id": "c0" },
+            { "tex": "-\\,8a", "id": "p1" },
+            { "tex": "-\\,10b", "id": "p2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "-4a - 10b", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand and simplify four A, minus two, bracket four A plus five B.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "The minus sign belongs to the two. So we multiply by minus two.",
+          "do": [
+            { "do": "highlight", "token": "k", "on": "belongs" }
+          ]
+        },
+        {
+          "say": "The four A in front stays.",
+          "do": [
+            { "do": "write", "token": "c0", "on": "four A" }
+          ]
+        },
+        {
+          "say": "Minus two times four A is minus eight A.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "a"], "label": "1", "on": "Minus two times" },
+            { "do": "write", "token": "p1", "on": "minus eight A" }
+          ]
+        },
+        {
+          "say": "Minus two times plus five B is minus ten B.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "b"], "label": "2", "on": "Minus two times" },
+            { "do": "write", "token": "p2", "on": "minus ten B" }
+          ]
+        },
+        {
+          "say": "That is the expansion. Now add up like terms.",
+          "do": [
+            { "do": "note", "text": "← Expand", "near": "p1", "on": "expansion" },
+            { "do": "mark", "kind": "underline", "token": ["c0", "p1"], "on": "like terms" }
+          ]
+        },
+        {
+          "say": "Four A minus eight A is minus four A.",
+          "do": [
+            { "do": "write", "step": 2, "on": "minus four A" }
+          ]
+        },
+        {
+          "say": "The answer is minus four A, minus ten B.",
+          "do": [
+            { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "answer" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "minus ten B" }
+          ]
+        }
+      ],
+      "verify": [
+        { "expr": "4a - 2(4a + 5*3)", "equiv": "4a - 8a - 10*3", "var": "a" },
+        { "expr": "4*2 - 2(4*2 + 5b)", "equiv": "-4*2 - 10b", "var": "b" },
+        { "expr": "4a - 8a", "equiv": "-4a", "var": "a" }
+      ]
+    }
+  ]
+}
