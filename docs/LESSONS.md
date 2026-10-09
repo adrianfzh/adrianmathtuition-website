@@ -71,6 +71,12 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   2026** (Adrian: "yes"; his verdict the same day: "video is much better now. let's keep
   to this quality" — this clip is the reference for the next ones): nine clips, 0.7 min, 196 KB, each with its word timings —
   tap 🔊 Voice; without it the clip plays on the Auto timers, paced to the words.
+- **The second: `expand-one-bracket-s2`** (9 Oct 2026) — step 1 of the same chapter's map,
+  $2(a+3b)$ then $-2(a+3b)$: every sign inside changes. 9 beats, 80 words, voiced.
+- **Clips follow the Revise map, one per step** (Adrian, 9 Oct 2026: "we need one clear
+  path of development"): a clip is the first thing a revision step shows
+  (`lib/revise-steps.ts` `clipSlug`, owned by the Revise page's session) and has no door of
+  its own for students. This side makes clips only.
 - **Authoring one:** the author-lesson skill § 3c.
 
 ## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board

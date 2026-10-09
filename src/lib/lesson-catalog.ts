@@ -45,6 +45,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Expand two brackets',
     minutes: 1,
   },
+  {
+    slug: 'expand-one-bracket-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Expand one bracket',
+    minutes: 1,
+  },
 ];
 
 /**

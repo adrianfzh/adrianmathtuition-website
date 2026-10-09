@@ -1,0 +1,134 @@
+{
+  "slug": "expand-one-bracket-s2",
+  "title": "Expand one bracket",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Expand one bracket",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "2", "id": "k" },
+            { "tex": "(" },
+            { "tex": "a", "id": "a" },
+            { "tex": "+\\,3b", "id": "b" },
+            { "tex": ")" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "2a", "id": "p1" },
+            { "tex": "+\\,6b", "id": "p2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "-2", "id": "n" },
+            { "tex": "(" },
+            { "tex": "a", "id": "a2" },
+            { "tex": "+\\,3b", "id": "b2" },
+            { "tex": ")" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "-2a", "id": "q1" },
+            { "tex": "-\\,6b", "id": "q2" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand two, bracket a plus three b.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b1.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "The two outside multiplies every term inside the bracket.",
+          "do": [
+            { "do": "highlight", "token": "k", "on": "two outside" },
+            { "do": "highlight", "token": ["a", "b"], "on": "every term" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b2.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Two times a is two a.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "a"], "on": "Two times" },
+            { "do": "write", "token": "p1", "on": "two a" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b3.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Two times three b is plus six b.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "b"], "on": "Two times" },
+            { "do": "write", "token": "p2", "on": "plus six b" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b4.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "The answer is two a plus six b.",
+          "do": [
+            { "do": "highlight", "token": ["p1", "p2"], "on": "two a" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b5.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Now make the number outside negative: minus two.",
+          "do": [
+            { "do": "write", "step": 2, "on": "minus two" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b6.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Minus two times a is minus two a.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["n", "a2"], "on": "Minus two times" },
+            { "do": "write", "token": "q1", "on": "minus two a" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b7.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Minus two times plus three b is minus six b. The plus has become a minus.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["n", "b2"], "on": "Minus two times" },
+            { "do": "write", "token": "q2", "on": "minus six b" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b8.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b8.timing.json"
+        },
+        {
+          "say": "A negative number outside changes every sign inside the bracket.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["q1", "q2"], "on": "every sign" }
+          ],
+          "audio": "/lessons/expand-one-bracket-s2/scene-01-b9.mp3",
+          "timing": "/lessons/expand-one-bracket-s2/scene-01-b9.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "2(a + 3*2)", "equiv": "2a + 6*2", "var": "a" },
+        { "expr": "-2(a + 3*2)", "equiv": "-2a - 6*2", "var": "a" },
+        { "expr": "2(5 + 3b)", "equiv": "2*5 + 6b", "var": "b" },
+        { "expr": "-2(5 + 3b)", "equiv": "-2*5 - 6b", "var": "b" }
+      ]
+    }
+  ]
+}
