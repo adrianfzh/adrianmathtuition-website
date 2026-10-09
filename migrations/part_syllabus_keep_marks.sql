@@ -42,7 +42,7 @@ begin
           and regexp_replace(lower(coalesce(e->>'label', '')), '[^a-z0-9]', '', 'g') = lbl
         limit 1;
       if lbl <> '' and op is not null then
-        foreach k in array array['legacy', 'legacy_reason', 'needs'] loop
+        foreach k in array array['legacy', 'legacy_reason', 'needs', 'needs_cleared', 'checked'] loop
           if op ? k and not np ? k then np := np || jsonb_build_object(k, op->k); end if;
         end loop;
         if np ? 'subparts' and op ? 'subparts' then

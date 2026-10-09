@@ -15,6 +15,7 @@ import {
 import type { PaperDef } from '@/lib/prelim-builder';
 import { setNumberFromTitle } from '@/lib/print-sets';
 import { studentRows } from './part-syllabus';
+import { recordPrintedLabels } from './part-label-prints-store';
 
 /** The stored blueprint entry — the H2 P2 render reads its section_boundary for Section A/B. */
 function blueprintPaperFor(level: string, paper: string, shape: PaperShape): PaperDef | null {
@@ -37,6 +38,8 @@ export interface RefPaper {
   printedFor: string | null;
   printedOn: string;       // "5 Oct 2026"
   shape: PaperShape;
+  /** For the print record of re-lettered parts: which sheet this is, and whose. */
+  record?: { surface: string; ref?: string | null; student?: string | null };
 }
 
 /** The PDF, or an error string (no questions / a bank read failed). */
@@ -48,7 +51,9 @@ export async function renderRefPaperPdf(sb: SupabaseClient, p: RefPaper): Promis
     .in('id', p.refs.map((r) => r.id));
   if (error) return { error: error.message, status: 500 };
   // Part marks: what prints is the student's row (lib/part-syllabus.ts); a question with too little left is skipped.
-  const byId = new Map(studentRows(qRows as QbPrintRow[]).map((q) => [q.id, q]));
+  // A re-lettered question prints only once the sheet's letters are on record.
+  const printable = await recordPrintedLabels(sb, p.record ?? { surface: 'print-paper' }, studentRows(qRows as QbPrintRow[]));
+  const byId = new Map(printable.map((q) => [q.id, q]));
 
   const questions: PrelimQuestion[] = [];
   for (const ref of p.refs) {

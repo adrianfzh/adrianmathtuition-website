@@ -1239,20 +1239,31 @@ export async function GET(req: NextRequest) {
         { label: 'c', marks: 3, text: 'keep', answer: '3' },
       ],
     });
+    // Students see the parts left RE-LETTERED: (a), (c) → (a), (b), and the map says so.
     const labels = (v.row.parts as { label: string }[]).map((p) => p.label).join('');
-    if (labels !== 'ac' || v.row.total_marks !== 7 || JSON.stringify(v.row).includes('HIDDEN-PART') || v.row.answer !== '(a) 1; (c) 3') {
-      throw new Error('the part-marks door let a hidden part through');
+    if (labels !== 'ab' || v.row.total_marks !== 7 || JSON.stringify(v.row).includes('HIDDEN-PART') || v.row.answer !== '(a) 1; (b) 3' || v.labels.original.b !== 'c') {
+      throw new Error('the part-marks door let a hidden part through, or lost the re-lettering');
     }
     const { getSupabaseAdmin } = await import('@/lib/supabase');
     const sb = getSupabaseAdmin();
     const [top, sub] = await Promise.all([
-      sb.from('questions').select('id, parts, total_marks').contains('parts', [{ legacy: true }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
-      sb.from('questions').select('id, parts, total_marks').contains('parts', [{ subparts: [{ legacy: true }] }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
+      sb.from('questions').select('id, question_text, parts, total_marks, answer, solution').contains('parts', [{ legacy: true }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
+      sb.from('questions').select('id, question_text, parts, total_marks, answer, solution').contains('parts', [{ subparts: [{ legacy: true }] }]).is('deleted_at', null).limit(1000).abortSignal(T(8000)),
     ]);
     if (top.error || sub.error) return 'door ok · count unavailable';
     const rows = new Map([...(top.data ?? []), ...(sub.data ?? [])].map((r) => [r.id as string, r]));
-    const notServed = [...rows.values()].filter((r) => !studentView(r).servable).length;
-    return `door ok · ${rows.size} question(s) with a hidden part${notServed ? ` · ${notServed} with too little left (not served)` : ''}`;
+    const views = [...rows.values()].map((r) => studentView(r));
+    const notServed = views.filter((x) => !x.enoughLeft).length;
+    const waiting = views.filter((x) => x.needsCheck).length;
+    // Once a part is marked, a printed sheet may show other letters than the bank's: the
+    // print record must exist (migrations/part_label_prints.sql) or such a question is
+    // left off every sheet. Red until the table is there.
+    if (rows.size) {
+      const { PRINT_TABLE } = await import('@/lib/part-label-prints-store');
+      const probe = await sb.from(PRINT_TABLE).select('id').limit(1).abortSignal(T(5000));
+      if (probe.error) throw new Error(`${rows.size} question(s) carry a hidden part but the print record (${PRINT_TABLE}) cannot be read: ${probe.error.message}`);
+    }
+    return `door ok · ${rows.size} question(s) with a hidden part${notServed ? ` · ${notServed} with too little left (not served)` : ''}${waiting ? ` · ${waiting} waiting for a person to check (not served)` : ''}`;
   }));
 
   results.push(await timed('ops-jobs', async () => {

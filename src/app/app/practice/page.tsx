@@ -50,6 +50,7 @@ import { scienceLevelsFor } from '@/lib/science-levels';
 import { bankScope } from '@/lib/qb-levels';
 import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
 import { studentRow } from '@/lib/part-syllabus';
+import { rollupSolution } from '@/lib/solution-rollup';   // a marked row's working lives on its parts once the door drops the whole-question copy
 
 /**
  * Sub-group audience gate for a deep-linked question (lib/subgroup-visibility
@@ -159,7 +160,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
         marks: q.total_marks ?? totalMarksOf(parts),
         figureUrl: q.figure_url ?? null,
         source: null,
-        hasSolution: !!(q.solution && q.solution.trim()),
+        hasSolution: !!rollupSolution(q.solution, q.parts),
       };
     }
     // Practice Again names the paper it came from in the banner.
@@ -217,7 +218,7 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
           marks: q.total_marks ?? totalMarksOf(parts),
           figureUrl: q.figure_url ?? null,
           source: null,
-          hasSolution: !!(q.solution && q.solution.trim()),
+          hasSolution: !!rollupSolution(q.solution, q.parts),
         },
       };
     } else {

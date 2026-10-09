@@ -7,6 +7,7 @@ import { createServiceClient } from '@/lib/supabase-server';
 import { renderPrelimPDF, type PrelimQuestion } from '@/lib/render-prelim';
 import { answerMarkdown, paperCodeFull, questionMarkdown, storageUrl, subjectName, type QbPrintRow } from '@/lib/print-paper';
 import { studentRows } from '@/lib/part-syllabus';
+import { recordPrintedLabels } from '@/lib/part-label-prints-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -44,7 +45,9 @@ export async function GET(req: NextRequest) {
       .in('id', ids);
     if (qErr) return NextResponse.json({ error: qErr.message }, { status: 500 });
     // Part marks: what prints is the student's row (lib/part-syllabus.ts).
-    const byId = new Map(studentRows(rows as QbFull[]).map((r) => [r.id, r]));
+    // A re-lettered question prints only once the paper's letters are on record.
+    const printable = await recordPrintedLabels(supabase, { surface: 'prelim-builder', ref: id }, studentRows(rows as QbFull[]));
+    const byId = new Map(printable.map((r) => [r.id, r]));
 
     const questions: PrelimQuestion[] = [];
     for (const s of slots) {

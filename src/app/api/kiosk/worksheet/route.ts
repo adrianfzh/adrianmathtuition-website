@@ -13,6 +13,7 @@ import { studentFromRequest } from '@/lib/kiosk-student';
 import { dailyDraw, drawSeedKey } from '@/lib/kiosk-draw';
 import { fetchWorksheetPool, SEED_LEVELS } from '@/lib/kiosk-pool';
 import { worksheetAudienceFor } from '@/lib/worksheet-audience';
+import { recordPrintedLabels } from '@/lib/part-label-prints-store';
 
 export const runtime = 'nodejs';
 
@@ -86,7 +87,9 @@ export async function GET(req: NextRequest) {
   // fetch cap) feeds the seeded shuffle. Capping before the shuffle starved
   // every row past the cap in id order — they could never print, on any day.
 
-  const picked = dailyDraw(pool.items, drawSeedKey(level, topic, tier), count);
+  // Part marks: a re-lettered question prints only once the sheet's letters are on record.
+  const picked = await recordPrintedLabels(supa, { surface: 'kiosk', ref: `${drawSeedKey(level, topic, tier)}#${count}`, student: student?.id ?? null },
+    dailyDraw(pool.items, drawSeedKey(level, topic, tier), count));
   const questions = picked.map((r) => ({
     id: r.id,
     markdown: r.markdown,

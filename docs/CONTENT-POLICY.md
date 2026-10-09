@@ -47,7 +47,8 @@ question to a student or to the public.
 **One part out of syllabus (9 Oct 2026, `SPEC-PART-SYLLABUS.md`).** A part inside `parts` may be
 marked `legacy: true`. Every SERVING surface takes its rows through `lib/part-syllabus.ts`
 (`studentRow` / `studentRows`) so the part, its answer and its working never reach a student
-and the marks total drops; a question with too little left is not served at all. GROUNDING of a
+and the marks total drops; the parts left are re-lettered for the student (the bank keeps its
+own labels); a question with too little left, or one a person has yet to check, is not served at all. GROUNDING of a
 real paper keeps every part. `part-syllabus-surfaces.test.ts` fails when a new reader of the
 bank skips the door.
 

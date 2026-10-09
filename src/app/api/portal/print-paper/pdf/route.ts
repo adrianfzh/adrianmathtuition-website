@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
   const out = await renderRefPaperPdf(sb, {
     preset: row.preset, level: row.level, paper: row.paper, title: row.title, refs,
     printedFor: account.display_name, printedOn: printed, shape,
+    record: { surface: 'print-paper', ref: String(row.id), student: portalIdentity(account) },
   });
   if ('error' in out) return NextResponse.json({ error: out.error }, { status: out.status });
   const { pdf } = out;

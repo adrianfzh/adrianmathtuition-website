@@ -24,7 +24,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { flattenParts, cropUrls, type Part } from './kiosk-worksheet-images';
 import { TIER_DIFFICULTY_VALUES, type Tier } from './practice-tiers';
-import { studentRows } from './part-syllabus';
+import { carryPartLabels, studentRows } from './part-syllabus';
 
 /** `questions.level` values servable per kiosk level token. */
 export const SEED_LEVELS: Record<string, string[]> = {
@@ -130,14 +130,16 @@ export async function fetchWorksheetPool(
     if (!hasPrintableAnswer(r)) continue; // answers always print — answer-less questions don't serve
     const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
     const answer = flat.answer || ((r.answer as string | null) ?? '');
-    items.push({
+    // The label map rides with the item (out of sight of JSON) so whoever prints it can
+    // record what the sheet called each part (lib/part-label-prints-store.ts).
+    items.push(carryPartLabels({
       id: r.id as string,
       markdown: flat.text,
       marks: (r.total_marks as number | null) ?? null,
       figureUrl: (r.figure_url as string | null) ?? null,
       imageUrls: r.figure_url ? [] : cropUrls((r.image_url as string | null) ?? null),
       answer,
-    });
+    }, r));
   }
   return { items, error: null };
 }

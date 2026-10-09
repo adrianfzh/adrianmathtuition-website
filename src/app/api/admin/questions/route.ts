@@ -33,7 +33,8 @@ import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { fromDetail, ansLine, questionMarkdown, type DetailRow } from '@/lib/pick-worksheet';
 import { brandForLevels } from '@/lib/worksheet-brand';
-import { applyPartMark, likelyDependents, normLabel, parsePartRef, studentRows, studentView } from '@/lib/part-syllabus';
+import { applyPartMark, confirmPartChecks, normLabel, parsePartRef, studentRows, studentView } from '@/lib/part-syllabus';
+import { recordPrintedLabels } from '@/lib/part-label-prints-store';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -156,7 +157,8 @@ function resolveParts(parts: unknown, gate?: SolutionImageGate, questionId?: str
 function partSyllabusOf(row: Row) {
   const v = studentView(row);
   const canMark = Array.isArray(row.parts) && row.parts.some((p) => p && typeof p === 'object');
-  if (!v.changed) return { canMark, hidden: [], needs: {}, marks: null, originalMarks: null, servable: true, notes: [] };
+  const none = { shown: {} as Record<string, string>, renames: [], needsCheck: false, checks: [], checksConfirmed: false, dependents: [], enoughLeft: true };
+  if (!v.changed) return { canMark, hidden: [], needs: {}, marks: null, originalMarks: null, servable: true, notes: [], ...none };
   const needs: Record<string, string[]> = {};
   const walk = (ps: unknown, prefix: string) => {
     if (!Array.isArray(ps)) return;
@@ -169,7 +171,13 @@ function partSyllabusOf(row: Row) {
     });
   };
   walk(row.parts, '');
-  return { canMark, hidden: v.hidden, needs, marks: v.marks, originalMarks: v.originalMarks, servable: v.servable, notes: v.notes };
+  return {
+    canMark, hidden: v.hidden, needs, marks: v.marks, originalMarks: v.originalMarks, servable: v.servable, notes: v.notes,
+    // Re-lettering (9 Oct 2026): what each remaining part is called on a student's page, and
+    // what a person still has to decide or read before the question is served.
+    shown: v.labels.shown, renames: v.labels.renames, enoughLeft: v.enoughLeft,
+    needsCheck: v.needsCheck, checks: v.checks, checksConfirmed: v.checksConfirmed, dependents: v.dependents,
+  };
 }
 
 function card(row: Row) {
@@ -496,25 +504,80 @@ export async function POST(req: NextRequest) {
   };
 
   // ── 🚫 one part out of syllabus (SPEC-PART-SYLLABUS.md) ─────────────────────
-  // { action:'part-syllabus', id, part:'(b)(ii)', legacy:true|false, reason?, needs?:[…] }
+  // { action:'part-syllabus', id, part:'(b)(ii)', legacy:true|false, reason?, needs?:[…], cleared?:[…],
+  //   decisions?: { '<later part>': 'needs' | 'alone' } }
   // Sets or clears the mark on ONE part inside `parts`; every other key on every
   // part is written back exactly as read. Students stop seeing the part at once.
+  //
+  // A mark is NOT saved while a later part that looks as if it depends on a hidden one
+  // ("Hence…", names it, its working cites it) is undecided: the reply is 409 with
+  // `undecided`, nothing written, and the caller sends the same request again with a
+  // decision for each — 'needs' (hidden with it) or 'alone' (stays; recorded as cleared).
   if (body.action === 'part-syllabus') {
     const id = typeof body.id === 'string' ? body.id : '';
     if (!/^[0-9a-f-]{36}$/.test(id)) return NextResponse.json({ error: 'id required' }, { status: 400 });
-    const { data: row, error } = await supa.from('questions').select('id, parts, total_marks, answer, solution').eq('id', id).maybeSingle();
+    const { data: row, error } = await supa.from('questions').select('id, question_text, parts, total_marks, answer, solution').eq('id', id).maybeSingle();
     if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
+    const list = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : undefined);
     const res = applyPartMark(row as Row, {
       part: typeof body.part === 'string' ? body.part : '',
       legacy: typeof body.legacy === 'boolean' ? body.legacy : undefined,
       reason: typeof body.reason === 'string' ? body.reason : undefined,
-      needs: Array.isArray(body.needs) ? body.needs.filter((x): x is string => typeof x === 'string') : undefined,
+      needs: list(body.needs),
+      cleared: list(body.cleared),
     });
+    if (!res.ok) return NextResponse.json({ error: res.error }, { status: 400 });
+    let parts = res.parts;
+    let view = res.view;
+    const decisions = (body.decisions && typeof body.decisions === 'object' ? body.decisions : {}) as Record<string, unknown>;
+    // Each decision adds to that part's own list; a 'needs' may hide more and raise new questions, so go round until settled.
+    for (let round = 0; round < 6 && view.dependents.length; round++) {
+      const todo = view.dependents.filter((d) => decisions[d.key] === 'needs' || decisions[d.key] === 'alone');
+      if (!todo.length) break;
+      for (const d of todo) {
+        const cur = (function find(ps: unknown, prefix: string): Record<string, unknown> | null {
+          for (const [i, p] of (Array.isArray(ps) ? ps : []).entries()) {
+            if (!p || typeof p !== 'object') continue;
+            const o = p as Record<string, unknown>;
+            const key = `${prefix}${normLabel(o.label) || `#${i + 1}`}`;
+            if (key === d.key) return o;
+            const deeper = find(o.subparts, `${key}.`);
+            if (deeper) return deeper;
+          }
+          return null;
+        })(parts, '');
+        const have = (k: string) => (Array.isArray(cur?.[k]) ? (cur![k] as unknown[]).map((x) => parsePartRef(x)).filter(Boolean) : []);
+        const next = applyPartMark({ ...(row as Row), parts }, decisions[d.key] === 'needs'
+          ? { part: d.key, needs: [...new Set([...have('needs'), d.on])] }
+          : { part: d.key, cleared: [...new Set([...have('needs_cleared'), d.on])] });
+        if (!next.ok) return NextResponse.json({ error: next.error }, { status: 400 });
+        parts = next.parts; view = next.view;
+      }
+    }
+    if (view.dependents.length) {
+      return NextResponse.json({
+        error: `Decide first: ${view.dependents.map((d) => `does ${d.label} need ${d.onLabel}? (${d.why})`).join(' · ')}`,
+        undecided: view.dependents,
+      }, { status: 409 });
+    }
+    const upd = await supa.from('questions').update({ parts }).eq('id', id).select('id');
+    if (upd.error || !upd.data?.length) return NextResponse.json({ error: upd.error?.message || 'not saved' }, { status: 500 });
+    return NextResponse.json({ ok: true, question: await freshDetail(id), needsCheck: view.needsCheck, checks: view.checks });
+  }
+
+  // { action:'part-syllabus-confirm', id } — "I have read what students get, and it is right."
+  // Stamps the marked parts with the fingerprint of the row as it stands; any later change
+  // to the stem, a part, the answer or the working makes the question wait for a person again.
+  if (body.action === 'part-syllabus-confirm') {
+    const id = typeof body.id === 'string' ? body.id : '';
+    if (!/^[0-9a-f-]{36}$/.test(id)) return NextResponse.json({ error: 'id required' }, { status: 400 });
+    const { data: row, error } = await supa.from('questions').select('id, question_text, parts, total_marks, answer, solution').eq('id', id).maybeSingle();
+    if (error || !row) return NextResponse.json({ error: error?.message || 'not found' }, { status: 404 });
+    const res = confirmPartChecks(row as Row);
     if (!res.ok) return NextResponse.json({ error: res.error }, { status: 400 });
     const upd = await supa.from('questions').update({ parts: res.parts }).eq('id', id).select('id');
     if (upd.error || !upd.data?.length) return NextResponse.json({ error: upd.error?.message || 'not saved' }, { status: 500 });
-    const part = typeof body.part === 'string' ? body.part : '';
-    return NextResponse.json({ ok: true, question: await freshDetail(id), check: body.legacy === true ? likelyDependents(row.parts, part) : [] });
+    return NextResponse.json({ ok: true, question: await freshDetail(id) });
   }
 
   // ── ✨ clean: lift the white point on a faded scan ─────────────────────────
@@ -922,7 +985,10 @@ export async function POST(req: NextRequest) {
       .in('id', ids);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     // Part marks: a sheet is for students — every row through the one door (lib/part-syllabus.ts).
-    const byId = new Map(studentRows((data ?? []) as Row[]).map((row) => [row.id as string, row]));
+    // A re-lettered question prints only once the sheet's letters are on record (lib/part-label-prints-store.ts).
+    const printable = await recordPrintedLabels(supa, { surface: 'worksheet-picker', ref: typeof body.title === 'string' ? body.title.slice(0, 80) : null },
+      studentRows((data ?? []) as Row[]) as (Row & { id: string })[]);
+    const byId = new Map(printable.map((row) => [row.id as string, row]));
     const warnings: string[] = [];
     const questions: BotWorksheetQuestion[] = [];
     for (const qid of ids) {

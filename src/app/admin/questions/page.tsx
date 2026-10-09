@@ -117,6 +117,12 @@ type Detail = Card & {
     canMark: boolean;
     hidden: { key: string; label: string; reason: string; via: 'marked' | 'parent' | 'needs' | 'emptied'; marks: number }[];
     marks: number | null; originalMarks: number | null; servable: boolean; notes: string[];
+    // Re-lettering: original part key → the key a student's page shows ('' = no letter).
+    shown?: Record<string, string>;
+    enoughLeft?: boolean;
+    needsCheck?: boolean; checksConfirmed?: boolean;
+    checks?: { code: string; part?: string; detail: string }[];
+    dependents?: { key: string; label: string; on: string; onLabel: string; why: string }[];
   };
 };
 const PART_NOTE: Record<string, string> = {
@@ -832,6 +838,35 @@ export default function QuestionBankPage() {
     const btn: React.CSSProperties = { fontSize: 11.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 6, padding: '1px 7px', cursor: 'pointer', marginLeft: 6 };
     const send = (extra: Record<string, unknown>, ok: (d: Record<string, unknown>) => string) =>
       figureAction({ action: 'part-syllabus', id: q.id, part: key, ...extra }, `ps:${key}`, ok);
+    // Hiding a part: a later part that looks as if it leans on it must be decided first —
+    // the server refuses to save until each one is "needs it" or "stands alone".
+    const hidePart = async (reason: string) => {
+      if (figBusy) return;
+      setFigBusy(`ps:${key}`);
+      try {
+        const decisions: Record<string, 'needs' | 'alone'> = {};
+        for (let round = 0; round < 6; round++) {
+          const r = await fetch('/api/admin/questions', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'part-syllabus', id: q.id, part: key, legacy: true, reason, decisions }),
+          });
+          const d = await r.json();
+          const undecided = (d.undecided as { key: string; label: string; onLabel: string; why: string }[] | undefined) ?? [];
+          if (r.status === 409 && undecided.length) {
+            for (const u of undecided) {
+              const needs = window.confirm(`${u.label} ${u.why}.\n\nCan ${u.label} still be done WITHOUT ${u.onLabel}?\n\nOK = yes, it stands alone — keep it.\nCancel = no, it needs ${u.onLabel} — hide it too.`);
+              decisions[u.key] = needs ? 'alone' : 'needs';
+            }
+            continue;
+          }
+          if (d.error) { flash(d.error); return; }
+          applyDetail(d.question as Detail | undefined);
+          flash(d.needsCheck ? 'Hidden — read the student view below, then confirm' : 'Hidden from students');
+          return;
+        }
+      } catch (e) { flash((e as Error).message); }
+      finally { setFigBusy(''); }
+    };
     if (h) {
       return (
         <div style={{ fontSize: 12, color: C.warn, margin: '2px 0' }}>
@@ -847,11 +882,14 @@ export default function QuestionBankPage() {
           onClick={() => {
             const reason = window.prompt('What in this part is out of syllabus? (a few words)');
             if (!reason?.trim()) return;
-            send({ legacy: true, reason: reason.trim() }, d => {
-              const check = (d.check as { label: string }[] | undefined) ?? [];
-              return check.length ? `Hidden. Check ${check.map(c => c.label).join(', ')} — it may need this part` : 'Hidden from students';
-            });
+            void hidePart(reason.trim());
           }}>Out of syllabus</button>
+        {/* students-only re-lettering: small and grey, the stored label above is the truth here */}
+        {ps.shown && key in ps.shown && ps.shown[key] !== key && (
+          <span style={{ fontSize: 11, color: C.muted, marginLeft: 6 }}>
+            {ps.shown[key] ? `students see this as ${ps.shown[key].split('.').map(t => `(${t})`).join('')}` : 'students see this with no letter'}
+          </span>
+        )}
         {ps.hidden.length > 0 && (
           <button style={btn} disabled={!!figBusy} title="This part cannot be done without a hidden part"
             onClick={() => {
@@ -862,6 +900,7 @@ export default function QuestionBankPage() {
       </span>
     );
   };
+  const psBtn: React.CSSProperties = { fontSize: 11.5, border: `1px solid ${C.border}`, background: '#fff', borderRadius: 6, padding: '1px 7px', cursor: 'pointer', marginLeft: 6 };
   const partSyllabusLine = (q: Detail) => {
     const ps = q.partSyllabus;
     if (!ps?.hidden.length) return null;
@@ -869,8 +908,29 @@ export default function QuestionBankPage() {
       <div style={{ fontSize: 12.5, color: C.warn, background: C.flagBg, borderRadius: 8, padding: '4px 9px', margin: '6px 0' }}>
         {ps.servable
           ? <>Students see {ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks — {ps.hidden.filter(h => h.via !== 'parent').map(h => h.label).join(', ')} hidden.</>
-          : <>Too little is left ({ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks) — students are not given this question at all.</>}
+          : ps.enoughLeft === false
+            ? <>Too little is left ({ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks) — students are not given this question at all.</>
+            : <>Not given to students yet — {ps.marks ?? '?'} of {ps.originalMarks ?? '?'} marks would be left, but it waits for you (below).</>}
         {ps.notes.map(n => <div key={n}>Note: {PART_NOTE[n] ?? n}.</div>)}
+        {(ps.dependents ?? []).map(d => (
+          <div key={`${d.key}>${d.on}`} style={{ marginTop: 4 }}>
+            <strong>Decide:</strong> {d.label} {d.why}. Can it still be done without {d.onLabel}?
+            <button style={psBtn} disabled={!!figBusy} onClick={() => figureAction({ action: 'part-syllabus', id: q.id, part: d.key, decisions: { [d.key]: 'alone' } }, `ps:${d.key}`, () => 'Kept — it stands alone')}>Yes — keep it</button>
+            <button style={psBtn} disabled={!!figBusy} onClick={() => figureAction({ action: 'part-syllabus', id: q.id, part: d.key, decisions: { [d.key]: 'needs' } }, `ps:${d.key}`, () => 'Hidden with the part it needs')}>No — hide it too</button>
+          </div>
+        ))}
+        {(ps.checks ?? []).length > 0 && (
+          <div style={{ marginTop: 4 }}>
+            <strong>{ps.checksConfirmed ? 'Read and confirmed:' : 'Read before students get it:'}</strong>
+            {(ps.checks ?? []).map((c, i) => <div key={i}>• {c.detail}</div>)}
+            {!ps.checksConfirmed && !(ps.dependents ?? []).length && (
+              <button style={{ ...psBtn, marginLeft: 0, marginTop: 3 }} disabled={!!figBusy}
+                onClick={() => figureAction({ action: 'part-syllabus-confirm', id: q.id }, 'ps:confirm', () => 'Confirmed — students get it now')}>
+                I have read it — it is right
+              </button>
+            )}
+          </div>
+        )}
       </div>
     );
   };

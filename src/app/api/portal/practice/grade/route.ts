@@ -28,7 +28,7 @@ import { scienceRowServable } from '@/lib/science-practice';
 import { sciencePoolLevels } from '@/lib/science-levels';
 import { applyGradedAttempt } from '@/lib/notebook-mistakes-store';
 import { bankLevelSubject } from '@/lib/portal-find';
-import { studentRow } from '@/lib/part-syllabus';
+import { hasRenames, partLabelsOf, studentRow } from '@/lib/part-syllabus';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -247,6 +247,8 @@ export async function POST(req: NextRequest) {
     }
     // Part marks: the marker is given the student's row, so a hidden part is neither
     // expected nor counted and the total is the reduced one (lib/part-syllabus.ts).
+    // The row carries the student's LETTERS too — the marker reads "(ii)" as the page showed
+    // it, and the attempt stores the map back to the bank's own labels (below).
     const view = studentRow(data as GradeQuestion, { assigned: true });
     if (!view) return NextResponse.json({ error: 'Question not found' }, { status: 404 });
     q = view;
@@ -289,6 +291,10 @@ export async function POST(req: NextRequest) {
         ...result, model: GRADING_MODEL, lines: storedLines, source: attemptImage ? 'photo' : 'typed', topics: q.topics,
         ...(timedMeta ? { timed: timedMeta } : {}),
         ...(ladderMeta ? { ladder: ladderMeta } : {}),
+        // Re-lettered parts: partBreakdown labels are the ones the student saw. This is the
+        // record of what each meant in the bank at that moment ({ shown: original }); an
+        // attempt without it was marked against the bank's own labels (storedOriginalKey).
+        ...(hasRenames(partLabelsOf(q)) ? { partLabels: partLabelsOf(q).original } : {}),
         ...(generated ? { generated: { assignmentId: generated.id, source: generated.source, skillTitle: generated.skill_title } } : {}),
       },
     })

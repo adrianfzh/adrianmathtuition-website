@@ -53,6 +53,7 @@ import {
 import { storeBankFile } from '@/lib/bank-pdf-store';
 import { renderBotWorksheetPDF } from '@/lib/render-bot-worksheet';
 import { worksheetAudienceFor } from '@/lib/worksheet-audience';
+import { recordPrintedLabels } from '@/lib/part-label-prints-store';
 
 export const runtime = 'nodejs';
 // Puppeteer cold start + KaTeX font fetch push past the 10s default.
@@ -249,6 +250,8 @@ export async function POST(req: NextRequest) {
     ({ items: picked, bandFallback } = applyBand(bandPool.length ? bandPool : pool.items, band, count, (items, n) => dailyDraw(items, seed, n)));
   }
   const title = worksheetTitle(cfg.label, topic);
+  // Part marks: a re-lettered question prints only once the sheet's letters are on record.
+  picked = await recordPrintedLabels(supa, { surface: 'bot-worksheet', ref: `${date}|${levelKey}|${topic}`, student: typeof body.studentId === 'string' ? body.studentId : null }, picked);
 
   const pdf = await renderBotWorksheetPDF({
     title,

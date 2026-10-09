@@ -109,9 +109,11 @@ export function partLabel(labels: string[]): string {
 export function fromDetail(input: DetailRow): PickQuestion {
   // Part marks: the sheet is for students, so it is built from the student's row
   // (lib/part-syllabus.ts). The admin detail view still shows the part, greyed.
-  const sv = studentView({ parts: input.parts, total_marks: input.marks ?? null, answer: input.answer ?? null, solution: input.solution ?? null });
+  // The stem goes through too: a part left alone at its level loses its letter and its text
+  // joins the stem, and a sentence in the stem that names a part follows its shown letter.
+  const sv = studentView({ question_text: input.questionMd ?? '', parts: input.parts, total_marks: input.marks ?? null, answer: input.answer ?? null, solution: input.solution ?? null });
   const d: DetailRow = sv.changed
-    ? { ...input, parts: sv.row.parts, marks: sv.marks, answer: sv.row.answer, solution: sv.row.solution, solutionImages: [] }
+    ? { ...input, questionMd: sv.row.question_text, parts: sv.row.parts, marks: sv.marks, answer: sv.row.answer, solution: sv.row.solution, solutionImages: [] }
     : input;
   const rawParts = Array.isArray(d.parts) ? (d.parts as RawPart[]) : [];
   const parts = rawParts.filter((p) => p && typeof p === 'object' && (p.label || p.text)).map(toPart);

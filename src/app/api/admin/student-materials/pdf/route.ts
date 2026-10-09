@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
     const out = await renderRefPaperPdf(sb, {
       preset: 'set', level: meta.setLevel ?? m.level ?? 'EM', paper: meta.paper ?? null, title: m.title,
       refs: meta.refs ?? [], printedFor: student?.name ?? null, printedOn, shape: 'gce',
+      record: { surface: 'student-materials', ref: String(m.id), student: m.airtable_student_id ?? null },
     });
     if ('error' in out) return NextResponse.json({ error: out.error }, { status: out.status });
     return new NextResponse(new Uint8Array(out.pdf), { headers: headers(paperFilename(m.title)) });

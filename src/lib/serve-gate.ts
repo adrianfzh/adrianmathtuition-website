@@ -6,7 +6,7 @@
 // must not open what the RPCs would never serve. Above all, national rows
 // (`national = true`, school 'GCE') are grounding-only under docs/CONTENT-POLICY.md.
 // Mirrors practice_next's WHERE clause; pure, tested.
-import { hasPartMarks, partMarksBlockServing, studentView } from './part-syllabus';
+import { partMarksBlockAlways, partMarksBlockServing } from './part-syllabus';
 import { legacyServableTo, questionServableTo, type SubgroupAudienceRow } from './subgroup-visibility';
 
 export interface GateRow {
@@ -53,8 +53,9 @@ export function serveRefusal(q: GateRow, ctx: GateContext): Refusal | null {
   if (ctx.allowedQLevels === null) return null;
   if (q.ai_generated === true && q.verified !== true) return 'unverified';
   if ((q.flagged_count ?? 0) >= 3) return 'flagged';
-  // Part marks (lib/part-syllabus.ts): nothing left → never; too little left → like legacy_syllabus.
-  if (hasPartMarks(q.parts) && studentView(q).empty) return 'legacy';
+  // Part marks (lib/part-syllabus.ts): nothing left, or a person has yet to check the
+  // student view → never, not even on the student's own list; too little left → like legacy_syllabus.
+  if (partMarksBlockAlways(q)) return 'legacy';
   if (ctx.assigned) return null;
   if (partMarksBlockServing(q)) return 'legacy';
   if (q.legacy_syllabus === true && !ctx.isIp) return 'legacy';
