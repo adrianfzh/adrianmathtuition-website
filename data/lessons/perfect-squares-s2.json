@@ -1,0 +1,110 @@
+{
+  "slug": "perfect-squares-s2",
+  "title": "Perfect squares",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Perfect squares",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(x + 3)^2", "id": "sq" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=\\,\\,(" },
+            { "tex": "x", "id": "a" },
+            { "tex": "+\\,3", "id": "b" },
+            { "tex": ")\\,(" },
+            { "tex": "x", "id": "c" },
+            { "tex": "+\\,3\\,)", "id": "d" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2", "id": "p1" },
+            { "tex": "+\\,3x", "id": "p2" },
+            { "tex": "+\\,3x", "id": "p3" },
+            { "tex": "+\\,9", "id": "p4" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2 + 6x + 9", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand x plus three, all squared.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "Squared means the bracket times itself.",
+          "do": [
+            { "do": "write", "step": 1, "on": "bracket" }
+          ]
+        },
+        {
+          "say": "x times x is x squared.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["a", "c"], "on": "x times" },
+            { "do": "write", "token": "p1", "on": "x squared" }
+          ]
+        },
+        {
+          "say": "x times three is three x.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["a", "d"], "on": "x times" },
+            { "do": "write", "token": "p2", "on": "three x" }
+          ]
+        },
+        {
+          "say": "Three times x is three x again.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["b", "c"], "on": "Three times" },
+            { "do": "write", "token": "p3", "on": "three x" }
+          ]
+        },
+        {
+          "say": "Three times three is nine.",
+          "do": [
+            { "do": "mark", "kind": "arc-under", "token": ["b", "d"], "on": "Three times" },
+            { "do": "write", "token": "p4", "on": "nine" }
+          ]
+        },
+        {
+          "say": "The two middle terms are the same. Three x plus three x is six x.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["p2", "p3"], "on": "middle terms" },
+            { "do": "note", "text": "$3x + 3x = 6x$", "near": "p2", "on": "six x" }
+          ]
+        },
+        {
+          "say": "The answer is x squared, plus six x, plus nine.",
+          "do": [
+            { "do": "write", "step": 3, "on": "x squared" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "plus nine" }
+          ]
+        },
+        { "say": "Do not write only x squared plus nine. The middle term, six x, must be there.", "do": [] }
+      ],
+      "verify": [
+        { "expr": "(x + 3)^2", "equiv": "(x + 3)(x + 3)" },
+        { "expr": "(x + 3)(x + 3)", "equiv": "x^2 + 3x + 3x + 9" },
+        { "expr": "x^2 + 3x + 3x + 9", "equiv": "x^2 + 6x + 9" },
+        { "expr": "3x + 3x", "equiv": "6x" }
+      ]
+    }
+  ]
+}

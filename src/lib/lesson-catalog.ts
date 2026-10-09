@@ -52,6 +52,20 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Expand one bracket',
     minutes: 1,
   },
+  {
+    slug: 'perfect-squares-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Perfect squares',
+    minutes: 1,
+  },
+  {
+    slug: 'difference-of-squares-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Difference of squares',
+    minutes: 1,
+  },
 ];
 
 /**
