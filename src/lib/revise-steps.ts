@@ -36,6 +36,7 @@ const EXPAND_TWO_BRACKETS: ReviseStep = {
     'Every term in the first bracket multiplies every term in the second.',
     'Two terms times two terms makes four pieces. Then collect the like terms.',
   ],
+  clipSlug: 'expand-two-brackets-s2',
   example: '(x+3)(x-2)',
   tryOne: '(x-4)(x+6)',
   // Each five climbs: both plus → one minus → two minus → a number in front of x → both.
@@ -49,6 +50,11 @@ const EXPAND_TWO_BRACKETS: ReviseStep = {
 };
 
 export const REVISE_STEPS: readonly ReviseStep[] = [EXPAND_ONE_BRACKET, EXPAND_TWO_BRACKETS];
+
+/** The revision step a clip belongs to, so the clip can hand the student on to it. */
+export function reviseStepForClip(clipSlug: string): ReviseStep | null {
+  return REVISE_STEPS.find(s => s.clipSlug === clipSlug) ?? null;
+}
 
 export function reviseStepBySlug(slug: string): ReviseStep | null {
   return REVISE_STEPS.find(s => s.slug === slug) ?? null;

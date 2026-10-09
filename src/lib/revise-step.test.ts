@@ -3,7 +3,7 @@ import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
   allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, setFor, working, workingTaps, FIVE,
 } from './revise-step';
-import { REVISE_STEPS, reviseStepBySlug } from './revise-steps';
+import { REVISE_STEPS, reviseStepBySlug, reviseStepForClip } from './revise-steps';
 
 const tex = (s: string) => polyTex(parseExpr(s)!.poly);
 
@@ -134,5 +134,7 @@ describe('revise-step — the five', () => {
     expect(reviseStepBySlug('expand-two-brackets')?.index).toBe(2);
     expect(reviseStepBySlug('expand-one-bracket')?.nextSlug).toBe('expand-two-brackets');
     expect(reviseStepBySlug('nope')).toBeNull();
+    expect(reviseStepForClip('expand-two-brackets-s2')?.slug).toBe('expand-two-brackets');
+    expect(reviseStepForClip('binomial-theorem-am')).toBeNull();
   });
 });

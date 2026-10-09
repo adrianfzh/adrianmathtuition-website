@@ -11,10 +11,12 @@ import ReviseFlow from './revise-flow';
 
 export const dynamic = 'force-dynamic';
 
-export default async function RevisePage({ params }: { params: Promise<{ step: string }> }) {
+export default async function RevisePage({ params, searchParams }: { params: Promise<{ step: string }>; searchParams: Promise<{ seen?: string }> }) {
   if (!(await reviseVisible())) redirect('/app');
   const { step: slug } = await params;
   const step = reviseStepBySlug(slug);
   if (!step) notFound();
-  return <ReviseFlow step={step} />;
+  // The step opens on its clip when it has one; ?seen=clip is the way back from it.
+  const seenClip = (await searchParams).seen === 'clip';
+  return <ReviseFlow step={step} seenClip={seenClip} />;
 }

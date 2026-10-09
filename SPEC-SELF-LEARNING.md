@@ -116,8 +116,10 @@ The end screen says four things: done · the score · one thing to watch (their 
 · what is next.
 
 Parked on purpose (his words in brackets):
-- **A one-minute clip as the first step** — waits for §8 (*"that lesson engine needs
-  fixing. It is not good enough yet"*).
+- **A one-minute clip as the first step** — **JOINED 9 Oct 2026 for "Expand two brackets"**
+  (Adrian: "yes"): a step with a `clipSlug` opens on "▶ Watch first"; the clip's end and its
+  back arrow return to the step (`?seen=clip`), where the example starts. Other steps get
+  theirs as the clips are made (§8).
 - **Piece-by-piece input with arrows** — *"too guided — perhaps more for younger students"*.
 - **Writing on the screen** (finger on a phone, pencil on an iPad) — wanted, added after
   the first step works; the final answer stays typed so the check is instant and never

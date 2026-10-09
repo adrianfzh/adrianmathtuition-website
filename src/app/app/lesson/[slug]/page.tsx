@@ -11,7 +11,8 @@
 // gate (and the matching `lessonsVisible` prop on the practice page) to
 // release. The /app layout still gates anonymous visitors to /login.
 import { notFound } from 'next/navigation';
-import { requireFullPortal } from '@/lib/portal-beta';
+import { requireFullPortal, reviseVisible } from '@/lib/portal-beta';
+import { reviseStepForClip } from '@/lib/revise-steps';
 import { lessonBySlug } from '@/lib/lesson-catalog';
 import {
   buildPlayScenes, loadLessonScript,
@@ -47,6 +48,11 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     } catch { /* checks degrade to skipped */ }
   }
 
+  // A clip that belongs to a revision step (SPEC-SELF-LEARNING.md §4) hands the
+  // student on to that step — and back to it — while the step is visible to them.
+  const step = script.kind === 'clip' && (await reviseVisible()) ? reviseStepForClip(slug) : null;
+  const toStep = step ? { backHref: `/app/revise/${step.slug}?seen=clip`, practiceHref: `/app/revise/${step.slug}?seen=clip`, practiceLabel: 'See an example' } : {};
+
   return (
     <LessonPlayer
       slug={script.slug}
@@ -57,6 +63,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       scenes={buildPlayScenes(script, rows)}
       // A clip is one concept in a minute: it opens playing, like a video.
       {...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {})}
+      {...toStep}
     />
   );
 }

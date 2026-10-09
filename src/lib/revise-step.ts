@@ -27,6 +27,8 @@ export interface ReviseStep {
   tryOne: string;
   /** Sets of five for "on your own"; a not-passed student gets the next set. */
   sets: string[][];
+  /** The one-minute clip for this step (a lesson slug, docs/LESSONS.md), when one exists. */
+  clipSlug?: string;
   /** What comes after this step, in plain words, and its slug once it is built. */
   next?: string;
   nextSlug?: string;

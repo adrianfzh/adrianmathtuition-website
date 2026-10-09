@@ -129,7 +129,7 @@ function AnswerBox({
 const PRIMARY = 'w-full rounded-2xl bg-navy text-[hsl(45,100%,96%)] font-semibold py-3 active:scale-[0.99] transition-transform disabled:opacity-40';
 const QUIET = 'w-full rounded-2xl border border-slate-300 text-navy font-semibold py-3 bg-white active:scale-[0.99] transition-transform disabled:opacity-40';
 
-export default function ReviseFlow({ step }: { step: ReviseStep }) {
+export default function ReviseFlow({ step, seenClip = false }: { step: ReviseStep; seenClip?: boolean }) {
   const [phase, setPhase] = useState<Phase>('example');
   const [attempt, setAttempt] = useState(0); // which five (0-based)
   const [shown, setShown] = useState(0); // taps of working on screen
@@ -186,6 +186,18 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
             <div>{step.idea[0]}</div>
             <div>{step.idea[1]}</div>
           </div>
+          {step.clipSlug && attempt === 0 && shown === 0 && (
+            <a
+              href={`/app/lesson/${step.clipSlug}`}
+              className={`flex items-center gap-3 rounded-2xl px-4 py-3 ${seenClip ? 'border border-slate-200 bg-white text-slate-600' : 'bg-navy text-[hsl(45,100%,96%)]'}`}
+            >
+              <span className="text-xl" aria-hidden="true">▶</span>
+              <span>
+                <span className="block font-semibold">{seenClip ? 'Watch the clip again' : 'Watch first'}</span>
+                <span className={`block text-xs ${seenClip ? 'text-slate-500' : 'opacity-80'}`}>Under a minute</span>
+              </span>
+            </a>
+          )}
           <div className="rounded-2xl bg-white border border-slate-200 px-4 py-4">
             <div className="text-xs font-semibold text-slate-500 mb-2">Example</div>
             <Working br={br} taps={shown} reasons />
@@ -194,7 +206,7 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
             )}
           </div>
           {shown < taps
-            ? <button type="button" className={PRIMARY} onClick={() => setShown(shown + 1)}>{shown === 0 ? 'Start' : 'Next step'}</button>
+            ? <button type="button" className={step.clipSlug && !seenClip && attempt === 0 && shown === 0 ? QUIET : PRIMARY} onClick={() => setShown(shown + 1)}>{shown === 0 ? (step.clipSlug && !seenClip && attempt === 0 ? 'Skip to the example' : 'Start') : 'Next step'}</button>
             : <button type="button" className={PRIMARY} onClick={() => go(attempt === 0 ? 'try' : 'five')}>{attempt === 0 ? 'Now try one' : 'Try a new five'}</button>}
         </section>
       )}
