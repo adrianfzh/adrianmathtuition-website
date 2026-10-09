@@ -40,7 +40,11 @@ function Working({ br, taps, reasons }: { br: Brackets; taps: number; reasons: b
   const now = n > 0 ? ps[n - 1] : null;
   return (
     <div>
-      <Rainbow br={br} arrows={building ? n : ps.length} active={building ? n : 0} />
+      {br.squared && <div className="text-xl text-slate-900 mt-1"><Tex tex={questionTex(br)} /></div>}
+      <div className="flex items-center gap-2">
+        {br.squared && <span className="text-xl text-slate-900">=</span>}
+        <Rainbow br={br} arrows={building ? n : ps.length} active={building ? n : 0} />
+      </div>
       <div className="space-y-2 -mt-3">
         {n > 0 && (
           <div>

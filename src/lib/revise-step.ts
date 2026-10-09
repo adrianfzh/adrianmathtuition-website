@@ -34,13 +34,21 @@ export interface ReviseStep {
   nextSlug?: string;
 }
 
-export interface Brackets { a: Term[]; b: Term[] }
+/** `squared` = the question is written (x + 3)², worked as (x + 3)(x + 3). */
+export interface Brackets { a: Term[]; b: Term[]; squared?: boolean }
 
 /**
- * "(x+3)(x-2)" → the two brackets, terms in the order written; "2(a+3b)" → one
- * term outside and the bracket (a has one term). Null when it is neither.
+ * "(x+3)(x-2)" → the two brackets, terms in the order written; "(x+3)^2" → the
+ * same bracket twice; "2(a+3b)" → one term outside and the bracket (a has one
+ * term). Null when it is none of these.
  */
 export function parseBrackets(q: string): Brackets | null {
+  const sq = /^\s*\(([^()]+)\)\s*(?:\^\s*2|²)\s*$/.exec(q);
+  if (sq) {
+    const a = parseExpr(sq[1])?.flat;
+    if (!a || a.length < 2) return null;
+    return { a, b: a, squared: true };
+  }
   const two = /^\s*\(([^()]+)\)\s*\(([^()]+)\)\s*$/.exec(q);
   if (two) {
     const a = parseExpr(two[1])?.flat, b = parseExpr(two[2])?.flat;
@@ -58,7 +66,13 @@ export function parseBrackets(q: string): Brackets | null {
 export function isSingle(br: Brackets): boolean { return br.a.length === 1; }
 
 export function questionTex(br: Brackets): string {
+  if (br.squared) return `(${sumTex(br.a)})^{2}`;
   return isSingle(br) ? `${termTex(br.a[0])}(${sumTex(br.b)})` : `(${sumTex(br.a)})(${sumTex(br.b)})`;
+}
+
+/** The brackets written out side by side — (x + 3)(x + 3) for a square — as the arrows are drawn over them. */
+export function spreadTex(br: Brackets): string {
+  return br.squared ? `(${sumTex(br.a)})(${sumTex(br.b)})` : questionTex(br);
 }
 
 /** The four (or more) pieces, in the order they are multiplied out. */

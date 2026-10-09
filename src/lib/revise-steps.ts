@@ -1,5 +1,5 @@
 // The revision steps that exist (SPEC-SELF-LEARNING.md §5 — the first map is
-// Sec 2 expansion and factorisation, eight steps). Two steps are built so far.
+// Sec 2 expansion and factorisation, eight steps). The four expansion steps are built so far.
 // A question is written as its two brackets; the working and the answer are
 // derived (lib/revise-step.ts), and revise-steps.test.ts checks every one.
 
@@ -47,9 +47,53 @@ const EXPAND_TWO_BRACKETS: ReviseStep = {
     ['(x+1)(x+8)', '(t+7)(t-4)', '(x-10)(x-3)', '(5x+2)(x-1)', '(2a-7)(3a+2)'],
   ],
   next: 'Perfect squares',
+  nextSlug: 'perfect-squares',
 };
 
-export const REVISE_STEPS: readonly ReviseStep[] = [EXPAND_ONE_BRACKET, EXPAND_TWO_BRACKETS];
+const PERFECT_SQUARES: ReviseStep = {
+  slug: 'perfect-squares',
+  index: 3,
+  of: 8,
+  title: 'Perfect squares',
+  idea: [
+    'A bracket squared is the bracket times itself: (a + b)² = (a + b)(a + b).',
+    'The two middle pieces are the same, so the answer has twice that piece.',
+  ],
+  example: '(x+3)^2',
+  tryOne: '(x-4)^2',
+  // Each five climbs: plus → minus → a number in front of x → both → two letters.
+  sets: [
+    ['(x+4)^2', '(x-5)^2', '(2x+1)^2', '(3x-2)^2', '(x+2y)^2'],
+    ['(x+7)^2', '(a-3)^2', '(3x+4)^2', '(2a-5)^2', '(2x-y)^2'],
+    ['(y+6)^2', '(x-9)^2', '(4x+1)^2', '(5x-2)^2', '(a+3b)^2'],
+    ['(m+8)^2', '(t-1)^2', '(2x+7)^2', '(4a-3)^2', '(3x-2y)^2'],
+  ],
+  next: 'Difference of squares',
+  nextSlug: 'difference-of-squares',
+};
+
+const DIFFERENCE_OF_SQUARES: ReviseStep = {
+  slug: 'difference-of-squares',
+  index: 4,
+  of: 8,
+  title: 'Difference of squares',
+  idea: [
+    'The two brackets are the same except for the sign in the middle.',
+    'The two middle pieces cancel, leaving a square minus a square.',
+  ],
+  example: '(x+3)(x-3)',
+  tryOne: '(x-6)(x+6)',
+  // Each five climbs: plus first → minus first → a number in front of x → both → two letters.
+  sets: [
+    ['(x+5)(x-5)', '(x-8)(x+8)', '(2x+3)(2x-3)', '(3a-1)(3a+1)', '(x+2y)(x-2y)'],
+    ['(x+2)(x-2)', '(y-7)(y+7)', '(4x+1)(4x-1)', '(5a-2)(5a+2)', '(3x+y)(3x-y)'],
+    ['(a+9)(a-9)', '(m-6)(m+6)', '(2x+5)(2x-5)', '(7x-1)(7x+1)', '(a+4b)(a-4b)'],
+    ['(x+10)(x-10)', '(t-3)(t+3)', '(3x+4)(3x-4)', '(6a-5)(6a+5)', '(2x+3y)(2x-3y)'],
+  ],
+  next: 'Take out a common factor',
+};
+
+export const REVISE_STEPS: readonly ReviseStep[] = [EXPAND_ONE_BRACKET, EXPAND_TWO_BRACKETS, PERFECT_SQUARES, DIFFERENCE_OF_SQUARES];
 
 /** The revision step a clip belongs to, so the clip can hand the student on to it. */
 export function reviseStepForClip(clipSlug: string): ReviseStep | null {

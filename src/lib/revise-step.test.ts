@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
-  allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, setFor, working, workingTaps, FIVE,
+  allQuestions, answerTex, expansion, fiveResult, mark, parseBrackets, questionTex, setFor, spreadTex, working, workingTaps, FIVE,
 } from './revise-step';
 import { REVISE_STEPS, reviseStepBySlug, reviseStepForClip } from './revise-steps';
 
@@ -84,6 +84,28 @@ describe('revise-step — one term outside a bracket', () => {
     expect(slip('2(a+3b)', '2a + 3b')).toBe('The term outside multiplies every term inside the bracket: $2 \\times 3b = 6b$.');
     expect(slip('-3(2x-5)', '−6x − 15')).toBe('Check the sign of one piece: $(-3) \\times (-5) = 15$.');
     expect(slip('3(x+4)', '3x + 7')).toBe('The last piece is a product, not a sum: $3 \\times 4 = 12$.');
+  });
+});
+
+describe('revise-step — squares', () => {
+  it('works (x + 3)² as the bracket times itself', () => {
+    const br = parseBrackets('(x+3)^2')!;
+    expect(questionTex(br)).toBe('(x + 3)^{2}');
+    expect(spreadTex(br)).toBe('(x + 3)(x + 3)');
+    expect(working(br).map(l => l.tex)).toEqual(['(x + 3)^{2}', '= x^{2} + 3x + 3x + 9', '= x^{2} + 6x + 9']);
+    expect(parseBrackets('(x+3)²')?.squared).toBe(true);
+  });
+
+  it('catches the square of each term on its own', () => {
+    const v = mark('(x-4)^2', 'x² + 16');
+    expect(v.kind === 'wrong' && v.slip.key).toBe('first-last-only');
+    expect(mark('(x-4)^2', 'x² − 8x + 16').kind).toBe('correct');
+  });
+
+  it('lets the middle pieces of a difference of squares cancel', () => {
+    const br = parseBrackets('(2x+3)(2x-3)')!;
+    expect(working(br).map(l => l.tex)).toEqual(['(2x + 3)(2x - 3)', '= 4x^{2} - 6x + 6x - 9', '= 4x^{2} - 9']);
+    expect(mark('(2x+3)(2x-3)', '4x² − 9').kind).toBe('correct');
   });
 });
 
