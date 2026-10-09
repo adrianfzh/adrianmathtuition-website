@@ -742,6 +742,128 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ picks: out, pool: candidates.length });
   }
 
+  // ── Describe-search (9 Oct 2026, Adrian: "can I search for questions based on
+  // their skills? or even generically? put an appropriate model behind it … I
+  // won't know the ids, just searching based on description") ─────────────────
+  // The worksheet picker's search box. Pool = bank rows whose topic, sub-skill
+  // name or text matches the description's words, plus the semantic index when
+  // the bot is reachable; a model then reads the excerpts and returns the best
+  // matches with a one-line reason each. Ids come only from the pool.
+  if (body.action === 'describe-search') {
+    if (!process.env.ANTHROPIC_API_KEY) return NextResponse.json({ error: 'describe-search not configured' }, { status: 503 });
+    const level = typeof body.level === 'string' ? body.level : '';
+    const q = typeof body.q === 'string' ? body.q.trim().slice(0, 400) : '';
+    const count = Math.min(20, Math.max(1, parseInt(String(body.count ?? 10), 10) || 10));
+    const exclude = new Set((Array.isArray(body.exclude) ? body.exclude : []).filter((x): x is string => typeof x === 'string'));
+    if (!q) return NextResponse.json({ error: 'describe what you want' }, { status: 400 });
+    if (!level) return NextResponse.json({ error: 'level required' }, { status: 400 });
+
+    const STOP = new Set(['the', 'a', 'an', 'and', 'or', 'of', 'for', 'to', 'in', 'on', 'with', 'that', 'this', 'question', 'questions', 'involving', 'like', 'kind', 'some', 'type', 'about', 'using', 'which', 'where', 'into', 'from', 'more', 'hard', 'harder', 'easy', 'any', 'need', 'want', 'find', 'me']);
+    const words = [...new Set(q.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter((w) => w.length >= 3 && !STOP.has(w)))].slice(0, 8);
+    const stem = (w: string) => w.replace(/(ies|es|s)$/i, (m) => (m === 'ies' ? 'y' : ''));
+    const levels = bankLevelsFor(level);
+    const like = (t: string) => t.replace(/[%_,.()]/g, '');
+
+    const pool = new Map<string, Row>();
+    const add = (rows: Row[] | null | undefined) => { for (const r of rows ?? []) if (!exclude.has(r.id as string)) pool.set(r.id as string, r); };
+    const base = () => supa.from('questions').select(`${LIST_COLUMNS}, parts`).is('deleted_at', null).in('level', levels).eq('national', false).eq('legacy_syllabus', false);
+
+    const sgLevel = level.startsWith('JC') ? 'JC' : level.replace(/^S3_/, '');
+    // 1. Sub-skill names/descriptions → their questions (the bank's own "skills").
+    {
+      const { data: sgs } = await supa.from('subgroups').select('id, name').eq('level', sgLevel)
+        .or(words.flatMap((t) => [`name.ilike.%${like(stem(t))}%`, `description.ilike.%${like(stem(t))}%`]).join(',')).limit(30);
+      const sgIds = (sgs ?? []).map((g) => g.id as number);
+      if (sgIds.length) {
+        const { data: links } = await supa.from('question_subgroups').select('question_id').in('subgroup_id', sgIds).limit(300);
+        const qids = [...new Set((links ?? []).map((l) => l.question_id as string))].slice(0, 150);
+        if (qids.length) { const { data } = await base().in('id', qids); add((data ?? []) as Row[]); }
+      }
+    }
+    // 2. Plain text match on the stems.
+    for (const w of words.slice(0, 4)) {
+      const { data } = await base().ilike('search_text', `%${like(stem(w))}%`).order('year', { ascending: false }).limit(60);
+      add((data ?? []) as Row[]);
+    }
+    // 3. The semantic index, when the bot is up (often sparse; never relied on).
+    try {
+      const botBase = process.env.BOT_BASE_URL, botSecret = process.env.BOT_INTERNAL_SECRET;
+      if (botBase && botSecret) {
+        const r = await fetch(`${botBase}/api/mark-paper`, { method: 'POST', headers: { Authorization: `Bearer ${botSecret}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phase: 'qb-search', q, level: level.replace(/^S3_/, ''), count: 15 }), signal: AbortSignal.timeout(12_000) });
+        const d = await r.json();
+        const ids: string[] = Array.isArray(d.ids) ? d.ids : [];
+        if (ids.length) { const { data } = await base().in('id', ids); add((data ?? []) as Row[]); }
+      }
+    } catch { /* optional */ }
+
+    const targeted = pool.size;
+    // 4. Topic words → the topic's rows, LAST so the targeted hits above survive the sampling. `topics` is an array, so the topic NAMES
+    //    are matched first (the sub-skill table lists them per level), then the
+    //    rows are sampled evenly so the whole topic is represented.
+    {
+      const { data: tops } = await supa.from('subgroups').select('topic').eq('level', sgLevel)
+        .or(words.map((t) => `topic.ilike.%${like(stem(t))}%`).join(',')).limit(200);
+      const topics = [...new Set((tops ?? []).map((t) => t.topic as string).filter(Boolean))].slice(0, 6);
+      for (const topic of topics) {
+        const { data } = await base().overlaps('topics', [topic]).order('id').limit(400);
+        const rows = (data ?? []) as Row[];
+        const take = 90;
+        add(rows.length <= take ? rows : Array.from({ length: take }, (_, i) => rows[Math.floor((i * rows.length) / take)]));
+      }
+    }
+    const cands = [...pool.values()];
+    if (!cands.length) return NextResponse.json({ results: [], pool: 0, note: 'nothing in the bank matched those words' });
+
+    // Prompt-sized pool: the targeted hits (first in the map) stay whole, the
+    // broad topic tail is sampled evenly to fill the rest.
+    const MAXC = 150;
+    const head = cands.slice(0, Math.min(cands.length, targeted));
+    const tail = cands.slice(head.length);
+    const room = Math.max(0, MAXC - head.length);
+    const sampled = tail.length <= room ? [...head, ...tail] : [...head, ...Array.from({ length: room }, (_, i) => tail[Math.floor((i * tail.length) / room)])];
+    const lines = sampled.map((r) => {
+      const flat = flattenParts((r.question_text as string) ?? '', (r.parts as Part[] | null) ?? null);
+      return `id:${r.id} marks:${r.total_marks ?? '?'} topics:${Array.isArray(r.topics) ? (r.topics as string[]).slice(0, 2).join('/') : ''} :: ${flat.text.replace(/\s+/g, ' ').replace(/<[^>]+>/g, '').slice(0, 380)}`;
+    });
+    const anthropic = new Anthropic();
+    // Thinking off: with a 60k-token candidate list the model spent the whole
+    // output budget thinking and never wrote the JSON (9 Oct 2026).
+    const ask = (strict: boolean) => anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 3000,
+      thinking: { type: 'disabled' },
+      system:
+        (strict ? 'Output must be raw JSON only — no prose, no code fence. ' : '') +
+        'You help a Singapore maths tutor find bank questions that match a description, for a revision worksheet. ' +
+        'Read the candidate excerpts and choose the ones that genuinely fit the description — the skill, the setting, the ' +
+        'difficulty asked for. Prefer variety of technique over near-duplicates. For H2 (JC) never pick a question whose point is ' +
+        'a locus (loci are out of the 9758 syllabus). Reply with ONLY a JSON object: {"picks":[{"id":"<uuid>","reason":"<≤14 words, what in it matches>"}]} ' +
+        'best match first. Use only ids from the list; fewer picks than asked is fine when few fit.',
+      messages: [{ role: 'user', content: `Level: ${level}. Description: ${q}. Pick up to ${count}.\n\nCandidates:\n${lines.join('\n')}` }],
+    });
+    const parsePicks = (raw: string): { id: string; reason: string }[] | null => {
+      const clean = raw.replace(/```(?:json)?/g, '');
+      const start = clean.indexOf('{"picks"') >= 0 ? clean.indexOf('{"picks"') : clean.indexOf('{');
+      try { const parsed = JSON.parse(clean.slice(start, clean.lastIndexOf('}') + 1)); return Array.isArray(parsed.picks) ? parsed.picks : null; } catch { return null; }
+    };
+    let msg = await ask(false);
+    let rawText = msg.content.find((b) => b.type === 'text')?.text ?? '';
+    let picks = parsePicks(rawText);
+    if (!picks) { msg = await ask(true); rawText = msg.content.find((b) => b.type === 'text')?.text ?? ''; picks = parsePicks(rawText); }
+    if (!picks) {
+      const diag = `stop=${msg.stop_reason} blocks=${msg.content.map((b) => b.type).join(',')} in=${msg.usage?.input_tokens} out=${msg.usage?.output_tokens}`;
+      return NextResponse.json({ error: `model returned unparseable picks (twice) [${diag}]: ${rawText.slice(0, 300).replace(/\s+/g, ' ')}` }, { status: 502 });
+    }
+    const byId = new Map(sampled.map((r) => [r.id as string, r]));
+    const seen = new Set<string>();
+    const results = picks
+      .filter((pk) => pk && typeof pk.id === 'string' && byId.has(pk.id) && !seen.has(pk.id) && seen.add(pk.id))
+      .slice(0, count)
+      .map((pk) => ({ ...card(byId.get(pk.id) as Row), reason: String(pk.reason || '').slice(0, 140) }));
+    return NextResponse.json({ results, pool: cands.length, words });
+  }
+
   // Worksheet basket → house-style PDF of exactly the picked questions, in order.
   if (body.action === 'worksheet') {
     const ids = (Array.isArray(body.ids) ? body.ids : [])

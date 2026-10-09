@@ -87,8 +87,8 @@ function GhostCard({ q }: { q: PickQuestion }) {
 
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
-function Card({ q, index, col, onMove, onDrop }: {
-  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void;
+function Card({ q, index, col, onMove, onDrop, reason }: {
+  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void; reason?: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
   const [sol, setSol] = useState(false);
@@ -120,6 +120,7 @@ function Card({ q, index, col, onMove, onDrop }: {
             <button onClick={() => onDrop(q.id)} className="text-[12px] font-semibold text-slate-400 hover:text-red-600 hover:underline ml-auto" title="Take this question off the candidates (it can be brought back)">✕ Remove</button>
           )}
         </div>
+        {reason && <div className="mb-1 text-[11px] italic text-indigo-700">Why: {reason}</div>}
         <div className="pr-1"><QuestionBody q={q} size={13} /></div>
         {/* The solution's own dropdown sits UNDER the question; the working unfolds below it. */}
         <div className="mt-1.5">
@@ -131,9 +132,9 @@ function Card({ q, index, col, onMove, onDrop }: {
   );
 }
 
-function Column({ col, title, items, onMove, onDrop, removedCount, onShowRemoved, empty }: {
+function Column({ col, title, items, onMove, onDrop, removedCount, onShowRemoved, reasons, empty }: {
   col: Col; title: string; items: PickQuestion[]; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void;
-  removedCount?: number; onShowRemoved?: () => void; empty: string;
+  removedCount?: number; onShowRemoved?: () => void; reasons?: Record<string, string>; empty: string;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: col });
   return (
@@ -143,7 +144,7 @@ function Column({ col, title, items, onMove, onDrop, removedCount, onShowRemoved
       </h2>
       <SortableContext id={col} items={items.map((q) => q.id)} strategy={verticalListSortingStrategy}>
         <div ref={setNodeRef} className={`flex flex-col gap-2 min-h-[140px] rounded-xl p-2 border-2 border-dashed ${isOver ? 'border-indigo-400 bg-indigo-50/50' : 'border-slate-200 bg-slate-50/60'}`}>
-          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} onDrop={onDrop} />)}
+          {items.map((q, i) => <Card key={q.id} q={q} index={i} col={col} onMove={onMove} onDrop={onDrop} reason={reasons?.[q.id]} />)}
           {!items.length && <div className="text-xs text-slate-400 text-center py-8">{empty}</div>}
         </div>
       </SortableContext>
@@ -214,7 +215,11 @@ export default function WorksheetPickerClient() {
   const [paste, setPaste] = useState('');
   const [searchQ, setSearchQ] = useState('');
   const [searchLevel, setSearchLevel] = useState('JC2');
+  const [searchCount, setSearchCount] = useState(10);
   const [searching, setSearching] = useState(false);
+  const [searchNote, setSearchNote] = useState<string | null>(null);
+  /** Why the model picked a card (describe-search), shown on the card. */
+  const [reasons, setReasons] = useState<Record<string, string>>({});
 
   const [busy, setBusy] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -385,17 +390,25 @@ export default function WorksheetPickerClient() {
     if (!ids.length) { say('No uuids found in the box', 'err'); return; }
     await loadIds(ids); setPaste('');
   }
+  /** Describe what you want in words; a model reads the bank's matching pool
+   *  and picks — skills, settings, difficulty (Adrian, 9 Oct 2026). */
   async function runSearch() {
     if (!searchQ.trim()) return;
-    setSearching(true);
+    setSearching(true); setSearchNote(null);
     try {
-      const r = await fetch(`/api/admin/questions?q=${encodeURIComponent(searchQ.trim())}&level=${encodeURIComponent(searchLevel)}`);
+      const r = await fetch('/api/admin/questions', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'describe-search', q: searchQ.trim(), level: searchLevel, count: searchCount, exclude: [...cands, ...picked, ...removed] }),
+      });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      const ids = (d.results as { id: string }[]).map((c) => c.id).filter((id) => !byId.has(id));
-      if (!ids.length) { say('Nothing new for that search'); return; }
-      await loadIds(ids.slice(0, 30));
-      say(`${Math.min(ids.length, 30)} added to candidates`);
+      const res = (d.results as { id: string; reason: string }[]) ?? [];
+      const ids = res.map((c) => c.id).filter((id) => !cands.includes(id) && !picked.includes(id));
+      setSearchNote(`${res.length} picked from ${d.pool ?? '?'} matching bank questions${d.note ? ` — ${d.note}` : ''}`);
+      if (!ids.length) { say('Nothing new for that description'); return; }
+      setReasons((cur) => ({ ...cur, ...Object.fromEntries(res.map((c) => [c.id, c.reason])) }));
+      await loadIds(ids);
+      say(`${ids.length} added to candidates`);
     } catch (e) { say((e as Error).message, 'err'); } finally { setSearching(false); }
   }
 
@@ -564,9 +577,14 @@ export default function WorksheetPickerClient() {
             <div className="flex flex-col gap-1">
               <div className="flex gap-2">
                 <select value={searchLevel} onChange={(e) => setSearchLevel(e.target.value)} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs">{LEVELS.map((l) => <option key={l}>{l}</option>)}</select>
-                <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void runSearch(); }} placeholder="search words (school, topic, phrase)" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+                <input value={searchQ} onChange={(e) => setSearchQ(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void runSearch(); }} placeholder="describe it: 'vectors in a real setting, a light ray off a mirror', 'reflection of a line in a plane', 'integration by parts twice'" className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-xs" />
+                <select value={searchCount} onChange={(e) => setSearchCount(Number(e.target.value))} className="border border-slate-300 rounded-lg px-2 py-1.5 text-xs" title="how many to pick">{[5, 10, 15, 20].map((n) => <option key={n} value={n}>{n}</option>)}</select>
               </div>
-              <button onClick={runSearch} disabled={searching || loading} className="self-start text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">{searching ? 'Searching…' : 'Search → candidates'}</button>
+              <div className="flex items-center gap-3">
+                <button onClick={runSearch} disabled={searching || loading} className="text-xs font-semibold bg-slate-800 text-white rounded-lg px-3 py-1.5 disabled:opacity-50">{searching ? 'Reading the bank… (20–40 s)' : 'Find → candidates'}</button>
+                {searchNote && <span className="text-xs text-slate-500">{searchNote}</span>}
+              </div>
+              <p className="text-[11px] text-slate-400">A model reads the bank questions whose topic, sub-skill or text matches your words and picks the ones that fit the description; each pick shows why.</p>
             </div>
           </div>
         </details>
@@ -575,8 +593,8 @@ export default function WorksheetPickerClient() {
 
         <DndContext sensors={sensors} collisionDetection={closestCorners} onDragStart={onDragStart} onDragOver={onDragOver} onDragEnd={onDragEnd} onDragCancel={() => setActiveId(null)}>
           <div className="flex flex-col md:flex-row gap-4">
-            <Column col="cands" title="Candidates" items={candQs} onMove={move} onDrop={dropCandidate} removedCount={removed.length} onShowRemoved={() => { void showRemoved(); }} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
-            <Column col="picked" title="Worksheet" items={pickQs} onMove={move} empty="Drag questions here, in print order" />
+            <Column col="cands" title="Candidates" items={candQs} onMove={move} onDrop={dropCandidate} removedCount={removed.length} onShowRemoved={() => { void showRemoved(); }} reasons={reasons} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
+            <Column col="picked" title="Worksheet" items={pickQs} onMove={move} reasons={reasons} empty="Drag questions here, in print order" />
           </div>
           <DragOverlay dropAnimation={null}>{active ? <GhostCard q={active} /> : null}</DragOverlay>
         </DndContext>
