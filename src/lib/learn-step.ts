@@ -271,6 +271,69 @@ export function evaluateSquare(n: number): NumberQuestion {
   };
 }
 
+/**
+ * His Practice 5b, Q6 and Q7: "By using a suitable identity, evaluate
+ * 65² + 650 + 25" — spot a² ± 2ab + b² in the numbers and fold it into a square.
+ * A small b is printed as its square (25), a large one as written (113²).
+ */
+export function foldIntoSquare(a: number, b: number, sign: '+' | '-'): NumberQuestion {
+  const mid = 2 * a * b;
+  const last = b <= 12 ? String(b * b) : `${b}^{2}`;
+  const total = sign === '+' ? a + b : a - b;
+  const s = sign === '-' ? '−' : '+';
+  return {
+    prompt: `By using a suitable identity, find the value of $${a}^{2} ${sign} ${mid} + ${last}$.`,
+    answer: total * total,
+    lines: [
+      { tex: `${a}^{2} ${sign} ${mid} + ${last}` },
+      { tex: `= ${a}^{2} ${sign} 2(${a})(${b}) + ${b}^{2}`, why: `${mid} = 2 × ${a} × ${b}${b <= 12 ? `, and ${b * b} = ${b}²` : ''}` },
+      { tex: `= (${a} ${sign} ${b})^{2}`, why: `a² ${s} 2ab + b² = (a ${s} b)²` },
+      { tex: `= ${total}^{2}` },
+      { tex: `= ${total * total}` },
+    ],
+  };
+}
+
+/**
+ * His Practice 5b, Q3: (a) simplify a² − (a + b)(a − b); (b) hence find
+ * 2018² − 2023 × 2013. The typed answer is part (b).
+ */
+export function henceProduct(n: number, d: number): NumberQuestion {
+  return {
+    prompt: `(a) Simplify $a^{2} - (a + b)(a - b)$.\n\n(b) Hence find the value of $${n}^{2} - ${n + d} \\times ${n - d}$, without using a calculator.`,
+    answer: d * d,
+    lines: [
+      { tex: 'a^{2} - (a + b)(a - b)', why: 'part (a)' },
+      { tex: '= a^{2} - (a^{2} - ab + ab - b^{2})', why: 'Expand. Note the minus sign in front' },
+      { tex: '= a^{2} - a^{2} + b^{2}' },
+      { tex: '= b^{2}' },
+      { tex: `${n}^{2} - ${n + d} \\times ${n - d}`, why: 'part (b)' },
+      { tex: `= ${n}^{2} - (${n} + ${d})(${n} - ${d})`, why: `compare with part (a): a = ${n} and b = ${d}` },
+      { tex: `= ${d}^{2}`, why: 'from part (a), the answer is b²' },
+      { tex: `= ${d * d}` },
+    ],
+  };
+}
+
+/**
+ * His Practice 5b, Q4: (a) simplify (x − y)² + 2xy; (b) hence find 299² + 2(300).
+ */
+export function henceSquare(x: number): NumberQuestion {
+  return {
+    prompt: `(a) Simplify $(x - y)^{2} + 2xy$.\n\n(b) Hence find the value of $${x - 1}^{2} + 2(${x})$, without using a calculator.`,
+    answer: x * x + 1,
+    lines: [
+      { tex: '(x - y)^{2} + 2xy', why: 'part (a)' },
+      { tex: '= x^{2} - 2xy + y^{2} + 2xy', why: '(a − b)² = a² − 2ab + b²' },
+      { tex: '= x^{2} + y^{2}', why: 'Add up like terms' },
+      { tex: `${x - 1}^{2} + 2(${x})`, why: 'part (b)' },
+      { tex: `= (${x} - 1)^{2} + 2(${x})(1)`, why: `compare with part (a): x = ${x} and y = 1` },
+      { tex: `= ${x}^{2} + 1^{2}`, why: 'from part (a), the answer is x² + y²' },
+      { tex: `= ${x * x + 1}` },
+    ],
+  };
+}
+
 // ── Marking a typed answer ───────────────────────────────────────────────────
 
 export type Verdict =

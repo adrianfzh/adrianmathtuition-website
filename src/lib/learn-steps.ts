@@ -3,10 +3,13 @@
 // (Dropbox/1 ONLINE LESSONS/1 NOTES/4 Notes S2 Math G3/S2 MATH 01 Algebra 1
 // Expansion.pdf) — his examples, his methods, his margin words; the first set of
 // five in a step is his own Practice where the notes have one. Built so far:
-// ideas 1–5 and 7–10 of the eleven; 6 (fractions) and 11 ("hence") are still to come.
+// ideas 1–5 and 7–11 of the eleven; 6 (fractions) is still to come.
 // learn-step.test.ts checks every question, every written line and his printed answers.
 
-import { evaluateSquare, squareFromSumAndProduct as sq, sumFromSquareAndProduct as sm, type LearnStep } from './learn-step';
+import {
+  evaluateSquare, foldIntoSquare as fold, henceProduct, henceSquare, squareFromSumAndProduct as sq,
+  sumFromSquareAndProduct as sm, type LearnStep,
+} from './learn-step';
 
 const OF = 11;
 
@@ -294,11 +297,35 @@ const WITHOUT_A_CALCULATOR: LearnStep = {
     [evaluateSquare(301), evaluateSquare(49), evaluateSquare(405), evaluateSquare(999), evaluateSquare(5002)],
   ],
   next: '"Hence" questions',
+  nextSlug: 'hence-questions',
+};
+
+const HENCE_QUESTIONS: LearnStep = {
+  slug: 'hence-questions',
+  index: 11,
+  of: OF,
+  title: '"Hence" questions',
+  ask: 'Find the value',
+  idea: [
+    '"Hence" means: use what you have just found. Do not start again.',
+    'Compare the numbers with the letters in part (a), and work out what each letter stands for.',
+  ],
+  trap: 'Compare the numbers with the letters first. Then use the answer to part (a) — do not multiply the big numbers out.',
+  // His Practice 5b, Q3 and Q4.
+  example: henceProduct(2018, 5),
+  tryOne: henceSquare(300),
+  sets: [
+    // The first two are his Practice 5b, Q6 and Q7.
+    [fold(65, 5, '+'), fold(213, 113, '-'), henceProduct(100, 3), henceSquare(200), fold(47, 3, '+')],
+    [fold(98, 2, '+'), fold(105, 5, '-'), henceProduct(250, 4), henceSquare(500), fold(321, 121, '-')],
+    [fold(36, 4, '+'), fold(57, 7, '-'), henceProduct(1000, 6), henceSquare(400), fold(88, 12, '+')],
+    [fold(75, 5, '+'), fold(109, 9, '-'), henceProduct(3000, 7), henceSquare(1000), fold(456, 256, '-')],
+  ],
 };
 
 export const LEARN_STEPS: readonly LearnStep[] = [
   ONE_BRACKET, EXPAND_AND_SIMPLIFY, TWO_BRACKETS, NUMBER_IN_FRONT, FURTHER_EXPANSION, SPECIAL_PRODUCTS,
-  SPECIAL_PRODUCTS_MIXED, USING_THE_IDENTITY, WITHOUT_A_CALCULATOR,
+  SPECIAL_PRODUCTS_MIXED, USING_THE_IDENTITY, WITHOUT_A_CALCULATOR, HENCE_QUESTIONS,
 ];
 
 /** The step a clip belongs to, so the clip can hand the student on to it. */

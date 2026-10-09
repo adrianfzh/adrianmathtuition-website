@@ -16,6 +16,10 @@ type Phase = 'example' | 'try' | 'five' | 'end';
 const INLINE = { p: ({ children }: { children?: React.ReactNode }) => <span>{children}</span> };
 function Tex({ tex }: { tex: string }) { return <MathMarkdown content={`$${tex}$`} components={INLINE} />; }
 function Say({ text }: { text: string }) { return <MathMarkdown content={text} components={INLINE} />; }
+/** A question in words; a blank line starts a new part — (a), then (b). */
+function Prompt({ text }: { text: string }) {
+  return <div className="space-y-1.5">{text.split('\n\n').map((part, i) => <div key={i}><Say text={part} /></div>)}</div>;
+}
 
 /** The letters a question uses, in the order they appear — each gets a key. */
 function lettersOf(question: string): string[] {
@@ -69,7 +73,7 @@ function Working({ w, taps, reasons }: { w: Worked; taps: number; reasons: boole
   const visible = w.prompt !== undefined ? w.lines.slice(0, taps) : w.lines.slice(0, taps + 1);
   return (
     <div className="space-y-2.5 mt-1">
-      {w.prompt !== undefined && <div className="text-base text-slate-900 leading-relaxed"><Say text={w.prompt} /></div>}
+      {w.prompt !== undefined && <div className="text-base text-slate-900 leading-relaxed"><Prompt text={w.prompt} /></div>}
       {visible.map((l, i) => (
         <div key={i}>
           {/* A long line is set smaller and kept on one line: a chain that wraps mid-expression is hard to read. */}
@@ -250,7 +254,7 @@ export default function LearnFlow({ step, seenClip = false }: { step: LearnStep;
             {phase === 'try' && helped > 0 && !verdict
               ? <Working w={w} taps={helped} reasons />
               : w.prompt !== undefined
-                ? <div className="text-base text-slate-900 leading-relaxed mt-1"><Say text={w.prompt} /></div>
+                ? <div className="text-base text-slate-900 leading-relaxed mt-1"><Prompt text={w.prompt} /></div>
                 : <div className="text-xl text-slate-900 mt-1 overflow-x-auto"><Tex tex={w.questionTex} /></div>}
           </div>
 

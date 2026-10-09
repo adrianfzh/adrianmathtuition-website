@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
-  allQuestions, evaluateSquare, exprTex, fiveResult, mark, parseBrackets, qOf, setFor, squareFromSumAndProduct,
+  allQuestions, evaluateSquare, exprTex, fiveResult, foldIntoSquare, henceProduct, henceSquare, mark, parseBrackets, qOf, setFor, squareFromSumAndProduct,
   squareLines, sumFromSquareAndProduct, work, FIVE,
 } from './learn-step';
 import { lessonBySlug } from './lesson-catalog';
@@ -205,6 +205,24 @@ describe('learn-step — answers that are numbers (his notes §5)', () => {
     }
   });
 
+  it('works his "hence" questions and gets his answers', () => {
+    // Practice 5b: Q3 (b) 25, Q4 (b) 90001, Q6 4900, Q7 10 000.
+    expect(henceProduct(2018, 5).answer).toBe(25);
+    expect(henceProduct(2018, 5).prompt).toContain('$2018^{2} - 2023 \\times 2013$');
+    expect(henceSquare(300).answer).toBe(90001);
+    expect(henceSquare(300).prompt).toContain('$299^{2} + 2(300)$');
+    expect(foldIntoSquare(65, 5, '+').prompt).toBe('By using a suitable identity, find the value of $65^{2} + 650 + 25$.');
+    expect(foldIntoSquare(65, 5, '+').answer).toBe(4900);
+    expect(foldIntoSquare(213, 113, '-').prompt).toContain('$213^{2} - 48138 + 113^{2}$');
+    expect(foldIntoSquare(213, 113, '-').answer).toBe(10000);
+    // The value is what the numbers really come to.
+    expect(2018 ** 2 - 2023 * 2013).toBe(25);
+    expect(299 ** 2 + 2 * 300).toBe(90001);
+    for (const [a, b] of [[65, 5], [47, 3], [88, 12]]) expect(foldIntoSquare(a, b, '+').answer).toBe(a * a + 2 * a * b + b * b);
+    for (const [a, b] of [[213, 113], [109, 9]]) expect(foldIntoSquare(a, b, '-').answer).toBe(a * a - 2 * a * b + b * b);
+    for (const [n, d] of [[100, 3], [3000, 7]]) expect(henceProduct(n, d).answer).toBe(n * n - (n + d) * (n - d));
+  });
+
   it('marks a typed number, and only a number', () => {
     const q = evaluateSquare(399);
     expect(mark(q, '159201').kind).toBe('correct');
@@ -267,7 +285,7 @@ describe('learn-steps — the chapter', () => {
   });
 
   it('runs in the order of his notes, each step leading to one that exists', () => {
-    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 7, 8, 9, 10]);
+    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 7, 8, 9, 10, 11]);
     for (const step of LEARN_STEPS) {
       if (step.nextSlug) expect(learnStepBySlug(step.nextSlug), `${step.slug} → ${step.nextSlug}`).not.toBeNull();
       // A step's clip must be a lesson that exists.
