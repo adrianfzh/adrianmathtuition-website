@@ -1,0 +1,449 @@
+---
+name: create-worksheet
+description: >
+  Generate Singapore secondary/JC math practice worksheets as formatted .docx files.
+  Use this skill whenever Adrian asks to create, generate, or produce a worksheet,
+  practice paper, or question set — even if phrased casually like "make me a worksheet
+  on differentiation" or "can you generate some practice questions for AM". Also trigger
+  when asked to reformat or clone an existing worksheet into a new .docx. The skill
+  produces properly formatted Word documents with proper OMML equation rendering,
+  auto-numbered questions and sub-questions that restart per question, right-aligned
+  marks, inline answers in orange in the format [Ans: ...], correct page margins, and
+  consistent typography matching Adrian's house style. This skill also owns Adrian's
+  Revision "(With Worked Examples)" sheet format — notes summary, concept-titled boxed
+  Examples, practice set — and two sibling skills drive it for bank-sourced sheets:
+  revision-worksheet (`rw`) builds a whole worked-examples sheet for a topic from the
+  question bank, and copy-revision-worksheet-with-different-practice (`crw`) appends
+  practice to a sheet Adrian already has. Use THIS skill when the worksheet should be produced straight from
+  a topic and a count, with no round of choosing first. If Adrian wants to SEE
+  candidate questions from the question bank and pick which ones go in before
+  anything is built, that is worksheet-clerk — which calls this skill to render
+  whatever he picked.
+---
+
+# Create Worksheet Skill
+
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
+Generates math practice worksheets as `.docx` files with one Python script per worksheet. The library `worksheet_lib.py` handles all the styling, numbering definitions, OMML conversion, and inline `numPr` patching internally — you just write the questions.
+
+Requires `pandoc` and `python-docx` (both present in the Cowork sandbox and on Adrian's Mac — Homebrew pandoc + pip python-docx).
+
+## Workflow
+
+This skill runs in two environments; the only difference is the paths.
+
+`<skill-dir>` = this skill's own directory (announced as "Base directory for this skill" when the skill loads; in Cowork it's `/mnt/skills/user/create-worksheet`, locally it's `~/.claude/skills/create-worksheet`).
+
+```bash
+# 1. Make a working directory:
+#    Cowork:      /home/claude/<topic>
+#    Claude Code: the session scratchpad dir (or any temp dir)
+mkdir -p <workdir> && cd <workdir>
+
+# 2. Copy the library from the skill directory
+cp <skill-dir>/worksheet_lib.py .
+
+# 3. Write your author script (template below), then run it
+python3 my_worksheet.py
+# Output: my_worksheet.docx — ready to use
+```
+
+That's it. One script to run. The library produces a Word-ready docx in a single pass.
+
+**Where the file goes (Adrian, 18 Sep 2026 — so a lesson-time request needs no follow-up
+question):** file it on the Dropbox shelf the kiosk reads, by what the sheet contains —
+`docs/KIOSK.md` §Dropbox library is the rule. A sheet WITH worked examples →
+`Dropbox/Apps/AdrianMathNotes/Revision/<LEVEL>`; questions with a summary/formula page and
+no solutions → `Practice/<LEVEL>`; a full paper → `Prelim/`. Never overwrite a file already
+on the shelf — a rebuild goes beside it under a new name (ADRIAN-STYLE.md). In a headless
+or Remote Control session also send the PDF to Adrian's Telegram (CLAUDE.md §📱).
+
+## Author Script Template
+
+Save as `my_worksheet.py` next to `worksheet_lib.py`:
+
+```python
+from worksheet_lib import Worksheet
+
+ws = Worksheet(working_space=4.0)   # ~2 cm of writing space per mark
+ws.title('Worksheet Title')
+ws.subtitle('IP4 / Sec 4 Mathematics')
+
+# Single-part question with sub-parts
+ws.Q([('text', '(Topic)  Given that ', {'italic': True}),
+      ('math', 'A = \\begin{pmatrix} 1 & 2 \\\\ 3 & 4 \\end{pmatrix}'),
+      ('text', ',')])
+ws.SQ([('text', 'Find '), ('math', 'A^2'), ('text', '.')], marks=2)
+ws.SQ([('text', 'Hence find '), ('math', 'A^3'), ('text', '.')], marks=2)
+ws.ans([('text', '(a) '), ('math', 'A^2 = ...'),
+        ('text', '; (b) '), ('math', 'A^3 = ...')])
+
+# Standalone question (no sub-parts)
+ws.Q([('text', '(Topic)  Solve ', {'italic': True}),
+      ('math', '2x^2 - 5x + 3 = 0'),
+      ('text', '.')], marks=3)
+ws.ans([('math', 'x = 1'), ('text', ' or '), ('math', 'x = \\dfrac{3}{2}')])
+
+# Display equation in the middle of a question
+ws.Q([('text', '(Topic)  Evaluate the integral', {'italic': True})])
+ws.math_block(r'\int_0^1 (3x^2 + 2x) \, dx')
+ws.para([('text', 'using the fundamental theorem of calculus.')], marks=3)
+ws.ans([('math', '= 2')])
+
+ws.save('my_worksheet.docx')
+```
+
+Run with `python3 my_worksheet.py`.
+
+## API Reference
+
+The `Worksheet` class exposes these methods. All take a `parts` list (described below) except where noted.
+
+| Method | Purpose |
+|---|---|
+| `ws.title(text)` | 12pt bold navy centred title |
+| `ws.subtitle(text)` | 10pt italic centred subtitle |
+| `ws.concept(text)` | Bold concept subtitle above the worked Example(s) it covers — see **Worked-example labelling** below. |
+| `ws.example(letter=None)` | Bold auto-numbered `Example N` label. `example('a')` starts a lettered group (`Example 3a`); `example('b')` reuses the number. |
+| `ws.Q(parts, marks=None)` | Main question. Auto-numbered `1.`, `2.`, `3.`, ... Each call also opens a fresh sub-question pool, so any `SQ()` calls that follow restart at `(a)`. |
+| `ws.SQ(parts, marks=None)` | Sub-question under the most recent `Q()`. Auto-numbered `(a)`, `(b)`, `(c)`, ... Restarts when a new `Q()` is called. |
+| `ws.parts()` | Start a fresh `(a)`, `(b)`, `(c)` list under an UNNUMBERED stem (an Example written with `para()`): labels flush with the stem's left edge, text one tab in. Call after the stem and its figure, then `SQ()` per part (7 Sep 2026). |
+| `ws.para(parts, marks=None)` | Plain paragraph with no numbering. |
+| `ws.section(text)` | Bold section header, glued to the question that follows so it cannot be stranded at the foot of a page. |
+| `ws.block_heights()` | Estimated cm height of each question block. Informative — shows which questions span pages. |
+| `ws.glued_heights()` | Estimated cm height of each atomic run (a keep-with-next chain). **Check this before `save()`:** anything over `ws.PAGE_CM` is a run Word must break inside. |
+| `ws.math_block(latex)` | Centred display equation (no surrounding text). |
+| `ws.ans(parts)` | `[Ans: ...]` line — right-aligned, orange. The wrapper `[Ans: ` and `]` are added automatically; pass only the inner content. |
+| `ws.figure(path, width_cm=10.5)` | Embed a rendered figure PNG, centred under the current question. Cap 16 cm; never upscales a small image. Render the PNG with `figure_lib.render` first — see **Figures** below. |
+| `ws.solution_box(rows, keep_together=True)` | Boxed worked solution in Adrian's house format — see **Worked-solution boxes** below. |
+| `ws.workspace(marks=None, lines=None)` | Blank writing space, sized by `marks` or by an explicit `lines`. Emitted automatically after every marked paragraph when `working_space` is set — call it directly only for space that isn't tied to a mark allocation. |
+| `ws.page_break()` | Manual page break. |
+| `ws.save(path)` | Write the final docx to disk. |
+
+### `parts` format
+
+A `parts` argument is a list of tuples. Each tuple is one of:
+
+```python
+('text', "string")                                    # plain text
+('text', "string", {'bold': True})                    # styled text
+('text', "string", {'italic': True})                  # italic text
+('text', "string", {'color': RGBColor(0xff,0,0)})     # coloured text
+('math', "latex_expr")                                # inline equation
+('math_display', "latex_expr")                        # display equation inline
+('math', "latex_expr", {'color': '00B050', 'bold': True})   # coloured / bold equation (9 Sep 2026)
+```
+
+**Green rule tags** — Adrian's `[rule in green bold square brackets]` inside a
+step — are built with `tag(...)`, which returns a parts list to splice in, and
+keeps any maths inside the brackets as an equation object:
+
+```python
+from worksheet_lib import tag
+ws.solution_box([('', [ [('text', 'so the coefficient is 0 '), *tag('No term in ', ('math', r'\frac{1}{x}'))], r'\ldots' ])])
+# tag(*items, color=RULE_GREEN, bold=True, brackets=True): strings → green bold text,
+# ('math', latex) → green bold OMML; brackets=False for a coloured run without [ ].
+```
+
+Never type the tag as `('text', '[No term in 1/x]')` — that is how Alessi's sheet
+shipped a slash fraction as characters (Adrian, 9 Sep 2026: "1/x is not written
+as OMML"). `ws.save(path)` prints a WARNING listing every run of maths typed as
+text; `ws.save(path, strict_maths=True)` refuses to save on one. The same check
+is callable on any finished file: `worksheet_lib.find_plain_maths('out.docx')`
+→ `[(run text, reason), …]` (units like `cm/s`, part refs like `Q4(a)/(b)` and
+dates are allowed).
+
+Mix freely:
+
+```python
+ws.Q([('text', 'Find '),
+      ('math', 'x'),
+      ('text', ' such that '),
+      ('math', 'x^2 + 3x - 4 = 0'),
+      ('text', '.')], marks=2)
+```
+
+### Important LaTeX-in-Python tips
+
+- Use **raw strings** for math-only fragments: `r'\dfrac{a}{b}'` so backslashes pass through.
+- Inside `\begin{pmatrix}...\end{pmatrix}`, the row separator `\\` becomes `\\\\` in a regular string. Or use `r'...'` to keep it as `\\`.
+- Always put math in `('math', ...)` tuples — never embed `$...$` directly in text strings.
+
+## Worked-solution boxes (2026-08-13)
+
+Adrian's Revision "(With Worked Examples)" sheets put every worked solution in a
+bordered table directly under a bold **Solution:** line. `ws.solution_box(rows)`
+reproduces that format exactly: a table showing **only the outer border** (the
+inside grid lines are suppressed — Adrian's boxes are a single rectangle),
+**two columns** — the part label alone in a narrow (1 cm) first column, the
+working beside it — **one table row per part**. An unlabelled solution becomes
+a single full-width cell instead.
+
+```python
+ws.solution_box([
+    ('(a)', [
+        [('text', 'Differentiate: ')],          # a parts list = left-aligned prose line
+        r'\dfrac{dy}{dx} = 3x^2 - 4',           # a bare latex string = display equation,
+                                                #   left-aligned at a 0.5 cm indent
+    ]),
+    ('(b)', [
+        ('figure', 'q3_fig.png', 7.0),          # a figure step: centred PNG inside the box
+        r'x = 2 \text{ or } x = -\tfrac{2}{3}',
+    ]),
+])
+
+# Unlabelled (whole solution, no parts):
+ws.solution_box([('', [ [('text', 'By symmetry the area is ')], r'A = 12' ])])
+```
+
+- `rows` is a list of `(label, steps)`; label `'(a)'`/`'(i)'`, or `''` for the
+  single-cell variant. Each step is one of: a `parts` list (prose, same shapes
+  `Q()`/`para()` take), a bare LaTeX string (display equation, left-aligned at
+  0.5 cm), or `('figure', path, width_cm=8.0)` for an explanatory diagram
+  rendered with `figure_lib` (see **Figures**).
+- **Never chain three or more `=` on one line.** Split into an aligned block —
+  one `=` per line, vertically aligned:
+  `r'\begin{aligned} s &= \int v\, dt \\ &= t^3 - \tfrac{15}{2}t^2 \end{aligned}'`.
+  Short side-by-side statements stay on one line with `\qquad` between them.
+- **Arrow annotations**: end a working line with `\quad\text{← short reason}`
+  and the arrow plus everything after it is styled automatically in Adrian's
+  annotation format (50 % grey, 8 pt) — e.g.
+  `r'... + C \quad\text{← every integration needs a constant}'`. Only `←` triggers
+  this; `⇒`/`→` remain normal math.
+- **A small gap between parts** is inserted automatically inside the box — 8 pt
+  of space above each later part's first line, in both cells (`part_gap`,
+  `PART_GAP_PT`), never an empty paragraph. Adrian, 10 Sep 2026, on a box where
+  (a)(b)(c) touched: "leave a line space between each subpart (or at least a
+  small space - need not be a full line space - you can adjust to fit the space
+  as required)". The blank paragraph used before then was a trailing empty
+  paragraph in the cell, which the filing checks strip — so it never reached a
+  sheet. Don't add empty steps for spacing.
+- The box writes a spacer line, then its own bold `Solution:` header, then the
+  table, then a blank paragraph — don't add any of those yourself.
+- **Keep-together** (default on): the whole block — question paragraphs since
+  the last `Q()`, the `Solution:` header, and the box — refuses to straddle a
+  page break; Word pushes it to a fresh page instead. Blocks taller than a full
+  page still split gracefully. Pass `keep_together=False` to let a box flow.
+- Don't mix labelled and unlabelled rows in one call; one call per solution block.
+
+### Worked-example labelling (2026-08-13)
+
+Every worked example is labelled **Example N** (bold, auto-numbered), and the
+concept it teaches is written **first**, as its own bold subtitle line above the
+label — never folded into the Example line:
+
+```python
+ws.concept('Total Distance When the Particle Turns Round Twice')
+ws.example()                     # -> Example 3
+ws.para([('text', 'A particle moves so that ...')])
+ws.solution_box([...])
+```
+
+Related examples that share one concept get **one number with letter suffixes**:
+write the concept once, then `ws.example('a')` (starts the group — `Example 4a`)
+and `ws.example('b')` / `ws.example('c')` for the siblings. A later plain
+`ws.example()` continues the numbering (`Example 5`).
+
+Order on the page: concept subtitle → `Example N` → question paragraphs →
+`solution_box`. The concept and label lines automatically join the
+keep-together block of the box that follows, so the whole example stays on one
+page.
+
+## Figures (2026-08-12)
+
+Generated questions may carry diagrams — but **never freehand one**. The iron
+rule is a single source of truth: define the question's parameters ONCE in the
+script, and derive the question text, the answer, **and the figure spec** from
+those same variables. A figure that is drawn from the numbers the answer is
+computed from cannot contradict the mark scheme.
+
+```python
+import figure_lib      # copy from the skill dir alongside worksheet_lib.py
+
+# ONE set of parameters drives everything:
+mu, sigma, cut = 50, 5, 55
+
+ws.Q([('text', f'The masses of oranges are normally distributed with mean {mu} g '
+               f'and standard deviation {sigma} g. Find the probability that a '
+               f'randomly chosen orange has mass greater than {cut} g.')], marks=2)
+fig = figure_lib.render({'kind': 'normal', 'mu': mu, 'sigma': sigma,
+                         'shade': [cut, None], 'xticks': [mu, cut],
+                         'xlabel': 'mass (g)'}, 'q1_fig.png')
+ws.figure(fig)
+ws.ans([('text', '0.159 (3 s.f.)')])   # computed from THE SAME mu/sigma/cut
+```
+
+Supported genres (`figure_lib.GENRES`) and their key spec fields:
+
+| kind | fields |
+|---|---|
+| `graph` | `curves: [{expr, domain, label, label_at?, label_side?}]` (`label_side: 'left'` puts the name above-left of the curve when the right side is crowded), `points`, `vlines`/`hlines` (an hline may be `{y, label}` — label sits above its right end, for asymptotes), `shade: {expr, from, to, to_expr?}`, `xticks`/`yticks` + optional `xtick_labels`/`ytick_labels` (display strings, e.g. `r'$\frac{5}{3}$'` at tick 5/3), `xlim`/`ylim`, `clip_y` (asymptotes), `axis_names` (default `("x","y")` — pass `("t","v")` for kinematics) |
+| `area_decomposition` | **the region asked for = its pieces** (10 Sep 2026, Adrian on Isabelle's Practice Again sheet: "would be good if a diagram can be drawn to show the areas required"). Every `graph` field (`curves`, `points`, `xticks`, `xlim`/`ylim`, …) draws the SAME picture in every panel; only the shading changes. `target: {shade, caption?}` is the region the question asks for (its lower edge is often `to_expr: 'max(3*x-8, 0)'` — the line where it is above the axis, else the axis); `pieces: [{shade, caption?, op?}]` are what the working integrates or measures, in order, `op` `'+'`/`'-'` (default `+`) written between them; a `shade` may be a list of `{from, to, expr, to_expr?}` regions; `caption` is mathtext under the panel (`$\\int_2^3 (x-2)^3\\,dx$`, `$\\frac{1}{2}\\times\\frac{1}{3}\\times 1$` — mathtext has `\\frac`, not `\\tfrac`); `result?` one line under the row; `curve_labels: 'all'` to name the curves in every panel (default: first panel only); `width_in` (default 6.4 — embed it at ~15 cm: `('figure', path, 15)`). It goes in the SOLUTION box, right after the plan line, never in the question. Sample: `python3 figure_lib.py <dir>` → `sample_area_decomposition.png` |
+| `normal` | `mu`, `sigma`, `shade: [lo, hi]` (`None` = tail), `xticks`, `xlabel` |
+| `histogram` | `bins: [[lo, hi, freq], …]`, `density: true` for unequal widths, `xlabel` |
+| `boxplot` | `min, q1, median, q3, max`, `xticks`, `xlabel` |
+| `cumulative` | `points: [[x, cf], …]`, `xlabel` (ogive with grid) |
+| `binomial_pairing` | `left: [mathtext terms of the first bracket]`, `right: [terms of the expansion]`, `pairs: [{l, r, product, color?}]` (indices into `left`/`right`; `product` is the mathtext line written under the picture in the pair's colour), `target?` (italic caption, e.g. `'the terms that give x⁻¹'`), `result?` (the coefficient line), `width_in?` (default 6.2). One coloured arrow per pair, dotted boxes round both terms, products stacked left-aligned. Adrian, 9 Sep 2026: "use arrows to show the expansion → more visual … both explanations will be good" — so the prose stays and the picture joins it, embedded with `ws.figure(png, width_cm=13)` after the expansion step |
+| `points` | `points: {A: [x,y], …}`, `segments: [[A,B] or [A,B,'dashed']]`, `circles`, `right_angles: [[A,B,C]]` (mark at B), `angle_arcs: [{at, from, to, label}]`, `labels: [{text, at, halo?, size?}]` (`halo: true` paints a white box behind the text — use it for any dimension label that has to sit on or near a line, otherwise the line strikes through it), `hide_points: [names]`, `axes: true` for coordinate questions |
+
+- `expr` strings use a whitelisted namespace: `x`, `sin cos tan asin acos atan exp ln log log10 sqrt abs pi e`, and `max`/`min` (elementwise, for a region's lower edge).
+  `render` raises on anything else — a bad spec must fail the script, never ship a blank box.
+- **If the question needs a genre that doesn't exist** (3-D solids, bearings with
+  scale, complicated circle-theorem configs), write the question WITHOUT a figure
+  or pick a different question. A described-but-missing diagram is the one output
+  this system exists to prevent.
+- Real past-paper diagrams are a different pipeline: the `copy-revision-worksheet-with-different-practice`
+  skill embeds the bank's stored `question_images` — don't re-render those here.
+- Requires `matplotlib` (present on Adrian's Mac; in Cowork check with
+  `python3 -c "import matplotlib"` and `pip install matplotlib` if missing).
+- Verify visually: after building, extract and LOOK at each figure
+  (`unzip -o out.docx 'word/media/*' -d check/`) the same way equations get an
+  OMML count — a wrong diagram is worse than a missing one.
+- **Every PNG is trimmed to its ink when it is embedded** (Adrian, 9 Sep 2026,
+  Alessi's E Math sheet: "the diagrams generated need not have so much white
+  space as its borders" — the half-cylinder faces figure was 44% blank frame,
+  116 px of white above the drawing). `worksheet_lib.trim_to_ink(path)` runs
+  inside `_picture` for `ws.figure()` and every `('figure', …)` step, and
+  `figure_lib._finish` calls it at save time too: the border is cut to 1.5 mm
+  on every side, in place, idempotently, and the embed width is scaled by the
+  same ratio so the DRAWING keeps the size it was going to print at — only the
+  white goes. A bespoke matplotlib figure (one drawn outside `figure_lib`) is
+  covered by the embed-time trim, so padded `xlim`/`ylim` no longer reach the
+  page; still save with `bbox_inches='tight'` and view the PNG.
+
+## House Style
+
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
+
+The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py` directly.
+
+| Property | Value |
+|---|---|
+| Font | Times New Roman |
+| Body size | 9.5 pt |
+| Title size | 12 pt, bold, navy `#1F4E79`, centred |
+| Subtitle | 10 pt, italic, centred |
+| Line spacing | 1.5 |
+| Paragraph spacing before/after | 0 pt |
+| Page size | A4 (21 × 29.7 cm) |
+| Margins | top 2 cm, bottom 1 cm, left/right 2.5 cm |
+| Marks tab stop | 15.5 cm, right-aligned |
+| Marks colour | Black |
+| Answer style | Right-aligned, orange `#843C0C`, prefix `[Ans: ...]` |
+| Working space | `Worksheet(working_space=4.0)` — 4 blank lines (~2 cm) per mark, plus one bonus line for a `[1]` (`one_mark_bonus`) |
+| Question tag | Usually none — a sheet grouped under `Section A — Trigonometry` headers does not need `(Trigonometry)` repeated on every question. Tag only a mixed-topic sheet, in italics. **Never name the source school or year** |
+
+### Working space and question tags (2026-08-29)
+
+**Build every write-on worksheet with `Worksheet(working_space=4.0)`.** The
+library then leaves blank writing space after each paragraph that carries a mark
+allocation, sized `marks x working_space` body lines — a `[3]` part gets three
+times the room of a `[1]`, which is what a student expects when the marks tell
+them how much working is wanted. 4.0 is about 2 cm per mark and is what Adrian
+asked for; go higher, never lower. A `[1]` part gets **one extra line** on top of
+its share (`one_mark_bonus=1.0`, so 5 lines): strict proportionality is meanest
+exactly where it hurts, since a one-mark answer still needs a line of working and
+a line for the answer itself. Set it to `0` (the default) only for a sheet
+nobody writes on: a solutions sheet, or a Revision "(With Worked Examples)" sheet
+where `solution_box()` already fills the space.
+
+The space is **real blank line paragraphs**, not one paragraph with a big
+`space_after`. Word discards trailing space at a page break, so a `space_after`
+gap that straddles a break silently swallows the rest of the student's writing
+room; separate lines just flow onto the next page.
+
+**The atomic unit is the PART, not the question.** This took three tries; the
+reasoning is worth keeping:
+
+1. Gluing whole questions fails — at this much space a question is taller than
+   the text column, so Word either splits it anyway or bumps it whole and leaves
+   most of a page blank. That is how a first page ended up holding only a title.
+2. Letting everything flow fails too — a part's writing space then straddles a
+   break, and its tail plus the `[Ans: …]` line strand on a near-empty page.
+3. What worked until 10 Sep 2026: glue **a part's text to every one of its blank
+   lines**, so a page could only break *between* parts. A `[3]` part at
+   `working_space=4.0` is 13 lines, about 6.5 cm — but the real unit is stem +
+   figure + part text + lines, and on Alessi's Practice Again that was taller
+   than what was left of the page, so Word bumped Q2 whole and left the page
+   half blank. Adrian: "do what you see fit according to space management".
+4. What works now: glue **a part's text to its first two blank lines only**
+   (`keep_lines_with_text=2`). A part's text can never end a page on its own, a
+   break between two blank lines costs nothing, and a question packs into
+   whatever room is left. The trade-off is that a part's writing space may cross
+   a page. The revision worksheets (`revision_lib`) keep the whole-run rule —
+   Adrian, 6 Aug 2026: "do not want writing space to span across two pages" —
+   so do not "harmonise" the two.
+
+`Worksheet` does this automatically. On top of it, the answer line keeps with the
+line above (no orphaned `[Ans: …]`), and a figure keeps with the stem above and
+the part below.
+
+**Check `ws.glued_heights()` before saving**: every atomic run must be under
+`ws.PAGE_CM` (26.7 cm), or Word is forced to break inside one. `ws.block_heights()`
+reports whole questions — informative (it shows which questions span pages) but
+no longer something to fix. Use `ws.section()` for section headers so they travel
+with the question below, and `page_break()` only for a hard section boundary.
+
+**Never put the originating school or year in a question.** Provenance lives in
+the author script's comments — the same convention as the kiosk and bot
+worksheets, which strip originating-school metadata by design. A topic tag on
+each question is usually redundant too: if the sheet is already grouped under
+`Section A — Trigonometry and Pythagoras' Theorem`, the questions need no tag.
+
+## Verification
+
+After running the script:
+
+```bash
+# OMML check (positive number = math equations embedded)
+unzip -p my_worksheet.docx word/document.xml | grep -o "m:oMath" | wc -l
+
+# OOXML validation — Cowork only (script lives in the sandbox docx skill;
+# skip locally, the OMML count + opening the file is enough there):
+python3 /mnt/skills/public/docx/scripts/office/validate.py my_worksheet.docx
+```
+
+Then deliver the file:
+
+```bash
+# Cowork: copy to outputs so Adrian gets a download card
+cp my_worksheet.docx /mnt/user-data/outputs/<descriptive_name>.docx
+
+# Claude Code local: copy to the Desktop (Adrian's convention for worksheets)
+cp my_worksheet.docx ~/Desktop/<descriptive_name>.docx
+```
+
+## How It Works (Internal Details)
+
+The library handles three things that are easy to get wrong:
+
+1. **Word's auto-numbering needs inline `numPr`, not just style inheritance.** MS Word ignores numbering attached to a paragraph style alone, so the library adds `<w:numPr>` directly on each `Q()` and `SQ()` paragraph at write time.
+
+2. **Each question's sub-list needs a unique `numId` to restart `(a)`.** The library pre-allocates 30 sub-question lists in `numbering.xml` (numIds 10–39), each with `<w:startOverride w:val="1"/>`. Every `Q()` advances an internal counter, and the next `SQ()` calls bind to that counter's numId. When a new `Q()` is called, the next numId is used — automatically restarting at `(a)`.
+
+3. **OMML equations come from pandoc.** For each `('math', ...)` or `('math_display', ...)` part, the library shells out to `pandoc` on a small fragment, extracts the `<m:oMath>` element from the resulting docx, and inserts it into the current paragraph. This produces native Word equation objects rather than Unicode plain text.
+
+The clean `numbering.xml` is injected at `save()` time by rewriting the docx zip — this avoids python-docx's noisy default numbering definitions.
+
+## Sandbox Caveat
+
+LibreOffice in the Linux sandbox can't render Cambria Math, so equations appear blank in PDF previews generated here. **The docx is correct** — equations render perfectly when opened in MS Word. Verify equations are present by counting OMML blocks in the XML (see Verification above).
+
+## Quick LaTeX Reference
+
+| Pattern | LaTeX |
+|---|---|
+| Inline | `('math', 'x^2 + 2x - 3')` |
+| Display | `ws.math_block(r'\int_0^1 x^2 \, dx')` |
+| Fraction | `\dfrac{a}{b}` |
+| Matrix (round) | `\begin{pmatrix} a & b \\ c & d \end{pmatrix}` |
+| Matrix (square) | `\begin{bmatrix} a & b \\ c & d \end{bmatrix}` |
+| Cases | `\begin{cases} x, & x \geq 0 \\ -x, & x < 0 \end{cases}` |
+| Vector hat | `\hat{i}`, `\hat{j}` |
+| Greek | `\alpha, \beta, \theta, \pi, \sigma` |
+| Inequalities | `\leq, \geq, \neq, \approx` |
+| Sets | `\in, \notin, \cup, \cap, \subset` |
+| Derivatives | `\dfrac{dy}{dx}`, `f'(x)`, `\dfrac{d^2 y}{dx^2}` |
+| Integrals | `\int_a^b f(x) \, dx` |
+| Trig | `\sin, \cos, \tan, \arctan` |

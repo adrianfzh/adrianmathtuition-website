@@ -1,0 +1,2170 @@
+"""
+worksheet_lib.py — single helper module for building Adrian's math worksheets.
+
+Usage:
+  1. Copy this file (or import from the skill folder) alongside your worksheet author script.
+  2. In your author script, import the helpers and write your questions:
+
+        from worksheet_lib import Worksheet
+
+        ws = Worksheet()
+        ws.title('My Worksheet')
+        ws.subtitle('IP4 / Sec 4 Mathematics')
+
+        ws.Q([('text', '(Topic)  Find '), ('math', 'A^2'), ('text', '.')], marks=3)
+        ws.ans([('math', 'A^2 = ...')])
+
+        ws.save('my_worksheet.docx')
+
+  3. Run: python3 author_script.py
+
+Everything (reference style setup, numbering definitions, OMML conversion,
+inline numPr patching) is handled internally. Only one script to run.
+"""
+from docx import Document
+from docx.shared import Pt, Cm, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
+from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
+from docx.enum.style import WD_STYLE_TYPE
+from docx.oxml.ns import qn
+from docx.oxml import OxmlElement
+from lxml import etree
+import subprocess, tempfile, os, sys, zipfile, io, re
+
+W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+M_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+
+NUMBERING_XML = '''<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:abstractNum w:abstractNumId="100">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="decimal"/>
+      <w:lvlText w:val="%1."/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="101">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerLetter"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1134" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="102">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerLetter"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="103">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="567" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="104">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1134" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="105">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerRoman"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1701" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:abstractNum w:abstractNumId="106">
+    <w:multiLevelType w:val="singleLevel"/>
+    <w:lvl w:ilvl="0">
+      <w:start w:val="1"/>
+      <w:numFmt w:val="lowerLetter"/>
+      <w:lvlText w:val="(%1)"/>
+      <w:lvlJc w:val="left"/>
+      <w:pPr><w:ind w:left="1701" w:hanging="567"/></w:pPr>
+    </w:lvl>
+  </w:abstractNum>
+  <w:num w:numId="1"><w:abstractNumId w:val="100"/></w:num>
+'''
+# Generic restartable lists for `numbered()` — (label format, indent level) pools of
+# 40 numIds each, so an Example's (i)(ii)(iii) parts, a practice question's (i)(ii)
+# sub-questions and any (i)(ii) sub-parts under a part are real Word numbering too
+# (Adrian, 12 Sep 2026: "can you autonumber the questions and subparts?").
+NUMBERED_POOLS = {('letter', 0): (102, 300), ('roman', 0): (103, 340), ('letter', 1): (101, 380),
+                  ('roman', 1): (104, 420), ('letter', 2): (106, 460), ('roman', 2): (105, 500)}
+for (_fmt, _lvl), (_abs, _base) in NUMBERED_POOLS.items():
+    for _i in range(40):
+        NUMBERING_XML += (
+            f'  <w:num w:numId="{_base+_i}">'
+            f'<w:abstractNumId w:val="{_abs}"/>'
+            f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+            f'</w:num>\n'
+        )
+
+# Sub-question numIds, each with startOverride so (a)(b)(c) restarts per question.
+# One is spent on EVERY Q() call, parts or not, so the pool has to cover every
+# question on the sheet: 30 overflowed on a 48-question revision sheet (17 Sep
+# 2026) -- Q31 onward pointed at numIds 40-49 (none defined, labels vanished)
+# and 50+ (the main-question pool, so parts printed "1. 2."). 400 each now.
+SUBQ_BASE, NOSTEM_BASE, SUBQ_POOL = 1000, 1400, 400
+for _i in range(SUBQ_POOL):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{SUBQ_BASE+_i}">'
+        f'<w:abstractNumId w:val="101"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
+# 30 MAIN-question numIds (50..79), each restarting at 1 — one per Practice set
+# on a self-study sheet, so every "Practice N" counts 1, 2, 3 from the top and
+# Adrian can insert or delete an item in Word and the rest renumber themselves
+# (2 Sep 2026: "can we have auto numbering for the question numbers").
+for _i in range(30):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{50+_i}">'
+        f'<w:abstractNumId w:val="100"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
+# 30 EXAMPLE-part numIds (90..119): (a)(b)(c) under an UNNUMBERED stem — an
+# Example's question sits at the left margin, so its parts sit there too
+# (Adrian, 7 Sep 2026: "the parts (a) (b) (c) should be vertically aligned with
+# the first line 'The equation of a circle…'"). Under a numbered practice
+# question the parts stay one tab in, level with the question's own text.
+for _i in range(30):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{90+_i}">'
+        f'<w:abstractNumId w:val="102"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="1"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
+# Sub-question numIds (NOSTEM_BASE..) that START at (b): a question with NO stem
+# puts its "(a)" on the number's own line ("1.  (a) Simplify …"), so the auto
+# list under it must begin at (b) (Adrian, 11 Sep 2026: "the question should be
+# horizontally level with the question number").
+for _i in range(SUBQ_POOL):
+    NUMBERING_XML += (
+        f'  <w:num w:numId="{NOSTEM_BASE+_i}">'
+        f'<w:abstractNumId w:val="101"/>'
+        f'<w:lvlOverride w:ilvl="0"><w:startOverride w:val="2"/></w:lvlOverride>'
+        f'</w:num>\n'
+    )
+NUMBERING_XML += '</w:numbering>'
+
+
+_FUNC_RE = re.compile(
+    r'(\\(?:sin|cos|tan|sec|cot|csc|operatorname\{cosec\}|operatorname\{sec\}|operatorname\{cot\})'
+    r'(?:\^\{[^}]*\}|\^[0-9])?)'          # the function, with an optional power
+    r'\s*(?=[A-Za-z0-9]|\\(?:theta|alpha|beta|gamma|phi|varphi|omega|lambda|mu|pi)\b)')
+
+
+_FUNC_BEFORE_RE = re.compile(
+    r'(?<=[A-Za-z0-9)\]}])\s*(?=\\(?:sin|cos|tan|sec|cot|csc|operatorname\{cosec\})\b)')
+
+
+def _function_spaces(latex: str) -> str:
+    """"cos P", not "cosP": pandoc's OMML runs a function name straight into a
+    plain argument, while Adrian types a space (12 Sep 2026: "cosP should be
+    written like human typed cos P"). A thin space after every trig function
+    that is followed by a letter, digit or Greek letter reproduces his look;
+    brackets, fractions and roots are left alone."""
+    latex = _FUNC_BEFORE_RE.sub('\\, ', latex)      # "cos P cos Q", not "cos Pcos Q"
+    return _FUNC_RE.sub(lambda m: m.group(1) + '\\, ', latex)
+
+
+_CSC_RE = re.compile(r'\\csc(?![A-Za-z])')
+
+
+def _cosec(latex: str) -> str:
+    """"cosec A", never "csc A" (Adrian, 14 Sep 2026, on the S3 Trigonometry
+    revision sheet: "write csc A as cosec A"). The Singapore syllabus spells it
+    cosec; \\csc is LaTeX's American name and pandoc prints it verbatim. Rewrite
+    it to the operator form the rest of the pipeline already knows how to space."""
+    return _CSC_RE.sub(r'\\operatorname{cosec}', latex)
+
+
+# A run of exactly one of these ends an operand: the fraction stops here.
+_SLASH_STOP = set('+-−=≠<>≤≥,;:±∓⇒⇔→←|')
+_OPEN, _CLOSE = '([{', ')]}'
+
+
+def _stack_slashes(elem):
+    """Every fraction is numerator OVER denominator — never "a/b" on one line,
+    and a fraction inside a fraction stacks too (Adrian, 14 Sep 2026: "for
+    fractions, write them as numerator over denominator, even for fractions
+    within a fraction"). pandoc leaves "7/2" as three runs, and texmath marks a
+    \dfrac with <m:type m:val="lin"/>; both render as the slanted form he
+    rejected. Make every fraction a bar fraction and turn each bare "/" into a
+    real <m:f>, taking the operand either side the way the maths binds —
+    "a+b/c+d" gives b over c, not a+b over c+d, and a bracketed group is taken
+    whole. A "/" inside \text{} (5 m/s) is left alone."""
+    m = lambda t: f'{{{M_NS}}}{t}'
+
+    for fPr in elem.iter(m('fPr')):                 # a linear fraction is a bar fraction
+        ty = fPr.find(m('type'))
+        if ty is not None and ty.get(m('val')) in ('lin', 'skw'):
+            fPr.remove(ty)
+
+    def text_of(el):
+        return ''.join(t.text or '' for t in el.iter(m('t')))
+
+    def is_slash(el):
+        return (el.tag == m('r') and text_of(el) == '/'
+                and el.find(f'{m("rPr")}/{m("nor")}') is None)   # not \text{m/s}
+
+    def span(kids, i, step):
+        """Indices of the operand on one side of the slash at kids[i]."""
+        opens, closes = (_CLOSE, _OPEN) if step < 0 else (_OPEN, _CLOSE)
+        j, depth, out = i + step, 0, []
+        while 0 <= j < len(kids):
+            t = text_of(kids[j])
+            if depth == 0 and len(t) == 1 and t in _SLASH_STOP:
+                break                                # an operator ends the operand
+            if t in opens:
+                depth += 1
+            elif t in closes:
+                depth -= 1
+                if depth < 0:
+                    break                            # the bracket we sit inside
+            out.append(j)
+            j += step
+        return sorted(out)
+
+    for parent in list(elem.iter()):
+        done = set()
+        while True:
+            kids = list(parent)
+            slash = next((i for i, k in enumerate(kids)
+                          if is_slash(k) and id(k) not in done), None)
+            if slash is None:
+                break
+            done.add(id(kids[slash]))
+            left, right = span(kids, slash, -1), span(kids, slash, +1)
+            if not left or not right:
+                continue                             # nothing to divide — leave it
+            frac = etree.Element(m('f'))
+            num = etree.SubElement(frac, m('num'))
+            den = etree.SubElement(frac, m('den'))
+            parent.insert(left[0], frac)             # in place of the numerator
+            for i in left:
+                parent.remove(kids[i]); num.append(kids[i])
+            for i in right:
+                parent.remove(kids[i]); den.append(kids[i])
+            parent.remove(kids[slash])
+    return elem
+
+
+def _latex_to_omml(latex_expr, display=False):
+    """Convert a LaTeX math expression to an OMML element via pandoc."""
+    latex_expr = _function_spaces(_cosec(latex_expr))
+    md = f"$${latex_expr}$$" if display else f"${latex_expr}$"
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.md', delete=False) as f:
+        f.write(md)
+        md_path = f.name
+    docx_path = md_path.replace('.md', '.docx')
+    try:
+        subprocess.run(['pandoc', md_path, '-o', docx_path], check=True, capture_output=True)
+        with zipfile.ZipFile(docx_path) as z:
+            doc_xml = z.read('word/document.xml')
+        tree = etree.fromstring(doc_xml)
+        if display:
+            elem = tree.find(f'.//{{{M_NS}}}oMathPara')
+            if elem is None:
+                elem = tree.find(f'.//{{{M_NS}}}oMath')
+        else:
+            elem = tree.find(f'.//{{{M_NS}}}oMath')
+        return _stack_slashes(elem) if elem is not None else elem
+    finally:
+        os.unlink(md_path)
+        if os.path.exists(docx_path):
+            os.unlink(docx_path)
+
+
+# A label column of 1 cm fits "(a)" or "(vii)"; "(viii)" wrapped onto two lines and
+# pushed the part's first line down, and a word label ("Step 1") is wider still. So
+# the column is measured from the label's own glyphs, not its character count —
+# parentheses and "i" are narrow, letters and digits are not.
+_LAB_GLYPH_CM = {'(': 0.13, ')': 0.13, 'i': 0.10, 'l': 0.10, 'j': 0.10,
+                 '.': 0.10, ' ': 0.10, 'v': 0.18, 'x': 0.18, '1': 0.18}
+
+
+def _label_width_cm(label, pad=0.45):
+    """Width in cm the label column needs so `label` sits on one line at 11 pt."""
+    if not label:
+        return 0.0
+    return round(sum(_LAB_GLYPH_CM.get(ch, 0.22) for ch in label) + pad, 2)
+
+
+def _outer_border_only(table):
+    """Adrian's solution boxes show ONLY the outer TableGrid border.
+
+    Instance-level override copied from his real Revision sheets: insideH and
+    insideV set to none, outer edges inherited from the TableGrid style.
+    """
+    tblPr = table._tbl.tblPr
+    borders = OxmlElement('w:tblBorders')
+    for edge in ('insideH', 'insideV'):
+        el = OxmlElement(f'w:{edge}')
+        el.set(qn('w:val'), 'none')
+        el.set(qn('w:sz'), '0')
+        el.set(qn('w:space'), '0')
+        el.set(qn('w:color'), 'auto')
+        borders.append(el)
+    anchor = None  # CT_TblPr schema order: tblBorders sits before these three
+    for tag in ('w:tblLayout', 'w:tblCellMar', 'w:tblLook'):
+        anchor = tblPr.find(qn(tag))
+        if anchor is not None:
+            break
+    if anchor is not None:
+        anchor.addprevious(borders)
+    else:
+        tblPr.append(borders)
+
+
+#: Space (points) above the first line of each later part of a solution box —
+#: the gap between (a) and (b). Paragraph spacing, never an empty paragraph;
+#: repair-sheet.py step 2c writes the same value into filed sheets.
+PART_GAP_PT = 8
+
+def _cant_split(row):
+    """Forbid Word from splitting this table row across a page."""
+    trPr = row._tr.get_or_add_trPr()
+    if trPr.find(qn('w:cantSplit')) is None:
+        trPr.append(OxmlElement('w:cantSplit'))
+
+
+def _left_align_math(elem):
+    """Point an oMathPara's own justification left (pandoc emits center)."""
+    if elem is None or elem.tag != f'{{{M_NS}}}oMathPara':
+        return
+    pr = elem.find(f'{{{M_NS}}}oMathParaPr')
+    if pr is None:
+        pr = etree.SubElement(elem, f'{{{M_NS}}}oMathParaPr')
+        elem.insert(0, pr)  # oMathParaPr must be the first child
+    jc = pr.find(f'{{{M_NS}}}jc')
+    if jc is None:
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc')
+    jc.set(f'{{{M_NS}}}val', 'left')
+
+
+def _align_math(elem, where):
+    """Set an oMathPara's justification to 'left' | 'right' | 'center'."""
+    if elem is None or elem.tag != f'{{{M_NS}}}oMathPara':
+        return
+    pr = elem.find(f'{{{M_NS}}}oMathParaPr')
+    if pr is None:
+        pr = etree.SubElement(elem, f'{{{M_NS}}}oMathParaPr')
+        elem.insert(0, pr)
+    jc = pr.find(f'{{{M_NS}}}jc')
+    if jc is None:
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc')
+    jc.set(f'{{{M_NS}}}val', where)
+
+
+_ALIGNED_RE = re.compile(r'\\begin\{aligned\}(.*)\\end\{aligned\}', re.S)
+_NOTE_RE = re.compile(r'\\quad\\text\{(←[^}]*)\}(.*)$')
+
+
+_CM_FONT = None
+_SPACE_EM = 0.22          # a Cambria Math space, in em
+_CM_PATH = '/Applications/Microsoft Word.app/Contents/Resources/DFonts/Cambria.ttc'   # index 1 = Cambria Math
+
+
+def _cm_em(text):
+    """Width of plain text in Cambria Math, in em (Pillow; 0.5 em a glyph without it)."""
+    global _CM_FONT
+    if _CM_FONT is None:
+        try:
+            from PIL import ImageFont
+            _CM_FONT = ImageFont.truetype(_CM_PATH, 1000, index=1)
+        except Exception:
+            _CM_FONT = False
+    if not _CM_FONT:
+        return 0.5 * len(text)
+    return _CM_FONT.getlength(text) / 1000.0
+
+
+def _is_eq_run(el):
+    if etree.QName(el).localname != 'r':
+        return False
+    t = el.find(f'{{{M_NS}}}t')
+    return t is not None and (t.text or '').strip().startswith('=')
+
+
+def _omml_em(el):
+    """Rough width of an OMML element in em: glyphs measured in Cambria Math,
+    Word's operator spacing added, a fraction as wide as its wider half,
+    scripts at 70 %."""
+    tag = etree.QName(el).localname
+    if tag.endswith('Pr') or tag in ('ctrlPr', 'degHide'):
+        return 0.0
+    if tag == 't':
+        txt = el.text or ''
+        w = _cm_em(txt)
+        w += 0.56 * sum(txt.count(c) for c in '=≡≤≥<>')      # relational spacing, both sides
+        w += 0.44 * sum(txt.count(c) for c in '+−-±')          # binary spacing
+        w += 0.17 * txt.count(',')
+        return w
+    if tag == 'f':
+        num = el.find(f'{{{M_NS}}}num'); den = el.find(f'{{{M_NS}}}den')
+        return max(_omml_em(num) if num is not None else 0, _omml_em(den) if den is not None else 0) + 0.15
+    if tag in ('sSup', 'sSub'):
+        e = el.find(f'{{{M_NS}}}e'); sc = el.find(f'{{{M_NS}}}sup') if tag == 'sSup' else el.find(f'{{{M_NS}}}sub')
+        return (_omml_em(e) if e is not None else 0) + 0.7 * (_omml_em(sc) if sc is not None else 0)
+    if tag == 'sSubSup':
+        e = el.find(f'{{{M_NS}}}e'); a = el.find(f'{{{M_NS}}}sub'); b = el.find(f'{{{M_NS}}}sup')
+        return (_omml_em(e) if e is not None else 0) + 0.7 * max(_omml_em(a) if a is not None else 0, _omml_em(b) if b is not None else 0)
+    if tag == 'rad':
+        e = el.find(f'{{{M_NS}}}e')
+        return 0.9 + (_omml_em(e) if e is not None else 0)
+    if tag == 'd':
+        return 0.9 + sum(_omml_em(c) for c in el)
+    return sum(_omml_em(c) for c in el)
+
+
+def _para_width_cm(p, size_pt=9.5, char_cm=0.151):
+    """Rough printed width of one paragraph, in cm: plain runs at the body
+    font's average glyph width, maths through the OMML estimator. Used to
+    catch a line that is about to wrap; an estimate, not a measurement."""
+    em_cm = size_pt / 72 * 2.54
+    w = 0.0
+    for el in p._p.iter():
+        tag = etree.QName(el)
+        if tag.namespace == M_NS and tag.localname == 'oMath':
+            w += _omml_em(el) * em_cm
+        elif tag.localname == 't' and tag.namespace != M_NS:
+            w += char_cm * len(el.text or '')
+    return w
+
+
+def _split_aligned(latex):
+    """An aligned block → [(lhs, rhs, note)] per line, or None if not aligned.
+    Each line is `lhs &= rhs \\quad\\text{← note}`; a line starting with `&`
+    has an empty lhs; `\\\\[4pt]` gaps become an empty row."""
+    m = _ALIGNED_RE.search(latex.strip())
+    if not m:
+        return None
+    body = m.group(1)
+    rows = []
+    for raw in re.split(r'\\\\(?:\[[^\]]*\])?', body):
+        line = raw.strip()
+        if not line:
+            rows.append(('', '', ''))
+            continue
+        note = ''
+        k = line.find('\\quad\\text{←')
+        if k >= 0:
+            note = line[k + len('\\quad'):].strip(); line = line[:k].rstrip()
+        if '&' in line:
+            lhs, rhs = line.split('&', 1)
+        else:
+            lhs, rhs = line, ''
+        rows.append((lhs.strip(), rhs.strip(), note))
+    return rows
+
+
+CHECK_GREEN = '2E7D32'
+
+def _colour_math(elem, hex_rgb):
+    """Colour every math run inside a converted OMML element (font left alone)."""
+    if elem is None:
+        return
+    for r in elem.iter(f'{{{M_NS}}}r'):
+        wrpr = r.find(qn('w:rPr'))
+        if wrpr is None:
+            wrpr = OxmlElement('w:rPr')
+            mrpr = r.find(f'{{{M_NS}}}rPr')
+            if mrpr is not None:
+                mrpr.addnext(wrpr)
+            else:
+                r.insert(0, wrpr)
+        old = wrpr.find(qn('w:color'))
+        if old is not None:
+            wrpr.remove(old)
+        col = OxmlElement('w:color')
+        col.set(qn('w:val'), hex_rgb)
+        wrpr.append(col)
+
+
+def _embolden_math(elem):
+    """Bold every math run inside a converted OMML element."""
+    if elem is None:
+        return
+    for r in elem.iter(f'{{{M_NS}}}r'):
+        wrpr = r.find(qn('w:rPr'))
+        if wrpr is None:
+            wrpr = OxmlElement('w:rPr')
+            mrpr = r.find(f'{{{M_NS}}}rPr')
+            if mrpr is not None:
+                mrpr.addnext(wrpr)
+            else:
+                r.insert(0, wrpr)
+        if wrpr.find(qn('w:b')) is None:
+            wrpr.insert(0, OxmlElement('w:b'))
+
+
+def _hex(color):
+    """'00B050' or RGBColor → 'RRGGBB'."""
+    if isinstance(color, RGBColor):
+        return str(color)
+    return str(color).lstrip('#').upper()
+
+
+RULE_GREEN = '00B050'     # Adrian's green: the rule, and the result it produces
+MATCH_BLUE = '0432FF'     # the expression being matched
+CHANGE_RED = 'EE0000'     # the piece added or changed
+
+
+def tag(*items, color=RULE_GREEN, bold=True, brackets=True):
+    """Adrian's green bold square-bracket rule tag, as a parts list.
+
+    The general rule sits inside a step in green bold square brackets — and
+    the maths inside the tag is an equation object like everywhere else, never
+    typed characters (Alessi's AM 2021 P2 sheet, 9 Sep 2026: "[No term in 1/x]"
+    shipped with a plain-text 1/x). So build the tag from pieces:
+
+        tag('No term in ', ('math', r'\frac{1}{x}'))
+        → [('text', '[No term in ', {...green bold}),
+           ('math', '\\frac{1}{x}', {'color': '00B050', 'bold': True}),
+           ('text', ']', {...green bold})]
+
+    Strings are words; ('math', latex) tuples are inline OMML in the same ink.
+    Splice the result into any parts list: `[('text', 'so '), *tag(...), ('text', '.')]`.
+    `brackets=False` gives the same coloured run without the square brackets —
+    a coloured principle line, or the blue/red pieces of a step.
+    """
+    hex_rgb = _hex(color)
+    text_attrs = {'bold': bold, 'color': RGBColor.from_string(hex_rgb)}
+    math_attrs = {'bold': bold, 'color': hex_rgb}
+    out = []
+    if brackets:
+        out.append(('text', '[', dict(text_attrs)))
+    for it in items:
+        if isinstance(it, str):
+            out.append(('text', it, dict(text_attrs)))
+        elif isinstance(it, (tuple, list)) and it and it[0] in ('math', 'math_display'):
+            out.append((it[0], it[1], dict(math_attrs)))
+        elif isinstance(it, (tuple, list)) and it and it[0] == 'text':
+            attrs = dict(text_attrs); attrs.update(it[2] if len(it) > 2 else {})
+            out.append(('text', it[1], attrs))
+        else:
+            raise ValueError(f'tag(): items are strings or (\'math\', latex) tuples, got {it!r}')
+    if brackets:
+        out.append(('text', ']', dict(text_attrs)))
+    return out
+
+
+# ── sub-part alignment lint (17 Sep 2026) ────────────────────────────────────
+# Under a NUMBERED question the parts use the indented pools (abstract 101 for
+# (a), 105/106 two tabs in for the (i) under it — render_parts' roman_level=2).
+# The flush-left pools (abstract 102/103, at the margin) exist only for an
+# Example's unnumbered stem. 105 sits at 1701 twips, so it was never flush-left. Alessi's
+# EM 2022 P1 Practice Again put every practice "(a)" in the number's column
+# (Adrian: "subparts should be aligned with the main question, not with the
+# question number"), so a saved file is refused when a flush-left part follows a
+# numbered question with no plain stem paragraph in between.
+_FLUSH_LEFT_ABSTRACTS = {'102', '103'}
+_MAIN_Q_ABSTRACTS = {'100'}
+
+def find_flush_parts_under_numbered(path):
+    """Return [(text, why)] for every flush-left list paragraph that sits under a
+    numbered main question. Reads the saved .docx; no python-docx needed."""
+    import re as _re, zipfile as _zf
+    with _zf.ZipFile(path) as z:
+        doc = z.read('word/document.xml').decode('utf-8')
+        numbering = z.read('word/numbering.xml').decode('utf-8')
+    num_abs = dict(_re.findall(r'<w:num w:numId="(\d+)"[^>]*>\s*<w:abstractNumId w:val="(\d+)"', numbering))
+    hits, in_q = [], False
+    for m in _re.finditer(r'<w:p[ >].*?</w:p>', doc, _re.S):
+        para = m.group(0)
+        text = ''.join(_re.findall(r'<w:t[^>]*>([^<]*)</w:t>', para)).strip()
+        nid = _re.search(r'<w:numId w:val="(\d+)"', para)
+        if nid:
+            a = num_abs.get(nid.group(1))
+            if a in _MAIN_Q_ABSTRACTS:
+                in_q = True
+            elif a in _FLUSH_LEFT_ABSTRACTS and in_q:
+                hits.append((text[:60], f'flush-left part (numId {nid.group(1)}) under a numbered question'))
+        elif text:
+            # a plain paragraph with words is a stem written with para(): an
+            # Example begins here, so flush-left parts are allowed again
+            in_q = False
+    return hits
+
+
+# ── plain-text maths lint (9 Sep 2026) ───────────────────────────────────────
+# "If it is maths, it is an equation object, wherever it appears" — and the
+# only sweep the sheets had looked INSIDE <m:t>, so a 1/x typed into a Word run
+# was invisible to it. This looks at every <w:t> run instead.
+_PLAIN_MATHS = [
+    (re.compile(r'[0-9A-Za-z)\]]\s?/\s?[0-9A-Za-z(]'), 'fraction typed with a slash'),
+    (re.compile(r'\^'), 'power typed with ^'),
+    (re.compile(r'[²³⁴⁵⁶⁷⁸⁹⁰¹⁻]'), 'superscript characters'),
+    (re.compile(r'[√∫∑∞≤≥≠±×÷]'), 'maths symbol typed as text'),
+    (re.compile(r'[αβγθπλμω]'), 'Greek letter typed as text'),
+    (re.compile(r'(?<![A-Za-z])(sin|cos|tan|sec|cosec|cot|ln|lg|log)\s?\(?\s?[0-9θx]'), 'trig/log typed as text'),
+    (re.compile(r'(?<![A-Za-z])[a-zA-Z]\s?=\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
+    (re.compile(r'[0-9)]\s?[=<>]\s?[-−0-9a-zA-Z(]'), 'equation typed as text'),
+    (re.compile(r'\d\s?°'), 'angle typed as text'),
+]
+# `and/or` is its own alternative: inside the unit group it needed a SECOND
+# slash after it and so never matched (found 10 Sep 2026, with the \b repair).
+_PLAIN_MATHS_OK = re.compile(
+    r'(?i)\band/or\b'
+    r'|\b(cm|mm|m|km|g|kg|ml|l|units?)\s?/\s?(s|h|hr|min|cm|m|kg|g|unit)\b'
+    r'|\bQ\d+\s?\([a-z]+\)\s?/\s?\([a-z]+\)'   # Q4(a)/(b)
+    r'|\b\d{1,2}/\d{1,2}/\d{2,4}\b'             # a date
+)
+
+
+#: tokens that are maths, not explanation — a note made only of these says nothing
+_NOTE_MATHS_WORDS = {
+    'sin', 'cos', 'tan', 'sec', 'cot', 'csc', 'cosec', 'sinh', 'cosh', 'tanh',
+    'log', 'lg', 'ln', 'exp', 'lim', 'max', 'min', 'arcsin', 'arccos', 'arctan',
+}
+
+
+def find_terse_notes(docx_path):
+    """Every grey "←" note in a saved .docx that carries no words of explanation.
+    Returns a list of note strings. Empty list = clean.
+
+    Adrian's rule (14 Sep 2026, on the S3 Trigonometry sheet): a note gives the
+    REASON, not just the conclusion — "using the formula for sin(A − B)", not a
+    bare "sin(A − B)"; "since Q is in 4th quad, Q/2 is in the 2nd quadrant,
+    hence sine positive", not the quadrant alone; and a line that substitutes a
+    known value says where it came from ("know the trigonometric ratios:
+    sin π/4 = 1/√2"). Whether a note explains ENOUGH is authoring judgment and
+    cannot be checked here. What can: a note that is only a formula or a symbol
+    has certainly not been written as a sentence, and is nearly always one of
+    those three shapes missing. A note needs one word of three letters or more
+    that is not a function name."""
+    import zipfile as _zf
+    from lxml import etree as _et
+    root = _et.fromstring(_zf.ZipFile(docx_path).read('word/document.xml'))
+    w_, m_ = f'{{{W}}}', f'{{{M_NS}}}'
+    notes = []
+    for par in root.iter(f'{w_}p'):
+        line = []
+        for el in par.iter():
+            if el.tag in (f'{w_}t', f'{m_}t'):
+                line.append(el.text or '')
+            elif el.tag == f'{w_}br':          # a soft break starts a new line
+                line.append('\n')
+        for seg in ''.join(line).split('\n'):
+            if '←' not in seg:
+                continue
+            note = seg.rsplit('←', 1)[1].strip()
+            words = [w for w in re.findall(r'[A-Za-z]+', note)
+                     if len(w) >= 3 and w.lower() not in _NOTE_MATHS_WORDS]
+            if not words:
+                notes.append(note)
+    return notes
+
+
+def find_plain_maths(docx_path):
+    """Every <w:t> run in a saved .docx that looks like maths typed as text.
+    Returns a list of (run text, reason). Empty list = clean."""
+    import zipfile as _zf
+    xml = _zf.ZipFile(docx_path).read('word/document.xml').decode('utf8', 'ignore')
+    hits = []
+    for t in re.findall(r'<w:t(?:\s[^>]*)?>([^<]*)</w:t>', xml):
+        text = t.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+        probe = _PLAIN_MATHS_OK.sub(' ', text)
+        for rx, why in _PLAIN_MATHS:
+            if rx.search(probe):
+                hits.append((text, why))
+                break
+    return hits
+
+
+#: adjectives that judge the maths instead of telling the student what to do
+_FANCY_WORDS = (
+    'awkward', 'nasty', 'ugly', 'messy', 'clunky', 'cumbersome', 'unwieldy',
+    'tedious', 'lonely', 'elegant', 'trivial', 'obvious', 'obviously',
+)
+_FANCY_RE = re.compile(r'\b(' + '|'.join(_FANCY_WORDS) + r')\b', re.I)
+
+
+def find_fancy_words(docx_path):
+    """Every sentence in a saved .docx that judges the maths rather than telling
+    the student what to do. Returns a list of (word, sentence). Empty list = clean.
+
+    Adrian's rule (14 Sep 2026, on the S3 Trigonometry sheet): "don't use fancy
+    words like 'awkward' (not teaching english here), explain simply and
+    directly" — and "saying the lonely 1 is ... is cryptic". A word like awkward
+    or trivial names a feeling about the working; a student who does not share
+    the feeling learns nothing from it. The metaphors ("the lonely 1") cannot be
+    detected here and stay authoring judgment — ADRIAN-STYLE §2."""
+    import zipfile as _zf
+    xml = _zf.ZipFile(docx_path).read('word/document.xml').decode('utf8', 'ignore')
+    hits = []
+    for t in re.findall(r'<w:t(?:\s[^>]*)?>([^<]*)</w:t>', xml):
+        text = t.replace('&amp;', '&').replace('&lt;', '<').replace('&gt;', '>')
+        for word in sorted({m.group(0).lower() for m in _FANCY_RE.finditer(text)}):
+            hits.append((word, text.strip()))
+    return hits
+
+
+def _recolour_paragraph(p, hex_rgb):
+    """Text runs and inline maths of one paragraph in one colour."""
+    rgb = RGBColor.from_string(hex_rgb)
+    for run in p.runs:
+        run.font.color.rgb = rgb
+    for child in p._element:
+        if child.tag in (f'{{{M_NS}}}oMath', f'{{{M_NS}}}oMathPara'):
+            _colour_math(child, hex_rgb)
+
+
+def _style_annotations(elem):
+    """Grey out Adrian's '←' step annotations inside converted OMML.
+
+    His sheets end a working line with a small grey note ("← apply chain
+    rule"). Authors write it as \\quad\\text{← ...} in the latex; here every
+    math run from the arrow onwards gets his exact styling: 50%-grey
+    (7F7F7F), 8 pt.
+    """
+    if elem is None:
+        return
+    for mt in elem.iter(f'{{{M_NS}}}t'):
+        if '←' not in (mt.text or ''):
+            continue
+        arrow_run = mt.getparent()
+        parent = arrow_run.getparent()
+        seen = False
+        runs = []
+        for sib in list(parent):
+            if sib is arrow_run:
+                seen = True
+            if not seen:
+                continue
+            runs.extend(sib.iter(f'{{{M_NS}}}r'))   # the run itself, or every run inside a fraction / script after the arrow
+        for sib in runs:
+            wrpr = sib.find(qn('w:rPr'))
+            if wrpr is None:
+                wrpr = OxmlElement('w:rPr')
+                mrpr = sib.find(f'{{{M_NS}}}rPr')
+                if mrpr is not None:
+                    mrpr.addnext(wrpr)
+                else:
+                    sib.insert(0, wrpr)
+            for tag in ('w:rFonts', 'w:color', 'w:sz', 'w:szCs'):
+                old = wrpr.find(qn(tag))
+                if old is not None:
+                    wrpr.remove(old)
+            rf = OxmlElement('w:rFonts')
+            rf.set(qn('w:ascii'), 'Cambria Math')
+            rf.set(qn('w:hAnsi'), 'Cambria Math')
+            col = OxmlElement('w:color')
+            col.set(qn('w:val'), '7F7F7F')
+            sz = OxmlElement('w:sz')
+            sz.set(qn('w:val'), '16')
+            szc = OxmlElement('w:szCs')
+            szc.set(qn('w:val'), '16')
+            for e in (rf, col, sz, szc):
+                wrpr.append(e)
+
+
+def trim_to_ink(path, pad_in=0.06, threshold=10):
+    """Crop a figure PNG to its ink plus a hair of white, in place.
+
+    Adrian, 9 Sep 2026: "the diagrams generated need not have so much white
+    space as its borders." Whatever drew the picture — figure_lib, a bespoke
+    matplotlib script with padded limits, diagram_helpers — the border is cut
+    here, once, at the point of use. Ink = any pixel that differs from white by
+    more than `threshold` in any channel (grey shading, red/blue construction
+    lines and antialiased edges all count). `pad_in` of white is kept on every
+    side (1.5 mm at the PNG's own dpi, 200 when it carries none). Idempotent:
+    an already-trimmed PNG comes back byte-for-byte the same shape.
+
+    Returns (width_before, width_after) in pixels so a caller can keep the
+    drawing at the size it was going to print at; (0, 0) when the file could
+    not be read as an image — a caller then embeds it untouched."""
+    try:
+        from PIL import Image, ImageChops
+    except ImportError:
+        return (0, 0)
+    try:
+        with Image.open(path) as im:
+            im.load()
+            info = dict(im.info)
+            w, h = im.size
+            if im.mode in ('RGBA', 'LA', 'P'):
+                # a transparent PNG is white paper, not black
+                bg = Image.new('RGBA', im.size, (255, 255, 255, 255))
+                flat = Image.alpha_composite(bg, im.convert('RGBA')).convert('RGB')
+            else:
+                flat = im.convert('RGB')
+            diff = ImageChops.difference(flat, Image.new('RGB', im.size, (255, 255, 255)))
+            r, g, b = diff.split()
+            ink = ImageChops.lighter(ImageChops.lighter(r, g), b).point(lambda v: 255 if v > threshold else 0)
+            bbox = ink.getbbox()
+            if not bbox:
+                return (w, w)          # blank image — leave it alone
+            dpi = info.get('dpi', (200, 200))
+            dpi = float(dpi[0] if isinstance(dpi, (tuple, list)) else dpi) or 200.0
+            pad = max(4, int(round(pad_in * dpi)))
+            x0, y0, x1, y1 = bbox
+            x0, y0 = max(0, x0 - pad), max(0, y0 - pad)
+            x1, y1 = min(w, x1 + pad), min(h, y1 + pad)
+            if (x0, y0, x1, y1) == (0, 0, w, h):
+                return (w, w)
+            out = im.crop((x0, y0, x1, y1))
+            save_kw = {}
+            if 'dpi' in info:
+                save_kw['dpi'] = info['dpi']
+            out.save(path, **save_kw)
+            return (w, x1 - x0)
+    except Exception:
+        return (0, 0)
+
+
+class Worksheet:
+    """Builder for a single worksheet docx with Adrian's house style."""
+
+    #: one body line at 9.5 pt on 1.5 spacing
+    LINE_PT = 9.5 * 1.5
+
+    def __init__(self, working_space=0.0, keep_questions_together=False,
+                 keep_figures_with_text=True, one_mark_bonus=1.0,
+                 keep_lines_with_text=2):
+        """working_space: blank writing lines to leave per mark, after every
+        paragraph that carries a mark allocation. 0 disables it (the right
+        choice for a solutions sheet); pass 2.5 for a worksheet students write
+        on, so a [3] gets three times the room of a [1].
+
+        keep_questions_together: glue a whole question so it cannot straddle a
+        page break. OFF by default, and leave it off once working_space is
+        generous — a question is then taller than a page, so Word either splits
+        it anyway or bumps it whole and wastes most of the previous page (which
+        is what left a title-only first page). What stops the ugly breaks is
+        unit-level gluing, always on: a question's text keeps with the first
+        lines of its writing space, the answer line keeps with the line above
+        it, and a figure keeps with its stem. Pages then break between blank
+        writing lines, where a break costs nothing.
+
+        keep_lines_with_text: how many of a part's blank lines travel with its
+        text (2). The remaining lines may cross a page — see workspace() for
+        why the whole run is no longer atomic (10 Sep 2026).
+
+        keep_figures_with_text: anchor each figure to the paragraphs either
+        side of it, so a diagram is never split from the stem that introduces
+        it.
+
+        one_mark_bonus: extra lines for a [1] part on top of the proportional
+        allowance. Strict proportionality is meanest exactly where it hurts —
+        a one-mark answer still needs a line of working plus the answer itself
+        — so a [1] gets one line more than its share. Only applied when
+        working_space is set."""
+        self.doc = Document()
+        self.working_space = float(working_space)
+        self.keep_questions_together = bool(keep_questions_together)
+        self.keep_figures_with_text = bool(keep_figures_with_text)
+        self.one_mark_bonus = float(one_mark_bonus)
+        self.keep_lines_with_text = max(0, int(keep_lines_with_text))
+        self._auto_subq_id = SUBQ_BASE - 1   # increments to SUBQ_BASE, +1, ... per Q
+        self._current_subq_id = None
+        self._stemless_q = False  # Q([]) seen: the next SQ rides the number's line
+        self._auto_parts_id = 89 # increments to 90, 91, ... per parts() (example sub-parts, flush left)
+        self._numbered_q_open = False  # True between a Q() and the next para() stem
+        self._auto_q_id = 49     # increments to 50, 51, ... per restart_numbering()
+        self._current_q_id = 1   # numId 1 = one continuous 1. 2. 3. list
+        self._block_paras = []   # paragraphs of the current question block (for keep-together)
+        self._blocks = []        # every finished block, for block_heights()
+        self._fig_cm = {}        # id(paragraph) -> rendered figure height in cm
+        self._example_n = 0      # auto-counter for example() labels
+        self._numbered_next = {k: v[1] for k, v in NUMBERED_POOLS.items()}   # next free numId per (fmt, level)
+        self._numbered_cur = {}   # (fmt, level) -> numId of the list currently open
+        self._setup_page()
+        self._setup_styles()
+
+    # ---------- private setup ----------
+    def _setup_page(self):
+        s = self.doc.sections[0]
+        s.page_width = Cm(21)
+        s.page_height = Cm(29.7)
+        s.top_margin = Cm(2)
+        s.bottom_margin = Cm(1)
+        s.left_margin = Cm(2.5)
+        s.right_margin = Cm(2.5)
+
+    def _setup_styles(self):
+        # Normal: TNR 9.5pt 1.5 line spacing
+        n = self.doc.styles['Normal']
+        n.font.name = 'Times New Roman'
+        n.font.size = Pt(9.5)
+        n.paragraph_format.line_spacing = 1.5
+        n.paragraph_format.space_before = Pt(0)
+        n.paragraph_format.space_after = Pt(0)
+        rPr = n.element.get_or_add_rPr()
+        rFonts = rPr.find(qn('w:rFonts'))
+        if rFonts is None:
+            rFonts = OxmlElement('w:rFonts')
+            rPr.append(rFonts)
+        for attr in ['ascii', 'hAnsi', 'eastAsia', 'cs']:
+            rFonts.set(qn(f'w:{attr}'), 'Times New Roman')
+
+        # WSTitle
+        t = self.doc.styles.add_style('WSTitle', WD_STYLE_TYPE.PARAGRAPH)
+        t.base_style = self.doc.styles['Normal']
+        t.font.name = 'Times New Roman'
+        t.font.size = Pt(12)
+        t.font.bold = True
+        t.font.color.rgb = RGBColor(0x1F, 0x4E, 0x79)
+        t.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        t.paragraph_format.space_after = Pt(6)
+
+        # WSSubtitle
+        st = self.doc.styles.add_style('WSSubtitle', WD_STYLE_TYPE.PARAGRAPH)
+        st.base_style = self.doc.styles['Normal']
+        st.font.name = 'Times New Roman'
+        st.font.size = Pt(10)
+        st.font.italic = True
+        st.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        st.paragraph_format.space_after = Pt(8)
+
+        # Answer
+        a = self.doc.styles.add_style('Answer', WD_STYLE_TYPE.PARAGRAPH)
+        a.base_style = self.doc.styles['Normal']
+        a.font.color.rgb = RGBColor(0x84, 0x3C, 0x0C)
+        a.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+
+        # Question, SubQuestion (no inline numbering — applied per paragraph)
+        self.doc.styles.add_style('Question', WD_STYLE_TYPE.PARAGRAPH).base_style = self.doc.styles['Normal']
+        self.doc.styles.add_style('SubQuestion', WD_STYLE_TYPE.PARAGRAPH).base_style = self.doc.styles['Normal']
+
+        # Set zoom
+        zoom = self.doc.settings.element.find(qn('w:zoom'))
+        if zoom is None:
+            z = etree.SubElement(self.doc.settings.element, qn('w:zoom'))
+            z.set(qn('w:percent'), '100')
+        else:
+            zoom.set(qn('w:percent'), '100')
+
+    # ---------- private paragraph builder ----------
+    def _add(self, parts, style=None, num_id=None, marks=None, alignment=None):
+        p = self.doc.add_paragraph()
+        if style:
+            p.style = self.doc.styles[style]
+        if alignment is not None:
+            p.alignment = alignment
+
+        if num_id is not None:
+            pPr = p._element.get_or_add_pPr()
+            existing = pPr.find(qn('w:numPr'))
+            if existing is not None:
+                pPr.remove(existing)
+            numPr = OxmlElement('w:numPr')
+            ilvl = OxmlElement('w:ilvl')
+            ilvl.set(qn('w:val'), '0')
+            nId = OxmlElement('w:numId')
+            nId.set(qn('w:val'), str(num_id))
+            numPr.append(ilvl)
+            numPr.append(nId)
+            pPr.append(numPr)
+
+        self._fill(p, parts)
+
+        if marks is not None:
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(15.5), WD_TAB_ALIGNMENT.RIGHT)
+            # The text of a marked paragraph stops 1.4 cm short of the right
+            # edge, so the [n] at the 15.5 cm right tab always stands clear of
+            # it (14 Sep 2026).  Without the indent a last line that happens to
+            # run past 15.0 cm eats the tab: LibreOffice collapses it to zero
+            # ("...significant figures.[4]") and Word throws the [n] out into
+            # the margin.  1.4 cm = the 0.5 cm beyond the tab stop, the widest
+            # label ([10]) and a gap.
+            p.paragraph_format.right_indent = Cm(1.4)
+            run = p.add_run(f'\t[{marks}]')
+            run.font.name = 'Times New Roman'
+            run.font.size = Pt(9.5)
+        self._block_paras.append(p)
+        if marks is not None and self.working_space:
+            self.workspace(marks=marks)
+        return p
+
+    def _fill(self, p, parts):
+        """Append runs/math to an existing paragraph from a parts list.
+
+        A maths part with no colour of its own takes the colour of the words
+        around it when every text part on the line shares one (20 Sep 2026,
+        Adrian: "you want to use grey for the font, but x is still black" — a
+        grey principle line with M('x') in it printed the x in black)."""
+        text_colours = {str(part[2].get('color')) for part in parts
+                        if part[0] == 'text' and len(part) > 2 and part[2].get('color')}
+        plain_text = any(part[0] == 'text' and not (len(part) > 2 and part[2].get('color')) for part in parts)
+        line_colour = None
+        if len(text_colours) == 1 and not plain_text:
+            line_colour = next(part[2]['color'] for part in parts if part[0] == 'text' and len(part) > 2 and part[2].get('color'))
+        for part in parts:
+            kind = part[0]
+            if kind == 'text':
+                text = part[1]
+                attrs = part[2] if len(part) > 2 else {}
+                run = p.add_run(text)
+                run.font.name = 'Times New Roman'
+                run.font.size = Pt(9.5)
+                if attrs.get('bold'):
+                    run.bold = True
+                if attrs.get('italic'):
+                    run.italic = True
+                if attrs.get('underline'):
+                    run.underline = True
+                if attrs.get('color'):
+                    run.font.color.rgb = attrs['color']
+            elif kind in ('math', 'math_display'):
+                if part[1].lstrip().startswith(('^', '_')):
+                    # an exponent with nothing under it: Word and LibreOffice
+                    # both draw the empty base slot as a box, "m□²"
+                    # (18 Sep 2026). The unit goes inside the maths with the
+                    # number: $156 \text{ m}^2$.
+                    print(f'  !! empty-base superscript: {part[1]!r}')
+                elem = _latex_to_omml(part[1], display=(kind == 'math_display'))
+                if elem is not None:
+                    _style_annotations(elem)
+                    # ('math', latex, {'color': '00B050', 'bold': True}) — the
+                    # maths inside a coloured tag or a coloured principle line
+                    # takes the same ink as the words around it (9 Sep 2026).
+                    attrs = part[2] if len(part) > 2 else {}
+                    if attrs.get('color'):
+                        _colour_math(elem, _hex(attrs['color']))
+                    elif line_colour is not None:
+                        _colour_math(elem, _hex(line_colour))
+                    if attrs.get('bold'):
+                        _embolden_math(elem)
+                    p._element.append(elem)
+            else:
+                raise ValueError(f"unknown part kind {kind!r} — use 'text', 'math' or 'math_display'")
+
+    # ---------- public API ----------
+    def title(self, text):
+        p = self.doc.add_paragraph()
+        p.style = self.doc.styles['WSTitle']
+        p.add_run(text)
+
+    def subtitle(self, text):
+        p = self.doc.add_paragraph()
+        p.style = self.doc.styles['WSSubtitle']
+        p.add_run(text)
+
+    def brand(self, level, topic, kind='Practice', n_questions=None, marks=None, mono=False):
+        """The AdrianMath masthead for `level` (a questions.level value): A Math
+        navy band, E Math white + teal, Sec 1 green tint, Sec 2 blue bar — each
+        with its subject block, running header and the site footer. mono=True is
+        the black-and-white version, told apart by design alone. Goes to the
+        top of the body whenever it is called; replaces title()/subtitle().
+        See worksheet_brand.py and ADRIAN-STYLE.md §9."""
+        here = os.path.dirname(os.path.abspath(__file__))
+        if here not in sys.path:
+            sys.path.insert(0, here)
+        import worksheet_brand
+        return worksheet_brand.apply(self, level, topic, kind, n_questions, marks, mono)
+
+    def concept(self, text):
+        """Bold concept subtitle written above the Example(s) it covers.
+
+        Adrian's convention: the concept a worked example teaches is a bold
+        line of its own, in front — then the "Example N" label, then the
+        question. When several related examples share one concept, write the
+        concept once and give the examples one number with letters
+        (example('a'), example('b'))."""
+        return self._add([('text', text, {'bold': True})])
+
+    def example(self, letter=None):
+        """Bold auto-numbered "Example N" label line.
+
+        example()    -> Example 1, Example 2, ... (counter increments)
+        example('a') -> starts a lettered group: Example 3a (counter increments)
+        example('b') -> Example 3b (same number as the last 'a')
+        """
+        if letter in (None, '', 'a'):
+            self._example_n += 1
+        return self._add([('text', f'Example {self._example_n}{letter or ""}',
+                           {'bold': True})])
+
+    def Q(self, parts, marks=None):
+        """Main question. Auto-numbered 1. 2. 3. ...
+
+        A question with NO stem — `Q([])` followed by SQ() parts — puts its
+        first part on the number's own line, "1.  (a) Simplify …", instead of
+        a bare "1." over an indented "(a)" (Adrian, 11 Sep 2026: "the question
+        should be horizontally level with the question number"). The later
+        parts then count on from (b)."""
+        # Bump the sub-question id pool for this question; reset on each Q call
+        self._finish_block()    # glue the question that just ended
+        self._auto_subq_id += 1
+        if self._auto_subq_id >= SUBQ_BASE + SUBQ_POOL:
+            raise RuntimeError(f'more than {SUBQ_POOL} questions on one sheet')
+        self._current_subq_id = self._auto_subq_id
+        self._numbered_q_open = True   # parts() is a no-op until a para() stem
+        self._block_paras = []  # a new question starts a new keep-together block
+        if not parts:
+            self._stemless_q = True
+            return None
+        self._stemless_q = False
+        # Apply the numId inline so MS Word picks it up reliably
+        return self._add(parts, style='Question', num_id=self._current_q_id, marks=marks)
+
+    def restart_numbering(self):
+        """Start a fresh 1. 2. 3. list for the Q() calls that follow.
+
+        A worksheet is one continuous list; a self-study sheet is several
+        "Practice N" sets that each count from 1. Call this right after the
+        Practice heading. Real Word numbering, not typed "1.  " text, so an
+        item Adrian inserts or deletes renumbers the rest (2 Sep 2026)."""
+        self._auto_q_id += 1
+        if self._auto_q_id > 79:
+            raise RuntimeError('more than 30 restarted lists on one sheet')
+        self._current_q_id = self._auto_q_id
+        return self._current_q_id
+
+    def SQ(self, parts, marks=None):
+        """Sub-question (a)(b)(c) ... auto-tracks under the current main question."""
+        if self._current_subq_id is None:
+            raise RuntimeError('SQ() called before any Q(). Add a main question first.')
+        if self._stemless_q:
+            # "(a)" typed on the question's line at the parts' label column, its
+            # text tabbed to the parts' text column; the list below starts at (b).
+            self._stemless_q = False
+            p = self._add([('text', '(a)'), ('text', '\t')] + list(parts), style='Question',
+                          num_id=self._current_q_id, marks=marks)
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(2.0))   # = the SubQuestion text indent (1134 twips)
+            # A wrapped line hangs under the part's text, not under the number
+            # (17 Sep 2026, S4 AM Circles Q1(a)): indent to the text column and
+            # hang the whole 2 cm, with a stop at 1 cm for the "(a)" label.
+            p.paragraph_format.left_indent = Cm(2.0)
+            p.paragraph_format.first_line_indent = Cm(-2.0)
+            p.paragraph_format.tab_stops.add_tab_stop(Cm(1.0))
+            if SUBQ_BASE <= self._current_subq_id < SUBQ_BASE + SUBQ_POOL:
+                self._current_subq_id = NOSTEM_BASE + (self._current_subq_id - SUBQ_BASE)
+            return p
+        return self._add(parts, style='SubQuestion',
+                         num_id=self._current_subq_id, marks=marks)
+
+    def cont(self, parts, marks=None, level=1):
+        """A further line of the part above, at the part's own text indent.
+
+        No label of its own: the part already carries one. A part that prints a
+        table of values in the middle of itself needs this -- "(c) Some values
+        of x and V are given below." / the table / "Find the value of p." is one
+        part, and the closing line must not open a new (d) (18 Sep 2026).
+        """
+        return self._add(parts, style='SubQuestion' if level >= 1 else None,
+                         marks=marks)
+
+    def parts(self):
+        """Start a fresh (a)(b)(c) list under an UNNUMBERED stem — an Example's
+        question written with para(). The labels sit flush with the stem's left
+        edge and the text one tab in (Adrian, 7 Sep 2026: "(a) (b) (c) should be
+        vertically aligned with the first line"). Call it right after the stem
+        (and its figure), then SQ() as usual. Q() keeps its own indented pool
+        for practice questions, where the parts line up with the question's
+        text instead. Real Word numbering either way."""
+        # Under a NUMBERED practice question this call is ignored: the parts
+        # keep the indented pool, so "(a)" sits level with the question's text,
+        # never in the number's column (Adrian, 17 Sep 2026, Alessi's EM 2022
+        # P1 Practice Again: "subparts should be aligned with the main question,
+        # not with the question number" — the worker had called parts() after
+        # ws.Q(), which put every practice part in the flush-left Example pool).
+        if getattr(self, '_numbered_q_open', False):
+            return self._current_subq_id
+        self._auto_parts_id += 1
+        if self._auto_parts_id > 119:
+            raise RuntimeError('more than 30 example part-lists on one sheet')
+        self._current_subq_id = self._auto_parts_id
+        return self._current_subq_id
+
+    def numbered(self, parts, level=0, fmt='letter', restart=False, marks=None):
+        """One item of a real Word list at `level` (0 = flush with the stem, 1 = one
+        tab in, 2 = two tabs in) in `fmt` 'letter' → (a)(b)(c) or 'roman' → (i)(ii)(iii).
+        `restart=True` opens a fresh list (the first part of a question); later items
+        continue it. Deleting or inserting an item in Word renumbers the rest."""
+        key = (fmt, level)
+        if key not in NUMBERED_POOLS:
+            raise ValueError(f'no numbering pool for {key}')
+        if restart or key not in self._numbered_cur:
+            nid = self._numbered_next[key]
+            if nid >= NUMBERED_POOLS[key][1] + 40:
+                raise RuntimeError(f'more than 40 restarted {fmt} lists at level {level} on one sheet')
+            self._numbered_next[key] = nid + 1
+            self._numbered_cur[key] = nid
+        style = 'SubQuestion' if level >= 1 else None
+        return self._add(parts, style=style, num_id=self._numbered_cur[key], marks=marks)
+
+    def para(self, parts, marks=None):
+        """Plain paragraph (no numbering). An Example's stem is written this
+        way, so a para() closes the numbered question above it and lets parts()
+        open its flush-left list again."""
+        self._numbered_q_open = False
+        return self._add(parts, marks=marks)
+
+    def keep_with_next(self):
+        """Glue the paragraph just written to the one below it.
+
+        The blanket keep-together is off, because a NEW part may start on the
+        next page. The few places where two paragraphs are one and the same
+        part say so here -- a part's lead-in and the first (i) underneath it,
+        for instance, since a part is never cut across two pages
+        (15 Sep 2026, a bare "(d)" left at the foot of a page with its (i) and
+        (ii) on the next one)."""
+        if self._block_paras:
+            self._block_paras[-1].paragraph_format.keep_with_next = True
+
+    def section(self, text, new_page=False):
+        """Bold section header, e.g. 'Section B - Congruency and Similarity'.
+
+        Closes the previous question and glues itself to the question that
+        follows, so a header can never be left stranded at the foot of a page
+        with its first question overleaf.
+
+        new_page=True starts the section on a fresh page. It sets the
+        heading's own "page break before" rather than adding a hard break,
+        because Word drops that property when the heading already sits at the
+        top of a page. A hard break does not: after a page that happens to end
+        on the bottom margin it hands you a blank page (15 Sep 2026, the JC2
+        P&C manual had two)."""
+        self._finish_block()
+        p = self._add([('text', text, {'bold': True})])
+        p.paragraph_format.space_before = Pt(6)
+        p.paragraph_format.keep_with_next = True
+        if new_page:
+            p.paragraph_format.page_break_before = True
+        return p
+
+    def math_block(self, latex_expr):
+        """Centred display equation. A \\begin{aligned} block is drawn the way a
+        solution box draws one — one equation per line, aligned at "=" — so notes
+        follow the same one-equation-per-line rule (17 Sep 2026: the aligned block
+        used to print a literal "&=")."""
+        p = self.doc.add_paragraph()
+        rows = _split_aligned(latex_expr)
+        if rows:
+            self._solution_lines(p, rows)
+            self._block_paras.append(p)
+            return p
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        elem = _latex_to_omml(latex_expr, display=True)
+        if elem is not None:
+            _style_annotations(elem)
+            p._element.append(elem)
+        self._block_paras.append(p)
+        return p
+
+    #: the text column an [Ans: …] line has to fit inside (A4 less the house
+    #: side margins), with a little slack for the estimate's own error
+    ANS_CM = 15.6
+
+    def ans(self, parts):
+        """[Ans: ...] right-aligned orange line, glued to the line above it so
+        it cannot be stranded at the top of the next page.
+
+        The line has to fit on ONE line -- a key that wraps reads as two
+        answers. The width is estimated here and anything over the column
+        prints at build time, so a too-long key is shortened at its source
+        rather than discovered on the render."""
+        if self._block_paras:
+            self._block_paras[-1].paragraph_format.keep_with_next = True
+        full = [('text', '[Ans: ')] + list(parts) + [('text', ']')]
+        p = self._add(full, style='Answer', alignment=WD_ALIGN_PARAGRAPH.RIGHT)
+        w = _para_width_cm(p)
+        if w > self.ANS_CM:
+            flat = ''.join(str(t[1]) for t in full)   # a part may carry a style dict as t[2] (26 Sep 2026: this crashed the sheet worker)
+            print(f'  !! [Ans:] wraps ({w:.1f} cm > {self.ANS_CM} cm): {flat[:100]}')
+        return p
+
+    def _picture(self, p, path, width_cm):
+        """Centre a PNG in paragraph p, capped at width_cm and never upscaled
+        past the image's natural 96-dpi size — a small render should stay
+        small, not blur.
+
+        The PNG is first trimmed to its ink (trim_to_ink): a figure whose
+        author padded xlim/ylim, or saved with matplotlib's default 0.1 in
+        border, used to print with a blank frame around it (Alessi's E Math
+        sheet, 9 Sep 2026 — the half-cylinder faces sat in 44% white). The
+        drawing keeps the size it was going to print at; only the border goes."""
+        from PIL import Image  # python-docx already depends on Pillow
+        before, after = trim_to_ink(path)
+        if before and after < before:
+            width_cm = width_cm * after / before
+        with Image.open(path) as im:
+            natural_cm = im.width / 96 * 2.54
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_before = Pt(4)
+        p.paragraph_format.space_after = Pt(4)
+        run = p.add_run()
+        w = min(width_cm, 16, natural_cm)
+        run.add_picture(path, width=Cm(w))
+        with Image.open(path) as im:
+            self._fig_cm[id(p)] = w * im.height / im.width
+        return p
+
+    def figure(self, path, width_cm=10.5):
+        """Embed a rendered figure (see figure_lib.py) under the current question."""
+        p = self._picture(self.doc.add_paragraph(), path, width_cm)
+        if self.keep_figures_with_text:
+            if self._block_paras:          # stay with the stem above
+                self._block_paras[-1].paragraph_format.keep_with_next = True
+            p.paragraph_format.keep_with_next = True   # and the part below
+        self._block_paras.append(p)
+        return p
+
+    def data_table(self, rows, label_w_cm=None):
+        """The question's own TABLE OF VALUES, drawn as a real table.
+
+        An exam paper prints the table of corresponding values with all its
+        rules -- a narrow first column carrying $x$ and $y$, then one column
+        per value -- so the sheet prints it the same way (15 Sep 2026: the bank
+        stores some of these as a markdown pipe table and others as a LaTeX
+        array, and both were reaching the page as raw characters or as a grid
+        with no rules at all).
+
+        `rows` is a list of rows; a row is a list of cells; a cell is a parts
+        list (`[('math', 'x')]`) or a bare string, which is split into prose and
+        inline maths the same way a question stem is. The table is centred, sized
+        to its own content rather than to the text width, and never split across
+        a page.
+
+        This is for the QUESTION's data. Working is never a table (ADRIAN-STYLE,
+        Working).
+        """
+        rows = [[(c if isinstance(c, (list, tuple)) else [('text', str(c))])
+                 for c in row] for row in rows]
+        ncols = max(len(r) for r in rows)
+        rows = [r + [[]] * (ncols - len(r)) for r in rows]
+
+        def cell_cm(cell):
+            n = sum(len(part[1]) for part in cell if len(part) > 1)
+            return round(0.22 * n + 0.5, 2)
+
+        lab_w = label_w_cm or max(1.1, max(cell_cm(r[0]) for r in rows))
+        val_w = max(0.95, max((cell_cm(c) for r in rows for c in r[1:]),
+                              default=0.95))
+        # the table sits within the text width even when the row is long
+        if lab_w + val_w * (ncols - 1) > 16.0:
+            val_w = round((16.0 - lab_w) / (ncols - 1), 2)
+        widths = [lab_w] + [val_w] * (ncols - 1)
+
+        table = self.doc.add_table(rows=len(rows), cols=ncols)
+        table.style = self.doc.styles['Table Grid']
+        table.autofit = False
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        for col, w in zip(table.columns, widths):
+            col.width = Cm(w)
+        last = len(rows) - 1
+        for r_i, (row, cells) in enumerate(zip(table.rows, rows)):
+            _cant_split(row)
+            for cell, parts, w in zip(row.cells, cells, widths):
+                cell.width = Cm(w)
+                cell.vertical_alignment = WD_ALIGN_VERTICAL.CENTER
+                p = cell.paragraphs[0]
+                p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                p.paragraph_format.space_after = Pt(1)
+                # cantSplit keeps a row whole; keep-with-next on every row but
+                # the last keeps the ROWS together (23 Sep 2026: a table of
+                # values broke between its x row and its y row).
+                p.paragraph_format.keep_with_next = r_i < last
+                if parts:
+                    self._fill(p, parts)
+        self.doc.add_paragraph()   # breathing space under the table
+        return table
+
+    def columns(self, columns, widths_cm=None):
+        """Side-by-side columns of NOTES, at top level — outside a solution box.
+
+        A borderless table with one cell per column, each cell holding the same
+        step shapes solution_box takes: a parts list (prose + inline maths), a
+        bare latex string (a display line), or ('figure', png[, cm]). Adrian's
+        notes put related pictures beside each other so the student reads them
+        as one picture (14 Sep 2026, on the trig graphs: "show the three basic
+        graphs (perhaps in three columns), with their max/min/amplitude/
+        centreline/period formula/period").
+
+        widths_cm must sum to about 16 (the text width); it defaults to equal
+        columns. A column never splits across a page.
+        """
+        n = len(columns)
+        widths = widths_cm or [round(16.0 / n, 2)] * n
+        table = self.doc.add_table(rows=1, cols=n)
+        table.autofit = False
+        b = OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
+        table._tbl.tblPr.append(b)
+        for col, w in zip(table.columns, widths):
+            col.width = Cm(w)
+        for cell, steps, w in zip(table.rows[0].cells, columns, widths):
+            cell.width = Cm(w)
+            first = True
+            for step in steps:
+                p = cell.paragraphs[0] if first else cell.add_paragraph()
+                first = False
+                self._solution_step(p, step, width=w - 0.3)
+        _cant_split(table.rows[0])
+        self.doc.add_paragraph()   # breathing space under the block
+        return table
+
+    def solution_box(self, rows, keep_together=True, part_gap=None):
+        """Boxed worked solution in Adrian's house format.
+
+        His Revision "(With Worked Examples)" sheets put every solution in a
+        TableGrid table showing ONLY the outer border (no inner gridlines),
+        under a bold "Solution:" line with one blank line of breathing space
+        after the question. Two columns: the part label alone in a narrow
+        first column, the working beside it, one table row per part. A small
+        gap (`part_gap` points, default PART_GAP_PT = 8) separates the parts:
+        space above each later part's first line, never an empty paragraph.
+
+        rows: list of (label, steps). label is '(a)' / '(i)' ('' for an
+        unlabelled single-cell solution), or a PAIR ('(a)', '(i)') when a part
+        has sub-parts — see "A sub-part label gets its own column" below.
+        Each step is one of:
+
+        - a bare latex string — a display equation, left-aligned at a small
+          indent. Never chain several = signs on one line: write multi-step
+          working as a \\begin{aligned} block (&= per line) so the lines
+          stack with the = signs vertically aligned. End a line with
+          \\quad\\text{← short note} for Adrian's grey 8pt arrow annotation.
+        - a parts list (same shapes Q()/para() take), rendered left-aligned
+          — for prose steps and inline-math sentences.
+        - ('figure', path[, width_cm]) — a centred figure_lib PNG inside the
+          box, for a sketch that explains the working (default 8 cm).
+        - ('check', parts) — a sanity check that is NOT part of the working:
+          "✓ Check: " and the parts, all in green (Adrian, 7 Sep 2026, on a
+          black "✓ 4√2 − 4 − π/2 = 0.086, a small positive number" line: "a
+          check beside the tick and the fonts in green/light grey will signify
+          to the student … that check is not part of the working").
+
+        The question paragraphs (since the last Q()) and the "Solution:" line
+        always keep with the first part; every part row is unsplittable.
+        keep_together=True additionally glues the parts to each other so the
+        whole box sits on one page — Word pushes the block to a fresh page
+        rather than straddling. Adrian's rule (13 Sep 2026) is the flowing
+        box: a new part may start on the next page, a part is never cut, a
+        near miss is tightened — so callers pass keep_together=False; the
+        True default is kept for old author scripts.
+
+        A SUB-PART LABEL GETS ITS OWN COLUMN (Adrian, 14 Sep 2026, on an (a)(i)
+        solution whose "(i)" was typed at the head of the working: "there should
+        be two columns separately to accomodate (a) and (i) / you can look at how
+        i did it in my notes worked examples"). His notes do it as a three-column
+        table — outer label, sub label, working (AM 16 Trigonometric Graphs, the
+        (iv)(a)/(iv)(b) table: 0.94 cm, 0.75 cm, the rest) — so the sub labels
+        line up under each other and the working starts at the same x on every
+        row. A row with no sub label merges the sub column into the working, so
+        an unlabelled row still uses the full width. Pass the pair and the
+        library builds it:
+
+            w.solution_box([
+                (('(a)', '(i)'),  ['period = …']),
+                (('',    '(ii)'), ['q = …']),
+                ('(b)',           ['…']),          # no sub-part: merged row
+            ], keep_together=False)
+
+        Repeat the outer label only on the FIRST of its sub-parts; '' after,
+        the way he writes it.
+
+        THAT PUSH IS THE "LARGE SPACE" (Adrian, 2 Sep 2026: "how can i remove
+        the large space between the example and section 3?"). A glued
+        heading + example + figure + box that does not fit in what is left of
+        the page jumps whole to the next one, leaving half a page empty. On a
+        dense teaching sheet pass keep_together=False and let the box flow;
+        in Word the same fix is Paragraph → Line and Page Breaks → untick
+        "Keep with next" on the paragraphs above the box, and Table Properties
+        → Row → tick "Allow row to break across pages".
+        """
+        spacer = self.doc.add_paragraph()  # breathing space above "Solution:"
+        self._block_paras.append(spacer)
+        self._add([('text', 'Solution:', {'bold': True})])
+        # A label may be '(a)' or the pair ('(a)', '(i)') — outer, sub-part.
+        labels = [(lab if isinstance(lab, (tuple, list)) else (lab, ''))
+                  for lab, _ in rows]
+        labelled = any(outer or sub for outer, sub in labels)
+        subbed = any(sub for _, sub in labels)
+        # The label column is 1 cm — his own sheets never go past "(vii)". A longer
+        # label ("(viii)", "(b)(ii)") wrapped onto two lines and pushed the part's
+        # first line down, so the column grows with the widest label instead.
+        lab_w = max(1.0, max((_label_width_cm(outer) for outer, _ in labels),
+                             default=0.0))
+        sub_w = max(0.75, max((_label_width_cm(sub) for _, sub in labels),
+                              default=0.0)) if subbed else 0.0
+        work_w = round(16.0 - lab_w - sub_w, 2)
+        ncols = 3 if subbed else (2 if labelled else 1)
+        table = self.doc.add_table(rows=len(rows), cols=ncols)
+        table.style = self.doc.styles['Table Grid']
+        table.autofit = False
+        _outer_border_only(table)
+        cells_by_row = []
+        for (outer, sub), row in zip(labels, table.rows):
+            if subbed:
+                lab_cell, sub_cell, work_cell = row.cells
+                lab_cell.width = Cm(lab_w)
+                if sub:
+                    sub_cell.width = Cm(sub_w)
+                    work_cell.width = Cm(work_w)
+                    self._fill(sub_cell.paragraphs[0], [('text', sub)])
+                else:
+                    # No sub-part on this row: the sub column joins the working,
+                    # so the row still uses the full width (his notes do the same).
+                    work_cell = sub_cell.merge(work_cell)
+                    work_cell.width = Cm(round(sub_w + work_w, 2))
+                    sub_cell = None
+            elif labelled:
+                lab_cell, work_cell = row.cells
+                lab_cell.width = Cm(lab_w)
+                work_cell.width = Cm(work_w)
+                sub_cell = None
+            else:
+                lab_cell = sub_cell = None
+                work_cell = row.cells[0]
+                work_cell.width = Cm(16.0)
+            if lab_cell is not None and outer:
+                self._fill(lab_cell.paragraphs[0], [('text', outer)])
+            cells_by_row.append((lab_cell, sub_cell, work_cell))
+        # cell.width only writes w:tcW, which Word honours; LibreOffice (and
+        # the soffice PDF preview) size columns from w:tblGrid instead and
+        # split 50/50, clipping long display math in the working column
+        # (found 9 Sep 2026 on the GCE solutions export). Set both.
+        grid = ([lab_w, sub_w, work_w] if subbed
+                else ([lab_w, work_w] if labelled else [16.0]))
+        for col, w in zip(table.columns, grid):
+            col.width = Cm(w)
+        gap_pt = PART_GAP_PT if part_gap is None else float(part_gap)
+        for idx, ((_, steps), (lab_cell, sub_cell, work_cell)) in enumerate(
+                zip(rows, cells_by_row)):
+            first = True
+            for step in steps:
+                if isinstance(step, tuple) and step and step[0] == 'cols':
+                    # ('cols', [steps, steps, …][, widths_cm]) — side-by-side columns
+                    # inside the working cell (Adrian, 12 Sep 2026: "you can create
+                    # columns in tables to enhance readability and neatness"): the
+                    # working on the left, an ASTC reference or a sketch on the right.
+                    self._solution_cols(work_cell, step[1], step[2] if len(step) > 2 else None, first)
+                    first = False
+                    continue
+                p = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
+                first = False
+                self._solution_step(p, step)
+            # Air above the first line of every part, as paragraph spacing on
+            # BOTH cells so the label and the working stay level:
+            #   row 0 — 2 pt (Adrian, 7 Sep 2026: "2px spacing from the top of
+            #   the box for the first line only — the '(a)' on the left and the
+            #   top of the line"; 2 pt is Word's nearest unit);
+            #   later rows — part_gap, the gap between parts.
+            # Spacing, NOT an empty paragraph (Adrian, 10 Sep 2026, on Alessi's
+            # Example 4a where (a)(b)(c) touched: "leave a line space between
+            # each subpart (or at least a small space - need not be a full line
+            # space - you can adjust to fit the space as required)"). The blank
+            # paragraph this used to add was a trailing EMPTY paragraph in the
+            # cell — exactly what the filing checks strip (SKILL.md: "the last
+            # paragraph of every table cell must have text"; repair-sheet.py
+            # step 2a) — so the gap never reached a filed sheet. Nothing strips
+            # spacing, and 8 pt costs under half a line instead of a whole one.
+            tops = [work_cell.paragraphs[0]] + [
+                c.paragraphs[0] for c in (lab_cell, sub_cell) if c is not None]
+            for tp in tops:
+                tp.paragraph_format.space_before = Pt(2) if idx == 0 else Pt(gap_pt)
+        for row in table.rows:
+            _cant_split(row)          # a part never breaks mid-way, glued or not
+        # The question's paragraphs stay together (a question never splits), and
+        # the spacer + "Solution:" line stay with the FIRST part of the box, so
+        # "Solution:" is never stranded at a page foot. The question is NOT
+        # chained to the box: Word breaks a paragraph-chain that runs into a
+        # table at an odd place (13 Sep 2026, JC1 Series: parts (a)–(c) of a
+        # question left on one page, (d) + the box on the next).
+        q_paras = self._block_paras[:-2] if len(self._block_paras) >= 2 else []
+        for para in q_paras[:-1]:
+            para.paragraph_format.keep_with_next = True
+        for para in self._block_paras[-2:]:
+            para.paragraph_format.keep_with_next = True
+        if keep_together:
+            for para in self._block_paras:
+                para.paragraph_format.keep_with_next = True
+            # …and the parts stay with each other too: the whole box on one page.
+            # Adrian's page rule (13 Sep 2026, as in his own notes — AM 18 Example
+            # 3b breaks between (c) and (d) at the foot of a full page): a part is
+            # never cut, a NEW part may start on the next page, a near miss is
+            # tightened to fit (fit-examples.py), and only a part taller than a
+            # page is broken, at a sensible line — author that one as two rows,
+            # the second with label ''. So keep_together=False is the normal case.
+            for row in list(table.rows)[:-1]:  # last row must NOT keep with what follows
+                for cell in row.cells:
+                    for cp in cell.paragraphs:
+                        cp.paragraph_format.keep_with_next = True
+        self._block_paras = []
+        self.doc.add_paragraph()  # breathing space between the box and what follows
+        return table
+
+    def _grid(self, work_cell, rows, widths_cm=None, host=None):
+        """('grid', rows, widths_cm) — a small BORDERED table, the shape Adrian's
+        sign test takes (20 Sep 2026: "first derivative test should look like this
+        instead (a table)"): x | 0⁻ | 0 | 0⁺ over the sign and the slope of dy/dx.
+        Every cell is centred and holds a parts list or a latex string. This is
+        for a reference grid, never for lines of working (§1 of ADRIAN-STYLE)."""
+        ncols = max(len(r) for r in rows)
+        widths = widths_cm or [round(14.0 / ncols, 2)] * ncols
+        inner = work_cell.add_table(rows=len(rows), cols=ncols)
+        inner.autofit = False
+        try:
+            inner.style = self.doc.styles['Table Grid']
+        except KeyError:
+            b = OxmlElement('w:tblBorders')
+            for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+                el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'single'); el.set(qn('w:sz'), '6'); b.append(el)
+            inner._tbl.tblPr.append(b)
+        for col, w in zip(inner.columns, widths):
+            col.width = Cm(w)
+        for r, row in zip(inner.rows, rows):
+            for cell, content, w in zip(r.cells, row, widths):
+                cell.width = Cm(w)
+                cp = cell.paragraphs[0]
+                cp.paragraph_format.line_spacing = 1.15
+                if isinstance(content, str):
+                    elem = _latex_to_omml(content, display=False)
+                    if elem is not None:
+                        _style_annotations(elem)
+                        cp._element.append(elem)
+                else:
+                    self._fill(cp, content)
+                cp.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        _cant_split(inner.rows[0])
+        if host is not None:
+            host._p.addnext(inner._tbl)
+        return inner
+
+    def grid(self, rows, widths_cm=None):
+        """A bordered reference grid at top level (Notes)."""
+        t = self._grid(self.doc, rows, widths_cm)
+        self.doc.add_paragraph()
+        return t
+
+    def _solution_step(self, p, step, width=14.5):
+        """Render ONE solution step into paragraph p (shared by the box and its columns)."""
+        p.paragraph_format.line_spacing = 1.5   # same as the body (Adrian, 2 Sep 2026: 1.5 "improves readability")
+        if isinstance(step, tuple) and step and step[0] == 'grid':
+            return self._grid(p._parent, step[1], step[2] if len(step) > 2 else None, host=p)
+        if isinstance(step, tuple) and step and step[0] == 'cols':
+            # nested columns (a sketch or an ASTC reference beside the working)
+            return self._solution_cols(p._parent, step[1], step[2] if len(step) > 2 else None, False, host=p)
+        if isinstance(step, tuple) and step and step[0] == 'or':
+            # ('or', left_aligned, right_aligned) — two cases side by side, his way
+            return self._or_lines(p, _split_aligned(step[1]) or [], _split_aligned(step[2]) or [])
+        if isinstance(step, tuple) and step and step[0] == 'figure':
+            self._picture(p, step[1], step[2] if len(step) > 2 else 8.0)
+        elif isinstance(step, tuple) and step and step[0] == 'check':
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            self._fill(p, [('text', '✓ Check: ', {'bold': True})] + list(step[1]))
+            _recolour_paragraph(p, CHECK_GREEN)
+        elif isinstance(step, str):
+            rows = _split_aligned(step)
+            if rows is not None:
+                return self._solution_lines(p, rows)
+            p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+            p.paragraph_format.left_indent = Cm(0.5)
+            elem = _latex_to_omml(step, display=True)
+            if elem is not None:
+                _left_align_math(elem)
+                _style_annotations(elem)
+                p._element.append(elem)
+        else:
+            self._fill(p, step)
+
+    def _solution_lines(self, p, rows, width=None):
+        """An aligned block the way Adrian types one: ONE math paragraph holding one
+        equation per line, every "=" carrying Word's alignment marker (m:aln), so
+        the lines meet at the equals sign and Enter inside the paragraph adds a
+        line that aligns too. The ← note stays at the end of its own line, grey.
+        (12 Sep 2026: "line by line so I can edit, add lines, delete lines —
+        equation should still be aligned at equal sign"; and "you have built the
+        equations inside tables, that's not what I want".)"""
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.left_indent = Cm(0.5)
+        para = etree.Element(f'{{{M_NS}}}oMathPara')
+        pr = etree.SubElement(para, f'{{{M_NS}}}oMathParaPr')
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc'); jc.set(f'{{{M_NS}}}val', 'left')
+        for lhs, rhs, note in rows:
+            if not lhs and not rhs:
+                continue
+            tex = (lhs + ' ' + rhs).strip()
+            if note:
+                tex += ' \\qquad ' + note
+            elem = _latex_to_omml(tex, display=True)
+            if elem is None:
+                continue
+            om = elem.find(f'{{{M_NS}}}oMath')
+            if om is None:
+                continue
+            # alignment marker on the first relation sign of the right-hand side:
+            # "=", or an inequality sign on an inequality's working (17 Sep 2026)
+            rels = ('=', '<', '>', '≤', '≥', '≠', '≈')
+            if any(k in rhs for k in ('=', '<', '>', '\\le', '\\ge', '\\ne', '\\approx')):
+                # The marker goes on the FIRST relation sign of the RIGHT-hand side.
+                # A left-hand side that carries its own "=" inside the words
+                # ("Maximum velocity when a = 0: 9 − 6t &= 0") used to take the
+                # marker on that first "=", so the next line lined up under the
+                # words instead of under the equation (Adrian, 20 Sep 2026:
+                # "alignment at equal sign should be at the second equals").
+                # Count the relation runs the lhs alone produces and skip them.
+                skip = 0
+                if lhs and any(k in lhs for k in ('=', '<', '>', '\\le', '\\ge', '\\ne', '\\approx')):
+                    lhs_elem = _latex_to_omml(lhs, display=True)
+                    if lhs_elem is not None:
+                        for r0 in lhs_elem.iter(f'{{{M_NS}}}r'):
+                            t0 = r0.find(f'{{{M_NS}}}t')
+                            if t0 is not None and (t0.text or '').strip().startswith(rels):
+                                skip += 1
+                seen = 0
+                for r in om.iter(f'{{{M_NS}}}r'):
+                    t = r.find(f'{{{M_NS}}}t')
+                    if t is not None and (t.text or '').strip().startswith(rels):
+                        if seen < skip:
+                            seen += 1
+                            continue
+                        mrpr = r.find(f'{{{M_NS}}}rPr')
+                        if mrpr is None:
+                            mrpr = etree.Element(f'{{{M_NS}}}rPr'); r.insert(0, mrpr)
+                        etree.SubElement(mrpr, f'{{{M_NS}}}aln')
+                        break
+            para.append(om)
+        oms = para.findall(f'{{{M_NS}}}oMath')
+        for om in oms[:-1]:            # a soft line break ends every line but the last (his exact structure)
+            br_run = etree.SubElement(om, f'{{{M_NS}}}r')
+            rpr = etree.SubElement(br_run, f'{{{M_NS}}}rPr'); sty = etree.SubElement(rpr, f'{{{M_NS}}}sty'); sty.set(f'{{{M_NS}}}val', 'p')
+            wrpr = etree.SubElement(br_run, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            etree.SubElement(br_run, qn('w:br'))
+        _style_annotations(para)
+        p._element.append(para)
+        return para
+
+    def _or_lines(self, p, left_rows, right_rows):
+        """Two cases side by side with "or" between them, the way Adrian's notes do it
+        (AM 17 Example 3c): ONE math paragraph, every line holding the left case, a
+        run of spaces, "or" on the first line, more spaces, then the right case; the
+        alignment marker sits on the "=" of the case with more lines, and the other
+        case is lined up by counting spaces (Cambria Math measured, the way he does
+        it by eye). No table — 12 Sep 2026: "you just put them in a box instead"."""
+        p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        p.paragraph_format.left_indent = Cm(0.5)
+        left_rows = [r for r in left_rows if r[0] or r[1]]
+        right_rows = [r for r in right_rows if r[0] or r[1]]
+        aln_left = len(left_rows) >= len(right_rows)
+        n = max(len(left_rows), len(right_rows))
+
+        def conv(row):
+            if row is None:
+                return None, 0.0, 0.0, False
+            lhs, rhs, _ = row
+            elem = _latex_to_omml((lhs + ' ' + rhs).strip(), display=True)
+            om = elem.find(f'{{{M_NS}}}oMath') if elem is not None else None
+            if om is None:
+                return None, 0.0, 0.0, False
+            before, after, seen = 0.0, 0.0, False
+            for ch in list(om):
+                if not seen and _is_eq_run(ch):
+                    seen = True
+                    after += _omml_em(ch)
+                    continue
+                if seen:
+                    after += _omml_em(ch)
+                else:
+                    before += _omml_em(ch)
+            if not seen:                     # no "=" on this line: the marker goes on its first
+                return om, 0.0, before, False  # run, so everything sits AFTER the alignment point
+            return om, before, after, True
+
+        L = [conv(left_rows[i] if i < len(left_rows) else None) for i in range(n)]
+        R = [conv(right_rows[i] if i < len(right_rows) else None) for i in range(n)]
+        notes = []
+        for i in range(n):
+            nl = left_rows[i][2] if i < len(left_rows) else ''
+            nr = right_rows[i][2] if i < len(right_rows) else ''
+            notes.append(nr or nl)
+        max_l_lhs = max([w[1] for w in L if w[0] is not None] or [0.0])
+        max_l_rhs = max([w[2] for w in L if w[0] is not None] or [0.0])
+        max_r_lhs = max([w[1] for w in R if w[0] is not None] or [0.0])
+        GAP = 2.2            # em between the left case's longest right-hand side and the right case
+        or_w = _cm_em('or')
+
+        def spacer(em, sty='p'):
+            r = etree.Element(f'{{{M_NS}}}r')
+            rpr = etree.SubElement(r, f'{{{M_NS}}}rPr'); st = etree.SubElement(rpr, f'{{{M_NS}}}sty'); st.set(f'{{{M_NS}}}val', sty)
+            wrpr = etree.SubElement(r, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            t = etree.SubElement(r, f'{{{M_NS}}}t'); t.text = ' ' * max(1, int(round(em / _SPACE_EM)))
+            t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+            return r
+
+        def word(txt):
+            r = spacer(0)
+            r.find(f'{{{M_NS}}}t').text = txt
+            return r
+
+        def mark(om, has_eq):
+            """alignment marker on the first "=" run, or on the first run when there is none"""
+            target = None
+            for ch in list(om):
+                if has_eq and _is_eq_run(ch):
+                    target = ch; break
+                if not has_eq and etree.QName(ch).localname == 'r':
+                    target = ch; break
+            if target is None:
+                return
+            mrpr = target.find(f'{{{M_NS}}}rPr')
+            if mrpr is None:
+                mrpr = etree.Element(f'{{{M_NS}}}rPr'); target.insert(0, mrpr)
+            etree.SubElement(mrpr, f'{{{M_NS}}}aln')
+
+        para = etree.Element(f'{{{M_NS}}}oMathPara')
+        pr = etree.SubElement(para, f'{{{M_NS}}}oMathParaPr')
+        jc = etree.SubElement(pr, f'{{{M_NS}}}jc'); jc.set(f'{{{M_NS}}}val', 'left')
+        eq_w = _cm_em('=') + 2 * 0.28
+        for i in range(n):
+            lom, l_lhs, l_rhs, l_eq = L[i]
+            rom, r_lhs, r_rhs, r_eq = R[i]
+            line = etree.SubElement(para, f'{{{M_NS}}}oMath')
+            if aln_left:
+                if lom is not None:
+                    mark(lom, l_eq)
+                    for ch in list(lom):
+                        line.append(ch)
+                    gap = GAP + (max_l_rhs - l_rhs)
+                else:
+                    # no left case on this line: pad from the paragraph edge to the right column
+                    gap = max_l_lhs + eq_w + max_l_rhs + GAP
+                pad = max_r_lhs - r_lhs if rom is not None else 0.0
+                if i == 0 and rom is not None:
+                    half = max(0.4, (gap - or_w) / 2)
+                    line.append(spacer(half)); line.append(word('or')); line.append(spacer(half + pad))
+                elif rom is not None:
+                    line.append(spacer(gap + pad))
+                if rom is not None:
+                    for ch in list(rom):
+                        line.append(ch)
+            else:
+                if lom is not None:
+                    for ch in list(lom):
+                        line.append(ch)
+                    gap = (max_l_rhs - l_rhs) + GAP + (max_r_lhs - r_lhs)
+                    if i == 0:
+                        a_ = (max_l_rhs - l_rhs) + GAP / 2 - or_w / 2
+                        b_ = GAP / 2 - or_w / 2 + (max_r_lhs - r_lhs)
+                        line.append(spacer(max(0.4, a_))); line.append(word('or')); line.append(spacer(max(0.4, b_)))
+                    else:
+                        line.append(spacer(gap))
+                if rom is not None:
+                    mark(rom, r_eq)
+                    for ch in list(rom):
+                        line.append(ch)
+            if notes[i]:
+                nel = _latex_to_omml('\\qquad ' + notes[i], display=True)
+                nom = nel.find(f'{{{M_NS}}}oMath') if nel is not None else None
+                if nom is not None:
+                    for ch in list(nom):
+                        line.append(ch)
+        oms = para.findall(f'{{{M_NS}}}oMath')
+        for om in oms[:-1]:
+            br_run = etree.SubElement(om, f'{{{M_NS}}}r')
+            rpr = etree.SubElement(br_run, f'{{{M_NS}}}rPr'); sty = etree.SubElement(rpr, f'{{{M_NS}}}sty'); sty.set(f'{{{M_NS}}}val', 'p')
+            wrpr = etree.SubElement(br_run, qn('w:rPr')); rf = etree.SubElement(wrpr, qn('w:rFonts')); rf.set(qn('w:ascii'), 'Cambria Math'); rf.set(qn('w:hAnsi'), 'Cambria Math')
+            etree.SubElement(br_run, qn('w:br'))
+        _style_annotations(para)
+        p._element.append(para)
+        return para
+
+    def _solution_cols(self, work_cell, columns, widths_cm, first, host=None):
+        """A borderless nested table with one cell per column, each holding steps."""
+        n = len(columns)
+        total = 14.5
+        widths = widths_cm or [total / n] * n
+        if host is None:
+            host = work_cell.paragraphs[0] if first else work_cell.add_paragraph()
+        inner = work_cell.add_table(rows=1, cols=n)
+        inner.autofit = False
+        tblPr = inner._tbl.tblPr
+        b = OxmlElement('w:tblBorders')
+        for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
+            el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
+        tblPr.append(b)
+        for col, w in zip(inner.columns, widths):
+            col.width = Cm(w)
+        for cell, steps, w in zip(inner.rows[0].cells, columns, widths):
+            cell.width = Cm(w)
+            f = True
+            for step in steps:
+                p = cell.paragraphs[0] if f else cell.add_paragraph()
+                f = False
+                self._solution_step(p, step, width=w - 0.3)
+        # the nested table sits after `host`; move it right behind that paragraph
+        host._p.addnext(inner._tbl)
+        return inner
+
+    def workspace(self, marks=None, lines=None):
+        """Blank writing space: `marks` x self.working_space real empty lines
+        (or an explicit `lines`). Emitted automatically after every marked
+        paragraph when the Worksheet was built with working_space.
+
+        Real empty paragraphs, NOT one paragraph with a big space_after: Word
+        discards trailing space at a page break, so a space_after gap that
+        straddles a break silently loses the rest of the student's writing room.
+        Separate lines simply flow onto the next page.
+
+        A [1] part gets `one_mark_bonus` lines on top of its share: strict
+        proportionality is meanest exactly where it hurts, since a one-mark
+        answer still needs a line of working and a line for the answer.
+
+        The marked paragraph is glued to its first `keep_lines_with_text` blank
+        lines (2 by default); the rest of the run may cross a page. Until 10 Sep
+        2026 the WHOLE run was atomic — stem + figure + part text + every line
+        had to fit together — and on Alessi's Practice Again that unit was
+        taller than what was left of the page, so Word bumped Q2 overleaf and
+        left the bottom of the page blank. Adrian: "do what you see fit
+        according to space management". A break between two blank lines costs
+        nothing, and the two glued lines stop a part's text from ending a page
+        on its own. The revision worksheets (revision_lib) keep their whole-run
+        rule of 6 Aug 2026 ("do not want writing space to span across two
+        pages") — do not harmonise the two.
+        """
+        if lines is None:
+            if marks is None:
+                raise ValueError('workspace() needs marks or lines')
+            lines = float(marks) * self.working_space
+            if self.working_space and float(marks) == 1:
+                lines += self.one_mark_bonus   # a [1] still needs working + answer
+        n = int(round(lines))
+        if n <= 0:
+            return None
+        if self._block_paras:                      # text keeps with its space
+            self._block_paras[-1].paragraph_format.keep_with_next = True
+        made = []
+        for i in range(n):
+            p = self.doc.add_paragraph()
+            p.paragraph_format.space_before = Pt(0)
+            p.paragraph_format.space_after = Pt(0)
+            if i < min(n, self.keep_lines_with_text) - 1:   # text + first lines travel together; the rest may break
+                p.paragraph_format.keep_with_next = True
+            self._block_paras.append(p)
+            made.append(p)
+        return made
+
+    def notes_end(self):
+        """Close a run of NOTES so Word may break inside it.
+
+        The page rule protects a question: a part is never cut across two pages
+        (ADRIAN-STYLE, Numbering and sections). Notes are not a part -- but they
+        sit in the same block as the question that follows, so the blanket glue
+        in `_finish_block` was making a section's whole notes block unbreakable
+        and leaving two thirds of the first page of a section empty (15 Sep 2026,
+        the speed-time and graph-paper sheets).
+
+        Call it after the notes of a section and before its first example. Every
+        paragraph keeps its own pagination; a bold heading still holds on to the
+        line beneath it, so a heading is never stranded at the foot of a page.
+        """
+        paras = self._block_paras
+        for i, para in enumerate(paras[:-1]):
+            runs = para.runs
+            if runs and all(r.bold for r in runs if r.text.strip()):
+                para.paragraph_format.keep_with_next = True
+        if paras:
+            self._blocks.append(paras)
+        self._block_paras = []
+
+    def _finish_block(self):
+        """Close the question just finished. The last paragraph must NOT keep
+        with what follows, or every question chains into one unbreakable block."""
+        if self.keep_questions_together:
+            for para in self._block_paras[:-1]:
+                para.paragraph_format.keep_with_next = True
+        # a bold heading is the LAST line of the block it is written in -- "Practice"
+        # sits at the end of the examples and belongs to the question below it, so
+        # it glues forward instead of being left alone at the foot of a page
+        # (15 Sep 2026, the graph-paper and speed-time sheets)
+        if self._block_paras:
+            last = self._block_paras[-1]
+            runs = [r for r in last.runs if r.text.strip()]
+            if runs and all(r.bold for r in runs):
+                last.paragraph_format.keep_with_next = True
+        if self._block_paras:
+            self._blocks.append(self._block_paras)
+        self._block_paras = []
+
+    #: usable text column, A4 less the house margins (top 2 cm, bottom 1 cm)
+    PAGE_CM = 26.7
+    LINE_CM = LINE_PT / 28.35
+    CHAR_CM = 0.151        # Times 9.5 pt, averaged over mixed case
+
+    def block_heights(self):
+        """Estimated height, in cm, of each question block — the check that
+        keep_questions_together is actually achievable. A block taller than
+        PAGE_CM cannot be kept whole; one just under it will be bumped to a
+        fresh page and leave the previous one mostly blank.
+
+        An estimate, not a measurement: line counts come from character counts
+        at the body size, and an equation is charged as three characters. Treat
+        anything within ~1.5 cm of PAGE_CM as "may not fit"."""
+        return [round(self._height_cm(b), 1) for b in
+                self._blocks + ([self._block_paras] if self._block_paras else [])]
+
+    def _height_cm(self, paras):
+        """Estimated height in cm of a list of paragraphs."""
+        if True:
+            cm = 0.0
+            for p in paras:
+                if id(p) in self._fig_cm:
+                    cm += self._fig_cm[id(p)] + 8 / 28.35   # picture + its 4pt padding
+                    continue
+                indent = 1.5 if p.style is not None and p.style.name == 'SubQuestion' else 0.0
+                width = 16.0 - indent
+                chars = len(p.text) + 3 * p._element.xml.count('<m:oMath')
+                cm += max(1, -(-chars // int(width / self.CHAR_CM))) * self.LINE_CM
+            return cm
+
+    def glued_heights(self):
+        """Height in cm of each atomic run — a chain of keep_with_next
+        paragraphs plus the one that ends it. These, not whole questions, are
+        what must fit on a page: Word has to break inside any run taller than
+        PAGE_CM. Same estimating caveats as block_heights()."""
+        flat = [p for block in self._blocks + ([self._block_paras] if self._block_paras else [])
+                for p in block]
+        runs, cur = [], []
+        for p in flat:
+            cur.append(p)
+            if not p.paragraph_format.keep_with_next:
+                runs.append(cur)
+                cur = []
+        if cur:
+            runs.append(cur)
+        return [round(self._height_cm(run), 1) for run in runs]
+
+    def page_break(self):
+        self._finish_block()
+        self.doc.add_page_break()
+        self._block_paras = []  # a manual break ends any keep-together block
+
+    def _enforce_line_spacing(self, spacing=1.5):
+        """Adrian's house rule (6 Sep 2026: "line spacing 1.5"): EVERY paragraph on
+        the sheet sits on 1.5 — body, headings, practice items, [Ans] lines and
+        every cell of every solution table. Rainie's 2 Sep sheet still carried
+        single/1.15 paragraphs inside the tables and the practice lists, because
+        only Normal and the solution boxes had been set. Walk everything."""
+        from docx.enum.text import WD_LINE_SPACING
+        def fix(par):
+            # A paragraph that holds a picture keeps SINGLE spacing: Word scales a
+            # "multiple" line spacing by the tallest object on the line, so a 23 cm
+            # answer-space grid at 1.5 became a 35 cm line, overflowed its page and
+            # left a blank page behind it (TJC IP4 papers, 20 Sep 2026).
+            pf = par.paragraph_format
+            if par._p.xpath('.//w:drawing'):
+                pf.line_spacing_rule = WD_LINE_SPACING.SINGLE
+                return
+            pf.line_spacing_rule = WD_LINE_SPACING.MULTIPLE
+            pf.line_spacing = spacing
+        for par in self.doc.paragraphs:
+            fix(par)
+        for tbl in self.doc.tables:
+            for row in tbl.rows:
+                for cell in row.cells:
+                    for par in cell.paragraphs:
+                        fix(par)
+                    for inner in cell.tables:
+                        for r2 in inner.rows:
+                            for c2 in r2.cells:
+                                for par in c2.paragraphs:
+                                    fix(par)
+
+    def _table_first_line_gap(self, pt=2):
+        """2 pt above the first line of a table (Adrian, 14 Sep 2026: "for the
+        first line of a table, leave the spacing before as 2pt" — his Paragraph
+        dialog read Before 2 pt, After 0 pt, 1.5 lines). solution_box already
+        set it on its own top row; the nested column tables and the Notes tables
+        did not, so the first line of those boxes sat lower than the rest.
+        One pass over every table in the document, nested tables included."""
+        from docx.text.paragraph import Paragraph
+        for tbl in self.doc.element.body.iter(qn('w:tbl')):
+            tr = tbl.find(qn('w:tr'))
+            if tr is None:
+                continue
+            for tc in tr.findall(qn('w:tc')):
+                par = tc.find(qn('w:p'))
+                if par is not None:
+                    Paragraph(par, None).paragraph_format.space_before = Pt(pt)
+
+    def save(self, path, strict_maths=False):
+        """Save the worksheet, injecting clean numbering.xml."""
+        self._enforce_line_spacing(1.5)
+        self._table_first_line_gap(2)
+        self._finish_block()    # the last question has no Q() after it
+        # Save to a temp buffer first, then rewrite numbering.xml
+        buf = io.BytesIO()
+        self.doc.save(buf)
+        buf.seek(0)
+
+        with zipfile.ZipFile(buf, 'r') as zin:
+            items = {name: zin.read(name) for name in zin.namelist()}
+
+        items['word/numbering.xml'] = NUMBERING_XML.encode('utf-8')
+
+        # Schema fix: pandoc emits <m:mcJc> before <m:count> inside <m:mcPr>,
+        # but OOXML requires count first (matrices fail strict validation otherwise).
+        import re as _re
+        items['word/document.xml'] = _re.sub(
+            rb'(<m:mcJc m:val="[^"]*"/>)(<m:count m:val="[^"]*"/>)',
+            rb'\2\1',
+            items['word/document.xml'])
+
+        with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as zout:
+            for name, data in items.items():
+                zout.writestr(name, data)
+
+        print(f'Saved {path}')
+        # Maths typed as text is the rule most often half-obeyed; say so at
+        # once, per run, so the author fixes the parts list rather than the
+        # file. `strict_maths=True` makes it a failure (the sheet worker's
+        # pre-file lint runs the same check and exits 1 on any hit).
+        misaligned = find_flush_parts_under_numbered(path)
+        if misaligned:
+            for text, why in misaligned[:20]:
+                print(f'   {why}: {text!r}')
+            raise ValueError(f'{len(misaligned)} sub-part(s) sit in the question-number column '
+                             f'(ADRIAN-STYLE §5: under a numbered question use Q() then SQ(); '
+                             f'parts() is only for an Example stem) in {path}')
+        hits = find_plain_maths(path)
+        if hits:
+            print(f'WARNING: {len(hits)} run(s) look like maths typed as text — use (\'math\', …) parts:')
+            for text, why in hits[:40]:
+                print(f'   {why}: {text!r}')
+            if strict_maths:
+                raise ValueError(f'{len(hits)} plain-text maths run(s) in {path}')
+        # A ← note explains; it is not a label (ADRIAN-STYLE §2, 14 Sep 2026).
+        # Advisory only — a note the author meant to be short is fine.
+        terse = find_terse_notes(path)
+        if terse:
+            print(f'HINT: {len(terse)} "←" note(s) carry no explanation — say what is '
+                  f'being used and why ("using the formula for sin(A − B)", not "sin(A − B)"):')
+            for note in terse[:20]:
+                print(f'   ← {note}')
+        # Plain words, not clever ones (ADRIAN-STYLE §2, 14 Sep 2026).
+        fancy = find_fancy_words(path)
+        if fancy:
+            print(f'HINT: {len(fancy)} sentence(s) judge the maths instead of telling the '
+                  f'student what to do — plain words only:')
+            for word, text in fancy[:20]:
+                print(f'   "{word}": {text}')

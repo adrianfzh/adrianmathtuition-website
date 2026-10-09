@@ -1,0 +1,524 @@
+{
+ "S3_AM/Binomial Theorem.docx": [
+  "Powers of $a$ and $b$ in each term must sum to $n$ — use this to check.",
+  "For the term in $x^k$, solve the power equation for $r$ first, then substitute.",
+  "Watch signs: $(a - b)^n$ makes every odd-power $b$ term negative.",
+  "Bring the whole bracket to the power: $(2x)^3 = 8x^3$, not $2x^3$.",
+  "Coefficient includes the sign; the term includes the power of $x$.",
+  "The term independent of $x$ is the one where the power of $x$ is 0."
+ ],
+ "S3_AM/Circles.docx": [
+  "Complete the square in $x$ and $y$ to turn general form into centre-radius form.",
+  "A real circle needs $a^2 + b^2 - c > 0$; otherwise no circle exists.",
+  "Tangent length from an external point $P = \\sqrt{CP^2 - r^2}$.",
+  "Line meets circle: substitute, then test the discriminant — tangent means $b^2 - 4ac = 0$.",
+  "Compare the distance from the centre with $r$ to decide inside, on, or outside.",
+  "State the centre as coordinates and the radius as a length — never leave $r^2$."
+ ],
+ "S3_AM/Coordinate Geometry.docx": [
+  "Shoelace: list vertices anticlockwise and repeat the first point at the end.",
+  "Take the modulus of the area — a negative value means you listed points clockwise.",
+  "Vertical lines have undefined gradient; the $m_1m_2 = -1$ test fails there.",
+  "Perpendicular bisector passes through the midpoint with the negative reciprocal gradient.",
+  "To show three points are collinear, compare gradients, not lengths.",
+  "Give the final equation in the form the question asks for."
+ ],
+ "S3_AM/Indices.docx": [
+  "The laws only combine powers with the SAME base — rewrite $8$ as $2^3$ first.",
+  "$a^m + a^n$ does not simplify; the laws cover $\\times$ and $\\div$ only.",
+  "$a^0 = 1$ for every $a$ except $a = 0$.",
+  "Solve index equations by matching bases, then equating the powers.",
+  "A negative power means reciprocal, not a negative answer: $2^{-3} = \\frac{1}{8}$.",
+  "For $a^{m/n}$, take the root first, then the power — smaller numbers."
+ ],
+ "S3_AM/Logarithms.docx": [
+  "$\\log$ is only defined for a positive argument — reject roots making any argument $\\leq 0$.",
+  "The base must be positive and not equal to 1.",
+  "$\\log(x + y)$ is NOT $\\log x + \\log y$; only products and quotients split.",
+  "Move a coefficient inside as a power before combining: $r \\log x = \\log x^r$.",
+  "$\\lg$ means base 10, $\\ln$ means base $e$ — read the question carefully.",
+  "When stuck, convert to index form: $\\log_a b = c \\Leftrightarrow a^c = b$."
+ ],
+ "S3_AM/Nature of Roots.docx": [
+  "Rearrange to $ax^2 + bx + c = 0$ before reading off $a$, $b$, and $c$.",
+  "Keep the signs with $a$, $b$, $c$ — $b^2$ is always positive, but $-4ac$ may not be.",
+  "\"Real roots\" without \"distinct\" allows equality: $b^2 - 4ac \\geq 0$.",
+  "If the unknown sits in $a$, state $a \\neq 0$ or the equation stops being quadratic.",
+  "For a quadratic in $k$, solve the discriminant inequality and give a range of values.",
+  "Show the discriminant working, then write the conclusion in words."
+ ],
+ "S3_AM/Partial Fractions.docx": [
+  "Improper means numerator degree $\\geq$ denominator degree — compare degrees before splitting.",
+  "Factorise the denominator fully first; a missed factor breaks the whole split.",
+  "Substitute the value that kills a bracket to get each constant quickly.",
+  "A repeated factor $(x + 1)^2$ needs BOTH $(x + 1)$ and $(x + 1)^2$ terms.",
+  "Compare coefficients of the highest power to pin the remaining unknowns.",
+  "Check by substituting one easy value of $x$ into your final answer."
+ ],
+ "S3_AM/Polynomials.docx": [
+  "A linear divisor leaves a constant remainder; a quadratic divisor leaves a linear one.",
+  "Insert $0$ placeholders for missing powers before starting long division.",
+  "Find the first factor by testing factors of the constant term.",
+  "$x = \\frac{b}{a}$ comes from setting the divisor to zero — solve $ax - b = 0$.",
+  "After one linear factor, divide out and factorise the quadratic that remains.",
+  "Sum of cubes: middle sign flips, and there is no $2$ in the middle term."
+ ],
+ "S3_AM/Surds.docx": [
+  "Simplify first: $\\sqrt{8} = 2\\sqrt{2}$, $\\sqrt{50} = 5\\sqrt{2}$ — pull out the largest square factor.",
+  "Only like surds add: $3\\sqrt{2} + 5\\sqrt{2} = 8\\sqrt{2}$, but $\\sqrt{2} + \\sqrt{3}$ stays as it is.",
+  "The conjugate flips the middle sign only; every other sign stays put.",
+  "$\\sqrt{a} \\times \\sqrt{a} = a$, which is what clears the surd from the denominator.",
+  "$\\sqrt{a + b} \\neq \\sqrt{a} + \\sqrt{b}$ — never split a surd across addition.",
+  "Leave the answer in exact surd form unless decimals are asked for."
+ ],
+ "S3_AM/Trigonometry (All).docx": [
+  "Set the calculator to DEGREES or RADIANS to match the question before solving.",
+  "Find the basic angle from the positive value, then place signs using ASTC.",
+  "Give ALL solutions inside the stated range, not just the first one found.",
+  "Solving $\\sin 2x = k$: widen the range to $2x$ first, then divide back.",
+  "Amplitude is $|a|$; a negative $a$ reflects the curve in the $x$-axis.",
+  "In the R-formula, take $R$ positive and the auxiliary angle acute."
+ ],
+ "S3_EM/Angles of Elevation and Depression.docx": [
+  "Sketch the triangle first and mark the right angle at the ground or wall.",
+  "Add the observer's eye height back on if the question wants total height.",
+  "Keep the calculator in DEGREE mode; give angles to $0.1^\\circ$.",
+  "Use $\\tan$ when the question gives horizontal distance and vertical height.",
+  "State the reason \"alt $\\angle$s, // lines\" when transferring a depression angle down.",
+  "Answers need units — write m or km, never a bare number."
+ ],
+ "S3_EM/Bearings.docx": [
+  "Write every bearing as three digits: $057^\\circ$, not $57^\\circ$.",
+  "Bearing of $B$ from $A$ is taken at $A$ — swapping the order changes the answer.",
+  "Back bearing differs by $180^\\circ$: add $180^\\circ$ if below $180^\\circ$, else subtract.",
+  "Draw a fresh North line at every new point in the diagram.",
+  "Bearings run $000^\\circ$ to $360^\\circ$; subtract $360^\\circ$ if your working overshoots.",
+  "Give bearings to $0.1^\\circ$ and always include the degree sign."
+ ],
+ "S3_EM/Circle Properties.docx": [
+  "Quote the property name as your reason — reason marks are separate marks.",
+  "The angle at the centre and at the circumference must stand on the same arc.",
+  "Same-segment angles must sit on the same chord — check both endpoints match.",
+  "Cyclic-quad rules apply only when all four vertices lie on the circle.",
+  "Two tangents from one external point are equal, forming an isosceles triangle.",
+  "Tangent $\\perp$ radius gives a right angle — reach for Pythagoras next."
+ ],
+ "S3_EM/Circular Measure.docx": [
+  "Check calculator mode: RAD for radian formulas, DEG for degree formulas.",
+  "$\\pi$ rad $= 180^\\circ$; multiply degrees by $\\frac{\\pi}{180}$ to convert.",
+  "Perimeter of a sector = arc + $2r$, not just the arc.",
+  "Perimeter of a segment = arc + chord, not arc + $2r$.",
+  "Areas carry $\\mathrm{cm}^2$, lengths carry cm — never mix the units.",
+  "Keep $\\pi$ exact through the working; round only at the final line."
+ ],
+ "S3_EM/Congruency and Similarity.docx": [
+  "Name vertices in matching order: $\\triangle ABC \\cong \\triangle PQR$ means $A \\leftrightarrow P$, $B \\leftrightarrow Q$, $C \\leftrightarrow R$.",
+  "Keep ratios consistent — largest over largest, or the answer flips.",
+  "Square-root an area ratio to recover the length ratio before finding volume.",
+  "Similar means same shape, not same size — equal angles AND proportional sides.",
+  "Mass of similar solids scales like volume, using the cube of the length ratio.",
+  "Name the test used (SSS, SAS, AA) as your reason in every proof."
+ ],
+ "S3_EM/Coordinate Geometry.docx": [
+  "Keep the point order identical in the gradient's numerator and denominator.",
+  "Vertical lines have undefined gradient; horizontal lines have gradient 0.",
+  "Perpendicular lines: $m_1 \\times m_2 = -1$ — flip the fraction, change the sign.",
+  "Sketch first: a line falling left-to-right must give a negative gradient.",
+  "Distance is always positive — never leave a negative length as an answer.",
+  "Prove collinearity by showing equal gradients through a shared point."
+ ],
+ "S3_EM/Distance and Speed Time Graphs.docx": [
+  "A flat line on a distance-time graph means stationary, not constant speed.",
+  "A flat line on a speed-time graph means constant speed, zero acceleration.",
+  "Negative gradient on a speed-time graph is deceleration — say so in words.",
+  "Read both axis units before calculating; convert km/h to m/s by $\\div 3.6$.",
+  "For area under a speed-time graph, split into triangles and trapeziums.",
+  "Average speed = total distance $\\div$ total time, never the average of speeds."
+ ],
+ "S3_EM/Indices.docx": [
+  "Index laws for $\\times$ and $\\div$ need the SAME base — rewrite $8$ as $2^3$ first.",
+  "$(-2)^4 = 16$ but $-2^4 = -16$; the brackets decide the sign.",
+  "$2a^0 = 2$, not $1$ — the index applies only to $a$.",
+  "$(3a^2)^3 = 27a^6$ — cube the number as well as the letter.",
+  "A negative index means reciprocal; it never makes the answer negative.",
+  "$a^m + a^n$ cannot be simplified — index laws cover $\\times$ and $\\div$ only."
+ ],
+ "S3_EM/Interest.docx": [
+  "Simple interest grows on the principal only; compound interest grows on the new amount.",
+  "Round money to 2 decimal places and write the dollar sign.",
+  "Do not round midway — keep full calculator accuracy until the final line.",
+  "Interest $= A - P$; check whether the question wants interest or the amount.",
+  "Monthly compounding: divide the yearly rate by 12, multiply years by 12.",
+  "Depreciation uses $(1 - \\frac{r}{100})^n$ — subtract the rate, do not add it."
+ ],
+ "S3_EM/Quadratic Graphs.docx": [
+  "$a > 0$ gives a minimum point ($\\cup$ shape); $a < 0$ gives a maximum point ($\\cap$ shape).",
+  "Line of symmetry is $x = h$, or $x = \\frac{\\alpha + \\beta}{2}$ — write it as an equation.",
+  "Sign trap: $y = a(x + 3)^2 + k$ has its turning point at $x = -3$.",
+  "Check $b^2 - 4ac$ before hunting $x$-intercepts; negative means the curve never cuts the $x$-axis.",
+  "Label both intercepts, the turning point and the line of symmetry on every sketch.",
+  "The maximum or minimum value of $y$ is $k$, not the $x$-coordinate $h$."
+ ],
+ "S3_EM/Shape of Graphs.docx": [
+  "Both axes are asymptotes for $y = \\frac{1}{x}$ and $y = \\frac{1}{x^2}$ — curves approach but never touch.",
+  "$x = 0$ is never allowed; leave a clear gap, never join the two branches.",
+  "$y = \\frac{1}{x}$ sits in opposite quadrants; $y = \\frac{1}{x^2}$ sits entirely above the $x$-axis.",
+  "A negative coefficient reflects the curve in the $x$-axis, e.g. $y = -x^3$.",
+  "$y = a^x$ never reaches zero and always passes through $(0, 1)$.",
+  "Draw every branch — a missing branch loses the mark even when the shape is right."
+ ],
+ "S3_EM/Solving Equations Involving Indices.docx": [
+  "Know your powers: $4$, $8$, $16$, $32$ are powers of $2$; $9$, $27$, $81$ powers of $3$.",
+  "A negative power means reciprocal: $\\frac{1}{a^n} = a^{-n}$. Flip it before comparing.",
+  "Convert roots to fractional powers first: $\\sqrt{a} = a^{1/2}$, $\\sqrt[3]{a} = a^{1/3}$.",
+  "Only compare powers when each side is one single power, never a sum.",
+  "$(a^m)^n = a^{mn}$ — multiply the powers, never add them.",
+  "Anything to the power 0 equals 1, so $a^x = 1$ gives $x = 0$."
+ ],
+ "S3_EM/Solving Quadratic Equations.docx": [
+  "Rearrange to $= 0$ before factorising; $x^2 + 3x = 10$ is not ready yet.",
+  "In the formula keep the sign of $b$: $b = -5$ gives $-b = +5$ and $b^2 = 25$.",
+  "Divide the whole numerator by $2a$ — the $\\pm$ part is included.",
+  "If $b^2 - 4ac$ is negative there are no real solutions; state that, don't force one.",
+  "Give both roots to 3 significant figures unless the question says otherwise.",
+  "In word problems reject negative lengths, times or ages, and say why."
+ ],
+ "S3_EM/Standard Form.docx": [
+  "Standard form is $A \\times 10^n$ with $1 \\leq A < 10$, so $0.34 \\times 10^{12}$ is not finished.",
+  "Tidy the final answer: $12 \\times 10^5$ becomes $1.2 \\times 10^6$; $0.5 \\times 10^3$ becomes $5 \\times 10^2$.",
+  "Use the calculator's $\\times 10^x$ (EXP) key — never type $\\times 10$ as well.",
+  "Multiplying: add the powers. Dividing: subtract them. Never multiply the powers.",
+  "Adding or subtracting: rewrite both terms with the same power first.",
+  "Numbers below 1 take negative powers: $0.0056 = 5.6 \\times 10^{-3}$."
+ ],
+ "S3_EM/Steps to Completing the Square.docx": [
+  "Halve the coefficient of $x$ for inside the bracket, then subtract that half squared.",
+  "Sign trap: $x^2 - 6x$ becomes $(x - 3)^2 - 9$; the minus stays inside the bracket.",
+  "Odd coefficients stay as fractions: $x^2 + 5x$ gives $(x + \\frac{5}{2})^2 - \\frac{25}{4}$.",
+  "After factorising $a$ out, multiply everything inside the bracket back at the end.",
+  "The minimum value of $(x + 2)^2 + 2$ is $2$, occurring at $x = -2$.",
+  "Expand your final answer to check it returns the original expression."
+ ],
+ "S3_EM/Trigonometry.docx": [
+  "Right-angled triangle? Use SOH-CAH-TOA or Pythagoras — the two rules are for non-right-angled triangles.",
+  "Each side must pair with the angle directly opposite it, not the nearest one.",
+  "Set the calculator to DEGREE mode before every trigonometry calculation.",
+  "For a missing angle rearrange to $\\cos A = (b^2 + c^2 - a^2) \\div (2bc)$.",
+  "An obtuse angle has a negative cosine — keep the minus sign.",
+  "Carry full calculator accuracy through; round only the final answer, angles to $0.1^\\circ$."
+ ],
+ "S4_AM/Binomial Theorem.docx": [
+  "The expansion of $(a+b)^n$ has $(n+1)$ terms, not $n$.",
+  "If $b$ is negative, signs alternate — keep the minus sign inside the bracket.",
+  "To find a specific term, form and solve the index equation for $r$ first.",
+  "$T_{r+1}$ is the $(r+1)$th term, so $r = 3$ gives the 4th term.",
+  "Powers apply to coefficients too: $(2x)^3 = 8x^3$, not $2x^3$.",
+  "\"Coefficient\" is the number only; \"term\" includes the power of $x$."
+ ],
+ "S4_AM/Calculus Applications (All).docx": [
+  "Substitute $x$ back into the original $y$ equation, not $\\frac{dy}{dx}$, for the $y$-coordinate.",
+  "Give stationary points as coordinates, then state maximum or minimum.",
+  "In maximum/minimum word problems, reduce to one variable before differentiating.",
+  "Area below the $x$-axis is negative — split the limits at the crossing point.",
+  "Instantaneous rest means $v = 0$; maximum or minimum velocity means $a = 0$.",
+  "Total distance travelled $\\neq$ displacement once the particle reverses direction."
+ ],
+ "S4_AM/Calculus Techniques (All).docx": [
+  "Work in radians for every trigonometric differentiation and integration.",
+  "Rewrite roots and fractions as powers first: $\\sqrt{x} = x^{1/2}$, $\\frac{1}{x^3} = x^{-3}$.",
+  "The divide-by-$a$ shortcut applies only to linear brackets like $(ax+b)$.",
+  "Never differentiate or integrate a product factor by factor — expand or apply a rule.",
+  "Quotient rule order matters — swapping the two numerator terms flips the sign.",
+  "Add $+ C$ to every indefinite integral; definite integrals need the limits substituted."
+ ],
+ "S4_AM/Circles.docx": [
+  "Complete the square to turn the expanded form into centre-radius form.",
+  "Divide through so $x^2$ and $y^2$ both have coefficient 1 before reading the centre.",
+  "Centre signs flip: $(x - 3)^2 + (y + 2)^2 = 25$ has centre $(3, -2)$.",
+  "Radius must be positive — a non-positive value under the root means no real circle.",
+  "Tangent gradient = $-1 \\div$ (gradient of the radius) at the point of contact.",
+  "For a line meeting a circle, substitute and use the discriminant to count intersections."
+ ],
+ "S4_AM/Coordinate Geometry.docx": [
+  "Take the modulus of the shoelace result — area is never negative.",
+  "List the shoelace vertices anticlockwise, going round the polygon in order.",
+  "Vertical lines have undefined gradient, so the $m_1m_2 = -1$ test cannot be used.",
+  "A perpendicular bisector needs the midpoint and the negative reciprocal gradient.",
+  "A negative gradient means $\\theta$ is obtuse — add $180^\\circ$ to the calculator angle.",
+  "To prove a shape or a right angle, compare lengths and gradients, then conclude."
+ ],
+ "S4_AM/Indices.docx": [
+  "Index laws combine like bases only — rewrite $8$ as $2^3$ or $9$ as $3^2$ first.",
+  "Powers add on multiplication only: $2^3 + 2^4$ is not $2^7$.",
+  "A negative index means reciprocal, not a negative answer: $2^{-3} = \\frac{1}{8}$.",
+  "Once the bases match on both sides, equate the indices and solve.",
+  "For disguised quadratics, let $u = 2^x$, solve for $u$, then convert back.",
+  "Reject any negative value of $u = a^x$, since $a^x$ is always positive."
+ ],
+ "S4_AM/Logarithms.docx": [
+  "Check the domain first — every log argument must be strictly positive.",
+  "Reject any solution that makes a log argument zero or negative.",
+  "$\\log(x + y)$ is not $\\log x + \\log y$; the law needs a product.",
+  "Combine each side into a single logarithm before comparing the arguments.",
+  "Convert to index form when stuck: $\\log_a x = b$ becomes $a^b = x$.",
+  "$\\lg$ means base 10, $\\ln$ means base $e$ — do not mix them."
+ ],
+ "S4_AM/Nature of Roots.docx": [
+  "Rearrange to $ax^2 + bx + c = 0$ before reading off $a$, $b$ and $c$.",
+  "Check $a \\neq 0$ first — the discriminant only applies once the equation is truly quadratic.",
+  "\"Real roots\" with no other wording means $b^2 - 4ac \\geq 0$; \"distinct\" means $> 0$.",
+  "Substitute negative $b$ or $c$ inside brackets: $(-3)^2$ is $9$, not $-9$.",
+  "Line tangent to a curve: eliminate $y$ first, then set the discriminant of the result to 0.",
+  "Always positive for all $x$ needs both $a > 0$ and $b^2 - 4ac < 0$."
+ ],
+ "S4_AM/Partial Fractions.docx": [
+  "Factorise the denominator completely before choosing which split form to use.",
+  "Improper means degree of numerator $\\geq$ degree of denominator — compare degrees, not sizes.",
+  "After long division, add the quotient back to the final answer.",
+  "Multiply through by the denominator, then substitute each root to find constants fastest.",
+  "An unfactorisable quadratic factor needs numerator $Ax + B$, never a single constant.",
+  "Check by substituting any convenient value of $x$ into both sides."
+ ],
+ "S4_AM/Plane Geometry (All).docx": [
+  "Quote a reason for every angle statement — the reasons carry the marks.",
+  "Midpoint Theorem also gives $DE = \\frac{1}{2} BC$, not only $DE$ // $BC$.",
+  "Angle in a semicircle needs the chord to be a diameter through the centre.",
+  "Never assume from the diagram: it is not to scale and centres are not automatic.",
+  "Name congruent triangles in matching vertex order, e.g. $\\triangle ABC \\cong \\triangle DEF$.",
+  "Alternate Segment Theorem needs a tangent — no tangent, no tangent-chord angle."
+ ],
+ "S4_AM/Polynomials.docx": [
+  "For divisor $(x + 2)$, substitute $x = -2$ — flip the sign of the constant.",
+  "Insert missing terms as $0x^2$ placeholders before starting long division.",
+  "Hunt the first root among factors of the constant term $\\div$ factors of the leading coefficient.",
+  "Two unknowns: substitute both given roots and solve the simultaneous equations.",
+  "Dividing by a quadratic leaves a remainder of the form $ax + b$.",
+  "Check the leftover quadratic's discriminant before writing \"no other real roots\"."
+ ],
+ "S4_AM/Surds.docx": [
+  "Simplify first: $\\sqrt{8} = 2\\sqrt{2}$, $\\sqrt{50} = 5\\sqrt{2}$ — pull out perfect squares.",
+  "The conjugate flips only the middle sign; the denominator becomes a difference of squares.",
+  "Single surd denominator $\\sqrt{a}$: multiply by $\\frac{\\sqrt{a}}{\\sqrt{a}}$, no conjugate needed.",
+  "$\\sqrt{a + b}$ is not $\\sqrt{a} + \\sqrt{b}$ — never split a sum under one root.",
+  "Leave the answer in exact surd form unless told to round off.",
+  "Cancel only factors common to the whole numerator, never one term of a sum."
+ ],
+ "S4_AM/Trigonometry (All).docx": [
+  "Match calculator mode to the question: degrees or radians, never mixed.",
+  "For $\\sin 2x = k$, widen the range to $2x$ first, then solve.",
+  "Never divide both sides by $\\cos\\theta$ or $\\sin\\theta$ — factorise, or you lose roots.",
+  "Prove identities by working down one side only; do not move terms across the equals sign.",
+  "R-formula: maximum value is $R$, minimum is $-R$ — state the $\\theta$ where each occurs.",
+  "Take the basic angle from the positive value, then use ASTC to list all solutions."
+ ],
+ "S4_EM/Algebraic Identities.docx": [
+  "$(a+b)^2$ is not $a^2+b^2$ — the middle term $2ab$ is never optional.",
+  "Square the whole coefficient: $(3x+2)^2 = 9x^2 + 12x + 4$.",
+  "$a^2+b^2$ does not factorise; only the difference of squares does.",
+  "Read every identity right-to-left too — that is how you factorise.",
+  "Difference of squares needs both terms as perfect squares: $4x^2-25 = (2x-5)(2x+5)$.",
+  "Use identities for fast arithmetic: $98^2 = (100-2)^2 = 10000 - 400 + 4$."
+ ],
+ "S4_EM/Circle Properties.docx": [
+  "Write the property name as your reason beside every angle you state.",
+  "The tangent-radius right angle exists only at the point of contact.",
+  "Angle at centre and angle at circumference must stand on the same arc.",
+  "Angle in a semicircle needs a diameter — check the line passes through the centre.",
+  "Opposite angles of a cyclic quadrilateral add to $180^\\circ$, not $90^\\circ$.",
+  "Never assume a point is the centre unless it is labelled or stated."
+ ],
+ "S4_EM/Circular Measure.docx": [
+  "Set the calculator to DEG or RAD to match the formula you chose.",
+  "Perimeter of a sector = arc length + $2r$, not the arc alone.",
+  "Area of a segment = area of sector $-$ area of triangle.",
+  "Convert using $\\pi$ radians $= 180^\\circ$: degrees $\\times \\frac{\\pi}{180}$, radians $\\times \\frac{180}{\\pi}$.",
+  "Leave answers in terms of $\\pi$ only when asked; otherwise round to 3 s.f.",
+  "For a reflex sector, subtract the minor sector from the whole circle."
+ ],
+ "S4_EM/Common number patterns.docx": [
+  "Constant first difference means linear; constant second difference means quadratic.",
+  "For a quadratic pattern, the second difference equals $2a$.",
+  "Test your formula on a term you did not use to build it.",
+  "$n$ must be a positive whole number — reject fractional or negative $n$.",
+  "\"Which term equals 245?\" means solve for $n$, not substitute $n$.",
+  "Give the answer as a formula in $n$, not just the next few numbers."
+ ],
+ "S4_EM/Completing the square.docx": [
+  "If the coefficient of $x^2$ is not 1, factorise it out first.",
+  "Halve the coefficient of $x$, then square it — carry the sign along.",
+  "Minimum value of $(x+p)^2 + q$ is $q$, and it happens at $x = -p$.",
+  "The sign flips: $(x+2)^2 + 2$ has its minimum at $x = -2$.",
+  "When solving, square-root both sides and keep $\\pm$ — expect two answers.",
+  "$(x+p)^2$ can never be negative, so some equations have no real solutions."
+ ],
+ "S4_EM/Congruency and Similarity.docx": [
+  "Name vertices in matching order, so corresponding sides and angles line up.",
+  "Quote the test (SSS, SAS, ASA, AAS, RHS) as your written reason.",
+  "Congruent means same shape and size; similar means same shape, any size.",
+  "Build every ratio from corresponding sides — match small with small.",
+  "From an area ratio, square-root to get lengths; from volume, cube-root.",
+  "For the same material, mass scales like volume, so by the cube of the ratio."
+ ],
+ "S4_EM/Coordinate Geometry.docx": [
+  "Keep the points in the same order top and bottom of the gradient fraction.",
+  "A horizontal line has gradient 0; a vertical line has no gradient.",
+  "Distance is always positive — you square first, so negatives disappear.",
+  "Find $c$ by substituting a known point into $y = mx + c$.",
+  "An intercept is a point: write $(a, 0)$ or $(0, c)$, not a bare number.",
+  "Sketch the axes and plot the points first — it catches sign errors."
+ ],
+ "S4_EM/Distance and Speed Time Graphs (All).docx": [
+  "Area under a speed-time graph gives the distance travelled.",
+  "Read the axis labels first — distance-time and speed-time graphs look identical.",
+  "Average speed = total distance $\\div$ total time, never the average of the speeds.",
+  "Convert units before calculating: km/h to m/s is $\\times 1000 \\div 3600$.",
+  "Deceleration means a negative gradient, but the speed itself stays positive.",
+  "On a distance-time graph, a return journey slopes back down to zero."
+ ],
+ "S4_EM/Indices.docx": [
+  "Index laws only apply when the bases match — rewrite $4$, $8$, $16$ as powers of $2$.",
+  "Only what sits directly under the power is raised: $3a^2$ means $3 \\times a^2$.",
+  "A negative index means reciprocal, never a negative answer.",
+  "$(-2)^4 = 16$ but $-2^4 = -16$ — the brackets decide the sign.",
+  "To solve index equations, make both sides one base, then equate the powers.",
+  "Leave final answers in positive indices unless told otherwise."
+ ],
+ "S4_EM/Inequalities.docx": [
+  "Adding or subtracting a negative number does not flip the sign.",
+  "Read \"at least\" as $\\geq$, \"at most\" as $\\leq$, \"more than\" as $>$.",
+  "For $-2 < x \\leq 5$, apply every operation to all three parts.",
+  "Swapping sides flips the sign: $5 > x$ means $x < 5$.",
+  "Number line: open circle for $<$ or $>$, filled circle for $\\leq$ or $\\geq$.",
+  "If integers are asked for, list them — $x > 3$ starts at $4$, not $3$."
+ ],
+ "S4_EM/Linear Graphs.docx": [
+  "Rearrange into $y = mx + c$ before reading off $m$ and $c$; divide every term.",
+  "Gradient = $(y_2 - y_1) \\div (x_2 - x_1)$ — keep both points in the same order.",
+  "A negative gradient slopes downward from left to right.",
+  "Parallel lines share the same gradient but have different $c$.",
+  "Read the gradient using the axis scales, not by counting squares.",
+  "Plot three points, not two — the third one catches a mistake."
+ ],
+ "S4_EM/Map Scales.docx": [
+  "Convert both lengths to the same unit before writing the ratio.",
+  "A scale ratio carries no units once both sides match.",
+  "1 cm representing 1 km is 1 : 100 000, since 1 km = 100 000 cm.",
+  "Perimeter uses the length scale — do not square it.",
+  "Volume scale is $1 : n^3$.",
+  "Square the conversion factor for areas: $1\\,\\mathrm{km}^2 = 10^{10}\\,\\mathrm{cm}^2$.",
+  "State units in the answer — km for length, $\\mathrm{km}^2$ for area."
+ ],
+ "S4_EM/Matrices.docx": [
+  "Add or subtract only matrices that have the same order.",
+  "$AB$ and $BA$ are different — never swap the order of a product.",
+  "Work across the row and down the column, not element by element.",
+  "A scalar multiplies every element, including the zeros.",
+  "If the inner orders differ, write \"product does not exist\".",
+  "In cost or quantity problems, state what each row and column represents."
+ ],
+ "S4_EM/Mensuration.docx": [
+  "Halve the diameter first — every formula here uses radius $r$.",
+  "Cone slant height $l$ is not the height $h$; get it from $l^2 = r^2 + h^2$.",
+  "Closed cylinder total surface $= 2\\pi rh + 2\\pi r^2$; closed cone $= \\pi rl + \\pi r^2$.",
+  "Heights must be perpendicular — never substitute a slanted side.",
+  "Convert all lengths to one unit before substituting.",
+  "State units every time: cm for length, $\\mathrm{cm}^2$ for area, $\\mathrm{cm}^3$ for volume.",
+  "Keep $\\pi$ in the calculator and round only at the final step."
+ ],
+ "S4_EM/Money.docx": [
+  "Simple interest $I$ is the interest only — add $P$ for the total amount.",
+  "Compound $A$ is the total amount — subtract $P$ for the interest earned.",
+  "$T$ must be in years: 18 months $= 1.5$, 9 months $= 0.75$.",
+  "Half-yearly: halve the rate, double $n$. Quarterly: rate $\\div 4$, $n \\times 4$.",
+  "Depreciation and yearly decrease use $(1 - \\frac{r}{100})^n$.",
+  "Write money to 2 decimal places with the \\$ sign; round only at the end."
+ ],
+ "S4_EM/Numbers (Types, HCF and LCM).docx": [
+  "Start every HCF/LCM question with prime factorisation in index form.",
+  "For HCF take the lowest power of each common prime.",
+  "HCF $\\times$ LCM equals the product of the two numbers — use it to check.",
+  "$2$ is the only even prime; $1$ is neither prime nor composite.",
+  "$\\sqrt{2}$ and $\\pi$ are irrational, but recurring decimals like $0.333\\ldots$ are rational.",
+  "Word cue: \"largest equal groups\" → HCF; \"when they next coincide\" → LCM."
+ ],
+ "S4_EM/Polygons.docx": [
+  "Interior + exterior angle at the same vertex $= 180^\\circ$.",
+  "Find $n$ from a regular polygon's exterior angle: $n = 360^\\circ \\div$ exterior angle.",
+  "$n$ must be a whole number of at least 3, or no such polygon exists.",
+  "Regular means all sides AND all angles equal, not just equal sides.",
+  "Learn the names: pentagon 5, hexagon 6, heptagon 7, octagon 8, decagon 10.",
+  "Write the $^\\circ$ sign and give a reason for each angle step."
+ ],
+ "S4_EM/Proportion.docx": [
+  "Find $k$ first from the given pair, then reuse the same $k$ throughout.",
+  "Keep $k$ exact as a fraction — rounding it early spoils later answers.",
+  "$y$ proportional to $x^2$ means $y = kx^2$, not $(kx)^2$.",
+  "If $y = kx^3$ and $x$ doubles, $y$ becomes 8 times bigger, not 3.",
+  "A direct proportion graph is a straight line through the origin.",
+  "Sanity check the direction: inverse means $y$ falls as $x$ rises."
+ ],
+ "S4_EM/Quadratic Equation Formula.docx": [
+  "Rearrange to $ax^2 + bx + c = 0$ before reading off $a$, $b$ and $c$.",
+  "Carry the sign with each coefficient: in $x^2 - 5x - 3$, $b = -5$ and $c = -3$.",
+  "If $b^2 - 4ac$ is negative, state there are no real solutions — do not force a root.",
+  "Divide the whole numerator by $2a$, not just the square-root part.",
+  "Give both roots to 3 significant figures unless the question says otherwise.",
+  "Reject any root that the context forbids: negative length, time or number of items."
+ ],
+ "S4_EM/Quadratic Graphs.docx": [
+  "$a > 0$ gives a $\\cup$ shape with a minimum; $a < 0$ gives a $\\cap$ shape with a maximum.",
+  "The $y$-intercept is $c$ — substitute $x = 0$ rather than guessing from the sketch.",
+  "The line of symmetry is $x = h$, exactly midway between the two $x$-intercepts.",
+  "In $y = a(x - h)^2 + k$ the turning point $x$-value is $+h$, not $-h$.",
+  "No $x$-intercepts when $b^2 - 4ac < 0$ — the curve never crosses the $x$-axis.",
+  "Label the turning point, both intercepts and the axis scales on every sketch."
+ ],
+ "S4_EM/Sets.docx": [
+  "Order and repeats do not matter: $\\{1, 2, 2\\}$ is the same set as $\\{1, 2\\}$.",
+  "$n(A)$ counts elements, so $n(\\emptyset) = 0$ but $n(\\{0\\}) = 1$.",
+  "$\\emptyset$ is a subset of every set, and every set is a subset of itself.",
+  "$\\subseteq$ allows $A = B$; $\\subset$ is the proper-subset symbol.",
+  "Shade a Venn diagram before evaluating $(A \\cup B)'$ or $A' \\cap B$ — never do it mentally.",
+  "Elements in neither $A$ nor $B$ still belong inside the rectangle $\\xi$."
+ ],
+ "S4_EM/Shape of Graphs (All).docx": [
+  "$y = \\frac{1}{x}$ and $y = \\frac{1}{x^2}$ are undefined at $x = 0$, so neither curve touches the axes.",
+  "$y = \\frac{1}{x}$ has branches in opposite quadrants; $y = \\frac{1}{x^2}$ keeps both branches above the $x$-axis.",
+  "$y = 2^x$ stays positive and passes through $(0, 1)$; it never meets the $x$-axis.",
+  "$y = x^3$ passes through the origin, rising from bottom-left to top-right.",
+  "A negative coefficient reflects the whole curve in the $x$-axis.",
+  "Draw smooth curves bending towards the asymptotes — never rule straight segments."
+ ],
+ "S4_EM/Standard Form.docx": [
+  "$0.5 \\times 10^6$ and $25 \\times 10^3$ are not standard form — fix $a$ into the 1 to 10 range.",
+  "Moving the decimal point right lowers $n$; moving it left raises $n$.",
+  "Numbers smaller than 1 give a negative $n$: $0.00042 = 4.2 \\times 10^{-4}$.",
+  "Make the powers of 10 equal before adding or subtracting.",
+  "Multiplying adds the indices, dividing subtracts them — then rewrite $a$ in range.",
+  "Convert prefixes to powers of 10 before calculating, and keep the unit in the answer."
+ ],
+ "S4_EM/Statistics.docx": [
+  "Arrange the data in order before reading off the median or the quartiles.",
+  "With an even number of values, the median is the mean of the two middle ones.",
+  "Mode is the value occurring most often, not the frequency itself.",
+  "A larger standard deviation or IQR means more spread out, so less consistent.",
+  "IQR ignores extreme values, so it beats the range when outliers exist.",
+  "Quote the actual figures and answer in context when comparing two data sets."
+ ],
+ "S4_EM/Trigonometry.docx": [
+  "SOH-CAH-TOA works only in right-angled triangles; otherwise use the sine or cosine rule.",
+  "Use the cosine rule for three sides, or two sides with the included angle.",
+  "The sine rule can give an obtuse angle — check whether $180^\\circ - \\theta$ fits the triangle.",
+  "Set the calculator to degree mode before starting any trigonometry question.",
+  "Bearings need three figures: write $072^\\circ$, not $72^\\circ$.",
+  "In Area $= \\frac{1}{2} ab \\sin C$, $C$ must be the angle between sides $a$ and $b$."
+ ],
+ "S4_EM/Vectors.docx": [
+  "$AB = -BA$ — reversing the letters flips the sign of both components.",
+  "$AB = OB - OA$: end position vector minus start position vector.",
+  "Parallel vectors share a direction; collinear points also need a common point.",
+  "$|AB|$ is a length, so it is never negative — leave surds exact unless told to round.",
+  "Multiplying by $k$ scales the length $k$ times but keeps the direction.",
+  "Express every vector in terms of the two given base vectors before comparing ratios."
+ ]
+}

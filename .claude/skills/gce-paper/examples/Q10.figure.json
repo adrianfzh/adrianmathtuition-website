@@ -1,0 +1,1 @@
+{"family":"coordinate-plane","xAxis":{"min":-4,"max":10,"step":100,"label":"x"},"yAxis":{"min":-4,"max":4,"step":100,"label":"y"},"grid":false,"points":[{"id":"A","x":4,"y":-2,"label":"A(4, −2)"},{"id":"B","x":8,"y":0,"label":"B(8, 0)"}],"lines":[{"gradient":0.5,"yIntercept":1,"label":"l"}]}

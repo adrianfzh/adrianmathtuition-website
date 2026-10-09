@@ -1,0 +1,1257 @@
+---
+name: self-study-sheet
+description: Turn a student's MARKED PAPER into a self-study sheet they can learn from — diagnose what they actually got wrong, propose one wave of skills for Adrian's approval, author the DOCX in his house style with verified worked examples, and file it into Dropbox for him to vet and edit. Trigger on "self-study sheet for <student>", "teaching round for <student>", "notes from <student>'s marked paper", "what should <student> work on", or after a paper is marked and Adrian asks what to send them. NOT for topic-driven notes with no marked paper behind them — that is create-teaching-notes.
+---
+
+# Self-study sheet — from one marked paper to work in their hands
+
+> **Style:** every rendered solution follows [`create-worksheet/ADRIAN-STYLE.md`](../create-worksheet/ADRIAN-STYLE.md) — line-by-line working aligned at "=" in editable Word maths, grey ← notes, two cases side by side with "or", real numbering, columns for diagrams. Add a new rule THERE.
+
+You are running steps 3–6 of the teaching round
+([`SPEC-TEACHING-CYCLE.md`](../../../SPEC-TEACHING-CYCLE.md) — read it): the
+marking is already vetted, and your job is **diagnose → propose the wave →
+author the sheet → file it for Adrian to amend**. Adrian releases the marked
+copy and the sheet together afterwards; you never send anything to a student.
+
+## Read first (binding, in this order)
+
+1. `docs/teaching-style/FEEDBACK.md` — every entry is a rule
+   Adrian already corrected once. The 30 Aug entries decide the whole layout:
+   teaching lives inside the annotated example, equation steps align at the
+   `=`, one idea per line.
+2. `docs/teaching-style/STYLE.md` — the
+   house DOCX style (fonts, boxes, colour semantics, orange answers).
+3. The `create-teaching-notes` skill itself — it owns the rendering pipeline
+   (python-docx / pandoc, figures, verification harness). Invoke it; this skill
+   supplies the brief, that one supplies the machinery.
+
+## Step 1 — find the paper
+
+Airtable `Students` (field `Student Name`) → the `rec…` id. Then the latest
+marked run in Supabase (math project `nempslbewxtlikfzachi`):
+
+```sql
+select id, paper_name, total_awarded, total_max, created_at, released_at
+from paper_marking_runs
+where student_id = '<rec…>' and result_json->'results' is not null
+order by created_at desc limit 5;
+```
+
+The newest run is the sheet's SUBJECT — the paper Adrian releases alongside it,
+and the one whose questions the student will recognise. If several re-marks of the
+same paper exist, use the **best/newest**; earlier ones are superseded.
+
+That run is the ONLY evidence the sheet diagnoses from (Adrian, 2 Sep 2026:
+*"diagnosis should be single-paper"* — see Step 2). Do not pull the student's
+other marked papers into the diagnosis.
+
+## Step 2 — extract the evidence (never topic labels)
+
+The grounding rule exists because it was broken twice on the first run: the
+marker's `topic_detected` said "Exponentials and logarithms" for a
+change-of-base log equation, and "Circle theorems" for an A-Math plane-geometry
+**proof**. Build from the QUESTION PROMPTS and the student's own working:
+
+```sql
+select r->>'question_number' as q,
+       r->'marking_output'->'question'->>'prompt'   as prompt,
+       r->'marking'->>'total_awarded' as awarded,
+       r->'marking'->>'total_max'     as max,
+       (select jsonb_agg(jsonb_build_object(
+          'label', p->>'label', 'aw', p->'awarded', 'mx', p->'max',
+          'na', p->'not_attempted', 'err', p->>'error_summary',
+          'err_kind', p->>'error_kind', 'gap', p->>'gap',
+          'note', p->>'study_note', 'sl', p->'second_look'))
+        from jsonb_array_elements(r->'marking'->'parts') p) as parts
+from paper_marking_runs, jsonb_array_elements(result_json->'results') r
+where id = '<run-id>'
+  and (r->'marking'->>'total_awarded')::numeric < (r->'marking'->>'total_max')::numeric
+order by (regexp_match(r->>'question_number','\d+'))[1]::int;
+```
+
+A part whose `sl.agree` is `false` is DISPUTED — the bot's second look
+(`ai/second-look.js`, 6 Sep 2026) read the page differently (working found
+where the first read said blank, or a different award). Its mark stands, its
+diagnosis does not: never build a teaching item on it; shelve it as "disputed
+by second look — check on the desk".
+
+Classify each loss: **blank** (nothing written / abandoned at the setup —
+needs first-move teaching), **procedure** (a named rule misapplied), **concept**
+(wrong method or strategy), **discipline** (units, signs, conclusions,
+rounding, "show that" endpoints). The mix decides what the sheet teaches: a
+paper losing 29 marks to blanks and 12 to procedure is a first-moves sheet,
+not a rules sheet.
+
+### One paper — the one in their hand (Adrian, 2 Sep 2026 — binding)
+
+**Diagnose from THIS run only.** Adrian, 2 Sep 2026: *"diagnosis should be
+single-paper."* This reverses the 1 Sep rule that pulled every marked paper the
+student had and let the newest one veto. That rule came from Eva's five papers,
+where blanks and "explain" answers were invisible on her newest script alone; it
+was retired the next day because the sheet is a response to the paper the student
+just got back, and dragging older papers in produced sheets that talked about
+"three of your four papers" and taught things the script in their hand did not
+show. Progress ACROSS papers is the portal's job — tracked over time, weighted
+towards the latest work — not the sheet's. (The all-papers SQL lives in git
+history, commit 3243f89a, if Adrian ever asks for the history.)
+
+Within the one paper, the ranking rules still hold:
+
+- **A revealed GAP is never Optional — it enters the wave whatever it cost.**
+  Adrian, 7 Sep 2026, Denise's Q3(b): she multiplied by $(4x^2 + x)$ when
+  integrating $(2x+1)^{-3/2}$ — two marks, and the sheet filed it as
+  "Optional: integrating a power of a linear bracket". *"This working reveals
+  a very important conceptual error which is not reflected in analysis and in
+  the learn again sheet … integration has a very high weightage in exams.
+  Analysis should capture important conceptual errors or gaps in knowledge
+  even for small slipups that reveal deeper or fundamental
+  gaps/misunderstanding."* So: every part whose marking carries a `gap` (the
+  marker names the rule or exam habit the student does not have, since 7 Sep
+  2026), or whose `error_kind` is `concept`/`misread`, or whose slip is the
+  same misunderstanding twice, is a tier-① section — its concept line states
+  the rule, its worked example targets exactly that gap, its practice drills
+  it. Ranking by damage orders the teach tier; it never decides what enters
+  it. In the wave line say it plainly: *"Q3(b), 2 marks — GAP: integrating a
+  power of a linear bracket"*. A missed instruction is a gap too (Q2: "show
+  that x = −1 is a solution" was never done — the habit is *read the
+  instruction and answer it first*). Copy the marker's `gap` text into the
+  diagnosis entry's `gap` field — after checking it against the script (next
+  bullet) — so page 1 names it.
+- **Teach the missed STEP, not the whole method** (Adrian, 9 Sep 2026, Alessi's
+  AM 2021 P2 — binding). The marker's `gap` is a LEAD, not the diagnosis: read the
+  script, find the exact line where the student stopped or went wrong, and THAT
+  line is what the section teaches. Two cases from one paper:
+  - Q4(c), R-formula: she found R and the maximum value correctly and could not
+    find the θ that gives it. The marker's gap said "does not use max of sine = 1
+    to find a greatest value" — the wrong lead, and the sheet spent its example
+    on the maximum she already had. The section is "Finding the θ at which
+    R sin(θ + α) is greatest: θ + α = 90°"; its example starts from the maximum
+    and spends its steps on the angle; every practice item asks for the angle.
+  - Q10, area between a line and a curve: the gradient was computed wrongly AND
+    every value from there on was a decimal, in a "show that" whose target is
+    exact (π and √3). The gap is not "area = ∫ y dx − triangle"; it is *carrying
+    exact form through a show-that* — exact trig values at π/3, the gradient as
+    a fraction with π in it, integrating every term, keeping √3 and π until the
+    last line matches the target.
+  The diagnosis entry's `gap` names the STEP ("cannot find the θ that gives the
+  maximum", "works a show-that in decimals"), so page 1 tells the student what
+  to practise rather than which topic they are weak in. The worked example
+  STARTS from what the student already had right and spends its steps on the
+  missing move.
+- **Rank by damage.** Marks lost to the skill, across every question it touched.
+- **Recurrence outranks size — within the paper.** The same slip in Q9 and Q16
+  is a hole they carry into the exam; a single 6-mark loss may be one hard
+  question. When you catch yourself putting something in Optional, check how
+  many QUESTIONS on this paper show it before you do.
+- **Behaviours count as skills.** Two things that are not topics at all:
+  - **Leaving parts blank.** If a student abandons parts, that is the biggest
+    thing you can teach them, whatever the topic — a first-move sheet ("what do
+    you write when you don't know how to finish") beats another rules sheet.
+  - **Answering "explain" by restating the claim.** Reaching the right
+    conclusion without earning it. Cheap to fix, and it costs marks in every
+    paper they will ever sit.
+
+**COUNT THE SLIPS AND THE TRANSFER ERRORS TOO** (Adrian, 1 Sep 2026). An
+arithmetic slip is not a skill, so it earns no practice (triage ② — show, don't
+drill). But it still costs marks, and a student who drops six marks to slips has
+a real, teachable problem that no topic list will ever name. So COUNT them and
+report the total, even though none of them becomes a section:
+
+- **arithmetic slips** — a sign lost, a term dropped, $-48 \div 8$ written as $+6$
+- **transfer errors** — the working says one thing and the answer line another;
+  a value copied wrongly from one part into the next; a correct value rounded
+  away at the end. The cheapest category of mark there is to win back.
+
+Report them as a line in the wave — *"and 7 marks to slips and answer-line
+transfers"* — so Adrian can see the size of it and decide whether it deserves a
+habit sheet of its own.
+
+Say in the wave WHICH QUESTIONS each skill came from and how many marks — Adrian
+is choosing what to teach, and "Q11 and Q20, 5 marks" is the fact that decides it.
+
+**On the SHEET itself, never name another paper** (Adrian, 2 Sep 2026: *"no need
+to mention exactly which paper she made the mistakes"*). No "Q23(b) at Zhonghua",
+no "in three of your four papers". The student's sheet talks about the paper in
+their hand — "Q14" and "on this paper" are fine.
+
+### What earns practice — Adrian's triage (31 Aug 2026, binding)
+
+**Practice is for what the student cannot yet do, not for what they got wrong.**
+The first sheets got this backwards: Sophie's opened with *"Every skill on this
+sheet comes from a question where your method was already right — the marks went
+in the last line"*, and then set practice on all of it. A student whose method
+was already right does not need to do it again. They need to be shown the line
+and left alone.
+
+Sort every loss into one of three, and the sort decides the sheet:
+
+**① Teach and practise — conceptual and method gaps.** The student could not
+have got there. Full Example → Practice treatment, and these come FIRST.
+*Sophie's shoelace area: the wrong idea of how an area is obtained. Her weather
+balloon: a differentiation-technique gap.*
+
+**② Show, do not drill — arithmetic and careless slips.** The method was sound
+and one line went wrong. Point at the line, say what happened in a sentence, and
+move on. **No practice question.** A slip is not a skill.
+*Dividing (−56 + 14√2) by −14 and flipping only the first sign. Dividing by an
+extra 60 when the rate was already per second. −48 ÷ 8 written as +6.*
+
+**② is decided by the marker's `error_kind`, and it is never ① — however much it
+cost** (Adrian, 10 Sep 2026, Isabelle's AM 2024 P1: the sheet opened with *"Using
+dy/dx = 0, then d²y/dx² to test a stationary point"* — but her Q8(b) was wrong
+because she **copied the printed V wrongly**; the method, working and idea were
+all fine. *"there is no need to practice again for arithmetic errors, transfer
+errors, rounding off errors, copy wrongly (or errors like that) if
+method/approach of doing question is correct … practice again sheet focuses on
+wrong approach/method/concepts"*). So:
+
+- A lost part whose `err_kind` is in the careless bucket — `arithmetic`,
+  `transfer`, `sign`, `rounding`, `units`, `careless` — is ② **even when it is
+  the biggest loss on the paper**. A `misread` whose `err` says the question
+  was *copied wrongly* is a copy slip (= `transfer`), not a misreading.
+- A skill whose every lost part is careless-bucket does not get a ① section —
+  **gap or no gap** (Adrian, 10 Sep 2026, Isabelle's Q11(b) transfer slip: "there is
+  no need for practice again for transfer errors"). Write the one-line ② instead. If you file it as `teach`
+  anyway, the site demotes it to `show` on the cover and pings Adrian.
+- The **analysis page (cover) keeps the magnitude**: MARKS LOST still shows the
+  six marks that went to slips. Only the practice is withheld.
+- ① is ordered by **marks lost, then severity** — a named gap or a `concept`
+  outranks a `misread`, which outranks `incomplete`. That order is yours to set
+  in the sheet; the cover follows the sheet's order.
+
+**③ Optional practice — borderline, worth awareness.** Real but slight; the
+student should know it exists and may drill it if they have time. Put these in a
+clearly marked **Optional** section at the END, never mixed into the core.
+*The trigonometry slips on this paper.*
+
+Two consequences worth stating out loud:
+
+- **Target the missing SKILL, not the question's topic.** The weather balloon
+  sits in a rate-of-change question, but the marks went on differentiating
+  `2.4V⁻¹` — carrying a constant multiplier through a derivative. So the practice
+  is differentiation technique, not more rates. Ask "what could they not do?",
+  never "what chapter was this in?".
+- **Rank by damage, not by order in the paper.** A major conceptual error
+  outranks a topic that only produced slips: the area question comes before the
+  trigonometry, every time.
+
+**Their time is the constraint.** A sheet that drills everything they got wrong
+is a sheet that does not get done. **Four skills in ① is the target** — Adrian
+cut a six-section sheet to four plus an optional one, losing a third of the
+paragraphs, and that is the shape he sends. The rest is ② in one line each,
+③ at the back, or shelved.
+
+Four more rules from that edit (full account in `docs/teaching-style/FEEDBACK.md`):
+
+- **An optional TOPIC is optional whole.** Told the trigonometry could be
+  optional, the sheet made one trig ITEM optional and kept two trig sections as
+  core. He moved the identity to Optional and cut the other. If a topic is
+  optional, none of it is core.
+- **Merge skills that share one lesson.** Two of his four sections are joins —
+  rate-of-change with the constant-factor rule; squaring-two-cases with the
+  shoelace method. One worked example can carry two skills; not every diagnosed
+  skill earns its own Example/Practice pair.
+- **"Already taught last wave" is not a reason to shelve.** The sheet shelved
+  integration coefficients because the previous wave covered them; he restored
+  them as section 1. Still wrong means still taught.
+- **Individual practice ITEMS can be marked "(Optional)"**, not only whole
+  sections — his Practice 4 marks item 3 alone.
+
+Section headings are **unnumbered Title Case skill labels** (Adrian, 2 Sep 2026
+— the number went on all four sheets he amended): "Master Finding Area Using
+Integration", "Finding Coefficient of A Specific Term In An Expansion". Not the
+teasing one-liner, not a filing label with a "—" explainer. An Example may carry
+the skill in its own heading, followed by ONE blue key-move line ("Always Form
+Chain Rule") echoed in blue as the `←` where it fires.
+
+**The heading names the TOOL, not the task** (Adrian, 5 Sep 2026, Sijia's AM
+TYS sheet): "Factorising A Cubic When One Factor Is Given" was wrong; the concept
+she must learn is **"Using f(x) = divisor × quotient + remainder"** — the identity
+he teaches on the board, which also covers unknown-coefficient divisors,
+remainders and "find a and b". A task-shaped name describes one situation; the
+tool survives to the next paper. Write the heading in the form he uses in class
+("Using …", "… = … × … + …") and put the situation in the blue key-move line
+under it. The same string goes into the `diagnosis` title (it drives the cover).
+
+**Blank questions are teach items, never "ungraded" (Adrian, 5 Sep 2026).**
+On Sijia's AM TYS the marker filed her blank answer pages as untouched
+question paper — Q7 (trig graphs, 6 marks), Q8(b) (max/min, 4) and Q14(b)
+(area by integration, 5) never entered `results`, `unattempted_questions`
+listed only "7", and the sheet shelved it as "never graded" while the other two
+were missed entirely; Adrian's vetted cover named all three. Whenever
+`totals.counted_max < totals.max` or `review.unmapped_max > 0`, open the marked
+PDF, find every printed question or part with nothing written under it, and
+treat each as a teach-tier skill: a student who wrote nothing did not know
+where to begin, which is the sheet's whole purpose.
+
+### A merged sheet for several papers (10 Sep 2026)
+
+Adrian may tick two or more of a student's marked papers of one maths on the
+desk for ONE Practice Again sheet (`sheet_jobs.run_ids`; his words: "the same
+mistakes or the same topics may appear across all 5 worksheets, so can batch and
+combine into one — more efficient and can save students' time. but still must be
+effective and target the required gaps"). For such a job the single-paper rule
+above is suspended and the batch rules in `scripts/sheet-worker/WORKER_PROMPT.md`
+§1e apply: diagnose from every covered run, cluster by GAP (a gap seen on two
+papers is one section and goes first), keep the cap, reuse the papers' own
+finished sheets, name the student's own papers in a grey "Where it showed" line,
+file into a new dated batch folder, and tag every `diagnosis[]` entry with the
+runs it showed on. Isabelle Toh Si Xian's A Math (3 papers) and E Math (2 papers)
+sheets of 10 Sep 2026 are the worked examples.
+
+## Step 3 — propose ONE wave, and STOP
+
+Cluster into 6–8 teachable skills for a single sheet. Everything else is
+**deferred with its evidence** (question, part scores, the annotated page URL).
+
+Show Adrian the proposed wave and the shelf list, and **wait for his approval**.
+Picking the wave is teaching judgment — the checkpoint is his.
+
+Once he approves the split, record each deferred topic on the 🧺 **student
+shelf** (built 2026-09-02 — this replaced the interim `/admin/my-todos` lines):
+one `POST /api/admin/shelf` per topic with
+`{ fromRun: { runId, questionNumber: "6(b)" }, topic }` — the API grabs the
+prompt, part scores and annotated page from the run's own `result_json`, and
+answers 409 if that question is already shelved. **Headless runs (the
+sheet-worker) skip this step** and only report `shelved` in the completion
+payload — no auto-shelving without Adrian's approval; he shelves in one tap
+from `/admin/desk` (triage retired 8 Sep 2026) or `/admin/papers`.
+
+**The completion payload also carries the diagnosis** (headless and in-session
+alike — Adrian, 2 Sep 2026: *"the sheet's diagnosis should drive the cover, not
+the cover the sheet"*). `result.diagnosis` is one entry per section of the sheet
+you actually wrote, **in the sheet's order**, each
+`{ title, marks, questions, why, tier }` — `title` the section heading verbatim,
+`marks` lost to it on this paper, `questions` like `["Q11(a)","Q20"]`, `why` one
+checkable sentence (TeX ok), `tier` = `teach` | `show` | `optional` (① ② ③ above).
+The site stores it on the run (`result_json.diagnosis`) and rebuilds both marked
+PDFs so page 1 follows your ranking instead of the keyword classifier's; the
+exact curl is in `scripts/sheet-worker/WORKER_PROMPT.md` step 5.
+
+## Step 4 — author the sheet
+
+### Adrian's own trap for the skill — check, then usually move on
+
+The diagnosis in Step 2 comes from the student's real script, which beats any
+generic list — do NOT let a stored trap displace what she actually did. But the
+teaching line under a heading states the GENERAL rule, and Adrian has often
+already written that rule down:
+
+```sql
+-- The teaching-knowledge layer (2026-09-03): ONE accessor over pitfalls +
+-- method_templates for every surface. Approved-only on both tables, strict
+-- canonical-topic match, ranked by overlap with the context you pass.
+SELECT teaching_knowledge(
+  '<the student's level, e.g. S3_AM / EM_NA / JC2>',   -- folded to AM/EM/JC/S1/S2 inside
+  ARRAY['<canonical topic>', '<canonical topic>'],
+  '<the question text she got wrong — drives the ranking>',
+  3,   -- methods: Adrian's method for the question type (the sheet's "Method recap" box)
+  4,   -- pitfalls: his traps
+  0    -- formulae
+);
+-- → jsonb { subject, methods:[{question_type, method, watch_out}], pitfalls:[{wrong_move, why_wrong, corrective_cue}], formulae:[] }
+```
+
+(Service-key callers only. Never query the two tables directly for a sheet —
+the function is where the approved gate lives.)
+
+Use one ONLY when it is the same slip the script shows, and then only for the
+wording — `corrective_cue` is already in his voice, which is the whole reason to
+look. A trap that does not match this student's error does not go on her sheet:
+the sheet is about what she got wrong, not what students generally get wrong.
+Expect to use none on most sheets.
+
+### The reference sheet
+
+`/Students/Khoo Ke Er Klaire/2026-08-30 klaire am tys 2021 p1/3 Practice Again.docx` (his amended copy; the worker's draft sits beside it as `Practice Again (worker original).docx`)
+is the sheet Adrian says is closest to what he wants (31 Aug 2026, comparing it
+against Kiara's and Sophie's from the same evening). Read it before authoring.
+What makes it the reference — all of it reproducible, none of it accidental:
+
+- **Headings are Title Case skill labels** — this bullet used to say the
+  opposite and cite "Always Increasing / Always Positive Leading To The
+  Discriminant Condition" as the label to avoid. On 2 Sep 2026 Adrian wrote
+  that exact heading himself, and replaced "Make it ONE base before you do
+  anything else" with "Solving Exponential Equations Using Logarithms". The
+  teaching goes in the one blue key-move line under the heading, not in the
+  heading.
+- **Two examples where the skill has two faces.** Example 1a took `12ˣ = 7×4ˣ⁺¹`
+  (same base by logs), 1b took `log₂x + log₄(x+3) = 3` (same base by change of
+  base) — one skill, both faces, then one practice set covering both. Kiara got
+  one example per skill throughout.
+- **Two zones, not three** (revised 2 Sep 2026 — he deleted the "Read these
+  once" zone from all four sheets he amended, because every line in it narrated
+  the student's own slip). The skills with Example + Practice, then either a
+  bold `(Optional)` line above the last section or a closing `Practice N –
+  Miscellaneous Practice`. ② slips are NOT listed on the sheet: they are
+  reported in the wave for Adrian, and at most one becomes an ordinary
+  practice item.
+- **Diagrams in the Example AND in the Practice.** Klaire's area section carried
+  three figures — one in the worked example and one on each practice item.
+  Kiara's sheet had none at all.
+- **Density.** 107 fractions and 50 display equations in Klaire's, against 29
+  and 34 in Kiara's, on comparable page counts. The difference is not padding:
+  it is that Kiara's Example 1 solution is four paragraphs of bare algebra with
+  no opening line in plain English, and Klaire's boxes all open with one
+  ("You are given dV/dt and asked for dr/dt. Build the chain first, substitute
+  second.") and close with a red danger line and a blue ✓ check.
+- **One instruction paragraph** (revised 2 Sep 2026 — he cut the three lines to
+  "Read through each **Example**. Then do the **Practice** under it on your
+  own, before you look at the answers."), and the name as a faded-blue
+  `For <Full Name>` subtitle, tight under the title.
+
+### Adrian's own explanations — the captured style (2 Sep 2026, binding)
+
+He rewrote two of Sophie's worked examples by hand and asked for the difference
+to be followed on every surface. The full diff is in
+`docs/teaching-style/FEEDBACK.md` § "How Adrian explains";
+the shape, in one breath:
+
+- **Box opens with 2–3 grey italic principle lines** (general rule → the trick →
+  applied to this question), then a blank line, then the working as
+  **auto-numbered steps** that each say what you are doing.
+- **The general rule sits inside the step in green bold square brackets**:
+  `y = [the expression on the other side of the equal sign] is the graph you
+  need to draw`. Build the tag with `worksheet_lib.tag(...)` —
+  `tag('No term in ', ('math', r'\frac{1}{x}'))` splices into any parts list —
+  so any maths inside the brackets is an equation object, not characters
+  (Adrian, 9 Sep 2026: "1/x is not written as OMML" — Alessi's tag had been typed
+  as a `('text', …)` part, the one slash fraction on an otherwise clean sheet).
+- **Every algebraic move carries a grey `←` that names its TARGET**: `← divide by
+  −2 to obtain x³ − 3x²`, `← add 2 to obtain x³ − 3x² + 2 (which is the graph
+  drawn)`.
+- **Colour = meaning, same in the principle line and the working**: blue
+  `0432FF` the expression being matched; red `EE0000` the piece added/changed;
+  green `00B050` the rule and the result it produces; bold+underline the BASE
+  in a percentages chain; black bold `←` for a plain instruction.
+- **Percentages**: conversion facts with the reason in brackets first, the unit
+  declared in bold ("Let … in 2019 be 100 units"), one block per base opened
+  with an underlined "From 2019 to 2020 → 2019 is the base (100%)", full-word
+  equation lines ("exports in year 2020 = 100 × 1.12 = 112"), the formula in
+  words before the numbers.
+- **Headings name the skill as an action, in Title Case** — "Find the Required
+  Line To Draw To Solve An Equation Graphically", "Mastering Percentages –
+  Whether To Multiply or Add/Subtract". He replaced the one-line teasers.
+- **Gone from the box**: the punchy italic opener, the red "on your paper you…"
+  lines, and the Check line on those two examples. ONE red Common Error warning
+  per box, not two.
+
+**Four more sheets the same evening — Kiara, Klaire, Rainie, Chloe Zhang**
+(diffed against the worker originals, 2 Sep 2026; full account in FEEDBACK.md
+§ "Four sheets amended in one evening"). The four agree with each other; where
+they contradict an older rule here, they win:
+
+- **The Example IS the exam question**: quote its stem and constraints (a
+  paraphrase that changes the domain is a bug), print `[n]` per part, bold the
+  operative word (`**magnitude**`), the exam's own numbers at the exam's
+  difficulty, the curve's equation written on the diagram.
+- **Two skills that are (a)/(b) of one exam question are ONE Example (a)/(b)
+  and ONE Practice (a)/(b).**
+- **A routine procedure gets a BARE box** — complete equation per line, `←`
+  annotations, no prose between steps, no Common Error, no Check. Prose only
+  where the idea is non-obvious.
+- **A "you stopped here" red line becomes the missing line of working**
+  (`For increasing function, dy/dx > 0`); a show-that ends `(shown)`.
+- **Common Error only when it names the wrong TOOL in one sentence**
+  (`b²−4ac counts the roots of an equation. It says nothing about the y-value
+  of a point.`). No "Test it: with m = 1.5…" disproofs, no picture arguments.
+- **Checks only where a real check exists**, in exact form, green.
+- **Routine `←` names the rule** (`← chain rule`); his own annotations also
+  carry `**must know …` tags and `eg.` micro-examples.
+- **`+C` on every indefinite-integral line; `ln(2x+7)` without modulus bars on
+  A-Math; magnitude = signed value first, then `|a|` with `← magnitude is just
+  the value without the minus sign`.**
+- **Name the method the student knows** (`Perform long division:`), not a
+  trick ("force a 6(x+1) to appear on top").
+- **Page break before each new skill.** Hints go UNDER a practice question in
+  light grey `[Remember: …]`.
+- **Re-verify his amended DOCX before release** — his hand-typed 1b dropped a
+  ×2 (`x³+3x²−8` for `−64`) and Kiara's Example 1 chain ran the inequality
+  the wrong way. The standard is his; the arithmetic still gets checked.
+
+### A solution is one chain, top to bottom (Adrian, 12 Sep 2026, binding)
+
+A student wrote back on a marked paper's worked solution: "could you explain how
+you get from here to there? and where did the integral in the green circle go".
+The solution had equated the required integral to a bracket minus a second
+integral, evaluated each piece on its own line, and added them at the end.
+Adrian: "students are confused by the working — it finds each integral
+separately then adds them up. It will be better if the line below follows the
+line above."
+
+- When the required quantity comes from manipulating a known result (a "hence"
+  integral, a subject change, a linear-law rearrangement), carry the WHOLE
+  statement down the page, one operation per line, each line an equation whose
+  left side is exactly what the line above produced, until the required
+  quantity stands alone on the left and its value on the right.
+- His own layout for ∫(6x+1)/√(4x−3) dx = [(x+2)√(4x−3)]: the given result with
+  limits → divide by 2 so 6x becomes 3x → write the numerator as (3x+2) − 1.5
+  so the required integral appears → integrate the 1.5 piece IN PLACE inside
+  the same equation → make the required integral the subject → numbers →
+  answer. Six lines, each following from the one above.
+- Never evaluate pieces on separate lines and reassemble at the end.
+- The reason for a step sits at the END of that line as an arrow note
+  ("← divide by 2, to make 6x to be 3x"), not as a sentence above it.
+
+## Adrian's formatting and voice — the binding rules (6 Sep 2026)
+
+Adrian diffed the worker's sheets against his own notes docx. These win over
+anything older in this file:
+
+- **Line spacing 1.5 on every paragraph** — body, headings, practice items,
+  `[Ans]` lines and every cell of every solution table. `worksheet_lib.save()`
+  enforces it since 6 Sep 2026; do not hand-set anything tighter.
+- **Parts sit in their own column.** A worked solution is a two-column table:
+  the part label `(i)` / `(ii)` / `(a)` in the left column, the working in the
+  right. One row per part. A one-part example has a single row with an empty
+  label cell — the layout stays the same.
+- **Answers once, at the end of the question.** A practice question with
+  parts carries ONE `[Ans: (a) …; (b) …]` line after the whole question, not
+  an answer line after each part.
+- **The word "never" does not appear on a student's sheet.** Say *not*, *does
+  not*, *is not*, *only when*. Before filing, search the docx text for the
+  word and rewrite the sentence; the worker checks and refuses to file with it
+  in.
+- **A Common Error only when it is really useful** — it names the wrong TOOL
+  or a trap that costs marks in this exact place, in one sentence. Most
+  routine examples carry none. Two per sheet is plenty; a sheet with one under
+  every example is wrong.
+- **Write errors the way Adrian writes them to a Singapore student.** Short,
+  concrete, the student's own symbols, the "X, not Y" shape or a plain
+  instruction. His own Reminders lines are the model:
+  - "The expansion of (a + b)ⁿ has (n + 1) terms, not n."
+  - "If b is negative, signs alternate — keep the minus sign inside the bracket."
+  - "Powers apply to coefficients too: (2x)³ = 8x³, not 2x³."
+  - "'Coefficient' is the number only; 'term' includes the power of x."
+  - "To find a specific term, form and solve the index equation for r first."
+  Not this: "A common misconception students hold is that…", "It is crucial to
+  remember that…", "This error typically arises when…". No preamble, no
+  explaining what the error type is called, no second sentence of reassurance.
+  The approved `pitfalls` rows mined from his notes (teaching-knowledge layer)
+  are in this voice — read a few for the topic before writing one.
+- **Plain Singapore classroom English in every lede and note — no idioms.**
+  Adrian, 7 Sep 2026, on "That same line hands you the factor (x − a) to
+  divide by": "don't say 'hands you', Singapore students don't speak like
+  that." Say *gives*, *gives you*, *tells you*, *is*: "That same line gives the
+  factor (x − a) to divide by." The same goes for *buys you*, *for free*,
+  *do the heavy lifting*, *nail down*, *unlock*, *the trick is*, and any other
+  figure of speech — a student should be able to read the line aloud in class.
+- **Concrete verbs for concrete moves.** Adrian, 7 Sep 2026, on "multiplying every
+  term by that exponential clears it": "don't say 'clears it', say 'remove the
+  denominator'." Name the thing done to the thing it is done to: *remove the
+  denominator*, *make the subject*, *take out the common factor*, *substitute
+  back*. Not *clears*, *kills*, *gets rid of*, *knocks out*.
+- **Reject in the original variable, after substituting back.** Adrian, 7 Sep
+  2026: "don't reject u = −1, sub back eˣ and then reject eˣ = −1." With a
+  substitution (u = eˣ, y = x², t = tan x) the roots in u are written, then EACH
+  is substituted back — "eˣ = 2/5 or eˣ = −1" — and the rejection happens
+  there, with its reason: "eˣ = −1 has no solution since eˣ > 0 for all x." A
+  root is never rejected at the u level.
+- **State the conclusion plainly.** Adrian, 7 Sep 2026: "don't say 'one root
+  survives', just say 'there is only 1 solution'." A show-that ends "So there
+  is only one solution. (shown)" — not *survives*, *is left standing*, *the
+  only one to make it*. **Still being written on 10 Sep 2026** — a sheet's
+  solution note read "Here both roots are positive, so both of them survive."
+  Adrian: "sounds weird (what does it mean both roots? and survive?)". Two
+  faults in one line: after a substitution, "root" is ambiguous (the quadratic
+  in u has roots; the equation in x has solutions), and *survive* is the
+  personification the line above bans. **Say nothing about the roots at all.**
+  Adrian, later the same day, on the offered rewrite ("Both values of u are
+  positive, so each gives a value of x"): "just don't mention it. say the
+  substitution, students can understand by working". So the note states the
+  substitution — "Let u = 2ˣ, so 4ˣ = u²" — and the working shows what each
+  value of u gives; a remark is only for a value that is REJECTED, and why
+  (2ˣ = −1 has no solution since 2ˣ > 0). The worker's pre-file sweep
+  (`WORKER_PROMPT.md` §3b) refuses to file with *survive* or any of the banned
+  figures of speech in the text — the rule was in this file alone and the
+  worker did not see it.
+- **A Common Error is a concrete wrong MOVE, or nothing.** Adrian, 7 Sep 2026,
+  on "Common Error: b² − 4ac counts the roots of the quadratic in eˣ. It says
+  nothing about how many of them survive as values of x": "Is that necessary?
+  doesn't seem to help but being a confusing message." That is commentary on
+  a theorem, not a mistake a student makes at this step. The test: it names
+  what a student WRITES wrongly here and what belongs instead, in one sentence
+  ("Rejecting u = −1 without substituting back loses the reason: it is eˣ = −1
+  that has no solution"). If it needs a second sentence to explain itself, or
+  the reader has to think about what it is warning against, leave it out.
+- **Quadrant errors are said as quadrants.** Adrian, 7 Sep 2026: "saying SINE
+  PARTNER is weird." A Common Error or note about a trig equation names the
+  quadrant used and the quadrant wanted ("you found the answer in the 2nd
+  quadrant instead of the 1st; cos > 0 puts the angle in quadrants 1 and 4"),
+  never "π − θ is the sine partner" or any "partner" language.
+- **A sanity check is a check, not working.** Adrian, 7 Sep 2026, on a black
+  "✓ 4√2 − 4 − π/2 = 0.086, a small positive number" line: "a check beside the
+  tick and the fonts in green will signify to the student … that check is not
+  part of the working." Write it as the `('check', parts)` step of
+  `solution_box` — it renders "✓ Check: …" in green. Never as a plain step.
+- **An Example's parts sit flush with its stem.** Adrian, 7 Sep 2026: "(a) (b)
+  (c) should be vertically aligned with the first line 'The equation of a
+  circle…'." After `ws.para(stem)` (and its figure) call `ws.parts()`, then
+  `ws.SQ()` per part — real Word numbering, labels at the left margin. Do NOT
+  poke `ws._auto_subq_id` by hand. Under a numbered practice `ws.Q()` the parts
+  keep their tab, level with the question's text. Every list on the sheet is
+  live Word numbering already (examples, parts, practice items) — insert or
+  delete in Word and the rest renumber.
+- **A diagram belongs where it is used.** Adrian, 7 Sep 2026, on a circle
+  example whose figure showed the tangent and Q from part (c) above part (a):
+  "the diagram doesn't seem to match part (a) — it is misleading … in worked
+  solutions that diagram should be provided, but for (b) onwards (not for (a))."
+  The QUESTION carries a diagram only when the bank question itself has one
+  (then as given). A diagram YOU draw goes inside the solution box, as a
+  `('figure', …)` step of the first part that uses it, showing only what that
+  part has established so far. A student can draw the rest; the sheet must not
+  hand them a picture of a later part's answer.
+- **Figure labels sit clear of every stroke.** Adrian, 7 Sep 2026: "diagram
+  generation for A and B, they are not block by the lines." `figure_lib`
+  places point labels at the first of eight offsets no curve, line, circle or
+  axis passes through (since 7 Sep 2026). Still LOOK at the PNG before
+  embedding — a label crossed by ink is a rejected sheet.
+- **No white frame around a figure.** Adrian, 9 Sep 2026, on Alessi's E Math
+  sheet (the half-cylinder faces drawing sat in 44% blank canvas): "the
+  diagrams generated need not have so much white space as its borders."
+  `worksheet_lib` now trims every PNG to its ink + 1.5 mm at embed time and
+  shrinks the embed width by the same ratio, so the drawing prints at the size
+  you chose with the border gone. Do not pad `xlim`/`ylim` to make room, and do
+  not widen `width_cm` to compensate for a border — there is none any more.
+
+Invoke `create-teaching-notes` and give it this brief:
+
+- **Example → Practice pairs, numbered straight through.** No TRIGGER /
+  FIRST LINE / WHY-IT-IS-SAFE scaffolding boxes, no memory-aid chants, no recap
+  box — those were explicitly cut. Teaching lives inside the annotated worked
+  solution, with at most a one-line italic strategy opener.
+- **EVERY example has practice of its own — lettered examples included.**
+  Adrian, 8 Sep 2026, Denise's sheet: "there is no corresponding practice
+  questions for example 5a." An Example (or an Example 5a / 5b pair) with no
+  practice under it teaches nothing the student can try: at least ONE practice
+  item per example, the same shape as the example, in that example's own
+  Practice section. **But never a number-swapped twin** (Adrian, 11 Sep 2026,
+  Isabelle's recipe-scaling Practice 2 — four items where Q1/Q2 and Q3/Q4 were
+  the same question with new numbers: "examples need not be repetitive → don't
+  waste students time"). A second item on the same example earns its place
+  only by adding something the first did not — a different move (the
+  exception case, a reversed question, an extra step, the harder tier), never
+  the same shape again with different numbers. Two examples of one skill (2a
+  the plain move, 2b the twist) get one item EACH, so the set is two, not four.
+  The worker's own pre-filing check (see the sweep below) counts one per
+  example and refuses to file a shortfall — and reads any second item to make
+  sure it is not the first one again.
+- **A rule with a known exception shows the exception.** Adrian, 8 Sep 2026:
+  "there should be examples and practices where the power is −1, which will
+  result in the integral being ln instead." When the rule taught has a case
+  where it changes shape or fails, the section carries one worked example ON
+  that case and practice that uses it: ∫(ax+b)ⁿ dx at n = −1 → (1/a) ln|ax+b|;
+  dividing an inequality by a negative flips it; √(x²) = |x|; the R-formula's
+  α sits in the quadrant the signs give; tan is undefined at 90°. The concept
+  line names the exception in one clause ("… and when the power is −1 the
+  answer is a log").
+- **A negative or fractional power is rewritten the way it will be solved, and
+  the ← note says so** (Adrian, 11 Sep 2026: "would like worker to put in the
+  annotation to write negative power in the denominator and power 1/2 as
+  square roots so that it is easy to see when solving equations"). Whenever a
+  derivative or an expansion leaves `(…)^{-1/2}`, `(…)^{-2}` or `(…)^{1/2}`,
+  the very next line rewrites it — the negative power as a fraction with the
+  bracket in the denominator, the half power as a square root — and carries
+  the grey arrow `← write negative power in the denominator and power 1/2 as
+  square roots`, e.g. `dT/dx = 1/5 + (x − 15)/(3√(x² − 30x + 289))`. The
+  student then sees the shape they will set equal to zero or substitute into.
+- **A question with no stem starts on the number's line** (Adrian, 11 Sep
+  2026, Practice 3: "the question should be horizontally level with the question
+  number"). Write `ws.Q([])` then the parts with `ws.SQ(...)`: the library puts
+  "(a)" on the "1." line and counts the rest from (b), so a practice item never
+  shows a bare "1." over an indented "(a)". A question WITH a stem is unchanged.
+- **Parallel is written `//`, never `∥`** (Adrian, 11 Sep 2026: "in practice
+  again sheets, parallel should be written as //, not ||"). In prose, in a green
+  tag and inside maths alike: `BX // DC`, `[BX // DC gives OX/OC = OB/OD]`. Do not
+  type `\parallel` — the lint refuses a sheet that carries `∥`.
+- **Every section says where it showed** (Adrian, 11 Sep 2026: "for practice
+  again for multiple marked papers, there is a 'where it showed' — can also have
+  'where it showed' in practice again for individual papers?"). Under each
+  section heading, one grey italic 9 pt line: on a single-paper sheet
+  `Where it showed: Q7(a)(i) and Q11(b)` (the question alone — the whole sheet
+  is that paper); on a batch sheet `Where it showed: 2025 Paper 1 Q2 and Q8(a);
+  2023 Paper 2 Q9(c)`. It is the student's own paper, so naming it is fine; it
+  is what lets them open the marked page beside the section.
+- **Worked examples reproduce the SHAPE of the question they got wrong**, with
+  changed numbers — never a generic textbook example of the same topic.
+  **The NOTATION is part of the shape** (Adrian, 11 Sep 2026, Isabelle's AM
+  2023 P1 Q6(b): "would be good if the examples and practice questions have
+  questions that mimic the use of g'(x) notation → some students are weak at
+  that"). The exam question defined g through f — `g'(x) = (x − a)² f'(x)`, "g
+  decreases for a < x < 8" — and the sheet taught it as a bare `dy/dx = 3x² −
+  2px − 24`, which drops exactly the reading the student fumbled. When the
+  question wrote its calculus in function notation (f'(x), g'(x), h''(x), a
+  derivative defined in terms of another function, f(g(x))), the example AND
+  its practice keep that notation and that structure: a named function, its
+  derivative written as f'(x), a second function built from the first. Only
+  the numbers and the functions change. Same for other notation the student
+  stumbled on — sigma sums, vector column form, set-builder brackets, R-formula
+  in the exam's own letters: the sheet drills the notation the paper used.
+  **The HARD STEP is part of the shape too** (Adrian, 11 Sep 2026, Isabelle's
+  AM 2025 P1 Q2 → Example 3b: "the main gap should be quadratic inequalities
+  when factorizing involves square roots. that's the difficulty for the
+  students, so worked examples and practice questions should have that"). The
+  paper's discriminant left `k² > 1/4`; the sheet's example left `m² − 4 < 0`
+  with integer roots, and every practice item factorised over integers — the
+  easy version of the skill, which is not the version that cost the marks.
+  Diagnose WHERE in the method the student stopped or slipped (the surd roots
+  of `k² > 3`, a negative leading coefficient, a fractional root, a repeated
+  root, the −1 power that turns an integral into a log) and make sure the
+  example AND every practice item put that same difficulty in front of the
+  student. Numbers friendlier than the exam's are a different, easier skill.
+  Name the difficulty in the section's blue key-move line so Adrian can see it
+  was targeted.
+- **Exact form is carried through a "show that"** (Adrian, 9 Sep 2026, Alessi's
+  Q10). When the target is exact — π, a surd, a fraction — the example works every
+  line exactly: exact trig values, fractions not decimals, π kept as π, and a
+  green tag at the line where the decimal habit would have lost the mark ("[a
+  show-that ends at the target's exact form — no decimals on the way]"). A
+  show-that worked in decimals can never "show" the target, so every practice
+  item in that section has an exact target too.
+- **Binomial products get prose AND arrows** (Adrian, 9 Sep 2026, Alessi's Q6:
+  "students tend to have a hard time knowing how to obtain the coefficients").
+  The pairing of powers is explained in words in the steps AND drawn:
+  `figure_lib.render({'kind': 'binomial_pairing', …})` — the two brackets side by
+  side, one coloured arrow from each term of the first bracket to the term it
+  multiplies in the second, the product under the picture in the same colour,
+  then the coefficient line. `ws.figure(png, width_cm=13)` right after the
+  expansion step, before the coefficient step. Both, always: the picture shows
+  WHICH terms pair, the prose says WHY those and no others. **When the bracket
+  shows only the first few terms of a longer expansion** (the question says "the
+  first four terms … are"), pass `right_more: True` so the picture ends
+  "… − 720/x³ + ⋯ )" (Adrian, 11 Sep 2026, Alessi's returned sheet: "there
+  should be ... after −720/x³ to indicate there are more terms") — a bracket
+  that closes after the fourth term claims the expansion stops there.
+- **Practice layout is fixed (Adrian, 31 Aug 2026):**
+  - **Number the items 1, 2, 3 …** — never (a), (b), (c). Letters are for the
+    PARTS of one question; using them for separate questions makes a
+    three-question practice look like one question with three parts.
+    **And the reverse holds** (Adrian, 2 Sep 2026): the parts of ONE question
+    are (a), (b), (c), never 1, 2. A second part that starts "Hence…" or
+    reuses the first part's figure is a part, not a new item — Sophie's EM
+    sheet numbered "draw the line to solve…" / "Hence solve the inequality…"
+    as 1 and 2, and he sent it back. One stem, one figure, one answer line →
+    lettered parts.
+  - **No source line under a practice question — none at all** (Adrian, 2 Sep
+    2026, twice: first "no need to write the school's name in the question",
+    then, shown `[2023 / EM / Prelim / Q9]`, "questions are still showing their
+    source - remove the sources"). Provenance goes in the completion payload
+    and the question-proposal queue, not on the student's page.
+    `scripts/sheet-worker/repair-sheet.py` deletes any that reach Dropbox.
+  - **Auto-number the items with real Word numbering** (Adrian, 2 Sep 2026:
+    "can we have auto numbering for the question numbers"). Call
+    `ws.restart_numbering()` right after each `practice_head(...)`, then
+    `ws.Q([...], marks=n)` per item and `ws.SQ([...])` per part — the list
+    restarts at 1 for every Practice set and an item he inserts or deletes in
+    Word renumbers the rest. Typed `"1.  "` text does not.
+  - **1.5 line spacing everywhere, solution boxes included** ("improve
+    readability"). `worksheet_lib` boxes are 1.5 since 2 Sep 2026; do not
+    tighten them back to 1.15.
+  - **The word "never" is out** ("avoid the word 'never', use 'not' or something
+    else instead"). "A fall of 15% is × 0.85, not −15." — say not / does not /
+    is not. Sweep the finished text for it before filing.
+  - **A question with parts gets ONE answer line, at the end**, carrying every
+    part: `[Ans: (a) v = 5π cos(πt/6), max speed 15.7 cm/s; (b) 8.22 cm/s²;
+    (c) 50 cm/s, a = −100 cm/s²]`. An answer line under each sub-part breaks the
+    question into fragments and lets the student check (a) before attempting (b).
+  - **Answers are OMML too.** They are the maths the student compares their own
+    against — a fraction typed as `3/2` beside a properly set one in the working
+    reads as a different standard, and the bracket ends up riding the fraction.
+  - **Right tab stop at 15.5 cm** for the `[N]` marks and the `[Ans: …]` line, so
+    every question on the sheet lines up down one edge.
+
+- **The Practice must drill the METHOD the Example just taught, not the topic
+  it belongs to** (Adrian, 31 Aug 2026). Example 3 taught "pair every
+  combination of powers that adds up to n" on `(1+4x)(3-ax)⁴`, and its practice
+  then asked for the first four terms of `(2 - x/2)⁵` — a plain expansion, which
+  never pairs anything. The student drills something adjacent and the skill goes
+  untouched. Test each practice item by asking: **can this be answered without
+  doing the thing the Example taught?** If yes, it is the wrong question.
+
+### Reuse before you write (Adrian, 9 Sep 2026)
+
+"For frequently marked papers, perhaps some examples can be reused if
+appropriate." Until 9 Sep nothing was: every sheet on the same TYS paper was
+authored from scratch, so the Example for "no term in 1/x" on the 2021 P2 was
+written afresh for every student who lost it. A vetted example is worth more
+than a fresh one — Adrian may have edited it in Word, and it has survived his
+eye — and one voice across students is a feature.
+
+**Since 17 Sep 2026 the reuse is across ALL papers, keyed by the missed step
+(Adrian: "yes, we can just let the bank accumulate, instead of writing
+everything from scratch"; SPEC-SECTION-BANK.md).** Every taught section of every
+filed sheet is a row in `sheet_sections` (filed by `sheet-jobs {action:'done'}`;
+180 rows back-filled from the 39 sheets whose diagnosis is still on their run (the rest were superseded)). Search it FIRST:
+
+```bash
+curl -s "$SHEETS_API_BASE/api/admin/sheet-sections?q=same+segment+angle+centre&subject=math&level=EM" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" | python3 -c "
+import sys, json
+for h in json.load(sys.stdin)['hits']: print(h['id'][:8], '|', h['line'], '|', h['docx_path'])"
+```
+
+`q` is the MISSED STEP in words (the gap, or the section title you would write),
+never the topic name; hits come vetted first, then newest; a retired row never
+appears. Same missed step → reuse that section from its `docx_path` (Adrian's
+copy), re-verify, name it in `reused`. Then, only for a same-paper same-question
+check, the older lookup below still applies:
+
+So, BEFORE drafting a section, look for an earlier sheet on the SAME paper:
+
+```bash
+# 1. earlier filed sheets on this paper (case-insensitive match on paper_name);
+#    each job carries the run's stored diagnosis as {at, skills[], sheetJobId} —
+#    one `skills` entry per section: title / questions / gap / tier / marks / why
+curl -s "$SHEETS_API_BASE/api/admin/sheet-jobs?paper=2021%20OLevel%20Amath%20Paper%202&status=done" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" | python3 -c "
+import sys, json
+for j in json.load(sys.stdin)['jobs']:
+    r = j.get('result') or {}
+    print(j['id'][:8], j.get('student_name'), (j.get('completed_at') or '')[:10], r.get('docx_path'))
+    for d in (j.get('diagnosis') or {}).get('skills') or []:
+        print('    ', d.get('questions'), '|', d.get('title'), '| gap:', d.get('gap'))"
+
+# 2. the sheet as Adrian last left it — his Word edits live in the .docx;
+#    --meta shows client_modified, so a time later than the job's completed_at means he edited it
+node scripts/dropbox-get.mjs "/Students/<Student>/<date> <paper>/3 Practice Again.docx" --meta
+node scripts/dropbox-get.mjs "/Students/<Student>/<date> <paper>/3 Practice Again.docx" /tmp/prev.docx
+pandoc /tmp/prev.docx -t markdown -o /tmp/prev.md     # OMML comes back as $…$ LaTeX you can paste into ('math', …) parts
+```
+
+**The reuse rule.** Same paper + same question + same `gap` → reuse that section's
+Example (concept line, worked example, its practice items), taking Adrian's edited
+docx over the worker's original whenever its `client_modified` is later than the
+job's `completed_at` — his edits ARE the standard. Re-run every sympy check on the
+reused numbers and re-verify the practice answers; keep the new sheet's diagnosis
+in the new student's order. Same question but a DIFFERENT gap → no reuse: Alessi
+had the maximum and lacked the angle, the next student may lack R itself, and the
+missed step decides the section, not the question number. Never copy a section
+whose gap you cannot see in this script. Say what you reused in the completion
+payload — `"reused": ["Q6 example from Alessi Tay's sheet (8 Sep, Adrian's edit)"]`
+— so the Telegram and the desk show it.
+
+### Search the bank BEFORE you write a question (Adrian, 1 Sep 2026 — binding)
+
+This used to read "prefer real bank questions of the same shape", buried at the
+end of another bullet, with no procedure and no tool. Predictably nothing was ever
+searched: every practice question on every sheet so far was written from scratch.
+Checked on Klaire's — `15ˣ = 4×3ˣ⁺¹`, the 300 cm³/s balloon,
+`log₅x + log₂₅(x+4)` — **not one of them is in the bank.** A preference with no
+recipe is not a preference, it is a comment.
+
+So, for EVERY practice item, in this order:
+
+1. **Search.** The bank holds thousands of real school and TYS questions and it is
+   searched semantically, so describe the METHOD, not the topic — "coefficient of
+   x² from a product where two pairs of powers combine" finds what "binomial
+   expansion" never will:
+
+   ```bash
+   curl -s -X POST "$SHEETS_API_BASE/api/admin/mark-paper" \
+     -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+     -d '{"phase":"qb-search","q":"<the method in one sentence>","level":"AM","count":12}'
+   ```
+
+   **That phase answers `{"ids":[]}` for nearly every phrasing** — its embedding
+   index is thin (whole levels have none). On Isabelle Toh Si Xian's seven single
+   sheets of 8–9 Sep 2026, **0 of 73 practice items carried a bank `question_id`**
+   and only 11 were filed as proposals: the worker searched, found nothing, and
+   wrote every item itself. **So the search that counts is PostgREST by topic** —
+   `SUPABASE_URL` + `SUPABASE_SECRET_KEY` from `.env.local`, ~60 rows per topic,
+   AI-generated rows excluded, then read the stems yourself (the 1 Sep Jamie Lim
+   job found real questions for 9/9 items this way; Chloe's EM job 11/12):
+
+   ```bash
+   curl -s -G "$SUPABASE_URL/rest/v1/questions" \
+     -H "apikey: $SUPABASE_SECRET_KEY" -H "Authorization: Bearer $SUPABASE_SECRET_KEY" \
+     --data-urlencode "select=id,school,year,paper,exam_type,question_number,total_marks,question_text,parts,answer,has_image,image_url" \
+     --data-urlencode "level=eq.AM" \
+     --data-urlencode 'topics=cs.{"Plane Geometry"}' \
+     --data-urlencode "school=neq.AI Generated" \
+     --data-urlencode "national=is.false" \
+     --data-urlencode "legacy_syllabus=is.false" \
+     --data-urlencode "deleted_at=is.null" --data-urlencode "limit=60"
+   ```
+
+   **National papers are grounding-only** (Adrian, 11 Sep 2026: "keep gce
+   questions out of serving"): `national=is.false` above is not optional. A GCE /
+   TYS / specimen question (`school = 'GCE'`) never appears on a sheet, not even
+   as "the same question again" — write the item yourself in the same shape.
+   The full rule: `docs/CONTENT-POLICY.md`.
+
+   The student's OWN paper is usually in the bank (query by school/year/paper) —
+   pull it first for the exact stems, and exclude it from the practice by CONTENT
+   (schools reuse questions verbatim under other names). A hit with `has_image`
+   must be looked at before use (`…/storage/v1/object/public/question_images/<file>`).
+   **Record `question_id` on every bank item in the `done` payload's
+   `questions[]`** — that field is how the desk and the Practice tab know a
+   question is real; an item without it is counted as authored.
+
+2. **Judge each hit by the same test the Practice must pass** — can it be answered
+   without doing the thing the Example taught? A hit on the right topic that skips
+   the method is not a hit. Take the best one that passes, verify its answer like
+   any other, and use it.
+
+3. **Author only when nothing fits**, and then say so: record the question as a
+   proposal (below). A real question of the same shape beats an invented one —
+   it carries a school's own phrasing, its mark allocation and its difficulty,
+   and Adrian can point at where it came from.
+
+**Authored questions go into the vetting queue, not into the void.** Until now an
+invented practice question lived in one student's DOCX and nowhere else, so the
+bank never grew and the next sheet on the same skill invented it again. POST each
+one to `authored_question_proposals` with the search that came up empty:
+
+```bash
+curl -s -X POST "$SHEETS_API_BASE/api/admin/question-proposals" \
+  -H "Authorization: Bearer $SHEETS_API_TOKEN" -H 'Content-Type: application/json' \
+  -d '{"runId":"<run id>","sheetJobId":"<job id>","level":"AM","topics":["Binomial"],
+       "skill":"pairing powers for a coefficient","questionText":"…","answer":"…",
+       "solution":"…","marks":5,"searchQuery":"<what you searched>","searchHits":[…],
+       "verification":{"ok":true,"method":"sympy","evidence":"<what you recomputed and what it gave>"}}'
+```
+
+**`verification` is required and must say `ok: true`** (7 Sept 2026, Adrian: "make
+sure they are verified first, even before asking me to approve/publish"). Recompute
+the answer the same way you verify the sheet's practice answers and put the working
+in `evidence`; the API refuses a filing without it, and the vetting page's
+"Approve & publish" button is disabled for anything unverified. Adrian rules on
+fit and wording, never on arithmetic.
+
+Nothing there reaches the bank until Adrian approves it. Record the FAILED SEARCH
+honestly — the queue cannot tell a genuine gap from a lazy search without it, and
+the gap is the interesting half: it says what the bank is missing.
+- Teach by contrast as a trio where two rules compete (Klaire 4a → 4b → 4c: a
+  warm-up box, a stem-less box with the wrong attempt in red and the fix in
+  blue, then the exam question); chain examples ("From Example 5: … ← carried
+  forward"). **Practice volume follows the skill** (2 Sep 2026): a routine skill
+  gets ONE item — the exam question's twin, same parts and marks, function
+  family varied; the conceptual skill gets 3–4 escalating items (increasing →
+  decreasing → two stationary points → none) from the bank; a set may close
+  with a full 12-mark exam question and its figure.
+- Colour: red = the single danger line and the offending term; blue =
+  check/verify lines with ✓; grey = ← annotations and Common Error working;
+  orange right-aligned `[Ans: …]`.
+- **The opening block is fixed. Use this, adapted only for the paper and the
+  name** (Adrian, 31 Aug 2026 — the first version explained the sheet's
+  *selection theory* to a 16-year-old, which is not their problem):
+
+  ```
+  ADRIAN'S MATH TUITION            ← running header, grey, centred
+  Additional Mathematics           ← running header, grey, centred
+
+  PRACTICE AGAIN — Learn from A Math 2021 Paper 1     ← title, navy, bold, centred
+  For Sophie Tan                   ← small, FADED blue (8EAADB), centred
+
+  Read through each Example
+  Then do the Practice under it on your own, before you look at the answers.
+  When you have finished, photograph your work and submit it for marking.
+  ```
+
+  Three instruction lines, in that order, bolding only **Example** and
+  **Practice**. Nothing about waves, triage, or why a skill was chosen — that is
+  Adrian's reasoning, not the student's instructions. No explanatory sentence
+  above them: the title already says what the sheet is.
+
+- **The name is a "For <Full Name>" subtitle under the title** — small, centred,
+  and in a FADED blue (`8EAADB`, i.e. the title's blue lightened, not grey).
+  Present but receding: the sheet is theirs, it does not shout their name and it
+  never addresses them in the prose ("Sophie, this worksheet…" was tried and
+  cut — made for them, not talking at them). Nowhere else on the page.
+  (This reverses the earlier "name never appears" rule: Adrian wants these
+  personalised, just quietly.) The FILE name keeps the student's name as before.
+- **The title block is TIGHT** (Adrian, 2 Sep 2026: *"don't leave such a large
+  gap"*). The name sits directly under the title, and the first instruction
+  line directly under the name. In `worksheet_lib` terms: the title paragraph
+  gets `space_after = Pt(2)` and `line_spacing = 1.0` (grab it with
+  `ws.doc.paragraphs[-1]` right after `ws.title(...)` — `title()` returns
+  nothing), and the `For <Name>` subtitle gets `space_before = 0`,
+  `space_after = Pt(3)`, `line_spacing = 1.0`. The WSTitle style's default
+  `space_after` of 6pt plus a 10pt subtitle gap is what he sent back. Keep the
+  one blank paragraph AFTER the three instruction lines.
+- **Every ② item appears as a single line, not a section.** "Q13(a)(ii): the 500
+  was already per second — no ÷ 60." That is the whole treatment.
+- **The Optional section (③) is last, and says it is optional in its heading**,
+  so a student who is short of time knows exactly what they may skip.
+
+**Two things the first sheets got wrong, both non-negotiable:**
+
+- **Real equations, never plain text — headings and question stems included.**
+  `dV/dr = 4πr²` typed as a run of characters is not acceptable output; it must
+  be OMML, one step per line with the `=` signs aligned, exactly as STYLE.md
+  §equation-steps requires. This is the rule most often half-obeyed: the worked
+  steps come out typeset while a section heading still reads "Kinematics — v =
+  dx/dt" and an example stem writes `40sin(πt/4)` inline (Adrian, 31 Aug 2026).
+  If it is maths, it is an equation object, wherever it appears. The marking
+  annotations already render proper fractions and derivatives — the sheet cannot
+  look worse than the paper it came from.
+
+- **Every fraction is STACKED — numerator over denominator, always** (Adrian,
+  31 Aug 2026). In python-docx terms: an `m:f` with **no `m:fPr/m:type`** (the
+  default `bar`). Never emit `<m:type m:val="lin"/>` or `"skw"` — Word draws
+  those as `4/3` and `1/2` side by side, and on a page where every other
+  fraction is stacked the small ones read as a different, sloppier standard.
+  Klaire's sheet carried nine linear fractions, all of them the "simple" ones
+  (`½`, `4/3`) the author judged not worth stacking — that judgement is wrong,
+  it is exactly the constant in front of `πr³` that a student mis-copies.
+  The same applies to slashes typed in PROSE: "so v = dx/dt" inside a sentence
+  is still maths, so it is still an equation object.
+  Sweep the finished file before filing it:
+  - **No `∥` anywhere, and a "Where it showed" line under every section
+    heading** (11 Sep 2026) — `render_sheet.py`'s lint flags the first; count
+    the second against the section headings.
+  - **A part is never cut across pages; a new part may start overleaf; a near
+    miss is tightened** (Adrian, 13 Sep 2026: "a new part can go to another page,
+    but not in the middle of a part … if the solutions almost fit into a page,
+    just a little left hanging … tighter to fit, then do so"; 11 Sep 2026: "reduce
+    the white spaces for the example/question").
+    After the file is otherwise finished, run
+    `/usr/bin/python3 scripts/sheet-worker/fit-examples.py <sheet.docx> --pdf
+    "<folder>/3 Practice Again.pdf"` (needs Word, like the PDF export) and FILE
+    THE PDF IT WRITES — never a separate export. It lets Word paginate, finds
+    an example that spills a small tail onto the next page or that jumped
+    whole to a new page leaving the page before mostly blank, and tightens
+    THAT example's spacing one rung at a time (box 1.5 → 1.3 → 1.15 → 1.05,
+    part gaps 8 → 2 pt, the breathing space above and below the box) until it
+    fits — or puts it back exactly as it was. Then, for an example TALLER than
+    a page (Word abandons every keep rule for those), it pins the "Solution:"
+    line to open the page with its box whenever it sits at a page's foot or
+    was carried to a page's top (Adrian, 11 Sep 2026, Kiara's Example 1:
+    "preferably, 'Solution' is on top of the box, instead of straddling across
+    two pages"). Why the PDF must be its own: Word's pagination drifts by a
+    line between two exports of the same file — the worker's export had that
+    label stranded, a re-export did not — so only the PDF judged is the PDF
+    that may be filed. Run it LAST: any later edit moves the page breaks. Its
+    report is part of the `done` payload's `verified` line. **Since 11 Sep 2026
+    evening the fitter also treats every Practice set as a block** (Adrian: "if
+    question 2 can be on the same page as question 1, just reduce some white
+    space on the page and we can squeeze in question 2") and, for a block up to
+    1.4 pages tall, adds two rungs that shrink its diagrams to 85 % then 72 %
+    (Adrian: "we can also have the solutions and the example on one page, just
+    reduce some white space, or make the diagram (slightly) smaller"). A block no
+    rung fits is restored untouched.
+  - **Every Example has at least ONE practice item of its own shape, and no
+    item is another with the numbers changed** (8 Sep 2026; the twin rule 11
+    Sep 2026) — count "Example N" / "Example Na" headings against the numbered
+    items in that skill's Practice section; a shortfall is a rewrite, not a
+    file. Then read the items of each set side by side: two that differ only
+    in numbers and names (20 biscuits → 15 pancakes) are one item, and the
+    second is deleted before filing — a student's time is the budget.
+
+  ```
+  python3 -c "import zipfile,re,sys; x=zipfile.ZipFile(sys.argv[1]).read('word/document.xml').decode(); \
+  print('linear fractions:', len(re.findall(r'<m:type m:val=\"(?:lin|skw)\"/>', x))); \
+  print('slashes in maths:', re.findall(r'<m:t[^>]*>([^<]*/[^<]*)</m:t>', x))" sheet.docx
+  python3 -c "import sys; sys.path.insert(0, '.claude/skills/create-worksheet'); from worksheet_lib import find_plain_maths; \
+  h = find_plain_maths(sys.argv[1]); [print('  ', r, '—', why) for r, why in h]; print('plain-text maths:', len(h)); sys.exit(1 if h else 0)" sheet.docx
+  ```
+
+  Zero linear fractions. The only slashes allowed in an `m:t` are units —
+  `cm/s`, `m/s²`. **And zero plain-text maths** (9 Sep 2026): the second check
+  walks every `<w:t>` run — the text OUTSIDE equation objects, which the first
+  check never looks at — and flags a slash fraction, a `^`, a superscript digit,
+  √ ∫ ∑, a Greek letter, an `x = …` equation or a degree sign typed as
+  characters. Alessi's sheet passed the first check and still carried
+  `[No term in 1/x]` as text, because the green tag was a `('text', …)` part.
+  `ws.save(path, strict_maths=True)` runs the same check and refuses to save on
+  a hit; a plain `save()` prints the hits as a WARNING you must not file over.
+
+- **The solution box hugs its content, top and bottom** (Adrian, 31 Aug 2026 —
+  *"i can't backspace to bring the box up to below the solution"*). Two separate
+  faults make that gap, and neither can be deleted by hand:
+
+  - **Below `Solution:`** — there is no empty paragraph there to remove, so
+    Backspace does nothing; the gap is the label paragraph's `space_after` plus
+    the cell's top margin. Set `space_after = 0` on the `Solution:` label and
+    `space_before = 0` on the cell's first paragraph, so the box starts where
+    the label ends.
+  - **Inside the box, at the bottom** — a trailing EMPTY paragraph in the cell.
+    Word will not let you delete the last paragraph of a cell, so that space is
+    permanent for whoever edits the sheet. Never append one: the box's last
+    paragraph must be the last line of teaching. Two of Klaire's six boxes ended
+    on an empty paragraph, and five of Kiara's ten.
+
+  - **Between the parts** — an 8 pt gap, as space ABOVE each later part's first
+    line in both cells (`solution_box(part_gap=…)`, `worksheet_lib.PART_GAP_PT`),
+    never an empty paragraph. Adrian, 10 Sep 2026, on Alessi's Example 4a where
+    (a)(b)(c) touched: "leave a line space between each subpart (or at least a
+    small space - need not be a full line space - you can adjust to fit the
+    space as required)". The library used to write a blank paragraph there —
+    exactly the trailing empty paragraph the bullet above strips — so no filed
+    sheet ever had the gap. Spacing survives every sweep; `repair-sheet.py`
+    step 2c writes it into sheets already filed.
+
+  Check all three before filing: the last paragraph of every table cell must
+  have text, no table may be preceded by an empty paragraph, and every row of a
+  labelled box after the first carries the gap.
+- **A geometry or area question gets a diagram — EXAMPLES AND PRACTICE ALIKE.**
+  If the skill is about a shape, a region, or coordinates, the student must be
+  able to SEE it: draw it with `figure_lib` (genres and fields in
+  `create-worksheet/SKILL.md` § Figures) and view the PNG before embedding.
+
+  This is not decoration on an area question, it is the method. "The region
+  bounded by the curve, the normal and the coordinate axes" is a sentence a
+  student can read three times and still not know what to integrate; one
+  sketch with the region shaded settles it. Sophie's sheet proved the point
+  twice — the worked example shipped without a figure, and then Practice 1(a),
+  (b) and (c) were three area questions in a row with no picture between them,
+  carrying an italic note ("in (b) the region really does lie between two
+  graphs, so you subtract") that was doing a diagram's job in words.
+
+  The figure shows the bounding curves and lines, labelled, with the region
+  shaded. If the practice item asks the student to FIND the region, draw the
+  curves and leave the shading to them — but draw the axes and curves.
+
+  **And the SOLUTION of an area question shows how the area is made** (Adrian,
+  10 Sep 2026, on Isabelle's sheet — Example 2, the region bounded by
+  y = (x−2)³, its tangent at P(3, 1) and the x-axis: "would be good if a
+  diagram can be drawn to show the areas required"). Whenever the working
+  combines pieces — an integral minus a triangle, two integrals added, a
+  rectangle minus an integral — the solution box carries a
+  `figure_lib.render({'kind': 'area_decomposition', …})` figure as the
+  `('figure', path, 15)` step straight after the plan line: the region asked
+  for, "=", then each piece shaded on the same axes with its expression under
+  it and "−"/"+" between. The pieces' `from`/`to`/`expr` are the SAME numbers
+  the integrals below are written from — never re-typed. The question figure
+  says what is asked; this one says why the working is the working. A single
+  integral with nothing to add or subtract needs only the question figure.
+
+**The page rule — a part is never cut, a new part may start overleaf**
+(Adrian, 13 Sep 2026, refining 11 Sep's "examples should try not to straddle
+across two pages … looks cut off in the middle": "if a worked example has
+multiple parts solutions, then a new part can go to another page, but not in
+the middle of a part … if the solutions almost fit into a page, just a little
+left hanging … tighter to fit, then do so. otherwise, it is okay to let a part
+be on another page … unless there is absolutely no choice, then break at a
+sensible part"). His own notes do this — AM 18 Example 3b breaks between (c)
+and (d) at the foot of a full page. So the box FLOWS (`keep_together=False`,
+the renderer's default now): every part row is unsplittable, the Example
+label, question, figure and `Solution:` line stay with the first part, and
+`fit-examples.py` tightens a near miss. A part taller than a page is written as
+two rows (the second with label `""`) so the break lands at a sensible line.
+Practice questions are short and stay whole: build the sheet with `Worksheet(keep_questions_together=True)`
+so a question's stem, its (a)(b)(c) parts, the `[Ans: …]` line and the
+`[Remember: …]` note stay together (they carry no writing space, so no
+question is taller than a page). `repair-sheet.py --unglue` still exists for a
+sheet Adrian is editing by hand in Word and finds too sticky; never run it as
+part of filing.
+
+**Verify everything before rendering**: every worked and practice answer
+recomputed with sympy; any figure verified from its own coordinates (tangency,
+parallels, claimed equal angles). Report the tally. An unverified sheet is not
+finished.
+
+### Re-authoring vs a new wave
+
+A sheet already in `/Students/<Student>/<date> <paper>/` for this paper does NOT always mean
+the job is a duplicate. Two different requests look identical from here:
+
+- **A new wave** — the same paper, the skills the last sheet deliberately left
+  out. If nothing is left (every lost mark is already taught), say so and stop.
+  That guard is correct and stays.
+- **A re-author** — the SAME wave, rebuilt because the format changed: a
+  missing diagram, plain-text maths, a heading Adrian rewrote. The content
+  repeats on purpose. Filing it is the whole point, and REPLACING the previous
+  file is the right outcome.
+
+`focus` on the job tells you which. Anything naming a rebuild, a fix, or a
+format ("regenerate", "with diagrams", "same wave") is a re-author: keep the
+wave the earlier sheet used, fix what was asked, file over it, and say in your
+summary which file you replaced. With no `focus`, and every lost mark already
+taught, the duplicate guard applies as before.
+
+31 Aug 2026: a rebuild-with-diagrams job reached "verifying" and then refused to
+file, reporting that all 19 lost marks were already covered by the two sheets
+before it. They were — that was the point.
+
+## Step 5 — file it for Adrian
+
+**Export the PDF from INSIDE Word's own sandbox container:
+`~/Library/Containers/com.microsoft.Word/Data/Documents/adrianmath-export/`**
+(`mkdir -p` it). Copy the DOCX there, run the Word AppleScript (`document 1` +
+name guard — recipe in the sheet-worker toolchain notes), copy the PDF back.
+Microsoft Word is sandboxed: it puts a "Grant File Access" dialog in front of
+Adrian for a folder outside its container, and for a script-opened file that
+grant does NOT persist across Word launches — the earlier fixed folder
+`~/.adrianmath_word_export/` asked him twice in one evening (7 Sep 2026; it is
+now a symlink into the container folder). Inside the container Word never asks
+(tested 7 Sep 2026: export in 4 s, no dialog). Word also refuses `save as` into
+`/private/tmp/...` outright (`-1708`).
+
+Render the DOCX **and** a preview PDF, then file both:
+
+```bash
+node scripts/dropbox-put.mjs "<file>" "/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.docx" --overwrite
+```
+
+(The script stages to Blob and calls `/api/admin/dropbox-put`; a direct Dropbox
+call from this Mac 401s — its refresh token predates `files.content.write`.)
+
+Then hand Adrian both files in the session and tell him the next step in one
+line: **edit the DOCX in Dropbox, export the PDF beside it, then release the
+marked paper + sheet together from triage** (the 📘 attach button there).
+
+### The filing path is fixed — one folder per paper (Adrian, 2 Sep 2026)
+
+```
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.docx
+/Students/<Student Name>/<YYYY-MM-DD> <paper>/3 Practice Again.pdf
+```
+
+`<YYYY-MM-DD>` is the marking run's date (`paper_marking_runs.created_at`, SGT)
+and `<paper>` its `paper_name` — e.g. `/Students/Sophie Tan/2026-09-01 EM 2025
+p1 sophie/3 Practice Again.docx`. Adrian, on a folder holding two papers' worth of
+docx + pdf side by side: *"these docx and pdfs will pile up in the same folder,
+any ways we can keep them more organized?"* A folder per paper keeps each
+paper's sheet and PDF together and sorts by date. **The same folder holds the
+marked script too**: the bot files `Marked (AI).pdf` there, and Adrian saves his
+amended copy beside it as `Marked (Adrian).pdf` — the website's
+`src/lib/paper-folder.ts` is the one rule for the folder name (`:` → `-`,
+trailing `.pdf` dropped, whitespace collapsed); a sheet must land in exactly
+that folder or release-with-sheet cannot find it. (`/Self-Study/` was renamed
+to `/Students/` on 2 Sep 2026.)
+
+**No "Wave" in the name.** (*"why are there always the word 'Wave 1'? do we
+need that?"*) The wave was SPEC-TEACHING-CYCLE's idea that one paper could
+spawn a second sheet later for the skills the first left out. That is rare, and
+the label on every first sheet was noise. The first sheet for a paper is
+`Practice Again`; only if a second sheet is ever built for the SAME paper is it
+`Practice Again 2`. A re-author writes the same path with `--overwrite`.
+No date in the FILE name (the folder carries it), no title variation, no run
+number.
+
+Sophie's folder is what happens without this. Two runs, two conventions —
+"2026-08-31 PRACTICE AGAIN — Learn from A Math 2021 Paper 1 — sophie am tys
+2021 p1" and "2026-08-31 Practice Again (Wave 2) — sophie am tys 2021 p1" —
+so the rebuild that was told to replace the earlier sheet quietly sat down
+beside it instead, and Adrian opened a folder with two sheets, two PDFs and a
+sync copy in it, unable to tell which one to send. "Replace the earlier file"
+is unenforceable when each run invents its own name.
+
+Dates belong in Dropbox's own modified column, not in the name.
+
+## Hard rules
+
+- **Sec syllabus methods** — a worked example, hint or practice solution for a Sec student never uses sum and product of roots (α + β, αβ), factorials, the dot product, integration by parts or the other routes in `docs/SEC-SYLLABUS-METHODS.md`; a quadratic with a known root is done by SUBSTITUTING the root, then solving. (Adrian, 11 Sep 2026 — a Practice Again example taught α + β = −b/a.)
+- **Never send anything to a student.** No assignment creation, no release, no
+  Telegram to anyone but Adrian.
+- **One wave.** Overwhelming a student is a worse failure than under-covering.
+  (A BATCH of two or three papers may run to eight or ten sections when the
+  clustered gaps need them — `WORKER_PROMPT.md` §1e, 11 Sep 2026 — and every gap
+  not taught is shelved WITH its paper and reason so the student can ask for the
+  next wave. A shelf is a queue, not a bin.)
+- **Nothing bare.** Every practice item on the sheet has its teaching above it.
+- **Evidence or it doesn't ship.** Every skill on the sheet traces to a
+  question they actually lost marks on; say which in your summary to Adrian.
+- **A slip is not a skill.** Nothing gets a practice question because the
+  student was careless — only because they could not do it. See the triage in
+  Step 2; getting this wrong wastes the scarcest thing they have.
+- **The sheet cannot look worse than the marked paper.** Typeset equations and
+  a diagram wherever the idea is visual.
+- If the paper has no lost marks — or the only ones lost are slips a sheet cannot
+  fix — **say so and stop; do not invent weaknesses.** Running as the headless
+  worker, that is a COMPLETION, not a failure: close the job with
+  `{"action":"done","id":"<job id>","result":{"noSheet":true,"reason":"<one
+  sentence: the score, what the lost marks were, why they do not earn practice>"}}`.
+  Never `fail` it — `fail` requeues, so the same right answer is reached three
+  times and then alarms (two of Kassandra Lim's papers, 3 Sep 2026).
