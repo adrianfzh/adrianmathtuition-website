@@ -1,0 +1,106 @@
+{
+  "slug": "without-a-calculator-s2",
+  "title": "Without a calculator",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Without a calculator",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "399^2", "id": "q" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "(400 - 1)^2", "id": "r" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "400^2 - 2(400)(1) + 1^2", "id": "t" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "160000 - 800 + 1", "id": "e" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "159201", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Find three hundred and ninety-nine squared, without a calculator.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b1.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Rewrite three hundred and ninety-nine as four hundred minus one.",
+          "do": [
+            { "do": "write", "step": 1, "on": "four hundred" },
+            { "do": "note", "text": "← rewrite 399 as 400 − 1", "near": "r", "on": "minus one" }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b2.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "This is the form A minus B, all squared. A is four hundred, and B is one.",
+          "do": [
+            { "do": "highlight", "token": "r", "on": "A minus B" }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b3.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Use the formula: A squared, minus two A B, plus B squared.",
+          "do": [
+            { "do": "write", "step": 2, "on": "A squared" },
+            { "do": "note", "text": "← use $(a - b)^2 = a^2 - 2ab + b^2$", "near": "t", "on": "plus B" }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b4.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Four hundred squared is one hundred and sixty thousand. Two times four hundred times one is eight hundred. One squared is one.",
+          "do": [
+            { "do": "write", "step": 3, "on": "one hundred and sixty" },
+            { "do": "note", "text": "← evaluate", "near": "e", "on": "eight hundred" }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b5.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b5.timing.json"
+        },
+        {
+          "say": "One hundred and sixty thousand, minus eight hundred, plus one, is one hundred and fifty-nine thousand, two hundred and one.",
+          "do": [
+            { "do": "write", "step": 4, "on": "fifty-nine" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "two hundred and one" }
+          ],
+          "audio": "/lessons/without-a-calculator-s2/scene-01-b6.mp3",
+          "timing": "/lessons/without-a-calculator-s2/scene-01-b6.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "399^2", "equals": 159201 },
+        { "expr": "400^2 - 2*400*1 + 1^2", "equals": 159201 },
+        { "expr": "400^2", "equals": 160000 },
+        { "expr": "160000 - 800 + 1", "equals": 159201 }
+      ]
+    }
+  ]
+}

@@ -80,6 +80,48 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Special products',
     minutes: 1,
   },
+  {
+    slug: 'expansion-with-fractions-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Expansion with fractions',
+    minutes: 1,
+  },
+  {
+    slug: 'special-products-minus-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Special products: a minus',
+    minutes: 1,
+  },
+  {
+    slug: 'special-products-mixed-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Special products with other terms',
+    minutes: 1,
+  },
+  {
+    slug: 'using-the-identity-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Using the identity',
+    minutes: 1,
+  },
+  {
+    slug: 'without-a-calculator-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Without a calculator',
+    minutes: 1,
+  },
+  {
+    slug: 'hence-questions-s2',
+    level: 'S2',
+    topic: 'Algebra (Expansion)',
+    title: 'Hence questions',
+    minutes: 1,
+  },
 ];
 
 /**

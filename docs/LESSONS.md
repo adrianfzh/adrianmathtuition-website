@@ -77,6 +77,15 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   2(a + 5) − (4a + 3)(2a − 7), the minus sign in front of the second expansion;
   `special-products-s2` (2p + 3q)² BY THE FORMULA, not the Rainbow. All six are voiced and
   word-timed (the last five on 9 Oct 2026, Adrian: "yes to the voice").
+- **The rest of the chapter** (9 Oct 2026, Adrian: "do the rest of the clips for this
+  chapter"), all voiced and word-timed: `expansion-with-fractions-s2` ¼(2a − 4b) (his
+  Practice 3a — the notes give no worked example here); `special-products-minus-s2`
+  (5m − 2n)² by the (a − b)² formula; `special-products-mixed-s2` (x − 3y)² − (x + y)²;
+  `using-the-identity-s2` ab = −6, a² + b² = 30 → (a + b)² = 18; `without-a-calculator-s2`
+  399² = (400 − 1)²; `hence-questions-s2` (two boards: simplify a² − (a + b)(a − b), then
+  2018² − 2023 × 2013 = 25 — his Q3, worked from his hint). Twelve clips for the chapter.
+  A board of five lines or more sets its lines closer; the question's maths is as large as
+  its words.
 - **Numbered arrows:** `label` on an arc (`"label": "1"`) draws a small ringed number on the
   curve, toward the arrowhead, in a layer above every curve. **Margin words:** a `note`
   whose text is the notes' own words ("← Add up like terms") — in a clip a note carries no

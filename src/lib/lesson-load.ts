@@ -17,6 +17,12 @@ import expandAndSimplifyS2 from '../../data/lessons/expand-and-simplify-s2.json'
 import numberInFrontS2 from '../../data/lessons/number-in-front-s2.json';
 import furtherExpansionS2 from '../../data/lessons/further-expansion-s2.json';
 import specialProductsS2 from '../../data/lessons/special-products-s2.json';
+import expansionWithFractionsS2 from '../../data/lessons/expansion-with-fractions-s2.json';
+import specialProductsMinusS2 from '../../data/lessons/special-products-minus-s2.json';
+import specialProductsMixedS2 from '../../data/lessons/special-products-mixed-s2.json';
+import usingTheIdentityS2 from '../../data/lessons/using-the-identity-s2.json';
+import withoutACalculatorS2 from '../../data/lessons/without-a-calculator-s2.json';
+import henceQuestionsS2 from '../../data/lessons/hence-questions-s2.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -33,6 +39,12 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'number-in-front-s2': numberInFrontS2,
   'further-expansion-s2': furtherExpansionS2,
   'special-products-s2': specialProductsS2,
+  'expansion-with-fractions-s2': expansionWithFractionsS2,
+  'special-products-minus-s2': specialProductsMinusS2,
+  'special-products-mixed-s2': specialProductsMixedS2,
+  'using-the-identity-s2': usingTheIdentityS2,
+  'without-a-calculator-s2': withoutACalculatorS2,
+  'hence-questions-s2': henceQuestionsS2,
 };
 
 /**

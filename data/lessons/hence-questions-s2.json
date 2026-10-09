@@ -1,0 +1,178 @@
+{
+  "slug": "hence-questions-s2",
+  "title": "Hence questions",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Part (a): simplify",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "a^2", "id": "x" },
+            { "tex": "-", "id": "m" },
+            { "tex": "(a + b)(a - b)", "id": "g" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "a^2" },
+            { "tex": "-\\,(a^2 - ab + ab - b^2)", "id": "e1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "a^2" },
+            { "tex": "-\\,(a^2 - b^2)", "id": "e2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "a^2 - a^2 + b^2", "id": "e3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "b^2", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Part A. Simplify A squared, minus, bracket A plus B, bracket A minus B.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-01-b1.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Expand the two brackets. Keep the expansion inside a bracket, because of the minus sign in front.",
+          "do": [
+            { "do": "write", "step": 1, "on": "inside" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-01-b2.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Minus A B and plus A B cancel.",
+          "do": [
+            { "do": "write", "step": 2, "on": "cancel" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-01-b3.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "The minus sign changes every sign inside the bracket.",
+          "do": [
+            { "do": "write", "step": 3, "on": "changes" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-01-b4.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "A squared minus A squared is zero. The answer is B squared.",
+          "do": [
+            { "do": "write", "step": 4, "on": "answer" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "B squared" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-01-b5.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-01-b5.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "a^2 - (a + 3)(a - 3)", "equiv": "0a + 3^2", "var": "a" },
+        { "expr": "5^2 - (5 + b)(5 - b)", "equiv": "b^2", "var": "b" }
+      ]
+    },
+    {
+      "type": "equation-steps",
+      "heading": "Part (b): hence",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "2018^2", "id": "n1" },
+            { "tex": "-" },
+            { "tex": "2023 \\times 2013", "id": "n2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "a^2", "id": "c1" },
+            { "tex": "-" },
+            { "tex": "(a + b)(a - b)", "id": "c2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "a = 2018,", "id": "va" },
+            { "tex": "b = 5", "id": "vb" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "= b^2" },
+            { "tex": "= 5^2" },
+            { "tex": "= 25", "id": "ans2", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Part B. Hence find two thousand and eighteen squared, minus two thousand and twenty-three times two thousand and thirteen.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-02-b1.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-02-b1.timing.json"
+        },
+        {
+          "say": "Hence means: use part A. Compare this with A squared, minus, A plus B, times A minus B.",
+          "do": [
+            { "do": "write", "step": 1, "on": "Compare" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-02-b2.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-02-b2.timing.json"
+        },
+        {
+          "say": "A is two thousand and eighteen.",
+          "do": [
+            { "do": "write", "token": "va", "on": "two thousand" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-02-b3.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-02-b3.timing.json"
+        },
+        {
+          "say": "A plus B is two thousand and twenty-three, so B is five. Check: A minus B is two thousand and thirteen.",
+          "do": [
+            { "do": "write", "token": "vb", "on": "B is five" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-02-b4.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-02-b4.timing.json"
+        },
+        {
+          "say": "From part A, the answer is B squared. Five squared is twenty-five.",
+          "do": [
+            { "do": "write", "step": 3, "on": "B squared" },
+            { "do": "write", "token": "ans2", "on": "twenty-five" }
+          ],
+          "audio": "/lessons/hence-questions-s2/scene-02-b5.mp3",
+          "timing": "/lessons/hence-questions-s2/scene-02-b5.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "2018^2 - 2023*2013", "equals": 25 },
+        { "expr": "2018 + 5", "equals": 2023 },
+        { "expr": "2018 - 5", "equals": 2013 }
+      ]
+    }
+  ]
+}

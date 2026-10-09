@@ -2044,6 +2044,10 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
 [data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: 2.8rem; }
+/* The question above a clip's working: its maths is as large as its words. */
+[data-lsn-clip] .lsn-body-steps > p .katex { font-size: 1.22em; }
+/* Five lines or more: closer together, so the whole working stays on a phone screen (such a board has margin words, not arcs). */
+[data-lsn-clip] .lsn-steps:has(> :nth-child(5)) > * + * { margin-top: 1.7rem; }
 [data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
 [data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
 /* Content sits in the UPPER part of the board with comfortable margins — a

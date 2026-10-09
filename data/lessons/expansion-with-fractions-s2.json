@@ -1,0 +1,81 @@
+{
+  "slug": "expansion-with-fractions-s2",
+  "title": "Expansion with fractions",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Expansion with fractions",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "\\tfrac{1}{4}", "id": "k" },
+            { "tex": "(" },
+            { "tex": "2a", "id": "a" },
+            { "tex": "-\\,4b", "id": "b" },
+            { "tex": ")" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\tfrac{1}{2}a", "id": "p1" },
+            { "tex": "-\\,b", "id": "p2" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand a quarter, bracket two A minus four B.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/expansion-with-fractions-s2/scene-01-b1.mp3",
+          "timing": "/lessons/expansion-with-fractions-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Use the Rainbow as usual. This time we multiply with a fraction.",
+          "do": [
+            { "do": "highlight", "token": "k", "on": "fraction" }
+          ],
+          "audio": "/lessons/expansion-with-fractions-s2/scene-01-b2.mp3",
+          "timing": "/lessons/expansion-with-fractions-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "A quarter times two A is two quarters A. That is a half A.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "a"], "label": "1", "on": "A quarter times" },
+            { "do": "write", "token": "p1", "on": "a half A" }
+          ],
+          "audio": "/lessons/expansion-with-fractions-s2/scene-01-b3.mp3",
+          "timing": "/lessons/expansion-with-fractions-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "A quarter times minus four B is minus four quarters B. That is minus B.",
+          "do": [
+            { "do": "mark", "kind": "arc", "token": ["k", "b"], "label": "2", "on": "A quarter times" },
+            { "do": "write", "token": "p2", "on": "minus B" }
+          ],
+          "audio": "/lessons/expansion-with-fractions-s2/scene-01-b4.mp3",
+          "timing": "/lessons/expansion-with-fractions-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "The answer is a half A, minus B.",
+          "do": [
+            { "do": "mark", "kind": "box", "token": ["p1", "p2"], "on": "minus B" }
+          ],
+          "audio": "/lessons/expansion-with-fractions-s2/scene-01-b5.mp3",
+          "timing": "/lessons/expansion-with-fractions-s2/scene-01-b5.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "(1/4)(2a - 4*3)", "equiv": "(1/2)a - 3", "var": "a" },
+        { "expr": "(1/4)(2*5 - 4b)", "equiv": "(1/2)*5 - b", "var": "b" }
+      ]
+    }
+  ]
+}

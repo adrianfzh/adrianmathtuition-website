@@ -1,0 +1,145 @@
+{
+  "slug": "special-products-mixed-s2",
+  "title": "Special products with other terms",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Special products with other terms",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(x - 3y)^2", "id": "f" },
+            { "tex": "-", "id": "m" },
+            { "tex": "(x + y)^2", "id": "g" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2 - 2(x)(3y) + (3y)^2", "id": "e1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\quad" },
+            { "tex": "-", "id": "m1" },
+            { "tex": "[\\,x^2 + 2(x)(y) + y^2\\,]", "id": "e2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2 - 6xy + 9y^2" },
+            { "tex": "-\\,(x^2 + 2xy + y^2)", "id": "s2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "x^2 - 6xy + 9y^2 - x^2 - 2xy - y^2", "id": "e3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "-8xy + 8y^2", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Expand and simplify X minus three Y, all squared, minus, X plus Y, all squared.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b1.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Use the formula on the first square.",
+          "do": [
+            { "do": "highlight", "token": "f", "on": "formula" },
+            { "do": "write", "token": "e1", "on": "first square" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b2.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Keep the minus sign. Put the second expansion inside a bracket.",
+          "do": [
+            { "do": "write", "token": "m1", "on": "minus sign" },
+            { "do": "write", "token": "e2", "on": "inside" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b3.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Work out each term.",
+          "do": [
+            { "do": "write", "step": 3, "on": "each term" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b4.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Note the minus sign in front of the bracket. Every sign inside changes.",
+          "do": [
+            { "do": "note", "text": "← Note the minus sign", "near": "s2", "on": "Note" },
+            { "do": "mark", "kind": "underline", "token": "s2", "on": "Every sign" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b5.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Expand again: minus X squared, minus two X Y, minus Y squared.",
+          "do": [
+            { "do": "write", "step": 4, "on": "minus X squared" },
+            { "do": "note", "text": "← Expand again", "near": "e3", "on": "minus Y" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b6.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Add up like terms. X squared minus X squared is zero.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": "e3", "on": "like terms" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b7.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Minus six X Y minus two X Y is minus eight X Y.",
+          "do": [],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b8.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b8.timing.json"
+        },
+        {
+          "say": "Nine Y squared minus Y squared is eight Y squared.",
+          "do": [],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b9.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b9.timing.json"
+        },
+        {
+          "say": "The answer is minus eight X Y, plus eight Y squared.",
+          "do": [
+            { "do": "write", "step": 5, "on": "minus eight" },
+            { "do": "note", "text": "← Add up like terms", "near": "ans", "on": "plus eight" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "squared" }
+          ],
+          "audio": "/lessons/special-products-mixed-s2/scene-01-b10.mp3",
+          "timing": "/lessons/special-products-mixed-s2/scene-01-b10.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "(x - 3*2)^2 - (x + 2)^2", "equiv": "x^2 - 6*x*2 + 9*2^2 - x^2 - 2*x*2 - 2^2", "var": "x" },
+        { "expr": "(x - 3*2)^2 - (x + 2)^2", "equiv": "-8*x*2 + 8*2^2", "var": "x" },
+        { "expr": "(5 - 3y)^2 - (5 + y)^2", "equiv": "-8*5*y + 8y^2", "var": "y" }
+      ]
+    }
+  ]
+}

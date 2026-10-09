@@ -1,0 +1,100 @@
+{
+  "slug": "using-the-identity-s2",
+  "title": "Using the identity",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Using the identity",
+      "intro": "Given $ab = -6$ and $a^2 + b^2 = 30$, find the value of $(a + b)^2$.",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(a + b)^2" },
+            { "tex": "=" },
+            { "tex": "a^2 + 2ab + b^2", "id": "f" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "a^2 + b^2", "id": "g1" },
+            { "tex": "+\\,2ab", "id": "g2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "30", "id": "v1" },
+            { "tex": "+\\,2(-6)", "id": "v2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "18", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Given A B is minus six, and A squared plus B squared is thirty. Find A plus B, all squared.",
+          "do": [],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b1.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "We can use the formula. A plus B, all squared, is A squared, plus two A B, plus B squared.",
+          "do": [
+            { "do": "write", "step": 0, "on": "formula" },
+            { "do": "note", "text": "← we can use the formula", "near": "f", "on": "plus two" }
+          ],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b2.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Put A squared and B squared together.",
+          "do": [
+            { "do": "write", "step": 1, "on": "together" }
+          ],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b3.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "We know both values. A squared plus B squared is thirty.",
+          "do": [
+            { "do": "write", "token": "v1", "on": "thirty" }
+          ],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b4.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "A B is minus six, so two A B is two times minus six.",
+          "do": [
+            { "do": "note", "text": "← we know $a^2 + b^2$ and $ab$", "near": "v1", "on": "minus six" },
+            { "do": "write", "token": "v2", "on": "two times" }
+          ],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b5.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Thirty minus twelve is eighteen. That is the answer.",
+          "do": [
+            { "do": "write", "step": 3, "on": "eighteen" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "answer" }
+          ],
+          "audio": "/lessons/using-the-identity-s2/scene-01-b6.mp3",
+          "timing": "/lessons/using-the-identity-s2/scene-01-b6.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "30 + 2*(-6)", "equals": 18 },
+        { "expr": "(a + 4)^2", "equiv": "a^2 + 4^2 + 2*a*4", "var": "a" }
+      ]
+    }
+  ]
+}

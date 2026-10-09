@@ -1,0 +1,120 @@
+{
+  "slug": "special-products-minus-s2",
+  "title": "Special products: a minus",
+  "level": "S2",
+  "topic": "Algebra (Expansion)",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Special products",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "(a - b)^2" },
+            { "tex": "=" },
+            { "tex": "a^2", "id": "fa" },
+            { "tex": "-\\,2ab", "id": "fm" },
+            { "tex": "+\\,b^2", "id": "fb" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "(5m - 2n)^2", "id": "q" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "(5m)^2", "id": "t1" },
+            { "tex": "-\\,2(5m)(2n)", "id": "t2" },
+            { "tex": "+\\,(2n)^2", "id": "t3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "25m^2 - 20mn + 4n^2", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "With a minus in the bracket, the formula is A squared, minus two A B, plus B squared.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b1.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Expand five M minus two N, all squared.",
+          "do": [
+            { "do": "write", "step": 1 }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b2.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Here, A is five M, and B is two N.",
+          "do": [
+            { "do": "highlight", "token": "q", "on": "five M" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b3.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b3.timing.json"
+        },
+        {
+          "say": "First, A squared: five M, all squared.",
+          "do": [
+            { "do": "highlight", "token": "fa", "on": "A squared" },
+            { "do": "write", "token": "t1", "on": "five M" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b4.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Next, minus two A B: minus two, times five M, times two N.",
+          "do": [
+            { "do": "highlight", "token": "fm", "on": "minus two A B" },
+            { "do": "write", "token": "t2", "on": "times five M" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b5.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Last, plus B squared: two N, all squared.",
+          "do": [
+            { "do": "highlight", "token": "fb", "on": "B squared" },
+            { "do": "write", "token": "t3", "on": "two N" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b6.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Work out each term: twenty-five M squared, minus twenty M N, plus four N squared.",
+          "do": [
+            { "do": "write", "step": 3, "on": "twenty-five" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "four N" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b7.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Only the middle term is minus. The last term is always plus.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": "t3", "on": "last term" }
+          ],
+          "audio": "/lessons/special-products-minus-s2/scene-01-b8.mp3",
+          "timing": "/lessons/special-products-minus-s2/scene-01-b8.timing.json"
+        }
+      ],
+      "verify": [
+        { "expr": "(5*3 - 2n)^2", "equiv": "(5*3)^2 - 2(5*3)(2n) + (2n)^2", "var": "n" },
+        { "expr": "(5*3 - 2n)^2", "equiv": "25*3^2 - 20*3*n + 4n^2", "var": "n" },
+        { "expr": "(5m - 2*7)^2", "equiv": "25m^2 - 20*m*7 + 4*7^2", "var": "m" }
+      ]
+    }
+  ]
+}
