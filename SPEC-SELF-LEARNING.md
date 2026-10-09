@@ -126,6 +126,42 @@ Parked on purpose (his words in brackets):
   misread. Reading the saved working to name the wrong line costs a little per read and
   needs his word.
 
+## 4a. Learn and Revise are two different things (Adrian, 9 Oct 2026)
+
+Adrian: *"seems like the clips we are building now are learning clips (when student first
+learn the topic), not revision clips."* Agreed the same day:
+
+- **Learn = his notes, in his order.** Source for Sec 2 expansion:
+  `Dropbox/1 ONLINE LESSONS/1 NOTES/4 Notes S2 Math G3/S2 MATH 01 Algebra 1 Expansion.pdf`
+  (13 pages; the other chapters sit beside it). His words: *"will you be able to build
+  according to these notes?"* — yes; a learning clip and its step use HIS example, HIS
+  method and HIS margin words ("← Add up like terms"). The order of that chapter:
+  1. Recap — one bracket, the Rainbow: 2(a + 3b); three terms inside: −2b(3 − 4b + 6c)
+  2. Expand and simplify: 4a − 2(4a + 5b)
+  3. Two brackets, arrows ①–④: (a + b)(a − 3b); and one with no like terms: (3x − 5)(2x − y)
+  4. A number in front: 2(p − 3q)(r + 3s) — first two first, or last two first
+  5. Further expansion: (3x − 8y)(2x + 3y) − 3xy; the minus sign in front of a second
+     expansion: 2(a + 5) − (4a + 3)(2a − 7)
+  6. Expansion with fractions
+  7. Special products, "Very Important" — **by the formula, not the Rainbow**:
+     (2p + 3q)² = (2p)² + 2(2p)(3q) + (3q)²
+  8. Special products mixed with other terms: (x − 3y)² − (x + y)²
+  9. Using the identity: given ab and a² + b², find (a + b)²
+  10. Evaluate without a calculator: 399² = (400 − 1)²
+  11. "Hence" questions: simplify, then use it on numbers
+  What this changes in what is built: the Perfect squares step must teach the formula
+  (it was built with the Rainbow); Difference of squares is not in this chapter and moves
+  to where his notes put it; "hence" questions are IN (the first map left them out).
+- **Revise = start from the exam papers.** His words: *"start from an exam paper > gather a
+  bunch of exam paper > create examples solutions clips or worked example solutions for
+  them, then practice … so students learn directly what they need to learn."* For a topic:
+  gather the exam questions (the bank already sorts them by kind), take the kinds that
+  come up most, and for each: one exam question worked as a short clip or worked example,
+  its learning point and the mistake that loses marks, then practice on questions like it.
+  Which rows may be shown is `docs/CONTENT-POLICY.md`.
+- So the loop in §1 reads: very weak → **Learn** (notes order) · shaky, a wrong question on
+  a marked paper, the night before → **Revise** (exam questions first).
+
 ## 5. The topic map — the flow of learning
 
 Adrian, 8 Oct 2026: *"need to build the topics mapping (flow of learning for each topic),
