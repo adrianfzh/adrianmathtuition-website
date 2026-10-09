@@ -387,7 +387,7 @@ export default function FiguresPage() {
   /** One fitness-lane decision — hide / accept / repair. The card leaves the
    *  list on success (repair too: it's Adrian's decision recorded, the row
    *  moves on to the actual repair queue); errors stay inline on the card. */
-  const fitAct = async (it: FitItem, action: 'hide' | 'accept' | 'repair' | 'table' | 'clean' | 'approve-candidate' | 'reject-candidate') => {
+  const fitAct = async (it: FitItem, action: 'hide' | 'accept' | 'repair' | 'redraw' | 'table' | 'clean' | 'approve-candidate' | 'reject-candidate') => {
     if (fitBusy) return;
     setFitBusy(it.path);
     setFitErr((e) => ({ ...e, [it.path]: '' }));
@@ -412,7 +412,7 @@ export default function FiguresPage() {
         held: Math.max(0, t.held - 1),
         blocking: Math.max(0, t.blocking - (it.severity === 'blocks-answering' ? 1 : 0)),
         cosmetic: Math.max(0, t.cosmetic - (it.severity === 'cosmetic' ? 1 : 0)),
-        sentToRepair: t.sentToRepair + (action === 'repair' && !fitView ? 1 : 0),
+        sentToRepair: t.sentToRepair + ((action === 'repair' || action === 'redraw') && !fitView ? 1 : 0),
         tables: t.tables + (action === 'table' && !fitView ? 1 : 0),
       }));
     } catch {
@@ -938,6 +938,8 @@ export default function FiguresPage() {
                   <button disabled={busy} onClick={() => fitAct(it, 'clean')} style={btn}
                     title="A judge looks at the image for foreign marks — a stray letter, a neighbour's line, a speck — and only those are erased. The result appears here as a candidate; nothing changes until you approve it.">🧹 Clean</button>
                   <button disabled={busy} onClick={() => fitAct(it, 'repair')} style={btn}>🛠 Send to repair</button>
+                  <button disabled={busy} onClick={() => fitAct(it, 'redraw')} style={btn}
+                    title="Joins the repair list, marked for a clean new drawing rather than a clean-up.">✏️ Redraw</button>
                   {/* Some of these are not figures at all — a printed TABLE stored as a
                       PNG belongs in the question text, where it reflows on a phone and
                       is searchable. Adrian had no way to say so (5 Sep 2026). */}

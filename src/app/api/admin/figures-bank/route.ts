@@ -890,6 +890,10 @@ const FITNESS_PREFIXES: Record<string, string> = {
   accept: 'Adrian: figure is fine · ',
   repair: 'Adrian: repair · ',
   table: 'Adrian: table · ',
+  // 9 Oct 2026, Adrian on a jetty diagram with a stray letter: "can request to redraw here
+  // too?" — a repair that says HOW: the row joins the repair list (same prefix), and the
+  // word tells the repair session a clean drawing is wanted, not a clean-up.
+  redraw: 'Adrian: repair · redraw · ',
 };
 
 /** The verdicts that DECIDE a row without changing its status. Both leave the
@@ -948,7 +952,10 @@ async function fitnessLanePost(
   if (DECIDED[action] && prior.startsWith(DECIDED[action])) {
     return NextResponse.json({ ok: true, status: 'held', note: prior, alreadySent: true });
   }
-  const note = prior.startsWith(prefix) ? prior : `${prefix}${prior}`;
+  // A row already sent to repair that he now wants redrawn is upgraded, not double-prefixed.
+  const base = action === 'redraw' && prior.startsWith(FITNESS_PREFIXES.repair) && !prior.startsWith(prefix)
+    ? prior.slice(FITNESS_PREFIXES.repair.length) : prior;
+  const note = base.startsWith(prefix) ? base : `${prefix}${base}`;
   const patch: Record<string, unknown> = { note };
   if (action === 'hide') patch.status = 'open';
   if (action === 'accept') patch.status = 'fixed';
