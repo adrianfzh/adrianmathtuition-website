@@ -48,6 +48,7 @@ const EXPAND_AND_SIMPLIFY: LearnStep = {
     'The sign in front of the bracket goes with its number: − 2( … ) multiplies by −2.',
   ],
   trap: 'A minus in front of a bracket changes every sign inside it.',
+  clipSlug: 'expand-and-simplify-s2',
   example: {
     q: '4a-2(4a+5b)',
     lines: [
@@ -110,6 +111,7 @@ const NUMBER_IN_FRONT: LearnStep = {
     'The first two first, or the last two first: the answer is the same.',
   ],
   trap: 'The number in front multiplies once, into one bracket only. Then expand the two brackets.',
+  clipSlug: 'number-in-front-s2',
   example: {
     q: '2(p-3q)(r+3s)',
     lines: [
@@ -149,6 +151,7 @@ const FURTHER_EXPANSION: LearnStep = {
     'Note a minus sign in front of an expansion: keep the expansion in a bracket, then expand again.',
   ],
   trap: 'A minus sign in front of an expansion changes every sign in it.',
+  clipSlug: 'further-expansion-s2',
   example: {
     q: '2(a+5)-(4a+3)(2a-7)',
     lines: [
@@ -214,7 +217,7 @@ const SPECIAL_PRODUCTS: LearnStep = {
     '(a + b)² = a² + 2ab + b²   and   (a − b)² = a² − 2ab + b².',
     'Square the first, twice the product, square the last.',
   ],
-  // 'perfect-squares-s2' was written with arrows; it is being redone his way (the formula) before it is joined.
+  clipSlug: 'special-products-s2',
   example: '(2p+3q)^2',
   tryOne: '(5m-2n)^2',
   sets: [
