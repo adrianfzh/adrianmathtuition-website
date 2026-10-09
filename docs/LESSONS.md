@@ -75,7 +75,7 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   $2(a+3b)$ then $-2(a+3b)$: every sign inside changes. 9 beats, 80 words, voiced.
 - **Clips follow the Revise map, one per step** (Adrian, 9 Oct 2026: "we need one clear
   path of development"): a clip is the first thing a revision step shows
-  (`lib/revise-steps.ts` `clipSlug`, owned by the Revise page's session) and has no door of
+  (`lib/learn-steps.ts` `clipSlug`, owned by the Learn-step session) and has no door of
   its own for students. This side makes clips only.
 - **Authoring one:** the author-lesson skill § 3c.
 

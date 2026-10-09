@@ -5,7 +5,7 @@
 // the second term's below. `arrows` = how many are drawn so far; `active` = the
 // one in colour (the piece being multiplied), 0 when the working is finished.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { Brackets } from '@/lib/revise-step';
+import type { Brackets } from '@/lib/learn-step';
 import type { Term } from '@/lib/poly';
 
 const INK = '#334155';

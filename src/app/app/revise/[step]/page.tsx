@@ -1,22 +1,12 @@
-// /app/revise/[step] — 📗 one revision step (SPEC-SELF-LEARNING.md §4, 9 Oct 2026):
-// a worked example one line a tap → try one with the next step on tap → five on
-// your own, typed and checked at once, pass 4 of 5. Everything is worked out on
-// the device from the step's brackets (lib/revise-step) — no model, no database.
-// ADMIN ONLY behind REVISE_OPEN_TO_STUDENTS (lib/portal-beta): a student who
-// types the address lands back on Home. Linked from nowhere yet.
-import { notFound, redirect } from 'next/navigation';
-import { reviseVisible } from '@/lib/portal-beta';
-import { reviseStepBySlug } from '@/lib/revise-steps';
-import ReviseFlow from './revise-flow';
+// /app/revise/[step] — the first address of the LEARN steps (9 Oct 2026, before
+// Learn and Revise were told apart). Kept as a redirect so the links Adrian was
+// given still open; the steps live at /app/learn-step/[step]. "Revise" is being
+// kept for the path that starts from exam questions (SPEC-SELF-LEARNING.md §4a).
+import { redirect } from 'next/navigation';
 
-export const dynamic = 'force-dynamic';
+const MOVED: Record<string, string> = { 'perfect-squares': 'special-products' };
 
-export default async function RevisePage({ params, searchParams }: { params: Promise<{ step: string }>; searchParams: Promise<{ seen?: string }> }) {
-  if (!(await reviseVisible())) redirect('/app');
-  const { step: slug } = await params;
-  const step = reviseStepBySlug(slug);
-  if (!step) notFound();
-  // The step opens on its clip when it has one; ?seen=clip is the way back from it.
-  const seenClip = (await searchParams).seen === 'clip';
-  return <ReviseFlow step={step} seenClip={seenClip} />;
+export default async function OldLearnStepAddress({ params }: { params: Promise<{ step: string }> }) {
+  const { step } = await params;
+  redirect(`/app/learn-step/${MOVED[step] ?? step}`);
 }

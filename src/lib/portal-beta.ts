@@ -542,15 +542,16 @@ export async function watchItVisible(): Promise<boolean> {
   return admin && !(await viewingAsStudent());
 }
 
-// 📗 Revise a topic in full — one revision step (SPEC-SELF-LEARNING.md §4, built
-// 9 Oct 2026, Adrian: "Build"): a worked example one line a tap → try one with
-// the next step on tap → five on your own, typed and checked at once, pass 4 of
-// 5. Step 1 of the build order: ONE step ("Expand two brackets") at
-// /app/revise/expand-two-brackets, linked from nowhere. ADMIN ONLY until Adrian
-// has gone through it on his phone — flip this to open it for every student.
-export const REVISE_OPEN_TO_STUDENTS = false;
-export async function reviseVisible(): Promise<boolean> {
-  if (REVISE_OPEN_TO_STUDENTS) return true;
+// 📗 LEARN steps (SPEC-SELF-LEARNING.md §4, §4a; built 9 Oct 2026, Adrian:
+// "Build"): the idea taught from the start, in the order of his own notes — a
+// worked example one line a tap → try one with the next step on tap → five on
+// your own, typed and checked at once, pass 4 of 5. At /app/learn-step/<step>,
+// linked from nowhere. ADMIN ONLY until Adrian has gone through them on his
+// phone — flip this to open them for every student. (REVISE, the path that
+// starts from exam questions, is a separate build with its own switch.)
+export const LEARN_STEP_OPEN_TO_STUDENTS = false;
+export async function learnStepVisible(): Promise<boolean> {
+  if (LEARN_STEP_OPEN_TO_STUDENTS) return true;
   const { cookies } = await import('next/headers');
   const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
   const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);

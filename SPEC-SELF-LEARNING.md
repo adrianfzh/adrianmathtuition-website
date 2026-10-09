@@ -1,6 +1,6 @@
 # SPEC — Ready for the next test (the self-learning loop, companion first)
 
-*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: step 1 of §11 built (admin only); the rest is design.**
+*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (six of eleven steps, admin only); REVISE and the test loop are design.**
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
@@ -127,6 +127,18 @@ Parked on purpose (his words in brackets):
   needs his word.
 
 ## 4a. Learn and Revise are two different things (Adrian, 9 Oct 2026)
+
+**Words (Adrian, 9 Oct 2026: "there are two paths now, learn and revise. we should make a
+distinction"):** LEARN = the idea from the start, his notes. REVISE = from exam questions,
+before a test. What was first built under the name "revise" is the LEARN path; it was renamed
+the same day — pages `/app/learn-step/<step>`, code `lib/learn-step.ts` + `lib/learn-steps.ts`,
+switch `LEARN_STEP_OPEN_TO_STUDENTS` (`/app/revise/<step>` redirects). He said: "let's finish
+the learn part for this topic first". **Built in notes order, 9 Oct 2026: ideas 1–5 and 7**
+(one bracket · expand and simplify · two brackets · a number in front · further expansion ·
+special products by the formula). **To come: 6 (fractions — the checker needs fractions),
+8 (special products with other terms), 9–11 (answers that are numbers; two-part "hence").**
+Two printed answers in the notes are wrong and are corrected in the steps: recap
+−2b(3 − 4b + 6c) ends −12bc (printed −12c); Practice 1b (a) is 2x² − 4xy − 30y² (printed −xy).
 
 Adrian: *"seems like the clips we are building now are learning clips (when student first
 learn the topic), not revision clips."* Agreed the same day:
