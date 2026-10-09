@@ -6,6 +6,8 @@
 //   GET  ?id=<uuid>      → { pick }                 (stamps opened_at)
 //   GET                  → { picks: [...] }         (newest 40)
 //   POST { title, subtitle?, note?, source?, question_ids[] } → { pick }
+//   PATCH { id, state } → { ok }   (the page's working state: title, subtitle,
+//                                    cands[], picked[]; null = restart)
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
@@ -14,7 +16,7 @@ import { parseIds } from '@/lib/pick-worksheet';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-const COLS = 'id, created_at, title, subtitle, note, source, question_ids, opened_at';
+const COLS = 'id, created_at, title, subtitle, note, source, question_ids, opened_at, state';
 
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
@@ -51,4 +53,26 @@ export async function POST(req: NextRequest) {
   const { data, error } = await getSupabaseAdmin().from('worksheet_picks').insert(row).select(COLS).single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ pick: data, url: `/admin/worksheet-picker?pick=${data.id}` });
+}
+
+export async function PATCH(req: NextRequest) {
+  if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  let body: { id?: unknown; state?: unknown };
+  try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
+  const id = typeof body.id === 'string' && /^[0-9a-f-]{36}$/.test(body.id) ? body.id : null;
+  if (!id) return NextResponse.json({ error: 'bad id' }, { status: 400 });
+  let state: Record<string, unknown> | null = null;
+  if (body.state && typeof body.state === 'object') {
+    const st = body.state as Record<string, unknown>;
+    state = {
+      title: typeof st.title === 'string' ? st.title.slice(0, 120) : '',
+      subtitle: typeof st.subtitle === 'string' ? st.subtitle.slice(0, 160) : '',
+      cands: parseIds(Array.isArray(st.cands) ? st.cands.join(',') : '').slice(0, 80),
+      picked: parseIds(Array.isArray(st.picked) ? st.picked.join(',') : '').slice(0, 80),
+      savedAt: new Date().toISOString(),
+    };
+  }
+  const { error } = await getSupabaseAdmin().from('worksheet_picks').update({ state }).eq('id', id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true, state });
 }

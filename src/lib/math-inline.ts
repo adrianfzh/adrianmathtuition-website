@@ -34,6 +34,9 @@ export function looksLikeMath(c: string): boolean {
   if (/[\\^_{}]/.test(c)) return true;                                  // TeX commands/structure
   if ((c.match(PROSE_WORDS) ?? []).length >= 2) return false;           // sentence, not equation
   if (c.length <= 40 && /[=+*/<>≤≥]/.test(c) && !/[.;] /.test(c)) return true;  // short equation
+  // A longer equation with no prose words and no sentence break — "11x + 6y - z - 4 +
+  // k(-x - 3y + z - 4) = 0" (NJC 2019 P1 Q11(iv) printed raw on the picker, 9 Oct 2026).
+  if (c.length <= 120 && /[=<>≤≥]/.test(c) && !/[.;] /.test(c)) return true;
   if (c.length <= 12 && !/\s/.test(c)) return true;                     // bare symbol/number run
   // Numeric coordinates/tuples — "(1, 6)", "(-1.5, 2)". Anchored to the parens
   // so a numeric span between two prices ("$5, $6") never matches.

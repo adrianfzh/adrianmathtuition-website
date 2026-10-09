@@ -287,3 +287,12 @@ describe('mathLineHtml — a line meant as one TeX expression (1 Oct 2026)', () 
     expect(mathLineHtml('add the case with no white seeds')).toBe('add the case with no white seeds');
   });
 });
+
+describe('looksLikeMath — long plain equations', () => {
+  it('a 50-character equation with no prose words is maths', () => {
+    expect(looksLikeMath('11x + 6y - z - 4 + k(-x - 3y + z - 4) = 0')).toBe(true);
+  });
+  it('a sentence between two prices still is not', () => {
+    expect(looksLikeMath('5 for the ticket and then another ')).toBe(false);
+  });
+});

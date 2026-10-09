@@ -186,7 +186,9 @@ export default function WorksheetPickerClient() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
 
-  type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null };
+  type PickState = { title: string; subtitle: string; cands: string[]; picked: string[]; savedAt?: string };
+  type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null; state?: PickState | null };
+  const [restoredAt, setRestoredAt] = useState<string | null>(null);
   const [picks, setPicks] = useState<Pick[]>([]);
   const [pickId, setPickId] = useState<string | null>(params.get('pick'));
   const [saving, setSaving] = useState(false);
@@ -257,9 +259,17 @@ export default function WorksheetPickerClient() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       const pk = d.pick as Pick;
-      setTitle(pk.title); setSubtitle(pk.subtitle); setPickId(pk.id);
+      const st = pk.state && Array.isArray(pk.state.cands) && Array.isArray(pk.state.picked) ? pk.state : null;
+      setTitle(st?.title || pk.title); setSubtitle(st?.subtitle ?? pk.subtitle); setPickId(pk.id);
       setCands([]); setPicked([]); setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
-      await loadIds(pk.question_ids);
+      setRestoredAt(st?.savedAt ?? null);
+      if (st) {
+        // Where you left off: the two columns as they were, in order.
+        await loadIds(st.cands, 'cands');
+        await loadIds(st.picked, 'picked');
+      } else {
+        await loadIds(pk.question_ids);
+      }
       const u = new URL(window.location.href); u.search = `?pick=${pk.id}`; window.history.replaceState(null, '', u.toString());
     } catch (e) { say((e as Error).message, 'err'); }
   }, [loadIds, say]);
@@ -395,6 +405,56 @@ export default function WorksheetPickerClient() {
     } catch (e) { say((e as Error).message, 'err'); } finally { setFiling(false); }
   }
 
+  // ── Save the state as you go (Adrian, 9 Oct 2026: "save the state so I can go
+  // back to the same state even if I leave the page") ──────────────────────────
+  // A saved selection keeps its state on the server (worksheet_picks.state); an
+  // ad-hoc ?ids= page keeps it in this browser under the ids.
+  const localKey = useMemo(() => (urlIds.length ? `picker:${urlIds.join(',')}` : null), [urlIds]);
+  const [dirty, setDirty] = useState(false);
+  useEffect(() => { if (seeded) setDirty(true); /* any change after seeding */ }, [cands, picked, title, subtitle, seeded]);
+  useEffect(() => {
+    if (!dirty || loading) return;
+    const st: PickState = { title, subtitle, cands, picked };
+    const t = setTimeout(() => {
+      if (pickId) {
+        fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: st }) }).catch(() => {});
+      } else if (localKey) {
+        try { localStorage.setItem(localKey, JSON.stringify({ ...st, savedAt: new Date().toISOString() })); } catch { /* private window */ }
+      }
+    }, 700);
+    return () => clearTimeout(t);
+  }, [dirty, loading, title, subtitle, cands, picked, pickId, localKey]);
+  // An ad-hoc page restores from the browser once its questions are in.
+  const [localRestored, setLocalRestored] = useState(false);
+  useEffect(() => {
+    if (!seeded || localRestored || pickId || !localKey || loading || !byId.size) return;
+    setLocalRestored(true);
+    try {
+      const raw = localStorage.getItem(localKey);
+      if (!raw) return;
+      const st = JSON.parse(raw) as PickState;
+      if (Array.isArray(st.cands) && Array.isArray(st.picked) && [...st.cands, ...st.picked].every((id) => byId.has(id))) {
+        setCands(st.cands); setPicked(st.picked); if (st.title) setTitle(st.title); setSubtitle(st.subtitle ?? ''); setRestoredAt(st.savedAt ?? null);
+      }
+    } catch { /* ignore */ }
+  }, [seeded, localRestored, pickId, localKey, loading, byId]);
+
+  /** Back to the selection as it was handed over: every question a candidate, nothing picked. */
+  async function restart() {
+    if (!window.confirm('Restart this selection? The worksheet column is emptied and every question goes back to candidates.')) return;
+    setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]); setRestoredAt(null);
+    if (pickId) {
+      await fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: null }) }).catch(() => {});
+      const pk = picks.find((p) => p.id === pickId);
+      if (pk) { setTitle(pk.title); setSubtitle(pk.subtitle); setCands([...pk.question_ids].filter((id) => byId.has(id))); setPicked([]); }
+      else await openPick(pickId);
+    } else {
+      if (localKey) { try { localStorage.removeItem(localKey); } catch { /* ignore */ } }
+      setCands([...urlIds].filter((id) => byId.has(id))); setPicked([]);
+    }
+    say('Restarted');
+  }
+
   function shareLink() {
     const u = new URL(window.location.href);
     u.searchParams.set('ids', picked.join(','));
@@ -482,7 +542,9 @@ export default function WorksheetPickerClient() {
             <button onClick={done} disabled={!!busy || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build PDF + DOCX (${picked.length})`}</button>
             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-700 underline">Open PDF</a>}
             {docxUrl && <a href={docxUrl} download={`${fileStem(title)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
-            <button onClick={saveSelection} disabled={saving || (!picked.length && !cands.length)} className="text-sm text-slate-600 underline disabled:opacity-40">{saving ? 'Saving…' : 'Save selection'}</button>
+            <button onClick={saveSelection} disabled={saving || (!picked.length && !cands.length)} className="text-sm text-slate-600 underline disabled:opacity-40">{saving ? 'Saving…' : 'Save as new selection'}</button>
+            <button onClick={restart} disabled={!cands.length && !picked.length} className="text-sm text-slate-600 underline disabled:opacity-40">Restart</button>
+            {restoredAt && <span className="text-xs text-slate-400">restored from {new Date(restoredAt).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
             <button onClick={shareLink} disabled={!picked.length} className="text-sm text-slate-600 underline disabled:opacity-40 ml-auto">Copy link to this selection</button>
           </div>
           {docxBlob && pdfUrl && (
