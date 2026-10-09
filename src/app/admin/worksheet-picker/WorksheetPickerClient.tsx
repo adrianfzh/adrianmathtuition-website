@@ -32,10 +32,20 @@ type Toast = { msg: string; kind: 'ok' | 'err' };
 
 const LEVELS = ['JC2', 'JC1', 'AM', 'EM', 'S3_AM', 'S3_EM', 'S2', 'S1'];
 
+/** A one-line excerpt for the drag ghost that never cuts inside maths: a
+ *  `$…$` / `$$…$$` run is kept whole or dropped with the tail (9 Oct 2026 —
+ *  "rendering errors": a stem cut mid-formula showed raw LaTeX). */
 function excerpt(q: PickQuestion, n = 150): string {
   const first = q.stem || (q.parts[0] ? `(${q.parts[0].label}) ${q.parts[0].text}` : '');
   const clean = first.replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
-  return clean.length > n ? clean.slice(0, n - 1) + '…' : clean;
+  if (clean.length <= n) return clean;
+  const tokens = clean.split(/(\$\$[^$]+\$\$|\$[^$\n]+\$)/g).filter(Boolean);
+  let out = '';
+  for (const t of tokens) {
+    if (out.length + t.length > n) { out += t.startsWith('$') ? '' : t.slice(0, Math.max(0, n - out.length - 1)); break; }
+    out += t;
+  }
+  return out.trimEnd() + '…';
 }
 
 // ── The whole question (stem, figures, parts with marks, the [Ans:] line) ────
