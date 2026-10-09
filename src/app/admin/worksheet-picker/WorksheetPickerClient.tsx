@@ -457,7 +457,7 @@ export default function WorksheetPickerClient() {
     if (!window.confirm('Restart this selection? The worksheet column is emptied and every question goes back to candidates.')) return;
     setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]); setRestoredAt(null);
     if (pickId) {
-      await fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: null }) }).catch(() => {});
+      await fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: null, force: true }) }).catch(() => {});
       const pk = picks.find((p) => p.id === pickId);
       if (pk) { setTitle(pk.title); setSubtitle(pk.subtitle); setCands([...pk.question_ids].filter((id) => byId.has(id))); setPicked([]); setStateFor(pk.id); }
       else await openPick(pickId);
