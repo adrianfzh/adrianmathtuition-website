@@ -170,6 +170,14 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, 
     return `<span class="ws-mk">[${n}]</span>${close}${perPart}`;
   });
 
+  // A part's text travels with its working space, and the answer line with the
+  // last of them — a question taller than a page breaks BETWEEN parts, never
+  // between a part and its space, and the orange [Ans:] line never lands alone
+  // on a page of its own (Adrian's H2 vectors sheet, 9 Oct 2026: two pages held
+  // nothing but the answer line). A part written as several paragraphs is left
+  // unglued — the page rule still holds for the common one-paragraph part.
+  body = body.replace(/(<p class="ws-part">(?:(?!<\/p>)[\s\S])*<\/p>)(\s*<div class="ws-answer-space"[^>]*><\/div>)/g, '<div class="ws-keep">$1$2</div><!--keep-->');
+
   // Parts carry their own [n] and their own spacer; a stem-only question gets
   // the total marks tag plus one marks-proportional block of working space.
   // When the parts just got their floated tags, the per-question total is
@@ -200,11 +208,20 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, 
     ansLine = `<div class="ws-ans">[Ans: ${inner}]</div>`;
   }
 
+  // The answer line joins the last glued block (parts), or the stem's own space.
+  let qBody = withMarks;
+  let tail = `${space}${ansLine}`;
+  if (ansLine && !space) {
+    const i = qBody.lastIndexOf('</div><!--keep-->');
+    if (i >= 0) { qBody = qBody.slice(0, i) + ansLine + qBody.slice(i); tail = ''; }
+  } else if (ansLine && space) {
+    tail = `<div class="ws-keep">${space}${ansLine}</div>`;
+  }
   return `
     <li class="ws-q">
       <span class="ws-qnum">${index + 1}.</span>
-      <div class="ws-q-body">${figures}${withMarks}</div>
-      ${space}${ansLine}
+      <div class="ws-q-body">${figures}${qBody}</div>
+      ${tail}
     </li>`;
 }
 
@@ -273,6 +290,7 @@ ${katexInlineHead()}
   /* Explicit numbering (::marker misplaces itself on tall/figure-first questions). */
   .ws-questions{list-style:none;padding-left:18pt;margin:0}
   .ws-q{margin-bottom:5pt;break-inside:avoid;position:relative}
+  .ws-keep{break-inside:avoid}
   .ws-qnum{position:absolute;left:-18pt;top:0;font-weight:700}
   .ws-q-body{display:block}
   .ws-q-body p{display:block;margin:0 0 1.5pt}

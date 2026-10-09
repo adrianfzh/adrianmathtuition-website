@@ -86,16 +86,17 @@ async function figurePara(url: string): Promise<Paragraph> {
   }
 }
 
-function blankLines(n: number): Paragraph[] {
+function blankLines(n: number, glueAll = false): Paragraph[] {
   // The part is the unit (ADRIAN-STYLE.md §5): a part's text and ALL its working
   // lines travel together, so a page end never cuts the space in two — 9 Oct
   // 2026, Adrian's H2 vectors sheet: (iii) got 4 of its 12 lines at the foot of
   // one page and 8 at the top of the next, and (iv) sat mid-page under them.
   // Only the last blank line is free, or every part would chain into one block.
   // A part taller than a page still splits — Word ignores keepNext it cannot honour.
+  // glueAll: the orange [Ans:] line follows, and must not land alone on a page.
   return Array.from({ length: n }, (_, i) => new Paragraph({
     spacing: { line: LINE_1_5, before: 0, after: 0 },
-    keepNext: i < n - 1,
+    keepNext: glueAll || i < n - 1,
     children: [new TextRun({ text: '' })],
   }));
 }
@@ -158,7 +159,8 @@ export async function buildPickWorksheetDocx(input: { title: string; subtitle: s
       }));
     }
     for (const u of q.images) body.push(await figurePara(u));
-    if (!hasParts && workingSpace) body.push(...blankLines(workingLines(q.marks)));
+    const hasAns = !!ansLine(q);
+    if (!hasParts && workingSpace) body.push(...blankLines(workingLines(q.marks), hasAns));
 
     // Parts. Sub-parts print as "(b)(i)" text labels under the same list
     // indent — a nested Word list per question is more than the sheet needs.
@@ -181,7 +183,7 @@ export async function buildPickWorksheetDocx(input: { title: string; subtitle: s
         }));
       }
       for (const u of part.imagesAfter) body.push(await figurePara(u));
-      if (workingSpace) body.push(...blankLines(workingLines(part.marks)));
+      if (workingSpace) body.push(...blankLines(workingLines(part.marks), hasAns && part === flat[flat.length - 1].part));
     }
 
     const ans = ansLine(q);
