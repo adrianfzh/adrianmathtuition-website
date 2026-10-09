@@ -6,6 +6,7 @@
 // must not open what the RPCs would never serve. Above all, national rows
 // (`national = true`, school 'GCE') are grounding-only under docs/CONTENT-POLICY.md.
 // Mirrors practice_next's WHERE clause; pure, tested.
+import { legacyServableTo, questionServableTo, type SubgroupAudienceRow } from './subgroup-visibility';
 
 export interface GateRow {
   level?: string | null;
@@ -51,5 +52,29 @@ export function serveRefusal(q: GateRow, ctx: GateContext): Refusal | null {
   if (ctx.assigned) return null;
   if (q.legacy_syllabus === true && !ctx.isIp) return 'legacy';
   if (!q.level || !ctx.allowedQLevels.includes(q.level)) return 'level';
+  return null;
+}
+
+/**
+ * A TOPIC-TAG draw (the Print-a-paper mock reads `questions` by tag, not through
+ * practice_pool) — may this row go to this student? The by-id gate above, then
+ * the two rules the RPCs apply through the question's filings:
+ *   - an old-syllabus row serves only through an IP-only filing the student can see
+ *     (9 Oct 2026: the mock drew flagged rows — ~1,000 JC questions had just been
+ *     marked old syllabus and a paper could still print them);
+ *   - a row filed only under sub-skills the student cannot see is not served.
+ * `qLevels` = bank levels the draw may use; `treeLevels` = the sub-skill trees
+ * the student browses (bankScope(...).level).
+ */
+export function tagDrawRefusal(
+  q: GateRow,
+  filings: SubgroupAudienceRow[],
+  viewer: { qLevels: string[]; treeLevels: string[]; isIp: boolean },
+): Refusal | 'audience' | null {
+  const refusal = serveRefusal(q, { allowedQLevels: viewer.qLevels, isIp: viewer.isIp, assigned: false });
+  if (refusal) return refusal;
+  const audience = { levels: viewer.treeLevels, isIp: viewer.isIp };
+  if (q.legacy_syllabus === true && !legacyServableTo(filings, audience)) return 'legacy';
+  if (!questionServableTo(filings, audience)) return 'audience';
   return null;
 }

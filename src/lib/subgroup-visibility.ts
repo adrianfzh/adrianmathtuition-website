@@ -125,6 +125,24 @@ export function questionServableTo(
   return inTrees.some(f => levels.some(L => subgroupVisibleTo(f, { level: L, isIp: viewer.isIp })));
 }
 
+/**
+ * May an OLD-SYLLABUS question (`questions.legacy_syllabus`) be served to this
+ * viewer? Only through an IP-only filing they can see — the A Math Modulus
+ * rows, which IP schools still sit. Mirrors the RPCs' legacy clause
+ * (migrations/subgroup_audience.sql: "t.visible and t.ip_only"), for readers
+ * that draw by topic tag instead of through practice_pool (the mock paper).
+ * Unfiled, or filed only under ordinary / hidden sub-groups → never.
+ */
+export function legacyServableTo(
+  filings: SubgroupAudienceRow[],
+  viewer: { levels: string[]; isIp: boolean; admin?: boolean },
+): boolean {
+  if (viewer.admin) return true;
+  const levels = viewer.levels.map(key).filter(Boolean);
+  return filings.some(f => normaliseVisibility(f.visibility) === 'ip'
+    && levels.some(L => subgroupVisibleTo(f, { level: L, isIp: viewer.isIp })));
+}
+
 /** Audience flags from a portal account row (null = anonymous). */
 export function accountAudience(
   account: { is_ip?: boolean | null } | null | undefined,

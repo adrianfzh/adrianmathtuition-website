@@ -33,7 +33,9 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
 import { fetchWorksheetPool, figureServable, hasPrintableAnswer } from '@/lib/kiosk-pool';
-import { questionServableTo, type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
+import { type SubgroupAudienceRow } from '@/lib/subgroup-visibility';
+import { tagDrawRefusal, type GateRow } from '@/lib/serve-gate';
+import { GATE_COLUMNS } from '@/lib/serve-gate-store';
 import { dailyDraw, sgtDate } from '@/lib/kiosk-draw';
 import { buildStudentMarking, type MarkingRunRow } from '@/lib/portal-marking';
 import { computeMastery, type MasteryEntry } from '@/lib/mastery';
@@ -101,14 +103,15 @@ async function papersThisWeek(studentId: string): Promise<number> {
  *    from this route; school/year are fetched for spread/recency scoring only
  *    and never survive past the assembled refs. */
 /**
- * Sub-group AUDIENCE gate for the mock draw (lib/subgroup-visibility
- * questionServableTo): this query is a TOPIC-TAG draw straight off
+ * The SERVE gate for the mock draw (lib/serve-gate tagDrawRefusal — old
+ * syllabus, unverified, flagged, and the sub-group audience rule of
+ * lib/subgroup-visibility): this query is a TOPIC-TAG draw straight off
  * `questions`, so without it a question filed only under an IP-only /
  * hidden sub-group (a Modulus-only filing tagged "Quadratic Functions") would
  * still land on a non-IP student's mock. One filings lookup per slot batch;
  * a lookup failure throws → the route's 502, never a leak.
  */
-async function dropAudienceBlocked<T extends { id: string }>(rows: T[], topicsKey: string, isIp: boolean): Promise<T[]> {
+async function dropAudienceBlocked<T extends { id: string } & GateRow>(rows: T[], tagLevels: string[], topicsKey: string, isIp: boolean): Promise<T[]> {
   if (rows.length === 0) return rows;
   const { data, error } = await getSupabaseAdmin()
     .from('question_subgroups')
@@ -122,30 +125,32 @@ async function dropAudienceBlocked<T extends { id: string }>(rows: T[], topicsKe
     else if (row.subgroups) list.push(row.subgroups);
     byQuestion.set(row.question_id, list);
   }
-  return rows.filter(r => questionServableTo(byQuestion.get(r.id) ?? [], { levels: [topicsKey], isIp }));
+  return rows.filter(r => tagDrawRefusal(r, byQuestion.get(r.id) ?? [], { qLevels: tagLevels, treeLevels: [topicsKey], isIp }) === null);
 }
 
 async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: string; isIp: boolean; topic: string; lo: number; hi: number }): Promise<Candidate[]> {
-  const { data, error } = await getSupabaseAdmin()
+  let query = getSupabaseAdmin()
     .from('questions')
-    .select('id, total_marks, school, year, difficulty, parts, answer, has_image, image_url, figure_url, image_watermark_status')
+    .select(`id, total_marks, year, difficulty, parts, answer, has_image, image_url, figure_url, image_watermark_status, ${GATE_COLUMNS}`)
     .is('deleted_at', null)
     // national papers are grounding-only (lib/portal-find practiceEligibility)
     .eq('national', false)
     .in('level', opts.tagLevels)
     .contains('topics', [opts.topic])
     .gte('total_marks', opts.lo)
-    .lte('total_marks', opts.hi)
-    .order('year', { ascending: false })
-    .limit(40);
+    .lte('total_marks', opts.hi);
+  // Old-syllabus rows never reach a non-IP student (tagDrawRefusal below is the
+  // rule); leaving them out here too keeps them from using up the 40 rows.
+  if (!opts.isIp) query = query.eq('legacy_syllabus', false);
+  const { data, error } = await query.order('year', { ascending: false }).limit(40);
   if (error) throw new Error(`QB query failed (${opts.topic}): ${error.message}`);
-  type Row = {
+  type Row = GateRow & {
     id: string; total_marks: number; school: string | null; year: number | null;
     difficulty: string | null; parts: unknown; answer: string | null;
     has_image: boolean | null; image_url: string | null; figure_url: string | null;
     image_watermark_status: string | null;
   };
-  const servable = await dropAudienceBlocked(data as Row[], opts.topicsKey, opts.isIp);
+  const servable = await dropAudienceBlocked(data as unknown as Row[], opts.tagLevels, opts.topicsKey, opts.isIp);
   return servable
     .filter(r => hasPrintableAnswer(r) && figureServable(r))
     .map(r => ({

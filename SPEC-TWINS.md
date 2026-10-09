@@ -116,6 +116,14 @@ is built from what students actually receive:
 A view `twin_queue` (source id, level, sub-skill, draws in 90 days, has a
 verified twin?) is the whole scheduler; the batch takes the top rows.
 
+**A hidden sub-skill is never asked for twins (9 Oct 2026).** `migrations/twin_queue_hidden_subgroups.sql`
+re-creates the view so a seed's sub-skill is its best OPEN filing (`subgroups.visibility` 'all' or 'ip';
+'hidden' and any unknown value are closed) and a question filed only under hidden sub-skills is not a
+seed. `math_twin_units`, `twin.mjs queue`, the cloud door and the dashboard read the view, so none of
+them changes. **Written, not applied** — until it is run on the maths project the old view still
+offers hidden sub-skill 863's seeds. Science has no hidden sub-skills (`subgroups` there has no
+`visibility` column), so `science_twin_units` is unchanged.
+
 ## 6. The flip — per (level, topic), then everywhere
 
 School rows leave serving one topic at a time, never by surprise:
