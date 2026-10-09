@@ -37,6 +37,8 @@ import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/
 import { mdToHtml } from '@/lib/render-worksheet';
 import { protectWorksheetHtml, restoreWorksheetHtml } from '@/lib/bot-worksheet';
 import { workingLines } from '@/lib/pick-worksheet';
+import { brandLevelInfo, MONO_DRAIN, type BrandPrint } from '@/lib/worksheet-brand';
+import { brandMastheadHtml, brandFontFaces, brandFooterTemplate, brandHeaderTemplate, EMPTY_TEMPLATE } from '@/lib/render-brand-masthead';
 
 // Tinos = metric-compatible Times New Roman. The Vercel render lambda has no
 // system TNR, which silently fell back to a sans (Adrian caught it, 2026-08-29).
@@ -121,6 +123,15 @@ export interface BotWorksheetInput {
    * separate Answers page) is ignored when this is set.
    */
   answersInline?: boolean;
+  /**
+   * The brand header switch (OFF unless set — Adrian, 9 Oct 2026: "default
+   * should not be in"): the series masthead of ADRIAN-STYLE.md §9 for `level`
+   * (a questions.level / /ws token) in colour or black and white, in place of
+   * the title + subtitle, with the footer "AdrianMath Tuition · … | Page x of
+   * y" and a running header from page 2. A level with no design prints the
+   * regular format. lib/render-brand-masthead.ts draws it.
+   */
+  brand?: { mode: BrandPrint; level: string };
 }
 
 function esc(s: string): string {
@@ -254,10 +265,21 @@ export function sheetSubtitle(input: Pick<BotWorksheetInput, 'title' | 'levelLab
   return [input.levelLabel, topic, tierBit, input.dateLabel, totalMarks > 0 ? `${totalMarks} marks` : null].filter(Boolean).join(' · ');
 }
 
+/** The brand design a sheet prints with, or null for the regular format. */
+export function brandOf(input: Pick<BotWorksheetInput, 'brand'>) {
+  const lv = input.brand ? brandLevelInfo(input.brand.level) : null;
+  return input.brand && lv ? { mode: input.brand.mode, lv } : null;
+}
+
 export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
   const { questions, workspace = true, plain, answersInline = false } = input;
   const answers = input.answers && !answersInline;
   const subtitle = plain ? plain.subtitle : sheetSubtitle(input);
+  const brand = brandOf(input);
+  const masthead = brand
+    ? brandMastheadHtml({ mode: brand.mode, lv: brand.lv, topic: input.topic || input.title, subtitle, nQuestions: questions.length, marks: questions.reduce((s, q) => s + (q.marks ?? 0), 0) || null })
+    : null;
+  const ansColor = brand?.mode === 'mono' ? '#' + MONO_DRAIN : ANSWER_ORANGE;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -332,22 +354,29 @@ ${katexInlineHead()}
   body:not(.ws-compact) .ws-q{break-inside:auto}
 
   /* Inline answer line: ONE orange right-aligned [Ans: …] at the end of the question. */
-  .ws-ans{text-align:right;color:${ANSWER_ORANGE};clear:both}
-  .ws-ans .katex{color:${ANSWER_ORANGE}}
+  .ws-ans{text-align:right;color:${ansColor};clear:both}
+  .ws-ans .katex{color:${ansColor}}
 
   /* Answers — a page of their own (the bank-made sheet; never inline there). */
   .ws-answers{break-before:page;page-break-before:always;padding-top:2pt}
   .ws-answers-h{color:${NAVY};font-weight:700;font-size:12pt;text-align:center;margin-bottom:6pt}
   .ws-answer-list{list-style:none;padding-left:10mm;margin:0}
-  .ws-a{position:relative;margin-bottom:0;break-inside:avoid;color:${ANSWER_ORANGE}}
-  .ws-a .katex{color:${ANSWER_ORANGE}}
+  .ws-a{position:relative;margin-bottom:0;break-inside:avoid;color:${ansColor}}
+  .ws-a .katex{color:${ansColor}}
   .ws-anum{position:absolute;left:-10mm;top:0;color:#111}
   .ws-a-body p{margin:0}
+${masthead ? `
+  /* Branded: room for the footer on every page and the running header from page 2
+     (Puppeteer templates, drawn in the margins — lib/render-brand-masthead.ts). */
+  @page{margin:24mm 25mm 17mm 25mm}
+  @page :first{margin-top:20mm}
+  ${masthead.css}` : ''}
 </style>
+${masthead ? `<style>${brandFontFaces()}</style>` : ''}
 </head>
 <body class="${workspace ? '' : 'ws-compact'}">
-  <div class="ws-title">${esc(input.title)}</div>
-  ${subtitle ? `<div class="ws-sub">${esc(subtitle)}</div>` : ''}
+${masthead ? masthead.html : `  <div class="ws-title">${esc(input.title)}</div>
+  ${subtitle ? `<div class="ws-sub">${esc(subtitle)}</div>` : ''}`}
 
   <ol class="ws-questions">
 ${questions.map((q, i) => questionHtml(q, i, workspace, answersInline)).join('\n')}
@@ -379,13 +408,37 @@ export async function renderBotWorksheetPDF(
     await waitForPageReady(page);
     lap('ready');
 
-    const pdf = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
+    const brand = brandOf(input);
+    if (!brand) {
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        preferCSSPageSize: true,
+      });
+      lap('pdf');
+      return Buffer.from(pdf);
+    }
+    // Branded: the footer on every page, the running header from page 2 only
+    // (Word's "different first page"). Puppeteer draws one header on every
+    // page, so the sheet is printed twice from the one laid-out page — once
+    // with a blank header, once with the running header — and page 1 of the
+    // first is joined to pages 2+ of the second (pdf-lib). Same CSS both times,
+    // so the pagination is identical.
+    const margin = { top: '24mm', bottom: '17mm', left: '25mm', right: '25mm' };
+    const common = { format: 'A4' as const, printBackground: true, preferCSSPageSize: true, displayHeaderFooter: true, margin, footerTemplate: brandFooterTemplate(brand.mode, brand.lv) };
+    const first = await page.pdf({ ...common, headerTemplate: EMPTY_TEMPLATE });
     lap('pdf');
-    return Buffer.from(pdf);
+    const { PDFDocument } = await import('pdf-lib');
+    const a = await PDFDocument.load(first);
+    if (a.getPageCount() <= 1) return Buffer.from(first);
+    const rest = await page.pdf({ ...common, headerTemplate: brandHeaderTemplate(brand.mode, brand.lv, input.topic || input.title) });
+    const b = await PDFDocument.load(rest);
+    const out = await PDFDocument.create();
+    for (const pg of await out.copyPages(a, [0])) out.addPage(pg);
+    const tail = Array.from({ length: Math.max(0, b.getPageCount() - 1) }, (_, i) => i + 1);
+    for (const pg of await out.copyPages(b, tail)) out.addPage(pg);
+    lap('pdf-merge');
+    return Buffer.from(await out.save());
   } finally {
     await page.close().catch(() => {});
   }

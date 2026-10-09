@@ -123,3 +123,42 @@ describe('buildBotWorksheetHTML — the house layout', () => {
     expect(h).not.toContain('class="ws-ans"');
   });
 });
+
+describe('the brand header switch (lib/render-brand-masthead)', () => {
+  const am = { ...base, topic: 'Binomial Theorem' };
+  it('absent = the regular sheet, the same HTML as before', () => {
+    expect(buildBotWorksheetHTML({ ...am, brand: undefined })).toBe(buildBotWorksheetHTML(am));
+    expect(buildBotWorksheetHTML(am)).toContain('<div class="ws-title">');
+    expect(buildBotWorksheetHTML(am)).not.toContain('class="bm"');
+  });
+  it('colour: the masthead replaces the title block; PRACTICE · n · marks, Name / Date, the series block and the page margins for the footer', () => {
+    const html = buildBotWorksheetHTML({ ...am, brand: { mode: 'colour', level: 'AM' } });
+    expect(html).not.toContain('<div class="ws-title">');
+    expect(html).toContain('<table class="bm">');
+    expect(html).toContain('<div class="bm-tag">A MATH</div>');
+    expect(html).toContain('<div class="bm-small">SEC 4</div>');
+    expect(html).toContain('Sec 4 Additional Mathematics');
+    expect(html).toContain('<div class="bm-topic">Binomial Theorem</div>');
+    expect(html).toMatch(/<b>PRACTICE<\/b>&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;2 questions&nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;7 marks/);
+    expect(html).toContain('Name <span>______');
+    expect(html).toContain('.bm td{padding:8.5pt 0;vertical-align:middle;border:none;background:#1B2A4A;}');   // the navy band
+    expect(html).toContain('background:#E08A3A !important');                                                  // the orange block
+    expect(html).toContain('@page{margin:24mm 25mm 17mm 25mm}');
+    expect(html).toContain('@page :first{margin-top:20mm}');
+    expect(html).toContain('font-family:Gelasio,Georgia,serif;font-size:19pt');
+    expect(html).toContain('font-family:Arimo;font-style:normal;font-weight:700');
+    expect(html).toMatch(/<img src="data:image\/png;base64,/);
+    expect(html).toContain('.ws-ans{text-align:right;color:#843C0C;clear:both}');
+  });
+  it('black and white: no fill, the outline logo, [Ans:] drained to 404040; JC has the left bar', () => {
+    const html = buildBotWorksheetHTML({ ...am, brand: { mode: 'mono', level: 'JC' } });
+    expect(html).toContain('.ws-ans{text-align:right;color:#404040;clear:both}');
+    expect(html).not.toMatch(/background:#(?!FFFFFF|F2F2F2)[0-9A-F]{6}/);
+    expect(html).toContain('border-left:4.5pt solid #1A1A1A');
+    expect(html).toContain('<div class="bm-tag">JC H2</div>');
+    expect(html).toContain('border-left:3pt solid #1A1A1A');   // the box's heavy left rule
+  });
+  it('a level with no design prints the regular format', () => {
+    expect(buildBotWorksheetHTML({ ...am, brand: { mode: 'colour', level: 'IB' } })).toBe(buildBotWorksheetHTML(am));
+  });
+});

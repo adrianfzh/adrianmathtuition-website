@@ -192,6 +192,8 @@ export async function POST(req: NextRequest) {
 
   const count = clampCount(body.count);
   const answers = body.answers === true;
+  // The brand header switch from /admin/worksheets (kind 3); the bot's /ws never sends it → the regular format.
+  const brand = body.brand === 'colour' || body.brand === 'mono' ? { mode: body.brand as 'colour' | 'mono', level: levelKey } : undefined;
   const date = sgtDate();
   // Marks band (SPEC-WORKSHEET-MENU): 'standard' | 'intermediate' | 'advanced'
   // | 'a/b/c'. Tertiles of total_marks over THIS pool (lib/marks-band), because
@@ -256,6 +258,7 @@ export async function POST(req: NextRequest) {
     dateLabel: dateLabel(date),
     questions: picked,
     answers,
+    ...(brand ? { brand } : {}),
   }, timings);
   lap('render');
 

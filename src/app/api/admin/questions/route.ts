@@ -32,6 +32,7 @@ import { cleanScan } from '@/lib/figure-clean';
 import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
 import { fromDetail, ansLine, questionMarkdown, type DetailRow } from '@/lib/pick-worksheet';
+import { brandForLevels } from '@/lib/worksheet-brand';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -914,11 +915,16 @@ export async function POST(req: NextRequest) {
     // picker's Done button. The branded masthead stays the default.
     const plain = body.style === 'plain';
     const subtitle = typeof body.subtitle === 'string' ? body.subtitle.trim().slice(0, 120) : '';
+    // The brand header switch (off unless asked): the series comes from the
+    // picked rows' levels, the same way the picker's Word file chooses it.
+    const brandLv = body.brand === 'colour' || body.brand === 'mono' ? brandForLevels(ids.map((id) => (byId.get(id) as Row | undefined)?.level as string | null)) : null;
+    if ((body.brand === 'colour' || body.brand === 'mono') && !brandLv) warnings.push('no brand design for these levels — printed in the regular format');
     try {
       const pdf = await renderBotWorksheetPDF({
         title, levelLabel: 'Custom', topic: title, tier: null, dateLabel, questions, answers: body.answers === true,
         workspace: body.workspace !== false,
         ...(plain ? { plain: { subtitle }, answersInline: body.answers !== false } : {}),
+        ...(brandLv ? { brand: { mode: body.brand as 'colour' | 'mono', level: brandLv.level } } : {}),
       });
       const blob = await storeBankFile(`custom-worksheets/${Date.now()}.pdf`, pdf, 'application/pdf');
       return NextResponse.json({ url: blob.url, count: questions.length, warnings });

@@ -12,6 +12,7 @@
 // file is only the form. Different from /admin/worksheet-picker (choose and arrange the
 // questions by hand). The old /admin/worksheet-builder was retired 9 Oct 2026.
 
+import { BRAND_MODES, readBrandMode, storeBrandMode, type BrandMode } from '@/lib/worksheet-brand';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import {
@@ -61,6 +62,10 @@ export default function WorksheetsMenuPage() {
   const [pw, setPw] = useState('');
 
   const [kind, setKind] = useState<WsKind | null>(null);
+  // The brand header switch for the instant sheet (kind 3) — OFF by default, remembered in this browser.
+  const [brand, setBrand] = useState<BrandMode>('off');
+  useEffect(() => { setBrand(readBrandMode('ws:brand')); }, []);
+  const pickBrand = (m: BrandMode) => { setBrand(m); storeBrandMode('ws:brand', m); setMade(null); };
   const [level, setLevel] = useState<string | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [count, setCount] = useState<number | null>(null);
@@ -142,7 +147,7 @@ export default function WorksheetsMenuPage() {
     return () => clearInterval(t);
   }, [authed, anyOpen, loadJobs]);
 
-  const form: WsForm = { kind, level, picked, count, tier, sheet, skipSkills, paper, preset, exclude };
+  const form: WsForm = { kind, level, picked, count, tier, sheet, skipSkills, paper, preset, exclude, ...(kind === 3 && brand !== 'off' ? { brand } : {}) };
   const need = missing(form, topics);
   const line = summaryLine(form, topics ?? []);
   const queued = kind ? isQueued(kind) : false;
@@ -330,6 +335,14 @@ export default function WorksheetsMenuPage() {
                   ))}
                 </div>
                 <p className="mt-1.5 text-xs text-neutral-500">Advanced is thin outside S4 A Math. Mixed is the safe choice.</p>
+                <div className="mt-3 mb-1.5 text-sm font-medium text-neutral-800">Brand header</div>
+                <div className="grid grid-cols-3 gap-2">
+                  {BRAND_MODES.map((m) => (
+                    <button key={m.key} type="button" onClick={() => pickBrand(m.key)} aria-pressed={brand === m.key}
+                      className={`min-h-[48px] rounded-xl text-sm font-medium ring-1 ${brand === m.key ? 'bg-indigo-600 text-white ring-indigo-600' : 'bg-white text-neutral-800 ring-neutral-300'}`}>{m.label}</button>
+                  ))}
+                </div>
+                <p className="mt-1.5 text-xs text-neutral-500">Off = the regular format. The masthead is only on this instant sheet; the queued kinds print their usual header.</p>
               </div>
             )}
             {skills.length > 0 && (

@@ -77,6 +77,8 @@ export type WsForm = {
   preset?: string | null;
   /** kind 5: canonical topics to leave out */
   exclude?: string[];
+  /** kind 3 only: the brand header switch (lib/worksheet-brand); absent/off = the regular format */
+  brand?: 'off' | 'colour' | 'mono' | null;
 };
 
 /** Clamp a count to the kind's cap; null when the kind takes none (a paper). */
@@ -158,6 +160,8 @@ export type WsQueueBody = {
 export type WsInstantBody = {
   level: string; topic: string; count: number; answers: true;
   topics?: string[]; title?: string; tier?: 'standard' | 'advanced'; skipSkills?: string[];
+  /** the brand header switch (kind 3 only; off = absent) — lib/worksheet-brand */
+  brand?: 'colour' | 'mono';
 };
 export type WsRequest =
   | { ok: false; error: string }
@@ -184,6 +188,7 @@ export function buildWsRequest(form: WsForm, allTopics: string[], chatId: number
     if (multi) { body.topics = multi; body.title = topic; }
     if (form.tier === 'standard' || form.tier === 'advanced') body.tier = form.tier;
     if (skip.length) body.skipSkills = skip;
+    if (form.brand === 'colour' || form.brand === 'mono') body.brand = form.brand;
     return { ok: true, lane: 'instant', body };
   }
 

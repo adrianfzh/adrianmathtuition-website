@@ -817,6 +817,7 @@ glance and in black-and-white print. Each series also gets its own header style:
 | **E MATH** | `EM`, `S3_EM`, `EM_NA`, `S3_EM_NA`, `S3_EM_NT` | white, teal rule under it (design A) | teal block, teal PRACTICE |
 | **SEC 1** | `S1` | pale green band | green block, green bar beside the title |
 | **SEC 2** | `S2` | white with a thick blue bar on top | bright blue block, blue PRACTICE |
+| **JC H2** | `JC`, `JC1`, `JC2`, `H2` | white with a thick burgundy bar down the LEFT edge (the one vertical design) | deep burgundy `7A1F3D` block, burgundy bar beside the title, burgundy PRACTICE (9 Oct 2026, built for the website's brand switch; Adrian to judge) |
 
 Sec 2 was plum at first; "change purple, something suitable for secondary school students"
 (Adrian, 17 Sep 2026) → bright blue `1F74D6`.
@@ -840,6 +841,7 @@ subject tab.
 | **E MATH** | white, one rule under it | outlined box | double |
 | **SEC 1** | near-white grey tint | double-lined box on white | dotted |
 | **SEC 2** | white, thick bar over it | heavy rules above and below, sides open | dashed |
+| **JC H2** | white, thick bar down the left edge | box with a heavy left rule, thin elsewhere | thick-thin |
 
 The logo is the **outlined** triangle A — the outline alone, no solid ink
 (`mark_outline.png`). "Math" goes grey, and every other colour on the
@@ -869,6 +871,11 @@ the accent colour.
 - **No watermark** comes with the brand. Watermarks stay on request only (§8).
 - The Practice Again sheets from the sheet worker (`scripts/sheet-worker/render_sheet.py`)
   still use their own plain header — not branded until Adrian says so.
+- **The website has the same designs behind a switch** (9 Oct 2026, Adrian: "default should
+  not be in, but I will like them to be in later"): `/admin/worksheet-picker` and the instant
+  sheet on `/admin/worksheets` carry "Brand header: Off | Colour | Black & white", OFF by
+  default. `src/lib/worksheet-brand.ts` is this module's twin (SERIES, SERIES_MONO, LEVELS) —
+  change both together.
 
 ## Adding a rule (how this list grows)
 

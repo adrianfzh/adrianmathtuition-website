@@ -18,6 +18,8 @@ treatment and the accent colour:
     EM      white, rule under the header (design A) teal
     S1      pale green tinted band                  green
     S2      white, thick blue bar over the header   bright blue
+    JC      white, thick burgundy bar down the LEFT  deep burgundy (9 Oct 2026)
+            edge of the masthead
 
 Every series also has a BLACK-AND-WHITE version (`mono=True`, Adrian: "i usually
 print in black and white, can i have other versions without colour? that means
@@ -30,6 +32,8 @@ the sheets apart — no colour is relied on:
     S1      near-white grey tint (F2F2F2)            double-lined box       dotted
     S2      white, thick bar over the header         heavy rules above and  dashed
                                                      below, sides open
+    JC      white, thick bar down the left edge      box with a heavy left  thick-thin
+                                                     rule, thin elsewhere
 
 (The first mono set, a solid black A Math band, was dropped the same day —
 Adrian: "too oppressive as black, and waste ink when printing".) The mark in
@@ -84,6 +88,13 @@ SERIES = {
     'S2': dict(tag='SEC 2', style='bar', frame=('top', 'single', 36, '1F74D6'),
                accent='1F74D6', block='1F74D6', tag_ink=WHITE,
                run_rule=('single', 8, '1F74D6')),
+    # JC (9 Oct 2026, the website's brand switch): the one series with a VERTICAL
+    # element — a thick burgundy bar down the left edge of the masthead, white
+    # header, burgundy block and PRACTICE, a burgundy bar beside the title.
+    # Older students, a darker colour. Twin: website src/lib/worksheet-brand.ts.
+    'JC': dict(tag='JC H2', style='edge', frame=('left', 'single', 36, '7A1F3D'),
+               accent='7A1F3D', block='7A1F3D', tag_ink=WHITE, title_bar='7A1F3D',
+               run_rule=('single', 8, '7A1F3D')),
 }
 
 # The black-and-white set. Adrian 17 Sep 2026, after the first mono set (a solid
@@ -113,6 +124,13 @@ SERIES_MONO = {
                accent='1A1A1A', block=None, tag_ink='1A1A1A',
                block_rules={'top': ('single', 18), 'bottom': ('single', 18)},
                run_rule=('dashed', 12, '1A1A1A')),
+    # a thick bar down the left edge; the subject in a box whose left rule is
+    # heavy; a thick-thin rule on page 2
+    'JC': dict(tag='JC H2', style='edge', frame=('left', 'single', 36, '1A1A1A'),
+               accent='1A1A1A', block=None, tag_ink='1A1A1A', title_bar='1A1A1A',
+               block_rules={'top': ('single', 6), 'right': ('single', 6),
+                            'bottom': ('single', 6), 'left': ('single', 24)},
+               run_rule=('thickThinSmallGap', 12, '1A1A1A')),
 }
 
 # questions.level -> (series, the small line under the subject block, level line)
@@ -127,6 +145,10 @@ LEVELS = {
     'S3_EM_NT': ('EM', 'SEC 3 N(T)', 'Sec 3 N(T) Mathematics'),
     'S1':       ('S1', 'MATHEMATICS', 'Sec 1 Mathematics'),
     'S2':       ('S2', 'MATHEMATICS', 'Sec 2 Mathematics'),
+    'JC':       ('JC', 'H2 MATH', 'JC H2 Mathematics'),
+    'JC1':      ('JC', 'H2 MATH', 'JC1 H2 Mathematics'),
+    'JC2':      ('JC', 'H2 MATH', 'JC2 H2 Mathematics'),
+    'H2':       ('JC', 'H2 MATH', 'JC H2 Mathematics'),
 }
 
 
@@ -275,7 +297,9 @@ def _masthead(doc, cfg, k, small, level_line):
         frame = [frame]
     _table_borders(tbl, **{side: (val, sz, color) for side, val, sz, color in frame})
     pad = 170 if ground else 110
-    _cell_margins(tbl, top=pad, bottom=pad, left=160 if ground else 0, right=160 if ground else 0)
+    # the edge style keeps the logo off its left bar
+    left = 160 if ground else (200 if cfg['style'] == 'edge' else 0)
+    _cell_margins(tbl, top=pad, bottom=pad, left=left, right=160 if ground else 0)
     _widths(tbl, (2.0, 4.5, 6.1, 3.4))
     logo, word, level, block = tbl.rows[0].cells
     for c in tbl.rows[0].cells:

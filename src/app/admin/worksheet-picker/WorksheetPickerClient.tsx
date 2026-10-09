@@ -26,6 +26,7 @@ import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { mathHtml } from '@/lib/math-inline';
 import SolutionText from '@/components/SolutionText';
 import { fromDetail, flatParts, partLabel, partKey, ansLine, parseIds, fileStem, practiceFolderFor, joinMultilineMath, PRACTICE_FOLDERS, type PracticeFolder, type PickQuestion, type DetailRow } from '@/lib/pick-worksheet';
+import { BRAND_MODES, brandForLevels, readBrandMode, storeBrandMode, type BrandMode } from '@/lib/worksheet-brand';
 
 type Col = 'cands' | 'picked';
 type Toast = { msg: string; kind: 'ok' | 'err' };
@@ -235,6 +236,11 @@ export default function WorksheetPickerClient() {
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  // The brand header switch — OFF by default (Adrian, 9 Oct 2026: "default should
+  // not be in, but I will like them to be in later"); this browser remembers it.
+  const [brand, setBrand] = useState<BrandMode>('off');
+  useEffect(() => { setBrand(readBrandMode('picker:brand')); }, []);
+  const pickBrand = (m: BrandMode) => { setBrand(m); storeBrandMode('picker:brand', m); };
 
   type PickState = { title: string; subtitle: string; cands: string[]; picked: string[]; removed?: string[]; savedAt?: string };
   const [removed, setRemoved] = useState<string[]>([]);
@@ -461,16 +467,19 @@ export default function WorksheetPickerClient() {
     if (!title.trim()) { say('Give the sheet a title', 'err'); return; }
     setPdfUrl(null); setDocxUrl(null); setFiled([]); setFileFailed(false);
     const qs = picked.map((id) => byId.get(id)!).filter(Boolean);
+    // The brand header needs a series design for the picked levels; without one the sheet prints the regular format.
+    let useBrand = brand;
+    if (brand !== 'off' && !brandForLevels(qs.map((q) => q.level))) { useBrand = 'off'; say('No brand design for these levels — printed in the regular format', 'err'); }
     try {
       setBusy('Building the DOCX…');
       const { buildPickWorksheetDocx } = await import('@/lib/pick-worksheet-docx');
-      const blob = await buildPickWorksheetDocx({ title: title.trim(), subtitle: subtitle.trim(), questions: qs, workingSpace });
+      const blob = await buildPickWorksheetDocx({ title: title.trim(), subtitle: subtitle.trim(), questions: qs, workingSpace, brand: useBrand });
       setDocxBlob(blob);
       setDocxUrl(URL.createObjectURL(blob));
       setBusy('Rendering the PDF…');
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'worksheet', ids: picked, title: title.trim(), subtitle: subtitle.trim(), style: 'plain', answers: true, workspace: workingSpace }),
+        body: JSON.stringify({ action: 'worksheet', ids: picked, title: title.trim(), subtitle: subtitle.trim(), style: 'plain', answers: true, workspace: workingSpace, ...(useBrand !== 'off' ? { brand: useBrand } : {}) }),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
@@ -635,6 +644,13 @@ export default function WorksheetPickerClient() {
           <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-3">
             <button onClick={() => done(true)} disabled={!!busy || filing || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build, file + send (${picked.length})`}</button>
             <button onClick={() => done(false)} disabled={!!busy || filing || !picked.length} title="Questions only, no working space — a compact sheet" className="border border-indigo-600 text-indigo-700 font-semibold rounded-lg px-3 py-2 text-sm disabled:opacity-40">Done, no working space</button>
+            <span className="inline-flex items-center gap-1 text-xs text-slate-600" title="The AdrianMath masthead on both files: off = the regular format (navy title, italic subtitle)">
+              <span className="mr-1">Brand header:</span>
+              {BRAND_MODES.map((m) => (
+                <button key={m.key} type="button" onClick={() => pickBrand(m.key)} aria-pressed={brand === m.key}
+                  className={`rounded-md px-2 py-1 ring-1 ${brand === m.key ? 'bg-slate-800 text-white ring-slate-800' : 'bg-white text-slate-700 ring-slate-300'}`}>{m.label}</button>
+              ))}
+            </span>
             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-700 underline">Open PDF</a>}
             {docxUrl && <a href={docxUrl} download={`${fileStem(fileNameShown)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
             {filed.length > 0 && <span className="text-xs text-emerald-700 truncate" title={filed.join('\n')}>Filed ✓ {filed.map((p) => p.split('/').pop()).join(' · ')}</span>}

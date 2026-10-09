@@ -234,3 +234,133 @@ describe('answer line and figures', () => {
     expect(docXml).not.toContain('MMLTOKEN');
   });
 });
+
+// ── the brand header switch (ADRIAN-STYLE.md §9; lib/worksheet-brand, lib/pick-worksheet-brand-docx) ──
+import { readFileSync } from 'node:fs';
+import { brandForLevels, SERIES, SERIES_MONO, LEVELS } from './worksheet-brand';
+
+const parts3 = (xml: string) => xml.match(/<w:p\b[\s\S]*?<\/w:p>/g) ?? [];
+async function build(brand: 'off' | 'colour' | 'mono' | undefined, qs = questions.slice(0, 3)) {
+  const blob = await buildPickWorksheetDocx({ title: 'Vectors and Trigonometry', subtitle: 'JC2 / Sec 4 A Math', questions: qs, ...(brand ? { brand } : {}) });
+  const zip = await JSZip.loadAsync(await blobToArrayBuffer(blob));
+  const names = Object.keys(zip.files).filter((n) => /^word\/(document|styles|numbering|header\d*|footer\d*)\.xml$/.test(n)).sort();
+  const files: Record<string, string> = {};
+  for (const n of names) files[n] = await zip.file(n)!.async('string');
+  return files;
+}
+const colourVals = (xml: string) => [...xml.matchAll(/<w:(?:color|shd)[^>]*w:(?:val|fill)="([0-9A-Fa-f]{6})"/g)].map((m) => m[1].toUpperCase());
+const isGrey = (v: string) => v.slice(0, 2) === v.slice(2, 4) && v.slice(2, 4) === v.slice(4, 6);
+
+describe('brand header switch (worksheet_brand.py port)', () => {
+  beforeAll(() => {
+    // the logos come from public/brand/ in the browser; serve them here too
+    const prev = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      const m = /^\/brand\/(mark_\w+\.png)$/.exec(url);
+      if (m) return new Response(new Uint8Array(readFileSync(`public/brand/${m[1]}`)), { status: 200, headers: { 'content-type': 'image/png' } });
+      return prev(url);
+    }));
+  });
+  it('off (and absent) = the regular sheet, byte for byte in every XML part', async () => {
+    const plain = await build(undefined);
+    const off = await build('off');
+    expect(Object.keys(off)).toEqual(Object.keys(plain));
+    // docx-js numbers its lists from one process-wide counter, so the numId
+    // values move between two builds in one run; everything else is identical.
+    const norm = (x: string) => x.replace(/w:(numId|abstractNumId) w:val="\d+"/g, 'w:$1 w:val="N"').replace(/<w:num w:numId="\d+">/g, '<w:num w:numId="N">').replace(/<w:abstractNum w:abstractNumId="\d+"/g, '<w:abstractNum w:abstractNumId="N"').replace(/(<wp:docPr|<pic:cNvPr) id="\d+"/g, '$1 id="N"').replace(/r:embed="rId\d+"/g, 'r:embed="rIdN"');   // the figure's ids count up the same way
+    for (const n of Object.keys(plain)) {
+      const [p2, o2] = [norm(plain[n]), norm(off[n])];
+      let i = 0; while (i < p2.length && p2[i] === o2[i]) i++;
+      expect(o2.slice(Math.max(0, i - 120), i + 120), `${n} differs at ${i}`).toBe(p2.slice(Math.max(0, i - 120), i + 120));
+      expect(o2.length).toBe(p2.length);
+    }
+    expect(Object.keys(plain)).not.toContain('word/header1.xml');
+    expect(plain['word/document.xml']).not.toContain('<w:tbl>');
+  }, 20_000);
+  it('the series comes from the picked levels, the most common one wins, an unknown level has none', () => {
+    expect(brandForLevels(['JC2', 'AM', 'JC2'])?.series).toBe('JC');
+    expect(brandForLevels(['S3_EM'])?.levelLine).toBe('Sec 3 Mathematics');
+    expect(brandForLevels(['IB', null, 'X'])).toBeNull();
+    expect(brandForLevels(['AM'])?.small).toBe('SEC 4');
+    for (const k of Object.keys(SERIES)) expect(Object.keys(SERIES_MONO)).toContain(k);
+    expect(new Set(Object.values(LEVELS).map((l) => l[0]))).toEqual(new Set(Object.keys(SERIES)));
+  });
+  it('colour: masthead table, Georgia 19 pt topic, PRACTICE · n questions · m marks, Name / Date, footer with Page x of y, running header from page 2', async () => {
+    const f = await build('colour');   // JC2 ×2 + AM → the JC series
+    const doc = f['word/document.xml'];
+    const ps = parts3(doc);
+    const t = (p: string) => (p.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) ?? []).map((x) => x.replace(/<[^>]+>/g, '')).join('');
+    // the masthead is the first thing in the body: logo, AdrianMath / TUITION, the level line + site, the block
+    expect(doc.indexOf('<w:tbl>')).toBeLessThan(doc.indexOf('Vectors and Trigonometry'));
+    expect(doc).toContain('<w:drawing>');
+    expect(ps.some((p) => t(p) === 'AdrianMath')).toBe(true);
+    expect(ps.some((p) => t(p) === 'TUITION' && /w:spacing w:val="60"/.test(p))).toBe(true);
+    expect(ps.some((p) => t(p) === 'JC2 H2 Mathematics')).toBe(true);
+    expect(ps.some((p) => t(p) === 'adrianmathtuition.com')).toBe(true);
+    expect(ps.some((p) => t(p) === 'JC H2' && /w:sz w:val="34"/.test(p) && /w:color w:val="FFFFFF"/.test(p))).toBe(true);
+    expect(doc).toMatch(/<w:shd [^>]*w:fill="7A1F3D"/);              // the burgundy block
+    expect(doc).toMatch(/<w:tblBorders>[\s\S]*?<w:left w:val="single" w:color="7A1F3D" w:sz="36"/);  // the bar down the left edge
+    expect(doc).toMatch(/<w:gridCol w:w="1134"\/><w:gridCol w:w="2551"\/><w:gridCol w:w="3458"\/><w:gridCol w:w="1928"\/>/);
+    // no title / subtitle paragraphs; the topic in Georgia 19 pt navy with the title bar
+    const topic = ps.find((p) => t(p) === 'Vectors and Trigonometry')!;
+    expect(topic).toMatch(/w:ascii="Georgia"/);
+    expect(topic).toMatch(/<w:sz w:val="38"\/>/);
+    expect(topic).toMatch(/<w:color w:val="1B2A4A"\/>/);
+    expect(topic).toMatch(/<w:left w:val="single" w:color="7A1F3D" w:sz="36" w:space="8"\/>/);
+    expect(topic).not.toMatch(/<w:jc w:val="center"\/>/);
+    const practice = ps.find((p) => t(p).startsWith('PRACTICE'))!;
+    expect(t(practice)).toBe('PRACTICE   ·   3 questions   ·   16 marks');
+    expect(practice).toMatch(/<w:color w:val="7A1F3D"\/>/);
+    expect(ps.some((p) => t(p) === 'JC2 / Sec 4 A Math')).toBe(true);      // the subtitle rides under PRACTICE
+    const name = ps.find((p) => t(p).startsWith('Name '))!;
+    expect(name).toMatch(/<w:bottom w:val="single" w:color="BEC6D2" w:sz="4" w:space="6"\/>/);
+    // page furniture: a title page with a blank header, the running header, the footer on both
+    expect(doc).toMatch(/<w:titlePg\/>/);
+    expect(doc).toMatch(/<w:pgMar [^>]*w:bottom="964"/);
+    const headers = Object.keys(f).filter((n) => /header/.test(n)).map((n) => f[n]);
+    const running = headers.find((h) => h.includes('Adrian'))!;
+    expect(running).toBeTruthy();
+    expect(running).toMatch(/<w:t[^>]*>JC H2<\/w:t>/);
+    expect(running).toMatch(/<w:tblBorders>[\s\S]*?<w:bottom w:val="single" w:color="7A1F3D" w:sz="8"/);
+    expect(headers.some((h) => !h.includes('Adrian'))).toBe(true);          // the title page's blank header
+    const footers = Object.keys(f).filter((n) => /footer/.test(n)).map((n) => f[n]);
+    expect(footers.length).toBe(2);
+    for (const ft of footers) {
+      expect(ft).toContain('AdrianMath Tuition');
+      expect(ft).toContain('adrianmathtuition.com');
+      expect(ft).toMatch(/<w:instrText[^>]*>\s*PAGE\s*<\/w:instrText>/);
+      expect(ft).toMatch(/<w:instrText[^>]*>\s*NUMPAGES\s*<\/w:instrText>/);
+      expect(ft).not.toContain('Adrian Fong');
+    }
+    // the orange [Ans:] line is still orange in colour
+    expect(doc).toMatch(/<w:color w:val="843C0C"\/>/);
+  }, 20_000);
+  it('black and white: no coloured fill or ink anywhere, the outlined logo, the [Ans:] line drained to 404040, a box instead of a block', async () => {
+    const f = await build('mono');
+    const doc = f['word/document.xml'];
+    for (const n of Object.keys(f).filter((x) => !/styles/.test(x))) for (const v of colourVals(f[n])) expect(isGrey(v), `${n}: ${v}`).toBe(true);   // styles.xml keeps docx-js's unused hyperlink blue
+    expect(doc).not.toMatch(/<w:shd [^>]*w:fill="(?!FFFFFF|F2F2F2)/);
+    expect(doc).toMatch(/<w:color w:val="404040"\/>/);
+    expect(doc).not.toMatch(/<w:color w:val="843C0C"\/>/);
+    expect(doc).toMatch(/<w:tcBorders>[\s\S]*?<w:left w:val="single" w:color="1A1A1A" w:sz="24"/);    // the JC box's heavy left rule
+    const running = Object.keys(f).filter((n) => /header/.test(n)).map((n) => f[n]).find((h) => h.includes('Adrian'))!;
+    expect(running).toMatch(/<w:bottom w:val="thickThinSmallGap" w:color="1A1A1A" w:sz="12"/);
+  }, 20_000);
+  it('every series builds in both modes with its own header shape', async () => {
+    const one = (level: string) => [fromDetail({ id: '66666666-6666-6666-6666-666666666666', level, marks: 2, questionMd: 'Solve $x^2=4$.', parts: [], answer: '$\\pm 2$' })];
+    const am = await build('colour', one('AM'));
+    expect(am['word/document.xml']).toMatch(/<w:shd [^>]*w:fill="1B2A4A"/);          // the navy band
+    expect(am['word/document.xml']).toMatch(/<w:t[^>]*>A MATH<\/w:t>/);
+    const em = await build('colour', one('S3_EM'));
+    expect(em['word/document.xml']).toMatch(/<w:tblBorders>[\s\S]*?<w:bottom w:val="single" w:color="0E8A7D" w:sz="18"/);
+    expect(em['word/document.xml']).toMatch(/<w:t[^>]*>SEC 3<\/w:t>/);
+    const s1 = await build('mono', one('S1'));
+    expect(s1['word/document.xml']).toMatch(/<w:shd [^>]*w:fill="F2F2F2"/);
+    expect(s1['word/document.xml']).toMatch(/<w:tcBorders>[\s\S]*?<w:top w:val="double" w:color="1A1A1A" w:sz="6"/);
+    const s2 = await build('colour', one('S2'));
+    expect(s2['word/document.xml']).toMatch(/<w:tblBorders>[\s\S]*?<w:top w:val="single" w:color="1F74D6" w:sz="36"/);
+    const none = await build('colour', one('IB'));                                    // no design → regular
+    expect(none['word/document.xml']).not.toContain('<w:tbl>');
+    expect(none['word/document.xml']).toMatch(/<w:color w:val="1F4E79"\/>/);
+  }, 40_000);
+});

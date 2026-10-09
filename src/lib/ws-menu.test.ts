@@ -168,3 +168,15 @@ describe('the words on the page', () => {
     expect(jobStateLine({ status: 'cancelled' }).text).toBe('Stopped');
   });
 });
+
+describe('the brand header switch rides only on kind 3', () => {
+  it('kind 3 carries brand when set; off/absent sends nothing; a queued kind never carries it', () => {
+    const base: WsForm = { kind: 3, level: 'AM', picked: ['Circles'], count: 8 };
+    const off = buildWsRequest(base, AM, CHAT);
+    expect(off.ok && off.lane === 'instant' && !('brand' in off.body)).toBe(true);
+    const on = buildWsRequest({ ...base, brand: 'mono' }, AM, CHAT);
+    expect(on.ok && on.lane === 'instant' && on.body.brand).toBe('mono');
+    const q = buildWsRequest({ kind: 1, level: 'AM', picked: ['Circles'], count: 8, brand: 'colour' }, AM, CHAT);
+    expect(q.ok && q.lane === 'queued' && JSON.stringify(q.body).includes('brand')).toBe(false);
+  });
+});
