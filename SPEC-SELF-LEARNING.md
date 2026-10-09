@@ -4,6 +4,72 @@
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
+## ▶ Where things stand — read this first (kept current; last updated 10 Oct 2026)
+
+**The rule for this file (Adrian, 10 Oct 2026: "make sure everything we do here future
+sessions know about it"):** every decision, build and open question on this work is written
+HERE in the same turn it happens — a session cannot see another session's chat. Update this
+section whenever anything below changes.
+
+**Two paths — always say which (his words: "there are two paths now, learn and revise"):**
+- **LEARN** = the idea from the start, in the order and the way of HIS notes. §4, §4a.
+- **REVISE** = from exam questions, before a test. §4b. Not built.
+
+**LEARN, Sec 2 "Algebra 1: Expansion" — BUILT and on the main site, admin only**
+(`LEARN_STEP_OPEN_TO_STUDENTS = false`; nothing links to it):
+- All eleven ideas of his notes chapter, each a step at `/app/learn-step/<slug>`, each
+  leading to the next, start `/app/learn-step/expand-one-bracket`: expand-one-bracket ·
+  expand-and-simplify · expand-two-brackets · number-in-front · further-expansion ·
+  expansion-with-fractions · special-products · special-products-mixed · using-the-identity ·
+  without-a-calculator · hence-questions.
+- A step = his example one line a tap (the Rainbow arrows / his formula lines / his margin
+  words) → try one with "Stuck? Next step" → five on your own, typed on a keypad and marked
+  at once, pass 4 of 5; not passed → the example again → a new five (four sets per step; the
+  first set is his own Practice where the notes have one).
+- Every step opens on its own voiced one-minute clip (`clipSlug` → `/app/lesson/<slug>-s2`,
+  made by the clips session from the same notes; `docs/LESSONS.md`). A twelfth clip,
+  `special-products-minus-s2`, is unjoined — his call.
+- Code: `src/lib/poly.ts` (marks a typed expression, fractions included, no model),
+  `src/lib/learn-step.ts` (shapes, working, slips, number questions), `src/lib/learn-steps.ts`
+  (the content), `src/app/app/learn-step/[step]/` (page, flow, `rainbow.tsx`);
+  `learn-step.test.ts` checks every question, every written line and his printed answers.
+  `/app/revise/<step>` is only a redirect (the first address).
+- **Not done:** (1) nothing a student does is SAVED — required before any student uses it;
+  (2) in expand-and-simplify, number-in-front and further-expansion a wrong answer in the
+  five shows the answer and the step's warning but no working for that question; (3) his
+  Practice 3 (b), ¾(3x + y)(2x − ¼y), is left out of the fractions step; (4) he has not yet
+  given his reaction after going through the steps and clips on his phone — ask for it.
+- **Slips found in his notes** (told to him; the app uses the correct values; his file is
+  unchanged): recap −2b(3 − 4b + 6c) ends −12bc (printed −12c); Practice 1b (a) is
+  2x² − 4xy − 30y² (printed −xy); Example 1a asks (a + b)(2a − b) but works (a + b)(a − 3b);
+  Example 5c (b) asks 701² but works 702²; Example 5d calls 301 and 105 prime.
+
+**REVISE — talked through, his yes awaited (§4b):** a student uploads a paper → a checked
+worked solution per question + two practice questions each, pulled from the bank. Next step
+when he says yes: time it on ONE real paper not in the bank, which he is to send.
+
+**Not started:** the test loop of §1–§3 (enter a test, papers, sorting by topic) · the clip
+pipeline he asked about ("can we make a pipeline for this?" — outline put to him, no yes) ·
+the topic map's game feel (§5) · saving work · the Notebook cards (§6) · "keep finding
+ways" (§7) · his view before a lesson (§9).
+
+**Still his to decide:** what "required" means each week for his students · the parent's
+weekly note · whether to open any of this to students.
+
+**How to work on it (learnt the hard way, 9–10 Oct 2026):**
+- A LEARN step or clip for a topic starts from HIS notes: `Dropbox/1 ONLINE LESSONS/1 NOTES/
+  <level folder>/` (Sec 2: `4 Notes S2 Math G3/`). Read the chapter PDF first; use his
+  examples, methods and margin words; check his printed answers with the test and tell him
+  about any that disagree.
+- He looks at things on his phone on the MAIN site, so he asks for promotes often
+  ("promote when okay" was his standing word on 9 Oct for this work). Promote a commit whose
+  preview build is READY, pinned: `git push origin <sha>:main` — it needs no branch switch,
+  which matters because several sessions share this checkout.
+- Shared checkout: commit with the pathspec ON the commit; another session's bare commit
+  once swept staged deletions and broke the build (e36198f4).
+- He talks to ONE session; that session relays his words, quoted exactly, to side sessions
+  (the clips session) and reports back. Paid spend needs his own yes with an amount.
+
 ## 0. The frame (decided)
 
 - **The aim is still "no tutor at all"** (Adrian, 8 Oct 2026) — a student who learns with
@@ -98,7 +164,7 @@ tested topic gets a harder next paper, and the aim moves up. Build after the bas
   answer now, the short clip (§8) when the clips are ready. Adrian: *"students at this
   phase want instant help … videos that are not too long will also calm their nerves."*
 
-## 4. Revise a topic in full — the session
+## 4. LEARN: one step — the session (first written as "revise a topic in full")
 
 One session = one step of the topic's map (§5). About 20 minutes.
 
@@ -213,7 +279,7 @@ ordered steps of a topic, which step opens which, and which older skills sit und
 The raw material exists: the `subgroups` table sorts the bank into small skills per topic.
 The game feel needs a picture for him before anything is built.
 
-### The first map — Sec 2 expansion and factorisation (agreed)
+### The first map — Sec 2 expansion and factorisation (agreed 8 Oct; SUPERSEDED for expansion by his notes' order, §4a — kept for the factorisation half)
 
 | Step | Skill | Underneath |
 |---|---|---|
@@ -275,8 +341,9 @@ use — off until he says.
 Adrian: *"the video must be very short, one concept at a time"*; and on today's engine:
 *"The voice and the animation is not synchronized perfectly yet. And the content of the
 voice is not good. Some content does not explain directly. Need clear direct explanation,
-and simple but effective animation."* Fixed in a separate session (started 8 Oct 2026);
-this loop runs without clips and they slot into §3 and §4 when he is happy with one.
+and simple but effective animation."* Fixed in a separate session (started 8 Oct 2026). **Done 9–10 Oct 2026:** twelve voiced
+clips for the expansion chapter, made from his notes, one per LEARN step (see the top of
+this file); revision clips (§4a) are a later, different kind.
 
 ## 9. Where Adrian comes in (the companion)
 
