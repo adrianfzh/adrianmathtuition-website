@@ -16,7 +16,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
-  DndContext, DragEndEvent, DragOverEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor,
+  DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, TouchSensor,
   closestCorners, useDroppable, useSensor, useSensors,
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -74,22 +74,34 @@ function QuestionBody({ q, size = 14 }: { q: PickQuestion; size?: number }) {
   );
 }
 
+// ── The drag ghost: a plain card, no sortable hooks (a sortable component inside
+// DragOverlay re-registers forever → "Maximum update depth exceeded", 9 Oct 2026) ──
+function GhostCard({ q }: { q: PickQuestion }) {
+  return (
+    <div className="bg-white border-2 border-indigo-400 rounded-lg px-2.5 py-2 shadow-xl w-80 rotate-1">
+      <div className="text-[11px] text-slate-500 mb-0.5">{q.provenance}{q.marks != null ? ` [${q.marks}]` : ''}</div>
+      <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q, 110)) }} />
+    </div>
+  );
+}
+
 // ── One card (sortable) ──────────────────────────────────────────────────────
 
-function Card({ q, index, col, onMove, onDrop, overlay = false }: {
-  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void; overlay?: boolean;
+function Card({ q, index, col, onMove, onDrop }: {
+  q: PickQuestion; index: number; col: Col; onMove: (id: string, to: Col) => void; onDrop?: (id: string) => void;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: q.id, data: { col } });
   const [sol, setSol] = useState(false);
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform), transition, touchAction: 'none',
-    opacity: isDragging && !overlay ? 0.35 : 1,
+    opacity: isDragging ? 0.35 : 1,
   };
   return (
     <div ref={setNodeRef} style={style} className="bg-white border border-slate-200 rounded-lg px-2.5 py-2 shadow-sm flex gap-2 items-start">
-      <span {...attributes} {...listeners} className="cursor-grab text-slate-400 select-none pt-0.5" title="Drag">⠿</span>
+      <span {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing text-slate-400 select-none pt-0.5 text-lg leading-none" title="Drag">⠿</span>
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 text-[11px] text-slate-500 mb-0.5">
+        {/* The source line is a grab handle too — a bigger target than the dots. */}
+        <div {...listeners} className="flex items-baseline gap-2 text-[11px] text-slate-500 mb-0.5 cursor-grab active:cursor-grabbing select-none" title="Drag to move">
           <span className="font-bold text-slate-400">{col === 'picked' ? `${index + 1}.` : ''}</span>
           <span className="truncate">{q.provenance}</span>
           {q.marks != null && <span className="shrink-0">[{q.marks}]</span>}
@@ -99,8 +111,7 @@ function Card({ q, index, col, onMove, onDrop, overlay = false }: {
             card unfolds (Adrian, 9 Oct 2026: "the dropdown remains at its
             original position"). */}
         {/* The whole question shows by default (Adrian, 9 Oct 2026: "just show
-            full question by default. solutions keep hidden"); the drag overlay
-            stays a one-line excerpt so the drag ghost is small. */}
+            full question by default. solutions keep hidden"). */}
         <div className="mb-1.5 flex gap-3">
           <button onClick={() => onMove(q.id, col === 'cands' ? 'picked' : 'cands')} className="text-[12px] font-semibold text-slate-600 hover:underline">
             {col === 'cands' ? 'Add →' : '← Back to candidates'}
@@ -109,15 +120,11 @@ function Card({ q, index, col, onMove, onDrop, overlay = false }: {
             <button onClick={() => onDrop(q.id)} className="text-[12px] font-semibold text-slate-400 hover:text-red-600 hover:underline ml-auto" title="Take this question off the candidates (it can be brought back)">✕ Remove</button>
           )}
         </div>
-        {overlay
-          ? <div className="text-[13px] text-slate-800 leading-snug" dangerouslySetInnerHTML={{ __html: mathHtml(excerpt(q)) }} />
-          : <div className="pr-1"><QuestionBody q={q} size={13} /></div>}
+        <div className="pr-1"><QuestionBody q={q} size={13} /></div>
         {/* The solution's own dropdown sits UNDER the question; the working unfolds below it. */}
-        {!overlay && (
-          <div className="mt-1.5">
-            <button onClick={() => setSol((v) => !v)} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
-          </div>
-        )}
+        <div className="mt-1.5">
+          <button onClick={() => setSol((v) => !v)} className="text-[12px] font-semibold text-indigo-700 hover:underline">{sol ? 'Hide solution ▴' : 'Solution ▾'}</button>
+        </div>
         {sol && <SolutionBlock q={q} />}
       </div>
     </div>
@@ -346,28 +353,30 @@ export default function WorksheetPickerClient() {
   }, [removed, loadIds]);
 
   function onDragStart(e: DragStartEvent) { setActiveId(String(e.active.id)); }
-  function onDragOver(e: DragOverEvent) {
-    const { active, over } = e;
-    if (!over) return;
-    const id = String(active.id);
-    const overId = String(over.id);
-    const from = colOf(id);
-    const to: Col | null = overId === 'cands' || overId === 'picked' ? (overId as Col) : colOf(overId);
-    if (!from || !to || from === to) return;
-    const list = to === 'cands' ? cands : picked;
-    const idx = list.indexOf(overId);
-    move(id, to, idx >= 0 ? idx : undefined);
-  }
+  // Cross-column moves happen on DROP, not during drag-over: moving an item
+  // between the two SortableContexts while the drag is live looped React
+  // ("Maximum update depth exceeded", 9 Oct 2026). The ghost follows the
+  // pointer and the target column highlights; within a column the cards
+  // still slide live.
+  function onDragOver() { /* no live moves across columns */ }
   function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const { active, over } = e;
     if (!over) return;
     const id = String(active.id); const overId = String(over.id);
-    const col = colOf(id);
-    if (!col || overId === id) return;
-    const list = col === 'cands' ? cands : picked;
+    const from = colOf(id);
+    const to: Col | null = overId === 'cands' || overId === 'picked' ? (overId as Col) : colOf(overId);
+    if (!from || !to) return;
+    if (from !== to) {
+      const list = to === 'cands' ? cands : picked;
+      const idx = list.indexOf(overId);
+      move(id, to, idx >= 0 ? idx : undefined);
+      return;
+    }
+    if (overId === id) return;
+    const list = from === 'cands' ? cands : picked;
     const a = list.indexOf(id); const b = list.indexOf(overId);
-    if (a >= 0 && b >= 0 && a !== b) (col === 'cands' ? setCands : setPicked)((cur) => arrayMove(cur, a, b));
+    if (a >= 0 && b >= 0 && a !== b) (from === 'cands' ? setCands : setPicked)((cur) => arrayMove(cur, a, b));
     setPdfUrl(null); setDocxUrl(null);
   }
 
@@ -569,7 +578,7 @@ export default function WorksheetPickerClient() {
             <Column col="cands" title="Candidates" items={candQs} onMove={move} onDrop={dropCandidate} removedCount={removed.length} onShowRemoved={() => { void showRemoved(); }} empty={urlIds.length || pickId ? 'All candidates are on the worksheet' : 'Open a recent selection above, or add candidates'} />
             <Column col="picked" title="Worksheet" items={pickQs} onMove={move} empty="Drag questions here, in print order" />
           </div>
-          <DragOverlay>{active ? <div className="w-80"><Card q={active} index={0} col="cands" onMove={() => {}} overlay /></div> : null}</DragOverlay>
+          <DragOverlay dropAnimation={null}>{active ? <GhostCard q={active} /> : null}</DragOverlay>
         </DndContext>
 
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200 backdrop-blur px-4 py-3">
