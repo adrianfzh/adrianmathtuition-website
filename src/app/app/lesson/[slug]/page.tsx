@@ -56,7 +56,7 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
       theme={script.theme ?? 'slide'}
       scenes={buildPlayScenes(script, rows)}
       // A clip is one concept in a minute: it opens playing, like a video.
-      {...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {})}
+      {...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {})}
     />
   );
 }

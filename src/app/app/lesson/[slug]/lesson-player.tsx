@@ -1339,7 +1339,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, clip = false, onClose }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1361,6 +1361,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   doneText?: string;
   /** Start in ▶ Auto — a clip plays like a video from the first frame (the one-minute explanation). */
   startAuto?: boolean;
+  /** Open with the 🔊 voice ON when the lesson has clips (a clip — Adrian, 9 Oct 2026: "make audio play by default"). A browser that
+   *  refuses sound before a tap shows the "Play with voice" poster: one tap starts it. The viewer's own toggle wins for the visit. */
+  startVoice?: boolean;
   /** A one-concept clip (script.kind === 'clip'): the working is set LARGE for a phone and the lines are spaced so an arc has room. */
   clip?: boolean;
   /** Played inside an overlay (▶ Watch it): ‹ and the closer call this instead of following a link. */
@@ -1386,7 +1389,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 
   // 🔊 Voice: the persisted choice only counts when this lesson has clips —
   // a silent lesson never shows the pill, and never pretends to narrate.
-  const narratedPref = usePref('narrated');
+  const storedVoice = usePref('narrated');
+  // What the viewer chose on THIS visit (null = nothing yet): it beats both the default and the remembered choice.
+  const [voiceChoice, setVoiceChoice] = useState<boolean | null>(null);
+  const narratedPref = voiceChoice ?? (startVoice || storedVoice);
   const muted = usePref('muted');
   const rate = useRatePref();
   const hasVoice = useMemo(() => lessonHasAudio(scenes), [scenes]);
@@ -1543,15 +1549,25 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     const next = !auto;
     setAuto(next);
     setPaused(false);
-    if (next && narratedPref) writePref('narrated', false);
+    if (next && narratedPref) { setVoiceChoice(false); writePref('narrated', false); }
   };
   const toggleVoice = () => {
     setPaused(false);
-    if (narrated) { writePref('narrated', false); return; }
+    if (narrated) { setVoiceChoice(false); writePref('narrated', false); return; }
     setAuto(false);
+    setVoiceChoice(true);
     writePref('narrated', true);
     narration.unlock();
   };
+  // A clip opens with the voice on: ask the browser once, without a gesture. Where
+  // sound is allowed (a desktop that has played this site before) it simply starts;
+  // where it is not (a phone), the refusal leaves the "Play with voice" poster up.
+  const autoVoiceTried = useRef(false);
+  useEffect(() => {
+    if (!startVoice || !hasVoice || autoVoiceTried.current) return;
+    autoVoiceTried.current = true;
+    narration.unlock();
+  }, [startVoice, hasVoice, narration]);
   const toggleMute = () => writePref('muted', !muted);
   const pickRate = (r: PlaybackRate) => { writeRate(r); setRateOpen(false); };
   const waitingForTap = pacing === 'narrated' && narration.locked && !done;
@@ -2074,6 +2090,8 @@ const PLAYER_CSS = `
 .lsn-marks path[data-mark="arc-under"] { stroke: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
 [data-lsn-theme="chalk"] .lsn-marks path { stroke-width: 2.4; opacity: 0.96;
   -webkit-mask-image: ${CHALK_GRAIN}; mask-image: ${CHALK_GRAIN}; -webkit-mask-size: 72px 72px; mask-size: 72px 72px; }
+/* An arrow is a clean line: no chalk grain eating into it, a touch finer. */
+[data-lsn-theme="chalk"] .lsn-marks path[data-mark^="arc"] { -webkit-mask-image: none; mask-image: none; stroke-width: 2; opacity: 1; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;
   background: radial-gradient(circle, rgba(255,255,250,0.85), rgba(255,255,250,0) 68%); box-shadow: none; }
 /* NO PEN by default (Adrian, 2026-09-06). The board's own pen dot rides the

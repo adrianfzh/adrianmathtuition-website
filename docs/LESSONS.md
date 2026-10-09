@@ -54,8 +54,11 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   chalk theme, ≤ 170 spoken words (≈ 65 s), beats ≤ 24 words, `minutes: 1`. `clipIssues`
   holds the shape; the long-lesson craft rules (8–16 scenes, title first, two checks) do
   not apply.
-- **Opens playing**, like a video (`startAuto`), kicker "Clip · 1 min", closer "Now try
-  one". The page passes `clip` to the player, which sets `data-lsn-clip`: the working is
+- **Opens playing, with the voice on** (`startAuto` + `startVoice` — Adrian, 9 Oct 2026:
+  "make audio play by default"). The player asks the browser once on open: where sound is
+  allowed it simply starts; a phone refuses sound before a tap, so the "Play with voice"
+  poster shows and one tap starts it. The viewer's own 🔊 toggle wins for the visit.
+  Kicker "Clip · 1 min", closer "Now try one". The page passes `clip` to the player, which sets `data-lsn-clip`: the working is
   1.45× the lesson size (24.5 px on a 390 px phone) and the lines stand 2.5 rem apart so
   an arc has its own air.
 - **Simple, effective animation:** one thing moves at a time and it is the thing being
@@ -65,7 +68,8 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   to another as the voice says "x times x", the product appears as it is named, like
   terms underlined, the answer boxed. 9 beats, 106 words, about 45 s.
   `/app/lesson/expand-two-brackets-s2`, admin-only like every lesson. **Voiced 9 Oct
-  2026** (Adrian: "yes"): nine clips, 0.7 min, 196 KB, each with its word timings —
+  2026** (Adrian: "yes"; his verdict the same day: "video is much better now. let's keep
+  to this quality" — this clip is the reference for the next ones): nine clips, 0.7 min, 196 KB, each with its word timings —
   tap 🔊 Voice; without it the clip plays on the Auto timers, paced to the words.
 - **Authoring one:** the author-lesson skill § 3c.
 
@@ -529,7 +533,7 @@ exactly one beat, the lead-in).
 | `highlight` | `token: "id"` or a list | A pulse on the token (scale + a halo in the pen colour). |
 | `move` | `from: "id"` | The moved-term FLIP: the earlier token flies onto the later line that declared `from: "id"`. A `from` token **with** a `move` waits for it; one **without** flies the moment its line is shown (the original behaviour). |
 | `morph` | `state: i` | graph-morph: the curve eases to `states[i]` (state 0 holds from entry). |
-| `mark` | `kind` + `token(s)` | **`arc` / `arc-under`** (8 Oct 2026): a curved line with an arrowhead from the first token to the second, over or under the row — "this times that" when expanding brackets; exactly two tokens; yellow over, cyan under on the slate. Otherwise a hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
+| `mark` | `kind` + `token(s)` | **`arc` / `arc-under`** (8 Oct 2026): a CLEAN curved arrow (one Bézier, no wobble, no chalk grain — Adrian, 9 Oct 2026: "for arrows don't make it hand drawn") from the first token to the second, over or under the row — "this times that" when expanding brackets; exactly two tokens; yellow over, cyan under on the slate. Otherwise a hand-drawn underline / circle / box (a wobbled SVG path drawn with `stroke-dashoffset`, the pen on it), measured from the tokens' resting rects, re-measured on resize. |
 | `note` | `text` (+ `near: "id"`) | A handwritten aside in the pen colour. Its SLOT is laid out from mount — under the token row of the line `near` sits in (equation-steps / annotate), else in the margin under the working — and drawn on when the action fires: never positioned over other glyphs, never a layout shift. ≤ 140 chars. |
 | `focus` | same targets as `write` (+ `hold` s, default 2.2) | **The dim IS the pointing** (2026-09-06): everything but the target drops to 45 % and the target lifts a hair (`brightness(1.1)`); released after `hold` ÷ rate. It used to also scale the board ≤ 1.14×, and that is what pushed a phone board's content off its own right edge and cut the top off — a scale > 1 on a wrapper that crops can only ever crop, so the transform is gone. |
 | `clear` | `what` (default `pen`) | Wipes marks + notes + focus; `board` also wipes everything written (a second worked example on the same board). |

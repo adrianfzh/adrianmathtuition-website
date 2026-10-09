@@ -165,24 +165,22 @@ export function markPath(kind: Exclude<BoardMark['kind'], 'arc' | 'arc-under'>, 
 
 /**
  * An arc from one token to another, over the row (or under it) — "this times
- * that". It leaves the middle of the first token's edge and lands on the
- * second's with a small arrowhead, so the eye is carried from one to the other.
+ * that". A CLEAN curve, not a hand-drawn one (Adrian, 9 Oct 2026: "can the
+ * arrows be smoother (for arrows don't make it hand drawn)"): one quadratic
+ * Bézier with a straight-barbed arrowhead turned along the curve's own end.
  */
 export function arcPath(a: Box, b: Box, under: boolean): string {
   const x0 = (a.x0 + a.x1) / 2, x1 = (b.x0 + b.x1) / 2;
-  const y = under ? Math.max(a.y1, b.y1) + 2 : Math.min(a.y0, b.y0) - 2;
+  const y = under ? Math.max(a.y1, b.y1) + 3 : Math.min(a.y0, b.y0) - 3;
   const dir = under ? 1 : -1;
   // Taller for a longer reach, so two arcs from one token nest instead of crossing.
   const h = Math.min(34, 10 + Math.abs(x1 - x0) * 0.14);
-  const pts: [number, number][] = [];
-  for (let k = 0; k <= 28; k++) {
-    const t = k / 28;
-    pts.push([x0 + (x1 - x0) * t, y + dir * h * 4 * t * (1 - t) + (k > 0 && k < 28 ? wob(k, 0.5) : 0)]);
-  }
-  const [ex, ey] = pts[pts.length - 1];
-  const back = x1 >= x0 ? -1 : 1;
-  const head = `M${(ex + back * 6).toFixed(1)} ${(ey + dir * 1.5).toFixed(1)} L${ex.toFixed(1)} ${ey.toFixed(1)} L${(ex + back * 0.5).toFixed(1)} ${(ey + dir * 7).toFixed(1)}`;
-  return 'M' + pts.map(p => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L') + ' ' + head;
+  const cx = (x0 + x1) / 2, cy = y + dir * 2 * h;       // the curve's peak sits h from the row
+  // The arrowhead: two barbs swung ±27° off the direction the curve arrives in.
+  const ang = Math.atan2(y - cy, x1 - cx);
+  const barb = (t: number) => `${(x1 - 7.5 * Math.cos(ang + t)).toFixed(1)} ${(y - 7.5 * Math.sin(ang + t)).toFixed(1)}`;
+  const f = (n: number) => n.toFixed(1);
+  return `M${f(x0)} ${f(y)} Q${f(cx)} ${f(cy)} ${f(x1)} ${f(y)} M${barb(0.47)} L${f(x1)} ${f(y)} L${barb(-0.47)}`;
 }
 
 // ── The layer ────────────────────────────────────────────────────────────────
