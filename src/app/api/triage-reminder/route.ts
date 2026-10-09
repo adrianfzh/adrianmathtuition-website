@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { extractFlagged } from '@/lib/mark-triage';
 import { triageReminderMessage, type WaitingRun } from '@/lib/triage-reminder';
 import { sendTelegram } from '@/lib/telegram';
-import { unlessQuiet } from '@/lib/quiet-messages';
+import { isQuiet } from '@/lib/quiet-messages';
 // Every notification from this file belongs in the marking topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_marking = (text: string) => sendTelegram(text, 'marking');
 import { logJobRun } from '@/lib/job-log';
@@ -74,15 +74,19 @@ export async function GET(req: NextRequest) {
   let sent = false;
   // Switched off (Adrian, 8 Oct 2026 — lib/quiet-messages 'desk-reminder'): sent daily for weeks while the
   // count only rose; the morning brief shows the number. The job still runs and stamps.
-  if (message) sent = await unlessQuiet('desk-reminder', () => notify_marking(message));
+  const quiet = isQuiet('desk-reminder');
+  if (message && !quiet) sent = await notify_marking(message);
 
   // Stamp even on quiet days — the job RAN; a silent morning must stay
   // distinguishable from a dead cron (that's the whole job_runs contract).
   await logJobRun(
     'triage-reminder',
-    message ? sent : true,
+    // A switched-off message is not a failed send (9 Oct 2026: the first quiet morning stamped
+    // "Telegram send FAILED" and the health check alarmed at 08:00). The count stays in the
+    // summary — the morning brief reads it from there.
+    message && !quiet ? sent : true,
     message
-      ? `${waiting.length} waiting — ${sent ? 'reminded' : 'Telegram send FAILED'}`
+      ? `${waiting.length} waiting — ${quiet ? 'message switched off (the morning brief shows the count)' : sent ? 'reminded' : 'Telegram send FAILED'}`
       : '0 waiting — quiet'
   );
 

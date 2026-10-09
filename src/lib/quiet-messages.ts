@@ -14,6 +14,10 @@ export const QUIET: Readonly<Record<string, string>> = Object.freeze({
   'desk-reminder': '2026-10-08',        // 🗂 "N marked papers waiting on the desk" at 08:00 — the brief shows the number
 });
 
+// RULE: a switched-off message is never a failed send. A job that stamps job_runs from the
+// result of its send must stamp the run as fine when its family is quiet — or the health check
+// alarms the next morning (9 Oct 2026, the desk reminder).
+
 /** Is this family switched off? An unknown family is never quiet. */
 export function isQuiet(family: string): boolean {
   return !!QUIET[family];
