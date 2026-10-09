@@ -291,7 +291,12 @@ export async function GET(req: NextRequest) {
     if (!ids.length) return NextResponse.json({ error: 'ids= needs uuids' }, { status: 400 });
     const { data, error } = await supa.from('questions').select('*').in('id', ids).is('deleted_at', null);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    const [flagged, gate] = await Promise.all([openFlagPaths(supa, ids), solutionImageGateFor(ids)]);
+    // `solutions=all` (the worksheet picker, 9 Oct 2026 — Adrian: "there are no
+    // diagrams for solutions?"): show every stored solution sketch. The gate
+    // exists so a watermarked scan never reaches a STUDENT; the picker is
+    // admin-only and prints questions, never solutions. Absent gate = all render.
+    const ungated = p.get('solutions') === 'all';
+    const [flagged, gate] = await Promise.all([openFlagPaths(supa, ids), ungated ? Promise.resolve(undefined) : solutionImageGateFor(ids)]);
     const byId = new Map((data ?? []).map((row) => [row.id as string, row as Row]));
     const questions = ids.map((qid) => byId.get(qid)).filter((r): r is Row => !!r).map((row) => detail(row, flagged, gate));
     const missing = ids.filter((qid) => !byId.has(qid));

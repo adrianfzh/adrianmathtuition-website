@@ -7,7 +7,7 @@ const detail = {
   questionMd: 'The curve $G$ has equation $y = \\frac{1}{1+x^2}$. {{IMG:question_images/x.png}}',
   parts: [
     { label: 'i', text: 'Sketch $G$.', marks: 2, answer: '' },
-    { label: 'ii', text: 'Find $c$ and $d$.', marks: 4, answer: '$c = 1, d = \\frac{1}{2}$', solution: 'Working.' },
+    { label: 'ii', text: 'Find $c$ and $d$.', marks: 4, answer: '$c = 1, d = \\frac{1}{2}$', solution: 'Working.', solution_image: 'https://x/sol_ii.png' },
     { label: 'iii', text: 'Show that $\\pi > 3$.', marks: 2, answer: 'Shown' },
     { label: 'iv', text: 'Two sub-parts', marks: 3, subparts: [
       { label: 'a', text: 'First', marks: 1, answer: '7', image_url: 'https://x/figure.png' },
@@ -32,6 +32,7 @@ describe('fromDetail', () => {
   it('keys part answers and solutions the readability way', () => {
     expect(q.partAnswers).toEqual({ ii: '$c = 1, d = \\frac{1}{2}$', iii: 'Shown', 'iv.a': '7', 'iv.b': 'Proved' });
     expect(q.partSolutions).toEqual({ ii: 'Working.' });
+    expect(q.partSolutionImages).toEqual({ ii: 'https://x/sol_ii.png' });
   });
   it('provenance is admin-only text and never enters the printed markdown', () => {
     expect(q.provenance).toBe('RI 2021 P1 Q8');

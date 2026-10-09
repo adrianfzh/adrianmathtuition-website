@@ -36,6 +36,8 @@ export type PickQuestion = {
   /** Per-part solutions keyed like lib/solution-readability labelKey ("a", "b.ii"). */
   partSolutions: Record<string, string>;
   partAnswers: Record<string, string>;
+  /** A part's stored solution sketch (parts[].solution_image), keyed like partSolutions. */
+  partSolutionImages: Record<string, string>;
   solutionImages: string[];
   topics: string[];
   level: string | null;
@@ -62,7 +64,7 @@ export type DetailRow = {
 
 type RawPart = {
   label?: unknown; text?: unknown; marks?: unknown; answer?: unknown; solution?: unknown;
-  image_url?: unknown; image_url_after?: unknown; subparts?: unknown;
+  image_url?: unknown; image_url_after?: unknown; subparts?: unknown; solution_image?: unknown;
 };
 
 const str = (v: unknown): string => (typeof v === 'string' ? v : v == null ? '' : String(v));
@@ -107,6 +109,7 @@ export function fromDetail(d: DetailRow): PickQuestion {
   const parts = rawParts.filter((p) => p && typeof p === 'object' && (p.label || p.text)).map(toPart);
   const partSolutions: Record<string, string> = {};
   const partAnswers: Record<string, string> = {};
+  const partSolutionImages: Record<string, string> = {};
   const walk = (list: RawPart[], prefix: string[]) => {
     for (const p of list) {
       if (!p || typeof p !== 'object') continue;
@@ -114,6 +117,7 @@ export function fromDetail(d: DetailRow): PickQuestion {
       const key = partKey(labels);
       if (str(p.solution).trim()) partSolutions[key] = str(p.solution).trim();
       if (str(p.answer).trim()) partAnswers[key] = str(p.answer).trim();
+      if (typeof p.solution_image === 'string' && /^https?:/i.test(p.solution_image)) partSolutionImages[key] = p.solution_image;
       if (Array.isArray(p.subparts)) walk(p.subparts as RawPart[], labels);
     }
   };
@@ -133,6 +137,7 @@ export function fromDetail(d: DetailRow): PickQuestion {
     solution: str(d.solution).trim(),
     partSolutions,
     partAnswers,
+    partSolutionImages,
     solutionImages: (d.solutionImages ?? []).filter((u) => typeof u === 'string'),
     topics: Array.isArray(d.topics) ? d.topics : [],
     level: d.level ?? null,

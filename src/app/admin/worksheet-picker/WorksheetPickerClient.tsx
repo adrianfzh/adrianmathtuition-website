@@ -135,10 +135,11 @@ function SolutionBlock({ q }: { q: PickQuestion }) {
       <h3 className="text-[11px] font-bold tracking-widest text-slate-500 uppercase mb-2">Worked solution</h3>
       <div className="text-[13px] text-slate-900" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             {hasPartSolutions ? (
-              parts.filter(({ labels }) => q.partSolutions[partKey(labels)]).map(({ labels }) => (
+              parts.filter(({ labels }) => q.partSolutions[partKey(labels)] || q.partSolutionImages[partKey(labels)]).map(({ labels }) => (
                 <div key={labels.join('.')} className="mb-4">
                   <div className="font-bold text-slate-700 mb-1">{partLabel(labels)}</div>
-                  <SolutionText text={q.partSolutions[partKey(labels)]} answer={q.partAnswers[partKey(labels)] ?? null} showScheme />
+                  {q.partSolutions[partKey(labels)] && <SolutionText text={q.partSolutions[partKey(labels)]} answer={q.partAnswers[partKey(labels)] ?? null} showScheme />}
+                  {q.partSolutionImages[partKey(labels)] && <img src={q.partSolutionImages[partKey(labels)]} alt={`sketch for ${partLabel(labels)}`} className="max-w-[70%] block my-2" />}
                 </div>
               ))
             ) : q.solution ? (
@@ -146,6 +147,9 @@ function SolutionBlock({ q }: { q: PickQuestion }) {
             ) : (
               <div className="text-slate-400 italic">No worked solution on file{ansLine(q) ? ' — the answer line above is all the bank holds.' : '.'}</div>
             )}
+        {!hasPartSolutions && Object.entries(q.partSolutionImages).map(([k, u]) => (
+          <div key={k} className="my-2"><div className="text-[12px] font-bold text-slate-600">({k.replace(/\./g, ')(')})</div><img src={u} alt={`sketch for part ${k}`} className="max-w-[70%] block" /></div>
+        ))}
         {q.solutionImages.map((u) => <img key={u} src={u} alt="solution" className="max-w-full block my-2" />)}
       </div>
     </div>
@@ -209,7 +213,7 @@ export default function WorksheetPickerClient() {
     try {
       let add = new Map<string, PickQuestion>();
       if (fresh.length) {
-        const r = await fetch(`/api/admin/questions?ids=${encodeURIComponent(fresh.join(','))}`);
+        const r = await fetch(`/api/admin/questions?ids=${encodeURIComponent(fresh.join(','))}&solutions=all`);
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
         add = new Map((d.questions as DetailRow[]).map((row) => [row.id, fromDetail(row)]));
