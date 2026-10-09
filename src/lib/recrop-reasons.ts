@@ -9,6 +9,9 @@ export const RECROP_REASONS = [
   'question words still in',
   'too small or blurry',
   'wrong picture',
+  // 9 Oct 2026, Adrian on a blurry scan: "able to request to redraw?" — the picture is the
+  // right one but a clean drawing is wanted; the redraw batch reads this reason.
+  'please redraw',
 ] as const;
 export type RecropReason = (typeof RECROP_REASONS)[number];
 
