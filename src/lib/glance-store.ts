@@ -20,6 +20,7 @@ import { localToday, daysAgo, EDIT_WINDOW_DAYS } from '@/lib/schedule-helpers';
 import { isScience, type StuckSubject } from '@/lib/stuck-topics';
 import { TWINS_PER_SKILL, mathGapSummary, type MathTwinUnit } from '@/lib/twin-gates';
 import { perDay, sumPerDay, type GlanceFacts, type JobLine, type LessonLink } from '@/lib/glance';
+import { countHandins, countPractice, type HandinRow, type PracticeRow } from '@/lib/dash-counts';
 
 const BOT_HEALTH_URL = 'https://adrianmath-telegram-math-bot.fly.dev/health';
 /** The levels the twins lanes write for (as scripts/ops-status.mjs counts them). */
@@ -261,6 +262,38 @@ async function tabsWeek(sb: Sb, now: number) {
   };
 }
 
+/**
+ * Papers real students handed in, per Singapore day (lib/dash-counts.ts has the rule).
+ * The second read finds the rows that REPLACE an earlier one (a re-mark, the same paper
+ * sent again): the earlier row carries `superseded_by` = the newer row's id.
+ */
+async function handedIn(sb: Sb, weekAgo: string, now: number) {
+  const [rows, replaced] = await Promise.all([
+    all<HandinRow>((a, b) => sb.from('paper_marking_runs').select('id, created_at, student_id, paper_name').gte('created_at', weekAgo).order('created_at', { ascending: false }).range(a, b), 3000),
+    all<{ superseded_by: string | null }>((a, b) => sb.from('paper_marking_runs').select('superseded_by').not('superseded_by', 'is', null).gte('created_at', new Date(now - 90 * 86400_000).toISOString()).range(a, b), 3000),
+  ]);
+  const c = countHandins(rows, replaced.map((r) => r.superseded_by).filter((x): x is string => !!x), TREND_DAYS, now);
+  return { today: c.today, perDay: c.perDay };
+}
+
+/**
+ * Practice questions real students answered, per Singapore day: maths practice
+ * (`student_attempts`), English practice and the H2 tools. One row = one question.
+ */
+async function practiceDone(sb: Sb, weekAgo: string, now: number) {
+  const [maths, english, h2] = await Promise.all([
+    all<{ airtable_student_id: string | null; attempted_at: string }>((a, b) => sb.from('student_attempts').select('airtable_student_id, attempted_at').gte('attempted_at', weekAgo).range(a, b), 5000),
+    all<{ identity: string | null; created_at: string }>((a, b) => sb.from('english_practice_attempts').select('identity, created_at').gte('created_at', weekAgo).range(a, b), 5000),
+    all<{ identity: string | null; created_at: string }>((a, b) => sb.from('h2_tool_attempts').select('identity, created_at').gte('created_at', weekAgo).range(a, b), 5000),
+  ]);
+  const rows: PracticeRow[] = [
+    ...maths.map((r) => ({ at: r.attempted_at, who: r.airtable_student_id })),
+    ...[...english, ...h2].map((r) => ({ at: r.created_at, who: r.identity })),
+  ];
+  const c = countPractice(rows, TREND_DAYS, now);
+  return { students: c.studentsToday, questions: c.today, perDay: c.perDay };
+}
+
 export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const sb = getSupabaseAdmin();
   const midnight = sgtDayStartISO(now);
@@ -270,7 +303,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   const [
     questionProposals, rulesProposed, shipsFailed, toCheck, extractionFlagged, failedHandins, suggestionsNew,
     shipsList, flaggedList, proposalLevels,
-    lessons, toLog, marked, practice,
+    lessons, toLog, marked, practice, handed,
     q, ext, tw, jb, lg, disk, bot, fileBackup, backupCheck, leakTest,
     st, cs, tb,
   ] = await Promise.all([
@@ -307,11 +340,8 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
       const today = rows.filter((r) => r.released_at >= midnight);
       return { today: today.length, perDay: perDay(at, TREND_DAYS, now), list: today.slice(0, LIST_ROWS).map((r) => ({ id: r.id, student: r.student_name, paper: r.paper_name })) };
     }),
-    safe(async () => {
-      const rows = await all<{ airtable_student_id: string | null; attempted_at: string }>((a, b) => sb.from('student_attempts').select('airtable_student_id, attempted_at').gte('attempted_at', weekAgo).range(a, b), 5000);
-      const today = rows.filter((r) => r.attempted_at >= midnight);
-      return { students: new Set(today.map((r) => r.airtable_student_id).filter(Boolean)).size, questions: today.length, perDay: perDay(rows.map((r) => r.attempted_at), TREND_DAYS, now) };
-    }),
+    safe(() => practiceDone(sb, weekAgo, now)),
+    safe(() => handedIn(sb, weekAgo, now)),
     safe(() => queue(sb)),
     safe(() => extraction(sb, midnight, now)),
     safe(() => twins(sb, midnight, now)),
@@ -333,7 +363,7 @@ export async function loadGlanceFacts(now = Date.now()): Promise<GlanceFacts> {
   return {
     questionProposals, rulesProposed, shipsFailed, papersToCheck: toCheck, extractionFlagged, failedHandins, suggestionsNew,
     shipsFailedList: shipsList, extractionFlaggedList: flaggedList, questionProposalsByLevel: proposalLevels,
-    lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice,
+    lessonsToday: lessons, lessonsToLog: toLog?.total ?? null, lessonsToLogDays: toLog?.days ?? null, marked, practice, handedIn: handed,
     queue: q, extraction: ext, twins: tw, jobs: jb, logins: lg, disk,
     deploys: {
       website: process.env.VERCEL_GIT_COMMIT_SHA ? { sha: process.env.VERCEL_GIT_COMMIT_SHA, message: (process.env.VERCEL_GIT_COMMIT_MESSAGE || '').split('\n')[0].slice(0, 80) || null } : null,

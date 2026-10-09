@@ -78,7 +78,10 @@ export interface GlanceFacts {
   lessonsToday: LessonLink[] | null;
   lessonsToLog: number | null;
   marked: { today: number; perDay: number[]; list?: { id: string; student: string | null; paper: string | null }[] } | null;
+  /** Practice questions real students answered (lib/dash-counts.ts): today, who, and the 7-day strip. */
   practice: { students: number; questions: number; perDay: number[] } | null;
+  /** Papers real students handed in (lib/dash-counts.ts): today and the 7-day strip. Optional so older callers still build. */
+  handedIn?: { today: number; perDay: number[] } | null;
   // The machine
   queue: { waiting: number; marking: number; oldestMinutes: number | null; list?: { student: string | null; paper: string; phase: string; waitingMinutes: number; pagesDone: number | null; pagesTotal: number | null }[] } | null;
   extraction: { waiting: number; working: number; held: number; doneToday: number; done24h: number; perDay: number[]; workingOn?: string[] } | null;
@@ -250,9 +253,14 @@ function todayTiles(f: GlanceFacts, now: number): Tile[] {
     tone: 'green', status: f.marked.today ? 'Going out' : 'Quiet', href: '/admin/mark-paper', trend: f.marked.perDay,
     ...capRows((f.marked.list ?? []).map((p) => ({ ...who(p.student, p.paper), href: `/admin/mark-paper?run=${p.id}` })), f.marked.today, 4),
   });
-  if (f.practice == null) out.push(NO_READING('practice', 'Practice today', '/admin/students'));
+  if (f.handedIn == null) out.push(NO_READING('handed-in', 'Papers handed in', '/admin/papers'));
   else out.push({
-    id: 'practice', label: 'Practice today', value: String(f.practice.questions),
+    id: 'handed-in', label: 'Papers handed in', value: String(f.handedIn.today),
+    tone: 'green', status: f.handedIn.today ? 'Coming in' : 'Quiet', href: '/admin/papers', trend: f.handedIn.perDay,
+  });
+  if (f.practice == null) out.push(NO_READING('practice', 'Practice questions done', '/admin/students'));
+  else out.push({
+    id: 'practice', label: 'Practice questions done', value: String(f.practice.questions),
     sub: `${plural(f.practice.students, 'student')}`,
     tone: 'green', status: f.practice.questions ? 'Practising' : 'Quiet', href: '/admin/students', trend: f.practice.perDay,
   });

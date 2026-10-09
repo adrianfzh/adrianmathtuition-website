@@ -8,7 +8,7 @@ const ago = (h: number) => new Date(NOW - h * 3600_000).toISOString();
 function facts(over: Partial<GlanceFacts> = {}): GlanceFacts {
   return {
     questionProposals: 0, rulesProposed: 0, shipsFailed: 0, papersToCheck: { papers: 0, parts: 0 }, extractionFlagged: 0, failedHandins: 0, suggestionsNew: 0,
-    lessonsToday: [], lessonsToLog: 0, marked: { today: 2, perDay: [1, 0, 3, 2, 0, 1, 2] }, practice: { students: 1, questions: 4, perDay: [0, 0, 0, 0, 0, 0, 4] },
+    lessonsToday: [], lessonsToLog: 0, marked: { today: 2, perDay: [1, 0, 3, 2, 0, 1, 2] }, practice: { students: 1, questions: 4, perDay: [0, 0, 0, 0, 0, 0, 4] }, handedIn: { today: 3, perDay: [2, 0, 1, 4, 0, 5, 3] },
     queue: { waiting: 0, marking: 0, oldestMinutes: null },
     extraction: { waiting: 10, working: 1, held: 5, doneToday: 3, done24h: 24, perDay: [0, 0, 0, 0, 0, 0, 3] },
     twins: { today: 3, perDay: [3, 3, 3, 3, 3, 3, 3], left: { S1: 120, S2: 80 } },
@@ -203,5 +203,21 @@ describe('the things themselves, on the tile', () => {
     const g = buildGlance(facts(), NOW);
     for (const id of ['lessons', 'marked', 'queue', 'jobs', 'stuck']) expect(tile(g, id).rows).toBeUndefined();
     expect(tile(g, 'to-log')).toBeUndefined();
+  });
+});
+
+describe('the two number tiles (9 Oct 2026)', () => {
+  it('papers handed in and practice questions done carry today and the seven days', () => {
+    const g = buildGlance(facts(), NOW);
+    expect(tile(g, 'handed-in')).toMatchObject({ label: 'Papers handed in', value: '3', trend: [2, 0, 1, 4, 0, 5, 3] });
+    expect(tile(g, 'practice')).toMatchObject({ label: 'Practice questions done', value: '4', trend: [0, 0, 0, 0, 0, 0, 4] });
+  });
+  it('a true zero shows as 0; a failed read shows no reading, never a zero', () => {
+    const zero = buildGlance(facts({ handedIn: { today: 0, perDay: [0, 0, 0, 0, 0, 0, 0] }, practice: { students: 0, questions: 0, perDay: [0, 0, 0, 0, 0, 0, 0] } }), NOW);
+    expect(tile(zero, 'handed-in').value).toBe('0');
+    expect(tile(zero, 'practice').value).toBe('0');
+    const down = buildGlance(facts({ handedIn: null, practice: null }), NOW);
+    expect(tile(down, 'handed-in')).toMatchObject({ value: '—', tone: 'grey' });
+    expect(tile(down, 'practice')).toMatchObject({ value: '—', tone: 'grey' });
   });
 });

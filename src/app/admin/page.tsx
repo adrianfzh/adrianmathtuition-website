@@ -12,6 +12,10 @@
 //   2. LIGHTS — is each part of the machine fine? A green or amber disc, two rings.
 //   3. CHARTS — only what changes day to day: extraction, our own questions, papers
 //      marked, marking cost. Seven bars each, today darkest.
+// 9 Oct 2026 (Adrian: "just admin dashboard put papers handed up (then the number),
+// practice questions done (then a number)" … "be visual"): TWO NUMBERS sit above
+// everything — today's count, large; seven small bars under it (today last, darkest);
+// one quiet line with the seven-day total. The counting rule is lib/dash-counts.ts.
 // A thin line of chips under the lights carries anything waiting on him ("Needs you").
 // One read (GET /api/admin/glance, 60 s cache), refreshed every minute while visible.
 // Every other page is in "All tools"; the old launcher grid is /admin/classic.
@@ -40,6 +44,11 @@ const CHARTS: { id: string; title: string; unit: string; light: string; dark: st
   { id: 'twins', title: 'Our own questions written', unit: 'today', light: '#c4bff2', dark: '#5b50c4' },
   { id: 'marked', title: 'Papers marked', unit: 'today', light: '#a7e3cf', dark: '#11795e' },
   { id: 'cost', title: 'Marking cost', unit: 'a paper', light: '#f8d08c', dark: '#96590c' },
+];
+/** The two numbers at the very top: the glance tile each reads, and its bar colours (past days · today). */
+const NUMBERS: { id: string; title: string; light: string; dark: string }[] = [
+  { id: 'handed-in', title: 'Papers handed in', light: '#b9d3f0', dark: '#1c64b0' },
+  { id: 'practice', title: 'Practice questions done', light: '#cdc9f3', dark: '#5b50c4' },
 ];
 /** Not on this page (his list, 6 Oct 2026) — the read still carries them for whoever wants them. */
 const NEEDS_HIDDEN = new Set(['papers-to-check']);
@@ -133,6 +142,7 @@ export default function AdminDashboard() {
   const shown: Tile[] = [...LIGHTS.map(l => tiles.get(l.id)), ...CHARTS.map(c => tiles.get(c.id)), ...needs].filter((t): t is Tile => !!t);
   const tone = data ? overallTone({ ...data, sections: [{ id: 'machine', title: '', tiles: shown }] }) : 'grey';
   const ago = data ? Math.max(0, Math.round((Date.now() - Date.parse(data.generatedAt)) / 1000)) : null;
+  const dayNow = new Date((data ? Date.parse(data.generatedAt) : Date.now()) + 8 * 3600_000).getUTCDay();
   // a tool outside /admin is not seen by the layout's counter — count the tap here
   const tap = (href: string) => { if (!href.startsWith('/admin')) countAdminOpen(href); };
 
@@ -163,6 +173,10 @@ export default function AdminDashboard() {
       </header>
 
       <main className="gl-body">
+        <section className="gl-nums" aria-label="Today">
+          {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
+        </section>
+
         <nav className="gl-row-tools" aria-label="Most used tools">
           {row.map(t => (
             <Link key={t.href} href={t.href} className="gl-tool" onClick={() => tap(t.href)}>
@@ -191,7 +205,7 @@ export default function AdminDashboard() {
             )}
 
             <section className="gl-charts">
-              {CHARTS.map(c => <Chart key={c.id} c={c} t={tiles.get(c.id)} today={new Date(Date.parse(data.generatedAt) + 8 * 3600_000).getUTCDay()} />)}
+              {CHARTS.map(c => <Chart key={c.id} c={c} t={tiles.get(c.id)} today={dayNow} />)}
             </section>
 
             <div className="gl-foot">
@@ -227,6 +241,33 @@ function Light({ name, ring, t }: { name: string; ring?: boolean; t?: Tile }) {
 }
 
 const DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+/** One number, large: today's count. Under it seven small bars (today last) and the seven-day total. */
+function NumberTile({ n, t, today }: { n: { title: string; light: string; dark: string }; t?: Tile; today: number }) {
+  const values = t?.trend ?? [];
+  const max = Math.max(...values, 0);
+  const total = values.reduce((a, b) => a + b, 0);
+  const body = (
+    <>
+      <div className="gl-num-t">{n.title}</div>
+      <div className="gl-num-v" style={{ color: t && t.tone !== 'grey' ? n.dark : '#9ca3af' }}>{t?.value ?? '—'}</div>
+      <div className="gl-num-u">today</div>
+      {values.length > 0 && (
+        <>
+          <div className="gl-num-bars" role="img" aria-label={`last ${values.length} days: ${values.join(', ')}`}>
+            {values.map((v, i) => (
+              <div key={i} className="gl-num-col" title={String(v)}>
+                <div className="gl-num-box"><div className="gl-num-bar" style={{ height: `${max > 0 && v > 0 ? Math.max(10, (v / max) * 100) : 0}%`, minHeight: 2, background: i === values.length - 1 ? n.dark : n.light }} /></div>
+                <span>{DAY_LETTER[(today - (values.length - 1 - i) + 70) % 7]}</span>
+              </div>
+            ))}
+          </div>
+          <div className="gl-num-w">last {values.length} days · {total} in all</div>
+        </>
+      )}
+    </>
+  );
+  return t?.href ? <Link href={t.href} className="gl-num">{body}</Link> : <div className="gl-num">{body}</div>;
+}
 /** Seven bars, oldest first, today darkest, a weekday letter under each (Singapore days). */
 function Chart({ c, t, today }: { c: { title: string; unit: string; light: string; dark: string; todayBar?: boolean }; t?: Tile; today: number }) {
   const values = t?.trend ?? [];
@@ -269,6 +310,24 @@ const CSS = `
 .gl-body { max-width: 1120px; margin: 0 auto; padding: 14px 16px 8px; }
 .gl-error { background: #fef2f2; color: #b91c1c; border-radius: 10px; padding: 10px 12px; font-size: 13px; margin: 8px 0; }
 .gl-wait { color: #6b7280; font-size: 14px; padding: 40px 0; text-align: center; }
+.gl-nums { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.gl-num { display: block; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 12px 10px; text-decoration: none; color: inherit; min-width: 0; }
+.gl-num-t { font-size: 12px; font-weight: 600; color: #4b5563; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gl-num-v { font-size: 52px; font-weight: 800; line-height: 1; letter-spacing: -1.5px; font-variant-numeric: tabular-nums; margin-top: 6px; }
+.gl-num-u { font-size: 12px; color: #6b7280; margin-top: 2px; }
+.gl-num-bars { display: flex; align-items: stretch; gap: 4px; height: 46px; margin-top: 10px; }
+.gl-num-col { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.gl-num-box { flex: 1; display: flex; align-items: flex-end; min-height: 0; }
+.gl-num-bar { width: 100%; border-radius: 3px 3px 0 0; }
+.gl-num-col span { font-size: 10px; color: #9ca3af; text-align: center; padding-top: 2px; flex: none; line-height: 1.2; }
+.gl-num-w { font-size: 11.5px; color: #6b7280; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (min-width: 760px) {
+  .gl-num { padding: 16px 20px 14px; }
+  .gl-num-t { font-size: 13.5px; }
+  .gl-num-v { font-size: 64px; }
+  .gl-num-bars { height: 56px; max-width: 360px; gap: 6px; }
+  .gl-num-w { font-size: 12.5px; }
+}
 .gl-row-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (min-width: 760px) { .gl-row-tools { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
 .gl-tool { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 4px 12px; text-decoration: none; color: #111827; min-width: 0; }
