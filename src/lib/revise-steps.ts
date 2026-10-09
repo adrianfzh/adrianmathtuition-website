@@ -1,9 +1,31 @@
 // The revision steps that exist (SPEC-SELF-LEARNING.md §5 — the first map is
-// Sec 2 expansion and factorisation, eight steps). One step is built so far.
+// Sec 2 expansion and factorisation, eight steps). Two steps are built so far.
 // A question is written as its two brackets; the working and the answer are
 // derived (lib/revise-step.ts), and revise-steps.test.ts checks every one.
 
 import type { ReviseStep } from './revise-step';
+
+const EXPAND_ONE_BRACKET: ReviseStep = {
+  slug: 'expand-one-bracket',
+  index: 1,
+  of: 8,
+  title: 'Expand one bracket',
+  idea: [
+    'The term outside multiplies every term inside the bracket.',
+    'When the term outside is negative, every sign inside changes.',
+  ],
+  example: '2(a+3b)',
+  tryOne: '5(2x-3)',
+  // Each five climbs: a number outside → a minus inside → a negative outside → a letter outside → both.
+  sets: [
+    ['3(x+4)', '5(2a-3)', '-2(x+6)', 'x(x+7)', '2x(3x-5)'],
+    ['4(y+9)', '7(3m-2)', '-3(2x-5)', 'a(a-8)', '3a(2a+b)'],
+    ['6(2p+5)', '2(4x-7y)', '-5(a-3b)', 'y(2y+3)', '-x(x-4)'],
+    ['8(x+3)', '9(2t-1)', '-4(3x+2)', 'm(5-m)', '4x(2x-3y)'],
+  ],
+  next: 'Expand two brackets',
+  nextSlug: 'expand-two-brackets',
+};
 
 const EXPAND_TWO_BRACKETS: ReviseStep = {
   slug: 'expand-two-brackets',
@@ -26,7 +48,7 @@ const EXPAND_TWO_BRACKETS: ReviseStep = {
   next: 'Perfect squares',
 };
 
-export const REVISE_STEPS: readonly ReviseStep[] = [EXPAND_TWO_BRACKETS];
+export const REVISE_STEPS: readonly ReviseStep[] = [EXPAND_ONE_BRACKET, EXPAND_TWO_BRACKETS];
 
 export function reviseStepBySlug(slug: string): ReviseStep | null {
   return REVISE_STEPS.find(s => s.slug === slug) ?? null;

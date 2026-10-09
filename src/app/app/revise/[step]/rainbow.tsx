@@ -79,6 +79,9 @@ export default function Rainbow({ br, arrows, active = 0 }: { br: Brackets; arro
     return () => { live = false; window.removeEventListener('resize', measure); };
   }, [measure]);
 
+  // One term outside, as in 2(a + 3b): no bracket round it, both arrows above.
+  const single = br.a.length === 1;
+
   const term = (t: Term, idx: number, side: 'a' | 'b') => (
     <span key={`${side}${idx}`}>
       {idx === 0 ? (t.coef < 0 && <span>−</span>) : <span className="mx-[0.4em]">{t.coef < 0 ? '−' : '+'}</span>}
@@ -90,12 +93,14 @@ export default function Rainbow({ br, arrows, active = 0 }: { br: Brackets; arro
     <div
       ref={box}
       className="relative inline-block text-[26px] leading-none text-slate-900 whitespace-nowrap"
-      style={{ padding: `${PAD}px 2px`, fontFamily: 'KaTeX_Main, "Times New Roman", serif' }}
+      style={{ padding: `${PAD}px 2px ${single ? 14 : PAD}px`, fontFamily: 'KaTeX_Main, "Times New Roman", serif' }}
       role="img"
       aria-label={`${arrows} of ${br.a.length * br.b.length} arrows drawn from the first bracket to the second`}
     >
-      <span>(</span>{br.a.map((t, i) => term(t, i, 'a'))}<span>)</span>
-      <span className="ml-[0.12em]">(</span>{br.b.map((t, j) => term(t, j, 'b'))}<span>)</span>
+      {single
+        ? term(br.a[0], 0, 'a')
+        : <><span>(</span>{br.a.map((t, i) => term(t, i, 'a'))}<span>)</span></>}
+      <span className={single ? '' : 'ml-[0.12em]'}>(</span>{br.b.map((t, j) => term(t, j, 'b'))}<span>)</span>
       <svg width={size.w} height={size.h} className="absolute inset-0 pointer-events-none" aria-hidden="true">
         <defs>
           {[INK, ACTIVE].map(col => (

@@ -222,7 +222,9 @@ never name a model · the app says "your tutor" or "we", never his name.
    attempts must be stored on our side before any student uses it.
 2. **Enter a test + the countdown + the two doors**, admin and the preview student.
 3. **A short paper from the tested topics**, and the topic-by-topic sorting after marking.
-4. **The other seven steps** of the first map (content: examples, more of our own questions).
+4. **The other seven steps** of the first map — **step 1, "Expand one bracket", BUILT 9 Oct 2026**
+   (`/app/revise/expand-one-bracket`, the single-bracket Rainbow, leads on to step 2; like
+   terms after a bracket, e.g. 3(x + 2) + 2(x − 1), are not in it yet) — (content: examples, more of our own questions).
 5. **The plan that fits the days left**, and the 11 → 16 → 19 screen.
 6. **Notebook**: a card per passed step, progress per topic, "your cards for the test".
 7. **Stuck**: ways 1, 3, 4, 6, 7; then 2 and 5 on his word.

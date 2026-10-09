@@ -22,27 +22,42 @@ export interface ReviseStep {
   title: string;
   /** The idea, two short lines. */
   idea: [string, string];
-  /** The worked example and the guided try, as typed brackets: "(x+3)(x-2)". */
+  /** The worked example and the guided try, as typed brackets: "(x+3)(x-2)" or "2(a+3b)". */
   example: string;
   tryOne: string;
   /** Sets of five for "on your own"; a not-passed student gets the next set. */
   sets: string[][];
-  /** What comes after this step, in plain words. */
+  /** What comes after this step, in plain words, and its slug once it is built. */
   next?: string;
+  nextSlug?: string;
 }
 
 export interface Brackets { a: Term[]; b: Term[] }
 
-/** "(x+3)(x-2)" → the two brackets, terms in the order written. Null when it is not two plain brackets. */
+/**
+ * "(x+3)(x-2)" → the two brackets, terms in the order written; "2(a+3b)" → one
+ * term outside and the bracket (a has one term). Null when it is neither.
+ */
 export function parseBrackets(q: string): Brackets | null {
-  const m = /^\s*\(([^()]+)\)\s*\(([^()]+)\)\s*$/.exec(q);
-  if (!m) return null;
-  const a = parseExpr(m[1])?.flat, b = parseExpr(m[2])?.flat;
-  if (!a || !b || a.length < 2 || b.length < 2) return null;
+  const two = /^\s*\(([^()]+)\)\s*\(([^()]+)\)\s*$/.exec(q);
+  if (two) {
+    const a = parseExpr(two[1])?.flat, b = parseExpr(two[2])?.flat;
+    if (!a || !b || a.length < 2 || b.length < 2) return null;
+    return { a, b };
+  }
+  const one = /^\s*([^()]+)\(([^()]+)\)\s*$/.exec(q);
+  if (!one) return null;
+  const a = parseExpr(one[1])?.flat, b = parseExpr(one[2])?.flat;
+  if (!a || !b || a.length !== 1 || b.length < 2) return null;
   return { a, b };
 }
 
-export function questionTex(br: Brackets): string { return `(${sumTex(br.a)})(${sumTex(br.b)})`; }
+/** One term outside a bracket, as in 2(a + 3b). */
+export function isSingle(br: Brackets): boolean { return br.a.length === 1; }
+
+export function questionTex(br: Brackets): string {
+  return isSingle(br) ? `${termTex(br.a[0])}(${sumTex(br.b)})` : `(${sumTex(br.a)})(${sumTex(br.b)})`;
+}
 
 /** The four (or more) pieces, in the order they are multiplied out. */
 export function pieces(br: Brackets): { x: Term; y: Term; product: Term }[] {
@@ -70,18 +85,25 @@ export function working(br: Brackets): WorkLine[] {
     { tex: questionTex(br) },
     { tex: `= ${sumTex(spread)}`, why: 'One piece for each arrow. Watch the signs.' },
   ];
-  const final = polyTex(expansion(br));
-  if (final !== sumTex(spread)) lines.push({ tex: `= ${final}`, why: 'Add up like terms' });
+  if (hasLikeTerms(br)) lines.push({ tex: `= ${polyTex(expansion(br))}`, why: 'Add up like terms' });
   return lines;
 }
 
 /** How many taps the working takes: one per arrow, then one to add up like terms (when there are any). */
 export function workingTaps(br: Brackets): number {
   const n = pieces(br).length;
-  return n + (working(br).length > 2 ? 1 : 0);
+  return n + (hasLikeTerms(br) ? 1 : 0);
 }
 
-export function answerTex(br: Brackets): string { return polyTex(expansion(br)); }
+/** True when two of the pieces are like terms, so there is a line of adding up to do. */
+export function hasLikeTerms(br: Brackets): boolean {
+  return expansion(br).size < pieces(br).filter(p => p.product.coef !== 0).length;
+}
+
+/** The answer as the working leaves it: the pieces in arrow order when nothing collects, else in reading order. */
+export function answerTex(br: Brackets): string {
+  return hasLikeTerms(br) ? polyTex(expansion(br)) : sumTex(pieces(br).map(p => p.product));
+}
 
 // ── Marking a typed answer ───────────────────────────────────────────────────
 
@@ -106,6 +128,11 @@ export function diagnose(br: Brackets, typed: Poly): Slip {
   // First × first and last × last only — the classic (x + 3)(x − 2) = x² − 6.
   if (br.a.length === 2 && br.b.length === 2 && equal(typed, polyOf([first.product, last.product]))) {
     return { key: 'first-last-only', say: 'You multiplied the first terms and the last terms only. Every term in the first bracket multiplies every term in the second: four pieces.' };
+  }
+  // One term outside: only the first term inside was multiplied — 2(a + 3b) = 2a + 3b.
+  if (isSingle(br) && equal(typed, polyOf([first.product, ...br.b.slice(1)]))) {
+    const p = ps[1];
+    return { key: 'first-only', say: `The term outside multiplies every term inside the bracket: ${times(p.x, p.y)}.` };
   }
   // The two numbers added instead of multiplied.
   const lx = br.a[br.a.length - 1], ly = br.b[br.b.length - 1];

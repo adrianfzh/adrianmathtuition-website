@@ -64,6 +64,29 @@ describe('revise-step — the working is derived from the brackets', () => {
   });
 });
 
+describe('revise-step — one term outside a bracket', () => {
+  it('works 2(a + 3b) as two arrows and nothing to add up', () => {
+    const br = parseBrackets('2(a+3b)')!;
+    expect(working(br).map(l => l.tex)).toEqual(['2(a + 3b)', '= 2a + 6b']);
+    expect(workingTaps(br)).toBe(2);
+    expect(answerTex(br)).toBe('2a + 6b');
+  });
+
+  it('keeps the pieces in arrow order and carries a negative outside', () => {
+    expect(answerTex(parseBrackets('m(5-m)')!)).toBe('5m - m^{2}');
+    expect(working(parseBrackets('-3(2x-5)')!).map(l => l.tex)).toEqual(['-3(2x - 5)', '= -6x + 15']);
+    expect(mark('m(5-m)', '5m − m²').kind).toBe('correct');
+    expect(mark('m(5-m)', '−m² + 5m').kind).toBe('correct');
+  });
+
+  it('names the slips of a single bracket', () => {
+    const slip = (q: string, a: string) => { const v = mark(q, a); return v.kind === 'wrong' ? v.slip.say : v.kind; };
+    expect(slip('2(a+3b)', '2a + 3b')).toBe('The term outside multiplies every term inside the bracket: $2 \\times 3b = 6b$.');
+    expect(slip('-3(2x-5)', '−6x − 15')).toBe('Check the sign of one piece: $(-3) \\times (-5) = 15$.');
+    expect(slip('3(x+4)', '3x + 7')).toBe('The last piece is a product, not a sum: $3 \\times 4 = 12$.');
+  });
+});
+
 describe('revise-step — marking a typed answer', () => {
   const q = '(x+3)(x-2)';
   it('passes the answer in any order and any way of typing it', () => {
@@ -109,6 +132,7 @@ describe('revise-step — the five', () => {
       expect(setFor(step, step.sets.length)).toBe(step.sets[0]);
     }
     expect(reviseStepBySlug('expand-two-brackets')?.index).toBe(2);
+    expect(reviseStepBySlug('expand-one-bracket')?.nextSlug).toBe('expand-two-brackets');
     expect(reviseStepBySlug('nope')).toBeNull();
   });
 });

@@ -17,7 +17,11 @@ const INLINE = { p: ({ children }: { children?: React.ReactNode }) => <span>{chi
 function Tex({ tex }: { tex: string }) { return <MathMarkdown content={`$${tex}$`} components={INLINE} />; }
 function Say({ text }: { text: string }) { return <MathMarkdown content={text} components={INLINE} />; }
 
-function letterOf(question: string): string { return /[a-zA-Z]/.exec(question)?.[0] ?? 'x'; }
+/** The letters a question uses, in the order they appear — each gets a key. */
+function lettersOf(question: string): string[] {
+  const found = [...new Set(question.match(/[a-zA-Z]/g) ?? [])];
+  return found.length ? found.slice(0, 2) : ['x'];
+}
 
 /**
  * The working, built up a tap at a time: an arrow and its piece per tap, then
@@ -59,13 +63,14 @@ function Working({ br, taps, reasons }: { br: Brackets; taps: number; reasons: b
   );
 }
 
-function Keypad({ letter, onKey }: { letter: string; onKey: (k: string) => void }) {
+function Keypad({ letters, onKey }: { letters: string[]; onKey: (k: string) => void }) {
   const rows = [
-    ['7', '8', '9', letter, '⌫'],
+    ['7', '8', '9', letters[0], '⌫'],
     ['4', '5', '6', '²', '('],
     ['1', '2', '3', '+', ')'],
-    ['0', '−'],
+    letters[1] ? ['0', '−', letters[1]] : ['0', '−'],
   ];
+  const span = (k: string) => (k === '0' ? (letters[1] ? 'col-span-2' : 'col-span-3') : k === '−' ? 'col-span-2' : '');
   return (
     <div className="space-y-1.5 select-none">
       {rows.map((row, r) => (
@@ -78,9 +83,9 @@ function Keypad({ letter, onKey }: { letter: string; onKey: (k: string) => void 
               aria-label={k === '⌫' ? 'Delete' : k === '²' ? 'squared' : k}
               className={`h-11 rounded-xl border text-lg active:scale-95 transition-transform ${
                 /[0-9]/.test(k) ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-50 border-slate-300 text-navy font-semibold'
-              } ${k === '0' ? 'col-span-3' : ''} ${k === '−' ? 'col-span-2' : ''}`}
+              } ${span(k)}`}
             >
-              {k === letter ? <i>{k}</i> : k === '²' ? <span>▫<sup>2</sup></span> : k}
+              {letters.includes(k) ? <i>{k}</i> : k === '²' ? <span>▫<sup>2</sup></span> : k}
             </button>
           ))}
         </div>
@@ -116,7 +121,7 @@ function AnswerBox({
         className="w-full rounded-xl border-2 border-slate-300 focus:border-navy outline-none px-3 py-2.5 text-lg font-serif bg-white"
       />
       {note && <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><Say text={note} /></div>}
-      <Keypad letter={letterOf(question)} onKey={key} />
+      <Keypad letters={lettersOf(question)} onKey={key} />
     </div>
   );
 }
@@ -207,7 +212,7 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
                 </div>
               )}
             </div>
-            <div className="text-sm text-slate-600">Expand and simplify</div>
+            <div className="text-sm text-slate-600">{taps > pieces(br).length ? 'Expand and simplify' : 'Expand'}</div>
             {phase === 'try' && helped > 0 && !verdict
               ? <Working br={br} taps={helped} reasons />
               : <div className="text-xl text-slate-900 mt-1"><Tex tex={questionTex(br)} /></div>}
@@ -292,7 +297,9 @@ export default function ReviseFlow({ step }: { step: ReviseStep }) {
             )}
           </div>
           {result.passed
-            ? <a href="/app" className={`${PRIMARY} block text-center`}>Done</a>
+            ? (step.nextSlug
+                ? <a href={`/app/revise/${step.nextSlug}`} className={`${PRIMARY} block text-center`}>Next: {step.next}</a>
+                : <a href="/app" className={`${PRIMARY} block text-center`}>Done</a>)
             : <button type="button" className={PRIMARY} onClick={again}>See the example again</button>}
         </section>
       )}
