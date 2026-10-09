@@ -189,6 +189,11 @@ export default function WorksheetPickerClient() {
   type PickState = { title: string; subtitle: string; cands: string[]; picked: string[]; savedAt?: string };
   type Pick = { id: string; created_at: string; title: string; subtitle: string; note: string; source: string; question_ids: string[]; opened_at: string | null; state?: PickState | null };
   const [restoredAt, setRestoredAt] = useState<string | null>(null);
+  // Which saved selection the two columns currently belong to. null while a
+  // switch is loading, so the autosave can never write one selection's lists
+  // under another's id (9 Oct 2026: switching A/V → Vectors saved the A/V list
+  // as the Vectors state, 60 ids, and Vectors then "restored" to that).
+  const [stateFor, setStateFor] = useState<string | null>(null);
   const [picks, setPicks] = useState<Pick[]>([]);
   const [pickId, setPickId] = useState<string | null>(params.get('pick'));
   const [saving, setSaving] = useState(false);
@@ -259,17 +264,24 @@ export default function WorksheetPickerClient() {
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       const pk = d.pick as Pick;
-      const st = pk.state && Array.isArray(pk.state.cands) && Array.isArray(pk.state.picked) ? pk.state : null;
+      // A saved state counts only if every id in it belongs to this selection.
+      const own = new Set(pk.question_ids);
+      const raw = pk.state && Array.isArray(pk.state.cands) && Array.isArray(pk.state.picked) ? pk.state : null;
+      const st = raw && [...raw.cands, ...raw.picked].every((id) => own.has(id)) && (raw.cands.length + raw.picked.length) > 0 ? raw : null;
+      setStateFor(null);
       setTitle(st?.title || pk.title); setSubtitle(st?.subtitle ?? pk.subtitle); setPickId(pk.id);
       setCands([]); setPicked([]); setPdfUrl(null); setDocxUrl(null); setDocxBlob(null); setFiled([]);
       setRestoredAt(st?.savedAt ?? null);
       if (st) {
-        // Where you left off: the two columns as they were, in order.
-        await loadIds(st.cands, 'cands');
+        // Where you left off: the two columns as they were, in order; any of
+        // the selection's questions missing from the state go back to candidates.
+        const seen = new Set([...st.cands, ...st.picked]);
+        await loadIds([...st.cands, ...pk.question_ids.filter((id) => !seen.has(id))], 'cands');
         await loadIds(st.picked, 'picked');
       } else {
         await loadIds(pk.question_ids);
       }
+      setStateFor(pk.id);
       const u = new URL(window.location.href); u.search = `?pick=${pk.id}`; window.history.replaceState(null, '', u.toString());
     } catch (e) { say((e as Error).message, 'err'); }
   }, [loadIds, say]);
@@ -293,7 +305,7 @@ export default function WorksheetPickerClient() {
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
-      setPickId(d.pick.id); await loadPicks(); say('Selection saved');
+      setPickId(d.pick.id); setStateFor(d.pick.id); await loadPicks(); say('Selection saved');
     } catch (e) { say((e as Error).message, 'err'); } finally { setSaving(false); }
   }
 
@@ -414,6 +426,7 @@ export default function WorksheetPickerClient() {
   useEffect(() => { if (seeded) setDirty(true); /* any change after seeding */ }, [cands, picked, title, subtitle, seeded]);
   useEffect(() => {
     if (!dirty || loading) return;
+    if (pickId && stateFor !== pickId) return;   // mid-switch: these lists are not this selection's
     const st: PickState = { title, subtitle, cands, picked };
     const t = setTimeout(() => {
       if (pickId) {
@@ -423,7 +436,7 @@ export default function WorksheetPickerClient() {
       }
     }, 700);
     return () => clearTimeout(t);
-  }, [dirty, loading, title, subtitle, cands, picked, pickId, localKey]);
+  }, [dirty, loading, title, subtitle, cands, picked, pickId, localKey, stateFor]);
   // An ad-hoc page restores from the browser once its questions are in.
   const [localRestored, setLocalRestored] = useState(false);
   useEffect(() => {
@@ -446,7 +459,7 @@ export default function WorksheetPickerClient() {
     if (pickId) {
       await fetch('/api/admin/worksheet-picker/picks', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: pickId, state: null }) }).catch(() => {});
       const pk = picks.find((p) => p.id === pickId);
-      if (pk) { setTitle(pk.title); setSubtitle(pk.subtitle); setCands([...pk.question_ids].filter((id) => byId.has(id))); setPicked([]); }
+      if (pk) { setTitle(pk.title); setSubtitle(pk.subtitle); setCands([...pk.question_ids].filter((id) => byId.has(id))); setPicked([]); setStateFor(pk.id); }
       else await openPick(pickId);
     } else {
       if (localKey) { try { localStorage.removeItem(localKey); } catch { /* ignore */ } }
