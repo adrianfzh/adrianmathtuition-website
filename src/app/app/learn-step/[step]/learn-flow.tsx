@@ -65,9 +65,12 @@ function Working({ w, taps, reasons }: { w: Worked; taps: number; reasons: boole
       </div>
     );
   }
+  // A question in words has no first line of its own: every line is working.
+  const visible = w.prompt !== undefined ? w.lines.slice(0, taps) : w.lines.slice(0, taps + 1);
   return (
     <div className="space-y-2.5 mt-1">
-      {w.lines.slice(0, taps + 1).map((l, i) => (
+      {w.prompt !== undefined && <div className="text-base text-slate-900 leading-relaxed"><Say text={w.prompt} /></div>}
+      {visible.map((l, i) => (
         <div key={i}>
           {/* A long line is set smaller and kept on one line: a chain that wraps mid-expression is hard to read. */}
           <div className={`${l.tex.length > 34 ? 'text-[15px]' : 'text-lg'} text-slate-900 whitespace-nowrap overflow-x-auto`}><Tex tex={l.tex} /></div>
@@ -115,9 +118,9 @@ function Keypad({ letters, onKey }: { letters: string[]; onKey: (k: string) => v
 }
 
 function AnswerBox({
-  question, value, onChange, onCheck, note,
+  letters, value, onChange, onCheck, note,
 }: {
-  question: string; value: string; onChange: (v: string) => void; onCheck: () => void; note: string | null;
+  letters: string[]; value: string; onChange: (v: string) => void; onCheck: () => void; note: string | null;
 }) {
   const key = (k: string) => {
     if (k === '⌫') onChange(value.endsWith(' ') ? value.slice(0, -3) : value.slice(0, -1));
@@ -139,7 +142,7 @@ function AnswerBox({
         className="w-full rounded-xl border-2 border-slate-300 focus:border-navy outline-none px-3 py-2.5 text-lg font-serif bg-white"
       />
       {note && <div className="text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2"><Say text={note} /></div>}
-      <Keypad letters={lettersOf(question)} onKey={key} />
+      <Keypad letters={letters} onKey={key} />
     </div>
   );
 }
@@ -218,7 +221,7 @@ export default function LearnFlow({ step, seenClip = false }: { step: LearnStep;
           )}
           <div className="rounded-2xl bg-white border border-slate-200 px-4 py-4">
             <div className="text-xs font-semibold text-slate-500 mb-2">Example</div>
-            <div className="text-sm text-slate-600">{step.ask}</div>
+            {w.prompt === undefined && <div className="text-sm text-slate-600">{step.ask}</div>}
             <Working w={w} taps={shown} reasons />
             {shown >= w.taps && (
               <div className="mt-3 pt-3 border-t border-slate-100 text-lg"><b>Answer:</b> <Tex tex={w.answerTex} /></div>
@@ -243,15 +246,17 @@ export default function LearnFlow({ step, seenClip = false }: { step: LearnStep;
                 </div>
               )}
             </div>
-            <div className="text-sm text-slate-600">{step.ask}</div>
+            {w.prompt === undefined && <div className="text-sm text-slate-600">{step.ask}</div>}
             {phase === 'try' && helped > 0 && !verdict
               ? <Working w={w} taps={helped} reasons />
-              : <div className="text-xl text-slate-900 mt-1 overflow-x-auto"><Tex tex={w.questionTex} /></div>}
+              : w.prompt !== undefined
+                ? <div className="text-base text-slate-900 leading-relaxed mt-1"><Say text={w.prompt} /></div>
+                : <div className="text-xl text-slate-900 mt-1 overflow-x-auto"><Tex tex={w.questionTex} /></div>}
           </div>
 
           {!verdict && (
             <>
-              <AnswerBox question={qOf(question)} value={typed} onChange={v => { setTyped(v); setNote(null); }} onCheck={check} note={note} />
+              <AnswerBox letters={w.prompt !== undefined ? [] : lettersOf(qOf(question))} value={typed} onChange={v => { setTyped(v); setNote(null); }} onCheck={check} note={note} />
               <div className="flex gap-2">
                 {phase === 'try' && (
                   <button type="button" className={QUIET} disabled={helped >= w.taps} onClick={() => setHelped(helped + 1)}>

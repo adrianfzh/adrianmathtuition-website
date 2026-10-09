@@ -22,9 +22,16 @@ export const PASS_MARK = 4;
 
 export interface WorkLine { tex: string; why?: string }
 
-/** A question: the expression as typed, with its working lines when it has no drawn method of its own. */
-export type Question = string | { q: string; lines: WorkLine[] };
-export const qOf = (x: Question): string => (typeof x === 'string' ? x : x.q);
+/**
+ * A question: the expression as typed, with its working lines when it has no
+ * drawn method of its own; or a question in words whose answer is a number
+ * ("Given that ab = −6 and a² + b² = 30, find the value of (a + b)²").
+ */
+export type Question = string | { q: string; lines: WorkLine[] } | NumberQuestion;
+export interface NumberQuestion { prompt: string; answer: number; lines: WorkLine[] }
+const isNumber = (x: Question): x is NumberQuestion => typeof x !== 'string' && 'prompt' in x;
+/** What tells one question from another: the typed expression, or the words. */
+export const qOf = (x: Question): string => (typeof x === 'string' ? x : isNumber(x) ? x.prompt : x.q);
 
 export interface LearnStep {
   slug: string;
@@ -43,7 +50,7 @@ export interface LearnStep {
   example: Question;
   tryOne: Question;
   /** Sets of five for "on your own"; a not-passed student gets the next set. */
-  sets: string[][];
+  sets: Question[][];
   /** What comes after this step, in plain words, and its slug once it is built. */
   next?: string;
   nextSlug?: string;
@@ -162,10 +169,18 @@ export interface Worked {
   /** Taps to show it all: one per arrow then one to add up (Rainbow), else one per line after the first. */
   taps: number;
   want: Poly;
+  /** A question in words: shown instead of `questionTex`, and every line of `lines` is working. */
+  prompt?: string;
 }
 
 /** Everything the page needs to show a question and its working. Null when the question cannot be read. */
 export function work(x: Question): Worked | null {
+  if (isNumber(x)) {
+    return {
+      shape: x.lines.length ? 'lines' : 'none', br: null, prompt: x.prompt, questionTex: '', lines: x.lines,
+      answerTex: String(x.answer), taps: x.lines.length, want: polyOf([{ coef: x.answer, vars: {} }]),
+    };
+  }
   const q = qOf(x);
   const want = parseExpr(q)?.poly;
   if (!want) return null;
@@ -189,6 +204,70 @@ export function work(x: Question): Worked | null {
   return {
     shape: lines.length ? 'lines' : 'none', br: null, questionTex: exprTex(q), lines, want,
     answerTex: last ?? polyTex(want), taps: Math.max(0, lines.length - 1),
+  };
+}
+
+// ── Questions whose answer is a number (his notes §5) ────────────────────────
+
+/**
+ * His Example 5a: given ab and a² + b², find (a ± b)². The working is the
+ * formula, regrouped, then the two known values put in.
+ */
+export function squareFromSumAndProduct(x: string, y: string, sum: number, prod: number, sign: '+' | '-'): NumberQuestion {
+  const answer = sign === '+' ? sum + 2 * prod : sum - 2 * prod;
+  const sq = `${x}^{2} + ${y}^{2}`;
+  return {
+    prompt: `Given that $${x}${y} = ${prod}$ and $${sq} = ${sum}$, find the value of $(${x} ${sign} ${y})^{2}$.`,
+    answer,
+    lines: [
+      { tex: `(${x} ${sign} ${y})^{2} = ${x}^{2} ${sign} 2${x}${y} + ${y}^{2}`, why: 'we can use the formula' },
+      { tex: `= ${sq} ${sign} 2${x}${y}` },
+      { tex: `= ${sum} ${sign} 2(${prod})`, why: `we know the value of ${x}² + ${y}² and ${x}${y}` },
+      { tex: `= ${answer}` },
+    ],
+  };
+}
+
+/**
+ * His Example 5b, the other way round: given (a ± b)² and ab, find a² + b².
+ */
+export function sumFromSquareAndProduct(x: string, y: string, square: number, prod: number, sign: '+' | '-'): NumberQuestion {
+  const answer = sign === '+' ? square - 2 * prod : square + 2 * prod;
+  const sq = `${x}^{2} + ${y}^{2}`;
+  // 2ab moves to the other side, changing sign.
+  const move = sign === '+' ? -2 * prod : 2 * prod;
+  return {
+    prompt: `Given that $(${x} ${sign} ${y})^{2} = ${square}$ and $${x}${y} = ${prod}$, find the value of $${sq}$.`,
+    answer,
+    lines: [
+      { tex: `(${x} ${sign} ${y})^{2} = ${square}` },
+      { tex: `${x}^{2} ${sign} 2${x}${y} + ${y}^{2} = ${square}`, why: 'we can use the formula' },
+      { tex: `${sq} ${sign} 2(${prod}) = ${square}`, why: `sub ${x}${y} as ${prod}` },
+      { tex: `${sq} = ${square} ${move < 0 ? '-' : '+'} ${Math.abs(move)}` },
+      { tex: `= ${answer}` },
+    ],
+  };
+}
+
+/**
+ * His Example 5c: a square worked without a calculator — 399² = (400 − 1)².
+ * The round number is the nearest one with a single leading digit.
+ */
+export function evaluateSquare(n: number): NumberQuestion {
+  const unit = 10 ** (String(n).length - 1);
+  const base = Math.round(n / unit) * unit;
+  const d = Math.abs(n - base);
+  const sign = n < base ? '-' : '+';
+  return {
+    prompt: `Without using a calculator, find the value of $${n}^{2}$.`,
+    answer: n * n,
+    lines: [
+      { tex: `${n}^{2}`, why: `rewrite ${n} as ${base} ${sign === '-' ? '−' : '+'} ${d}` },
+      { tex: `= (${base} ${sign} ${d})^{2}`, why: `this is of the form (a ${sign === '-' ? '−' : '+'} b)², where a = ${base} and b = ${d}` },
+      { tex: `= ${base}^{2} ${sign} 2(${base})(${d}) + ${d}^{2}`, why: sign === '-' ? '(a − b)² = a² − 2ab + b²' : '(a + b)² = a² + 2ab + b²' },
+      { tex: `= ${base * base} ${sign} ${2 * base * d} + ${d * d}`, why: 'evaluate' },
+      { tex: `= ${n * n}` },
+    ],
   };
 }
 
@@ -273,6 +352,14 @@ export function mark(x: Question, typedRaw: string, trap?: string): Verdict {
   const w = work(x);
   const typed = parseExpr(typedRaw);
   if (!w) return { kind: 'unreadable', say: 'This question could not be loaded.' };
+  if (w.prompt !== undefined) {
+    // An answer that is a number: digits and a minus sign only.
+    const t = typedRaw.replace(/[−–]/g, '-').replace(/[\s,]/g, '');
+    if (!/^-?[0-9]+$/.test(t)) return { kind: 'unreadable', say: 'Type the number only.' };
+    return equal(polyOf([{ coef: Number(t), vars: {} }]), w.want)
+      ? { kind: 'correct' }
+      : { kind: 'wrong', slip: trap ? { key: 'trap', say: trap } : { key: 'other', say: GENERAL } };
+  }
   if (!typed) return { kind: 'unreadable', say: 'That could not be read. Type it like x² + 5x − 6.' };
   if (equal(typed.poly, w.want)) {
     if (typed.hasBrackets) return { kind: 'unfinished', say: 'That is still in brackets. Expand it fully.' };
@@ -303,7 +390,7 @@ export function fiveResult(slips: (Slip | null)[]): FiveResult {
 }
 
 /** The set a student gets on their n-th five (0-based); the sets go round. */
-export function setFor(step: LearnStep, attempt: number): string[] {
+export function setFor(step: LearnStep, attempt: number): Question[] {
   const n = step.sets.length;
   return step.sets[((attempt % n) + n) % n];
 }

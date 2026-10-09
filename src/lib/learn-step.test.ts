@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { equal, isCollected, parseExpr, polyTex } from './poly';
 import {
-  allQuestions, exprTex, fiveResult, mark, parseBrackets, qOf, setFor, squareLines, work, FIVE,
+  allQuestions, evaluateSquare, exprTex, fiveResult, mark, parseBrackets, qOf, setFor, squareFromSumAndProduct,
+  squareLines, sumFromSquareAndProduct, work, FIVE,
 } from './learn-step';
 import { lessonBySlug } from './lesson-catalog';
 import { LEARN_STEPS, learnStepBySlug, learnStepForClip } from './learn-steps';
@@ -110,6 +111,7 @@ describe('learn-step — written working (his notes, recap and "Further Expansio
       for (const x of [step.example, step.tryOne]) {
         const w = work(x)!;
         expect(w.lines.length, `${step.slug}: the example and the try need working`).toBeGreaterThan(1);
+        if (w.prompt !== undefined) continue; // a number answer: its lines are checked below, by value
         expect(w.lines[0].tex).toBe(w.questionTex);
         for (const line of w.lines) {
           const typed = parseExpr(asTyped(line.tex));
@@ -145,6 +147,11 @@ describe('learn-step — his printed answers', () => {
     ['9x-(2x-1)(4x+5)', '−8x² + 3x + 5'], ['(x-6y)(2x+3y)+6xy', '2x² − 3xy − 18y²'], ['(x-3)(2x+4)-3(x+5)(x-1)', '−x² − 14x + 3'],
     // Examples and Practice 4
     ['(2x+7)^2', '4x² + 28x + 49'], ['(9w-4)^2', '81w² − 72w + 16'],
+    ['(x+2y)(3x-5y)-4(x-y)^2', '−x² + 9xy − 14y²'], ['(a+b)(5a+3b)+(a+b)^2', '6a² + 10ab + 4b²'],
+    ['10m^2-(7m^2-n)-(m-n)^2', '2m² + 2mn − n² + n'], ['(3-m)(m+3)-2m+6(m+1)^2', '5m² + 10m + 15'],
+    // Assignment 1, Q2
+    ['(2x+1)(x-3)-2(x+3)^2', '−17x − 21'], ['(3y+1)^2+2(3y-1)^2', '27y² − 6y + 3'], ['(a+4)^2-(a-4)^2', '16a'],
+    ['(6m-3n)^2-(2m+5n)^2', '32m² − 56mn − 16n²'], ['4a(a+4)-(a+1)^2', '3a² + 14a − 1'], ['3(2a-3)^2-2(2a-3)(2a+3)', '4a² − 36a + 45'],
   ];
   it('marks each of them correct', () => {
     const used = new Set(LEARN_STEPS.flatMap(s => allQuestions(s).map(qOf)));
@@ -152,6 +159,59 @@ describe('learn-step — his printed answers', () => {
       expect(used.has(q), `${q} is in a step`).toBe(true);
       expect(mark(q, a).kind, `${q} = ${a}`).toBe('correct');
     }
+  });
+});
+
+describe('learn-step — answers that are numbers (his notes §5)', () => {
+  it('works his Example 5a and gets his 18', () => {
+    const q = squareFromSumAndProduct('a', 'b', 30, -6, '+');
+    expect(q.prompt).toBe('Given that $ab = -6$ and $a^{2} + b^{2} = 30$, find the value of $(a + b)^{2}$.');
+    expect(q.lines.map(l => l.tex)).toEqual([
+      '(a + b)^{2} = a^{2} + 2ab + b^{2}', '= a^{2} + b^{2} + 2ab', '= 30 + 2(-6)', '= 18',
+    ]);
+    expect(q.answer).toBe(18);
+  });
+
+  it('works his Example 5b and gets his 33', () => {
+    const q = sumFromSquareAndProduct('a', 'b', 9, 12, '-');
+    expect(q.lines.map(l => l.tex)).toEqual([
+      '(a - b)^{2} = 9', 'a^{2} - 2ab + b^{2} = 9', 'a^{2} + b^{2} - 2(12) = 9', 'a^{2} + b^{2} = 9 + 24', '= 33',
+    ]);
+    expect(q.answer).toBe(33);
+    expect(sumFromSquareAndProduct('x', 'y', 36, -8, '+').lines[3].tex).toBe('x^{2} + y^{2} = 36 + 16');
+    expect(sumFromSquareAndProduct('x', 'y', 64, 15, '+').lines[3].tex).toBe('x^{2} + y^{2} = 64 - 30');
+  });
+
+  it('works his Example 5c and his Practice 5b', () => {
+    expect(evaluateSquare(399).lines.map(l => l.tex)).toEqual([
+      '399^{2}', '= (400 - 1)^{2}', '= 400^{2} - 2(400)(1) + 1^{2}', '= 160000 - 800 + 1', '= 159201',
+    ]);
+    expect(evaluateSquare(399).lines[0].why).toBe('rewrite 399 as 400 − 1');
+    // His printed answers: 702², 1001², 997², 3999², 204²; Practice 5a Q1, Q2.
+    for (const [n, want] of [[702, 492804], [1001, 1002001], [997, 994009], [3999, 15992001], [204, 41616]]) expect(evaluateSquare(n).answer).toBe(want);
+    expect(squareFromSumAndProduct('x', 'y', 29, 10, '-').answer).toBe(9);
+    expect(sumFromSquareAndProduct('x', 'y', 58, 6, '-').answer).toBe(70);
+    expect(sumFromSquareAndProduct('x', 'y', 100, 2, '-').answer).toBe(104);
+  });
+
+  it('every line of a number working has the same value', () => {
+    // Each "= …" line of an evaluated square is plain arithmetic: work it out and compare.
+    for (const n of [399, 702, 997, 98, 49, 5002]) {
+      const q = evaluateSquare(n);
+      for (const line of q.lines) {
+        const typed = parseExpr(asTyped(line.tex));
+        expect(typed && [...typed.poly.values()][0]?.coef, `${n}: ${line.tex}`).toBe(n * n);
+      }
+    }
+  });
+
+  it('marks a typed number, and only a number', () => {
+    const q = evaluateSquare(399);
+    expect(mark(q, '159201').kind).toBe('correct');
+    expect(mark(q, '159 201').kind).toBe('correct');
+    expect(mark(q, '159200', 'trap').kind).toBe('wrong');
+    expect(mark(q, '400² − 1').kind).toBe('unreadable');
+    expect(mark(squareFromSumAndProduct('p', 'q', 45, -18, '-'), '81').kind).toBe('correct');
   });
 });
 
@@ -207,7 +267,7 @@ describe('learn-steps — the chapter', () => {
   });
 
   it('runs in the order of his notes, each step leading to one that exists', () => {
-    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 7]);
+    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 7, 8, 9, 10]);
     for (const step of LEARN_STEPS) {
       if (step.nextSlug) expect(learnStepBySlug(step.nextSlug), `${step.slug} → ${step.nextSlug}`).not.toBeNull();
       // A step's clip must be a lesson that exists.

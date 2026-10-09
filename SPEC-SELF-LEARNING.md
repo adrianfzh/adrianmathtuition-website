@@ -1,6 +1,6 @@
 # SPEC — Ready for the next test (the self-learning loop, companion first)
 
-*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (six of eleven steps, admin only); REVISE and the test loop are design.**
+*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (nine of eleven steps, admin only); REVISE and the test loop are design.**
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
@@ -133,10 +133,11 @@ distinction"):** LEARN = the idea from the start, his notes. REVISE = from exam 
 before a test. What was first built under the name "revise" is the LEARN path; it was renamed
 the same day — pages `/app/learn-step/<step>`, code `lib/learn-step.ts` + `lib/learn-steps.ts`,
 switch `LEARN_STEP_OPEN_TO_STUDENTS` (`/app/revise/<step>` redirects). He said: "let's finish
-the learn part for this topic first". **Built in notes order, 9 Oct 2026: ideas 1–5 and 7**
-(one bracket · expand and simplify · two brackets · a number in front · further expansion ·
-special products by the formula). **To come: 6 (fractions — the checker needs fractions),
-8 (special products with other terms), 9–11 (answers that are numbers; two-part "hence").**
+the learn part for this topic first". **Built in notes order, 9 Oct 2026: ideas 1–5 and 7–10** (one bracket · expand and
+simplify · two brackets · a number in front · further expansion · special products by the
+formula · special products with other terms · using the identity · without a calculator;
+the last two have answers that are numbers, their working derived from the numbers).
+**To come: 6 (fractions — the checker needs fractions) and 11 (two-part "hence").**
 Two printed answers in the notes are wrong and are corrected in the steps: recap
 −2b(3 − 4b + 6c) ends −12bc (printed −12c); Practice 1b (a) is 2x² − 4xy − 30y² (printed −xy).
 

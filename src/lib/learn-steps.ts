@@ -3,10 +3,10 @@
 // (Dropbox/1 ONLINE LESSONS/1 NOTES/4 Notes S2 Math G3/S2 MATH 01 Algebra 1
 // Expansion.pdf) — his examples, his methods, his margin words; the first set of
 // five in a step is his own Practice where the notes have one. Built so far:
-// ideas 1–5 and 7 of the eleven; 6 (fractions) and 8–11 are still to come.
+// ideas 1–5 and 7–10 of the eleven; 6 (fractions) and 11 ("hence") are still to come.
 // learn-step.test.ts checks every question, every written line and his printed answers.
 
-import type { LearnStep } from './learn-step';
+import { evaluateSquare, squareFromSumAndProduct as sq, sumFromSquareAndProduct as sm, type LearnStep } from './learn-step';
 
 const OF = 11;
 
@@ -199,10 +199,106 @@ const SPECIAL_PRODUCTS: LearnStep = {
     ['(y+6)^2', '(t-1)^2', '(4x+1)^2', '(3x-2y)^2', '(7a-3)^2'],
   ],
   next: 'Special products with other terms',
+  nextSlug: 'special-products-mixed',
+};
+
+const SPECIAL_PRODUCTS_MIXED: LearnStep = {
+  slug: 'special-products-mixed',
+  index: 8,
+  of: OF,
+  title: 'Special products with other terms',
+  ask: 'Expand and simplify',
+  idea: [
+    'Use the formula on each square first. Then add up like terms.',
+    'A square that is subtracted goes in a bracket first: every sign in it changes.',
+  ],
+  trap: 'A minus sign in front of a square changes every sign in its expansion.',
+  example: {
+    q: '(3a+1)+(3a-1)^2',
+    lines: [
+      { tex: '(3a + 1) + (3a - 1)^{2}' },
+      { tex: '= (3a + 1) + (3a)^{2} - 2(3a)(1) + 1^{2}', why: '(a − b)² = a² − 2ab + b²' },
+      { tex: '= 3a + 1 + 9a^{2} - 6a + 1' },
+      { tex: '= 9a^{2} + 3a - 6a + 1 + 1', why: 'Group like terms together' },
+      { tex: '= 9a^{2} - 3a + 2', why: 'Add up like terms' },
+    ],
+  },
+  tryOne: {
+    q: '(x-3y)^2-(x+y)^2',
+    lines: [
+      { tex: '(x - 3y)^{2} - (x + y)^{2}' },
+      { tex: '= x^{2} - 2(x)(3y) + (3y)^{2} - (x^{2} + 2(x)(y) + y^{2})', why: 'The second square stays in a bracket' },
+      { tex: '= x^{2} - 6xy + 9y^{2} - (x^{2} + 2xy + y^{2})' },
+      { tex: '= x^{2} - 6xy + 9y^{2} - x^{2} - 2xy - y^{2}', why: 'Every sign in the bracket changes' },
+      { tex: '= x^{2} - x^{2} - 6xy - 2xy + 9y^{2} - y^{2}', why: 'Group like terms together' },
+      { tex: '= -8xy + 8y^{2}', why: 'Add up like terms' },
+    ],
+  },
+  sets: [
+    // His Practice 4, Q4: the questions with the smiley faces (c, d, f, g, h).
+    ['(2y-3)^2+(2y+3)^2', '(7a-2b)^2-(5a+4b)^2', '(x+2y)(3x-5y)-4(x-y)^2', '(a+b)(5a+3b)+(a+b)^2', '10m^2-(7m^2-n)-(m-n)^2'],
+    // His Assignment 1, Q2 a–e.
+    ['(2x+1)(x-3)-2(x+3)^2', '(3y+1)^2+2(3y-1)^2', '(a+4)^2-(a-4)^2', '(6m-3n)^2-(2m+5n)^2', '4a(a+4)-(a+1)^2'],
+    // His Assignment 1, Q2 f and Practice 4, Q4 e, then three like them.
+    ['3(2a-3)^2-2(2a-3)(2a+3)', '(3-m)(m+3)-2m+6(m+1)^2', '(x+1)^2+(x-1)^2', '(x+5)^2-x(x+3)', '2(a-1)^2+(a+2)^2'],
+    ['(y+2)^2-(y-3)^2', '(2x-1)^2+3x(x+2)', '(a+b)^2-(a-b)^2', '5-(x-2)^2', '(3p+q)^2-(p-3q)^2'],
+  ],
+  next: 'Using the identity',
+  nextSlug: 'using-the-identity',
+};
+
+const USING_THE_IDENTITY: LearnStep = {
+  slug: 'using-the-identity',
+  index: 9,
+  of: OF,
+  title: 'Using the identity',
+  ask: 'Find the value',
+  idea: [
+    '(a + b)² = a² + 2ab + b² joins three things: the square, a² + b², and ab.',
+    'Know any two of them and the formula gives the third.',
+  ],
+  trap: 'Write the formula first. Then put in the two values you are given: 2ab is twice the value of ab.',
+  // His Example 5a, and Example 5b with ab given directly.
+  example: sq('a', 'b', 30, -6, '+'),
+  tryOne: sm('a', 'b', 9, 12, '-'),
+  sets: [
+    // The first three are his Practice 5a, Q1 and Q2, and Assignment 1, Q6 written with its square.
+    [sq('x', 'y', 29, 10, '-'), sm('x', 'y', 58, 6, '-'), sm('x', 'y', 100, 2, '-'), sq('p', 'q', 20, 8, '+'), sm('a', 'b', 49, 12, '+')],
+    [sq('a', 'b', 34, 15, '+'), sq('x', 'y', 41, 20, '-'), sm('x', 'y', 64, 15, '+'), sm('p', 'q', 4, 21, '-'), sq('m', 'n', 13, -6, '+')],
+    [sq('x', 'y', 25, 12, '+'), sq('a', 'b', 50, 7, '-'), sm('a', 'b', 81, 20, '+'), sm('x', 'y', 16, 6, '-'), sq('p', 'q', 45, -18, '-')],
+    [sq('m', 'n', 52, 24, '+'), sq('x', 'y', 61, 30, '-'), sm('p', 'q', 121, 30, '+'), sm('a', 'b', 25, 14, '-'), sm('x', 'y', 36, -8, '+')],
+  ],
+  next: 'Without a calculator',
+  nextSlug: 'without-a-calculator',
+};
+
+const WITHOUT_A_CALCULATOR: LearnStep = {
+  slug: 'without-a-calculator',
+  index: 10,
+  of: OF,
+  title: 'Without a calculator',
+  ask: 'Find the value',
+  idea: [
+    'Rewrite the number as a round number plus or minus a small one: 399 = 400 − 1.',
+    'Then it is a special product, and the formula does the rest.',
+  ],
+  trap: 'The middle term is twice the product of the two numbers: 2 × round number × small number.',
+  // His Example 5c.
+  example: evaluateSquare(399),
+  tryOne: evaluateSquare(702),
+  sets: [
+    // His Practice 5b, Q1 and Q2, and Assignment 1, Q7 a and b.
+    [evaluateSquare(1001), evaluateSquare(997), evaluateSquare(3999), evaluateSquare(204), evaluateSquare(98)],
+    [evaluateSquare(101), evaluateSquare(199), evaluateSquare(502), evaluateSquare(298), evaluateSquare(1003)],
+    [evaluateSquare(201), evaluateSquare(99), evaluateSquare(603), evaluateSquare(798), evaluateSquare(2001)],
+    [evaluateSquare(301), evaluateSquare(49), evaluateSquare(405), evaluateSquare(999), evaluateSquare(5002)],
+  ],
+  next: '"Hence" questions',
 };
 
 export const LEARN_STEPS: readonly LearnStep[] = [
   ONE_BRACKET, EXPAND_AND_SIMPLIFY, TWO_BRACKETS, NUMBER_IN_FRONT, FURTHER_EXPANSION, SPECIAL_PRODUCTS,
+  SPECIAL_PRODUCTS_MIXED, USING_THE_IDENTITY, WITHOUT_A_CALCULATOR,
 ];
 
 /** The step a clip belongs to, so the clip can hand the student on to it. */
