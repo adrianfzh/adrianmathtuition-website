@@ -104,16 +104,15 @@ function masthead(cfg: SeriesDesign, k: Palette, lv: BrandLevel, logo: ArrayBuff
     tight([run(lv.levelLine, { size: lv.levelLine.length <= 22 ? 10 : 9, bold: true, color: band ? WHITE : k.ink })], { align: AlignmentType.RIGHT, rightIndent: CM(0.35) }),
     tight([run('adrianmathtuition.com', { size: 8, color: band ? k.pale : k.grey })], { align: AlignmentType.RIGHT, rightIndent: CM(0.35) }),
   ], widths[2]);
-  const blockExtra: Partial<ConstructorParameters<typeof TableCell>[0]> = {};
-  if (cfg.block) blockExtra.shading = { fill: cfg.block, type: ShadingType.CLEAR, color: 'auto' };
-  if (cfg.blockRules) {
-    const b: Partial<Record<Side, IBorderOptions>> = {};
-    for (const s of ['top', 'left', 'bottom', 'right'] as Side[]) {
-      const r = cfg.blockRules[s];
-      if (r) b[s] = { style: STYLE[r.style], size: r.sz, color: cfg.tagInk, space: 0 };
-    }
-    blockExtra.borders = b;
+  const blockBorders: Partial<Record<Side, IBorderOptions>> = {};
+  for (const s of ['top', 'left', 'bottom', 'right'] as Side[]) {
+    const r = cfg.blockRules?.[s];
+    if (r) blockBorders[s] = { style: STYLE[r.style], size: r.sz, color: cfg.tagInk, space: 0 };
   }
+  const blockExtra: Partial<ConstructorParameters<typeof TableCell>[0]> = {
+    ...(cfg.block ? { shading: { fill: cfg.block, type: ShadingType.CLEAR, color: 'auto' } } : {}),
+    ...(cfg.blockRules ? { borders: blockBorders } : {}),
+  };
   const blockCell = cell([
     tight([run(cfg.tag, { size: 17, bold: true, color: cfg.tagInk, spacing: 10 })], { align: AlignmentType.CENTER }),
     tight([run(lv.small, { size: 7, bold: true, color: cfg.tagInk, spacing: 40 })], { align: AlignmentType.CENTER }),
