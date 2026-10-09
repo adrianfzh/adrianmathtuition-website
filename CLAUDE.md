@@ -302,6 +302,8 @@ This takes 2 seconds and returns **no student data** — only field names, types
 
 ## Pending Tasks → [`IDEAS.md`](IDEAS.md)
 
+**Latest hand-over: [`docs/HANDOFF-2026-10-09.md`](docs/HANDOFF-2026-10-09.md)** — where everything stood on 9 Oct 2026 (replacing Gemini, the Ship button, the morning brief, subject heads, self-learning, the redraw buttons). Read it before picking up any of those.
+
 **The consolidated build queue lives in [`IDEAS.md`](IDEAS.md)** (its top section "📅 Shipped 4–5 Oct 2026" lists what those days changed and what is still open for Adrian) (repo root, 2026-08-29) —
 statuses per idea, updated by whichever session ships or designs one. Read it before
 proposing new builds; add agreed ideas THERE, not here (session memory is per-account;
