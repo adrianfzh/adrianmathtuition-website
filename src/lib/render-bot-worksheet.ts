@@ -1,24 +1,33 @@
 /**
  * src/lib/render-bot-worksheet.ts
  *
- * Adrian's house-style practice sheet, rendered to an A4 PDF for the bot's
- * worksheet-on-demand flow (POST /api/bot/worksheet). This lands in a parent's
- * WhatsApp/Telegram, so the typography is a straight port of what the iPad
- * kiosk prints (src/app/kiosk/KioskClient.tsx PRINT_CSS, itself calibrated on
- * paper with Adrian): Times New Roman at 9.5pt, navy caps brand over an orange
- * rule, centred uppercase topic, explicit question numbers in the left margin,
- * marks right-aligned at the margin, and blank marks-proportional working space
- * (no ruled lines — this is maths).
+ * The house-style practice sheet as an A4 PDF — ONE renderer and ONE
+ * stylesheet for every door that makes a questions-only sheet (9 Oct 2026,
+ * Adrian: one kitchen per job): the worksheet picker's PDF (POST
+ * /api/admin/questions {action:'worksheet', style:'plain'}) and the Telegram
+ * /ws kind-3 sheet (POST /api/bot/worksheet). The layout is measured against
+ * the create-worksheet skill's Word file (worksheet_lib.py) and matches the
+ * picker's own Word builder (lib/pick-worksheet-docx.ts) number for number:
+ * Times New Roman 9.5 pt at 1.5 lines, A4 with 2 / 1 / 2.5 / 2.5 cm margins,
+ * a 12 pt navy centred title over a 10 pt italic subtitle, "1." at the margin
+ * with its text at 1.0 cm, parts "(a)" at 1.0 cm with their text at 2.0 cm,
+ * marks "[n]" right-aligned at 15.5 cm, blank working space of 4 lines a mark
+ * (5 for a [1]), figures at most 10.5 x 8 cm, and ONE orange right-aligned
+ * [Ans: …] line at the end of each question when answers are inline.
  *
- * Differences from the kiosk sheet, both required by the endpoint contract:
- *  - answers are NEVER inline; they go on a final Answers page (answers=true).
- *  - the stem-level marks read "[3 marks]" rather than the kiosk's bare "[3]".
+ * Until 9 Oct 2026 this file carried the kiosk's branded masthead (navy caps
+ * brand over an orange rule, name bar, footer) at 11 pt — the "new format"
+ * Adrian turned down on 4 Oct 2026 ("just give me a regular format
+ * worksheet"); the picker's plain style is now the only style, and the
+ * `plain` option just supplies the subtitle.
  *
- * Markdown → HTML reuses mdToHtml from lib/render-worksheet; the fragments
- * flattenParts emits that a generic markdown pass would destroy (marks span,
- * working-space div, inline figures) are stashed/restored by lib/bot-worksheet.
- * Math is typeset by KaTeX auto-render inside Puppeteer, same as
- * lib/render-worksheet and lib/render-revise.
+ * The bank-made sheet (kind 3) keeps its contract: answers never inline, on a
+ * final Answers page (answers=true). Markdown → HTML reuses mdToHtml from
+ * lib/render-worksheet; the fragments flattenParts emits that a generic
+ * markdown pass would destroy (marks span, working-space div, inline figures)
+ * are stashed/restored by lib/bot-worksheet. Math is typeset by KaTeX
+ * auto-render inside Puppeteer, same as lib/render-worksheet and
+ * lib/render-revise.
  */
 
 import fs from 'fs';
@@ -27,6 +36,7 @@ import { getBrowser } from '@/lib/generate-pdf';
 import { katexInlineHead, katexAutoRenderScript, waitForPageReady } from '@/lib/katex-inline';
 import { mdToHtml } from '@/lib/render-worksheet';
 import { protectWorksheetHtml, restoreWorksheetHtml } from '@/lib/bot-worksheet';
+import { workingLines } from '@/lib/pick-worksheet';
 
 // Tinos = metric-compatible Times New Roman. The Vercel render lambda has no
 // system TNR, which silently fell back to a sans (Adrian caught it, 2026-08-29).
@@ -99,10 +109,10 @@ export interface BotWorksheetInput {
   /** Marks-proportional working space under each question (default). False = compact question list. */
   workspace?: boolean;
   /**
-   * The create-worksheet skill's REGULAR format (Adrian, 4 Oct 2026: "don't
-   * want the new format, just give me a regular format worksheet"): a navy
-   * centred title and an italic subtitle instead of the branded masthead, no
-   * name bar and no footer. Used by the worksheet picker.
+   * The picker's own subtitle line. Since 9 Oct 2026 every sheet prints the
+   * regular format (navy title, italic subtitle — Adrian, 4 Oct 2026: "just
+   * give me a regular format worksheet"); without this the subtitle is built
+   * from level · topic · tier · date · marks (sheetSubtitle).
    */
   plain?: { subtitle: string };
   /**
@@ -121,19 +131,13 @@ function esc(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-/**
- * Working space apportioned to the marks — same calibration as the kiosk
- * (lib/kiosk-worksheet-images spaceMm): 17mm/mark, floor 36mm, cap 100mm.
- */
-function spaceMm(marks: number | null): number {
-  return Math.min(190, Math.max(44, (marks ?? 2) * 22));
-}
+/** One body line: 9.5 pt on 1.5 spacing (worksheet_lib Worksheet.LINE_PT). */
+const LINE_PT = 9.5 * 1.5;
 
-/** Working space for ONE part — same 22mm/mark, smaller floor, so (a)(b)(c)
- *  each get room under them instead of one lump after the question.
- *  (Adrian, 2026-08-29, twice: "be more generous with the space".) */
-function partSpaceMm(marks: number): number {
-  return Math.min(150, Math.max(40, marks * 22));
+/** Blank writing space in pt: 4 lines a mark, one more for a [1] — the
+ *  create-worksheet house rule (lib/pick-worksheet workingLines). */
+function spacePt(marks: number | null): number {
+  return workingLines(marks) * LINE_PT;
 }
 
 /** One question's body: figures, then the markdown, then the marks tag. */
@@ -148,53 +152,40 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, 
   const { src, stash } = protectWorksheetHtml(q.markdown);
   let body = restoreWorksheetHtml(mdToHtml(src), stash);
 
-  // Word-style hanging indent for parts (Adrian, 2026-08-29): "(a) …" gets
-  // its marker in a gutter and every wrapped line aligned with the text.
+  // Parts under the question's TEXT, as the Word file prints them: "(a)" at
+  // 1.0 cm with its text at 2.0 cm, a sub-part "(b)(i)" one tab further
+  // showing only "(i)". The bank's label arrives bold ("**(a)**", the picker
+  // and the kiosk flattening) or bare ("(a)").
   body = body.replace(
-    /<p>\((([a-h])|([ivx]{1,4}))\)\s*/g,
-    (_m, label: string) => `<p class="ws-part"><span class="ws-pnum">(${label})</span>`,
+    /<p>(?:<strong>)?((?:\((?:[a-h]|[ivx]{1,4})\))+)(?:<\/strong>)?\s*/g,
+    (_m, label: string) => {
+      const groups = label.match(/\([^)]*\)/g) ?? [label];
+      const depth = Math.min(groups.length - 1, 2);
+      return `<p class="ws-part ws-d${depth}"><span class="ws-pnum">${groups[groups.length - 1]}</span>`;
+    },
   );
 
-  // Part marks arrive as plain "[3]" at the end of each part's paragraph —
-  // float them to the right margin like a real paper (Adrian, 2026-08-29:
-  // "marks are not right-aligned"), and give EACH part its own
-  // marks-proportional working space ("be more generous with the space").
-  // Only a bracketed number that CLOSES a paragraph is a mark tag; [x+2]
-  // mid-sentence maths never matches.
+  // Part marks: a bare "[3]" that CLOSES a paragraph (the picker's markdown)
+  // or the kiosk's <span class="ws-mk">[3]</span>; each marked part then gets
+  // its own blank writing space. [x+2] mid-sentence maths never matches.
+  // The kiosk flattening's own mm spacer (one per marked part) goes: the
+  // marked part gets the house space instead.
+  body = body.replace(/<p>\s*<div class="ws-sp"[^>]*><\/div>\s*<\/p>|<div class="ws-sp"[^>]*><\/div>/g, '');
   let partMarks = 0;
-  body = body.replace(/\[(\d{1,2})\]\s*(<\/p>)/g, (_m, n: string, close: string) => {
+  body = body.replace(/(?:\[(\d{1,2})\]|<span class="ws-mk">\[(\d{1,2})\]<\/span>)\s*(<\/p>)/g, (_m, a: string | undefined, b: string | undefined, close: string) => {
     partMarks += 1;
-    const perPart = workspace
-      ? `<div class="ws-answer-space" style="height:${partSpaceMm(parseInt(n, 10))}mm"></div>`
-      : '';
+    const n = parseInt(a ?? b ?? '0', 10);
+    const perPart = workspace ? `<div class="ws-answer-space" style="height:${spacePt(n)}pt"></div>` : '';
     return `<span class="ws-mk">[${n}]</span>${close}${perPart}`;
   });
 
-  // A part's text travels with its working space, and the answer line with the
-  // last of them — a question taller than a page breaks BETWEEN parts, never
-  // between a part and its space, and the orange [Ans:] line never lands alone
-  // on a page of its own (Adrian's H2 vectors sheet, 9 Oct 2026: two pages held
-  // nothing but the answer line). A part written as several paragraphs is left
-  // unglued — the page rule still holds for the common one-paragraph part.
-  body = body.replace(/(<p class="ws-part">(?:(?!<\/p>)[\s\S])*<\/p>)(\s*<div class="ws-answer-space"[^>]*><\/div>)/g, '<div class="ws-keep">$1$2</div><!--keep-->');
-
-  // Parts carry their own [n] and their own spacer; a stem-only question gets
-  // the total marks tag plus one marks-proportional block of working space.
-  // When the parts just got their floated tags, the per-question total is
-  // noise (the header already totals the sheet) — skip it.
-  const hasOwnMarks = q.markdown.includes('ws-mk') || partMarks > 0;
-  // Parts that just received their own spacers don't ALSO get the end lump.
-  const hasOwnSpace = q.markdown.includes('ws-sp') || partMarks > 0;
-  const marksTag = !hasOwnMarks && q.marks != null
-    ? `<span class="ws-mk">[${q.marks} mark${q.marks === 1 ? '' : 's'}]</span>`
-    : '';
-  const space = hasOwnSpace || !workspace
-    ? ''
-    : `<div class="ws-answer-space" style="height:${spaceMm(q.marks)}mm"></div>`;
+  // A stem-only question gets the total marks tag and one block of space.
+  const hasOwnMarks = partMarks > 0;
+  const marksTag = !hasOwnMarks && q.marks != null ? `<span class="ws-mk">[${q.marks}]</span>` : '';
+  const space = hasOwnMarks || !workspace ? '' : `<div class="ws-answer-space" style="height:${spacePt(q.marks)}pt"></div>`;
 
   // The marks tag belongs INSIDE the last paragraph — a float that trails a
-  // closed <p> drops to a line of its own, which reads as a stray annotation
-  // rather than an exam paper's right-margin mark allocation.
+  // closed <p> drops to a line of its own.
   const withMarks = marksTag
     ? (/<\/p>\s*$/.test(body) ? body.replace(/<\/p>(\s*)$/, `${marksTag}</p>$1`) : body + marksTag)
     : body;
@@ -208,19 +199,32 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, 
     ansLine = `<div class="ws-ans">[Ans: ${inner}]</div>`;
   }
 
-  // The answer line joins the last glued block (parts), or the stem's own space.
-  let qBody = withMarks;
+  // "1." sits INSIDE the first paragraph as a hanging inline-block, so it
+  // shares that line's baseline (an absolutely placed number floated above
+  // a line that opens with a column vector or a fraction). A question that
+  // opens with a figure gets a bare number line above it, like the Word file.
+  const num = `<span class="ws-qnum">${index + 1}.</span>`;
+  let numbered = !figures && /^\s*<p\b/.test(withMarks)
+    ? withMarks.replace(/^(\s*<p(?: [^>]*)?>)/, `$1${num}`)
+    : `<p class="ws-qline">${num}</p>${figures}${withMarks}`;
+
+  // A part's text travels with its working space, and the answer line with the
+  // last of them — a question taller than a page breaks BETWEEN parts, never
+  // between a part and its space, and the orange [Ans:] line never lands alone
+  // on a page of its own (e4a43f26, Adrian's H2 vectors sheet, 9 Oct 2026: two
+  // pages held nothing but the answer line). The Word file does the same with
+  // keepNext on every blank line but a part's last, and on the last part's last.
+  numbered = numbered.replace(/(<p class="ws-part[^"]*">(?:(?!<\/p>)[\s\S])*<\/p>)(\s*<div class="ws-answer-space"[^>]*><\/div>)/g, '<div class="ws-keep">$1$2</div><!--keep-->');
   let tail = `${space}${ansLine}`;
   if (ansLine && !space) {
-    const i = qBody.lastIndexOf('</div><!--keep-->');
-    if (i >= 0) { qBody = qBody.slice(0, i) + ansLine + qBody.slice(i); tail = ''; }
+    const i = numbered.lastIndexOf('</div><!--keep-->');
+    if (i >= 0) { numbered = numbered.slice(0, i) + ansLine + numbered.slice(i); tail = ''; }
   } else if (ansLine && space) {
     tail = `<div class="ws-keep">${space}${ansLine}</div>`;
   }
   return `
     <li class="ws-q">
-      <span class="ws-qnum">${index + 1}.</span>
-      <div class="ws-q-body">${figures}${qBody}</div>
+      <div class="ws-q-body">${numbered}</div>
       ${tail}
     </li>`;
 }
@@ -228,7 +232,7 @@ function questionHtml(q: BotWorksheetQuestion, index: number, workspace = true, 
 function answersHtml(questions: BotWorksheetQuestion[]): string {
   const rows = questions
     .map((q, i) => {
-      // Bare answers — the page is already headed ANSWERS, so the inline
+      // Bare answers — the page is already headed Answers, so the inline
       // "[Ans: …]" wrapper is noise here (Adrian, 2026-08-29).
       const { src, stash } = protectWorksheetHtml(q.answer);
       return `<li class="ws-a"><span class="ws-anum">${i + 1}.</span><div class="ws-a-body">${restoreWorksheetHtml(mdToHtml(src), stash)}</div></li>`;
@@ -241,11 +245,19 @@ function answersHtml(questions: BotWorksheetQuestion[]): string {
   </section>`;
 }
 
+/** The subtitle a bank-made sheet prints under its title when the caller
+ *  gives none: level · topic · tier · date · marks. */
+export function sheetSubtitle(input: Pick<BotWorksheetInput, 'title' | 'levelLabel' | 'topic' | 'tier' | 'dateLabel' | 'questions'>): string {
+  const totalMarks = input.questions.reduce((s, q) => s + (q.marks ?? 0), 0);
+  const tierBit = input.tier && input.tier !== 'mixed' ? input.tier.charAt(0).toUpperCase() + input.tier.slice(1) : null;
+  const topic = input.topic && input.topic !== input.title ? input.topic : null;   // the admin route passes the title as the topic
+  return [input.levelLabel, topic, tierBit, input.dateLabel, totalMarks > 0 ? `${totalMarks} marks` : null].filter(Boolean).join(' · ');
+}
+
 export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
-  const { levelLabel, topic, tier, dateLabel, questions, workspace = true, plain, answersInline = false } = input;
+  const { questions, workspace = true, plain, answersInline = false } = input;
   const answers = input.answers && !answersInline;
-  const tierBit = tier && tier !== 'mixed' ? `${tier} · ` : '';
-  const totalMarks = questions.reduce((s, q) => s + (q.marks ?? 0), 0);
+  const subtitle = plain ? plain.subtitle : sheetSubtitle(input);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -255,111 +267,86 @@ export function buildBotWorksheetHTML(input: BotWorksheetInput): string {
 ${tinosInlineStyle() || '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tinos:ital,wght@0,400;0,700;1,400;1,700&display=swap">'}
 ${katexInlineHead()}
 <style>
+  /* ONE stylesheet for every door (the picker's sheet and the /ws kind-3
+     sheet), measured against the create-worksheet house file
+     (worksheet_lib.py) — the same numbers as lib/pick-worksheet-docx.ts. */
   *{box-sizing:border-box;margin:0;padding:0}
-  @page{size:A4;margin:15mm 22mm 13mm}
+  @page{size:A4;margin:20mm 25mm 10mm 25mm}
   html,body{background:#fff}
   body{
     color:#111;font-family:Tinos,"Times New Roman",Georgia,serif;
-    font-size:11pt;line-height:1.5;
+    font-size:9.5pt;line-height:1.5;
   }
-  /* KaTeX defaults to 1.21em — maths printed ~11.5pt against 9.5pt prose and
-     the whole sheet read oversized. Pin maths to the body size. */
+  /* KaTeX defaults to 1.21em; pin maths to the body size. */
   .katex{font-size:1em}
-  p{margin:0 0 1.5pt}
+  p{margin:0}
   ul,ol{margin:2pt 0 3pt 0;padding-left:13pt}
-  li{margin-bottom:1.5pt}
+  li{margin-bottom:0}
   hr{border:none;border-top:0.75pt solid #ccc;margin:4pt 0}
-  table{border-collapse:collapse;margin:3pt 0}
+  table{border-collapse:collapse;margin:2pt 0}
   th,td{border:0.75pt solid #999;padding:2pt 6pt}
 
-  /* Branded header (STYLE.md): navy caps brand + orange rule, grey level token,
-     navy bold TYPE, big centred topic title. */
-  .ws-header{margin-bottom:8pt}
-  .ws-brand{text-align:center;color:${NAVY};font-weight:700;font-size:11.5pt;letter-spacing:.3em;border-bottom:1.1pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt}
-  .ws-line2{text-align:center;margin-top:3pt}
-  .ws-lvl{color:#6E6E6E;font-size:8pt;letter-spacing:.2em}
-  .ws-type{color:${NAVY};font-weight:700;font-size:9.5pt;letter-spacing:.26em;margin-left:9pt}
-  .ws-topic{text-align:center;font-size:13.5pt;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:7pt 0 3pt}
-  /* Clear air above the name row so a student's handwriting doesn't collide
-     with the divider (Adrian, 2026-08-29: "give more space above name too"). */
-  .ws-namebar{display:flex;justify-content:space-between;align-items:flex-end;gap:10pt;font-size:10.5pt;margin-top:9pt;padding-top:18pt;border-top:0.5pt solid #ccc}
-  .ws-nameline{flex:1;display:flex;align-items:flex-end;gap:4pt}
-  .ws-nameblank{flex:1;max-width:220pt;border-bottom:0.75pt solid #111;height:18pt}
-  .ws-datemeta{color:#6E6E6E;text-transform:capitalize}
+  /* Title block: 12 pt bold navy, 6 pt after; 10 pt italic subtitle, 8 pt after. */
+  .ws-title{text-align:center;color:${NAVY};font-weight:700;font-size:12pt;margin-bottom:6pt}
+  .ws-sub{text-align:center;font-style:italic;font-size:10pt;margin-bottom:8pt}
 
-  /* Explicit numbering (::marker misplaces itself on tall/figure-first questions). */
-  .ws-questions{list-style:none;padding-left:18pt;margin:0}
-  .ws-q{margin-bottom:5pt;break-inside:avoid;position:relative}
-  .ws-keep{break-inside:avoid}
-  .ws-qnum{position:absolute;left:-18pt;top:0;font-weight:700}
+  /* "1." at the margin, the text at 1.0 cm. The number is a hanging
+     inline-block inside the first line (not ::marker, not absolute), so it
+     sits on that line's baseline even when the line opens with a tall vector. */
+  .ws-questions{list-style:none;padding-left:10mm;margin:0}
+  .ws-q{break-inside:avoid}
+  .ws-qnum{display:inline-block;width:10mm;margin-left:-10mm}
   .ws-q-body{display:block}
-  .ws-q-body p{display:block;margin:0 0 1.5pt}
-  /* Figures print generously — grids especially must be big enough to plot on. */
-  .ws-figure,.ws-q-body img{display:block;max-width:100%;max-height:300pt;margin:5pt 0}
-
-  /* Marks right-aligned at the margin, exam style. */
-  .ws-mk{float:right;font-weight:400}
-  /* Word-style hanging indent for parts: marker in a gutter, wrapped lines
-     aligned with the part's own text. */
-  .ws-part{position:relative;padding-left:17pt;margin-top:3pt}
-  .ws-pnum{position:absolute;left:0}
-  /* Working space: blank, no lines; heights set inline (∝ marks). */
+  .ws-q-body p{display:block;margin:0}
+  /* A part: "(a)" at 1.0 cm, text at 2.0 cm; a sub-part one tab further. */
+  .ws-part{padding-left:10mm}
+  .ws-part.ws-d1{padding-left:20mm}
+  .ws-part.ws-d2{padding-left:30mm}
+  .ws-pnum{display:inline-block;width:10mm;margin-left:-10mm}
+  /* a question with no stem: "1." then "(a)" on the one line */
+  .ws-part .ws-qnum{margin-left:-20mm}
+  .ws-part.ws-d1 .ws-qnum{margin-left:-30mm}
+  .ws-qnum + .ws-pnum{margin-left:0}
+  /* Marks "[n]" right-aligned at 15.5 cm — 5 mm short of the right margin —
+     and the marked line stops 14 mm short of the edge so the tag never
+     collides with the text (worksheet_lib right_indent 1.4 cm). */
+  .ws-mk{float:right;font-weight:400;margin-right:-9mm}
+  .ws-q-body p:has(> .ws-mk){padding-right:14mm}
+  /* Figures: centred, at most 10.5 cm wide and 8 cm tall, never upscaled, 4 pt above and below. */
+  .ws-figure,.ws-q-body img{display:block;max-width:105mm;max-height:80mm;margin:4pt auto}
+  /* Working space: blank, no lines; heights set inline (4 lines a mark). */
   .ws-sp,.ws-answer-space{display:block;clear:both}
-  /* Compact list mode: part-level spacers flatten too; questions breathe a little. */
+  .ws-keep{break-inside:avoid}
   .ws-compact .ws-sp{display:none}
-  .ws-compact .ws-q{margin-bottom:9pt}
+  .ws-compact .ws-q{margin-bottom:0}
+  /* With working space, every question after the first starts on a fresh
+     page — the GCE paper's rule (Adrian, 9 Oct 2026: "the working spaces and
+     questions don't straddle across pages"); a compact sheet flows on. The
+     first question flows under the title (never a title-only page 1). */
+  .ws-q:first-child{break-inside:auto}
+  body:not(.ws-compact) .ws-q + .ws-q{break-before:page;page-break-before:always}
 
-  /* Answers — always a page of their own, never inline next to the question. */
-  .ws-answers{break-before:page;page-break-before:always;padding-top:2pt}
-  .ws-answers-h{color:${NAVY};font-weight:700;font-size:11pt;letter-spacing:.24em;text-transform:uppercase;border-bottom:0.9pt solid ${ANSWER_ORANGE};padding-bottom:2.5pt;margin-bottom:7pt}
-  .ws-answer-list{list-style:none;padding-left:18pt;margin:0}
-  .ws-a{position:relative;margin-bottom:4pt;break-inside:avoid;color:${ANSWER_ORANGE}}
-  .ws-a .katex{color:${ANSWER_ORANGE}}
-  .ws-anum{position:absolute;left:-18pt;top:0;font-weight:700;color:#111}
-  .ws-a-body p{margin:0}
-
-  /* Inline answer line (plain sheets): orange, right-aligned, after the working space. */
-  .ws-ans{text-align:right;color:${ANSWER_ORANGE};margin:2pt 0 6pt;clear:both}
+  /* Inline answer line: ONE orange right-aligned [Ans: …] at the end of the question. */
+  .ws-ans{text-align:right;color:${ANSWER_ORANGE};clear:both}
   .ws-ans .katex{color:${ANSWER_ORANGE}}
-  /* Regular format header: navy centred title, italic subtitle. */
-  .ws-plain-title{text-align:center;color:${NAVY};font-weight:700;font-size:12pt;margin-bottom:2pt}
-  .ws-plain-sub{text-align:center;font-style:italic;font-size:10pt;margin-bottom:10pt}
-  /* A plain sheet has no masthead to fill page 1: let the FIRST question flow
-     under the title instead of bumping whole to page 2 and leaving a title-only
-     page (8 Oct 2026). Later questions keep the one-question-per-page rule. */
-  body.ws-plain .ws-q:first-child{break-inside:auto}
-  /* With working space, every later question starts on a fresh page — the GCE
-     paper's rule, same as the Word file (Adrian, 9 Oct 2026: "the working spaces
-     and questions don't straddle across pages"). A compact sheet flows on. */
-  body.ws-plain:not(.ws-compact) .ws-q + .ws-q{break-before:page;page-break-before:always}
-  .ws-footer{margin-top:10pt;padding-top:4pt;border-top:0.75pt solid #999;display:flex;justify-content:space-between;font-size:8pt}
-  .ws-foot-brand{color:${NAVY};font-weight:700;letter-spacing:.12em}
-  .ws-foot-url{color:#6E6E6E}
+
+  /* Answers — a page of their own (the bank-made sheet; never inline there). */
+  .ws-answers{break-before:page;page-break-before:always;padding-top:2pt}
+  .ws-answers-h{color:${NAVY};font-weight:700;font-size:12pt;text-align:center;margin-bottom:6pt}
+  .ws-answer-list{list-style:none;padding-left:10mm;margin:0}
+  .ws-a{position:relative;margin-bottom:0;break-inside:avoid;color:${ANSWER_ORANGE}}
+  .ws-a .katex{color:${ANSWER_ORANGE}}
+  .ws-anum{position:absolute;left:-10mm;top:0;color:#111}
+  .ws-a-body p{margin:0}
 </style>
 </head>
-<body class="${[workspace ? '' : 'ws-compact', plain ? 'ws-plain' : ''].filter(Boolean).join(' ')}">
-  ${plain ? `<div class="ws-plain-title">${esc(input.title)}</div><div class="ws-plain-sub">${esc(plain.subtitle)}</div>` : `<div class="ws-header">
-    <div class="ws-brand">ADRIAN&rsquo;S MATH TUITION</div>
-    <div class="ws-line2">
-      <span class="ws-lvl">${esc(levelLabel.toUpperCase())}</span>
-      <span class="ws-type">PRACTICE WORKSHEET</span>
-    </div>
-    <div class="ws-topic">${esc(topic)}</div>
-    <div class="ws-namebar">
-      <span class="ws-nameline">Name:<span class="ws-nameblank"></span></span>
-      <span class="ws-datemeta">${esc(tierBit)}${esc(dateLabel)}${totalMarks > 0 ? ` · ${totalMarks} marks` : ''}</span>
-      <span>Date: ______________</span>
-    </div>
-  </div>`}
+<body class="${workspace ? '' : 'ws-compact'}">
+  <div class="ws-title">${esc(input.title)}</div>
+  ${subtitle ? `<div class="ws-sub">${esc(subtitle)}</div>` : ''}
 
   <ol class="ws-questions">
 ${questions.map((q, i) => questionHtml(q, i, workspace, answersInline)).join('\n')}
   </ol>
-
-  ${plain ? '' : `<div class="ws-footer">
-    <span class="ws-foot-brand">Adrian&rsquo;s Math Tuition</span>
-    <span class="ws-foot-url">adrianmathtuition.com</span>
-  </div>`}
 ${answers ? answersHtml(questions) : ''}
 ${katexAutoRenderScript()}
 </body>

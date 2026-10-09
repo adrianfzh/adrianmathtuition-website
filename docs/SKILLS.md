@@ -12,6 +12,31 @@ Adrian invokes one by typing `/<name>`, or just by describing the task — each
 skill's `description:` carries its trigger phrases. This file exists because
 several of them are paper-shaped and it stops being obvious which is which.
 
+## Which door makes which worksheet? (9 Oct 2026, Adrian: one kitchen per job)
+
+Every questions-only sheet prints the SAME house layout whichever door made it
+(Times 9.5 pt at 1.5 lines, A4 2 / 1 / 2.5 / 2.5 cm, "1." at the margin, parts
+at 1.0 / 2.0 cm, marks at 15.5 cm, one orange `[Ans:]` line per question) — the
+Word files from `worksheet_lib.py` and `lib/pick-worksheet-docx.ts` and the PDF
+from `lib/render-bot-worksheet.ts` are measured against each other
+(`pick-worksheet-docx.test.ts`, `render-bot-worksheet.test.ts`). Each KIND of
+sheet has ONE door:
+
+| The sheet I want | The one door | Word file | PDF |
+|---|---|---|---|
+| Questions I picked by hand (a session's shortlist, a saved selection, a search) | `/admin/worksheet-picker` | built in the browser (`lib/pick-worksheet-docx.ts`) | `lib/render-bot-worksheet.ts` (Puppeteer) |
+| Questions the bank picks for me, by topic (five kinds: questions-only, with worked examples, revision sheet, my own sheet with new practice, a paper) | `/admin/worksheets` or Telegram `/ws` | kinds 1 / 2 / 4 / 5: the Fly builder (`worksheet_jobs`, bot repo) | kind 3: `lib/render-bot-worksheet.ts`; the others: **Word in the cloud** on the Fly builder (`scripts/sheet-worker/ms_graph_pdf.py`), never LibreOffice |
+| A sheet that needs NEW questions written (nothing in the bank fits) | `create-worksheet` in a chat session (`worksheet_lib.py`), or `gce-paper` for a whole paper | the session writes it | Microsoft Word on this Mac (`scripts/sheet-worker/render_sheet.py export_pdf`), or the Fly builder's Word in the cloud — never LibreOffice (it ran aligned equations together and re-paginated 11 pages to 16, 18 Sep 2026) |
+
+- **A cloud session (claude.ai/code) never builds a PDF itself** — it has no Word
+  and LibreOffice is not faithful. It pushes the Word file or queues a
+  `worksheet_jobs` row and lets the Fly builder export it.
+- The picker's Word file follows `worksheet_lib.py` number for number with two
+  deliberate differences Adrian asked for on 9 Oct 2026: a part's text and ALL
+  its working lines travel together, and with working space every question after
+  the first starts on a fresh page (the GCE way). The Python library still glues
+  only the first two lines and flows questions on.
+
 ## Which one do I want?
 
 | I want to… | Skill |

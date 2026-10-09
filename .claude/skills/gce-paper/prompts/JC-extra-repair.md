@@ -1,2 +1,0 @@
-
-H2 (27 Sep 2026): also read `__RUN__/Q__N__.idea.md` — the idea this slot was built from. If the verdict says the question fell back into a §9 template or lost its §8 move, rebuild it FROM the move (standard.md §8), not by adding a twist to the template; keep the stem to three sentences before the first part unless the situation carries the maths. If the verdict names a different move that would serve better, you may take it.

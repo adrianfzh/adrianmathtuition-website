@@ -57,6 +57,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | Stale-doc sweeper | [`docs/OPS.md`](docs/OPS.md) §🧹 |
 | Other people's exam questions (what may be served) | [`docs/CONTENT-POLICY.md`](docs/CONTENT-POLICY.md) |
 | Telegram `/ws` worksheet menu | [`SPEC-WORKSHEET-MENU.md`](SPEC-WORKSHEET-MENU.md) |
+| Which door makes which worksheet (picker · `/ws` · create-worksheet), where its PDF comes from | [`docs/SKILLS.md`](docs/SKILLS.md) top table |
 | Learn from Adrian | [`docs/LEARN-FROM-ADRIAN.md`](docs/LEARN-FROM-ADRIAN.md) |
 | Commit / push / preview alias / promote detail, CLI seat block | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
 | Patterns (sgt.ts, teaching-knowledge layer, figure library, student files, Puppeteer, KaTeX), every gotcha, env-var notes | [`docs/PATTERNS.md`](docs/PATTERNS.md) |

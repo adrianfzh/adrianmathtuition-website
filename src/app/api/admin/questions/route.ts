@@ -31,7 +31,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { cleanScan } from '@/lib/figure-clean';
 import { solutionImageAllowed, partImagePaths, type SolutionImageGate } from '@/lib/bank-question-markdown';
 import { solutionImageGateFor } from '@/lib/solution-image-gate';
-import { fromDetail, ansLine, type DetailRow } from '@/lib/pick-worksheet';
+import { fromDetail, ansLine, questionMarkdown, type DetailRow } from '@/lib/pick-worksheet';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // the worksheet action renders a Puppeteer PDF
@@ -890,12 +890,16 @@ export async function POST(req: NextRequest) {
       if (row.has_image && !figureUrl && !clean) {
         warnings.push(`Q${row.question_number ?? '?'} (${row.school ?? 'bank'}): image not watermark-clean — printed without its figure`);
       }
-      // The plain sheet prints ONE [Ans:] line per question built the picker's
-      // way (shown/proved parts left out, top-level answer as the fallback).
-      const plainAns = body.style === 'plain' ? ansLine(fromDetail(detail(row) as unknown as DetailRow)) : null;
+      // The plain sheet (the picker) prints from the picker's OWN model —
+      // the same parts, marks and ONE [Ans:] line (shown/proved parts left
+      // out, top-level answer as the fallback) as its Word file — so the two
+      // files never disagree (a parent part stamped with its sub-parts' total
+      // printed "[5]" over "[1] [1] [3]" through the kiosk flattening, 9 Oct 2026).
+      const pick = body.style === 'plain' ? fromDetail(detail(row) as unknown as DetailRow) : null;
+      const plainAns = pick ? ansLine(pick) : null;
       questions.push({
         id: qid,
-        markdown: flat.text,
+        markdown: pick ? questionMarkdown(pick) : flat.text,
         marks: (row.total_marks as number | null) ?? null,
         figureUrl,
         imageUrls,
