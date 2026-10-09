@@ -228,6 +228,17 @@ plan and stops (no env needed). Students of the level see "Set n · Paper 1/2" o
 `/app/print` the moment every question of that paper is in; the health-check `print-sets`
 probe alarms on an incomplete set.
 
+**The folder copy follows the bank (9 Oct 2026, Adrian: "can you automatically put the
+papers in the database here?").** Dropbox › Apps › AdrianMathNotes › School Papers holds
+one PDF per Set paper, named `AdrianMath-<AM|EM|H2>-Set<n>-Paper<1|2>.pdf` (H2 also
+`-solutions.pdf`). `npx tsx scripts/gce-paper/sync-folder.mts` prints each paper whose bank
+rows changed since its last print (fingerprints in the folder's hidden `.sets-sync.json`)
+through the live site's Print route and replaces the file; `--dry` lists, `--force` prints
+all. `publish.mjs` runs it at the end of every publish. No timer (Adrian: "it's not a
+common thing") — after an edit made any other way (the bank page, SQL), run it by hand.
+Rule and names: `src/lib/sets-dropbox.ts`. The H2 `.docx` copies there are from the
+30 Sep generator run, not the bank; the bank's H2 Paper 2 prints no Section A/B headings.
+
 First set: `GCE-AM-P1-seed1` (13 Q, figures on Q7/Q9/Q10/Q13) + `GCE-AM-P2-seed1`
 (10 Q, figures on Q6/Q10), written 8 Sep 2026, JSON in `data/gce-generated/` (committed),
 **published as A Math Set 1 on 9 Sep 2026** (23 rows).

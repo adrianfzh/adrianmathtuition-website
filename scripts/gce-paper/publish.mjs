@@ -253,3 +253,11 @@ for (const p of plan) {
   }
 }
 console.log(`\n${setKey}: ${inserted} inserted, ${updated} updated — students on /app/print see "${examType} · Paper ${paperNo}" once the whole paper is in.`);
+
+// The readable copy in Dropbox › Apps › AdrianMathNotes › School Papers follows the bank
+// (9 Oct 2026, lib/sets-dropbox.ts): re-print this paper's file there. Never fails a publish.
+try {
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync('npx', ['tsx', join(ROOT, 'scripts', 'gce-paper', 'sync-folder.mts')], { cwd: ROOT, stdio: 'inherit' });
+  if (r.status !== 0) console.warn('⚠ the School Papers folder copy was not refreshed — run: npx tsx scripts/gce-paper/sync-folder.mts');
+} catch (e) { console.warn(`⚠ School Papers folder copy skipped: ${e.message}`); }
