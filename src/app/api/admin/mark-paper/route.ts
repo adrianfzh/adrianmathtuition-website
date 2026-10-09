@@ -79,8 +79,8 @@ export async function POST(req: NextRequest) {
       try {
         const ids = data.runs.map((x: { id?: string }) => x.id).filter(Boolean);
         const { data: rows } = await getSupabaseAdmin()
-          .from('paper_marking_runs').select('id, checked_at, paper_subject, paper_kind:result_json->source->>paper_kind').in('id', ids);
-        type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null };
+          .from('paper_marking_runs').select('id, checked_at, paper_subject, queue_status, queue_failed_reason, paper_kind:result_json->source->>paper_kind').in('id', ids);
+        type R = { id: string; checked_at: string | null; paper_subject: string | null; paper_kind: string | null; queue_status: string | null; queue_failed_reason: string | null };
         const byId = new Map(((rows ?? []) as R[]).map((row) => [row.id, row]));
         // paper_subject + practice_again feed the list's ticks for a merged
         // Practice Again sheet (30 Sep 2026, the desk retired into this page).
@@ -88,6 +88,14 @@ export async function POST(req: NextRequest) {
           const row = byId.get(run.id);
           run.checked_at = row?.checked_at ?? null;
           run.paper_subject = row?.paper_subject ?? null;
+          // A paper taken off the queue by hand has queue_status 'failed' and a reason, but
+          // no failed_at inside result_json — the list kept saying "queued — waiting for a
+          // free slot" for five cancelled bench scripts (Adrian, 9 Oct 2026: "why are there
+          // still leftover papers to be marked?").
+          if (row?.queue_status === 'failed' && run.total_max == null) {
+            run.queue_failed = run.queue_failed || run.created_at || 'failed';
+            run.queue_failed_reason = row.queue_failed_reason ?? null;
+          }
           run.practice_again = row?.paper_kind === 'practice-again' || /^\s*practice again\b/i.test(String(run.paper_name || ''));
         }
       } catch { /* the list is still useful without the split */ }
