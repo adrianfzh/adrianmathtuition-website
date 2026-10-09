@@ -1,6 +1,6 @@
 # SPEC — Ready for the next test (the self-learning loop, companion first)
 
-*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (ten of eleven steps, admin only); REVISE and the test loop are design.**
+*Agreed with Adrian in the design talk of 8 Oct 2026. **Status: the LEARN path for Sec 2 expansion is being built (all eleven steps of his notes, admin only); REVISE and the test loop are design.**
 Everything here stays closed to students until he opens it (`docs/SWITCHES.md`). No paid
 spend without his word. Build order is §11; each step is shown to him before the next.*
 
@@ -138,7 +138,8 @@ simplify · two brackets · a number in front · further expansion · special pr
 formula · special products with other terms · using the identity · without a calculator ·
 "hence" questions; the last three have answers that are numbers, their working derived from
 the numbers; a "hence" question shows both parts and the typed answer is part (b)).
-**To come: 6 (fractions — the checker needs fractions).**
+**6, expansion with fractions, built the same day** (the checker reads 3/4x, the keypad has
+a fraction key, the Rainbow sets fractions) — **all eleven ideas of the chapter are built.**
 Two printed answers in the notes are wrong and are corrected in the steps: recap
 −2b(3 − 4b + 6c) ends −12bc (printed −12c); Practice 1b (a) is 2x² − 4xy − 30y² (printed −xy).
 

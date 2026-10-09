@@ -149,6 +149,11 @@ export function exprTex(q: string): string {
       while (j < s.length && /[0-9]/.test(s[j])) j++;
       out += `^{${s.slice(i + 1, j)}}`;
       i = j - 1;
+    } else if (/[0-9]/.test(c) && /^[0-9]+\/[0-9]+/.test(s.slice(i))) {
+      // A fraction written 3/4 is set as a fraction.
+      const [whole, top, under] = /^([0-9]+)\/([0-9]+)/.exec(s.slice(i))!;
+      out += `\\frac{${top}}{${under}}`;
+      i += whole.length - 1;
     } else if ((c === '+' || c === '-') && prev !== undefined && prev !== '(') out += ` ${c} `;
     else if (c === '*') out += ' \\times ';
     else out += c;
@@ -425,8 +430,9 @@ export function mark(x: Question, typedRaw: string, trap?: string): Verdict {
   }
   if (!typed) return { kind: 'unreadable', say: 'That could not be read. Type it like x² + 5x − 6.' };
   if (equal(typed.poly, w.want)) {
-    if (typed.hasBrackets) return { kind: 'unfinished', say: 'That is still in brackets. Expand it fully.' };
-    if (!isCollected(typed)) return { kind: 'unfinished', say: 'Right so far. Now add up the like terms.' };
+    // Still in brackets = a bracket with a letter in it; (1/2)a is only a fraction set apart.
+    if (/\([^()]*[a-zA-Z]/.test(typedRaw)) return { kind: 'unfinished', say: 'That is still in brackets. Expand it fully.' };
+    if (!typed.hasBrackets && !isCollected(typed)) return { kind: 'unfinished', say: 'Right so far. Now add up the like terms.' };
     return { kind: 'correct' };
   }
   const known = w.br ? diagnose(w.br, typed.poly) : null;

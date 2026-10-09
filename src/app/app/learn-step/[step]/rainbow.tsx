@@ -6,7 +6,7 @@
 // one in colour (the piece being multiplied), 0 when the working is finished.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { Brackets } from '@/lib/learn-step';
-import type { Term } from '@/lib/poly';
+import { toFraction, type Term } from '@/lib/poly';
 
 const INK = '#334155';
 export const ACTIVE = '#b45309';
@@ -15,9 +15,19 @@ const PAD = 56; // room above and below the line for the arcs
 function Body({ t }: { t: Term }) {
   const n = Math.abs(t.coef);
   const letters = Object.keys(t.vars).sort();
+  const f = toFraction(n);
   return (
     <>
-      {(n !== 1 || letters.length === 0) && <span>{n}</span>}
+      {(n !== 1 || letters.length === 0) && (
+        f && f[1] !== 1
+          ? (
+            <span className="inline-flex flex-col items-center align-middle text-[0.62em] leading-[1.05] mx-[0.08em]">
+              <span className="border-b border-current px-[0.2em]">{f[0]}</span>
+              <span>{f[1]}</span>
+            </span>
+          )
+          : <span>{n}</span>
+      )}
       {letters.map(v => (
         <span key={v} style={{ fontFamily: 'KaTeX_Math, "Times New Roman", serif', fontStyle: 'italic' }}>
           {v}{t.vars[v] > 1 && <sup style={{ fontFamily: 'KaTeX_Main, serif', fontStyle: 'normal', fontSize: '0.7em' }}>{t.vars[v]}</sup>}

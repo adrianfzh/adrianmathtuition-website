@@ -3,7 +3,7 @@
 // (Dropbox/1 ONLINE LESSONS/1 NOTES/4 Notes S2 Math G3/S2 MATH 01 Algebra 1
 // Expansion.pdf) — his examples, his methods, his margin words; the first set of
 // five in a step is his own Practice where the notes have one. Built so far:
-// ideas 1–5 and 7–11 of the eleven; 6 (fractions) is still to come.
+// all eleven ideas.
 // learn-step.test.ts checks every question, every written line and his printed answers.
 
 import {
@@ -176,6 +176,30 @@ const FURTHER_EXPANSION: LearnStep = {
     ['(x+2)(x+5)-4x', '5a-(a+3)(a-2)', '(2x-1)(x+3)+2(x-4)', '(a+2b)(a-b)-ab', '(x+4)(x-2)-(x-1)(x+3)'],
     ['(y-3)(y+6)+2y', '8m-(2m+1)(m-5)', '(3x+2)(x-1)-3(x+2)', '(2a-b)(a+3b)+5ab', '(x+1)(x+5)-(x-2)(x-3)'],
   ],
+  next: 'Expansion with fractions',
+  nextSlug: 'expansion-with-fractions',
+};
+
+const WITH_FRACTIONS: LearnStep = {
+  slug: 'expansion-with-fractions',
+  index: 6,
+  of: OF,
+  title: 'Expansion with fractions',
+  ask: 'Expand and simplify',
+  idea: [
+    'Expand as usual, with the Rainbow. Just that you multiply with fractions now.',
+    'Multiply the tops, multiply the bottoms, then simplify: ¼ × 4b = b.',
+  ],
+  trap: 'Multiply the fraction into every term, and simplify each piece.',
+  // His Practice 3 a and c; d and the squares from Practice 4 and Assignment 1 are in the fives.
+  example: '1/4(2a-4b)',
+  tryOne: '5/2(6x+8y)',
+  sets: [
+    ['3/4(8x-12)', '2/3(9a+6b)', '(1/2x+1/3y)(2/3x-1/2y)', '(2x-1/2)^2', '(1/4a+b)^2'],
+    ['1/2(4x+10)', '-1/3(6a-9b)', '(x+1/2)(x-1/2)', '(3a-2/5b)^2', '(2/5a+1/6b)^2'],
+    ['3/5(10m-15n)', '1/6(12x+18y)', '(1/2x+3)(4x-2)', '(x+1/3)^2', '(1/2a-4)^2'],
+    ['5/4(8p+4q)', '-1/2(6x-3)', '(2/3x-1)(3x+6)', '(1/3x+3y)^2', '(x-3/2)^2'],
+  ],
   next: 'Special products',
   nextSlug: 'special-products',
 };
@@ -324,7 +348,7 @@ const HENCE_QUESTIONS: LearnStep = {
 };
 
 export const LEARN_STEPS: readonly LearnStep[] = [
-  ONE_BRACKET, EXPAND_AND_SIMPLIFY, TWO_BRACKETS, NUMBER_IN_FRONT, FURTHER_EXPANSION, SPECIAL_PRODUCTS,
+  ONE_BRACKET, EXPAND_AND_SIMPLIFY, TWO_BRACKETS, NUMBER_IN_FRONT, FURTHER_EXPANSION, WITH_FRACTIONS, SPECIAL_PRODUCTS,
   SPECIAL_PRODUCTS_MIXED, USING_THE_IDENTITY, WITHOUT_A_CALCULATOR, HENCE_QUESTIONS,
 ];
 

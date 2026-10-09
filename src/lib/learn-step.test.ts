@@ -9,7 +9,7 @@ import { LEARN_STEPS, learnStepBySlug, learnStepForClip } from './learn-steps';
 
 const tex = (s: string) => polyTex(parseExpr(s)!.poly);
 /** A line of working as the checker reads it: no "= ", no KaTeX braces. */
-const asTyped = (line: string) => line.replace(/^=\s*/, '').replace(/[{}]/g, '');
+const asTyped = (line: string) => line.replace(/^=\s*/, '').replace(/\\frac\{([0-9]+)\}\{([0-9]+)\}/g, '$1/$2').replace(/[{}]/g, '');
 
 describe('poly — reading what a student types', () => {
   it('reads powers, side-by-side products and the minus signs a phone types', () => {
@@ -22,7 +22,7 @@ describe('poly — reading what a student types', () => {
   });
 
   it('refuses what it cannot read, never guesses', () => {
-    for (const bad of ['', 'x +', '(x+3', 'x^', 'x = 2', '3/4', 'x^99', '2..3']) expect(parseExpr(bad)).toBeNull();
+    for (const bad of ['', 'x +', '(x+3', 'x^', 'x = 2', 'x/y', '3/0', 'x^99', '2..3']) expect(parseExpr(bad)).toBeNull();
   });
 
   it('knows a collected sum from one with like terms left', () => {
@@ -87,6 +87,39 @@ describe('learn-step — special products, by the formula (his notes §4)', () =
     expect(slip('4p² + 6pq + 9q²')?.key).toBe('half-middle');
     expect(slip('4p² − 12pq + 9q²')?.key).toBe('sign');
     expect(mark('(2p+3q)^2', '4p² + 12pq + 9q²').kind).toBe('correct');
+  });
+});
+
+describe('learn-step — fractions (his notes §3)', () => {
+  it('reads a typed fraction and writes one out', () => {
+    expect(tex('1/2a − b')).toBe('\\frac{1}{2}a - b');
+    expect(tex('x/2 + 3/4')).toBe('\\frac{1}{2}x + \\frac{3}{4}');
+    expect(tex('1/3 x + 1/6 x')).toBe('\\frac{1}{2}x');
+    expect(exprTex('3/4(3x+y)(2x-1/4y)')).toBe('\\frac{3}{4}(3x + y)(2x - \\frac{1}{4}y)');
+  });
+
+  it('works his Practice 3 a with the Rainbow', () => {
+    const w = work('1/4(2a-4b)')!;
+    expect(w.shape).toBe('rainbow');
+    expect(w.lines.map(l => l.tex)).toEqual(['\\frac{1}{4}(2a - 4b)', '= \\frac{1}{2}a - b']);
+    expect(mark('1/4(2a-4b)', '1/2a − b').kind).toBe('correct');
+    expect(mark('1/4(2a-4b)', 'a/2 − b').kind).toBe('correct');
+    // A bracket round a bare fraction is not an unexpanded bracket.
+    expect(mark('1/4(2a-4b)', '(1/2)a − b').kind).toBe('correct');
+    expect(mark('1/4(2a-4b)', '1/4(2a − 4b)').kind).toBe('unfinished');
+    expect(mark('1/4(2a-4b)', '2/4a − 4/4b').kind).toBe('correct');
+    const v = mark('1/4(2a-4b)', '1/2a − 4b');
+    expect(v.kind === 'wrong' && v.slip.key).toBe('first-only');
+  });
+
+  it('gets his printed answers for the squares with fractions', () => {
+    // Practice 4 Q2, Q3 and Assignment 1 Q3.
+    expect(mark('(2x-1/2)^2', '4x² − 2x + 1/4').kind).toBe('correct');
+    expect(mark('(2/5a+1/6b)^2', '4/25a² + 2/15ab + 1/36b²').kind).toBe('correct');
+    expect(mark('(1/4a+b)^2', '1/16a² + 1/2ab + b²').kind).toBe('correct');
+    expect(mark('(3a-2/5b)^2', '9a² − 12/5ab + 4/25b²').kind).toBe('correct');
+    expect(work('(2x-1/2)^2')!.lines[1].tex).toBe('= (2x)^{2} - 2(2x)(\\frac{1}{2}) + (\\frac{1}{2})^{2}');
+    expect(work('(1/2x+1/3y)(2/3x-1/2y)')!.answerTex).toBe('\\frac{1}{3}x^{2} - \\frac{1}{36}xy - \\frac{1}{6}y^{2}');
   });
 });
 
@@ -285,7 +318,7 @@ describe('learn-steps — the chapter', () => {
   });
 
   it('runs in the order of his notes, each step leading to one that exists', () => {
-    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 7, 8, 9, 10, 11]);
+    expect(LEARN_STEPS.map(s => s.index)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
     for (const step of LEARN_STEPS) {
       if (step.nextSlug) expect(learnStepBySlug(step.nextSlug), `${step.slug} → ${step.nextSlug}`).not.toBeNull();
       // A step's clip must be a lesson that exists.

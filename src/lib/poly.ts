@@ -1,5 +1,5 @@
-// Polynomials with integer coefficients — just enough algebra to mark a typed
-// expansion at once (SPEC-SELF-LEARNING.md §4). `lib/notebook.checkTypedAnswer`
+// Polynomials with whole-number or simple-fraction coefficients — just enough
+// algebra to mark a typed expansion at once (SPEC-SELF-LEARNING.md §4). `lib/notebook.checkTypedAnswer`
 // grades an expression answer 'unclear' (no symbolic equivalence); a revision
 // step needs right or wrong on the spot, with no model call. Pure.
 
@@ -9,6 +9,17 @@ export interface Term { coef: number; vars: Record<string, number> }
 export type Poly = Map<string, Term>;
 
 const MAX_POWER = 8;
+/** Coefficients are plain numbers; a fraction is held as its value and two of them are "the same" within this. */
+const EPS = 1e-9;
+
+/** A coefficient as a fraction in lowest terms — 0.75 → [3, 4], 2 → [2, 1]. Null when it is not a simple one. */
+export function toFraction(x: number): [number, number] | null {
+  for (let d = 1; d <= 720; d++) {
+    const n = x * d;
+    if (Math.abs(n - Math.round(n)) < EPS * d) return [Math.round(n), d];
+  }
+  return null;
+}
 
 export function termKey(vars: Record<string, number>): string {
   return Object.keys(vars).filter(v => vars[v] > 0).sort().map(v => (vars[v] === 1 ? v : `${v}^${vars[v]}`)).join('*');
@@ -20,7 +31,7 @@ export function polyOf(terms: Term[]): Poly {
     const key = termKey(t.vars);
     const had = p.get(key);
     const coef = (had ? had.coef : 0) + t.coef;
-    if (coef === 0) p.delete(key);
+    if (Math.abs(coef) < EPS) p.delete(key);
     else p.set(key, { coef, vars: cleanVars(t.vars) });
   }
   return p;
@@ -75,6 +86,7 @@ export function normaliseTyped(raw: string): string {
     .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => '^' + [...m].map(c => SUPER[c]).join(''))
     .replace(/[−–—‒]/g, '-')
     .replace(/[×·∙⋅]/g, '*')
+    .replace(/[÷∕⁄]/g, '/')
     .replace(/\*\*/g, '^')
     .replace(/\s+/g, '');
 }
@@ -152,6 +164,14 @@ export function parseExpr(raw: string): Parsed | null {
     let out = unary();
     while (ok && i < s.length) {
       if (s[i] === '*') { i++; out = mul(out, unary()); }
+      else if (s[i] === '/') {
+        // A fraction: only a number may go underneath — 3/4x is three-quarters of x.
+        i++;
+        const under = power();
+        const k = under.size === 1 ? under.get('')?.coef : undefined;
+        if (!ok || !k) { ok = false; return out; }
+        out = scale(out, 1 / k);
+      }
       else if (startsFactor(s[i])) out = mul(out, power());
       else break;
     }
@@ -207,10 +227,11 @@ function varsTex(vars: Record<string, number>): string {
 
 /** One term without its sign: 2x^{2}, x, 6. */
 export function termBodyTex(t: Term): string {
-  const n = Math.abs(t.coef);
   const v = varsTex(t.vars);
-  if (!v) return String(n);
-  return (n === 1 ? '' : String(n)) + v;
+  const f = toFraction(Math.abs(t.coef));
+  const n = !f ? String(Math.abs(t.coef)) : f[1] === 1 ? String(f[0]) : `\\frac{${f[0]}}{${f[1]}}`;
+  if (!v) return n;
+  return (n === '1' ? '' : n) + v;
 }
 
 /** A term as it stands alone: −2x, 3, x^{2}. */

@@ -95,13 +95,13 @@ function Keypad({ letters, onKey }: { letters: string[]; onKey: (k: string) => v
   const SIGN = 'bg-slate-50 border-slate-300 text-navy font-semibold';
   return (
     <div className="space-y-1.5 select-none">
-      <div className="grid grid-cols-5 gap-1.5">
-        {letters.map(k => (
-          <button key={k} type="button" onClick={() => onKey(k)} aria-label={k} className={`${KEY} ${SIGN}`}><i>{k}</i></button>
-        ))}
-        <button type="button" onClick={() => onKey('0')} aria-label="0"
-          className={`${KEY} bg-white border-slate-200 text-slate-800`} style={{ gridColumn: `span ${Math.max(1, 5 - letters.length)}` }}>0</button>
-      </div>
+      {letters.length > 0 && (
+        <div className="grid grid-cols-5 gap-1.5">
+          {letters.map(k => (
+            <button key={k} type="button" onClick={() => onKey(k)} aria-label={k} className={`${KEY} ${SIGN}`}><i>{k}</i></button>
+          ))}
+        </div>
+      )}
       {rows.map((row, r) => (
         <div key={r} className="grid grid-cols-5 gap-1.5">
           {row.map(k => (
@@ -117,6 +117,10 @@ function Keypad({ letters, onKey }: { letters: string[]; onKey: (k: string) => v
           ))}
         </div>
       ))}
+      <div className="grid grid-cols-5 gap-1.5">
+        <button type="button" onClick={() => onKey('0')} aria-label="0" className={`${KEY} col-span-3 bg-white border-slate-200 text-slate-800`}>0</button>
+        <button type="button" onClick={() => onKey('/')} aria-label="fraction bar" className={`${KEY} col-span-2 ${SIGN}`}>/</button>
+      </div>
     </div>
   );
 }
