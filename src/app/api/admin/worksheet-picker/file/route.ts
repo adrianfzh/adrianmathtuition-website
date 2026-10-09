@@ -6,11 +6,18 @@
 // the folder /admin/notes and the kiosk read (lib/notes-list dropboxFolderFor).
 // Mode is add + autorename: a same-named sheet already on the shelf is never
 // replaced (a handed-over sheet is Adrian's), the new one lands beside it.
+//
+// The .docx is ALSO sent to Adrian's Telegram chat (TELEGRAM_CHAT_ID), the way a
+// /ws job delivers its sheet. Admin web UI actions are otherwise silent; this one
+// send is the deliberate exception (Adrian, 9 Oct 2026: "can it also be saved in
+// the same manner as for /ws?" — yes). `telegram` in the reply: true sent, false
+// failed, absent = no .docx was filed.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { dropboxConfigured, uploadFile } from '@/lib/dropbox';
 import { dropboxFolderFor } from '@/lib/notes-list';
 import { PRACTICE_FOLDERS, fileStem, type PracticeFolder } from '@/lib/pick-worksheet';
+import { sendTelegramDocument } from '@/lib/telegram';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -56,5 +63,12 @@ export async function POST(req: NextRequest) {
     }
   }
   if (!filed.length) return NextResponse.json({ error: errors.join('; ') || 'upload failed' }, { status: 502 });
-  return NextResponse.json({ ok: true, folder: dir, filed, errors });
+  let telegram: boolean | undefined;
+  const docx = files.find((f) => f.ext === 'docx');
+  const docxFiled = filed.find((f) => f.ext === 'docx');
+  if (docx && docxFiled) {
+    const chat = String(process.env.TELEGRAM_CHAT_ID || '').trim() || null;
+    telegram = await sendTelegramDocument({ bytes: docx.buf, filename: docxFiled.name, contentType: docx.type }, `📄 ${name} — filed to Practice/${folder}`, undefined, chat);
+  }
+  return NextResponse.json({ ok: true, folder: dir, filed, errors, telegram });
 }

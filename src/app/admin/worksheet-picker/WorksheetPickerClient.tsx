@@ -260,6 +260,7 @@ export default function WorksheetPickerClient() {
   const [folder, setFolder] = useState<PracticeFolder | ''>('');
   const [fileName, setFileName] = useState('');
   const [filing, setFiling] = useState(false);
+  const [fileFailed, setFileFailed] = useState(false);
   const [filed, setFiled] = useState<string[]>([]);
 
   const sensors = useSensors(
@@ -447,10 +448,19 @@ export default function WorksheetPickerClient() {
     } catch (e) { say((e as Error).message, 'err'); }
   }
 
+  // The folder and file name shown above Done, before anything is built, so a
+  // wrong guess is seen before it is filed (Adrian, 9 Oct 2026, "yes to both").
+  const folderShown: PracticeFolder = folder || practiceFolderFor(picked.map((id) => byId.get(id)?.level ?? '')) || 'JC';
+  const fileNameShown = fileName || fileStem(title.trim());
+
+  /** Done — build the DOCX here, the PDF on the server, then file BOTH to the
+   *  Practice shelf and send the .docx to Adrian's Telegram by itself, the way a
+   *  /ws job does (Adrian, 9 Oct 2026: "can it also be saved in the same manner
+   *  as for /ws?") — no second press. */
   async function done() {
     if (!picked.length) { say('Drag some questions to the worksheet first', 'err'); return; }
     if (!title.trim()) { say('Give the sheet a title', 'err'); return; }
-    setPdfUrl(null); setDocxUrl(null);
+    setPdfUrl(null); setDocxUrl(null); setFiled([]); setFileFailed(false);
     const qs = picked.map((id) => byId.get(id)!).filter(Boolean);
     try {
       setBusy('Building the DOCX…');
@@ -458,9 +468,6 @@ export default function WorksheetPickerClient() {
       const blob = await buildPickWorksheetDocx({ title: title.trim(), subtitle: subtitle.trim(), questions: qs, workingSpace });
       setDocxBlob(blob);
       setDocxUrl(URL.createObjectURL(blob));
-      setFiled([]);
-      if (!folder) setFolder(practiceFolderFor(qs.map((q) => q.level)) ?? 'JC');
-      if (!fileName) setFileName(fileStem(title.trim()));
       setBusy('Rendering the PDF…');
       const r = await fetch('/api/admin/questions', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -470,30 +477,33 @@ export default function WorksheetPickerClient() {
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       setPdfUrl(d.url);
       if (Array.isArray(d.warnings) && d.warnings.length) say(d.warnings.join(' · '), 'err');
-      else say('Both files are ready');
+      setBusy('Filing to Dropbox + sending…');
+      await fileToDropbox(blob, d.url as string);
     } catch (e) {
       say((e as Error).message, 'err');
     } finally { setBusy(null); }
   }
 
-  /** Both files onto the kiosk's Practice shelf (Dropbox/Apps/AdrianMathNotes/Practice/<folder>). */
-  async function fileToDropbox() {
-    if (!docxBlob || !pdfUrl || !folder) { say('Build the files first', 'err'); return; }
-    setFiling(true);
+  /** Both files onto the kiosk's Practice shelf (Dropbox/Apps/AdrianMathNotes/Practice/<folder>);
+   *  the server also sends the .docx to Telegram. Called by Done, and by "File again" after a failure. */
+  async function fileToDropbox(blob = docxBlob, pdf = pdfUrl) {
+    if (!blob || !pdf) { say('Build the files first', 'err'); return; }
+    setFiling(true); setFileFailed(false);
     try {
-      const pdfRes = await fetch(pdfUrl);
+      const pdfRes = await fetch(pdf);
       if (!pdfRes.ok) throw new Error(`Could not read the PDF (HTTP ${pdfRes.status})`);
       const fd = new FormData();
-      fd.set('folder', folder);
-      fd.set('name', fileStem(fileName || title));
-      fd.set('docx', new File([docxBlob], 'sheet.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
+      fd.set('folder', folderShown);
+      fd.set('name', fileStem(fileNameShown));
+      fd.set('docx', new File([blob], 'sheet.docx', { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' }));
       fd.set('pdf', new File([await pdfRes.blob()], 'sheet.pdf', { type: 'application/pdf' }));
       const r = await fetch('/api/admin/worksheet-picker/file', { method: 'POST', body: fd });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
       setFiled((d.filed as { path: string }[]).map((f) => f.path));
-      say(d.errors?.length ? `Filed with a problem: ${d.errors.join('; ')}` : `Filed to ${d.folder}`, d.errors?.length ? 'err' : 'ok');
-    } catch (e) { say((e as Error).message, 'err'); } finally { setFiling(false); }
+      const sent = d.telegram === true ? ', .docx sent to Telegram' : d.telegram === false ? ' (Telegram send failed)' : '';
+      say(d.errors?.length ? `Filed with a problem: ${d.errors.join('; ')}` : `Filed to ${d.folder}${sent}`, d.errors?.length || d.telegram === false ? 'err' : 'ok');
+    } catch (e) { setFileFailed(true); say((e as Error).message, 'err'); } finally { setFiling(false); }
   }
 
   // ── Save the state as you go (Adrian, 9 Oct 2026: "save the state so I can go
@@ -615,26 +625,26 @@ export default function WorksheetPickerClient() {
         </DndContext>
 
         <div className="fixed bottom-0 left-0 right-0 bg-white/95 border-t border-slate-200 backdrop-blur px-4 py-3">
+          <div className="max-w-6xl mx-auto mb-2 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-slate-600">Files to Dropbox Practice/</span>
+            <select value={folderShown} onChange={(e) => setFolder(e.target.value as PracticeFolder)} className="border border-slate-300 rounded-lg px-2 py-1 text-sm">
+              {PRACTICE_FOLDERS.map((f) => <option key={f} value={f}>{f}</option>)}
+            </select>
+            <span className="text-slate-600">/</span>
+            <input value={fileNameShown} onChange={(e) => setFileName(e.target.value)} placeholder="file name" className="flex-1 min-w-[200px] border border-slate-300 rounded-lg px-3 py-1 text-sm" />
+            <span className="text-xs text-slate-400">.docx + .pdf · the .docx also goes to Telegram</span>
+          </div>
           <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-3">
-            <button onClick={done} disabled={!!busy || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build PDF + DOCX (${picked.length})`}</button>
+            <button onClick={done} disabled={!!busy || filing || !picked.length} className="bg-indigo-600 text-white font-semibold rounded-lg px-5 py-2 text-sm disabled:opacity-40">{busy ?? `Done — build, file + send (${picked.length})`}</button>
             {pdfUrl && <a href={pdfUrl} target="_blank" rel="noreferrer" className="text-sm font-semibold text-indigo-700 underline">Open PDF</a>}
-            {docxUrl && <a href={docxUrl} download={`${fileStem(title)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
+            {docxUrl && <a href={docxUrl} download={`${fileStem(fileNameShown)}.docx`} className="text-sm font-semibold text-indigo-700 underline">Download DOCX</a>}
+            {filed.length > 0 && <span className="text-xs text-emerald-700 truncate" title={filed.join('\n')}>Filed ✓ {filed.map((p) => p.split('/').pop()).join(' · ')}</span>}
+            {fileFailed && docxBlob && pdfUrl && <button onClick={() => fileToDropbox()} disabled={filing} className="bg-emerald-600 text-white font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-40">{filing ? 'Filing…' : 'File again'}</button>}
             <button onClick={saveSelection} disabled={saving || (!picked.length && !cands.length)} className="text-sm text-slate-600 underline disabled:opacity-40">{saving ? 'Saving…' : 'Save as new selection'}</button>
             <button onClick={restart} disabled={!cands.length && !picked.length} className="text-sm text-slate-600 underline disabled:opacity-40">Restart</button>
             {restoredAt && <span className="text-xs text-slate-400">restored from {new Date(restoredAt).toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>}
             <button onClick={shareLink} disabled={!picked.length} className="text-sm text-slate-600 underline disabled:opacity-40 ml-auto">Copy link to this selection</button>
           </div>
-          {docxBlob && pdfUrl && (
-            <div className="max-w-6xl mx-auto mt-2 flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-slate-600">File to Dropbox Practice/</span>
-              <select value={folder} onChange={(e) => setFolder(e.target.value as PracticeFolder)} className="border border-slate-300 rounded-lg px-2 py-1 text-sm">
-                {PRACTICE_FOLDERS.map((f) => <option key={f} value={f}>{f}</option>)}
-              </select>
-              <input value={fileName} onChange={(e) => setFileName(e.target.value)} placeholder="file name" className="flex-1 min-w-[200px] border border-slate-300 rounded-lg px-3 py-1 text-sm" />
-              <button onClick={fileToDropbox} disabled={filing || !!filed.length} className="bg-emerald-600 text-white font-semibold rounded-lg px-4 py-1.5 text-sm disabled:opacity-40">{filing ? 'Filing…' : filed.length ? 'Filed ✓' : 'File .docx + .pdf'}</button>
-              {filed.length > 0 && <span className="text-xs text-slate-500 truncate" title={filed.join('\n')}>{filed.map((p) => p.split('/').pop()).join(' · ')}</span>}
-            </div>
-          )}
         </div>
 
         {toast && <div className={`fixed top-3 right-3 z-50 text-sm px-3 py-2 rounded-lg shadow ${toast.kind === 'ok' ? 'bg-emerald-600 text-white' : 'bg-red-600 text-white'}`}>{toast.msg}</div>}
