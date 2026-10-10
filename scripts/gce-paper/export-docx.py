@@ -139,6 +139,32 @@ def segs(text, attrs=None):
                 out.append(('math_display', latex))
         pos = m.end()
     txt(text[pos:])
+    return _no_break_after_math(out)
+
+
+# LibreOffice breaks a line between an inline formula and the text that follows
+# it, so a comma or a short unit lands alone at the start of the next line
+# (10 Oct 2026, Set 3 P1: "... = 2 + √3" / ", giving", "SN = 40" / "m.",
+# "1.3" / "km."). A word joiner glues punctuation to the maths; a no-break
+# space glues a unit of up to four letters to it.
+_GLUE_PUNCT = re.compile(r'^[,.;:)!?]')
+_GLUE_UNIT = re.compile(r'^ (?=(?:mm|cm|km|m|kg|g|ml|l|h|min|s|°|%|units?)(?:[.,;:)]|\s|$))')
+_GLUE_HYPHEN = re.compile(r'^-(?=[A-Za-z])')
+
+
+def _no_break_after_math(parts):
+    out = []
+    for i, part in enumerate(parts):
+        if i and part[0] == 'text' and parts[i - 1][0] == 'math' and part[1]:
+            s = part[1]
+            if _GLUE_PUNCT.match(s):
+                s = '\u2060' + s
+            elif _GLUE_HYPHEN.match(s):   # "$x$-axis" stays one word
+                s = '\u2011' + s[1:]
+            else:
+                s = _GLUE_UNIT.sub('\u00a0', s, count=1)
+            part = (part[0], s) + tuple(part[2:])
+        out.append(part)
     return out
 
 
