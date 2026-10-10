@@ -47,7 +47,7 @@ Writers:
   `next-lesson` (nightly 8pm SGT, `0 12 * * *` UTC — 📌 every student with a lesson
   tomorrow: the plan + the ready-to-print PDFs, silent; refreshes the last three days'
   unconfirmed auto logs; stamps every non-dry run → SPEC-STUDENT-FIRST §15),
-  `lesson-end` (hourly at :10, 11:10–21:10 SGT, `10 3-13 * * *` UTC — 📒 the lesson log
+  `lesson-end` (twice an hour at :02 and :32, 11:02–21:32 SGT, `2,32 3-13 * * *` UTC — 📒 the lesson log
   that fills itself + one Telegram line per student, switch `lesson_end_line` →
   docs/SCHEDULE.md), `progress-notes` (the Fly worker, 17:05 SGT daily — 📝 the student
   card's progress note; switch `progress-notes`),
@@ -101,7 +101,7 @@ Writers:
 - **Anything shell-ish** can `POST /api/job-log` (`Bearer CRON_SECRET` or admin)
   with `{job, ok?, summary?}` — job must be a kebab-case slug. **`find-review`**
   (the nightly Find-a-question similarity review, `scripts/find-review/`,
-  launchd `com.adrianmath.findreview`, 05:30 SGT + login catch-up, 6 Sep 2026)
+  the Fly worker's `find-review` job, 05:30 SGT; built 6 Sep 2026 as a Mac launchd job, unloaded 8 Oct 2026)
   stamps this way as the last step of its runbook (`REVIEW_PROMPT.md`) — every
   night, quiet days included (`ok=true`, summary `<date>: N finds · N judged ·
   N misses`); its wrapper `run.sh` stamps `ok=false` with the reason when the
@@ -150,8 +150,7 @@ Similar / Same-chapter-only / Off, `POST`s the verdicts into
 topic; SPEC-PORTAL-V2 §4) takes the same nightly shape:
 `'find-review': { kind: 'interval', hours: 36, label: 'nightly 5:30am' }` in
 `lib/job-health.ts` (armed 6 Sep 2026 with the route, the scripts and the
-`find-review` health-check probe). Install on the Mac with
-`bash scripts/find-review/install.sh`.
+`find-review` health-check probe). Runs on the Fly worker (bot `worker/fly/jobs.sh` `job_find_review`); the Mac install script is no longer used.
 
 **`twin-batch`** (the Fly worker's 👯 twins lane since 30 Sep 2026, SPEC-TWINS §10 phase 1 — bot `worker/fly/twins.sh`, a `jobs.sh` lane every 15 min at nice 15: by day only when the marking queue is empty, always 00–06 SGT; `TWINS_LANE=0` parks it, `TWINS_LEVEL`/`TWINS_PER_RUN` tune it). One run = up to 3 untwinned school questions → our own twins with `verified=false`, each role its own `claude -p` on a pooled login (author Opus → gates → Sonnet blind → Opus moderate → figure → publish); run dirs `/data/twins/<source-id>/` with `published` / `parked` markers; Adrian verifies on `/admin/generated` (✓ Verify). Stamps on every run that looked at the queue, empty or not; `meta` carries `published` / `parked_*` / `failed`. Rhythm `'twin-batch': { kind: 'interval', hours: 30 }`. **Three lanes since 30 Sep 2026** (`TWINS_LANES=3` in the bot's `fly.worker.toml`; `twins2` / `twins3` in `jobs.sh`, each 5 min behind the one before, logs `twins2.log` / `twins3.log`): lane two works the A Math tree (`TWINS_LEVEL_2`), lane three lane one's level; a source is claimed by an atomic `mkdir` under `/tmp/adrianmath-twins-locks`, the marking queue is asked again between sources, a run waits under 1.5 GB free, and twin sessions do not count against `MAX_SESSIONS` (the `[twins lane]` prompt prefix, like extraction's exclusion).
 
@@ -398,7 +397,7 @@ Rules:
 | Task | Schedule | Mac | Status (2026-08-27) | What it does |
 |---|---|---|---|---|
 | `topup-bank-nightly` | 3:30am daily | **the Fly worker** (bot `worker/fly/jobs.sh job_qb_topup`, switch `qb-topup`) — **since 7 Oct 2026**; the Air's task went silent 9 Sep | ✅ live | plan-billed question-bank topup (spec in its SKILL.md; stamps `qb-topup`). Starts a session ONLY when a `generation_requests` row waits (requests come from Practice photo and admin top-ups); an empty night stamps ok with no session |
-| `file-subgroups` + `file-subgroups-science` | maths 04:15 + 16:15 · science 10:15 + 22:15 | the Fly worker (`worker/fly/jobs.sh job_file_subgroups`, since 2 Oct 2026) | ✅ live once deployed | 🗂 the sub-skill filer: 300 topic-tagged questions a run filed under ONE sub-skill each (`question_subgroups`, source `cc_backfill`), Opus 5.5 at medium effort (measured: effort makes no difference to the labels), two-reader rule under 0.75, never the API. The Mac task that ran it had not stamped since 9 Sep 2026 — three weeks of extraction went unfiled (maths 2,547, science 7,100 on 2 Oct). Science = the science project, trees PHY / CHEM / BIO, a Combined Science question filed under its subject's pure tree. The wrapper stamps the backlog before and after. N(A) / N(T) / JC H1 maths and lower-sec science have no tree and are never filed. Since 9 Oct 2026: the reader gets the whole question (all parts with marks; a thin figure-only stem also gets its solution text); maths `legacy_syllabus` rows are neither fetched nor counted; a multi-skill question is filed under the sub-skill with the most marks (tie → the later 'hence' part). New outcome 'not under this topic': when the question is filed under another topic of the same tree the seen ledger records `other_topic` (never expires, not backlog; tags untouched) — counts in `meta.set_aside.other_topic`, `--status`, and `node scripts/file-subgroups.js --spare-tags`. |
+| `file-subgroups` + `file-subgroups-science` | maths 04:15 + 16:15 · science every 2 hours at :15 (since 7 Oct 2026; 10:15 + 22:15 take Pure first) | the Fly worker (`worker/fly/jobs.sh job_file_subgroups`, since 2 Oct 2026) | ✅ live once deployed | 🗂 the sub-skill filer: 300 topic-tagged questions a run filed under ONE sub-skill each (`question_subgroups`, source `cc_backfill`), Opus 5.5 at medium effort (measured: effort makes no difference to the labels), two-reader rule under 0.75, never the API. The Mac task that ran it had not stamped since 9 Sep 2026 — three weeks of extraction went unfiled (maths 2,547, science 7,100 on 2 Oct). Science = the science project, trees PHY / CHEM / BIO, a Combined Science question filed under its subject's pure tree. The wrapper stamps the backlog before and after. N(A) / N(T) / JC H1 maths and lower-sec science have no tree and are never filed. Since 9 Oct 2026: the reader gets the whole question (all parts with marks; a thin figure-only stem also gets its solution text); maths `legacy_syllabus` rows are neither fetched nor counted; a multi-skill question is filed under the sub-skill with the most marks (tie → the later 'hence' part). New outcome 'not under this topic': when the question is filed under another topic of the same tree the seen ledger records `other_topic` (never expires, not backlog; tags untouched) — counts in `meta.set_aside.other_topic`, `--status`, and `node scripts/file-subgroups.js --spare-tags`. |
 | `extract` (Fly worker) | every 15 min, the marking queue empty or 00:00–06:59 SGT | **Fly `adrianmath-worker`** (bot `worker/fly/extract.sh`, since 25 Sep 2026) | ✅ live | drains the `paper_library` queue ONE row per run under the live law + the prompt's box overrides; runner `PDF-Pipeline-Fly-<ddHHMM>`; stamps `pdf-extract` on claiming runs → [`EXTRACTION-QUEUE.md`](EXTRACTION-QUEUE.md) §4. The Mac rows this replaced (`pdf-extraction-worker`, `-b`, `-c`, `s1s2-…`) were deleted from the Pro; `inbox-extract` + `exam-extraction-cc1..3` below are redundant since the same day |
 | `question-mine-daily` | — | — | ⏹ **retired 7 Oct 2026** (Adrian: "yes") | four runs (31 Aug–7 Oct) enqueued nothing — the bank covered every asked topic; its one standing finding (thin E Math notes) is in `IDEAS.md`. Spec kept in [`docs/QMINE.md`](QMINE.md) |
 | `doc-sweep-memory` | Sundays ~8:07am (the app jitters the minute) | the MacBook Pro — the memory folder lives there | ✅ live (5 Oct 2026) | 🧹 the memory half of the stale-doc sweeper: runs `scripts/doc-sweep/check.mjs --memory …`, fixes or removes memory files that name a file, function or flag that no longer exists, keeps `MEMORY.md` in step (bot skill `doc-sweep` §7) |
@@ -471,12 +470,12 @@ jobs there are together with the toggles for accounts … have a page just for t
 | 🖥 Mac plan only | Airtable `Settings` `marking_mac_only` | the bot, every queue tick | (ON) nothing goes to the API |
 | 🌙 Gemini Batch for queued papers (3 Oct 2026) | Airtable `Settings` `marking_vision_batch` | the bot, every queue tick (`lib/marking-settings.js visionBatch()`; no row yet → the Fly secret `VISION_BATCH` decides) | every vision call is live — full price, no waiting. ON = a queued paper's first vision round goes to Google's Batch API at half price and may wait up to an hour; ⚡ Mark now never batches |
 | Plan accounts ×3 | `Settings` `slot_accounts` (+ `slot_usage` meters) | every slot and lane's picker | that account is never picked |
-| Worker jobs ×20 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
+| Worker jobs ×25 | `Settings` `worker_jobs` | the Fly worker's scheduler, every 2 min | no NEW run of that job starts |
 
-- **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins` (all lanes of each
+- **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins`, `science-twins` (all lanes of each
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
   `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
-  `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `worksheets`, `proposals`,
+  `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `qb-topup`, `progress-notes`, `morning-brief`, `worksheets`, `proposals`,
   `flagjudge`, `flag-review`, `plan-reads` (✍️ the answer reader, 7 Oct 2026 — reads the `plan_reads` queue every minute; health-check `plan-reads` alarms when an answer waits over 20 minutes; since 8 Oct 2026 it also reads the essay marker's reads, kind `essay-read`, model `opus`, up to three rows at once). `prune`, the disk check and the after-restart recovery are never
   switchable (they keep the worker alive).
 - **Every one obeys since 5 Oct 2026** (Adrian: "fix switches page so it stops every job"). The
