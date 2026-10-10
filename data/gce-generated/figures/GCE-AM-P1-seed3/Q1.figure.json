@@ -1,0 +1,7 @@
+{
+  "family": "mensuration-3d",
+  "solids": [
+    { "type": "cylinder", "radius": 6, "height": 1.5,
+      "radiusLabel": "r cm", "heightLabel": "h cm" }
+  ]
+}

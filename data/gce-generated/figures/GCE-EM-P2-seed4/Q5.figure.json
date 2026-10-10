@@ -1,0 +1,12 @@
+{
+  "family": "graph-paper",
+  "specVersion": 1,
+  "xAxis": { "min": 0, "max": 8, "step": 1, "label": "x (hours)", "majorsPerStep": 2 },
+  "yAxis": { "min": 0, "max": 50, "step": 5, "label": "y (mg)", "majorsPerStep": 2 },
+  "paper": "fine",
+  "minorPerMajor": 5,
+  "paperColour": "grey",
+  "axes": true,
+  "origin": "O",
+  "points": [ { "x": 7.5, "y": 47.5, "marker": "none" } ]
+}

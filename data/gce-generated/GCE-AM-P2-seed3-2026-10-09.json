@@ -1,0 +1,1812 @@
+{
+ "key": "GCE-AM-P2",
+ "seed": 3,
+ "set": 3,
+ "variety": true,
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)",
+  "repair": "claude-fable-5-1 (Claude Code agent)",
+  "figure": "claude-opus-5-5 (Claude Code agent)",
+  "whole_paper_read": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 1 P2",
+  "Set 2 P1",
+  "Set 2 P2"
+ ],
+ "shape": {
+  "subject": "Additional Mathematics",
+  "code": "4049",
+  "level": "AM",
+  "exam": "O-Level",
+  "cut": 2021,
+  "duration": "2 hours 15 minutes",
+  "standardYears": "2024/25",
+  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial.",
+  "register": "REGISTER — how SEAB asks\n- Plain, exact, economical English. Instructions are imperatives: Find, Show that, Hence, Explain why, Determine, Express, Solve, Sketch, State, Calculate, Verify, Use … to …, Given that …\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A single-part question has no labels.\n- Precision demands are explicit: \"giving your answer in the form $a + b\\sqrt{3}$, where $a$ and $b$ are integers\", \"correct to 2 decimal places\", \"in terms of $\\pi$\", \"in exact form\", \"in logarithmic form\".\n- A \"Show that\"/\"Prove that\" part states its target exactly; a later part uses it (\"Hence …\", \"Using your answer to part (a) …\").\n- Contexts are brief and concrete (a coffee machine, a patch of water, a ball thrown upwards), never chatty; units are given; constants are named (\"where $k$ is a constant\"); the model is stated as a formula.\n- \"A calculator must not be used in this question.\" opens a question whose point is exact arithmetic (surds, exact trigonometric values). Otherwise no calculator remark.\n- Function notation $\\mathrm{f}(x)$, $\\mathrm{f}'(x)$, $\\frac{dy}{dx}$, $\\int \\ldots \\,dx$; angles in radians unless degrees are stated; a domain such as $0 \\le x \\le 2\\pi$ or $-\\frac{\\pi}{2} \\le \\theta \\le \\frac{\\pi}{2}$ is always stated for a trigonometric equation.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1–2 marks: state/verify/one-line deduction. 3–4 marks: one standard routine. 5–7 marks: a multi-step argument. A long closing question of 9–12 marks has 3–5 parts that build on one another."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "sections": null,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-10-09T14:14:57.655Z",
+ "topicList": [
+  "Quadratic Functions",
+  "Simultaneous Equations",
+  "Nature of Roots",
+  "Quadratic Inequalities",
+  "Surds",
+  "Polynomials",
+  "Partial Fractions",
+  "Indices",
+  "Logarithms",
+  "Binomial Theorem",
+  "Linear Law",
+  "Coordinate Geometry",
+  "Circles",
+  "Plane Geometry",
+  "Trigonometry (Ratios)",
+  "Trigonometry (Graphs)",
+  "Trigonometry (Identities)",
+  "Trigonometry (Equations)",
+  "Trigonometry (R-Formula)",
+  "Trigonometry (Applications)",
+  "Differentiation (Techniques)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Increasing and Decreasing Functions)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Maximum and Minimum)",
+  "Integration (Techniques)",
+  "Integration (Definite Integrals)",
+  "Integration (Area)",
+  "Integration (Applications)",
+  "Kinematics"
+ ],
+ "must_appear": [
+  "Differentiation (Techniques)",
+  "Logarithms",
+  "Polynomials"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Surds",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.468
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.0213
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.0213
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.0106
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Quadratic Inequalities",
+   "target": 6,
+   "marks": [
+    5,
+    10
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Polynomials",
+     "weight": 0.0212
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.175
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.175
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.017499999999999998
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.175
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.0088
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Differentiation (Tangents and Normals)",
+   "target": 6,
+   "marks": [
+    5,
+    8
+   ],
+   "parts": [
+    1,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.186
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0185
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.185
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.0111
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Logarithms",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0147
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0147
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.147
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.0147
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.0088
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.0088
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.0088
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.074
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.0074
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Nature of Roots",
+   "target": 7,
+   "marks": [
+    6,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0239
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.019000000000000003
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.131
+    },
+    {
+     "topic": "Differentiation (Increasing and Decreasing Functions)",
+     "weight": 0.0119
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.119
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.071
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.0070999999999999995
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.006
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Integration (Definite Integrals)",
+   "target": 8,
+   "marks": [
+    7,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.024900000000000002
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.167
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.016700000000000003
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.0083
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Circles",
+   "target": 8,
+   "marks": [
+    7,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Indices",
+     "weight": 0.172
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.17
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.106
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.0106
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.106
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.0106
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.0064
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0064
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.0053
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.0053
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Coordinate Geometry",
+   "target": 9,
+   "marks": [
+    9,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Logarithms",
+     "weight": 0.297
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.185
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.185
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.0111
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Kinematics",
+   "target": 10,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Kinematics",
+     "weight": 0.177
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0122
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.006700000000000001
+    },
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.067
+    },
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.067
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.005600000000000001
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Plane Geometry",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Circles",
+     "weight": 0.23
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.023000000000000003
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.013500000000000002
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.135
+    },
+    {
+     "topic": "Trigonometry (Applications)",
+     "weight": 0.013500000000000002
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.013500000000000002
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Trigonometry (Equations)",
+   "target": 12,
+   "marks": [
+    12,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.027700000000000002
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.0213
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.0128
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.106
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.0106
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.064
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.053
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.053
+    }
+   ]
+  }
+ ],
+ "title": "A Math · Set 3 · Paper 2 · O-Level format",
+ "assembled_at": "2026-10-10T00:37:16.851Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Surds",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "Do not use a calculator in this question.\n\nA solid cone has base radius $\\sqrt{3}$ cm and curved surface area $(3 + 4\\sqrt{3})\\pi$ cm$^2$.\n\nFind the volume of the cone, giving your answer in the form $(a + b\\sqrt{3})\\pi$ cm$^3$, where $a$ and $b$ are integers.\n\n[The curved surface area of a cone with base radius $r$ and slant height $l$ is $\\pi r l$. The volume of a cone with base radius $r$ and height $h$ is $\\frac{1}{3}\\pi r^2 h$.]",
+    "parts": [],
+    "answer": "$(2 + 2\\sqrt{3})\\pi$ cm$^3$",
+    "total_marks": 5,
+    "topics": [
+     "Surds"
+    ],
+    "skills": [
+     "rationalise a quotient of surds to find a length",
+     "recognise $16 + 8\\sqrt{3}$ as the perfect square $(2 + 2\\sqrt{3})^2$ when taking an exact square root",
+     "chain curved surface area, Pythagoras and volume in exact form"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Let the slant height be $l$ cm and the height be $h$ cm.\n\nCurved surface area: $\\pi \\sqrt{3}\\, l = (3 + 4\\sqrt{3})\\pi$\n$l = \\frac{3 + 4\\sqrt{3}}{\\sqrt{3}} = \\frac{3}{\\sqrt{3}} + 4 = \\sqrt{3} + 4$\n\nBy Pythagoras, $h^2 = l^2 - r^2$\n$h^2 = (4 + \\sqrt{3})^2 - (\\sqrt{3})^2 = 16 + 8\\sqrt{3} + 3 - 3 = 16 + 8\\sqrt{3}$\n\nWrite $16 + 8\\sqrt{3} = (a + b\\sqrt{3})^2 = a^2 + 3b^2 + 2ab\\sqrt{3}$, so $ab = 4$ and $a^2 + 3b^2 = 16$, giving $a = b = 2$.\n$h = 2 + 2\\sqrt{3}$ (positive root, since $h > 0$)\n\nVolume $= \\frac{1}{3}\\pi r^2 h = \\frac{1}{3}\\pi (3)(2 + 2\\sqrt{3}) = (2 + 2\\sqrt{3})\\pi$\n\n**Answer:** $(2 + 2\\sqrt{3})\\pi$ cm$^3$, so $a = 2$, $b = 2$.\n\nMarks: M1 use $\\pi r l$ to write $l$ as a quotient; A1 $l = 4 + \\sqrt{3}$ after rationalising; M1 $h^2 = l^2 - r^2$ expanded to $16 + 8\\sqrt{3}$; A1 $h = 2 + 2\\sqrt{3}$ by recognising the perfect square; A1 volume $(2 + 2\\sqrt{3})\\pi$.",
+    "syllabus_check": "4049 A3 Surds: four operations on surds, rationalising a denominator with a single surd term, expanding $(a + b\\sqrt{3})^2$ and matching rational and irrational parts. Pythagoras' theorem and the two cone formulae (printed in the question) are prior E Math knowledge. No calculator, exact form throughout.",
+    "originality_note": "Surds have been tested only once in the earlier Sets (Set 1 P1 Q8: a line meeting the curve $\\frac{1}{x} + \\frac{1}{y} = \\frac{1}{3}$, coordinates in $a + b\\sqrt{c}$, $OP \\perp OQ$); this is a different skill (exact mensuration with a perfect-square surd root) in a different setting. It is not the 2024 P1 Q7 cuboid (volume $\\to$ height $\\to$ surface area) or the 2016 block: the chain runs the other way, from curved surface area to slant height to height to volume, on a cone, and its twist is the exact square root of $16 + 8\\sqrt{3}$, which neither exemplar needs. It is not the 2025 P2 Q1 trapezium and it does not use trig values (the Set's P1 Q3 already has $2 + \\sqrt{3}$ from $\\sec\\theta + \\tan\\theta$). Unparted, as paper-shape.md asks; routine-adjacent with the one twist (item 10 of the standard: a surd question in a setting needing three exact steps)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P2 Q1",
+     "jaccard": 0.163,
+     "nearest_set": "Set 1 P2 Q3",
+     "jaccard_set": 0.072,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-10-10T00:36:39.846Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "single": "(2 + 2√3)π cm³"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give (2 + 2 sqrt 3) pi cm^3. Re-worked: l = (3 + 4 sqrt 3)/sqrt 3 = sqrt 3 + 4; h^2 = (4 + sqrt 3)^2 - 3 = 16 + 8 sqrt 3 = (2 + 2 sqrt 3)^2 (check: 4 + 12 = 16, 2*2*2 = 8); h = 2 + 2 sqrt 3 > 0; V = (1/3) pi (3)(2 + 2 sqrt 3) = (2 + 2 sqrt 3) pi, so a = 2, b = 2. The only other candidate for the square root, (-2 - 2 sqrt 3), is negative and is not a length."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted no-calculator opener in a setting that needs three exact steps (item 10): rationalise to the slant height, Pythagoras to h^2 = 16 + 8 sqrt 3, and the one idea the candidate must supply, that the demanded form (a + b sqrt 3) pi forces h to be an exact square root of a surd, found by matching (a + b sqrt 3)^2 - no exemplar needs that step, so this is the routine-adjacent slot with its twist, exactly as paper-shape.md asked for Q1. Numbers close cleanly (l = 4 + sqrt 3, r^2 = 3 cancels the 1/3), the two cone formulae are printed as the real papers print the sphere's, and the register ('A calculator must not be used in this question', the form with integers a and b) is GCE 2022 P2 Q5's. Same family as GCE 2024 P1 Q7 (cuboid: height by division, then an area) and GCE 2025 P2 Q1 (trapezium: one equation, rationalise) but neither situation nor chain: the solid is a cone, the chain runs area -> slant -> height -> volume, and the denesting step is new, so not a re-skin. Surds in our Sets were only Set 1 P1 Q8 (line meets reciprocal curve, surd coordinates, perpendicular gradients), a different skill. Beside Set 1 P2 Q1 (5 marks, a bare log equation) this is as demanding and carries a context that the solution needs. Marks match the work (division [2], Pythagoras [1], square root [1], volume [1]). Gates all pass. Closing step (an exact volume in surd form) differs from every accepted slot in paper-so-far.md."
+   },
+   "exemplars": [
+    {
+     "id": "dc07fe39-e73a-4378-876b-a13b4255237e",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "58aa76b4-1046-4100-bc77-7f77b2c6f389",
+     "ref": "GCE 2024 P1 Q7"
+    },
+    {
+     "id": "afeab02d-8e88-4ac7-b063-98b5c152d7cd",
+     "ref": "GCE 2021 specimen P1 Q8"
+    },
+    {
+     "id": "830b4093-d4d4-4b65-9acb-c06e1c1695ef",
+     "ref": "GCE 2022 P2 Q5"
+    },
+    {
+     "id": "2eab8c43-da54-4f26-9035-434d9491d1db",
+     "ref": "GCE 2016 P1 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Quadratic Inequalities",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "The line $y = m(x - 3)$, where $m$ is a constant, meets the curve $y = x^2 - 2x - 3$ at the point $A(3, 0)$ and at the point $P$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find, in terms of $m$, the coordinates of $P$.",
+      "marks": 3,
+      "answer": "$P\\left(m - 1,\\ m^2 - 4m\\right)$, i.e. $P(m - 1,\\ m(m - 4))$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the range of values of $m$ for which $P$ lies in the third quadrant.",
+      "marks": 3,
+      "answer": "$0 < m < 1$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 6,
+    "topics": [
+     "Quadratic Inequalities",
+     "Quadratic Functions"
+    ],
+    "skills": [
+     "factorise a line-meets-curve quadratic using the known intersection $x = 3$ instead of the formula",
+     "turn a quadrant condition on a point into a sign condition $m(m - 4) < 0$ and solve a quadratic inequality in the constant",
+     "intersect a quadratic inequality with a linear inequality on a number line"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) At the points of intersection, $x^2 - 2x - 3 = m(x - 3)$\n$x^2 - (2 + m)x + 3m - 3 = 0$\n\nSince $A(3, 0)$ is one point of intersection, $x = 3$ is a root, so $(x - 3)$ is a factor:\n$(x - 3)(x - (m - 1)) = 0$ [check: $x^2 - (m + 2)x + 3(m - 1)$]\n$x = 3$ or $x = m - 1$\n\nAt $P$, $x = m - 1$ and $y = m(m - 1 - 3) = m(m - 4)$\n\n**Answer:** $P(m - 1,\\ m(m - 4))$, i.e. $P(m - 1,\\ m^2 - 4m)$.\n\n(b) $P$ in the third quadrant means $x < 0$ and $y < 0$.\n\n$x < 0$: $m - 1 < 0$, so $m < 1$\n\n$y < 0$: $m(m - 4) < 0$\nThe graph of $m(m - 4)$ is a U-shaped parabola with roots $0$ and $4$, negative between them.\n$0 < m < 4$\n\nBoth conditions hold when $0 < m < 4$ and $m < 1$, that is $0 < m < 1$.\n\n**Answer:** $0 < m < 1$\n\nCheck: $m = \\frac{1}{2}$ gives $P\\left(-\\frac{1}{2}, -\\frac{7}{4}\\right)$, third quadrant; $m = 2$ gives $P(1, -4)$, fourth quadrant; $m = -1$ gives $P(-2, 5)$, second quadrant.\n\nMarks: (a) M1 equate and form the quadratic in $x$; M1 factorise using the known root $x = 3$ (or solve by any method to $x = m - 1$); A1 both coordinates in terms of $m$. (b) B1 $m < 1$ from $x < 0$; M1 $m(m - 4) < 0$ solved to $0 < m < 4$ (sketch or critical values); A1 combine to $0 < m < 1$.",
+    "syllabus_check": "4049 A1/A2: finding the intersection of a line and a quadratic curve by solving simultaneous equations; solving a quadratic inequality by factorising and sketching or by critical values; representing a solution set on a number line and combining conditions. No discriminant is needed (the line always meets the curve at $A$), so the slot stays clear of the nature-of-roots slot (Q5).",
+    "originality_note": "It is a quadratic inequality in a constant that comes out of a sign condition (the coordinates of a moving point), which paper-shape.md names as the Set's only inequality-in-a-constant slot. Different from Set 1 P1 Q4 (distance $AB < 5$ in $k$, least distance) and Set 2 P2 Q1 (fish populations, inequality in $1.25^n$). Not 2024 P2 Q2 (line $y = kx$ meeting a curve twice is a discriminant question) and not 2022 P1 Q4 (points at $k$ and $2k$ on $y = 14x - x^2$, compare $y$-values): here the line pivots about a point already on the curve, the second point is found by factorising with the known root (a decision, no formula, no discriminant) and the closing step intersects a quadratic inequality with a linear one. Closing step (a combined range on a number line) differs from Q1 (exact volume) and Q3 (exact coordinates with a logarithm)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P2 Q2",
+     "jaccard": 0.123,
+     "nearest_set": "Set 1 P1 Q1",
+     "jaccard_set": 0.074,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-09T14:42:10.213Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "P(m - 1, m^2 - 4m)",
+     "(b)": "0 < m < 1"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give P(m - 1, m^2 - 4m). Re-worked: (x - 3)(x + 1) = m(x - 3), and since P is not A, x + 1 = m, so x = m - 1 and y = m(m - 4). Equivalently x^2 - (m + 2)x + 3m - 3 = (x - 3)(x - m + 1)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 0 < m < 1. Re-worked: x_P < 0 gives m < 1; y_P = m(m - 4) < 0 gives 0 < m < 4; together 0 < m < 1. Both ends are open: m = 0 puts P at (-1, 0) on the x-axis, m = 1 puts P at (0, -3) on the y-axis, neither in the third quadrant. Checks: m = 1/2 gives (-1/2, -7/4); m = 2 gives (1, -4), fourth quadrant; m = -1 gives (-2, 5), second quadrant."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A line pivoting about a point already on the parabola: (a) rewards the decision to divide out the known root (or to see y = (x - 3)(x + 1)) rather than reach for the formula or a discriminant, and (b) carries the idea - 'P lies in the third quadrant' must be turned by the candidate into two sign conditions, one of them the quadratic inequality m(m - 4) < 0 in the constant, and the two intersected to an open interval whose both ends are decided by where P lands on an axis (the §6.6 boundary A1). No discriminant anywhere, so it stays clear of Q5(a). Not a re-skin of GCE 2024 P2 Q2 (y = kx meets a curve twice: a discriminant in k, unparted) nor of GCE 2022 P1 Q4 (two points at k and 2k on one curve, compare y-values); a different skill from Set 1 P1 Q4 (a distance < 5 in k, then the least distance) and Set 2 P2 Q1 (an inequality in 1.25^n). Numbers close exactly (x = m - 1, 0 < m < 1), the register is SEAB's, parts build and (b) is impossible without (a). Marks match the work (equate, divide out the root, coordinates [3]; linear condition, quadratic inequality, intersection [3]; GCE 2022 P1 Q4(a) paid 3 for one such inequality). Beside Set 1 P1 Q4 (6 marks, the same shape of a coordinate condition becoming an inequality in a constant with a structural fact at the end) it is as demanding and as clean. Gates all pass. Closing step (a combined range of m on a number line) differs from Q1 (exact volume), Q3 (exact coordinates with a logarithm) and Q5 (k from a product of roots); the only inequality-in-a-constant of the Set, as planned."
+   },
+   "exemplars": [
+    {
+     "id": "09ca9274-2927-432c-a892-4c3e27cb1617",
+     "ref": "GCE 2023 P1 Q7"
+    },
+    {
+     "id": "c54ac4b6-c497-45bc-8498-cf4e5199972d",
+     "ref": "GCE 2024 P2 Q2"
+    },
+    {
+     "id": "1899af66-790b-4bd4-a2d3-5daa1e3abb9e",
+     "ref": "GCE 2022 P1 Q4"
+    },
+    {
+     "id": "87e6f4e3-0018-49dd-b356-03ed8fa8588e",
+     "ref": "GCE 2021 P2 Q5"
+    },
+    {
+     "id": "2d1dbff7-5221-4908-b7ee-d4025a9901b8",
+     "ref": "GCE 2010 P1 Q3"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Differentiation (Tangents and Normals)",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows part of the curve $y = \\mathrm{e}^{2x}$. The point $P(p, \\mathrm{e}^{2p})$ lies on the curve. The tangent to the curve at $P$ meets the $x$-axis at the point $T$ and the normal to the curve at $P$ meets the $x$-axis at the point $N$. Given that $TN = 1$, find the exact coordinates of $P$.",
+    "parts": [],
+    "answer": "$P\\left(-\\frac{1}{2}\\ln 2,\\ \\frac{1}{2}\\right)$",
+    "total_marks": 6,
+    "topics": [
+     "Differentiation (Tangents and Normals)",
+     "Logarithms"
+    ],
+    "skills": [
+     "write the tangent and the normal at a general point $(p, \\mathrm{e}^{2p})$ and find where each meets the $x$-axis",
+     "show that the subtangent of $y = \\mathrm{e}^{2x}$ is constant (a result independent of $p$)",
+     "use the configuration $TN = TM + MN$ to set up $2\\mathrm{e}^{4p} = \\frac{1}{2}$ and solve it exactly with logarithms"
+    ],
+    "needs_figure": true,
+    "figure_description": "Sketch of y = e^{2x} for x on both sides of 0, rising to the right; a point P on the curve above the x-axis in the region x < 0; the tangent at P drawn to meet the x-axis at T on the left of P's foot; the normal at P drawn to meet the x-axis at N on the right; axes labelled x and y, points labelled P, T, N only; no coordinates, no lengths, no TM or TN value printed.",
+    "solution": "$y = \\mathrm{e}^{2x}$, so $\\frac{dy}{dx} = 2\\mathrm{e}^{2x}$.\nGradient of the tangent at $P$ is $2\\mathrm{e}^{2p}$.\n\nTangent at $P$: $y - \\mathrm{e}^{2p} = 2\\mathrm{e}^{2p}(x - p)$\nAt $T$, $y = 0$: $-\\mathrm{e}^{2p} = 2\\mathrm{e}^{2p}(x - p)$\n$x - p = -\\frac{1}{2}$ (dividing by $\\mathrm{e}^{2p} \\neq 0$)\nSo $T$ is $\\left(p - \\frac{1}{2}, 0\\right)$.\n\nGradient of the normal at $P$ is $-\\frac{1}{2\\mathrm{e}^{2p}}$.\nNormal at $P$: $y - \\mathrm{e}^{2p} = -\\frac{1}{2\\mathrm{e}^{2p}}(x - p)$\nAt $N$, $y = 0$: $-\\mathrm{e}^{2p} = -\\frac{1}{2\\mathrm{e}^{2p}}(x - p)$\n$x - p = 2\\mathrm{e}^{4p}$\nSo $N$ is $\\left(p + 2\\mathrm{e}^{4p}, 0\\right)$.\n\nLet $M(p, 0)$ be the foot of the perpendicular from $P$ to the $x$-axis.\n$TM = p - \\left(p - \\frac{1}{2}\\right) = \\frac{1}{2}$\n$MN = \\left(p + 2\\mathrm{e}^{4p}\\right) - p = 2\\mathrm{e}^{4p}$\n$T$ is to the left of $M$ and $N$ is to the right of $M$, so\n$TN = TM + MN = \\frac{1}{2} + 2\\mathrm{e}^{4p}$\n\n$\\frac{1}{2} + 2\\mathrm{e}^{4p} = 1$\n$\\mathrm{e}^{4p} = \\frac{1}{4}$\n$4p = \\ln\\frac{1}{4} = -\\ln 4 = -2\\ln 2$\n$p = -\\frac{1}{2}\\ln 2$\n\n$y = \\mathrm{e}^{2p} = \\mathrm{e}^{-\\ln 2} = \\frac{1}{2}$\n\n**Answer:** $P\\left(-\\frac{1}{2}\\ln 2,\\ \\frac{1}{2}\\right)$\n\nCheck: $\\mathrm{e}^{4p} = \\left(\\mathrm{e}^{2p}\\right)^2 = \\frac{1}{4}$, so $MN = 2 \\times \\frac{1}{4} = \\frac{1}{2}$ and $TN = \\frac{1}{2} + \\frac{1}{2} = 1$.\n\nMarks: M1 $\\frac{dy}{dx} = 2\\mathrm{e}^{2x}$, tangent gradient $2\\mathrm{e}^{2p}$ and its equation at $P$; A1 $T = \\left(p - \\frac{1}{2}, 0\\right)$. M1 normal gradient $-\\frac{1}{2\\mathrm{e}^{2p}}$ and its equation at $P$; A1 $N = \\left(p + 2\\mathrm{e}^{4p}, 0\\right)$. M1 $TN = TM + MN = \\frac{1}{2} + 2\\mathrm{e}^{4p} = 1$ leading to $\\mathrm{e}^{4p} = \\frac{1}{4}$ and $p = -\\frac{1}{2}\\ln 2$ ($TM = \\frac{1}{2}$ is no longer printed; it earns its credit inside this chain). A1 $y = \\mathrm{e}^{2p} = \\frac{1}{2}$, coordinates $P\\left(-\\frac{1}{2}\\ln 2, \\frac{1}{2}\\right)$ stated (accept $p = -\\frac{1}{4}\\ln 4$; $y$ must be given as $\\frac{1}{2}$, not left as $\\mathrm{e}^{2p}$).",
+    "syllabus_check": "4049 C1/C2: derivative of $\\mathrm{e}^{2x}$ (chain rule), equations of tangent and normal at a point, intersections with the $x$-axis; A6: solving $\\mathrm{e}^{4p} = \\frac{1}{4}$ by taking natural logarithms and simplifying $\\mathrm{e}^{-\\ln 2}$. No optimisation, no area, no second meeting with the curve.",
+    "originality_note": "Tangents and normals have been tested in Set 1 P1 Q13 ($y = \\frac{4}{(x+1)^2}$, tangent parallel to a line, midpoint, area), Set 2 P1 Q7 (trig curve, tangent at the point of greatest gradient) and Set 2 P2 Q5 (tangents through the origin to a log quotient). This question tests the topic from another direction: a general point $P(p, \\mathrm{e}^{2p})$, a structural fact shown for every $p$ (the tangent meets the $x$-axis a fixed $\\frac{1}{2}$ before the foot of $P$), then a length condition that the candidate must assemble as $TM + MN$ and solve exactly with logarithms. No quotient, no area, no midpoint, no external point, no optimisation (the Set's one optimisation is P1 Q10), and the second meeting-with-the-curve device is avoided because Q2 already factorises with a known root. Not the 2025 P1 Q10 or 2022 P1 Q13 shape (those close on the area of a triangle) and not 2021 P1 Q14 (normal at a fixed point on a root curve). Closing step (exact coordinates with $\\ln 2$) differs from Q1 (surd volume) and Q2 (a range of $m$)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P1 Q14",
+     "jaccard": 0.222,
+     "nearest_set": "Set 1 P1 Q13",
+     "jaccard_set": 0.207,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-10T00:36:39.860Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "P(-(1/2) ln 2, 1/2)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Re-worked: dy/dx = 2e^{2x}; tangent y - e^{2p} = 2e^{2p}(x - p); at y = 0, x - p = -1/2 (e^{2p} is never 0), so T is (p - 1/2, 0) and TM = 1/2 whatever p is."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give P(-(1/2) ln 2, 1/2). Re-worked: normal y - e^{2p} = -(1/(2e^{2p}))(x - p); at y = 0, x - p = 2e^{4p}, so N is (p + 2e^{4p}, 0); TN = (p + 2e^{4p}) - (p - 1/2) = 2e^{4p} + 1/2 with no sign ambiguity (T is always left of M, N always right); 2e^{4p} + 1/2 = 1 gives e^{4p} = 1/4, p = -(1/4) ln 4 = -(1/2) ln 2, and y = e^{2p} = (e^{4p})^{1/2} = 1/2. Check: MN = 2(1/4) = 1/2, TN = 1."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register: 'The point M is (p, 0).' is not SEAB's phrasing - write 'M is the point (p, 0).' or 'The point M has coordinates (p, 0).'",
+     "re-mark: (b) gains one mark and (a) loses one, i.e. (a) [2], (b) [4]. (a) is derivative, tangent, intercept (GCE 2024 P1 Q13(a) paid about two of its four marks for the tangent and R); (b) is the normal, its intercept, the length equation, the exponential equation solved by logarithms and the back-substitution for y - five steps on three marks, out of line with its demand (lesson 3: uneven marks)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Tangents and normals at a GENERAL point with the constant carried (List A item 4's 'general n' twist and List B item 7's constant): (a) is a structural fact shown for every p (the subtangent of e^{2x} is a fixed 1/2, the e^{2p} cancelling), and (b) reverses it - a length between the two intercepts fixes the point, through an exponential equation solved exactly, with the clean touch that y = e^{2p} is the square root of e^{4p} = 1/4. Parts build ((b) needs (a)'s T), numbers close exactly (1/2, -(1/2) ln 2), the figure can be drawn from the words. Not a re-skin: GCE 2025 P1 Q10 puts the constant in the curve and the normal at a fixed x = 0 and closes on an area; GCE 2024 P1 Q13 and GCE 2021 P1 Q14 are numerical tangent/normal-and-area closers; GCE 2022 P1 Q13(b) closes on a triangle's area. Variety: Set 1 P1 Q13(b) shows a midpoint of two intercepts at a fixed P, Set 2 P2 Q5 makes the tangent at (p, f(p)) pass through the origin from a quotient derivative (the shape paper-shape.md told this slot to avoid, and it avoids it: no quotient, no external point, no area, no midpoint), Set 2 P1 Q7 is a trig tangent at the point of greatest gradient - this slot's skills (a result independent of p, the normal's intercept p + 2e^{4p}, a length condition) are the topic from another direction. The setter's three skills phrases are true and specific. Beside Set 1 P1 Q6 and P1 Q4 (6 marks) it is as demanding and cleaner; beside Set 1 P1 Q13(b) [3] its (a) is the same kind of structural 'show'. Gates all pass. Score 4 for the two light edits above (the M phrasing, the 3/3 split). For the whole-paper reader: Q3, Q4 and Q5 all stand on e^x and all take a logarithm on the way (Q3 closes on exact coordinates with ln 2, Q4 on a duration decision, Q5 on k from a product of roots - the closing steps differ), so three exponential questions in a row is the session's call under List B, not a defect of this slot."
+   },
+   "exemplars": [
+    {
+     "id": "dcaf6b37-e242-4b90-b943-9d27d7972c2a",
+     "ref": "GCE 2025 P1 Q10"
+    },
+    {
+     "id": "9c3708ed-70b3-47e6-b6f7-bd57fcdbd621",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "b071686f-de36-479e-8f36-4638bf3fe287",
+     "ref": "GCE 2022 P1 Q13"
+    },
+    {
+     "id": "385afa74-fb00-48a8-ad07-8884affc04a8",
+     "ref": "GCE 2021 P1 Q14"
+    },
+    {
+     "id": "94987940-788b-4140-9421-42c923ee405e",
+     "ref": "GCE 2021 specimen P2 Q3"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Logarithms",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "During a power failure, the air inside a freezer warms towards the temperature of the room in which the freezer stands. The room is kept at a constant temperature of $R\\,^\\circ$C. The temperature, $T\\,^\\circ$C, of the air inside the freezer $t$ hours after the power fails is given by $T = R - B\\mathrm{e}^{-kt}$, where $B$ and $k$ are positive constants. The temperature of the air inside the freezer is $-18\\,^\\circ$C when the power fails, $-6\\,^\\circ$C after 6 hours and $3\\,^\\circ$C after 12 hours.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $R = 30$.",
+      "marks": 3,
+      "answer": "$B = R + 18$, $B\\mathrm{e}^{-6k} = R + 6$, $B\\mathrm{e}^{-12k} = R - 3$; since $\\mathrm{e}^{-12k} = (\\mathrm{e}^{-6k})^2$, $(R + 6)^2 = (R + 18)(R - 3)$, giving $3R = 90$, $R = 30$."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the value of $B$ and of $k$.",
+      "marks": 2,
+      "answer": "$B = 48$; $k = \\frac{1}{6}\\ln\\frac{4}{3} = 0.0479$ (3 s.f.)"
+     },
+     {
+      "label": "(c)",
+      "text": "The food in the freezer is at the same temperature as the air inside it. The food must be thrown away if its temperature has been above $-4\\,^\\circ$C for more than 2 hours. The power is restored $9\\frac{1}{2}$ hours after it failed. Determine whether the food must be thrown away.",
+      "marks": 3,
+      "answer": "$T = -4$ when $\\mathrm{e}^{-kt} = \\frac{17}{24}$, so $t = \\frac{6\\ln\\frac{24}{17}}{\\ln\\frac{4}{3}} = 7.19$ hours (7 h 12 min). The food is above $-4\\,^\\circ$C from $t = 7.19$ until $t = 9.5$, that is for $2.31$ hours (about 2 h 18 min), which is more than 2 hours, so the food must be thrown away."
+     }
+    ],
+    "answer": "",
+    "total_marks": 8,
+    "topics": [
+     "Logarithms"
+    ],
+    "skills": [
+     "fit the three constants of a warming model T = R - B e^{-kt} from three readings by using e^{-12k} = (e^{-6k})^2 to eliminate B and k and find the room temperature R",
+     "solve an exponential equation for a time with logarithms and judge whether a threshold has been exceeded for longer than a stated duration"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) When $t = 0$: $-18 = R - B$, so $B = R + 18$.\nWhen $t = 6$: $-6 = R - B\\mathrm{e}^{-6k}$, so $B\\mathrm{e}^{-6k} = R + 6$.\nWhen $t = 12$: $3 = R - B\\mathrm{e}^{-12k}$, so $B\\mathrm{e}^{-12k} = R - 3$.\nSince $\\mathrm{e}^{-12k} = \\left(\\mathrm{e}^{-6k}\\right)^2$, we have $B\\mathrm{e}^{-12k} = B\\left(\\mathrm{e}^{-6k}\\right)^2 = \\frac{(B\\mathrm{e}^{-6k})^2}{B}$.\nSo $R - 3 = \\frac{(R + 6)^2}{R + 18}$.\n$(R + 18)(R - 3) = (R + 6)^2$\n$R^2 + 15R - 54 = R^2 + 12R + 36$\n$3R = 90$\n$R = 30$ (shown).\n\n(b) $B = R + 18 = 48$.\n$\\mathrm{e}^{-6k} = \\frac{R + 6}{B} = \\frac{36}{48} = \\frac{3}{4}$\n$-6k = \\ln\\frac{3}{4}$\n$k = \\frac{1}{6}\\ln\\frac{4}{3} = 0.0479$ (3 s.f.)\n**Answer:** $B = 48$, $k = 0.0479$\n\n(c) The temperature is $-4\\,^\\circ$C when $30 - 48\\mathrm{e}^{-kt} = -4$.\n$48\\mathrm{e}^{-kt} = 34$\n$\\mathrm{e}^{-kt} = \\frac{17}{24}$\n$t = \\frac{1}{k}\\ln\\frac{24}{17} = \\frac{6\\ln\\frac{24}{17}}{\\ln\\frac{4}{3}} = 7.19$ hours (about 7 h 12 min).\n$T$ increases with $t$, so the food is above $-4\\,^\\circ$C from $t = 7.19$ until the power is restored at $t = 9.5$.\nThat is $9.5 - 7.19 = 2.31$ hours, about 2 h 18 min, which is more than 2 hours.\n**Answer:** The food must be thrown away.\n(Alternative: 2 hours before the power is restored, $t = 7.5$ and $T = 30 - 48\\mathrm{e}^{-7.5k} = -3.50\\,^\\circ$C, already above $-4\\,^\\circ$C, so the food has been above $-4\\,^\\circ$C for more than 2 hours.)",
+    "syllabus_check": "4049 Exponential and logarithmic functions: exponential model with constants found from data; laws of indices and logarithms; solving an exponential equation. Only e^{-12k} = (e^{-6k})^2, simultaneous equations and ln are used. No calculus, no series.",
+    "originality_note": "Not a re-skin. 2024 P2 Q1 (machine value V = 1800e^{-kt}) and 2023 P2 Q3 (tea cooling with k given) have one or two constants and a direct read-off; here the limiting value R, the amplitude B and the rate k are all unknown and the candidate must see that e^{-12k} is the square of e^{-6k} to eliminate two of them (an unstated structural fact, standard.md List A item 2), and the final part turns a threshold into a duration that is compared with a stated limit. Set 2 P2 Q1 (fish populations) led to a quadratic inequality in 1.25^n with whole years; Set 1 P2 Q1 was a bare log equation. This paper's Q2 owns the inequality-in-a-constant closing; this question closes on a time found by ln and a reasoned decision in words."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2013 P1 Q8",
+     "jaccard": 0.032,
+     "nearest_set": "Set 1 P2 Q7",
+     "jaccard_set": 0.038,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-09T14:37:45.705Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "B = 48, k = (1/6) ln(4/3) = 0.0479",
+     "(c)": "T = -4 when t = 6 ln(24/17)/ln(4/3) = 7.19 h; above -4 C from t = 7.19 h to 9.5 h, i.e. 2.31 h > 2 h, so the food must be thrown away"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Re-worked: B = R + 18, Be^{-6k} = R + 6, Be^{-12k} = R - 3; e^{-12k} = (e^{-6k})^2 gives (R + 6)^2 = (R + 18)(R - 3), R^2 + 12R + 36 = R^2 + 15R - 54, 3R = 90, R = 30. Consistency check: B = 48, e^{-6k} = 3/4, e^{-12k} = 9/16, 30 - 48(9/16) = 3, which is the third reading."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give B = 48 and k = (1/6) ln(4/3) = 0.0479 (3 s.f.). Re-worked: ln(4/3)/6 = 0.28768/6 = 0.04795."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give t = 6 ln(24/17)/ln(4/3) = 7.19 h at T = -4, so 9.5 - 7.19 = 2.31 h above -4 C, more than 2 h, food thrown away. Re-worked: e^{-kt} = 34/48 = 17/24, ln(24/17) = 0.34484, /0.04795 = 7.192 h. Setter's alternative also checks: at t = 7.5, e^{-7.5k} = (3/4)^{1.25} = 0.6980, T = 30 - 33.50 = -3.50 C, already above -4 C."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact, including the alternative route in (c).",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An exponential model in context with all three constants withheld: the idea in (a) is to see that e^{-12k} is the square of e^{-6k} (an unstated structural fact, List A items 1 and 2) so that B and k drop out and R = 30 falls from a linear equation, a show-that that gates (b) and (c); (c) turns a threshold into a duration compared with a stated limit, closing on a reasoned decision in words (item 8: the context changes the maths), with the t = 7.19 decimal the context needs and every other number clean (R = 30, B = 48, e^{-6k} = 3/4). Not a re-skin of GCE 2024 P2 Q1 (one constant, a direct read-off) or GCE 2023 P2 Q3 (k given); the Set has had no exponential model yet (Set 2 P2 Q1 is a growth/decay inequality with no formula printed, Set 2 P2 Q8 fixes an exponential acceleration from a limiting speed inside kinematics), so no skill is repeated. Marks match the work (three equations and the elimination for [3], two constants for [2], solve-and-decide for [3]). Gates all pass. For the whole-paper reader: Q4 and Q5 are both tagged Logarithms and both sit on e^x, but Q4 closes on a duration decision and Q5 on a product of roots, so their closing steps differ."
+   },
+   "exemplars": [
+    {
+     "id": "aa982da1-67df-462e-9c85-03d59f68d6f3",
+     "ref": "GCE 2021 P1 Q12"
+    },
+    {
+     "id": "795f3575-95c7-4c0a-aa62-c3f89d6b2438",
+     "ref": "GCE 2025 P2 Q8"
+    },
+    {
+     "id": "3ec5cb88-bbd3-497c-ba47-8ce7a1f43343",
+     "ref": "GCE 2023 P2 Q3"
+    },
+    {
+     "id": "f2d2e5eb-d98d-4637-99fc-4037949bd8c5",
+     "ref": "GCE 2022 P2 Q6"
+    },
+    {
+     "id": "cb863cc3-2c9b-481f-944f-bd1b6597ce49",
+     "ref": "GCE 2024 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Nature of Roots",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "The equation $\\mathrm{e}^{2x} - 2k\\mathrm{e}^{x} + 3k - 6 = 0$, where $k$ is a constant, can be written as a quadratic equation in $\\mathrm{e}^{x}$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that, for all values of $k$, this quadratic equation in $\\mathrm{e}^{x}$ has two distinct real roots.",
+      "marks": 2,
+      "answer": "With $u = \\mathrm{e}^{x}$, $u^2 - 2ku + 3k - 6 = 0$ has discriminant $4k^2 - 12k + 24 = (2k - 3)^2 + 15 > 0$ for all $k$."
+     },
+     {
+      "label": "(b)",
+      "text": "Explain why, when $k < 2$, the equation $\\mathrm{e}^{2x} - 2k\\mathrm{e}^{x} + 3k - 6 = 0$ has exactly one real root.",
+      "marks": 2,
+      "answer": "The product of the roots in $u$ is $3k - 6 < 0$, so one root is negative and one is positive; $\\mathrm{e}^{x} > 0$ for all real $x$, so only the positive root gives a value of $x$, hence exactly one real root."
+     },
+     {
+      "label": "(c)",
+      "text": "The equation $\\mathrm{e}^{2x} - 2k\\mathrm{e}^{x} + 3k - 6 = 0$ has two real roots, $x = a$ and $x = b$, where $a + b = \\ln 12$. Find the value of $k$.",
+      "marks": 3,
+      "answer": "$k = 6$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 7,
+    "topics": [
+     "Nature of Roots",
+     "Logarithms"
+    ],
+    "skills": [
+     "discriminant of a hidden quadratic in e^x with a general constant k, completed as a square plus a positive number to show two distinct real roots for every k",
+     "count the real roots in x by the signs of the roots in e^x, rejecting a non-positive value of e^x, and explain it in words",
+     "turn a condition a + b = ln 12 on the sum of the x-roots into the product of the e^x-roots equal to 12, and so find k"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Let $u = \\mathrm{e}^{x}$. The equation becomes $u^2 - 2ku + (3k - 6) = 0$.\nDiscriminant $= (-2k)^2 - 4(1)(3k - 6) = 4k^2 - 12k + 24$.\n$4k^2 - 12k + 24 = (2k - 3)^2 - 9 + 24 = (2k - 3)^2 + 15$.\nSince $(2k - 3)^2 \\geq 0$, the discriminant is at least $15$, which is positive for all values of $k$.\nSo the quadratic equation in $\\mathrm{e}^{x}$ has two distinct real roots for all values of $k$ (shown).\n\n(b) By the quadratic formula, $u = \\frac{2k \\pm \\sqrt{(2k - 3)^2 + 15}}{2} = k \\pm \\sqrt{k^2 - 3k + 6}$.\nThe product of the two roots is $\\left(k + \\sqrt{k^2 - 3k + 6}\\right)\\left(k - \\sqrt{k^2 - 3k + 6}\\right) = k^2 - (k^2 - 3k + 6) = 3k - 6$.\nWhen $k < 2$, $3k - 6 < 0$, so the two roots in $u$ have opposite signs: one is negative and one is positive.\nSince $\\mathrm{e}^{x} > 0$ for every real $x$, the negative root gives no value of $x$ and the positive root gives exactly one value, $x = \\ln\\left(k + \\sqrt{k^2 - 3k + 6}\\right)$.\nSo the equation has exactly one real root.\n(Alternative: let $\\mathrm{f}(u) = u^2 - 2ku + 3k - 6$; $\\mathrm{f}(0) = 3k - 6 < 0$ and the graph of $\\mathrm{f}$ is a parabola opening upwards, so it crosses the $u$-axis once at a negative $u$ and once at a positive $u$.)\n\n(c) The roots in $u$ are $\\mathrm{e}^{a}$ and $\\mathrm{e}^{b}$.\nTheir product is $\\mathrm{e}^{a}\\mathrm{e}^{b} = \\mathrm{e}^{a + b} = \\mathrm{e}^{\\ln 12} = 12$.\nFrom part (b), the product of the roots in $u$ is $3k - 6$.\n$3k - 6 = 12$\n$k = 6$\nCheck: $u^2 - 12u + 12 = 0$ gives $u = 6 \\pm 2\\sqrt{6}$, both positive, so there are indeed two real roots $x = \\ln(6 + 2\\sqrt{6})$ and $x = \\ln(6 - 2\\sqrt{6})$, consistent with $k > 2$.\n**Answer:** $k = 6$",
+    "syllabus_check": "4049 Equations and inequalities: conditions for a quadratic equation to have two distinct real roots (discriminant), completing the square; Exponential and logarithmic functions: e^x > 0, laws of logarithms (e^{a+b} = e^a e^b, e^{ln 12} = 12). The product of the roots is obtained from the quadratic formula by difference of two squares, so no sum-and-product-of-roots result is needed (though a candidate may use it). No calculus.",
+    "originality_note": "Not a line-meets-curve discriminant and not 'f(x) > 0 for all x' (Set 2 P1 Q1), not a cubic remainder leading to one real root (Set 1 P2 Q2), not a derivative with no stationary points (Set 1 P2 Q5). The discriminant is carried with a general k and the real-root count is decided by the sign of the e^x-roots, a case rejected by the domain of e^x; the closing step is a single value of k from a product of roots, not a range of k or a quadratic inequality in k (this paper's Q2 owns that). 2024 P2 Q5 solves one numerical equation e^x + e^{-x} = 2.9; here the equation's structure, not its solution, is the question."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P1 Q1",
+     "jaccard": 0.056,
+     "nearest_set": "Set 2 P1 Q10",
+     "jaccard_set": 0.051,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-10-09T14:37:45.709Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — with y = e^x: y^2 - 2ky + (3k - 6) = 0, discriminant = 4k^2 - 4(3k - 6) = 4(k^2 - 3k + 6) = 4[(k - 3/2)^2 + 15/4] > 0 for all real k, so two distinct real roots",
+     "(b)": "shown — product of roots in e^x = 3k - 6 < 0 when k < 2, so one root in e^x is positive and one negative; since e^x > 0, only the positive root gives a value of x, so exactly one real root",
+     "(c)": "k = 6"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Re-worked: with u = e^x, u^2 - 2ku + (3k - 6) = 0 has discriminant 4k^2 - 12k + 24 = (2k - 3)^2 + 15 (the examiner's 4[(k - 3/2)^2 + 15/4] is the same) and is at least 15, so positive for every k."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both argue the same way and correctly: the product of the u-roots is 3k - 6 < 0 when k < 2, so one u-root is negative and one positive; e^x > 0 for every real x, so only the positive u-root gives an x, exactly one real root. (At k = 2 the product is 0 and the statement still holds, so 'k < 2' is a safe hypothesis.)"
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give k = 6. Re-worked: e^a e^b = e^{a+b} = 12 = product of the u-roots = 3k - 6, so k = 6; then u^2 - 12u + 12 = 0 gives u = 6 +/- 2 sqrt 6, both positive (2 sqrt 6 = 4.90), so the two real roots exist as the stem says."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Nature of roots bridged to exponentials through a hidden quadratic with a general k: (a) is honest routine with a twist (the discriminant must be completed as a square plus 15, not solved for k), (b) is a reason in words whose last mark is the sentence that e^x cannot take the negative root (the 2024 'explain why' register), and (c) carries the idea, turning a + b = ln 12 on the x-roots into a product of 12 on the e^x-roots so that k = 6 falls from one line; every part feeds the next and nothing can be deleted. Not a re-skin of GCE 2024 P2 Q5(b) (a numerical quadratic in e^x solved to logarithmic form) or GCE 2024 P2 Q2 (a range of k from a discriminant); unlike Set 1 P2 Q2(b) (one real root of a cubic by the discriminant of the quadratic factor) and Set 1 P2 Q5(b) (a range of k for no stationary points) it counts roots by their signs and never solves an inequality in k, and unlike Set 2 P1 Q1 it shows the discriminant is always positive rather than finding when it is negative. Marks match the work ([2] discriminant, [2] reason, [3] product of roots). Gates all pass. Beside Set 1 P2 Q5 (7 marks, same shape of idea-in-the-last-part) it is as demanding and as clean. For the whole-paper reader: if the planned Q2 closes on a discriminant condition in a constant, Q5(a)'s discriminant is a second use of that tool in the paper, though Q5 does not close on it; that is the session's call, not a defect of this slot."
+   },
+   "exemplars": [
+    {
+     "id": "d0002da5-ed41-4da5-9ec4-318e5cc4b03a",
+     "ref": "GCE 2025 P1 Q8"
+    },
+    {
+     "id": "82dd20d8-9070-4ccf-a861-02a61bd119ab",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "09ca9274-2927-432c-a892-4c3e27cb1617",
+     "ref": "GCE 2023 P1 Q7"
+    },
+    {
+     "id": "120a93f4-95d9-454b-bde5-b790e2bbb4d9",
+     "ref": "GCE 2022 P1 Q8"
+    },
+    {
+     "id": "c54ac4b6-c497-45bc-8498-cf4e5199972d",
+     "ref": "GCE 2024 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Integration (Definite Integrals)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Differentiate $\\frac{\\sin x}{1 + \\cos x}$ with respect to $x$, giving your answer in its simplest form.",
+      "marks": 3,
+      "answer": "$\\frac{1}{1 + \\cos x}$"
+     },
+     {
+      "label": "(b)",
+      "text": "The diagram shows part of the curve $y = \\frac{1}{1 + \\cos x}$. The region $R$ is bounded by the curve, the $x$-axis, the $y$-axis and the line $x = \\frac{2\\pi}{3}$. The line $x = a$, where $0 < a < \\frac{2\\pi}{3}$, divides $R$ into two parts such that the area of the part between the $y$-axis and the line $x = a$ is half the area of the other part. Using your answer to part (a), find the exact value of $a$.",
+      "marks": 5,
+      "answer": "$a = \\frac{\\pi}{3}$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 8,
+    "topics": [
+     "Integration (Definite Integrals)",
+     "Differentiation (Techniques)",
+     "Trigonometry (Equations)"
+    ],
+    "skills": [
+     "quotient rule on sin x/(1 + cos x), the numerator collapsing by sin^2 x + cos^2 x = 1 to the unprinted single term 1/(1 + cos x)",
+     "reverse the derivative found to integrate 1/(1 + cos x), which the syllabus cannot integrate directly, between 0 and 2pi/3 (area root 3) and between 0 and an unknown limit a",
+     "turn a 1 : 2 split of the region by the vertical line x = a into root 3 sin a = 1 + cos a and solve it (R-formula, or squaring to the factorised quadratic (2 cos a - 1)(cos a + 1) = 0), keeping a = pi/3 and discarding a = pi, outside the range and where the curve is undefined"
+    ],
+    "needs_figure": true,
+    "figure_description": "Axes with O at the origin, x-axis to the right and y-axis up; the x-axis is labelled x and the y-axis y. Part of the curve y = 1/(1 + cos x) is drawn for x from 0 to about 2.3 (a little past 2π/3 ≈ 2.09): it starts at (0, 0.5) on the y-axis and rises slowly at first, then more steeply, through (π/3, 2/3) and (2π/3, 2) and on past the vertical line. Mark the point where the curve meets the y-axis but do NOT print its value 1/2 (print nothing on the y-axis). A vertical line x = 2π/3 is drawn from the x-axis up to the curve and labelled 2π/3 at its foot on the x-axis. The region R, bounded by the curve, the x-axis, the y-axis and the line x = 2π/3, is lightly shaded and labelled R inside the shading, towards its lower middle. Do NOT draw the line x = a and do NOT mark π/3 anywhere: a is what the candidate finds. The proportions should be honest (the curve at 2π/3 is four times its height at 0) but the figure is not drawn to scale and carries no scale, no grid, no numbers other than 2π/3, and no equation of the curve (the equation is in the text).",
+    "solution": "(a) Let $y = \\frac{\\sin x}{1 + \\cos x}$.\nBy the quotient rule, $\\frac{dy}{dx} = \\frac{(1 + \\cos x)(\\cos x) - (\\sin x)(-\\sin x)}{(1 + \\cos x)^2}$\n$= \\frac{\\cos x + \\cos^2 x + \\sin^2 x}{(1 + \\cos x)^2}$\n$= \\frac{\\cos x + 1}{(1 + \\cos x)^2}$ (using $\\sin^2 x + \\cos^2 x = 1$)\n$= \\frac{1}{1 + \\cos x}$\n**Answer:** $\\frac{d}{dx}\\left(\\frac{\\sin x}{1 + \\cos x}\\right) = \\frac{1}{1 + \\cos x}$\n\n(b) From part (a), $\\displaystyle\\int \\frac{1}{1 + \\cos x}\\,dx = \\frac{\\sin x}{1 + \\cos x} + c$.\nArea of $R = \\displaystyle\\int_{0}^{\\frac{2\\pi}{3}} \\frac{1}{1 + \\cos x}\\,dx = \\left[\\frac{\\sin x}{1 + \\cos x}\\right]_{0}^{\\frac{2\\pi}{3}}$\n$= \\frac{\\frac{\\sqrt{3}}{2}}{1 - \\frac{1}{2}} - \\frac{0}{1 + 1} = \\sqrt{3}$ unit$^2$\nArea of the part between the $y$-axis and $x = a$ is $\\displaystyle\\int_{0}^{a} \\frac{1}{1 + \\cos x}\\,dx = \\frac{\\sin a}{1 + \\cos a}$.\nThis part is half the other, so it is one third of $R$: $\\frac{\\sin a}{1 + \\cos a} = \\frac{\\sqrt{3}}{3}$\n$3\\sin a = \\sqrt{3}(1 + \\cos a)$\n$\\sqrt{3}\\sin a - \\cos a = 1$\nWrite $\\sqrt{3}\\sin a - \\cos a = R\\sin(a - \\alpha)$: $R = \\sqrt{3 + 1} = 2$, $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$, $\\alpha = \\frac{\\pi}{6}$.\n$2\\sin\\left(a - \\frac{\\pi}{6}\\right) = 1$\n$\\sin\\left(a - \\frac{\\pi}{6}\\right) = \\frac{1}{2}$\n$a - \\frac{\\pi}{6} = \\frac{\\pi}{6}$ or $\\frac{5\\pi}{6}$\n$a = \\frac{\\pi}{3}$ or $a = \\pi$\n$a = \\pi$ is outside $0 < a < \\frac{2\\pi}{3}$ (and the curve is not defined at $x = \\pi$), so it is discarded.\nCheck: $\\frac{\\sin\\frac{\\pi}{3}}{1 + \\cos\\frac{\\pi}{3}} = \\frac{\\frac{\\sqrt{3}}{2}}{\\frac{3}{2}} = \\frac{\\sqrt{3}}{3}$, one third of $\\sqrt{3}$.\nAlternative: square $\\sqrt{3}\\sin a = 1 + \\cos a$: $3(1 - \\cos^2 a) = 1 + 2\\cos a + \\cos^2 a$, so $2\\cos^2 a + \\cos a - 1 = 0$, $(2\\cos a - 1)(\\cos a + 1) = 0$; $\\cos a = \\frac{1}{2}$ gives $a = \\frac{\\pi}{3}$ and $\\cos a = -1$ gives $a = \\pi$, discarded as above.\n**Answer:** $a = \\frac{\\pi}{3}$",
+    "syllabus_check": "4049 Differentiation: quotient rule with sin x and cos x; Trigonometry: sin^2 x + cos^2 x = 1, exact values at pi/3 and 2pi/3, solving a sin x + b cos x = c by the R-formula (or by squaring and the Pythagorean identity to a quadratic in cos x) on a stated range; Integration: integration as the reverse of differentiation, the area under a curve as a definite integral, a definite integral with an unknown upper limit set equal to a value. No integration by substitution or parts, no inverse trigonometric functions, no half-angle formulae needed, no ln of a trigonometric function.",
+    "originality_note": "Not a re-skin and not the Set 1 / Set 2 sequence. Set 1 P2 Q3 differentiates then asks 'Hence' for the indefinite and then the definite integral of the related function to an exact value; Set 2 P2 Q3 proves an identity, evaluates the integral over [0, pi/4] exactly, then gives an integral over a moved interval [a, a + pi/4] a value and solves a quadratic in tan a from the tan addition formula; GCE 2021 P2 Q3 and GCE 2022 P2 Q8 reverse the derivative of an algebraic product over a square root. Here no definite integral is asked for as an answer: part (b) moves the unknown to a limit through a 1 : 2 split of a region by a vertical line, and the integral of 1/(1 + cos x) (reversed from the unprinted single term of (a)) becomes the trigonometric equation root 3 sin a = 1 + cos a, solved by the R-formula or by squaring to a factorised quadratic in cos a, with a = pi discarded by the range. Set 2 P2 Q10 splits a log-curve region by a HORIZONTAL line y = k into equal halves and carries k as a function; GCE 2025 P2 Q9 equates two areas under a parabola and a line to find a gradient. The closing step (an exact angle from a trigonometric equation with one value discarded by the range) differs from Q2 (intersecting inequalities on a number line), Q3 (a logarithmic equation in p), Q4 (a time by ln and a decision), Q5 (k from a product of roots), Q7 (the far end of a chord) and Q8 (equal areas argued in words); the Hence in (b) uses the derivative of (a) directly, with no split or substitution left unstated."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 specimen P2 Q3",
+     "jaccard": 0.106,
+     "nearest_set": "Set 1 P1 Q13",
+     "jaccard_set": 0.096,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-09T23:39:18.666Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "1/(1 + cos x)",
+     "(b)": "a = π/3"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 1/(1 + cos x). Re-worked: quotient rule gives [(1 + cos x)cos x + sin^2 x]/(1 + cos x)^2 = (cos x + 1)/(1 + cos x)^2 = 1/(1 + cos x); cross-check sin x/(1 + cos x) = tan(x/2), derivative (1/2)sec^2(x/2) = 1/(2cos^2(x/2)) = 1/(1 + cos x). Key right; 1 + cos x > 0 on [0, 2pi/3] so the region in (b) is well defined and above the x-axis."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give a = pi/3. Re-worked: area of R = [sin x/(1 + cos x)] from 0 to 2pi/3 = (sqrt3/2)/(1/2) - 0 = sqrt3; the part between the y-axis and x = a is sin a/(1 + cos a) and is half the other part, so one third of R: sin a/(1 + cos a) = 1/sqrt3, i.e. sqrt3 sin a - cos a = 1, 2 sin(a - pi/6) = 1, a = pi/3 or a = pi; pi is outside 0 < a < 2pi/3 (and 1 + cos x = 0 there). Squaring route gives (2cos a - 1)(cos a + 1) = 0, same two candidates. Unique because sin a/(1 + cos a) = tan(a/2) is increasing on the range. Check: (sqrt3/2)/(3/2) = sqrt3/3 = (1/3)sqrt3."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on both parts and both are right; the key is exact and a = pi/3 is the only value in the range.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "A real 4049 area question prints the region (GCE 2025 P2 Q9, GCE 2024 P1 Q13 both open 'The diagram shows ...'): set needs_figure true with a sketch of y = 1/(1 + cos x) from x = 0 to x = 2pi/3, the line x = a and the two parts of R marked, and open (b) 'The diagram shows part of the curve y = 1/(1 + cos x) for 0 <= x <= 2pi/3. The region R is bounded by ...'. The region is drawable from the words, so this is the light edit between 4 and 5, not a defect.",
+     "Lesson 2 (the whole-paper reader, for the session rather than this slot): Q6 closes on a = pi/3 from a trigonometric equation solved on a range with one value discarded; Q9 reaches its next instant of rest from cos t = 1/2, which also yields pi/3 (and 5pi/3), and Q11 closes by solving trigonometric equations on a domain with admit/drop decisions. The equation types differ (a sin x + b cos x = c here; cos t = 1/2 in Q9; a quadratic in sin x in Q11), so this is a shared feel, not the same skill. If the reader counts the repeated pi/3 as the same feel, change Q9's instant of rest (e.g. cos t = -1/2, giving 2pi/3) rather than this slot: with the curve 1/(1 + cos x) the 1 : 2 split under the bound 2pi/3 is the one split that closes on a clean exact angle, and any unknown-limit version of this slot must end in a trigonometric equation."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "At standard for 8 marks: (a) withholds the simplified form (the 2024/25 move) for [3], and (b) [5] is one honest chain with its idea in the set-up — the candidate must read 'half the other part' as one third of R, reverse the derivative of (a) (signalled, so Lesson 1 holds: no split or substitution is left unstated), then choose the R-formula or squaring for sqrt3 sin a - cos a = 1 and discard a = pi by the range — with every number clean (sqrt3, pi/3) and a kept/rejected case for the A1 (item 9). Beside Set 1 P2 Q3 [8] it is less scaffolded (no printed derivative, no separate indefinite-integral part) and its last part finds a fact about the configuration, so it is as good as Set 1. It shares the 'differentiate, then use the result to integrate' shape with Set 1 P2 Q3 and the unknown-limit-of-a-trig-integral ending with Set 2 P2 Q3(c), but the skill comes from a different direction each time (an area ratio with the unknown moved to the limit, a region split by a vertical line, an a sin + b cos = c equation instead of a definite value or a tan-addition quadratic), which the variety rule allows; the situation, structure and sequence of parts are new, the gates pass (nearest Set 1 P1 Q13 at 0.06, no repeated skills), and no 2024/25 P2 question is re-skinned (GCE 2025 P2 Q9 equates two areas to find a gradient, a different situation). Setter's skills phrases are true and specific. Marks match the work (differentiate [3] plus an unknown-limit area equation [5] against GCE 2021 P2 Q3's [4, 4] for a plain 'hence' integral), so no re-mark."
+   },
+   "exemplars": [
+    {
+     "id": "a906d956-d3fc-466d-9cd9-75b9505014e1",
+     "ref": "GCE 2021 P2 Q3"
+    },
+    {
+     "id": "cada459a-5436-41aa-92f2-80e3a77be480",
+     "ref": "GCE 2024 P1 Q12"
+    },
+    {
+     "id": "14d24a81-10c5-473d-9376-b1be1af3db49",
+     "ref": "GCE 2022 P2 Q8"
+    },
+    {
+     "id": "e9dac870-5eb4-42f8-bc7f-9c590e2ff544",
+     "ref": "GCE 2015 P2 Q2"
+    },
+    {
+     "id": "88f697b8-fd98-48df-9359-c0780779fd7e",
+     "ref": "GCE 2013 P2 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Circles",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The points $A(8, -1)$ and $B(10, 5)$ lie on a circle. The tangent to the circle at $A$ has equation $y = x - 9$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the equation of the circle.",
+      "marks": 5,
+      "answer": "$(x - 3)^2 + (y - 4)^2 = 50$, i.e. $x^2 + y^2 - 6x - 8y - 25 = 0$ (centre $(3, 4)$, radius $5\\sqrt{2}$)"
+     },
+     {
+      "label": "(b)",
+      "text": "The chord $BE$ of the circle is parallel to the tangent at $A$. Find the coordinates of $E$.",
+      "marks": 3,
+      "answer": "$E(2, -3)$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 8,
+    "topics": [
+     "Circles",
+     "Coordinate Geometry"
+    ],
+    "skills": [
+     "equation of a circle from two points on it and the tangent at one of them: the centre is where the normal at the point of contact meets the perpendicular bisector of the chord joining the two points, neither line printed",
+     "far end of a chord drawn parallel to the tangent at A, found either by meeting the line of the chord with the circle (one root already known) or by seeing that the diameter through A is perpendicular to the chord and so bisects it"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) The radius to the point of contact is perpendicular to the tangent, so the centre $C$ lies on the line through $A$ perpendicular to $y = x - 9$.\nThis line has gradient $-1$: $y + 1 = -(x - 8)$, i.e. $x + y = 7$.\n$C$ is equidistant from $A$ and $B$, so $C$ also lies on the perpendicular bisector of $AB$.\nMidpoint of $AB$ is $(9, 2)$. Gradient of $AB$ is $\\frac{5 - (-1)}{10 - 8} = 3$, so the bisector has gradient $-\\frac{1}{3}$.\nPerpendicular bisector: $y - 2 = -\\frac{1}{3}(x - 9)$, i.e. $x + 3y = 15$.\nSolving $x + y = 7$ and $x + 3y = 15$: $2y = 8$, so $y = 4$ and $x = 3$. Centre $C(3, 4)$.\n$r^2 = CA^2 = (8 - 3)^2 + (-1 - 4)^2 = 25 + 25 = 50$.\nCheck with $B$: $(10 - 3)^2 + (5 - 4)^2 = 49 + 1 = 50$.\nAnswer: $(x - 3)^2 + (y - 4)^2 = 50$, i.e. $x^2 + y^2 - 6x - 8y - 25 = 0$.\n(Alternative: centre $(h, k)$ with $CA \\perp$ tangent gives $h + k = 7$, and $CA^2 = CB^2$ gives $h + 3k = 15$; same centre.)\n(b) $BE$ is parallel to the tangent $y = x - 9$, so $BE$ has gradient $1$ and passes through $B(10, 5)$: $y = x - 5$.\nA line through the centre perpendicular to a chord bisects the chord.\nThe perpendicular from $C(3, 4)$ to $BE$ has gradient $-1$: $y - 4 = -(x - 3)$, i.e. $y = -x + 7$.\nMeeting $y = x - 5$: $x - 5 = -x + 7$, so $x = 6$ and $y = 1$.\nSo $(6, 1)$ is the midpoint of $BE$.\n$E = (2 \\times 6 - 10,\\ 2 \\times 1 - 5) = (2, -3)$\nCheck: $(2 - 3)^2 + (-3 - 4)^2 = 1 + 49 = 50$, so $E$ is on the circle.\nAnswer: $E(2, -3)$.\n\nAlternative:\nSubstitute $y = x - 5$ into the circle: $x^2 + (x - 5)^2 - 6x - 8(x - 5) - 25 = 0$.\n$2x^2 - 24x + 40 = 0$, i.e. $x^2 - 12x + 20 = 0$.\n$(x - 10)(x - 2) = 0$. $x = 10$ is $B$, so at $E$, $x = 2$ and $y = 2 - 5 = -3$.",
+    "syllabus_check": "4049 Coordinate geometry and circles: equation of a circle in both forms, the tangent perpendicular to the radius at the point of contact, the perpendicular bisector of a chord through the centre, gradients of parallel and perpendicular lines, midpoint, intersection of two lines, a line meeting a circle (quadratic with one known root). No perpendicular-distance formula, no vectors, no section formula.",
+    "originality_note": "Not a centre-and-radius opener from a printed equation: the circle is fixed by two points and the tangent at one of them, so the candidate must decide that the centre lies on the normal at A as well as on the perpendicular bisector of AB (GCE 2025 P1 Q13 fixed the centre with a chord, a line for the centre and a diameter through a point; GCE 2024 P2 Q7 gave a diameter; the 2021 specimen P2 Q8 printed the perpendicular bisector as part (a)). Part (b) asks for the far end of a chord parallel to the tangent at A, a configuration no earlier Set used; the candidate chooses between meeting the chord line with the circle (one root known) and the perpendicular-from-centre-bisects-chord fact. Set 1 P2 Q9 (tangents from an external point, CAPB a square), Set 2 P1 Q13 (right angle on a line, circle on AB as diameter) and Set 2 P2 Q9 (circle touching the x-axis, angle SAB) share neither the given information nor the sequence of parts. Numbers: centre (3, 4), r^2 = 50, E(2, -3), all integers."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2018 P2 Q11",
+     "jaccard": 0.113,
+     "nearest_set": "Set 1 P1 Q7",
+     "jaccard_set": 0.061,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-10T00:36:39.864Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "(x - 3)^2 + (y - 4)^2 = 50  [i.e. x^2 + y^2 - 6x - 8y - 25 = 0]",
+     "(b)": "E(2, -3)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give (x - 3)^2 + (y - 4)^2 = 50, i.e. x^2 + y^2 - 6x - 8y - 25 = 0. Re-worked: normal at A is x + y = 7, perpendicular bisector of AB (midpoint (9, 2), gradient -1/3) is x + 3y = 15, centre (3, 4), r^2 = 25 + 25 = 50, and B checks (49 + 1 = 50)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give E(2, -3). Re-worked: BE is y = x - 5; substitution gives x^2 - 12x + 20 = 0 = (x - 2)(x - 10), x = 10 is B, so E(2, -3); on the circle (1 + 49 = 50). The geometric route (foot of the perpendicular from B to x + y = 7 is (6, 1), the midpoint of BE) agrees."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A circle opener that withholds the equation: the candidate must decide that the centre lies on the normal at the point of contact AND on the perpendicular bisector of AB (neither line printed), which is the 2025 P1 Q13 kind of given information at a fair 5 marks, and (b) closes on a second intersection with the known root to discard (or the diameter-bisects-the-chord shortcut); numbers close exactly (centre (3, 4), r^2 = 50, E(2, -3)) and the register is SEAB's. Not a re-skin of 2024 P2 Q7 (diameter given) and a different skill from Set 1 P2 Q9 (tangents from an external point) and Set 2 P2 Q9 (touching the x-axis, two circles). Gates all pass. For the whole-paper reader: Q7(b) and Q8(a) both begin with a line through a given point parallel to a given line, though the two questions close differently."
+   },
+   "exemplars": [
+    {
+     "id": "47a911b9-671b-4a1e-ac67-4e2fc06e6974",
+     "ref": "GCE 2025 P1 Q13"
+    },
+    {
+     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "2abd9e0f-c88e-4b73-94b1-c4fb95016a17",
+     "ref": "GCE 2024 P1 Q4"
+    },
+    {
+     "id": "251d5273-4d46-4776-a04a-f837876f78ce",
+     "ref": "GCE 2023 P1 Q10"
+    },
+    {
+     "id": "f57648c6-4ce1-433b-b20c-78139b8526aa",
+     "ref": "GCE 2022 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Coordinate Geometry",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "Solutions to this question by accurate drawing will not be accepted.\nThe diagram shows a trapezium $ABCD$ in which $AB$ is parallel to $DC$. The points $A$, $B$ and $D$ have coordinates $(0, 1)$, $(8, 5)$ and $(2, 8)$ respectively, and $C$ lies in the first quadrant. The area of the trapezium is $36$ units$^2$. The diagonals $AC$ and $BD$ meet at $X$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of $C$.",
+      "marks": 4,
+      "answer": "$C(6, 10)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the coordinates of $X$ and the ratio $AX : XC$.",
+      "marks": 3,
+      "answer": "$X(4, 7)$; $AX : XC = 2 : 1$"
+     },
+     {
+      "label": "(c)",
+      "text": "Explain why triangle $AXD$ and triangle $BXC$ have the same area, and find this area.",
+      "marks": 2,
+      "answer": "Triangles $ABD$ and $ABC$ have the same base $AB$ and the same height, since $DC$ is parallel to $AB$, so they have equal areas; each contains triangle $ABX$, and removing it leaves triangles $AXD$ and $BXC$ with equal areas. Area $= 8$ units$^2$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 9,
+    "topics": [
+     "Coordinate Geometry"
+    ],
+    "skills": [
+     "unknown vertex of a trapezium fixed by its area: C placed on the line through D parallel to AB with one parameter, the area of the rectilinear figure written as a linear expression in that parameter and equated to the given area, the second value rejected because C must lie in the first quadrant",
+     "ratio in which the diagonals of a trapezium cut each other, read from the intersection point of the two diagonals (equal to the ratio of the parallel sides)",
+     "equal areas of the two side triangles of a trapezium argued in words from a common base and a common height, then the area found by subtracting the common triangle"
+    ],
+    "needs_figure": true,
+    "figure_description": "Cartesian axes with the origin O marked, x from -1 to 9 and y from 0 to 11, no grid lines, arrows on the positive axes. A trapezium ABCD drawn with four straight sides, vertices (not printed as coordinates for C): A at (0, 1) on the y-axis, B at (8, 5), C at (6, 10), D at (2, 8); AB and DC are the parallel sides (both of gradient one half), DC the shorter side lying above AB. The two diagonals AC and BD are drawn as thin straight lines and their intersection is labelled X (letter only). Print beside each point: A(0, 1), B(8, 5), D(2, 8) with their coordinates; C and X with their letters only and NO coordinates. No equations, lengths, angles, areas, ratios or shading appear on the figure.",
+    "solution": "(a) $DC$ is parallel to $AB$, so $DC$ has gradient $\\frac{5 - 1}{8 - 0} = \\frac{1}{2}$.\n$C$ lies on the line through $D(2, 8)$ with gradient $\\frac{1}{2}$: $y - 8 = \\frac{1}{2}(x - 2)$, i.e. $y = \\frac{1}{2}x + 7$. Let $C$ be $(2 + 2t,\\ 8 + t)$.\nArea of $ABCD$ (vertices in order $A, B, C, D$) $= \\frac{1}{2}\\left|\\,0(5) + 8(8 + t) + (2 + 2t)(8) + 2(1) - [1(8) + 5(2 + 2t) + (8 + t)(2) + 8(0)]\\,\\right|$\n$= \\frac{1}{2}\\left|(82 + 24t) - (34 + 12t)\\right| = \\frac{1}{2}|48 + 12t|$.\n$\\frac{1}{2}|48 + 12t| = 36$, so $48 + 12t = 72$ or $48 + 12t = -72$, giving $t = 2$ or $t = -10$.\n$t = -10$ gives $C(-18, -2)$, which is not in the first quadrant, so it is rejected.\n$t = 2$ gives $C(6, 10)$.\nAnswer: $C(6, 10)$.\n(Alternative: the perpendicular from $A$ to $DC$ has equation $y = -2x + 1$ and meets $y = \\frac{1}{2}x + 7$ at $(-2.4, 5.8)$, so the height of the trapezium is $\\sqrt{2.4^2 + 4.8^2} = \\frac{12}{\\sqrt{5}}$; $AB = \\sqrt{80} = 4\\sqrt{5}$; $\\frac{1}{2}(4\\sqrt{5} + DC)\\cdot\\frac{12}{\\sqrt{5}} = 36$ gives $DC = 2\\sqrt{5}$, so $C = D \\pm (4, 2)$, and $(-2, 6)$ is rejected.)\n(b) $AC$: gradient $\\frac{10 - 1}{6 - 0} = \\frac{3}{2}$, so $y = \\frac{3}{2}x + 1$.\n$BD$: gradient $\\frac{8 - 5}{2 - 8} = -\\frac{1}{2}$, so $y - 5 = -\\frac{1}{2}(x - 8)$, i.e. $y = -\\frac{1}{2}x + 9$.\n$\\frac{3}{2}x + 1 = -\\frac{1}{2}x + 9$, so $2x = 8$, $x = 4$, $y = 7$.\n$X(4, 7)$.\n$A$, $X$ and $C$ are collinear, so $AX : XC = (4 - 0) : (6 - 4) = 4 : 2 = 2 : 1$ (or $AX = \\sqrt{4^2 + 6^2} = 2\\sqrt{13}$ and $XC = \\sqrt{2^2 + 3^2} = \\sqrt{13}$).\nAnswer: $X(4, 7)$ and $AX : XC = 2 : 1$.\n(c) Triangles $ABD$ and $ABC$ have the same base $AB$, and because $DC$ is parallel to $AB$ their third vertices $D$ and $C$ are the same perpendicular distance from $AB$, so the two triangles have the same area.\nEach of them contains triangle $ABX$. Removing it from both leaves triangle $AXD$ and triangle $BXC$, which therefore have the same area.\nArea of triangle $ABD = \\frac{1}{2}\\left|0(5) + 8(8) + 2(1) - [1(8) + 5(2) + 8(0)]\\right| = \\frac{1}{2}|66 - 18| = 24$.\nArea of triangle $ABX = \\frac{1}{2}\\left|0(5) + 8(7) + 4(1) - [1(8) + 5(4) + 7(0)]\\right| = \\frac{1}{2}|60 - 28| = 16$.\nArea of triangle $AXD = 24 - 16 = 8$.\n(Check: with $AX : XC = 2 : 1$ the four triangles $ABX$, $AXD$, $BXC$, $DXC$ have areas in the ratio $4 : 2 : 2 : 1$, and $\\frac{2}{9} \\times 36 = 8$.)\nAnswer: $8$ units$^2$.",
+    "syllabus_check": "4049 Coordinate geometry in two dimensions: gradient of parallel lines, equation of a straight line, area of a rectilinear figure (shoelace), intersection of two lines, lengths and ratios along a line from coordinates, and the O-Level area facts for triangles on the same base between the same parallels. No section formula, no vectors, no perpendicular-distance formula required.",
+    "originality_note": "A trapezium with one vertex withheld and its area given, so the candidate builds the relation (C on the line through D parallel to AB) and turns the area into an equation in one unknown with a case to reject; the diagonals then give a ratio and a reason-in-words closer about equal side triangles. Not the kite with h + k = 12 (GCE 2021 P1 Q9, which asked for the area), not a family of lines through a fixed point (Set 1 P2 Q6), not a reflection in a perpendicular bisector with a right-angle argument (Set 1 P1 Q10), not a distance inequality (Set 1 P1 Q4), and no circle. All answers integers: C(6, 10), X(4, 7), 2 : 1, area 8."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P1 Q11",
+     "jaccard": 0.178,
+     "nearest_set": "Set 2 P1 Q13",
+     "jaccard_set": 0.097,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-09T14:29:49.435Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "C = (6, 10)",
+     "(b)": "X = (4, 7); AX : XC = 2 : 1",
+     "(c)": "Triangles ABD and ABC share base AB and have equal heights (D and C lie on DC, parallel to AB), so they have equal area; subtracting the common triangle AXB leaves area AXD = area BXC. Area = 8 units^2"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give C(6, 10). Re-worked: C = (2 + 2t, 8 + t) on the line through D parallel to AB; shoelace area = (1/2)|48 + 12t| = 36 gives t = 2 or t = -10, and (-18, -2) is rejected by the first-quadrant condition. The trapezium-formula route (height 12/sqrt5, AB = 4 sqrt5, DC = 2 sqrt5) gives (6, 10) or (-2, 6), the second also rejected by the same condition."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give X(4, 7) and AX : XC = 2 : 1. Re-worked: AC is y = (3/2)x + 1, BD is y = -(1/2)x + 9, meeting at (4, 7); AX : XC = 4 : 2 by x-coordinates (equals AB : DC = 4 sqrt5 : 2 sqrt5)."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give the same-base-same-height argument (D and C are the same distance from AB because DC is parallel to AB), subtract the common triangle ABX, and area 8 units^2. Re-worked: area ABD = 24, area ABX = 16, so AXD = 8; shoelace on A, X, D also gives 8, and the 4 : 2 : 2 : 1 split of 36 agrees."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and both are right; the key is exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The idea sits in (a): the unknown vertex is fixed by the area, so the candidate must place C on the line through D parallel to AB with one parameter, write the area and reject the second value by the first-quadrant condition the question supplies (a rejection that works for both the shoelace and the trapezium-formula routes); (b) is honest routine and (c) turns the question round to a structural fact argued in words (equal areas from a common base and parallel sides) before the number 8. Clean numbers throughout (C(6, 10), X(4, 7), 2 : 1, 24 - 16 = 8), SEAB's register including the accurate-drawing line, and every part feeds the next. Not a re-skin of 2021 P1 Q9 (kite with symmetry constraints) or of any 2024/25 P2 question; the skills (vertex from area, diagonal ratio, equal side-triangles of a trapezium) are new to the Sets, though the find-point / find-intersection / explain-and-area cadence resembles Set 1 P1 Q10's parts. Gates all pass."
+   },
+   "exemplars": [
+    {
+     "id": "e4ac5782-bc7a-4f07-8ccc-a8ee10c87447",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "64269ab0-a9e7-4245-b23e-2a04388fae1f",
+     "ref": "GCE 2021 P1 Q9"
+    },
+    {
+     "id": "251d5273-4d46-4776-a04a-f837876f78ce",
+     "ref": "GCE 2023 P1 Q10"
+    },
+    {
+     "id": "b071686f-de36-479e-8f36-4638bf3fe287",
+     "ref": "GCE 2022 P1 Q13"
+    },
+    {
+     "id": "f57648c6-4ce1-433b-b20c-78139b8526aa",
+     "ref": "GCE 2022 P2 Q9"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Kinematics",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A particle $P$ moves in a straight line so that its acceleration, $a$ m/s$^2$, $t$ seconds after passing through a fixed point $O$, is given by $a = -4\\sin t$. The particle is instantaneously at rest when $t = \\frac{\\pi}{3}$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find an expression for the velocity of $P$ in terms of $t$.",
+      "marks": 2,
+      "answer": "$v = 4\\cos t - 2$",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Find the next value of $t$ for which $P$ is instantaneously at rest and find, in exact form, the displacement of $P$ from $O$ at this instant.",
+      "marks": 4,
+      "answer": "$t = \\frac{5\\pi}{3}$; displacement $= -2\\sqrt{3} - \\frac{10\\pi}{3}$ m (i.e. $13.9$ m from $O$ on the side opposite to its initial motion)",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Find the total distance travelled by $P$ in the first $2\\pi$ seconds of its motion, giving your answer correct to 3 significant figures.",
+      "marks": 4,
+      "answer": "$18.0$ m (exact value $8\\sqrt{3} + \\frac{4\\pi}{3}$)",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $v = 4\\cos t - 2$. (b) $t = \\frac{5\\pi}{3}$, displacement $-2\\sqrt{3} - \\frac{10\\pi}{3}$ m. (c) $18.0$ m.",
+    "total_marks": 10,
+    "topics": [
+     "Kinematics"
+    ],
+    "skills": [
+     "constant of integration of a trigonometric velocity model fixed from an instant of rest, not from an initial velocity",
+     "next instant of rest chosen from the periodic solutions of cos t = 1/2 within the motion",
+     "total distance over an interval containing two changes of direction, displacement found from s(0) = 0, the three legs summed and given to 3 significant figures (18.0 m)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "**(a)** $v = \\int -4\\sin t\\,dt = 4\\cos t + c$.\nAt $t = \\frac{\\pi}{3}$, $v = 0$: $4\\cos\\frac{\\pi}{3} + c = 0$, so $2 + c = 0$, $c = -2$.\n**Answer:** $v = 4\\cos t - 2$.\n\n**(b)** At rest: $4\\cos t - 2 = 0$, so $\\cos t = \\frac{1}{2}$.\nBasic angle $\\frac{\\pi}{3}$; solutions $t = \\frac{\\pi}{3}, \\frac{5\\pi}{3}, \\frac{7\\pi}{3}, \\ldots$\nThe next instant of rest after $t = \\frac{\\pi}{3}$ is $t = \\frac{5\\pi}{3}$.\n$s = \\int (4\\cos t - 2)\\,dt = 4\\sin t - 2t + k$.\nAt $t = 0$, $s = 0$ (the particle is at $O$): $k = 0$, so $s = 4\\sin t - 2t$.\nAt $t = \\frac{5\\pi}{3}$: $s = 4\\sin\\frac{5\\pi}{3} - \\frac{10\\pi}{3} = 4\\left(-\\frac{\\sqrt{3}}{2}\\right) - \\frac{10\\pi}{3} = -2\\sqrt{3} - \\frac{10\\pi}{3}$.\n**Answer:** $t = \\frac{5\\pi}{3}$; displacement $= -2\\sqrt{3} - \\frac{10\\pi}{3}$ m.\n\n**(c)** $P$ changes direction only where $v = 0$, at $t = \\frac{\\pi}{3}$ and $t = \\frac{5\\pi}{3}$ (both in $0 \\le t \\le 2\\pi$).\n$s\\left(\\frac{\\pi}{3}\\right) = 4\\cdot\\frac{\\sqrt{3}}{2} - \\frac{2\\pi}{3} = 2\\sqrt{3} - \\frac{2\\pi}{3} \\approx 1.370$.\n$s\\left(\\frac{5\\pi}{3}\\right) = -2\\sqrt{3} - \\frac{10\\pi}{3} \\approx -13.936$.\n$s(2\\pi) = 4\\sin 2\\pi - 4\\pi = -4\\pi \\approx -12.566$.\nDistance from $t = 0$ to $\\frac{\\pi}{3}$: $2\\sqrt{3} - \\frac{2\\pi}{3}$.\nDistance from $\\frac{\\pi}{3}$ to $\\frac{5\\pi}{3}$: $\\left(2\\sqrt{3} - \\frac{2\\pi}{3}\\right) - \\left(-2\\sqrt{3} - \\frac{10\\pi}{3}\\right) = 4\\sqrt{3} + 4\\pi$.\nDistance from $\\frac{5\\pi}{3}$ to $2\\pi$: $-4\\pi - \\left(-2\\sqrt{3} - \\frac{10\\pi}{3}\\right) = 2\\sqrt{3} - \\frac{2\\pi}{3}$.\nTotal $= 2\\left(2\\sqrt{3} - \\frac{2\\pi}{3}\\right) + 4\\sqrt{3} + 4\\pi = 8\\sqrt{3} + \\frac{4\\pi}{3} = 18.04\\ldots$\n**Answer:** total distance $= 18.0$ m (3 s.f.).",
+    "syllabus_check": "4049 Kinematics: motion in a straight line with velocity and acceleration as functions of time; integration of sin t and of a constant; displacement, velocity, acceleration, instants of rest, distance travelled versus displacement. Trigonometric equation cos t = 1/2 in radians (Trigonometry (Equations), basic). No optimisation, no material outside 4049.",
+    "originality_note": "Kinematics with a trigonometric acceleration model has not appeared in Set 1 or Set 2 (Set 1 P2 Q8: lift with v = kt(T - t), design limits on acceleration and speed; Set 2 P2 Q8: car with a = k e^(-t/4) against a van, greatest gap, overtaking bound). The twist is that the constant of integration comes from an instant of rest rather than an initial velocity, the next rest instant has to be picked from a periodic family, and the distance over 2 pi seconds spans two reversals. No model-fitting from two speeds (GCE 2021 spec P1 Q13, GCE 2024 P2 Q8), no exponential braking (GCE 2021 P2 Q8), no two-body meeting. Closing step (a distance made of three legs, given to 3 s.f. so that it does not end on an exact surd-and-pi value like Q6) differs from every other closing step planned for this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P1 Q12",
+     "jaccard": 0.115,
+     "nearest_set": "Set 2 P2 Q8",
+     "jaccard_set": 0.073,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-09T23:37:20.192Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "v = 4cos t - 2",
+     "(b)": "t = 5π/3; s = -2√3 - 10π/3 m (i.e. 2√3 + 10π/3 m on the negative side of O)",
+     "(c)": "18.0 m (exact 8√3 + 4π/3)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "v = 4cos t - 2 from v(pi/3) = 0; both agree and it is right (v(pi/3) = 0 checked)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "t = 5pi/3 (the next solution of cos t = 1/2 after pi/3); s = 4sin t - 2t with s(0) = 0, so s(5pi/3) = -2sqrt3 - 10pi/3 = -13.9 m. Both agree; verified."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Turning points pi/3 and 5pi/3 inside [0, 2pi]; three pieces sum to 8sqrt3 + 4pi/3 = 18.0 m. Both agree; a numerical integral of |v| over [0, 2pi] gives 18.045, matching the key."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and the key is right; I re-worked (b) and (c) and confirmed 5pi/3, -2sqrt3 - 10pi/3 and 8sqrt3 + 4pi/3.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Light edit of register: (b) is two answers in one part, so say 'Find the next value of t for which P is instantaneously at rest and find, in exact form, the displacement of P from O at this instant' (or 'correct to 3 significant figures') so the candidate knows which form is wanted; as printed, -2sqrt3 - 10pi/3 and -13.9 are both left open.",
+     "Lesson 2 (same closing feel in one paper): Q6 already closes on an exact value in surds and pi from a trigonometric integral over [0, pi/3]; (c) closes on 8sqrt3 + 4pi/3 from a trigonometric integral with pi/3 and 5pi/3 as limits. Ask (c) 'correct to 3 significant figures' (a distance in metres), so that the two questions do not end the same way; the maths of the split is unchanged.",
+     "Minor overlap of a small step, not a defect: Q9(b) solves cos t = 1/2 in radians and Q11(b) solves a quadratic in sin x in radians. Nothing to change if Q11 is rewritten."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A correct, clean kinematics question at the 2024/25 standard: the constant comes from an instant of rest rather than an initial velocity, the next rest instant has to be chosen from the periodic solutions, and (c) needs the candidate to count two changes of direction inside [0, 2pi] and sum three pieces (integrating straight through gives -4pi and loses the part); exact numbers close to 8sqrt3 + 4pi/3. It is not GCE 2023 P2 Q7 re-skinned (acceleration given, rest-instant constant, no 'smallest c' part), and it shares no situation, structure or skill with Set 1 P2 Q8 (lift, design limits) or Set 2 P2 Q8 (exponential acceleration, overtaking); the named skills are true and specific; all gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "7bbe6b23-ba87-4d42-80e3-35f89f343c24",
+     "ref": "GCE 2021 specimen P1 Q13"
+    },
+    {
+     "id": "e44ee8b7-01b6-4813-843a-aba3efa5162c",
+     "ref": "GCE 2021 P2 Q8"
+    },
+    {
+     "id": "7aaac191-6e12-4501-9b5d-04b59160841b",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "1256eefe-1ee9-439e-9321-9354b9eb1265",
+     "ref": "GCE 2023 P2 Q7"
+    },
+    {
+     "id": "3fd0c2a4-c811-4101-bc71-08c5a4ccddf8",
+     "ref": "GCE 2022 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Plane Geometry",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a circle and a point $P$ outside the circle. The line $PT$ is a tangent to the circle at $T$. A line through $P$ cuts the circle at $A$ and at $B$, where $A$ lies between $P$ and $B$. The bisector of angle $TPB$ meets $TA$ at $E$ and meets $TB$ at $F$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show, giving all reasons, that angle $TAB$ = angle $TPB$ + angle $TBA$.",
+      "marks": 3,
+      "answer": "Proof: angle PTA = angle TBA (alternate segment theorem); angle TAB is an exterior angle of triangle PTA, so angle TAB = angle TPA + angle PTA = angle TPB + angle TBA.",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence prove that $TE = TF$.",
+      "marks": 4,
+      "answer": "Proof: with angle TPE = angle EPB = alpha, angle TFE = alpha + angle TBA (exterior angle of triangle PFB) and angle TEF = angle TAB - alpha = alpha + angle TBA by (a); so angle TEF = angle TFE and TE = TF (sides opposite equal angles of triangle TEF).",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Hence show that $PA \\times PF = PT \\times PE$.",
+      "marks": 4,
+      "answer": "Proof: angle APE = angle TPF (PF bisects angle TPB); angle PEA = angle TEF (vertically opposite angles at E) = angle TFE (TE = TF from (b), base angles of the isosceles triangle TEF) = angle PFT (same angle, E lies on PF); so triangles PAE and PTF are similar (P to P, A to T, E to F), PA/PT = PE/PF, giving PA x PF = PT x PE.",
+      "subparts": []
+     }
+    ],
+    "answer": "(a), (b), (c) are proofs; see solution.",
+    "total_marks": 11,
+    "topics": [
+     "Plane Geometry"
+    ],
+    "skills": [
+     "alternate segment theorem used from a secant drawn through the external point of a tangent, combined with the exterior angle of a triangle",
+     "angle bisector from the external point: proving an isosceles triangle TEF with no angle letters given, introducing the half-angle",
+     "finding the similar triangles PAE and PTF unprompted, from the base angles of the isosceles triangle TEF and vertically opposite angles at E, to prove the product PA x PF = PT x PE of tangent, secant and bisector segments"
+    ],
+    "needs_figure": true,
+    "figure_description": "A circle with centre not marked. Point T on the upper-right part of the circumference. The tangent at T is drawn as a line through T, extended to the right to a point P outside the circle (P to the right of and slightly below T). From P a straight line runs down and to the left through the circle, cutting it first at A (nearer P, on the right side of the circle) and then at B (farther, on the lower-left of the circle); the line is drawn from P to B only. Chords TA and TB are drawn. A straight line from P, lying between PT and PB (the bisector of angle TPB), is drawn through the circle region: it crosses TA at a point labelled E and then crosses TB at a point labelled F, ending just beyond F. Labels: P, T, A, B, E, F only. No angle marks, no equal-length marks, no right-angle marks, no measurements, no centre. Nothing that is to be proved (equal angles, TE = TF, the similar triangles) is indicated.",
+    "solution": "**(a)** Angle $PTA$ = angle $TBA$ (alternate segment theorem: the angle between the tangent $PT$ and the chord $TA$ equals the angle in the alternate segment).\nIn triangle $PTA$, angle $TAB$ is an exterior angle at $A$ (since $PAB$ is a straight line).\nSo angle $TAB$ = angle $TPA$ + angle $PTA$ (exterior angle of a triangle equals the sum of the two interior opposite angles).\nAngle $TPA$ is the same angle as angle $TPB$.\n**Answer:** angle $TAB$ = angle $TPB$ + angle $TBA$, as required.\n\n**(b)** Let angle $TPE$ = angle $EPB$ = $\\alpha$ ($PF$ bisects angle $TPB$), so angle $TPB = 2\\alpha$.\nIn triangle $PFB$, angle $TFP$ is an exterior angle at $F$: angle $TFP$ = angle $FPB$ + angle $FBP$ = $\\alpha$ + angle $TBA$.\nAngle $TFE$ = angle $TFP$ (same angle, $E$ lies on $PF$).\nIn triangle $PEA$: angle $PEA = 180^\\circ - \\alpha - $ angle $PAE$, and angle $PAE = 180^\\circ - $ angle $TAB$ (angles on the straight line $PAB$), so angle $PEA$ = angle $TAB - \\alpha$.\nAngle $TEF$ = angle $PEA$ (vertically opposite angles).\nBy part (a), angle $TAB = 2\\alpha + $ angle $TBA$, so angle $TEF = \\alpha + $ angle $TBA$.\nHence angle $TEF$ = angle $TFE$.\n**Answer:** $TE = TF$ (sides opposite equal angles of triangle $TEF$ are equal).\n\n**(c)** Angle $APE$ = angle $TPF$ ($PF$ bisects angle $TPB$; each is the angle $\\alpha$ at $P$).\nAngle $PEA$ = angle $TEF$ (vertically opposite angles at $E$, since $TEA$ and $PEF$ are straight lines).\nFrom (b), $TE = TF$, so angle $TEF$ = angle $TFE$ (base angles of the isosceles triangle $TEF$).\nAngle $TFE$ = angle $PFT$ (the same angle, since $E$ lies on $PF$).\nHence angle $PEA$ = angle $PFT$.\nSo triangles $PAE$ and $PTF$ are similar (two pairs of equal angles), with $P \\leftrightarrow P$, $A \\leftrightarrow T$, $E \\leftrightarrow F$.\nHence $\\dfrac{PA}{PT} = \\dfrac{PE}{PF}$.\n**Answer:** $PA \\times PF = PT \\times PE$, as required.",
+    "syllabus_check": "4049 Plane Geometry: alternate segment (tangent-chord) theorem, exterior angle of a triangle, angles on a straight line, vertically opposite angles, isosceles triangle (converse), similar triangles with reasons and ratio of corresponding sides. No circle-theorem converses, no trigonometry, nothing outside 4049.",
+    "originality_note": "Different theorem family from Set 1 P1 Q7 (tangent-chord with a cyclic quadrilateral, CB = CD, chords meeting at X) and Set 2 P1 Q11 (two intersecting circles with diameters from a common point): here the alternate segment theorem is used from a secant through the tangent's external point together with the bisector of the angle between the tangent and the secant, and the results are an isosceles triangle and the product PA x PF = PT x PE linking tangent, secant and bisector segments. Set 1 P1 Q7(c) names its two triangles and closes on CB^2 = CX x CA; here no triangle is named, one of the pair is built from the bisector and the tangent, and the equality of angles rests on (b)'s isosceles triangle, so (b) feeds (c). Not GCE 2025 P2 Q10 (tangent at B meets AC extended, similar triangles on a cyclic quadrilateral, ADC = x + y, parallel chord): no cyclic quadrilateral, no angle letters printed, no parallel line. Not GCE 2024 P1 Q6 (two tangents from T, diameter, ATB = 2 AXB). Parts (b) and (c) are unguided: no angle letters, triangles not named. Within this paper no other question closes on similar triangles or a product of lengths."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2024 P1 Q6",
+     "jaccard": 0.072,
+     "nearest_set": "Set 1 P2 Q9",
+     "jaccard_set": 0.041,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-10-09T23:43:05.675Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown — TRUE. In triangle PAT, angle TAB is the exterior angle at A, so angle TAB = angle TPA + angle PTA. Alternate segment theorem: angle PTA (tangent PT, chord TA) = angle TBA. Angle TPA = angle TPB (A lies on PB). Hence angle TAB = angle TPB + angle TBA.",
+     "(b)": "shown — TRUE. Let angle TPE = angle FPB = x (PF bisects angle TPB). Angle TEF is the exterior angle at E of triangle TPE, so angle TEF = x + angle PTA = x + angle TBA (alt. segment). Angle TFE (= angle TFP) is the exterior angle at F of triangle PFB, so angle TFE = x + angle FBP = x + angle TBA. So angle TEF = angle TFE, triangle TEF is isosceles, TE = TF. (Equivalently via (a): angle PEA = 180 - x - (180 - angle TAB) = angle TAB - x = x + angle TBA.)",
+     "(c)": "shown — TRUE. From (b), angle TEF = angle TFE, so angle PEA = angle TEF (vert. opp.) = angle TFE = angle PFT. Also angle APE = angle TPF = x (bisector). So triangles PAE and PTF are similar (AA), with P<->P, A<->T, E<->F. Hence PA/PT = PE/PF, i.e. PA x PF = PT x PE."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both prove angle TAB = angle TPB + angle TBA: exterior angle of triangle PTA at A (PAB a straight line) and the alternate segment theorem angle PTA = angle TBA, with angle TPA the same angle as angle TPB. Checked on the unit circle with T = (0, 1), P = (2, 1) and three secants: TAB = 47.59, 72.07, 101.39 degrees against TPB + TBA = 47.59, 72.07, 101.39. True."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both prove triangle TEF isosceles with the half-angle alpha at P introduced by the candidate: angle TFE = alpha + angle TBA (exterior angle of triangle PFB at F; F lies between T and B, and E lies between P and F so angle TFE is angle TFP); angle TEF = angle PEA (vertically opposite, TEA and PEF straight lines) = angle TAB - alpha = alpha + angle TBA by (a). The examiner's alternative (angle TEF as the exterior angle of triangle TPE, then the alternate segment theorem) reaches the same line without (a); the 'Hence' route through (a) has no unstated leap. Checked: TE = TF = 0.5693, 0.7381, 0.8697 in the three configurations, and E lies on segment TA, F on segment TB in every case (the bisector of angle TPB lies between rays PT and PB, so it must cross both chords). True."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "The repaired target PA x PF = PT x PE is TRUE and both prove it the same way: angle APE = angle TPF (bisector), angle PEA = angle TEF (vertically opposite at E) = angle TFE (base angles, TE = TF from (b)) = angle PFT (same angle, E on PF); so triangles PAE and PTF are similar with P-P, A-T, E-F, and PA/PT = PE/PF. Checked: PA x PF = PT x PE = 3.0371, 2.9592, 3.2160 (the old false target PB x PE = 4.8414, 4.6705, 4.0344 is gone); angle PEA = angle PFT = 37.59, 54.57, 76.39 degrees. 'Hence' is honest: (c) needs TE = TF from (b) and nothing the question did not signal."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on all three parts and I verified each: (a) and (b) are sound, and the repaired (c) PA x PF = PT x PE holds via triangles PAE and PTF (the former target PB x PE was false and is no longer printed).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register: a real paper tells the candidate that reasons are the marks — open (a) as 'Show, giving all reasons, that angle TAB = angle TPB + angle TBA' (GCE 2024 P1 Q6 wording), or add 'giving all reasons' to the stem; the marks [3, 4, 4] then read as reason-marks and the A1 of each part is the last reason, not the last equation. No re-mark needed: (a) alternate segment + exterior angle + conclusion = 3; (b) half-angle, exterior angle at F, angle at E via (a) or vertically opposite, isosceles with reason = 4; (c) similar triangles with reasons [3, as GCE 2025 P2 Q10(a)] plus the ratio to the product = 4."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A three-part circle proof with no angle letters and no triangles named: (b) makes the candidate introduce the half-angle and find two exterior angles, (c) makes him find the similar pair PAE, PTF from (b)'s isosceles triangle — two idea-parts, allowed at 11 marks, each one idea then routine, finishable in about 16 minutes; it is at the GCE 2025 P2 Q10 standard (which named its triangles in (a) and printed x and y) and more demanding than Set 1 P1 Q7 (named triangles, three printed targets) while as clean. It re-skins no exemplar (2025 P2 Q10 has a cyclic quadrilateral and printed angles; 2022 P1 Q7 a diameter and two tangents; 2023 P2 Q2 a diameter and a named pair), shares no configuration with Set 1 P1 Q7 or Set 2 P1 Q11 (the closer is again similar triangles to a product, but unprompted and reached through an isosceles triangle built from a bisector, which no earlier Set asked), nothing else in this paper closes on similar triangles or a product of lengths, and all gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "3ddc70aa-b93b-4b34-a816-81e951378437",
+     "ref": "GCE 2025 P2 Q10"
+    },
+    {
+     "id": "306e23e9-371b-4feb-94b8-5a0cd82bc358",
+     "ref": "GCE 2023 P2 Q2"
+    },
+    {
+     "id": "d9576081-3d6e-4bf1-998c-334eb1cec642",
+     "ref": "GCE 2021 specimen P1 Q11"
+    },
+    {
+     "id": "1d51d59d-01ac-42af-a87b-6b9c36aa9d0e",
+     "ref": "GCE 2024 P1 Q6"
+    },
+    {
+     "id": "6be6dc14-b43c-48fb-b50b-9d0aefe487ec",
+     "ref": "GCE 2022 P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Trigonometry (Equations)",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Prove that $\\sin^2\\left(x + \\frac{\\pi}{6}\\right) + \\sin^2\\left(x - \\frac{\\pi}{6}\\right) = 1 - \\frac{1}{2}\\cos 2x$.",
+      "marks": 4,
+      "answer": "Proof: expand both compound angles, square and add (cross terms cancel) to get $\\frac{1}{2}\\left(3\\sin^2 x + \\cos^2 x\\right) = \\sin^2 x + \\frac{1}{2} = 1 - \\frac{1}{2}\\cos 2x$.",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence solve the equation $4\\sin^2\\left(x + \\frac{\\pi}{6}\\right) + 4\\sin^2\\left(x - \\frac{\\pi}{6}\\right) = 3 + 3\\sin x$ for $0 \\le x \\le 2\\pi$.",
+      "marks": 5,
+      "answer": "$x = \\frac{\\pi}{2}$, $3.39$, $6.03$",
+      "subparts": []
+     },
+     {
+      "label": "(c)",
+      "text": "Hence, by replacing $x$ by $x - \\frac{\\pi}{4}$ in the equation in part (b), solve the equation $2\\sin 2x = 1 - 3\\sin\\left(x - \\frac{\\pi}{4}\\right)$ for $0 \\le x \\le 2\\pi$.",
+      "marks": 3,
+      "answer": "$x = 0.533$, $\\frac{3\\pi}{4}$ (= 2.36), $4.18$",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) proof; (b) $x = \\frac{\\pi}{2}$, $3.39$, $6.03$; (c) $x = 0.533$, $\\frac{3\\pi}{4}$ (= 2.36), $4.18$",
+    "total_marks": 12,
+    "topics": [
+     "Trigonometry (Equations)",
+     "Trigonometry (Identities)"
+    ],
+    "skills": [
+     "identity for the sum of the squares of two compound-angle sines, sin²(x + π/6) + sin²(x − π/6) = 1 − ½cos 2x, proved from the compound-angle formulae, sin²x + cos²x = 1 and a double-angle form (either expanding and squaring each sine, or writing each square as ½(1 − cos 2A) and adding the two cosines)",
+     "equation reduced through the proved identity by choosing cos 2x = 1 − 2sin²x to reach a quadratic in sin x whose two roots are both kept; sin x = 1 gives a single solution at π/2 on the domain",
+     "solving a shifted equation: the signposted replacement x → x − π/4 turns cos 2x into sin 2x; the part (b) roots are re-read on the shifted domain −π/4 ≤ x − π/4 ≤ 7π/4, admitting the solution that enters from below 0 and dropping the one that leaves"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "**(a)**\n$\\sin\\left(x + \\frac{\\pi}{6}\\right) = \\sin x \\cos\\frac{\\pi}{6} + \\cos x \\sin\\frac{\\pi}{6} = \\frac{1}{2}\\left(\\sqrt{3}\\sin x + \\cos x\\right)$\n$\\sin\\left(x - \\frac{\\pi}{6}\\right) = \\sin x \\cos\\frac{\\pi}{6} - \\cos x \\sin\\frac{\\pi}{6} = \\frac{1}{2}\\left(\\sqrt{3}\\sin x - \\cos x\\right)$\nSquare each and add:\n$\\sin^2\\left(x + \\frac{\\pi}{6}\\right) + \\sin^2\\left(x - \\frac{\\pi}{6}\\right) = \\frac{1}{4}\\left(3\\sin^2 x + 2\\sqrt{3}\\sin x\\cos x + \\cos^2 x\\right) + \\frac{1}{4}\\left(3\\sin^2 x - 2\\sqrt{3}\\sin x\\cos x + \\cos^2 x\\right)$\nThe cross terms cancel:\n$= \\frac{1}{4}\\left(6\\sin^2 x + 2\\cos^2 x\\right) = \\frac{1}{2}\\left(3\\sin^2 x + \\cos^2 x\\right)$\nUsing $\\cos^2 x = 1 - \\sin^2 x$:\n$= \\frac{1}{2}\\left(2\\sin^2 x + 1\\right) = \\sin^2 x + \\frac{1}{2}$\nUsing $\\sin^2 x = \\frac{1}{2}\\left(1 - \\cos 2x\\right)$:\n$= \\frac{1}{2} - \\frac{1}{2}\\cos 2x + \\frac{1}{2} = 1 - \\frac{1}{2}\\cos 2x$ (shown)\n**Answer:** $\\sin^2\\left(x + \\frac{\\pi}{6}\\right) + \\sin^2\\left(x - \\frac{\\pi}{6}\\right) = 1 - \\frac{1}{2}\\cos 2x$, as required.\nMarking: the 4 marks are for the chain of equal expressions: M1 both compound angles expanded with the exact values of $\\cos\\frac{\\pi}{6}$ and $\\sin\\frac{\\pi}{6}$; M1 squared and added with the cross terms cancelling; M1 $\\sin^2 x + \\cos^2 x = 1$ used to reach $\\sin^2 x + \\frac{1}{2}$; A1 the double-angle form $1 - \\frac{1}{2}\\cos 2x$ reached with no error (shown). The route through $\\sin^2 A = \\frac{1}{2}(1 - \\cos 2A)$ and $\\cos\\left(2x + \\frac{\\pi}{3}\\right) + \\cos\\left(2x - \\frac{\\pi}{3}\\right) = 2\\cos 2x\\cos\\frac{\\pi}{3}$ earns full marks.\n\n**(b)**\nBy part (a), the left side is $4\\left(1 - \\frac{1}{2}\\cos 2x\\right) = 4 - 2\\cos 2x$.\n$4 - 2\\cos 2x = 3 + 3\\sin x$\n$1 - 2\\cos 2x = 3\\sin x$\nUse $\\cos 2x = 1 - 2\\sin^2 x$ so that the equation is in $\\sin x$ only:\n$1 - 2\\left(1 - 2\\sin^2 x\\right) = 3\\sin x$\n$4\\sin^2 x - 3\\sin x - 1 = 0$\n$\\left(4\\sin x + 1\\right)\\left(\\sin x - 1\\right) = 0$\n$\\sin x = 1$ or $\\sin x = -\\frac{1}{4}$\n$\\sin x = 1$: $x = \\frac{\\pi}{2}$ (the only solution in $0 \\le x \\le 2\\pi$).\n$\\sin x = -\\frac{1}{4}$: basic angle $\\alpha = \\sin^{-1}\\frac{1}{4} = 0.2527$; $\\sin x$ is negative in the third and fourth quadrants,\n$x = \\pi + 0.2527 = 3.394$ or $x = 2\\pi - 0.2527 = 6.031$.\n**Answer:** $x = \\frac{\\pi}{2}$, $3.39$, $6.03$ (radians, 3 s.f.).\n\n**(c)**\nPart (b) reduced to $1 - 2\\cos 2x = 3\\sin x$. Replace $x$ by $x - \\frac{\\pi}{4}$:\n$1 - 2\\cos\\left(2x - \\frac{\\pi}{2}\\right) = 3\\sin\\left(x - \\frac{\\pi}{4}\\right)$\nSince $\\cos\\left(2x - \\frac{\\pi}{2}\\right) = \\sin 2x$, this is $1 - 2\\sin 2x = 3\\sin\\left(x - \\frac{\\pi}{4}\\right)$, which is the given equation.\nSo $x - \\frac{\\pi}{4}$ must satisfy the equation of part (b).\nFor $0 \\le x \\le 2\\pi$ the domain shifts: $-\\frac{\\pi}{4} \\le x - \\frac{\\pi}{4} \\le \\frac{7\\pi}{4}$.\nFrom part (b), $\\sin\\left(x - \\frac{\\pi}{4}\\right) = 1$ or $\\sin\\left(x - \\frac{\\pi}{4}\\right) = -\\frac{1}{4}$.\n$\\sin\\left(x - \\frac{\\pi}{4}\\right) = 1$: $x - \\frac{\\pi}{4} = \\frac{\\pi}{2}$, so $x = \\frac{3\\pi}{4}$.\n$\\sin\\left(x - \\frac{\\pi}{4}\\right) = -\\frac{1}{4}$ on $-\\frac{\\pi}{4} \\le x - \\frac{\\pi}{4} \\le \\frac{7\\pi}{4}$: $x - \\frac{\\pi}{4} = -0.2527$ or $\\pi + 0.2527 = 3.394$\n(the value $2\\pi - 0.2527 = 6.031$ lies beyond $\\frac{7\\pi}{4} = 5.498$ and is discarded).\n$x = -0.2527 + \\frac{\\pi}{4} = 0.533$ or $x = 3.394 + \\frac{\\pi}{4} = 4.180$.\nCheck: $x = 0.533$ gives $2\\sin 2x = 1.750$ and $1 - 3\\sin\\left(x - \\frac{\\pi}{4}\\right) = 1.750$.\n**Answer:** $x = 0.533$, $\\frac{3\\pi}{4}$ (= 2.36), $4.18$ (radians, 3 s.f.).\nMarking: M1 the shifted interval $-\\frac{\\pi}{4} \\le x - \\frac{\\pi}{4} \\le \\frac{7\\pi}{4}$ used (or an explicit re-solve of $\\sin y = -\\frac{1}{4}$ on it); A1 $x = \\frac{3\\pi}{4}$ and $4.18$; A1 $x = 0.533$, with $6.03 + \\frac{\\pi}{4}$ rejected. A candidate who only adds $\\frac{\\pi}{4}$ to the three answers of (b) gets $\\frac{3\\pi}{4}$ and $4.18$ and loses the A1 for $0.533$.",
+    "syllabus_check": "4049 Trigonometry: compound-angle formulae sin(A ± B) with exact values at π/6 (a); sin² + cos² = 1 and the double-angle formula cos 2A = 1 − 2sin²A chosen to match the target (a, b); proving a simple identity (a); solving a trigonometric equation on a given domain in radians via a quadratic in sin x with basic angle and quadrants (b); a shifted-argument equation solved on the shifted domain using the earlier result (c). Only sin, cos and their squares appear, so nothing is undefined anywhere on the domain and every root of (b) carries over honestly to (c). No calculus, no R-formula, no triple angle.",
+    "originality_note": "Rebuilt after the moderator's repeats_set verdict. (a) is no longer Set 1 P1 Q3(a)'s product sin(A+B)sin(A−B) = sin²A − sin²B (difference of squares, A = x, B = π/4): it is the SUM OF SQUARES sin²(x+π/6) + sin²(x−π/6), whose route is expand, square, add so the cross terms cancel, then Pythagoras and a double angle — a different identity, a different closing manoeuvre and a different target (1 − ½cos 2x). It is not Set 2 P1 Q3 (product of cosines to ⅛sin 8θ), Set 2 P2 Q3 (sec⁴ − tan⁴), Set 2 P2 Q4 (u = cos x − sin x) or this Set's P1 Q3 (sec θ + tan θ = k) or P1 Q9 (tan double angle); no tan, cot or sec appears, so no root is lost in (b) and silently restored in (c). (b) reduces to 4sin²x − 3sin x − 1 = 0 with BOTH roots kept (sin x = 1 giving one solution, sin x = −¼ giving two) — this paper's Q6 closes on a factorised equation with a discarded root and Set 1 P2 Q4 / this Set's P1 Q11 use the R-formula, so Q11 closes differently. (c) is the only shifted-argument equation in the paper; it differs from Set 2 P1 Q5 (factor out cos x, cot 2x = ½sec x) in identity, structure and step, and from GCE 2024 P2 Q9 / 2025 P2 Q6 (which carry no shift). The replacement is named in the question, as Lesson 1 requires, and the shifted domain is part of the work."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 11,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2021 P1 Q10",
+     "jaccard": 0.075,
+     "nearest_set": "Set 2 P1 Q5",
+     "jaccard_set": 0.079,
+     "repeated_skills": []
+    },
+    "marks": 12,
+    "checked_at": "2026-10-10T00:03:55.055Z",
+    "rounds": 4
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "x = π/2, 3.39, 6.03 (sin x = 1 or sin x = -1/4; x = 1.57, 3.39, 6.03)",
+     "(c)": "x = 0.533, 3π/4 (2.36), 4.18"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Identity verified (residual 0 at four values of x). The setter's route (expand, square, add; cross terms cancel; Pythagoras; double angle) is right. A second route — sin^2 A = (1 - cos 2A)/2 then cos(2x + pi/3) + cos(2x - pi/3) = 2cos 2x cos(pi/3) — reaches the target in three lines and the scheme must accept it."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "4 - 2cos 2x = 3 + 3sin x -> 4sin^2 x - 3sin x - 1 = 0 -> (4sin x + 1)(sin x - 1) = 0; sin x = 1 gives pi/2 (a double root of the original equation), sin x = -1/4 gives 3.3943 and 6.0305. Setter and blind examiner agree; verified by direct root search on [0, 2pi]."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "With y = x - pi/4, sin 2x = cos 2y, so the given equation is (b)'s reduced form in y; y runs over [-pi/4, 7pi/4]; sin y = 1 -> y = pi/2 -> x = 3pi/4; sin y = -1/4 -> y = -0.2527 or 3.3943 (6.0305 > 7pi/4 discarded) -> x = 0.5327, 4.1797. Setter and blind examiner agree; verified by direct root search of 2sin 2x = 1 - 3sin(x - pi/4) on [0, 2pi], which has exactly these three roots."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "The setter and the blind examiner agree on every part and the key is exactly right; no part is disputed.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Wording of (c), for a real paper's precision: 'Hence, by replacing $x$ by $x - \\frac{\\pi}{4}$ in the equation in part (b), solve …' — the replacement is made in the equation (its reduced form $1 - 2\\cos 2x = 3\\sin x$), not in the three listed answers. In the mark scheme make the shifted interval $-\\frac{\\pi}{4} \\le x - \\frac{\\pi}{4} \\le \\frac{7\\pi}{4}$ (or an explicit re-solve of $\\sin y = -\\frac{1}{4}$ on it) the M1; a candidate who only adds $\\frac{\\pi}{4}$ to the three answers of (b) finds $\\frac{3\\pi}{4}$ and $4.18$ and loses the A1 for $0.533$ — that is the part's discriminator and should stay.",
+     "Scheme note for (a): the four marks are for the chain of equal expressions, so the route through $\\sin^2 A = \\frac{1}{2}(1 - \\cos 2A)$ and $\\cos(2x + \\frac{\\pi}{3}) + \\cos(2x - \\frac{\\pi}{3}) = 2\\cos 2x\\cos\\frac{\\pi}{3}$ earns full marks; the setter's first skills phrase ('cross terms cancel') describes one route only, not the question.",
+     "For the whole-paper read (not a slot defect, score unchanged): Q6 and Q11(b) both pass through a factorised quadratic in a single trigonometric ratio (Q6: $(2\\cos a - 1)(\\cos a + 1) = 0$ as one of two routes, $a = \\pi$ discarded; Q11(b): $(4\\sin x + 1)(\\sin x - 1) = 0$, both roots kept). The closing steps differ — Q6 ends on an exact $a = \\frac{\\pi}{3}$ with a rejection, Q11 ends on a shifted-domain re-read that admits a root from below zero — so Lesson 2 is not breached; if the read-through still counts the overlap, the lighter repair is to make the R-formula the lead route in Q6's scheme, not to change this slot."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The key is exactly right and the question is the 2024/25 identity-then-equation shape (GCE 2024 P2 Q9 [4, 6, 2]) with a genuine discriminator in its last part: the signposted shift x -> x - pi/4 moves the domain to [-pi/4, 7pi/4], so one root enters from below zero and one leaves, and only a candidate who re-solves on the shifted interval finds all three — a 'keep the case' A1 of the Set 1 kind, every part feeding the next, marks within one of what 2024/25 paid. The repeat of Set 1 P1 Q3(a) is gone: a sum of squares closed by cancelling cross terms, Pythagoras and a double angle is a different identity proved by a different manoeuvre, and the shifted-argument closer differs in kind from Set 2 P1 Q5(b)'s reciprocal equation and from this Set's P1 trig questions (sec/tan with k, a tan graph, an R-formula shadow); all gates passed. A light edit to the wording of (c) and two scheme notes keep it from 5."
+   },
+   "exemplars": [
+    {
+     "id": "fe3c3527-4acd-4ba4-bba1-1d824ff0143a",
+     "ref": "GCE 2025 P2 Q11"
+    },
+    {
+     "id": "d5a035c5-4ee3-47d7-b395-dfb8bef9a4e7",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "4fba6494-000e-451a-bfe9-048dc8ea6c1e",
+     "ref": "GCE 2021 specimen P1 Q12"
+    },
+    {
+     "id": "20a3ac3e-c456-4417-93c6-5ad8633078f9",
+     "ref": "GCE 2022 P2 Q3"
+    },
+    {
+     "id": "e228e0f2-1b3d-4b57-a0e8-668f3e821142",
+     "ref": "GCE 2025 P1 Q9"
+    }
+   ]
+  }
+ ]
+}

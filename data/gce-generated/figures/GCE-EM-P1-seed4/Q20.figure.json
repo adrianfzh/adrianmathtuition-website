@@ -1,0 +1,93 @@
+{
+  "family": "plane-geometry-configuration",
+  "specVersion": 1,
+  "points": [
+    {
+      "id": "A",
+      "x": 0,
+      "y": 0,
+      "labelPos": "below-left"
+    },
+    {
+      "id": "B",
+      "x": 6,
+      "y": 0,
+      "labelPos": "below-right"
+    },
+    {
+      "id": "C",
+      "x": 8,
+      "y": 4,
+      "labelPos": "above-right"
+    },
+    {
+      "id": "D",
+      "x": 2,
+      "y": 4,
+      "labelPos": "above-left"
+    },
+    {
+      "id": "Q",
+      "x": 3.2,
+      "y": 1.6,
+      "labelPos": "below-right"
+    },
+    {
+      "id": "P",
+      "x": 4.8,
+      "y": 2.4,
+      "labelPos": "above-left"
+    }
+  ],
+  "segments": [
+    {
+      "from": "A",
+      "to": "B"
+    },
+    {
+      "from": "B",
+      "to": "C"
+    },
+    {
+      "from": "C",
+      "to": "D"
+    },
+    {
+      "from": "D",
+      "to": "A"
+    },
+    {
+      "from": "A",
+      "to": "C"
+    },
+    {
+      "from": "D",
+      "to": "Q"
+    },
+    {
+      "from": "B",
+      "to": "P"
+    }
+  ],
+  "collinear": [
+    [
+      "A",
+      "Q",
+      "P",
+      "C"
+    ]
+  ],
+  "rightAngles": [
+    {
+      "at": "Q",
+      "from": "D",
+      "to": "C"
+    },
+    {
+      "at": "P",
+      "from": "B",
+      "to": "A"
+    }
+  ],
+  "caption": "Not drawn to scale"
+}

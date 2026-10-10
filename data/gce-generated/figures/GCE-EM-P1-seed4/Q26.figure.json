@@ -1,0 +1,56 @@
+{
+  "family": "function-graph",
+  "version": 1,
+  "xAxis": {
+    "min": -5.5,
+    "max": 7.5,
+    "step": 100,
+    "label": "x"
+  },
+  "yAxis": {
+    "min": -6,
+    "max": 24,
+    "step": 100,
+    "label": "y"
+  },
+  "grid": false,
+  "ticks": false,
+  "curves": [
+    {
+      "expr": "48/x^2",
+      "domain": [
+        -5.5,
+        7.5
+      ],
+      "label": "y = a/x²",
+      "labelAt": 2.4,
+      "style": "solid"
+    },
+    {
+      "expr": "0.75x",
+      "domain": [
+        -5.5,
+        7
+      ],
+      "label": "y = ¾x",
+      "labelAt": 6.6,
+      "style": "solid"
+    }
+  ],
+  "features": [
+    {
+      "type": "point",
+      "x": 2,
+      "y": 12,
+      "curve": 0,
+      "label": "A(2, 12)"
+    },
+    {
+      "type": "point",
+      "x": 4,
+      "y": 3,
+      "curve": 0,
+      "label": "B"
+    }
+  ]
+}

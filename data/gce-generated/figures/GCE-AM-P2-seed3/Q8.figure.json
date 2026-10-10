@@ -1,0 +1,19 @@
+{
+  "family": "coordinate-plane",
+  "version": 1,
+  "xAxis": { "min": -1, "max": 9, "step": 20, "label": "x" },
+  "yAxis": { "min": 0, "max": 11, "step": 20, "label": "y" },
+  "grid": false,
+  "points": [
+    { "id": "A", "x": 0, "y": 1, "label": "A(0, 1)", "labelPos": "left" },
+    { "id": "B", "x": 8, "y": 5, "label": "B(8, 5)", "labelPos": "right" },
+    { "id": "C", "x": 6, "y": 10, "label": "C", "labelPos": "above-right" },
+    { "id": "D", "x": 2, "y": 8, "label": "D(2, 8)", "labelPos": "above-left" },
+    { "id": "X", "x": 4, "y": 7, "label": "X", "labelPos": "above" }
+  ],
+  "shapes": [ { "vertices": ["A", "B", "C", "D"], "closed": true } ],
+  "lines": [
+    { "from": "A", "to": "C", "extend": false, "style": "solid" },
+    { "from": "B", "to": "D", "extend": false, "style": "solid" }
+  ]
+}

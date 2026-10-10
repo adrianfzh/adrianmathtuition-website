@@ -1,0 +1,20 @@
+{
+  "family": "function-graph",
+  "version": 1,
+  "xAxis": { "min": -0.35, "max": 2.6, "step": 2.0943951023931953, "label": "x", "tickFormat": "pi" },
+  "yAxis": { "min": -0.35, "max": 2.6, "step": 10, "label": "y" },
+  "grid": false,
+  "curves": [
+    { "expr": "1/(1 + cos(x))", "domain": [0, 2.35], "style": "solid" },
+    { "expr": "20000(x - 2pi/3)", "domain": [2.0943951023931953, 2.0944951023931953], "style": "solid" }
+  ],
+  "features": [
+    { "type": "y-intercept", "y": 0.5, "curve": 0, "label": "" }
+  ],
+  "regions": [
+    { "from": 0, "to": 2.0943951023931953,
+      "upper": { "curve": 0 }, "lower": { "y": 0 },
+      "statedArea": 1.7320508075688772,
+      "label": "R", "labelAt": { "x": 1.0, "y": 0.28 } }
+  ]
+}

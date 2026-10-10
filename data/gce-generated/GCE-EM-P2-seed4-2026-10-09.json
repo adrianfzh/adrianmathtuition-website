@@ -1,0 +1,1726 @@
+{
+ "key": "GCE-EM-P2",
+ "seed": 4,
+ "set": 3,
+ "variety": true,
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)",
+  "repair": "claude-fable-5-1 (Claude Code agent)",
+  "figure": "claude-opus-5-5 (Claude Code agent)",
+  "whole_paper_read": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 1 P2",
+  "Set 2 P1",
+  "Set 2 P2"
+ ],
+ "shape": {
+  "subject": "Mathematics",
+  "code": "4052",
+  "level": "EM",
+  "exam": "O-Level",
+  "cut": 2023,
+  "duration": "2 hours 15 minutes",
+  "standardYears": "2024/25",
+  "scope": "Numbers and their operations (primes, HCF/LCM, squares/cubes/roots, standard form, estimation, significant figures); ratio and proportion (incl. map scales, direct and inverse proportion); percentage (incl. reverse percentage); rate and speed (incl. average speed, conversion of units); financial mathematics (simple and compound interest, hire purchase, money exchange, taxation, utilities bills); algebraic expressions and formulae (expansion, factorisation incl. grouping and quadratic trinomials, algebraic fractions, changing the subject, algebraic identities); functions and graphs (linear, quadratic incl. completed-square and factorised forms, cubic, reciprocal y=a/x and a/x^2, exponential y=ka^x, drawing on a grid from a table of values, gradient of a curve by a tangent, solving equations by drawing a suitable line); equations and inequalities (linear, simultaneous linear, quadratic by factorisation / completing the square / the formula, fractional equations reducing to quadratics, linear inequalities incl. double inequalities, word problems leading to these); set language and notation (union, intersection, complement, subsets, Venn diagrams with numbers of elements); matrices (display of information, addition, scalar multiplication, multiplication of two matrices, interpretation of the product; no inverses); problems in real-world contexts (reading tables and information sheets, making and justifying a decision, estimating a cost or a quantity); angles, triangles and polygons (angle properties of parallel lines, triangles, quadrilaterals and regular polygons; construction with ruler, compasses and protractor: perpendicular bisectors and angle bisectors; scale drawings); congruence and similarity (tests, ratios of lengths, areas and volumes of similar figures and solids); properties of circles (symmetry properties: equal chords, perpendicular from centre, tangents from a point; angle properties: angle at centre, angle in a semicircle, angles in the same segment, opposite angles of a cyclic quadrilateral, tangent-radius; reasons stated); Pythagoras' theorem and trigonometry (sine, cosine and tangent for acute and obtuse angles, sine and cosine rules, area of a triangle as ½ab sin C, bearings, angles of elevation and depression, simple 3-D problems); mensuration (area of a triangle, parallelogram, trapezium, circle; arc length and sector area with the angle in RADIANS or degrees; surface area and volume of a prism, cylinder, pyramid, cone and sphere; composite solids); coordinate geometry (gradient, length, midpoint is NOT required, equation of a straight line y=mx+c, parallel lines, area of a rectilinear figure by shoelace is NOT required — use base×height or split into triangles); vectors in two dimensions (column vectors, magnitude, position vectors, addition, scalar multiples, collinearity, expressing one vector in terms of others, ratios of areas of triangles with a common height or on the same base); data handling and analysis (tables, bar charts, pie charts, pictograms, line graphs, histograms with equal class widths, dot diagrams, stem-and-leaf, box-and-whisker plots, cumulative frequency curves, median, quartiles, percentiles, range, interquartile range, mean and standard deviation for grouped and ungrouped data, comparing two distributions in context); probability (single events, combined events by possibility diagrams and tree diagrams, with and without replacement, mutually exclusive and independent events). NOT in 4052: calculus, logarithms, surds, the binomial theorem, trigonometric identities, the R-formula, quadratic inequalities, matrices inverses and determinants, vectors in three dimensions, the shoelace formula, the midpoint formula.",
+  "register": "REGISTER — how SEAB asks (4052)\n- Plain, exact, economical English. Instructions are imperatives: Find, Calculate, Work out, Write down, Simplify, Factorise, Expand, Solve, Show that, Explain why, Give a reason, Complete the table, Draw, Describe, Estimate, Express, State.\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A 1–3 mark question is often a single unlabelled part.\n- A scientific calculator is allowed on BOTH papers. Never write \"a calculator must not be used\". The paper's rubric already says: non-exact answers to 3 significant figures, angles to 1 decimal place, π = calculator value or 3.142 — so a question states a precision only when it wants something else (\"correct to 2 decimal places\", \"in its simplest form\", \"in terms of π\", \"as a fraction in its lowest terms\", \"in standard form\", \"to the nearest cent\").\n- Angles are in DEGREES with the degree sign ($58^\\circ$); a sector angle in radians is stated as \"1.8 radians\". Bearings are three-figure ($048^\\circ$). Money is dollars and cents ($\\$92.75$).\n- Contexts are short, concrete and Singaporean-neutral (a garden fountain, a box of apples, a map of Singapore, a candle business): the situation in one or two sentences, units given, then the parts. Never chatty, never a story.\n- \"Show that\" states its target exactly (\"Show that $x^2 - 102x + 1440 = 0$\", \"Show that $p = 2.5$\") and a later part uses it. \"Explain why …\" / \"Give a reason for your answer\" / \"Is he correct?\" parts are worth 1 mark and expect one sentence with a number in it. A circle-properties question says \"Give a reason for each step of your working.\"\n- Statistics and probability parts ask for interpretation in context (\"By commenting on the means and the standard deviations, compare …\", \"Explain what this tells you about …\").\n- Paper 1 (27 short questions, 90 marks): each question tests ONE idea in 1–7 marks, answered in the space provided; the paper walks the syllabus (number, algebra, geometry, statistics interleaved), with the vector and mensuration questions near the end.\n- Paper 2 (9 long questions, 90 marks): each question is 8–12 marks in 3–5 parts. Early questions are ALGEBRA MEDLEYS whose parts (a), (b), (c), (d) are separate short problems on different algebra skills. Later ones are one context developed through parts: a graph question (a table of values with two blanks, \"On the grid, draw the graph of …\", a gradient by a tangent, \"By drawing a suitable straight line, solve …\"), a trigonometry-on-the-ground question with bearings and a mast, a statistics + probability question over a table or histogram, a circle-properties + circular-measure question, a speed/quadratic question (\"Show that … = 0\", solve to 2 decimal places, reject a root, interpret), and the last question is a PROBLEM IN A REAL-WORLD CONTEXT: an information sheet (a table of prices, rates or measurements) followed by parts that end in a 5–7 mark \"Suggest a suitable … Justify your answer\" or \"Is it worth …? Show your working\" decision.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1 mark: read/state/one-line. 2 marks: one routine. 3–4 marks: a short chain. 5–7 marks: a multi-step argument or a decision with working."
+ },
+ "paperNo": 2,
+ "total": 90,
+ "sections": null,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-10-09T14:14:58.471Z",
+ "topicList": [
+  "Algebra (Expansion)",
+  "Algebra (Expressions)",
+  "Algebra (Factorization)",
+  "Algebra (Fractions)",
+  "Algebra (Graph on Graph Paper)",
+  "Algebra (Identities)",
+  "Algebra (Inequalities)",
+  "Algebra (Linear Equations)",
+  "Algebra (Quadratic Equations)",
+  "Algebra (Quadratic Graphs)",
+  "Algebra (Simultaneous Equations)",
+  "Algebra (Subject of Formula)",
+  "Indices",
+  "Indices (Standard Form)",
+  "Numbers (Estimation)",
+  "Numbers (HCF and LCM)",
+  "Numbers (Percentages)",
+  "Numbers (Prime Factorization)",
+  "Numbers (Rate)",
+  "Numbers (Ratio)",
+  "Numbers (Speed)",
+  "Proportion",
+  "Angles",
+  "Circle Properties",
+  "Circular Measure",
+  "Congruency and Similarity",
+  "Coordinate Geometry",
+  "Distance and Speed Time Graphs",
+  "Geometrical Constructions",
+  "Graphs of Functions",
+  "Map Scales",
+  "Mensuration",
+  "Polygons",
+  "Trigonometry",
+  "Vectors",
+  "Financial Math (Hire Purchase)",
+  "Financial Math (Interest)",
+  "Financial Math (Taxation)",
+  "Math In Real World Context",
+  "Matrices",
+  "Number Patterns",
+  "Sets",
+  "Probability",
+  "Statistics",
+  "Coordinate Geometry (Lines)",
+  "Pythagoras' Theorem",
+  "Symmetry",
+  "Financial Math (Exchange Rate)"
+ ],
+ "must_appear": [
+  "Algebra (Fractions)",
+  "Algebra (Quadratic Equations)",
+  "Coordinate Geometry",
+  "Graphs of Functions",
+  "Math In Real World Context",
+  "Mensuration",
+  "Numbers (Percentages)",
+  "Probability",
+  "Statistics"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Numbers (Percentages)",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.193
+    },
+    {
+     "topic": "Algebra (Simultaneous Equations)",
+     "weight": 0.115
+    },
+    {
+     "topic": "Algebra (Factorization)",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.077
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.0077
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.0038
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.038
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Simultaneous Equations)",
+   "target": 10,
+   "marks": [
+    8,
+    12
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.0128
+    },
+    {
+     "topic": "Algebra (Fractions)",
+     "weight": 0.083
+    },
+    {
+     "topic": "Algebra (Inequalities)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Algebra (Linear Equations)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Algebra (Subject of Formula)",
+     "weight": 0.083
+    },
+    {
+     "topic": "Indices (Standard Form)",
+     "weight": 0.083
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.083
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.0083
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.083
+    },
+    {
+     "topic": "Financial Math (Hire Purchase)",
+     "weight": 0.042
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry",
+   "target": 9,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    3,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.012400000000000001
+    },
+    {
+     "topic": "Map Scales",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Matrices",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.125
+    },
+    {
+     "topic": "Numbers (Percentages)",
+     "weight": 0.0125
+    },
+    {
+     "topic": "Numbers (Ratio)",
+     "weight": 0.125
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.125
+    },
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.063
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.063
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Statistics",
+   "target": 11,
+   "marks": [
+    10,
+    12
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Graph on Graph Paper)",
+     "weight": 0.222
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.222
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Polygons",
+     "weight": 0.111
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0111
+    },
+    {
+     "topic": "Probability",
+     "weight": 0.005600000000000001
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.056
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 9,
+   "marks": [
+    8,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0267
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.020000000000000004
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.2
+    },
+    {
+     "topic": "Graphs of Functions",
+     "weight": 0.133
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.013300000000000001
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.006700000000000001
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Mensuration",
+   "target": 12,
+   "marks": [
+    11,
+    13
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.021400000000000002
+    },
+    {
+     "topic": "Vectors",
+     "weight": 0.214
+    },
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.0143
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.143
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.0143
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0143
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Circular Measure",
+   "target": 8,
+   "marks": [
+    7,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Probability",
+     "weight": 0.0461
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.308
+    },
+    {
+     "topic": "Sets",
+     "weight": 0.154
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0077
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Vectors",
+   "target": 10,
+   "marks": [
+    10,
+    11
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Algebra (Quadratic Equations)",
+     "weight": 0.0292
+    },
+    {
+     "topic": "Circle Properties",
+     "weight": 0.0118
+    },
+    {
+     "topic": "Circular Measure",
+     "weight": 0.118
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0118
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.0118
+    },
+    {
+     "topic": "Number Patterns",
+     "weight": 0.0118
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.059
+    },
+    {
+     "topic": "Trigonometry",
+     "weight": 0.0059
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "marks": [
+    9,
+    11
+   ],
+   "parts": [
+    2,
+    4
+   ],
+   "pool": [
+    {
+     "topic": "Math In Real World Context",
+     "weight": 0.369
+    },
+    {
+     "topic": "Numbers (Rate)",
+     "weight": 0.0158
+    },
+    {
+     "topic": "Numbers (Speed)",
+     "weight": 0.0158
+    },
+    {
+     "topic": "Congruency and Similarity",
+     "weight": 0.0105
+    },
+    {
+     "topic": "Mensuration",
+     "weight": 0.105
+    },
+    {
+     "topic": "Statistics",
+     "weight": 0.105
+    }
+   ]
+  }
+ ],
+ "title": "E Math · Set 3 · Paper 2 · O-Level format",
+ "assembled_at": "2026-10-10T00:34:44.772Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Numbers (Percentages)",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "In Singapore, a restaurant adds a service charge of $10\\%$ to the menu price of the food ordered.\nGoods and Services Tax (GST) is then charged on the total of the menu price and the service charge.\nOn 1 January 2024 the rate of GST increased from $8\\%$ to $9\\%$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "In February 2024, Mei Ling orders food with a menu price of $\\$120$.\nCalculate the total amount she pays.",
+      "marks": 2,
+      "answer": "$\\$143.88$"
+     },
+     {
+      "label": "(b)",
+      "text": "In March 2024, Raj pays a total of $\\$95.92$ for his food.\nCalculate the amount of GST he paid.",
+      "marks": 2,
+      "answer": "$\\$7.92$"
+     },
+     {
+      "label": "(c)",
+      "text": "Members of the restaurant receive a discount of $10\\%$ on the menu price.\nThe service charge and GST are then added to the discounted price.\nKumar is a member. He says that, for him, the discount cancels out the service charge, so he pays only the GST on top of the menu price.\nExplain why Kumar is wrong and find the percentage by which the total a member pays exceeds the menu price.",
+      "marks": 3,
+      "answer": "Kumar is wrong because $0.9 \\times 1.1 = 0.99$, not $1$: a $10\\%$ discount followed by a $10\\%$ service charge leaves $99\\%$ of the menu price, not $100\\%$. A member pays $0.9 \\times 1.1 \\times 1.09 = 1.0791$ times the menu price, so the total exceeds the menu price by $7.91\\%$ (not $9\\%$)."
+     },
+     {
+      "label": "(d)",
+      "text": "On 1 January 2024 the restaurant also raised all its menu prices by $5\\%$.\nRashid is not a member of the restaurant.\nIn January 2024, Rashid paid $\\$14.19$ more for a set of dishes than he would have paid for the same set of dishes in December 2023.",
+      "marks": 4,
+      "answer": "(i) $\\$200$ (ii) $\\$251.79$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "Calculate the menu price of the set of dishes in December 2023.",
+        "marks": 3,
+        "answer": "$\\$200$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Calculate the total amount Rashid paid in January 2024.",
+        "marks": 1,
+        "answer": "$\\$251.79$"
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $\\$143.88$ (b) $\\$7.92$ (c) Kumar is wrong ($0.9 \\times 1.1 = 0.99$); a member pays $7.91\\%$ above the menu price (d)(i) $\\$200$ (d)(ii) $\\$251.79$",
+    "total_marks": 11,
+    "topics": [
+     "Numbers (Percentages)",
+     "Financial Math (Taxation)",
+     "Algebra (Linear Equations)"
+    ],
+    "skills": [
+     "chain two percentage additions in the right order (GST is charged on the menu price plus the service charge, so multipliers 1.1 then 1.09), and recover the GST inside a total by undoing only the last stage (total divided by 1.09, then subtract) rather than taking 9% of the total",
+     "explain with multipliers why a 10% discount does not cancel a 10% service charge (0.9 x 1.1 = 0.99, not 1), and chain the third multiplier to find that a member pays 7.91% above the menu price, not 9%",
+     "form a linear equation in the December 2023 menu price from the difference between two multiplier chains (5% price rise with 9% GST against the old prices with 8% GST), where the three changes do not add to a single 6%"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Service charge: $120 \\times 1.1 = 132$.\nGST at $9\\%$ on $\\$132$: $132 \\times 1.09 = 143.88$.\n**Answer: $\\$143.88$**\n\n(b) GST was charged on the amount after the service charge, so that amount is $95.92 \\div 1.09 = 88$.\nGST paid $= 95.92 - 88 = 7.92$.\n**Answer: $\\$7.92$**\n(Taking $9\\%$ of the total gives $0.09 \\times 95.92 = \\$8.63$, which is wrong: the GST is $9\\%$ of $\\$88$, not of $\\$95.92$.)\n\n(c) Take a menu price of $\\$100$ (or let it be $\\$x$).\nAfter the member discount: $100 \\times 0.9 = 90$.\nAfter the service charge: $90 \\times 1.1 = 99$.\nSo the discount and the service charge do not cancel: $0.9 \\times 1.1 = 0.99$, and the member is charged on $\\$99$, not $\\$100$.\nAfter GST: $99 \\times 1.09 = 107.91$.\n$107.91 - 100 = 7.91$, so the total exceeds the menu price by $7.91\\%$.\n**Answer: Kumar is wrong because $0.9 \\times 1.1 = 0.99 \\neq 1$; a member pays $7.91\\%$ more than the menu price, not $9\\%$.**\n\n(d)(i) Let the menu price of the set in December 2023 be $\\$x$.\nDecember 2023 total (service charge $10\\%$, GST $8\\%$): $x \\times 1.1 \\times 1.08 = 1.188x$.\nJanuary 2024 menu price: $1.05x$.\nJanuary 2024 total (service charge $10\\%$, GST $9\\%$): $1.05x \\times 1.1 \\times 1.09 = 1.25895x$.\n$1.25895x - 1.188x = 14.19$\n$0.07095x = 14.19$\n$x = 200$\n**Answer: $\\$200$**\n(Treating the changes as a single rise of $6\\%$ gives $0.06x = 14.19$, $x = \\$236.50$; forgetting that GST was $8\\%$ in December gives $0.05995x = 14.19$, $x = \\$236.70$. Both look plausible and both are wrong.)\n\n(d)(ii) January 2024 total $= 1.25895 \\times 200 = 251.79$.\n(Check: December 2023 total $= 1.188 \\times 200 = 237.60$, and $251.79 - 237.60 = 14.19$.)\n**Answer: $\\$251.79$**",
+    "syllabus_check": "4052 percentages and financial mathematics (taxation): successive percentage changes as multipliers, reverse percentage for one stage of a chain, comparing two routes, and a linear equation in one unknown formed from a difference of two totals. No quadratic, no inequality.",
+    "originality_note": "Set 1 P1 Q3 was hire purchase, Set 1 P2 Q2 a quadratic from two successive percentage changes with a given final price reversed through the chain, Set 2 P1 Q3 a combined percentage change with a reverse; this Set's P1 Q3 recovers a compound-interest rate and P1 Q7 uses an invariant mass. GCE 2022 P2 Q2 used interest and a card fee on a currency exchange. None of them is a service-charge-then-GST bill with the GST rate change of January 2024, a GST amount recovered from a total, a discount-cancels-the-service-charge misconception explained with multipliers, or a linear equation formed from the difference between a bill under the new rates and the same bill under the old rates. This paper's Q2 forms its equations by balancing two tariffs; (d) here forms one from a stated difference and closes on a forward total, not on the equation. Every number is real-world (Singapore GST 8% to 9% on 1 January 2024)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q2",
+     "jaccard": 0.014,
+     "nearest_set": "Set 1 P1 Q3",
+     "jaccard_set": 0.015,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-10-09T23:42:47.556Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "$143.88",
+     "(b)": "$7.92",
+     "(c)": "Kumar is not correct: restaurant (member) costs 0.9 x 1.1 x 1.09 = 1.0791 of the menu price, cafe costs 1.09 of the menu price, so the restaurant is cheaper (by 1.09% of the menu price)",
+     "(d)(i)": "$200",
+     "(d)(ii)": "$251.79"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "120 x 1.1 x 1.09 = 143.88; both $143.88."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "95.92 / 1.09 = 88 exactly, GST = 95.92 - 88 = 7.92; both $7.92. The tempting wrong route 9% of 95.92 = 8.63 is a believable number."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Member at the restaurant 0.9 x 1.1 x 1.09 = 1.0791 of the menu price; cafe 1.09; the restaurant is cheaper, Kumar is wrong. Both say so."
+     },
+     {
+      "label": "(d)(i)",
+      "agree": true,
+      "note": "(1.05 x 1.1 x 1.09 - 1.1 x 1.08) x = (1.25895 - 1.188) x = 0.07095 x = 14.19, x = 200 exactly; both $200. The single-6% route gives 236.50 and forgetting the 8% gives 236.70, both plausible."
+     },
+     {
+      "label": "(d)(ii)",
+      "agree": true,
+      "note": "1.25895 x 200 = 251.79; check 1.188 x 200 = 237.60 and 251.79 - 237.60 = 14.19. Both $251.79."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm each value; the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Lesson 2 (same feel inside the paper): (c) 'Is Kumar correct?' compares two pricing schemes to decide which is cheaper, and the accepted Q2(c) next door also closes by finding where two tariffs give the same bill and which users pay more under the flat rate. Same feel in neighbours. Keep the 0.9 x 1.1 = 0.99 trap but drop the cafe: '(c) Members of the restaurant receive a discount of 10% on the menu price. The service charge and GST are then added to the discounted price. Kumar is a member. He says that, for him, the discount cancels out the service charge, so he pays only the GST on top of the menu price. Explain why Kumar is wrong and find the percentage by which the total a member pays exceeds the menu price. [3]' (answer 7.91%, not 9%; the explanation hangs on 0.9 x 1.1 = 0.99). If the session changes Q2 instead, (c) can stay as it is.",
+     "Session note, not a slot defect: every real P2 since 2019 opens with the algebra medley and sets percentages as 1-3-mark parts of the Q2/Q3 medley; an 11-mark money question at Q1 is unlike the real paper's shape. The question itself is at standard."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The repaired question now carries a hidden linear equation in (d)(i) formed from the difference of two three-factor chains (clean answer $200), a reverse step in (b) where the believable wrong answer is 9% of the total, and a comparison in (c) whose reason is a computed fact (0.9 x 1.1 = 0.99); the deciding parts carry 8 of 11 marks, the context changes the maths (GST on the service charge, 8% then 9%), and the wording is SEAB's. Beside Set 1 P2 Q2 it is a little less heavy (a linear rather than a quadratic equation) but as clean, as well built and finishable; the one defect left is the shared 'which scheme is cheaper' feel with Q2(c)."
+   },
+   "exemplars": [
+    {
+     "id": "26af6f78-edef-48f9-a281-1982a3ad9f24",
+     "ref": "GCE 2023 P2 Q1"
+    },
+    {
+     "id": "30e06f06-6ddf-47ef-b1dd-2dcc221c9c9f",
+     "ref": "GCE 2023 P1 Q7"
+    },
+    {
+     "id": "20c9c8ad-0d34-4855-8299-fe80975656db",
+     "ref": "GCE 2024 P1 Q3"
+    },
+    {
+     "id": "4c5fe96e-345f-47a3-a8e1-e4b9b22eec8a",
+     "ref": "GCE 2025 P1 Q14"
+    },
+    {
+     "id": "bd1c9b54-4cff-4b98-b13d-fd0262599cc2",
+     "ref": "GCE 2022 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Algebra (Simultaneous Equations)",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A water supplier charges households $\\$a$ for each of the first $20$ m$^3$ of water used in a month and $\\$b$ for each additional m$^3$.\nTo encourage households to save water, the rate for the additional water is the higher rate.\nIn April a household used $26$ m$^3$ of water and its bill was $\\$53.60$.\nIn May the same household used $35$ m$^3$ of water and its bill was $\\$77.00$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $a$ and the value of $b$.",
+      "marks": 4,
+      "answer": "$a = 1.90$, $b = 2.60$"
+     },
+     {
+      "label": "(b)",
+      "text": "In June the household's bill was $\\$100.40$.\nCalculate the volume of water, in m$^3$, used in June.",
+      "marks": 2,
+      "answer": "$44$ m$^3$"
+     },
+     {
+      "label": "(c)",
+      "text": "The supplier proposes a new tariff in which every m$^3$ of water costs $\\$2.25$, with no higher rate for additional water.",
+      "marks": 4,
+      "answer": "(i) $V = 40$ (ii) households using less than $40$ m$^3$ a month",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "A household uses $V$ m$^3$ of water in a month, where $V > 0$. Its bill is the same under the two tariffs. Find $V$.",
+        "marks": 3,
+        "answer": "$V = 40$"
+       },
+       {
+        "label": "(ii)",
+        "text": "Explain which households would pay more under the new tariff.",
+        "marks": 1,
+        "answer": "Households using less than $40$ m$^3$ a month, because each of the first $20$ m$^3$ costs $\\$0.35$ more ($\\$7$ in all), and the $\\$0.35$ saved on each m$^3$ above $20$ only cancels this once $20$ extra m$^3$ are used (for example $26$ m$^3$: $\\$58.50$ under the new tariff instead of $\\$53.60$ now)."
+       }
+      ]
+     }
+    ],
+    "answer": "(a) $a = 1.90$, $b = 2.60$ (b) $44$ m$^3$ (c)(i) $V = 40$ (ii) households using less than $40$ m$^3$",
+    "total_marks": 10,
+    "topics": [
+     "Algebra (Simultaneous Equations)",
+     "Algebra (Linear Equations)"
+    ],
+    "skills": [
+     "form a pair of simultaneous equations from a two-block tariff where the split of each month's volume (20 at one rate, the rest at the other) is not stated: 20a + 6b = 53.60 and 20a + 15b = 77",
+     "use the solved rates to find a volume from a bill, deciding that the bill exceeds the cost of the first block so the extra volume is charged at the higher rate",
+     "find where a two-block tariff and a flat tariff give the same bill (a linear equation on the second block only, since the first block alone never balances) and read off which users pay more under the flat rate"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) April: $20$ m$^3$ at $\\$a$ and $6$ m$^3$ at $\\$b$: $20a + 6b = 53.6$.\nMay: $20$ m$^3$ at $\\$a$ and $15$ m$^3$ at $\\$b$: $20a + 15b = 77$.\nSubtract: $9b = 23.4$, so $b = 2.6$.\nThen $20a = 53.6 - 15.6 = 38$, so $a = 1.9$.\n**Answer: $a = 1.90$, $b = 2.60$**\n\n(b) The first $20$ m$^3$ cost $20 \\times 1.9 = \\$38$, and $100.40 > 38$, so more than $20$ m$^3$ was used.\nAdditional water: $(100.40 - 38) \\div 2.6 = 62.4 \\div 2.6 = 24$ m$^3$.\nVolume used $= 20 + 24 = 44$.\n**Answer: $44$ m$^3$**\n\n(c)(i) For $V \\le 20$: $1.9V = 2.25V$ only when $V = 0$, but $V > 0$, so $V > 20$.\nCurrent tariff: $38 + 2.6(V - 20) = 2.6V - 14$.\nNew tariff: $2.25V$.\n$2.6V - 14 = 2.25V$\n$0.35V = 14$\n$V = 40$\nCheck: $38 + 2.6 \\times 20 = 90 = 2.25 \\times 40$.\n**Answer: $V = 40$**\n\n(c)(ii) Each of the first $20$ m$^3$ costs $\\$2.25$ instead of $\\$1.90$: $\\$0.35$ more, $\\$7$ in all.\nEach m$^3$ above $20$ costs $\\$2.25$ instead of $\\$2.60$: $\\$0.35$ less.\nThe saving only cancels the extra $\\$7$ once $20$ extra m$^3$ are used, that is at $40$ m$^3$.\nExample: $26$ m$^3$ costs $\\$58.50$ under the new tariff but $\\$53.60$ now.\n**Answer: households using less than $40$ m$^3$ of water a month would pay more.**",
+    "syllabus_check": "4052 simultaneous linear equations from a word problem, linear equations, utilities bills (financial mathematics). No inequality notation required; no quadratic.",
+    "originality_note": "Earlier simultaneous-equation questions: Set 1 P2 Q1 and Set 2 P2 Q2 (algebraic fractions to a quadratic), Set 1 P1 Q22 (wire cut into edges of two solids), Set 2 P1 Q22 (trimmed mean), Set 1 P1 Q14 (x - y from a rearranged pair); this Set's P1 Q1 forms expressions for coins and P1 Q5 a single linear equation for two candles. Set 2 P1 Q15 compared three gym plans by inequalities in an unknown fee. None uses a two-block tariff whose block split the candidate must see (26 = 20 + 6, 35 = 20 + 15), nor a crossing point between a block tariff and a flat rate with the users who lose identified. Shape of Singapore's increasing-block water tariff, which is real information.",
+    "marking_note": "(c)(ii): \"small households\" alone earns nothing — the mark needs the 40 m³ threshold, or the $0.35 extra on each of the first 20 m³ set against the $0.35 saved on each m³ above 20."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 P1 Q6",
+     "jaccard": 0.041,
+     "nearest_set": "Set 2 P1 Q12",
+     "jaccard_set": 0.039,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-10T00:29:35.988Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = 1.90, b = 2.60",
+     "(b)": "44 m^3",
+     "(c)(i)": "35 m^3",
+     "(c)(ii)": "Households using less than 35 m^3 of water a month pay more under the new tariff (2.20x > old bill for 0 < x < 35); those using more than 35 m^3 pay less."
+    },
+    "solvable": true,
+    "issues": [
+     "(c)(i) Trivially the bills are also equal at 0 m^3 (both $0); the intended non-trivial answer is 35 m^3. Not a real defect, but a marker may want to note 35 is the only positive volume."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "20a + 6b = 53.6, 20a + 15b = 77 give b = 2.6, a = 1.9; both a = 1.90, b = 2.60."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "(100.40 - 38)/2.6 = 24 extra, 44 m^3; both 44."
+     },
+     {
+      "label": "(c)(i)",
+      "agree": true,
+      "note": "2.6n - 14 = 2.2n gives n = 35; both 35 m^3. The blind examiner rightly notes n = 0 also satisfies 'the same bill' trivially; the wording should exclude it (fix 1)."
+     },
+     {
+      "label": "(c)(ii)",
+      "agree": true,
+      "note": "Both: households using less than 35 m^3 a month pay more under the flat tariff."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm each value; the key is right (one cosmetic slip: the key prints the (c) answers twice).",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(c)(i): 'the bill is the same under the two tariffs' is also true at 0 m^3 (both $0); a real paper would close that door. Reword: 'A household uses V m^3 of water in a month, where V > 0. Its bill is the same under the two tariffs. Find V.' — keeps the decision that the first block alone never balances, removes the trivial answer.",
+     "Key: the (c) answers are printed twice ('(c) (i) 35 m^3 (ii) households using ...' and again as (c)(i), (c)(ii)); delete the first line.",
+     "(c)(ii): SEAB would print 'Explain which households would pay more under the new tariff.' as is, but the marking must demand the 35 m^3 threshold (or the $0.30 extra on each of the first 20 m^3 against $0.40 saved on each m^3 above 20) — 'small households' alone earns nothing."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The context does real work: the 20/6 and 20/15 split is left for the candidate to see (the equations are formed, not cued), (b) needs the decision that $100.40 exceeds the first block, and the flat-tariff break-even needs the old tariff modelled as 2.6n - 14 for n > 20; numbers come out clean (1.90, 2.60, 44, 35) and the explain mark hangs on the computed 35. Nearest earlier work is Set 2 P1 Q15 (cheapest of three plans as inequalities in a fee) — a different skill of the same family, not a repeat; nothing in this paper's Q1 or Q9 shares the skill."
+   },
+   "exemplars": [
+    {
+     "id": "f650d380-b315-4357-8798-46263e7870f7",
+     "ref": "GCE 2025 P2 Q1"
+    },
+    {
+     "id": "5b5106ab-669f-4d36-85ee-9fd35e7a0481",
+     "ref": "GCE 2023 specimen P2 Q1"
+    },
+    {
+     "id": "d9e1d2ad-e61c-4013-a2ac-6cfe4546c643",
+     "ref": "GCE 2023 P1 Q22"
+    },
+    {
+     "id": "46a62516-c556-4dbf-ae78-5b76a835ab3a",
+     "ref": "GCE 2024 P1 Q14"
+    },
+    {
+     "id": "8f10720c-f835-43d8-8124-f55b4038d043",
+     "ref": "GCE 2005 P2 Q2"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "$P$, $Q$ and $R$ are three points on horizontal ground.\n$PQ = 60$ m and $PR = 100$ m.\nThe bearing of $Q$ from $P$ is $070^\\circ$ and the bearing of $R$ from $P$ is $190^\\circ$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $QR = 140$ m.",
+      "marks": 2,
+      "answer": "Angle $QPR = 190^\\circ - 70^\\circ = 120^\\circ$; $QR^2 = 60^2 + 100^2 - 2(60)(100)\\cos 120^\\circ = 19600$, so $QR = 140$ m."
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the bearing of $Q$ from $R$.",
+      "marks": 3,
+      "answer": "$031.8^\\circ$"
+     },
+     {
+      "label": "(c)",
+      "text": "A vertical tower $PT$ of height $36$ m stands at $P$.\nA straight path runs from $Q$ to $R$.\nThe angle of elevation of $T$ from a point $S$ on the path is $30^\\circ$.\nCalculate $QS$.",
+      "marks": 4,
+      "answer": "$97.2$ m"
+     }
+    ],
+    "answer": "(a) $QR = 140$ m (shown) (b) $031.8^\\circ$ (c) $QS = 97.2$ m",
+    "total_marks": 9,
+    "topics": [
+     "Trigonometry"
+    ],
+    "skills": [
+     "angle between two bearings from one point as an obtuse 120 degrees, then the cosine rule with cos 120 = -1/2 (the sign is the trap) to reach an exact third side",
+     "bearing of one point from another through the reverse bearing (190 becomes 010) plus an angle from the sine rule, deciding from the figure whether to add or subtract",
+     "locate the point of a straight path from which a tower is seen at a given angle of elevation: the ground distance from the foot of the tower is fixed by the tangent ratio (36/tan 30 = 36 root 3), then that side with PQ and the angle at Q is a two-sides-and-a-non-included-angle triangle, solved by the cosine rule as a quadratic in QS (or the sine rule, angle then side) with the negative root rejected as a point beyond the end of the path"
+    ],
+    "needs_figure": true,
+    "figure_description": "Not to scale. Plan view of three points on horizontal ground. P is drawn near the middle of the figure with a vertical line through it carrying an upward arrow labelled 'North'. Q is above-right of P (bearing 070 from P, PQ shorter), R is below and slightly left of P (bearing 190 from P, PR longer, about 1.7 times PQ). Straight line segments PQ, PR and QR are drawn, forming triangle PQR with its obtuse angle at P. Label PQ '60 m' and PR '100 m' beside the segments. Mark the bearing of Q from P as a small arc from the north line at P clockwise to PQ labelled '70°', and the bearing of R from P as an arc from the north line clockwise round to PR labelled '190°'. Do NOT show QR's length, any angle at Q or R, a north line at R, the tower, the point S, or any angle of elevation.",
+    "solution": "(a) Angle $QPR = 190^\\circ - 70^\\circ = 120^\\circ$.\nCosine rule: $QR^2 = 60^2 + 100^2 - 2(60)(100)\\cos 120^\\circ$\n$= 3600 + 10000 - 12000 \\times (-0.5)$\n$= 3600 + 10000 + 6000 = 19600$.\n$QR = \\sqrt{19600} = 140$.\n**Answer: $QR = 140$ m (shown)**\n\n(b) Sine rule in triangle $PQR$: $\\dfrac{\\sin \\angle PRQ}{60} = \\dfrac{\\sin 120^\\circ}{140}$.\n$\\sin \\angle PRQ = \\dfrac{60 \\sin 120^\\circ}{140} = 0.37115\\ldots$, so $\\angle PRQ = 21.79^\\circ$ (acute, as it is opposite the shortest side).\nBearing of $P$ from $R = 190^\\circ - 180^\\circ = 010^\\circ$.\n$Q$ lies clockwise of $RP$ when viewed from $R$, so bearing of $Q$ from $R = 10^\\circ + 21.79^\\circ = 31.8^\\circ$.\n**Answer: $031.8^\\circ$**\n\n(c) In the right-angled triangle $PST$: $\\tan 30^\\circ = \\dfrac{36}{PS}$, so $PS = \\dfrac{36}{\\tan 30^\\circ} = 36\\sqrt{3} = 62.35$ m (and $PS^2 = 3888$).\nAngle $PQS = $ angle $PQR = 180^\\circ - 120^\\circ - 21.79^\\circ = 38.21^\\circ$ (or $\\cos \\angle PQR = \\dfrac{60^2 + 140^2 - 100^2}{2(60)(140)} = \\dfrac{11}{14}$).\nLet $QS = x$ m. Cosine rule in triangle $PQS$:\n$3888 = 60^2 + x^2 - 2(60)(x)\\cos 38.21^\\circ$\n$x^2 - 94.29x - 288 = 0$\n$x = \\dfrac{94.29 \\pm \\sqrt{94.29^2 + 4(288)}}{2} = \\dfrac{94.29 \\pm 100.21}{2}$\n$x = 97.25$ or $x = -2.96$.\n$QS$ cannot be negative (that point is on $RQ$ produced, not on the path), so $QS = 97.2$ m.\n**Answer: $QS = 97.2$ m**\n\nAlternative for (c) by the sine rule: $\\dfrac{\\sin \\angle PSQ}{60} = \\dfrac{\\sin 38.21^\\circ}{62.35}$, so $\\sin \\angle PSQ = 0.5952$ and $\\angle PSQ = 36.53^\\circ$ (the obtuse value $143.47^\\circ$ exceeds $180^\\circ - 38.21^\\circ$).\nAngle $QPS = 180^\\circ - 38.21^\\circ - 36.53^\\circ = 105.26^\\circ$.\n$QS = \\dfrac{62.35 \\sin 105.26^\\circ}{\\sin 38.21^\\circ} = 97.2$ m.\n\nCheck: $QS = 97.2 < 140$, so $S$ is on the path. The nearest point of the path to $P$ is $47.1$ m from $Q$ at $37.1$ m from $P$ (elevation $44.1^\\circ$); the elevation at $Q$ itself is $\\tan^{-1}(36/60) = 31.0^\\circ$ and at $R$ is $19.8^\\circ$, so $30^\\circ$ is reached at exactly one point of the path, on the $R$ side of the nearest point.\nTidy wrong answers: $\\sqrt{PS^2 - PQ^2} = 17.0$ m (a right angle assumed at $S$); $62.4$ m (giving $PS$ as $QS$).\nMarking: (a) M1 for $120^\\circ$ and the cosine rule set up, A1 $140$. (b) M1 sine rule for angle $PRQ$ ($21.8^\\circ$), M1 reverse bearing $010^\\circ$ or equivalent, A1 $031.8^\\circ$. (c) M1 $PS = 36/\\tan 30^\\circ$, M1 the angle at $Q$ (from (b) or $\\cos Q = 11/14$), M1 a correct equation for $QS$ (the cosine-rule quadratic, or the sine rule for angle $PSQ$ then angle $QPS$), A1 $97.2$ with the negative root rejected.",
+    "syllabus_check": "4052 trigonometry: bearings, cosine rule with an obtuse angle, sine rule, angle of elevation, tangent ratio in a right-angled triangle, cosine rule with an unknown side giving a quadratic solved by the formula (or the sine rule). Nothing outside the syllabus.",
+    "originality_note": "The closing part no longer uses the perpendicular foot (Set 2 P2 Q3(b)'s closest approach, Set 1 P1 Q23(c)'s shortest distance) and so is no longer GCE 2009 P2 Q8's 'greatest angle of elevation from a point on BC': the candidate is given the angle of elevation and must locate the point, the reverse direction of GCE 2024 P2 Q5(c) (elevation from a named second point) and of this Set's P1 Q2 (two angles on one line to a height). No earlier Set has asked for a point to be located from an angle of elevation, nor used the cosine rule with the unknown side as a quadratic. Not a re-skin of GCE 2023 P1 Q23 (bearing of C from A after a given angle) or Set 2 P2 Q3 (a moving ship, clock times, a supply boat). (a) and (b) are the standard bearings opener; the numbers are exact (QR = 140, cos PQR = 11/14, PS = 36 root 3)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2015 P1 Q18",
+     "jaccard": 0.097,
+     "nearest_set": "Set 1 P2 Q5",
+     "jaccard_set": 0.014,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-09T23:42:47.629Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "031.8°",
+     "(c)": "QS = 97.2 m"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Angle QPR = 190 - 70 = 120; QR^2 = 3600 + 10000 - 12000 cos 120 = 19600, QR = 140 exactly. Both 'shown'."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "sin PRQ = 60 sin 120 / 140 = 0.3712, PRQ = 21.79 (acute, opposite the shortest side); bearing of P from R is 010, so Q from R = 10 + 21.79 = 031.8. Checked by coordinates: Q - R = (73.7, 119.0), bearing 31.79. Both 031.8."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "PS = 36 / tan 30 = 62.35 (PS^2 = 3888); cos PQS = cos PQR = 11/14 (38.21). Cosine rule in PQS: x^2 - 94.29x - 288 = 0, x = 97.25 or -2.96; the negative root is beyond Q, off the path. Sine-rule route: sin PSQ = 0.5952, the obtuse 143.47 is impossible (143.47 + 38.21 > 180). S is unique: elevation at Q is 31.0, at the nearest point (37.1 m from P, QF = 47.1) 44.1, at R 19.8, so 30 degrees is reached once, on the R side; QS = 97.2 < 140 so S is on the path. Both 97.2 m."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm each value; the key is right, the show-that is true and (c) has exactly one solution on the path.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "re-mark: (a) loses one mark, (c) gains one — (a) [2], (b) [3], (c) [4]. (a) is one angle (190 - 70) and one cosine rule, two steps; (c) is PS from the tangent ratio, the angle at Q (from (b)'s working or 11/14), then a two-sides-and-a-non-included-angle triangle solved as a quadratic or by two sine rules with a root or an obtuse angle rejected — four steps and the question's real decision, worth more than GCE 2024 P2 Q5(c)'s two-step [3]. With (c) at 4 the marks follow the demand (M1 PS, M1 angle at Q, M1 a correct equation for QS, A1 97.2 with the rejection)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Correct, clean (QR = 140 exact, cos PQR = 11/14) and in SEAB's register: the bearings fix the obtuse 120 degrees whose cosine sign is the trap, (b) makes the candidate decide add or subtract at R, and the repaired (c) hands over a real decision — locate a point on the path from an angle of elevation by building triangle PQS and solving the ambiguous case — so the deciding parts carry 6 of 9 marks and the hardest part is last. The perpendicular-foot closing that repeated Set 2 P2 Q3 is gone; (a) and (b) are the standard bearings opener every real year sets (GCE 2023 P1 Q23, 2024 P2 Q5) without re-skinning either. As good as Set 1 P2 Q5; only the mark split needs the light edit above."
+   },
+   "exemplars": [
+    {
+     "id": "f05ebc88-2a20-4bba-bce3-60d467a1a143",
+     "ref": "GCE 2024 P2 Q5"
+    },
+    {
+     "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+     "ref": "GCE 2023 P2 Q5"
+    },
+    {
+     "id": "337f8a90-e048-406d-bf36-f88770a9660c",
+     "ref": "GCE 2023 P1 Q23"
+    },
+    {
+     "id": "ebabb11d-6e22-4c39-90e9-e45d5f7322f4",
+     "ref": "GCE 2024 P1 Q23"
+    },
+    {
+     "id": "8097db6a-ec59-446a-8739-cbdc97a0d25d",
+     "ref": "GCE 2025 P2 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Statistics",
+   "target": 11,
+   "accepted": true,
+   "question": {
+    "stem": "The speed limit on a road is 60 km/h.\n\nThe speeds, in km/h, of 200 cars passing a point on the road were recorded in one week in January.\n\nA speed camera was then installed at this point.\n\nThe speeds of 200 cars passing the same point were recorded in one week in March.\n\nThe cumulative frequency curves show the speeds of the cars in January and in March.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Use the January curve to find",
+      "marks": 3,
+      "answer": "(i) 60 km/h  (ii) about 13 km/h (accept 12 to 14)",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "the median speed,",
+        "marks": 1,
+        "answer": "60 km/h"
+       },
+       {
+        "label": "(ii)",
+        "text": "the interquartile range of the speeds.",
+        "marks": 2,
+        "answer": "About $68 - 55 = 13$ km/h (accept 12 to 14)"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "A driver travelling at more than 20 km/h above the speed limit has their driving licence suspended.\n\nA driver travelling above the speed limit, but not more than 20 km/h above it, is given a warning.\n\nFind, in its simplest form, the ratio of the number of drivers given a warning in January to the number of drivers whose licence was suspended in January.",
+      "marks": 3,
+      "answer": "$4 : 1$ (warnings $180 - 100 = 80$, suspensions $200 - 180 = 20$)"
+     },
+     {
+      "label": "(c)",
+      "text": "Before the speed camera was installed, the town council set two targets for the speeds of the cars in March.\n\nTarget 1: no more than 5% of the cars travelling at speeds greater than $V$ km/h.\n\nTarget 2: a median speed at least 5 km/h below the speed limit.\n\nIn January, 20% of the cars were travelling at speeds greater than $V$ km/h.\n\nDetermine whether each target was met in March.\n\nJustify your answers using figures from the curves.",
+      "marks": 5,
+      "answer": "$V = 70$. Target 1 not met: in March $200 - 186 = 14$ cars, which is $7\\%$ (accept 6.5% to 7.5%), were faster than 70 km/h, more than 5%. Target 2 met: the March median is about 53 km/h (accept 52 to 54), which is about 7 km/h below 60 km/h, at least 5 km/h below the limit."
+     }
+    ],
+    "answer": "",
+    "total_marks": 11,
+    "topics": [
+     "Statistics"
+    ],
+    "skills": [
+     "two cumulative frequency curves on one grid for the same road before and after a speed camera: the drivers in the band from the speed limit to 20 km/h above it counted as the difference of two readings (not the reading itself), then set in a ratio against the drivers above the band",
+     "a percentile found on one curve (the speed exceeded by 20% of the January cars, cumulative frequency 160, not 40) and carried across to the other curve to read the proportion above that speed in March, then judged against a 5% target",
+     "two stated targets judged from the curves with no statistic named for the candidate: a proportion above a speed (met or not met) and a median at least 5 km/h below the speed limit, each decision justified with the figures read"
+    ],
+    "needs_figure": true,
+    "figure_description": "ONE figure: a graph grid of 2 mm squares, 12 cm wide by 20 cm tall, with TWO cumulative frequency curves already drawn on it.\n\nHorizontal axis labelled 'Speed (km/h)', running from 40 to 100, with 2 cm representing 10 km/h (so 2 mm = 1 km/h) and the values 40, 50, 60, 70, 80, 90, 100 printed at the 2 cm lines. Vertical axis labelled 'Cumulative frequency', running from 0 to 200, with 2 cm representing 20 (so 2 mm = 2) and the values 0, 20, 40, ..., 200 printed at the 2 cm lines. The axes meet at (40, 0).\n\nCurve 1, labelled 'January': a smooth increasing curve through EVERY one of these points, in order: (40, 0), (45, 4), (50, 16), (55, 50), (60, 100), (64, 128), (67, 147), (70, 160), (73, 168), (76, 174), (80, 180), (85, 188), (90, 194), (95, 198), (100, 200). Draw it as a single smooth curve (a monotone curve through the points, no straight segments, no overshoot between points); it is steepest between 55 and 60 and flattens towards (100, 200). The points (55, 50), (60, 100), (70, 160) and (80, 180) are the readings, and the curve reads about 150 at 68, the question depends on: the curve must pass through each of them exactly.\n\nCurve 2, labelled 'March': a smooth increasing curve through EVERY one of these points, in order: (40, 0), (45, 20), (50, 60), (53, 100), (55, 120), (60, 150), (65, 174), (70, 186), (75, 192), (80, 196), (85, 199), (90, 200), (95, 200), (100, 200). Draw it as a single smooth monotone curve, no straight segments, no overshoot; it is steepest between 50 and 60, lies to the LEFT of (above) the January curve everywhere between 40 and 90, and runs level at 200 from 90 to 100. The points (53, 100) and (70, 186) are the readings the question depends on: the curve must pass through each of them exactly.\n\nBoth curves are solid black lines of the same weight. The word 'January' is printed just below and to the right of the January curve at about (74, 130); the word 'March' is printed just above and to the left of the March curve at about (43, 110). The two curves must be clearly distinguishable where they approach each other near the top right.\n\nNo plotted points are marked with dots or crosses. No frequencies, quartiles, percentiles, horizontal or vertical reading lines, or any other values appear on the figure. Nothing is shaded.",
+    "solution": "(a)(i) The median is the 100th value.\n\nOn the January curve, cumulative frequency 100 is at 60 km/h.\n\n**Answer: 60 km/h**\n\n(a)(ii) Lower quartile: the 50th value. From the January curve, 55 km/h.\n\nUpper quartile: the 150th value. From the January curve, 68 km/h.\n\nInterquartile range $= 68 - 55 = 13$ km/h.\n\n**Answer: about 13 km/h (accept 12 to 14)**\n\n(b) 20 km/h above the limit is 80 km/h.\n\nA warning: more than 60 km/h and not more than 80 km/h.\n\nA suspension: more than 80 km/h.\n\nJanuary curve at 60 km/h: cumulative frequency 100.\n\nJanuary curve at 80 km/h: cumulative frequency 180.\n\nWarnings $= 180 - 100 = 80$.\n\nSuspensions $= 200 - 180 = 20$.\n\nRatio $= 80 : 20 = 4 : 1$.\n\n**Answer: $4 : 1$**\n\n(c) Target 1.\n\n20% of 200 cars is 40 cars.\n\nSo in January 160 cars were travelling at $V$ km/h or slower.\n\nJanuary curve at cumulative frequency 160: $V = 70$.\n\nMarch curve at 70 km/h: cumulative frequency 186.\n\nCars faster than 70 km/h in March $= 200 - 186 = 14$.\n\n$\\frac{14}{200} \\times 100\\% = 7\\%$\n\n$7\\% > 5\\%$, so Target 1 was not met.\n\nTarget 2.\n\nAt least 5 km/h below the limit means a median of 55 km/h or less.\n\nMarch median: the 100th value. From the March curve, about 53 km/h.\n\n$60 - 53 = 7$ km/h below the limit, so Target 2 was met.\n\n**Answer: Target 1 not met (7% of the March cars were faster than 70 km/h, more than 5%); Target 2 met (March median about 53 km/h, about 7 km/h below 60 km/h).**\n\n(Marking: (a)(i) B1 60. (a)(ii) M1 both quartiles read (lower 54 to 55.5, upper 67 to 68.5), A1 12 to 14. (b) M1 the boundaries 60 and 80 identified and both readings taken (99 to 101, 179 to 181); M1 the counts 80 and 20 by subtraction; A1 $4 : 1$. Taking 180 as the number warned, giving $9 : 1$, scores M1 only. (c) M1 reading the January curve at cumulative frequency 160 to give $V = 70$ (accept 69.5 to 70.5); M1 the March reading at $V$ (185 to 187) subtracted from 200, giving 13 to 15 cars; A1 6.5% to 7.5% with the conclusion that Target 1 was not met; B1 March median 52 to 54; A1 the median compared with 55 (or the gap 6 to 8 km/h stated against 5) with the conclusion that Target 2 was met. Reading at cumulative frequency 40 ($V \\approx 54$, about 45% in March) scores 0 for the first three marks. A decision with no figure quoted earns no A mark; 'the March curve is further left' alone scores 0.)",
+    "syllabus_check": "4052 Data handling and analysis: reading a cumulative frequency curve for the median, quartiles, interquartile range and a percentile; the number of values in an interval as the difference of two readings; comparing two distributions in context using the median; judging stated targets from readings with the reasons given in figures. Ratio in its simplest form and a percentage are Sec 1 number work. No mean, no standard deviation, no probability, no histogram. Every reading the key depends on sits on a stated point of a curve: January (55, 50), (60, 100), (68, 150), (70, 160), (80, 180); March (53, 100), (70, 186).",
+    "originality_note": "One road before and after a speed camera, two cumulative frequency curves given on one grid, nothing else given. Not Set 1 P2 Q7 (two café branches A and B, a cumulative frequency TABLE used for mean and standard deviation, an advertised 90%-within-45-minutes claim, a five-number table for B, a refunds explain and a probability) and not Set 2 P2 Q7 (a back-to-back stem-and-leaf diagram, a named person's claim about spread judged by interquartile ranges, a combined median, a probability): here there are no times, no second group as five numbers or a box plot, no advertised claim, no named person, no spread claim and no probability. Not this Set's P1 Q25 (a ratio of group sizes reversed from means) or P1 Q4 (a train's speed computed). Against the real papers: GCE 2025 P2 Q2 gives one curve and asks median, interquartile range, a probability and a box-plot count; GCE 2023 P1 Q8 asks a cut-off height then mean and standard deviation; the 2023 specimen compares two varieties' curves for a packing decision then probability. Here (b) needs the band 60 to 80 built from the context (20 km/h above the limit) and counted as a difference of readings, with the tidy wrong answer 9 : 1 from taking the reading itself; (c) is a 5-mark two-target decision with no statistic named for the candidate: find the percentile V on one curve (160, not 40 — reading at 40 gives a believable 45%), carry it to the other curve and judge 7% against 5% (not met), then choose the median as the statistic for Target 2, read it from the March curve and judge 53 against 55 (met), one target met and one not. Closing step: two targets judged from readings off curves, unlike every other slot (Q2 closes on which users pay more under a flat rate from a linear equation, Q9 on a payback period searched over the number of panels, Q6 on a filling time, Q8 on naming a quadrilateral from vectors). No money bands (Q2's tariff blocks and Q9's split rate already carry those) and no probability (P1 Q11). Marks (a) 3, (b) 3, (c) 5: the paper's third single part of 5+ marks now that Q5's plotting part is below 5."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2017 P2 Q9",
+     "jaccard": 0.053,
+     "nearest_set": "Set 2 P1 Q23",
+     "jaccard_set": 0.018,
+     "repeated_skills": []
+    },
+    "marks": 11,
+    "checked_at": "2026-10-10T00:07:59.325Z",
+    "rounds": 5
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "60 km/h",
+     "(a)(ii)": "13 km/h (UQ 68 - LQ 55)",
+     "(b)": "4 : 1 (warning 180 - 100 = 80, suspended 200 - 180 = 20)",
+     "(c)": "Target 1 not met: 20% of 200 = 40 cars above V, so CF 160 on January curve gives V = 70; in March 200 - 186 = 14 cars above 70 km/h = 7% > 5%. Target 2 met: March median (CF 100) = 54.5 km/h, which is 5.5 km/h below 60 (at least 5 below)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "Both 60 km/h. Cumulative frequency 100 is a pinned point of the January curve, (60, 100). Clean."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Both 13 km/h. The lower quartile (50th) and upper quartile (150th) are now pinned points of the January curve, (55, 50) and (68, 150), so the reading no longer depends on how the drawer bends the curve; 68 - 55 = 13, and the accept band 12 to 14 is the right width for a 2 mm = 1 km/h grid. The fault in the previous draft is fixed."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 4 : 1. The limit fixes the boundaries 60 and 60 + 20 = 80, both pinned points: (60, 100) and (80, 180). Warned = 180 - 100 = 80, suspended = 200 - 180 = 20. Taking the reading 180 as the number warned gives the believable wrong 9 : 1, as the scheme anticipates."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: Target 1 not met, Target 2 met. 20% above V means 160 at or below, so the January reading is at cumulative frequency 160, pinned at (70, 160): V = 70. March at 70 is pinned (70, 186): 14 cars above, 7% > 5%, not met. Reading at cumulative frequency 40 instead gives V about 53 and about 57% in March, the believable wrong route the scheme scores 0. Target 2: 'at least 5 km/h below 60' means a median of 55 or less; the March median is pinned at (54.5, 100), 5.5 below, met. The 3 + 2 split of the 5 marks matches the work."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and every reading the key depends on sits on a pinned point of one of the curves; the key is exactly right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "MARGIN (c) Target 2: the decision rests on a reading 0.5 km/h (1 mm on the 2 mm = 1 km/h grid) from the threshold 55. The curve is steep there (about 10 per km/h), so a careful candidate reads 54.5, but a real paper leaves the decision clear of the standard reading tolerance. Either pin the March median lower, e.g. replace (54.5, 100), (55, 105) by (53, 100), (55, 120) and keep (60, 150), (70, 186) (key: median about 53, accept 52 to 54, 7 km/h below, met), or change Target 2 to 'at least 4 km/h below the speed limit' (threshold 56, margin 1.5 km/h = 3 mm). The first is better: the conclusion is then safe against a 1 km/h misreading either way.",
+     "REGISTER (b): 'in January' sits at the end of a long sentence and could be read as qualifying only the suspensions. Write 'Find, in its simplest form, the ratio of the number of drivers given a warning in January to the number of drivers whose licence was suspended in January.' or open the sentence with 'In January, '.",
+     "FOR THE SESSION (whole-paper item 13, not a reason for this score): all 11 marks are read from one grid, seven readings in all, where the real 2024/25 papers give cumulative-frequency reading 5 to 6 marks (GCE 2025 P2 Q2(a)) and spend the rest of the statistics question on a table, a plot or an explain mark. The deciding parts carry 8 of 11 marks and (c) is the paper's third single part of 5+ marks, so the question stands; note only that the paper's statistics is single-representation and P1 should carry the mean/standard deviation/other-diagram work. Set 3 P1 is not in earlier-sets.md (72 questions = Sets 1 and 2), so the setter's claims about 'this Set's P1 Q4 and Q25' could not be checked here."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean SEAB-register two-curve question whose context changes the maths at every turn (the limit and 'limit + 20' fix the boundaries 60 and 80; '20% above V' sends the candidate to cumulative frequency 160, not 40; 'at least 5 km/h below' must be turned into a median of 55 or less), with believable wrong answers in (b) and (c), every key reading pinned, the deciding parts carrying 8 of 11 marks and a 5-mark close with no statistic named for the candidate; a different skill family from Set 1 P2 Q7 (cumulative table, mean/SD, explain, probability) and Set 2 P2 Q7 (stem-and-leaf, spread claim, combined median), and not a re-skin of GCE 2025 P2 Q2 (one curve, probability, box plot) or the 2023 specimen (two varieties, packing choice). It stops at 4 because the Target 2 decision sits 1 mm from its threshold on the printed grid and a real paper would leave more room; one pinned point moved makes it a 5."
+   },
+   "exemplars": [
+    {
+     "id": "1995d8f9-a5d5-4879-bf28-ca4469ab147c",
+     "ref": "GCE 2023 specimen P2 Q4"
+    },
+    {
+     "id": "ec412120-d59f-429a-a097-8e6bf6aba169",
+     "ref": "GCE 2024 P2 Q7"
+    },
+    {
+     "id": "98f4a286-0e1f-4543-b6bd-7faee75caf63",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "77a410ea-31c3-46bd-8224-32b2c75d2cd7",
+     "ref": "GCE 2023 P1 Q8"
+    },
+    {
+     "id": "12a67ec2-8a20-47e4-8921-8a3c5dc320f7",
+     "ref": "GCE 2024 P1 Q21"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Algebra (Graph on Graph Paper)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A patient is given a 50 mg dose of a medicine.\n\nThe amount, $y$ mg, of the medicine remaining in the patient's blood $x$ hours after the dose is given by\n\n$y = 50 \\times 0.8^{x}$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "",
+      "marks": 3,
+      "answer": "(i) $x = 7$: $y = 10.5$  (ii) smooth decreasing curve through the nine points $(0, 50)$, $(1, 40)$, $(2, 32)$, $(3, 25.6)$, $(4, 20.5)$, $(5, 16.4)$, $(6, 13.1)$, $(7, 10.5)$, $(8, 8.4)$",
+      "subparts": [
+       {
+        "label": "(i)",
+        "text": "The table shows some values of $x$ and the corresponding values of $y$, correct to 1 decimal place.\n\n$\\begin{array}{|c|c|c|c|c|c|c|c|c|c|} \\hline x & 0 & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\\\ \\hline y & 50 & 40 & 32 & 25.6 & 20.5 & 16.4 & 13.1 & & 8.4 \\\\ \\hline \\end{array}$\n\nComplete the table.",
+        "marks": 1,
+        "answer": "$10.5$"
+       },
+       {
+        "label": "(ii)",
+        "text": "On the grid, draw the graph of $y = 50 \\times 0.8^{x}$ for $0 \\le x \\le 8$.",
+        "marks": 2,
+        "answer": "Smooth decreasing curve through the nine points, falling more and more slowly"
+       }
+      ]
+     },
+     {
+      "label": "(b)",
+      "text": "A second patient is given a 50 mg dose of a different medicine at the same time.\n\nThe amount of this medicine in the blood falls by the same amount every hour, and 3.5 hours after the dose exactly half of it remains.\n\nBy drawing a suitable straight line on the grid, find how many hours after the doses the amounts of the two medicines remaining in the blood are next equal.",
+      "marks": 2,
+      "answer": "Straight line from $(0, 50)$ to $(7, 0)$; the line crosses the curve again at $x \\approx 4.35$, so about 4.35 hours after the doses (accept 4.25 to 4.45)"
+     },
+     {
+      "label": "(c)",
+      "text": "By drawing a tangent, estimate the rate at which the amount of the first medicine in the blood is decreasing at the time when 30 mg of it remains.\n\nState the units of your answer.",
+      "marks": 3,
+      "answer": "Tangent at the point where $y = 30$ (about $x = 2.3$); gradient $\\approx -6.7$, so the amount is decreasing at about 6.7 mg per hour (accept 5.8 to 7.6 mg per hour)"
+     },
+     {
+      "label": "(d)",
+      "text": "Use your graph to find the greatest difference between the amounts of the two medicines in the blood during the first 4 hours after the doses.",
+      "marks": 1,
+      "answer": "About 3.7 mg, at about 2 hours after the doses (accept 3.4 to 4.0 mg)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 9,
+    "topics": [
+     "Algebra (Graph on Graph Paper)",
+     "Graphs of Functions"
+    ],
+    "skills": [
+     "a second process described only in words (constant rate, none left after 7 hours) turned, unprompted, into the straight line through $(0, 50)$ and $(7, 0)$ on the same grid, and the next time the two amounts are equal read from where that line crosses the drawn decay curve (the word 'next' in the question sets the common start aside)",
+     "gradient by a tangent at a point the candidate must first locate from its $y$-value (30 mg remaining, about $x = 2.3$), the result reported as a rate of decrease with its units, mg per hour",
+     "greatest vertical gap between the drawn line and the drawn curve over an interval, read by scanning the gap (or by seeing it is widest where the tangent is parallel to the line), the tempting wrong readings being the gap at an end of the interval"
+    ],
+    "needs_figure": true,
+    "figure_description": "A blank graph grid of 2 mm squares, 16 cm wide by 20 cm tall, for part (a)(ii). Horizontal axis labelled '$x$ (hours)' running from 0 to 8, with 2 cm representing 1 hour and the integers 0 to 8 printed at the 2 cm lines. Vertical axis labelled '$y$ (mg)' running from 0 to 50, with 2 cm representing 5 mg and the values 0, 5, 10, ..., 50 printed at the 2 cm lines. The axes meet at the origin. NOTHING is drawn on the grid: no points, no curve, no line, no tangent, no equation.",
+    "solution": "(a)(i) $x = 7$: $y = 50 \\times 0.8^{7} = 50 \\times 0.2097\\ldots = 10.49\\ldots = 10.5$ (1 d.p.)\n\n**Answer: $10.5$**\n\n(a)(ii) Plot the nine points $(0, 50)$, $(1, 40)$, $(2, 32)$, $(3, 25.6)$, $(4, 20.5)$, $(5, 16.4)$, $(6, 13.1)$, $(7, 10.5)$, $(8, 8.4)$ and join them with a smooth curve that falls more and more slowly.\n\n**Answer: smooth decreasing curve through the nine points**\n\n(b) The second medicine starts at 50 mg and falls by the same amount each hour, from 50 mg to 25 mg in 3.5 hours, so it reaches 0 mg at 7 hours.\n\nSo its amount is a straight line from $(0, 50)$ to $(7, 0)$, that is $y = 50 - \\frac{50}{7}x$.\n\nDraw this line on the grid.\n\nThe line and the curve meet at $x = 0$ (both amounts are 50 mg at the start) and again where the line crosses the curve: from the graph, at $x \\approx 4.35$.\n\n(Check: at $x = 4.35$, $50 \\times 0.8^{4.35} = 18.9$ and $50 - \\frac{50}{7}(4.35) = 18.9$.)\n\n**Answer: about $4.35$ hours after the doses (accept 4.25 to 4.45)**\n\n(c) When 30 mg remains, $y = 30$: from the curve this is at $x \\approx 2.3$.\n\nDraw the tangent to the curve at this point and find its gradient from two points on the tangent, for example $(0, 45.3)$ and $(6, 5.2)$.\n\nGradient $\\approx \\frac{5.2 - 45.3}{6 - 0} = -6.7$\n\n(Exact: $x = \\frac{\\lg 0.6}{\\lg 0.8} = 2.29$ and the gradient there is $30 \\ln 0.8 = -6.69$.)\n\n**Answer: the amount is decreasing at about $6.7$ mg per hour (accept 5.8 to 7.6 mg per hour)**\n\n(d) In the first 4 hours the line is above the curve (they next meet at 4.35 hours), so the difference is the vertical gap from the curve up to the line.\n\nFrom the graph the gap is widest at about $x = 2$: line $50 - \\frac{50}{7}(2) = 35.7$, curve $32$, gap $3.7$.\n\n(Check: the gap is $3.5$ at $x = 1.5$ and at $x = 2.5$, $2.9$ at $x = 1$ and at $x = 3$, $0.9$ at $x = 4$; it is widest where the tangent to the curve is parallel to the line, which is at $x = 2.00$.)\n\n**Answer: about $3.7$ mg (accept 3.4 to 4.0)**\n\n(Marking: (a)(i) B1 10.5. (a)(ii) P1 all nine points correct to half a small square, C1 smooth curve through the plotted points (a curve through eight correct points scores P0 C1). (b) L1 straight line from $(0, 50)$ to $(7, 0)$; A1 $x$ in $4.25$ to $4.45$; $x = 0$ alone scores 0. (c) T1 tangent drawn at the point where $y = 30$, touching the curve there and not crossing it (a tangent at $x = 3$ or at $y = 20$ scores T0); M1 gradient from two points on the tangent, at least 3 cm apart; A1 magnitude in $5.8$ to $7.6$ with the unit mg per hour (a negative gradient with the unit, or a positive value with 'decreasing', is accepted; a value with no unit loses A1). (d) B1 $3.4$ to $4.0$ from the candidate's own graphs; $0.9$ (the gap at $x = 4$) and $10.5$ (the gap at $x = 7$) score 0.)",
+    "syllabus_check": "4052 Functions and graphs: the exponential graph $y = ka^{x}$ ($k = 50$, $a = 0.8$) drawn from a table on a grid; gradient of a curve by drawing a tangent, interpreted as a rate with units; a linear graph drawn from a context and an equation solved by the intersection of a line and a curve; a difference read from two drawn graphs. Table values to 1 decimal place as the real papers give them. No logarithms are needed by the candidate (the exact values appear only in the solution as a check).",
+    "originality_note": "Not Set 1 P2 Q3 (reciprocal-plus-linear $\\frac{x}{2} + \\frac{6}{x}$: range of $k$, a line after dividing by $x$, a tangent parallel to that line), not Set 2 P2 Q4 (a poster's area $624 + 6x + 2400/x$ formed from margins: least value, a horizontal line for a fraction condition), not Set 1 P2 Q4 (exponential constants found by algebra, sketches, a common base), not this Set's P1 Q26 (reciprocal-square curve and a line, an inequality from a sketch). Against the real papers: GCE 2024 P2 Q4 and GCE 2022 P2 Q4 draw a cubic and solve a rearranged cubic by a line; GCE 2025 P2 Q5(b) gives a drawn investment graph and asks for the tangent where the value is 1.5 times the initial value; GCE 2017 P2 Q3 grows bacteria by $50 \\times 2^{t}$ and asks for a tangent at a named point. Here the curve decays, the candidate draws it, the straight line comes from a SECOND process described in words (constant rate, gone after 7 hours) rather than from a rearranged equation or a printed $y = ax + b$, the tangent point is located by the amount remaining, and the sting reads the widest gap between the two drawn graphs. Marks: table 1 + draw 2 (as Set 1 P2 Q3), then the three parts that each need an idea carry 2 + 3 + 1 = 6 of 9, as Set 1 P2 Q3's (c), (d), (e) do. Closing step: the greatest difference between two drawn graphs over an interval; no other slot closes on a reading from a graph (Q6 closes on a filling time, Q2 on a linear balance, P1 Q26 on an inequality from a sketch). Note for the session's read-through: paper-shape.md listed Q5's plotting part as one of the paper's three single parts of 5+ marks; the moderator rejected that shape (5 of 9 marks on the table and the plot leaves the idea parts under half), so this question now carries no 5-mark part and the third 5+ single part must sit elsewhere."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2020 P2 Q3",
+     "jaccard": 0.097,
+     "nearest_set": "Set 1 P2 Q3",
+     "jaccard_set": 0.076,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-10T00:29:36.004Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)(i)": "x = 7: y = 10.5",
+     "(a)(ii)": "graph drawn (smooth decreasing curve through the 9 plotted points, from (0, 50) to (8, 8.4))",
+     "(b)": "line y = 50 - (50/7)x, joining (0, 50) to (7, 0); next equal at x ≈ 4.35 hours (accept 4.3 to 4.4)",
+     "(c)": "tangent at y = 30 (x ≈ 2.29); rate ≈ 6.7 mg per hour (exact gradient -6.69; accept about 6 to 7.5 from a drawn tangent)",
+     "(d)": "≈ 3.7 mg (at x ≈ 2; exact maximum 3.71; accept 3.5 to 3.9)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)(i)",
+      "agree": true,
+      "note": "50 x 0.8^7 = 10.49 = 10.5 to 1 d.p.; both 10.5. All printed table values re-checked (20.48, 16.38, 13.11, 8.39 round to 20.5, 16.4, 13.1, 8.4)."
+     },
+     {
+      "label": "(a)(ii)",
+      "agree": true,
+      "note": "Both: smooth decreasing curve through the nine points from (0, 50) to (8, 8.4)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: the line y = 50 - 50x/7 from (0, 50) to (7, 0); next equal at x = 4.35 (exact crossing 4.346: 0.8^4.35 = 0.379 = 1 - 4.35/7). The setter's band 4.25 to 4.45 and the examiner's 4.3 to 4.4 differ only in width."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: tangent where y = 30 (x = lg 0.6 / lg 0.8 = 2.29), gradient 30 ln 0.8 = -6.69, about 6.7 mg per hour decreasing. Setter's band 5.8 to 7.6, examiner's 6 to 7.5: presentation only."
+     },
+     {
+      "label": "(d)",
+      "agree": true,
+      "note": "Both: greatest gap about 3.7 mg at x = 2 (exact maximum 3.714 at x = 2.00, where the tangent is parallel to the line); the gap is 3.5 at 1.5 and 2.5, 0.9 at x = 4. Setter's band 3.4 to 4.0, examiner's 3.5 to 3.9."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm each value; the key is right.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The re-marked question now reads like a real graph question: the routine table-and-plot opener is 3 of 9 marks, and the three parts that need an idea carry 6 — the second medicine described only in words becomes a line the candidate must build (the word 'next' sets the common start aside), the tangent is at a point located from 30 mg with units demanded as GCE 2025 P2 Q5(b) does, and the 1-mark sting asks for the greatest gap between the two drawn graphs with the end-of-interval gap (0.9) as the tempting wrong reading. Context changes the maths at every step, numbers are clean, wording is SEAB's. It asks the tangent-parallel idea of Set 1 P2 Q3(e) from a different direction (a greatest difference in context, not an x-coordinate), which the variety rule allows, and its line comes from a second model rather than a rearrangement, unlike Set 1 P2 Q3(d) and Set 2 P2 Q4(e). As good as Set 1 P2 Q3."
+   },
+   "exemplars": [
+    {
+     "id": "e0dfab94-8d90-494a-858c-990449760d16",
+     "ref": "GCE 2023 specimen P2 Q3"
+    },
+    {
+     "id": "6399e899-8387-4772-9ec9-f002ce7269df",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "fcd01980-8713-45e7-968e-fb68eae226c0",
+     "ref": "GCE 2025 P1 Q26"
+    },
+    {
+     "id": "64acdc91-c8bf-4921-bc2c-97845bb79824",
+     "ref": "GCE 2017 P2 Q3"
+    },
+    {
+     "id": "13671f8b-54d9-4622-8b6e-95286425b780",
+     "ref": "GCE 2022 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Mensuration",
+   "target": 12,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a container that is open at the top.\n\nThe top of the container is a horizontal square of side 32 cm and the base is a horizontal square of side 20 cm. The centre of the top is vertically above the centre of the base.\n\nThe four sloping faces are congruent trapeziums.\n\nThe vertical height of the container is 24 cm.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that the capacity of the container is $16\\,512$ cm$^3$.",
+      "marks": 4,
+      "answer": "Apex of the completed pyramid is 40 cm below the base ($\\frac{20}{32} = \\frac{h}{h + 24}$); capacity $= \\frac{1}{3}(32^2)(64) - \\frac{1}{3}(20^2)(40) = \\frac{65536}{3} - \\frac{16000}{3} = 16\\,512$ cm$^3$"
+     },
+     {
+      "label": "(b)",
+      "text": "The outside of the four sloping faces of the container is to be painted.\n\nCalculate the total area to be painted.",
+      "marks": 3,
+      "answer": "$2570$ cm$^2$ (slant height of a face $= \\sqrt{24^2 + 6^2} = \\sqrt{612}$; $4 \\times \\frac{1}{2}(32 + 20)\\sqrt{612} = 2572.8\\ldots$)"
+     },
+     {
+      "label": "(c)",
+      "text": "The container stands on horizontal ground and water is poured into it at a constant rate.\n\nAfter 36 seconds, the depth of the water is 8 cm.\n\nCalculate the time taken to fill the container completely.\n\nGive your answer in minutes and seconds, correct to the nearest second.",
+      "marks": 5,
+      "answer": "2 minutes 33 seconds (water at depth 8 cm has volume $\\frac{1}{3}(24^2)(48) - \\frac{16000}{3} = 3882.67$ cm$^3$; rate $= 107.85$ cm$^3$/s; $16512 \\div 107.85 = 153.1$ s)"
+     }
+    ],
+    "answer": "",
+    "total_marks": 12,
+    "topics": [
+     "Mensuration",
+     "Congruency and Similarity",
+     "Pythagoras' Theorem"
+    ],
+    "skills": [
+     "capacity of an open container with a 32 cm square top, a 20 cm square base and height 24 cm found by completing the pyramid: the apex 40 cm below the base by similar triangles, then one pyramid volume minus another",
+     "area of the four sloping trapezium faces using the face's own slant height $\\sqrt{24^2 + 6^2}$ (half the difference of the sides, not the vertical height and not the slant edge)",
+     "constant-rate filling: the water at depth 8 cm is itself the difference of two pyramids (surface a 24 cm square), so the rate comes from that volume and the filling time is not proportional to the depth"
+    ],
+    "needs_figure": true,
+    "figure_description": "A 3-D drawing of a container shaped like a square-based pyramid with its top cut off and turned so that the WIDER square is at the top: an open-topped square 'tub' whose sides slope outwards going up. The top is a horizontal square of side 32 cm (drawn in perspective as a parallelogram, all four edges solid since the top is open), the base is a smaller horizontal square of side 20 cm directly below it (front edge solid, back edges dashed), and four sloping trapezium faces join corresponding edges. Label the front top edge '32 cm' and the front base edge '20 cm'. Draw a dashed vertical line from the centre of the base to the centre of the top and label it '24 cm'. Do NOT draw the apex or any extension of the sloping edges below the base, do NOT mark any slant height, slant edge, water level or volume. Caption: Not drawn to scale.",
+    "solution": "(a) Extend the four sloping edges downwards: they meet at a point $V$ below the base, because the top and base are similar squares with the same centre.\n\nLet $V$ be $h$ cm below the base. Then $V$ is $(h + 24)$ cm below the top.\n\nBy similar triangles (the half-widths 10 and 16 against the heights),\n\n$\\frac{h}{h + 24} = \\frac{20}{32}$\n\n$32h = 20h + 480$\n\n$h = 40$\n\nThe container is the pyramid of base 32 cm and height $64$ cm with the pyramid of base 20 cm and height 40 cm removed.\n\nCapacity $= \\frac{1}{3}(32)^2(64) - \\frac{1}{3}(20)^2(40)$\n\n$= \\frac{65536}{3} - \\frac{16000}{3}$\n\n$= \\frac{49536}{3}$\n\n$= 16\\,512$ cm$^3$ (shown)\n\n**Answer: capacity $= 16\\,512$ cm$^3$**\n\n(b) Each sloping face is a trapezium with parallel sides 32 cm and 20 cm.\n\nThe height of the trapezium is the slant height of the face, from the midpoint of a base edge to the midpoint of the top edge above it.\n\nHorizontally the top edge is $\\frac{32 - 20}{2} = 6$ cm beyond the base edge; vertically it is 24 cm higher.\n\nSlant height $= \\sqrt{24^2 + 6^2} = \\sqrt{612} = 24.74$ cm (4 s.f.)\n\nArea of one face $= \\frac{1}{2}(32 + 20)(24.74) = 643.2$ cm$^2$\n\nArea to be painted $= 4 \\times 643.2 = 2572.8$ cm$^2$\n\n**Answer: $2570$ cm$^2$**\n\n(c) At depth 8 cm the water surface is a horizontal square $40 + 8 = 48$ cm above $V$.\n\nSide of the water surface $= 48 \\times \\frac{32}{64} = 24$ cm\n\nVolume of water $= \\frac{1}{3}(24)^2(48) - \\frac{1}{3}(20)^2(40) = 9216 - \\frac{16000}{3} = 3882.67$ cm$^3$\n\nRate of pouring $= \\frac{3882.67}{36} = 107.85$ cm$^3$ per second\n\nTime to fill the container $= \\frac{16512}{107.85} = 153.1$ s\n\n$153.1$ s $= 2$ minutes $33$ seconds\n\n**Answer: 2 minutes 33 seconds**\n\n(Marking: (a) M1 similar triangles giving an equation for the apex distance, A1 $h = 40$ (or whole height 64), M1 difference of the two pyramid volumes, A1 $16\\,512$ reached exactly. The frustum formula $\\frac{24}{3}(1024 + 400 + 640)$ earns full marks. (b) M1 slant height $\\sqrt{612}$, M1 $4 \\times \\frac{1}{2}(52)(\\text{their slant})$, A1 $2570$ to $2573$. Using 24 as the trapezium height gives 2496 and earns M0 M1 A0. (c) M1 water surface side 24 cm (or height 48 above $V$), M1 water volume as a difference of pyramids, A1 $3882.67$ or $3880$, M1 rate then $16512 \\div$ their rate, A1 2 min 33 s. Taking the time as proportional to the depth ($36 \\times 3 = 108$ s $= 1$ min 48 s) scores 0.)",
+    "syllabus_check": "4052 Mensuration: volume of a pyramid $\\frac{1}{3} \\times$ base area $\\times$ height (formula sheet), a solid with a part removed treated by subtraction, area of a trapezium, rate of filling as volume per second. Congruence and similarity: corresponding lengths of similar figures (the completed pyramid and the removed pyramid). Pythagoras' theorem for the slant height. No frustum formula is required, no cone, no sphere, no trigonometry.",
+    "originality_note": "An open square 'tub' that is a square pyramid with its top removed and turned wide side up: not this Set's P1 Q22 (a cylinder with a conical hollow, in terms of $\\pi$), not Set 1 P1 Q26 (a complete pyramid from angle $VAO$) or Set 1 P1 Q22 (wire edges of a cuboid and a pyramid), not Set 1 P2 Q9 (cylinder tanks and rainfall in litres), not Set 2 P1 Q26 (pipe flow into an aquarium with a sphere inside), not Set 2 P1 Q27 (a trapezium cut by vectors). Against the real papers: GCE 2025 P2 Q6(b) melts a pyramid into cubes and a sphere; GCE 2024 P1 Q26 and GCE 2025 P1 Q21 fill a cone or cone-and-cylinder with water and ask for a depth by cube roots; GCE 2024 P2 Q9 makes candles from similar cylinders. Here nothing names a pyramid: the candidate must see the completed pyramid in (a), must find the face's slant height through the 6 cm offset in (b) (using 24 cm gives a tidy wrong 2496), and in (c) must see that the water at 8 cm is again a difference of pyramids before any rate exists (the proportional answer 1 min 48 s is the trap). Closing step: a filling time in minutes and seconds from a rate, unlike the graph readings of Q4 and Q5. The 5-mark part chains similar triangles, two volumes, a rate and a division with no intermediate value supplied, as the paper plan assigns to Q6."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2018 P2 Q8",
+     "jaccard": 0.084,
+     "nearest_set": "Set 2 P1 Q26",
+     "jaccard_set": 0.052,
+     "repeated_skills": []
+    },
+    "marks": 12,
+    "checked_at": "2026-10-09T14:34:40.207Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "2570 cm^2 (2572.8 cm^2; = 104*sqrt(612))",
+     "(c)": "2 min 33 s"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 'shown'. Re-worked: 20/32 = h/(h+24) gives h = 40; (1/3)(32^2)(64) - (1/3)(20^2)(40) = 49536/3 = 16512 exactly; the frustum formula (24/3)(1024 + 400 + 640) = 16512 confirms."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both 2570 cm^2 (2572.8; 104 sqrt(612)). Slant height sqrt(24^2 + 6^2) = 24.74, face 643.2, four faces 2572.8."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both 2 min 33 s. Water surface at depth 8 cm is a 24 cm square (48 above the apex, scale 1/2); volume 9216 - 16000/3 = 3882.67; rate 107.85 cm^3/s; 16512 / 107.85 = 153.1 s."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part; every value re-worked and exact.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "All 12 marks sit in parts where the candidate must supply the model: complete the pyramid by similar triangles for the show-that (which gates (c)), the face's own slant height for the painted area (24 or the slant edge are the tempting wrong routes), and the water at 8 cm as a second difference of pyramids so that the filling time is not proportional to the depth (36 x 3 = 1 min 48 s is the believable wrong answer). Numbers are exact at every step (h = 40, 16512, a 24 cm surface), the hardest part is last and the finish ('minutes and seconds, correct to the nearest second') is GCE 2024 P2 Q6(d)'s register; (b)'s slant-height step is the same move as Set 1 P1 Q26(b) but on a trapezium face of a frustum, a different direction, and the completing-the-pyramid and partial-fill skills are new to the Sets."
+   },
+   "exemplars": [
+    {
+     "id": "8097db6a-ec59-446a-8739-cbdc97a0d25d",
+     "ref": "GCE 2025 P2 Q6"
+    },
+    {
+     "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "a2a3dab5-c1ec-4b59-a621-acb601da1a10",
+     "ref": "GCE 2023 specimen P2 Q8"
+    },
+    {
+     "id": "9754f1ff-ccbc-4001-9208-38b9b5e75b86",
+     "ref": "GCE 2025 P1 Q16"
+    },
+    {
+     "id": "0aa31d1b-a2da-4272-adae-1c2559209b6b",
+     "ref": "GCE 2024 P1 Q26"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Circular Measure",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a sector $OAB$ of a circle, centre $O$ and radius 12 cm.\nAngle $AOB = \\frac{\\pi}{3}$ radians.\nA circle, centre $C$, lies inside the sector. It touches $OA$ at $P$, $OB$ at $Q$ and the arc $AB$ at $T$.\nThe region bounded by $OP$, $OQ$ and the minor arc $PQ$ is shaded.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that the radius of the circle with centre $C$ is 4 cm.",
+      "marks": 3,
+      "answer": "$r = 4$ (shown): $O$, $C$, $T$ collinear so $OC = 12 - r$; $OC$ bisects angle $AOB$ so angle $POC = \\frac{\\pi}{6}$; $\\sin\\frac{\\pi}{6} = \\frac{r}{12 - r}$ gives $12 - r = 2r$, $r = 4$."
+     },
+     {
+      "label": "(b)",
+      "text": "Calculate the area of the shaded region.",
+      "marks": 3,
+      "answer": "$16\\sqrt{3} - \\frac{16\\pi}{3} = 11.0$ cm$^2$ (accept 10.96)"
+     },
+     {
+      "label": "(c)",
+      "text": "A smaller circle is drawn inside the shaded region so that it touches $OP$, $OQ$ and the circle with centre $C$.\nFind the exact radius of this smaller circle.",
+      "marks": 2,
+      "answer": "$\\frac{4}{3}$ cm"
+     }
+    ],
+    "answer": "(a) $r = 4$ shown; (b) $11.0$ cm$^2$; (c) $\\frac{4}{3}$ cm",
+    "total_marks": 8,
+    "topics": [
+     "Circular Measure",
+     "Circle Properties",
+     "Trigonometry"
+    ],
+    "skills": [
+     "radius of a circle inscribed in a sector: the line of centres through the point of contact gives OC = R - r, the bisector gives the half-angle, and sin(half-angle) = r/(R - r) in the right-angled triangle at the tangent point",
+     "area between two tangents from a point and the minor arc between the points of contact: kite minus sector, the angle at the centre of the small circle coming from the angle sum of the quadrilateral with two right angles",
+     "radius of a second circle nested between the first circle and the vertex of the sector, by reusing the half-angle relation along the bisector and adding the distances along it"
+    ],
+    "needs_figure": true,
+    "figure_description": "A sector OAB of a circle with centre O and radius 12 cm, drawn with O at the bottom left. For the drawer, take O = (0, 0), A = (12, 0) so that OA is horizontal to the right, and B = (6, 10.39) so that OB makes 60 degrees with OA; draw the straight radii OA and OB and the arc from A to B (anticlockwise, bulging away from O). Inside the sector draw a circle with centre C = (6.93, 4) and radius 4: it touches OA at P = (6.93, 0), touches OB at Q = (3.46, 6) and touches the arc AB at T = (10.39, 6). Mark C with a small dot. Label the points O, A, B, C, P, Q and T beside their positions (O at the vertex, A at the right end of the horizontal radius, B at the top end of the slanted radius, P on OA, Q on OB, T on the arc, C at the centre of the circle). Print the length '12 cm' beside OA and mark the angle at O with a small arc labelled 'pi/3' (set as $\\frac{\\pi}{3}$). Shade (light grey) ONLY the curvilinear triangle at the vertex O, bounded by the segment OP, the segment OQ and the minor arc of the circle from P to Q (the arc nearer to O). Do not draw CP, CQ, OC or OT, do not print the radius of the circle or any angle other than pi/3, and do not draw the smaller circle of part (c). Note 'Not drawn to scale' is NOT needed; the figure may be to scale.",
+    "solution": "(a)\nThe circle touches the arc $AB$ at $T$, so $O$, $C$ and $T$ lie on a straight line (the centres of two touching circles and the point of contact are collinear).\n$OC = OT - CT = 12 - r$, where $r$ is the radius of the circle.\n$OP = OQ$ (tangents from $O$), so $OC$ bisects angle $AOB$: angle $POC = \\frac{\\pi}{6}$.\n$CP$ is perpendicular to $OA$ (tangent perpendicular to radius).\nIn triangle $OPC$: $\\sin\\frac{\\pi}{6} = \\frac{CP}{OC} = \\frac{r}{12 - r}$.\n$\\frac{1}{2}(12 - r) = r$\n$12 - r = 2r$\n$r = 4$\n**Answer:** radius $= 4$ cm (shown).\n\n(b)\n$OC = 12 - 4 = 8$ cm.\n$OP = \\sqrt{8^2 - 4^2} = \\sqrt{48} = 4\\sqrt{3}$ cm (Pythagoras in triangle $OPC$).\nArea of kite $OPCQ = 2 \\times \\frac{1}{2} \\times OP \\times CP = 4\\sqrt{3} \\times 4 = 16\\sqrt{3}$ cm$^2$.\nIn quadrilateral $OPCQ$, angles $OPC$ and $OQC$ are right angles, so angle $PCQ = 2\\pi - \\frac{\\pi}{2} - \\frac{\\pi}{2} - \\frac{\\pi}{3} = \\frac{2\\pi}{3}$.\nArea of sector $CPQ = \\frac{1}{2} \\times 4^2 \\times \\frac{2\\pi}{3} = \\frac{16\\pi}{3}$ cm$^2$.\nShaded area $= 16\\sqrt{3} - \\frac{16\\pi}{3} = 27.71 - 16.76 = 10.96$ cm$^2$.\n**Answer:** $11.0$ cm$^2$.\n\n(c)\nLet the smaller circle have centre $D$ and radius $x$ cm.\nBy symmetry $D$ lies on $OC$, and as in (a), $\\sin\\frac{\\pi}{6} = \\frac{x}{OD}$, so $OD = 2x$.\nThe two circles touch, so $DC = x + 4$.\n$OD + DC = OC$: $2x + x + 4 = 8$\n$3x = 4$\n$x = \\frac{4}{3}$\n**Answer:** $\\frac{4}{3}$ cm.",
+    "syllabus_check": "4052: arc, sector and segment work with the angle in radians (Circular Measure); tangent perpendicular to radius, equal tangents from an external point, two circles touching (Circle Properties); sine in a right-angled triangle and Pythagoras' theorem (Trigonometry). No calculus, no surds beyond an exact intermediate 4 root 3 that the candidate may keep as a decimal.",
+    "originality_note": "A circle inscribed in a sector, with the region at the vertex shaded and a second nested circle to close. Not a chord-and-segment cross-section (Set 1 P2 Q8 tunnel), not a belt round two pulleys (Set 2 P2 Q8), not a sector scaled by area (Set 1 P1 Q2), not radius from arc and area (Set 2 P1 Q9); not the two intersecting circles of GCE 2024 P2 Q8(b) nor the tangent-and-chord perimeter of GCE 2023 P2 Q5. The show-that is built by the candidate (collinear centres, bisector, sine); the area is a kite minus a sector of the SMALL circle with its angle deduced, not sector minus triangle of the big circle; the closing part reuses the half-angle relation in a new way."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2015 P1 Q19",
+     "jaccard": 0.067,
+     "nearest_set": "Set 1 P2 Q8",
+     "jaccard_set": 0.047,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-09T14:34:08.807Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown (OC = r / sin(pi/6) = 2r; OC + r = 12 so 3r = 12, r = 4 cm)",
+     "(b)": "16√3 − 16π/3 = 11.0 cm² (10.96 cm²)",
+     "(c)": "4/3 cm"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both reach r = 4 by the same route: O, C, T collinear so OC = 12 - r, OC bisects the pi/3 angle, sin(pi/6) = r/(12 - r). Checked: 12 - r = 2r, r = 4."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 16 sqrt(3) - 16 pi/3 = 10.96, i.e. 11.0 cm^2. Checked: OP = sqrt(64 - 16) = 4 sqrt(3), kite OPCQ = 16 sqrt(3), angle PCQ = 2 pi - pi/2 - pi/2 - pi/3 = 2 pi/3, sector = (1/2)(16)(2 pi/3) = 16 pi/3."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 4/3 cm. Checked: the nested circle's centre D is on OC with OD = 2x (same half-angle relation), DC = x + 4, OD + DC = OC = 8 gives 3x = 4."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is right.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Every part needs its own idea (the line of centres through T so OC = 12 - r; the kite-minus-sector decomposition with angle PCQ from the quadrilateral; reusing the half-angle relation along the bisector for the nested circle), the wrong decision in (a) (OC = 12) lands on the tidy r = 6, the numbers come out exact (4, 4 sqrt(3), 4/3), and nothing in the stem names a rule. No 2024/25 question has this situation (GCE 2024 P2 Q8(b) is two intersecting circles, sector minus triangle); no earlier Set has a circle inscribed in a sector or a nested-circle sting (Set 1 P2 Q5 found an incircle radius from area and perimeter; Set 2 P2 Q8 used a common external tangent of two separate circles); nothing in this paper so far uses the tangent-kite or the half-angle relation. Beside Set 1 P2 Q8 (show r [3], then an area, then a sting) it is as demanding, cleaner in its numbers and ends on an exact 2-mark sting that uses (a) in a new way."
+   },
+   "exemplars": [
+    {
+     "id": "31161f93-9f37-4d87-98f6-936f47b32fbf",
+     "ref": "GCE 2023 P2 Q5"
+    },
+    {
+     "id": "20345f91-46c3-4357-87da-d90b830bb060",
+     "ref": "GCE 2024 P2 Q8"
+    },
+    {
+     "id": "e594a84c-4369-4a1d-893c-e6907e45bcb2",
+     "ref": "GCE 2023 specimen P1 Q21"
+    },
+    {
+     "id": "2885c79b-8287-489f-892a-56e05dbefe36",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "778084c8-2600-4b5d-9cea-dae8dc72da7e",
+     "ref": "GCE 2021 P2 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Vectors",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "In the diagram, $OAB$ is a triangle with $\\overrightarrow{OA} = \\mathbf{a}$ and $\\overrightarrow{OB} = \\mathbf{b}$.\n$C$ is the point on $OA$ such that $OC : CA = 3 : 2$ and $D$ is the midpoint of $AB$.\nThe line $CD$ is produced to meet $OB$ produced at the point $E$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "The line $CD$ divides triangle $OAB$ into two parts.\nFind the ratio of the area of triangle $ACD$ to the area of quadrilateral $OCDB$.",
+      "marks": 3,
+      "answer": "$1 : 4$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the ratio $OB : BE$.",
+      "marks": 4,
+      "answer": "$\\overrightarrow{OE} = 3\\mathbf{b}$, so $OB : BE = 1 : 2$"
+     },
+     {
+      "label": "(c)",
+      "text": "$G$ is the point on $OE$ such that $OG : GE = 2 : 1$.\nWhat type of quadrilateral is $ADGE$? Justify your answer using vectors.",
+      "marks": 3,
+      "answer": "Trapezium: $\\overrightarrow{DG} = \\frac{1}{2}(3\\mathbf{b} - \\mathbf{a}) = \\frac{1}{2}\\overrightarrow{AE}$, so $DG$ is parallel to $AE$ but $DG \\ne AE$ (and $AD$ is not parallel to $GE$), so exactly one pair of opposite sides is parallel"
+     }
+    ],
+    "answer": "(a) $1 : 4$; (b) $OB : BE = 1 : 2$; (c) trapezium, since $\\overrightarrow{DG} = \\frac{1}{2}\\overrightarrow{AE}$ (one pair of opposite sides parallel and unequal)",
+    "total_marks": 10,
+    "topics": [
+     "Vectors"
+    ],
+    "skills": [
+     "ratio of the two pieces into which a line from a point on one side to the midpoint of another cuts a triangle, with no area given: two common-height ratios chosen by the candidate (ACD : OCD = CA : OC from the shared apex D, then OAD = OBD from the midpoint) and the quadrilateral assembled as a sum, so 2 : 3 and 1 : 5 are the tempting wrong answers",
+     "two-parameter collinearity with the unknown point on a side produced and no parameter printed: the candidate builds CD, writes OE = k b and CE = m CD unprompted, equates the coefficients of a and b, and reads OB : BE from k",
+     "identify a quadrilateral from vectors: show one pair of opposite sides parallel by DG = half of AE, and say why unequal parallel sides make it a trapezium and not a parallelogram (the point G given as a 2 : 1 point of OE, so the candidate must first use OE = 3b)"
+    ],
+    "needs_figure": true,
+    "figure_description": "A triangle OAB, not to scale, with O at the bottom left. For the drawer, take O = (0, 0), A = (10, 0) to the right, B = (4, 5) above and to the right of O, and E = (12, 15) on OB produced beyond B (so that OE = 3 OB). Mark C on OA at (6, 0) (three-fifths of the way from O to A) and D at (7, 2.5), the midpoint of AB. Draw the segment OA, the segment AB, ONE straight line from O through B to E, and ONE straight line from C through D to E (the line CD produced meets OB produced at E). Label the points O, A, B, C, D and E beside their positions (C below OA, D to the right of AB, E at the top right). Mark the vector a with an arrowhead along OA pointing from O to A and label it with a bold lower-case a; mark the vector b with an arrowhead along OB pointing from O to B and label it with a bold lower-case b. Do NOT mark the point G, do NOT draw the segments AE, DG or OD, and do not print any ratio, length or area.",
+    "solution": "(a)\nTriangles $ACD$ and $OCD$ have the same height from $D$ to the line $OA$, and $CA : OC = 2 : 3$.\nArea of triangle $ACD$ : area of triangle $OCD = 2 : 3$.\nTake area of triangle $ACD = 2$ units and area of triangle $OCD = 3$ units, so area of triangle $OAD = 5$ units.\nTriangles $OAD$ and $OBD$ have the same height from $O$ to the line $AB$, and $AD = DB$.\nArea of triangle $OBD = $ area of triangle $OAD = 5$ units.\nArea of quadrilateral $OCDB = $ area of triangle $OCD + $ area of triangle $OBD = 3 + 5 = 8$ units.\nArea of triangle $ACD$ : area of quadrilateral $OCDB = 2 : 8$.\n**Answer:** $1 : 4$\n\n(b)\n$\\overrightarrow{OC} = \\frac{3}{5}\\mathbf{a}$\n$\\overrightarrow{OD} = \\frac{1}{2}(\\mathbf{a} + \\mathbf{b})$\n$\\overrightarrow{CD} = \\overrightarrow{OD} - \\overrightarrow{OC} = \\frac{1}{2}\\mathbf{a} + \\frac{1}{2}\\mathbf{b} - \\frac{3}{5}\\mathbf{a} = -\\frac{1}{10}\\mathbf{a} + \\frac{1}{2}\\mathbf{b} = \\frac{1}{10}(5\\mathbf{b} - \\mathbf{a})$\n$E$ lies on $OB$ produced, so $\\overrightarrow{OE} = k\\mathbf{b}$ for some number $k$.\n$C$, $D$ and $E$ lie on one straight line, so $\\overrightarrow{CE} = m\\overrightarrow{CD}$ for some number $m$.\n$\\overrightarrow{CE} = \\overrightarrow{OE} - \\overrightarrow{OC} = k\\mathbf{b} - \\frac{3}{5}\\mathbf{a}$\n$k\\mathbf{b} - \\frac{3}{5}\\mathbf{a} = \\frac{m}{10}(5\\mathbf{b} - \\mathbf{a})$\nComparing $\\mathbf{a}$: $-\\frac{3}{5} = -\\frac{m}{10}$, so $m = 6$.\nComparing $\\mathbf{b}$: $k = \\frac{5m}{10} = 3$.\n$\\overrightarrow{OE} = 3\\mathbf{b}$, so $\\overrightarrow{BE} = 3\\mathbf{b} - \\mathbf{b} = 2\\mathbf{b}$.\n(Or, with one parameter: $\\overrightarrow{OE} = \\overrightarrow{OC} + m\\overrightarrow{CD} = \\left(\\frac{3}{5} - \\frac{m}{10}\\right)\\mathbf{a} + \\frac{m}{2}\\mathbf{b}$, and $E$ on $OB$ needs the coefficient of $\\mathbf{a}$ to be $0$, so $m = 6$ and $\\overrightarrow{OE} = 3\\mathbf{b}$.)\n**Answer:** $OB : BE = 1 : 2$\n\n(c)\n$\\overrightarrow{OG} = \\frac{2}{3}\\overrightarrow{OE} = \\frac{2}{3}(3\\mathbf{b}) = 2\\mathbf{b}$\n$\\overrightarrow{DG} = \\overrightarrow{OG} - \\overrightarrow{OD} = 2\\mathbf{b} - \\frac{1}{2}\\mathbf{a} - \\frac{1}{2}\\mathbf{b} = \\frac{3}{2}\\mathbf{b} - \\frac{1}{2}\\mathbf{a} = \\frac{1}{2}(3\\mathbf{b} - \\mathbf{a})$\n$\\overrightarrow{AE} = \\overrightarrow{OE} - \\overrightarrow{OA} = 3\\mathbf{b} - \\mathbf{a}$\n$\\overrightarrow{DG} = \\frac{1}{2}\\overrightarrow{AE}$, so $DG$ is parallel to $AE$ and $DG = \\frac{1}{2}AE$.\n$DG$ and $AE$ are a pair of opposite sides of $ADGE$ that are parallel but not equal in length, so $ADGE$ is not a parallelogram.\n(Check of the other pair: $\\overrightarrow{AD} = \\frac{1}{2}(\\mathbf{b} - \\mathbf{a})$ and $\\overrightarrow{GE} = \\mathbf{b}$ are not multiples of each other, so $AD$ is not parallel to $GE$.)\n**Answer:** $ADGE$ is a trapezium, because $\\overrightarrow{DG} = \\frac{1}{2}\\overrightarrow{AE}$: one pair of opposite sides is parallel and they are unequal",
+    "syllabus_check": "4052 Vectors in two dimensions: position vectors, addition and scalar multiples, expressing one vector in terms of others, the collinearity of three points through parallel vectors with a common point (two parameters introduced by the candidate, as GCE 2024 P1 Q27(b) sets with its parameters printed), ratios of areas of triangles with a common height, and identifying a quadrilateral from vector relations (GCE 2023 specimen P2 Q6(b)(iii)). No dot product, no 3-D, no midpoint theorem required.",
+    "originality_note": "Rebuilt from the rejected draft. The unknown is back on the candidate: E is not given (the draft gave Q by a midpoint statement and asked only for a scalar check) but is where CD produced meets OB produced, found by two parameters the candidate introduces, as Set 1 P1 Q27(a) [4] makes the candidate build both routes - and set once in this paper, unscaffolded. The configuration is not GCE 2024 P1 Q27's (no 2 : 1 point, no midpoint of a cevian, no point on a side given by a 'show that'): C is a 3 : 2 point of OA, D the midpoint of AB, and the transversal CD leaves the triangle. The draft's rung (a)(ii) is gone - CD is built inside (b). The question no longer closes on 'the area of X is n cm^2; find the area of Y' (Set 1 P1 Q27(b), Set 2 P1 Q27(b)): the area ratio of triangles sits as the 3-mark opener with no area given and the complement quadrilateral assembled by the candidate (two ratios, 2 : 3 and 1 : 5 as the believable wrong answers), and the closing part is the quadrilateral-type justification of GCE 2023 specimen P2 Q6(b)(iii), with G hidden as a 2 : 1 point of OE so the candidate must first use OE = 3b. Not Set 1 P1 Q27 (no diagonal intersection), not Set 2 P1 Q27 (no parallel-vector condition, no trapezium given), not this Set's P1 Q27 (no column vectors, no collinearity with the origin), and no part of the draft's structure survives except the triangle OAB with a and b."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2023 specimen P2 Q6",
+     "jaccard": 0.085,
+     "nearest_set": "Set 2 P1 Q27",
+     "jaccard_set": 0.037,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-09T23:33:24.178Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "1 : 4",
+     "(b)": "1 : 2",
+     "(c)": "Trapezium: DG = (3b - a)/2 = 1/2 AE where AE = 3b - a, so DG is parallel to AE (and half its length); AD = (b - a)/2 is not parallel to GE = b, so exactly one pair of parallel sides"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both 1 : 4. Checked: ACD : OCD = CA : OC = 2 : 3 (shared apex D, bases on OA); OAD = OBD (D the midpoint of AB, apex O), so OAD = 5 units, OBD = 5, OCDB = 3 + 5 = 8, ACD : OCDB = 2 : 8. Coordinates O(0,0) A(10,0) B(4,5) C(6,0) D(7,2.5) confirm it: ACD = 5, OCDB = 20. The tempting wrong answers 2 : 3 and 1 : 5 are real."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both OB : BE = 1 : 2. Checked: CD = -(1/10)a + (1/2)b; OE = OC + m CD = (3/5 - m/10)a + (m/2)b, and E on OB needs the a-coefficient zero, so m = 6 and OE = 3b, BE = 2b. Coordinates: C(6,0) + 6(1, 2.5) = (12, 15) = 3B. Exactly right."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: trapezium. Checked: OG = 2b; DG = 2b - (a + b)/2 = (1/2)(3b - a) = (1/2)AE; AD = (b - a)/2 is not a multiple of GE = b. With A(10,0) D(7,2.5) G(8,10) E(12,15) the vertex order A-D-G-E is a convex simple quadrilateral (all four edge cross-products negative), DG parallel to AE and half its length, the other pair not parallel - exactly one pair of parallel sides, so a trapezium and not a parallelogram. The setter's reason covers both halves."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is exactly right; the figure's coordinates (O(0,0), A(10,0), B(4,5), E(12,15)) are consistent with all three results.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Every part hands the candidate a decision and all 10 marks sit in deciding parts: (a) an area ratio with no area given, built from two common-height ratios the candidate chooses and a quadrilateral assembled as a sum; (b) two-parameter collinearity with the unknown point on a side produced and no parameter printed - the GCE 2024 P1 Q27(b) technique set without its scaffold, which standard.md section 5 allows once in a paper and this paper does once (the Set's P1 Q27 sets a one-parameter column-vector collinearity, the other paper); (c) the quadrilateral-type justification of GCE 2023 specimen P2 Q6(b)(iii), which no Set has used, reachable only through OE = 3b. Numbers are clean (3 : 2, 1 : 2, one half), the hardest part is second-last, the closing step (name and justify a quadrilateral) matches no other question in paper-so-far.md, and the skills phrases are true and specific. It is not a re-skin: the configuration (a transversal from a point on OA through the midpoint of AB to OB produced) and the sequence of parts (area ratio, ratio on a produced side, quadrilateral type) differ from GCE 2024 P1 Q27 (cevian through the midpoint of OC, show-that, parameters printed, area from a given area) and from Set 1 P1 Q27 (diagonals of a quadrilateral, express OX, area from a given area) and Set 2 P1 Q27 (parallel condition in a trapezium, area from a given area). As demanding and as clean as Set 1 P1 Q27 and Set 1 P2 Q6(c). One note for the session's read-through: ten marks of pure a-b vector geometry is heavier than the real P2 has placed in one question (the 2023 specimen mixes in column vectors); the slot plan asked for exactly this, so it is recorded, not fixed."
+   },
+   "exemplars": [
+    {
+     "id": "5627d27e-a8b8-4811-bf89-083d70fa265f",
+     "ref": "GCE 2024 P2 Q3"
+    },
+    {
+     "id": "390b6a03-4a6b-44ac-a58a-eaf498a8e642",
+     "ref": "GCE 2023 specimen P2 Q6"
+    },
+    {
+     "id": "b14cc036-9b5b-44d6-a351-e51770245f91",
+     "ref": "GCE 2024 P1 Q27"
+    },
+    {
+     "id": "2344e456-09f3-4e58-90d8-c395a620c062",
+     "ref": "GCE 2023 P1 Q27"
+    },
+    {
+     "id": "fb74e5cb-5e94-4da8-bb95-bc41669b979c",
+     "ref": "GCE 2025 P1 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Math In Real World Context",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "A family is thinking of installing solar panels on the flat roof of their house. They find the following information.\n\nSolar panels\nEach panel is a rectangle 1.7 m long and 1.0 m wide, with a rated power of 0.4 kW.\nIn Singapore, each 1 kW of rated power produces an average of 3.5 kWh of electricity per day.\nCost of panels: $\\$650$ per panel, including installation.\nCost of the inverter and wiring: $\\$1800$, whatever the number of panels.\nTake 1 year to be 365 days.\n\nThe roof\nThe roof is a rectangle 6.4 m by 4.6 m.\nThe panels are laid flat on the roof with their sides parallel to the edges of the roof, all with their long sides in the same direction and with no gaps between them.\nNo part of a panel may be within 0.5 m of any edge of the roof.\n\nElectricity\nThe family buys electricity at 30 cents per kWh.\nThe family uses 4000 kWh of electricity each year.\nOver a year, the family uses the electricity produced by the panels first and buys the rest from the electricity company.\nThe family is not paid for any electricity produced by the panels that it does not use.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Calculate the amount of electricity, in kWh, that one panel produces in a year.",
+      "marks": 1,
+      "answer": "$511$ kWh"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the greatest number of panels that can be installed on the roof.",
+      "marks": 3,
+      "answer": "$10$ panels (long sides parallel to the 4.6 m edge: $5$ across the 5.4 m by $2$ along the 3.6 m; the other way round gives only $3 \\times 3 = 9$)"
+     },
+     {
+      "label": "(c)",
+      "text": "The family wants to install as many panels as possible.\nThe total cost of the panels, the inverter and the wiring must be paid back within 6 years by the money the family saves on electricity.\nSuggest the number of panels the family should install.\nJustify your answer with calculations.",
+      "marks": 6,
+      "answer": "$8$ panels: the saving can never exceed $4000 \\times \\$0.30 = \\$1200$ a year, so 10 panels ($\\$8300$) take $6.92$ years to pay back and 9 panels ($\\$7650$) take $6.38$ years, both too long; 8 panels ($\\$7000$, producing $4088$ kWh, which is more than $4000$ kWh) take $5.83$ years, within 6 years. So 8 panels."
+     }
+    ],
+    "answer": "(a) $511$ kWh; (b) $10$; (c) $8$ panels (payback $5.83$ years; 9 and 10 panels take more than 6 years because electricity beyond the family's $4000$ kWh saves nothing)",
+    "total_marks": 10,
+    "topics": [
+     "Math In Real World Context",
+     "Numbers (Rate)"
+    ],
+    "skills": [
+     "greatest number of equal rectangles that fit in a rectangle once a border is removed, trying both orientations and taking whole numbers in each direction (dividing the areas overcounts)",
+     "annual saving capped at the household's own use: kWh the family would have bought are worth the buying price, kWh beyond that are worth nothing, so the saving never exceeds 4000 x $0.30 however many panels there are",
+     "payback period as (fixed cost + cost per panel x number) divided by the annual saving, searched downward from the roof's maximum to the largest number of panels that pays back within the limit (or the cap on the saving turned into 1800 + 650n <= 6 x 1200)"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)\nOne panel produces $0.4 \\times 3.5 = 1.4$ kWh per day.\nIn a year: $1.4 \\times 365 = 511$ kWh.\n**Answer:** $511$ kWh\n\n(b)\nThe usable part of the roof is $(6.4 - 2 \\times 0.5)$ m by $(4.6 - 2 \\times 0.5)$ m $= 5.4$ m by $3.6$ m.\nLong sides parallel to the 6.4 m edge: $5.4 \\div 1.7 = 3.17$, so 3 panels along; $3.6 \\div 1.0 = 3.6$, so 3 panels across. Total $3 \\times 3 = 9$.\nLong sides parallel to the 4.6 m edge: $3.6 \\div 1.7 = 2.12$, so 2 panels along; $5.4 \\div 1.0 = 5.4$, so 5 panels across. Total $2 \\times 5 = 10$.\n**Answer:** $10$ panels\n\n(c)\nWith $n$ panels the electricity produced in a year is $511n$ kWh.\nThe family uses $4000$ kWh a year and is not paid for electricity it does not use.\nSo the most the family can save is $4000 \\times \\$0.30 = \\$1200$ a year.\n$8$ panels produce $8 \\times 511 = 4088$ kWh, more than $4000$ kWh, so $8$ or more panels all save $\\$1200$ a year.\nTotal cost $= 1800 + 650n$ dollars.\n\n10 panels (the greatest number that fits, from (b)):\nCost $= 1800 + 6500 = \\$8300$.\nPayback $= 8300 \\div 1200 = 6.92$ years, more than 6 years. Not acceptable.\n\n9 panels:\nCost $= 1800 + 5850 = \\$7650$.\nPayback $= 7650 \\div 1200 = 6.38$ years, more than 6 years. Not acceptable.\n\n8 panels:\nCost $= 1800 + 5200 = \\$7000$.\nPayback $= 7000 \\div 1200 = 5.83$ years, within 6 years. Acceptable.\n\n8 is the largest number of panels that fits on the roof and pays back within 6 years.\n**Answer:** $8$ panels\n\n(Alternative: in 6 years the saving is at most $6 \\times 1200 = \\$7200$, so $1800 + 650n \\le 7200$, $n \\le 8.3$, at most $8$ panels; and $8$ panels produce $4088 \\ge 4000$ kWh, so the full saving is made.)\n\n(Note for the marker: a candidate who values all the electricity at 30 cents gets $5110 \\times 0.30 = \\$1533$ a year for 10 panels and a payback of $5.41$ years, and wrongly chooses 10 panels; the cap at the family's own use is the point of the question.)",
+    "syllabus_check": "4052 Problems in real-world contexts: reading an information sheet, rates (kWh per day per kW, cents per kWh), money, whole-number fitting of rectangles, a justified decision. No topic outside the syllabus.",
+    "originality_note": "Solar panels on a roof where electricity beyond the family's own use earns nothing. Not a rainwater tank chosen for capacity and footprint (Set 1 P2 Q9), not shuttle buses and a queue (Set 2 P2 Q9), not gym plans (Set 2 P1 Q15); not the candle moulds and packs of GCE 2024 P2 Q9 nor the electric-car charging legs of GCE 2025 P2 Q9. The constraint that changes the answer is the cap on the saving at the family's 4000 kWh: valuing everything at 30 cents gives a believable but wrong 10 panels. There is no second rate, so it does not repeat the two-block tariff of Q2 of this paper. Part (b) is a packing count with an orientation decision (area division gives 11), not a check that one object's footprint fits a base."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2010 P2 Q7",
+     "jaccard": 0.012,
+     "nearest_set": "Set 2 P1 Q21",
+     "jaccard_set": 0.013,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-09T23:37:49.689Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "511 kWh",
+     "(b)": "10",
+     "(c)": "8 panels: 8 panels produce 4088 kWh > 4000 kWh, so saving = 4000 x $0.30 = $1200 a year, $7200 in 6 years >= cost 8 x 650 + 1800 = $7000 (pays back); 9 panels cost $7650 > $7200 (does not); 7 panels: 6-yr saving $6438.60 >= $6350 also pays back but 8 is more"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give 511 kWh. Checked: 0.4 x 3.5 = 1.4 kWh a day, x 365 = 511."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 10 panels. Checked: usable area (6.4 - 1.0) by (4.6 - 1.0) = 5.4 m by 3.6 m; long sides along the 3.6 m side gives floor(3.6/1.7) = 2 by floor(5.4/1.0) = 5 = 10; the other way floor(5.4/1.7) = 3 by 3 = 9; dividing the areas, 19.44/1.7 = 11.4, overcounts to 11. All wrong routes land on tidy numbers (9 or 11)."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 8 panels by the same inequality, the setter as payback years and the examiner as six years' saving against cost. Checked: saving = 0.30 x min(511n, 4000) a year, so never more than 1200; 10 panels cost 8300 (6.92 years), 9 cost 7650 (6.38 years), both fail; 8 cost 7000 and produce 4088 >= 4000 kWh, 5.83 years, passes; 7 also passes (6350 against 6 x 1073.10 = 6438.60) but is fewer. The alternative 1800 + 650n <= 7200 gives n <= 8.3, with the 4088 >= 4000 check closing it. Valuing every kWh at 30 cents gives 10 panels at 5.41 years, the intended wrong answer."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is right; I reworked all three parts.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Say that the panels are laid with their sides parallel to the edges of the roof (\"laid flat on the roof with their sides parallel to the edges of the roof, all with their long sides in the same direction and with no gaps between them\"); as printed, a tilted arrangement is not excluded, and a real paper closes that door.",
+     "Register: \"Take 1 year $= 365$ days.\" -> \"Take 1 year to be 365 days.\" (SEAB does not print an equals sign inside a sentence of the stem)."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A real last question in the 2024/25 shape (a 1-mark opener, a 3-mark packing decision with a border and both orientations, then a 6-mark justify needing item 10's two explicit decisions: that electricity beyond the family's own 4000 kWh saves nothing, and a search down from the roof's 10 to the largest number that pays back within 6 years), with a believable wrong answer (10 panels at 5.41 years) and clean numbers; the deciding parts carry 9 of 10 marks. Not a re-skin of GCE 2024 P2 Q9 (candle pricing) or GCE 2025 P2 Q9 (charging times and cost); its skills (packing with a border, a saving capped at own use, a payback search) are new to the Sets (Set 1 P2 Q9 chose a tank, Set 2 P2 Q9 sized a bus fleet), and the earlier defect, an 8-cent sell-back that made a two-block rate echoing this paper's Q2, has been removed (the family is now simply not paid for surplus), so no skill or closing step is reused in the paper. Beside Set 1 P2 Q9 the (c) constraint changes the answer the same way (the cap rejects 9 and 10 as the base rejects the preferred tank) and (b) is a stronger 3-mark decision than Set 1's rainfall back-calculation. Gates all pass. Two wording edits keep it at 4."
+   },
+   "exemplars": [
+    {
+     "id": "06644e75-f947-4d76-b5ef-69990767c093",
+     "ref": "GCE 2023 specimen P2 Q9"
+    },
+    {
+     "id": "2283a969-cca8-444f-9aae-c453bcbdae48",
+     "ref": "GCE 2025 P2 Q9"
+    },
+    {
+     "id": "2c458b26-c70a-4f6d-9afc-f27570e26b27",
+     "ref": "GCE 2024 P2 Q9"
+    },
+    {
+     "id": "954a0fe6-73d9-45b0-ac6e-5731b60bcc2b",
+     "ref": "GCE 2021 P2 Q10"
+    },
+    {
+     "id": "0d307f22-686c-42ee-a1d9-d92f371512dc",
+     "ref": "GCE 2020 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

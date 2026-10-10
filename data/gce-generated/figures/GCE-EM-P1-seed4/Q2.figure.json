@@ -1,0 +1,125 @@
+{
+  "family": "plane-geometry-configuration",
+  "specVersion": 1,
+  "unit": "m",
+  "points": [
+    {
+      "id": "P",
+      "x": 0,
+      "y": 0,
+      "labelPos": "below-left"
+    },
+    {
+      "id": "Q",
+      "x": 45,
+      "y": 0,
+      "labelPos": "below"
+    },
+    {
+      "id": "T",
+      "intersect": [
+        {
+          "through": "P",
+          "angle": 28
+        },
+        {
+          "through": "Q",
+          "angle": 51
+        }
+      ],
+      "labelPos": "above"
+    },
+    {
+      "id": "B",
+      "intersect": [
+        [
+          "P",
+          "Q"
+        ],
+        {
+          "through": "T",
+          "perpendicular": [
+            "P",
+            "Q"
+          ]
+        }
+      ],
+      "labelPos": "below-right"
+    },
+    {
+      "id": "H",
+      "from": "T",
+      "angle": 180,
+      "distance": 30,
+      "label": ""
+    },
+    {
+      "id": "M",
+      "midpoint": [
+        "P",
+        "Q"
+      ],
+      "label": "45 m",
+      "labelPos": "below"
+    }
+  ],
+  "segments": [
+    {
+      "from": "P",
+      "to": "B"
+    },
+    {
+      "from": "T",
+      "to": "B"
+    },
+    {
+      "from": "T",
+      "to": "P"
+    },
+    {
+      "from": "T",
+      "to": "Q"
+    },
+    {
+      "from": "Q",
+      "to": "P",
+      "length": 45
+    },
+    {
+      "from": "T",
+      "to": "H",
+      "style": "dashed"
+    }
+  ],
+  "collinear": [
+    [
+      "P",
+      "Q",
+      "B"
+    ]
+  ],
+  "rightAngles": [
+    {
+      "at": "B",
+      "from": "T",
+      "to": "Q"
+    }
+  ],
+  "angles": [
+    {
+      "at": "T",
+      "from": "H",
+      "to": "P",
+      "degrees": 28,
+      "label": "28°",
+      "arcRadius": 40
+    },
+    {
+      "at": "Q",
+      "from": "B",
+      "to": "T",
+      "degrees": 51,
+      "label": "51°"
+    }
+  ]
+}

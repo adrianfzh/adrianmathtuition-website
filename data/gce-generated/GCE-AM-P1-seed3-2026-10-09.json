@@ -1,0 +1,2050 @@
+{
+ "key": "GCE-AM-P1",
+ "seed": 3,
+ "set": 3,
+ "variety": true,
+ "models": {
+  "author": "claude-fable-5-1 (Claude Code agent)",
+  "solver": "claude-opus-5-5 (Claude Code agent)",
+  "moderator": "claude-fable-5-1 (Claude Code agent)",
+  "repair": "claude-fable-5-1 (Claude Code agent)",
+  "figure": "claude-opus-5-5 (Claude Code agent)",
+  "whole_paper_read": "claude-fable-5-1 (Claude Code agent)"
+ },
+ "earlier_sets": [
+  "Set 1 P1",
+  "Set 1 P2",
+  "Set 2 P1",
+  "Set 2 P2"
+ ],
+ "shape": {
+  "subject": "Additional Mathematics",
+  "code": "4049",
+  "level": "AM",
+  "exam": "O-Level",
+  "cut": 2021,
+  "duration": "2 hours 15 minutes",
+  "standardYears": "2024/25",
+  "scope": "Quadratic functions, equations and inequalities (incl. nature of roots, simultaneous equations involving one linear and one non-linear equation); surds; indices and logarithms (incl. exponential growth/decay models); polynomials, remainder and factor theorems, partial fractions; binomial theorem for positive integer index; linear law; coordinate geometry of straight lines, perpendicular bisectors, areas of rectilinear figures; equations of circles; plane geometry proofs (angle properties of circles, similar/congruent triangles, tangent-chord theorem, midpoint theorem, intersecting chords); trigonometry (ratios of special angles, graphs of sin/cos/tan and their transformations, identities incl. sec/cosec/cot, addition and double-angle formulae, R-formula, equations, real-world models); differentiation (chain/product/quotient rules, trig/exp/log functions, tangents and normals, increasing/decreasing functions, rates of change, maxima/minima); integration (as reverse of differentiation, standard forms incl. (ax+b)^n, trig, e^x, 1/x, definite integrals, areas between curves and lines); kinematics of a particle in a straight line via calculus. NOT in 4049: vectors, matrices, statistics, complex numbers, integration by parts or substitution, inverse trigonometric functions, series beyond binomial.",
+  "register": "REGISTER — how SEAB asks\n- Plain, exact, economical English. Instructions are imperatives: Find, Show that, Hence, Explain why, Determine, Express, Solve, Sketch, State, Calculate, Verify, Use … to …, Given that …\n- Parts are labelled (a), (b), (c), with sub-parts (i), (ii). Every part carries its marks. A single-part question has no labels.\n- Precision demands are explicit: \"giving your answer in the form $a + b\\sqrt{3}$, where $a$ and $b$ are integers\", \"correct to 2 decimal places\", \"in terms of $\\pi$\", \"in exact form\", \"in logarithmic form\".\n- A \"Show that\"/\"Prove that\" part states its target exactly; a later part uses it (\"Hence …\", \"Using your answer to part (a) …\").\n- Contexts are brief and concrete (a coffee machine, a patch of water, a ball thrown upwards), never chatty; units are given; constants are named (\"where $k$ is a constant\"); the model is stated as a formula.\n- \"A calculator must not be used in this question.\" opens a question whose point is exact arithmetic (surds, exact trigonometric values). Otherwise no calculator remark.\n- Function notation $\\mathrm{f}(x)$, $\\mathrm{f}'(x)$, $\\frac{dy}{dx}$, $\\int \\ldots \\,dx$; angles in radians unless degrees are stated; a domain such as $0 \\le x \\le 2\\pi$ or $-\\frac{\\pi}{2} \\le \\theta \\le \\frac{\\pi}{2}$ is always stated for a trigonometric equation.\n- Marks follow the work: about 1 mark per 1.5 minutes. 1–2 marks: state/verify/one-line deduction. 3–4 marks: one standard routine. 5–7 marks: a multi-step argument. A long closing question of 9–12 marks has 3–5 parts that build on one another."
+ },
+ "paperNo": 1,
+ "total": 90,
+ "sections": null,
+ "prompt_version": "gce-author-v2",
+ "blueprint_derived_at": "2026-09-26",
+ "generated_at": "2026-10-09T13:42:58.994Z",
+ "topicList": [
+  "Quadratic Functions",
+  "Simultaneous Equations",
+  "Nature of Roots",
+  "Quadratic Inequalities",
+  "Surds",
+  "Polynomials",
+  "Partial Fractions",
+  "Indices",
+  "Logarithms",
+  "Binomial Theorem",
+  "Linear Law",
+  "Coordinate Geometry",
+  "Circles",
+  "Plane Geometry",
+  "Trigonometry (Ratios)",
+  "Trigonometry (Graphs)",
+  "Trigonometry (Identities)",
+  "Trigonometry (Equations)",
+  "Trigonometry (R-Formula)",
+  "Trigonometry (Applications)",
+  "Differentiation (Techniques)",
+  "Differentiation (Tangents and Normals)",
+  "Differentiation (Increasing and Decreasing Functions)",
+  "Differentiation (Rates of Change)",
+  "Differentiation (Maximum and Minimum)",
+  "Integration (Techniques)",
+  "Integration (Definite Integrals)",
+  "Integration (Area)",
+  "Integration (Applications)",
+  "Kinematics",
+  "Proof"
+ ],
+ "must_appear": [
+  "Differentiation (Maximum and Minimum)",
+  "Differentiation (Rates of Change)",
+  "Integration (Techniques)",
+  "Quadratic Functions",
+  "Trigonometry (Identities)"
+ ],
+ "plan": [
+  {
+   "pos": 1,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 4,
+   "marks": [
+    3,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.174
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.159
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.159
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.159
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.159
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.095
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.095
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Partial Fractions",
+   "target": 5,
+   "marks": [
+    3,
+    6
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.138
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.137
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.137
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.137
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.137
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.082
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.082
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.082
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.068
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry (Identities)",
+   "target": 5,
+   "marks": [
+    4,
+    6
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.318
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.254
+    },
+    {
+     "topic": "Proof",
+     "weight": 0.159
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.095
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.095
+    },
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.079
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Integration (Techniques)",
+   "target": 6,
+   "marks": [
+    4,
+    7
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.295
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.295
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.114
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.114
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.068
+    },
+    {
+     "topic": "Differentiation (Increasing and Decreasing Functions)",
+     "weight": 0.057
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.057
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Linear Law",
+   "target": 6,
+   "marks": [
+    6,
+    8
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.34
+    },
+    {
+     "topic": "Linear Law",
+     "weight": 0.213
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.213
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.128
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.106
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Differentiation (Increasing and Decreasing Functions)",
+   "target": 6,
+   "marks": [
+    6,
+    7
+   ],
+   "parts": [
+    2,
+    2
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Increasing and Decreasing Functions)",
+     "weight": 0.177
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.175
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.175
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.175
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.105
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.105
+    },
+    {
+     "topic": "Integration (Applications)",
+     "weight": 0.088
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Binomial Theorem",
+   "target": 7,
+   "marks": [
+    6,
+    7
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Binomial Theorem",
+     "weight": 0.145
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.145
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.145
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.145
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.087
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.087
+    },
+    {
+     "topic": "Proof",
+     "weight": 0.087
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.087
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.072
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Polynomials",
+   "target": 7,
+   "marks": [
+    5,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.277
+    },
+    {
+     "topic": "Simultaneous Equations",
+     "weight": 0.276
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.172
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.103
+    },
+    {
+     "topic": "Surds",
+     "weight": 0.086
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.086
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Trigonometry (Graphs)",
+   "target": 8,
+   "marks": [
+    7,
+    8
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.201
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.203
+    },
+    {
+     "topic": "Differentiation (Maximum and Minimum)",
+     "weight": 0.19
+    },
+    {
+     "topic": "Nature of Roots",
+     "weight": 0.127
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.127
+    },
+    {
+     "topic": "Differentiation (Increasing and Decreasing Functions)",
+     "weight": 0.076
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.076
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 9,
+   "marks": [
+    6,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.254
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.159
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.159
+    },
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.159
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.095
+    },
+    {
+     "topic": "Proof",
+     "weight": 0.095
+    },
+    {
+     "topic": "Polynomials",
+     "weight": 0.079
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Trigonometry (R-Formula)",
+   "target": 8,
+   "marks": [
+    7,
+    9
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.318
+    },
+    {
+     "topic": "Integration (Techniques)",
+     "weight": 0.159
+    },
+    {
+     "topic": "Trigonometry (R-Formula)",
+     "weight": 0.159
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.095
+    },
+    {
+     "topic": "Indices",
+     "weight": 0.095
+    },
+    {
+     "topic": "Logarithms",
+     "weight": 0.095
+    },
+    {
+     "topic": "Plane Geometry",
+     "weight": 0.079
+    }
+   ]
+  },
+  {
+   "pos": 12,
+   "topic": "Quadratic Functions",
+   "target": 9,
+   "marks": [
+    8,
+    10
+   ],
+   "parts": [
+    2,
+    5
+   ],
+   "pool": [
+    {
+     "topic": "Integration (Definite Integrals)",
+     "weight": 0.129
+    },
+    {
+     "topic": "Partial Fractions",
+     "weight": 0.128
+    },
+    {
+     "topic": "Quadratic Functions",
+     "weight": 0.128
+    },
+    {
+     "topic": "Quadratic Inequalities",
+     "weight": 0.128
+    },
+    {
+     "topic": "Trigonometry (Graphs)",
+     "weight": 0.128
+    },
+    {
+     "topic": "Differentiation (Rates of Change)",
+     "weight": 0.077
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.077
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.077
+    },
+    {
+     "topic": "Trigonometry (Equations)",
+     "weight": 0.064
+    },
+    {
+     "topic": "Trigonometry (Identities)",
+     "weight": 0.064
+    }
+   ]
+  },
+  {
+   "pos": 13,
+   "topic": "Integration (Area)",
+   "target": 10,
+   "marks": [
+    9,
+    10
+   ],
+   "parts": [
+    2,
+    3
+   ],
+   "pool": [
+    {
+     "topic": "Differentiation (Tangents and Normals)",
+     "weight": 0.294
+    },
+    {
+     "topic": "Coordinate Geometry",
+     "weight": 0.213
+    },
+    {
+     "topic": "Integration (Area)",
+     "weight": 0.213
+    },
+    {
+     "topic": "Circles",
+     "weight": 0.133
+    },
+    {
+     "topic": "Differentiation (Techniques)",
+     "weight": 0.08
+    },
+    {
+     "topic": "Kinematics",
+     "weight": 0.067
+    }
+   ]
+  }
+ ],
+ "title": "A Math · Set 3 · Paper 1 · O-Level format",
+ "assembled_at": "2026-10-10T00:35:31.042Z",
+ "questions": [
+  {
+   "pos": 1,
+   "topic": "Differentiation (Rates of Change)",
+   "target": 4,
+   "accepted": true,
+   "question": {
+    "stem": "A piece of dough has a volume of $200\\pi$ cm$^3$. The volume of the dough does not change as it is rolled. It is being rolled out flat, and at every instant it has the shape of a circular cylinder of radius $r$ cm and thickness $h$ cm, as shown in the diagram. The thickness of the dough is decreasing at a constant rate of $0.1$ cm per second. Find the rate at which the radius of the dough is increasing at the instant when the thickness is $0.5$ cm.",
+    "parts": [],
+    "answer": "$2$ cm/s",
+    "total_marks": 4,
+    "topics": [
+     "Differentiation (Rates of Change)"
+    ],
+    "skills": [
+     "a constant-volume constraint, not a given rate of volume: turn \"the volume is unchanged\" into the relation $r^2 h = 200$ between two dimensions that change at once",
+     "rate of a dimension that grows while the other shrinks: chain rule on $r = \\sqrt{200}\\,h^{-\\frac{1}{2}}$ (or the product rule in $t$ on $r^2 h = 200$) with the negative rate of the thickness",
+     "recover the radius at the instant ($r = 20$ from $h = 0.5$) before substituting"
+    ],
+    "needs_figure": true,
+    "figure_description": "A flat circular cylinder (a thick disc) drawn in oblique view, like a pizza base seen from slightly above: an ellipse for the top face, a second parallel ellipse (only its front half visible) for the bottom face, joined by two short vertical lines at the left and right ends. On the top face, mark its centre with a small dot and draw a straight line from the centre to the right-hand edge of the ellipse, labelled \"$r$ cm\" above the line. Beside the right-hand vertical edge, draw a short double-headed arrow spanning the thickness and label it \"$h$ cm\". No numbers, no rolling pin, no equation and no rate appear on the figure. Axis window: none (a plain sketch, about 6 cm wide and 2 cm high on the page). Nothing the candidate is asked to find appears on it.",
+    "solution": "Volume of the cylinder: $V = \\pi r^2 h$.\nThe volume does not change, so $\\pi r^2 h = 200\\pi$, giving $r^2 h = 200$.\n\nMethod 1 (eliminate $r$ as a function of $h$):\n$r = \\sqrt{\\frac{200}{h}} = \\sqrt{200}\\,h^{-\\frac{1}{2}}$\n$\\frac{dr}{dh} = -\\frac{1}{2}\\sqrt{200}\\,h^{-\\frac{3}{2}}$\nWhen $h = 0.5$: $h^{-\\frac{3}{2}} = \\left(\\frac{1}{2}\\right)^{-\\frac{3}{2}} = 2^{\\frac{3}{2}} = 2\\sqrt{2}$ and $\\sqrt{200} = 10\\sqrt{2}$,\nso $\\frac{dr}{dh} = -\\frac{1}{2}(10\\sqrt{2})(2\\sqrt{2}) = -20$.\nThe thickness is decreasing, so $\\frac{dh}{dt} = -0.1$.\n$\\frac{dr}{dt} = \\frac{dr}{dh} \\times \\frac{dh}{dt} = (-20)(-0.1) = 2$\n\nMethod 2 (differentiate the relation with respect to $t$):\n$r^2 h = 200$\n$2rh\\,\\frac{dr}{dt} + r^2\\,\\frac{dh}{dt} = 0$\n$\\frac{dr}{dt} = -\\frac{r}{2h}\\,\\frac{dh}{dt}$\nWhen $h = 0.5$: $r^2 = \\frac{200}{0.5} = 400$, so $r = 20$ (radius positive).\n$\\frac{dr}{dt} = -\\frac{20}{2(0.5)}(-0.1) = 2$\n\n**Answer:** the radius is increasing at $2$ cm/s.\n\nMarks: M1 for $\\pi r^2 h = 200\\pi$ (the constant volume used as the relation); M1 for differentiating, either $\\frac{dr}{dh} = -\\frac{1}{2}\\sqrt{200}\\,h^{-\\frac{3}{2}}$ or $2rh\\frac{dr}{dt} + r^2\\frac{dh}{dt} = 0$; M1 for evaluating at the instant ($r = 20$ or $h^{-\\frac{3}{2}} = 2\\sqrt{2}$) with $\\frac{dh}{dt} = -0.1$; A1 $2$ cm/s. A candidate who takes $\\frac{dh}{dt} = +0.1$ and reports $-2$ cm/s loses the A1.",
+    "syllabus_check": "4049 Differentiation: connected rates of change via the chain rule $\\frac{dr}{dt} = \\frac{dr}{dh}\\frac{dh}{dt}$, the power rule on $h^{-\\frac{1}{2}}$ (or, equivalently, the product rule on $r^2 h$ with respect to $t$). The volume of a cylinder is O-Level E Math knowledge, so no formula is printed (SEAB prints only the sphere, cone and pyramid formulas). No integration, no inverse trigonometry, no differential equation: the constraint is algebraic. Finishable in about 6 minutes.",
+    "originality_note": "Not the circular oil patch of GCE 2024 P1 Q1 (a given rate of area feeding a radius through $A = \\pi r^2$), not the growing leg of a right-angled triangle of GCE 2025 P1 Q11, not the expanding patch with a printed $\\frac{dr}{dt}$ of GCE 2023 P1 Q11. Against our own Sets: Set 1 P1 Q11 turned a constant angular rate into the rate of a chord and an area by trigonometry; Set 2 P1 Q4 turned a constant inflow into the rate of a depth through a volume built from a trapezium. Neither used a CONSTANT volume with two dimensions changing against each other, which is the whole idea here: no rate of volume is given, the candidate must see that $\\frac{dV}{dt} = 0$ gives the relation $r^2 h = 200$ (or $r$ as a function of $h$). The context carries the mathematics: \"being rolled out flat\" fixes the sign of $\\frac{dh}{dt}$ and the dough keeping its volume supplies the relation. Numbers engineered to close exactly: $200\\pi$ with $h = 0.5$ gives $r = 20$ and $\\frac{dr}{dh} = -20$, so the answer is the integer $2$. Unparted, as the paper shape asks of Q1; no closing step shared with any accepted slot (none yet)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 1,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2017 P2 Q8",
+     "jaccard": 0.083,
+     "nearest_set": "Set 1 P1 Q11",
+     "jaccard_set": 0.066,
+     "repeated_skills": []
+    },
+    "marks": 4,
+    "checked_at": "2026-10-09T14:02:10.324Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "single": "2 cm/s (r = 20 when h = 0.5; dr/dt = 2 cm s^-1)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give 2 cm/s. Checked: pi r^2 h = 200 pi gives r^2 h = 200; at h = 0.5, r^2 = 400 so r = 20; 2rh dr/dt + r^2 dh/dt = 0 with dh/dt = -0.1 gives dr/dt = -(20/1)(-0.1) = 2. The elimination route dr/dh = -(1/2)sqrt(200) h^(-3/2) = -20 at h = 0.5 gives the same."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on 2 cm/s and the working checks; the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "State the constancy the maths rests on, as a real paper does (GCE 2025 P1 Q11: 'AE is always 3 units and angle AEB is always 90 degrees'): add one sentence 'The volume of the dough does not change as it is rolled.' after the first sentence. Today the candidate must infer that 200 pi is the volume at every instant and not only at the start; the idea of the question (a constant product r^2 h, both dimensions changing, no rate of volume given) survives the sentence untouched."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted 4-mark model in a situation, where the relation r^2 h = 200 is built by the candidate from a constant volume rather than a printed rate, the thickness rate must be taken negative and the radius recovered at the instant: the 4-5 mark band of section 2 (a relation to set up first), a step up from the routine circle-area rate at GCE 2024 P1 Q1, not a re-skin of it, and a different skill from Set 1's fan chord and Set 2's trough inflow. Numbers are clean (r = 20, 2 cm/s), marks match the work, and it is at least as demanding as Set 1 P1 Q1, which is a parted routine slot."
+   },
+   "exemplars": [
+    {
+     "id": "01951fa6-eda8-4ef6-b301-9133047475b2",
+     "ref": "GCE 2024 P1 Q1"
+    },
+    {
+     "id": "e61389e1-bfe7-4d27-b6f5-e0a51a8c3f40",
+     "ref": "GCE 2021 specimen P1 Q4"
+    },
+    {
+     "id": "27681c15-8155-4451-8a03-55c3a24b1e5c",
+     "ref": "GCE 2025 P1 Q11"
+    },
+    {
+     "id": "737e17c6-a091-4317-b2bd-3f1a8bfd9012",
+     "ref": "GCE 2023 P1 Q11"
+    },
+    {
+     "id": "14d24a81-10c5-473d-9376-b1be1af3db49",
+     "ref": "GCE 2022 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 2,
+   "topic": "Partial Fractions",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "Express $\\frac{x^2 - 3x + 5}{x^3 + 2x^2 + x + 2}$ in partial fractions.",
+    "parts": [],
+    "answer": "$\\frac{3}{x + 2} + \\frac{1 - 2x}{x^2 + 1}$",
+    "total_marks": 5,
+    "topics": [
+     "Partial Fractions",
+     "Polynomials"
+    ],
+    "skills": [
+     "factorise an unfactorised cubic denominator by grouping (or the factor theorem) before decomposing, the factorised form not being printed",
+     "partial fractions with an irreducible quadratic factor x^2 + 1: numerator Bx + C over the quadratic, A by cover-up and B, C by comparing coefficients"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Factorise the denominator first.\n$x^3 + 2x^2 + x + 2 = x^2(x + 2) + (x + 2) = (x + 2)(x^2 + 1)$\n$x^2 + 1 > 0$ for every real $x$, so $x^2 + 1$ has no linear factor and keeps a linear numerator.\n$\\frac{x^2 - 3x + 5}{(x + 2)(x^2 + 1)} \\equiv \\frac{A}{x + 2} + \\frac{Bx + C}{x^2 + 1}$\n$x^2 - 3x + 5 \\equiv A(x^2 + 1) + (Bx + C)(x + 2)$\nPut $x = -2$: $4 + 6 + 5 = 5A$, so $A = 3$.\nCompare coefficients of $x^2$: $1 = A + B$, so $B = -2$.\nCompare constant terms: $5 = A + 2C$, so $C = 1$.\nCheck the coefficient of $x$: $2B + C = -4 + 1 = -3$, as required.\n**Answer:** $\\frac{x^2 - 3x + 5}{x^3 + 2x^2 + x + 2} = \\frac{3}{x + 2} + \\frac{1 - 2x}{x^2 + 1}$",
+    "syllabus_check": "4049 partial fractions: the denominator is of the listed form (ax + b)(x^2 + c^2) once factorised, with c = 1; factorising the cubic (by grouping, or by the factor theorem with x = -2) is within polynomials. The fraction is proper, so no division is needed. No calculus, no result outside the syllabus.",
+    "originality_note": "The quadratic-factor case (numerator Bx + C) is the one case of 4049 partial fractions no earlier Set has asked: Set 1 P1 Q12 used a repeated linear factor and then integrated; Set 2 P1 Q12 used an improper fraction over two distinct linear factors and then differentiated. This question is unparted and feeds nothing, so it shares no sequence of parts with either. The 2024/25-style demand is that the denominator is printed as a cubic and the candidate supplies the plan: factorise (by grouping, which the cubic is built for), recognise that x^2 + 1 does not factorise, then decompose. It does not re-skin GCE 2022 P1 Q3 or the 2021 specimen P2 Q1 (improper fractions over x(x^2 + c), with a division part), GCE 2021 P1 Q5 or GCE 2023 P1 Q2 or GCE 2024 P1 Q12 (repeated factors, the last feeding an integral). Numbers: A = 3, B = -2, C = 1, all non-zero so the wrong form B/(x^2 + 1) cannot survive the x-coefficient check; the closing step (a partial-fraction form) is unlike every other closing step planned for this paper."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 2,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2016 P1 Q5",
+     "jaccard": 0.107,
+     "nearest_set": "Set 2 P1 Q12",
+     "jaccard_set": 0.072,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-10-09T13:50:46.221Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "single": "3/(x+2) + (1 - 2x)/(x^2 + 1)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give 3/(x+2) + (1-2x)/(x^2+1). Checked: x^3+2x^2+x+2 = x^2(x+2)+(x+2) = (x+2)(x^2+1); x^2-3x+5 = A(x^2+1)+(Bx+C)(x+2); x=-2 gives 15 = 5A, A = 3; x^2: 1 = A+B, B = -2; constant: 5 = A+2C, C = 1; x-coefficient check 2B+C = -3 holds. The key is right and the fraction is proper (degree 2 over degree 3), so no division is needed."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and my own working confirms A = 3, B = -2, C = 1; the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "No change to the maths or the wording is needed. The one thing that keeps it off 5 is precedent: every 4049 paper so far either printed the denominator factorised (GCE 2021 P1 Q5, GCE 2023 P1 Q2, GCE 2024 P1 Q12(a)) or gave the factor/division as a [1] rung (GCE 2022 P1 Q3(a)); only the 2021 specimen P2 Q1 left x^3+4x unfactorised. Leaving the rung out is the 2025 move standard.md asks for, so keep it; the mark scheme must then pay the factorisation its own mark (factorise the cubic M1, the form A/(x+2) + (Bx+C)/(x^2+1) M1, A A1, B and C M1A1) so that a candidate who writes B/(x^2+1) loses only the last two marks."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted 5-mark 'Express in partial fractions' whose denominator is an unfactorised cubic: the candidate must see that it factorises (grouping, or the factor theorem at x = -2), that x^2+1 is irreducible so its numerator is Bx+C, and that the cover-up value only gives A, so B and C come from comparing coefficients. That is the section 5 'link between two topics with the intermediate form not printed' idea, paid the [5] that GCE 2024 P1 Q12(a) paid partial fractions, finishable in 7.5 minutes, with clean constants (3, -2, 1). It is not a re-skin of GCE 2024 P1 Q12 (repeated factor feeding an integral), and it tests a different decomposition skill from Set 1 P1 Q12 (repeated linear factor, factor theorem with a given factor, then an integral) and Set 2 P1 Q12 (improper fraction over a quadratic, divide first); nothing in paper-so-far (rates, integration) shares its closing step. Beside Set 1 P1 Q2 and Q3 (5 marks each) it is as demanding and cleaner in register. Gates passed."
+   },
+   "exemplars": [
+    {
+     "id": "5aa01a2e-0ea3-4e4d-930f-5a3564268399",
+     "ref": "GCE 2023 P1 Q2"
+    },
+    {
+     "id": "682f78ee-fff2-4e71-b7d4-b3d2bc7d0d1f",
+     "ref": "GCE 2022 P1 Q3"
+    },
+    {
+     "id": "660fdff8-22a6-4cd3-84a1-b0ea2c6c2513",
+     "ref": "GCE 2021 specimen P2 Q1"
+    },
+    {
+     "id": "6fde5681-0650-487f-b9aa-5561ec16b2cb",
+     "ref": "GCE 2021 P1 Q5"
+    },
+    {
+     "id": "cada459a-5436-41aa-92f2-80e3a77be480",
+     "ref": "GCE 2024 P1 Q12"
+    }
+   ]
+  },
+  {
+   "pos": 3,
+   "topic": "Trigonometry (Identities)",
+   "target": 5,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $\\sec\\theta + \\tan\\theta = k$, where $k$ is a constant and $0 < \\theta < \\frac{\\pi}{2}$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\sin\\theta = \\frac{k^2 - 1}{k^2 + 1}$.",
+      "marks": 3,
+      "answer": "$\\sin\\theta = \\frac{k^2 - 1}{k^2 + 1}$ (shown: from $\\sec\\theta - \\tan\\theta = \\frac{1}{k}$, $\\sec\\theta = \\frac{k^2 + 1}{2k}$ and $\\tan\\theta = \\frac{k^2 - 1}{2k}$, so $\\sin\\theta = \\frac{\\tan\\theta}{\\sec\\theta}$; or square $1 + \\sin\\theta = k\\cos\\theta$ and cancel $1 + \\sin\\theta$)",
+      "subparts": []
+     },
+     {
+      "label": "(b)",
+      "text": "Hence find, without using a calculator, the value of $\\theta$, in terms of $\\pi$, for which $\\sec\\theta + \\tan\\theta = 2 + \\sqrt{3}$.",
+      "marks": 2,
+      "answer": "$\\theta = \\frac{\\pi}{3}$ (from $\\sin\\theta = \\frac{6 + 4\\sqrt{3}}{8 + 4\\sqrt{3}} = \\frac{\\sqrt{3}}{2}$)",
+      "subparts": []
+     }
+    ],
+    "answer": "(a) $\\sin\\theta = \\frac{k^2 - 1}{k^2 + 1}$ shown. (b) $\\theta = \\frac{\\pi}{3}$.",
+    "total_marks": 5,
+    "topics": [
+     "Trigonometry (Identities)"
+    ],
+    "skills": [
+     "eliminating between a given sum $\\sec\\theta + \\tan\\theta = k$ and the identity $\\sec^2\\theta - \\tan^2\\theta = 1$ (so $\\sec\\theta - \\tan\\theta = \\frac{1}{k}$), or squaring $1 + \\sin\\theta = k\\cos\\theta$ and cancelling the factor $1 + \\sin\\theta$, to express $\\sin\\theta$ in terms of a general constant $k$",
+     "using the derived relation backwards: a surd value $k = 2 + \\sqrt{3}$ rationalised to $\\sin\\theta = \\frac{\\sqrt{3}}{2}$ and recognised as the special angle $\\frac{\\pi}{3}$ without a calculator"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Method 1 (the conjugate).\n$\\sec^2\\theta - \\tan^2\\theta = 1$, so $(\\sec\\theta + \\tan\\theta)(\\sec\\theta - \\tan\\theta) = 1$.\nSince $\\sec\\theta + \\tan\\theta = k$, this gives $\\sec\\theta - \\tan\\theta = \\frac{1}{k}$.\nAdding: $2\\sec\\theta = k + \\frac{1}{k} = \\frac{k^2 + 1}{k}$, so $\\sec\\theta = \\frac{k^2 + 1}{2k}$.\nSubtracting: $2\\tan\\theta = k - \\frac{1}{k} = \\frac{k^2 - 1}{k}$, so $\\tan\\theta = \\frac{k^2 - 1}{2k}$.\n$\\sin\\theta = \\tan\\theta\\cos\\theta = \\frac{\\tan\\theta}{\\sec\\theta} = \\frac{k^2 - 1}{2k} \\times \\frac{2k}{k^2 + 1} = \\frac{k^2 - 1}{k^2 + 1}$.\n**Answer:** $\\sin\\theta = \\frac{k^2 - 1}{k^2 + 1}$, as required.\n\nAlternative (squaring).\n$\\sec\\theta + \\tan\\theta = \\frac{1 + \\sin\\theta}{\\cos\\theta} = k$, so $1 + \\sin\\theta = k\\cos\\theta$.\nSquaring: $(1 + \\sin\\theta)^2 = k^2\\cos^2\\theta = k^2(1 - \\sin^2\\theta) = k^2(1 - \\sin\\theta)(1 + \\sin\\theta)$.\nFor $0 < \\theta < \\frac{\\pi}{2}$, $1 + \\sin\\theta \\ne 0$, so dividing by $1 + \\sin\\theta$: $1 + \\sin\\theta = k^2(1 - \\sin\\theta)$.\n$\\sin\\theta\\,(1 + k^2) = k^2 - 1$, so $\\sin\\theta = \\frac{k^2 - 1}{k^2 + 1}$.\n\n(b) Put $k = 2 + \\sqrt{3}$ in the result of part (a).\n$k^2 = (2 + \\sqrt{3})^2 = 4 + 4\\sqrt{3} + 3 = 7 + 4\\sqrt{3}$.\n$\\sin\\theta = \\frac{7 + 4\\sqrt{3} - 1}{7 + 4\\sqrt{3} + 1} = \\frac{6 + 4\\sqrt{3}}{8 + 4\\sqrt{3}} = \\frac{3 + 2\\sqrt{3}}{4 + 2\\sqrt{3}}$.\nRationalise: $\\frac{(3 + 2\\sqrt{3})(4 - 2\\sqrt{3})}{(4 + 2\\sqrt{3})(4 - 2\\sqrt{3})} = \\frac{12 - 6\\sqrt{3} + 8\\sqrt{3} - 12}{16 - 12} = \\frac{2\\sqrt{3}}{4} = \\frac{\\sqrt{3}}{2}$.\nSince $0 < \\theta < \\frac{\\pi}{2}$ and $\\sin\\theta = \\frac{\\sqrt{3}}{2}$, $\\theta = \\frac{\\pi}{3}$.\n**Answer:** $\\theta = \\frac{\\pi}{3}$.\n\nCheck: $\\sec\\frac{\\pi}{3} + \\tan\\frac{\\pi}{3} = 2 + \\sqrt{3}$.\n(Shorter route for (b): $\\frac{1}{k} = \\frac{1}{2 + \\sqrt{3}} = 2 - \\sqrt{3}$, so $\\sin\\theta = \\frac{k - \\frac{1}{k}}{k + \\frac{1}{k}} = \\frac{2\\sqrt{3}}{4} = \\frac{\\sqrt{3}}{2}$.)",
+    "syllabus_check": "4049 Trigonometry: the identities $\\sec^2\\theta = 1 + \\tan^2\\theta$ and $\\sin^2\\theta + \\cos^2\\theta = 1$, the reciprocal ratios $\\sec\\theta$ and $\\tan\\theta = \\frac{\\sin\\theta}{\\cos\\theta}$, and exact ratios of the special angle $\\frac{\\pi}{3}$; the surd step in (b) is rationalising a denominator of the form $a + b\\sqrt{3}$ (4049 Surds). No sum/product of roots, no inverse trigonometric functions, no result outside the syllabus; both routes in (a) use only listed identities.",
+    "originality_note": "New situation: a sum $\\sec\\theta + \\tan\\theta$ is GIVEN as a constant $k$ and the candidate must extract $\\sin\\theta$ in terms of $k$ — the idea is the conjugate $\\sec\\theta - \\tan\\theta = \\frac{1}{k}$ (or squaring and cancelling the factor $1 + \\sin\\theta$, with the reason that it is non-zero). Not in any earlier Set: Set 1 P1 Q3 proves compound-angle products and a triple angle; Set 2 P1 Q3 collapses a product of cosines by the double-angle formula and evaluates a product at $\\frac{\\pi}{7}$; Set 2 P2 Q3 factorises $\\sec^4 x - \\tan^4 x$ to simplify an integrand (the Pythagorean identity used as a difference of two squares to simplify, not to eliminate between a given sum and the identity); Set 2 P1 Q9 is $\\tan(A - B)$ in a context. Real papers: GCE 2019 P1 Q1 goes the easy direction (given $\\cos\\theta = c$, write $\\tan\\theta$, $\\operatorname{cosec}\\theta$ in terms of $c$); GCE 2023 P1 Q3 proves a cosec/sec identity; GCE 2024 P1 Q3 is a triangle with $\\tan(\\alpha + \\beta)$; GCE 2021 specimen P1 Q8 and 2022 P2 Q5 evaluate $\\cos 75^\\circ$ / $\\tan 75^\\circ$ by compound angles. None gives $\\sec\\theta + \\tan\\theta$ as a value. The closing step — a surd value of $k$ rationalised to $\\sin\\theta = \\frac{\\sqrt{3}}{2}$ and read as $\\frac{\\pi}{3}$ — is neither 'substitute a special angle into the identity' (Set 2 P1 Q3) nor 'hence solve on a domain' (GCE 2025 P1 Q9), and no trigonometric equation is solved, leaving that closer free for the R-formula and graph slots. Carries a general constant $k$ to the printed target of (a).",
+    "marking_note": "Scheme for (a) pays only the chain, never the printed result (it is a stock exercise): M1 for sec θ − tan θ = 1/k (or for 1 + sin θ = k cos θ squared), M1 for sec θ and tan θ in terms of k (or for the factor 1 + sin θ cancelled with the reason that it is non-zero), A1 for the printed form reached from those lines; the result quoted without the conjugate or the cancelled factor scores 0."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 3,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2004 P2 Q2",
+     "jaccard": 0.086,
+     "nearest_set": "Set 1 P2 Q3",
+     "jaccard_set": 0.07,
+     "repeated_skills": []
+    },
+    "marks": 5,
+    "checked_at": "2026-10-10T00:04:03.936Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "θ = π/3"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both say shown. Checked: sec^2 θ - tan^2 θ = 1 gives (sec θ + tan θ)(sec θ - tan θ) = 1, so sec θ - tan θ = 1/k; adding and subtracting, sec θ = (k^2+1)/(2k) and tan θ = (k^2-1)/(2k); sin θ = tan θ / sec θ = (k^2-1)/(k^2+1). The squaring route also closes: (1+sin θ)^2 = k^2(1-sin θ)(1+sin θ), and 1+sin θ > 0 on 0 < θ < π/2 so the factor cancels. The target is right and the 'show that' is true (k > 1 on this domain, so nothing degenerates)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give θ = π/3. Checked: k = 2+√3, 1/k = 2-√3, so sin θ = (k - 1/k)/(k + 1/k) = 2√3/4 = √3/2; the long route (6+4√3)/(8+4√3) rationalises to the same. θ = π/3 is the only value in (0, π/2); check sec(π/3) + tan(π/3) = 2 + √3."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on both parts and my own working confirms sin θ = (k^2-1)/(k^2+1) and θ = π/3; the key is right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "The mark scheme must pay (a) only for the chain, never for the result: 'sec θ + tan θ = k, show sin θ = (k^2-1)/(k^2+1)' is a stock textbook exercise, so a drilled candidate can write the last line from memory. Scheme: M1 for sec θ - tan θ = 1/k (or for 1 + sin θ = k cos θ squared), M1 for sec θ and tan θ in terms of k (or for the factor 1 + sin θ cancelled with the reason that it is non-zero), A1 for the printed form reached from those lines; the result quoted without the conjugate or the cancelled factor scores 0.",
+     "Optional, within one mark so no re-mark is required: (b) asks for substitution, the surd simplification (6+4√3)/(8+4√3) or 1/k = 2-√3, and the special angle, which a real paper would as readily pay [3] as [2] (the 2021 specimen P1 Q8(a) paid [2] for the single step cos 75°). If the session needs a mark elsewhere in the paper, this is the part that can spare none; if it has one spare, this is where it sits."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A 5-mark identity slot at the 2024/25 standard: (a) [3] makes the candidate decide the move the stem does not name (the conjugate sec θ - tan θ = 1/k, or squaring and cancelling the factor 1 + sin θ with its reason), carrying a general constant k to a printed gate; (b) [2] is a consequence read exactly, with 'Hence' honest because the value k = 2+√3 is stated, the surd closing to √3/2 and the answer a multiple of π. Not a re-skin of any 2024/25 question (GCE 2025 P1 Q9 proves an identity then solves on a domain; GCE 2024 P1 Q3 is a triangle with tan(α+β)); the nearest corpus item, GCE 2004 P2 Q2, is a surds question. Against our Sets: Set 1 P1 Q3 proves compound-angle and triple-angle identities, Set 2 P1 Q3 substitutes a given angle into a proved product, Set 2 P2 Q3 uses sec^2 - tan^2 = 1 as a difference of squares to simplify an integrand — here the identity eliminates between a GIVEN sum and the Pythagorean relation and the unknown is moved to the angle, which is the variety rule's 'same skill from another direction'. No question in paper-so-far closes on a special angle from an exact ratio (Q11 closes on an inequality, Q9 on a tan-curve point); two calculator-ban items in P1 (this (b) and Q8) is a paper-level count for the session, not a fault of this slot. Beside Set 1 P1 Q3 and Q2 (5 marks each) it is as demanding, its parts feed each other where Set 1 P1 Q3's did not, and its numbers close exactly. Gates passed. Off 5 only because (a)'s result is a textbook staple that a scheme must guard against recall."
+   },
+   "exemplars": [
+    {
+     "id": "3a3c5a1b-929b-4a4f-9a25-184df60b2d38",
+     "ref": "GCE 2024 P1 Q3"
+    },
+    {
+     "id": "9c77136d-6725-4ce3-946e-c6fa679b6d59",
+     "ref": "GCE 2023 P1 Q3"
+    },
+    {
+     "id": "e050e37b-5560-4f20-a27f-aa59aeb2d4c0",
+     "ref": "GCE 2025 P2 Q6"
+    },
+    {
+     "id": "e228e0f2-1b3d-4b57-a0e8-668f3e821142",
+     "ref": "GCE 2025 P1 Q9"
+    },
+    {
+     "id": "afeab02d-8e88-4ac7-b063-98b5c152d7cd",
+     "ref": "GCE 2021 specimen P1 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 4,
+   "topic": "Integration (Techniques)",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "A curve is such that $\\frac{dy}{dx} = 2 - \\frac{8}{(2x+1)^2}$, where $x > -\\frac{1}{2}$. The $x$-axis is a tangent to the curve. Find the equation of the curve.",
+    "parts": [],
+    "answer": "$y = 2x + \\frac{4}{2x+1} - 3$ (equivalently $y = \\frac{(2x-1)^2}{2x+1}$)",
+    "total_marks": 6,
+    "topics": [
+     "Integration (Techniques)"
+    ],
+    "skills": [
+     "read 'the x-axis is a tangent to the curve' as two conditions at an unknown point of contact: dy/dx = 0 and y = 0",
+     "integrate (ax+b)^{-2} with the 1/a factor and the sign, then fix the constant from a point the candidate had to find",
+     "reject the stationary point outside the stated domain because 2x+1 > 0"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "The $x$-axis is a tangent to the curve, so at the point of contact the gradient is $0$ and $y = 0$.\nGradient $0$: $2 - \\frac{8}{(2x+1)^2} = 0$\n$(2x+1)^2 = 4$\n$2x + 1 = 2$ or $2x + 1 = -2$\nSince $x > -\\frac{1}{2}$, $2x + 1 > 0$, so $2x + 1 = 2$ and $x = \\frac{1}{2}$ ($x = -\\frac{3}{2}$ rejected).\nIntegrate: $y = \\int \\left(2 - 8(2x+1)^{-2}\\right)dx = 2x - \\frac{8(2x+1)^{-1}}{(-1)(2)} + c = 2x + \\frac{4}{2x+1} + c$\nThe point of contact $\\left(\\frac{1}{2}, 0\\right)$ lies on the curve: $1 + \\frac{4}{2} + c = 0$, so $c = -3$.\n**Answer:** $y = 2x + \\frac{4}{2x+1} - 3$, which is $y = \\frac{(2x-1)^2}{2x+1}$.\nCheck (not required): $\\frac{d^2y}{dx^2} = \\frac{16}{(2x+1)^3} > 0$ for $x > -\\frac{1}{2}$, so $\\left(\\frac{1}{2}, 0\\right)$ is a minimum point and the curve lies on or above the $x$-axis, touching it there.\nMarks: M1 both conditions (gradient $0$ and $y = 0$) at the unknown point of contact; A1 $x = \\frac{1}{2}$ with $-\\frac{3}{2}$ rejected by the domain; M1 integrating $(2x+1)^{-2}$ with the factor $\\frac{1}{2}$ and the sign; A1 $2x + \\frac{4}{2x+1} + c$; M1 substituting the point of contact; A1 $c = -3$ and the equation.",
+    "syllabus_check": "4049 Integration: integration of (ax+b)^n (here n = -2), finding the equation of a curve from its gradient function and a condition fixing the constant. 4049 Differentiation: a tangent parallel to the x-axis means dy/dx = 0; a curve touching an axis at a point means that point lies on both. Solving (2x+1)^2 = 4 is Sec 3 algebra. No integration by substitution or parts, no inverse trig, nothing outside 4049.",
+    "originality_note": "No point on the curve is printed: the candidate must decode 'the x-axis is a tangent to the curve' into dy/dx = 0 and y = 0 at a point they first have to find, reject x = -3/2 by the domain, then integrate and fix c. Set 1 P1 Q6 gave dy/dx (exponential) and a point, then an increasing-function inequality; Set 2 P1 Q6 was a quotient over sqrt(x) with a definite integral set to zero and a cubic in sqrt(k); Set 1 P1 Q12 and Set 1 P2 Q3 reached integrals through partial fractions and a printed derivative. Real exemplars: GCE 2025 P2 Q3 and GCE 2024 P2 Q4(b) print a point through which the curve passes; GCE 2022 P1 Q6 prints the second derivative with the y-intercept and the gradient there; GCE 2024 P1 Q2 and GCE 2025 P1 Q4 are differentiate-then-hence-integrate. None withholds the point and makes the candidate find it from a tangency. Set 2 P2 Q9 has a circle touching the x-axis (radius = k, a circle skill); the wording here differs and the skill is a stationary point on y = 0 of a curve recovered by integration. The numbers close exactly: the curve is (2x-1)^2/(2x+1), whose double root at x = 1/2 is the tangency. Unparted as paper-shape.md requires for Q4; closes on an equation of a curve, not on an inequality, a discriminant or a range of k."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 4,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2010 P1 Q8",
+     "jaccard": 0.118,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.157,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-09T13:49:37.557Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "single": "y = 2x + \\frac{4}{2x+1} - 3"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give y = 2x + 4/(2x+1) - 3. Worked independently: dy/dx = 0 gives (2x+1)^2 = 4, so 2x+1 = 2 (2x+1 = -2 rejected because x > -1/2 makes 2x+1 > 0), x = 1/2; integrating -8(2x+1)^(-2) gives +4(2x+1)^(-1); y(1/2) = 0 gives 1 + 2 + c = 0, c = -3. The combined form (2x-1)^2/(2x+1) is correct, and the curve does touch rather than cross the x-axis (y >= 0 on the domain). Note the domain is load-bearing: taking x = -3/2 would give c = 5, a different curve, so the rejection costs the final A1 if missed."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree and the key is right; the domain x > -1/2 is what fixes a unique curve.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted 6-mark chain in SEAB's register whose one idea comes first and is not stated in the stem: 'the x-axis is a tangent' must be read as dy/dx = 0 and y = 0 at a point the candidate has to find, with the domain deciding which root (and so which curve) survives; the rest is the (ax+b)^(-2) integration and the constant, closing on the clean (2x-1)^2/(2x+1). It is not a re-skin of GCE 2022 P1 Q6 or GCE 2024 P2 Q4(b) (both hand the point to the candidate) and tests the Set 1 P1 Q6 skill from the other direction with the point hidden and a domain rejection added, which is what the variety rule asks for; nothing in Q1 or Q2 of this paper integrates, rejects by domain or closes on an equation of a curve."
+   },
+   "exemplars": [
+    {
+     "id": "5019e509-7fd8-42a0-8d73-fa6aa56a380f",
+     "ref": "GCE 2025 P1 Q4"
+    },
+    {
+     "id": "746970d5-fb8b-46e5-b888-1ee0afe393c5",
+     "ref": "GCE 2025 P2 Q3"
+    },
+    {
+     "id": "73045143-a5ec-407c-911c-10524005176f",
+     "ref": "GCE 2024 P2 Q4"
+    },
+    {
+     "id": "7ce9b118-0db9-4eac-b681-ea09d0de65d5",
+     "ref": "GCE 2023 P1 Q4"
+    },
+    {
+     "id": "ece8d6db-2e3a-4f90-bcf0-06ccdf5a0c8e",
+     "ref": "GCE 2022 P1 Q6"
+    }
+   ]
+  },
+  {
+   "pos": 5,
+   "topic": "Linear Law",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "A car is travelling along a straight road at a speed of $v$ metres per second when the driver sees an obstacle ahead. The stopping distance, $d$ metres, is the distance the car travels from the moment the driver sees the obstacle until the car stops. It is the sum of the thinking distance, which the car travels before the driver applies the brakes, and the braking distance. For a particular car and driver, the thinking distance is $av$ metres and the braking distance is $bv^2$ metres, where $a$ and $b$ are constants.\n\nWhen a suitable expression in $d$ and $v$ is plotted against $v$, the points lie on a straight line. The line has gradient $0.075$ and passes through the point $(10, 1.45)$.\n\nFind the speed at which the braking distance is three times the thinking distance, and the stopping distance at this speed.",
+    "parts": [],
+    "answer": "$v = 28$ m/s; stopping distance $= 78.4$ m  (the line is $\\frac{d}{v}$ against $v$, $b = 0.075$, $a = 0.7$)",
+    "total_marks": 6,
+    "topics": [
+     "Linear Law"
+    ],
+    "skills": [
+     "deciding unaided, with no axis named on the vertical, that the two-term model $d = av + bv^2$ formed from the stem's thinking and braking distances is made linear by dividing through by $v$, so that the straight line drawn is $\\frac{d}{v}$ against $v$ and the given point $(10, 1.45)$ is a value of $\\left(v, \\frac{d}{v}\\right)$",
+     "reading both constants of the model from a straight line given only by its gradient and one point, with no table, no grid and no intercept: the gradient is $b$ and $a$ must be found by substituting the point into $\\frac{d}{v} = a + bv$",
+     "using the two components of the fitted model separately: the speed at which the braking distance $bv^2$ is three times the thinking distance $av$, the common factor $v$ cancelled with $v = 0$ rejected because the car is moving, then the whole model $d = av + bv^2$ evaluated at that speed"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "The stopping distance is the sum of the two distances:\n$d = av + bv^2$.\nThis is not a straight line in $v$, so a different variable must be on the vertical axis.\nDivide both sides by $v$ ($v > 0$ because the car is moving):\n$\\frac{d}{v} = a + bv$.\nThis has the form $Y = mX + c$ with $X = v$ and $Y = \\frac{d}{v}$, gradient $b$ and vertical intercept $a$.\nSo the straight line drawn is $\\frac{d}{v}$ against $v$.\n\nThe gradient of the line is $b$, so $b = 0.075$.\nThe point $(10, 1.45)$ is a value of $\\left(v, \\frac{d}{v}\\right)$ on the line:\n$1.45 = a + 0.075 \\times 10$\n$a = 1.45 - 0.75 = 0.7$.\n\nBraking distance three times the thinking distance:\n$bv^2 = 3av$\n$0.075v^2 = 3(0.7)v = 2.1v$\n$v(0.075v - 2.1) = 0$\n$v = 0$ is rejected because the car is moving, so $0.075v = 2.1$.\n$v = \\frac{2.1}{0.075} = 28$.\n**Answer: $28$ m/s**\n\nStopping distance at this speed:\n$d = 0.7 \\times 28 + 0.075 \\times 28^2$\n$= 19.6 + 58.8$\n$= 78.4$.\nCheck: the braking distance $58.8$ m is $3 \\times 19.6$ m, three times the thinking distance.\n**Answer: $78.4$ m**",
+    "syllabus_check": "4049 Algebra: linear law — transformation of a given relationship to linear form to determine the unknown constants (here $d = av + bv^2$ to $\\frac{d}{v} = a + bv$), reading the constants from the gradient and a point of the straight line, and using the determined relationship. Only the algebra of a linear equation and a quadratic with a common factor is needed; no logarithms, no calculus, no graph paper.",
+    "originality_note": "Not a re-skin of any real or earlier question. Rebuilt after the moderator placed the two-part draft beside GCE 2025 P1 Q5: that question fixes $\\ln y$ on the $Y$-axis and asks '(a) determine, with working, the function of $x$ which must be plotted [2]; (b) two points on the line, find $A$ and $b$ [4]'. This slot is now ONE unparted 6-mark model question (the paper's third unparted question beside Q1 and Q4, and its second model): nothing is asked about the axes, the line is given by its gradient and a single point rather than two points, and the candidate must decide for themselves that $\\frac{d}{v}$ was plotted before the point $(10, 1.45)$ means anything, read $b$ from the gradient, find $a$ by substitution, and close on the stopping distance at the speed where the braking distance is three times the thinking distance — a shape no 2024/25 paper used. GCE 2022 P1 Q2 and GCE 2012 P1 Q5 are exponential decay with a table to plot; GCE 2024 P2 Q10(b) asks only to EXPLAIN how $y = ax + \\frac{b}{x}$ is linearised; GCE 2021 specimen P2 Q2 plots a pendulum on a grid. Set 2 P2 Q2 (the only earlier linear-law question) is the saturation law $r = \\frac{Ac}{B + c}$ linearised by reciprocals on a blank grid, closing on a limiting value and $80\\%$ of it. Closing step (a quadratic with a common factor, then a substitution into the model) differs from every accepted question in paper-so-far.md. Numbers are realistic (a reaction time of $0.7$ s; at $28$ m/s, about $100$ km/h, thinking $19.6$ m and braking $58.8$ m, close to published stopping distances) and every answer is exact."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 5,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2025 P1 Q5",
+     "jaccard": 0.03,
+     "nearest_set": "Set 1 P2 Q2",
+     "jaccard_set": 0.02,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-09T14:17:16.190Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "single": "v = 28 m/s; stopping distance d = 78.4 m (from d/v = a + bv with b = 0.075, a = 0.7)"
+    },
+    "solvable": true,
+    "issues": [
+     "The vertical-axis variable is not stated. It has to be inferred as d/v (the only straight-line form d/v = a + bv with v on the horizontal axis). Candidates can work it out, but naming the axis (e.g. 'with d/v plotted against v') would remove the guess."
+    ]
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Setter and blind examiner both give v = 28 m/s and d = 78.4 m. Checked: with v on the horizontal axis the only linear form of d = av + bv^2 is d/v = a + bv, so the gradient is b = 0.075 and (10, 1.45) gives a = 1.45 - 0.75 = 0.7; bv^2 = 3av gives v(0.075v - 2.1) = 0, v = 0 rejected (the car is moving), v = 2.1/0.075 = 28; d = 0.7(28) + 0.075(784) = 19.6 + 58.8 = 78.4, and 58.8 = 3 x 19.6 as required. The key is exact."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement: both are right and the key is exact; the blind examiner's one issue (the vertical axis is never named) is a wording point, not a key error.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Light edit to the register (the blind examiner's issue): the stem never says that the vertical axis is NOT d, so a candidate reading 'a straight line graph ... to represent the relationship between d and v' can take (10, 1.45) as (v, d) and the gradient as dd/dv, and only discovers the trap when nothing fits. GCE 2025 P1 Q5 signals this step ('where X is a function of x and Y is a function of y') while still leaving the choice to the candidate. Replace the second paragraph with: 'When a suitable expression in d and v is plotted against v, the points lie on a straight line. The line has gradient 0.075 and passes through the point (10, 1.45).' The candidate still has to decide that d/v was plotted; the key and the marks are unchanged.",
+     "For the session's information, not a rejection: the stopping-distance model d = av^2 + bv with a and b constants is the situation of GCE 2021 P2 Q7(a) ('Explain how a straight line graph can be drawn to represent the formula, and state how the values of a and b could be obtained from the line. [4]'), which is not in the 2024/25 anchor list and so is not a too_close_to; the setter's originality note missed it. The structure here is different (numbers given, unparted, closes on using the fitted model) and the real papers do reuse situations, so the slot stands - but a candidate who has worked the 2021 paper arrives with the d/v transform ready. If the session wants the transform to be a fresh decision, give the car a two-term model the corpus has not linearised (for example fuel used per kilometre as p/v + qv, plotted as (fuel x v) against v^2), keeping the closing comparison of the two components."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "An unparted 6-mark model the candidate must plan from the stem: build d = av + bv^2 from the two named distances, decide unaided that d/v was plotted, read b from the gradient and a from one point, then use the two components of the fitted model to close on v = 28 (v = 0 rejected) and d = 78.4 - one idea at the start then clean routine, finishable in nine minutes, context carrying the information the closing step uses, and a closing step unlike any accepted question in this paper. It is not the Set 2 P2 Q2 saturation-law plot and, now unparted with the line given by gradient and one point and closing on use of the law, it no longer re-skins GCE 2025 P1 Q5; it sits beside Set 1 P1 Q4 and Q6 (both two-part, more scaffolded) as at least as demanding. Only the unnamed vertical axis keeps it off 5."
+   },
+   "exemplars": [
+    {
+     "id": "d63d0115-e21e-4a06-b890-5366fd19d861",
+     "ref": "GCE 2025 P1 Q5"
+    },
+    {
+     "id": "2a20403d-af88-418b-907e-f80b48d86880",
+     "ref": "GCE 2022 P1 Q2"
+    },
+    {
+     "id": "baf4a751-d3f0-4caa-bce4-9d5aad090538",
+     "ref": "GCE 2021 specimen P2 Q2"
+    },
+    {
+     "id": "e7b67bb3-ddea-4630-b7f0-46ec6eb28771",
+     "ref": "GCE 2024 P2 Q10"
+    },
+    {
+     "id": "b6744455-db40-4129-9037-110803533a57",
+     "ref": "GCE 2012 P1 Q5"
+    }
+   ]
+  },
+  {
+   "pos": 6,
+   "topic": "Differentiation (Increasing and Decreasing Functions)",
+   "target": 6,
+   "accepted": true,
+   "question": {
+    "stem": "A short film is released online. The total number of people, $N$ thousand, who have watched the film $t$ days after its release is modelled by $N = \\frac{80t^2}{t^2 + 12}$, for $t \\ge 0$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $\\frac{dN}{dt} = \\frac{1920t}{(t^2 + 12)^2}$ and hence explain why $N$ is an increasing function of $t$ for $t > 0$.",
+      "marks": 3,
+      "answer": "$\\frac{dN}{dt} = \\frac{80[2t(t^2 + 12) - t^2(2t)]}{(t^2 + 12)^2} = \\frac{1920t}{(t^2 + 12)^2}$ (shown). For $t > 0$ the numerator $1920t$ is positive and the denominator $(t^2 + 12)^2$ is a square, so $\\frac{dN}{dt} > 0$ and $N$ is increasing."
+     },
+     {
+      "label": "(b)",
+      "text": "Find the set of values of $t$ for which the rate of increase of $N$ is decreasing.",
+      "marks": 3,
+      "answer": "$t > 2$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 6,
+    "topics": [
+     "Differentiation (Increasing and Decreasing Functions)",
+     "Differentiation (Techniques)"
+    ],
+    "skills": [
+     "read 'the rate at which the film gains viewers' as dN/dt and 'that rate is decreasing' as d^2N/dt^2 < 0, differentiating a printed quotient a second time (product rule with the chain rule on (t^2 + 12)^(-2)) and factorising to 5760(4 - t^2)/(t^2 + 12)^3",
+     "sign of a rational derivative decided from its numerator alone because the denominator is a square, written as a one-line reason that N increases for all t > 0",
+     "t > 2 from t^2 > 4 with the branch t < -2 discarded because t is a time"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Quotient rule on $N = \\frac{80t^2}{t^2 + 12}$:\n$\\frac{dN}{dt} = \\frac{80\\left[2t(t^2 + 12) - t^2(2t)\\right]}{(t^2 + 12)^2}$\n$= \\frac{80(2t^3 + 24t - 2t^3)}{(t^2 + 12)^2}$\n$= \\frac{80 \\times 24t}{(t^2 + 12)^2}$\n$= \\frac{1920t}{(t^2 + 12)^2}$ (shown)\nFor $t > 0$: the numerator $1920t > 0$.\nThe denominator $(t^2 + 12)^2$ is a square, so it is positive for every $t$.\nSo $\\frac{dN}{dt} > 0$ for all $t > 0$.\n**Answer:** $\\frac{dN}{dt} > 0$ for all $t > 0$, so $N$ is an increasing function of $t$.\n\n(b) The rate at which the film gains viewers is $\\frac{dN}{dt}$.\nThis rate is decreasing when $\\frac{d^2N}{dt^2} < 0$.\nWrite $\\frac{dN}{dt} = 1920t(t^2 + 12)^{-2}$ and use the product rule with the chain rule:\n$\\frac{d^2N}{dt^2} = 1920(t^2 + 12)^{-2} + 1920t \\times (-2)(t^2 + 12)^{-3} \\times 2t$\n$= \\frac{1920}{(t^2 + 12)^3}\\left[(t^2 + 12) - 4t^2\\right]$\n$= \\frac{1920(12 - 3t^2)}{(t^2 + 12)^3}$\n$= \\frac{5760(4 - t^2)}{(t^2 + 12)^3}$\nThe denominator $(t^2 + 12)^3$ is positive for every $t$, so the sign of $\\frac{d^2N}{dt^2}$ is the sign of $4 - t^2$.\n$\\frac{d^2N}{dt^2} < 0 \\Rightarrow 4 - t^2 < 0 \\Rightarrow t^2 > 4$\n$t < -2$ or $t > 2$\n$t$ is a time, so $t \\ge 0$: reject $t < -2$.\n**Answer:** $t > 2$\n(Check: at $t = 2$, $N = \\frac{320}{16} = 20$ thousand; from the third day on, the film still gains viewers every day, but fewer each day than the day before. As $t$ grows, $N$ approaches $80$ thousand.)",
+    "syllabus_check": "4049 Differentiation: quotient rule and chain rule (Techniques); increasing functions via the sign of dN/dt; interpreting a rate of change and its own rate of change (the second derivative, which 4049 uses for the second-derivative test) inside a real-world model. No vectors, no integration by parts, no inverse trigonometric functions. The second derivative is found by the product rule on 1920t(t^2 + 12)^(-2), both rules within the syllabus. Answers exact: t > 2.",
+    "originality_note": "Not a re-skin of any exemplar or earlier Set: Set 1 P1 Q6 integrated an exponential gradient function and solved an exponential inequality for where y increases; Set 2 P1 Q12 split a rational function into partial fractions, found stationary points and the decreasing set of x. This question tests increasing/decreasing from the other direction — the candidate must decide that 'the rate at which the film gains viewers' is dN/dt and that 'this rate is decreasing' is a condition on the second derivative, then differentiate the printed quotient again and keep t > 2 only because t is a time. The real exemplars: GCE 2025 P2 Q5 proves an e^(-x) quotient increases for all x (here that is a one-mark sentence inside (a), on a rational model, and is not the point of the question); GCE 2023 P1 Q6 finds a constant from a decreasing interval; GCE 2021 specimen P1 Q4 pairs increasing/decreasing with connected rates. No earlier question asks where a rate of increase is itself decreasing. Closing step: an interval t > 2 (not an inequality in a constant, no discriminant, no quadratic formula). Context carries information: the model is a saturating total (N approaches 80 thousand), t >= 0 discards the branch t < -2, and the phrase 'rate at which the film gains viewers' is what the candidate must translate."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 6,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2009 P1 Q2",
+     "jaccard": 0.073,
+     "nearest_set": "Set 1 P1 Q6",
+     "jaccard_set": 0.076,
+     "repeated_skills": []
+    },
+    "marks": 6,
+    "checked_at": "2026-10-09T14:09:53.067Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown; dN/dt = 1920t/(t^2+12)^2 > 0 for t > 0 since 1920t > 0 and (t^2+12)^2 > 0, so N is increasing",
+     "(b)": "t > 2 (d2N/dt2 = 5760(4 - t^2)/(t^2+12)^3 < 0 when t > 2)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give dN/dt = 80[2t(t^2+12) - 2t^3]/(t^2+12)^2 = 1920t/(t^2+12)^2 and the sign reason (numerator 1920t > 0 for t > 0, denominator a square). Checked: 80 x 24t = 1920t. The restriction t > 0 is right, since dN/dt = 0 at t = 0."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give t > 2. Checked: d2N/dt2 = 1920[(t^2+12) - 4t^2]/(t^2+12)^3 = 5760(4 - t^2)/(t^2+12)^3, negative iff t^2 > 4, so t > 2 with t < -2 discarded as t >= 0. The set is open: at t = 2 the rate is stationary (its maximum), not decreasing."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on both parts and both are right: dN/dt = 1920t/(t^2+12)^2 with N increasing for t > 0, and the rate decreases for t > 2.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Wording of (b) in SEAB register: 'Find the set of values of t for which the rate of increase of N is decreasing.' The present 'the rate at which the film gains viewers is decreasing' reads as two 'is/decreasing' clauses and a weak candidate may parse it as N decreasing (which (a) has just ruled out).",
+     "Wording of (a): 'Show that dN/dt = 1920t/(t^2 + 12)^2 and hence explain why N is an increasing function of t for t > 0.' - the 'hence' tells the candidate the reason is read off the printed derivative, as GCE 2021 specimen P1 Q4(a) and GCE 2025 P2 Q5 do.",
+     "Optional, to put more distance between (a) and GCE 2021 specimen P1 Q4(a) (f(x) = (x^2-4)/(x^2+6), quotient rule, numerator kx over a square, 'increasing'): the whole question is not a re-skin because (b) is a different skill and the context supplies the decision, so this is not required for the slot to pass."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "At standard: (a) is the routine gate (quotient rule, one-line sign reason), and (b) hands the candidate the decision the stem does not name - 'the rate ... is decreasing' is d2N/dt2 < 0, not dN/dt < 0 (which (a) has just shown is impossible) - then a product-and-chain-rule differentiation, the sign from 4 - t^2 alone and the branch t < -2 discarded because t is a time; one idea, 1.5 min a mark, numbers close exactly (5760(4 - t^2), t = 2, N(2) = 20). Beside Set 1 P1 Q6 [6] (integrate, then an exponential inequality for 'increasing') it is as demanding, as clean and better linked (the printed (a) feeds (b)); it repeats no earlier Set's skill (Set 2 P1 Q12(c) asked where a curve decreases from dy/dx < 0; this asks where the RATE decreases) and nothing in paper-so-far uses the quotient rule or a second-derivative inequality, and no other accepted question closes on a set of values from a quadratic inequality. Gates pass; the setter's skills phrases are true and specific. One point short of 5 only for the two wording edits above."
+   },
+   "exemplars": [
+    {
+     "id": "e3e86fbf-1532-4dfd-b59a-78cea2955959",
+     "ref": "GCE 2025 P2 Q5"
+    },
+    {
+     "id": "08140fec-6a72-46c2-aaca-4c0161c412a5",
+     "ref": "GCE 2023 P1 Q6"
+    },
+    {
+     "id": "e61389e1-bfe7-4d27-b6f5-e0a51a8c3f40",
+     "ref": "GCE 2021 specimen P1 Q4"
+    },
+    {
+     "id": "13226df5-5455-499c-89d9-521c661d8fe6",
+     "ref": "GCE 2022 P1 Q9"
+    },
+    {
+     "id": "cc51af06-a2f8-49d1-a185-57ed368348f3",
+     "ref": "GCE 2010 P1 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 7,
+   "topic": "Binomial Theorem",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "In the expansion of $(1 + ax)^3(1 - 2x)^5$, where $a$ is a constant, the coefficient of $x^2$ is $-23$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the possible values of $a$.",
+      "marks": 4,
+      "answer": "$a = 3$ or $a = 7$"
+     },
+     {
+      "label": "(b)",
+      "text": "It is given further that the coefficient of $x$ in this expansion is negative. Find the coefficient of $x^3$.",
+      "marks": 3,
+      "answer": "$37$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 7,
+    "topics": [
+     "Binomial Theorem"
+    ],
+    "skills": [
+     "coefficient of a power of x in the product of two binomial expansions with different indices, choosing which pairs of terms from the two expansions contribute",
+     "an unknown constant from a given non-zero coefficient of the product, which gives a quadratic in the constant with BOTH roots kept",
+     "choosing between the two values of the constant from a sign condition on a neighbouring coefficient, then a coefficient that needs a term of the expansion beyond those already used"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a) Expand each factor as far as the term in $x^2$.\n$(1 - 2x)^5 = 1 + 5(-2x) + 10(-2x)^2 + 10(-2x)^3 + \\ldots = 1 - 10x + 40x^2 - 80x^3 + \\ldots$\n$(1 + ax)^3 = 1 + 3ax + 3a^2x^2 + a^3x^3$\nThe term in $x^2$ of the product comes from three pairs: $(1)(40x^2) + (3ax)(-10x) + (3a^2x^2)(1)$.\nCoefficient of $x^2$: $40 - 30a + 3a^2$\n$3a^2 - 30a + 40 = -23$\n$3a^2 - 30a + 63 = 0$\n$a^2 - 10a + 21 = 0$\n$(a - 3)(a - 7) = 0$\nBoth values satisfy the condition.\n**Answer:** $a = 3$ or $a = 7$\n\n(b) Coefficient of $x$ in the product: $(1)(-10) + (3a)(1) = 3a - 10$\n$a = 3$: $3(3) - 10 = -1 < 0$\n$a = 7$: $3(7) - 10 = 11 > 0$\nSo $a = 3$ and the product is $(1 + 3x)^3(1 - 2x)^5$, with $(1 + 3x)^3 = 1 + 9x + 27x^2 + 27x^3$.\nThe term in $x^3$ comes from four pairs: $(1)(-80x^3) + (9x)(40x^2) + (27x^2)(-10x) + (27x^3)(1)$.\nCoefficient of $x^3$: $-80 + 360 - 270 + 27 = 37$\n**Answer:** $37$",
+    "syllabus_check": "4049 Binomial Theorem: expansion of $(a + b)^n$ for positive integer $n$ and use of the general term; the product of two expansions is handled by multiplying the terms needed, which the syllabus covers (coefficients in a product such as $(2 + 3x)(2 - \\frac{ax}{2})^5$ in GCE 2022 P1 Q5). The condition gives a quadratic in $a$ solved by factorisation (Quadratic Functions, within scope). No approximation, no greatest term, no negative or fractional index.",
+    "originality_note": "Not a re-skin of any real question: GCE 2022 P1 Q5, GCE 2023 P2 Q1, GCE 2024 P1 Q5 and GCE 2025 P1 Q7 each multiply ONE expansion by a one- or two-term factor and fix the constant from a zero coefficient or a coefficient relation; here both factors are genuine expansions with different indices ($3$ and $5$), the constant comes from a given NON-ZERO coefficient and is a quadratic with both roots kept, and the second part selects a root by a sign condition on the coefficient of $x$ before asking for the coefficient of $x^3$ (which needs the $x^3$ term of $(1 - 2x)^5$, beyond the terms part (a) used). Unlike Set 1 P1 Q5 (difference of conjugate expansions feeding a tan equation) and Set 2 P2 Q6 (conjugate product combined into one binomial, unknown index $n$, term independent of $x$): no conjugates, no combining into one binomial, the indices are fixed and different, and the skill is choosing the contributing pairs of terms from two separate expansions. Closes on a coefficient as the paper shape requires."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 7,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P1 Q7",
+     "jaccard": 0.118,
+     "nearest_set": "Set 2 P2 Q6",
+     "jaccard_set": 0.074,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-10-09T14:01:50.669Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = 3 or a = 7",
+     "(b)": "37"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Checked: (1-2x)^5 = 1 - 10x + 40x^2 - 80x^3 + ..., (1+ax)^3 = 1 + 3ax + 3a^2x^2 + a^3x^3; x^2 coefficient 3a^2 - 30a + 40 = -23 gives a^2 - 10a + 21 = 0, a = 3 or 7. Setter and blind examiner both give a = 3 or a = 7."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Checked: x coefficient 3a - 10 is -1 for a = 3 and 11 for a = 7, so a = 3; x^3 coefficient (1)(-80) + (9)(40) + (27)(-10) + (27)(1) = 37. Setter and blind examiner both give 37."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "No disagreement: both parts worked independently and the key (a = 3 or 7; 37) is exactly right.",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A clean 2024/25-standard binomial question: no expansion rung is printed, the candidate must expand both factors and choose the three (then four) pairs that contribute (List A item 1), (a) ends on a quadratic in the constant with BOTH roots kept and (b) hands the candidate the decision between them through a sign condition on a neighbouring coefficient (item 4 twist, item 9 case), with engineered numbers (-23 gives a = 3 or 7, the x coefficient -1 vs 11, answer 37); marks match the work (GCE 2024 P1 Q5(a) [4] for a constant from one coefficient). Nearest real question is GCE 2022 P1 Q5 (constant from a coefficient condition, then the x^3 coefficient) but that one prints the expansion as (a), has a linear second factor and discards a = 0 by 'positive' - different situation and sequence, not a re-skin; distinct from Set 1 P1 Q5 (difference of fifth powers into a tan equation) and Set 2 P2 Q6 (conjugate product, general n), and no other question in paper-so-far.md closes on a coefficient or selects a constant by a sign condition on a coefficient. Beside Set 1 P1 Q5 [7] it is as demanding, less scaffolded and as clean."
+   },
+   "exemplars": [
+    {
+     "id": "f9712d69-9043-4a95-875d-329a8919e1a3",
+     "ref": "GCE 2025 P1 Q7"
+    },
+    {
+     "id": "e5583299-4957-406d-b0f2-2e38449d068f",
+     "ref": "GCE 2024 P1 Q5"
+    },
+    {
+     "id": "bbe1776c-339f-4d7e-99b4-9f6efc3c5058",
+     "ref": "GCE 2022 P1 Q5"
+    },
+    {
+     "id": "b2ca24ac-f0a9-4304-8df4-0179f34cfa1d",
+     "ref": "GCE 2021 specimen P1 Q3"
+    },
+    {
+     "id": "22303d15-cdcc-4b0c-9fea-70f382242699",
+     "ref": "GCE 2023 P2 Q1"
+    }
+   ]
+  },
+  {
+   "pos": 8,
+   "topic": "Polynomials",
+   "target": 7,
+   "accepted": true,
+   "question": {
+    "stem": "It is given that $2 + \\sqrt{2}$ is a root of the equation $3x^3 + ax^2 + 2x + b = 0$, where $a$ and $b$ are integers. Without using a calculator, find the value of $a$ and of $b$, and find the other two roots of the equation.",
+    "parts": [],
+    "answer": "$a = -11$, $b = 2$; the other two roots are $x = 2 - \\sqrt{2}$ and $x = -\\frac{1}{3}$",
+    "total_marks": 7,
+    "topics": [
+     "Polynomials",
+     "Surds"
+    ],
+    "skills": [
+     "find two integer constants of a cubic from ONE given surd root: separate $\\mathrm{p}(2 + \\sqrt{2}) = 0$ into its rational part and its $\\sqrt{2}$ part, each of which must be zero because $a$ and $b$ are integers (two equations from one condition), nothing signposted",
+     "find the remaining roots after the constants: either the conjugate 2 - √2 and the quadratic factor x^2 - 4x + 2 then 3x + 1 by comparison, or the rational root -1/3 by trial then the quadratic factor solved exactly"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "Let $\\mathrm{p}(x) = 3x^3 + ax^2 + 2x + b$.\n$(2 + \\sqrt{2})^2 = 4 + 4\\sqrt{2} + 2 = 6 + 4\\sqrt{2}$\n$(2 + \\sqrt{2})^3 = (2 + \\sqrt{2})(6 + 4\\sqrt{2}) = 12 + 8\\sqrt{2} + 6\\sqrt{2} + 8 = 20 + 14\\sqrt{2}$\n$2 + \\sqrt{2}$ is a root, so $\\mathrm{p}(2 + \\sqrt{2}) = 0$:\n$3(20 + 14\\sqrt{2}) + a(6 + 4\\sqrt{2}) + 2(2 + \\sqrt{2}) + b = 0$\n$(64 + 6a + b) + (44 + 4a)\\sqrt{2} = 0$\n$a$ and $b$ are integers, so $64 + 6a + b$ and $44 + 4a$ are rational; $\\sqrt{2}$ is irrational, so both brackets are zero (if $44 + 4a \\ne 0$ then $\\sqrt{2} = -\\frac{64 + 6a + b}{44 + 4a}$ would be rational).\n$44 + 4a = 0$, so $a = -11$\n$64 + 6(-11) + b = 0$, so $b = 2$\n**Answer:** $a = -11$, $b = 2$\nSo $\\mathrm{p}(x) = 3x^3 - 11x^2 + 2x + 2$.\nReplacing $\\sqrt{2}$ by $-\\sqrt{2}$ in the working above gives $\\mathrm{p}(2 - \\sqrt{2}) = (64 + 6a + b) - (44 + 4a)\\sqrt{2} = 0$, so $2 - \\sqrt{2}$ is also a root.\n(Check by substitution: $(2 - \\sqrt{2})^2 = 6 - 4\\sqrt{2}$, $(2 - \\sqrt{2})^3 = 20 - 14\\sqrt{2}$, and $3(20 - 14\\sqrt{2}) - 11(6 - 4\\sqrt{2}) + 2(2 - \\sqrt{2}) + 2 = (60 - 66 + 4 + 2) + (-42 + 44 - 2)\\sqrt{2} = 0$.)\n$x - (2 + \\sqrt{2})$ and $x - (2 - \\sqrt{2})$ are both factors of $\\mathrm{p}(x)$, so their product is a factor:\n$(x - 2 - \\sqrt{2})(x - 2 + \\sqrt{2}) = (x - 2)^2 - 2 = x^2 - 4x + 2$\n$3x^3 - 11x^2 + 2x + 2 = (x^2 - 4x + 2)(3x + c)$\nConstant term: $2c = 2$, so $c = 1$. (Check the $x^2$ term: $c - 12 = -11$, correct; the $x$ term: $6 - 4c = 2$, correct.)\n$\\mathrm{p}(x) = (x^2 - 4x + 2)(3x + 1)$\nThird root: $3x + 1 = 0$, so $x = -\\frac{1}{3}$.\n(Check: $\\mathrm{p}\\left(-\\frac{1}{3}\\right) = -\\frac{1}{9} - \\frac{11}{9} - \\frac{6}{9} + \\frac{18}{9} = 0$.)\n**Answer:** the other two roots are $x = 2 - \\sqrt{2}$ and $x = -\\frac{1}{3}$\nAlternative route: a candidate who takes $2 - \\sqrt{2}$ as a root at once writes $\\mathrm{p}(x) = (x^2 - 4x + 2)(3x + c)$, compares the $x$ terms to get $c = 1$, then $a = c - 12 = -11$ and $b = 2c = 2$, with the third root $-\\frac{1}{3}$; this earns the same marks provided the conjugate is justified or $\\mathrm{p}(2 + \\sqrt{2}) = 0$ is verified with the values found.\nMarks: M1 $(2 + \\sqrt{2})^3 = 20 + 14\\sqrt{2}$ (both powers correct); M1 $\\mathrm{p}(2 + \\sqrt{2})$ collected into a rational part and a multiple of $\\sqrt{2}$ and both equated to zero; A1 $a = -11$; A1 $b = 2$; M1 $2 - \\sqrt{2}$ a root (by the sign argument or by substitution) and the quadratic factor $x^2 - 4x + 2$; M1 the linear factor $3x + 1$ by comparing coefficients or by division; A1 both other roots $2 - \\sqrt{2}$ and $-\\frac{1}{3}$. A candidate who finds $x = -\\frac{1}{3}$ by trial after finding $a$ and $b$, and divides to reach $x^2 - 4x + 2$ and its root $2 - \\sqrt{2}$, earns the same last three marks.",
+    "syllabus_check": "4049 Polynomials: a root of p(x) = 0 means p(root) = 0 (factor theorem); the product of two linear factors as a quadratic factor; the remaining factor of a cubic by comparing coefficients or by long division. 4049 Surds: expanding powers of (2 + sqrt 2), collecting into the form P + Q sqrt 2, and the standard result that if P + Q sqrt 2 = 0 with P and Q rational then P = Q = 0 (equating rational and irrational parts), which is why the stem says a and b are integers. The conjugate root is answerable by direct substitution, so no conjugate-root theorem is assumed; no sum or product of roots, no complex numbers, nothing outside 4049.",
+    "originality_note": "Unparted, in the 2024/25 form (GCE 2024 P1 Q7 'Without using a calculator, express ...'; GCE 2025 P1 Q2, Q4(b)): nothing is signposted, the candidate decides the separation into rational and irrational parts, the conjugate root and the division, with no intermediate answer printed, and the question closes on a value (the two remaining roots), as paper-shape.md asks of Q8. The given information is unfamiliar: ONE surd root of a cubic with two unknown integer coefficients, which the candidate must see yields TWO equations. It does not share Set 1 P2 Q2's frame: that question prints p(x) = 2x^3 + ax^2 + bx - 10 with a linear remainder on division by a quadratic, part (a) finds a and b, part (b) shows one real root by the discriminant; here there is one part, the given fact is a surd root, the unknowns are the x^2 coefficient and the constant term (as in GCE 2022 P2 Q2, not Set 1), the leading coefficient is 3, and the question ends on the roots themselves. Set 1 P1 Q12 (2x - 1 a factor, partial fractions, an integral), Set 2 P1 Q10 (x - 2 a factor for all k, repeated roots) and Set 2 P1 Q6 (a cubic in sqrt k from an integral) test other polynomial skills. The real exemplars GCE 2022 P2 Q2, GCE 2021 specimen P1 Q10 and GCE 2025 P2 Q4 give a factor and a remainder and END with surd roots; here the direction is reversed, the surd root is the input. In this paper Q2 factorises a cubic by grouping and Q3(b) rationalises 1/(2 + sqrt 3) to a special angle: Q8 instead cubes a binomial surd and equates parts, then divides a cubic by a known quadratic factor, so no skill is used twice, and sqrt 2 is used rather than Q3's 2 + sqrt 3; the session should still know that P1 now carries two no-calculator surd steps (Q3(b) and Q8) against the real papers' one or two a year across both papers; the ban is kept here because without it the roots could be read off a calculator's polynomial solver. The numbers close exactly: p(x) = (x^2 - 4x + 2)(3x + 1), roots 2 +/- sqrt 2 and -1/3, with a = -11 and b = 2 from 44 + 4a = 0 and 64 + 6a + b = 0. Marks: two constants from two conditions [4] and the remaining roots [3], as GCE 2022 P2 Q2 paid the same work (4 + 3). The paper's unparted questions are now Q1, Q2, Q4, Q5 and Q8 (five, the top of List B item 3b's two-to-five)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 8,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2004 P2 Q2",
+     "jaccard": 0.172,
+     "nearest_set": "Set 1 P2 Q2",
+     "jaccard_set": 0.127,
+     "repeated_skills": []
+    },
+    "marks": 7,
+    "checked_at": "2026-10-09T14:24:29.262Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "a": "a = -11",
+     "b": "b = 2",
+     "other roots": "x = 2 - \\sqrt{2}, x = -\\frac{1}{3}"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "single",
+      "agree": true,
+      "note": "Both give a = -11, b = 2, other roots 2 - √2 and -1/3. Worked independently: (2+√2)^2 = 6+4√2, (2+√2)^3 = 20+14√2; p(2+√2) = (64+6a+b) + (44+4a)√2 = 0; a, b integers so both brackets vanish: a = -11, b = 2. Then 3x^3 - 11x^2 + 2x + 2 = (x^2 - 4x + 2)(3x + 1) — expansion checks (3x^3 + x^2 - 12x^2 - 4x + 6x + 2) — so the other roots are 2 - √2 and -1/3; p(-1/3) = (-1 - 11 - 6 + 18)/9 = 0. The key is exactly right and the 'integers' hypothesis the method needs is now in the stem."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every value and both are right: a = -11, b = 2, the other roots 2 - √2 and -1/3.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Skills phrase 2 overclaims: the candidate is NOT forced to 'decide unprompted that the conjugate 2 - √2 is also a root'. Once a = -11 and b = 2 are found, the syllabus route — trial of x = -1/3 by the factor theorem, divide by 3x + 1, solve x^2 - 4x + 2 = 0 by formula — reaches 2 ± √2 with no conjugate argument, and the setter's own scheme pays that route in full. Reword the phrase to what the question actually tests: 'find the remaining roots after the constants: either the conjugate 2 - √2 and the quadratic factor x^2 - 4x + 2 then 3x + 1 by comparison, or the rational root -1/3 by trial then the quadratic factor solved exactly'. The question itself needs no change.",
+     "For the session's read-through (paper level, not a reason to reject): Q2 and Q8 both end by writing a cubic as a product of factors (Q2 by grouping x^3 + 2x^2 + x + 2 = (x + 2)(x^2 + 1); Q8 by division of 3x^3 - 11x^2 + 2x + 2 by a known factor), and Q3(b) and Q8 are both no-calculator surd manipulations (rationalising 1/(2 + √3); cubing 2 + √2 and equating parts) — the real papers carry one or two calculator-ban/exact-form items a YEAR across both papers. Different closing steps and different skills, so neither is a Lesson-2 match; the reader should simply know P1 now carries two exact-surd items."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The round-1 fixes were all taken: unparted in the 2024/25 form, 'integers' in the stem, new numbers (leading coefficient 3, root 2 + √2), closing on the roots themselves. One genuine idea the candidate must supply — one surd root gives TWO equations by separating the rational part from the √2 part — then honest routine (solve, factor theorem or conjugate, divide, solve the quadratic), nothing printed, numbers that close exactly, marks in line with the [4] + [3] GCE 2022 P2 Q2 paid the same work, finishable in about ten minutes. Not a re-skin of any 2024/25 P1 question (nearest corpus item GCE 2004 P2 Q2 is a nested-surd a-and-b question, a different situation), and no longer Set 1 P2 Q2's frame or part sequence: the given fact, the unknown positions and the structure are all different. Beside Set 1 P1 Q8 and P2 Q2 (both 7 marks) it is as demanding and as clean with less scaffolding. Gates pass. Held at 4 only because the second skills phrase claims a decision the question does not force."
+   },
+   "exemplars": [
+    {
+     "id": "13226df5-5455-499c-89d9-521c661d8fe6",
+     "ref": "GCE 2022 P1 Q9"
+    },
+    {
+     "id": "8e1d2031-ec74-4b3a-8c6a-99a5fac95bbc",
+     "ref": "GCE 2022 P2 Q2"
+    },
+    {
+     "id": "dda2fb93-d93f-47a7-9218-3322317b1b5a",
+     "ref": "GCE 2021 specimen P1 Q10"
+    },
+    {
+     "id": "cc0ccc7b-e0f4-4257-b84a-c8e4f92dffda",
+     "ref": "GCE 2025 P1 Q3"
+    },
+    {
+     "id": "e3760789-c8bf-4dea-a2b1-8142f18449ad",
+     "ref": "GCE 2025 P2 Q4"
+    }
+   ]
+  },
+  {
+   "pos": 9,
+   "topic": "Trigonometry (Graphs)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The curve $y = a\\tan bx$, where $a$ and $b$ are positive constants and $x$ is in radians, passes through the points $P\\left(\\frac{\\pi}{12}, 1\\right)$ and $Q\\left(\\frac{\\pi}{6}, 3\\right)$. The period of the curve is greater than $\\frac{\\pi}{4}$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the value of $a$ and of $b$.",
+      "marks": 4,
+      "answer": "$a = \\sqrt{3}$, $b = 2$"
+     },
+     {
+      "label": "(b)",
+      "text": "Sketch the curve for $0 \\le x \\le \\pi$, showing the asymptotes and the coordinates of the points where the curve meets the $x$-axis.",
+      "marks": 3,
+      "answer": "Sketch of $y = \\sqrt{3}\\tan 2x$ for $0 \\le x \\le \\pi$: three increasing branches; asymptotes $x = \\frac{\\pi}{4}$ and $x = \\frac{3\\pi}{4}$; meets the $x$-axis at $(0, 0)$, $\\left(\\frac{\\pi}{2}, 0\\right)$ and $(\\pi, 0)$"
+     },
+     {
+      "label": "(c)",
+      "text": "The line through $Q$ parallel to the $x$-axis meets the curve sketched in part (b) again at the point $R$. State the coordinates of $R$.",
+      "marks": 1,
+      "answer": "$R\\left(\\frac{2\\pi}{3}, 3\\right)$"
+     }
+    ],
+    "answer": "",
+    "total_marks": 8,
+    "topics": [
+     "Trigonometry (Graphs)",
+     "Trigonometry (Identities)"
+    ],
+    "skills": [
+     "constants of y = a tan bx from two points whose x-coordinates are in the ratio 1 : 2, the unknown b eliminated through the double-angle formula for tan and the second value of b rejected by the period",
+     "sketch of y = a tan bx over three branches, with the asymptotes and the x-intercepts of a stretched tan curve",
+     "the second point at the same height on a tan curve lies one period along, not at the reflection in the asymptote"
+    ],
+    "needs_figure": false,
+    "figure_description": "",
+    "solution": "(a)\nAt $P$: $a\\tan\\frac{b\\pi}{12} = 1$.\nAt $Q$: $a\\tan\\frac{b\\pi}{6} = 3$.\nLet $t = \\tan\\frac{b\\pi}{12}$. Since $\\frac{b\\pi}{6} = 2 \\times \\frac{b\\pi}{12}$, $\\tan\\frac{b\\pi}{6} = \\frac{2t}{1 - t^2}$.\nSo $a t = 1$ and $a \\cdot \\frac{2t}{1 - t^2} = 3$.\nDividing the second equation by the first: $\\frac{2}{1 - t^2} = 3$.\n$1 - t^2 = \\frac{2}{3}$, so $t^2 = \\frac{1}{3}$.\n$a > 0$ and $at = 1$, so $t > 0$: $t = \\frac{1}{\\sqrt{3}}$.\n$a = \\frac{1}{t} = \\sqrt{3}$.\n$\\tan\\frac{b\\pi}{12} = \\frac{1}{\\sqrt{3}}$ with $b > 0$ gives $\\frac{b\\pi}{12} = \\frac{\\pi}{6}$ or $\\frac{7\\pi}{6}$ or $\\ldots$, i.e. $b = 2$ or $b = 14$ or $\\ldots$\nThe period of $y = a\\tan bx$ is $\\frac{\\pi}{b}$; $b = 14$ gives period $\\frac{\\pi}{14} < \\frac{\\pi}{4}$ (rejected), and larger values are worse. $b = 2$ gives period $\\frac{\\pi}{2} > \\frac{\\pi}{4}$.\nCheck at $Q$: $\\sqrt{3}\\tan\\frac{\\pi}{3} = \\sqrt{3} \\times \\sqrt{3} = 3$.\n**Answer:** $a = \\sqrt{3}$, $b = 2$.\n\n(b)\nThe curve is $y = \\sqrt{3}\\tan 2x$, period $\\frac{\\pi}{2}$.\nAsymptotes where $2x = \\frac{\\pi}{2}$ or $\\frac{3\\pi}{2}$: $x = \\frac{\\pi}{4}$ and $x = \\frac{3\\pi}{4}$.\nMeets the $x$-axis where $2x = 0, \\pi, 2\\pi$: $(0, 0)$, $\\left(\\frac{\\pi}{2}, 0\\right)$, $(\\pi, 0)$.\nThree increasing branches: from $(0, 0)$ up towards the asymptote $x = \\frac{\\pi}{4}$; from far below the axis just after $x = \\frac{\\pi}{4}$, through $\\left(\\frac{\\pi}{2}, 0\\right)$, up towards $x = \\frac{3\\pi}{4}$; from far below just after $x = \\frac{3\\pi}{4}$ up to $(\\pi, 0)$.\n$P\\left(\\frac{\\pi}{12}, 1\\right)$ and $Q\\left(\\frac{\\pi}{6}, 3\\right)$ lie on the first branch.\n**Answer:** sketch as described; asymptotes $x = \\frac{\\pi}{4}$, $x = \\frac{3\\pi}{4}$; $x$-intercepts $(0, 0)$, $\\left(\\frac{\\pi}{2}, 0\\right)$, $(\\pi, 0)$.\n\n(c)\nThe line is $y = 3$. The curve repeats every $\\frac{\\pi}{2}$, so the next point at height $3$ is at $x = \\frac{\\pi}{6} + \\frac{\\pi}{2} = \\frac{2\\pi}{3}$, on the second branch.\nCheck: $\\sqrt{3}\\tan\\frac{4\\pi}{3} = \\sqrt{3} \\times \\sqrt{3} = 3$.\n(The reflection of $Q$ in the asymptote $x = \\frac{\\pi}{4}$, at $x = \\frac{\\pi}{3}$, gives $y = \\sqrt{3}\\tan\\frac{2\\pi}{3} = -3$, not $3$.)\nThe third branch lies below the $x$-axis, so there is no other point.\n**Answer:** $R\\left(\\frac{2\\pi}{3}, 3\\right)$.",
+    "syllabus_check": "4049 only: the graph of y = a tan bx (period pi/b, asymptotes, x-intercepts) and its sketch over a stated domain in radians; the double-angle formula tan 2A = 2 tan A / (1 - tan^2 A); solving tan(theta) = 1/sqrt(3) for a positive angle and choosing the value that fits a stated condition. No calculus, no general solution formula, no inverse trigonometric functions, no sec/cosec graphs. Exact answers throughout.",
+    "originality_note": "Topic Trigonometry (Graphs) has been tested twice in our Sets, both on sine/cosine curves: Set 1 P1 Q2 sketched y = 2 sin 3x + 1 and counted solutions of y = k; Set 2 P1 Q7 read a, b, c of y = a cos bx + c from a minimum, a maximum value and a maximum gradient, then a tangent. This question is the first tan graph in the Sets. Its idea is not a reading of features but an identity: the two given points have x-coordinates in the ratio 1 : 2, so b is eliminated by tan 2A = 2 tan A / (1 - tan^2 A) and the candidate must decide to do that; the period condition then rejects b = 14. The sketch is of a tan curve with asymptotes (never sketched in Sets 1 or 2), and the closing 1-mark part turns on the period of tan, with the reflection in the asymptote as the trap. No horizontal-line count (Set 1), no tangent or gradient (Set 2), no drawn straight line to count solutions (GCE 2024 P1 Q10), no triangle on the curve and no answer in terms of k (GCE 2025 P1 Q12), no max/min reading (GCE 2021 P1 Q7), no two curves on one diagram (GCE 2022 P1 Q10). Numbers are engineered: a = sqrt 3, b = 2, R = (2 pi / 3, 3)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 9,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2008 P2 Q8",
+     "jaccard": 0.109,
+     "nearest_set": "Set 1 P2 Q2",
+     "jaccard_set": 0.065,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-09T13:54:07.590Z",
+    "rounds": 1
+   },
+   "blind": {
+    "answers": {
+     "(a)": "a = √3, b = 2",
+     "(b)": "y = √3 tan 2x (period π/2): asymptotes x = π/4 and x = 3π/4; meets x-axis at (0, 0), (π/2, 0), (π, 0); branches increasing, through P(π/12, 1) and Q(π/6, 3)",
+     "(c)": "R(2π/3, 3)"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give a = sqrt(3), b = 2. Checked: dividing a tan(b pi/6) = 3 by a tan(b pi/12) = 1 and writing tan(b pi/6) = 2t/(1 - t^2) with t = tan(b pi/12) gives t^2 = 1/3, t > 0 because a > 0, so a = sqrt(3); b = 2 + 12n all fit both points (b = 14 and 26 verified numerically) and only b = 2 has period pi/b > pi/4. Scheme note: b is not stated to be an integer, so a trial of b = 1, 2, 3 under the period bound earns the A marks only; the M marks sit on forming the two equations and eliminating a through the double-angle (or ratio) step, and the final A1 on b needs the period reason."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: y = sqrt(3) tan 2x, period pi/2, asymptotes x = pi/4 and x = 3pi/4, x-intercepts (0, 0), (pi/2, 0), (pi, 0), three increasing branches with P and Q on the first. Checked."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give R(2pi/3, 3). Checked: tan 2x = sqrt(3) on 0 <= x <= pi gives 2x = pi/3 or 4pi/3 only (7pi/3 is beyond 2pi), so x = pi/6 (Q) and x = 2pi/3 (R); the reflection of Q in the asymptote x = pi/4, at x = pi/3, gives y = -3; the third branch is below the axis."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and the key is right: a = sqrt(3), b = 2; asymptotes x = pi/4, 3pi/4 with intercepts at 0, pi/2, pi; R(2pi/3, 3).",
+    "score": 5,
+    "standard": "at",
+    "fixes": [],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The idea sits in (a): nothing says the x-coordinates are in the ratio 1 : 2, so the candidate must choose to eliminate a and reach tan 2A = 2 tan A/(1 - tan^2 A), and the unstated family b = 2 + 12n is cut to b = 2 only by turning 'period greater than pi/4' into b < 4; (b) is the syllabus tan sketch (asymptotes, intercepts, three branches, paid [3] as GCE 2024 P1 Q10(b)) and (c) reads the periodicity exactly, with the asymptote-reflection trap giving -3. Unlike Set 1 P1 Q2 (sine sketch, count of solutions) and Set 2 P1 Q7 (cosine constants from a minimum, the maximum value and the maximum gradient, then a tangent) it finds the constants of a tan curve from two points through an identity and ends on the next point at the same height; its numbers close exactly (sqrt(3), 2, 2pi/3) and it does not re-skin GCE 2021 P1 Q7, 2023 P2 Q7(a), 2024 P1 Q10 or 2025 P1 Q12; no 'Hence' part, and no other question in this paper closes by stating a point on a periodic curve."
+   },
+   "exemplars": [
+    {
+     "id": "ac7e2630-78dd-4fa9-94d7-1cf5a55d346c",
+     "ref": "GCE 2025 P1 Q12"
+    },
+    {
+     "id": "5c25951b-f81a-439e-bd5e-ecc6237d4a5e",
+     "ref": "GCE 2024 P1 Q10"
+    },
+    {
+     "id": "087a763f-0746-4052-a352-e5cbf9e99b0e",
+     "ref": "GCE 2022 P1 Q10"
+    },
+    {
+     "id": "0458c4d4-e382-40cc-a4d4-bd2ba256da0f",
+     "ref": "GCE 2021 P1 Q7"
+    },
+    {
+     "id": "1256eefe-1ee9-439e-9321-9354b9eb1265",
+     "ref": "GCE 2023 P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 10,
+   "topic": "Differentiation (Maximum and Minimum)",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a straight shoreline. A fish farm is at the point $S$ in the sea, and $N$ is the point on the shore nearest to $S$, so that $SN$ is perpendicular to the shoreline and $SN = 40$ m. A power supply is at the point $L$ on the shore, where $NL = 100$ m. A cable is to be laid from $S$ to $L$. It is laid in a straight line under the sea from $S$ to a point $P$ on $NL$, and then along the shore from $P$ to $L$. The cable costs $\\$500$ per metre to lay under the sea and $\\$300$ per metre to lay along the shore. The distance $NP$ is $x$ m.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Given that $x$ can vary, find the value of $x$ for which the total cost of laying the cable is stationary.",
+      "marks": 5,
+      "answer": "$x = 30$"
+     },
+     {
+      "label": "(b)",
+      "text": "Determine whether this value of $x$ gives a maximum or a minimum total cost, and find this cost.",
+      "marks": 2,
+      "answer": "Minimum; $\\$46\\,000$"
+     },
+     {
+      "label": "(c)",
+      "text": "A second fish farm is also $40$ m from the shore. It is to be connected to a point $Q$ on the shore, in the same way and at the same costs per metre, where $Q$ is $20$ m from the point on the shore nearest to this farm. Explain why, for the least cost, the whole of this cable should be laid under the sea.",
+      "marks": 2,
+      "answer": "The cost function has the same derivative, whose only zero is at $x = 30$, outside $0 \\le x \\le 20$; for $0 \\le x \\le 20$ the derivative is negative, so the cost falls all the way to $x = 20$ and is least at $P = Q$, i.e. with no cable along the shore."
+     }
+    ],
+    "answer": "(a) $x = 30$; (b) minimum, $\\$46\\,000$; (c) the only stationary point ($x = 30$) is outside $0 \\le x \\le 20$ and the cost decreases throughout that range, so the least cost is at the end point $x = 20$: the whole cable goes straight under the sea to $Q$.",
+    "total_marks": 9,
+    "topics": [
+     "Differentiation (Maximum and Minimum)"
+    ],
+    "skills": [
+     "build a two-rate cost function from a shoreline scene with no formula printed: the under-sea leg by Pythagoras, the shore leg as the remainder of a fixed length",
+     "stationary value of a cost of the form a\\sqrt{x^2 + c} + b(d - x) by the chain rule, the equation cleared by squaring, with the nature tested",
+     "least value at an end point of the domain when the only stationary point lies outside it: the whole cable under the sea when the shore point is nearer than 30 m"
+    ],
+    "needs_figure": true,
+    "figure_description": "A plain line diagram, no axes, no grid. A horizontal straight line across the figure is the shoreline; the region above it is the sea (label 'sea' in small italics near the top left) and the region below it is land (label 'land' in small italics near the bottom left). On the shoreline mark two points: N towards the left and L towards the right, with the segment NL labelled '100 m' below the line. Mark the point S in the sea directly above N; draw the segment SN as a solid line with a small right-angle square at N, and label SN '40 m' to its left. Mark a point P on the shoreline between N and L, about 45% of the way from N to L (do NOT place it at 30% of the way); label the segment NP 'x m' below the line, between N and P. Draw the cable as a dashed line from S to P and a dashed line from P to L (the dashed P-L part lies along the shoreline, drawn just above it so it is visible). Letters S, N, P, L in italic capitals beside their points. Print nothing else: no costs, no value of x, no second farm, no point Q.",
+    "solution": "(a) In triangle $SNP$, angle $SNP = 90^\\circ$, $SN = 40$ and $NP = x$.\n$SP = \\sqrt{x^2 + 40^2} = \\sqrt{x^2 + 1600}$ (Pythagoras).\n$PL = NL - NP = 100 - x$.\nTotal cost, $C$ dollars: $C = 500\\sqrt{x^2 + 1600} + 300(100 - x)$, for $0 \\le x \\le 100$.\n$\\frac{dC}{dx} = 500 \\times \\frac{1}{2}(x^2 + 1600)^{-\\frac{1}{2}} \\times 2x - 300 = \\frac{500x}{\\sqrt{x^2 + 1600}} - 300$.\nStationary when $\\frac{dC}{dx} = 0$: $\\frac{500x}{\\sqrt{x^2 + 1600}} = 300$.\n$5x = 3\\sqrt{x^2 + 1600}$.\n$25x^2 = 9(x^2 + 1600) = 9x^2 + 14\\,400$.\n$16x^2 = 14\\,400$, so $x^2 = 900$.\n$x = 30$ ($x = -30$ rejected: $x \\ge 0$, and the left side $5x$ must be positive).\n**Answer:** $x = 30$.\nMarks: B1 $SP = \\sqrt{x^2 + 1600}$ and $PL = 100 - x$; M1 total cost $C = 500 \\times SP + 300 \\times PL$ (both legs, each at its own rate); A1 correct $\\frac{dC}{dx} = \\frac{500x}{\\sqrt{x^2 + 1600}} - 300$ (chain rule); M1 set $\\frac{dC}{dx} = 0$ and square to a quadratic in $x$; A1 $x = 30$, negative root rejected.\n\n(b) Nature by the sign of $\\frac{dC}{dx}$ either side of $x = 30$:\nat $x = 20$: $\\frac{500(20)}{\\sqrt{2000}} - 300 = 223.6 - 300 < 0$;\nat $x = 40$: $\\frac{500(40)}{\\sqrt{3200}} - 300 = 353.6 - 300 > 0$.\nNegative then positive, so $x = 30$ gives a minimum.\n(Or $\\frac{d^2C}{dx^2} = \\frac{500 \\times 1600}{(x^2 + 1600)^{\\frac{3}{2}}} = \\frac{800\\,000}{(x^2 + 1600)^{\\frac{3}{2}}}$, which at $x = 30$ is $\\frac{800\\,000}{125\\,000} = 6.4 > 0$: minimum.)\nAt $x = 30$: $SP = \\sqrt{900 + 1600} = 50$ and $PL = 70$.\n$C = 500(50) + 300(70) = 25\\,000 + 21\\,000 = 46\\,000$.\n**Answer:** $x = 30$ gives a minimum total cost; the least cost is $\\$46\\,000$.\nMarks: M1 sign test on $\\frac{dC}{dx}$ either side of $30$ (or second derivative shown positive) with the conclusion 'minimum'; A1 $\\$46\\,000$.\n\n(c) For the second farm, with $x$ m the distance along the shore from the nearest point to where the cable comes ashore, $0 \\le x \\le 20$:\ncost $= 500\\sqrt{x^2 + 1600} + 300(20 - x)$, so $\\frac{d}{dx}(\\text{cost}) = \\frac{500x}{\\sqrt{x^2 + 1600}} - 300$, the same derivative as in (a).\nIts only zero is at $x = 30$, which is outside $0 \\le x \\le 20$: there is no stationary point in the range.\nFor $0 \\le x \\le 20$ we have $x < 30$, so $\\frac{500x}{\\sqrt{x^2 + 1600}} < 300$ and the derivative is negative throughout (as at $x = 20$ in (b)).\nSo the cost decreases as $x$ increases over the whole range, and is least at the end point $x = 20$.\nAt $x = 20$ the cable comes ashore at $Q$ itself, so no cable runs along the shore: the whole cable runs in a straight line under the sea from the farm to $Q$ (cost $500\\sqrt{400 + 1600} = 500\\sqrt{2000} \\approx \\$22\\,400$, not required).\n**Answer:** The only stationary point of the cost ($x = 30$) lies outside $0 \\le x \\le 20$ and the cost is decreasing throughout that range, so the least cost is at $x = 20$, i.e. the cable goes straight to $Q$ wholly under the sea.\nMarks: M1 the derivative is the same, its only zero $x = 30$ is outside the range $0 \\le x \\le 20$, and the derivative is negative on the range so the cost decreases as $x$ increases (accept 'the stationary point is at $30$ m but the shore point is only $20$ m away, and the cost falls up to $30$' from the sign test in (b)); A1 conclusion: least cost at the end point $x = 20$, so no cable along the shore, the whole cable under the sea. No mark for 'it is cheaper' without the end-point argument.",
+    "syllabus_check": "4049 only: Pythagoras to build a length; differentiation of (x^2 + 1600)^{1/2} by the chain rule; stationary points of a function in a context, nature by sign test or second derivative; least value on a closed interval found at an end point by the sign of the derivative (increasing/decreasing functions). No integration, no trigonometry, nothing outside the syllabus.",
+    "originality_note": "New situation (a cable from a fish farm to a power supply, two laying rates) with no formula printed, the candidate building the two-leg cost. Earlier Sets' optimisation: Set 1 P1 Q9 (tent volume from 6 m poles, a printed cubic), Set 1 P2 Q10 (cone with a ball, similar triangles, quotient volume), Set 2 P1 Q9 (angle subtended by a screen, tan(A - B)), Set 2 P2 Q8 (car and van, kinematics) - none is a cost/rate-of-laying model, none has the sqrt(x^2 + c) + linear shape, and none closes on an end point of the domain. Real papers: GCE 2024 P1 Q8 and GCE 2022 P2 Q4 are box surface-area/volume with the relation printed as a 'show that'; GCE 2025 P1 Q11 uses sqrt(9 + x^2) for a rate of change, not an optimisation and with no cost. Part (c) is the twist: the stationary point exists but lies outside the new domain, so the least value is at the end point (the whole cable under the sea), paid as an explain-type unit whose last mark is the sentence.",
+    "marking_note": "Scheme for (c): a bare comparison of two costs (straight to Q, $22 400, against via the nearest point, $26 000) compares two routes, not all routes, and earns nothing; M1 is the derivative negative on 0 ≤ x ≤ 20 (or 'x = 30 is where the cost stops falling and Q is nearer than that'), A1 the end-point conclusion."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 10,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2022 P2 Q4",
+     "jaccard": 0.08,
+     "nearest_set": "Set 2 P1 Q9",
+     "jaccard_set": 0.037,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-09T14:09:53.075Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "x = 30",
+     "(b)": "Minimum (d2C/dx2 = 800000/(1600+x^2)^(3/2) > 0); minimum cost = $46 000",
+     "(c)": "With P at distance x from the nearest point (0 <= x <= 20), C = 500 sqrt(1600+x^2) + 300(20-x), dC/dx = 500x/sqrt(1600+x^2) - 300 < 0 for x < 30 (stationary only at x = 30 > 20), so C decreases throughout 0 <= x <= 20 and is least at x = 20, i.e. P = Q: lay all the cable under the sea (cost 500 sqrt(2000) = $22 400 to 3 s.f., vs e.g. $26 000 via the nearest point)."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both x = 30. Checked: C = 500\\sqrt{x^2+1600} + 300(100-x), dC/dx = 500x/\\sqrt{x^2+1600} - 300 = 0 gives 25x^2 = 9x^2 + 14400, x^2 = 900, x = 30 (x = -30 rejected as a length and because 5x must be positive)."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: minimum, least cost $46 000. Setter uses a sign test (negative at x = 20, positive at x = 40); examiner uses d^2C/dx^2 = 800 000/(x^2+1600)^{3/2} = 6.4 > 0 at x = 30 — the same verdict by two accepted methods. SP = 50, PL = 70, C = 25 000 + 21 000 = 46 000 confirmed."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both argue the same way: the cost 500\\sqrt{x^2+1600} + 300(20-x) on 0 <= x <= 20 has the same derivative, whose only zero x = 30 lies outside the range, the derivative is negative throughout (x < 30), so the cost falls all the way to the end point x = 20, i.e. P = Q and no cable along the shore. Checked: straight to Q costs 500\\sqrt{2000} ≈ $22 400 against $26 000 via the nearest point."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and I confirm the key: x = 30, minimum, $46 000, and the end-point argument in (c) is sound.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "(c) stem: say what 'should' means and that the cable is laid in the same way — 'A second fish farm is also 40 m from the shore. It is to be connected to a point Q on the shore, in the same way and at the same costs per metre, where Q is 20 m from the point on the shore nearest to this farm. Explain why, for the least cost, the whole of this cable should be laid under the sea.' — otherwise a candidate may read 'should' as a rule rather than a least-cost conclusion, and may wonder whether the second cable also comes ashore then runs along the shore.",
+     "(a) stem: a real paper signals the variable with 'Given that x can vary, find the value of x for which the total cost of laying the cable is stationary.' (GCE 2022 P2 Q4(b), GCE 2024 P1 Q8(b)); add the phrase.",
+     "Mark scheme note for (c) (not the question): the scheme's 'no mark for it is cheaper without the end-point argument' should also refuse a bare comparison of two costs (straight to Q $22 400 against via the nearest point $26 000) — that compares two routes, not all routes; the M1 is the derivative negative on 0 <= x <= 20 (or 'x = 30 is where the cost stops falling and Q is nearer than that'), the A1 the end-point conclusion."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A model built from the figure with no formula printed (two legs, two rates, Pythagoras — 2025's unprinted-relation standard), a chain-rule derivative cleared by squaring with clean numbers (3-4-5 triangle, 50 m and 70 m, $46 000), a routine nature test, and a last part that turns the question round on a structural fact — the only stationary point lies outside the domain so the least cost sits at the end point and the shore leg vanishes — which is the 'end point that counts' twist of item 4 and the kind of closing Set 1 favours (P1 Q9's stationary volume, P2 Q10's twice the ball). Marks are in line with 2024 P1 Q8 (model + stationary value 5, nature + value 2) and no exemplar or earlier Set uses a shoreline, a two-rate cost or an end-point minimum (Set 2 P2 Q4's end point is a quadratic in u on a trig range — a different mechanism). Score 4 not 5 only for the light wording edits above. For the whole-paper reader: Q4 also discards a stationary point outside the domain, but as a rejection of a second candidate, not an end-point argument, and Q6's monotonicity sentence closes a different topic — neither matches Q10's closing step."
+   },
+   "exemplars": [
+    {
+     "id": "24248693-5d8d-4eb9-853c-73f66bf3a703",
+     "ref": "GCE 2023 P1 Q9"
+    },
+    {
+     "id": "9709e1ba-beb9-4d8f-8992-c378d4af621d",
+     "ref": "GCE 2022 P2 Q4"
+    },
+    {
+     "id": "3da6bbbe-1799-4314-b2da-52c12568c4b2",
+     "ref": "GCE 2025 P1 Q6"
+    },
+    {
+     "id": "b789fca3-ea07-47ae-adec-a18d1d68848c",
+     "ref": "GCE 2024 P1 Q8"
+    },
+    {
+     "id": "1ebf3505-31aa-45ae-ab87-fa34b9ee4edc",
+     "ref": "GCE 2021 specimen P2 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 11,
+   "topic": "Trigonometry (R-Formula)",
+   "target": 8,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows a thin straight rod $OA$ of length $k$ cm. The end $O$ of the rod is fixed on horizontal ground and the rod can be turned about $O$ so that the angle $AOS$ between the rod and the ground is $\\theta$, where $0^\\circ < \\theta \\le 90^\\circ$. The sun's rays are parallel and make an angle of $30^\\circ$ with the ground. The rod and the rays lie in the same vertical plane, and the rod leans away from the sun, as shown. The ray through $A$ meets the ground at $S$, so that the shadow of the rod on the ground is $OS$.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Show that $OS = k\\left(\\cos\\theta + \\sqrt{3}\\sin\\theta\\right)$.",
+      "marks": 2,
+      "answer": "Let $N$ be the foot of the perpendicular from $A$ to the ground. $ON = k\\cos\\theta$, $AN = k\\sin\\theta$; angle $ASN = 30^\\circ$ (the rays are parallel), so $NS = \\frac{AN}{\\tan 30^\\circ} = \\sqrt{3}\\,k\\sin\\theta$; $OS = ON + NS = k\\cos\\theta + \\sqrt{3}\\,k\\sin\\theta = k\\left(\\cos\\theta + \\sqrt{3}\\sin\\theta\\right)$."
+     },
+     {
+      "label": "(b)",
+      "text": "Express $\\cos\\theta + \\sqrt{3}\\sin\\theta$ in the form $R\\cos(\\theta - \\alpha)$, where $R > 0$ and $0^\\circ < \\alpha < 90^\\circ$. Hence find, in terms of $k$, the length of the shadow when the rod is vertical, and the other value of $\\theta$ for which the shadow has this same length.",
+      "marks": 4,
+      "answer": "$R = 2$, $\\alpha = 60^\\circ$, so $OS = 2k\\cos(\\theta - 60^\\circ)$. Rod vertical: $\\theta = 90^\\circ$, $OS = 2k\\cos 30^\\circ = \\sqrt{3}\\,k$ cm. Then $2k\\cos(\\theta - 60^\\circ) = \\sqrt{3}\\,k$ gives $\\cos(\\theta - 60^\\circ) = \\frac{\\sqrt{3}}{2}$, so $\\theta - 60^\\circ = -30^\\circ$ or $30^\\circ$; the other value is $\\theta = 30^\\circ$."
+     },
+     {
+      "label": "(c)",
+      "text": "Show that the shadow is always longer than the rod.",
+      "marks": 2,
+      "answer": "For $0^\\circ < \\theta \\le 90^\\circ$, $-60^\\circ < \\theta - 60^\\circ \\le 30^\\circ$, and on this interval $\\cos(\\theta - 60^\\circ) > \\cos 60^\\circ = \\frac{1}{2}$ (the value $\\frac{1}{2}$ at $\\theta = 0^\\circ$ is not attained). Hence $OS = 2k\\cos(\\theta - 60^\\circ) > 2k \\times \\frac{1}{2} = k$, so the shadow is longer than the rod."
+     }
+    ],
+    "answer": "(a) shown; (b) $R = 2$, $\\alpha = 60^\\circ$; shadow $= \\sqrt{3}\\,k$ cm when the rod is vertical, and the other value is $\\theta = 30^\\circ$; (c) shown.",
+    "total_marks": 8,
+    "topics": [
+     "Trigonometry (R-Formula)",
+     "Trigonometry (Applications)"
+    ],
+    "skills": [
+     "build the length of a shadow from the figure: the foot of the perpendicular from the tip and the parallel ray at 30 degrees give OS = k cos theta + sqrt(3) k sin theta, the foot-to-shadow-tip piece being k sin theta divided by tan 30",
+     "exact R-form (R = 2, alpha = 60 degrees) with a general length k, then read the vertical-rod shadow sqrt(3) k from theta = 90 degrees and solve 2k cos(theta - 60) = sqrt(3) k on the restricted domain for the second position theta = 30 degrees, recognising 90 degrees as the vertical one already found",
+     "proving an inequality on a restricted domain from R cos(theta - alpha): for -60 < theta - 60 <= 30 the cosine stays above cos 60 = 1/2 (the end value is not attained), so the shadow exceeds the rod"
+    ],
+    "needs_figure": true,
+    "figure_description": "A horizontal line represents the ground. The point O is on the ground, roughly one third of the way along from the left. A thick straight segment OA, the rod, rises from O to the upper right at about 50 degrees to the ground (any angle between 40 and 55 degrees; it must not look like 60 degrees). Label O below the ground line, A at the tip of the rod, and write k cm beside the rod. At O mark the angle between the rod and the ground to the right of O with a small arc labelled theta. The sun's rays are three or four thin parallel arrows, all pointing down and to the right, each making 30 degrees with the ground (i.e. coming from the upper left). One of these arrows passes exactly through A and ends on the ground at a point S to the right of A; label S below the ground line. At S mark the angle between the arrow SA and the ground segment SO with a small arc labelled 30 degrees, drawn on the left-hand side of S (between the ray and the ground towards O). The other arrows are placed to the left of the rod and above it, clearly parallel to AS, not touching the rod. The segment OS of the ground (the shadow) may be shown slightly thicker or shaded as a thin strip, but it carries NO length label. Do not draw the perpendicular from A to the ground and do not mark the point N. No coordinates, no axes, no numbers other than 30 degrees, theta and k cm. The figure must show nothing that the candidate is asked to find: no length for OS, no 60 degrees, no right angle at A.",
+    "solution": "(a)\nLet $N$ be the foot of the perpendicular from $A$ to the ground.\nIn triangle $OAN$: $ON = k\\cos\\theta$ and $AN = k\\sin\\theta$.\nThe rays are parallel and make $30^\\circ$ with the ground, so angle $ASN = 30^\\circ$.\nIn triangle $ANS$: $\\tan 30^\\circ = \\frac{AN}{NS}$, so $NS = \\frac{k\\sin\\theta}{\\tan 30^\\circ} = \\sqrt{3}\\,k\\sin\\theta$.\n$OS = ON + NS = k\\cos\\theta + \\sqrt{3}\\,k\\sin\\theta$.\n**Answer:** $OS = k\\left(\\cos\\theta + \\sqrt{3}\\sin\\theta\\right)$ (shown).\n\n(b)\nLet $\\cos\\theta + \\sqrt{3}\\sin\\theta = R\\cos(\\theta - \\alpha) = R\\cos\\alpha\\cos\\theta + R\\sin\\alpha\\sin\\theta$.\n$R\\cos\\alpha = 1$ and $R\\sin\\alpha = \\sqrt{3}$.\n$R = \\sqrt{1 + 3} = 2$.\n$\\tan\\alpha = \\sqrt{3}$, so $\\alpha = 60^\\circ$.\n**Answer:** $\\cos\\theta + \\sqrt{3}\\sin\\theta = 2\\cos(\\theta - 60^\\circ)$, so $OS = 2k\\cos(\\theta - 60^\\circ)$.\nThe rod is vertical when $\\theta = 90^\\circ$.\n$OS = 2k\\cos(90^\\circ - 60^\\circ) = 2k\\cos 30^\\circ = 2k \\times \\frac{\\sqrt{3}}{2} = \\sqrt{3}\\,k$.\n**Answer:** length of the shadow when the rod is vertical $= \\sqrt{3}\\,k$ cm.\nFor the shadow to have this same length: $2k\\cos(\\theta - 60^\\circ) = \\sqrt{3}\\,k$.\n$\\cos(\\theta - 60^\\circ) = \\frac{\\sqrt{3}}{2}$.\nSince $0^\\circ < \\theta \\le 90^\\circ$, $-60^\\circ < \\theta - 60^\\circ \\le 30^\\circ$.\n$\\theta - 60^\\circ = -30^\\circ$ or $\\theta - 60^\\circ = 30^\\circ$.\n$\\theta = 30^\\circ$ or $\\theta = 90^\\circ$.\n$\\theta = 90^\\circ$ is the vertical rod already found.\n**Answer:** the other value is $\\theta = 30^\\circ$.\n\n(c)\n$OS = 2k\\cos(\\theta - 60^\\circ)$ with $0^\\circ < \\theta \\le 90^\\circ$.\nSo $-60^\\circ < \\theta - 60^\\circ \\le 30^\\circ$.\nFor $-60^\\circ < \\theta - 60^\\circ \\le 0^\\circ$, $\\cos(\\theta - 60^\\circ) > \\cos(-60^\\circ) = \\frac{1}{2}$, the value $\\frac{1}{2}$ not being attained because $\\theta > 0^\\circ$.\nFor $0^\\circ < \\theta - 60^\\circ \\le 30^\\circ$, $\\cos(\\theta - 60^\\circ) \\ge \\cos 30^\\circ = \\frac{\\sqrt{3}}{2} > \\frac{1}{2}$.\nSo $\\cos(\\theta - 60^\\circ) > \\frac{1}{2}$ for every $\\theta$ in $0^\\circ < \\theta \\le 90^\\circ$.\nHence $OS > 2k \\times \\frac{1}{2} = k$.\n**Answer:** $OS > k$ for every $\\theta$ in $0^\\circ < \\theta \\le 90^\\circ$: the shadow is always longer than the rod (shown).\n(Alternative: $OS - k = k\\left(\\cos\\theta + \\sqrt{3}\\sin\\theta - 1\\right)$. For $0^\\circ < \\theta \\le 90^\\circ$, $\\sin\\theta > 0$, so $\\cos\\theta + \\sqrt{3}\\sin\\theta > \\cos\\theta + \\sin\\theta$; and $(\\cos\\theta + \\sin\\theta)^2 = 1 + \\sin 2\\theta \\ge 1$ with $\\cos\\theta + \\sin\\theta > 0$, so $\\cos\\theta + \\sin\\theta \\ge 1$. Hence $OS > k$.)",
+    "syllabus_check": "4049 Trigonometry: expressing a cos theta + b sin theta as R cos(theta - alpha); evaluating the R-form at a given angle and solving R cos(theta - alpha) = c on a restricted domain, keeping both solutions of cos(theta - 60) = sqrt(3)/2 that the domain allows; exact ratios of 30 and 60 degrees; right-angled triangle trigonometry and parallel lines (corresponding angles) to build the relation; a bounded cosine on a stated interval for the inequality. No vectors, no calculus, nothing outside 4049.",
+    "originality_note": "New situation: the shadow of a rod that leans away from a sun at 30 degrees, with the rod length left as a general k. No real paper or earlier Set uses a shadow, parallel rays or an exact (R = 2, alpha = 60 degrees) R-form. The structure is not show / express-and-maximise / solve-for-a-number: part (b) asks for the shadow of the vertical rod (sqrt(3) k, read from the R-form at theta = 90) and then the second position giving the same shadow, which needs both solutions of cos(theta - 60) = sqrt(3)/2 on the domain and the recognition that 90 degrees is the one already in hand; part (c) is a proof from the bounded cosine on a restricted domain. No part asks for the largest shadow. Set 1 P2 Q4 tested R and tan alpha in terms of p, solvability of f = 17 and f = p + 9, and a numerical solve; Set 2 P2 Q4 tested a quadratic in u = cos x - sin x over the range the R-form gives; neither tests a geometric relation built from a figure, an exact length in terms of a general constant, a two-position equation, or an inequality proved from the R-form. GCE 2024 P1 Q11, 2022 P2 Q7 and the 2021 specimen P2 Q6 all end by solving length = c for one numerical angle; this question's equation is in k and has two roots, one of which the candidate must identify as the given position.",
+    "marking_note": "Scheme for (b) [4]: B1 for the completed form 2cos(theta - 60) with R = 2 and alpha = 60 both stated (an unsimplified tan alpha = sqrt(3) alone, or R without alpha, earns no mark). B1 sqrt(3) k for the vertical rod — this may come straight from (a) with theta = 90 or from 2k cos 30; accept either. For the other value: M1 for 2k cos(theta - 60) = sqrt(3) k leading to cos(theta - 60) = sqrt(3)/2 with BOTH theta - 60 = -30 and theta - 60 = 30 considered (or the equivalent in theta), A1 theta = 30. A candidate who writes theta = 90 as the 'other value' has not used the domain and earns the M only; theta = 30 stated by symmetry about 60 with no equation written earns A0 unless the equation cos(theta - 60) = sqrt(3)/2 appears. Scheme for (c) [2]: M1 the interval -60 < theta - 60 <= 30 (or an equivalent bound on cos(theta - 60)), A1 the strict inequality cos(theta - 60) > 1/2 giving OS > k with the strictness justified (theta > 0 so the end value is not attained). Checking end points or a few values of theta earns nothing. The alternative route via cos theta + sqrt(3) sin theta > cos theta + sin theta >= 1 scores M1 for the comparison using sin theta > 0, A1 for (cos theta + sin theta)^2 = 1 + sin 2 theta >= 1 with cos theta + sin theta > 0 completing OS > k; the comparison must be strict somewhere, otherwise A0."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 11,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2008 P2 Q9",
+     "jaccard": 0.071,
+     "nearest_set": "Set 1 P2 Q4",
+     "jaccard_set": 0.045,
+     "repeated_skills": []
+    },
+    "marks": 8,
+    "checked_at": "2026-10-09T23:37:20.085Z",
+    "rounds": 5
+   },
+   "blind": {
+    "answers": {
+     "(a)": "shown",
+     "(b)": "cos θ + √3 sin θ = 2cos(θ − 60°); vertical rod: shadow = √3k cm; other value θ = 30°",
+     "(c)": "shown"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both: shown. Checked: with N the foot of the perpendicular from A, ON = k cos θ, AN = k sin θ; the ray through A makes 30° with the ground at S (corresponding angles, parallel rays), so NS = k sin θ / tan 30° = √3 k sin θ and OS = k(cos θ + √3 sin θ). 'Leans away from the sun' fixes ON + NS rather than a difference, and 0° < θ ≤ 90° keeps cos θ ≥ 0, so S lies beyond N as the figure shows. The figure prints only k cm, θ and 30°."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both: 2 cos(θ − 60°); √3 k cm when the rod is vertical; the other value θ = 30°. Checked: R = √(1 + 3) = 2, tan α = √3, α = 60° inside (0°, 90°); θ = 90° gives 2k cos 30° = √3 k (and directly cos 90° + √3 sin 90° = √3); 2k cos(θ − 60°) = √3 k, cos(θ − 60°) = √3/2, θ − 60° = ±30° on −60° < θ − 60° ≤ 30°, so θ = 30° or 90°, and 30° is the other position (cos 30° + √3 sin 30° = √3 confirms it). Exactly one other value exists on the domain, so 'the other value' is well posed."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both: shown. Checked: −60° < θ − 60° ≤ 30°, cosine is increasing on (−60°, 0°] and decreasing on [0°, 30°], its least value over the interval would be cos(−60°) = 1/2 at the open end, which θ > 0° never reaches; so cos(θ − 60°) > 1/2 and OS > k strictly. OS → k as θ → 0° and OS = √3 k > k at θ = 90°, so the strict inequality is exactly right. The setter's alternative route now reads cos θ + √3 sin θ > cos θ + sin θ ≥ 1 with the strictness from sin θ > 0 — correct (the earlier non-strict slip is gone)."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and all three are right as checked above.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "marking_note for (b) allocates FIVE marks to a 4-mark part (B1 R = 2, B1 α = 60°, A1 √3 k, M1 equation with both cases, A1 θ = 30°). Re-write it to four: B1 for the completed form 2cos(θ − 60°) with R = 2 and α = 60° both stated (or B1 R, B1 α and fold √3 k into the M1 — choose one and say so); B1 √3 k (accept it straight from (a) with θ = 90°); M1 2k cos(θ − 60°) = √3 k → cos(θ − 60°) = √3/2 with both θ − 60° = ±30° considered on the domain; A1 θ = 30°. The part marks 2 + 4 + 2 are right; only the scheme's count is wrong.",
+     "Paper-level, minor (Lesson 2 / 'no skill used twice'): Q3(b) closes by recognising the exact ratio √3/2 (sin θ = √3/2 → θ = π/3 without a calculator) and Q11(b) solves cos(θ − 60°) = √3/2 → ±30°. Different skills (rationalise-and-recognise vs two cases on a restricted domain) and eight slots apart, so not a rejection; if the whole-paper reader wants the exact value not to recur, change Q3's target constant (e.g. k = 1 + √2 → sin θ = √2/2 → π/4) rather than touching this slot, since 30° rays with k are what make Q11's numbers close exactly. Q10(c) (least value at an end point) and Q11(c) (cosine bounded on a restricted domain) still both argue over a bounded range, but the maximum has been removed from Q11 and the registers and techniques differ — tolerable, as the whole-paper reader judged."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "Beside Set 1 P1 Q9 and Q11 (8 marks each, a figure, a 2-mark show-that whose fact is not in the stem, then parts that build) this is as good: the relation turns on the dropped perpendicular and the corresponding angle at S, neither stated; the general k rides through to the unprinted √3 k; (b) ends on a kept second case (θ = 30° found, θ = 90° recognised as the given position) rather than a lone numerical angle; (c) is a proof whose last mark is the reason the end value 1/2 is not attained — the twist (List A item 4, an end point that counts) that lifts it above the 2021/2024 R-formula template, which it does not follow step for step (no maximum, no 'find θ for which length = c'). The shadow, the parallel rays and an exact R-form appear in no real paper or earlier Set; Set 1 P2 Q4 and Set 2 P2 Q4 are algebraic and share no situation, structure or skill. Clean numbers, SEAB register, finishable in 12 minutes; the only edit needed is the marking note's count, so 4 not 5."
+   },
+   "exemplars": [
+    {
+     "id": "26e75099-4fc1-4639-9412-212442f9a7a9",
+     "ref": "GCE 2024 P1 Q11"
+    },
+    {
+     "id": "d1f03fe5-5d81-4200-8983-5c86ba20505b",
+     "ref": "GCE 2022 P2 Q7"
+    },
+    {
+     "id": "37c02057-7114-4712-a710-5d539f2564d2",
+     "ref": "GCE 2021 specimen P2 Q6"
+    },
+    {
+     "id": "fe3c3527-4acd-4ba4-bba1-1d824ff0143a",
+     "ref": "GCE 2025 P2 Q11"
+    },
+    {
+     "id": "892e5c5a-8b85-480a-a177-a35c8f249d7d",
+     "ref": "GCE 2023 P2 Q8"
+    }
+   ]
+  },
+  {
+   "pos": 12,
+   "topic": "Quadratic Functions",
+   "target": 9,
+   "accepted": true,
+   "question": {
+    "stem": "A basketball player throws a ball towards a hoop. The path of the ball is modelled by the curve $y = k - a(x - h)^2$, where $x$ m is the horizontal distance of the ball from the player, $y$ m is the height of the ball above the floor, and $a$, $h$ and $k$ are positive constants. The ball is released from a height of $2$ m above the floor. The centre of the hoop is $3$ m above the floor and at a horizontal distance of $5$ m from the player. The greatest height reached by the ball is $3.8$ m, and the ball is falling as it passes through the centre of the hoop.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the values of $a$, $h$ and $k$.",
+      "marks": 5,
+      "answer": "$k = 3.8$, $h = 3$, $a = 0.2$ (the second solution $h = 15$, $a = 0.008$ is rejected: its greatest height would be $15$ m from the player, beyond the hoop, so the ball would still be rising at the hoop)"
+     },
+     {
+      "label": "(b)",
+      "text": "A second player stands at the same place as the first player and releases a ball from a height of $3$ m. The path of this ball is modelled by a curve of the same form, with the same value of $a$ as in part (a), and this ball also passes through the centre of the hoop. Find the values of $h$ and $k$ for the path of this ball.",
+      "marks": 2,
+      "answer": "$h = 2.5$, $k = 4.25$ (the release point $(0, 3)$ and the hoop $(5, 3)$ are at the same height, so by symmetry $h = 2.5$; then $k = 3 + 0.2(2.5)^2 = 4.25$)"
+     },
+     {
+      "label": "(c)",
+      "text": "Explain why the paths of the two balls do not meet at any point other than the centre of the hoop.",
+      "marks": 2,
+      "answer": "Equating $2 + 1.2x - 0.2x^2$ and $3 + x - 0.2x^2$, the $x^2$ terms cancel (both curves have the same value of $a$), leaving the linear equation $0.2x = 1$, which has exactly one solution, $x = 5$, where $y = 3$: the centre of the hoop. So there is no other common point."
+     }
+    ],
+    "answer": "(a) $a = 0.2$, $h = 3$, $k = 3.8$ ($h = 15$ rejected: the ball would still be rising at the hoop). (b) $h = 2.5$ by symmetry (equal heights at $x = 0$ and $x = 5$), $k = 4.25$. (c) Both paths have the same $x^2$ term, so equating them gives a linear equation, $0.2x = 1$, with the single solution $x = 5$: the centre of the hoop is the only common point.",
+    "total_marks": 9,
+    "topics": [
+     "Quadratic Functions",
+     "Simultaneous Equations"
+    ],
+    "skills": [
+     "recover the constants of a vertex-form quadratic path from scene facts (release height, a point passed through, the greatest height): two equations in a and h give two parabolas through the same two points, and the one whose vertex lies beyond the hoop is rejected because the ball must be falling there",
+     "symmetry of a parabola about its axis: a release point and a hoop at equal heights put the vertex midway (h = 2.5) when a is fixed, giving the greatest height without solving two equations",
+     "two quadratic curves with the same x^2 coefficient meet at most once, because their difference is linear: explaining why two paths through the hoop have no other common point"
+    ],
+    "needs_figure": true,
+    "figure_description": "Sketch, not to scale: the floor is the x-axis, the y-axis passes through the player (x = 0). The ball is released at (0, 2). The path y = 3.8 - 0.2(x - 3)^2 rises to its highest point at (3, 3.8), which is marked, then falls through the centre of the hoop at (5, 3). Draw the hoop as a short horizontal segment (the ring seen edge-on) centred at (5, 3) on a vertical post standing on the floor. Label the release height 2 m, the hoop centre height 3 m and the horizontal distance 5 m. Only the first ball's path is drawn; the highest point must clearly lie BEFORE the hoop so that the ball is seen to be falling at the hoop. Axis letters x and y on the axes.",
+    "solution": "(a)\nThe greatest height of the ball is $k$, so $k = 3.8$.\nAt the release point, $x = 0$ and $y = 2$:\n$3.8 - ah^2 = 2$\n$ah^2 = 1.8$ … (1)\nAt the centre of the hoop, $x = 5$ and $y = 3$:\n$3.8 - a(5 - h)^2 = 3$\n$a(5 - h)^2 = 0.8$ … (2)\nDividing (2) by (1):\n$\\frac{(5 - h)^2}{h^2} = \\frac{0.8}{1.8} = \\frac{4}{9}$\n$\\frac{5 - h}{h} = \\frac{2}{3}$ or $\\frac{5 - h}{h} = -\\frac{2}{3}$\n$15 - 3h = 2h$ or $15 - 3h = -2h$\n$h = 3$ or $h = 15$\n[Alternatively, expand (2): $25a - 10ah + ah^2 = 0.8$, and with (1) this gives $25a - 10ah = -1$, so $a = \\frac{1}{10h - 25}$; substituting in (1): $h^2 = 1.8(10h - 25)$, $h^2 - 18h + 45 = 0$, $(h - 3)(h - 15) = 0$.]\nIf $h = 15$, the ball reaches its greatest height $15$ m from the player, which is beyond the hoop, so the ball would still be rising as it passes through the hoop. This is rejected.\nSo $h = 3$.\nFrom (1): $a = \\frac{1.8}{9} = 0.2$.\n(Check: $y = 3.8 - 0.2(x - 3)^2$ gives $y = 2$ at $x = 0$ and $y = 3$ at $x = 5$, and the greatest height is at $x = 3$, before the hoop.)\n**Answer:** $a = 0.2$, $h = 3$, $k = 3.8$.\n\n(b)\nThe second ball is released at $(0, 3)$ and passes through the centre of the hoop at $(5, 3)$.\nThese two points are at the same height.\nThe curve $y = k - 0.2(x - h)^2$ is symmetrical about the line $x = h$, so two points of the curve at the same height are equally far from $x = h$.\nHence $h = \\frac{0 + 5}{2} = 2.5$.\n[Alternatively: $3 = k - 0.2h^2$ and $3 = k - 0.2(5 - h)^2$, so $h^2 = (5 - h)^2$, giving $h = 5 - h$ (since $h > 0$) and $h = 2.5$.]\nThen $3 = k - 0.2(2.5)^2$, so $k = 3 + 0.2(2.5)^2 = 3 + 1.25 = 4.25$.\n**Answer:** $h = 2.5$, $k = 4.25$\n\n(c)\nFirst ball: $y = 3.8 - 0.2(x - 3)^2 = 2 + 1.2x - 0.2x^2$.\nSecond ball: $y = 4.25 - 0.2(x - 2.5)^2 = 3 + x - 0.2x^2$.\nWhere the paths meet:\n$2 + 1.2x - 0.2x^2 = 3 + x - 0.2x^2$\nThe $x^2$ terms are the same on both sides (both curves have $a = 0.2$), so they cancel:\n$0.2x = 1$\n$x = 5$\nThis is a linear equation, so it has exactly one solution, $x = 5$, where $y = 3$: the centre of the hoop.\n**Answer:** because both curves have the same $x^2$ term, equating them gives a linear equation with only one solution, $x = 5$; so the centre of the hoop is the only point the two paths have in common.",
+    "syllabus_check": "4049 A1 Quadratic functions: the completed-square (vertex) form $y = k - a(x - h)^2$, its maximum value and the symmetry of the graph about $x = h$. A2 Equations: forming two equations from a model and reducing them to a quadratic in $h$ ($h^2 - 18h + 45 = 0$, or the ratio $\\frac{5 - h}{h} = \\pm\\frac{2}{3}$), rejecting a root for a reason from the context; the intersection of two curves by equating. No calculus, no kinematics formulae, nothing beyond O-Level Additional Mathematics.",
+    "originality_note": "Not in the 2019–2025 corpus: GCE 2023 P1 Q12 (ball thrown vertically) and GCE 2025 P2 Q2 (temperature) print their constants and work on height against time; GCE 2024 P1 Q9(b) recovers p, q, r from two intercepts and a maximum with no context and no case to reject. Here the model is a two-dimensional path whose three constants are not printed: the candidate forms two equations from the release point and the hoop, finds TWO parabolas through them, and rejects the one whose vertex lies beyond the hoop because the stem says the ball is falling there. Earlier Sets' quadratic-functions questions are the vertex in terms of k on a line (Set 1 P1 Q1), a distance inequality in k (Set 1 P1 Q4), positive-for-all-x with the vanishing leading coefficient (Set 2 P1 Q1) and a quadratic in u = cos x - sin x (Set 2 P2 Q4); none builds a model from a scene, uses the symmetry of a parabola, or argues that two parabolas with equal x^2 coefficient meet at most once. No discriminant, no range of a constant, no inequality closes the question; it ends on a reason in words about the configuration.",
+    "marking_note": "Scheme note for (a): a candidate who takes only the positive square root of 4/9 reaches h = 3 without seeing h = 15; award the reason mark on that route only when 5 - h > 0 is justified (the vertex lies before the hoop), and on the quadratic route only when the rejection of h = 15 is stated in the scene's terms (the ball would still be rising at the hoop)."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 12,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2011 P2 Q5",
+     "jaccard": 0.025,
+     "nearest_set": "Set 1 P2 Q7",
+     "jaccard_set": 0.023,
+     "repeated_skills": []
+    },
+    "marks": 9,
+    "checked_at": "2026-10-09T14:08:59.100Z",
+    "rounds": 2
+   },
+   "blind": {
+    "answers": {
+     "(a)": "k = 3.8, a = 0.2, h = 3 (h = 15, a = 0.008 rejected since the ball would be rising at the hoop)",
+     "(b)": "shown: 3 = K - 0.2H^2 and 3 = K - 0.2(5-H)^2 give H^2 = (5-H)^2, so H = 2.5 (midway); greatest height = 4.25 m",
+     "(c)": "Ball 1: y = 2 + 1.2x - 0.2x^2; ball 2: y = 3 + x - 0.2x^2. Equating, the x^2 terms cancel (same a) leaving the linear equation 1 - 0.2x = 0, which has only one solution x = 5, the centre of the hoop."
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give k = 3.8, h = 3, a = 0.2 with h = 15 (a = 0.008) rejected. Checked: a > 0 makes k the greatest height, so k = 3.8; (0, 2) gives ah^2 = 1.8 and (5, 3) gives a(5 - h)^2 = 0.8; dividing, (5 - h)^2/h^2 = 4/9, so (5 - h)/h = 2/3 or -2/3, h = 3 or h = 15 (equivalently h^2 - 18h + 45 = 0). h = 15 puts the vertex 15 m from the player, beyond the hoop, so the ball would be rising at x = 5, against the stem; h = 3 gives a = 1.8/9 = 0.2 and checks at both points."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give the vertex at x = 2.5 and greatest height 4.25 m. Checked: (0, 3) and (5, 3) are at equal height on a curve symmetric about x = H, so H = 2.5; algebraically 0.2H^2 = 0.2(5 - H)^2 forces H = 5 - H (the other sign gives 0 = 5). K = 3 + 0.2(2.5)^2 = 4.25."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both argue the same way. Checked: first path y = 3.8 - 0.2(x - 3)^2 = 2 + 1.2x - 0.2x^2; second path y = 4.25 - 0.2(x - 2.5)^2 = 3 + x - 0.2x^2; equating, the -0.2x^2 terms cancel and 0.2x = 1 is linear with the single solution x = 5, y = 3, the centre of the hoop."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and all three check by hand; the key is right, the rejection of h = 15 is correctly reasoned from 'falling as it passes through the hoop', and the 'show that' in (b) is true.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "Register, part (a): 'Find the value of each of a, h and k' is not SEAB's phrasing; write 'Find the values of a, h and k' (GCE 2024 P1 Q9(b): 'Find the values of p, q and r').",
+     "Register, stem: 'The ball is released at a height of 2 m above the floor, at the point where x = 0' is laboured, since x is already defined as the horizontal distance from the player; write 'The ball is released from a height of 2 m above the floor.' A real paper at this position would also print a sketch of the path with the hoop marked; add needs_figure = true with the player at the origin, the hoop centre at (5, 3) and the path's highest point before the hoop, so the 'falling at the hoop' condition can be seen as well as read.",
+     "Mark scheme note (no change to the question): a candidate who takes only the positive square root of 4/9 in (a) reaches h = 3 without ever seeing h = 15; the scheme should award the reason mark to the positive-root route only when it is justified (5 - h > 0 because the vertex lies before the hoop), and award it to the quadratic route only with the rejection stated in the scene's terms."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "A quadratic model whose three constants are built from the scene (the 4-5 mark band of section 2: a relation to set up first, a case decided by the context), with a symmetry step in (b) that feeds (c) and a 2-mark closer in words on a structural fact (the same x^2 coefficient makes the difference linear, so one common point). Nearest real question is GCE 2024 P1 Q9(b) (vertex-form constants from two points and a maximum), but that is a bare [4] with symmetric intercepts and nothing to reject; here the two points are at unequal heights, two parabolas fit, and the stem's 'falling' clause does the choosing, so it is not a re-skin. No earlier Set tests this skill: Set 1 P1 Q1/Q4 and Set 2 P1 Q1 close on k, Set 2 P2 Q4 is a quadratic in u; the rejection-of-a-second-root move is shared with Set 2 P1 Q8 but in a different topic, situation and structure. It does not end on a discriminant, an inequality or a range of k (paper-shape rule for Q12), its closing step differs from Q11 (an inequality proof) and Q13 (an area), the context carries information the solution needs, numbers close exactly (0.2, 3, 2.5, 4.25), and it is at least as demanding and as well built as Set 1 P1 Q12 and P2 Q6 at 9 marks. Gates all pass."
+   },
+   "exemplars": [
+    {
+     "id": "82dd20d8-9070-4ccf-a861-02a61bd119ab",
+     "ref": "GCE 2024 P1 Q9"
+    },
+    {
+     "id": "171e3ef7-b5d2-4abe-a8a9-6940ddbba3ef",
+     "ref": "GCE 2023 P1 Q12"
+    },
+    {
+     "id": "ccd35ccd-e669-4b4e-bf1c-b2e196a9a95e",
+     "ref": "GCE 2021 specimen P2 Q4"
+    },
+    {
+     "id": "8baa3f95-8ef4-46b2-b57f-9c85e32c7b68",
+     "ref": "GCE 2025 P2 Q2"
+    },
+    {
+     "id": "8fc277c7-0991-48cb-877c-9d5df5f38dcf",
+     "ref": "GCE 2021 specimen P1 Q7"
+    }
+   ]
+  },
+  {
+   "pos": 13,
+   "topic": "Integration (Area)",
+   "target": 10,
+   "accepted": true,
+   "question": {
+    "stem": "The diagram shows part of the curve $y = \\frac{1}{2}x^2 - x - 4$, which crosses the $y$-axis at the point $A$. The line through $A$ with gradient $2$ meets the curve again at the point $B$. The region enclosed by the curve and the line $AB$ is shaded.",
+    "parts": [
+     {
+      "label": "(a)",
+      "text": "Find the coordinates of $B$.",
+      "marks": 2,
+      "answer": "$B(6, 8)$"
+     },
+     {
+      "label": "(b)",
+      "text": "Find the area of the shaded region.",
+      "marks": 3,
+      "answer": "$18$ units$^2$"
+     },
+     {
+      "label": "(c)",
+      "text": "The $x$-axis divides the shaded region into two parts. Determine, with full working, which of these two parts has the greater area.",
+      "marks": 5,
+      "answer": "Part below the $x$-axis: $\\frac{28}{3}$ units$^2$; part above the $x$-axis: $\\frac{26}{3}$ units$^2$. The part below the $x$-axis has the greater area."
+     }
+    ],
+    "answer": "",
+    "total_marks": 10,
+    "topics": [
+     "Integration (Area)",
+     "Coordinate Geometry"
+    ],
+    "skills": [
+     "region enclosed by a chord and a parabola cut by the x-axis, where the chord's x-intercept and the curve's root are different points: the part below the axis found as the lobe under the x-axis minus the triangle under the chord (or the part above as a triangle minus the lobe over the curve)",
+     "comparing the two parts of one region on either side of the x-axis with a stated conclusion, one part computed and the other taken from the total",
+     "second intersection of a line through the y-intercept with a parabola, the root x = 0 recognised as A itself"
+    ],
+    "needs_figure": true,
+    "figure_description": "Cartesian axes, origin labelled $O$, $x$-axis to the right, $y$-axis upwards; axis window about $-2.5 \\le x \\le 7.5$ and $-6 \\le y \\le 10$. Draw the parabola $y = \\frac{1}{2}x^2 - x - 4$ for about $-2.2 \\le x \\le 7$: it passes through $(-2, 0)$, has its minimum at $(1, -4.5)$, crosses the $y$-axis at $(0, -4)$, crosses the $x$-axis again at $(4, 0)$ and rises through $(6, 8)$. Print the equation $y = \\frac{1}{2}x^2 - x - 4$ beside the right-hand arm of the curve. Mark the point $A$ at $(0, -4)$ on the $y$-axis, labelled $A$ only (no coordinates printed). Mark the point $B$ at $(6, 8)$ on the curve, labelled $B$ only (no coordinates printed). Draw the straight line through $A$ and $B$ (equation $y = 2x - 4$), extended a little beyond $A$ and beyond $B$. Shade the region enclosed between the line $AB$ (above) and the curve (below) from $A$ to $B$; the $x$-axis visibly passes through this shaded region, which crosses it between $x = 2$ (where the line meets the axis) and $x = 4$ (where the curve meets the axis). Do NOT label or mark the points where the line or the curve meet the $x$-axis, do NOT mark the minimum point, and do NOT print any coordinates other than the equation of the curve. Label the axes $x$ and $y$.",
+    "solution": "(a) The line $AB$ passes through $A(0, -4)$ with gradient $2$, so its equation is $y = 2x - 4$.\nAt the points where the line meets the curve, $\\frac{1}{2}x^2 - x - 4 = 2x - 4$.\n$\\frac{1}{2}x^2 - 3x = 0$\n$x\\left(\\frac{1}{2}x - 3\\right) = 0$\n$x = 0$ (the point $A$) or $x = 6$.\nWhen $x = 6$, $y = 2(6) - 4 = 8$.\n**Answer:** $B(6, 8)$.\n\n(b) For $0 \\le x \\le 6$ the line lies above the curve, so the area is $\\int_0^6 \\left[(2x - 4) - \\left(\\frac{1}{2}x^2 - x - 4\\right)\\right] dx$.\n$= \\int_0^6 \\left(3x - \\frac{1}{2}x^2\\right) dx$\n$= \\left[\\frac{3x^2}{2} - \\frac{x^3}{6}\\right]_0^6$\n$= 54 - 36$\n$= 18$\n**Answer:** $18$ units$^2$.\n\n(c) The line $AB$ meets the $x$-axis where $2x - 4 = 0$, that is at $C(2, 0)$.\nThe curve meets the positive $x$-axis where $\\frac{1}{2}x^2 - x - 4 = 0$, that is $x^2 - 2x - 8 = 0$, $(x - 4)(x + 2) = 0$, so at $D(4, 0)$ (the root $x = -2$ is outside the shaded region).\nThe part of the shaded region below the $x$-axis is bounded by the curve from $A$ to $D$, the $x$-axis from $D$ to $C$ and the line from $C$ to $A$.\nThe region between the curve and the $x$-axis from $x = 0$ to $x = 4$ has area $\\int_0^4 -\\left(\\frac{1}{2}x^2 - x - 4\\right) dx$.\n$= \\left[-\\frac{x^3}{6} + \\frac{x^2}{2} + 4x\\right]_0^4$\n$= -\\frac{32}{3} + 8 + 16$\n$= \\frac{40}{3}$\nThis region is made up of the lower part of the shaded region together with the triangle $OAC$, which lies below the $x$-axis but outside the shaded region.\nArea of triangle $OAC = \\frac{1}{2} \\times 2 \\times 4 = 4$.\nArea of the part below the $x$-axis $= \\frac{40}{3} - 4 = \\frac{28}{3}$.\nArea of the part above the $x$-axis $= 18 - \\frac{28}{3} = \\frac{26}{3}$.\n(Check: the part above the $x$-axis is triangle $CEB$, where $E(6, 0)$, minus the region under the curve from $x = 4$ to $x = 6$: $\\frac{1}{2} \\times 4 \\times 8 - \\int_4^6 \\left(\\frac{1}{2}x^2 - x - 4\\right) dx = 16 - \\left[\\frac{x^3}{6} - \\frac{x^2}{2} - 4x\\right]_4^6 = 16 - \\left(-6 + \\frac{40}{3}\\right) = 16 - \\frac{22}{3} = \\frac{26}{3}$.)\nSince $\\frac{28}{3} > \\frac{26}{3}$, the part below the $x$-axis has the greater area.\n**Answer:** The part below the $x$-axis ($\\frac{28}{3}$ units$^2$) has the greater area; the part above has area $\\frac{26}{3}$ units$^2$.",
+    "syllabus_check": "4049 Integration: definite integrals of polynomials; area of a region bounded by a curve and line(s), including a region partly below the x-axis (no area between two curves, which 4049 excludes). 4049 Coordinate Geometry: equation of a line from a point and a gradient, intersection of a line and a curve (one linear, one quadratic), intercepts, area of a triangle. No integration by parts or substitution, no integration with respect to y.",
+    "originality_note": "New situation and structure: a sloping chord through the y-intercept of a parabola, the enclosed region cut by the x-axis at two DIFFERENT points (the chord's intercept and the curve's root), and the closing decision of which side of the axis is larger with full working. Not Set 1 P1 Q13 (tangent at a point of given gradient, midpoint of intercepts, area with the y-axis) and not Set 2 P2 Q10 (a horizontal line y = k, equal areas, a stationary value with a general constant). Not GCE 2025 P2 Q9 (line through the origin, general constant, R1 = R2) and not GCE 2024 P1 Q13 or GCE 2021 P1 Q14 (tangent/normal with the axes). The trap is the one real papers now set: splitting the region at x = 2 or at x = 4 alone, or treating the lobe under the axis as the lower part without removing the triangle OAC."
+   },
+   "draft": null,
+   "gates": {
+    "pos": 13,
+    "pass": true,
+    "problems": [],
+    "novelty": {
+     "nearest": "GCE 2012 P2 Q11",
+     "jaccard": 0.153,
+     "nearest_set": "Set 1 P1 Q13",
+     "jaccard_set": 0.119,
+     "repeated_skills": []
+    },
+    "marks": 10,
+    "checked_at": "2026-10-09T14:08:14.449Z",
+    "rounds": 3
+   },
+   "blind": {
+    "answers": {
+     "(a)": "B(6, 8)",
+     "(b)": "18 units^2",
+     "(c)": "Part above the x-axis = 26/3 (8.67) units^2; part below the x-axis = 28/3 (9.33) units^2; the part below the x-axis has the greater area"
+    },
+    "solvable": true,
+    "issues": []
+   },
+   "verdict": {
+    "parts": [
+     {
+      "label": "(a)",
+      "agree": true,
+      "note": "Both give B(6, 8). Checked: y = 2x - 4 meets the curve where x^2/2 - 3x = 0, so x = 0 (A) or x = 6, y = 8."
+     },
+     {
+      "label": "(b)",
+      "agree": true,
+      "note": "Both give 18 units^2. Checked: integral from 0 to 6 of (3x - x^2/2) dx = 54 - 36 = 18."
+     },
+     {
+      "label": "(c)",
+      "agree": true,
+      "note": "Both give 28/3 below the x-axis and 26/3 above, the lower part greater. Checked by the direct route: below = integral 0..2 of (line - curve) + integral 2..4 of (0 - curve) = 14/3 + 14/3 = 28/3; above = integral 2..4 of the line + integral 4..6 of (line - curve) = 4 + 14/3 = 26/3; the two sum to 18. The setter's lobe-minus-triangle route (40/3 - 4) is also right. The x-axis does cut the region into exactly two connected parts, so the stem is true."
+     }
+    ],
+    "all_agree": true,
+    "key_verdict": "Setter and blind examiner agree on every part and my own working confirms B(6, 8), 18, 28/3 below and 26/3 above; the key is exactly right.",
+    "score": 4,
+    "standard": "at",
+    "fixes": [
+     "re-mark: (b) gains one mark to [3] (set up line minus curve with limits 0 to 6, integrate, evaluate is M1 M1 A1 in a real paper, and 'Find the area of the shaded region' is never paid [2] in 2021-2025) and (c) loses one to [5] (B1 the two intercepts x = 2 and x = 4, M1 the decomposition, A1 one part, A1 the other from the total, A1 the stated conclusion); the question stays at 10 marks."
+    ],
+    "too_close_to": null,
+    "repeats_set": null,
+    "as_good_as_set1": true,
+    "why": "The idea sits in (c): the figure labels neither the chord's x-intercept (x = 2) nor the curve's root (x = 4), so the candidate must find both, see that the lower part is not the whole lobe under the axis (the triangle OAC must come off, or the region is split at x = 2 and x = 4) and close with a stated comparison of 28/3 against 26/3 - a decision real papers now set (GCE 2024 P1 Q13(a) 'Determine, with full working'), while (a) and (b) are clean routine that feed it; numbers close exactly and no part needs more than one idea. It is a chord through the y-intercept compared across the x-axis, not the tangent-midpoint-area of Set 1 P1 Q13, not the horizontal-line equal-areas-with-a-parameter of Set 2 P2 Q10, and not a re-skin of GCE 2025 P2 Q9 (line through the origin, R1 in terms of alpha, R1 = R2) or GCE 2024 P1 Q13 (tangent and normal with the axes); no closing step or skill is shared with Q1-Q12 of this paper. Set 1 P1 Q13 was itself a routine slot, so this ends the paper on a harder, cleaner question; only the mark split holds it at 4."
+   },
+   "exemplars": [
+    {
+     "id": "0a5a253d-f9ba-4481-a8df-8d052813700d",
+     "ref": "GCE 2025 P2 Q9"
+    },
+    {
+     "id": "9c3708ed-70b3-47e6-b6f7-bd57fcdbd621",
+     "ref": "GCE 2024 P1 Q13"
+    },
+    {
+     "id": "385afa74-fb00-48a8-ad07-8884affc04a8",
+     "ref": "GCE 2021 P1 Q14"
+    },
+    {
+     "id": "94987940-788b-4140-9421-42c923ee405e",
+     "ref": "GCE 2021 specimen P2 Q3"
+    },
+    {
+     "id": "5a4b7b29-7ddf-417f-b430-3df768274d3b",
+     "ref": "GCE 2022 P2 Q10"
+    }
+   ]
+  }
+ ]
+}

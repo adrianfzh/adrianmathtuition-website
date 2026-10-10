@@ -1,0 +1,18 @@
+{
+  "family": "function-graph",
+  "version": 1,
+  "xAxis": { "min": -2.5, "max": 7.5, "step": 20, "label": "x" },
+  "yAxis": { "min": -6, "max": 10, "step": 20, "label": "y" },
+  "grid": false,
+  "curves": [
+    { "expr": "1/2x^2 - x - 4", "domain": [-2.2, 7], "label": "y = ½x² − x − 4", "labelAt": 3, "style": "solid" },
+    { "expr": "2x - 4", "domain": [-0.7, 6.8], "style": "solid" }
+  ],
+  "features": [
+    { "type": "y-intercept", "y": -4, "curve": 0, "label": "A" },
+    { "type": "point", "x": 6, "y": 8, "curve": 0, "label": "B" }
+  ],
+  "regions": [
+    { "from": 0, "to": 6, "upper": { "curve": 1 }, "lower": { "curve": 0 }, "statedArea": 18 }
+  ]
+}
