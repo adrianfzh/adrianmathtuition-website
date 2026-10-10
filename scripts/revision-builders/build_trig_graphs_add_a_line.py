@@ -11,6 +11,9 @@ prints. The counts were checked by computer (sign changes of curve minus line on
     (x = 32.2, 92.6, 143.2; the bank key says 2 — wrong). The bank's part (iv) text is not
     stored, so (b) here carries the usual "by drawing a suitable straight line" wording.
   4 Dunman 2026 P1 Q9 (b)(c) 48bce04b               line y = 4x/pi + 4, touches the curve at its maximum (3pi/4, 7)
+Added later the same day ("trigo graphs need 2 more really complicated manipulations, add to worksheet"):
+  5 Bendemeer 2021 P1 Q12 (ii)(iii) 61f662d3        y = (3/2)cos 2x + 1/2; line y = x/(2 pi) - 1, 4 solutions
+  6 NJC (IP) 2020 P2 Q6 02818029                    line y = 12x/pi + 6, 1 solution (x = -0.870)
 """
 import sys
 from pathlib import Path
@@ -51,5 +54,18 @@ SQ('Sketch the graph of $y = 4 - 3\\sin 2x$ for $0 \\leq x \\leq \\pi$ radians.'
 SQ('By drawing a suitable straight line in your sketch, explain why the equation $3\\pi\\sin 2x = -4x$ has no solution for the values of $x$ below.')
 E_(r'x > \dfrac{3\pi}{4}', 3)
 A(r'(a) sketch; (b) line $y = \dfrac{4x}{\pi} + 4$ touches the curve at its top $\left(\dfrac{3\pi}{4}, 7\right)$, then stays above')
+
+ws.section('Section C — Really complicated manipulation')
+ws.Q(P('It is given that $y = 2\\cos^2 x - \\sin^2 x$.'))
+SQ('Sketch the graph of $y = 2\\cos^2 x - \\sin^2 x$ for $0 \\leq x \\leq 2\\pi$ radian, showing clearly the turning points and the intercepts with the line below.')
+E_(r'y = \dfrac{1}{2}', 3)
+SQ('By drawing a suitable line on the same axes, state the number of solutions to the equation $4\\pi\\cos^2 x - 2\\pi\\sin^2 x = x - 2\\pi$.', 3)
+A(r'(a) sketch of $y = \dfrac{3}{2}\cos 2x + \dfrac{1}{2}$; (b) line $y = \dfrac{x}{2\pi} - 1$, 4 solutions')
+
+ws.Q([])
+SQ('Sketch the graph of $y = -4\\cos 2x + 2$ for $-\\pi \\leq x \\leq \\pi$.', 3)
+SQ('By drawing a suitable straight line on the diagram drawn in part (a), state the number of solutions of the equation '
+   '$-\\pi\\cos 2x = 3x + \\pi$ for $-\\pi \\leq x \\leq \\pi$.', 3)
+A(r'(a) sketch; (b) line $y = \dfrac{12x}{\pi} + 6$, 1 solution')
 
 ws.save(sys.argv[1], strict_maths=True)

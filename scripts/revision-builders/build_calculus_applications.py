@@ -15,6 +15,15 @@ Ten real school questions from the bank, none with a diagram (part labels re-let
   8 Deyi 2024 P2 Q11 6d405bbf             integrate e twice · normal · turning point
   9 Xinmin 2024 P1 Q14 21317103           kinematics, trig · total distance
  10 Yishun Town 2024 P2 Q8 2f533dd6       kinematics, e · minimum velocity · distance
+
+Section D, added later on 10 Oct 2026 (Adrian: "add on … questions involving where you have to
+differentiate and integrate -> give a wide variety of questions … as many questions as required"):
+ 11 Greendale 2025 P1 Q4 011d50c9 (ln quotient)        12 Nan Hua 2025 P2 Q7 1480b85f (x e^3x, definite)
+ 13 Montfort 2023 P2 Q2 26db18ad (x cos 4x, exact)     14 Zhenghua 2023 P2 Q5 1a262716 (ln of a root -> 1/(9x^2-1))
+ 15 Hougang 2022 P2 Q3 1a0dbe3c (surd product, rate)   16 Chung Cheng High (Main) 2022 P1 Q8 194d2f9a (ln cos x, x tan x)
+ 17 CHIJ St Nicholas 2022 P2 Q3 2f0be052 (x sin^2 x)   18 Ngee Ann 2026 P1 Q12 fb767a2c (sin^3 2x -> cos^3 2x)
+ 19 Victoria 2024 P1 Q7 4e07fae7 (surd quotient)       20 ACS (Barker Road) 2024 P1 Q9 628017f1 (two results combined)
+ 21 Bukit Panjang Govt High 2023 P2 Q8 062b28b9 (x tan^2 x -> f(x)); the bank key's constant 4/5 is wrong, 9/5 here
 """
 import sys
 from pathlib import Path
@@ -104,5 +113,71 @@ Q('A particle travelling in a straight line passes through a fixed point $O$ wit
 SQ('Find the acceleration of the particle when it first comes to instantaneous rest.', 4)
 SQ('Find the distance travelled by the particle when the particle reaches minimum velocity.', 6)
 A('(a) $-12' + ms2 + '$; (b) $8.34$ m')
+
+ws.section('Section D — Differentiate, then use the result to integrate')
+ws.Q([])
+SQ('Find'); E_(r'\dfrac{d}{dx}\left(\dfrac{\ln x}{x^2}\right)', 3, 2.6)
+SQ('Hence, find'); E_(r'\int \dfrac{\ln x}{x^3}\,dx', 4, 2.6)
+A(r'(a) $\dfrac{1 - 2\ln x}{x^3}$; (b) $-\dfrac{\ln x}{2x^2} - \dfrac{1}{4x^2} + c$')
+
+ws.Q([])
+SQ('Show that'); E_(r'\dfrac{d}{dx}\left[e^{3x}(2x - 5)\right] = e^{3x}(6x - 13)', 2, 2.6)
+SQ('Hence find the value of each of the constants $a$ and $b$ for which')
+E_(r'\int_0^4 xe^{3x}\,dx = ae^{12} + b', 5, 2.6)
+A(r'(a) shown; (b) $a = \dfrac{11}{9}$, $b = \dfrac{1}{9}$')
+
+ws.Q([])
+SQ('Find'); E_(r'\dfrac{d}{dx}(x\cos 4x)', 2, 2.6)
+SQ('Without using a calculator, find the value of each of the constant $a$ and $b$ for which')
+E_(r'\int_0^{\frac{\pi}{12}} x\sin 4x\,dx = a\pi + b', 4, 2.6)
+A(r'(a) $\cos 4x - 4x\sin 4x$; (b) $a = -\dfrac{1}{96}$, $b = \dfrac{\sqrt{3}}{32}$')
+
+ws.Q([])
+SQ('Find the derivative below, leaving your answer as a single fraction in its simplest form.')
+E_(r'\dfrac{d}{dx}\left(\ln\sqrt{\dfrac{3x + 1}{3x - 1}}\right)', 4, 2.6)
+SQ('Hence, find'); E_(r'\int \dfrac{2}{9x^2 - 1}\,dx', 3, 2.6)
+A(r'(a) $-\dfrac{3}{(3x + 1)(3x - 1)}$; (b) $-\dfrac{2}{3}\ln\sqrt{\dfrac{3x + 1}{3x - 1}} + c$')
+
+ws.Q([])
+SQ(r'Given that $y = (x + 2)\sqrt{x - 1}$, show that the gradient can be written as below, where $k$ is constant.')
+E_(r'\dfrac{dy}{dx} = \dfrac{kx}{2\sqrt{x - 1}}', 4, 2.6)
+SQ('Hence find the rate of change of $x$ when $x = 2$, given that $y$ is changing at a constant rate of 2 units per second.', 2)
+SQ('Evaluate'); E_(r'\int_2^5 \dfrac{x}{\sqrt{x - 1}}\,dx', 3, 2.6)
+A(r'(a) $k = 3$; (b) $\dfrac{2}{3}$ units per second; (c) $\dfrac{20}{3}$')
+
+ws.Q([])
+SQ(r'By differentiating $\ln(\cos x)$, find $\int \tan x\,dx$.', 3)
+SQ(r'Given that $y = x\tan x$, find $\dfrac{dy}{dx}$.', 2)
+SQ(r'Using your answers to (a) and (b), find $\int x\sec^2 x\,dx$.', 3)
+A(r'(a) $-\ln(\cos x) + c$; (b) $x\sec^2 x + \tan x$; (c) $x\tan x + \ln(\cos x) + c$')
+
+ws.Q([])
+SQ(r'Given that $y = x\sin^2 x$, show that')
+E_(r'\dfrac{dy}{dx} = x\sin 2x - \dfrac{1}{2}\cos 2x + \dfrac{1}{2}', 4, 2.6)
+SQ(r'Hence find $\int 4x\sin 2x\,dx$.', 4)
+A(r'(a) shown; (b) $4x\sin^2 x + \sin 2x - 2x + c$')
+
+ws.Q([])
+SQ('Show that'); E_(r'\dfrac{d}{dx}\left(\sin^3 2x\right) = 6\sin^2 2x\cos 2x', 1, 2.6)
+SQ(r'Hence find $\int \cos^3 2x\,dx$.', 5)
+A(r'(a) shown; (b) $\dfrac{1}{2}\sin 2x - \dfrac{1}{6}\sin^3 2x + c$')
+
+ws.Q([])
+SQ('Show that'); E_(r'\dfrac{d}{dx}\left(\dfrac{x + 2}{\sqrt{4 + 3x^2}}\right) = \dfrac{4 - 6x}{\sqrt{(4 + 3x^2)^3}}', 3, 2.6)
+SQ('Evaluate'); E_(r'\int_0^2 \dfrac{6 - 9x}{\sqrt{(4 + 3x^2)^3}}\,dx', 3, 2.6)
+A('(a) shown; (b) $0$')
+
+ws.Q([])
+SQ(r'Differentiate $x\sin x + \cos x$ with respect to $x$.', 2)
+SQ('Show that'); E_(r'\dfrac{d}{dx}\left(\dfrac{1}{3}x\sin^3 x\right) = \dfrac{1}{3}\sin^3 x - x\cos^3 x + x\cos x', 3, 2.6)
+SQ(r'Using the results found in part (a) and part (b), find $\int (\sin^3 x - 3x\cos^3 x)\,dx$.', 4)
+A(r'(a) $x\cos x$; (b) shown; (c) $x\sin^3 x - 3x\sin x - 3\cos x + c$')
+
+ws.Q([])
+SQ(r'Find $\dfrac{d}{dx}(x\tan^2 x)$.', 2)
+SQ(r"It is given that the curve $y = f(x)$ passes through the point $\left(\dfrac{\pi}{4}, \dfrac{7}{5}\right)$ and is such that $f'(x)$ is as below. "
+   'Using the result of part (a), find $f(x)$.')
+E_(r"f'(x) = \dfrac{4x\tan x\sec^2 x}{5}", 6, 2.6)
+A(r'(a) $\tan^2 x + 2x\tan x\sec^2 x$; (b) $f(x) = \dfrac{2}{5}(x\tan^2 x - \tan x + x) + \dfrac{9}{5} - \dfrac{\pi}{5}$')
 
 ws.save(sys.argv[1], strict_maths=True)
