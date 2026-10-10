@@ -12,6 +12,11 @@ Answers: verify_circles_draw_it.py.
  10 Cedar Girls 2024 P2 Q8 0a7aaaba  (St Patrick 2025 P1 Q13 is the same question; ITS bank key —
     centre (0,-4), radius sqrt 5, k = -19 — is wrong: x = -1 would not touch that circle)
  11 St Joseph's Institution 2025 P2 Q9 ba150c33  12 Ang Mo Kio 2024 P2 Q9 1c031db5
+
+Section B, added later on 10 Oct 2026 (Adrian: "include questions that describes horizontal or vertical
+lines as the tangents or normals to the circle and to find the centre"):
+ 13 RI 2024 P2 Q4 2f0288e9            14 ACS (Barker Road) 2024 P1 Q9 e5ebc6b6   15 ACS (Barker Road) 2025 P2 Q10 57191f6f
+ 16 Anglican High 2024 P1 Q11 ecde08fb 17 Anderson 2024 P2 Q9 c92909ff           18 Dunman 2025 P2 Q10 5bc79827
 """
 import sys
 from pathlib import Path
@@ -29,6 +34,7 @@ Q = lambda s, marks=None: ws.Q(P(s), marks=marks)
 SQ = lambda s, marks=None: ws.SQ(P(s), marks=marks)
 A = lambda s: ws.ans(P(s))
 
+ws.section('Section A — Harder questions')
 Q('The line $y = 10$ and $3y + 4x = 32$ are tangent to a circle $C$ at the points $(-2, 10)$ and $(2, 8)$ respectively.')
 SQ('Show that the equation of $C$ is $(x + 2)^2 + (y - 5)^2 = 25$.', 5)
 SQ('Explain if the $x$-axis is tangent to $C$.', 2)
@@ -111,5 +117,44 @@ SQ('The radius of circle $C_1$ is 10 units. Find the coordinates of the centres 
 SQ(r'Given that circles $C_1$ and $C_2$ are inscribed in a larger circle $C_3$, find the equation of circle $C_3$ in the form of '
    r'$(x - a)^2 + (y - b)^2 = p + q\sqrt{2}$, where $a$, $b$, $p$ and $q$ are integers.', 4)
 A(r'(a) $y = x + 20$; (b) $(-5, 15)$ and $(-15, 5)$; (c) $(x + 10)^2 + (y - 10)^2 = 150 + 100\sqrt{2}$')
+
+ws.section('Section B — Horizontal and vertical tangents: find the centre')
+Q('A circle passes through the points $A(3, 0)$ and $B(-1, 8)$. The $x$-axis is a tangent to the circle at $A$.')
+SQ('Explain briefly why the $x$-coordinate of the centre of the circle is 3.', 1)
+SQ('Find the equation of the circle.', 3)
+A('(a) the radius at $A$ is vertical; (b) $(x - 3)^2 + (y - 5)^2 = 25$')
+
+Q('$(-2, 6)$ and $(-2, 0)$ are points on the circumference of a circle. The line $y = 8$ is a tangent at the highest point of the circle. '
+  'The line with equation $y = 3x - 3$ passes through the centre of the circle.')
+SQ('Show that the radius of the circle is 5 units.', 2)
+SQ('Find the equation of the circle.', 2)
+SQ('Determine whether the point $(6, 7)$ lies inside, on or outside the circle.', 2)
+A(r'(a) shown; (b) $(x - 2)^2 + (y - 3)^2 = 25$; (c) outside, $\sqrt{32} > 5$')
+
+Q('The points $A(3, -1)$ and $B(3, 9)$ lie on the circumference of a circle. The line $y = 17$ is a tangent to the circle. '
+  'The $x$-coordinate of the centre of the circle is positive.')
+SQ('Find the radius of the circle and the coordinates of its centre.', 4)
+SQ('Hence, find the coordinates of the point on the circle which is nearest to the $y$-axis.', 2)
+A('(a) $13$, $(15, 4)$; (b) $(2, 4)$')
+
+Q('The points $H(-18, 0)$, $K(5, 7)$ and $L(-10, 32)$ lie on a circle, $C$. The line $y = 32$ is a tangent to the circle.')
+SQ('Find the equation of the perpendicular bisector of the chord $HK$.', 3)
+SQ('Show that the coordinates of the centre of the circle are $(-10, 15)$.', 1)
+SQ('Find the equation of the circle.', 2)
+A(r'(a) $y = -\dfrac{23}{7}x - \dfrac{125}{7}$; (b) shown; (c) $(x + 10)^2 + (y - 15)^2 = 289$')
+
+Q('The lines $x = 3$ and $y = -4$ are tangents to a circle $C$. The centre, $(a, b)$, of the circle is a point in the second quadrant. '
+  'The line $T$ is a tangent to $C$ at the point $(1, -3)$ on the circle.')
+SQ('Show that $a + b = -1$.', 2)
+SQ('Find the centre of the circle $(a, b)$.', 4)
+SQ('Find the equation of $C$.', 1)
+SQ('Find the equation of $T$.', 2)
+A(r'(a) shown; (b) $(-2, 1)$; (c) $(x + 2)^2 + (y - 1)^2 = 25$; (d) $y = \dfrac{3}{4}x - \dfrac{15}{4}$')
+
+Q('The lines $y = 9$, $y = -1$ and $3y = 4x + 9$ are tangents to a circle. The $x$-coordinate of the centre of the circle is positive.')
+SQ('Explain why the $y$-coordinate of the centre of the circle is 4.', 1)
+SQ('By considering the discriminant, or otherwise, show that the $x$-coordinate of the centre of the circle is 7.', 7)
+SQ('Determine if the point $(3, 0)$ lies within the circle.', 2)
+A(r'(a) the centre is midway between $y = 9$ and $y = -1$; (b) shown; (c) no, $\sqrt{32} > 5$')
 
 ws.save(sys.argv[1], strict_maths=True)
