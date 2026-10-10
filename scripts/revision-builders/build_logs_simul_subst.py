@@ -18,6 +18,9 @@ scanned for all real roots; rejected values shown to be undefined).
  11  Cedar Girls 2025 P1 Q10           78e7b70c   (x = 1 rejected: base of a log)
  12  Raffles Girls 2021 P1 Q2          dbd7007e
  13  Yishun Town 2024 P1 Q6            b833b080
+ 14  Fairfield Methodist 2022 P2 Q7(a) d1a4ecc4   (y = 0 rejected)   } added 10 Oct 2026, Adrian:
+ 15  Bukit Merah 2016 P1 Q2            c075dc1f   (x = -2 rejected)  } "3 more tougher simultaneous
+ 16  Swiss Cottage 2017 P2 Q7          462237c7                      }  questions involving indices and logarithms"
 """
 import sys
 from pathlib import Path
@@ -145,6 +148,22 @@ ws.SQ([T('The curve '), M(r'\dfrac{x}{y} + y = 1'), T(' and the line '), M('x - 
 ws.SQ([T('Hence solve for the value(s) of '), M('x'), T(' in the simultaneous equations')])
 eqs([r'\dfrac{\lg x}{\lg y} + \lg y = 1', r'\lg\dfrac{x}{y^{2}} = -6'], marks=3, indent=2.6)
 ws.ans([T('(a) '), M('x = -2'), T(' or '), M('x = -12'), T('; (b) '), M('x = 10^{-2}'), T(' or '), M('x = 10^{-12}')])
+
+ws.section('Section D — More simultaneous questions (tougher)')
+simul([T('Solve the simultaneous equations')],
+      r'e\sqrt{e^{x}} = e^{2y}', r'\log_{4}(x + 2) = 1 + \log_{2}y', 8)
+ws.ans([M('x = 2'), T(', '), M('y = 1')])
+
+simul([T('Solve the simultaneous equations')],
+      r'0.5^{x}\left(4^{3y}\right) = 16', r'\log_{4}2x + \log_{4}(x + 3y) = 1', 5)
+ws.ans([M(r'x = \dfrac{2}{3}'), T(', '), M(r'y = \dfrac{7}{9}')])
+
+ws.Q([])
+ws.SQ([T('Given the equation below, express '), M('b'), T(' as a power of '), M('a'), T('.')])
+eqs([r'\dfrac{\left(\log_{a}b\right)^{2}}{\log_{b}a} - 27 = 0'], marks=4, indent=2.6)
+ws.SQ([T('Hence, solve, for '), M('a'), T(' and '), M('b'), T(', the simultaneous equations')])
+eqs([r'ab = 81', r'\dfrac{\left(\log_{a}b\right)^{2}}{\log_{b}a} - 27 = 0'], marks=3, indent=2.6)
+ws.ans([T('(a) '), M('b = a^{3}'), T('; (b) '), M('a = 3'), T(', '), M('b = 27')])
 
 print('glued (cm):', [round(h, 1) for h in ws.glued_heights()])
 ws.save(sys.argv[1], strict_maths=True)

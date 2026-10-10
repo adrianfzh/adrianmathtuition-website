@@ -60,4 +60,14 @@ one('Q13a x', lambda x: x/((x+6)/2)+(x+6)/2-1, -100,100,[-12,-2])
 pair('Q13b',[lambda x,y:lg(x)/lg(y)+lg(y)-1, lambda x,y:lg(x/y**2)+6],[(1e-2,1e2),(1e-12,1e-3)])
 # Q13b all roots: lg y = t, lg x = 2t-6
 one('Q13b t', lambda t: (2*t-6)/t+t-1, -50,50,[-3,2])
+# --- Section D (added 10 Oct 2026)
+# Q14  1 + x/2 = 2y -> x = 4y - 2
+one('Q14 y', lambda y: L(4,(4*y-2)+2)-1-L(2,y), 1e-4,1e3,[1])
+pair('Q14',[lambda x,y:math.e*math.sqrt(math.e**x)-math.e**(2*y), lambda x,y:L(4,x+2)-1-L(2,y)],[(2,1)])
+# Q15  -x + 6y = 4 -> x = 6y - 4 ; needs x > 0, i.e. y > 2/3
+one('Q15 y', lambda y: L(4,2*(6*y-4))+L(4,(6*y-4)+3*y)-1, 0.66667,1e3,[7/9])
+pair('Q15',[lambda x,y:0.5**x*4**(3*y)-16, lambda x,y:L(4,2*x)+L(4,x+3*y)-1],[(2/3,7/9)],bad=[(-2,1/3)])
+# Q16  b = 81/a
+one('Q16 a<1', lambda a: L(a,81/a)**2/L(81/a,a)-27, 1e-3,0.999,[]); one('Q16 a>1', lambda a: L(a,81/a)**2/L(81/a,a)-27, 1.001,80.9,[3])
+pair('Q16',[lambda a,b:a*b-81, lambda a,b:L(a,b)**2/L(b,a)-27],[(3,27)])
 print('ALL OK' if ok else 'SOMETHING FAILED')
