@@ -15,9 +15,9 @@
 
 **`/api/admin-invoices` GET windows PAID invoices to the last ~5 months** (`paidWindowCutoffISO` in `lib/invoice-month.ts`, unit-tested) so the Airtable scan doesn't grow a serial pagination page every ~2 months; unpaid/unsent are always included regardless of age; `?all=1` = full history (the month filter's "Earlier months…" option triggers it).
 
-**That's the ADVANCE cycle — the only one for Feb–Sep.** From October to January a second,
-**arrears** cycle runs alongside it on the 1st/2nd (`?mode=arrears`, same three routes,
-same three steps), and exam-year students' advance invoices are cut short at their last
+**That's the ADVANCE cycle — the only one that runs, every month, since 15 Sep 2026.** The second,
+**arrears** cycle built for October to January (1st/2nd, `?mode=arrears`, same three routes,
+same three steps) is DORMANT — no cron schedules it and `ARREARS_MONTHS` is empty. Exam-year students' advance invoices are cut short at their last
 paper → **[§ Year-end billing](#year-end-billing-octjan--2026-09-02) is mandatory reading
 before touching anything in Oct–Jan.**
 
