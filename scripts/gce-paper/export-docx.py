@@ -36,7 +36,26 @@ _omml_cache = {}
 FAILED = []
 
 
+_FN_RE = re.compile(r'\\(sec|cosec|csc|cot)(?![A-Za-z])')
+_FN_NAME = {'csc': 'cosec'}
+
+
+def _fix_latex(latex):
+    """Small rewrites before pandoc: \\sec, \\cosec, \\csc and \\cot come out
+    italic (and cosec as "cos ec") in Word/LibreOffice maths — an upright
+    \\text{sec} with a thin space reads as the function it is (10 Oct 2026,
+    Set 3 AM P1 Q3). A trailing \\% or a leading \\$ are peeled off by segs()."""
+    def fn(m):
+        name = _FN_NAME.get(m.group(1), m.group(1))
+        return '\\text{' + name + '}\\,'
+    latex = _FN_RE.sub(fn, latex)
+    # "\text{sec}\,^2\theta" — the power belongs on the name, then the thin space
+    latex = re.sub(r'(\\text\{(?:sec|cosec|cot)\})\\,(\^\{?[^{}\\]{1,3}\}?)', r'\1\2\\,', latex)
+    return latex
+
+
 def _memo_omml(latex, display=False):
+    latex = _fix_latex(latex)
     key = (latex, bool(display))
     if key not in _omml_cache:
         try:
@@ -125,12 +144,24 @@ def segs(text, attrs=None):
             if latex.startswith('^') and unit:
                 before = before[:unit.start()]
                 latex = '\\text{' + unit.group(1) + '}' + latex
+        after = ''
+        if m.group(3) is not None:
+            # "$10\\%$" → maths 10 + text "%"; "$\\$120$" → text "$" + maths 120:
+            # inside the maths LibreOffice spaces them ("10 %", "$ 120").
+            pm = re.fullmatch(r'(.*?\S)\s*\\%', latex, re.S)
+            if pm and '\\%' not in pm.group(1):
+                latex, after = pm.group(1), '%'
+            dm = re.fullmatch(r'\\\$\s*(\S.*)', latex, re.S)
+            if dm and '\\$' not in dm.group(1):
+                latex, before = dm.group(1), before + '$\u2060'
         txt(before)
         if m.group(3) is not None:
             if _memo_omml(latex, False) is None:
                 out.append(('text', latex, {'italic': True}))
             else:
                 out.append(('math', latex))
+            if after:
+                out.append(('text', after, attrs) if attrs else ('text', after))
         else:
             latex = (m.group(1) or m.group(2)).strip()
             if _memo_omml(latex, True) is None:
@@ -159,8 +190,10 @@ def _no_break_after_math(parts):
             s = part[1]
             if _GLUE_PUNCT.match(s):
                 s = '\u2060' + s
-            elif _GLUE_HYPHEN.match(s):   # "$x$-axis" stays one word
-                s = '\u2011' + s[1:]
+            elif _GLUE_HYPHEN.match(s):   # "$x$-axis" stays one word (a plain hyphen
+                s = '\u2060-\u2060' + s[1:]   # between word joiners: U+2011 has no glyph here)
+            elif s[0] not in ' \n':        # "$-18°$C", "$10$%": no gap, so no break
+                s = '\u2060' + s
             else:
                 s = _GLUE_UNIT.sub('\u00a0', s, count=1)
             part = (part[0], s) + tuple(part[2:])
@@ -597,8 +630,11 @@ def split_long_math(latex, limit=70):
 # the same rules as lib/solution-readability.ts): a "Mark scheme:" / "Marks:"
 # paragraph is dropped from where it starts to the paragraph's end, and a
 # "[M1 for …]" note goes. The stored JSON keeps both for the marker.
-SCHEME_PARA = re.compile(r'^\s*(?:\*\*)?(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?)'
-                         r'(?:\s*[(\[][^:\n]{0,40}|\s+for\s+[^:\n]{1,24})?\s*:', re.I)
+SCHEME_PARA = re.compile(
+    r'^\s*\(?\s*(?:\*\*)?'
+    r'(?:mark(?:ing)?\s*scheme|marking|marks?\s*(?:allocation|breakdown)?'
+    r'|(?:note\s+)?for\s+the\s+marker|tidy\s+wrong\s+answers|examiner(?:\'s)?\s*(?:note|comment)s?)'
+    r'(?:\s*,?\s*(?:parts?\s*)?[(\[][^:\n]{0,40}|\s+for\s+[^:\n]{1,24})?\s*:', re.I)
 MARK_NOTE = re.compile(r'\[\s*((?:[BMA]\d\s*,?\s*)+)(?:[^\]]*)\]')
 BOLD_LABEL = re.compile(r'^\*\*\s*(\([^)]{1,5}\)(?:\s*\([^)]{1,5}\))?)\s*\*\*\s*')
 ANSWER = re.compile(r'^\**\s*Answers?\s*:\s*\**\s*', re.I)
@@ -684,15 +720,26 @@ def solution_rows(sol):
     def flush_aligned():
         if not pending:
             return
-        rows = [r for a in pending for r in a['rows']]
-        if len(rows) >= 2 and _memo_omml(aligned_latex(rows), True) is not None:
-            for a in pending:
-                if a.get('sub'):
-                    steps.append(segs(a['sub']))
-            steps.append(aligned_latex(rows))
-        else:
-            for a in pending:   # one row only: the sentence as it was, lead-in and all
-                steps.append(segs((a.get('sub', '') + ' ' + a['line']).strip()))
+        # A lead-in ("Area:", "For the second case,") opens a new block, so each
+        # label sits right above its own working (10 Oct 2026, Set 3 AM P1 Q2/Q3:
+        # every lead-in was stacked first, then one block held all the rows).
+        groups, cur = [], []
+        for a in pending:
+            if a.get('sub') and cur:
+                groups.append(cur)
+                cur = []
+            cur.append(a)
+        if cur:
+            groups.append(cur)
+        for group in groups:
+            rows = [r for a in group for r in a['rows']]
+            if len(rows) >= 2 and _memo_omml(aligned_latex(rows), True) is not None:
+                if group[0].get('sub'):
+                    steps.append(segs(group[0]['sub']))
+                steps.append(aligned_latex(rows))
+            else:
+                for a in group:   # one row only: the sentence as it was, lead-in and all
+                    steps.append(segs((a.get('sub', '') + ' ' + a['line']).strip()))
         pending.clear()
 
     for line, its_steps in zip(cleaned, aligned):
@@ -738,6 +785,18 @@ def _solution_step(steps, pending, flush_aligned, st):
         # the result stands out: a bold "Answer:" line
         steps.append([('text', 'Answer: ', {'bold': True})] + segs(line[ans.end():]))
         return
+    arr = ARRAY_LINE_RE.match(line)
+    if arr:
+        # a possibility diagram / table of values inside the working: a small
+        # bordered grid, as the stem does (10 Oct 2026, Set 3 EM P1 Q11 printed
+        # the array as "¿" characters)
+        rows = array_rows(arr.group(1))
+        if rows:
+            ncols = max(len(r) for r in rows)
+            cells = [[segs(c) or [('text', '')] for c in r] + [[('text', '')]] * (ncols - len(r))
+                     for r in rows]
+            steps.append(('grid', cells, [min(round(14.0 / ncols, 2), 1.6)] * ncols))
+            return
     disp = whole_math(line)
     if disp is not None:
         disp = split_long_math(disp)
@@ -950,7 +1009,7 @@ def key_answer(q):
         leaves = p['subparts'] if p.get('subparts') else [p]
         for x in leaves:
             if x.get('answer'):
-                out.append(f"{x.get('label', '')} {x['answer']}".strip())
+                out.append(f"{x.get('label', '')} {x['answer']}".strip().rstrip('.').rstrip())
     return ';  '.join(out)
 
 
