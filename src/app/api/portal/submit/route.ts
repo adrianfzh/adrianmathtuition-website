@@ -295,7 +295,7 @@ export async function POST(req: Request) {
   // ── the same paper, handed in twice ────────────────────────────────────────
   // Rainie, 4 Oct 2026: Queenstown Chemistry P2 at 12:25, again at 22:28 — the same
   // 24 photos (the first sat ten hours in a full queue) — and it was marked twice.
-  // lib/duplicate-handin: the SAME PHOTOS (storage fingerprints) within three days →
+  // lib/duplicate-handin: the SAME PHOTOS (storage fingerprints) within thirty days →
   // nothing is asked: pages the earlier hand-in lacks are added to it, and it is marked
   // once; the copy is logged (portal_event_log 'submit:duplicate', its photos kept).
   // Only the same NAME → the student is asked below, beside the pre-flight's findings.

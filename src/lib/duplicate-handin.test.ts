@@ -50,8 +50,12 @@ describe('photos', () => {
   it('a different family never matches (a physics paper is not a chemistry one)', () => {
     expect(findDuplicate({ paperName: 'Queenstown Paper 2', subject: 'physics', fingerprints: RAINIE_ETAGS }, [rainieFirst], AT_SECOND)).toBeNull();
   });
-  it('older than three days, archived or superseded → not counted', () => {
-    const late = new Date('2026-10-08T00:00:00Z');
+  it('the same photos a week later are still the same paper (thirty days since 10 Oct 2026)', () => {
+    const aWeekOn = new Date('2026-10-11T00:00:00Z');
+    expect(findDuplicate({ paperName: 'x', subject: 'chemistry', fingerprints: RAINIE_ETAGS }, [rainieFirst], aWeekOn)?.kind).toBe('photos');
+  });
+  it('older than thirty days, archived or superseded → not counted', () => {
+    const late = new Date('2026-11-05T00:00:00Z');
     expect(findDuplicate({ paperName: 'x', subject: 'chemistry', fingerprints: RAINIE_ETAGS }, [rainieFirst], late)).toBeNull();
     expect(findDuplicate({ paperName: 'x', subject: 'chemistry', fingerprints: RAINIE_ETAGS }, [{ ...rainieFirst, archived_at: '2026-10-04T05:00:00Z' }], AT_SECOND)).toBeNull();
     expect(findDuplicate({ paperName: 'x', subject: 'chemistry', fingerprints: RAINIE_ETAGS }, [{ ...rainieFirst, superseded_by: 'zz' }], AT_SECOND)).toBeNull();

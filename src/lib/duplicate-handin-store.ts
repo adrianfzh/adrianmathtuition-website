@@ -1,6 +1,6 @@
 // 🔁 The same paper handed in twice — the I/O half (5 Oct 2026). The rule is
 // lib/duplicate-handin.ts (pure, tested); this reads what it needs and nothing more:
-//   - the student's own hand-ins of the last three days (paper_marking_runs), and
+//   - the student's own hand-ins of the last thirty days (paper_marking_runs), and
 //   - each page's content fingerprint: the storage eTag (an MD5 of the bytes) from ONE
 //     listing of the student's hand-in folder — no photo is downloaded.
 // A failure anywhere answers "nothing known" — a check that cannot read must never stop
@@ -17,7 +17,7 @@ export async function handinFingerprints(admin: Admin, studentId: string): Promi
   try {
     const prefix = `handins/${studentId}`;
     const { data, error } = await admin.storage.from(STUDENT_FILES_BUCKET)
-      .list(prefix, { limit: 600, sortBy: { column: 'created_at', order: 'desc' } });
+      .list(prefix, { limit: 1000, sortBy: { column: 'created_at', order: 'desc' } });
     if (error || !data) return out;
     for (const o of data) {
       const tag = String((o.metadata as { eTag?: unknown } | null)?.eTag ?? '').replace(/"/g, '');
@@ -42,7 +42,7 @@ export async function earlierHandins(admin: Admin, studentId: string, prints: Ma
       .eq('result_json->>portal_submission', 'true')
       .gte('created_at', since)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(80);
     return ((data ?? []) as Array<Record<string, unknown>>).map((r) => ({
       id: String(r.id),
       created_at: String(r.created_at),

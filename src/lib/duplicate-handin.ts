@@ -14,12 +14,13 @@
 //      earlier one not marked yet. A name can be a different paper ("Queenstown P2" from
 //      another year), so the student is ASKED — "Send anyway" goes through as before.
 //
-// Only the student's own hand-ins in the last three days, in the same family (a physics
-// paper never matches a maths one). A paper marked before stays a match only by its photos.
+// Only the student's own hand-ins in the last thirty days, in the same family (a physics
+// paper never matches a maths one). Three days until 10 Oct 2026 (Adrian: "YES" to thirty —
+// the same photos re-sent a week later were marked again). A paper marked before stays a match only by its photos.
 // Nothing is deleted: a matched hand-in's photos stay in storage and are listed on the
 // earlier run (result_json.duplicate_handins). The I/O is in the submit route.
 
-export const DUPLICATE_WINDOW_DAYS = 3;
+export const DUPLICATE_WINDOW_DAYS = 30;
 
 export interface EarlierHandin {
   id: string;

@@ -2793,7 +2793,7 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
 > **The same paper twice (5 Oct 2026, Adrian: "do the self fixes").** Rainie sent Queenstown
 > Chemistry P2 at 12:25 and again at 22:28 (the first sat ten hours in a full queue) — the same
 > 24 photos — and it was marked twice. Now the submit route checks the student's own hand-ins
-> of the last 3 days in the same family (`lib/duplicate-handin.ts`, pure/tested, Rainie's runs
+> of the last 30 days (3 until 10 Oct 2026, Adrian: "YES") in the same family (`lib/duplicate-handin.ts`, pure/tested, Rainie's runs
 > as the regression; I/O `lib/duplicate-handin-store.ts`). **Same photos** (the storage eTag of
 > each page, from one folder listing — nothing downloaded; half the pages or three shared) →
 > nothing is asked: pages the earlier hand-in lacks go to it through the bot's `add-pages`,
