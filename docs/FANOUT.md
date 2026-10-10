@@ -176,6 +176,13 @@ test-gated in both repos, reported by the Sunday doc-sweep), and these rules sta
   reads when it chooses. A coordinator collects its sub-agents' results silently and
   sends one summary. Brief line to paste: *"Report once, at the end (or if blocked).
   No progress messages."*
+- **(a2) Look once (10 Oct 2026, Adrian: *"wouldn't checking again waste tokens?"*).**
+  A session backed up some work in the background, then looked at it again each time
+  Adrian asked a question about it — every look re-read a very long conversation. A
+  background job reports by itself when it ends. Until then the answer to "is it
+  done?" is what the session already knows: "still running, started 9:24 pm, I will
+  say when it lands". One look when it ends; a second look only when the end message
+  never came.
 - **(b) One topic per session.** Unrelated work starts a fresh session — a long
   session re-reads everything it has ever done on every turn.
 - **(c) Model per agent.** Haiku or Sonnet for search, counting, formatting, file
