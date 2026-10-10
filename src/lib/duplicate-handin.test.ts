@@ -26,13 +26,39 @@ describe('regression: Rainie Cheng, Queenstown Chemistry P2 handed in twice (4 O
     expect(m?.kind).toBe('name');
     expect(duplicateMessage(m!, { now: AT_SECOND })).toMatch(/tap Send anyway/);
   });
-  it('once marked, a name alone is no longer a duplicate (it may be a second attempt)', () => {
+  it('once marked, the name still asks — it may be a second attempt, so Send anyway stays (10 Oct 2026)', () => {
     const marked = { ...rainieFirst, released_at: '2026-10-04T14:40:55Z', queue_status: 'done' };
-    expect(findDuplicate({ paperName: 'Queenstown Paper 2', subject: 'chemistry', fingerprints: [] }, [marked], AT_SECOND)).toBeNull();
-    // …but the same photos still are
+    const n = findDuplicate({ paperName: 'Queenstown Paper 2', subject: 'chemistry', fingerprints: [] }, [marked], AT_SECOND);
+    expect(n?.kind).toBe('name');
+    expect(duplicateMessage(n!, { now: AT_SECOND })).toMatch(/and it is marked\. Find it under Papers\.\nIf this is a new attempt or a different paper, tap Send anyway\./);
+    // the same photos are the same paper without asking
     const m = findDuplicate({ paperName: 'x', subject: 'chemistry', fingerprints: RAINIE_ETAGS }, [marked], AT_SECOND);
     expect(m?.kind).toBe('photos');
     expect(duplicateMessage(m!, { now: AT_SECOND })).toMatch(/it is marked/);
+  });
+});
+
+describe('regression: Denise Chan, TYS 2023 A Math P1 scanned again four days after it was marked (10 Oct 2026)', () => {
+  // paper_marking_runs 325c5040… (6 Oct, 77/90) and 6ef79906… (10 Oct, 75/90): the same script,
+  // new scans — no photo fingerprint in common — and a name with no school in it.
+  const first: EarlierHandin = {
+    id: '325c5040', created_at: '2026-10-06T01:16:00Z', paper_name: 'tys 2023 amath paper 1', subject: 'math',
+    released_at: '2026-10-06T01:35:00Z', queue_status: 'done', fingerprints: ['a1', 'a2', 'a3'],
+  };
+  const at = new Date('2026-10-10T03:40:00Z');
+  it('the name asks, and says the paper is already marked', () => {
+    const m = findDuplicate({ paperName: 'tys 2023 amath paper 1', subject: 'math', fingerprints: ['b1', 'b2', 'b3'] }, [first], at);
+    expect(m?.kind).toBe('name');
+    expect(duplicateMessage(m!, { now: at })).toBe('You handed in “tys 2023 amath paper 1” on Tue 6 Oct, and it is marked. Find it under Papers.\nIf this is a new attempt or a different paper, tap Send anyway.');
+  });
+  it('her other papers do not match it', () => {
+    for (const other of ['tys 2024 emath p2', 'tys 2023 paper 2 emath', 'tys 2023 emath paper 1', 'tys amath 2024 paper 1', 'tys 2023 amath paper 2', 'AM Tys 2021 specimen paper 2']) {
+      expect(findDuplicate({ paperName: other, subject: 'math', fingerprints: [] }, [first], at)).toBeNull();
+    }
+  });
+  it('written another way it is still the same paper', () => {
+    expect(sameNameish('TYS 2023 A Math P1', 'tys 2023 amath paper 1')).toBe(true);
+    expect(sameNameish('2023 add maths paper 1', 'tys 2023 amath paper 1')).toBe(true);
   });
 });
 
@@ -68,7 +94,7 @@ describe('photos', () => {
 
 describe('names', () => {
   it('reads the paper, year, exam and school words', () => {
-    expect(nameParts('Xinmin 2021 Prelim P2')).toEqual({ paper: '2', year: '2021', exam: 'prelim', words: ['xinmin'] });
+    expect(nameParts('Xinmin 2021 Prelim P2')).toEqual({ paper: '2', year: '2021', exam: 'prelim', kind: null, words: ['xinmin'] });
     expect(nameParts('Olevel AMATH 2025 paper 1 and 2').words).toEqual([]);
   });
   it('a different paper number, year or exam is a different paper', () => {
@@ -77,8 +103,11 @@ describe('names', () => {
     expect(sameNameish('Xinmin Prelim P2', 'Xinmin EOY P2')).toBe(false);
     expect(sameNameish('Xinmin P2', 'Bedok View P2')).toBe(false);
   });
-  it('a name with no school words never matches ("A Math paper 2")', () => {
+  it('a name with no school words and no year never matches ("A Math paper 2")', () => {
     expect(sameNameish('A Math paper 2', 'E Math Paper 2')).toBe(false);
+    expect(sameNameish('A Math paper 2', 'A Math Paper 2')).toBe(false);
+    expect(sameNameish('tys 2023 paper 1', 'tys 2023 amath paper 1')).toBe(false);
+    expect(sameNameish('Xinmin 2023 A Math P1', 'Xinmin 2023 E Math P1')).toBe(false);
   });
   it('a paper number on one side only needs the same words exactly', () => {
     expect(sameNameish('Queenstown Chemistry', 'Queenstown Chemistry P2')).toBe(true);

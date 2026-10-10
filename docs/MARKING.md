@@ -2801,7 +2801,11 @@ Adrian's own intake) → straight-to-Blob via client token → one POST files it
 > line, and the copy is logged in `portal_event_log` kind `submit:duplicate` (its photo URLs
 > kept — nothing deleted). If the bot refuses the pages (marking under way), the hand-in is
 > filed as its own run, the old way. **Same name only** (school words, paper number; no clash
-> of year or exam) and the earlier one not marked yet → a `duplicate` finding beside the
+> of year, exam or A/E Math; **since 10 Oct 2026 also when the earlier one is already marked,
+> and for a name with no school when year + paper number + A/E Math agree** — Denise scanned
+> "tys 2023 amath paper 1" again four days after it was marked, new photo files, marked twice
+> 77 then 75; a marked match reads "… and it is marked. Find it under Papers. If this is a new
+> attempt or a different paper, tap Send anyway") → a `duplicate` finding beside the
 > pre-flight's: "If this is the same paper, you don't need to send it again … If it is a
 > different paper, tap Send anyway", with an "It's the same paper — don't send it" door. The
 > bot's Telegram `/handin` does not check (it has its own one-a-day rule).
