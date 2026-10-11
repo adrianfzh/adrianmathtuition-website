@@ -1,4 +1,4 @@
-# SPEC-TWINS — our own question for every school question we serve
+# SPEC-TWINS — our own questions for every skill we serve (a few per skill, not one per school question)
 
 **Verified by the checks since 30 Sep 2026** (Adrian: *"if they pass the checks consider them verified"*): `publish` runs only after every gate, the blind solve and the moderator passed, so it writes `verified=true` (`gen_meta.verified_by = 'checks'`); Adrian's per-twin read is no longer a step, Retire on `/admin/generated` takes one out. The 51 twins written before the change were flipped the same day. Flipping a topic to ours-only stays his. **Status: phase 2 BUILT 30 Sep 2026** — `serving_policy` + `serving_school_rows()` + the `twin_readiness` view (`migrations/serving_policy.sql`), the four serving RPCs admit school rows only where the policy says so, `practiceEligibility {schoolRowsRetired}` mirrors it, `GET|POST /api/admin/serving-policy` (409 below the threshold), the 👯 Flip section on `/admin/ops` (`lib/serving-policy.ts` pure/tested); Adrian flips, nothing flips itself. **Phase 1 BUILT** the same day (the Fly worker's `twins` lane). **Phase 0 BUILT 30 Sep 2026** — the `twin_queue` view + the `kiosk_pool` verified guard (`migrations/twin_queue.sql`; every serving door now refuses an unverified `ai_generated` row), `scripts/twins/twin.mjs` (queue · brief · check · publish · review) and the `twin-question` skill (Opus author → gates → Sonnet blind solve → Opus moderate → figure → insert `verified=false`). 40 E Math twins written for Adrian's read the same day (Adrian: "40 in review page is good, we can go ahead"). **Phase 1 BUILT 30 Sep 2026** — the Fly worker's `twins` lane (bot `worker/fly/twins.sh` + `jobs.sh`, every 15 min at nice 15 behind marking, ≤3 sources a run, EM first via `TWINS_LEVEL`, `job_runs` `twin-batch`, `docs/OPS.md`) and Adrian's per-twin ✓ Verify on `/admin/generated` (`POST /api/admin/generated {action:'verify'}`). Phase 2 (`serving_policy` + the flip) waits until verified twins ≥ the drawn school rows of a topic. **Spec written 11 Sep 2026.** Adrian: *"creating questions based
 off the schools' questions and then serving our own questions, and not serving
@@ -222,6 +222,11 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   5) and the lane wrote past the cap of 5 (E Math ~120 extra over 46 sub-skills). The sub-skill id
   is now the last ORDER BY key. At 5 a sub-skill that day: **E Math 9 to write, A Math 205, Sec 1
   100, Sec 2 246**.
+- **Progress is reported by skill, never by school question (11 Oct 2026, Adrian, the fourth
+  time: *"Twins should be for every skill, not every question"*).** A status report had led with
+  "school questions that now have a twin: 1,364 of 5,054 (27%)", which reads as if 5,000 twins
+  were the goal. Say, per level: skills at the target, skills still short, twins left to write
+  (`to_write` above; science §11) — and that the writer stops at the target (3, then 5).
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic
