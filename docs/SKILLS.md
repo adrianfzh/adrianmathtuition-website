@@ -36,6 +36,15 @@ sheet has ONE door:
   off = the regular format, byte for byte. Kinds 1 / 2 / 4 / 5 and the Telegram `/ws` sheet
   print their usual header (the queued builder runs the skills headless and takes no brand
   flag yet).
+- **A sheet made from bank questions prints the school's own sentences, and nothing in a
+  table** (11 Oct 2026, Adrian: *"why does the question look different from question bank? did
+  you write the questions yourself?"* … *"can you don't put in table form?"*; first asked 4 Oct:
+  *"did you come up with these questions yourself?"*). Why: he picks bank questions because they
+  are real exam wording, and a reworded one looks made up.
+  - Keep each sentence as the bank stores it. Do not move an expression out of its sentence.
+  - The report says in one line where the questions came from: the bank, or written new.
+  - Any line that is not the school's (a re-lettered part, an instruction the bank does not
+    store) is listed in the report. Never say "word for word" unless nothing was changed.
 - **A cloud session (claude.ai/code) never builds a PDF itself** — it has no Word
   and LibreOffice is not faithful. It pushes the Word file or queues a
   `worksheet_jobs` row and lets the Fly builder export it.
