@@ -198,10 +198,30 @@ async function need() {
 
 // --------------------------------------------------------------- queue ----
 // the units in science_twin_units order (open topics first, fewest twins first), one seed per unit a round
+//
+// A seed the lane already tried is passed over, and the NEXT one is offered (11 Oct 2026). The
+// lane's "this seed failed" mark lives only on the worker's disk (<done-dir>/<pool>-<seed>/parked),
+// so the database kept offering the same first seeds, the lane dropped every one of them, and
+// 247 twins over 172 sub-skills sat unwritten behind "0 of 0" while ~700 other seeds went unread.
+// A sub-skill the lane has given up on (<done-dir>/skip/<pool>-<subgroup>) is left out too.
+// --done-dir <dir> | SCI_TWINS_RUNS_DIR | /data/science-twins; no such folder (the Mac) = no filter.
+function triedHere() {
+  const dir = argOf('--done-dir', process.env.SCI_TWINS_RUNS_DIR || '/data/science-twins');
+  if (!dir || !existsSync(dir)) return { seed: () => false, unit: () => false };
+  const mark = (d, f) => existsSync(join(dir, d, f));
+  return {
+    seed: (pool, sid) => mark(`${pool}-${sid}`, 'parked') || mark(`${pool}-${sid}`, 'published') || mark(sid, 'parked') || mark(sid, 'published'),
+    unit: (pool, sg) => existsSync(join(dir, 'skip', `${pool}-${sg}`)),
+  };
+}
 async function queue() {
   const limit = Number(argOf('--limit', 10));
   const onlyPool = argOf('--pool', null);
-  const rows = (await units()).filter((u) => u.need > 0 && (u.seeds ?? []).length && (!onlyPool || u.pool === onlyPool));
+  const tried = triedHere();
+  const rows = (await units())
+    .filter((u) => u.need > 0 && (!onlyPool || u.pool === onlyPool) && !tried.unit(u.pool, u.subgroup_id))
+    .map((u) => ({ ...u, seeds: (u.seeds ?? []).filter((sid) => !tried.seed(u.pool, sid)) }))
+    .filter((u) => u.seeds.length);
   const out = []; const used = new Set();
   for (let round = 0; out.length < limit; round++) {
     let left = 0;

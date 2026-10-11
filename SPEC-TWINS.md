@@ -291,6 +291,14 @@ One rewrite from the problems or the checker's fixes; a second failure drops the
 logged). The lane skips a sub-skill after 3 dropped seeds, and a Combined sub-skill at once when
 the checker finds it outside the Combined syllabus (`/data/science-twins/skip/`).
 
+**A tried seed is passed over, the next one is offered (11 Oct 2026).** The lane's `parked` /
+`published` marks live only on the worker's disk, so `science_twin_units()` kept offering the same
+first seeds; the lane dropped every one and reported "0 of 0" from 10 Oct with 247 twins over 172
+sub-skills still owed and ~700 seeds unread. `sci-twin.mjs queue` now reads those marks itself
+(`--done-dir` | `SCI_TWINS_RUNS_DIR` | `/data/science-twins`; no such folder = no filter): a
+tried seed is removed before the pick, a skipped sub-skill is left out. The function returns at
+most five seeds a sub-skill, and three drops skip it, so five is enough.
+
 **Filed as ours** (`sci-twin.mjs publish` / the door, science project): `school='AdrianMath'`,
 `exam_type='Twin'`, level = the pool's bank level (PHYS… or CS_PHYS…), `twin_of` = the seed,
 `gen_meta` (`twin_item` = `sci-twin-<seed>` pure, `sci-twin-<pool>-<seed>` Combined; gates, blind
