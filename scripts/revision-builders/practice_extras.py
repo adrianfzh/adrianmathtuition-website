@@ -2,11 +2,11 @@
 (10 Oct 2026, the logs / calculus / circles sheets).
 
 P('Find $x$ when …')   -> a parts list: text outside $…$, maths inside.
-eqs(ws, [latex, …], marks=n) -> the question's expression(s), each on a line of
-its own at full size with the marks level with the last one. Inline, Word
-shrinks fractions until they cannot be read; a display line cannot share its
-paragraph with the [n] tab — so the lines sit in the left cell of a borderless
-row and the marks in the right cell, whose edge is the 15.5 cm marks column.
+eqs(ws, [latex, …], marks=n) -> equations the bank itself prints on their own lines,
+as plain indented paragraphs (no table), marks on the last.
+Questions keep the bank's own sentence, expression inside it (11 Oct 2026: "why does the
+question look different from question bank?" — the lead-ins "the expression below",
+"Integrate the following" were ours, and are gone).
 """
 import re
 from docx.shared import Cm
@@ -25,28 +25,49 @@ def P(s):
 
 
 def eqs(ws, lines, marks=None, indent=1.6):
+    """Equation(s) the bank prints on lines of their own (a pair of simultaneous
+    equations): one plain paragraph each, set in from the question's text, the
+    marks on the last one. NOT a table — Adrian, 11 Oct 2026, on the borderless
+    two-cell row this used to be: "can you don't put in table form?"."""
     ws.doc.paragraphs[-1].paragraph_format.keep_with_next = True
-    table = ws.doc.add_table(rows=1, cols=2)
-    table.autofit = False
-    b = OxmlElement('w:tblBorders')
-    for side in ('top', 'left', 'bottom', 'right', 'insideH', 'insideV'):
-        el = OxmlElement(f'w:{side}'); el.set(qn('w:val'), 'nil'); b.append(el)
-    table._tbl.tblPr.append(b)
-    widths = (14.2, 1.72)   # right edge of the [n] = the 15.5 cm marks tab
-    for col, w in zip(table.columns, widths):
-        col.width = Cm(w)
-    left, right = table.rows[0].cells
-    left.width, right.width = Cm(widths[0]), Cm(widths[1])
+    out = []
     for i, latex in enumerate(lines):
-        p = left.paragraphs[0] if i == 0 else left.add_paragraph()
-        ws._solution_step(p, latex, width=widths[0] - indent)
+        last = i == len(lines) - 1
+        # the zero-width space keeps Word from centring a line that holds only an equation
+        p = ws.cont([('math', latex), ('text', '\u200b')], marks=marks if last else None, level=0)
         p.paragraph_format.left_indent = Cm(indent)
+        p.paragraph_format.first_line_indent = Cm(0)
         p.paragraph_format.keep_with_next = True
-    right.vertical_alignment = WD_ALIGN_VERTICAL.BOTTOM
-    rp = right.paragraphs[0]
-    rp.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    rp.paragraph_format.keep_with_next = True
-    if marks is not None:
-        ws._fill(rp, [('text', f'[{marks}]')])
-    table.rows[0]._tr.get_or_add_trPr().append(OxmlElement('w:cantSplit'))
-    return table
+        out.append(p)
+    return out
+
+
+M_NS = 'http://schemas.openxmlformats.org/officeDocument/2006/math'
+W_NS = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+
+
+def full_size_fractions(ws, body_pt=9.5, scale=0.72):
+    """Inside a sentence Word prints a fraction's top and bottom at script size
+    (about 70%), which at 9.5 pt is too small to read. Give those runs a larger
+    font so they PRINT at the body size — the sentence stays the bank's, and no
+    table or display line is needed. Answer lines (right-aligned) are left alone.
+    Call just before save()."""
+    half_pts = str(int(round(body_pt / scale * 2)))
+    for p in ws.doc.paragraphs:
+        if p.alignment == WD_ALIGN_PARAGRAPH.RIGHT:
+            continue
+        for f in p._element.iter(f'{{{M_NS}}}f'):
+            if any(a.tag == f'{{{M_NS}}}f' or a.tag in (f'{{{M_NS}}}sup', f'{{{M_NS}}}sub') for a in f.iterancestors()):
+                continue          # a fraction in an index or inside another fraction stays small
+            for r in f.iter(f'{{{M_NS}}}r'):
+                rpr = r.find(f'{{{W_NS}}}rPr')
+                if rpr is None:
+                    rpr = OxmlElement('w:rPr')
+                    mrpr = r.find(f'{{{M_NS}}}rPr')
+                    r.insert(0 if mrpr is None else list(r).index(mrpr) + 1, rpr)
+                if rpr.find(f'{{{W_NS}}}rFonts') is None:
+                    fonts = OxmlElement('w:rFonts'); fonts.set(qn('w:ascii'), 'Cambria Math'); fonts.set(qn('w:hAnsi'), 'Cambria Math')
+                    rpr.insert(0, fonts)
+                for old in rpr.findall(f'{{{W_NS}}}sz'):
+                    rpr.remove(old)
+                sz = OxmlElement('w:sz'); sz.set(qn('w:val'), half_pts); rpr.append(sz)

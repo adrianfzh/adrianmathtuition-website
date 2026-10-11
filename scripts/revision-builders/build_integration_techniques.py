@@ -22,7 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / '.claude/skills/create-worksheet'))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from worksheet_lib import Worksheet
-from practice_extras import P, eqs
+from practice_extras import P, eqs, full_size_fractions
 
 ws = Worksheet()
 ws.title('Integration Techniques — From the Basics Up')
@@ -31,17 +31,14 @@ Q = lambda s, marks=None: ws.Q(P(s), marks=marks)
 SQ = lambda s, marks=None: ws.SQ(P(s), marks=marks)
 A = lambda s: ws.ans(P(s))
 E_ = lambda latex, marks=None, indent=1.6: eqs(ws, [latex], marks, indent)
-WRT = 'Integrate the following with respect to $x$.'
-
-
-def integrate(latex, marks, ans, stem=WRT):
-    Q(stem); E_(latex, marks); A(ans)
+def integrate(latex, marks, ans):
+    Q('Integrate $' + latex + '$ with respect to $x$.', marks); A(ans)
 
 
 ws.section('Section A — Powers: expand or divide first')
 Q('Integrate with respect to $x$')
 SQ('$(x^2 - 1)^2$,', 2)
-SQ('the expression below.'); E_(r'\dfrac{x^3 - x^2}{2x}', 2, 2.6)
+SQ(r'$\dfrac{x^3 - x^2}{2x}$.', 2)
 A(r'(a) $\dfrac{x^5}{5} - \dfrac{2x^3}{3} + x + c$; (b) $\dfrac{x^3}{6} - \dfrac{x^2}{4} + c$')
 
 integrate(r'\left(x - \dfrac{5}{2x}\right)^2', 3, r'$\dfrac{x^3}{3} - 5x - \dfrac{25}{4x} + c$')
@@ -63,8 +60,8 @@ integrate(r'\dfrac{4}{2 - 5x} + \dfrac{2}{x^3} + e^{4x}', 4, r'$-\dfrac{4}{5}\ln
 integrate(r'e^{-\frac{1}{2}x} + \sin 3x', 2, r'$-2e^{-\frac{1}{2}x} - \dfrac{1}{3}\cos 3x + c$')
 
 ws.Q([])
-SQ(r'Integrate $1 - \sin 2x + \tan^2 x$ with respect to $x$.', 3)
-SQ('Find'); E_(r'\int \dfrac{3}{4e^{3x - 6}}\,dx', 2, 2.6)
+SQ(r'Integrate $1 - \sin 2x + \tan^2 x$ with respect to $x$', 3)
+SQ(r'Find $\displaystyle\int \dfrac{3}{4e^{3x - 6}}\,dx$', 2)
 A(r'(a) $\dfrac{1}{2}\cos 2x + \tan x + c$; (b) $-\dfrac{1}{4e^{3x - 6}} + c$')
 
 integrate(r'\dfrac{2}{\cos^2(3x - 1)} - \sin\dfrac{1}{4}x', 3, r'$\dfrac{2}{3}\tan(3x - 1) + 4\cos\dfrac{1}{4}x + c$')
@@ -74,33 +71,34 @@ integrate(r'\sin^2 x + \dfrac{1}{x}', 3, r'$\dfrac{1}{2}x - \dfrac{1}{4}\sin 2x 
 
 integrate(r'\dfrac{1}{3}\tan^2\left(\dfrac{2}{5}x\right)', 2, r'$\dfrac{5}{6}\tan\left(\dfrac{2}{5}x\right) - \dfrac{1}{3}x + c$')
 
-integrate(r'\int_0^{\frac{\pi}{3}} \left(\dfrac{1}{2}\sin 3x - \cos^2 x\right) dx', 4, '$-0.41$',
-          stem='Evaluate the integral below, correct to 2 decimal places.')
+Q(r'Evaluate $\displaystyle\int_0^{\frac{\pi}{3}} \left(\dfrac{1}{2}\sin 3x - \cos^2 x\right) dx$, correct to 2 decimal places.', 4)
+A('$-0.41$')
 
 ws.section('Section E — Definite integrals and unknown limits')
-integrate(r'\int_{-1}^{1} \dfrac{2}{\sqrt{5 - 3x}}\,dx', 3, r'$\dfrac{4\sqrt{2}}{3}$ or $1.89$', stem='Evaluate')
+Q(r'Evaluate $\displaystyle\int_{-1}^{1} \dfrac{2}{\sqrt{5 - 3x}}\,dx$.', 3)
+A(r'$\dfrac{4\sqrt{2}}{3}$ or $1.89$')
 
-integrate(r'\int_p^{14} \dfrac{3}{2y - 5}\,dy = \ln 27', 4, r'$p = \dfrac{34}{9}$',
-          stem='Given the result below, find the exact value of $p$.')
+Q(r'Given that $\displaystyle\int_p^{14} \dfrac{3}{2y - 5}\,dy = \ln 27$, find the exact value of $p$.', 4)
+A(r'$p = \dfrac{34}{9}$')
 
-integrate(r'\int_n^8 \dfrac{x - 5}{x^2 - 2x - 15}\,dx = \ln\dfrac{33}{13}', 4, r'$n = \dfrac{4}{3}$',
-          stem='Given the result below, find the value of $n$.')
+Q(r'Given that $\displaystyle\int_n^8 \dfrac{x - 5}{x^2 - 2x - 15}\,dx = \ln\dfrac{33}{13}$, find the value of $n$.', 4)
+A(r'$n = \dfrac{4}{3}$')
 
 ws.section('Section F — Partial fractions, and using a derivative to integrate')
 ws.Q([])
-SQ('Express the following in partial fractions.'); E_(r'\dfrac{5x^4 + 10x^2 + 3}{x(x^2 + 3)}', 5, 2.6)
+SQ(r'Express $\dfrac{5x^4 + 10x^2 + 3}{x(x^2 + 3)}$ in partial fractions.', 5)
 SQ(r'Differentiate $\ln(x^2 + 3)$ with respect to $x$.', 1)
-SQ('Using the results of parts (a) and (b), determine'); E_(r'\int \dfrac{5x^4 + 10x^2 + 3}{2x(x^2 + 3)}\,dx', 4, 2.6)
+SQ(r'Using the results of parts (a) and (b), determine $\displaystyle\int \dfrac{5x^4 + 10x^2 + 3}{2x(x^2 + 3)}\,dx$.', 4)
 A(r'(a) $5x + \dfrac{1}{x} - \dfrac{6x}{x^2 + 3}$; (b) $\dfrac{2x}{x^2 + 3}$; (c) $\dfrac{5x^2}{4} + \dfrac{1}{2}\ln x - \dfrac{3}{2}\ln(x^2 + 3) + c$')
 
-Q('Given the result below, find the value of $f$ at the given value of $x$.')
-eqs(ws, [r'\int e^{-2x}f(x)\,dx = e^{-2x}\sin 4x + c', r'x = \dfrac{\pi}{4}'], 4)
+Q(r'Given that $\displaystyle\int e^{-2x}f(x)\,dx = e^{-2x}\sin 4x + c$, find the value of $f\left(\dfrac{\pi}{4}\right)$.', 4)
 A(r'$f\left(\dfrac{\pi}{4}\right) = -4$')
 
 ws.Q([])
-SQ('Find'); E_(r'\dfrac{d}{dx}\left(xe^{0.4x - 5}\right)', 1, 2.6)
+SQ(r'Find $\dfrac{d}{dx}\left(xe^{0.4x - 5}\right)$.', 1)
 SQ('Find the range of $x$ such that $f(x) = xe^{0.4x - 5}$ is always a decreasing function.', 2)
-SQ('Use your answer to part (a) to find'); E_(r'\int xe^{0.4x - 5}\,dx', 3, 2.6)
+SQ(r'Use your answer to part (a) to find $\displaystyle\int xe^{0.4x - 5}\,dx$.', 3)
 A(r'(a) $e^{0.4x - 5}(0.4x + 1)$; (b) $x < -2.5$; (c) $\dfrac{5}{2}xe^{0.4x - 5} - \dfrac{25}{4}e^{0.4x - 5} + c$')
 
+full_size_fractions(ws)
 ws.save(sys.argv[1], strict_maths=True)

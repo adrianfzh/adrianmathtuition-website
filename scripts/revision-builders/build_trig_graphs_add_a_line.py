@@ -20,7 +20,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / '.claude/skills/create-worksheet'))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from worksheet_lib import Worksheet
-from practice_extras import P, eqs
+from practice_extras import P, eqs, full_size_fractions
 
 ws = Worksheet()
 ws.title('Trigonometric Graphs — Add a Line to Solve an Equation')
@@ -31,41 +31,39 @@ E_ = lambda latex, marks=None: eqs(ws, [latex], marks, 2.6)
 
 ws.section('Section A — Standard')
 ws.Q([])
-SQ('Sketch the graph below for $0 \\leq x \\leq 4\\pi$.'); E_(r'y = 3\cos\left(\dfrac{x}{2}\right) + 1', 3)
-SQ('By drawing a suitable straight line on your sketch in part (a), determine the number of solutions of the equation below for $0 \\leq x \\leq 4\\pi$.')
-E_(r'\cos\left(\dfrac{x}{2}\right) + 1 = \dfrac{x}{3\pi}', 3)
+SQ(r'Sketch the graph of $y = 3\cos\left(\dfrac{x}{2}\right) + 1$ for $0 \leq x \leq 4\pi$.', 3)
+SQ(r'By drawing a suitable straight line on your sketch in part (a), determine the number of solutions of the equation '
+   r'$\cos\left(\dfrac{x}{2}\right) + 1 = \dfrac{x}{3\pi}$ for $0 \leq x \leq 4\pi$.', 3)
 A(r'(a) sketch; (b) line $y = \dfrac{x}{\pi} - 2$, 2 solutions')
 
 ws.Q([])
-SQ('Sketch the graph of $y = 4\\cos 2x - 2$ for $0 \\leq x \\leq \\pi$.', 2)
-SQ('By drawing a suitable straight line on your sketch, determine the number of solutions of the equation')
-E_(r'\cos 2x = \dfrac{x}{\pi} - 1', 2)
+SQ(r'Sketch the graph of $y = 4\cos 2x - 2$ for $0 \leq x \leq \pi$.', 2)
+SQ(r'By drawing a suitable straight line on your sketch, determine the number of solutions of the equation $\cos 2x = \dfrac{x}{\pi} - 1$.', 2)
 A(r'(a) sketch; (b) line $y = \dfrac{4x}{\pi} - 6$, 2 solutions')
 
 ws.section('Section B — Tougher manipulation')
 ws.Q([])
-SQ('Sketch the graph of $y = 1 - 4\\cos 3x$ for $0^\\circ \\leq x \\leq 180^\\circ$.', 2)
-SQ('By drawing a suitable straight line on your sketch, state the number of solutions, for $0^\\circ \\leq x \\leq 180^\\circ$, '
-   'of the equation $x - 240\\cos 3x = 60$.', 2)
+SQ(r'Sketch the graph of $y = 1 - 4\cos 3x$ for $0^\circ \leq x \leq 180^\circ$.', 2)
+SQ(r'By drawing a suitable straight line on your sketch, state the number of solutions, for $0^\circ \leq x \leq 180^\circ$, '
+   r'of the equation $x - 240\cos 3x = 60$.', 2)
 A(r'(a) sketch; (b) line $y = 2 - \dfrac{x}{60}$, 3 solutions')
 
 ws.Q([])
-SQ('Sketch the graph of $y = 4 - 3\\sin 2x$ for $0 \\leq x \\leq \\pi$ radians.', 3)
-SQ('By drawing a suitable straight line in your sketch, explain why the equation $3\\pi\\sin 2x = -4x$ has no solution for the values of $x$ below.')
-E_(r'x > \dfrac{3\pi}{4}', 3)
+SQ(r'Sketch the graph of $y = 4 - 3\sin 2x$ for $0 \leq x \leq \pi$ radians.', 3)
+SQ(r'By drawing a suitable straight line in your sketch, explain why the equation $3\pi\sin 2x = -4x$ has no solution for $x > \dfrac{3\pi}{4}$.', 3)
 A(r'(a) sketch; (b) line $y = \dfrac{4x}{\pi} + 4$ touches the curve at its top $\left(\dfrac{3\pi}{4}, 7\right)$, then stays above')
 
 ws.section('Section C — Really complicated manipulation')
-ws.Q(P('It is given that $y = 2\\cos^2 x - \\sin^2 x$.'))
-SQ('Sketch the graph of $y = 2\\cos^2 x - \\sin^2 x$ for $0 \\leq x \\leq 2\\pi$ radian, showing clearly the turning points and the intercepts with the line below.')
-E_(r'y = \dfrac{1}{2}', 3)
-SQ('By drawing a suitable line on the same axes, state the number of solutions to the equation $4\\pi\\cos^2 x - 2\\pi\\sin^2 x = x - 2\\pi$.', 3)
+ws.Q(P(r'It is given that $y = 2\cos^2 x - \sin^2 x$.'))
+SQ(r'Sketch the graph of $y = 2\cos^2 x - \sin^2 x$ for $0 \leq x \leq 2\pi$ radian, showing clearly the turning points and the intercepts with $y = \dfrac{1}{2}$.', 3)
+SQ(r'By drawing a suitable line on the same axes, state the number of solutions to the equation $4\pi\cos^2 x - 2\pi\sin^2 x = x - 2\pi$.', 3)
 A(r'(a) sketch of $y = \dfrac{3}{2}\cos 2x + \dfrac{1}{2}$; (b) line $y = \dfrac{x}{2\pi} - 1$, 4 solutions')
 
 ws.Q([])
-SQ('Sketch the graph of $y = -4\\cos 2x + 2$ for $-\\pi \\leq x \\leq \\pi$.', 3)
-SQ('By drawing a suitable straight line on the diagram drawn in part (a), state the number of solutions of the equation '
-   '$-\\pi\\cos 2x = 3x + \\pi$ for $-\\pi \\leq x \\leq \\pi$.', 3)
+SQ(r'Sketch the graph of $y = -4\cos 2x + 2$ for $-\pi \leq x \leq \pi$.', 3)
+SQ(r'By drawing a suitable straight line on the diagram drawn in part (a), state the number of solutions of the equation '
+   r'$-\pi\cos 2x = 3x + \pi$ for $-\pi \leq x \leq \pi$.', 3)
 A(r'(a) sketch; (b) line $y = \dfrac{12x}{\pi} + 6$, 1 solution')
 
+full_size_fractions(ws)
 ws.save(sys.argv[1], strict_maths=True)
