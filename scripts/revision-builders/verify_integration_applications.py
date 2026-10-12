@@ -36,4 +36,18 @@ z('9b', sp.Integral(sp.Abs(v), (t, 5, 6)).evalf() - 0.925, 5e-4); z('9c', sp.Int
 v = 2*sp.exp(t/10) - 10*sp.exp(-3*t/10); T = R(5, 2)*ln(5); s = I(v, (t, 0, t))
 z('10a', v.subs(t, T)); z('10b', D(v, t).subs(t, T) - 1.20, 5e-3); z('10c', -s.subs(t, T) - 13.5, 5e-2)
 z('10d s(10)', s.subs(t, 10) - 2.69, 5e-3); z('10d s(11)', s.subs(t, 11) - 7.98, 5e-3)
+# ---- Section D: our own kinematics questions with 1/sqrt(at+b) (12 Oct 2026)
+def tot(v, a, b): return sp.Integral(sp.Abs(v), (t, a, b)).evalf()
+# 11  a = 12/sqrt(4t+1), v(0) = -12
+v = -12 + I(12/sqrt(4*t + 1), (t, 0, t)); s = I(v, (t, 0, t))
+z('11a', sp.simplify(v - (6*sqrt(4*t + 1) - 18))); print('11b rest', sp.solve(v, t)); z('11b', v.subs(t, 2))
+z('11c OA', s.subs(t, 2) + 10); z('11d', tot(v, 0, 6) - 36, 1e-6)
+# 12  v = 20/sqrt(2t+1) - 4
+v = 20/sqrt(2*t + 1) - 4; s = I(v, (t, 0, t))
+z('12a', D(v, t).subs(t, 4) + R(20, 27)); print('12b rest', sp.solve(v, t)); z('12c', sp.simplify(s - (20*sqrt(2*t + 1) - 4*t - 20)))
+z('12d', s.subs(t, 12) - 32); z('12e s(40)', s.subs(t, 40)); print('12e other zeros', sp.solve(s, t)); z('12e dist', I(v, (t, 0, 12)) - I(v, (t, 12, 40)) - 64)   # split at the turn: the |v| quadrature is only good to ~1e-4
+# 13  v = sqrt(t+1) - 4/sqrt(t+1)
+v = sqrt(t + 1) - 4/sqrt(t + 1); s = I(v, (t, 0, t))
+print('13a rest', sp.solve(v, t)); z('13b', sp.simplify(D(v, t) - (1/(2*sqrt(t + 1)) + 2/(t + 1)**R(3, 2))))
+z('13c s(3)', s.subs(t, 3) + R(10, 3)); z('13c', tot(v, 0, 8) - 8, 1e-6)
 print('ALL OK' if ok else 'SOMETHING FAILED')

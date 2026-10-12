@@ -15,6 +15,9 @@ Answers: verify_integration_applications.py.
   8 Xinmin 2025 P1 Q12 ab5b1946             area · ln x (integrate along y, or by a derivative)
   9 Ahmad Ibrahim 2024 P2 Q7 caa34abb       kinematics · 6/(t+1) gives ln · total distance
  10 Mayflower 2023 P2 Q4 3cf1f3bc           kinematics · e
+ 11-13 WRITTEN HERE, not bank questions (12 Oct 2026). Adrian asked whether the bank has kinematics
+    questions that integrate (at+b)^(-1/2); it has none in 249 rows, and he said "yes" to three
+    written ones: a = 12/sqrt(4t+1); v = 20/sqrt(2t+1) - 4; v = sqrt(t+1) - 4/sqrt(t+1).
 """
 import sys
 from pathlib import Path
@@ -99,6 +102,31 @@ SQ('Find the acceleration of the particle at $A$.', 2)
 SQ('Find the distance $OA$.', 4)
 SQ('Explain whether the particle is again at $O$ at some instant during the eleventh second after first passing through $O$.', 2)
 A('(a) shown; (b) $1.20' + ms2 + '$; (c) $13.5$ m; (d) no, $s = 2.69$ m at $t = 10$ and $7.98$ m at $t = 11$')
+
+ws.section('Section D — Kinematics: integrating a reciprocal square root')
+Q(r'A particle moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its acceleration, $a\text{ m/s}^2$, '
+  r'is given by $a = \dfrac{12}{\sqrt{4t + 1}}$. The particle passes through $O$ with a velocity of $-12$ m/s.')
+SQ('Find an expression, in terms of $t$, for the velocity of the particle.', 3)
+SQ('Show that the particle comes to instantaneous rest when $t = 2$.', 1)
+SQ('Find the distance of the particle from $O$ when it is at instantaneous rest.', 4)
+SQ('Find the total distance travelled by the particle in the first 6 seconds.', 3)
+A(r'(a) $v = 6\sqrt{4t + 1} - 18$; (b) shown; (c) $10$ m; (d) $36$ m')
+
+Q(r'A particle moves in a straight line so that, $t$ seconds after leaving a fixed point $O$, its velocity, $v$ m/s, is given by '
+  r'$v = \dfrac{20}{\sqrt{2t + 1}} - 4$.')
+SQ('Find the acceleration of the particle when $t = 4$.', 2)
+SQ('Find the value of $t$ when the particle is at instantaneous rest.', 2)
+SQ('Find an expression, in terms of $t$, for the displacement of the particle from $O$.', 3)
+SQ('Find the greatest distance of the particle from $O$ in the first 40 seconds.', 2)
+SQ('Show that the particle returns to $O$ when $t = 40$, and find the total distance it has travelled by then.', 3)
+A(r'(a) $-\dfrac{20}{27}' + ms2 + r'$; (b) $t = 12$; (c) $s = 20\sqrt{2t + 1} - 4t - 20$; (d) $32$ m; (e) shown, $64$ m')
+
+Q(r'A particle moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its velocity, $v$ m/s, is given by '
+  r'$v = \sqrt{t + 1} - \dfrac{4}{\sqrt{t + 1}}$.')
+SQ('Find the value of $t$ when the particle is at instantaneous rest.', 2)
+SQ('Explain why the acceleration of the particle is always positive.', 3)
+SQ('Find the total distance travelled by the particle in the first 8 seconds.', 6)
+A(r'(a) $t = 3$; (b) $a = \dfrac{1}{2\sqrt{t + 1}} + \dfrac{2}{\sqrt{(t + 1)^3}}$, both terms positive; (c) $8$ m')
 
 full_size_fractions(ws)
 ws.save(sys.argv[1], strict_maths=True)
