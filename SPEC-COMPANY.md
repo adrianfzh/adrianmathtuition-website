@@ -810,6 +810,15 @@ thing for a buyer to check, and every cost in one ledger.
 4. **Switch only where Claude is at least as good on the bench**, one call type at a time, with
    Gemini kept as the fallback for a month.
 
+**⚠️ Superseded — the red pen no longer uses Gemini (8 → 13 Oct 2026).** Adrian, 8 Oct 2026: *"In
+the end the goal is to replace Gemini - do not want to pay for Gemini anymore"*. 12 Oct: *"Switch
+all maths papers to our own red pen now … science follows 1 day later"*, and when the first paper
+showed faults: *"why switch back to gemini? we just have to improve our tools"* → *"keep ours and
+fix it"*. Maths has drawn from the marker's own row picks since 12 Oct, science since 13 Oct. The
+keep-Gemini decision and the bench findings below are history — never use them to switch back or
+to slow the replacement; a fault in our pen is fixed in our pen. Where it stands: bot
+`docs/HANDOFF-NUMBERED-BOXES-TRIAL.md` §"Switched on for maths".
+
 **Decision (Adrian, 24 Sep 2026): keep Gemini, and make it cheaper.** **1 Oct 2026, Adrian: "forget about gemini vision trial - we will be keeping gemini pro"** — the four-way trial below is NOT to be run; placement stays on `gemini-3.1-pro-preview`. The cheaper levers that do not change the model (thinking low on every placement call, fewer calls per page, skipping the upright check when the previous page was upright) remain open. The test was built the
 same day as `scripts/vision-trial.cjs` in the bot repo (run on the Mac — it needs the Google,
 Anthropic and Supabase keys; `--dry` shows the pages and the estimate, about US$4.50). It runs
