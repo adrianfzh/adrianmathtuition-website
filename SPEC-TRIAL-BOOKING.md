@@ -1,16 +1,19 @@
 # Paid WhatsApp trials + the parent fact sheet
 
-**Where things stand (12 Oct 2026):** built in both repos, **switched off**. Fly secret
-`TRIAL_PREPAY` is unset (= off), so parents still get the old trial card that Adrian confirms by hand.
-Website on `dev`. Bot commit made but **not pushed**: a push to the bot's `main` deploys
-production, so it waits for Adrian's word. Still needed before parents see any of it:
+**Where things stand (12 Oct 2026, ~16:30 SGT):** live in both repos, **test mode**.
+- Website promoted (067a4ce2): `/trial/pay`, the Stripe trial branch, the refund door, the first-bill credit.
+- Bot deployed (3185d213, 94cb27fa, f11d029a): paid booking, after-trial questions, Refund/Keep
+  buttons, fact-sheet answers on WhatsApp AND Telegram.
+- Fly secret `TRIAL_PREPAY=test`: only `ADRIAN_WHATSAPP` (and Adrian's own Telegram) get any of it.
+- Both after-trial templates approved by Adrian ("yes"); **he submits them** in Telegram:
+  `/wa submit trial_followup`, `/wa submit trial_reminder`, then once WhatsApp approves,
+  `/wa trial_followup test` + `/wa trial_reminder test` (and `on` at go-live).
 
-1. Adrian approves the two new WhatsApp messages word for word (below). Set `approved: true`, then
-   `/wa submit trial_followup` + `trial_reminder`, then put each `HX…` id in with `/wa <key> sid HX…`.
-2. Stripe dashboard → the existing webhook endpoint: no change needed (it already sends
-   `checkout.session.completed` + `async_payment_succeeded`; the trial branch rides on it).
-3. `TRIAL_PREPAY=test` → Adrian runs the whole journey from his own WhatsApp (pays $80, presses Refund).
-4. `TRIAL_PREPAY=on`.
+Still to do:
+1. Adrian's test run from his own phone: book, pay $80, then the test lesson is set to Cancelled so
+   the 30-minute job sends the Refund card, and he presses 💸 Refund (checks Checkout create, the
+   webhook, the booking and the refund end to end). The "continuing" path to be tried after.
+2. Then `TRIAL_PREPAY=on` and both templates `on`.
 
 ## What Adrian asked for (12 Oct 2026)
 
