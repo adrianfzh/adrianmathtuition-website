@@ -29,5 +29,9 @@ for blk in blocks[1:]:
             out.append(pending); pending = None
         out.append('\n'.join(lines))
 assert keep <= set(range(1, n + 1)), (keep, n)
-out.append("ws.save(sys.argv[3], strict_maths=True)")
+if 'full_size_fractions' in src:
+    out.append("full_size_fractions(ws)")
+if len(sys.argv) > 4:          # an optional title of its own, and no section headings
+    out = [re.sub(r"ws\.title\('[^']*'\)", f"ws.title({sys.argv[4]!r})", o) for o in out if not o.startswith('ws.section(')]
+out.append("ws.save(sys.argv[3])")
 exec(compile('\n\n'.join(out), sys.argv[1], 'exec'), {'__file__': str(Path(__file__).resolve()), '__name__': '__main__'})
