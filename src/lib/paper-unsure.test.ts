@@ -57,7 +57,7 @@ describe('missingQuestionPaper — tell the student, ask for the paper', () => {
   });
   it('names no tutor and no model', () => {
     expect(MISSING_PAPER_LINE).not.toMatch(/adrian|tutor|claude|gemini|model|\bai\b/i);
-    expect(MISSING_PAPER_LINE).toBe('No questions were detected.');   // Adrian's wording, 13 Oct 2026
-    expect(MISSING_PAPER_LINK).toBe('Send us the question paper');
+    expect(MISSING_PAPER_LINE).toBe('There are no questions in your submission.');   // Adrian's wording, 13 Oct 2026
+    expect(MISSING_PAPER_LINK).toBe('Please upload the question paper.');
   });
 });
