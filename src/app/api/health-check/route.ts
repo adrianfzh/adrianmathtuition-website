@@ -163,6 +163,14 @@ export async function GET(req: NextRequest) {
     // Referral landing (/r/<code> — parent-facing invite links in invoice emails).
     // Probes with a syntactically-valid-but-unknown id: the page must still 200
     // with the generic invite (no Airtable data dependency in the check).
+    // The trial payment link a new parent taps on WhatsApp (12 Oct 2026, SPEC-TRIAL-BOOKING.md):
+    // an unknown booking must answer the plain "does not work" page (404), not crash (5xx).
+    timed('trial-pay-page', async () => {
+      const r = await fetch('https://www.adrianmathtuition.com/trial/pay/00000000-0000-4000-8000-000000000000', { signal: T(10000) });
+      if (r.status !== 404) throw new Error(`HTTP ${r.status}`);
+      if (!(await r.text()).includes('does not work')) throw new Error('page rendered without expected content');
+      return 'ok';
+    }),
     timed('referral-landing', async () => {
       const r = await fetch('https://www.adrianmathtuition.com/r/recAAAAAAAAAAAAAA', { signal: T(10000) });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);

@@ -40,6 +40,7 @@ import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the money topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_money = (text: string) => sendTelegram(text, 'money');
 import { rewardInviterForPaidPass } from '@/lib/referral-reward';
+import { handleTrialPaid } from '@/lib/trial-paid';
 
 export const runtime = 'nodejs';
 
@@ -53,6 +54,7 @@ interface StripeSession {
   amount_total?: number | null; // integer cents
   currency?: string | null; // lowercase, e.g. "sgd"
   metadata?: Record<string, string> | null;
+  payment_intent?: string | null;
 }
 
 function money(amountCents: number | null | undefined, currency: string): string {
@@ -95,6 +97,12 @@ export async function POST(req: NextRequest) {
   const session: StripeSession = event.data?.object ?? {};
   if (session.payment_status !== 'paid') {
     return NextResponse.json({ ok: true, ignored: `payment_status=${session.payment_status || 'none'}` });
+  }
+
+  // A trial-lesson fee (12 Oct 2026, SPEC-TRIAL-BOOKING.md) — never a portal pass.
+  if (session.metadata?.kind === 'trial') {
+    const r = await handleTrialPaid(session, notify_money);
+    return NextResponse.json(r, { status: r.ok ? 200 : 500 });
   }
 
   // Idempotency: Stripe retries (and completed + async_payment_succeeded can

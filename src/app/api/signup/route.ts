@@ -14,6 +14,8 @@ import { firstInvoiceLessonDates, weekdayLessonDates, addDaysISO, nextDayISO } f
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { REC_ID_RE, appendReferrerMarker } from '@/lib/referral-link';
 import { sgtDateISO } from '@/lib/sgt';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import { trialCreditLine, type TrialRow } from '@/lib/trial-booking';
 
 const sanitize = (str: unknown) => String(str || '').trim().replace(/[<>]/g, '').slice(0, 500);
 
@@ -227,6 +229,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Step 2c: a trial booked AND PAID on WhatsApp (12 Oct 2026, SPEC-TRIAL-BOOKING.md) — its fee
+    // comes off the first invoice as a minus line. Non-fatal: no row = no credit.
+    let trialCredit: { description: string; amount: number } | null = null;
+    let trialBookingId: string | null = null;
+    if (trialLessonId) {
+      try {
+        const { data } = await getSupabaseAdmin().from('trial_bookings')
+          .select('id, status, amount_cents, created_at, payment_intent, refunded_at, invoice_id')
+          .eq('lesson_id', String(trialLessonId)).maybeSingle();
+        trialCredit = trialCreditLine((data as TrialRow) || null);
+        if (trialCredit) trialBookingId = (data as TrialRow).id;
+      } catch (err) {
+        console.error('[signup] trial booking lookup failed:', (err as Error).message);
+      }
+    }
+
     // Step 2d: Create registration token (non-fatal)
     let registrationToken: string | null = null;
     try {
@@ -395,7 +413,9 @@ export async function POST(request: NextRequest) {
 
           const totalLessons = allLineItems.length;
           if (totalLessons > 0) {
-            const totalAmount = totalLessons * ratePerLesson;
+            const lessonsAmount = totalLessons * ratePerLesson;
+            const extraLines = trialCredit ? [trialCredit] : [];
+            const totalAmount = Math.max(0, lessonsAmount + extraLines.reduce((a, l) => a + l.amount, 0));
             const firstLessonDate = allLineItems[0].date;
             const firstLessonFormatted = formatDateLong(firstLessonDate);
 
@@ -417,6 +437,7 @@ export async function POST(request: NextRequest) {
               `<b>First invoice</b> — prorated from ${firstLessonFormatted} (${aprilCount} lesson${aprilCount !== 1 ? 's' : ''} in ${startMonthLabel}${batchAlreadyRan && nextMonthCount > 0 ? `, ${nextMonthCount} lesson${nextMonthCount !== 1 ? 's' : ''} in ${nextMonthLabel}` : ''})`,
             ];
             if (trialLessonFormatted) noteParts.push(`Trial lesson: ${trialLessonFormatted}`);
+            if (trialCredit) noteParts.push(`Trial lesson fee already paid: −$${Math.abs(trialCredit.amount).toFixed(2)}`);
             noteParts.push(`First lesson: ${firstLessonFormatted}`);
             const autoNotes = noteParts.join('\n');
 
@@ -429,6 +450,7 @@ export async function POST(request: NextRequest) {
                 'Rate Per Lesson': ratePerLesson,
                 'Final Amount':   totalAmount,
                 'Line Items':     JSON.stringify(allLineItems),
+                ...(extraLines.length ? { 'Line Items Extra': JSON.stringify(extraLines) } : {}),
                 'Invoice Type':   'Regular',
                 'Status':         'Draft',
                 'Issue Date':     todayStr,
@@ -447,6 +469,12 @@ export async function POST(request: NextRequest) {
 
             invoiceGenerated = true;
             invoiceAmount = totalAmount;
+            if (trialBookingId) {
+              const { error: tbErr } = await getSupabaseAdmin().from('trial_bookings')
+                .update({ status: 'signed_up', invoice_id: createdInvoice.id, updated_at: new Date().toISOString() })
+                .eq('id', trialBookingId);
+              if (tbErr) console.error('[signup] trial booking not marked signed_up:', tbErr.message);
+            }
             // Parent-facing month spans back for combined first invoices
             // ("July–August 2026"); the Month FIELD stays the filing label.
             const displayMonth = displaySpanMonth(invoiceMonthLabel, JSON.stringify(allLineItems));
@@ -469,13 +497,13 @@ export async function POST(request: NextRequest) {
                   dueDate: firstLessonDate,
                   lessonsCount: totalLessons,
                   ratePerLesson,
-                  baseAmount: totalAmount,   // must be set so PDF template renders correctly
+                  baseAmount: lessonsAmount,   // must be set so PDF template renders correctly
                   finalAmount: totalAmount,
                   status: 'Pending',
                   makeupCredits: 0,
                   notes: autoNotes,
                   lineItems: allLineItems,
-                  lineItemsExtra: [],
+                  lineItemsExtra: extraLines,
                 };
                 const pdfBuffer = await generateInvoicePDF(invoiceData);
                 firstInvoicePdf = pdfBuffer; // for the welcome-email attachment (Step 8)
@@ -508,7 +536,7 @@ export async function POST(request: NextRequest) {
               const baseUrl = process.env.WEBSITE_URL || 'https://www.adrianmathtuition.com';
               await sendTelegramWithButtons(
                 `📝 <b>New student signup: ${sanitize(studentName)} (${level})</b>\n` +
-                `First invoice: $${totalAmount.toFixed(2)} (${breakdown})\n` +
+                `First invoice: $${totalAmount.toFixed(2)} (${breakdown}${trialCredit ? `, trial fee −$${Math.abs(trialCredit.amount).toFixed(2)} taken off` : ''})\n` +
                 `Auto-emailing it to the parent with the welcome email…`,
                 [
                   [

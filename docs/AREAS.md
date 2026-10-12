@@ -15,6 +15,7 @@ The deep documentation (bug archaeology, invariants, field tables) was split out
 
 | Touching… | Read FIRST |
 |---|---|
+| Paid WhatsApp trials — `/trial/pay/<id>`, `/trial/done`, `api/bot/trial-refund`, the `metadata.kind=trial` branch of `stripe-webhook`, `trial_bookings`, the trial-fee credit in `api/signup` Step 2c, bot `handlers/trial.js` + `lib/parent-facts.js` (12 Oct 2026, switched off until Adrian tests) | [`SPEC-TRIAL-BOOKING.md`](SPEC-TRIAL-BOOKING.md) |
 | `/admin/schedule`, `/admin/progress`, lessons, reschedules, capacity, recurring generation, Revision Sprint, exam season, Lessons progress fields | [`docs/SCHEDULE.md`](docs/SCHEDULE.md) |
 | Marking — `/admin/mark-paper`, `/admin/mark` (batch — RETIRED 5 Oct 2026 → redirects to `/admin/mark-paper`, the `mark-batch/*` routes deleted), `/admin/papers`, `/admin/mark/triage` (RETIRED 8 Sep 2026 → redirects to `/admin/desk`; the API route `mark-triage` stays), **`/app/marking`** (student-facing), `mark-paper-*` routes, `render-marking`, marked-PDF assembly, ✏️ Annotate overlay, **the paper's mark scheme as a state** (`paper_schemes` status/allocation, the desk's 📐 chip, `/api/admin/paper-scheme`) | [`docs/MARKING.md`](docs/MARKING.md) |
 | `/kiosk`, `/api/kiosk/*`, `/admin/notes`, Dropbox notes/revision/practice/prelim PDFs | [`docs/KIOSK.md`](docs/KIOSK.md) |

@@ -23,6 +23,9 @@ export type Rhythm =
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
+  // 🎯 Paid WhatsApp trials (12 Oct 2026, SPEC-TRIAL-BOOKING.md): the bot's after-trial question,
+  // the 2-day reminder and the 7-day "no reply" note. Every 30 min on the bot; stamps every pass.
+  'trial-followup':    { kind: 'interval', hours: 2, label: 'every 30 min (bot)' },
   // 🗂 The sub-skill filer: on the Fly worker since 2 Oct 2026 (the Mac task had not run since
   // 9 Sep), maths 04:15 + 16:15, science 10:15 + 22:15 (bot worker/fly/jobs.sh job_file_subgroups).
   'file-subgroups':    { kind: 'interval', hours: 36, label: '4:15am + 4:15pm' },
