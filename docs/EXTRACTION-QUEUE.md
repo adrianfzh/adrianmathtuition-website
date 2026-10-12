@@ -527,6 +527,22 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   tasks; a 成语 list from a scheme kept as `answer.points`; OCR of scans checked character by character
   against the page.
 
+- **The 2026 Grail papers (12 Oct 2026, Adrian: "go to holy grail site and find the 2026 papers … only
+  secondary level, the subjects we already have in the question bank").** grail.moe has a public per-file
+  lookup (`https://api.grail.moe/note/<id>` → name, level, subject, year, `file_name`; the PDF is
+  `https://document.grail.moe/<file_name>`); ids 21000–26700 were walked and every approved 2026 O/N-Level,
+  IP and Sec 1–2 exam or test file in a banked subject was taken (not Notes, not Accounting / Chinese / Tamil).
+  232 files built (Insert merged after the booklet for Geography; Insert first for English Paper 2; the two
+  KiasuExamPaper books cut by page range into one file per school per paper, Ngee Ann / Dunman / St Patrick /
+  Yishun Town papers skipped as already banked). Every file is in Dropbox `AdrianMath Work/Papers/<subject>/2026 …/`;
+  **177 went through the Extraction Inbox** (papers + their schemes). Not queued, Dropbox only: papers already
+  banked, humanities papers with no scheme (Geography: Dunman, Unity, Christ Church), SJI English Paper 1 (only
+  its editing section has a scheme), Seng Kang Sec 2 History (no lower-sec humanities level), and three Hwa Chong
+  IP files that are one student's marked script (name on them) or a one-page fragment. Left out: N-Level A Math
+  "Unknown School", the NJC JH3 quiz (a student's name on it), two compilations of older papers.
+  The same day `EXAM_RULES` learned `WA1`–`WA4`/`WA` — before it, a weighted assessment was queued with the
+  token inside the school ("WA2 Tanjong Katong Girls", exam null).
+
 ## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
 
 Adrian, 5 Oct 2026: *"do extraction learning from its own flags too"*, then *"are standing rules

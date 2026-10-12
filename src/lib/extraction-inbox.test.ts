@@ -36,6 +36,12 @@ describe("parseSourceFilename — the fleet law's filename conventions", () => {
     expect(parseSourceFilename('EM GCE 2021 Paper 2.pdf')).toMatchObject({ paper: 'p2', examType: 'GCE', school: 'GCE' });
     expect(parseSourceFilename('AM EOY 2021 Nanyang Girls.pdf')).toMatchObject({ examType: 'SA2', school: 'Nanyang Girls' });
   });
+  it('reads a weighted-assessment token as the exam, never as part of the school (12 Oct 2026)', () => {
+    expect(parseSourceFilename('AM WA2 2026 Tanjong Katong Girls.pdf')).toMatchObject({ ok: true, examType: 'WA2', school: 'Tanjong Katong Girls' });
+    expect(parseSourceFilename('EM S3 WA2 2026 Hwa Chong Institution P1 MS.pdf')).toMatchObject({ ok: true, level: 'S3_EM', examType: 'WA2', school: 'Hwa Chong Institution', paper: 'p1' });
+    expect(parseSourceFilename('S3 PHY WA2 2026 Hwa Chong Institution P2.pdf')).toMatchObject({ ok: true, examType: 'WA2', school: 'Hwa Chong Institution', paper: 'p2' });
+    expect(parseSourceFilename("Social Studies WA 2026 St Anthony's Canossian P1.pdf")).toMatchObject({ ok: true, examType: 'WA', school: "St Anthony's Canossian" });
+  });
   it('a Ten-Year-Series / O Level / A Level name IS the national paper: exam GCE, school GCE (10 Sep 2026)', () => {
     expect(parseSourceFilename('O Level AM TYS 2025 (Questions).pdf')).toMatchObject({ ok: true, level: 'AM', year: 2025, school: 'GCE', examType: 'GCE', paper: 'all' });
     expect(parseSourceFilename('O Level EM TYS 2025 (Questions).pdf')).toMatchObject({ ok: true, level: 'EM', school: 'GCE', examType: 'GCE', paper: 'all' });

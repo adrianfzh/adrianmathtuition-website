@@ -97,6 +97,13 @@ const EXAM_RULES: Array<[RegExp, string]> = [
   [/\bSA1\b/i, 'SA1'],
   [/\bSA2\b/i, 'SA2'],
   [/\bEOY\b/i, 'SA2'],
+  // Weighted assessments (12 Oct 2026): until then "AM WA2 2026 Tanjong Katong Girls" was
+  // queued as school "WA2 Tanjong Katong Girls", exam null. The fleet already reads WA1–WA3.
+  [/\bWA1\b/i, 'WA1'],
+  [/\bWA2\b/i, 'WA2'],
+  [/\bWA3\b/i, 'WA3'],
+  [/\bWA4\b/i, 'WA4'],
+  [/\bWA\b/i, 'WA'],
 ];
 
 // A national paper is filed under school 'GCE' in the bank, whatever the file
