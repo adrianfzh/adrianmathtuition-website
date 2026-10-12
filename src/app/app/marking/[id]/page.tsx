@@ -32,7 +32,8 @@ import { displayPaperName } from '@/lib/paper-display-name';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import PaperUnsure from '../PaperUnsure';
-import { unsurePaper } from '@/lib/paper-unsure';
+import { unsurePaper, renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE } from '@/lib/paper-unsure';
+import PaperRenameSuggest from '../PaperRenameSuggest';
 import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
 import PaperNote from '../PaperNote';
@@ -243,7 +244,22 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           lib/paper-unsure): ask the student, offer the re-mark and the re-hand-in. */}
       {(() => {
         const unsure = !isAdmin && !supersededBy ? unsurePaper((row as { result_json?: unknown }).result_json) : null;
-        return unsure ? <PaperUnsure runId={paper.id} label={unsure.label} submitHref={isScience ? '/app/science/submit' : '/app/submit'} /> : null;
+        if (unsure) return <PaperUnsure runId={paper.id} label={unsure.label} submitHref={isScience ? '/app/science/submit' : '/app/submit'} />;
+        if (isAdmin || supersededBy) return null;
+        const rjx = (row as { result_json?: unknown }).result_json;
+        // ✏️ Named one paper, wrote another — marked against the right one; suggest the name (12 Oct 2026).
+        const rename = renameSuggestion(rjx, (row as { student_label?: string | null }).student_label);
+        if (rename) return <PaperRenameSuggest runId={paper.id} label={rename.label} button={rename.button} />;
+        // 🕳 We do not hold the question paper — say so once, plainly, and ask for it.
+        if (missingQuestionPaper(rjx)) {
+          return (
+            <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-2">
+              {MISSING_PAPER_LINE}{' '}
+              <a href={isScience ? '/app/science/submit' : '/app/submit'} className="font-semibold underline underline-offset-2">Send the question paper</a>
+            </p>
+          );
+        }
+        return null;
       })()}
 
       {/* The same three-day line the card carries (lib/paper-notice.ts) — a

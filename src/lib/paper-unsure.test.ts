@@ -29,3 +29,34 @@ describe('answeredCandidate — what the stamp becomes', () => {
     expect(unsurePaper({ paper_match: { candidate: c } })).toBeNull();
   });
 });
+
+import { renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE } from './paper-unsure';
+
+describe('renameSuggestion — named Paper 2, wrote Paper 1 (12 Oct 2026)', () => {
+  const stamp = { key: 'gce 2024 am p1', label: '2024 A Math Paper 1', name: 'o level 2024 paper 1 amath', confirmed: 'working', misnamed: true, suggest: true, was: 'o level 2024 paper 2 amath', kept_label: 'o level 2024 paper 2 amath' };
+  it('suggests the rename while the card still carries the name the student gave it', () => {
+    expect(renameSuggestion({ paper_match: { candidate: stamp } }, 'o level 2024 paper 2 amath')).toEqual({ label: '2024 A Math Paper 1', button: 'Rename to Paper 1' });
+  });
+  it('goes away once renamed — cleared, or a name of their own', () => {
+    expect(renameSuggestion({ paper_match: { candidate: stamp } }, null)).toBeNull();
+    expect(renameSuggestion({ paper_match: { candidate: stamp } }, 'my mock')).toBeNull();
+  });
+  it('never for a paper we do not hold, an ordinary recognition, or no stamp', () => {
+    expect(renameSuggestion({ paper_match: { candidate: { ...stamp, not_held: true } } }, stamp.kept_label)).toBeNull();
+    expect(renameSuggestion({ paper_match: { candidate: { ...stamp, misnamed: undefined } } }, stamp.kept_label)).toBeNull();
+    expect(renameSuggestion({}, stamp.kept_label)).toBeNull();
+  });
+});
+
+describe('missingQuestionPaper — tell the student, ask for the paper', () => {
+  it('true on either stamp, false otherwise', () => {
+    expect(missingQuestionPaper({ paper_match: { candidate: { misnamed: true, not_held: true } } })).toBe(true);
+    expect(missingQuestionPaper({ paper_match: { ungrounded: { key: 'gce 2025 am p2' } } })).toBe(true);
+    expect(missingQuestionPaper({ paper_match: { candidate: { misnamed: true, suggest: true } } })).toBe(false);
+    expect(missingQuestionPaper(null)).toBe(false);
+  });
+  it('names no tutor and no model', () => {
+    expect(MISSING_PAPER_LINE).not.toMatch(/adrian|tutor|claude|gemini|model|\bai\b/i);
+    expect(MISSING_PAPER_LINE).toMatch(/send the question paper/);
+  });
+});
