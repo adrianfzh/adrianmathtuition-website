@@ -542,6 +542,9 @@ Sec 1–2 English Literature / Geography / History. Not A-Level, not maths or sc
   "Unknown School", the NJC JH3 quiz (a student's name on it), two compilations of older papers.
   The same day `EXAM_RULES` learned `WA1`–`WA4`/`WA` — before it, a weighted assessment was queued with the
   token inside the school ("WA2 Tanjong Katong Girls", exam null).
+  **Next time (Adrian, 12 Oct 2026: "yes"):** that walk was ~5,700 look-ups and 237 downloads in minutes from
+  his connection — it stands out in Grail's logs and the address can be matched to his own Grail use. From now
+  on: read grail.moe's terms first, fetch a few files a minute, and only the papers Adrian names — no id walk.
 
 ## 4b. The rules in plain words + the extraction learner (5 Oct 2026)
 
