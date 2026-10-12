@@ -16,7 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
 import type { Glance, Tile } from '@/lib/glance';
-import { requestWords, waitingWords, type JobHistory, type NightLine, type OpenProposal, type RequestState } from '@/lib/overnight';
+import { needsWords, requestWords, waitingWords, type JobHistory, type NightLine, type OpenProposal, type RequestState } from '@/lib/overnight';
 
 type Data = {
   ledger: { ok: boolean; error?: string };
@@ -83,7 +83,9 @@ export default function OvernightPage() {
     );
   }
 
-  const needsCount = (data?.stale.length ?? 0) + needs.reduce((n, t) => n + (Number.parseInt(t.value, 10) || 0), 0);
+  // the big number and what it is made of, in words (each part is listed again under "Needs your look")
+  const needsW = needsWords(data?.stale.length ?? 0, needs);
+  const needsCount = needsW.count;
 
   return (
     <main className="min-h-screen bg-neutral-100 pb-10">
@@ -106,7 +108,7 @@ export default function OvernightPage() {
             <section className="grid grid-cols-3 gap-2.5" aria-label="At a glance">
               <BigTile title="Fixed by itself" value={String(data.night.fixed)} sub="last night" colour="#11795e" href="#night" />
               <BigTile title="Waiting for Ship" value={data.ledger.ok ? String(data.open.length) : '?'} sub={data.ledger.ok ? 'proposals' : 'list not read'} colour="#1c64b0" href="#proposals" />
-              <BigTile title="Needs your look" value={String(needsCount)} sub={needsCount ? 'see below' : 'nothing'} colour={needsCount ? '#b45309' : '#9ca3af'} href="#needs" />
+              <BigTile title="Needs your look" value={String(needsCount)} sub={needsW.sub} colour={needsCount ? '#b45309' : '#9ca3af'} href="#needs" />
             </section>
 
             {/* ── Waiting for Ship ── */}
@@ -128,13 +130,13 @@ export default function OvernightPage() {
             <section id="needs" className="space-y-2 scroll-mt-16">
               <h2 className="text-base font-bold text-neutral-900">Needs your look</h2>
               {needsCount === 0 && <div className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-500">Nothing. Every job ran.</div>}
+              {needsW.parts.length > 1 && <p className="text-sm text-neutral-600">The {needsCount} is: {needsW.parts.join(' · ')}.</p>}
               {data.stale.length > 0 && (
                 <ul className="bg-white border border-neutral-200 rounded-xl divide-y divide-neutral-100">
                   {data.stale.map((s) => (
                     <li key={s.job} className="px-4 py-2.5 text-sm">
                       <div className="font-semibold text-neutral-900">⚠️ {s.name}</div>
-                      <div className="text-neutral-600 break-words">{/FAILED/.test(s.reason) ? 'Last run failed.' : 'Did not run on time.'}</div>
-                      <div className="text-xs text-neutral-400 break-words">{s.reason}</div>
+                      <div className="text-neutral-600 break-words">{s.reason}</div>
                     </li>
                   ))}
                 </ul>
@@ -218,7 +220,7 @@ function ProposalCard({ p, req, onDone }: { p: OpenProposal; req?: RequestState;
       <div>
         <h3 className="text-[16px] font-bold text-neutral-900 leading-snug">{p.title}</h3>
         <div className="text-xs text-neutral-500 mt-0.5">
-          {waitingWords(p.days)}{p.repo === 'website' ? ' · the website' : ''}
+          {p.approved ? 'you said yes — only your Ship is left' : waitingWords(p.days)}{p.repo === 'website' ? ' · the website' : ''}
         </div>
       </div>
 
@@ -269,7 +271,6 @@ function Part({ label, text }: { label: string; text: string }) {
 }
 
 function NightRow({ l }: { l: NightLine }) {
-  const [open, setOpen] = useState(false);
   const dot = l.ok == null ? 'bg-neutral-300' : l.ok ? 'bg-emerald-600' : 'bg-red-500';
   const word = l.ok == null ? 'did not run' : l.ok ? 'ok' : 'failed';
   return (
@@ -279,12 +280,7 @@ function NightRow({ l }: { l: NightLine }) {
         <span className="text-[14px] font-semibold text-neutral-900 min-w-0">{l.name}</span>
         <span className="ml-auto text-xs text-neutral-500 whitespace-nowrap">{l.at ? `${time(l.at)} · ` : ''}<span className={l.ok === false ? 'text-red-600 font-semibold' : ''}>{word}</span></span>
       </div>
-      {l.fixed > 0 && <div className="mt-1 ml-[18px] text-xs font-semibold text-emerald-700">Fixed {l.fixed}</div>}
-      {l.summary && (
-        <button onClick={() => setOpen((o) => !o)} className={`mt-1 ml-[18px] text-left text-[13px] text-neutral-600 break-words ${open ? '' : 'line-clamp-2'}`}>
-          {l.summary}
-        </button>
-      )}
+      {l.summary && <div className="mt-1 ml-[18px] text-[13.5px] leading-snug text-neutral-700 break-words">{l.summary}</div>}
     </li>
   );
 }

@@ -127,9 +127,9 @@ describe('last night from the logbook', () => {
     const n = lastNight(rows, NOW);
     expect(n.fixed).toBe(7);   // 5 + 1 + the day-review's ONE label, not two
     const by = Object.fromEntries(n.lines.map((l) => [l.job, l]));
-    expect(by['marking-fix']).toMatchObject({ ok: true, summary: '5 classes fixed', runs: 1, fixed: 5 });
+    expect(by['marking-fix']).toMatchObject({ ok: true, summary: 'Fixed 5 kinds of red-pen mistakes.', runs: 1, fixed: 5 });
     expect(by['day-review']).toMatchObject({ ok: false, runs: 2, fixed: 1 });
-    expect(by['twin-batch'].summary).toBe('3 written and checked (of 5 tried) in 2 runs');
+    expect(by['twin-batch'].summary).toBe('Wrote 3 new questions (of 5 tried) in 2 runs.');
     expect(by['doc-sweep']).toMatchObject({ at: null, ok: null, runs: 0 });
     expect(n.lines.some((l) => l.job === 'health-check')).toBe(false);
   });
@@ -141,5 +141,21 @@ describe('last night from the logbook', () => {
     expect(mf.days[0]).toMatchObject({ date: '2026-10-12', runs: 1, fixed: 5 });
     expect(mf.days[1]).toMatchObject({ date: '2026-10-11', runs: 1, fixed: 3 });
     expect(mf.days[2]).toMatchObject({ runs: 0, summary: null });
+  });
+});
+
+describe('the open proposals from the bot', () => {
+  it('turns the bot JSON into cards, dropping bad rows', async () => {
+    const { fromBotProposals } = await import('./overnight');
+    const cards = fromBotProposals([
+      { slug: 'said-yes', title: 'Said yes', days: 3, approved: true, problem: null, solution: null, fix: null, plain: 'Just a sentence.', repo: 'bot' },
+      { slug: 'three', title: 'Three parts', days: 1, approved: false, problem: 'P.', solution: 'S.', fix: 'F.', plain: null, repo: 'website' },
+      { slug: 'Bad Slug', title: 'x' },
+      { slug: 'three', title: 'duplicate' },
+    ]);
+    expect(cards.map((c) => c.slug)).toEqual(['said-yes', 'three']);
+    expect(cards[0]).toMatchObject({ title: 'Said yes', approved: true, text: 'Just a sentence.', problem: null, days: 3 });
+    expect(cards[1]).toMatchObject({ problem: 'P.', solution: 'S.', fix: 'F.', repo: 'website', text: null });
+    expect(fromBotProposals(null)).toEqual([]);
   });
 });

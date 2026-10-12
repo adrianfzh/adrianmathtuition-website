@@ -1,6 +1,6 @@
 // /api/admin/overnight — what /admin/overnight shows (12 Oct 2026, Adrian: "build the overnight page").
 //
-// GET  → open proposals (bot docs/PROPOSALS.md), the newest Ship/Change/Drop request per
+// GET  → open proposals (the bot's GET /api/internal/proposals; GitHub only as a fallback), the newest Ship/Change/Drop request per
 //        proposal, last night's line per night job, seven days per job, and the jobs that
 //        failed or went missing (lib/job-health). `?count=1` → just { waiting } for the
 //        dashboard's link.
@@ -15,12 +15,11 @@ import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { latestJobRuns } from '@/lib/job-log';
 import { staleJobs } from '@/lib/job-health';
-import { sgtTodayISO } from '@/lib/sgt';
 import {
-  NIGHT_JOBS, checkTap, jobName, lastNight, latestRequests, openProposals, proposalRequestRow, weekHistory,
+  NIGHT_JOBS, checkTap, jobName, lastNight, latestRequests, proposalRequestRow, staleWords, weekHistory,
   type RequestState, type RunRow,
 } from '@/lib/overnight';
-import { readLedger, wakeWorker } from '@/lib/overnight-io';
+import { readOpenProposals, wakeWorker } from '@/lib/overnight-io';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,8 +46,8 @@ async function weekRows(now: number): Promise<RunRow[]> {
 export async function GET(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const now = Date.now();
-  const ledger = await readLedger();
-  const open = ledger.ok ? openProposals(ledger.text, sgtTodayISO(now)) : [];
+  const ledger = await readOpenProposals();
+  const open = ledger.ok ? ledger.open : [];
   if (req.nextUrl.searchParams.get('count') === '1') {
     return NextResponse.json({ waiting: ledger.ok ? open.length : null });
   }
@@ -62,7 +61,8 @@ export async function GET(req: NextRequest) {
         : Promise.resolve({ data: [] as RequestState[] }),
     ]);
     const night = lastNight(rows, now);
-    const stale = staleJobs(latest, new Date(now)).map((s) => ({ ...s, name: jobName(s.job) }));
+    // the reason is said in plain words: the stored one quotes the job's summary, which carries names
+    const stale = staleJobs(latest, new Date(now)).map((s) => ({ job: s.job, name: jobName(s.job), reason: staleWords(s.job, s.reason) }));
     return NextResponse.json({
       ledger: ledger.ok ? { ok: true } : { ok: false, error: ledger.error },
       open,
@@ -80,9 +80,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const body = await req.json().catch(() => ({}));
-  const ledger = await readLedger({ fresh: true });
+  const ledger = await readOpenProposals({ fresh: true });
   if (!ledger.ok) return NextResponse.json({ error: 'Could not read the list of proposals, so nothing was sent.' }, { status: 503 });
-  const open = openProposals(ledger.text, sgtTodayISO());
+  const open = ledger.open;
   const tap = checkTap(body, open.map((p) => p.slug));
   if (!tap.ok) return NextResponse.json({ error: tap.error }, { status: 400 });
   const row = proposalRequestRow(tap, process.env.TELEGRAM_CHAT_ID);
