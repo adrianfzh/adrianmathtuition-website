@@ -52,6 +52,7 @@ Writers:
   docs/SCHEDULE.md), `progress-notes` (the Fly worker, 17:05 SGT daily — 📝 the student
   card's progress note; switch `progress-notes`),
   `morning-brief` (the Fly worker, 07:45 SGT daily — ☀️ the one morning message, bot `docs/MORNING-BRIEF.md`; switch `morning-brief`),
+  `pen-switch-watch` (the Fly worker, 07:40 SGT daily — 🖊 the new red pen's check on maths papers, bot `scripts/pen-switch-watch.js`; past 1 in 20 corrected the brief asks; switch `pen-switch-watch`, 12 Oct 2026),
   `model-check` (the bot, 09:00 on Mondays of even ISO weeks — its result is read by the morning brief; no message of its own since 8 Oct 2026),
   `missing-papers` (Mondays 8am SGT — the last 7 days of runs marked without
   their paper, grouped and checked against `paper_library` + the bank,
@@ -475,7 +476,7 @@ jobs there are together with the toggles for accounts … have a page just for t
 - **Worker jobs** = `WORKER_JOBS` in `lib/worker-jobs.ts`: `extract`, `twins`, `science-twins` (all lanes of each
   share the name), `file-subgroups`, `file-subgroups-science`, `figure-fitness`, `missing-figures`, `subject-retag`,
   `day-review`, `find-review`, `bot-review`, `marking-review`, `marking-fix`, `marking-learn`,
-  `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `qb-topup`, `progress-notes`, `morning-brief`, `worksheets`, `proposals`,
+  `doc-sweep`, `extraction-learn`, `nightly-builder` (its 07:30 morning message too), `qb-topup`, `progress-notes`, `morning-brief`, `pen-switch-watch`, `worksheets`, `proposals`,
   `flagjudge`, `flag-review`, `plan-reads` (✍️ the answer reader, 7 Oct 2026 — reads the `plan_reads` queue every minute; health-check `plan-reads` alarms when an answer waits over 20 minutes; since 8 Oct 2026 it also reads the essay marker's reads, kind `essay-read`, model `opus`, up to three rows at once). `prune`, the disk check and the after-restart recovery are never
   switchable (they keep the worker alive).
 - **Every one obeys since 5 Oct 2026** (Adrian: "fix switches page so it stops every job"). The

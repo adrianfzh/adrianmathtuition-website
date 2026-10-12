@@ -83,6 +83,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'progress-notes':     { kind: 'interval', hours: 36, label: 'daily 5:05pm' },
   // ☀️ The morning brief (8 Oct 2026, Fly worker /morning-brief, 07:45 SGT daily): ONE message to Adrian; stamps every morning (a plain brief is sent when the session cannot run).
   'morning-brief':      { kind: 'interval', hours: 36, label: 'daily 7:45am' },
+  // 🖊 The new red pen's daily check (12 Oct 2026, bot scripts/pen-switch-watch.js, Fly worker 07:40 SGT):
+  // placement corrections ÷ marks drawn on maths papers drawn from the marker's row picks; stamps every morning.
+  'pen-switch-watch':   { kind: 'interval', hours: 36, label: 'daily 7:40am' },
   // The bot's model and price check (Mondays of even ISO weeks, 09:00 SGT — bot lib/model-check.js, 8 Oct 2026); the morning brief reads its row.
   'model-check':        { kind: 'interval', hours: 372, label: 'every other Monday 9am' },
   // The monitor + self-fix for a marked page whose image never uploaded: redraws

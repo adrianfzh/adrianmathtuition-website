@@ -54,6 +54,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'doc-sweep', group: 'reviews', label: '🧹 Stale-doc sweep', what: 'Finds instructions in the docs that no longer match the code; fixes the obvious ones and asks you about the rest.', when: 'Sundays 07:20' },
   { key: 'progress-notes', group: 'reviews', label: '📝 Progress notes', what: 'Writes the progress note on each student card that has new work: how they are doing, why, next steps — numbers from the data only.', when: '17:05' },
   { key: 'morning-brief', group: 'reviews', label: '☀️ Morning brief', what: 'One message each morning: what happened overnight, what broke, and the few things only you can decide. It only reads and sends; it changes nothing.', when: '07:45' },
+  { key: 'pen-switch-watch', group: 'reviews', label: '🖊 New red pen check', what: 'Each morning, counts how often you move a tick or cross the new red pen drew on maths papers. Past 1 in 20, the morning brief asks whether to switch back. It only reads; it never switches anything.', when: '07:40' },
   { key: 'worksheets', group: 'requests', label: '📝 Telegram worksheets', what: 'Builds the worksheets asked for with /ws.', when: 'checks every 10 min' },
   { key: 'proposals', group: 'requests', label: '🚢 Ship or drop a proposal', what: 'Acts on "ship proposal …" sent from Telegram.', when: 'checks every minute' },
   { key: 'flagjudge', group: 'requests', label: '🤔 Flag judge', what: 'Settles a student\'s flag the first check could not.', when: 'checks every minute' },
