@@ -831,3 +831,15 @@ through her words, ticks on her words, a verdict on her margin jotting (P4, P5, 
 needs a finer look first); ticks at nothing (P6 — re-check after F101); notes in another part's space, the graph fix aimed at
 the wrong cross, ring on the wrong token, brackets round correct work for a missing dx (P3, P8–P10); awarded marks with no ✓
 (P13); leaders through her writing (P2, ten pages — the open proposal `arrows-round-her-writing`); wording W2, W5, W6, W8, W9.
+
+# 13 Oct 2026 — the page reader: new defect classes (findings of 13 Oct: 7 papers, 34 pages; the fixer works them at 06:45)
+
+Every paper was drawn after the 12 Oct fixer pushes; every maths page by the new `row_picks` pen but before its 12–13 Oct
+night rounds. One line per NEW class — returns (F117/F118 a part's words in another part's space; the point said 3–4
+times; ticks at nothing; leaders through her writing) are in the reader's findings file.
+
+- **✓ code ≠ chip code** — a ✓B1 drawn on a part the chip scores 0/1 B0, the verdict never written (Rainie chemistry Plmgs 2025 P2 p11 Q4(a)(ii) "1.0 s"); a ✗B0 under an "A0" chip (Denise physics 2020 P2 p12 Q9(b)(i)). Misleads. Pen (science) — no check compares a mark's code with its chip.
+- **A minus lost after a text label** — the continuation `\text{upward force} - 910 = 18.2` is drawn "upward force: 910 = 18.2" (Denise physics 2020 P2 p3 Q3(b)(iii)). Wrong maths on her page. Pen (text).
+- **Footer for a not-attempted part prints scheme codes** — "Marker's notes: Q5(c)(ii) 0/4 · M1 M1 M1 A0; not attempted", no chip, no hint (Eva EM 2021 P2 p11; also p14, Rainie EM Zhonghua 2025 P1 p4). Pen (layout) + marker talk.
+- **✓ and ✗ on the same item** — Eva EM 2021 P2 p14 Q7(a): both beside her "15/10". Pen (marks).
+- **A faded ghost label** — a washed-out second "✓M1 your method is right, using your wrong number" under the red follow-through label (Eva EM 2021 P2 p9 Q4(b)). Pen (redraw).
