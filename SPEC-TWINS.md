@@ -308,6 +308,11 @@ sub-skills still owed and ~700 seeds unread. `sci-twin.mjs queue` now reads thos
 tried seed is removed before the pick, a skipped sub-skill is left out. The function returns at
 most five seeds a sub-skill, and three drops skip it, so five is enough.
 
+**New science sub-skills (12 Oct 2026).** 16 types added to the science tree after a read of the
+2,159 questions the filer had set aside as "fits none" — most were correct skips under a second
+topic tag; ~150 were real gaps → [`docs/science-subskill-review-2026-10-12.md`](docs/science-subskill-review-2026-10-12.md).
+Each new sub-skill owes 3 twins once its questions are filed.
+
 **Filed as ours** (`sci-twin.mjs publish` / the door, science project): `school='AdrianMath'`,
 `exam_type='Twin'`, level = the pool's bank level (PHYS… or CS_PHYS…), `twin_of` = the seed,
 `gen_meta` (`twin_item` = `sci-twin-<seed>` pure, `sci-twin-<pool>-<seed>` Combined; gates, blind
