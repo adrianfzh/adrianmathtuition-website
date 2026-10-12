@@ -81,6 +81,7 @@ export function missingQuestionPaper(resultJson: unknown): boolean {
   return !!(pm.ungrounded && typeof pm.ungrounded === 'object');
 }
 
-/** The line itself — no tutor, no model named. */
-export const MISSING_PAPER_LINE =
-  "We don't have the question paper for this one, so it was marked from your working only. Please send the question paper (a photo of each page is fine) so we can check it properly.";
+/** The line itself — no tutor, no model named. Adrian's wording, 13 Oct 2026. */
+export const MISSING_PAPER_LINE = 'No questions were detected.';
+/** The link after it. */
+export const MISSING_PAPER_LINK = 'Send us the question paper';

@@ -30,7 +30,7 @@ describe('answeredCandidate — what the stamp becomes', () => {
   });
 });
 
-import { renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE } from './paper-unsure';
+import { renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE, MISSING_PAPER_LINK } from './paper-unsure';
 
 describe('renameSuggestion — named Paper 2, wrote Paper 1 (12 Oct 2026)', () => {
   const stamp = { key: 'gce 2024 am p1', label: '2024 A Math Paper 1', name: 'o level 2024 paper 1 amath', confirmed: 'working', misnamed: true, suggest: true, was: 'o level 2024 paper 2 amath', kept_label: 'o level 2024 paper 2 amath' };
@@ -57,6 +57,7 @@ describe('missingQuestionPaper — tell the student, ask for the paper', () => {
   });
   it('names no tutor and no model', () => {
     expect(MISSING_PAPER_LINE).not.toMatch(/adrian|tutor|claude|gemini|model|\bai\b/i);
-    expect(MISSING_PAPER_LINE).toMatch(/send the question paper/);
+    expect(MISSING_PAPER_LINE).toBe('No questions were detected.');   // Adrian's wording, 13 Oct 2026
+    expect(MISSING_PAPER_LINK).toBe('Send us the question paper');
   });
 });

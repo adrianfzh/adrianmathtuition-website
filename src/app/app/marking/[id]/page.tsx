@@ -32,7 +32,7 @@ import { displayPaperName } from '@/lib/paper-display-name';
 import LostMarks from '../LostMarks';
 import RenamePaper from '../RenamePaper';
 import PaperUnsure from '../PaperUnsure';
-import { unsurePaper, renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE } from '@/lib/paper-unsure';
+import { unsurePaper, renameSuggestion, missingQuestionPaper, MISSING_PAPER_LINE, MISSING_PAPER_LINK } from '@/lib/paper-unsure';
 import PaperRenameSuggest from '../PaperRenameSuggest';
 import StarPaper from '../StarPaper';
 import ArchivePaper from '../ArchivePaper';
@@ -255,7 +255,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           return (
             <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-2xl px-3 py-2">
               {MISSING_PAPER_LINE}{' '}
-              <a href={isScience ? '/app/science/submit' : '/app/submit'} className="font-semibold underline underline-offset-2">Send the question paper</a>
+              <a href={isScience ? '/app/science/submit' : '/app/submit'} className="font-semibold underline underline-offset-2">{MISSING_PAPER_LINK}</a>
             </p>
           );
         }
