@@ -4,17 +4,26 @@ import { reissueLine, parseReissueReason } from './reissue-message';
 const base = { paper: 'A Math • GCE 2022 • Paper 1', awarded: 77, max: 90, site: 'https://x.test' };
 
 describe('reissueLine', () => {
-  it("keeps the desk's wording for an override", () => {
+  it("the desk's line names no one (12 Oct 2026: \"don't mention tutor\")", () => {
     const s = reissueLine({ ...base, reason: 'checked', internal: false });
-    expect(s).toContain('Your tutor checked');
+    expect(s).toContain('was checked again and updated');
     expect(s).toContain('77/90');
+    expect(s).not.toMatch(/tutor|adrian/i);
+  });
+
+  it('notes-added: more notes and solutions, the mark did not move, no one named', () => {
+    const s = reissueLine({ ...base, reason: 'notes-added', internal: false });
+    expect(s).toContain('more notes and solutions');
+    expect(s).toContain('still <b>77/90</b>');
+    expect(s).not.toMatch(/tutor|adrian|updated it|re-?mark/i);
+    expect(parseReissueReason('notes-added')).toBe('notes-added');
   });
 
   it('tells a pages-recovered student the copy is complete, not re-marked', () => {
     const s = reissueLine({ ...base, reason: 'pages-recovered', internal: false });
     expect(s).toContain("didn't upload properly");
     expect(s).toContain('mark is unchanged');
-    expect(s).not.toMatch(/Your tutor checked|updated|re-?mark|redraw/i);
+    expect(s).not.toMatch(/was checked again|updated|re-?mark|redraw/i);
   });
 
   it('never blames the student for the missing pages', () => {
@@ -27,14 +36,14 @@ describe('reissueLine', () => {
     expect(s).toContain("didn't line up");
     expect(s).toContain('still <b>77/90</b>');
     // Not a re-mark, not a re-check, not a new score, and not the pages story.
-    expect(s).not.toMatch(/Your tutor checked|updated|re-?mark|redraw|upload/i);
+    expect(s).not.toMatch(/was checked again|updated|re-?mark|redraw|upload/i);
   });
 
   it('reads as the first copy when the student never saw the predecessor', () => {
     for (const reason of ['checked', 'pages-recovered', 'marks-realigned'] as const) {
       const s = reissueLine({ ...base, reason, internal: true });
       expect(s).toContain('is ready');
-      expect(s).not.toContain('Your tutor checked');
+      expect(s).not.toContain('was checked again');
       expect(s).not.toContain("didn't upload");
       expect(s).not.toContain("didn't line up");
     }

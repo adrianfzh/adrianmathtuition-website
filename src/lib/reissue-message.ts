@@ -34,7 +34,9 @@ export type ReissueReason =
   /** The student added pages after marking; only those pages were marked. */
   | 'pages-added'
   /** The paper's "out of" was wrong and is fixed (5 Oct 2026); the marks did not move. App channel by design. */
-  | 'total-corrected';
+  | 'total-corrected'
+  /** Notes or solutions that were missing from some pages were added; the marks did not move (12 Oct 2026). */
+  | 'notes-added';
 
 export type ReissueLineInput = {
   reason: ReissueReason;
@@ -88,7 +90,14 @@ export function reissueLine(input: ReissueLineInput): string {
     return `📄 The pages you added to ${paper} are marked${score ? ` — it is now ${score}` : ''}. The updated copy is in the app.\n\n${link}`;
   }
 
-  return `✏️ Your tutor checked your marked ${paper} and updated it${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
+  if (input.reason === 'notes-added') {
+    // 12 Oct 2026, Adrian: "don't mention tutor, just give a generic reason" — a redraw that only
+    // added the notes and solutions some pages were missing. The mark goes last: it did not move.
+    return `📄 Your marked ${paper} has more notes and solutions now${score ? ` — your mark is still ${score}` : ''}. The copy in the app is the new one.\n\n${link}`;
+  }
+
+  // The desk's line. No one is named (12 Oct 2026, Adrian: "don't mention tutor, just give a generic reason").
+  return `✏️ Your marked ${paper} was checked again and updated${score ? ` — it is now ${score}` : ''}. The copy in the app is the new one.`;
 }
 
 /** The reason off a request body — anything unrecognised is the desk's. */
@@ -98,5 +107,6 @@ export function parseReissueReason(v: unknown): ReissueReason {
   if (v === 'marks-recalibrated') return 'marks-recalibrated';
   if (v === 'pages-added') return 'pages-added';
   if (v === 'total-corrected') return 'total-corrected';
+  if (v === 'notes-added') return 'notes-added';
   return 'checked';
 }
