@@ -216,6 +216,12 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   (Sec 1 206 vs 4). On 6 Oct 2026 at 3 a sub-skill: **Sec 1 4 to write, Sec 2 480, A Math 0,
   E Math 4** (at 5: 196 / 738 / 223 / 429); sub-skills that cannot reach 3 from the seeds they
   have: Sec 1 20, Sec 2 43, A Math 23, E Math 43.
+- **A seed's sub-skill is fixed (12 Oct 2026)** — `migrations/twin_queue_stable_unit.sql`: the view's
+  pick tied for a seed filed under several sub-skills with no primary (most Sec 3 rows) and
+  returned a different one on different reads, so a sub-skill's twin count moved (988 read 9, then
+  5) and the lane wrote past the cap of 5 (E Math ~120 extra over 46 sub-skills). The sub-skill id
+  is now the last ORDER BY key. At 5 a sub-skill that day: **E Math 9 to write, A Math 205, Sec 1
+  100, Sec 2 246**.
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic
