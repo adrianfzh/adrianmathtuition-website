@@ -18,6 +18,8 @@ Answers: verify_integration_applications.py.
  11-13 WRITTEN HERE, not bank questions (12 Oct 2026). Adrian asked whether the bank has kinematics
     questions that integrate (at+b)^(-1/2); it has none in 249 rows, and he said "yes" to three
     written ones: a = 12/sqrt(4t+1); v = 20/sqrt(2t+1) - 4; v = sqrt(t+1) - 4/sqrt(t+1).
+ 14-16 WRITTEN HERE too: the reciprocal root together with a term like -(t+2)/3 (the shape of Gan Eng
+    Seng 2024's v = 3/(t+2) - (t+2)/3), after Adrian sent that term: "how about including terms like this?"
 """
 import sys
 from pathlib import Path
@@ -127,6 +129,28 @@ SQ('Find the value of $t$ when the particle is at instantaneous rest.', 2)
 SQ('Explain why the acceleration of the particle is always positive.', 3)
 SQ('Find the total distance travelled by the particle in the first 8 seconds.', 6)
 A(r'(a) $t = 3$; (b) $a = \dfrac{1}{2\sqrt{t + 1}} + \dfrac{2}{\sqrt{(t + 1)^3}}$, both terms positive; (c) $8$ m')
+
+Q(r'A particle moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its velocity, $v$ m/s, is given by '
+  r'$v = \dfrac{8}{\sqrt{t + 4}} - \dfrac{t + 4}{8}$. The particle comes to instantaneous rest at the point $A$.')
+SQ('Find the time taken for the particle to reach $A$.', 3)
+SQ('Calculate the distance $OA$.', 4)
+SQ('Explain why the velocity of the particle is always decreasing.', 2)
+SQ('Show that the particle is again at $O$ at some instant during the 27th second after first passing through $O$.', 3)
+A(r'(a) $12$ s; (b) $17$ m; (c) $a = -\dfrac{4}{\sqrt{(t + 4)^3}} - \dfrac{1}{8} < 0$; (d) $s = 0.385$ at $t = 26$, $-1.98$ at $t = 27$')
+
+Q(r'A particle moves in a straight line so that, $t$ seconds after leaving a fixed point $O$, its velocity, $v$ m/s, is given by '
+  r'$v = \dfrac{9}{\sqrt{2t + 1}} - \dfrac{2t + 1}{3}$.')
+SQ('Find the initial acceleration of the particle.', 3)
+SQ('Find the value of $t$ when the particle is at instantaneous rest.', 3)
+SQ('Find the total distance travelled by the particle in the first 12 seconds.', 6)
+A(r'(a) $-\dfrac{29}{3}' + ms2 + r'$; (b) $t = 4$; (c) $\dfrac{116}{3}$ m or $38.7$ m')
+
+Q(r'A particle moves in a straight line so that, $t$ seconds after passing through a fixed point $O$, its velocity, $v$ m/s, is given by '
+  r'$v = \dfrac{t + 1}{2} - \dfrac{4}{\sqrt{t + 1}}$.')
+SQ('Show that the acceleration of the particle is always positive.', 3)
+SQ('Find the greatest distance of the particle from $O$ in the first 3 seconds.', 5)
+SQ('Find the average speed of the particle for the first 8 seconds.', 4)
+A(r'(a) $a = \dfrac{1}{2} + \dfrac{2}{\sqrt{(t + 1)^3}} > 0$; (b) $\dfrac{17}{4}$ m; (c) $\dfrac{25}{16}$ m/s or $1.56$ m/s')
 
 full_size_fractions(ws)
 ws.save(sys.argv[1], strict_maths=True)

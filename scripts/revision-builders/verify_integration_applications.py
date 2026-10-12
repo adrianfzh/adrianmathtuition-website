@@ -50,4 +50,17 @@ z('12d', s.subs(t, 12) - 32); z('12e s(40)', s.subs(t, 40)); print('12e other ze
 v = sqrt(t + 1) - 4/sqrt(t + 1); s = I(v, (t, 0, t))
 print('13a rest', sp.solve(v, t)); z('13b', sp.simplify(D(v, t) - (1/(2*sqrt(t + 1)) + 2/(t + 1)**R(3, 2))))
 z('13c s(3)', s.subs(t, 3) + R(10, 3)); z('13c', tot(v, 0, 8) - 8, 1e-6)
+# ---- 14-16: 1/sqrt(at+b) together with a term like -(t+2)/3 (12 Oct 2026)
+# 14  v = 8/sqrt(t+4) - (t+4)/8
+v = 8/sqrt(t + 4) - (t + 4)/8; s = I(v, (t, 0, t))
+print('14a rest', sp.solve(v, t)); z('14b', s.subs(t, 12) - 17); z('14c', sp.simplify(D(v, t) - (-4/(t + 4)**R(3, 2) - R(1, 8))))
+z('14d s(26)', s.subs(t, 26) - 0.385, 5e-3); z('14d s(27)', s.subs(t, 27) + 1.98, 5e-3)
+# 15  v = 9/sqrt(2t+1) - (2t+1)/3
+v = 9/sqrt(2*t + 1) - (2*t + 1)/3; s = I(v, (t, 0, t))
+z('15a', D(v, t).subs(t, 0) + R(29, 3)); print('15b rest', sp.solve(v, t))
+z('15c', I(v, (t, 0, 4)) - I(v, (t, 4, 12)) - R(116, 3)); z('15c parts', s.subs(t, 4) - R(34, 3)); z('15c s12', s.subs(t, 12) + 16)
+# 16  v = (t+1)/2 - 4/sqrt(t+1)
+v = (t + 1)/2 - 4/sqrt(t + 1); s = I(v, (t, 0, t))
+z('16a', sp.simplify(D(v, t) - (R(1, 2) + 2/(t + 1)**R(3, 2)))); print('16b rest', sp.solve(v, t)); z('16b', s.subs(t, 3) + R(17, 4))
+z('16c', (-I(v, (t, 0, 3)) + I(v, (t, 3, 8)))/8 - R(25, 16)); z('16c s8', s.subs(t, 8) - 4)
 print('ALL OK' if ok else 'SOMETHING FAILED')
