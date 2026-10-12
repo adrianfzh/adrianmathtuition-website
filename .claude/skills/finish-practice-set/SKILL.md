@@ -127,6 +127,11 @@ number** (not indented under it — match the reference); a question whose only
 answer is unlabelled stays inline (`3.  x = 7, y = 2`). Omitting the object
 (a bare array) keeps the JC layout exactly as before.
 
+`"inline": true` keeps the em heading but runs a question's parts on its own line
+(`1. (a) … (b) …`) — the A Math series layout (`2026 AM Prelim Practice Set 3 (Cedar
+Girls 2025).pdf`; AM Sets 1–2 built this way 12 Oct 2026). There is no `pdflatex` on
+this Mac, so `prelim-practice-sets/scripts/answer_key.py` cannot run here — use this.
+
 `"subheading": ""` drops that line entirely — use it when Adrian is titling the
 set himself, so the key carries no name you invented.
 

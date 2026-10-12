@@ -51,7 +51,9 @@ const md = s => s.replace(/\\\$/g, DOLLAR).split(/(\$[^$]*\$)/g).map(c =>
 // anything with part letters stacks one per line under the number.
 const rows = data.map(q => {
   const lone = q.parts.length === 1 && !q.parts[0][0];
-  if (!em) {
+  // `inline: true` with the em head = the AM Prelim Practice Set 3 key (12 Oct 2026):
+  // left-aligned Times head, but parts run on the question's own line.
+  if (!em || cfg.inline) {
     return `<p class="ans"><b class="qn">${q.n}.</b>` +
       q.parts.map(([lab, txt]) => (lab ? `<b>${lab}</b> ` : '') + md(txt))
         .join('<span class="sep"></span>') + `</p>`;
