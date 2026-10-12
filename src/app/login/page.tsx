@@ -6,6 +6,16 @@ import Link from 'next/link';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import PasswordInput from '@/components/PasswordInput';
 
+// Best-effort: never blocks or changes what the student sees.
+function reportLoginEvent(body: Record<string, unknown>) {
+  fetch('/api/portal/login-event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    keepalive: true,
+  }).catch(() => { /* telemetry only */ });
+}
+
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
@@ -27,6 +37,10 @@ function LoginForm() {
   // (2026-08-29). Sign the dead session out and show the form instead.
   const stale = params.get('stale') === '1';
   useEffect(() => {
+    // Sent here from the hand-in page with no live session (src/proxy.ts + lib/portal-auth
+    // loginPath, 12 Oct 2026): leave a trace so "I could not submit" can be looked up.
+    // Fired BEFORE any sign-out / session check below, so the old cookie still says who it was.
+    if (nextPath.startsWith('/app/submit')) reportLoginEvent({ kind: 'handin_logged_out' });
     if (stale) {
       getSupabaseBrowser().auth.signOut().catch(() => { /* cookie already gone */ });
       setError('Your previous session expired — please log in again.');
@@ -44,8 +58,10 @@ function LoginForm() {
     setError(null);
     const { error } = await getSupabaseBrowser().auth.signInWithPassword({ email, password });
     if (error) {
+      // A trace for Adrian (lib/login-trouble.ts): the reason, never the password.
+      reportLoginEvent({ kind: 'login_failed', email, code: (error as { code?: string }).code ?? null, status: error.status ?? null });
       // Generic message — never reveal whether the email exists.
-      setError('Email or password is incorrect.');
+      setError(error.status === 429 ? 'Too many tries. Wait a few minutes, then try again.' : 'Email or password is incorrect.');
       setBusy(false);
       return;
     }

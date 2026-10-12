@@ -21,6 +21,8 @@
 // OUR blob store AND under this student's own portal prefix (the submit-token
 // route pins uploads there), so one student cannot submit another's photos.
 import { NextResponse } from 'next/server';
+import { cookieReader } from '@/lib/login-trouble';
+import { handinSeenCookie, recordHandinLoggedOut } from '@/lib/login-trouble-server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { ownsHandinUrl } from '@/lib/add-pages';
@@ -67,9 +69,15 @@ const MAX_PAGES = 30;   // was 20 — raised 26 Sep 2026 (a student hit it with 
 const RESUBMIT_WINDOW_MS = 30 * 60 * 1000;
 
 export async function POST(req: Request) {
+  const rawCookies = cookieReader(req.headers.get('cookie'));
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    // A hand-in with no session (12 Oct 2026, lib/login-trouble): leave a trace, once per browser per 10 min.
+    const res = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (await recordHandinLoggedOut(rawCookies, req.headers.get('user-agent'), 'submit')) res.cookies.set(handinSeenCookie);
+    return res;
+  }
   const { data: account } = await supabase
     .from('portal_accounts')
     .select('id, airtable_student_id, display_name, prefs')

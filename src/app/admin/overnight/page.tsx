@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import PasswordInput from '@/components/PasswordInput';
 import type { Glance, Tile } from '@/lib/glance';
+import { failedLoginLabel } from '@/lib/login-trouble';
 import { needsWords, requestWords, waitingWords, type JobHistory, type NightLine, type OpenProposal, type RequestState } from '@/lib/overnight';
 
 type Data = {
@@ -25,6 +26,8 @@ type Data = {
   night: { since: string; lines: NightLine[]; fixed: number };
   history: JobHistory[];
   stale: { job: string; name: string; reason: string }[];
+  /** Real accounts with a failed login in the last day (lib/login-trouble.ts, 12 Oct 2026). */
+  failedLogins?: number;
   generatedAt: string;
 };
 
@@ -84,7 +87,12 @@ export default function OvernightPage() {
   }
 
   // the big number and what it is made of, in words (each part is listed again under "Needs your look")
-  const needsW = needsWords(data?.stale.length ?? 0, needs);
+  // Failed logins for a real account in the last day join the count ONLY when there were some.
+  const loginLabel = failedLoginLabel(data?.failedLogins ?? 0);
+  const needsAll: Tile[] = loginLabel
+    ? [...needs, { id: 'failed-logins', label: loginLabel, value: String(data?.failedLogins ?? 0), tone: 'amber' as Tile['tone'], status: 'Look' }]
+    : needs;
+  const needsW = needsWords(data?.stale.length ?? 0, needsAll);
   const needsCount = needsW.count;
 
   return (
@@ -141,9 +149,9 @@ export default function OvernightPage() {
                   ))}
                 </ul>
               )}
-              {needs.length > 0 && (
+              {needsAll.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {needs.map((t) => {
+                  {needsAll.map((t) => {
                     const body = <><b className="text-amber-700">{t.value}</b> {t.label.toLowerCase()}</>;
                     return t.href
                       ? <Link key={t.id} href={t.href} className="bg-white border border-neutral-200 rounded-full px-3 py-1.5 text-sm text-neutral-700">{body}</Link>

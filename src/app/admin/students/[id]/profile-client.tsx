@@ -83,6 +83,8 @@ interface PortalActivity {
   status: 'active' | 'quiet' | 'never';
   /** Which app tabs they opened, newest first (6 Oct 2026). */
   lastTabs?: { tab: string; label: string; at: string }[];
+  /** Could not get in — failed logins, logged-out hand-in visits (12 Oct 2026). */
+  loginTrouble?: string[];
 }
 interface Profile {
   student: { id: string; name: string; level: string; subjects: string[]; subjectLevel: string; status: string; juneRevision: string };
@@ -883,6 +885,11 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
                       <div style={{ marginTop: 4 }}>
                         <span style={{ color: '#9ca3af' }}>Last opened ·</span>{' '}
                         {data.portal.lastTabs.map((t) => `${t.label} ${relativeDay(t.at, new Date())}`).join(' · ')}
+                      </div>
+                    )}
+                    {data.portal.loginTrouble && data.portal.loginTrouble.length > 0 && (
+                      <div style={{ marginTop: 4, color: '#b45309' }}>
+                        {data.portal.loginTrouble.map((l, i) => <div key={i}>⚠️ {l}</div>)}
                       </div>
                     )}
                   </>

@@ -14,6 +14,7 @@ import { resolveRescheduleChain, ChainLesson } from '@/lib/reschedule-chain';
 import { SLOT_WINDOWS_SETTING, parseSlotWindows } from '@/lib/slot-windows';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { TAB_VIEW_KIND } from '@/lib/portal-tabs';
+import { LOGIN_TROUBLE_KINDS, troubleLines, type TroubleEvent } from '@/lib/login-trouble';
 import { lastOpenedTabs, type LastOpenedTab, summariseActivity, type ActivityAccount, type ActivityEvent, type ActivityAttempt, type ActivityHandin } from '@/lib/portal-activity';
 
 export const runtime = 'nodejs';
@@ -37,6 +38,8 @@ type PortalBlock = {
   lastAttemptAt: string | null; lastMarkingViewAt: string | null; status: 'active' | 'quiet' | 'never';
   /** Which app tabs they opened, newest first (6 Oct 2026, 'tab:view' rows). */
   lastTabs: LastOpenedTab[];
+  /** Could not get in (12 Oct 2026, lib/login-trouble.ts): failed logins and logged-out hand-in visits, last 30 days, newest first, plain lines. */
+  loginTrouble: string[];
 };
 async function readPortalActivity(id: string): Promise<PortalBlock | null> {
   try {
@@ -48,9 +51,9 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
       .limit(1);
     const account = (acctRows ?? [])[0] as ActivityAccount | undefined;
     if (!account) {
-      return { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never', lastTabs: [] };
+      return { hasAccount: false, lastSeenAt: null, lastHandinAt: null, lastAttemptAt: null, lastMarkingViewAt: null, status: 'never', lastTabs: [], loginTrouble: [] };
     }
-    const [eventsRes, attemptsRes, handinsRes, tabsRes] = await Promise.all([
+    const [eventsRes, attemptsRes, handinsRes, tabsRes, troubleRes] = await Promise.all([
       sb.from('portal_event_log').select('identity, kind, created_at')
         .eq('identity', id).in('kind', ['marking:view', 'marking:open'])
         .order('created_at', { ascending: false }).limit(1),
@@ -64,6 +67,10 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
       sb.from('portal_event_log').select('identity, kind, created_at, detail')
         .eq('identity', id).eq('kind', TAB_VIEW_KIND)
         .order('created_at', { ascending: false }).limit(300),
+      sb.from('portal_event_log').select('kind, created_at, detail')
+        .eq('identity', id).in('kind', [...LOGIN_TROUBLE_KINDS])
+        .gte('created_at', new Date(Date.now() - 30 * 86_400_000).toISOString())
+        .order('created_at', { ascending: false }).limit(20),
     ]);
     const summary = summariseActivity({
       accounts: [account],
@@ -77,6 +84,7 @@ async function readPortalActivity(id: string): Promise<PortalBlock | null> {
       hasAccount: true, lastSeenAt: row.lastSeenAt, lastHandinAt: row.lastHandinAt,
       lastAttemptAt: row.lastAttemptAt, lastMarkingViewAt: row.lastMarkingViewAt, status: row.status,
       lastTabs: lastOpenedTabs((tabsRes.data ?? []) as ActivityEvent[], 5),
+      loginTrouble: troubleLines((troubleRes.data ?? []) as TroubleEvent[], 5),
     };
   } catch (e) {
     console.error('[student-profile] portal activity read failed:', (e as Error).message);

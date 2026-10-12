@@ -8,6 +8,7 @@
 // data on the very next navigation.
 import { cache } from 'react';
 import { redirect } from 'next/navigation';
+import { headers } from 'next/headers';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import { createSupabaseServer, createServiceClient } from './supabase-server';
 import { airtableRequest } from './airtable';
@@ -143,6 +144,38 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   return user ? { id: user.id, email: user.email ?? undefined } : null;
 });
 
+/**
+ * The user id inside a session cookie that may have EXPIRED (12 Oct 2026, lib/login-trouble):
+ * the signature and issuer are still checked, only the expiry is relaxed (up to 400 days), so a
+ * logged-out visit can be put on the right student's page. Never use this to grant access.
+ */
+export async function staleTokenUserId(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, getJwks(), {
+      issuer: `${jwksUrl()}/auth/v1`,
+      clockTolerance: 400 * 86_400,
+    });
+    return claimsToSessionUser(payload)?.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Where a logged-out visitor is sent. src/proxy.ts stamps `x-portal-path` on the hand-in
+ * page only, so a student bounced from /app/submit lands on /login?next=/app/submit — the
+ * login page records the logged-out visit (lib/login-trouble) and returns them there after.
+ */
+async function loginPath(extra = ''): Promise<string> {
+  let next: string | null = null;
+  try {
+    const p = (await headers()).get('x-portal-path');
+    if (p && /^\/app\/submit(\?[^\s]*)?$/.test(p)) next = p;
+  } catch { /* outside a request — plain /login */ }
+  const params = [extra, next ? `next=${encodeURIComponent(next)}` : ''].filter(Boolean).join('&');
+  return params ? `/login?${params}` : '/login';
+}
+
 // The session's portal_accounts row, or null (no session / no linked row).
 // Non-redirecting on purpose: the layout badge and the admin-browsable pages
 // (plan, practice, print) need "null when anonymous", not a bounce.
@@ -196,14 +229,14 @@ export async function requireAuth() {
 // they skip currentStudent()'s serial Airtable round-trip.
 export async function currentAccount(): Promise<PortalAccount> {
   const user = await getSessionUser();
-  if (!user) redirect('/login');
+  if (!user) redirect(await loginPath());
   const account = await sessionAccount();
   // An Auth user whose portal_accounts row is gone (deleted account, stale
   // cookie from an old build) must NOT bounce to plain /login — its
   // auto-redirect sees the session and sends them straight back here, a
   // visible /app ↔ /login flicker loop (Adrian hit it, 2026-08-29).
   // ?stale=1 tells /login to sign the dead session out first.
-  if (!account) redirect('/login?stale=1');
+  if (!account) redirect(await loginPath('stale=1'));
   return account;
 }
 

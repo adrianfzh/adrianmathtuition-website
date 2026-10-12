@@ -178,6 +178,8 @@ activation is live). Granted → subscribed → ✓ for 2.5 s → gone. Denied �
 browser remembers, gone for good. `'granted'` with the toggle switched off is
 a choice — the nudge never shows for it. Never prompts on load.
 
+**Login trouble (12 Oct 2026)** — `lib/login-trouble.ts` + `POST /api/portal/login-event` (no login, by design): a refused password login writes `portal_event_log` kind `login_failed` {reason: wrong password / no such account / account deactivated / too many tries / other, device phone|desktop}; a logged-out visit to `/app/submit` (`src/proxy.ts` stamps the path so `currentAccount` redirects to `/login?next=/app/submit`) or a hand-in / upload-token call with no session writes `handin_logged_out`, once per browser per 10 min (cookie `am_handin_lo`). Identity = the account's when the email or a signature-checked stale cookie names one, else `anon` — never the password, never a stranger's email. Shown as ⚠️ lines on the student's admin page (overview) and, when a real account failed in the last day, a count in /admin/overnight "Needs your look". Kept 90 days (retention cron). Health-check `login-event` expects 400 on an unknown kind.
+
 **Telemetry** — `POST /api/portal/event {kind}` → `portal_event_log`, bounded
 kinds (`PORTAL_CLIENT_EVENT_KINDS`): `install:shown` (Android card),
 `install:accepted`, `install:dismissed`, `install:ios-shown`,

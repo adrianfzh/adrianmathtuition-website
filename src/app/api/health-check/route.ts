@@ -532,6 +532,17 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🔑 Login trouble (12 Oct 2026, lib/login-trouble.ts): the login page's trace of a failed
+    // login / a logged-out hand-in visit. No login by design — an unknown kind must 400 (and
+    // writes nothing); a 404 means "I could not submit" is back to leaving no trace.
+    timed('login-event', async () => {
+      const r = await fetch(`${base}/api/portal/login-event`, {
+        method: 'POST', redirect: 'manual', signal: T(10000),
+        headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind: 'health-check' }),
+      });
+      if (r.status !== 400) throw new Error(`expected 400 (unknown kind), got HTTP ${r.status}`);
+      return 'door up';
+    }),
     // 📘 Practice Again on request (8 Sep 2026): the student's door on
     // /app/marking/[id] must hold its auth gate — a 404 means the request
     // button silently stops working and no sheet is ever written.

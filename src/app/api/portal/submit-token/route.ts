@@ -8,6 +8,8 @@
 // client token for mark-paper/portal/<identity>/…; those legacy URLs are still
 // accepted by the submit route.
 import { NextResponse } from 'next/server';
+import { cookieReader } from '@/lib/login-trouble';
+import { handinSeenCookie, recordHandinLoggedOut } from '@/lib/login-trouble-server';
 import { createSupabaseServer } from '@/lib/supabase-server';
 import { portalIdentity } from '@/lib/portal-auth';
 import { createUploadUrl, handinKey, safeExt } from '@/lib/student-files';
@@ -15,9 +17,15 @@ import { createUploadUrl, handinKey, safeExt } from '@/lib/student-files';
 export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
+  const rawCookies = cookieReader(req.headers.get('cookie'));
   const supabase = await createSupabaseServer();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!user) {
+    // A hand-in with no session (12 Oct 2026, lib/login-trouble): leave a trace, once per browser per 10 min.
+    const res = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (await recordHandinLoggedOut(rawCookies, req.headers.get('user-agent'), 'upload')) res.cookies.set(handinSeenCookie);
+    return res;
+  }
   const { data: account } = await supabase
     .from('portal_accounts').select('id, airtable_student_id').eq('id', user.id).single();
   if (!account) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

@@ -60,7 +60,7 @@ export default function PrivacyPage() {
             keeps as your tutor.
           </li>
           <li className={li}>
-            <strong>App usage</strong> — when the app was last used and which parts, so we can keep it
+            <strong>App usage</strong> — when the app was last used and which parts, and sign-ins that did not work, so we can keep it
             working and notice who needs a nudge.
           </li>
         </ul>

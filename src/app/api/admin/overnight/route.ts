@@ -20,6 +20,7 @@ import {
   type RequestState, type RunRow,
 } from '@/lib/overnight';
 import { readOpenProposals, wakeWorker } from '@/lib/overnight-io';
+import { ANON_IDENTITY, LOGIN_FAILED_KIND, failedLoginAccounts, type TroubleEvent } from '@/lib/login-trouble';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -52,13 +53,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ waiting: ledger.ok ? open.length : null });
   }
   try {
-    const [rows, latest, reqs] = await Promise.all([
+    const [rows, latest, reqs, trouble] = await Promise.all([
       weekRows(now),
       latestJobRuns(),
       open.length
         ? getSupabaseAdmin().from('proposal_requests').select('slug, action, status, requested_at')
           .in('slug', open.map((p) => p.slug)).order('requested_at', { ascending: false }).limit(200)
         : Promise.resolve({ data: [] as RequestState[] }),
+      // failed logins for a real account in the last day (lib/login-trouble.ts, 12 Oct 2026)
+      getSupabaseAdmin().from('portal_event_log').select('identity, kind, created_at')
+        .eq('kind', LOGIN_FAILED_KIND).neq('identity', ANON_IDENTITY)
+        .gte('created_at', new Date(now - 86_400_000).toISOString()).limit(1000),
     ]);
     const night = lastNight(rows, now);
     // the reason is said in plain words: the stored one quotes the job's summary, which carries names
@@ -70,6 +75,7 @@ export async function GET(req: NextRequest) {
       night,
       history: weekHistory(rows, now),
       stale,
+      failedLogins: failedLoginAccounts(((trouble as { data: TroubleEvent[] | null }).data ?? []), new Date(now)),
       generatedAt: new Date(now).toISOString(),
     });
   } catch (e) {

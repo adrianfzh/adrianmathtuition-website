@@ -26,6 +26,7 @@ import { isOurBlobUrl } from '@/lib/blob-url';
 import { collectFileKeys, removeStudentFiles } from '@/lib/student-files';
 import { RETENTION_MONTHS, retentionCutoffIso, latestActivityIso, isExpired } from '@/lib/retention';
 import { sweepNotebooks } from '@/lib/retention-notebook-store';
+import { LOGIN_TROUBLE_KEEP_DAYS, LOGIN_TROUBLE_KINDS } from '@/lib/login-trouble';
 import { sendTelegram } from '@/lib/telegram';
 // Every notification from this file belongs in the ops topic (6 Sept 2026; falls back to the DM when unbound).
 const notify_ops = (text: string) => sendTelegram(text, 'ops');
@@ -147,6 +148,21 @@ export async function GET(req: NextRequest) {
     }
 
     const nb = await sweepNotebooks(admin, cutoff, dry);
+
+    // Login trouble (12 Oct 2026, lib/login-trouble.ts): failed logins and logged-out hand-in
+    // visits are kept 90 days — the anonymous ones belong to no account the sweep above follows.
+    let troubleRows = 0;
+    {
+      const troubleCutoff = new Date(Date.now() - LOGIN_TROUBLE_KEEP_DAYS * 86_400_000).toISOString();
+      const q = admin.from('portal_event_log').select('id', { count: 'exact', head: true })
+        .in('kind', [...LOGIN_TROUBLE_KINDS]).lt('created_at', troubleCutoff);
+      troubleRows = (await q).count ?? 0;
+      if (!dry && troubleRows > 0) {
+        const { error: tErr } = await admin.from('portal_event_log').delete()
+          .in('kind', [...LOGIN_TROUBLE_KINDS]).lt('created_at', troubleCutoff);
+        if (tErr) console.warn('[retention] login-trouble delete failed:', tErr.message);
+      }
+    }
     const nbRows = Object.values(nb.rows).reduce((a, b) => a + b, 0);
     if (!dry && (nb.expired > 0 || nb.fileFailures > 0)) {
       notify_ops(
@@ -165,7 +181,7 @@ export async function GET(req: NextRequest) {
       ).catch(() => {});
     }
 
-    if (!dry) await logJobRun('retention', true, `practice: ${byKey.size} students looked at, ${purgedStudents} purged; notebook: ${nb.identities} looked at, ${nb.expired} cleared (${nbRows} rows)`);
+    if (!dry) await logJobRun('retention', true, `practice: ${byKey.size} students looked at, ${purgedStudents} purged; notebook: ${nb.identities} looked at, ${nb.expired} cleared (${nbRows} rows); login trouble: ${troubleRows} rows over ${LOGIN_TROUBLE_KEEP_DAYS} days`);
     return NextResponse.json({
       ok: true, dry, cutoff,
       students: byKey.size,
