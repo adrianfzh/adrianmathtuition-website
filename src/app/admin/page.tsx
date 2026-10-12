@@ -62,6 +62,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [row, setRow] = useState<AdminTool[]>(() => topTools({}));
+  const [waiting, setWaiting] = useState<number | null>(null);
   const [, tick] = useState(0);
   const busy = useRef(false);
 
@@ -100,6 +101,9 @@ export default function AdminDashboard() {
       const d = await r.json();
       if (!r.ok) throw new Error(d?.error || `HTTP ${r.status}`);
       setData(d); setError('');
+      // 🌙 Overnight (12 Oct 2026): how many proposals wait for his Ship — its own small read
+      fetch('/api/admin/overnight?count=1', { cache: 'no-store' }).then(x => (x.ok ? x.json() : null))
+        .then(o => { if (o && typeof o.waiting === 'number') setWaiting(o.waiting); }).catch(() => {});
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -176,6 +180,13 @@ export default function AdminDashboard() {
         <section className="gl-nums" aria-label="Today">
           {NUMBERS.map(n => <NumberTile key={n.id} n={n} t={tiles.get(n.id)} today={dayNow} />)}
         </section>
+
+        <Link href="/admin/overnight" className="gl-night">
+          <span className="gl-night-e" aria-hidden>🌙</span>
+          <span className="gl-night-t">Overnight</span>
+          <span className="gl-night-n">{waiting == null ? '' : waiting === 0 ? 'nothing waiting' : <><b>{waiting}</b> waiting for Ship</>}</span>
+          <span className="gl-night-go" aria-hidden>›</span>
+        </Link>
 
         <nav className="gl-row-tools" aria-label="Most used tools">
           {row.map(t => (
@@ -328,6 +339,12 @@ const CSS = `
   .gl-num-bars { height: 56px; max-width: 360px; gap: 6px; }
   .gl-num-w { font-size: 12.5px; }
 }
+.gl-night { display: flex; align-items: center; gap: 10px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 12px 16px; margin-bottom: 14px; text-decoration: none; color: #111827; }
+.gl-night-e { font-size: 22px; line-height: 1; }
+.gl-night-t { font-size: 15px; font-weight: 700; }
+.gl-night-n { margin-left: auto; font-size: 13.5px; color: #4b5563; white-space: nowrap; }
+.gl-night-n b { font-size: 20px; font-weight: 800; color: #1c64b0; margin-right: 2px; }
+.gl-night-go { font-size: 20px; color: #9ca3af; }
 .gl-row-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (min-width: 760px) { .gl-row-tools { grid-template-columns: repeat(9, minmax(0, 1fr)); } }
 .gl-tool { display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 14px 4px 12px; text-decoration: none; color: #111827; min-width: 0; }
