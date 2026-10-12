@@ -294,8 +294,11 @@ agent, never the API):
    Challenge 4–5 — or one above, never below), real distractors, house style, honest "why not"
    lines, student-safe.
 One rewrite from the problems or the checker's fixes; a second failure drops the seed (`parked`,
-logged). The lane skips a sub-skill after 3 dropped seeds, and a Combined sub-skill at once when
-the checker finds it outside the Combined syllabus (`/data/science-twins/skip/`).
+logged). The lane skips a sub-skill after 3 dropped seeds (`/data/science-twins/skip/`). **Since 12 Oct
+2026 a Combined "outside the Combined syllabus" verdict is one ordinary drop** (Adrian: "yes") — until then
+it skipped the sub-skill at once, and 26 Combined sub-skills (~53 twins owed) were dropped after 1–2 tries,
+often over what the author put into the twin rather than the sub-skill; their skip marks under 3 drops were
+removed the same day (`.drops` counts kept).
 
 **A tried seed is passed over, the next one is offered (11 Oct 2026).** The lane's `parked` /
 `published` marks live only on the worker's disk, so `science_twin_units()` kept offering the same
