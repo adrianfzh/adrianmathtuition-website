@@ -52,9 +52,16 @@ function TypeBadge({ type }: { type: string }) {
 }
 
 function StatusBadge({ status }: { status: string }) {
-  const s = status === 'sent'
-    ? { bg: '#dcfce7', color: '#15803d' }
-    : { bg: '#fee2e2', color: '#b91c1c' };
+  // Green = went out / arrived, amber = still trying, red = a real failure,
+  // grey = anything else. 'delivered' used to fall through to red.
+  const GREEN = { bg: '#dcfce7', color: '#15803d' };
+  const AMBER = { bg: '#fef3c7', color: '#b45309' };
+  const RED = { bg: '#fee2e2', color: '#b91c1c' };
+  const GREY = { bg: '#f1f5f9', color: '#475569' };
+  const s = status === 'sent' || status === 'delivered' ? GREEN
+    : status === 'delayed' ? AMBER
+    : ['failed', 'bounced', 'complained', 'suppressed'].includes(status) ? RED
+    : GREY;
   return (
     <span style={{
       background: s.bg, color: s.color,
