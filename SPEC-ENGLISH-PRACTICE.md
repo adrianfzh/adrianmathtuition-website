@@ -62,6 +62,25 @@ immediate feedback when they submit"*.
   "y"" · "Right word found, wrong correction" — then `wrong → right` and the note. Tapping a word
   holds the keyboard (pointerdown is held), so the box does not jump. Checked at phone width with the
   test student (13 Oct 2026); not yet with a real phone keyboard.
+- **NEXT — crash course + grammar map (agreed shape 13 Oct 2026, not built).** Adrian: *"add like a
+  link say to mini crash course about that particular error … a pop up? And will keep linking
+  students to go deeper and deeper should they wish to learn more? A graph?"* — shown a mock-up, chose
+  to build it in a fresh session. Build order:
+  1. **The link + pop-up.** Under a marked line (wrong, a tick on a line with a mistake, or a lucky
+     right), a pill "Learn this: <kind> · 1 min ›". It opens a bottom sheet over the passage (the place
+     is kept): the rule in one or two lines, one ✗ and one ✓ example, then **Try 3** — three single
+     lines of the same kind taken from OUR passages (216 tagged error lines + clean lines), answered
+     the same way (circle, then correct), marked by `checkEditing`. Buttons: Try 3 · Go deeper ›.
+  2. **The grammar map** (`/app/languages/practice/editing/map`): the 16 kinds of `EDIT_KIND_WEIGHT`
+     as boxes, easier at the top (weight 1) to harder at the foot (weight 3), lines joining a kind to
+     the ones that build on it; each box coloured by the student's own record from
+     `english_practice_attempts` (per-line ok × the line's `kind`): green strong · amber shaky · red
+     weak · grey not tried. Tap a box → its lesson + Try 3.
+  - **To write:** 16 short lessons, one per kind, our own words, checked (one idea per line; no
+    jargon a Sec 3 student would not know — "doing / receiving the action", not "subject / object
+    case"). Store as data (`data/english/grammar/<kind>.json`) with a test that every kind has one.
+  - Stays behind `ENGLISH_PRACTICE_OPEN_TO_STUDENTS`. Readability rule; the app never names Adrian
+    or a model. Health-check + APP-MAP row for the map page.
 - **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
   order; once all are done, the one done longest ago; never the one just finished
   (`nextEditing`, tested; done = an `english_practice_attempts` row of kind `editing`).
