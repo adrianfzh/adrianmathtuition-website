@@ -849,3 +849,16 @@ times; ticks at nothing; leaders through her writing) are in the reader's findin
 - **Footer for a not-attempted part prints scheme codes** — "Marker's notes: Q5(c)(ii) 0/4 · M1 M1 M1 A0; not attempted", no chip, no hint (Eva EM 2021 P2 p11; also p14, Rainie EM Zhonghua 2025 P1 p4). Pen (layout) + marker talk.
 - **✓ and ✗ on the same item** — Eva EM 2021 P2 p14 Q7(a): both beside her "15/10". Pen (marks).
 - **A faded ghost label** — a washed-out second "✓M1 your method is right, using your wrong number" under the red follow-through label (Eva EM 2021 P2 p9 Q4(b)). Pen (redraw).
+
+# 14 Oct 2026 — the page reader: new defect classes (findings of 14 Oct: 3 papers, 35 pages; the fixer works them at 06:45)
+
+All three papers drawn 13 Oct afternoon, after the F120–F125 pushes and science pen v6–v8. One line per NEW class — returns
+(F125 ✓ and ✗ on one row, now as the exam ✗A0 beside a ✓ for her later correction; F117/F118 a part's note in another part's
+space, now on maths too; the point said 3–6 times; marks on crossed-out work) are in the reader's findings file.
+
+- **"From line" stops one step short** — the marker's steps end before the answer and the pen never prints `final_latex`: "Diff = 1320 − 363" (no 957 J), "d = 417/52" (no 8.02 m), "efficiency = 6.68/45 × 100%" (no 14.8%) (Rainie physics Plmgs P2 p6 Q4(a)(b), p9 Q6(b)). Pen (continuation).
+- **A ratio colon in prose cut or turned into a dash** — "a scale is map : actual" printed as "A scale is map." and "scale is map – actual: …" (Chloe EM SJC prelim P1 p9 Q15(a)). Pen (text) — F121's sibling.
+- **A continuation step cut mid-expression is printed** — a step ending "… + " showed 3 of 4 branch products, then a 4-term sum (Chloe EM SJC prelim P2 p6 Q4(a)(i)). Pen (continuation check).
+- **A strip heading names the wrong part** — "Q20(a):" over (b)'s angle-bisector steps; (a) was 3/3 (Chloe EM P1 p15). Pen (strip).
+- **A ring round her correct correction, with "should be" the same value** — (a)(ii)'s ellipse encloses her 7/15 and "should be 7/15" sits beside it (Chloe EM P2 p3). Misleads. Pen (ring) + corrections.
+- **The green-pen boilerplate where there is no green** — "Green = your corrections: checked, but no marks … In the exam, write the first step you know…" in ~10 parts, up to 3× a page, when her later work is black and even when the correction is ticked right (Chloe EM P1/P2). Words (pen rule) — for a proposal.
