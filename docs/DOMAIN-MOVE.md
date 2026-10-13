@@ -43,10 +43,12 @@ Drop: root MX `mailspamprotection.com` + root SPF (no inbound mail any more), `m
 
 ## Steps (Adrian clicks; the session checks after each)
 
-1. **Vercel** → Domains → adrianmathtuition.com → DNS Records: add the six rows above that
-   are not A records (send MX, send TXT, resend._domainkey, _dmarc, two google TXT).
-2. **SiteGround** → Services → Domains → adrianmathtuition.com → Nameservers →
-   `ns1.vercel-dns.com`, `ns2.vercel-dns.com`.
+1. **SiteGround** → Services → Domains → adrianmathtuition.com → Nameservers →
+   `ns1.vercel-dns.com`, `ns2.vercel-dns.com`. (Vercel refuses records first —
+   `vercel dns add` → "is not a DNS zone (400)" until its nameservers are in, 13 Oct 2026.)
+2. Session adds the six non-A rows above with `vercel dns add` straight away (Adrian approved
+   "add them", 13 Oct 2026). The old SiteGround answers stay cached for a while, so Resend
+   keeps sending through the switch-over; do it away from an invoice run.
 3. Session checks: website + `/api/health-check` open, a test Resend email still sends.
 4. **SiteGround** → domain → unlock + get the transfer (EPP) code. **Vercel** → Domains →
    Transfer In → paste code, pay US$11.25. Approve SiteGround's e-mail if it comes (≤5 days).
