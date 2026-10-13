@@ -41,22 +41,34 @@ session's permission classifier — Adrian adds them in the dashboard or approve
 Drop: root MX `mailspamprotection.com` + root SPF (no inbound mail any more), `mail`/`ftp`/
 `webmail` A `35.213.156.147`, `default._domainkey` (SiteGround DKIM).
 
-## Steps (Adrian clicks; the session checks after each)
+## ⚠️ What happened on 13 Oct 2026 — nameservers first FAILED
 
-1. **SiteGround** → Services → Domains → adrianmathtuition.com → Nameservers →
-   `ns1.vercel-dns.com`, `ns2.vercel-dns.com`. (Vercel refuses records first —
-   `vercel dns add` → "is not a DNS zone (400)" until its nameservers are in, 13 Oct 2026.)
-2. Session adds the six non-A rows above with `vercel dns add` straight away (Adrian approved
-   "add them", 13 Oct 2026). The old SiteGround answers stay cached for a while, so Resend
-   keeps sending through the switch-over; do it away from an invoice run.
-3. Session checks: website + `/api/health-check` open, a test Resend email still sends.
-4. **SiteGround** → domain → unlock + get the transfer (EPP) code. **Vercel** → Domains →
-   Transfer In → paste code, pay US$11.25. Approve SiteGround's e-mail if it comes (≤5 days).
-5. Session checks `vercel domains inspect`: registrar Vercel, expiry 2027.
-6. Then turn off SiteGround auto-renew and let the plan lapse. Not before step 5.
+Nameservers were switched to `ns1/ns2.vercel-dns.com` while the domain was still registered at
+SiteGround. Vercel's nameservers answered **REFUSED** (no zone: `vercel domains inspect` showed
+"Intended Nameservers -", `vercel dns add` → "is not a DNS zone (400)"), so 8.8.8.8 and 1.1.1.1
+returned nothing for the apex and www → site down ~15 min for fresh lookups. Reverted to
+SiteGround; site back (200). **Never switch nameservers until `dig A adrianmathtuition.com
+@ns1.vercel-dns.com` returns `216.198.79.1` (or an ALIAS answer) AND the six mail rows answer
+there too.**
+
+## Steps (Adrian clicks; the session checks after each) — transfer FIRST
+
+1. **SiteGround** → Services → Domains → adrianmathtuition.com → ⋮ / Extras → unlock the
+   domain + get the transfer (EPP) code. The SiteGround plan must stay alive (its DNS keeps
+   the site up during the transfer).
+2. **Vercel** → Domains → Transfer In → adrianmathtuition.com → paste code → pay US$11.25.
+   Approve the "transfer away" e-mail from SiteGround/Tucows if it comes (≤5 days otherwise).
+   Vercel does NOT copy DNS records; once its zone exists, the session adds the six non-A rows
+   above (`vercel dns add`, Adrian approved "add them") or `vercel dns import` a zone file.
+3. Session checks `dig … @ns1.vercel-dns.com` answers the site + all six rows BEFORE anything
+   points at Vercel's nameservers; then the nameservers move to Vercel (Vercel may do this
+   itself on transfer completion — check the site at once if it does).
+4. Session checks: site 200 via 8.8.8.8, `/api/health-check`, a test Resend e-mail sends,
+   `vercel domains inspect` shows registrar Vercel + expiry 2027.
+5. Then turn off SiteGround auto-renew and let the plan lapse. Not before step 4.
 
 Deadline: steps 2–7 done before **12 Nov 2026**; aim to finish by 1 Nov.
 
 ## Progress
 
-- 13 Oct 2026 — plan agreed, records snapshotted, reply_to fixed; Vercel chosen, site shows Gmail. Next: step 1.
+- 13 Oct 2026 — plan agreed, records snapshotted, reply_to fixed; Vercel chosen, site shows Gmail. Nameserver switch tried, site down ~15 min, reverted (see ⚠️). Next: transfer, step 1.
