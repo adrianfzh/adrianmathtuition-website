@@ -1053,6 +1053,13 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // Waiting list in the app (13 Oct 2026): join / leave / answer an offer from
+    // /app/reschedule. 401 anonymously = deployed with its session gate up.
+    timed('portal-waitlist', async () => {
+      const r = await fetch(`${base}/api/portal/waitlist`, { method: 'POST', redirect: 'manual', signal: T(10000), headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // Web-push subscriptions (/app/settings toggle → "marked paper ready"
     // notifications). 401 anonymously proves the subscribe route is deployed
     // with its session gate up — a 404 means students silently stop being able

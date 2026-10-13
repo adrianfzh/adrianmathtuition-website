@@ -29,17 +29,19 @@ function ensureVapid(): boolean {
 /**
  * Push `msg` to every subscribed browser of one student. Expired endpoints
  * (HTTP 404/410 from the push service — uninstalled PWA, cleared site data)
- * are deleted so the table self-cleans. Never throws.
+ * are deleted so the table self-cleans. Never throws. Resolves the number of
+ * devices the push reached (0 = no subscription, not configured, or every send
+ * failed) — the bot's waiting-list offer counts "App" as reached only when > 0.
  */
 export async function sendPushToStudent(
   airtableStudentId: string,
   msg: PortalPushMessage
-): Promise<void> {
+): Promise<number> {
   try {
-    if (!airtableStudentId) return;
+    if (!airtableStudentId) return 0;
     if (!ensureVapid()) {
       console.warn('[portal-push] VAPID keys not configured — push skipped');
-      return;
+      return 0;
     }
 
     const supa = getSupabaseAdmin();
@@ -49,17 +51,19 @@ export async function sendPushToStudent(
       .eq('airtable_student_id', airtableStudentId);
     if (error) {
       console.warn('[portal-push] subscription read failed:', error.message);
-      return;
+      return 0;
     }
-    if (!subs?.length) return;
+    if (!subs?.length) return 0;
 
     const payload = buildPushPayload(msg);
+    let reached = 0;
     await Promise.all(subs.map(async (sub) => {
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
           payload
         );
+        reached++;
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
         if (status === 404 || status === 410) {
@@ -74,7 +78,9 @@ export async function sendPushToStudent(
         }
       }
     }));
+    return reached;
   } catch (err) {
     console.warn('[portal-push] sendPushToStudent failed:', (err as Error).message);
+    return 0;
   }
 }

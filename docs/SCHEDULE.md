@@ -345,6 +345,38 @@ gate) before `executeReschedule(..., 'Portal (student)')`. Adrian gets the
 usual 📅 Telegram note from the bot. Health-check probes the website route
 anonymously (expects 401).
 
+### Waiting list, makeups and offers in the app (13 Oct 2026)
+
+Adrian, 13 Oct 2026: *"yes, the app too"* → *"yes to both"*. The "no waiting list on
+the portal" line above is superseded. `/app/reschedule` now does what the bots do:
+
+- **Two tabs** when the student has a missed lesson: "📅 Move a lesson" / "🔄 Make up a
+  lesson" (the bot's `getMissedLessons`, same 90-day rule). Without a missed lesson the
+  page is as before.
+- **Full classes show ⏳** "Full — join the waiting list"; quieter ones 🟢. Tapping a
+  full one → "Join the waiting list for Sat, 24 Oct, 3-5pm" → "You're #3 on the waiting
+  list." A seat that freed while the page sat open is booked at once instead.
+- **Your waiting list** lists each place ("You're #2 in line.") with Leave → "Leave the
+  line" / "Keep my place".
+- **An open offer sits at the top**: "🎉 A slot has opened up", the bot's own words ("A slot
+  at Sun 18 Oct, 11am-1pm has opened up. Do you want to take it up?"), a live countdown
+  "⏳ 11 h 40 min left — until 9:30pm Wed 14 Oct" (ticks every 20 s,
+  `lib/waitlist-view.ts`), and **Yes, take it** / **No**. The answer is the bot's reply
+  text (`answerOffer`), e.g. "✅ Booked. Your lesson is now on …".
+- **Push**: when an offer is made, the bot calls `POST /api/bot/portal-push` (Bearer
+  `BOT_INTERNAL_SECRET`) → `sendPushToStudent` ("⏳ Waiting list" / "A slot at … has
+  opened up — tap to answer.", opens `/app/reschedule`). It answers `{ sent }`; the bot
+  adds "App" to Adrian's "offered" line only when `sent > 0`.
+
+Routes: `GET /api/portal/reschedule` asks the bot with `waitlist=1` (adds `missed`,
+`queue` and full options); `POST /api/portal/waitlist` (join / leave / answer, studentId
+from the session) → the bot's `/api/portal-waitlist`. Both proxies share
+`lib/portal-reschedule-proxy.ts`. Health checks `portal-reschedule` and
+`portal-waitlist` (401 anonymously). **Weekly slot switch**: the app has no weekly-switch
+page, so weekly places are joined on Telegram only; an open weekly offer still shows in
+the app and can be answered there. Bot side: bot `docs/SCHEDULING.md` §Waiting list in
+the app.
+
 ### Reschedule semantics (mirrors bot /rs exactly)
 
 - Creates new lesson: `Type: 'Rescheduled'`, `Status: 'Scheduled'`
