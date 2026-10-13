@@ -848,8 +848,10 @@ function AnnotateView({ scene, step, timed, board }: { scene: AnnotateScene; ste
 
 type CheckStatus = 'idle' | 'retry' | 'correct' | 'reveal' | 'unclear';
 
-function CheckView({ scene, slug, onResolved, timed, board }: {
+function CheckView({ scene, slug, onResolved, onCorrect, timed, board }: {
   scene: ResolvedCheckScene; slug: string; onResolved: () => void; timed: boolean; board: BoardState | null;
+  /** A lesson with a cheer clip (lib/lesson-extras): called inside the Check tap, so the clip may play with sound. */
+  onCorrect?: () => void;
 }) {
   const [value, setValue] = useState('');
   const [status, setStatus] = useState<CheckStatus>('idle');
@@ -875,7 +877,7 @@ function CheckView({ scene, slug, onResolved, timed, board }: {
       }).catch(() => {});
     }
     setAttempts(a => a + 1);
-    if (verdict === 'correct') { setStatus('correct'); onResolved(); }
+    if (verdict === 'correct') { setStatus('correct'); onCorrect?.(); onResolved(); }
     else if (verdict === 'wrong' && attempts === 0) setStatus('retry'); // exactly one retry
     else if (verdict === 'wrong') { setStatus('reveal'); onResolved(); }
     else { setStatus('unclear'); onResolved(); }
@@ -1361,7 +1363,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1390,6 +1392,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   clip?: boolean;
   /** Played inside an overlay (▶ Watch it): ‹ and the closer call this instead of following a link. */
   onClose?: () => void;
+  /** 🎬 The tutor's cheer clip (lib/lesson-extras): plays over the board after a correct quick check,
+   *  and the timed pacings wait for it. Unset = no element, no change. */
+  cheerSrc?: string;
 }) {
   const theme = normalizeTheme(themeProp);
   const [sceneIdx, setSceneIdx] = useState(0);
@@ -1407,6 +1412,12 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const gestureTimer = useRef(0);
   const reduced = useReducedMotion();
   const cardRef = useRef<HTMLDivElement>(null);
+  const cheerRef = useRef<HTMLVideoElement>(null);
+  // The scene whose cheer is playing: a new scene (the card is keyed by scene, so the clip unmounts) ends it.
+  const [cheerScene, setCheerScene] = useState<number | null>(null);
+  const cheering = cheerScene === sceneIdx;
+  // Leaving the scene unmounts the clip: clear it, so coming back never finds a frozen cheer.
+  const cheerElRef = useCallback((el: HTMLVideoElement | null) => { cheerRef.current = el; if (!el) setCheerScene(null); }, []);
   const ribbonRef = useRef<HTMLDivElement>(null);
 
   // 🔊 Voice: the persisted choice only counts when this lesson has clips —
@@ -1416,6 +1427,15 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const [voiceChoice, setVoiceChoice] = useState<boolean | null>(null);
   const narratedPref = voiceChoice ?? (startVoice || storedVoice);
   const muted = usePref('muted');
+  // Called inside the Check tap (a gesture), so a phone lets the clip play with sound.
+  const playCheer = useCallback(() => {
+    const v = cheerRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.muted = muted;
+    setCheerScene(sceneIdx);
+    v.play().catch(() => setCheerScene(null));
+  }, [muted, sceneIdx]);
   const rate = useRatePref();
   const hasVoice = useMemo(() => lessonHasAudio(scenes), [scenes]);
   const narrated = narratedPref && hasVoice;
@@ -1494,7 +1514,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const beatRef = useRef<{ key: string; totalMs: number; remainingMs: number; startedAt: number; running: boolean } | null>(null);
   const beatKey = `${sceneIdx}:${step}:${voiceVersion}:${gated}:${pacing}`;
   useEffect(() => {
-    if (pacing === 'manual' || done || gated) { beatRef.current = null; return; }
+    if (pacing === 'manual' || done || gated || cheering) { beatRef.current = null; return; }
     if (pacing === 'narrated' && (voiceLocked || voiceDriving())) { beatRef.current = null; return; }
     const base = scene.type === 'check' ? CHECK_WHY_BEAT_MS : beatDuration(scene, step);
     if (base === null) { beatRef.current = null; return; }
@@ -1516,7 +1536,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         b.running = false;
       }
     };
-  }, [pacing, done, gated, scene, step, rate, paused, beatKey, voiceLocked, voiceDriving]);
+  }, [pacing, done, gated, cheering, scene, step, rate, paused, beatKey, voiceLocked, voiceDriving]);
   const beatClock = useCallback((): BeatClock | null => {
     const b = beatRef.current;
     if (!b) return null;
@@ -1818,6 +1838,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             {scene.type === 'annotate' && <AnnotateView scene={scene} step={step} timed={timed} board={board} />}
             {scene.type === 'check' && (
               <CheckView scene={scene} slug={slug} timed={timed} board={board}
+                onCorrect={cheerSrc ? playCheer : undefined}
                 onResolved={() => setResolved(prev => new Set(prev).add(sceneIdx))} />
             )}
             {scene.type === 'check-skipped' && <CheckSkippedView />}
@@ -1827,6 +1848,15 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           {gesture && (
             <span key={gesture.id} aria-hidden data-lsn-gesture={gesture.glyph === '⏸' ? 'pause' : 'play'}
               className="lsn-gesture">{gesture.glyph}</span>
+          )}
+          {/* 🎬 The tutor's cheer after a correct check (lib/lesson-extras). Always in the DOM
+              when the lesson has one, so the Check tap can start it with sound; shown only
+              while it plays. Tapping it stops it. */}
+          {cheerSrc && scene.type === 'check' && (
+            <video ref={cheerElRef} src={cheerSrc} poster={cheerSrc.replace(/\.mp4$/, '.jpg')} playsInline preload="auto" aria-hidden data-lsn-cheer={cheering ? 'on' : 'off'}
+              onEnded={() => setCheerScene(null)} onError={() => setCheerScene(null)}
+              onClick={(e) => { e.stopPropagation(); e.currentTarget.pause(); setCheerScene(null); }}
+              className={`absolute right-3 top-3 w-[42%] max-w-[200px] aspect-square rounded-2xl object-cover shadow-[0_10px_28px_-10px_rgba(0,0,0,0.6)] motion-safe:transition-opacity duration-300 ${cheering ? 'opacity-100 z-20' : 'opacity-0 pointer-events-none -z-10'}`} />
           )}
           {/* Paused: a quiet chip; the card itself is the resume surface. */}
           {paused && (

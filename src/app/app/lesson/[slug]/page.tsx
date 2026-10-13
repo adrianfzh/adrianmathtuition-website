@@ -10,8 +10,10 @@
 // the marking-only beta is on; Adrian's admin cookie previews it. Remove the
 // gate (and the matching `lessonsVisible` prop on the practice page) to
 // release. The /app layout still gates anonymous visitors to /login.
-import { notFound } from 'next/navigation';
-import { requireFullPortal, learnStepVisible } from '@/lib/portal-beta';
+import { notFound, redirect } from 'next/navigation';
+import { fullPortalVisible, learnStepVisible, lessonVideoExtrasVisible } from '@/lib/portal-beta';
+import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import { lessonExtras } from '@/lib/lesson-extras';
 import { learnStepForClip } from '@/lib/learn-steps';
 import { lessonBySlug } from '@/lib/lesson-catalog';
 import {
@@ -21,12 +23,23 @@ import {
 import { checkQids } from '@/lib/lesson-script';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import LessonPlayer from './lesson-player';
+import LessonWithIntro from './lesson-intro';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {
-  await requireFullPortal();
   const { slug } = await params;
+  // 🎬 A lesson with video extras (lib/lesson-extras) also opens for the preview
+  // student while its switch is off; every other lesson keeps the admin-only gate.
+  const extras = lessonExtras(slug);
+  let extrasOn = false;
+  if (await fullPortalVisible()) {
+    extrasOn = !!extras && (await lessonVideoExtrasVisible());
+  } else {
+    if (!extras) redirect('/app');
+    extrasOn = await lessonVideoExtrasVisible(portalIdentity(await currentAccount()));
+    if (!extrasOn) redirect('/app');
+  }
   const entry = lessonBySlug(slug);
   const script = entry ? loadLessonScript(slug) : null;
   if (!entry || !script) notFound();
@@ -53,17 +66,18 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const step = script.kind === 'clip' && (await learnStepVisible()) ? learnStepForClip(slug) : null;
   const toStep = step ? { backHref: `/app/learn-step/${step.slug}?seen=clip`, practiceHref: `/app/learn-step/${step.slug}?seen=clip`, practiceLabel: 'See an example' } : {};
 
-  return (
-    <LessonPlayer
-      slug={script.slug}
-      title={script.title}
-      topic={script.topic}
-      minutes={script.minutes}
-      theme={script.theme ?? 'slide'}
-      scenes={buildPlayScenes(script, rows)}
-      // A clip is one concept in a minute: it opens playing, like a video.
-      {...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {})}
-      {...toStep}
-    />
-  );
+  const player = {
+    slug: script.slug,
+    title: script.title,
+    topic: script.topic,
+    minutes: script.minutes,
+    theme: script.theme ?? 'slide',
+    scenes: buildPlayScenes(script, rows),
+    // A clip is one concept in a minute: it opens playing, like a video.
+    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {}),
+    ...toStep,
+  };
+  return extras && extrasOn
+    ? <LessonWithIntro intro={extras.intro} cheer={extras.cheer} {...player} />
+    : <LessonPlayer {...player} />;
 }

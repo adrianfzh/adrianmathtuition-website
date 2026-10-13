@@ -308,7 +308,7 @@ and transition and the pose still shows.
   (no dev server) is the previous sessions' `preview.mjs` recipe: pull `CHARACTER_CSS` and
   the `<svg>` out of the TSX, swap the JSX attribute names, stamp six copies with `data-pose`.
 
-## 🎬 Video extras around the board (13 Oct 2026) — APPROVED, NOT BUILT
+## 🎬 Video extras around the board (13 Oct 2026) — BUILT, admin + preview student only
 
 Adrian asked whether Seedance / Kling / Hailuo can make his teaching clips. Answer agreed:
 **not the maths** — video models draw pictures of symbols (wrong digits, no word-level timing,
@@ -341,6 +341,39 @@ image-to-video; the character stays consistent). Cost ≈ US$0.20 per 5 s clip.
 Rules that still apply: no model names on student screens, the tutor never named, the
 installed-app / phone autoplay rules in § A clip, and the readability rule (check it rendered,
 on a phone).
+
+**Built 13 Oct 2026** (switch `LESSON_VIDEO_EXTRAS_OPEN_TO_STUDENTS = false`, `docs/SWITCHES.md`):
+- **Which lessons:** `src/lib/lesson-extras.ts` (`lessonExtras(slug)`) — today only
+  `quadratic-functions-am`: intro = `public/lessons/quadratic-functions-am/opener-ball-throw.mp4`
+  (540×960, ~370 KB, + a `.jpg` still) → `public/lessons/characters/tutor/clips/hello.mp4`; cheer =
+  `…/tutor/clips/cheer.mp4` (480², ~200 KB; each clip has a same-name `.jpg` still). A lesson
+  not in that list renders `<LessonPlayer>` with exactly the props it had before.
+- **Who sees them:** `lessonVideoExtrasVisible(identity)` in `lib/portal-beta.ts` — the admin
+  cookie (not while viewing as a student) or the preview student. The lesson page is still
+  admin-only for students (§ Release switch); while the switch is off, a lesson WITH extras also
+  opens for the preview student (`page.tsx`), every other lesson keeps `/app` as before.
+- **The intro** (`app/lesson/[slug]/lesson-intro.tsx`, `LessonWithIntro`): the clips play one
+  after another in ONE `<video>` (a new `src`, like the voice's one `<audio>`), so the tap that
+  starts the first lets the next play with sound on a phone. It asks for sound first; a refusal
+  shows a "▶ Play" poster, one tap starts it. "Skip ›" top-right; a clip that fails is skipped.
+  Then the player opens unchanged.
+- **The cheer** (`LessonPlayer` prop `cheerSrc`, unset everywhere else = no element): on a check
+  scene a hidden `<video>` waits; a correct answer calls `play()` INSIDE the Check tap (iOS allows
+  sound only there), it shows top-right of the board (over the question already answered, never
+  over the "✓ Correct" line), the Auto / Voice beat waits while it plays, a tap on it stops it,
+  the 🔈 mute applies, and leaving the scene clears it.
+- **Testing it locally without the admin password:** a throw-away dev-only page that renders
+  `LessonWithIntro` / `LessonPlayer cheerSrc` with the real script (deleted before commit). Keep
+  test audio MUTED (`volume = 0` on every media element before any click) — on 13 Oct the cheer
+  played out loud on Adrian's Mac during a test. The in-app browser's screenshots often paint a
+  `<video>` as an empty box; check `readyState` / draw a frame to a canvas instead.
+- **Still open (13 Oct):** the six tutor pictures were regenerated with the white hair and shirt
+  kept (`~/Desktop/ai-video-pipeline/out/tutor-recut/` — `gen.mjs` = Seedream edit onto a green
+  screen, `key.py` = the chroma cut lined up with the old pictures' size and position) and are
+  waiting for Adrian's yes before they replace `public/lessons/characters/tutor/*.png`; the hello
+  and cheer clips in `tutor/clips/` are STAND-INS cut from the old dark-shirt clips until they are
+  re-made from the new pictures (keyframe → `out/<slug>/keyframes/s01.png`, delete
+  `shots/s01.mp4`, re-run the story) with the voice Adrian is still choosing.
 
 ## Stickers (1 Oct 2026) — a reaction picture for the beat
 

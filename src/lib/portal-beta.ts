@@ -527,6 +527,21 @@ export async function explainClipVisible(identity?: string | null): Promise<bool
   return admin && !(await viewingAsStudent());
 }
 
+// 🎬 Video extras around the chalk board (docs/LESSONS.md § Video extras, 13 Oct 2026,
+// Adrian: "yes"): Completing the Square opens with a real-life clip and the tutor's
+// hello, and the tutor cheers after a right answer (lib/lesson-extras). ADMIN + the
+// preview student until Adrian has watched it on his phone — flip this to show the
+// extras to every student who can open that lesson.
+export const LESSON_VIDEO_EXTRAS_OPEN_TO_STUDENTS = false;
+export async function lessonVideoExtrasVisible(identity?: string | null): Promise<boolean> {
+  if (LESSON_VIDEO_EXTRAS_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // ▶ Watch it — an animated worked solution under a science MCQ's solution
 // (5 Oct 2026, Adrian: "build the watch it animations for kinematics and
 // chemical calculations … gate keep it to me, then show me the results").
