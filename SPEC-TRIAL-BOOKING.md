@@ -49,9 +49,13 @@ Statuses: `awaiting_payment → paid → booked → asked → continuing → sig
   `lib/trial-booking.js feeCents` (both tested).
 - Credit only for a paid, unrefunded, not-yet-credited fee (`trialCreditLine`). Refund only for a
   paid, unrefunded, uncredited fee (`refundCheck`).
-- Stripe key: `STRIPE_SECRET_KEY` (restricted). Refunds write: confirmed 12 Oct (a fake id got
-  "no such payment", not "permission denied"). Checkout create: not tested from a session (it would
-  make a real payment page) — Adrian's test run checks it.
+- Stripe key: `STRIPE_SECRET_KEY` (restricted, …p4NL). Checkout create works (Adrian paid $80 on
+  13 Oct). **Refunds write was NOT on the key**: the 12 Oct probe with a fake id got "no such
+  payment" because Stripe checks the object before the permission — a wrong conclusion. On 13 Oct
+  the real refund got 403; Adrian adds Refunds → Write to the key in the Stripe dashboard. A probe
+  with a made-up id proves nothing about permissions.
+- 13 Oct test run: booking + Apple Pay + webhook + booking + cancelled card all worked; the refund
+  door first 401'd (untrimmed secret, fixed caaf3018) then Stripe 403'd (key permission).
 
 ## The two messages awaiting Adrian's yes (bot `lib/whatsapp-templates.js`)
 
