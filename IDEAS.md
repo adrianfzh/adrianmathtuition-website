@@ -68,6 +68,15 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
+## 💬 Chat about MY marked paper (Adrian, 13 Oct 2026: "add it") — NOTED, not designed, not built
+
+A student asks about their own marked paper and keeps going: "why did I lose marks on Q3?" → "what
+should I have written?" → "show me a similar one". Today the chat (Telegram, `/chat`, app Ask)
+remembers the conversation but cannot attach it to ONE marked paper; the Telegram "portal asks"
+(13 Oct, bot `lib/portal-asks.js`) only lists papers and scores, one message at a time. Needs: pick
+the paper (last one by default, or by name), load its marked parts + scheme into the thread, answer
+in the red pen's words; credits/Ask daily cap per SPEC-COMPANY §7.1 for non-tuition users.
+
 ## 🧭 Learning it the first time — the gap after "self-revision" (Adrian, 7 Oct 2026) — NOTED, not designed, not built
 
 Adrian: *"Right now our set up is very good for students to self revise if they already somewhat
