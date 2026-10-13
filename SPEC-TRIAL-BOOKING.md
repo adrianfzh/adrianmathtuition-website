@@ -1,19 +1,15 @@
 # Paid WhatsApp trials + the parent fact sheet
 
-**Where things stand (12 Oct 2026, ~16:30 SGT):** live in both repos, **test mode**.
-- Website promoted (067a4ce2): `/trial/pay`, the Stripe trial branch, the refund door, the first-bill credit.
-- Bot deployed (3185d213, 94cb27fa, f11d029a): paid booking, after-trial questions, Refund/Keep
-  buttons, fact-sheet answers on WhatsApp AND Telegram.
-- Fly secret `TRIAL_PREPAY=test`: only `ADRIAN_WHATSAPP` (and Adrian's own Telegram) get any of it.
-- Both after-trial templates approved by Adrian ("yes"); **he submits them** in Telegram:
-  `/wa submit trial_followup`, `/wa submit trial_reminder`, then once WhatsApp approves,
-  `/wa trial_followup test` + `/wa trial_reminder test` (and `on` at go-live).
-
-Still to do:
-1. Adrian's test run from his own phone: book, pay $80, then the test lesson is set to Cancelled so
-   the 30-minute job sends the Refund card, and he presses 💸 Refund (checks Checkout create, the
-   webhook, the booking and the refund end to end). The "continuing" path to be tried after.
-2. Then `TRIAL_PREPAY=on` and both templates `on`.
+**Where things stand (13 Oct 2026, ~21:40 SGT): LIVE for every parent.** Fly secret
+`TRIAL_PREPAY=on` (Adrian: "yes"). Both after-trial templates approved by WhatsApp; Adrian sets them
+`on` with `/wa trial_followup on` + `/wa trial_reminder on`. Telegram strangers get the fact sheet too.
+- Tested end to end on Adrian's phone, 13 Oct: question → booking → $80 Apple Pay → booked +
+  confirmation → cancelled-trial card → 💸 Refund (after adding Refunds → Write to the Stripe key) →
+  continuing → weekly slot → stream → start date → sign-up form. Two test rows are in
+  `trial_bookings` (status refunded, and kept with a fake payment id — never refund it).
+- Next: a short sign-up link (the signed /signup URL is long in WhatsApp).
+- The first-bill credit has unit tests only; the first real sign-up after a paid trial is the
+  live check — look at that first invoice's "Trial lesson fee (already paid)" line.
 
 ## What Adrian asked for (12 Oct 2026)
 
