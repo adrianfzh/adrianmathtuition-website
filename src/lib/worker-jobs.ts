@@ -48,6 +48,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'day-review', group: 'reviews', label: '🌅 Day review', what: 'Reads yesterday\'s bot answers and sends you the digest.', when: '05:00' },
   { key: 'find-review', group: 'reviews', label: '🔍 Find review', what: 'Checks yesterday\'s Find-a-question matches.', when: '05:30' },
   { key: 'bot-review', group: 'reviews', label: '🤖 Bot review', what: 'Turns the day review\'s findings into fixes and proposals.', when: '05:45' },
+  { key: 'unmet-asks', group: 'reviews', label: '🧰 What students asked for', what: 'Lists what students asked the bot for that it could not do yet (Monday brief).', when: 'Mon 07:41' },
   { key: 'marking-review', group: 'reviews', label: '🔎 Marked-page reader', what: 'Looks at yesterday\'s marked pages as the student saw them.', when: '06:15' },
   { key: 'marking-fix', group: 'reviews', label: '🛠 Marking fixer', what: 'Fixes what the page reader found, on the bench.', when: '06:45' },
   { key: 'marking-learn', group: 'reviews', label: '🎓 Learn from my corrections', what: 'Reads the marks and notes you changed; a mistake you fixed twice or more becomes a proposed fix for you to ship.', when: '07:15' },
