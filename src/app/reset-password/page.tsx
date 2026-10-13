@@ -43,6 +43,8 @@ function ResetPasswordInner() {
       setBusy(false);
       return;
     }
+    // Tell Adrian (one Telegram line); never blocks the student.
+    await fetch('/api/portal/password-changed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ where: 'reset' }) }).catch(() => {});
     router.replace('/app');
   }
 

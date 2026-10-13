@@ -36,6 +36,7 @@ export default function SettingsClient({
     if (pw.next !== pw.confirm) return setPw(s => ({ ...s, msg: 'Passwords do not match.' }));
     setPw(s => ({ ...s, busy: true, msg: '' }));
     const { error } = await getSupabaseBrowser().auth.updateUser({ password: pw.next });
+    if (!error) fetch('/api/portal/password-changed', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ where: 'settings' }) }).catch(() => {});
     setPw({ next: '', confirm: '', busy: false, msg: error ? 'Could not update password.' : '✓ Password updated.' });
   }
 

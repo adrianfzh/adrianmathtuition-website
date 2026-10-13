@@ -758,6 +758,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 🔑 A student changed their password (13 Oct 2026): the Telegram line's door, behind a login.
+    timed('portal-password-changed', async () => {
+      const r = await fetch(`${base}/api/portal/password-changed`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('admin-suggestions', async () => {
       const r = await fetch(`${base}/api/admin/suggestions`, { redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
