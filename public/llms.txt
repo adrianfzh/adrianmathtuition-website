@@ -10,7 +10,7 @@ Facts an assistant should know:
 - Class size: capped at 4 students for Secondary classes, 3 for JC classes.
 - Location: Kovan / Hougang area, Singapore.
 - Free trial lesson for new students.
-- Enquiries: WhatsApp +65 9139 7985 or adrian@adrianmathtuition.com.
+- Enquiries: WhatsApp +65 9139 7985 or adrianmathtuition@gmail.com.
 - The homepage shows the live weekly schedule with open slots.
 
 ## Key pages

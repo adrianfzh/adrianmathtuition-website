@@ -81,7 +81,7 @@ export default function RootLayout({
               name: SITE_NAME,
               url: SITE_URL,
               description: DEFAULT_DESC,
-              email: 'adrian@adrianmathtuition.com',
+              email: 'adrianmathtuition@gmail.com',
               telephone: '+65 9139 7985',
               address: { '@type': 'PostalAddress', addressLocality: 'Singapore', addressCountry: 'SG' },
               areaServed: ['Kovan', 'Hougang', 'Singapore'],

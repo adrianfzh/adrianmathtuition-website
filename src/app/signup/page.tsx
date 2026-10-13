@@ -618,8 +618,8 @@ function SignupContent() {
         <p className="mb-1">&copy; {new Date().getFullYear()} Adrian&apos;s Math Tuition &middot; Singapore</p>
         <p className="text-[0.75rem]">
           Questions about your data?{' '}
-          <a href="mailto:adrian@adrianmathtuition.com" className="text-[#818cf8] no-underline">
-            adrian@adrianmathtuition.com
+          <a href="mailto:adrianmathtuition@gmail.com" className="text-[#818cf8] no-underline">
+            adrianmathtuition@gmail.com
           </a>
         </p>
       </footer>
