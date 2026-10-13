@@ -71,5 +71,5 @@ Deadline: steps 2–7 done before **12 Nov 2026**; aim to finish by 1 Nov.
 
 ## Progress
 
-- 13 Oct 2026 — transfer to Vercel STARTED (paid US$11.25). Vercel warns the domain uses Vercel DNS once transferred; `docs/adrianmathtuition.com.zone` (website + the six rows) made for its zone-file upload box. After completion: dig @ns1.vercel-dns.com for every row, health-check, Resend test.
+- 13 Oct 2026 — transfer to Vercel STARTED (paid US$11.25). Vercel warns the domain uses Vercel DNS once transferred; `docs/adrianmathtuition.com.zone` (website + the six rows) made for its zone-file upload box — the upload FAILS ("not a DNS zone", same as the CLI) until the transfer completes; import it with `vercel dns import adrianmathtuition.com docs/adrianmathtuition.com.zone` the moment it does (Vercel defaults ALIAS @ + * keep the site up meanwhile). After completion: dig @ns1.vercel-dns.com for every row, health-check, Resend test.
 - 13 Oct 2026 — plan agreed, records snapshotted, reply_to fixed; Vercel chosen, site shows Gmail. Nameserver switch tried, site down ~15 min, reverted (see ⚠️). Next: transfer, step 1.
