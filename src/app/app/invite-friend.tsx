@@ -45,11 +45,13 @@ export default function InviteFriend({ link, tuition }: { link: string; tuition:
         type="button"
         onClick={() => setOpen(true)}
         className="flex items-center gap-1 rounded-full border border-navy/20 bg-white px-2 sm:px-2.5 py-1 text-xs font-semibold text-navy hover:bg-navy/5 active:scale-95 transition"
+        aria-label="Invite a friend" title="Invite a friend"
         aria-haspopup="dialog"
         aria-expanded={open}
       >
         <span aria-hidden>🎁</span>
-        Invite
+        {/* Word hidden on a tablet, where the tab row shares the bar (13 Oct 2026). */}
+        <span className="sm:hidden xl:inline">Invite</span>
       </button>
       {open && mounted && createPortal(
         <>

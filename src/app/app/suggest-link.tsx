@@ -5,14 +5,15 @@ import Link from 'next/link';
 
 export default function SuggestLink() {
   return (
-    <Link href="/app/suggestions"
+    <Link href="/app/suggestions" aria-label="Suggestions" title="Suggestions"
       className="flex items-center gap-1 rounded-full border border-navy/20 bg-white px-2 sm:px-2.5 py-1 text-xs font-semibold text-navy hover:bg-navy/5 active:scale-95 transition">
       {/* The sparkle — "something new" (his pick of seven, "G", 7 Oct 2026). */}
       <svg viewBox="0 0 24 24" className="w-4 h-4 -ml-0.5" aria-hidden>
         <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="#FDB913" stroke="#B77A00" strokeWidth="1.2" strokeLinejoin="round" />
         <path d="M18.5 15.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z" fill="#FDB913" stroke="#B77A00" strokeWidth="1" strokeLinejoin="round" />
       </svg>
-      Suggestions
+      {/* The word on a phone and a wide screen; on a tablet the tab row shares the bar, so the sparkle alone (Adrian, 13 Oct 2026: "the suggestions seems to clutter on the menu bar on an ipad"). */}
+      <span className="sm:hidden xl:inline">Suggestions</span>
     </Link>
   );
 }
