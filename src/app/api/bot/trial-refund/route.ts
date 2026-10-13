@@ -4,6 +4,7 @@
 // Idempotency-Key on the trial id).
 import { NextRequest, NextResponse } from 'next/server';
 import { safeEqual } from '@/lib/safe-equal';
+import { botInternalSecret } from '@/lib/bot-secret';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { refundCheck, type TrialRow } from '@/lib/trial-booking';
 import { refundPayment } from '@/lib/stripe-api';
@@ -11,7 +12,7 @@ import { refundPayment } from '@/lib/stripe-api';
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.BOT_INTERNAL_SECRET;
+  const secret = botInternalSecret();   // trimmed — the stored value ends in a newline (13 Oct 2026: every tap 401'd)
   if (!secret || !safeEqual(req.headers.get('authorization') ?? '', `Bearer ${secret}`)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
