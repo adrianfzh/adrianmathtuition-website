@@ -800,8 +800,10 @@ export default function ChatPage() {
 
       conversationHistoryRef.current.push({ role: 'user', content: text || '[image]' });
       conversationHistoryRef.current.push({ role: 'assistant', content: fullText });
-      if (conversationHistoryRef.current.length > 40) {
-        conversationHistoryRef.current = conversationHistoryRef.current.slice(-40); // 12 → 40, 6 Oct 2026 (longer memory; bot WEB_HISTORY_MAX)
+      if (conversationHistoryRef.current.length > 100) {
+        // 40 → 100, 13 Oct 2026 (Adrian: "Make same as telegram"): the bot squeezes everything
+        // past 40 into one summary (bot lib/web-history.js) and caps at the same WEB_HISTORY_MAX.
+        conversationHistoryRef.current = conversationHistoryRef.current.slice(-100);
       }
       try { localStorage.setItem('am_chat_last', String(Date.now())); } catch { /* noop */ }
       if (doneMessageId) {
