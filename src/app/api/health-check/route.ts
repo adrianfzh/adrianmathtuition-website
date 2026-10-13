@@ -171,6 +171,13 @@ export async function GET(req: NextRequest) {
       if (!(await r.text()).includes('does not work')) throw new Error('page rendered without expected content');
       return 'ok';
     }),
+    // The short sign-up link the bot sends on WhatsApp (13 Oct 2026): an unknown code must answer
+    // the plain "no longer works" page (410), not crash.
+    timed('short-link', async () => {
+      const r = await fetch('https://www.adrianmathtuition.com/j/AAAAAAAA', { signal: T(10000), redirect: 'manual' });
+      if (r.status !== 410) throw new Error(`HTTP ${r.status}`);
+      return 'ok';
+    }),
     timed('referral-landing', async () => {
       const r = await fetch('https://www.adrianmathtuition.com/r/recAAAAAAAAAAAAAA', { signal: T(10000) });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
