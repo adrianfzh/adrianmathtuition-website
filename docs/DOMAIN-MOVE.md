@@ -71,5 +71,6 @@ Deadline: steps 2–7 done before **12 Nov 2026**; aim to finish by 1 Nov.
 
 ## Progress
 
+- 13 Oct 2026 (evening) — transfer DONE at the registry: registrar Name.com (Vercel's partner), expiry 12 Nov 2027, nameservers still SiteGround. Vercel's own list still says "Third Party" and `vercel dns import` still answers "not a DNS zone" after 30 min of retries. Next: import the zone once Vercel catches up, check every row @ns1.vercel-dns.com, then NS → Vercel if Vercel has not done it.
 - 13 Oct 2026 — transfer to Vercel STARTED (paid US$11.25). Vercel warns the domain uses Vercel DNS once transferred; `docs/adrianmathtuition.com.zone` (website + the six rows) made for its zone-file upload box — the upload FAILS ("not a DNS zone", same as the CLI) until the transfer completes; import it with `vercel dns import adrianmathtuition.com docs/adrianmathtuition.com.zone` the moment it does (Vercel defaults ALIAS @ + * keep the site up meanwhile). After completion: dig @ns1.vercel-dns.com for every row, health-check, Resend test.
 - 13 Oct 2026 — plan agreed, records snapshotted, reply_to fixed; Vercel chosen, site shows Gmail. Nameserver switch tried, site down ~15 min, reverted (see ⚠️). Next: transfer, step 1.
