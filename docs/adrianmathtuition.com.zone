@@ -1,0 +1,14 @@
+$ORIGIN adrianmathtuition.com.
+$TTL 3600
+; Upload into Vercel's "Transfer In Domain" box (13 Oct 2026). See docs/DOMAIN-MOVE.md.
+; Website (Vercel)
+@                  IN A     216.198.79.1
+www                IN A     216.198.79.1
+; Resend (outgoing invoices, receipts, welcome emails)
+send               IN MX    10 feedback-smtp.ap-northeast-1.amazonses.com.
+send               IN TXT   "v=spf1 include:amazonses.com ~all"
+resend._domainkey  IN TXT   "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCgt1PQrZBkN+2UWRdJaTVO90oPRkTT2bbtzwfxFzO8OjT+wmfx3qDzgPrJaWTZEfwmFJUU00MWWGih2uOX0GQok8gsdJ6pO7Qpxgb/OtRNShQquHZXtAxFn/x64bDYdpaziCpnv1ZKEiSh+fKZgVJoSIfUjn7cmnP1Q23gdhBvrwIDAQAB"
+_dmarc             IN TXT   "v=DMARC1; p=none; aspf=r; adkim=r;"
+; Google Search Console
+@                  IN TXT   "google-site-verification=bqhqJkFiw6s8CYlUDOFAJjEwt3N1fRF494QhSR7IhDo"
+@                  IN TXT   "google-site-verification=QN9XvVYohoRNFbHlrbViSEW0SNKzZQILdTHS_wGSZTQ"
