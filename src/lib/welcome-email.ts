@@ -96,6 +96,7 @@ export async function sendWelcomeEmail(d: WelcomeEmailData, attachment?: Welcome
       body: JSON.stringify({
         from: "Adrian's Math Tuition <hello@adrianmathtuition.com>",
         to: d.parentEmail,
+        reply_to: 'adrianmathtuition@gmail.com',
         subject,
         html,
         ...(attachment ? { attachments: [{ filename: attachment.filename, content: attachment.contentBase64 }] } : {}),

@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from: "Adrian's Math Tuition <hello@adrianmathtuition.com>", to: parentEmail, subject: studentName ? `${studentName} — end of lessons at Adrian's Math Tuition` : `End of lessons — Adrian's Math Tuition`, html }),
+        body: JSON.stringify({ from: "Adrian's Math Tuition <hello@adrianmathtuition.com>", to: parentEmail, reply_to: 'adrianmathtuition@gmail.com', subject: studentName ? `${studentName} — end of lessons at Adrian's Math Tuition` : `End of lessons — Adrian's Math Tuition`, html }),
       });
       result.emailSent = res.ok;
     } catch { /* non-fatal */ }
