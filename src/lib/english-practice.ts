@@ -135,7 +135,8 @@ export function editingAccepts(schemeAnswer: string): { tick: boolean; words: st
   return { tick: false, words };
 }
 
-export interface EditingLine { label: string; where: string; scheme: string; note: string | null }
+/** `wrong` = the wrong word in the line (our own sets): the student must circle it, as in the exam. */
+export interface EditingLine { label: string; where: string; scheme: string; note: string | null; wrong?: string | null }
 export interface EditingSet { itemId: string; text: string; lines: EditingLine[]; rows?: { label: string | null; text: string }[] }
 
 /** An editing item is servable only with its lines in `parts`, each carrying an answer. */
@@ -149,16 +150,50 @@ export function toEditingSet(r: ItemRow): EditingSet | null {
   return lines.length >= 8 && lines.length === (r.parts ?? []).length ? { itemId: r.id, text: str(r.question_text), lines } : null;
 }
 
-export interface EditingResult { label: string; ok: boolean; yours: string; correct: string; note: string | null }
+/**
+ * One line's result. `circled` = the word the student circled (null = none / a tick);
+ * `circledOk` = it is the wrong word (null when the line has no circling to check);
+ * `wrongWord` = the line's wrong word, shown after the answer (null for a clean line).
+ */
+export interface EditingResult {
+  label: string; ok: boolean; yours: string; correct: string; note: string | null;
+  circled?: string | null; circledOk?: boolean | null; wrongWord?: string | null;
+}
+
+/**
+ * What the student gave for a line: a tick, or { circled, word } — the word they circled and their
+ * correction (13 Oct 2026, Adrian: "you have to fill in the correct word instead of identifying it
+ * then correcting it?" → circle, then correct, as in the exam). A bare string is the older answer
+ * (a correction with no circle) and is marked on the correction only.
+ */
+export type EditingAnswer = string | { circled?: unknown; word?: unknown };
 
 export function checkEditing(set: EditingSet, answers: Record<string, unknown>): { results: EditingResult[]; right: number; total: number } {
   const results = set.lines.map((l): EditingResult => {
-    const yours = str(answers[l.label]).slice(0, 60);
+    const a = answers[l.label];
+    const obj = a && typeof a === 'object' ? (a as { circled?: unknown; word?: unknown }) : null;
+    const yours = str(obj ? obj.word : a).slice(0, 60);
+    const circled = obj ? str(obj.circled).slice(0, 40) || null : null;
     const acc = editingAccepts(l.scheme);
-    const ok = yours !== '' && (acc.tick ? isTick(yours) : !isTick(yours) && acc.words.includes(norm(yours)));
-    return { label: l.label, ok, yours, correct: acc.tick ? '✓ (no error)' : l.scheme.replace(/\s*\([^)]*\)\s*/g, ' ').trim(), note: l.note };
+    const wrongWord = acc.tick ? null : (l.wrong ?? null);
+    const tick = isTick(yours) && !circled;
+    let circledOk: boolean | null = null;
+    if (obj && wrongWord) circledOk = !!circled && norm(circled) === norm(wrongWord);
+    else if (obj && acc.tick && circled) circledOk = false;
+    const wordOk = yours !== '' && (acc.tick ? tick : !tick && acc.words.includes(norm(yours)));
+    const ok = wordOk && circledOk !== false;
+    return { label: l.label, ok, yours: tick ? '✓' : yours, correct: acc.tick ? '✓ (no error)' : l.scheme.replace(/\s*\([^)]*\)\s*/g, ' ').trim(), note: l.note,
+      circled, circledOk, wrongWord };
   });
   return { results, right: results.filter(r => r.ok).length, total: results.length };
+}
+
+/** The words of a line a student can circle: each word once, its punctuation left outside. Pure. */
+export function lineWords(text: string): { before: string; word: string; after: string }[] {
+  return text.split(/\s+/).filter(Boolean).map(t => {
+    const m = /^([^A-Za-z0-9]*)(.*?)([^A-Za-z0-9]*)$/.exec(t)!;
+    return { before: m[1], word: m[2], after: m[3] };
+  });
 }
 
 // ── Short answers: a free rule where the answer is one exact thing ──────────

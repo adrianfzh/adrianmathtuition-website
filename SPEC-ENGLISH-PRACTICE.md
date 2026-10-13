@@ -49,6 +49,19 @@ immediate feedback when they submit"*.
   *Not seen yet:* the new layout with a real phone keyboard open — the simulator stopped showing
   its keyboard. Adrian to try one passage on his phone.
   Per-line marking is `POST { editing, line, answer }` — the same rule, nothing stored.
+- **Circle, then correct — as in the exam (13 Oct 2026).** Adrian: *"in the app, you have to fill in
+  the correct word instead of identifying it then correcting it?"* The real paper (checked against
+  2025 prelims from three schools) says: circle the wrong word, write the correct word. Now each word
+  of the line being asked is a button: tap the wrong word (it is circled; tap again to undo), type the
+  correction, Submit. **Right only when the circled word AND the correction are right**; a tick is
+  right only on a clean line. The answer is `{ circled, word }` or `'✓'`; a bare string (older page)
+  is marked on the correction only (`checkEditing` in `lib/english-practice.ts`, tested; the set's
+  `wrong` word rides on `EditingLine.wrong`, never sent to the page before the answer). After the
+  answer the real wrong word is circled green, a wrong circle red, and one plain line says which part
+  went wrong: "This line has no mistake" · "This line has a mistake" · "The wrong word is "x", not
+  "y"" · "Right word found, wrong correction" — then `wrong → right` and the note. Tapping a word
+  holds the keyboard (pointerdown is held), so the box does not jump. Checked at phone width with the
+  test student (13 Oct 2026); not yet with a real phone keyboard.
 - **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
   order; once all are done, the one done longest ago; never the one just finished
   (`nextEditing`, tested; done = an `english_practice_attempts` row of kind `editing`).

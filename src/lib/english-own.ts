@@ -233,6 +233,7 @@ export function ownEditingSet(s: OwnEditing): EditingSet {
       label: String(i + 1), where: `Line ${i + 1}`,
       scheme: l.wrong ? [l.right as string, ...(l.accept ?? [])].join(' / ') : '✓',
       note: l.wrong ? (l.note ?? null) : null,
+      wrong: l.wrong ?? null,
     })),
   };
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  buildShortPrompt, buildSummaryPrompt, checkEditing, editingAccepts, isTick, marksLine, parseShortReply, parseSummaryReply,
+  buildShortPrompt, buildSummaryPrompt, checkEditing, lineWords, editingAccepts, isTick, marksLine, parseShortReply, parseSummaryReply,
   parseUnitKey, passageLabel, publicUnit, ruleShort, schemeShown, servable, summaryContentMax, toEditingSet, toScheme, unitsOf, withinLimit, wordCount,
-  type ItemRow,
+  type EditingSet, type ItemRow,
 } from './english-practice';
 
 const ID = '86adf3be-7723-4f00-a8db-a2617cd55a72';
@@ -145,5 +145,35 @@ describe('what the student reads', () => {
 describe('what is shown after the check', () => {
   it('carries no mark codes', () => {
     expect(schemeShown({ answer: 'It was shut [1], so he lost his stall [1].', accept: [], points: [] }).answer).toBe('It was shut, so he lost his stall.');
+  });
+});
+
+// 13 Oct 2026 (Adrian): circle the wrong word, then correct it — as in the exam.
+describe('editing: circle, then correct', () => {
+  const set: EditingSet = { itemId: 'x', text: '', lines: [
+    { label: '1', where: 'Line 1', scheme: 'opened', note: 'Tense.', wrong: 'open' },
+    { label: '2', where: 'Line 2', scheme: '✓', note: null },
+  ] };
+  const one = (label: string, a: unknown) => checkEditing(set, { [label]: a }).results.find(r => r.label === label)!;
+  it('right only when the circle and the correction are both right', () => {
+    expect(one('1', { circled: 'open', word: 'opened' })).toMatchObject({ ok: true, circledOk: true, wrongWord: 'open' });
+    expect(one('1', { circled: 'stall', word: 'opened' })).toMatchObject({ ok: false, circledOk: false });
+    expect(one('1', { circled: 'Open', word: 'had' })).toMatchObject({ ok: false, circledOk: true });
+  });
+  it('a tick on a line with a mistake is wrong; on a clean line it is right', () => {
+    expect(one('1', '✓')).toMatchObject({ ok: false, yours: '✓' });
+    expect(one('2', '✓')).toMatchObject({ ok: true, wrongWord: null });
+  });
+  it('circling a word in a clean line is wrong', () => {
+    expect(one('2', { circled: 'the', word: 'a' })).toMatchObject({ ok: false, circledOk: false });
+  });
+  it('an old answer with no circle is marked on the correction', () => {
+    expect(one('1', 'opened').ok).toBe(true);
+  });
+  it('lineWords keeps punctuation outside the word', () => {
+    expect(lineWords('soup, and "it" grew.')).toEqual([
+      { before: '', word: 'soup', after: ',' }, { before: '', word: 'and', after: '' },
+      { before: '"', word: 'it', after: '"' }, { before: '', word: 'grew', after: '.' },
+    ]);
   });
 });
