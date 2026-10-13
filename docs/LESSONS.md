@@ -308,6 +308,40 @@ and transition and the pose still shows.
   (no dev server) is the previous sessions' `preview.mjs` recipe: pull `CHARACTER_CSS` and
   the `<svg>` out of the TSX, swap the JSX attribute names, stamp six copies with `data-pose`.
 
+## 🎬 Video extras around the board (13 Oct 2026) — APPROVED, NOT BUILT
+
+Adrian asked whether Seedance / Kling / Hailuo can make his teaching clips. Answer agreed:
+**not the maths** — video models draw pictures of symbols (wrong digits, no word-level timing,
+nothing editable), so every equation stays on the chalk board. They are used only for extras
+around it. Three test clips were made on 12–13 Oct with his own fal.ai pipeline
+(`~/Desktop/ai-video-pipeline`, its own git repo — README there; `npm run pipeline story/<x>.json`,
+resumable, `FAL_KEY` in its `.env`):
+
+| Clip | Story file | Output | Adrian |
+|---|---|---|---|
+| Ball thrown in the air, 5 s, real-life opener for Completing the Square | `story/opener-ball-throw.json` | `out/opener-ball-throw/opener-ball-throw.mp4` (1080×1920; arc slightly uneven, the boy hops) | "let's try it" |
+| The approved tutor waves hello, 5 s | `story/tutor-hello.json` | `out/tutor-hello/tutor-hello-square.mp4` (960², no voice) | yes |
+| The tutor cheers, 5 s, voice "Yes! You got it. Well done!" in the lesson voice (`English_FriendlyPerson`, happy), the model's own sound dropped | `story/tutor-cheer.json` | `out/tutor-cheer/tutor-cheer.mp4` (960²) | asked for a better voice → this version |
+
+The tutor clips start from `public/lessons/characters/tutor/{idle,cheer}.png` on a plain
+`#2a3631` square (keyframe supplied by hand in `out/<slug>/keyframes/s01.png`; Kling v3
+image-to-video; the character stays consistent). Cost ≈ US$0.20 per 5 s clip.
+
+**Agreed next (Adrian, 13 Oct 2026: "yes"):**
+1. **Fix the tutor's shirt first** — the known flaw above: the cut-out removed his white hair
+   and shirt, which shows as a dark shirt once he moves. Regenerate the six PNGs with the white
+   kept (or a non-white shirt), then re-make the hello + cheer clips from the new pictures.
+2. **Completing the Square (`quadratic-functions-am`), admin + preview student only:** play the
+   ball opener → the tutor's hello → the chalk board as now; the cheer after a correct check.
+   Needs a small player addition (a video beat/intro + a cheer on a right answer), additive like
+   every earlier change — scripts without it play byte-identically.
+3. Adrian watches on his phone and decides whether students see it (a `*_OPEN_TO_STUDENTS`
+   switch + a `docs/SWITCHES.md` row).
+
+Rules that still apply: no model names on student screens, the tutor never named, the
+installed-app / phone autoplay rules in § A clip, and the readability rule (check it rendered,
+on a phone).
+
 ## Stickers (1 Oct 2026) — a reaction picture for the beat
 
 Adrian: *"do the stickers"* — the small reaction pictures 洋葱学园 / 作业帮 clips drop on the
