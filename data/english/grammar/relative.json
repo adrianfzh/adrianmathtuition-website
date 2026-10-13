@@ -1,0 +1,24 @@
+{
+  "kind": "relative",
+  "name": "who, which, that",
+  "tag": "a tree who → which",
+  "rule": [
+    "'Who' is for people.",
+    "'Which' or 'that' is for things, animals and places."
+  ],
+  "wrong": {
+    "text": "We sat under a tree who gave lots of shade.",
+    "word": "who"
+  },
+  "right": {
+    "text": "We sat under a tree which gave lots of shade.",
+    "word": "which"
+  },
+  "spot": "Look at the word just before who / which. Is it a person or not?",
+  "deeper": [
+    "'Whose' shows owning, for people and things: the girl whose bag was lost.",
+    "'Where' is for places when the next part has its own doer: the shop where we met.",
+    "Animals usually take 'which' or 'that': a dog which barks."
+  ],
+  "extra": []
+}

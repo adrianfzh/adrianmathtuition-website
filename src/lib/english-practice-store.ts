@@ -15,6 +15,8 @@ import {
 } from './english-practice';
 import { editingLevel, isEditing, nextEditing, type EditLevel, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
 import { OWN_EDITING, OWN_READING, ownByUuid } from './english-own-data';
+import { kindRecord, type KindRecord } from './english-grammar';
+import type { EditKind } from './english-own';
 import { enqueuePlanRead, getPlanRead, planReadsFor, planReadsSince, setPlanReadMeta, type PlanRead } from './plan-reads';
 
 // ── Editing ─────────────────────────────────────────────────────────────────
@@ -43,6 +45,13 @@ export async function nextEditingFor(identity: string, level: EditLevel, after?:
   const ids = (await loadEditingList()).filter(e => e.level === level).map(e => e.itemId);
   const doneAt = await editingDoneAt(identity).catch(() => ({} as Record<string, string>));
   return { itemId: nextEditing(ids, doneAt, after), done: ids.filter(id => doneAt[id]).length, total: ids.length };
+}
+
+/** This person's record per mistake kind, from their handed-in editing passages (the grammar map). */
+export async function grammarRecordFor(identity: string): Promise<Record<EditKind, KindRecord>> {
+  const { data } = await getSupabaseAdmin().from('english_practice_attempts').select('item_id, result')
+    .eq('identity', identity).eq('kind', 'editing').order('created_at', { ascending: false }).limit(400);
+  return kindRecord(OWN_EDITING, (data ?? []) as { item_id: string; result: unknown }[]);
 }
 
 // ── Reading sets: one text and the questions on it ──────────────────────────

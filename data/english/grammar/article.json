@@ -1,0 +1,24 @@
+{
+  "kind": "article",
+  "name": "a or an",
+  "tag": "a hour → an hour",
+  "rule": [
+    "Use 'an' before a vowel SOUND: an apple, an hour.",
+    "Use 'a' before every other sound: a dog, a uniform."
+  ],
+  "wrong": {
+    "text": "We waited for a hour at the clinic.",
+    "word": "a"
+  },
+  "right": {
+    "text": "We waited for an hour at the clinic.",
+    "word": "an"
+  },
+  "spot": "Say the next word out loud. Listen to its first sound, not its first letter.",
+  "deeper": [
+    "'Hour' and 'honest' start with a vowel sound: the h is silent.",
+    "'University' and 'one' start with a 'y' or 'w' sound, so: a university, a one-day trip.",
+    "It is the word straight after that counts: an old car, but a new car."
+  ],
+  "extra": []
+}

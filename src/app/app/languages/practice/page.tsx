@@ -75,6 +75,13 @@ export default async function EnglishPracticePage({ searchParams }: { searchPara
           <p className="text-[13px] text-gray-500 mt-0.5">Twelve lines. Find the wrong word in eight of them.</p>
           <p className="text-[13px] text-gray-500">Choose how hard, then start. The passages come one at a time.</p>
           {editing.length > 0 ? <EditingStart levels={levels} /> : <p className="py-3 text-[14px] text-gray-500">Nothing here yet.</p>}
+          <Link href="/app/languages/practice/editing/map" className="mt-2 flex items-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-3.5 py-2.5">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[14px] font-semibold text-navy">Grammar map</span>
+              <span className="block text-[12px] text-gray-500">The 16 kinds of mistake, and how you are doing on each</span>
+            </span>
+            <span aria-hidden className="text-violet-700 font-bold">›</span>
+          </Link>
         </section>
       )}
 

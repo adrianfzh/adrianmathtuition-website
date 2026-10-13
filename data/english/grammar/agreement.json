@@ -1,0 +1,25 @@
+{
+  "kind": "agreement",
+  "name": "Verb matches the doer",
+  "tag": "the boys was → were",
+  "rule": [
+    "Find who is doing the action.",
+    "One doer: is, was, has, runs.",
+    "More than one: are, were, have, run."
+  ],
+  "wrong": {
+    "text": "The cups on the shelf was all chipped.",
+    "word": "was"
+  },
+  "right": {
+    "text": "The cups on the shelf were all chipped.",
+    "word": "were"
+  },
+  "spot": "Cover the words in between ('on the shelf') and match the verb to the doer.",
+  "deeper": [
+    "'Everyone', 'nobody' and 'each' count as one: everyone is here.",
+    "Two doers joined by 'and' count as many: Ali and Mei are late.",
+    "With 'he', 'she' or 'it', today's verb takes -s: she walks."
+  ],
+  "extra": []
+}

@@ -1,0 +1,24 @@
+{
+  "kind": "participle",
+  "name": "have gone, not have went",
+  "tag": "has went → gone",
+  "rule": [
+    "After have, has, had, is, was or been, use the third form of the verb.",
+    "go → went → gone. After 'have' it is 'gone'."
+  ],
+  "wrong": {
+    "text": "By noon, all the tickets had went.",
+    "word": "went"
+  },
+  "right": {
+    "text": "By noon, all the tickets had gone.",
+    "word": "gone"
+  },
+  "spot": "See 'have', 'had' or 'was' just before the verb? Check it is the third form.",
+  "deeper": [
+    "Learn the three forms together: give, gave, given · write, wrote, written · take, took, taken.",
+    "'Was' or 'is' before it means something was done to the thing: the window was broken.",
+    "For most verbs the second and third forms are the same: walked, walked."
+  ],
+  "extra": []
+}

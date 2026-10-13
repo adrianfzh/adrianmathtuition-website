@@ -1,0 +1,24 @@
+{
+  "kind": "tense",
+  "name": "Keep the time the same",
+  "tag": "it starts → it started",
+  "rule": [
+    "A passage stays in one time unless something changes it.",
+    "A story told in the past keeps its verbs in the past."
+  ],
+  "wrong": {
+    "text": "Last night we went to the hall, but the show starts late.",
+    "word": "starts"
+  },
+  "right": {
+    "text": "Last night we went to the hall, but the show started late.",
+    "word": "started"
+  },
+  "spot": "Read the lines before. Which time is the passage in? Check this verb fits.",
+  "deeper": [
+    "'Had' + third form: an earlier past, before another past event.",
+    "Facts that are always true stay in today's time: the sun rises in the east.",
+    "After 'when' or 'if' about the future, use today's form: when he arrives, we will eat."
+  ],
+  "extra": []
+}

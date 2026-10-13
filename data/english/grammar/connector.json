@@ -1,0 +1,25 @@
+{
+  "kind": "connector",
+  "name": "Linking words",
+  "tag": "tired so … → but",
+  "rule": [
+    "A linking word shows how two ideas fit.",
+    "'And' adds. 'But' and 'although' show a contrast.",
+    "'Because' gives a reason. 'So' gives a result."
+  ],
+  "wrong": {
+    "text": "He was very tired, so he kept on studying.",
+    "word": "so"
+  },
+  "right": {
+    "text": "He was very tired, but he kept on studying.",
+    "word": "but"
+  },
+  "spot": "Read the two ideas on each side. Does the second one surprise you? Then it is a contrast.",
+  "deeper": [
+    "'Although' and 'but' do the same job; never use both in one sentence.",
+    "'However' starts a new sentence and takes a comma: However, it rained.",
+    "'Unless' means 'if not': we will go unless it rains."
+  ],
+  "extra": []
+}

@@ -1,0 +1,25 @@
+{
+  "kind": "pronoun",
+  "name": "he, him, his",
+  "tag": "help she → her",
+  "rule": [
+    "The one doing the action: I, he, she, we, they.",
+    "The one receiving it: me, him, her, us, them.",
+    "The owner: my, his, her, our, their."
+  ],
+  "wrong": {
+    "text": "The coach told we to warm up first.",
+    "word": "we"
+  },
+  "right": {
+    "text": "The coach told us to warm up first.",
+    "word": "us"
+  },
+  "spot": "Ask who the word points to, and whether that person is doing or receiving.",
+  "deeper": [
+    "After words like 'to', 'with' and 'for', use the receiving form: with him, for them.",
+    "A group of people takes 'their', not 'its': the players and their coach.",
+    "Check the word still matches when it points back many lines earlier."
+  ],
+  "extra": []
+}

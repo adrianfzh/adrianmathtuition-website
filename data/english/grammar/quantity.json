@@ -1,0 +1,49 @@
+{
+  "kind": "quantity",
+  "name": "much or many",
+  "tag": "much people → many",
+  "rule": [
+    "'Many' and 'few' go with things you can count: many chairs, few cars.",
+    "'Much' and 'little' go with things you cannot count: much rice, little time."
+  ],
+  "wrong": {
+    "text": "There were too much people in the lift.",
+    "word": "much"
+  },
+  "right": {
+    "text": "There were too many people in the lift.",
+    "word": "many"
+  },
+  "spot": "Can you put a number in front of the thing (three people)? Then it is 'many'.",
+  "deeper": [
+    "'Fewer' for counted things, 'less' for the rest: fewer cars, less noise.",
+    "'A number of' goes with counted things; 'an amount of' with the rest.",
+    "Money, water, time and advice cannot be counted this way: much advice."
+  ],
+  "extra": [
+    {
+      "text": "Grandma did not need much reasons to bake a cake on a Sunday.",
+      "wrong": "much",
+      "right": "many",
+      "note": "Reasons can be counted, so it is 'many'."
+    },
+    {
+      "text": "We did not have many time left, so we ran to the bus stop.",
+      "wrong": "many",
+      "right": "much",
+      "note": "Time is not counted this way, so it is 'much'."
+    },
+    {
+      "text": "The new shop does not get much visitors on weekday mornings.",
+      "wrong": "much",
+      "right": "many",
+      "note": "Visitors can be counted, so it is 'many'."
+    },
+    {
+      "text": "After the storm, there was too many water on the court to play.",
+      "wrong": "many",
+      "right": "much",
+      "note": "Water is not counted one by one, so it is 'much'."
+    }
+  ]
+}

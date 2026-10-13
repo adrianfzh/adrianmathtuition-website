@@ -1,0 +1,24 @@
+{
+  "kind": "comparison",
+  "name": "Comparing two or more",
+  "tag": "more fast → faster",
+  "rule": [
+    "Comparing two things: -er or 'more' (taller, more careful).",
+    "Comparing three or more: -est or 'most' (tallest, most careful)."
+  ],
+  "wrong": {
+    "text": "This road is busiest than the one near school.",
+    "word": "busiest"
+  },
+  "right": {
+    "text": "This road is busier than the one near school.",
+    "word": "busier"
+  },
+  "spot": "'Than' after it means two things: use the -er or 'more' form.",
+  "deeper": [
+    "Short words take -er: big → bigger. Long words take 'more': more beautiful.",
+    "Never both: 'more taller' is wrong.",
+    "Odd ones: good → better → best; bad → worse → worst."
+  ],
+  "extra": []
+}

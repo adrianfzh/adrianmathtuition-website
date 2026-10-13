@@ -136,7 +136,7 @@ export function editingAccepts(schemeAnswer: string): { tick: boolean; words: st
 }
 
 /** `wrong` = the wrong word in the line (our own sets): the student must circle it, as in the exam. */
-export interface EditingLine { label: string; where: string; scheme: string; note: string | null; wrong?: string | null }
+export interface EditingLine { label: string; where: string; scheme: string; note: string | null; wrong?: string | null; kind?: string | null }
 export interface EditingSet { itemId: string; text: string; lines: EditingLine[]; rows?: { label: string | null; text: string }[] }
 
 /** An editing item is servable only with its lines in `parts`, each carrying an answer. */
@@ -158,6 +158,8 @@ export function toEditingSet(r: ItemRow): EditingSet | null {
 export interface EditingResult {
   label: string; ok: boolean; yours: string; correct: string; note: string | null;
   circled?: string | null; circledOk?: boolean | null; wrongWord?: string | null;
+  /** the mistake's kind (EDIT_KIND_WEIGHT) — opens its crash course ("Learn this"); shown only after the answer */
+  kind?: string | null;
 }
 
 /**
@@ -183,7 +185,7 @@ export function checkEditing(set: EditingSet, answers: Record<string, unknown>):
     const wordOk = yours !== '' && (acc.tick ? tick : !tick && acc.words.includes(norm(yours)));
     const ok = wordOk && circledOk !== false;
     return { label: l.label, ok, yours: tick ? '✓' : yours, correct: acc.tick ? '✓ (no error)' : l.scheme.replace(/\s*\([^)]*\)\s*/g, ' ').trim(), note: l.note,
-      circled, circledOk, wrongWord };
+      circled, circledOk, wrongWord, kind: wrongWord ? (l.kind ?? null) : null };
   });
   return { results, right: results.filter(r => r.ok).length, total: results.length };
 }

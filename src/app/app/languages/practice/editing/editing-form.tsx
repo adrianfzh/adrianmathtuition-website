@@ -21,22 +21,15 @@ import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import Link from 'next/link';
 import { lineWords, type EditingAnswer, type EditingResult } from '@/lib/english-practice';
+import { GRAMMAR, isEditKind } from '@/lib/english-grammar';
+import type { EditKind } from '@/lib/english-own';
+import { verdict } from './editing-verdict';
+import GrammarSheet from './grammar-sheet';
 
 const CARD = 'bg-white rounded-3xl border border-black/5 shadow-sm';
 const API = '/api/portal/english/practice';
 type Phase = 'ask' | 'shown' | 'done';
 const same = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
-
-/** The plain words under a marked line: what went wrong, then the fix. */
-function verdict(r: EditingResult): { head: string; fix: string | null } {
-  const fix = r.wrongWord ? `${r.wrongWord} → ${r.correct}` : null;
-  if (r.ok) return { head: r.wrongWord ? '✓ Right' : '✓ Right, no mistake', fix };
-  if (!r.wrongWord) return { head: '✗ This line has no mistake', fix: null };
-  if (r.yours === '✓') return { head: '✗ This line has a mistake', fix };
-  if (r.circledOk === false) return { head: `✗ The wrong word is "${r.wrongWord}", not "${r.circled}"`, fix };
-  if (r.circledOk === true) return { head: '✗ Right word found, wrong correction', fix };
-  return { head: `✗ ${r.yours}`, fix };
-}
 
 export default function EditingForm({ itemId, text, rows, lines, nextHref, levelName, progress }: {
   itemId: string; text: string; rows: { label: string | null; text: string }[] | null; lines: { label: string; where: string }[]; nextHref: string | null;
@@ -50,6 +43,7 @@ export default function EditingForm({ itemId, text, rows, lines, nextHref, level
   const [results, setResults] = useState<Record<string, EditingResult>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [learn, setLearn] = useState<EditKind | null>(null);
   const input = useRef<HTMLInputElement>(null);
   const top = useRef<HTMLDivElement>(null);
   const line = lines[at];
@@ -99,8 +93,17 @@ export default function EditingForm({ itemId, text, rows, lines, nextHref, level
     setTimeout(() => top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
   };
 
+  // "Learn this" under a line that has a mistake and was not got right (13 Oct 2026: the crash course)
+  const Pill = ({ r }: { r: EditingResult }) => (!r.ok && isEditKind(r.kind) ? (
+    <button type="button" onPointerDown={e => e.preventDefault()} onClick={() => setLearn(r.kind as EditKind)}
+      className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300 px-2.5 py-1 text-[12px] font-semibold">
+      <span aria-hidden>💡</span> Learn this: {GRAMMAR[r.kind as EditKind].name} · 1 min ›
+    </button>
+  ) : null);
+
   return (
     <div className="space-y-4 pb-28 sm:pb-6">
+      {learn && <GrammarSheet kind={learn} notSet={itemId} onClose={() => setLearn(null)} />}
       <div className="pt-1 scroll-mt-24" ref={top}>
         <Link href="/app/languages/practice?t=editing" className="text-xs text-gray-500">‹ Editing</Link>
         <h1 className="text-xl font-bold text-navy mt-1">Editing</h1>
@@ -154,6 +157,7 @@ export default function EditingForm({ itemId, text, rows, lines, nextHref, level
                       <p className="text-[13px] leading-snug">
                         <span className={`font-semibold ${res.ok ? 'text-emerald-700' : 'text-red-600'}`}>{v.head}</span>
                         {v.fix && <><span className="text-gray-500"> · </span><b className="text-emerald-700">{v.fix}</b></>}
+                        {!res.ok && isEditKind(res.kind) && <><br /><Pill r={res} /></>}
                       </p>
                     ); })()}
                   </div>
@@ -166,6 +170,7 @@ export default function EditingForm({ itemId, text, rows, lines, nextHref, level
                         <p className={`text-[15px] font-bold ${shown.ok ? 'text-emerald-700' : 'text-red-600'}`}>{verdict(shown).head}</p>
                         {verdict(shown).fix && <p className="text-[15px] font-bold text-emerald-700">{verdict(shown).fix}</p>}
                         {!shown.ok && shown.note && <p className="text-[13px] leading-snug text-gray-700">{shown.note}</p>}
+                        <Pill r={shown} />
                       </div>
                     )}
                     <form className="flex items-center gap-2" onSubmit={e => { e.preventDefault(); if (phase === 'ask') void submit(value); else void next(); }}>

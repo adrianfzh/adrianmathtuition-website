@@ -62,25 +62,36 @@ immediate feedback when they submit"*.
   "y"" · "Right word found, wrong correction" — then `wrong → right` and the note. Tapping a word
   holds the keyboard (pointerdown is held), so the box does not jump. Checked at phone width with the
   test student (13 Oct 2026); not yet with a real phone keyboard.
-- **NEXT — crash course + grammar map (agreed shape 13 Oct 2026, not built).** Adrian: *"add like a
-  link say to mini crash course about that particular error … a pop up? And will keep linking
-  students to go deeper and deeper should they wish to learn more? A graph?"* — shown a mock-up, chose
-  to build it in a fresh session. Build order:
-  1. **The link + pop-up.** Under a marked line (wrong, a tick on a line with a mistake, or a lucky
-     right), a pill "Learn this: <kind> · 1 min ›". It opens a bottom sheet over the passage (the place
-     is kept): the rule in one or two lines, one ✗ and one ✓ example, then **Try 3** — three single
-     lines of the same kind taken from OUR passages (216 tagged error lines + clean lines), answered
-     the same way (circle, then correct), marked by `checkEditing`. Buttons: Try 3 · Go deeper ›.
-  2. **The grammar map** (`/app/languages/practice/editing/map`): the 16 kinds of `EDIT_KIND_WEIGHT`
-     as boxes, easier at the top (weight 1) to harder at the foot (weight 3), lines joining a kind to
-     the ones that build on it; each box coloured by the student's own record from
-     `english_practice_attempts` (per-line ok × the line's `kind`): green strong · amber shaky · red
-     weak · grey not tried. Tap a box → its lesson + Try 3.
-  - **To write:** 16 short lessons, one per kind, our own words, checked (one idea per line; no
-    jargon a Sec 3 student would not know — "doing / receiving the action", not "subject / object
-    case"). Store as data (`data/english/grammar/<kind>.json`) with a test that every kind has one.
-  - Stays behind `ENGLISH_PRACTICE_OPEN_TO_STUDENTS`. Readability rule; the app never names Adrian
-    or a model. Health-check + APP-MAP row for the map page.
+- **Crash course + grammar map — BUILT 13 Oct 2026** (Adrian: *"add like a link say to mini crash
+  course about that particular error … a pop up? And will keep linking students to go deeper and
+  deeper should they wish to learn more? A graph?"* → "yes, build it").
+  - **The lessons**: 16, one per kind of `EDIT_KIND_WEIGHT`, in our own words —
+    `data/english/grammar/<kind>.json`: a plain name and a tag ("One or many · book → books"), the rule
+    in 1–3 short lines, one ✗ and one ✓ sentence (differing in that one word), "How to spot it", and
+    "Go deeper" points. Read by `lib/english-grammar.ts` (`GRAMMAR`). Tested: every kind has a lesson,
+    lines are short, the ✗/✓ pair differs in exactly the marked word, and no lesson uses a grammar word
+    a Sec 3 student may not know (subject, object, noun, adjective, participle, clause, …).
+  - **The pill + pop-up**: under a marked line that has a mistake and was not got right, a pill
+    "💡 Learn this: <name> · 1 min ›" (`editing-form.tsx`; the line's `kind` rides on the result, only
+    after the answer). It opens `editing/grammar-sheet.tsx`, a bottom sheet drawn on `<body>` (so the
+    bottom tab bar cannot sit over it) — the passage keeps its place. Learn → **Try 3** → **Go deeper**
+    (more points, "Next on this path ›" which opens the next kind's lesson, "See the grammar map ›").
+  - **Try 3**: three single lines of that kind from OUR passages (`drillPool` — every tagged error
+    line) plus a lesson's own `extra` lines where the passages are thin (much / many and a / the each
+    have 3–4). Not the lines just seen, not from the passage being done. The line before and after are
+    shown grey for sense, **with their own mistakes already put right** (`fixedLine`, tested) so they
+    never teach a mistake. Answered as in the exam (tap, then type), marked by the same `checkEditing`.
+    Door `GET|POST /api/portal/english/grammar` — nothing stored.
+  - **The grammar map** `/app/languages/practice/editing/map` (linked under Start on the Editing tab):
+    the 16 kinds on six paths (`GRAMMAR_PATHS`: Verbs and time · Who does it · Counting · a, an, the ·
+    Describing · Joining ideas), easier at the top of each path, harder at the foot, a line joining each
+    box to the one it builds on. Each box is coloured by the student's own record — handed-in passages
+    in `english_practice_attempts` (each stored line's ok × that line's kind, `kindRecord`):
+    green ≥ 80% over 3+ tries · red under 50% · amber between · grey not tried. Shows "n of m right".
+    Tap → the lesson + Try 3.
+  - *Not yet:* Try 3 answers are not stored, so they do not move the map colours (that needs a new
+    `kind` on `english_practice_attempts` — a migration). Not seen with a real phone keyboard open
+    inside the pop-up. Checked at phone width with the test student, 13 Oct 2026.
 - **No repeats until the level is used up**: a passage not yet handed in comes first, in the sets'
   order; once all are done, the one done longest ago; never the one just finished
   (`nextEditing`, tested; done = an `english_practice_attempts` row of kind `editing`).

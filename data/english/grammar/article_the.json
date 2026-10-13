@@ -1,0 +1,43 @@
+{
+  "kind": "article_the",
+  "name": "a or the",
+  "tag": "a sun → the sun",
+  "rule": [
+    "Use 'a' for any one thing, met for the first time.",
+    "Use 'the' for a thing already mentioned, or the only one there is."
+  ],
+  "wrong": {
+    "text": "I bought a kite and a ball. A kite broke on the first day.",
+    "word": "A"
+  },
+  "right": {
+    "text": "I bought a kite and a ball. The kite broke on the first day.",
+    "word": "The"
+  },
+  "spot": "Has the thing come up before, or is there only one? Then it is 'the'.",
+  "deeper": [
+    "Only one: the sun, the sea, the principal of our school.",
+    "With the -est words: the tallest, the best.",
+    "With a plain job or kind: she is a nurse."
+  ],
+  "extra": [
+    {
+      "text": "Dad found an old radio in the store room. He said a radio still worked.",
+      "wrong": "a",
+      "right": "the",
+      "note": "It is the same radio, already mentioned, so it is 'the radio'."
+    },
+    {
+      "text": "On the trip, we watched a sun set slowly behind the hills.",
+      "wrong": "a",
+      "right": "the",
+      "note": "There is only one sun, so it is 'the sun'."
+    },
+    {
+      "text": "Mei won the race and then gave a medal to her grandmother.",
+      "wrong": "a",
+      "right": "the",
+      "note": "It is the medal she just won, so it is 'the medal'."
+    }
+  ]
+}

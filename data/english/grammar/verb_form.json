@@ -1,0 +1,25 @@
+{
+  "kind": "verb_form",
+  "name": "The verb's shape",
+  "tag": "enjoy swim → swimming",
+  "rule": [
+    "Some words decide the shape of the verb after them.",
+    "After can, will, must, should: the plain verb (can swim).",
+    "After enjoy, keep, stop, avoid: the -ing form (enjoy swimming)."
+  ],
+  "wrong": {
+    "text": "My brother enjoys build model planes.",
+    "word": "build"
+  },
+  "right": {
+    "text": "My brother enjoys building model planes.",
+    "word": "building"
+  },
+  "spot": "Look at the word just before the verb. Does it call for plain, 'to', or -ing?",
+  "deeper": [
+    "After 'to' the verb stays plain: to eat, to play.",
+    "Two verbs joined by 'and' or 'or' take the same shape: washing and drying.",
+    "After words like 'for', 'by' and 'without', use -ing: by working hard."
+  ],
+  "extra": []
+}

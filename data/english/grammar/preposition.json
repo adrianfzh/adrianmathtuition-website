@@ -1,0 +1,24 @@
+{
+  "kind": "preposition",
+  "name": "Small place and time words",
+  "tag": "good in maths → at",
+  "rule": [
+    "Small words like in, on, at and with are fixed by the words around them.",
+    "They are learnt in pairs: good at, afraid of, interested in."
+  ],
+  "wrong": {
+    "text": "My sister is very good in drawing.",
+    "word": "in"
+  },
+  "right": {
+    "text": "My sister is very good at drawing.",
+    "word": "at"
+  },
+  "spot": "Read the whole phrase aloud. Does the pair sound like one you have heard?",
+  "deeper": [
+    "Time: at 3 pm, on Monday, in June.",
+    "Place: at the bus stop, on the table, in the box.",
+    "Common pairs: proud of, depend on, agree with, arrive at."
+  ],
+  "extra": []
+}

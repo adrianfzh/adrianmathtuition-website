@@ -234,6 +234,7 @@ export function ownEditingSet(s: OwnEditing): EditingSet {
       scheme: l.wrong ? [l.right as string, ...(l.accept ?? [])].join(' / ') : '✓',
       note: l.wrong ? (l.note ?? null) : null,
       wrong: l.wrong ?? null,
+      kind: l.wrong ? (l.kind ?? null) : null,
     })),
   };
 }

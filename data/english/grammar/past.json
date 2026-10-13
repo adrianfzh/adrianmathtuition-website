@@ -1,0 +1,24 @@
+{
+  "kind": "past",
+  "name": "Missing -ed",
+  "tag": "he walk → walked",
+  "rule": [
+    "When the story is in the past, the verb shows it.",
+    "Most verbs add -ed: walk → walked, cook → cooked."
+  ],
+  "wrong": {
+    "text": "Last week, the class clean the whole beach.",
+    "word": "clean"
+  },
+  "right": {
+    "text": "Last week, the class cleaned the whole beach.",
+    "word": "cleaned"
+  },
+  "spot": "Look for a time word (yesterday, last year) or other past verbs in the same sentence.",
+  "deeper": [
+    "Two verbs joined by 'and' stay in the same time: she washed and dried.",
+    "After 'have', 'has' or 'had' the -ed is also needed: they have walked.",
+    "Some verbs change instead: go → went, buy → bought."
+  ],
+  "extra": []
+}

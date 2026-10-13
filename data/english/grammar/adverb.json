@@ -1,0 +1,24 @@
+{
+  "kind": "adverb",
+  "name": "How it is done",
+  "tag": "drives careful → carefully",
+  "rule": [
+    "A word that tells HOW something is done usually ends in -ly.",
+    "She drives carefully. He spoke softly."
+  ],
+  "wrong": {
+    "text": "The old man walked slow up the stairs.",
+    "word": "slow"
+  },
+  "right": {
+    "text": "The old man walked slowly up the stairs.",
+    "word": "slowly"
+  },
+  "spot": "Is the word describing an action (walk, speak, work)? Then it needs the -ly form.",
+  "deeper": [
+    "'Good' describes a thing; 'well' describes an action: a good singer sings well.",
+    "After 'is', 'feels' or 'looks' keep the plain word: the soup smells good.",
+    "Some words stay the same: fast, hard, early."
+  ],
+  "extra": []
+}

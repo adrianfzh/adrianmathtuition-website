@@ -356,6 +356,15 @@ export async function GET(req: NextRequest) {
       if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
       return `401 · page ${p.status}`;
     }),
+    // The editing crash course + grammar map (13 Oct 2026): the Try door answers 401 to a stranger, the map page exists.
+    timed('portal-english-grammar', async () => {
+      const r = await fetch(`${base}/api/portal/english/grammar?kind=number`, { signal: T(10000) });
+      if (r.status !== 401) throw new Error(`anonymous GET answered ${r.status}, expected 401`);
+      const p = await fetch(`${base}/app/languages/practice/editing/map`, { redirect: 'manual', signal: T(10000) });
+      if (p.status === 404) throw new Error('/app/languages/practice/editing/map is missing');
+      if (p.status >= 500) throw new Error(`page HTTP ${p.status}`);
+      return `401 · page ${p.status}`;
+    }),
     // English listening + oral (8 Oct 2026, SPEC-ENGLISH-ORAL-LISTENING.md): the doors answer 401 to a
     // stranger, the pages exist, and the first recording is really there to be played.
     timed('portal-english-listening', async () => {

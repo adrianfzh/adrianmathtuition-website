@@ -1,0 +1,24 @@
+{
+  "kind": "word_class",
+  "name": "Word families",
+  "tag": "patient → patience",
+  "rule": [
+    "One word has a family: patient, patience, patiently.",
+    "The space in the sentence decides which family member fits."
+  ],
+  "wrong": {
+    "text": "The nurse showed great patient with the child.",
+    "word": "patient"
+  },
+  "right": {
+    "text": "The nurse showed great patience with the child.",
+    "word": "patience"
+  },
+  "spot": "After 'a', 'the', 'great' or 'my' a thing word is needed. After 'is' or 'very' a describing word.",
+  "deeper": [
+    "Feelings: a person feels bored; the thing that causes it is boring.",
+    "Common endings for thing words: -ness, -ment, -ion, -ence.",
+    "Common endings for describing words: -ful, -ous, -ive, -able."
+  ],
+  "extra": []
+}

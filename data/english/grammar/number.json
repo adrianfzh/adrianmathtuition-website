@@ -1,0 +1,24 @@
+{
+  "kind": "number",
+  "name": "One or many",
+  "tag": "book → books",
+  "rule": [
+    "A number word before a thing means more than one.",
+    "So the thing takes -s: three books, several friends."
+  ],
+  "wrong": {
+    "text": "She bought three new book for school.",
+    "word": "book"
+  },
+  "right": {
+    "text": "She bought three new books for school.",
+    "word": "books"
+  },
+  "spot": "Look left of the thing for a count: two, many, several, a few, all.",
+  "deeper": [
+    "'One of the …' needs the plural too: one of the boys.",
+    "Some words do not end in -s: children, people, sheep.",
+    "'Each' and 'every' take one: every student, each book."
+  ],
+  "extra": []
+}
