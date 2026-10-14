@@ -74,7 +74,9 @@ works it blind, we compare, copy slips are fixed from the source page, a key is 
 when the school's own answer agrees with the solver, a solver-vs-school dispute is paused on
 `/admin/question-health` for Adrian. `SPEC-QUESTION-HEALTH.md`. Why: twins already pass a blind solve + checker before they enter the bank, and A Math, E Math and Sec 1 already serve twins only (all 99 topics flipped; 3,538 verified twins), so the check would only cover Sec 2 / JC and sheets that still draw school rows — a gap that closes as twins finish. The code is on `dev`, dormant: `migrations/question_health.sql` NOT applied, bot branch `question-health-lane` NOT merged, switch off. Revisit only if Sec 2 / JC practice gets heavy before their twins are done. The part still worth building later is cheaper: a student's "my answer is right" / most-wrong-first-try sends ONE question back for a look (spec §7).
 
-## ✏️ Draw on the student's own photo to explain (Adrian, 14 Oct 2026: "yes") — QUEUED, starts after the explanation work is live
+## ✏️ Draw on the student's own photo to explain (Adrian, 14 Oct 2026: "yes") — SIMPLE VERSION BUILT 14 Oct 2026, switch `PHOTO_MARK` OFF — waiting for Adrian to see the before/after pictures
+
+**Built (14 Oct 2026):** bot `ai/photo-mark.js` + the `PHOTO:MARK` line in `prompts/base-math.txt`, all three chat doors (Telegram photo, Telegram follow-up, website/app Ask); the website hides the line while streaming (`src/lib/chat-solver.ts`). A ring only when every part is found confidently, else a clean figure, else text only. Detail + the eval: bot `docs/SOLVER.md` §✏️ Draw on the student's own photo. Turning it on = `PHOTO_MARK=1` on the bot, after Adrian's yes.
 
 When a student sends a question with a diagram and asks "why is this angle 40°?", mark THEIR photo:
 circle/highlight the part being talked about and write a short label beside it (simple first
