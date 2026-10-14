@@ -877,6 +877,47 @@ the accent colour.
   default. `src/lib/worksheet-brand.ts` is this module's twin (SERIES, SERIES_MONO, LEVELS) —
   change both together.
 
+## 10 · A solutions document is a TABLE (14 Oct 2026)
+
+Adrian, 12–14 Oct 2026, showing a screenshot of his own solutions file: *"can you put the
+solutions like this?"*, then *"put this way of building solutions into style.md — i mean
+this style"*. Whenever the deliverable is **the solutions to a practice / paper** (a
+"… (Practice Solutions).docx", a worked-solutions file to hand out), lay it out like this —
+not as the boxed worked examples of a revision sheet.
+
+- **One Word table**, full page width, thin black borders on every cell (`Table Grid`),
+  **three columns**: question number (≈1.1 cm) · part label (≈1.6 cm) · working (the rest).
+- **One row per part.** The number (`3.`) prints only on the question's first row; the
+  later rows of that question leave column 1 empty. A question with no parts is one row
+  with column 2 empty. Sub-parts keep their full label in column 2 (`(c)(ii)`).
+- **Column 3 = the working, one step a line** (§1): each line its own paragraph, line
+  spacing 1.5, Word equations (OMML, Cambria Math) set left-aligned, text Times New Roman
+  12 pt. A chain continues under its "=" (the continuation line is indented to the
+  width of the left-hand side). Equation tags are fine: `a = b + d … (1)`,
+  `(3) − 2(2):  ar⁷ − 2ar² = b … (4)`. Calculator steps read `Using GC, …`.
+- **Each part ends with its conclusion in bold, starting `∴`** — `∴ least n = 42`,
+  `∴ largest value of n = 28`. That is the "result stands out" rule of the readability
+  standard in this layout; there is no separate "Answer:" line.
+- Asides stay quiet (grey, smaller) inside the row — e.g. a note that the question's own
+  data is inconsistent. No mark codes.
+- A short centred bold title above the table ("Vectors — Practice Solutions") and nothing
+  else: no cover, no boxes.
+
+**How to build it:** write the solutions exactly as for any sheet — a build script on
+`worksheet_lib`'s `Worksheet` API (`ws.Q(...)`, `ws.solution_box([(label, steps), …])`,
+the last step of each part `[('text','Answer: ',{'bold':True}), …]`) — then render it as
+the table with
+
+```
+/usr/bin/python3 .claude/skills/create-worksheet/solutions_table.py <build.py> <out.docx> "<Title>"
+```
+
+(`/usr/bin/python3` has python-docx on this Mac.) It records the `Q` / `solution_box`
+calls instead of drawing boxes and emits the table above, turning each `Answer:` step
+into the bold `∴` line. Worked example: `examples/vectors_solutions_build.py` (the
+H2 Vectors practice, 10 questions, 37 rows). Known limit: lines after an `=` only
+roughly align — check the rendered page in Word before handing it over.
+
 ## Adding a rule (how this list grows)
 
 1. Quote what Adrian said, with the date, in the section it belongs to (new section if
