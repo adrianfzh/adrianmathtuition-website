@@ -15,7 +15,8 @@
 // GET — this student's generated papers plus the week's remaining allowance
 // (the /app/print page's data, kept here so the page and the POST can never
 // disagree on the allowance).
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { blockedIds, noteServed } from '@/lib/question-health-store';
 import fs from 'node:fs';
 import path from 'node:path';
 import { practiceAuth, levelAllowed, studentMathLevels } from '@/lib/practice';
@@ -153,8 +154,10 @@ async function fetchSlotCandidates(opts: { tagLevels: string[]; topicsKey: strin
   };
   // Part marks: candidates are the student's rows; too little left → not drawn (lib/part-syllabus.ts).
   const servable = await dropAudienceBlocked(studentRows(data as unknown as Row[]), opts.tagLevels, opts.topicsKey, opts.isIp);
+  // 🩺 Question health: a question paused for Adrian or retired is never drawn (SPEC-QUESTION-HEALTH.md).
+  const blocked = await blockedIds(servable.map(r => r.id));
   return servable
-    .filter(r => hasPrintableAnswer(r) && figureServable(r))
+    .filter(r => !blocked.has(r.id) && hasPrintableAnswer(r) && figureServable(r))
     .map(r => ({
       id: r.id,
       total_marks: r.total_marks,
@@ -426,6 +429,8 @@ export async function POST(req: NextRequest) {
     .select('id')
     .single();
   if (insErr || !row) return NextResponse.json({ error: 'Could not save the paper — try again.' }, { status: 500 });
+  // 🩺 the paper's unchecked questions are checked after (a Set paper is ours and was checked when written).
+  if (preset !== 'set') { const ids = refs.map(r => r.id); after(() => noteServed(ids, 'paper')); }
 
   return NextResponse.json({ ok: true, paperId: row.id, title, questions: refs.length, totalMarks });
 }

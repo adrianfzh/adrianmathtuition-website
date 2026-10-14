@@ -32,6 +32,7 @@ const EXEMPT: Record<string, string> = {
   'app/api/admin/question-proposals/route.ts': 'inserts our own new questions',
   'app/api/admin/assignments/route.ts': 'reads id + deleted_at only',
   'app/api/admin/remediation/route.ts': 'parked admin tool',
+  'lib/question-health-store.ts': 'the question check: the worker and Adrian see every part, it serves nothing',
   // ── counts, ids, figures: no part content
   'app/api/cron/auto-release-report/route.ts': 'counts',
   'app/api/cron/missing-papers/route.ts': 'which papers exist',

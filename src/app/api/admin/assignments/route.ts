@@ -4,6 +4,7 @@
 //        → { assignment }  — a Dropbox-sourced pdfUrl is copied to Blob first
 //   PATCH { id, action:'revoke' }     → { assignment }
 // All writes are service-role; the student only ever SELECTs their own rows (RLS).
+import { noteServed } from '@/lib/question-health-store';
 import { NextRequest, NextResponse } from 'next/server';
 import { putStudentFile, assignmentKey } from '@/lib/student-files';
 import { withSource, withRequired } from '@/lib/assignments';
@@ -85,6 +86,7 @@ export async function POST(req: NextRequest) {
     .from('portal_assignments').insert(withRequired(withSource(row, body), body)).select('*').single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   const a = data as AssignmentRow;
+  if (a.question_id) await noteServed([a.question_id], 'assign');   // 🩺 checked after if never checked (never throws)
 
   // D4: nudge the student on Telegram only if they linked it; otherwise silent.
   // The wording is chosen by what the work is (lib/assignment-nudge, 8 Sep 2026):

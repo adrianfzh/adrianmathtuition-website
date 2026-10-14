@@ -78,6 +78,8 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'stuck-weekly':       { kind: 'interval', hours: 204, label: 'Sundays 7pm' },
   // 🖼 Figures we need (5 Oct 2026): the Sunday message of figures twins needed that no family draws.
   'figure-needs-weekly': { kind: 'interval', hours: 204, label: 'Sundays 6pm' },
+  // 🩺 Question check (14 Oct 2026, SPEC-QUESTION-HEALTH.md): the Monday counts message; stamps every run, off or on.
+  'question-health-weekly': { kind: 'interval', hours: 204, label: 'Mondays 8:10am' },
   // 📌 Next lesson packs, the night before each lesson (5 Oct 2026, /api/cron/next-lesson, 8pm SGT).
   'next-lesson':        { kind: 'interval', hours: 36, label: 'nightly 8pm' },
   // 📒 The lesson log that fills itself (5 Oct 2026, /api/cron/lesson-end, hourly :10 from 11:10 to 21:10 SGT).

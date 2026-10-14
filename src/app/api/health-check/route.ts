@@ -1309,6 +1309,24 @@ export async function GET(req: NextRequest) {
   // question (hidden part gone, total reduced, nothing of it left in what is sent on),
   // and a count of live questions carrying a mark — with how many have fallen below the
   // serving threshold, which is worth a look but not an alarm.
+  // 🩺 Question health (SPEC-QUESTION-HEALTH.md): the rules still pause a solver-vs-school dispute
+  // (the moat line), and — when switched on — the queue is moving (nothing waiting over a day).
+  results.push(await timed('question-health', async () => {
+    const { decide } = await import('@/lib/question-health');
+    const q = { id: '00000000-0000-0000-0000-000000000000', question_text: 'Find x if 2x = 8.', answer: '4', topics: ['Algebra'], level: 'S1', school: 'X', ai_generated: false };
+    const d = decide(q, { question_id: q.id, solver_model: 't', completeness: [], scheme_found: true, parts: [{ label: 'single', ours: '4', solver: '5', scheme: '4', agree: false }] });
+    if (d.status !== 'paused' || d.edits.length) throw new Error('a solver-vs-school dispute was not paused for Adrian');
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const sb = getSupabaseAdmin();
+    const { data: st, error } = await sb.from('question_health_settings').select('is_on').eq('id', 1).abortSignal(T(5000)).maybeSingle();
+    if (error) return 'rules ok · table not there yet (migrations/question_health.sql)';
+    if (!st?.is_on) return 'rules ok · switched off';
+    const { data: old } = await sb.from('question_health').select('queued_at').eq('status', 'queued').order('queued_at', { ascending: true }).limit(1).abortSignal(T(5000));
+    const hours = old?.[0]?.queued_at ? (Date.now() - Date.parse(old[0].queued_at)) / 3_600_000 : 0;
+    if (hours > 24) throw new Error(`a question has waited ${Math.round(hours)} h for its check — is the worker lane running?`);
+    const { count } = await sb.from('question_health').select('question_id', { count: 'exact', head: true }).eq('status', 'paused').abortSignal(T(5000));
+    return `on · oldest waiting ${hours.toFixed(1)} h · ${count ?? 0} paused for Adrian`;
+  }));
   results.push(await timed('part-marks', async () => {
     const { studentView } = await import('@/lib/part-syllabus');
     const v = studentView({

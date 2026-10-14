@@ -3,7 +3,8 @@
 // level+topic. Returns question text (+ marks, + optional answer) ONLY — never
 // the worked solution or any originating school/paper metadata.
 // Auth: valid kiosk device cookie OR admin. 401 otherwise.
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { noteServed } from '@/lib/question-health-store';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { isKioskOpen } from '@/lib/kiosk-config';
@@ -90,6 +91,7 @@ export async function GET(req: NextRequest) {
   // Part marks: a re-lettered question prints only once the sheet's letters are on record.
   const picked = await recordPrintedLabels(supa, { surface: 'kiosk', ref: `${drawSeedKey(level, topic, tier)}#${count}`, student: student?.id ?? null },
     dailyDraw(pool.items, drawSeedKey(level, topic, tier), count));
+  after(() => noteServed(picked.map((r) => r.id), 'worksheet'));   // 🩺 unchecked ones are checked after (SPEC-QUESTION-HEALTH.md)
   const questions = picked.map((r) => ({
     id: r.id,
     markdown: r.markdown,
