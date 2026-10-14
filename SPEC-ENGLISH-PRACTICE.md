@@ -45,6 +45,8 @@ Text 1 / Text 2 / Both / Neither); some give the picture 2 marks.
 - **A tick bug found on the way:** a choice whose right answer began with the word "a" ("a personal
   request…") also marked option **A** right. `ruleShort` now takes a letter only when that option's
   own words follow it; a test pins it, and every set's every wrong option is checked to score 0.
+- **Bench, 14 Oct 2026** (`results/vt2-2026-10-14.json`, all 12 sets, all on the plan): seeded 123/123 ·
+  repeats 36/36 · padding 24/24; no swapped rows (too few short questions per set). **Passes.**
 
 ## Editing starts from a difficulty, one passage at a time (8 Oct 2026)
 
