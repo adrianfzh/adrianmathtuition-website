@@ -207,7 +207,7 @@ export function scienceLevelsAllowedFor(identity: string | null | undefined): bo
 // straight away"). The practice grader has not been checked against science scheme
 // answers yet, so Structured stays behind Adrian's cookie until the seeded check passes;
 // MCQ is open. Only rows with a solution are served (scienceNext kind).
-export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = false;
+export const SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS = true; // Adrian, 14 Oct 2026: "yes" — grader check 90/90, 175 starter questions checked; only checked questions are served
 export async function scienceStructuredPracticeOpen(): Promise<boolean> {
   if (SCIENCE_STRUCTURED_PRACTICE_OPEN_TO_STUDENTS) return true;
   return !(await viewingAsStudent()) && (await isNotesAuthed());
