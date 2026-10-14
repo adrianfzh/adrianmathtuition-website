@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import type { PublicUnit } from '@/lib/english-practice';
-import type { VisualBlock, VisualTheme } from '@/lib/english-own';
+import type { OwnText2, VisualBlock, VisualTheme } from '@/lib/english-own';
 import VisualText from './visual-text';
 
 const CARD = 'bg-white rounded-3xl border border-black/5 shadow-sm';
@@ -152,8 +152,15 @@ function Question({ u, wordLimit, earlier }: { u: PublicUnit; wordLimit: number;
   );
 }
 
+/** "Text 1 is a webpage for …" above each text of a visual set — its name in bold. */
+function TextLabel({ n, intro }: { n: number; intro: string | null }) {
+  const name = `Text ${n}`;
+  const rest = intro?.startsWith(name) ? intro.slice(name.length) : intro ? ` — ${intro}` : '';
+  return <p className="px-1 pt-1 text-[14px] leading-snug text-gray-700"><b className="text-violet-700">{name}</b>{rest}</p>;
+}
+
 export default function ReadingForm({ title, paragraphs, visual, units, backHref, wordLimit }: {
-  title: string; paragraphs: string[] | null; visual: { format: string; theme: VisualTheme; blocks: VisualBlock[] } | null;
+  title: string; paragraphs: string[] | null; visual: { format: string; theme: VisualTheme; intro: string | null; blocks: VisualBlock[]; text2: OwnText2 | null } | null;
   units: PublicUnit[]; backHref: string; wordLimit: number;
 }) {
   // answers handed in earlier on this set, and their marks when they are in
@@ -170,7 +177,16 @@ export default function ReadingForm({ title, paragraphs, visual, units, backHref
         <h1 className="text-xl font-bold text-navy mt-1 leading-tight">{title}</h1>
       </div>
 
-      {visual && <VisualText format={visual.format} theme={visual.theme} blocks={visual.blocks} />}
+      {visual && (visual.text2 ? (
+        <>
+          <TextLabel n={1} intro={visual.intro} />
+          <VisualText format={visual.format} theme={visual.theme} blocks={visual.blocks} />
+          <TextLabel n={2} intro={visual.text2.intro} />
+          <div className={`${CARD} p-4 space-y-3`}>
+            {visual.text2.paragraphs.map((p, i) => <p key={i} className="text-[15px] leading-relaxed text-gray-900">{p}</p>)}
+          </div>
+        </>
+      ) : <VisualText format={visual.format} theme={visual.theme} blocks={visual.blocks} />)}
 
       {paragraphs && (
         <div className={`${CARD} p-4 space-y-3`}>

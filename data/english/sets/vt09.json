@@ -4,83 +4,213 @@
   "title": "Shelter Buddies",
   "format": "webpage",
   "theme": "green",
+  "intro": "Text 1 is a webpage inviting teenagers to volunteer with shelter animals.",
   "visual": [
-    { "t": "kicker", "text": "SHELTER BUDDIES · A PROGRAMME FOR TEENS AGED 14 TO 17" },
-    { "t": "headline", "text": "He has been waiting a long time for someone to learn his name." },
-    { "t": "tagline", "text": "Give two Sunday mornings a month to a shelter dog or cat that nobody has chosen yet." },
-    { "t": "picture", "text": "A thin brown dog presses its nose through the bars of a kennel. A name card on the gate reads ‘Kopi — here since last year’. A teenager’s hand reaches towards it." },
-    { "t": "body", "text": "Shelters are full of animals that are fed and safe but rarely touched. Volunteers are few, and the shy ones at the back get the least attention. As a Shelter Buddy, you are matched with one animal for six months. You walk it, brush it, sit beside it, and write a short note after each visit. Those notes help the shelter find it a home." },
-    { "t": "box", "title": "Before you sign up", "items": [
-      "This is not a petting zoo. You will clean kennels and wash bowls.",
-      "Some animals will take weeks to trust you.",
-      "You need a parent’s consent and closed shoes.",
-      "You may not adopt your buddy — but your notes may help someone else to."
-    ] },
-    { "t": "quote", "text": "“For three visits Kopi would not come near me. On the fourth, he fell asleep on my foot. I did not move for an hour.” — Sarah, 16" },
-    { "t": "button", "text": "Apply to be a Shelter Buddy" }
+    {
+      "t": "kicker",
+      "text": "SHELTER BUDDIES · A PROGRAMME FOR TEENS AGED 14 TO 17"
+    },
+    {
+      "t": "headline",
+      "text": "He has been waiting a long time for someone to learn his name."
+    },
+    {
+      "t": "tagline",
+      "text": "Give two Sunday mornings a month to a shelter dog or cat that nobody has chosen yet."
+    },
+    {
+      "t": "picture",
+      "text": "A thin brown dog presses its nose through the bars of a kennel. A name card on the gate reads ‘Kopi — here since last year’. A teenager’s hand reaches towards it."
+    },
+    {
+      "t": "body",
+      "text": "Shelters are full of animals that are fed and safe but rarely touched. Volunteers are few, and the shy ones at the back get the least attention. As a Shelter Buddy, you are matched with one animal for six months. You walk it, brush it, sit beside it, and write a short note after each visit. Those notes help the shelter find it a home."
+    },
+    {
+      "t": "box",
+      "title": "Before you sign up",
+      "items": [
+        "This is not a petting zoo. You will clean kennels and wash bowls.",
+        "Some animals will take weeks to trust you.",
+        "You need a parent’s consent and closed shoes.",
+        "You may not adopt your buddy — but your notes may help someone else to."
+      ]
+    },
+    {
+      "t": "quote",
+      "text": "“For three visits Kopi would not come near me. On the fourth, he fell asleep on my foot. I did not move for an hour.” — Sarah, 16"
+    },
+    {
+      "t": "button",
+      "text": "Apply to be a Shelter Buddy"
+    }
   ],
+  "text2": {
+    "intro": "Text 2 is taken from a letter that a family wrote to an animal shelter after adopting a dog.",
+    "paragraphs": [
+      "Dear Shelter Team,",
+      "We nearly walked past Kopi. He was curled up at the back of his kennel and did not even lift his head when we called. Then one of your staff showed us the notebook hanging on his gate. Page after page, a volunteer called Sarah had written about him: that he was scared of brooms, that he loved having his ears rubbed, that he slept better with an old towel. Reading those notes made us feel we already knew him, and we took him home that same afternoon.",
+      "Three months on, he still hides whenever the broom comes out, but he waits by the door every evening for us. Please pass on our thanks to Sarah. — The Lim family"
+    ]
+  },
   "questions": [
     {
-      "n": "1", "marks": 1, "type": "short", "skill": "visual",
-      "text": "Why does the webpage include the box titled ‘Before you sign up’?",
-      "scheme": { "answer": "To make sure readers know that the work is hard and needs patience, so that only teenagers who are serious about it will apply.", "accept": ["To warn teenagers that volunteering involves chores and commitment and is not just playing with animals."] },
+      "n": "1",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Look at Text 1. Which sentence best states the main message of the webpage?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Teenagers can adopt the animal they look after once six months are up."
+        },
+        {
+          "label": "B",
+          "text": "Shelter animals need patient, regular company, and teenagers can give it."
+        },
+        {
+          "label": "C",
+          "text": "Shelters need donations of money more than they need volunteers."
+        }
+      ],
+      "scheme": {
+        "answer": "Shelter animals need patient, regular company, and teenagers can give it."
+      },
+      "seeds": []
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "visual",
+      "text": "Look at the picture in Text 1. How does it support the headline ‘He has been waiting a long time for someone to learn his name.’?",
+      "scheme": {
+        "answer": "The name card says Kopi has been there since last year, and he pushes his nose through the bars towards a hand, showing he has waited a long time and longs for someone to notice him.",
+        "accept": [
+          "The card shows he has been in the shelter since last year, so he has been waiting a long time, and he reaches out to the teenager’s hand because he wants someone of his own.",
+          "His name card and his nose pressed through the bars show a dog that has waited long and is eager for a person to know him."
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "To let readers know the work is tough and needs patience, so that only teenagers who are serious will apply." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It warns teens that they have to do dirty chores and be committed, it is not just about playing with cute animals." },
-        { "mark": 0, "flaw": "wrong", "text": "To stop all teenagers from joining the programme." },
-        { "mark": 0, "flaw": "wrong", "text": "To teach teenagers the correct way to clean a kennel." },
-        { "mark": 0, "flaw": "vague", "text": "To give more information." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The card on the gate says Kopi has been there since last year, and he is pushing his nose out to the hand, so it shows he has been waiting long and wants someone to care about him."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "We can see from the sign that the dog has stayed in the shelter for over a year, and he is trying to reach the person, so he is lonely and hoping for a friend."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that the dog is dangerous and should be kept behind bars."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The picture shows a dog in a shelter."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "A thin brown dog presses its nose through the bars of a kennel."
+        }
       ]
     },
     {
-      "n": "2", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Sarah says, ‘I did not move for an hour.’ What does this show about how she felt when Kopi fell asleep on her foot?",
-      "scheme": { "answer": "She was so touched that Kopi finally trusted her that she did not want to disturb him.", "accept": ["His trust meant a great deal to her, so she kept still to let him sleep."] },
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Text 1 tells readers that their notes ‘may help someone else’ to adopt their buddy. Find one sentence in Text 2 that supports this.",
+      "scheme": {
+        "answer": "Reading those notes made us feel we already knew him, and we took him home that same afternoon.",
+        "accept": [
+          "Reading those notes made us feel we already knew him"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "She was so touched that Kopi finally trusted her that she did not want to disturb him." },
-        { "mark": 1, "flaw": "paraphrase", "text": "His trust was precious to her after waiting so long, so she stayed still to let him carry on sleeping." },
-        { "mark": 0, "flaw": "wrong", "text": "She was frightened that Kopi would bite her if she moved." },
-        { "mark": 0, "flaw": "wrong", "text": "She was tired and wanted to rest too." },
-        { "mark": 0, "flaw": "vague", "text": "She felt something for Kopi." },
-        { "mark": 0, "flaw": "wrong", "text": "She was bored because there was nothing to do." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "Reading those notes made us feel we already knew him, and we took him home that same afternoon."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "‘Reading those notes made us feel we already knew him’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Three months on, he still hides whenever the broom comes out, but he waits by the door every evening for us."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "We nearly walked past Kopi."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The sentence about the volunteer writing things down."
+        }
       ]
     },
     {
-      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "Which phrase in the body text shows that the animals’ basic needs are already taken care of?",
-      "scheme": { "answer": "fed and safe", "accept": ["are fed and safe", "animals that are fed and safe", "fed and safe but rarely touched"] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "fed and safe" },
-        { "mark": 1, "flaw": "paraphrase", "text": "'animals that are fed and safe'" },
-        { "mark": 0, "flaw": "wrong", "text": "rarely touched" },
-        { "mark": 0, "flaw": "wrong", "text": "the least attention" },
-        { "mark": 0, "flaw": "wrong", "text": "find it a home" }
-      ]
+      "n": "4a",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "stem": "Read Texts 1 and 2 again, then complete each statement with the best option.",
+      "text": "Taken together, the two texts show that a Shelter Buddy’s visits …",
+      "options": [
+        {
+          "label": "A",
+          "text": "are mainly about cleaning kennels and washing bowls."
+        },
+        {
+          "label": "B",
+          "text": "are only useful for animals that are already friendly."
+        },
+        {
+          "label": "C",
+          "text": "can change an animal’s life even if the volunteer never adopts it."
+        }
+      ],
+      "scheme": {
+        "answer": "can change an animal’s life even if the volunteer never adopts it."
+      },
+      "seeds": []
     },
     {
-      "n": "4", "marks": 1, "type": "short", "skill": "visual",
-      "text": "How does the picture make readers want to help?",
-      "scheme": { "answer": "It shows a thin, lonely dog that has been in the shelter for a long time reaching out through the bars, which makes readers feel sorry for it.", "accept": ["The dog pressing its nose through the bars looks as if it is longing for company, so readers pity it and want to be the one to reach out."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It shows a thin and lonely dog that has been there since last year pushing its nose out of the bars, so readers feel sorry for it." },
-        { "mark": 1, "flaw": "paraphrase", "text": "The dog looks like it is longing for someone to come to it, which makes us pity it and want to be the one who reaches out." },
-        { "mark": 0, "flaw": "wrong", "text": "It shows that the dog is dangerous and must be kept behind bars." },
-        { "mark": 0, "flaw": "wrong", "text": "It shows that the dog likes to drink coffee." },
-        { "mark": 0, "flaw": "vague", "text": "It shows a dog at the shelter." }
-      ]
-    },
-    {
-      "n": "5", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Look at the headline: ‘He has been waiting a long time for someone to learn his name.’ What does it suggest about the lives of animals in a shelter?",
-      "scheme": { "answer": "They are overlooked; nobody gives them personal attention or gets to know them.", "accept": ["The animals are lonely because no one treats them as individuals or spends time with them."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that the animals are overlooked and nobody gives them personal attention or gets to know them." },
-        { "mark": 1, "flaw": "paraphrase", "text": "They are lonely because people do not bother to spend time with them one by one." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that the animals in the shelter do not have names." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests the dog has forgotten its own name." },
-        { "mark": 0, "flaw": "vague", "text": "It suggests that the animals live in a shelter." },
-        { "mark": 0, "flaw": "lifted", "text": "He has been waiting a long time for someone to learn his name." }
-      ]
+      "n": "4b",
+      "marks": 1,
+      "type": "choice",
+      "skill": "language_use",
+      "stem": "Read Texts 1 and 2 again, then complete each statement with the best option.",
+      "text": "The words ‘This is not a petting zoo’ in Text 1 are used to …",
+      "options": [
+        {
+          "label": "A",
+          "text": "warn readers honestly that the work can be hard."
+        },
+        {
+          "label": "B",
+          "text": "make the programme sound fun for young children."
+        },
+        {
+          "label": "C",
+          "text": "tell readers that they may not touch the animals."
+        }
+      ],
+      "scheme": {
+        "answer": "warn readers honestly that the work can be hard."
+      },
+      "seeds": []
     }
   ]
 }

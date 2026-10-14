@@ -78,6 +78,12 @@ export interface OwnQuestion {
   scheme: { answer?: string; accept?: string[]; points?: string[] };
   seeds: OwnSeed[];
 }
+/**
+ * A visual set's second text (14 Oct 2026, Adrian: "yes" — match O-Level Paper 2 Section A:
+ * "Texts 1 and 2, one of which will include visuals"). A short piece on the same topic — a blog,
+ * an interview, a letter, a news extract — with the line that says where it is from.
+ */
+export interface OwnText2 { intro: string; paragraphs: string[] }
 export interface OwnReading {
   id: string;
   kind: 'visual' | 'narrative' | 'non_narrative';
@@ -85,7 +91,10 @@ export interface OwnReading {
   paragraphs?: string[];
   format?: 'poster' | 'webpage' | 'post';
   theme?: VisualTheme;
+  /** A visual set: the line above Text 1 ("Text 1 is a webpage for …"). */
+  intro?: string;
   visual?: VisualBlock[];
+  text2?: OwnText2;
   questions: OwnQuestion[];
 }
 export type OwnSet = OwnEditing | OwnReading;
@@ -115,7 +124,10 @@ export function visualWords(blocks: VisualBlock[]): string {
 
 /** The text the checker is given beside a question. */
 export function ownPassage(s: OwnReading): string {
-  if (s.kind === 'visual') return visualWords(s.visual ?? []);
+  if (s.kind === 'visual') {
+    const t1 = `TEXT 1${s.intro ? ` (${s.intro})` : ''}\n${visualWords(s.visual ?? [])}`;
+    return s.text2 ? `${t1}\n\nTEXT 2 (${s.text2.intro})\n${s.text2.paragraphs.join('\n\n')}` : t1;
+  }
   return (s.paragraphs ?? []).map((p, i) => `[Paragraph ${i + 1}] ${p}`).join('\n\n');
 }
 
@@ -186,6 +198,31 @@ function questionProblems(q: OwnQuestion, i: number, s: OwnReading): string[] {
   return out;
 }
 
+/**
+ * A visual set is Section A of the exam (1184 Paper 2): Text 1 with its picture, a short Text 2,
+ * and questions on comprehension, the visuals and language for effect — 5 marks in 4 to 6
+ * questions, at least one "tick" choice, one on how the picture supports the words, one asking
+ * for words from Text 2, and one on both texts together.
+ */
+function text2Problems(s: OwnReading): string[] {
+  const out: string[] = [];
+  const t = s.text2;
+  if (!t) return ['a visual set has a Text 2'];
+  if (!t.intro || t.intro.length < 10 || t.intro.length > 160) out.push('text2.intro: where Text 2 is from, 10–160 characters');
+  const p = t.paragraphs ?? [];
+  const n = words(p.join(' ')).length;
+  if (p.length < 1 || p.length > 3) out.push('Text 2 is 1–3 paragraphs');
+  if (n < 70 || n > 200) out.push(`Text 2: ${n} words (70–200)`);
+  const qs = s.questions ?? [];
+  if (qs.length < 4 || qs.length > 6) out.push('a visual set has 4–6 questions');
+  if (!qs.some(q => q.type === 'choice')) out.push('a visual set has at least one tick-the-answer choice');
+  const asks = (q: OwnQuestion) => `${q.stem ?? ''} ${q.text}`;
+  if (!qs.some(q => q.type === 'short' && q.skill === 'visual' && /\b(picture|image|photo(graph)?|illustration|drawing)s?\b/i.test(asks(q)))) out.push('one short question asks how the picture supports the words');
+  if (!qs.some(q => q.type === 'short' && /\bText 2\b/.test(asks(q)) && /\bText 1\b/.test(asks(q)))) out.push('one short question asks for words from Text 2 that support Text 1');
+  if (!qs.some(q => /\b(Texts 1 and 2|both texts)\b/i.test(asks(q)))) out.push('one question is on both texts together');
+  return out;
+}
+
 function readingProblems(s: OwnReading): string[] {
   const out: string[] = [];
   if (!s.title || s.title.length > 70) out.push('title: 1–70 characters');
@@ -196,6 +233,9 @@ function readingProblems(s: OwnReading): string[] {
     if (s.theme && !VISUAL_THEMES.includes(s.theme)) out.push('theme');
     const n = words(visualWords(b)).length;
     if (n < 60 || n > 280) out.push(`visual text: ${n} words (60–280)`);
+    if (!s.intro || s.intro.length < 10 || s.intro.length > 160) out.push('intro: the line above Text 1, 10–160 characters');
+    if (!b.some(x => x.t === 'picture')) out.push('Text 1 has a picture');
+    out.push(...text2Problems(s));
   } else {
     const p = s.paragraphs ?? [];
     const n = words(p.join(' ')).length;

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildShortPrompt, buildSummaryPrompt, checkEditing, lineWords, editingAccepts, isTick, marksLine, parseShortReply, parseSummaryReply,
-  parseUnitKey, passageLabel, publicUnit, ruleShort, schemeShown, servable, summaryContentMax, toEditingSet, toScheme, unitsOf, withinLimit, wordCount,
+  parseUnitKey, passageLabel, publicUnit, ruleShort, schemeShown, servable, SHORT_RULES, SUMMARY_RULES, summaryContentMax, toEditingSet, toScheme, unitsOf, withinLimit, wordCount,
   type EditingSet, type ItemRow,
 } from './english-practice';
 
@@ -85,6 +85,20 @@ describe('editing', () => {
   it('an editing row without its lines is not served', () => {
     expect(toEditingSet({ ...row, parts: null })).toBeNull();
     expect(toEditingSet({ ...row, parts: row.parts!.slice(0, 4) })).toBeNull();
+  });
+});
+
+describe('a choice', () => {
+  const opts = [{ label: 'A', text: 'an angry complaint' }, { label: 'B', text: 'a personal request, made politely' }, { label: 'C', text: 'a list of rules' }];
+  const c = (answer: string) => ({ kind: 'choice' as const, options: opts, sectionKind: 'visual_text', scheme: { answer, accept: [], points: [] } });
+  it('an answer that begins with the word "a" is not option A', () => {
+    expect(ruleShort(c('a personal request, made politely'), 'A')).toBe(false);
+    expect(ruleShort(c('a personal request, made politely'), 'B')).toBe(true);
+  });
+  it('the scheme may name the option by letter and words', () => {
+    expect(ruleShort(c('B — a personal request, made politely'), 'B')).toBe(true);
+    expect(ruleShort(c('B — a personal request, made politely'), 'C')).toBe(false);
+    expect(ruleShort(c('B'), 'B')).toBe(true);
   });
 });
 
@@ -175,5 +189,23 @@ describe('editing: circle, then correct', () => {
       { before: '', word: 'soup', after: ',' }, { before: '', word: 'and', after: '' },
       { before: '"', word: 'it', after: '"' }, { before: '', word: 'grew', after: '.' },
     ]);
+  });
+});
+
+// The schools' marking habits (docs/english-marking-conventions.md, 14 Oct 2026) — one list, read by the
+// page's prompt and the plan bench's sheets alike.
+describe('school marking conventions in the prompts', () => {
+  const u = { stem: null, text: 'What does this suggest?', marks: 2, scheme: { answer: 'A.', accept: [], points: ['a', 'b'] } };
+  it('every short-answer rule reaches the prompt', () => {
+    const p = buildShortPrompt(u, 'x', 'passage');
+    for (const r of SHORT_RULES) expect(p).toContain(r);
+    expect(p).toMatch(/excess denied/);
+    expect(p).toMatch(/naming the device alone/);
+    expect(p).toMatch(/lifting is right/);
+  });
+  it('every summary rule reaches the prompt; lifting costs language, not content', () => {
+    const p = buildSummaryPrompt(u, 'x', 'passage');
+    for (const r of SUMMARY_RULES) expect(p).toContain(r);
+    expect(p).toMatch(/Lifting costs the language mark, not content/);
   });
 });

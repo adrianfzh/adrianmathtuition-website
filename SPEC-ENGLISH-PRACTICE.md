@@ -25,6 +25,29 @@ longer a content-policy decision. What it waits on: the bench on all 51 own sets
 - **Questions point at paragraphs, never line numbers** — lines move on a phone.
 - The writers' brief for a batch: `docs/english-own-brief.md`.
 
+## Visual text = Paper 2 Section A: two texts (14 Oct 2026)
+
+Adrian, 14 Oct 2026: *"yes"* — make visual-text practice match O-Level Paper 2 Section A (1184
+syllabus: "Texts 1 and 2, one of which will include visuals … comprehension, the use of visuals
+and the use of language for effect", 5 marks). 2025 prelims from seven schools (read for shape
+only) all ask the same four things: tick the main message or best title; how the picture supports
+the words; a sentence from Text 2 that supports Text 1; two ticks on both texts (purpose, tone, or
+Text 1 / Text 2 / Both / Neither); some give the picture 2 marks.
+
+- A `vt..` set now carries `intro` (the line above Text 1), its blocks, and `text2: { intro,
+  paragraphs }`. `ownProblems` requires the Text 2 (70–200 words), a picture, 4–6 questions, a
+  choice, a picture question, a Text-2-for-Text-1 question and a both-texts question
+  (`text2Problems`). The question mix (patterns A and B) is in `docs/english-own-brief.md`.
+- The page shows "**Text 1** is a webpage …", the visual, "**Text 2** is taken from …", the
+  Text 2 card, then the questions; ticks are marked by rule, the rest as before.
+- The checker is given both texts, headed TEXT 1 / TEXT 2 (`ownPassage`).
+- All 12 sets rewritten the same day (8 pattern A, 4 pattern B; writers on the plan), copy check clean.
+- **A tick bug found on the way:** a choice whose right answer began with the word "a" ("a personal
+  request…") also marked option **A** right. `ruleShort` now takes a letter only when that option's
+  own words follow it; a test pins it, and every set's every wrong option is checked to score 0.
+- **Bench, 14 Oct 2026** (`results/vt2-2026-10-14.json`, all 12 sets, all on the plan): seeded 123/123 ·
+  repeats 36/36 · padding 24/24; no swapped rows (too few short questions per set). **Passes.**
+
 ## Editing starts from a difficulty, one passage at a time (8 Oct 2026)
 
 Adrian, 8 Oct 2026: *"we shouldn't list questions like that … they should select difficulty, then
@@ -169,6 +192,14 @@ clumsy half answer, never generous.
 **The re-read, 8 Oct 2026** (`results/reread-2026-10-08.json`, sets na05 + vt06, with the rule
 "an answer in the scheme's own words is right"): seeded 99/99 · repeats 25/25 · padding 20/20 ·
 swapped 18/18. Both of the batch's gross misses now read correctly. **Passes.**
+
+**The schools' marking habits, 14 Oct 2026** (Adrian: *"yes"*): 59 school schemes read for HOW they
+mark (excess denied, a quote with no explanation, a device named alone, feeling words too strong or
+too mild, the same idea twice, any two of three, lifting costs language not content in a summary).
+The rules, with counts: `docs/english-marking-conventions.md`. They live in `SHORT_RULES` /
+`SUMMARY_RULES` (`lib/english-practice.ts`), read by the page's prompt AND `plan.ts`'s sheets.
+Before/after on the plan: sample 388/389 both; hard set 55/57 → 54–56/57 (noise of one read);
+nothing worse. `run.ts --hard --answers conventions-answers.json` runs the 21 rule-check answers.
 
 **Pilot, 7 Oct 2026** (`results/pilot-2026-10-07.json`, 3 reading sets, 220 reads): seeded 128/128 ·
 repeats 33/33 · padding 25/25 · swapped 24/24 · summary 10/10, every point agreed. Limits: few sets,

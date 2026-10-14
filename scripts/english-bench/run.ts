@@ -44,8 +44,10 @@ const reportOnly = args.includes('--report-only');
 // --plan-only: write the rows to read and stop — the reading is then done on the plan (plan.ts), not the paid key
 const planOnly = args.includes('--plan-only');
 // --hard: read scripts/english-bench/hard-answers.json instead of the sets' own seeds — answers written the
-// way students write them, each read twice
+// way students write them, each read twice. --answers <file in this folder> reads another such list
+// (conventions-answers.json: answers aimed at the schools' marking habits, docs/english-marking-conventions.md)
 const hard = args.includes('--hard');
+const answersFile = opt('--answers', 'hard-answers.json');
 const OUT = path.join(HERE, 'results', `${name}.json`);
 
 type Kind = 'seeded' | 'repeat' | 'padding' | 'swapped' | 'summary' | 'summary_repeat';
@@ -57,11 +59,11 @@ interface Row {
 
 function hardPlan(): Row[] {
   const rows: Row[] = [];
-  const list = JSON.parse(fs.readFileSync(path.join(HERE, 'hard-answers.json'), 'utf8')).answers as { set: string; n: string; mark: number; flaw: string; text: string; hit?: number[] }[];
+  const list = JSON.parse(fs.readFileSync(path.join(HERE, answersFile), 'utf8')).answers as { set: string; n: string; mark: number; flaw: string; text: string; hit?: number[] }[];
   list.forEach((a, i) => {
     const s = OWN_READING.find(x => x.id === a.set);
     const u = s ? ownUnits(s).find(x => x.number === a.n) : undefined;
-    if (!s || !u) throw new Error(`hard-answers.json: no question ${a.set} Q${a.n}`);
+    if (!s || !u) throw new Error(`${answersFile}: no question ${a.set} Q${a.n}`);
     if (only && !only.includes(a.set)) return;
     const summary = u.kind === 'summary';
     const base: Row = { key: `hard:${a.set}:${a.n}:${i}`, kind: summary ? 'summary' : 'seeded', setId: a.set, unit: a.n, skill: u.skill ?? '', flaw: a.flaw, text: a.text,

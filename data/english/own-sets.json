@@ -13720,6 +13720,7 @@
    "title": "Skill Swap Saturdays",
    "format": "webpage",
    "theme": "teal",
+   "intro": "Text 1 is a webpage for a volunteer programme at a community library.",
    "visual": [
     {
      "t": "kicker",
@@ -13768,87 +13769,76 @@
      "text": "Tampines West Community Library · every second Saturday of the month"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a blog post by Mdm Goh, a retired tailor who joined the programme.",
+    "paragraphs": [
+     "When my neighbour first told me about these Saturday mornings, I laughed. What could a fifteen-year-old teach a woman who has been sewing since before his parents were born? Quite a lot, it turns out. Irfan showed me how to scan a code at the hawker centre without panicking, and how to send my sister in Penang a voice message instead of waiting for her to call. In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week. Every month I look forward to it more. It is not only the skills. For three hours, someone young listens to me as if what I know still matters."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘You know your phone. They know everything else.’ What does it suggest teenagers can gain from the programme?",
-     "scheme": {
-      "answer": "Seniors have a great deal of knowledge and skills outside technology, and teenagers can learn these from them.",
-      "accept": [
-       "Teenagers can pick up many useful skills or life lessons from older people that they do not have themselves."
-      ]
-     },
-     "seeds": [
+     "text": "Look at Text 1. Which sentence best states the main message of the webpage?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that seniors know a lot of things other than technology, and teenagers can learn all these from them."
+       "label": "A",
+       "text": "Teenagers should help seniors who struggle with their phones."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Teens are only good with phones, but the old folks have plenty of other skills to pass on to them."
+       "label": "B",
+       "text": "Teenagers and seniors each have something worth teaching the other."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that teenagers can become better at using their phones."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "They can gain a lot from joining the programme."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Seniors do not know how to use phones."
+       "label": "C",
+       "text": "Seniors should pass on traditional crafts before they are forgotten."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Teenagers and seniors each have something worth teaching the other."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
      "skill": "visual",
-     "text": "The webpage is written for teenagers. Give one piece of evidence from the webpage that shows this.",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘You know your phone. They know everything else.’?",
      "scheme": {
-      "answer": "It says ‘Ages 13 to 18’.",
+      "answer": "The boy and the woman share a phone while a half-made rattan basket sits between them, showing that each has a skill to give: he knows the phone, she knows the craft.",
       "accept": [
-       "It says the mornings count towards ‘Values in Action hours’, which students need.",
-       "It speaks to the reader as ‘you’ who knows ‘your phone’ and has a ‘grandmother’.",
-       "It quotes Irfan, who is 15.",
-       "The picture shows a teenage boy as the volunteer."
+       "The phone stands for what the teenager can teach and the basket for what the senior can teach, so the picture shows the swap the headline describes.",
+       "They are laughing together over both a phone and a basket, which shows the two sides learning from each other."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It states that it is for ages 13 to 18."
+       "text": "The picture shows the boy with a phone and a half-finished basket on the table, so the boy can teach the phone and the old lady can teach the weaving, just like the headline says."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "It mentions Values in Action hours, which only students have to collect."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The person quoted, Irfan, is 15 years old, the same age as the readers."
+       "text": "The phone is the teen's skill and the rattan basket is the senior's skill, so we see both of them have something to teach each other."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It is held at Tampines West Community Library."
+       "text": "It shows that the old woman does not know how to use a phone."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "The words used are simple and easy."
+       "text": "The picture shows two people who look happy together."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "A teenage boy and an elderly woman laugh over a phone."
       }
      ]
     },
@@ -13856,124 +13846,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "visual",
-     "text": "Why does the webpage include Irfan’s words?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that seniors can teach ‘something no app can teach’.",
      "scheme": {
-      "answer": "Irfan is a real teenager who has taken part, so his words make the benefits believable and show the reader that someone like them enjoyed it.",
+      "answer": "In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week.",
       "accept": [
-       "To convince teenagers to join by showing what a volunteer of their age gained from it."
+       "I taught him to thread a needle and sew on a button"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "He is a teenager who actually joined, so readers will believe the programme is worth it because someone like them enjoyed it."
+       "text": "In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "To persuade teens to sign up by showing a real volunteer their age who got something out of it."
+       "text": "‘In return, I taught him to thread a needle and sew on a button’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "To tell us that Irfan knows how to sew a button."
+       "text": "Irfan showed me how to scan a code at the hawker centre without panicking."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Every month I look forward to it more."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "To make the webpage more interesting."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "I came to teach Mdm Goh how to pay with her phone."
+       "text": "The sentence where she says she taught him something."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "Which phrase in the sign-up button is meant to make the reader act quickly?",
+     "type": "choice",
+     "skill": "inference",
+     "stem": "Read Texts 1 and 2. Choose the best ending for each statement.",
+     "text": "Both texts show that the programme …",
+     "options": [
+      {
+       "label": "A",
+       "text": "is mainly about keeping seniors safe from scams."
+      },
+      {
+       "label": "B",
+       "text": "helps the teenagers as much as the seniors."
+      },
+      {
+       "label": "C",
+       "text": "is too short to make a real difference."
+      }
+     ],
      "scheme": {
-      "answer": "places are limited",
-      "accept": [
-       "places are limited to 40 pairs",
-       "limited to 40 pairs",
-       "by 30 June",
-       "Sign up by 30 June"
-      ]
+      "answer": "helps the teenagers as much as the seniors."
      },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "places are limited"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "'limited to 40 pairs'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"by 30 June\"."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "No experience needed"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "every second Saturday of the month"
-      }
-     ]
+     "seeds": []
     },
     {
-     "n": "5",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "language_use",
-     "text": "‘They show you something no app can teach.’ What is the writer suggesting about the skills that seniors have?",
-     "scheme": {
-      "answer": "Their skills are hands-on and personal, so they cannot be learnt from a phone or the internet — they are special and worth learning in person.",
-      "accept": [
-       "The skills are valuable because technology cannot replace them."
-      ]
-     },
-     "seeds": [
+     "stem": "Read Texts 1 and 2. Choose the best ending for each statement.",
+     "text": "The tone of Text 2 is best described as …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The writer suggests their skills are special because you cannot get them from technology, only from the person."
+       "label": "A",
+       "text": "doubtful and worried"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "These are things you have to learn face to face from someone experienced, a phone cannot give you that, so they are precious."
+       "label": "B",
+       "text": "proud and boastful"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Seniors cannot use apps."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The seniors have skills."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Apps are bad teachers and teenagers should stop using them."
+       "label": "C",
+       "text": "warm and thankful"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "warm and thankful"
+     },
+     "seeds": []
     }
    ]
   },
@@ -13983,6 +13942,7 @@
    "title": "Walk to School Week",
    "format": "poster",
    "theme": "green",
+   "intro": "Text 1 is a poster from a student council about a week of walking to school.",
    "visual": [
     {
      "t": "kicker",
@@ -14002,7 +13962,7 @@
     },
     {
      "t": "body",
-     "text": "Every morning, the road outside our gate fills with cars, and half of us arrive sleepy and silent. For one week, try something different. Get off the bus a stop early, or ask to be dropped at the park. Walk the rest with a friend. You will reach class awake, with a story to tell."
+     "text": "Every morning, the road outside our gate fills with cars, and those of us in the back seats arrive sleepy and silent. For one week, try something different. Get off the bus a stop early, or ask to be dropped at the park. Walk the rest with a friend. You will reach class awake, with a story to tell."
     },
     {
      "t": "box",
@@ -14027,85 +13987,76 @@
      "text": "Pick up your stamp card on Monday"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a letter a parent wrote to the school newsletter after the walking week.",
+    "paragraphs": [
+     "For three years I drove my daughter right up to the school gate. Every morning she slept against the window while I fought the traffic, and neither of us said a word. During the walking week, she asked me to drop her at the park instead. I was worried she would be late. She was not.",
+     "On the Wednesday she came home full of news: the old man who feeds the mynahs by the canal, a shortcut her friend had found behind the market, and a bet about whose umbrella would break first. That evening she talked more at dinner than she had in a month. The week is over, but we have kept the park drop-off. I lose ten minutes of driving; I gain a daughter who arrives at school awake."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "How does the picture support the message of the poster?",
-     "scheme": {
-      "answer": "It shows the students who walk laughing and enjoying one another’s company while the cars are stuck in a queue, so walking looks more pleasant than being driven.",
-      "accept": [
-       "It contrasts cheerful students on foot with a traffic jam at the gate, which makes walking seem the better way to come to school."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "text": "Look at Text 1. Which sentence sums up what the poster most wants students to believe?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It shows the students who walk are happy and having fun together, while the cars are all stuck in a jam, so walking looks better than going by car."
+       "label": "A",
+       "text": "Students should stop being driven to school because cars pollute the air."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The walkers are laughing with their friends but the cars behind cannot move, so it makes us feel walking is the nicer way to get to school."
+       "label": "B",
+       "text": "Walking even part of the way makes the school morning livelier and friendlier."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that students should share their food with their friends."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The picture makes the poster more colourful and attractive."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that there are too many cars in Singapore."
+       "label": "C",
+       "text": "Students who walk to school can win a free breakfast from the canteen."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Walking even part of the way makes the school morning livelier and friendlier."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text tells us that many students are not at their best when they reach school in the morning?",
+     "skill": "visual",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘The best ten minutes of your day are not in a car.’?",
      "scheme": {
-      "answer": "sleepy and silent",
+      "answer": "The students walking are laughing and sharing biscuits while the cars sit in a queue behind them, so walking looks far more enjoyable than being in a car.",
       "accept": [
-       "arrive sleepy and silent",
-       "half of us arrive sleepy and silent"
+       "It contrasts the happy walkers in front with the cars stuck at the gate, showing the walk is the better part of the morning."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "sleepy and silent"
+       "text": "The students are laughing and sharing biscuits as they walk, while behind them the cars are stuck in a long line, so walking looks like the best part of the day and being in a car does not."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The phrase is 'arrive sleepy and silent'."
+       "text": "The walkers are having fun together but the cars are jammed at the gate, so it shows walking is more enjoyable than sitting in a car."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "fills with cars"
+       "text": "It shows that cars are dangerous for students crossing the road."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "awake, with a story to tell"
+       "flaw": "vague",
+       "text": "It shows some students walking to school."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "try something different"
+       "flaw": "lifted",
+       "text": "Four students in uniform stroll along a covered walkway."
       }
      ]
     },
@@ -14113,130 +14064,94 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "visual",
-     "text": "The poster is written for the students of one school. Give one piece of evidence from the poster that shows this.",
+     "skill": "evidence",
+     "text": "Pick out one sentence from Text 2 that supports the claim in Text 1 that students in the back seats of cars ‘arrive sleepy and silent’.",
      "scheme": {
-      "answer": "It says ‘our gate’ and ‘half of us’, so the writer and the readers belong to the same school.",
+      "answer": "Every morning she slept against the window while I fought the traffic, and neither of us said a word.",
       "accept": [
-       "Stamp cards are collected from ‘your form teacher’.",
-       "The rewards are a breakfast set from the canteen and choosing the music at Friday’s assembly.",
-       "It quotes Hui Min, a Secondary 3 student.",
-       "The Walking Bus is led by prefects.",
-       "It is put up by the Student Council."
+       "she slept against the window",
+       "neither of us said a word"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It uses 'our gate' and 'half of us', which shows the writer is talking to people in the same school."
+       "text": "Every morning she slept against the window while I fought the traffic, and neither of us said a word."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "Students have to collect the stamp card from their form teacher, and only students have form teachers."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The prize is a breakfast set from the school canteen."
+       "text": "‘she slept against the window’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It says the best ten minutes of your day are not in a car."
+       "text": "I was worried she would be late."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "That evening she talked more at dinner than she had in a month."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "The poster uses simple words that are easy to understand."
+       "text": "The part where the parent says the drive was boring."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "Why does the poster include the information about the Walking Bus?",
-     "scheme": {
-      "answer": "It shows students who live far away that they can still take part, by walking the last stretch in a group.",
-      "accept": [
-       "So that students who live too far to walk from home do not feel left out and have a way to join in."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "So that students who stay far from school can still join by walking part of the way with the group."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Some students cannot walk all the way from home, so this gives them a way to take part too and not be left out."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To tell students that there is a new bus service to the school."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To give students more information about the week."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To show that prefects are responsible students."
-      }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘The best ten minutes of your day are not in a car.’ What does it suggest about walking to school?",
-     "scheme": {
-      "answer": "Walking to school can be the most enjoyable part of a student’s day, much better than sitting in a car.",
-      "accept": [
-       "A short walk to school is something to look forward to, and students who are driven miss out on it."
-      ]
-     },
-     "seeds": [
+     "stem": "Think about Texts 1 and 2 together. Pick the ending that fits each sentence best.",
+     "text": "Both texts suggest that walking to school …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that walking to school is very enjoyable and can even be the best part of the whole day, better than being driven."
+       "label": "A",
+       "text": "is mainly a way for students to keep fit."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Students who sit in a car are missing out, because the short walk is actually the nicest time of their day."
+       "label": "B",
+       "text": "gives young people time to notice things and talk to others."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that it takes exactly ten minutes to walk to school."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "The best ten minutes of your day are not in a car."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that cars are dangerous for students."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests something about how students travel to school."
+       "label": "C",
+       "text": "is only possible for students who live close by."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "gives young people time to notice things and talk to others."
+     },
+     "seeds": []
+    },
+    {
+     "n": "4b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Think about Texts 1 and 2 together. Pick the ending that fits each sentence best.",
+     "text": "In Text 2, the words ‘I lose ten minutes of driving; I gain a daughter who arrives at school awake’ show that the parent …",
+     "options": [
+      {
+       "label": "A",
+       "text": "regrets agreeing to the walking week."
+      },
+      {
+       "label": "B",
+       "text": "feels the small cost is well worth it."
+      },
+      {
+       "label": "C",
+       "text": "wants the school to make the week longer."
+      }
+     ],
+     "scheme": {
+      "answer": "feels the small cost is well worth it."
+     },
+     "seeds": []
     }
    ]
   },
@@ -14246,6 +14161,7 @@
    "title": "The Borrow Shed",
    "format": "webpage",
    "theme": "amber",
+   "intro": "Text 1 is a webpage for a tool-lending cupboard run by the residents of a housing block.",
    "visual": [
     {
      "t": "kicker",
@@ -14289,90 +14205,76 @@
      "text": "Have a tool you never use? Donate it and let it work for the whole block."
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a residents’ newsletter article about one of the volunteers at the Borrow Shed.",
+    "paragraphs": [
+     "Mr Tan, a retired aircraft technician of 68, spends two evenings a week beside the cupboard under the stairs. ‘People think I am here to guard the tools,’ he laughs. ‘Actually, I am here to talk.’ Nearly everything on the shelves was given by neighbours. ‘When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again.’",
+     "What surprises him most is who comes to borrow. It is not only fathers fixing taps, but teenagers building projects and grandmothers hanging photo frames. ‘Last week a boy came for a saw and stayed an hour asking me how planes stay up,’ he says. ‘The tools are the excuse. The shed is really about knowing your neighbours.’"
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘You need a hole in the wall, not a drill in the cupboard.’ What does it suggest about owning tools?",
-     "scheme": {
-      "answer": "People only need a tool for the short job it does, so there is no need to buy one and keep it at home.",
-      "accept": [
-       "What matters is getting the job done, not having your own tool, so borrowing makes more sense than buying."
-      ]
-     },
-     "seeds": [
+     "text": "Look at Text 1. Which of these would be the best title for the webpage?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that people only need the tool to do one job, so they do not really need to buy and keep one at home."
+       "label": "A",
+       "text": "Why buy it when you can borrow it?"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "What you want is the job done, not the tool itself, so owning it is unnecessary and you can just borrow."
+       "label": "B",
+       "text": "How to fix things around the house"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that drills should not be stored inside cupboards."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that people should not make holes in their walls."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests something about tools at home."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "You need a hole in the wall, not a drill in the cupboard."
+       "label": "C",
+       "text": "Give your old tools to charity"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Why buy it when you can borrow it?"
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
      "skill": "visual",
-     "text": "Besides free tools, what other benefit of the Borrow Shed does Mrs Kaur’s experience show?",
+     "text": "Look at the picture in Text 1. How does it support the tagline ‘Borrow the tool. Finish the job. Bring it back.’?",
      "scheme": {
-      "answer": "The volunteers on duty teach borrowers how to use the tools safely.",
+      "answer": "Each tool has a numbered tag and the sign tells people to return what they took, which shows the tools are shared and are meant to come back after use.",
       "accept": [
-       "Borrowers get help and guidance from a neighbour who knows how to use the tools.",
-       "Residents can learn new skills from the volunteers."
+       "The rows of tagged tools and the sign on the door show a shared cupboard where you take a tool and put it back, as the tagline says."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "The volunteer on duty will teach you how to use the tools safely."
+       "text": "The tools all have number tags and the sign on the door says to return what you took, so it shows the tools are for everyone to borrow and then bring back, like the tagline."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "You can get guidance from a neighbour who knows about the tools, so you learn how to handle them properly."
+       "text": "The handwritten sign and the tags show that you can take a tool but must put it back, which matches borrowing it and returning it."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "You can borrow a saw and a sander without paying."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The volunteers will build the shelf for you."
+       "text": "It shows that the tools are being sold cheaply to residents."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It shows that the Borrow Shed is very good for residents."
+       "text": "It shows a cupboard with a lot of tools."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "A cupboard under a staircase with open doors."
       }
      ]
     },
@@ -14380,124 +14282,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
+     "skill": "evidence",
+     "text": "Pick out one sentence from Text 2 that supports the claim in Text 1 that most home tools are ‘used for a few minutes a year’.",
+     "scheme": {
+      "answer": "When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again.",
+      "accept": [
+       "they bought it for one job years ago and never touched it again"
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "‘they bought it for one job years ago and never touched it again’"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "What surprises him most is who comes to borrow."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "‘Actually, I am here to talk.’"
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "The sentence where Mr Tan talks about the people who donate."
+      }
+     ]
+    },
+    {
+     "n": "4a",
+     "marks": 1,
+     "type": "choice",
+     "skill": "inference",
+     "stem": "Using both texts, pick the ending that fits each sentence best.",
+     "text": "Both texts suggest that the Borrow Shed …",
+     "options": [
+      {
+       "label": "A",
+       "text": "is mostly used by fathers repairing their flats."
+      },
+      {
+       "label": "B",
+       "text": "brings neighbours together as well as lending tools."
+      },
+      {
+       "label": "C",
+       "text": "charges a small fee to keep the tools in good repair."
+      }
+     ],
+     "scheme": {
+      "answer": "brings neighbours together as well as lending tools."
+     },
+     "seeds": []
+    },
+    {
+     "n": "4b",
+     "marks": 1,
+     "type": "choice",
      "skill": "language_use",
-     "text": "Which phrase in the body text suggests that tools kept at home are mostly wasted?",
-     "scheme": {
-      "answer": "gathering dust",
-      "accept": [
-       "spend the rest of their lives gathering dust",
-       "the rest of their lives gathering dust",
-       "used for a few minutes a year",
-       "a few minutes a year"
-      ]
-     },
-     "seeds": [
+     "stem": "Using both texts, pick the ending that fits each sentence best.",
+     "text": "In Text 2, Mr Tan’s words ‘The tools are the excuse’ suggest that …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "gathering dust"
+       "label": "A",
+       "text": "many of the tools in the shed are broken."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "'spend the rest of their lives gathering dust'"
+       "label": "B",
+       "text": "the real value of the shed is the people it brings together."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"used for a few minutes a year\"."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "a shared cupboard"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "free, for up to three days"
+       "label": "C",
+       "text": "residents make up reasons not to return what they borrow."
       }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "In the picture, a handwritten sign reads ‘Take what you need. Return what you took.’ What does the sign tell us the Borrow Shed expects of the people who use it?",
+     ],
      "scheme": {
-      "answer": "It expects borrowers to be honest and responsible, taking only what they need and bringing every tool back.",
-      "accept": [
-       "It trusts residents to return the tools they borrow."
-      ]
+      "answer": "the real value of the shed is the people it brings together."
      },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It expects them to be honest and responsible and bring back whatever tools they borrowed."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The shed depends on trust, so residents must not keep the things for themselves after using them."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It tells us that people can take any tool they like and keep it."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It tells people about the Borrow Shed."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It expects them to write neatly on the sign."
-      }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "What is the purpose of the last line: ‘Have a tool you never use? Donate it and let it work for the whole block.’?",
-     "scheme": {
-      "answer": "To encourage residents to give their unused tools to the Borrow Shed so that all their neighbours can use them.",
-      "accept": [
-       "To get more tools for the shed by asking residents to donate the ones they do not need."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "To encourage residents to donate tools they are not using so that everyone in the block can borrow them."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It is asking people to give their spare tools to the shed, so the shed has more things for the neighbours to share."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To ask residents to borrow more tools from the shed."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To tell residents to throw away their old tools."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To end the webpage in a nice way."
-      }
-     ]
+     "seeds": []
     }
    ]
   },
@@ -14507,6 +14378,7 @@
    "title": "Sunday Beach Clean-up",
    "format": "post",
    "theme": "teal",
+   "intro": "Text 1 is a social media post by a volunteer group that cleans up beaches.",
    "visual": [
     {
      "t": "kicker",
@@ -14554,89 +14426,117 @@
      "text": "Tag a friend who owes you a favour. #ShorelineKakis"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a blog post by Shalini, a student who joined her first beach clean-up.",
+    "paragraphs": [
+     "I almost did not go. I am not sporty, and I could not tell you the name of a single fish, but nobody there seemed to mind. A woman in a wide straw hat handed me a pair of tongs and pointed at a stretch of sand that looked perfectly clean. It was not.",
+     "Once I started looking, I saw bottle caps, sweet wrappers and crumbs of foam everywhere, mixed in with the shells. By nine o’clock my sack was so heavy that I had to drag it. My strangest find was a plastic toy soldier, its paint long gone. Some child had lost it years ago, and the sea had carried it all the way to Changi. I keep thinking about how long it must have been floating."
+    ]
+   },
    "questions": [
     {
-     "n": "1",
+     "n": "1a",
      "marks": 1,
-     "type": "short",
-     "skill": "language_use",
-     "text": "‘If you can bend down and pick something up, you are qualified.’ What is the writer suggesting about the clean-up?",
-     "scheme": {
-      "answer": "Anyone can take part because the work is simple and needs no special skill, fitness or knowledge.",
-      "accept": [
-       "The clean-up is easy enough for everybody, so nobody should think they are not good enough to join."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "stem": "For each statement, decide whether it is true of Text 1 only, Text 2 only, both texts, or neither.",
+     "text": "It mentions an item that seems to have been in the sea for many years.",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The writer is suggesting that anyone can join because it is simple work and you do not need any special skills."
+       "label": "A",
+       "text": "Text 1"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It is so easy that everybody is good enough to help, even people who are not sporty or have never done it before."
+       "label": "B",
+       "text": "Text 2"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Volunteers need to have a qualification before they can join."
+       "label": "C",
+       "text": "Both"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The clean-up is very tiring because you have to keep bending down."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "If you can bend down and pick something up, you are qualified."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The writer is suggesting something good about the clean-up."
+       "label": "D",
+       "text": "Neither"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Both"
+     },
+     "seeds": []
+    },
+    {
+     "n": "1b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "For each statement, decide whether it is true of Text 1 only, Text 2 only, both texts, or neither.",
+     "text": "It uses light-hearted jokes to persuade readers to sign up.",
+     "options": [
+      {
+       "label": "A",
+       "text": "Text 1"
+      },
+      {
+       "label": "B",
+       "text": "Text 2"
+      },
+      {
+       "label": "C",
+       "text": "Both"
+      },
+      {
+       "label": "D",
+       "text": "Neither"
+      }
+     ],
+     "scheme": {
+      "answer": "Text 1"
+     },
+     "seeds": []
     },
     {
      "n": "2",
-     "marks": 1,
+     "marks": 2,
      "type": "short",
-     "skill": "inference",
-     "text": "Danish says he ‘could not stop looking’. What does this suggest about how he found the clean-up?",
+     "skill": "visual",
+     "text": "Look at the picture in Text 1. What does it show, and how does that support the headline ‘The sea keeps returning what we throw away. This Sunday, help us take it back.’?",
      "scheme": {
-      "answer": "He found it so interesting that he became absorbed in searching for things, instead of being bored as he had expected.",
-      "accept": [
-       "He enjoyed it and was curious to see what else he could find."
+      "answer": "It shows a girl holding up an old slipper caught in fishing line while volunteers clear the beach behind her; the slipper is rubbish the sea has brought back, and the volunteers are taking it back, as the headline asks.",
+      "points": [
+       "It shows a girl holding up a faded slipper tangled in fishing line, with volunteers collecting rubbish on the beach behind her. [1]",
+       "This backs the headline: the slipper is rubbish the sea has washed back, and the volunteers are ‘taking it back’ by clearing the sand. [1]"
       ]
      },
      "seeds": [
       {
-       "mark": 1,
+       "mark": 2,
        "flaw": "full",
-       "text": "He found it really interesting and got absorbed in searching, even though he expected to be bored."
+       "text": "The picture shows a girl holding up an old slipper stuck in fishing line, and people with sacks and tongs behind her. This supports the headline because the slipper is the rubbish the sea brought back to the beach, and the volunteers are taking it away like the headline asks."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "We see a girl showing a worn-out slipper wrapped in fishing line while other volunteers pick up rubbish on the sand. The slipper proves the sea washes our rubbish back, and the people cleaning show readers how to help take it back."
       },
       {
        "mark": 1,
-       "flaw": "paraphrase",
-       "text": "He was curious about what else was hidden in the sand, so he ended up enjoying himself."
+       "flaw": "half",
+       "text": "It shows a girl holding up a faded slipper tangled in fishing line, and many volunteers with tongs and sacks on the beach at sunrise."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It supports the headline because it proves that the sea really does wash our rubbish back onto the beach, so we must help to remove it."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "He found the two hours very long and tiring."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "He had lost his toothbrush and was trying to find it."
+       "text": "It shows that the beach is too dirty for children to play on, so people should stay away."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It suggests that he went to the clean-up and looked around."
+       "text": "It shows a girl at the beach in the morning."
       }
      ]
     },
@@ -14644,130 +14544,39 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "visual",
-     "text": "The post hopes to attract people who have never joined a beach clean-up before. Give one piece of evidence from the post that shows this.",
+     "skill": "evidence",
+     "text": "Pick out one sentence from Text 2 that supports the claim in Text 1 that volunteers ‘do not need to be fit or know anything about the sea’.",
      "scheme": {
-      "answer": "It says ‘You do not need to be fit or know anything about the sea.’",
+      "answer": "I am not sporty, and I could not tell you the name of a single fish, but nobody there seemed to mind.",
       "accept": [
-       "It says that if you can bend down and pick something up, you are qualified.",
-       "It quotes Danish, a first-timer.",
-       "It says ‘all hands welcome’.",
-       "It promises to provide the gloves, tongs and sacks and tells readers what to bring, as if they would not know."
+       "I am not sporty, and I could not tell you the name of a single fish"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It says you do not need to be fit or know anything about the sea."
+       "text": "I am not sporty, and I could not tell you the name of a single fish, but nobody there seemed to mind."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The person they quoted, Danish, is a first-timer, so new people will feel they can come too."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It tells readers that the group will bring the gloves, tongs and sacks, and lists what to bring, which only new people need to be told."
+       "text": "‘I am not sporty, and I could not tell you the name of a single fish’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It is held at Changi Beach on Sunday at 7.30 am."
+       "text": "By nine o’clock my sack was so heavy that I had to drag it."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "They found a rice cooker on the beach last month."
+       "text": "I almost did not go."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "The post sounds friendly."
-      }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the box tells readers that volunteers will be given a treat for their effort?",
-     "scheme": {
-      "answer": "teh and curry puffs on us",
-      "accept": [
-       "on us",
-       "curry puffs on us",
-       "teh and curry puffs",
-       "Afterwards: teh and curry puffs on us"
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "teh and curry puffs on us"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "'curry puffs on us'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"Afterwards: teh and curry puffs on us\"."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "a weighing scale"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "a water bottle, a hat and covered shoes"
-      }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
-     "skill": "inference",
-     "text": "Look at the first sentence of the headline: ‘The sea keeps returning what we throw away.’ What does it suggest about where the rubbish on the beach comes from?",
-     "scheme": {
-      "answer": "The rubbish was thrown away by people, and the sea washes it back onto the shore.",
-      "accept": [
-       "The litter on the beach is our own; humans are responsible for it."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests the rubbish comes from people who threw it away, and the waves wash it back up onto the beach."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The mess is caused by humans. Our own litter ends up in the water and then lands on the shore again."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that the sea produces the rubbish by itself."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The rubbish is left behind by the volunteers every Sunday."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests that the beach has a problem."
+       "text": "The part where Shalini says she was not good at things."
       }
      ]
     }
@@ -14779,6 +14588,7 @@
    "title": "The Year-End Swap",
    "format": "poster",
    "theme": "rose",
+   "intro": "Text 1 is a poster for a uniform and textbook swap run by a school’s parent support group.",
    "visual": [
     {
      "t": "kicker",
@@ -14823,89 +14633,76 @@
      "text": "Saturday, 22 November · 9 am to 1 pm · School Hall"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a forum post by Wen Hui, a Secondary 2 student, about using second-hand textbooks.",
+    "paragraphs": [
+     "Every December, my mother sits at the kitchen table with the booklist and a calculator, and goes very quiet. With three of us in school, the books and uniforms for January cost her more than she spends on groceries in a month. So last year, when a neighbour offered us her son’s old books, I said thank you and felt secretly embarrassed. I did not want anyone in class to notice that my books were not new.",
+     "That feeling lasted about two weeks. Inside the Geography textbook, the boy had drawn tiny arrows and diagrams beside every chapter, and they made the hard parts make sense. Now I am the one keeping my books neat, because I already know which girl on my block will get them next."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘Outgrown it? Someone else is about to grow into it.’ What does it suggest about the things students no longer need?",
-     "scheme": {
-      "answer": "They are still useful, because a younger student will soon need exactly those things.",
-      "accept": [
-       "Items that are too small or no longer needed by one student can be used by another, so they should not be wasted."
-      ]
-     },
-     "seeds": [
+     "text": "Look at Text 1. Which sentence best sums up what the poster wants readers to understand?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that these things are still useful because a younger student will need them soon."
+       "label": "A",
+       "text": "Families should buy fewer new things to help the environment."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Something too small for you is just right for another person, so it should be passed on and not wasted."
+       "label": "B",
+       "text": "Things students have outgrown can be passed on, free, to others who need them."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that students should buy bigger uniforms so that they last longer."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that old things should be thrown away."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests that students grow."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "Someone else is about to grow into it."
+       "label": "C",
+       "text": "Students should take better care of their uniforms and textbooks."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Things students have outgrown can be passed on, free, to others who need them."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
      "skill": "visual",
-     "text": "How does the picture support the message of the poster?",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘Outgrown it? Someone else is about to grow into it.’?",
      "scheme": {
-      "answer": "It shows an older student passing his books to a younger one who is clearly delighted, which shows that used items are welcomed and put to use by someone else.",
+      "answer": "A tall older boy hands his textbooks to a much smaller boy who is eager to use them, showing that what one student has outgrown goes straight to a younger one who needs it.",
       "accept": [
-       "The smaller boy’s grin shows that what one student no longer needs can make another student happy."
+       "The big Secondary 4 boy is passing his old books to a small boy who is already reading one, so the things one student no longer needs are about to be used by another."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It shows an older boy giving his books to a younger boy who is very happy to get them, so we see that used things are still wanted by someone."
+       "text": "The picture shows a tall Sec 4 boy giving his textbooks to a much smaller boy, so the older boy has outgrown them and the younger boy is going to grow into them, like the headline says."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The small boy is grinning and already reading the book, which proves that things you have finished with can make another student glad."
+       "text": "The older student passes his books to a younger kid who is happy and already opening one, so the old books will be used again by someone who needs them."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It shows that the uniforms are sold at a cheap price in the hall."
+       "text": "It shows that the small boy is buying the books from the older boy at a cheap price."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It shows what the school hall looks like."
+       "text": "It shows students at the swap who look happy."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that Secondary 4 boys are taller than other boys."
+       "flaw": "lifted",
+       "text": "A long table in a school hall is piled with folded uniforms sorted by size."
       }
      ]
     },
@@ -14913,133 +14710,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text suggests that buying everything new costs families a lot of money?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that new uniforms and books are ‘a heavy bill at the start of every year’.",
      "scheme": {
-      "answer": "a heavy bill",
+      "answer": "With three of us in school, the books and uniforms for January cost her more than she spends on groceries in a month.",
       "accept": [
-       "heavy bill",
-       "are a heavy bill",
-       "a heavy bill at the start of every year"
+       "the books and uniforms for January cost her more than she spends on groceries in a month"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "a heavy bill"
+       "text": "With three of us in school, the books and uniforms for January cost her more than she spends on groceries in a month."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "'heavy bill'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"a heavy bill at the start of every year\"."
+       "text": "‘the books and uniforms for January cost her more than she spends on groceries in a month’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "sit in a box"
+       "text": "That feeling lasted about two weeks."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "at the back of the wardrobe"
+       "text": "Now I am the one keeping my books neat, because I already know which girl on my block will get them next."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "no longer fit"
+       "flaw": "vague",
+       "text": "The sentence about her mother and the money."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "‘There is no need to bring something in order to take something. Nobody will ask.’ Why do you think the poster includes these lines?",
-     "scheme": {
-      "answer": "To assure students who have nothing to give that they can still take what they need without feeling embarrassed.",
-      "accept": [
-       "So that families who need the items will come and take them freely, knowing that nobody will question or judge them."
-      ]
-     },
-     "seeds": [
+     "stem": "Think about Texts 1 and 2 together. Pick the best way to finish each statement.",
+     "text": "Both texts suggest that a used textbook …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "To assure students who have nothing to give that they can still take things and need not feel embarrassed about it."
+       "label": "A",
+       "text": "is only worth taking if nobody has written in it."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "So that families who really need the uniforms and books will not be shy to come, because no one will question them or judge them."
+       "label": "B",
+       "text": "can be more helpful than a new one because of the notes inside."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To remind students that they must bring something before they are allowed to take anything."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To show that nobody is interested in the Swap."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To tell students the rules of the Swap."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "Because there is no need to bring something in order to take something."
+       "label": "C",
+       "text": "should be given back to the school at the end of the year."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "can be more helpful than a new one because of the notes inside."
+     },
+     "seeds": []
     },
     {
-     "n": "5",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "According to Aditi’s words, what advantage can a used textbook have over a new one?",
-     "scheme": {
-      "answer": "It may contain the previous owner’s notes, which help the next student understand the subject better.",
-      "accept": [
-       "The notes written in it by an older student can explain the lessons more clearly."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Think about Texts 1 and 2 together. Pick the best way to finish each statement.",
+     "text": "In Text 2, the words ‘goes very quiet’ show that the writer’s mother …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "A used textbook may have the notes of the previous owner, and these help you to understand the subject better."
+       "label": "A",
+       "text": "is tired after a long day at work."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The older student has already written explanations inside, so the topics become clearer to the next person."
+       "label": "B",
+       "text": "is worried about how much everything will cost."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "A used textbook is cheaper than a new one."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Her brother is very good at Chemistry."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "Used textbooks are better than new textbooks."
+       "label": "C",
+       "text": "is angry that her children need new books."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "is worried about how much everything will cost."
+     },
+     "seeds": []
     }
    ]
   },
@@ -15049,6 +14806,7 @@
    "title": "Byte Buddies Coding Club",
    "format": "webpage",
    "theme": "indigo",
+   "intro": "Text 1 is a webpage for a free weekend coding club for primary school children.",
    "visual": [
     {
      "t": "kicker",
@@ -15093,98 +14851,76 @@
      "text": "Register your child — 20 places per round"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from an interview in a community centre newsletter with Jun Hao, a Secondary 3 student who tutors at the club.",
+    "paragraphs": [
+     "Newsletter: What is the hardest part of tutoring? Jun Hao: Keeping my hands to myself! When a child is stuck, every part of me wants to grab the mouse and fix it in two seconds. But if I do that, the game becomes mine, not theirs. So I sit on my hands, sometimes really, and ask, “What did you want the cat to do? What is it doing instead?”",
+     "Newsletter: Do the children ever give up? Jun Hao: Some want to, at first. One boy cried in week two because his character kept falling through the floor. I told him I had once spent a whole evening on the same problem. By week six he was helping the girl next to him. That is the moment I wait for every round."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The webpage is written for parents rather than for children. Give one piece of evidence from the webpage that shows this.",
-     "scheme": {
-      "answer": "It speaks to the reader about ‘your child’.",
-      "accept": [
-       "The box is titled ‘What parents ask us’.",
-       "It quotes Mdm Lim, a parent.",
-       "The button says ‘Register your child’.",
-       "It answers worries that parents have, such as cost and safety."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "text": "Look at Text 1. What is the webpage mainly trying to persuade parents to do?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It keeps saying 'your child', so it is talking to the parents."
+       "label": "A",
+       "text": "Buy their child a laptop so that they can code at home."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "There is a box called 'What parents ask us'."
+       "label": "B",
+       "text": "Sign their child up for a free coding club run by patient teenage tutors."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The person quoted is Mdm Lim, who is a parent of a pupil, not a child."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It says the club is for Primary 3 to 6."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The picture shows a girl of about ten using a laptop."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The language used is quite formal."
+       "label": "C",
+       "text": "Stop their child from playing computer games at the weekend."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Sign their child up for a free coding club run by patient teenage tutors."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
      "skill": "visual",
-     "text": "In the picture, the tutor sits back ‘with his hands off the keyboard’. Which idea in the body text does this detail support?",
+     "text": "Look at the picture in Text 1. How does it support what the body text says about the tutors?",
      "scheme": {
-      "answer": "The tutors never take over; they let the children do the work and solve the problems themselves.",
+      "answer": "The tutor sits back with his hands off the keyboard while the girl shows the game she made, which supports the claim that the tutors never take over and let the children do the work themselves.",
       "accept": [
-       "‘our tutors never take over the mouse’",
-       "The tutors only ask questions, give hints and wait."
+       "The girl is excited about her own jumping cat and the tutor is not touching the laptop, so it shows the tutors only guide and do not take over the mouse."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It supports the idea that the tutors do not do the work for the children but let them figure it out on their own."
+       "text": "The tutor is sitting back with his hands off the keyboard while the girl points at the cat she made, so it shows what the body text says, that the tutors never take over the mouse."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The idea that 'our tutors never take over the mouse'."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The tutors just give hints and wait while the child does the coding herself."
+       "text": "The teenager is not touching the laptop at all and the girl did the game herself, so it proves the tutors let the kids work it out on their own."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "The idea that the club lends a laptop to every child."
+       "text": "It shows that the tutor is lazy and does not bother to help the girl."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the tutor does not know how to code."
+       "flaw": "vague",
+       "text": "It shows a girl and a tutor using a laptop together."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "The idea that children already love games."
+       "flaw": "lifted",
+       "text": "A girl of about ten points excitedly at a laptop screen."
       }
      ]
     },
@@ -15192,128 +14928,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that the tutors are ‘teenagers who remember being beginners’.",
+     "scheme": {
+      "answer": "I told him I had once spent a whole evening on the same problem.",
+      "accept": [
+       "I had once spent a whole evening on the same problem"
+      ]
+     },
+     "seeds": [
+      {
+       "mark": 1,
+       "flaw": "full",
+       "text": "I told him I had once spent a whole evening on the same problem."
+      },
+      {
+       "mark": 1,
+       "flaw": "paraphrase",
+       "text": "‘I had once spent a whole evening on the same problem’"
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "By week six he was helping the girl next to him."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "One boy cried in week two because his character kept falling through the floor."
+      },
+      {
+       "mark": 0,
+       "flaw": "vague",
+       "text": "The part where Jun Hao talks to the boy who cried."
+      }
+     ]
+    },
+    {
+     "n": "4a",
+     "marks": 1,
+     "type": "choice",
      "skill": "inference",
-     "text": "The body text says children will ‘learn that a mistake is just a puzzle to solve’. What attitude does the club hope children will develop?",
-     "scheme": {
-      "answer": "Not to be discouraged by their mistakes but to keep trying until they have worked out how to fix them.",
-      "accept": [
-       "To persevere when something goes wrong and to see errors as a challenge rather than a failure."
-      ]
-     },
-     "seeds": [
+     "stem": "Now read Texts 1 and 2 side by side. Choose the ending that fits each statement best.",
+     "text": "Both texts show that the club wants children to …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The club hopes children will not be discouraged by mistakes and will keep trying until they can fix them."
+       "label": "A",
+       "text": "finish their games as quickly as they can."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "To not give up when things go wrong, and to treat an error as a challenge instead of a failure."
+       "label": "B",
+       "text": "solve problems for themselves instead of being handed the answer."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "That children should never make any mistakes when they code."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "That children should play more puzzle games."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The club hopes children will have a good attitude."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "That a mistake is just a puzzle to solve."
+       "label": "C",
+       "text": "learn coding so that they can get good jobs later."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "solve problems for themselves instead of being handed the answer."
+     },
+     "seeds": []
     },
     {
-     "n": "4",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "language_use",
-     "text": "Which phrase in the tagline suggests that the tutors will understand what it is like to be new to coding?",
-     "scheme": {
-      "answer": "remember being beginners",
-      "accept": [
-       "who remember being beginners",
-       "teenagers who remember being beginners",
-       "being beginners"
-      ]
-     },
-     "seeds": [
+     "stem": "Now read Texts 1 and 2 side by side. Choose the ending that fits each statement best.",
+     "text": "In Text 1, the words ‘by getting stuck, a lot’ are used to …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "remember being beginners"
+       "label": "A",
+       "text": "warn parents that the course is very difficult."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "'teenagers who remember being beginners'"
+       "label": "B",
+       "text": "show, with a light touch, that the tutors struggled when they started."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"who remember being beginners\"."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Free weekend coding"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "for Primary 3 to 6"
+       "label": "C",
+       "text": "complain that nobody taught the tutors properly."
       }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "What is the purpose of the box titled ‘What parents ask us’?",
+     ],
      "scheme": {
-      "answer": "To remove the worries parents may have, such as cost, safety and equipment, so that they feel comfortable registering their child.",
-      "accept": [
-       "To reassure parents by answering the questions that might stop them from signing their child up."
-      ]
+      "answer": "show, with a light touch, that the tutors struggled when they started."
      },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "To clear the worries parents may have, like the cost and safety, so that they will be willing to register their child."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It reassures parents by answering the doubts that might stop them from signing up."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To tell parents the time and place of the club."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To show that parents ask too many questions."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To give some information."
-      }
-     ]
+     "seeds": []
     }
    ]
   },
@@ -15323,6 +15024,7 @@
    "title": "The Dinner Table Project",
    "format": "poster",
    "theme": "amber",
+   "intro": "Text 1 is a poster that encourages families to eat one meal a week without phones.",
    "visual": [
     {
      "t": "kicker",
@@ -15367,89 +15069,117 @@
      "text": "Take the one-dinner challenge"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a letter to a community newspaper written by a mother of three teenagers.",
+    "paragraphs": [
+     "For months, dinner in our flat looked like a waiting room. Five of us sat at one table, and most nights the only sound was the tapping of thumbs on screens. I told myself the children were tired after school and needed to rest their minds. Then I realised I had not heard a single story about my son’s day in weeks.",
+     "That was when we tried a phone-free dinner on Fridays. The children groaned. My husband, I must admit, groaned loudest. But by the third Friday, my son was telling us about a science experiment that had gone badly wrong, and we laughed until the soup went cold. We have not managed every week. Still, Friday is now the night nobody wants to miss."
+    ]
+   },
    "questions": [
     {
-     "n": "1",
+     "n": "1a",
      "marks": 1,
-     "type": "short",
-     "skill": "language_use",
-     "text": "‘Now we eat side by side and scroll alone.’ What is the writer suggesting about family meals today?",
-     "scheme": {
-      "answer": "Family members sit together at meals, but each one is busy with a phone, so they do not really talk to one another.",
-      "accept": [
-       "Families are together only in body; their attention is on their screens and not on each other."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "stem": "Each statement below is about Texts 1 and 2. Decide whether it is true of Text 1 only, Text 2 only, both texts, or neither of them.",
+     "text": "It shows a family laughing together at a meal without phones.",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The writer is suggesting that family members sit together but everyone is busy with their own phone, so they do not really talk."
+       "label": "A",
+       "text": "Text 1"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "They are at the same table, but their minds are on their screens and not on each other."
+       "label": "B",
+       "text": "Text 2"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Families no longer eat at the same table, and everyone eats in a different room."
+       "label": "C",
+       "text": "Both"
       },
       {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "We eat side by side and scroll alone."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "Family meals have changed compared to the past."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Families enjoy sharing videos with one another while eating."
+       "label": "D",
+       "text": "Neither"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Both"
+     },
+     "seeds": []
+    },
+    {
+     "n": "1b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Each statement below is about Texts 1 and 2. Decide whether it is true of Text 1 only, Text 2 only, both texts, or neither of them.",
+     "text": "It compares a family dinner to a place where strangers sit together without talking.",
+     "options": [
+      {
+       "label": "A",
+       "text": "Text 1"
+      },
+      {
+       "label": "B",
+       "text": "Text 2"
+      },
+      {
+       "label": "C",
+       "text": "Both"
+      },
+      {
+       "label": "D",
+       "text": "Neither"
+      }
+     ],
+     "scheme": {
+      "answer": "Text 2"
+     },
+     "seeds": []
     },
     {
      "n": "2",
-     "marks": 1,
+     "marks": 2,
      "type": "short",
      "skill": "visual",
-     "text": "How does the picture show that the idea in the poster works?",
+     "text": "Look at the picture in Text 1. What does it show, and how does this support the message of the poster?",
      "scheme": {
-      "answer": "It shows a family laughing and enjoying their meal together while their phones are put away in the basket.",
-      "accept": [
-       "With the phones in the basket, the family members are paying attention to one another and are clearly happy."
+      "answer": "It shows a family laughing together at dinner while their four phones sit in a basket on the shelf, which supports the message that putting phones away brings a family back to talking and enjoying the meal.",
+      "points": [
+       "It shows a family laughing and reaching for the dishes while their four phones sit in a basket on the shelf behind them [1]",
+       "This supports the message that when phones are put away, a family talks and enjoys the meal together again [1]"
       ]
      },
      "seeds": [
       {
-       "mark": 1,
+       "mark": 2,
        "flaw": "full",
-       "text": "It shows the family laughing and enjoying dinner together while all their phones are kept in the basket."
+       "text": "The picture shows a family of four laughing at dinner and their phones are in a basket on the shelf. This supports the poster because it shows that when the phones are put away, the family talks and has fun together."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "All four phones are kept in a basket away from the table and the family is laughing while eating, so it proves the poster's idea works and families enjoy dinner more without phones."
       },
       {
        "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Nobody is holding a phone because the phones are on the shelf, and the family looks happy and close."
+       "flaw": "half",
+       "text": "The picture shows a family laughing at the table and their four phones are in a rattan basket on the shelf."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It supports the message that families talk more and enjoy dinner when they put their phones away."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It shows that the family owns four phones."
+       "text": "It shows that the family has forgotten where they left their phones."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It shows a family having their dinner at home."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the family is laughing at something funny on a phone."
+       "text": "The picture matches the poster and makes it more interesting to look at."
       }
      ]
     },
@@ -15457,132 +15187,39 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text gives an example of the brief replies that family members send one another instead of talking?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that families now ‘eat side by side and scroll alone’.",
      "scheme": {
-      "answer": "a thumbs-up in the family chat",
+      "answer": "Five of us sat at one table, and most nights the only sound was the tapping of thumbs on screens.",
       "accept": [
-       "a thumbs-up",
-       "thumbs-up",
-       "Not a thumbs-up in the family chat",
-       "thumbs-up in the family chat"
+       "most nights the only sound was the tapping of thumbs on screens"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "a thumbs-up in the family chat"
+       "text": "Five of us sat at one table, and most nights the only sound was the tapping of thumbs on screens."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "'a thumbs-up'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"Not a thumbs-up in the family chat\"."
+       "text": "‘most nights the only sound was the tapping of thumbs on screens’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "the whole story"
+       "text": "The children groaned."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "with the funny voices"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "take it back"
-      }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "inference",
-     "text": "What does Farah’s experience suggest a family may gain from a dinner without phones?",
-     "scheme": {
-      "answer": "Family members may learn things about one another that they never knew, and so grow closer.",
-      "accept": [
-       "They may hear stories from their parents for the first time and get to know them better."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "They may find out things about each other that they never knew before, and become closer."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Children can hear their parents' stories for the first time and understand them better as people."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that the family will feel awkward for the whole dinner."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that Farah's father enjoyed his school days."
+       "text": "Still, Friday is now the night nobody wants to miss."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "They may gain something good from it."
-      }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The last item in the box reads ‘Whoever reaches for a phone first washes the dishes’. Why is this item included?",
-     "scheme": {
-      "answer": "It sets a light-hearted penalty that discourages family members from picking up their phones during the meal.",
-      "accept": [
-       "It turns the rule into a game, so that everyone tries to keep away from their phone."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It is a fun penalty that stops family members from picking up their phones during the meal."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "So that nobody dares to take their phone from the basket, because they do not want to end up washing the dishes."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It makes the rule into a kind of game, so everyone will try to stay away from their phone."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To make sure the dishes get washed after dinner."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To teach teenagers how to do housework."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "Because it is one of the steps to follow."
+       "text": "The sentence where she talks about dinner in her flat."
       }
      ]
     }
@@ -15594,6 +15231,7 @@
    "title": "Open Rehearsal",
    "format": "post",
    "theme": "rose",
+   "intro": "Text 1 is a social media post by a youth orchestra inviting the public to a rehearsal.",
    "visual": [
     {
      "t": "kicker",
@@ -15637,90 +15275,77 @@
      "text": "Tell us you are coming"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a forum post by a teenager who went to one of the orchestra’s open rehearsals.",
+    "paragraphs": [
+     "I only went because my cousin plays the violin and my aunt said the whole family had to show up. I expected two hours of sitting still and pretending to enjoy it. Instead, I watched the conductor stop everyone six times in the first ten minutes. The trumpets came in too early, then too late, and the whole hall groaned, laughed and tried again.",
+     "During the break, a bassoon player let me blow into her instrument. It made a sound like an angry goose, and nobody minded at all. That was when it hit me: these players were not born geniuses. They were ordinary teenagers who had simply kept practising. The next week, I put my name down for the beginners’ group."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘Come and hear us get it wrong.’ What does it tell readers to expect at the event?",
-     "scheme": {
-      "answer": "They will watch the orchestra practising, with mistakes and corrections, rather than a perfect performance.",
-      "accept": [
-       "It is a rehearsal, so the playing will be unpolished and the players will stop and try again."
-      ]
-     },
-     "seeds": [
+     "text": "Look at Text 1. Which sentence best sums up what the post wants readers to take away?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "Readers should expect to watch the orchestra practising and making mistakes, not a perfect performance."
+       "label": "A",
+       "text": "The orchestra is looking for experienced players to fill its empty seats."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It will be an unpolished practice session where the players stop and redo the parts they played badly."
+       "label": "B",
+       "text": "Anyone is welcome to watch real music being made, mistakes and all."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It tells readers that the orchestra is not good at music."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The audience is expected to correct the players' mistakes."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It tells readers to expect something different."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "To come and hear them get it wrong."
+       "label": "C",
+       "text": "Concerts are a waste of money when rehearsals are free."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Anyone is welcome to watch real music being made, mistakes and all."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the tagline suggests that the audience need not keep quiet?",
+     "skill": "visual",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘Come and hear us get it wrong.’?",
      "scheme": {
-      "answer": "no shushing",
+      "answer": "The young players are laughing at a mistake while the conductor grins, which shows that getting things wrong is a normal, relaxed part of a rehearsal and nothing to hide.",
       "accept": [
-       "no ticket, no dress code, no shushing",
-       "no dress code, no shushing"
+       "The conductor and players are smiling after a mistake, so the picture shows the orchestra does not mind people seeing them get it wrong.",
+       "It shows the players in a relaxed mood laughing at their own error, which matches the headline’s promise that visitors will see mistakes."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "no shushing"
+       "text": "The violinists are laughing at a mistake and the conductor is grinning, so it shows that making mistakes in rehearsal is normal and they are not ashamed of it, like the headline says."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The phrase is 'no shushing'."
+       "text": "Everyone in the picture is smiling even though someone just played wrongly, so it shows the orchestra is happy to let people watch them mess up."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "no dress code"
+       "text": "It shows that the conductor is angry with the players for being careless."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "Free open rehearsal"
+       "flaw": "vague",
+       "text": "The picture shows an orchestra practising their music."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "no ticket"
+       "flaw": "lifted",
+       "text": "A conductor in a T-shirt has stopped with her baton in the air, grinning."
       }
      ]
     },
@@ -15728,135 +15353,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "visual",
-     "text": "What impression of the orchestra does the picture give?",
+     "skill": "evidence",
+     "text": "Text 1 says that during the break visitors can ‘try a cello, a trumpet or the timpani’. Write down one sentence from Text 2 which supports this.",
      "scheme": {
-      "answer": "It seems relaxed, friendly and fun, not strict or formal.",
+      "answer": "During the break, a bassoon player let me blow into her instrument.",
       "accept": [
-       "The players and the conductor are casual and good-humoured, and can laugh at their own mistakes."
+       "a bassoon player let me blow into her instrument"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It gives the impression that the orchestra is relaxed and fun, not strict or formal."
+       "text": "During the break, a bassoon player let me blow into her instrument."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The players are casual and cheerful, and even the conductor can laugh when someone makes a mistake."
+       "text": "‘a bassoon player let me blow into her instrument’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It gives the impression that the conductor is angry with the violinists."
+       "text": "The trumpets came in too early, then too late, and the whole hall groaned, laughed and tried again."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "The orchestra is very formal and serious."
+       "text": "The next week, I put my name down for the beginners’ group."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It gives a good impression of the orchestra."
+       "text": "The part where the writer talks about the break."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The post is aimed at people who feel that orchestras are not for them. Give one piece of evidence from the post that shows this.",
+     "type": "choice",
+     "skill": "inference",
+     "stem": "Think about Texts 1 and 2 together. Pick the ending that fits each statement best.",
+     "text": "Both texts suggest that the players in the orchestra …",
+     "options": [
+      {
+       "label": "A",
+       "text": "are mostly adults who have played for many years."
+      },
+      {
+       "label": "B",
+       "text": "are ordinary young people who still make mistakes."
+      },
+      {
+       "label": "C",
+       "text": "are too serious to enjoy their own music."
+      }
+     ],
      "scheme": {
-      "answer": "It promises ‘no ticket, no dress code, no shushing’, removing the things that make concerts feel formal.",
-      "accept": [
-       "It quotes Wei Jie, who came in ‘thinking orchestras were for other people’.",
-       "It invites visitors to try the instruments themselves.",
-       "It mentions a beginners’ ensemble with no audition.",
-       "It says children are welcome and noise is forgiven.",
-       "It tells visitors to sit anywhere and walk around."
-      ]
+      "answer": "are ordinary young people who still make mistakes."
      },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It says there is no ticket, no dress code and no shushing, so it will not feel formal."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Wei Jie says he used to think orchestras were for other people, just like the readers think."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It lets people try the instruments and there is a beginners' group with no audition."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The rehearsal is on Saturday at 3 pm."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The orchestra has sixty players."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The post is written in an interesting way."
-      }
-     ]
+     "seeds": []
     },
     {
-     "n": "5",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "language_use",
-     "text": "The body text mentions ‘the moment sixty players finally breathe together’. What does this suggest happens at a rehearsal after the wrong notes and restarts?",
-     "scheme": {
-      "answer": "After many attempts, all the players at last play in time with one another, as one group.",
-      "accept": [
-       "The orchestra finally comes together and gets the music right."
-      ]
-     },
-     "seeds": [
+     "stem": "Think about Texts 1 and 2 together. Pick the ending that fits each statement best.",
+     "text": "In Text 1, the words ‘Stand behind the drums if you dare’ are meant to …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "After trying many times, all the players are finally in time with one another and play as one group."
+       "label": "A",
+       "text": "warn visitors that the drums are dangerous."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The whole orchestra at last comes together and gets the piece right."
+       "label": "B",
+       "text": "tell visitors exactly where they must sit."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The players are out of breath because rehearsals are tiring."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The players do breathing exercises before they start."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "Something special happens in the rehearsal."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "Sixty players finally breathe together."
+       "label": "C",
+       "text": "playfully challenge readers to come up close."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "playfully challenge readers to come up close."
+     },
+     "seeds": []
     }
    ]
   },
@@ -15866,6 +15449,7 @@
    "title": "Shelter Buddies",
    "format": "webpage",
    "theme": "green",
+   "intro": "Text 1 is a webpage inviting teenagers to volunteer with shelter animals.",
    "visual": [
     {
      "t": "kicker",
@@ -15906,89 +15490,78 @@
      "text": "Apply to be a Shelter Buddy"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a letter that a family wrote to an animal shelter after adopting a dog.",
+    "paragraphs": [
+     "Dear Shelter Team,",
+     "We nearly walked past Kopi. He was curled up at the back of his kennel and did not even lift his head when we called. Then one of your staff showed us the notebook hanging on his gate. Page after page, a volunteer called Sarah had written about him: that he was scared of brooms, that he loved having his ears rubbed, that he slept better with an old towel. Reading those notes made us feel we already knew him, and we took him home that same afternoon.",
+     "Three months on, he still hides whenever the broom comes out, but he waits by the door every evening for us. Please pass on our thanks to Sarah. — The Lim family"
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "Why does the webpage include the box titled ‘Before you sign up’?",
-     "scheme": {
-      "answer": "To make sure readers know that the work is hard and needs patience, so that only teenagers who are serious about it will apply.",
-      "accept": [
-       "To warn teenagers that volunteering involves chores and commitment and is not just playing with animals."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "text": "Look at Text 1. Which sentence best states the main message of the webpage?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "To let readers know the work is tough and needs patience, so that only teenagers who are serious will apply."
+       "label": "A",
+       "text": "Teenagers can adopt the animal they look after once six months are up."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It warns teens that they have to do dirty chores and be committed, it is not just about playing with cute animals."
+       "label": "B",
+       "text": "Shelter animals need patient, regular company, and teenagers can give it."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To stop all teenagers from joining the programme."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To teach teenagers the correct way to clean a kennel."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To give more information."
+       "label": "C",
+       "text": "Shelters need donations of money more than they need volunteers."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Shelter animals need patient, regular company, and teenagers can give it."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
-     "skill": "inference",
-     "text": "Sarah says, ‘I did not move for an hour.’ What does this show about how she felt when Kopi fell asleep on her foot?",
+     "skill": "visual",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘He has been waiting a long time for someone to learn his name.’?",
      "scheme": {
-      "answer": "She was so touched that Kopi finally trusted her that she did not want to disturb him.",
+      "answer": "The name card says Kopi has been there since last year, and he pushes his nose through the bars towards a hand, showing he has waited a long time and longs for someone to notice him.",
       "accept": [
-       "His trust meant a great deal to her, so she kept still to let him sleep."
+       "The card shows he has been in the shelter since last year, so he has been waiting a long time, and he reaches out to the teenager’s hand because he wants someone of his own.",
+       "His name card and his nose pressed through the bars show a dog that has waited long and is eager for a person to know him."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "She was so touched that Kopi finally trusted her that she did not want to disturb him."
+       "text": "The card on the gate says Kopi has been there since last year, and he is pushing his nose out to the hand, so it shows he has been waiting long and wants someone to care about him."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "His trust was precious to her after waiting so long, so she stayed still to let him carry on sleeping."
+       "text": "We can see from the sign that the dog has stayed in the shelter for over a year, and he is trying to reach the person, so he is lonely and hoping for a friend."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "She was frightened that Kopi would bite her if she moved."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "She was tired and wanted to rest too."
+       "text": "It shows that the dog is dangerous and should be kept behind bars."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "She felt something for Kopi."
+       "text": "The picture shows a dog in a shelter."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "She was bored because there was nothing to do."
+       "flaw": "lifted",
+       "text": "A thin brown dog presses its nose through the bars of a kennel."
       }
      ]
     },
@@ -15996,128 +15569,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text shows that the animals’ basic needs are already taken care of?",
+     "skill": "evidence",
+     "text": "Text 1 tells readers that their notes ‘may help someone else’ to adopt their buddy. Find one sentence in Text 2 that supports this.",
      "scheme": {
-      "answer": "fed and safe",
+      "answer": "Reading those notes made us feel we already knew him, and we took him home that same afternoon.",
       "accept": [
-       "are fed and safe",
-       "animals that are fed and safe",
-       "fed and safe but rarely touched"
+       "Reading those notes made us feel we already knew him"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "fed and safe"
+       "text": "Reading those notes made us feel we already knew him, and we took him home that same afternoon."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "'animals that are fed and safe'"
+       "text": "‘Reading those notes made us feel we already knew him’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "rarely touched"
+       "text": "Three months on, he still hides whenever the broom comes out, but he waits by the door every evening for us."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "the least attention"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "find it a home"
-      }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "How does the picture make readers want to help?",
-     "scheme": {
-      "answer": "It shows a thin, lonely dog that has been in the shelter for a long time reaching out through the bars, which makes readers feel sorry for it.",
-      "accept": [
-       "The dog pressing its nose through the bars looks as if it is longing for company, so readers pity it and want to be the one to reach out."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It shows a thin and lonely dog that has been there since last year pushing its nose out of the bars, so readers feel sorry for it."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The dog looks like it is longing for someone to come to it, which makes us pity it and want to be the one who reaches out."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the dog is dangerous and must be kept behind bars."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the dog likes to drink coffee."
+       "text": "We nearly walked past Kopi."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It shows a dog at the shelter."
+       "text": "The sentence about the volunteer writing things down."
       }
      ]
     },
     {
-     "n": "5",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘He has been waiting a long time for someone to learn his name.’ What does it suggest about the lives of animals in a shelter?",
-     "scheme": {
-      "answer": "They are overlooked; nobody gives them personal attention or gets to know them.",
-      "accept": [
-       "The animals are lonely because no one treats them as individuals or spends time with them."
-      ]
-     },
-     "seeds": [
+     "stem": "Read Texts 1 and 2 again, then complete each statement with the best option.",
+     "text": "Taken together, the two texts show that a Shelter Buddy’s visits …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that the animals are overlooked and nobody gives them personal attention or gets to know them."
+       "label": "A",
+       "text": "are mainly about cleaning kennels and washing bowls."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "They are lonely because people do not bother to spend time with them one by one."
+       "label": "B",
+       "text": "are only useful for animals that are already friendly."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that the animals in the shelter do not have names."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests the dog has forgotten its own name."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests that the animals live in a shelter."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "He has been waiting a long time for someone to learn his name."
+       "label": "C",
+       "text": "can change an animal’s life even if the volunteer never adopts it."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "can change an animal’s life even if the volunteer never adopts it."
+     },
+     "seeds": []
+    },
+    {
+     "n": "4b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Read Texts 1 and 2 again, then complete each statement with the best option.",
+     "text": "The words ‘This is not a petting zoo’ in Text 1 are used to …",
+     "options": [
+      {
+       "label": "A",
+       "text": "warn readers honestly that the work can be hard."
+      },
+      {
+       "label": "B",
+       "text": "make the programme sound fun for young children."
+      },
+      {
+       "label": "C",
+       "text": "tell readers that they may not touch the animals."
+      }
+     ],
+     "scheme": {
+      "answer": "warn readers honestly that the work can be hard."
+     },
+     "seeds": []
     }
    ]
   },
@@ -16127,6 +15665,7 @@
    "title": "The Read-for-15 Challenge",
    "format": "poster",
    "theme": "teal",
+   "intro": "Text 1 is a poster for a reading challenge run by a neighbourhood library.",
    "visual": [
     {
      "t": "kicker",
@@ -16170,91 +15709,118 @@
      "text": "Start today. Day 1 is the hardest."
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a blog post by a fifteen-year-old about her June holidays.",
+    "paragraphs": [
+     "I signed up for the library’s reading challenge mainly for the lucky draw. On the first day, I set a timer on my phone, opened a cookbook my mother had left on the table and stared at a recipe for kueh lapis until the alarm rang. It felt like homework.",
+     "By the end of the first week, though, something had changed. I stopped setting the timer, because I kept reading past it anyway. I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop. My brother laughed at me, then quietly borrowed the mystery I had just finished.",
+     "I did not win the lucky draw, and I honestly did not mind."
+    ]
+   },
    "questions": [
     {
-     "n": "1",
+     "n": "1a",
      "marks": 1,
+     "type": "choice",
+     "skill": "literal",
+     "stem": "Think about Texts 1 and 2. For each statement, choose the text it is true of.",
+     "text": "It says that the reader won a prize in the lucky draw.",
+     "options": [
+      {
+       "label": "A",
+       "text": "Text 1"
+      },
+      {
+       "label": "B",
+       "text": "Text 2"
+      },
+      {
+       "label": "C",
+       "text": "Both"
+      },
+      {
+       "label": "D",
+       "text": "Neither"
+      }
+     ],
+     "scheme": {
+      "answer": "Neither"
+     },
+     "seeds": []
+    },
+    {
+     "n": "1b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Think about Texts 1 and 2. For each statement, choose the text it is true of.",
+     "text": "It speaks to the reader directly as ‘you’ to urge them to act.",
+     "options": [
+      {
+       "label": "A",
+       "text": "Text 1"
+      },
+      {
+       "label": "B",
+       "text": "Text 2"
+      },
+      {
+       "label": "C",
+       "text": "Both"
+      },
+      {
+       "label": "D",
+       "text": "Neither"
+      }
+     ],
+     "scheme": {
+      "answer": "Text 1"
+     },
+     "seeds": []
+    },
+    {
+     "n": "2",
+     "marks": 2,
      "type": "short",
      "skill": "visual",
-     "text": "What does the picture suggest about reading?",
+     "text": "Look at the picture in Text 1. Say what it shows, and explain how it supports the headline ‘You have fifteen minutes. You just spent them on someone else’s holiday photos.’",
      "scheme": {
-      "answer": "Reading can be so enjoyable and absorbing that a reader forgets everything around him, even his phone.",
-      "accept": [
-       "A good book can hold a person’s attention completely."
+      "answer": "The boy is so absorbed in his book, with his phone face down, that he does not notice the train doors opening [1]; this backs the headline’s point that spare minutes are better spent reading than scrolling through a phone [1].",
+      "points": [
+       "What it shows: the teenager is lost in his book, with his phone face down beside him / he does not notice the train doors opening.",
+       "How it backs the words: a few spare minutes, such as waiting for a train, can go to reading instead of the phone."
       ]
      },
      "seeds": [
       {
-       "mark": 1,
+       "mark": 2,
        "flaw": "full",
-       "text": "It suggests that reading can be so enjoyable that you forget about everything around you, even your phone."
+       "text": "The boy is so into his book that he does not even see the train doors open, and his phone is face down. This supports the headline because it shows that the short waiting time can be used for reading instead of looking at other people’s photos on the phone."
+      },
+      {
+       "mark": 2,
+       "flaw": "paraphrase",
+       "text": "His phone is turned over and he is busy reading at the MRT, so it shows that instead of scrolling social media in the few minutes you have, you can read and enjoy it."
       },
       {
        "mark": 1,
-       "flaw": "paraphrase",
-       "text": "A good book can take up all of a person's attention, until he does not even notice his train has come."
+       "flaw": "half",
+       "text": "The boy is reading so hard that he does not notice the train doors opening behind him."
+      },
+      {
+       "mark": 1,
+       "flaw": "half",
+       "text": "It tells readers to use their waiting time to read a book instead of scrolling on their phones."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It suggests that people should only read at MRT stations."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that the teenager's phone is spoilt."
+       "text": "It shows that teenagers should not take the MRT alone."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It suggests that reading is good for teenagers."
-      }
-     ]
-    },
-    {
-     "n": "2",
-     "marks": 1,
-     "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text tells readers that any kind of reading material is acceptable for the challenge?",
-     "scheme": {
-      "answer": "it all counts",
-      "accept": [
-       "a comic, a cookbook, a football biography — it all counts",
-       "Read a comic, a cookbook, a football biography",
-       "a comic, a cookbook, a football biography"
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "it all counts"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is 'it all counts'."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "\"a comic, a cookbook, a football biography — it all counts\""
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "finish a classic by Friday"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "the queue for bubble tea"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "twenty-one days"
+       "text": "The picture is interesting and catches the reader’s eye."
       }
      ]
     },
@@ -16262,138 +15828,40 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "inference",
-     "text": "Look at the headline. What does it suggest about the way readers use their spare time?",
+     "skill": "evidence",
+     "text": "Text 1 claims that fifteen minutes can be found in everyday moments such as ‘the queue for bubble tea’. Pick out one sentence from Text 2 that supports this claim.",
      "scheme": {
-      "answer": "They do have time to read, but they spend it scrolling through other people’s posts on their phones.",
+      "answer": "I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop.",
       "accept": [
-       "Readers waste on social media the short periods of free time that they could have used for reading."
+       "even in the queue at the bubble tea shop",
+       "I read on the bus, in the clinic waiting room"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It suggests that readers do have time to read, but they spend it scrolling through other people's posts on their phones."
+       "text": "I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "They waste their little bits of free time on social media when they could have used the time for a book."
+       "text": "‘even in the queue at the bubble tea shop’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It suggests that readers go on holiday very often."
+       "text": "My brother laughed at me, then quietly borrowed the mystery I had just finished."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It suggests that readers enjoy taking photographs."
+       "text": "It felt like homework."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It suggests that readers have fifteen minutes."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Readers are too busy and have no spare time at all."
-      }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "language_use",
-     "text": "The button says, ‘Day 1 is the hardest.’ What does this suggest about the days that follow?",
-     "scheme": {
-      "answer": "Reading every day becomes easier once you have begun, as it turns into a habit.",
-      "accept": [
-       "The only difficult part is getting started; after that it takes less effort to keep going."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that it gets easier to read every day once you have started, because it becomes a habit."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Starting is the only tough part, and after that it takes less and less effort to carry on."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The challenge gets harder and harder every day."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The book for Day 1 is the most difficult one to read."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "Day 1 is the hardest."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It suggests something about the other days."
-      }
-     ]
-    },
-    {
-     "n": "5",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The poster is aimed at people who do not read much. Give one piece of evidence from the poster that shows this.",
-     "scheme": {
-      "answer": "It says ‘Nobody is asking you to finish a classic by Friday’, assuring readers that they need not read anything difficult.",
-      "accept": [
-       "It asks for only fifteen minutes a day, ‘one small slice of your day’.",
-       "It says comics, cookbooks and football biographies all count.",
-       "It says ‘Day 1 is the hardest’, as if the reader is not used to reading.",
-       "It offers help to those who are ‘stuck for ideas’ about what to read.",
-       "It quotes Marcus, who started with only one volume of manga."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It says nobody is asking you to finish a classic by Friday, so readers know they need not read something difficult."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It only asks for fifteen minutes a day, which is very little."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It says even a comic or a cookbook counts, so people who do not like serious books can join."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The challenge ends on 30 June."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The poster is from the neighbourhood library."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The poster is very persuasive."
+       "text": "The part where she says she read a lot."
       }
      ]
     }
@@ -16405,6 +15873,7 @@
    "title": "A Word from Our Cleaners",
    "format": "webpage",
    "theme": "amber",
+   "intro": "Text 1 is a webpage on which the cleaners of a hawker centre speak to the people who eat there.",
    "visual": [
     {
      "t": "kicker",
@@ -16444,92 +15913,76 @@
      "text": "Read more stories from our cleaners"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a post on a neighbourhood forum by a secondary school student.",
+    "paragraphs": [
+     "Last Friday my friends and I finished our chicken rice and got up to go, leaving everything on the table as usual. Then I noticed Auntie Rosnah, the cleaner who always hums while she works, stop at the next table and rub her lower back before she bent down again. By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat.",
+     "Nobody had told us to clear up, and nobody stopped us from leaving. That was exactly the problem. I walked back, stacked our trays and carried them to the rack. It took me less time than tying my shoelaces. Auntie Rosnah gave me a small nod, and I felt more embarrassed than proud. Now our group has a rule: whoever finishes eating last carries the trays."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The webpage is written as if the cleaners themselves are speaking (‘I’, ‘we’, ‘us’). Why do you think it is written this way?",
-     "scheme": {
-      "answer": "So that readers see the cleaners as real people and feel for them, which makes readers more willing to return their trays.",
-      "accept": [
-       "A personal appeal from the cleaners is more moving than a rule, so readers are more likely to do as they ask."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "text": "Look at Text 1. Which of these would make the best title for the webpage?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "So that readers will see the cleaners as real people and feel for them, and then be more willing to return their trays."
+       "label": "A",
+       "text": "Why Hawker Food Costs More These Days"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Hearing it from the cleaners personally is more touching than a rule on a sign, so people are more likely to listen."
+       "label": "B",
+       "text": "A Small Effort That Helps Us a Lot: Return Your Tray"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Because the cleaners are the ones who made the rules of the hawker centre."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "To show that the cleaners are lazy and do not want to work."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "To make the webpage more interesting to read."
+       "label": "C",
+       "text": "Meet the Fastest Cleaners in the Neighbourhood"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "A Small Effort That Helps Us a Lot: Return Your Tray"
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the body text suggests that customers hardly notice the cleaners?",
+     "skill": "visual",
+     "text": "Look at the picture in Text 1. How does it support the question asked in the headline?",
      "scheme": {
-      "answer": "walk past",
+      "answer": "It shows an elderly cleaner already pushing a heavy, overloaded trolley while young students walk off and leave their trays, so we see an old person doing the carrying that the students could easily do themselves.",
       "accept": [
-       "you walk past every day",
-       "whom you walk past every day",
-       "walk past every day",
-       "whom you walk past"
+       "The old cleaner struggles with a full trolley while the students leave their trays behind, which makes readers ask themselves the headline's question: why should she carry what they could carry back?"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "walk past"
+       "text": "The picture shows an old cleaner pushing a trolley piled with trays while the students just get up and leave theirs on the table. It shows she has to carry their trays even though she is old, so it backs up the headline asking if we will carry it back."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "'whom you walk past every day'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"you walk past every day\"."
+       "text": "We see an elderly auntie with a very full trolley and young students walking away from their trays, so the old lady is doing the work the young people should do. This is why the headline asks them to carry their own tray back."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "older than your parents"
+       "text": "It shows that the hawker centre is very crowded at lunch time."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "without a pause"
+       "flaw": "vague",
+       "text": "The picture shows a cleaner at a hawker centre."
       },
       {
        "mark": 0,
-       "flaw": "wrong",
-       "text": "nowhere to sit"
+       "flaw": "lifted",
+       "text": "An elderly cleaner in a blue apron pushes a trolley stacked high with used trays and bowls."
       }
      ]
     },
@@ -16537,126 +15990,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "The body text ends: ‘we can keep the tables clean instead of merely cleared’. What will the cleaners be able to do if customers return their own trays?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that, when trays are left behind, ‘the next family has nowhere to sit’.",
      "scheme": {
-      "answer": "They will have time to wipe the tables properly, instead of only rushing to take away the trays.",
+      "answer": "By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat.",
       "accept": [
-       "They can concentrate on cleaning the tables thoroughly rather than just removing what customers leave behind."
+       "a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "They will have the time to wipe the tables properly, instead of only rushing to take the trays away."
+       "text": "By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "The cleaners can focus on making the tables really hygienic and not just removing the things people left."
+       "text": "‘a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "They will be able to go home earlier."
+       "text": "Then I noticed Auntie Rosnah, the cleaner who always hums while she works, stop at the next table and rub her lower back before she bent down again."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "They will not need to do anything at all."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "They can keep the tables clean instead of merely cleared."
+       "text": "It took me less time than tying my shoelaces."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "They will be able to do their job."
+       "text": "The sentence about the people at the hawker centre."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Mdm Tan says of the boy, ‘He does not know that I look out for him.’ What does this suggest about how she feels about what he does?",
-     "scheme": {
-      "answer": "His small act of kindness and thanks means a great deal to her, and she looks forward to it.",
-      "accept": [
-       "She appreciates being thanked and treated with respect so much that she remembers him."
-      ]
-     },
-     "seeds": [
+     "stem": "Think about Texts 1 and 2 together. Pick the best ending for each statement.",
+     "text": "Both texts suggest that many young people leave their trays behind because they …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "His small kind act and his thanks mean a lot to her, and she looks forward to seeing him."
+       "label": "A",
+       "text": "want to make extra work for the cleaners."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "She really appreciates being thanked and respected, so much that she remembers this one boy."
+       "label": "B",
+       "text": "do not stop to think about who clears up after them."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "She is suspicious of the boy and watches him in case he does something wrong."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "She is annoyed that he talks to her every day."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "She has some feelings about the boy."
+       "label": "C",
+       "text": "cannot find the return racks in the hawker centre."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "do not stop to think about who clears up after them."
+     },
+     "seeds": []
     },
     {
-     "n": "5",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "How does the picture support the question asked in the headline?",
-     "scheme": {
-      "answer": "It shows an elderly cleaner struggling with a heavy load while young, able students leave their trays behind, which makes readers feel that they should carry their own.",
-      "accept": [
-       "The contrast between the old cleaner doing the heavy work and the students walking away makes leaving a tray look unfair."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Think about Texts 1 and 2 together. Pick the best ending for each statement.",
+     "text": "The headline of Text 1 is written as …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It shows an old cleaner struggling with a heavy trolley while young, strong students just leave their trays, so readers feel they should carry their own."
+       "label": "A",
+       "text": "an angry complaint about rude students."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The contrast between the elderly auntie doing all the heavy work and the students walking off makes it look unfair to leave your tray."
+       "label": "B",
+       "text": "a personal request, made politely."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the students are rushing back to school."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It shows that the hawker centre has many trolleys."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "It shows a cleaner and some students at a hawker centre."
+       "label": "C",
+       "text": "a joke to make readers laugh."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "a personal request, made politely."
+     },
+     "seeds": []
     }
    ]
   },
@@ -16666,6 +16086,7 @@
    "title": "The Last Hour Before Bed",
    "format": "poster",
    "theme": "indigo",
+   "intro": "Text 1 is a poster put up by student peer helpers during the examination period.",
    "visual": [
     {
      "t": "kicker",
@@ -16699,7 +16120,7 @@
     },
     {
      "t": "quote",
-     "text": "“I used to study until 2 am and feel proud. My marks went up the term I started sleeping at eleven.” — Daniel, Secondary 4"
+     "text": "“I used to study until 2 am and feel proud. My marks went up the term I started sleeping at eleven.” — Daniel, 16"
     },
     {
      "t": "small",
@@ -16710,89 +16131,76 @@
      "text": "Tonight, try it once"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a blog post by a student who changed her study habits.",
+    "paragraphs": [
+     "For most of last year, I was the friend who sent messages at 2 am asking if anyone else was still awake. I thought staying up proved I was serious. Then came the morning of my mid-year paper. In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before. I stared at the page while the clock moved on without me.",
+     "After that, my mother and I made a deal. My phone sleeps in the kitchen, and I stop starting new topics after ten. The first week was hard; lying in the dark felt like wasting time. But in the next round of tests, I finished early enough to check my working, and I actually remembered what I had revised. I still work hard. I just stop before my brain does."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "How do the two halves of the picture support the message of the poster?",
-     "scheme": {
-      "answer": "They contrast a girl who is exhausted from studying late with the same girl resting and ready for the next day, which shows that sleeping is the better choice.",
-      "accept": [
-       "The left half makes late-night studying look tiring and unhealthy, while the right half makes going to bed look calm and well prepared."
-      ]
-     },
-     "seeds": [
+     "type": "choice",
+     "skill": "inference",
+     "text": "Look at Text 1. Which sentence best states the main message of the poster?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "They contrast the girl who is worn out from studying late with the same girl resting and ready for the next day, to show that sleeping is the better choice."
+       "label": "A",
+       "text": "Studying late at night shows that you take your exams seriously."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The left side makes staying up look tiring and unhealthy, but the right side looks calm and prepared, so we feel we should go to bed."
+       "label": "B",
+       "text": "Resting well the night before is part of doing well in the exam."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "They show that the girl studies very hard, so she will do well."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "They show that students should drink coffee to stay awake."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "They show a girl studying and a girl sleeping."
+       "label": "C",
+       "text": "Students should drink less coffee during the exam period."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Resting well the night before is part of doing well in the exam."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "‘It feels responsible to squeeze in one more chapter at midnight. It is not.’ What is the effect of the short sentence ‘It is not.’?",
+     "skill": "visual",
+     "text": "How do the two halves of the picture in Text 1 support the message of the poster?",
      "scheme": {
-      "answer": "It firmly contradicts what students believe, stressing that studying late at night is not the sensible thing to do.",
+      "answer": "The left half shows the girl exhausted at her desk at 1 am with empty coffee cans, while the right half shows her asleep with her notes and bag ready, so the contrast shows that preparing early and sleeping is the better choice.",
       "accept": [
-       "Its bluntness makes the reader stop and realise that a habit which seems hard-working is actually a mistake."
+       "The picture compares a tired girl studying very late with the same girl resting after getting ready, showing readers that sleep, not late-night studying, is the right way to end the day before a paper."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It firmly goes against what students believe, and stresses that studying late at night is actually not the sensible thing to do."
+       "text": "On the left she is studying at 1 am with coffee cans and looks very tired, but on the right she is sleeping with her bag already packed. The contrast shows sleeping is better than staying up, which is what the poster wants students to do."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "It is very blunt, so the reader stops and realises that what seems hard-working is really a mistake."
+       "text": "One side shows her worn out from staying up late and the other shows her resting after getting everything ready, so it compares the bad habit with the good one the poster is telling us to follow."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It saves space on the poster."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It tells students that it is not midnight yet."
+       "text": "It shows that students should not drink coffee because it is bad for health."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It creates an impact on the reader."
+       "text": "The two halves show the same girl in two different places."
       },
       {
        "mark": 0,
-       "flaw": "vague",
-       "text": "It makes the poster more interesting."
+       "flaw": "lifted",
+       "text": "On the left, a girl is hunched over her desk at 1 am, with three empty coffee cans beside her."
       }
      ]
     },
@@ -16800,136 +16208,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "language_use",
-     "text": "Which phrase in the tagline compares what the brain does during sleep to putting papers away in order?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that tired students ‘blank on formulas they knew’.",
      "scheme": {
-      "answer": "file what you learnt",
+      "answer": "In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before.",
       "accept": [
-       "Let your brain file what you learnt",
-       "your brain file what you learnt",
-       "file"
+       "I could not recall a formula I had copied out twenty times the night before"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "file what you learnt"
+       "text": "In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "'Let your brain file what you learnt'"
+       "text": "‘I could not recall a formula I had copied out twenty times the night before’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "Close the book"
+       "text": "I thought staying up proved I was serious."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "Dim the screen"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "The last hour before bed"
-      }
-     ]
-    },
-    {
-     "n": "4",
-     "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "The poster is aimed at students who are sitting for examinations. Give one piece of evidence from the poster that shows this.",
-     "scheme": {
-      "answer": "The headline mentions ‘the first paper tomorrow’.",
-      "accept": [
-       "The box tells readers to pack their entry proof, pens and calculator.",
-       "The kicker says ‘Exam season’.",
-       "It says tired students misread questions and blank on formulas.",
-       "It tells readers to stop new topics and skim their own summary."
-      ]
-     },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The headline talks about 'the first paper tomorrow'."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It tells them to pack their entry proof, pens and calculator, which are things for an exam."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "It says tired students will misread questions and forget formulas they knew."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It tells readers to shower and stretch."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "There are three empty coffee cans in the picture."
+       "text": "My phone sleeps in the kitchen, and I stop starting new topics after ten."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "It talks about things that students do."
+       "text": "The part where she talks about her exam."
       }
      ]
     },
     {
-     "n": "5",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Daniel says he used to study until 2 am ‘and feel proud’. What does this suggest about how some students view staying up late to study?",
-     "scheme": {
-      "answer": "They see it as a sign of hard work, something to be admired.",
-      "accept": [
-       "They believe that giving up sleep shows how dedicated and hard-working they are."
-      ]
-     },
-     "seeds": [
+     "stem": "Consider Texts 1 and 2 together and pick the best ending for each statement.",
+     "text": "Daniel in Text 1 and the writer of Text 2 both …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that some students see staying up late as a sign of hard work, something to be admired."
+       "label": "A",
+       "text": "used to believe that studying late into the night was the right thing to do."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "They think that giving up sleep proves how dedicated they are to their studies."
+       "label": "B",
+       "text": "were told by a counsellor to change their habits."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that students are proud of getting good marks."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Students stay up late because they enjoy it."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "They have their own view about it."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Students think staying up late is bad for their health."
+       "label": "C",
+       "text": "gave up studying hard after one bad paper."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "used to believe that studying late into the night was the right thing to do."
+     },
+     "seeds": []
+    },
+    {
+     "n": "4b",
+     "marks": 1,
+     "type": "choice",
+     "skill": "language_use",
+     "stem": "Consider Texts 1 and 2 together and pick the best ending for each statement.",
+     "text": "In Text 2, the phrase ‘the clock moved on without me’ suggests that the writer …",
+     "options": [
+      {
+       "label": "A",
+       "text": "felt stuck and helpless as the time ran out."
+      },
+      {
+       "label": "B",
+       "text": "finished the paper faster than she expected."
+      },
+      {
+       "label": "C",
+       "text": "forgot to bring her watch to the exam."
+      }
+     ],
+     "scheme": {
+      "answer": "felt stuck and helpless as the time ran out."
+     },
+     "seeds": []
     }
    ]
   }

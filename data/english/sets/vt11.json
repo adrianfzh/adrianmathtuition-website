@@ -4,82 +4,210 @@
   "title": "A Word from Our Cleaners",
   "format": "webpage",
   "theme": "amber",
+  "intro": "Text 1 is a webpage on which the cleaners of a hawker centre speak to the people who eat there.",
   "visual": [
-    { "t": "kicker", "text": "OUR HAWKER CENTRE · A WORD FROM THE CLEANERS" },
-    { "t": "headline", "text": "You carried it to the table. I am 68 — will you carry it back?" },
-    { "t": "tagline", "text": "Return your tray. It takes you thirty seconds and saves us a great deal more." },
-    { "t": "picture", "text": "An elderly cleaner in a blue apron pushes a trolley stacked high with used trays and bowls. Beside her, a group of students in uniform is getting up to leave a table, their trays still on it." },
-    { "t": "body", "text": "We are the uncles and aunties in aprons whom you walk past every day. Most of us are older than your parents. When trays are left behind, birds get to the leftovers before we do, the next family has nowhere to sit, and we spend the lunch rush bending, lifting and wiping without a pause. When you return your tray, we can keep the tables clean instead of merely cleared." },
-    { "t": "box", "title": "Three small things", "items": [
-      "Carry your tray, bowls and cups to the nearest return rack",
-      "Tip tissues and bones onto the tray, not the table",
-      "Halal and non-halal racks are separate — please check the sign"
-    ] },
-    { "t": "quote", "text": "“One boy returns his tray and says ‘Thank you, Auntie’ every single day. He does not know that I look out for him.” — Mdm Tan, a cleaner for eleven years" },
-    { "t": "button", "text": "Read more stories from our cleaners" }
+    {
+      "t": "kicker",
+      "text": "OUR HAWKER CENTRE · A WORD FROM THE CLEANERS"
+    },
+    {
+      "t": "headline",
+      "text": "You carried it to the table. I am 68 — will you carry it back?"
+    },
+    {
+      "t": "tagline",
+      "text": "Return your tray. It takes you thirty seconds and saves us a great deal more."
+    },
+    {
+      "t": "picture",
+      "text": "An elderly cleaner in a blue apron pushes a trolley stacked high with used trays and bowls. Beside her, a group of students in uniform is getting up to leave a table, their trays still on it."
+    },
+    {
+      "t": "body",
+      "text": "We are the uncles and aunties in aprons whom you walk past every day. Most of us are older than your parents. When trays are left behind, birds get to the leftovers before we do, the next family has nowhere to sit, and we spend the lunch rush bending, lifting and wiping without a pause. When you return your tray, we can keep the tables clean instead of merely cleared."
+    },
+    {
+      "t": "box",
+      "title": "Three small things",
+      "items": [
+        "Carry your tray, bowls and cups to the nearest return rack",
+        "Tip tissues and bones onto the tray, not the table",
+        "Halal and non-halal racks are separate — please check the sign"
+      ]
+    },
+    {
+      "t": "quote",
+      "text": "“One boy returns his tray and says ‘Thank you, Auntie’ every single day. He does not know that I look out for him.” — Mdm Tan, a cleaner for eleven years"
+    },
+    {
+      "t": "button",
+      "text": "Read more stories from our cleaners"
+    }
   ],
+  "text2": {
+    "intro": "Text 2 is taken from a post on a neighbourhood forum by a secondary school student.",
+    "paragraphs": [
+      "Last Friday my friends and I finished our chicken rice and got up to go, leaving everything on the table as usual. Then I noticed Auntie Rosnah, the cleaner who always hums while she works, stop at the next table and rub her lower back before she bent down again. By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat.",
+      "Nobody had told us to clear up, and nobody stopped us from leaving. That was exactly the problem. I walked back, stacked our trays and carried them to the rack. It took me less time than tying my shoelaces. Auntie Rosnah gave me a small nod, and I felt more embarrassed than proud. Now our group has a rule: whoever finishes eating last carries the trays."
+    ]
+  },
   "questions": [
     {
-      "n": "1", "marks": 1, "type": "short", "skill": "visual",
-      "text": "The webpage is written as if the cleaners themselves are speaking (‘I’, ‘we’, ‘us’). Why do you think it is written this way?",
-      "scheme": { "answer": "So that readers see the cleaners as real people and feel for them, which makes readers more willing to return their trays.", "accept": ["A personal appeal from the cleaners is more moving than a rule, so readers are more likely to do as they ask."] },
+      "n": "1",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Look at Text 1. Which of these would make the best title for the webpage?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Why Hawker Food Costs More These Days"
+        },
+        {
+          "label": "B",
+          "text": "A Small Effort That Helps Us a Lot: Return Your Tray"
+        },
+        {
+          "label": "C",
+          "text": "Meet the Fastest Cleaners in the Neighbourhood"
+        }
+      ],
+      "scheme": {
+        "answer": "A Small Effort That Helps Us a Lot: Return Your Tray"
+      },
+      "seeds": []
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "visual",
+      "text": "Look at the picture in Text 1. How does it support the question asked in the headline?",
+      "scheme": {
+        "answer": "It shows an elderly cleaner already pushing a heavy, overloaded trolley while young students walk off and leave their trays, so we see an old person doing the carrying that the students could easily do themselves.",
+        "accept": [
+          "The old cleaner struggles with a full trolley while the students leave their trays behind, which makes readers ask themselves the headline's question: why should she carry what they could carry back?"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "So that readers will see the cleaners as real people and feel for them, and then be more willing to return their trays." },
-        { "mark": 1, "flaw": "paraphrase", "text": "Hearing it from the cleaners personally is more touching than a rule on a sign, so people are more likely to listen." },
-        { "mark": 0, "flaw": "wrong", "text": "Because the cleaners are the ones who made the rules of the hawker centre." },
-        { "mark": 0, "flaw": "wrong", "text": "To show that the cleaners are lazy and do not want to work." },
-        { "mark": 0, "flaw": "vague", "text": "To make the webpage more interesting to read." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The picture shows an old cleaner pushing a trolley piled with trays while the students just get up and leave theirs on the table. It shows she has to carry their trays even though she is old, so it backs up the headline asking if we will carry it back."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "We see an elderly auntie with a very full trolley and young students walking away from their trays, so the old lady is doing the work the young people should do. This is why the headline asks them to carry their own tray back."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that the hawker centre is very crowded at lunch time."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The picture shows a cleaner at a hawker centre."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "An elderly cleaner in a blue apron pushes a trolley stacked high with used trays and bowls."
+        }
       ]
     },
     {
-      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "Which phrase in the body text suggests that customers hardly notice the cleaners?",
-      "scheme": { "answer": "walk past", "accept": ["you walk past every day", "whom you walk past every day", "walk past every day", "whom you walk past"] },
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that, when trays are left behind, ‘the next family has nowhere to sit’.",
+      "scheme": {
+        "answer": "By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat.",
+        "accept": [
+          "a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "walk past" },
-        { "mark": 1, "flaw": "paraphrase", "text": "'whom you walk past every day'" },
-        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"you walk past every day\"." },
-        { "mark": 0, "flaw": "wrong", "text": "older than your parents" },
-        { "mark": 0, "flaw": "wrong", "text": "without a pause" },
-        { "mark": 0, "flaw": "wrong", "text": "nowhere to sit" }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "By the time she reached our corner, a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "‘a family with a toddler had been standing beside it for five minutes, holding their plates and waiting for a seat’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "Then I noticed Auntie Rosnah, the cleaner who always hums while she works, stop at the next table and rub her lower back before she bent down again."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It took me less time than tying my shoelaces."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The sentence about the people at the hawker centre."
+        }
       ]
     },
     {
-      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "The body text ends: ‘we can keep the tables clean instead of merely cleared’. What will the cleaners be able to do if customers return their own trays?",
-      "scheme": { "answer": "They will have time to wipe the tables properly, instead of only rushing to take away the trays.", "accept": ["They can concentrate on cleaning the tables thoroughly rather than just removing what customers leave behind."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "They will have the time to wipe the tables properly, instead of only rushing to take the trays away." },
-        { "mark": 1, "flaw": "paraphrase", "text": "The cleaners can focus on making the tables really hygienic and not just removing the things people left." },
-        { "mark": 0, "flaw": "wrong", "text": "They will be able to go home earlier." },
-        { "mark": 0, "flaw": "wrong", "text": "They will not need to do anything at all." },
-        { "mark": 0, "flaw": "lifted", "text": "They can keep the tables clean instead of merely cleared." },
-        { "mark": 0, "flaw": "vague", "text": "They will be able to do their job." }
-      ]
+      "n": "4a",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "stem": "Think about Texts 1 and 2 together. Pick the best ending for each statement.",
+      "text": "Both texts suggest that many young people leave their trays behind because they …",
+      "options": [
+        {
+          "label": "A",
+          "text": "want to make extra work for the cleaners."
+        },
+        {
+          "label": "B",
+          "text": "do not stop to think about who clears up after them."
+        },
+        {
+          "label": "C",
+          "text": "cannot find the return racks in the hawker centre."
+        }
+      ],
+      "scheme": {
+        "answer": "do not stop to think about who clears up after them."
+      },
+      "seeds": []
     },
     {
-      "n": "4", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Mdm Tan says of the boy, ‘He does not know that I look out for him.’ What does this suggest about how she feels about what he does?",
-      "scheme": { "answer": "His small act of kindness and thanks means a great deal to her, and she looks forward to it.", "accept": ["She appreciates being thanked and treated with respect so much that she remembers him."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "His small kind act and his thanks mean a lot to her, and she looks forward to seeing him." },
-        { "mark": 1, "flaw": "paraphrase", "text": "She really appreciates being thanked and respected, so much that she remembers this one boy." },
-        { "mark": 0, "flaw": "wrong", "text": "She is suspicious of the boy and watches him in case he does something wrong." },
-        { "mark": 0, "flaw": "wrong", "text": "She is annoyed that he talks to her every day." },
-        { "mark": 0, "flaw": "vague", "text": "She has some feelings about the boy." }
-      ]
-    },
-    {
-      "n": "5", "marks": 1, "type": "short", "skill": "visual",
-      "text": "How does the picture support the question asked in the headline?",
-      "scheme": { "answer": "It shows an elderly cleaner struggling with a heavy load while young, able students leave their trays behind, which makes readers feel that they should carry their own.", "accept": ["The contrast between the old cleaner doing the heavy work and the students walking away makes leaving a tray look unfair."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It shows an old cleaner struggling with a heavy trolley while young, strong students just leave their trays, so readers feel they should carry their own." },
-        { "mark": 1, "flaw": "paraphrase", "text": "The contrast between the elderly auntie doing all the heavy work and the students walking off makes it look unfair to leave your tray." },
-        { "mark": 0, "flaw": "wrong", "text": "It shows that the students are rushing back to school." },
-        { "mark": 0, "flaw": "wrong", "text": "It shows that the hawker centre has many trolleys." },
-        { "mark": 0, "flaw": "vague", "text": "It shows a cleaner and some students at a hawker centre." }
-      ]
+      "n": "4b",
+      "marks": 1,
+      "type": "choice",
+      "skill": "language_use",
+      "stem": "Think about Texts 1 and 2 together. Pick the best ending for each statement.",
+      "text": "The headline of Text 1 is written as …",
+      "options": [
+        {
+          "label": "A",
+          "text": "an angry complaint about rude students."
+        },
+        {
+          "label": "B",
+          "text": "a personal request, made politely."
+        },
+        {
+          "label": "C",
+          "text": "a joke to make readers laugh."
+        }
+      ],
+      "scheme": {
+        "answer": "a personal request, made politely."
+      },
+      "seeds": []
     }
   ]
 }

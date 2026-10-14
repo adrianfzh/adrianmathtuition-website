@@ -22,7 +22,7 @@ export const dynamic = 'force-dynamic';
 const LISTS = {
   physics: { subject: 'physics', example: 'specific heat capacity', title: 'Physics definitions', code: 'O-Level Physics (6091)', tile: 'bg-blue-600', list: DEFINITIONS, topics: DEFINITION_TOPICS, hint: 'Search — moment, half-life, refraction…', open: SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS },
   biology: { subject: 'biology', example: 'transpiration', title: 'Biology definitions', code: 'O-Level Biology (6093)', tile: 'bg-emerald-600', list: BIOLOGY_DEFINITIONS, topics: BIOLOGY_TOPICS, hint: 'Search — osmosis, enzyme, allele…', open: BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS },
-  chemistry: { title: 'Chemistry definitions', code: 'O-Level Chemistry (6092)', tile: 'bg-purple-600', list: CHEMISTRY_DEFINITIONS, topics: CHEMISTRY_TOPICS, hint: 'Search — isotopes, mole, catalyst…', open: CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS },
+  chemistry: { subject: 'chemistry', example: 'isotopes', title: 'Chemistry definitions', code: 'O-Level Chemistry (6092)', tile: 'bg-purple-600', list: CHEMISTRY_DEFINITIONS, topics: CHEMISTRY_TOPICS, hint: 'Search — isotopes, mole, catalyst…', open: CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS },
 } as const;
 
 export default async function ScienceDefinitionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

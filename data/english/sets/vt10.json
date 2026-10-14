@@ -4,84 +4,204 @@
   "title": "The Read-for-15 Challenge",
   "format": "poster",
   "theme": "teal",
+  "intro": "Text 1 is a poster for a reading challenge run by a neighbourhood library.",
   "visual": [
-    { "t": "kicker", "text": "YOUR NEIGHBOURHOOD LIBRARY · JUNE HOLIDAY CHALLENGE" },
-    { "t": "headline", "text": "You have fifteen minutes. You just spent them on someone else’s holiday photos." },
-    { "t": "tagline", "text": "The Read-for-15 Challenge: one small slice of your day, any book you like." },
-    { "t": "picture", "text": "A teenager sits on a bench at an MRT platform with a paperback open on his knees, so absorbed that he has not noticed the train doors opening behind him. His phone lies face down beside him." },
-    { "t": "body", "text": "Nobody is asking you to finish a classic by Friday. Fifteen minutes is the bus ride home, the queue for bubble tea, the wait while your rice cools. Read a comic, a cookbook, a football biography — it all counts. Do it for twenty-one days and see whether you can still stop." },
-    { "t": "box", "title": "How to join", "items": [
-      "Pick up a bookmark tracker at the counter",
-      "Colour one square for every day you read for fifteen minutes",
-      "Return a full bookmark by 30 June for a lucky draw — and keep the habit for free"
-    ] },
-    { "t": "quote", "text": "“I started with one volume of manga on Day 1. By Day 21 I was halfway through a thick mystery and annoyed when my stop came.” — Marcus, 14" },
-    { "t": "small", "text": "Stuck for ideas? Ask any librarian for the ‘If you liked that, try this’ shelf." },
-    { "t": "button", "text": "Start today. Day 1 is the hardest." }
+    {
+      "t": "kicker",
+      "text": "YOUR NEIGHBOURHOOD LIBRARY · JUNE HOLIDAY CHALLENGE"
+    },
+    {
+      "t": "headline",
+      "text": "You have fifteen minutes. You just spent them on someone else’s holiday photos."
+    },
+    {
+      "t": "tagline",
+      "text": "The Read-for-15 Challenge: one small slice of your day, any book you like."
+    },
+    {
+      "t": "picture",
+      "text": "A teenager sits on a bench at an MRT platform with a paperback open on his knees, so absorbed that he has not noticed the train doors opening behind him. His phone lies face down beside him."
+    },
+    {
+      "t": "body",
+      "text": "Nobody is asking you to finish a classic by Friday. Fifteen minutes is the bus ride home, the queue for bubble tea, the wait while your rice cools. Read a comic, a cookbook, a football biography — it all counts. Do it for twenty-one days and see whether you can still stop."
+    },
+    {
+      "t": "box",
+      "title": "How to join",
+      "items": [
+        "Pick up a bookmark tracker at the counter",
+        "Colour one square for every day you read for fifteen minutes",
+        "Return a full bookmark by 30 June for a lucky draw — and keep the habit for free"
+      ]
+    },
+    {
+      "t": "quote",
+      "text": "“I started with one volume of manga on Day 1. By Day 21 I was halfway through a thick mystery and annoyed when my stop came.” — Marcus, 14"
+    },
+    {
+      "t": "small",
+      "text": "Stuck for ideas? Ask any librarian for the ‘If you liked that, try this’ shelf."
+    },
+    {
+      "t": "button",
+      "text": "Start today. Day 1 is the hardest."
+    }
   ],
+  "text2": {
+    "intro": "Text 2 is taken from a blog post by a fifteen-year-old about her June holidays.",
+    "paragraphs": [
+      "I signed up for the library’s reading challenge mainly for the lucky draw. On the first day, I set a timer on my phone, opened a cookbook my mother had left on the table and stared at a recipe for kueh lapis until the alarm rang. It felt like homework.",
+      "By the end of the first week, though, something had changed. I stopped setting the timer, because I kept reading past it anyway. I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop. My brother laughed at me, then quietly borrowed the mystery I had just finished.",
+      "I did not win the lucky draw, and I honestly did not mind."
+    ]
+  },
   "questions": [
     {
-      "n": "1", "marks": 1, "type": "short", "skill": "visual",
-      "text": "What does the picture suggest about reading?",
-      "scheme": { "answer": "Reading can be so enjoyable and absorbing that a reader forgets everything around him, even his phone.", "accept": ["A good book can hold a person’s attention completely."] },
+      "n": "1a",
+      "marks": 1,
+      "type": "choice",
+      "skill": "literal",
+      "stem": "Think about Texts 1 and 2. For each statement, choose the text it is true of.",
+      "text": "It says that the reader won a prize in the lucky draw.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Text 1"
+        },
+        {
+          "label": "B",
+          "text": "Text 2"
+        },
+        {
+          "label": "C",
+          "text": "Both"
+        },
+        {
+          "label": "D",
+          "text": "Neither"
+        }
+      ],
+      "scheme": {
+        "answer": "Neither"
+      },
+      "seeds": []
+    },
+    {
+      "n": "1b",
+      "marks": 1,
+      "type": "choice",
+      "skill": "language_use",
+      "stem": "Think about Texts 1 and 2. For each statement, choose the text it is true of.",
+      "text": "It speaks to the reader directly as ‘you’ to urge them to act.",
+      "options": [
+        {
+          "label": "A",
+          "text": "Text 1"
+        },
+        {
+          "label": "B",
+          "text": "Text 2"
+        },
+        {
+          "label": "C",
+          "text": "Both"
+        },
+        {
+          "label": "D",
+          "text": "Neither"
+        }
+      ],
+      "scheme": {
+        "answer": "Text 1"
+      },
+      "seeds": []
+    },
+    {
+      "n": "2",
+      "marks": 2,
+      "type": "short",
+      "skill": "visual",
+      "text": "Look at the picture in Text 1. Say what it shows, and explain how it supports the headline ‘You have fifteen minutes. You just spent them on someone else’s holiday photos.’",
+      "scheme": {
+        "answer": "The boy is so absorbed in his book, with his phone face down, that he does not notice the train doors opening [1]; this backs the headline’s point that spare minutes are better spent reading than scrolling through a phone [1].",
+        "points": [
+          "What it shows: the teenager is lost in his book, with his phone face down beside him / he does not notice the train doors opening.",
+          "How it backs the words: a few spare minutes, such as waiting for a train, can go to reading instead of the phone."
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that reading can be so enjoyable that you forget about everything around you, even your phone." },
-        { "mark": 1, "flaw": "paraphrase", "text": "A good book can take up all of a person's attention, until he does not even notice his train has come." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that people should only read at MRT stations." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that the teenager's phone is spoilt." },
-        { "mark": 0, "flaw": "vague", "text": "It suggests that reading is good for teenagers." }
+        {
+          "mark": 2,
+          "flaw": "full",
+          "text": "The boy is so into his book that he does not even see the train doors open, and his phone is face down. This supports the headline because it shows that the short waiting time can be used for reading instead of looking at other people’s photos on the phone."
+        },
+        {
+          "mark": 2,
+          "flaw": "paraphrase",
+          "text": "His phone is turned over and he is busy reading at the MRT, so it shows that instead of scrolling social media in the few minutes you have, you can read and enjoy it."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "The boy is reading so hard that he does not notice the train doors opening behind him."
+        },
+        {
+          "mark": 1,
+          "flaw": "half",
+          "text": "It tells readers to use their waiting time to read a book instead of scrolling on their phones."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that teenagers should not take the MRT alone."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The picture is interesting and catches the reader’s eye."
+        }
       ]
     },
     {
-      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "Which phrase in the body text tells readers that any kind of reading material is acceptable for the challenge?",
-      "scheme": { "answer": "it all counts", "accept": ["a comic, a cookbook, a football biography — it all counts", "Read a comic, a cookbook, a football biography", "a comic, a cookbook, a football biography"] },
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Text 1 claims that fifteen minutes can be found in everyday moments such as ‘the queue for bubble tea’. Pick out one sentence from Text 2 that supports this claim.",
+      "scheme": {
+        "answer": "I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop.",
+        "accept": [
+          "even in the queue at the bubble tea shop",
+          "I read on the bus, in the clinic waiting room"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "it all counts" },
-        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is 'it all counts'." },
-        { "mark": 1, "flaw": "paraphrase", "text": "\"a comic, a cookbook, a football biography — it all counts\"" },
-        { "mark": 0, "flaw": "wrong", "text": "finish a classic by Friday" },
-        { "mark": 0, "flaw": "wrong", "text": "the queue for bubble tea" },
-        { "mark": 0, "flaw": "wrong", "text": "twenty-one days" }
-      ]
-    },
-    {
-      "n": "3", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Look at the headline. What does it suggest about the way readers use their spare time?",
-      "scheme": { "answer": "They do have time to read, but they spend it scrolling through other people’s posts on their phones.", "accept": ["Readers waste on social media the short periods of free time that they could have used for reading."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that readers do have time to read, but they spend it scrolling through other people's posts on their phones." },
-        { "mark": 1, "flaw": "paraphrase", "text": "They waste their little bits of free time on social media when they could have used the time for a book." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that readers go on holiday very often." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that readers enjoy taking photographs." },
-        { "mark": 0, "flaw": "vague", "text": "It suggests that readers have fifteen minutes." },
-        { "mark": 0, "flaw": "wrong", "text": "Readers are too busy and have no spare time at all." }
-      ]
-    },
-    {
-      "n": "4", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "The button says, ‘Day 1 is the hardest.’ What does this suggest about the days that follow?",
-      "scheme": { "answer": "Reading every day becomes easier once you have begun, as it turns into a habit.", "accept": ["The only difficult part is getting started; after that it takes less effort to keep going."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that it gets easier to read every day once you have started, because it becomes a habit." },
-        { "mark": 1, "flaw": "paraphrase", "text": "Starting is the only tough part, and after that it takes less and less effort to carry on." },
-        { "mark": 0, "flaw": "wrong", "text": "The challenge gets harder and harder every day." },
-        { "mark": 0, "flaw": "wrong", "text": "The book for Day 1 is the most difficult one to read." },
-        { "mark": 0, "flaw": "lifted", "text": "Day 1 is the hardest." },
-        { "mark": 0, "flaw": "vague", "text": "It suggests something about the other days." }
-      ]
-    },
-    {
-      "n": "5", "marks": 1, "type": "short", "skill": "visual",
-      "text": "The poster is aimed at people who do not read much. Give one piece of evidence from the poster that shows this.",
-      "scheme": { "answer": "It says ‘Nobody is asking you to finish a classic by Friday’, assuring readers that they need not read anything difficult.", "accept": ["It asks for only fifteen minutes a day, ‘one small slice of your day’.", "It says comics, cookbooks and football biographies all count.", "It says ‘Day 1 is the hardest’, as if the reader is not used to reading.", "It offers help to those who are ‘stuck for ideas’ about what to read.", "It quotes Marcus, who started with only one volume of manga."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It says nobody is asking you to finish a classic by Friday, so readers know they need not read something difficult." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It only asks for fifteen minutes a day, which is very little." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It says even a comic or a cookbook counts, so people who do not like serious books can join." },
-        { "mark": 0, "flaw": "wrong", "text": "The challenge ends on 30 June." },
-        { "mark": 0, "flaw": "wrong", "text": "The poster is from the neighbourhood library." },
-        { "mark": 0, "flaw": "vague", "text": "The poster is very persuasive." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "I read on the bus, in the clinic waiting room, even in the queue at the bubble tea shop."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "‘even in the queue at the bubble tea shop’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "My brother laughed at me, then quietly borrowed the mystery I had just finished."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It felt like homework."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The part where she says she read a lot."
+        }
       ]
     }
   ]

@@ -21,9 +21,31 @@ No school, year or exam name anywhere.
 | Kind | File | Shape | Marks |
 |---|---|---|---|
 | Editing | `edNN.json` | 12 lines of 9–15 words; first and last correct; 8 of lines 1–10 have ONE wrong word (grammar only: tense, agreement, verb form, word form, preposition, article, pronoun, connector, plural); 2 clean. Mix the kinds — no kind more than twice. Each wrong word stands once in its line. A short plain note per error. | 10 |
-| Visual text | `vtNN.json` | poster / webpage / post from blocks (kicker, headline, tagline, picture-in-words, body, box, quote, small, button), 90–220 words | 5 × 1 mark: purpose, audience, a persuasive feature, a phrase, what a line suggests |
+| Visual text | `vtNN.json` | **Two texts, as in 1184 Paper 2 Section A** (14 Oct 2026). Text 1: a poster / webpage / post from blocks (kicker, headline, tagline, picture-in-words, body, box, quote, small, button), 90–220 words, with a picture. Text 2: 1–3 short paragraphs, 70–200 words, on the same topic from another angle (a blog, an interview, a letter, a forum post, a news extract). Each has an `intro` line saying what it is ("Text 1 is a webpage for …", "Text 2 is taken from a blog post by …"). | 5, in 4–6 questions — see below |
 | Narrative | `naNN.json` | a story, 500–750 words, 7–10 paragraphs, with feeling under the surface so there is something to infer | 20: about 12 questions; language use and inference carry most; one "which word", one "two details", two "in your own words" |
 | Non-narrative | `nnNN.json` | an article, 480–700 words, 6–8 paragraphs | 10 (about 7 questions, one a choice on purpose or tone) + a summary on two or three named paragraphs with 10–12 clear points |
+
+### Visual text — the question mix (from 2025 school prelims, read for shape only)
+
+Every set has: at least one **choice** ("tick" — 3 options, one plainly best); one **short**
+question with skill `visual` on how the **picture** supports the words (name the picture, link it
+to the message); one **short** question asking for a sentence or phrase **from Text 2** that
+supports an idea in **Text 1** (skill `evidence`; the scheme is the sentence itself, `accept` a
+shorter right part of it); one question on **both texts together** (its stem or text says
+"Texts 1 and 2" or "both texts" — purpose, tone, audience, or "Text 1 / Text 2 / Both / Neither").
+Two patterns, both 5 marks:
+
+- **A** — 1 choice: the main message or the best title of Text 1 · 2 the picture [1] · 3 words from
+  Text 2 for Text 1 [1] · 4a + 4b two choices on both texts sharing a stem [2].
+- **B** — 1a + 1b "Text 1 / Text 2 / Both / Neither" choices [2] · 2 the picture, **2 marks**
+  (`points`: what it shows · how that backs the words; seed a `half`) · 3 words from Text 2 for
+  Text 1 [1].
+
+Keep "the use of language for effect" in each set: a choice on tone or on what a phrase does, or
+a short question on a phrase. Write the instructions in our own words — never the exam's stock
+sentence ("Look at Texts 1 and 2 and statements (a) and (b) below…"); the copy check counts a run of
+12 words in a question. A choice's options never begin with a bare letter word ("A", "B").
+The pilot is `vt01.json` (pattern A).
 
 Questions point at **paragraphs**, never line numbers. A two-part question is two questions
 (`4a`, `4b`) sharing a `stem`.
