@@ -16,11 +16,11 @@ import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, BIOLOGY_PROCESSES_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, QA_FLASHCARDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, BIOLOGY_PROCESSES_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, QA_FLASHCARDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { scienceChoiceLabel, studentSciences } from '@/lib/portal-prefs';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { BiologyDoors, CommandWordsDoor, DefinitionsDoor, loadSciencePapers, QaDoor, ScienceTabs } from './science-papers';
+import { BiologyDoors, ChemistryDoors, CommandWordsDoor, DefinitionsDoor, loadSciencePapers, ScienceTabs } from './science-papers';
 import SciencePicker from './science-picker';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +41,7 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
   const qaOpen = QA_FLASHCARDS_OPEN_TO_STUDENTS || adminView;
   const defsOpen = SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS || adminView;
   const bioDefsOpen = BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS || adminView;
+  const chemDefsOpen = CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS || adminView;
   const bioProcOpen = BIOLOGY_PROCESSES_OPEN_TO_STUDENTS || adminView;
   const wordsOpen = COMMAND_WORDS_OPEN_TO_STUDENTS || adminView;
   const { papers, pending } = choosing ? { papers: [], pending: [] } : await loadSciencePapers(sid, account?.display_name ?? null);
@@ -81,7 +82,7 @@ export default async function ScienceHome({ searchParams }: { searchParams: Prom
             <span className="shrink-0 text-white/80 text-lg">›</span>
           </Link>
 
-          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={{ ...(qaOpen ? { chemistry: <QaDoor /> } : {}), ...(defsOpen ? { physics: <DefinitionsDoor /> } : {}), ...(bioDefsOpen || bioProcOpen ? { biology: <BiologyDoors definitions={bioDefsOpen} processes={bioProcOpen} /> } : {}) }} />
+          <ScienceTabs papers={papers} pending={pending} subjects={choice!.subjects} limit={HOME_LIMIT} panelExtras={{ ...(qaOpen || chemDefsOpen ? { chemistry: <ChemistryDoors qa={qaOpen} definitions={chemDefsOpen} /> } : {}), ...(defsOpen ? { physics: <DefinitionsDoor /> } : {}), ...(bioDefsOpen || bioProcOpen ? { biology: <BiologyDoors definitions={bioDefsOpen} processes={bioProcOpen} /> } : {}) }} />
 
           {wordsOpen && <CommandWordsDoor />}
         </>

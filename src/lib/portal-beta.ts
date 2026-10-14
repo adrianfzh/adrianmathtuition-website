@@ -463,6 +463,13 @@ export async function myDefinitionsOpenFor(identity: string | null): Promise<boo
 }
 
 /**
+ * ⚗️ The Chemistry definitions list (/app/science/definitions?s=chemistry and its
+ * door on the Chemistry tab, 14 Oct 2026): Adrian's cookie only until he has
+ * read it. Data: lib/chemistry-definitions.ts.
+ */
+export const CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS = false;
+
+/**
  * ✍️ Formats (/app/languages/formats, 6 Oct 2026): how to set out each
  * situational-writing text type (lib/english-formats.ts). Inside the Languages
  * family (itself closed by ESSAY_MARKING_OPEN_TO_STUDENTS) this page is Adrian's

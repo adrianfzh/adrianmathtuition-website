@@ -214,6 +214,16 @@ export function BiologyDoors({ definitions, processes }: { definitions: boolean;
   );
 }
 
+/** The Chemistry tab's doors: Qualitative analysis and the definitions list (14 Oct 2026). */
+export function ChemistryDoors({ qa, definitions }: { qa: boolean; definitions: boolean }) {
+  return (
+    <div className="space-y-2">
+      {qa && <QaDoor />}
+      {definitions && <StudyDoor href="/app/science/definitions?s=chemistry" tile="bg-purple-600" icon="book" title="Chemistry definitions" sub="Every definition, by topic · key words marked" />}
+    </div>
+  );
+}
+
 /** Science Home's door to Command words — for every science (3 Oct 2026). */
 export function CommandWordsDoor() {
   return <StudyDoor href="/app/science/command-words" tile="bg-slate-700" icon="book" title="Command words" sub="What state, describe and explain each need · describing a graph" />;

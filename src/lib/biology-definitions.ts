@@ -21,6 +21,7 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Cells', 'Tissue', 'A group of **similar cells** working together to perform a **specific function**.'),
   d('Cells', 'Organ', '**Different tissues** working together to perform a **specific function**.'),
 
+  d('Movement of substances', 'Partially permeable membrane', 'A membrane that lets **some substances** through, such as **small molecules like water**, but **not others**, such as large molecules.'),
   d('Movement of substances', 'Diffusion', 'The **net movement of particles** from a region of **higher concentration** to a region of **lower concentration**, **down a concentration gradient**.'),
   d('Movement of substances', 'Osmosis', 'The **net movement of water molecules** from a region of **higher water potential** to a region of **lower water potential**, through a **partially permeable membrane**.'),
   d('Movement of substances', 'Active transport', 'The movement of particles **against a concentration gradient**, from lower to higher concentration, using **energy from respiration**.'),
@@ -75,6 +76,7 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Homeostasis', 'Vasoconstriction', 'The **arterioles** near the skin surface **narrow**, so **less blood** flows to the skin capillaries and **less heat is lost**.'),
 
   d('Nervous system and hormones', 'Hormone', 'A **chemical substance** produced in small amounts by an **endocrine gland**, **carried in the blood** to **target organs**, where it has its effect.'),
+  d('Nervous system and hormones', 'Endocrine gland', 'A **ductless gland** that **secretes hormones directly into the blood**.'),
   d('Nervous system and hormones', 'Reflex action', 'An **immediate response** to a stimulus **without conscious control**.'),
   d('Nervous system and hormones', 'Reflex arc', 'The **shortest pathway** of a nerve impulse from the **receptor to the effector**.'),
   d('Nervous system and hormones', 'Synapse', 'The **junction between two neurones**. The impulse crosses it as a **chemical**.'),
@@ -115,11 +117,13 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Ecology', 'Bioaccumulation', 'A substance that **cannot be broken down or excreted** builds up **in the body of an organism**.'),
   d('Ecology', 'Biodiversity', 'The **range of species** living in an ecosystem.'),
 
+  d('Molecular genetics', 'Chromosome', 'A **thread-like structure** in the **nucleus**, made of **DNA** wound around proteins. It carries **genes**.'),
   d('Molecular genetics', 'Gene', 'A **sequence of nucleotides** on a DNA molecule that **controls the production of one polypeptide**.'),
   d('Molecular genetics', 'Complementary base pairing', '**Adenine pairs with thymine** and **guanine pairs with cytosine**.'),
   d('Molecular genetics', 'Transcription', 'The **base sequence of a gene is copied** into a molecule of **mRNA**, in the **nucleus**.'),
   d('Molecular genetics', 'Translation', 'The **mRNA** is used at a **ribosome** to join **amino acids** in the correct order to make a **polypeptide**.'),
   d('Molecular genetics', 'Genetic engineering', 'The **transfer of a gene** from one organism to another, so that the gene is **expressed** in the organism that receives it.'),
+  d('Molecular genetics', 'Transgenic organism', 'An organism that has received a **gene from another species** by **genetic engineering**.'),
 
   d('Reproduction', 'Asexual reproduction', 'The production of **genetically identical** offspring from **one parent**, **without the fusion of gametes**.'),
   d('Reproduction', 'Sexual reproduction', 'The **fusion of two gametes** to form a **zygote**, producing **genetically different** offspring.'),
@@ -131,6 +135,7 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Reproduction', 'Haploid', 'A nucleus with **one set of chromosomes**, written n.'),
   d('Reproduction', 'Implantation', 'The **embryo embeds itself** in the **uterine lining**.'),
 
+  d('Inheritance', 'Homologous chromosomes', 'A **pair of chromosomes**, **one from each parent**, of the **same size and shape**, with **genes for the same characteristics at the same positions**.'),
   d('Inheritance', 'Allele', 'One of the **different forms of a gene**. Alleles occupy the **same position** on a pair of homologous chromosomes.'),
   d('Inheritance', 'Genotype', 'The **genetic make-up** of an organism: the **combination of alleles** it has.'),
   d('Inheritance', 'Phenotype', 'The **expressed trait** of an organism, the result of its genotype and the environment.'),
@@ -139,6 +144,7 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Inheritance', 'Homozygous', 'Having **two identical alleles** of a gene.'),
   d('Inheritance', 'Heterozygous', 'Having **two different alleles** of a gene.'),
   d('Inheritance', 'Co-dominance', '**Both alleles are expressed** in the phenotype of a heterozygous organism.'),
+  d('Inheritance', 'Multiple alleles', 'A gene with **more than two alleles** in the population, such as the ABO blood group gene. Each person carries **only two** of them.'),
   d('Inheritance', 'Mutation', 'A **sudden, random change** in the **structure of a gene** or in the **number of chromosomes**.'),
   d('Inheritance', 'Continuous variation', 'A **range of phenotypes** with no clear categories, controlled by **many genes** and **affected by the environment**. Example: height.'),
   d('Inheritance', 'Discontinuous variation', '**A few clear-cut phenotypes**, controlled by **one or a few genes** and **not affected by the environment**. Example: blood group.'),

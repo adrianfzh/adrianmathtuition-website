@@ -67,6 +67,7 @@ export const DEFINITIONS: readonly Definition[] = [
   d('Energy', 'Efficiency', 'The **useful energy output** divided by the **total energy input**, × 100%.'),
   d('Energy', 'Kinetic energy', 'The energy a body has **due to its motion**.', 'Eₖ = ½mv²'),
   d('Energy', 'Gravitational potential energy', 'The energy a body has **due to its position** in a gravitational field.', 'Eₚ = mgh'),
+  d('Energy', 'Renewable energy source', 'An energy source that is **replenished naturally** and **will not run out**, such as solar, wind or hydroelectric energy.'),
 
   d('Kinetic particle model', 'Brownian motion', 'The **random, continuous** motion of small particles in a fluid, caused by **uneven bombardment by the fluid molecules**.'),
   d('Kinetic particle model', 'Temperature and particles', 'The higher the temperature, the greater the **average kinetic energy** of the particles.'),
@@ -107,17 +108,22 @@ export const DEFINITIONS: readonly Definition[] = [
   d('Light', 'Total internal reflection', 'All the light is reflected inside the **optically denser medium**. It happens when the **angle of incidence is greater than the critical angle**.'),
   d('Light', 'Focal length', 'The **distance** between the **optical centre** and the **focal point** of the lens.'),
   d('Light', 'Focal point (principal focus)', 'The point on the principal axis where rays **parallel to the principal axis** **converge** after passing through the lens.'),
+  d('Light', 'Virtual image', 'An image that **cannot be formed on a screen**. The light rays **do not actually meet**; they only **appear to come from** the image.'),
 
   d('Static electricity', 'Electric field', 'A **region** in which an **electric charge experiences a force**.'),
   d('Static electricity', 'Direction of an electric field', 'The direction of the **force on a positive charge**.'),
 
   d('Current electricity', 'Current', 'The **rate of flow of charge**.', 'I = Q ÷ t'),
+  d('Current electricity', 'Conventional current', 'The flow of **positive charge**, from the **positive terminal to the negative terminal** of the source. Electrons flow the **opposite way**.'),
   d('Current electricity', 'Electromotive force (e.m.f.)', 'The **work done by the source** in driving a **unit charge** around a **complete circuit**.', 'ε = W ÷ Q'),
   d('Current electricity', 'Potential difference', 'The **work done** to drive a **unit charge** **through the component**.', 'V = W ÷ Q'),
   d('Current electricity', 'Resistance', 'The ratio of the **potential difference across** a component to the **current through** it.', 'R = V ÷ I'),
   d('Current electricity', "Ohm's law", 'The current through a metallic conductor is **directly proportional** to the **potential difference across it**, provided the **temperature stays constant**.'),
 
   d('Practical electricity', 'Kilowatt-hour', 'The energy used by a **1 kW** appliance in **1 hour**.', '1 kWh = 3.6 × 10⁶ J'),
+  d('Practical electricity', 'Alternating current (a.c.)', 'A current that **reverses its direction periodically**, at regular intervals.'),
+  d('Practical electricity', 'Live wire', 'The wire at a **high potential** that **delivers the current** to the appliance. The **fuse and the switch** go in it.'),
+  d('Practical electricity', 'Neutral wire', 'The wire at **zero potential** that **completes the circuit**, carrying the current back from the appliance.'),
   d('Practical electricity', 'Fuse', 'A thin wire that **melts and breaks the circuit** when the **current exceeds its rated value**. It goes in the **live wire**.'),
   d('Practical electricity', 'Earthing', 'The metal casing is joined to the **earth wire**, a **low-resistance path** for the current if the casing becomes live.'),
 
@@ -133,6 +139,7 @@ export const DEFINITIONS: readonly Definition[] = [
   d('Radioactivity', 'Nucleon number', 'The **total number of protons and neutrons** in the nucleus.'),
   d('Radioactivity', 'Isotopes', 'Atoms of the same element with the **same number of protons** but **different numbers of neutrons**.'),
   d('Radioactivity', 'Radioactive decay', 'An **unstable nucleus** emits radiation. The process is **random** and **spontaneous**.'),
+  d('Radioactivity', 'Beta particle', 'A **fast-moving electron** emitted from an **unstable nucleus**, when a **neutron changes into a proton**.'),
   d('Radioactivity', 'Half-life', 'The **time taken** for **half the nuclei** of the radioactive isotope in a sample to **decay**.'),
   d('Radioactivity', 'Background radiation', 'The radiation **always present** in the environment, from natural and man-made sources.'),
   d('Radioactivity', 'Nuclear fission', 'A **heavy nucleus splits** into **two smaller nuclei**, releasing energy.'),

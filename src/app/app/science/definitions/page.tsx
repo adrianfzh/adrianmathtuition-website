@@ -7,24 +7,27 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, myDefinitionsOpenFor, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
+import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, myDefinitionsOpenFor, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { DEFINITIONS, DEFINITION_TOPICS } from '@/lib/science-definitions';
 import { BIOLOGY_DEFINITIONS, BIOLOGY_TOPICS } from '@/lib/biology-definitions';
+import { CHEMISTRY_DEFINITIONS, CHEMISTRY_TOPICS } from '@/lib/chemistry-definitions';
 import PortalIcon from '@/components/PortalIcon';
 import DefinitionsList from './definitions-list';
 import MyDefinitions from './my-definitions';
 
 export const dynamic = 'force-dynamic';
 
-// One page, a list per science: ?s=biology is the Biology list (its own switch).
+// One page, a list per science: ?s=biology / ?s=chemistry (each its own switch).
 const LISTS = {
   physics: { subject: 'physics', example: 'specific heat capacity', title: 'Physics definitions', code: 'O-Level Physics (6091)', tile: 'bg-blue-600', list: DEFINITIONS, topics: DEFINITION_TOPICS, hint: 'Search — moment, half-life, refraction…', open: SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS },
   biology: { subject: 'biology', example: 'transpiration', title: 'Biology definitions', code: 'O-Level Biology (6093)', tile: 'bg-emerald-600', list: BIOLOGY_DEFINITIONS, topics: BIOLOGY_TOPICS, hint: 'Search — osmosis, enzyme, allele…', open: BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS },
+  chemistry: { title: 'Chemistry definitions', code: 'O-Level Chemistry (6092)', tile: 'bg-purple-600', list: CHEMISTRY_DEFINITIONS, topics: CHEMISTRY_TOPICS, hint: 'Search — isotopes, mole, catalyst…', open: CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS },
 } as const;
 
 export default async function ScienceDefinitionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const L = LISTS[(await searchParams)?.s === 'biology' ? 'biology' : 'physics'];
+  const s = (await searchParams)?.s;
+  const L = LISTS[s === 'biology' || s === 'chemistry' ? s : 'physics'];
   if (!(await scienceMarkingOpen())) redirect('/app');
   const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
   if (!L.open && !isAdmin) redirect('/app/science');
@@ -42,7 +45,8 @@ export default async function ScienceDefinitionsPage({ searchParams }: { searchP
           <p className="text-[12px] text-gray-500">The highlighted words are the ones that score</p>
         </div>
       </div>
-      {mine && <MyDefinitions subject={L.subject} example={L.example} />}
+      {/* My definitions covers Physics and Biology only, so far. */}
+      {mine && 'subject' in L && <MyDefinitions subject={L.subject} example={L.example} />}
       <DefinitionsList definitions={L.list} topics={L.topics} hint={L.hint} />
       <p className="text-[12px] text-gray-400">
         For {L.code}. <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
