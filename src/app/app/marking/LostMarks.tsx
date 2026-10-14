@@ -97,6 +97,20 @@ export default function LostMarks({ paper, explain = false }: { paper: StudentPa
                 ))}
               </ul>
             )}
+            {/* Science (14 Oct 2026): the definition a lost "define" part asked for, or
+                what its command word wants — at most one line per lost part. */}
+            {(q.studyLinks ?? []).length > 0 && (
+              <ul className="mt-2 space-y-1">
+                {q.studyLinks!.map((l, j) => (
+                  <li key={j} className="flex items-baseline gap-1.5">
+                    {l.part && <span className="font-mono text-[11px] text-gray-400">{l.part}</span>}
+                    <Link href={l.href} className="text-[13px] font-semibold text-blue-800 underline underline-offset-2" data-study-link>
+                      📖 {l.label} ›
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
             {q.revise && (
               <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
                 <Link href={q.revise.href}

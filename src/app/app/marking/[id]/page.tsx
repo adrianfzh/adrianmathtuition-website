@@ -12,7 +12,11 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { lostPartLinks, type DefSubjectKey } from '@/lib/definition-asks';
+import { DEFINITIONS } from '@/lib/science-definitions';
+import { BIOLOGY_DEFINITIONS } from '@/lib/biology-definitions';
+import { CHEMISTRY_DEFINITIONS } from '@/lib/chemistry-definitions';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { buildStudentMarking, type MarkingRunRow, type StudentQuestion } from '@/lib/portal-marking';
 import { asksForDiagram } from '@/lib/science-diagram-match';
@@ -107,6 +111,10 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   // 🖼 A lost mark on a "draw / label the diagram" part shows the correct picture from the
   // science library (6 Oct 2026, Adrian: "marking use them"). Approved pictures only.
   if (isScience) await attachLibraryDiagrams(lane, paper.dropped);
+  // 📖 A lost mark on a "define X" part links to X on the definitions page; a lost
+  // describe / explain / suggest part links to what that word asks for (14 Oct 2026,
+  // Adrian: "#2 > do it"). Science only, and only the lists open to this viewer.
+  if (isScience) attachStudyLinks(lane, paper.dropped, isAdmin);
   const tone = subjectTone(paper.subject);
   // ▶ Explain it (1 Oct 2026): admin-only until the flag flips; the preview student sees it.
   const explain = await explainClipVisible(sid);
@@ -418,6 +426,17 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
 /** For each lost-mark question that asks for a diagram, the approved library picture that
  *  matches its printed words. One small read; any failure leaves the page as it was. */
+function attachStudyLinks(lane: string, dropped: StudentQuestion[], admin: boolean) {
+  const subject: DefSubjectKey | null = lane === 'physics' || lane === 'biology' || lane === 'chemistry' ? lane : null;
+  if (!subject) return;
+  const lists = {
+    ...(SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS || admin ? { physics: DEFINITIONS } : {}),
+    ...(BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS || admin ? { biology: BIOLOGY_DEFINITIONS } : {}),
+    ...(CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS || admin ? { chemistry: CHEMISTRY_DEFINITIONS } : {}),
+  };
+  for (const q of dropped) q.studyLinks = lostPartLinks(q, subject, lists, COMMAND_WORDS_OPEN_TO_STUDENTS || admin);
+}
+
 async function attachLibraryDiagrams(subject: string, dropped: StudentQuestion[]) {
   if (!dropped.some(q => asksForDiagram(q.prompt))) return;
   const rows = await approvedDiagrams(subject);

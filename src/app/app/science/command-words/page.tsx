@@ -8,7 +8,9 @@ import { cookies } from 'next/headers';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { COMMAND_WORDS_OPEN_TO_STUDENTS, scienceMarkingOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { COMMAND_WORDS, DESCRIBE_VS_EXPLAIN, GRAPH_EXAMPLE, GRAPH_STEPS } from '@/lib/command-words';
+import { commandWordAnchor } from '@/lib/definition-asks';
 import { Marked, STUDY_CARD, StudyHeader } from '../study-bits';
+import ScrollToWord from './scroll-to-word';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +22,7 @@ export default async function CommandWordsPage() {
   if (!COMMAND_WORDS_OPEN_TO_STUDENTS && !isAdmin) redirect('/app/science');
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
+      <ScrollToWord />
       <StudyHeader tile="bg-slate-700" icon="book" title="Command words" sub="The first word of the question tells you what to write" />
 
       <section className={`${STUDY_CARD} px-4 py-4 space-y-2`} aria-label="Describe or explain">
@@ -40,7 +43,8 @@ export default async function CommandWordsPage() {
         <h2 className={HEAD}>The words</h2>
         <dl className="divide-y divide-gray-100">
           {COMMAND_WORDS.map(c => (
-            <div key={c.word} className="py-3">
+            // id = the anchor a lost mark links to (#explain); the row lights up when it is the target.
+            <div key={c.word} id={commandWordAnchor(c.word)} className="py-3 scroll-mt-24 target:-mx-2 target:px-2 target:rounded-2xl target:bg-amber-50 target:ring-2 target:ring-amber-300">
               <dt className="text-[16px] font-bold text-navy">{c.word}</dt>
               <dd className="mt-0.5 text-[15px] leading-snug text-gray-700"><Marked text={c.needs} /></dd>
               <dd className="mt-1.5 text-[13px] leading-snug text-gray-500">{c.question}</dd>

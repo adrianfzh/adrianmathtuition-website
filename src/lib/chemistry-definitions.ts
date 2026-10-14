@@ -3,7 +3,7 @@
 // Biology lists (lib/science-definitions.ts), by O-Level Chemistry (6092)
 // topic. **bold** = the words a marking point wants. Pure data; the parser and
 // search are shared.
-import { defn as d, type Definition } from './science-definitions';
+import { defn as d, withOften, type Definition } from './science-definitions';
 
 export const CHEMISTRY_TOPICS: readonly string[] = [
   'Particulate nature of matter', 'Chemical bonding and structure', 'Chemical calculations',
@@ -11,7 +11,28 @@ export const CHEMISTRY_TOPICS: readonly string[] = [
   'Chemical energetics', 'Rate of reactions', 'Organic chemistry', 'Maintaining air quality',
 ];
 
-export const CHEMISTRY_DEFINITIONS: readonly Definition[] = [
+// ⭐ "Often asked" (14 Oct 2026, Adrian: "#1 > do it"): the terms our science
+// bank asks to define most — at least 3 questions, the top 20 at most.
+// Counted by scripts/definitions-often-asked.ts; the number is how many
+// questions asked. Re-run it and update this list when the bank grows.
+export const CHEMISTRY_OFTEN: readonly string[] = [
+  'patterns-in-the-periodic-table-alloy', // 19,
+  'particulate-nature-of-matter-isotopes', // 17,
+  'chemical-calculations-relative-atomic-mass-a', // 11,
+  'particulate-nature-of-matter-diatomic', // 8,
+  'chemical-energetics-exothermic-reaction', // 8,
+  'organic-chemistry-hydrocarbon', // 7,
+  'acid-base-chemistry-weak-acid', // 6,
+  'organic-chemistry-isomers', // 6,
+  'organic-chemistry-homologous-series', // 5,
+  'acid-base-chemistry-acid', // 5,
+  'acid-base-chemistry-amphoteric-oxide', // 4,
+  'organic-chemistry-unsaturated', // 4,
+  'acid-base-chemistry-strong-acid', // 3,
+  'chemical-bonding-and-structure-allotropes', // 3
+];
+
+export const CHEMISTRY_DEFINITIONS: readonly Definition[] = withOften([
   d('Particulate nature of matter', 'Element', 'A substance that **cannot be broken down** into simpler substances by **chemical methods**.'),
   d('Particulate nature of matter', 'Compound', 'A substance made of **two or more elements chemically combined** in a **fixed proportion**.'),
   d('Particulate nature of matter', 'Proton number', 'The **number of protons** in the nucleus of an atom.'),
@@ -59,4 +80,4 @@ export const CHEMISTRY_DEFINITIONS: readonly Definition[] = [
   d('Organic chemistry', 'Polymer', 'A **very large molecule** made by joining **many small molecules (monomers)** together.'),
 
   d('Maintaining air quality', 'Greenhouse gas', 'A gas that **absorbs infrared radiation** given off by the Earth and **traps heat in the atmosphere**. Examples: carbon dioxide, methane.'),
-];
+], CHEMISTRY_OFTEN);

@@ -1,7 +1,7 @@
 // The Biology definitions list (3 Oct 2026) — the same page as the Physics one
 // (lib/science-definitions.ts), by O-Level Biology (6093) topic. **bold** = the
 // words a marking point wants. Pure data; the parser and search are shared.
-import { defn as d, type Definition } from './science-definitions';
+import { defn as d, withOften, type Definition } from './science-definitions';
 
 export const BIOLOGY_TOPICS: readonly string[] = [
   'Cells', 'Movement of substances', 'Biological molecules', 'Enzymes', 'Nutrition in humans',
@@ -10,7 +10,31 @@ export const BIOLOGY_TOPICS: readonly string[] = [
   'Molecular genetics', 'Reproduction', 'Inheritance',
 ];
 
-export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
+// ⭐ "Often asked" (14 Oct 2026, Adrian: "#1 > do it"): the terms our science
+// bank asks to define most — at least 3 questions, the top 20 at most.
+// Counted by scripts/definitions-often-asked.ts; the number is how many
+// questions asked. Re-run it and update this list when the bank grows.
+export const BIOLOGY_OFTEN: readonly string[] = [
+  'inheritance-mutation', // 16,
+  'excretion-excretion', // 15,
+  'nervous-system-and-hormones-hormone', // 12,
+  'molecular-genetics-gene', // 10,
+  'inheritance-allele', // 8,
+  'enzymes-enzyme', // 8,
+  'homeostasis-homeostasis', // 7,
+  'transport-in-plants-transpiration', // 6,
+  'homeostasis-negative-feedback', // 5,
+  'ecology-carbon-sink', // 5,
+  'ecology-trophic-level', // 5,
+  'inheritance-dominant-allele', // 5,
+  'nervous-system-and-hormones-endocrine-gland', // 5,
+  'infectious-diseases-pathogen', // 3,
+  'nervous-system-and-hormones-reflex-action', // 3,
+  'reproduction-pollination', // 3,
+  'reproduction-sexual-reproduction', // 3
+];
+
+export const BIOLOGY_DEFINITIONS: readonly Definition[] = withOften([
   d('Cells', 'Cell membrane', 'A **partially permeable** membrane that **controls the movement of substances** into and out of the cell.'),
   d('Cells', 'Cell wall', 'A **fully permeable** layer of **cellulose** that **protects** the plant cell and gives it a **fixed shape**.'),
   d('Cells', 'Nucleus', '**Controls cell activities** such as cell division, and contains the **genetic material (DNA)**.'),
@@ -149,4 +173,4 @@ export const BIOLOGY_DEFINITIONS: readonly Definition[] = [
   d('Inheritance', 'Continuous variation', 'A **range of phenotypes** with no clear categories, controlled by **many genes** and **affected by the environment**. Example: height.'),
   d('Inheritance', 'Discontinuous variation', '**A few clear-cut phenotypes**, controlled by **one or a few genes** and **not affected by the environment**. Example: blood group.'),
   d('Inheritance', 'Natural selection', 'Organisms with **favourable traits survive, reproduce** and **pass on their alleles** to their offspring.'),
-];
+], BIOLOGY_OFTEN);

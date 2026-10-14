@@ -125,6 +125,10 @@ export interface StudentQuestion {
   snippets?: Snippet[];
   /** Where the question sits down its page, from the marker's boxes — "See it on my paper" lands on it exactly. */
   jump?: { at: number; span: number } | null;
+  /** The parts that lost marks, with the marker's note — science papers link each to a definition or a command word (lib/definition-asks). */
+  lostParts?: { label: string | null; why: string | null }[];
+  /** Science: at most one study link per lost part (lib/definition-asks lostPartLinks), attached by the paper page. */
+  studyLinks?: { label: string; href: string; part: string | null }[];
 }
 
 /**
@@ -327,6 +331,7 @@ export function mergeSplitQuestions(questions: StudentQuestion[]): StudentQuesti
     prev.full = prev.max > 0 && prev.awarded >= prev.max;
     prev.slips = [...prev.slips, ...q.slips.filter(x => !prev.slips.includes(x))];
     prev.schemes = [...prev.schemes, ...q.schemes];
+    prev.lostParts = [...(prev.lostParts ?? []), ...(q.lostParts ?? [])];
     prev.fixes = [...(prev.fixes ?? []), ...(q.fixes ?? [])];
     prev.corrections = [...(prev.corrections ?? []), ...(q.corrections ?? [])];
     prev.working = [...(prev.working ?? []), ...(q.working ?? [])];
@@ -354,6 +359,7 @@ function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefine
 
   const slips: string[] = [];
   const schemes: StudentQuestion['schemes'] = [];
+  const lostParts: NonNullable<StudentQuestion['lostParts']> = [];
   for (const p of parts) {
     const part = asRecord(p);
     if (!part) continue;
@@ -370,6 +376,7 @@ function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefine
     // A part that scored full marks has nothing to say; `error_summary` on a
     // correct part (some markers write "no errors") would read as a criticism.
     if (num(part.awarded) >= num(part.max)) continue;
+    lostParts.push({ label: str(part.label) || null, why: str(part.error_summary) || null });
     const why = str(part.error_summary);
     if (!why) continue;
     const label = str(part.label);
@@ -395,6 +402,7 @@ function toQuestion(raw: unknown, ctx: PageContext = { annotationDebug: undefine
     region: str(r.region) || null,
     comment: str(marking.overall_comment),
     slips,
+    lostParts,
     full: max > 0 && awarded >= max,
     prompt: str(asRecord(output?.question)?.prompt) || null,
     schemes,

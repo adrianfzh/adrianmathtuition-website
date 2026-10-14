@@ -12,6 +12,8 @@ export interface Definition {
   text: string;
   /** The formula, with what each letter stands for. */
   formula?: string;
+  /** ⭐ Exams ask for it often (lib/*-definitions OFTEN lists). */
+  often?: boolean;
 }
 
 export const DEFINITION_TOPICS: readonly string[] = [
@@ -29,7 +31,39 @@ export const defn = (topic: string, term: string, text: string, formula?: string
 
 const d = defn;
 
-export const DEFINITIONS: readonly Definition[] = [
+/** Sets ⭐ `often` on the definitions whose ids are listed. */
+export const withOften = (list: readonly Definition[], ids: readonly string[]): readonly Definition[] =>
+  list.map(x => (ids.includes(x.id) ? { ...x, often: true } : x));
+
+// ⭐ "Often asked" (14 Oct 2026, Adrian: "#1 > do it"): the terms our science
+// bank asks to define most — at least 3 questions, the top 20 at most.
+// Counted by scripts/definitions-often-asked.ts; the number is how many
+// questions asked. Re-run it and update this list when the bank grows.
+export const PHYSICS_OFTEN: readonly string[] = [
+  'turning-effect-of-forces-centre-of-gravity', // 27,
+  'waves-wavefront', // 27,
+  'light-focal-length', // 24,
+  'current-electricity-electromotive-force-e-m-f', // 23,
+  'thermal-properties-specific-heat-capacity', // 23,
+  'light-critical-angle', // 20,
+  'waves-frequency', // 18,
+  'pressure-pressure', // 18,
+  'static-electricity-electric-field', // 16,
+  'light-refractive-index', // 16,
+  'turning-effect-of-forces-moment-of-a-force', // 16,
+  'waves-ultrasound', // 13,
+  'energy-work-done', // 13,
+  'current-electricity-current', // 12,
+  'kinematics-acceleration', // 12,
+  'energy-power', // 11,
+  'thermal-properties-specific-latent-heat-of-fusion', // 10,
+  'energy-efficiency', // 10,
+  'waves-longitudinal-wave', // 10,
+  'thermal-properties-internal-energy', // 10
+];
+
+
+export const DEFINITIONS: readonly Definition[] = withOften([
   d('Measurement', 'Scalar quantity', 'A quantity that has **magnitude only**.'),
   d('Measurement', 'Vector quantity', 'A quantity that has **both magnitude and direction**.'),
   d('Measurement', 'Period of a pendulum', 'The **time taken** for **one complete oscillation**.'),
@@ -144,7 +178,7 @@ export const DEFINITIONS: readonly Definition[] = [
   d('Radioactivity', 'Background radiation', 'The radiation **always present** in the environment, from natural and man-made sources.'),
   d('Radioactivity', 'Nuclear fission', 'A **heavy nucleus splits** into **two smaller nuclei**, releasing energy.'),
   d('Radioactivity', 'Nuclear fusion', '**Two light nuclei join** to form a **heavier nucleus**, releasing energy.'),
-];
+], PHYSICS_OFTEN);
 
 export interface BoldRun { text: string; bold: boolean }
 

@@ -26,7 +26,10 @@ const LISTS = {
 } as const;
 
 export default async function ScienceDefinitionsPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const s = (await searchParams)?.s;
+  const sp = await searchParams;
+  const s = sp?.s;
+  // ?term=<id>: land on one term (a lost mark on a marked paper links here).
+  const term = typeof sp?.term === 'string' ? sp.term : null;
   const L = LISTS[s === 'biology' || s === 'chemistry' ? s : 'physics'];
   if (!(await scienceMarkingOpen())) redirect('/app');
   const isAdmin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value) && !(await viewingAsStudent());
@@ -47,7 +50,7 @@ export default async function ScienceDefinitionsPage({ searchParams }: { searchP
       </div>
       {/* My definitions covers Physics and Biology only, so far. */}
       {mine && 'subject' in L && <MyDefinitions subject={L.subject} example={L.example} />}
-      <DefinitionsList definitions={L.list} topics={L.topics} hint={L.hint} />
+      <DefinitionsList definitions={L.list} topics={L.topics} hint={L.hint} focus={term} />
       <p className="text-[12px] text-gray-400">
         For {L.code}. <Link href="/app/science" className="underline underline-offset-2">Back to Science</Link>
       </p>
