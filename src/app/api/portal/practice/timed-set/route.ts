@@ -22,7 +22,8 @@
 // Auth: portal student session (level-gated) OR admin Bearer (testing —
 // admin can build a set, only students can grade one). Anonymous POST must
 // 401 — probed by /api/health-check.
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { noteServed } from '@/lib/question-health-store';
 import { randomUUID } from 'node:crypto';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createServiceClient } from '@/lib/supabase-server';
@@ -208,6 +209,9 @@ async function build(caller: NonNullable<PracticeCaller>, body: Record<string, u
   const timeLimitSec = timeLimitSeconds(level, totalMarks);
   const setId = randomUUID();
   await logEvents(caller, ['timed:start']);
+  // 🩺 Question health (SPEC-QUESTION-HEALTH.md): the set's unchecked questions are checked after.
+  const servedIds = questions.map((q) => q.id);
+  after(() => noteServed(servedIds, 'practice'));
   return NextResponse.json({
     setId, level, tier, mixed, topics: mixed ? [] : topics, count: questions.length,
     totalMarks, timeLimitSec, questions,

@@ -4,6 +4,7 @@
 // Every judgement is pure in lib/portal-find.ts — this file is only the
 // queries, all service-role with the identity predicate IN the query
 // (lib/supabase-server.ts header).
+import { noteServed } from './question-health-store';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   practiceEligibility, previewOf, primaryFiling, candidateTopic,
@@ -183,6 +184,7 @@ export async function createFindAssignment(
     console.error('[find-assign] assignment insert failed:', error?.message);
     return null;
   }
+  await noteServed([input.question.id], 'assign');   // 🩺 checked after if never checked (never throws)
   return data.id;
 }
 

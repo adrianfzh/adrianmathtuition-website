@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionMarkdown, questionStructured, totalMarksOf, type BankQuestion } from '@/lib/bank-question-markdown';
 import { practiceAuth, practiceLevelAllowed, bankScope, rpcAudience, scienceServeFor } from '@/lib/practice';
@@ -8,6 +8,7 @@ import { adaptiveFallbacks, parseAdaptiveLevel, parseSkill, resolveTopicPool, se
 import { scienceLevelsAllowedFor, scienceStructuredPracticeOpen } from '@/lib/portal-beta';
 import { portalIdentity } from '@/lib/portal-auth';
 import { studentRow } from '@/lib/part-syllabus';
+import { afterPracticeServe } from '@/lib/question-health-store';
 
 export const runtime = 'nodejs';
 
@@ -110,6 +111,10 @@ export async function POST(req: NextRequest) {
     if (!q) skip.push(raw.id);
   }
   if (!q) return NextResponse.json({ question: null });
+  // 🩺 Question health (SPEC-QUESTION-HEALTH.md): an unchecked question is checked straight after,
+  // and the topic's next few are queued. After the answer is sent — the student never waits.
+  const served = q.id;
+  after(() => afterPracticeServe(served, scope.level, topic, rpcAudience(caller).p_is_ip));
 
   // Deliberately NOT exposing the originating school/paper to students —
   // the portal shows the question and marks only.

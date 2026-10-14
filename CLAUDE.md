@@ -51,6 +51,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | GCE-format papers + Set papers · school-style papers | [`docs/GCE-PAPER.md`](docs/GCE-PAPER.md) · [`docs/SCHOOL-PAPER.md`](docs/SCHOOL-PAPER.md) |
 | Practice photo + photo sheets | [`SPEC-PRACTICE-PHOTO.md`](SPEC-PRACTICE-PHOTO.md) |
 | Twins (our own questions) | [`SPEC-TWINS.md`](SPEC-TWINS.md) |
+| 🩺 Question check on first serve (paused / retired questions, Adrian's list, the `question-health` lane) | [`SPEC-QUESTION-HEALTH.md`](SPEC-QUESTION-HEALTH.md) |
 | Measuring the marking (shadow reads, consistency) · ops, switches, safety checks, job_runs | [`docs/MARKING.md`](docs/MARKING.md) + [`docs/OPS.md`](docs/OPS.md) |
 | Running a batch of fixes with agents; which model does which job | [`docs/FANOUT.md`](docs/FANOUT.md) (§9 is LIVING) |
 | 🌙 Nightly builder | [`docs/NIGHTLY-BUILDER.md`](docs/NIGHTLY-BUILDER.md) |

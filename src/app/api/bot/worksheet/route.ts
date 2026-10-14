@@ -36,7 +36,8 @@
 // Blob URL. Eligibility comes from lib/kiosk-pool, so the never-worked-solutions
 // / never-originating-school invariants hold here by construction.
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse, after } from 'next/server';
+import { noteServed } from '@/lib/question-health-store';
 import { safeEqual } from '@/lib/safe-equal';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { KIOSK_LEVELS } from '@/lib/kiosk-session';
@@ -252,6 +253,7 @@ export async function POST(req: NextRequest) {
   const title = worksheetTitle(cfg.label, topic);
   // Part marks: a re-lettered question prints only once the sheet's letters are on record.
   picked = await recordPrintedLabels(supa, { surface: 'bot-worksheet', ref: `${date}|${levelKey}|${topic}`, student: typeof body.studentId === 'string' ? body.studentId : null }, picked);
+  { const ids = picked.map((r) => r.id); after(() => noteServed(ids, 'worksheet')); }   // 🩺 unchecked ones are checked after (SPEC-QUESTION-HEALTH.md)
 
   const pdf = await renderBotWorksheetPDF({
     title,

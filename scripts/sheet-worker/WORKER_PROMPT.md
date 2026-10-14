@@ -70,6 +70,17 @@ If `job` is null, you are done — exit without writing anything. Otherwise note
     the bank `question_id` on every such item in `questions[]`; author only when
     nothing fits, and file the proposal.
 
+1d3. **🩺 Question check on every bank question you pick** (14 Oct 2026, SPEC-QUESTION-HEALTH.md).
+    Before a bank question goes on the sheet, ask the website which of your candidates are safe:
+    `POST $API/api/admin/question-health {"action":"status","ids":[...]}` (admin bearer) →
+    `{statuses:{id: "passed"|"fixed"|"queued"|"checking"|"paused"|"retired"|"unchecked"}}`.
+    **Never use a `paused` or `retired` one.** Prefer `passed`/`fixed`. For any `unchecked` pick,
+    check it yourself the way `scripts/question-health/WORKER_PROMPT.md` says (a fresh subagent
+    solves it blind, you compare with our key, read it for completeness) and post the report:
+    `{"action":"result","runner":"sheet-worker","report":{…}}`. A report that comes back
+    `paused` or `retired` → swap that question for another. (When the check is switched off the
+    statuses all read `unchecked` and posting is refused — then carry on as before.)
+
 1e. **A BATCH job — one sheet for several papers** (10 Sep 2026; Adrian, on
     Isabelle's five finished-but-unsent sheets: "the same mistakes or the same
     topics may appear across all 5 worksheets, so can batch and combine into one

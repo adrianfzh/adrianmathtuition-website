@@ -68,6 +68,15 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
+## 🩺 Question check on first serve (Adrian, 14 Oct 2026: "yes") — BUILT, OFF
+A maths question is checked the first time it is about to reach a student: a separate solver
+works it blind, we compare, copy slips are fixed from the source page, a key is corrected only
+when the school's own answer agrees with the solver, a solver-vs-school dispute is paused on
+`/admin/question-health` for Adrian. `SPEC-QUESTION-HEALTH.md`. **Open for Adrian:** (1) yes to
+applying `migrations/question_health.sql` (it changes the live pickers); (2) merge the bot branch
+`question-health-lane`; (3) turn it on. Later (§7): student disputes / skips as suspects, levels
+from results.
+
 ## ✏️ Draw on the student's own photo to explain (Adrian, 14 Oct 2026: "yes") — QUEUED, starts after the explanation work is live
 
 When a student sends a question with a diagram and asks "why is this angle 40°?", mark THEIR photo:

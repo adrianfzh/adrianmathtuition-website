@@ -16,6 +16,7 @@
 //                             released, an item is the student's.
 //
 // The shape-checking and row-building are pure in lib/practice-again.ts.
+import { noteServed } from './question-health-store';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   PRACTICE_AGAIN_HANDS_BACK_QUESTIONS,
@@ -90,6 +91,9 @@ export async function createHeldPracticeItems(
       }
       created = (ins || []).length;
     }
+    // 🩺 the sheet's bank questions are checked if never checked (SPEC-QUESTION-HEALTH.md). The sheet
+    // session checks its own picks first; this is the net for what it did not. Never throws.
+    if (bankIds.size) await noteServed([...bankIds], 'sheet');
 
     const { data: all } = await sb.from('portal_assignments')
       .select('id, kind, skill_title').eq('sheet_job_id', job.id).eq('status', 'held');

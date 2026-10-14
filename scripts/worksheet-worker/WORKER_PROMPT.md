@@ -37,6 +37,12 @@ curl -s -X POST "$WORKSHEETS_API_BASE/api/admin/worksheet-jobs" \
    the repo is your working directory (`$WORKSHEETS_REPO`). `/usr/bin/python3` is
    the interpreter every skill expects. Never modify git, never commit, never push.
 
+   **🩺 Question check (14 Oct 2026, SPEC-QUESTION-HEALTH.md).** Before a bank question goes on the
+   sheet, ask which picks are safe — `POST $WORKSHEETS_API_BASE/api/admin/question-health
+   {"action":"status","ids":[…]}` — and never use one that reads `paused` or `retired`. When the
+   sheet is built, queue the rest for a check: `{"action":"enqueue","reason":"worksheet","ids":[…]}`
+   (the checker runs them; a swap is Adrian's when he edits the DOCX).
+
    **Kind 1 — revision worksheet with worked examples.** Invoke the
    `revision-worksheet` skill (`.claude/skills/revision-worksheet/`) and follow
    it: `rw.py plan --level <level> --topic "<topic>"` → choose the arc →

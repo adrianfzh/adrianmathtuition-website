@@ -156,6 +156,10 @@
       "schedule": "0 0 * * 1"
     },
     {
+      "path": "/api/cron/question-health-weekly",
+      "schedule": "10 0 * * 1"
+    },
+    {
       "path": "/api/cron/practice-again-reminders",
       "schedule": "0 1 * * *"
     },

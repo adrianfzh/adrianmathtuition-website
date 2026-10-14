@@ -70,6 +70,8 @@ carries `.eq('national', false)`, and the skills' queries carry
 `national=is.false`. Any NEW serving surface must do the same; the test in
 `portal-find.test.ts` pins the gate.
 
+**Question check (14 Oct 2026, `SPEC-QUESTION-HEALTH.md`).** A row `question_health.status` of `paused` or `retired` is never served: `practice_next`, `kiosk_pool` and `practice_candidates` carry `not exists … status in ('paused','retired')`, the print-paper draw drops them (`blockedIds`), and the sheet workers ask `{action:'status'}` first. Any NEW serving surface does the same.
+
 ## The six rules
 
 1. **Never on a public, indexable page.** Public pages (`/`, the SEO landing
