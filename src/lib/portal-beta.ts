@@ -444,6 +444,25 @@ export const BIOLOGY_PROCESSES_OPEN_TO_STUDENTS = false;
 export const COMMAND_WORDS_OPEN_TO_STUDENTS = false;
 
 /**
+ * 📌 My definitions (14 Oct 2026, Adrian: "allow a function that would let
+ * students add their own definition too … allow students to remove them too >
+ * so it is a study resource"): on the Physics and Biology definitions pages a
+ * student types a term, taps Add, and the definition is found (our list → the
+ * bank → written) and saved to their account (lib/my-definitions.ts,
+ * /api/portal/definitions). Adrian's cookie + the preview student until he
+ * opens it. The definitions pages have their own switches above.
+ */
+export const MY_DEFINITIONS_OPEN_TO_STUDENTS = false;
+export const MY_DEFINITIONS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
+/** True when this portal identity (null = Adrian's cookie with no student session) may use My definitions. */
+export async function myDefinitionsOpenFor(identity: string | null): Promise<boolean> {
+  if (MY_DEFINITIONS_OPEN_TO_STUDENTS) return true;
+  if (identity && MY_DEFINITIONS_PREVIEW_IDENTITIES.includes(identity)) return true;
+  return !(await viewingAsStudent()) && (await isNotesAuthed());
+}
+
+/**
  * ✍️ Formats (/app/languages/formats, 6 Oct 2026): how to set out each
  * situational-writing text type (lib/english-formats.ts). Inside the Languages
  * family (itself closed by ESSAY_MARKING_OPEN_TO_STUDENTS) this page is Adrian's

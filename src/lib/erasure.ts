@@ -28,6 +28,8 @@ export const ERASE_BY_IDENTITY: readonly { table: string; column: string }[] = [
   // 8 Oct 2026 (English practice, listening and oral):
   { table: 'english_practice_attempts', column: 'identity' }, // answers to our own English sets, listening included
   { table: 'english_oral_attempts', column: 'identity' }, // what they said in oral practice + the report (the recordings: ERASE_FILE_PREFIXES)
+  // 14 Oct 2026 (My definitions):
+  { table: 'student_definitions', column: 'identity' }, // the definitions they saved on the science pages
   { table: 'plan_reads', column: 'identity' }, // answers waiting for, or back from, the plan reader
 ];
 

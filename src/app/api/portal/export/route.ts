@@ -112,7 +112,7 @@ export async function GET() {
   // 5 Oct 2026: the rest of what the app keeps (lib/erasure.ts + the ink kept with marked papers).
   const byCol = (table: string, column: string) =>
     studentId ? admin.from(table).select('*').eq(column, studentId) : empty;
-  const [essays, humanities, workInk, paperInk, usage, asks, photoSheets, suggestions] = await Promise.all([
+  const [essays, humanities, workInk, paperInk, usage, asks, photoSheets, suggestions, myDefinitions] = await Promise.all([
     byCol('essay_runs', 'airtable_student_id'),
     byCol('humanities_runs', 'airtable_student_id'),
     byCol('student_work_ink', 'identity'),
@@ -126,6 +126,10 @@ export async function GET() {
     // tutor's own note stays out. Anonymous ones carry no identity, so nobody can pull them.
     studentId
       ? admin.from('portal_suggestions').select('id, created_at, text, status').eq('airtable_student_id', studentId)
+      : empty,
+    // 📌 The definitions they saved on the science pages (14 Oct 2026).
+    studentId
+      ? admin.from('student_definitions').select('subject, term, text, formula, created_at').eq('identity', studentId)
       : empty,
   ]);
 
@@ -159,6 +163,7 @@ export async function GET() {
     asks_by_skill: asks.data || [],
     practice_sheet_requests: photoSheets.data || [],
     suggestions: suggestions.data || [],
+    my_definitions: myDefinitions.data || [],
   };
 
   return new NextResponse(JSON.stringify(payload, null, 2), {

@@ -24,6 +24,8 @@ const SWITCHED: Record<string, RegExp> = {
   'src/lib/practice-hint.ts': /HINT_MODEL = process\.env\.PRACTICE_HINT_MODEL \|\| SONNET_55;/,
   'src/lib/paper-book-split-io.ts': /COVER_MODEL = process\.env\.BOOK_COVER_MODEL \|\| SONNET_55;/,
   'src/app/api/admin-schedule/extract-exam-topics/route.ts': /const EXTRACTION_MODEL = SONNET_55;/,
+  // 📌 My definitions' writer (14 Oct 2026, built on Sonnet 5.5 from the start).
+  'src/lib/my-definitions-store.ts': /MY_DEFINITIONS_MODEL = process\.env\.MY_DEFINITIONS_MODEL \|\| SONNET_55;/,
 };
 
 describe('Sonnet 5.5 setting', () => {
