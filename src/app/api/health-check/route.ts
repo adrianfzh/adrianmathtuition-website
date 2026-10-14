@@ -14,6 +14,10 @@ import { arrearsRunTarget } from '@/lib/year-end-billing';
 import { sgtTodayISO } from '@/lib/invoice-month';
 import { HEALTH_PROBE_HEADER, HEALTH_PROBE_VALUE } from '@/lib/login-trouble';
 
+import { DEFINITIONS } from '@/lib/science-definitions';
+import { BIOLOGY_DEFINITIONS } from '@/lib/biology-definitions';
+import { CHEMISTRY_DEFINITIONS } from '@/lib/chemistry-definitions';
+
 export const runtime = 'nodejs';
 export const maxDuration = 60;
 
@@ -178,6 +182,15 @@ export async function GET(req: NextRequest) {
       const r = await fetch('https://www.adrianmathtuition.com/j/AAAAAAAA', { signal: T(10000), redirect: 'manual' });
       if (r.status !== 410) throw new Error(`HTTP ${r.status}`);
       return 'ok';
+    }),
+    // Science definitions, open to students since 14 Oct 2026: every list still has its entries,
+    // and the page answers (a logged-out visit is sent to the login page, never a 5xx).
+    timed('science-definitions', async () => {
+      const n = { physics: DEFINITIONS.length, biology: BIOLOGY_DEFINITIONS.length, chemistry: CHEMISTRY_DEFINITIONS.length };
+      if (n.physics < 50 || n.biology < 50 || n.chemistry < 20) throw new Error(`lists too short: ${JSON.stringify(n)}`);
+      const r = await fetch('https://www.adrianmathtuition.com/app/science/definitions', { signal: T(10000), redirect: 'manual' });
+      if (r.status >= 500) throw new Error(`HTTP ${r.status}`);
+      return `${n.physics}/${n.biology}/${n.chemistry}`;
     }),
     timed('referral-landing', async () => {
       const r = await fetch('https://www.adrianmathtuition.com/r/recAAAAAAAAAAAAAA', { signal: T(10000) });
