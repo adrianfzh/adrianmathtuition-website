@@ -34,6 +34,11 @@ WHERE THINGS STAND (14 Oct 2026, check before repeating):
 - Still on Gemini, to replace one at a time after the above: the two readers above (until switched back on),
   rare back-ups, small marking checks (two-page photo check, a "Gemini up?" ping), and outside marking: chat
   back-up, chat photo text, drawing graphs/diagrams, voice notes, oral transcription.
+- This is the same Mac. Private bench files (student page images — never commit or upload) are kept at
+  ~/paused-work-2026-10-05/pen-bench-2026-10-14/ : ab/ (science + maths renders, side-by-sides, blind keys,
+  mkpdf.py), mr/ (maths rounds 1–5, final verdicts, final.py), keys10/, judge/. The retrained "which way up"
+  model and its training files: ~/paused-work-2026-10-05/linedet/upright-v2/. Comparison PDFs Adrian looked at:
+  .scratch_shot/compare-2026-10-13/ and compare-2026-10-14/ (untracked, in this folder).
 - The worker's plan logins were nearly full on 14 Oct (reset Wed/Thu); when all are full, marking moves to
   the paid API by itself.
 
