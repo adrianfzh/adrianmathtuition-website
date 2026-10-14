@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   test: {
-    include: ['src/**/*.test.ts', 'scripts/doc-sweep/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'scripts/doc-sweep/*.test.mjs', 'scripts/science-twins/*.test.mjs'],
     environment: 'node',
   },
   // Mirror the tsconfig `@/*` path alias so libs that import siblings by alias

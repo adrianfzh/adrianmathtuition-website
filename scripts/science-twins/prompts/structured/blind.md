@@ -1,0 +1,1 @@
+You are an independent candidate. Read ONLY the file RUN/Q1.solve.md (and the diagram it names, if any) — do not open any other file in RUN: no Q1.json, no source, no brief, no check file; that would break a blind check. Answer every part yourself in full, then write RUN/Q1.blind.json in exactly the JSON shape the file asks for. Then stop.

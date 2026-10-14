@@ -6,7 +6,8 @@
 -- A unit = (pool, sub-skill): pure PHY/CHEM/BIO × every subgroup of that science; Combined
 -- CS_PHY/CS_CHEM/CS_BIO × the subgroups whose topic the Combined bank has (the Combined rows are
 -- not filed, so a Combined twin is modelled on a filed PURE seed and written at Combined scope).
---   twins  live verified twins filed under the sub-skill at the pool's levels
+--   twins  live verified MCQ twins filed under the sub-skill at the pool's levels (a STRUCTURED twin —
+--          answer null, 14 Oct 2026 — is not counted: structured twins are ordered by sci-stwin.mjs)
 --   need   per_skill − twins (≥ 0)
 --   seeds  up to 5 usable MCQ seeds (real school rows, servable shape, no live twin in this pool),
 --          checked rows first, text-only first, rows with a level first
@@ -37,6 +38,7 @@ counted as (
   select u.*,
     (select count(distinct t.id)::int from questions t join question_subgroups tq on tq.question_id = t.id
       where tq.subgroup_id = u.sgid and t.school = 'AdrianMath' and t.exam_type = 'Twin' and t.verified and not t.practice_hidden
+        and t.answer ~ '^\s*([A-Da-d]\s*$|[*][*][(]?[A-D][)]?[*][*])'   -- MCQ twins only (14 Oct 2026: structured twins have their own order, sci-stwin.mjs)
         and t.level = any (case when u.combined then array[u.lvl, u.lvl || '_NA'] else array[u.lvl] end)) tw,
     (select array_agg(x.id) from (select s.id from seeds s where s.subgroup_id = u.sgid and s.level = u.pure_lvl
         and not exists (select 1 from questions t where t.twin_of = s.id and not t.practice_hidden and t.level = any (case when u.combined then array[u.lvl, u.lvl || '_NA'] else array[u.lvl] end))

@@ -1,0 +1,23 @@
+Structured science twins — first batch, 14 Oct 2026, by hand on the Mac with the lane's exact steps
+(sci-stwin.mjs brief → Opus author → check → Opus blind solve → Opus checker → publish; one rewrite).
+10 seeds tried in the open pure topics → 5 published, 5 dropped.
+
+PUBLISHED (school AdrianMath, exam_type Twin, verified, practice_checked_at — live in Structured practice)
+  06a51d02-c457-4ac1-a6b8-2ddaee3ad112  PHY  Kinematics › Acceleration of free fall            8 marks  blind 8/8  checker 4
+  9469c7cb-bb29-4be2-b742-edb37a1662f5  PHY  Turning Effect › Centre of gravity and stability  4 marks  blind 4/4  checker 4
+  df5886db-5413-4149-95e0-08b4bf8aea9d  PHY  Forces › Free-body diagrams and equilibrium        5 marks  blind 5/5  checker 4
+  d571cd75-9026-428d-8b2a-e0497d76688e  BIO  Movement of Substances › Active transport         7 marks  blind 7/7  checker 4
+  2fd97f63-9db2-4f9e-bf03-1102a5687e80  CHEM Salts › Ammonia and the Haber process             9 marks  blind 9/9  checker 4
+
+DROPPED (seed parked)
+  BIO  Cell Structure › Cell structures     rewrite broke "one point a line" (scheme lines > 260 characters)
+  CHEM Chemical Calculations › Titration    the seed had a "plot the graph" part — no typed twin keeps that demand
+                                            (the queue now skips such seeds: SEED_UNTYPED)
+  CHEM Acids and Bases › Ions               twice a data flaw (two readings of [H+]; the chloride test could not prove HCl)
+  CHEM Periodic Table › Group 1             the scheme did not credit the ionic equation (after a gate rewrite)
+  BIO  Nutrition in Plants › CO2 supply     the scheme did not list a data-quoting description (after a rewrite)
+
+Lessons folded into sci-stwin.mjs the same day: a parent part's own text (shared data) now reaches the
+blind solver and checker (`lead`); mark codes on "Accept:" lines are not counted; grader notes
+("Do not accept", "Award …") may follow the Answer line; the checker fails a scheme only for a DIFFERENT
+correct answer it leaves out, not a rewording the grader credits anyway; the brief tells the author so.

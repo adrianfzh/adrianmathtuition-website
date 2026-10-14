@@ -53,31 +53,31 @@ const MCQ_RE = /^\s*([A-Da-d]\s*$|\*\*\(?[A-D]\)?\*\*)/;
 const SERVED = ['results', 'estimate', 'twin'];
 
 // key → bank level, subject, syllabus words for the briefs
-const SCI = {
+export const SCI = {
   PHY: { bank: 'PHYS', subject: 'physics', name: 'Physics', code: '6091', cs: 'CS_PHYS' },
   CHEM: { bank: 'CHEM', subject: 'chemistry', name: 'Chemistry', code: '6092', cs: 'CS_CHEM' },
   BIO: { bank: 'BIO', subject: 'biology', name: 'Biology', code: '6093', cs: 'CS_BIO' },
 };
-const poolLevels = (key, combined) => (combined ? [SCI[key].cs, `${SCI[key].cs}_NA`] : [SCI[key].bank]);
-const poolName = (key, combined) => (combined ? `CS_${key}` : key);
-function parsePool(p) {
+export const poolLevels = (key, combined) => (combined ? [SCI[key].cs, `${SCI[key].cs}_NA`] : [SCI[key].bank]);
+export const poolName = (key, combined) => (combined ? `CS_${key}` : key);
+export function parsePool(p) {
   const m = /^(CS_)?(PHY|CHEM|BIO)$/.exec(String(p ?? ''));
   return m ? { key: m[2], combined: !!m[1] } : null;
 }
-const syllabusOf = (key, combined) => combined
+export const syllabusOf = (key, combined) => combined
   ? `Singapore-Cambridge GCE O-Level Combined Science (5086 / 5087 / 5088), the ${SCI[key].name} section — narrower than pure ${SCI[key].name}: test ONLY what the Combined Science ${SCI[key].name} syllabus covers`
   : `Singapore-Cambridge GCE O-Level ${SCI[key].name} (${SCI[key].code})`;
 
 // Things the O-Level physics syllabi do not ask (Adrian, 5 Oct 2026: "physics: no suvat
 // equations, no momentum, no circular motion"). A twin naming one is out of scope.
-const SCOPE_WORDS = {
+export const SCOPE_WORDS = {
   PHY: [/momentum/i, /impulse/i, /centripetal/i, /circular motion/i, /angular/i, /projectile/i, /\bsuvat\b/i,
     /v\s*=\s*u\s*\+\s*at/i, /v\s*(\^\s*2|²)\s*=\s*u\s*(\^\s*2|²)/i, /s\s*=\s*ut/i, /\bv\s*(\^\s*2|²)\s*=\s*2\s*g\s*h/i, /\bv\s*(\^\s*2|²)\s*=\s*2\s*a\s*s/i, /coefficient of friction/i, /\bμ\b/],
   CHEM: [/\bmolarity\b/i, /\bKc\b/, /equilibrium constant/i, /\bpH\s*=\s*-?\s*log/i, /enthalpy of formation/i, /hybridi[sz]ation/i],
   BIO: [/\bKrebs\b/i, /\bglycolysis\b/i, /\bATP synthase\b/i, /\bHardy[- ]Weinberg\b/i],
 };
 // Nothing that names a school, a sitting, or a model reaches a student.
-const FORBIDDEN = [/\bclaude\b/i, /\bopus\b/i, /\bsonnet\b/i, /\bgpt\b/i, /\bgemini\b/i, /\bA\.?I\.?[- ]generated\b/i, /\bprelim/i, /secondary school/i, /\bGCE\b/, /\bO[- ]Level paper\b/i, /\bTYS\b/, /\b(19|20)\d{2}\s+(paper|prelim|exam)/i];
+export const FORBIDDEN = [/\bclaude\b/i, /\bopus\b/i, /\bsonnet\b/i, /\bgpt\b/i, /\bgemini\b/i, /\bA\.?I\.?[- ]generated\b/i, /\bprelim/i, /secondary school/i, /\bGCE\b/, /\bO[- ]Level paper\b/i, /\bTYS\b/, /\b(19|20)\d{2}\s+(paper|prelim|exam)/i];
 
 // ------------------------------------------------------------------ env ----
 function loadEnv() {
@@ -98,7 +98,7 @@ function loadEnv() {
   return out;
 }
 let _sb = null;
-function sb() {
+export function sb() {
   if (_sb) return _sb;
   const env = loadEnv();
   const { createClient } = require('@supabase/supabase-js');
@@ -120,7 +120,7 @@ function eligible(q, subject) {
     .not('practice_checked_at', 'is', null)
     .filter('answer', 'match', '^\\s*([A-Da-d]\\s*$|[*][*][(]?[A-D][)]?[*][*])');
 }
-async function all(build) {
+export async function all(build) {
   const rows = [];
   for (let a = 0; ; a += 1000) {
     const { data, error } = await build().range(a, a + 999);
@@ -240,27 +240,27 @@ async function queue() {
 }
 
 // ------------------------------------------------------------- helpers ----
-function readJsonLoose(path) {
+export function readJsonLoose(path) {
   let t = readFileSync(path, 'utf8').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
   const a = t.indexOf('{'), b = t.lastIndexOf('}');
   if (a < 0 || b < 0) throw new Error(`${path}: no JSON object`);
   t = t.slice(a, b + 1);
   try { return JSON.parse(t); } catch { return JSON.parse(t.replace(/\\(?!["\\/bfnrtu])/g, '\\\\')); }
 }
-const readIf = (p, loose = true) => (existsSync(p) ? (loose ? readJsonLoose(p) : JSON.parse(readFileSync(p, 'utf8'))) : null);
-function grams(text, n = 3) {
+export const readIf = (p, loose = true) => (existsSync(p) ? (loose ? readJsonLoose(p) : JSON.parse(readFileSync(p, 'utf8'))) : null);
+export function grams(text, n = 3) {
   const toks = String(text).toLowerCase().replace(/\\[a-z]+/g, ' ').replace(/[${}^_()\[\]\\|,.;:!?'"“”‘’*]/g, ' ').split(/\s+/).filter(Boolean);
   const g = new Set();
   for (let i = 0; i + n <= toks.length; i++) g.add(toks.slice(i, i + n).join(' '));
   return g;
 }
-function jaccard(a, b) {
+export function jaccard(a, b) {
   if (!a.size || !b.size) return 0;
   let inter = 0;
   for (const x of a) if (b.has(x)) inter++;
   return inter / (a.size + b.size - inter);
 }
-const masked = (t) => String(t).toLowerCase().replace(/\d+(\.\d+)?/g, '#').replace(/[^a-z#]+/g, ' ').trim();
+export const masked = (t) => String(t).toLowerCase().replace(/\d+(\.\d+)?/g, '#').replace(/[^a-z#]+/g, ' ').trim();
 const normOpt = (t) => String(t).toLowerCase().replace(/[^a-z0-9.]+/g, ' ').trim();
 const LETTERS = ['A', 'B', 'C', 'D'];
 /** Split a bank MCQ into its stem and A–D options (both stored forms: "A) x" and "A  x"). */
@@ -632,8 +632,8 @@ async function publish() {
 }
 
 // -------------------------------------------------------------- review ----
-const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const mdLite = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+export const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+export const mdLite = (s) => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
 function review() {
   const dirs = [];
   const i = argv.indexOf('--runs');
