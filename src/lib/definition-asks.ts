@@ -110,6 +110,9 @@ export function commandWordOf(text: string): string | null {
 
 // The marker's note says the answer gave a reason when a description was asked
 // (or the other way round), or missed what the word wants.
+// The note shows an "explain" question answered without the reason: only described, only stated,
+// no reason / explanation, or the command word named.
+const EXPLAIN_SLIP = /\b(?:only\s+(?:describ|stat|list|nam|gave\s+(?:a\s+)?descri)\w*|describ\w*\s+(?:instead|only|but)|no\s+(?:reason|explanation|link|because)|(?:did\s+not|didn't|does\s+not|doesn't|not)\s+explain|missing\s+(?:the\s+)?(?:reason|explanation)|command\s+word)/i;
 const SLIP = /\b(describ|explain|reason|why|trend|values?|state[ds]?|no\s+because|not\s+asked|instead|command\s+word|define|definition|key\s+word|compar|whereas|both)/i;
 
 export interface LostPart {
@@ -156,6 +159,10 @@ export function lostPartHelp(
   if (word === 'calculate' || word === 'name' || word === 'identify') return null;
   // "State" is a short fact: only worth a link when the note shows the slip.
   if (word === 'state' && !SLIP.test(String(part.note ?? ''))) return null;
+  // "Explain" only when the note shows the command word itself was missed — described or stated
+  // instead of giving the reason — not when the science was simply wrong (Adrian, 14 Oct 2026: "yes"
+  // to cutting the 55 of 109 links that were "explain" after a science slip).
+  if (word === 'explain' && !EXPLAIN_SLIP.test(String(part.note ?? ''))) return null;
   const anchor = COMMAND_WORD_ANCHORS[word];
   return { kind: 'command', label: `What ‘${word}’ asks for`, href: `/app/science/command-words#${anchor}`, word };
 }

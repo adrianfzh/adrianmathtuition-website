@@ -112,6 +112,14 @@ describe('a lost part out of the question', () => {
     expect(links).toEqual([{ label: 'Learn the definition: Centre of gravity', href: '/app/science/definitions?term=turning-effect-of-forces-centre-of-gravity#turning-effect-of-forces-centre-of-gravity', part: '(a)' }]);
     // A labelled part the prompt does not show gets nothing (never another part's term).
     expect(lostPartLinks({ prompt: 'Define an alloy. Describe the test.', lostParts: [{ label: '(b)', why: 'x' }] }, 'chemistry', lists, true)).toEqual([]);
-    expect(lostPartLinks({ prompt: 'Explain why. Then explain how.', lostParts: [{ label: null, why: 'x' }, { label: null, why: 'y' }] }, 'physics', lists, true)).toHaveLength(1);
+    expect(lostPartLinks({ prompt: 'Explain why. Then explain how.', lostParts: [{ label: null, why: 'only described, no reason' }, { label: null, why: 'no explanation given' }] }, 'physics', lists, true)).toHaveLength(1);
+  });
+});
+
+describe('explain links only for a command-word slip (Adrian, 14 Oct 2026)', () => {
+  it('a wrong science answer to an explain question gets no link; a described-instead answer does', () => {
+    const q = { text: '(b) Explain why the current decreases.' };
+    expect(lostPartHelp({ ...q, note: 'Wrong: resistance increases, so current decreases.' }, 'physics', lists, true)).toBeNull();
+    expect(lostPartHelp({ ...q, note: 'You only described the change — no reason given.' }, 'physics', lists, true)?.label).toMatch(/explain/);
   });
 });
