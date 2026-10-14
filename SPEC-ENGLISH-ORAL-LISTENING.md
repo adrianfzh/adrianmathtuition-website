@@ -199,10 +199,119 @@ When it is built:
   2. time and memory on the worker itself for a two-minute answer — the one-to-two-minute figure
      above is an estimate from a Mac, and the worker has already run short of memory once.
 
+## More papers — made ahead, checked, "New paper" at three levels (14 Oct 2026)
+
+Adrian, 14 Oct 2026: *"yes"* — more listening papers, made in advance and checked, handed out by a
+**New paper** button, at three levels. Then (same day, through the English portal session): keep 2–3
+ready a level and refill at once; a shared pile; cost limits; *"can we review the papers to sift out
+the good quality ones automatically?"*
+
+### The paper and the levels
+
+- **A paper = a whole Paper 3**: Section A three recordings (6 + 7 + 9 = 22 marks, heard twice: a
+  talk, a conversation with a matching task, an explanation with a graphic organiser), Section B one
+  talk (8 notes, heard once). The exam format is the same at every level.
+- **Easier** — slower voice (speed 0.85, longer pauses); every answer said once, plainly; no trap.
+- **Standard** — like the exam (speed 0.95); a wrong detail at most mentioned in passing (≤2 traps a part).
+- **Harder** — normal speed (1.05, short pauses); speakers change their minds or correct themselves
+  in every part, so the final answer must be caught (≥1 trap a part, ≥6 a paper).
+- A question's `trap` = the wrong words exactly as said. Checked: it is said, it is never an accepted
+  answer, the page never sees it.
+
+### Where things are
+
+| Job | Where |
+|---|---|
+| Rules (pure, tested): paper checks, levels, Singapore-word check, copy check, blind reader, guesser, reviewer checklist, which paper next, the pile and the caps, retiring | `src/lib/english-listening-papers.ts` |
+| The papers | table `english_listening_papers` (`migrations/english_listening_papers.sql`): `checked` → `ready` (recorded) · `rejected` (thrown away, reasons kept) · `retired` |
+| Reads, saving, stock, retiring | `src/lib/english-listening-store.ts` |
+| The recordings | public bucket `english-audio`, `listening/<lp001-1>.mp3` — MiniMax, joined without ffmpeg (`src/lib/mp3-join.ts`, `src/lib/english-listening-voice.ts`) |
+| Student pages | `/app/languages/listening` (New paper ×3 levels · Your papers · the first paper) → `/new?level=` → `/paper/<lp001>` → `/<lp001-1>` |
+| The worker's door | `GET|POST /api/agent/listening-papers` (admin auth = the worker's token) |
+| The worker's job | bot `scripts/listening-papers.js`, `worker/fly/jobs.sh` `listening-papers` (peek every minute; switch on `/admin/switches`) |
+| A session's batch | `npx tsx scripts/english-own/listening-papers.ts brief|prompts|save|voice|list|stock|retire` |
+| Adrian's list | `/admin/listening-papers` (the pile, the month against the cap, every paper and why one was thrown away or retired) |
+
+### The pile and the limits
+
+- Every paper is **shared by all students**. Each level keeps **3** papers ready (or being recorded),
+  so New paper is instant. **New paper** = the oldest ready paper at the level the student has not started.
+- One more is made when the **keenest** student at a level has **2 or fewer** left — the pile grows
+  with the keenest student's use, not with the number of students.
+- When a student takes a paper the worker's one-minute look sees it; one paper takes roughly 15–30
+  minutes to write, check and record. A paper that fails any check is thrown away and remade.
+- **Limits** (`english-listening-papers.ts`): at most **1 new paper a day because of any one student**
+  (`PER_STUDENT_PER_DAY`); **30 a month** in all (`MONTHLY_CAP`, thrown-away ones count) — shown on
+  `/admin/listening-papers`.
+- **Cost of one paper**: writing, checking and reviewing = plan only (no paid key). The voice =
+  MiniMax `speech-02-hd`, US$1 per 10,000 characters; a paper is about 7,500 characters ≈ **US$0.75**
+  (Harder a little more). 30 a month ≈ US$23.
+- **Recording is OFF** (`VOICE_NEW_PAPERS = false`) until Adrian agrees the cost; while off, a kept
+  paper waits as `checked` and is never served.
+
+### The checks — every one must pass before a paper is kept
+
+1. **Mechanical** (`paperProblems`): four parts, 22 + 8 marks, a conversation in Section A, each part
+   180–480 words, 5–10 questions, a fill-in answer said word for word, traps as the level allows.
+2. **Singapore words** (`sgUnlisted`): every local place, food or everyday word must be in
+   `src/lib/sg-say.mjs` (Adrian's 37, settled 14 Oct 2026); people's names from `PLAIN_NAMES`. A
+   capitalised word that is neither (nor an ordinary English word) is flagged — the writer picks a
+   listed one; a new word is added only after Adrian has listened (`speaking-audio.mjs --check-sg`).
+3. **Our own words** (`sharedRuns`): no run of 8 words shared with another paper, or (from a session)
+   with the language bank.
+4. **The blind reader** (Opus, fresh): gets the script and the questions, no key — must match the key
+   on every question.
+5. **The guesser** (Sonnet, fresh): gets the choice and matching questions with NO script — more than
+   half right = the paper can be passed without listening → thrown away.
+6. **The reviewer** (Opus, fresh): the whole paper with its key against the checklist below. Every
+   item must pass.
+
+### The reviewer's checklist (`REVIEW_ITEMS`)
+
+| Item | Passes when |
+|---|---|
+| `real-task` | each part feels like a real Paper 3 task, with the exam's kinds of question |
+| `natural-speech` | it sounds spoken — contractions, short turns — not written prose read out |
+| `one-answer` | every question has exactly one clear answer in the script, and the key gives it |
+| `fair-distractors` | wrong options and traps are fair: mentioned or plausible, no trick of wording, no outside knowledge |
+| `level-fits` | Easier plain · Standard like the exam · Harder changes of mind to catch |
+| `length-timing` | each recording about 2–3 minutes; questions in the order heard; fill-ins 1–3 words or a number |
+| `sg-words` | every local word is one the voice was taught; names easy for an English voice |
+| `suitable` | nothing awkward or unsuitable for a 15-year-old (no romance, alcohol, violence, brands, real public figures) |
+
+**Examples**
+
+- ✅ *Pass, Standard.* A conversation about a class outing: "We'd have to split the class" →
+  matching letter B. Escape room "twenty-eight dollars each" mentioned before the cooking class at
+  "twelve dollars" — one trap, said in passing, fair. Every item passes.
+- ❌ *`one-answer` fails.* "When does the workshop start?" — the speaker says "doors open at nine, we
+  begin at half past". Key: 9.30; but "nine" is an equally fair reading of "start". Thrown away.
+- ❌ *`level-fits` fails, Easier.* "The talk is on Friday — oh no, sorry, it moved to Thursday."
+  A change of mind belongs in Harder; an Easier paper says "The talk is on Thursday." Thrown away.
+
+### After use — student results retire weak papers (`weakPaper`, `retireWeakPapers`)
+
+Each student's FIRST try at a part counts. With at least 8 tries a question:
+- a question **15 % or fewer** get right → retired ("unclear, or the key is wrong");
+- a **Harder** paper where **every** question is 95 %+ right → retired ("too easy for Harder");
+- of 6+ students who began it, **60 %+ stopped halfway** → retired.
+
+A retired paper stops being served, shows on `/admin/listening-papers` with its reason, and the
+pile refills. Run at the start of every worker run (`POST {action:'retire'}`) — runs happen as
+students use papers, which is when results change.
+
+### Health and logs
+
+- Health-check `listening-papers-pile`: the worker's door answers 401 to a stranger; once recording is
+  on, every level has a ready paper.
+- The worker stamps `job_runs` `listening-papers` on every real run (kept or thrown away, and why).
+  No `JOB_RHYTHMS` line: it runs on demand (`docs/OPS.md` — queue workers get none); the pile check
+  is the alarm.
+
 ## Not built
 
 - A silent video clip as the stimulus (the exam uses a clip; the pilot uses a still picture).
 - Follow-up prompts that react to what the student just said (the three prompts are fixed).
 - A bench for the oral reading (seeded transcripts at a known band, the same answer read twice).
 - Deleting a recording after a set time — recommendation: keep 30 days, then keep only the words.
-- More sets: the pilot is 4 listening sets and 3 oral sets.
+- More oral sets: the pilot is 3. (More listening: §More papers.)

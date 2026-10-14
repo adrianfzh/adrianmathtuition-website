@@ -1,7 +1,7 @@
 // /api/portal/english/listening — listening practice on our OWN recordings
 // (SPEC-ENGLISH-ORAL-LISTENING.md, 8 Oct 2026).
 //
-//   POST { set: "ls01", answers: { "1": "B", "2": "tag", … } }
+//   POST { set: "ls01" | "lp001-1", answers: { "1": "B", "2": "tag", … } }
 //        → { results[], right, total, script[] }   marked by the key, no model.
 //        The key, the reasons and the script are in the reply only — never in the page before.
 //
@@ -12,6 +12,8 @@ import { englishListeningOpen, viewingAsStudent } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { checkListening, scriptShown } from '@/lib/english-listening';
 import { listeningById } from '@/lib/english-speaking-data';
+import { paperOfPart } from '@/lib/english-listening-papers';
+import { loadPart } from '@/lib/english-listening-store';
 import { ownUuid } from '@/lib/english-own';
 import { logAttempt } from '@/lib/english-practice-store';
 
@@ -29,7 +31,9 @@ export async function POST(req: NextRequest) {
   if (!identity) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
   if (!(await englishListeningOpen())) return NextResponse.json({ error: 'Not open yet.' }, { status: 403 });
   const body = (await req.json().catch(() => ({}))) as { set?: unknown; answers?: unknown };
-  const set = listeningById(String(body.set ?? ''));
+  const id = String(body.set ?? '');
+  // a part of a made paper (lp001-1) is read from the table; the first paper's sets are files
+  const set = paperOfPart(id) ? (await loadPart(id, { admin: identity === 'admin' }).catch(() => null))?.set ?? null : listeningById(id);
   if (!set || !body.answers || typeof body.answers !== 'object') return NextResponse.json({ error: 'bad request' }, { status: 400 });
   const out = checkListening(set, body.answers as Record<string, unknown>);
   const uuid = ownUuid(set.id);

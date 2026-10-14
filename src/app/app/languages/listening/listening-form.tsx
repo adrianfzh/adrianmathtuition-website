@@ -61,7 +61,9 @@ function Verdict({ r }: { r: Checked['results'][number] }) {
   );
 }
 
-export default function ListeningForm({ set, audio }: { set: PublicListening; audio: string }) {
+/** `back` / `next`: where the page leads (a paper's parts lead back to the paper and on to the next part). */
+type Door = { href: string; label: string };
+export default function ListeningForm({ set, audio, back = { href: '/app/languages/listening', label: 'Listening' }, next, kicker }: { set: PublicListening; audio: string; back?: Door; next?: Door; kicker?: string }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,9 +102,9 @@ export default function ListeningForm({ set, audio }: { set: PublicListening; au
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       <div className="pt-1">
-        <Link href="/app/languages/listening" className="text-xs text-gray-500">‹ Listening</Link>
+        <Link href={back.href} className="text-xs text-gray-500">‹ {back.label}</Link>
         <h1 className="text-xl font-bold text-navy mt-1 leading-tight">{set.title}</h1>
-        <p className="text-[12px] text-gray-500">Section {set.section} · {set.marks} marks</p>
+        <p className="text-[12px] text-gray-500">{kicker ? `${kicker} · ` : ''}Section {set.section} · {set.marks} marks</p>
       </div>
 
       {res && (
@@ -162,7 +164,8 @@ export default function ListeningForm({ set, audio }: { set: PublicListening; au
               ))}
             </div>
           </details>
-          <Link href="/app/languages/listening" className="block text-center w-full rounded-xl border border-violet-600 text-violet-700 text-sm font-semibold px-4 py-3">Choose another recording</Link>
+          {next && <Link href={next.href} className="block text-center w-full rounded-xl bg-violet-600 text-white text-sm font-semibold px-4 py-3">{next.label}</Link>}
+          <Link href={back.href} className="block text-center w-full rounded-xl border border-violet-600 text-violet-700 text-sm font-semibold px-4 py-3">{next ? `Back to ${back.label.toLowerCase()}` : 'Choose another recording'}</Link>
         </>
       )}
     </div>

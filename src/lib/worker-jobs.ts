@@ -61,6 +61,7 @@ export const WORKER_JOBS: readonly WorkerJob[] = [
   { key: 'flagjudge', group: 'requests', label: '🤔 Flag judge', what: 'Settles a student\'s flag the first check could not.', when: 'checks every minute' },
   { key: 'flag-review', group: 'requests', label: '🚩 Same-day flag review', what: 'When a student\'s flag shows the bot was wrong, finds why the same day and proposes the fix.', when: 'checks every 10 min' },
   { key: 'plan-reads', group: 'requests', label: '✍️ Answer reader', what: 'Reads the English practice answers students hand in, on the plan (no paid key).', when: 'checks every minute' },
+  { key: 'listening-papers', group: 'requests', label: '🎧 Listening papers', what: 'Writes and checks new English listening papers when a level runs low, on the plan.', when: 'checks every minute' },
 ];
 
 export interface WorkerJobState { on: boolean; at: string | null; by: string | null }

@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
     // can render a PDF through lib/generate-pdf.ts getBrowser — the tracer
     // cannot see the package's readdir-based file loading on its own.
     '/api/**/*': ['./node_modules/@sparticuz/chromium/bin/**', './node_modules/katex/dist/**', './node_modules/@fontsource/tinos/files/tinos-latin-*', './node_modules/@fontsource/arimo/files/arimo-latin-*', './node_modules/@fontsource/gelasio/files/gelasio-latin-*', './public/brand/*'],
+    // The English word list the listening-paper check reads (lib/english-listening-words.ts).
+    '/api/agent/listening-papers': ['./data/english/words.txt.gz'],
     '/api/mark-batch/init': [
       './node_modules/@napi-rs/canvas/**/*',
       './node_modules/@napi-rs/canvas-linux-x64-gnu/**/*',

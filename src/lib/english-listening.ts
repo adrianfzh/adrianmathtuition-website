@@ -10,13 +10,15 @@
 export type Speaker = 'narrator' | 'a' | 'b';
 export type SpeakerVoice = 'girl' | 'woman' | 'boy' | 'man';
 export interface ListeningLine { who: Speaker; text: string }
+/** `trap` (papers, 14 Oct 2026): words said in the recording that a careless listener would take for
+ *  the answer — a speaker's first choice before they change their mind. Never an accepted answer. */
 export type ListeningQuestion =
-  | { n: string; type: 'choice'; heading?: string; text: string; options: { label: string; text: string }[]; answer: string; why: string }
-  | { n: string; type: 'match'; heading?: string; text: string; answer: string; why: string }
-  | { n: string; type: 'fill'; heading?: string; text: string; after?: string; accept: string[]; why: string };
+  | { n: string; type: 'choice'; heading?: string; text: string; options: { label: string; text: string }[]; answer: string; why: string; trap?: string }
+  | { n: string; type: 'match'; heading?: string; text: string; answer: string; why: string; trap?: string }
+  | { n: string; type: 'fill'; heading?: string; text: string; after?: string; accept: string[]; why: string; trap?: string };
 
 export interface ListeningSet {
-  id: string;                    // "ls01"
+  id: string;                    // "ls01" (the pilot) or "lp001-1" (part 1 of a paper)
   kind: 'listening';
   section: 'A' | 'B';
   title: string;
@@ -45,7 +47,7 @@ export const scriptWords = (s: Pick<ListeningSet, 'script'>): number => s.script
 // ── The checks: a set with any problem is not built into the app ────────────
 export function listeningProblems(s: ListeningSet): string[] {
   const out: string[] = [];
-  if (!/^ls\d{2}$/.test(s.id ?? '')) out.push('id like "ls01"');
+  if (!/^(ls\d{2}|lp\d{3}-[1-4])$/.test(s.id ?? '')) out.push('id like "ls01" or "lp001-1"');
   if (s.section !== 'A' && s.section !== 'B') out.push('section is A or B');
   if (!s.title || s.title.length < 3 || s.title.length > 60) out.push('title: 3–60 characters');
   if (!s.intro || s.intro.length < 20) out.push('an intro to read aloud');
@@ -87,6 +89,10 @@ export function listeningProblems(s: ListeningSet): string[] {
       // the first listed answer is the one shown, and it must really be in the recording
       if (acc[0] && !said.includes(norm(acc[0]))) out.push(`${at}: "${acc[0]}" is not said in the recording`);
     } else out.push(`${at}: type is choice, match or fill`);
+    if (q.trap !== undefined) {
+      if (!q.trap.trim() || !said.includes(norm(q.trap))) out.push(`${at}: the trap "${q.trap}" is not said in the recording`);
+      else if (q.type === 'fill' && (q.accept ?? []).some(a => norm(a) === norm(q.trap!))) out.push(`${at}: the trap is an accepted answer`);
+    }
   }
   const matchAnswers = qs.filter(q => q.type === 'match').map(q => q.answer);
   if (new Set(matchAnswers).size !== matchAnswers.length) out.push('each letter of the list is the answer to at most one matching question');

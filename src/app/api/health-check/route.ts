@@ -385,6 +385,19 @@ export async function GET(req: NextRequest) {
       if (!a.ok) throw new Error(`the first recording answered ${a.status}`);
       return `401 · page ${p.status} · audio ${a.status}`;
     }),
+    // 🎧 The pile of listening papers (14 Oct 2026): the worker's door answers 401 to a stranger,
+    // and once recording is on, every level has a ready paper ("New paper" is never empty for long).
+    timed('listening-papers-pile', async () => {
+      const r = await fetch(`${base}/api/agent/listening-papers?peek=1`, { signal: T(10000) });
+      if (r.status !== 401) throw new Error(`anonymous GET answered ${r.status}, expected 401`);
+      const { listeningStock } = await import('@/lib/english-listening-store');
+      const { VOICE_NEW_PAPERS } = await import('@/lib/english-listening-papers');
+      const st = await listeningStock();
+      const line = st.levels.map(l => `${l.level} ${l.ready}+${l.checked}`).join(' · ');
+      const empty = st.levels.filter(l => l.ready === 0).map(l => l.level);
+      if (VOICE_NEW_PAPERS && empty.length) throw new Error(`no ready paper at ${empty.join(', ')} (${line})`);
+      return `${line} · ${st.madeThisMonth}/${st.monthlyCap} this month`;
+    }),
     timed('portal-english-oral', async () => {
       const r = await fetch(`${base}/api/portal/english/oral?attempt=x`, { signal: T(10000) });
       if (r.status !== 401) throw new Error(`anonymous GET answered ${r.status}, expected 401`);
