@@ -217,6 +217,7 @@ RULES FOR EVERY PART
 - Questions follow the order of the recording. Every question has ONE clear answer in the script.
 - A student who did NOT hear the recording must not be able to pick the answer by common sense: every option (and every matching letter) is equally likely until you listen — the right answer is not the most sensible, kindest or most typical one. A reader with no script is tried on every paper; more than half right and the paper is thrown away.
 - Each speaker's lines are their own: never make a speaker answer or thank themselves for the other's idea.
+- No stock talk openers or set phrases ("Today I'd like to tell you about…", "let me take you through it step by step", "I'm here to tell you about…"): every paper is compared with every other, and a shared run of 8 words throws it away.
 - A fill-in answer is one to three words or a number, and its FIRST listed answer ("accept"[0]) appears word for word in the script. List other fair forms too (e.g. "ten", "10").
 - "why": one line saying where the answer is heard, quoting the script.
 - "trap" (only where the level allows): the wrong words exactly as said in the script; never an accepted answer.
