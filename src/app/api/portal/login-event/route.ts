@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
   if (body.kind === HANDIN_LOGGED_OUT_KIND) {
     const res = NextResponse.json({ ok: true });
-    if (await recordHandinLoggedOut(req.cookies, ua, 'page')) res.cookies.set(handinSeenCookie);
+    if (await recordHandinLoggedOut(req.cookies, req.headers, 'page')) res.cookies.set(handinSeenCookie);
     return res;
   }
   return NextResponse.json({ error: 'Unknown kind' }, { status: 400 });

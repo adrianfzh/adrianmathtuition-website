@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  ANON_IDENTITY, HANDIN_LOGGED_OUT_KIND, LOGIN_FAILED_KIND, accessTokenFromAuthCookies, classifyLoginFailure,
-  cookieReader, deviceFamily, failedLoginAccounts, failedLoginLabel, normaliseEmail, reasonWords, troubleLine, troubleLines,
+  ANON_IDENTITY, HANDIN_LOGGED_OUT_KIND, HEALTH_PROBE_HEADER, HEALTH_PROBE_VALUE, LOGIN_FAILED_KIND, accessTokenFromAuthCookies, classifyLoginFailure,
+  cookieReader, deviceFamily, failedLoginAccounts, isHealthProbe, failedLoginLabel, normaliseEmail, reasonWords, troubleLine, troubleLines,
 } from './login-trouble';
 
 const b64url = (s: string) => Buffer.from(s, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -113,5 +113,15 @@ describe('failedLoginAccounts', () => {
       { kind: LOGIN_FAILED_KIND, identity: 'recBBBBBBBBBBBBBB', created_at: '2026-10-10T11:00:00Z' },
       { kind: HANDIN_LOGGED_OUT_KIND, identity: 'recCCCCCCCCCCCCCC', created_at: '2026-10-12T11:00:00Z' },
     ], now)).toBe(2);
+  });
+});
+
+describe('isHealthProbe — the site\'s own 6-hourly check is never login trouble (14 Oct 2026)', () => {
+  it('is true only for the probe header with its value', () => {
+    expect(isHealthProbe(new Headers({ [HEALTH_PROBE_HEADER]: HEALTH_PROBE_VALUE }))).toBe(true);
+    expect(isHealthProbe(new Headers({ [HEALTH_PROBE_HEADER]: '0' }))).toBe(false);
+    expect(isHealthProbe(new Headers({ 'user-agent': 'node' }))).toBe(false);
+    expect(isHealthProbe(new Headers())).toBe(false);
+    expect(isHealthProbe(null)).toBe(false);
   });
 });

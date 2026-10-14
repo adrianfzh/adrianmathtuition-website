@@ -1,7 +1,7 @@
 'use client';
 
 // The install + push-nudge store — ONE client-side snapshot of "what does this
-// device look like" that components/InstallCard.tsx, components/PushNudgeCard.tsx
+// device look like" that components/InstallCard.tsx, components/PushAskCard.tsx
 // and app/settings/PushToggle.tsx read through useSyncExternalStore. SSR-safe:
 // the server snapshot is a constant with ready:false, so every card renders
 // nothing on the server and during hydration, then fills in — no hydration
@@ -53,11 +53,13 @@ export interface InstallSnapshot {
   homePushOwner: object | null;
   /** ✕ on the Home Telegram nudge (21 Sep 2026) — read here so Home shows one nudge at a time. */
   telegramDismissed: boolean;
+  /** "Not now" on the notifications ask (or ✕ on the old Home push nudge) on this device. */
+  pushDismissed: boolean;
 }
 
 const SERVER_SNAPSHOT: InstallSnapshot = {
   ready: false, platform: 'desktop', ipad: false, shareHint: '', state: 'desktop', deferredPrompt: null,
-  push: 'not-installed', pushSupported: false, pushPermission: null, homeInstallOwner: null, homePushOwner: null, telegramDismissed: false,
+  push: 'not-installed', pushSupported: false, pushPermission: null, homeInstallOwner: null, homePushOwner: null, telegramDismissed: false, pushDismissed: false,
 };
 
 function readStorage(key: string): string | null {
@@ -102,6 +104,7 @@ function compute(): InstallSnapshot {
     homeInstallOwner,
     homePushOwner,
     telegramDismissed: parseDismissed(readStorage(TELEGRAM_NUDGE_DISMISSED_KEY)),
+    pushDismissed: parseDismissed(readStorage(PUSH_NUDGE_DISMISSED_KEY)),
   };
 }
 
@@ -154,7 +157,7 @@ export function dismissInstall(): void {
   refreshInstallStore();
 }
 
-/** ✕ on the Home push nudge: never again, its own key. */
+/** "Not now" on the notifications ask (components/PushAskCard): never again on this device, its own key. */
 export function dismissPushNudge(): void {
   writeStorage(PUSH_NUDGE_DISMISSED_KEY, DISMISSED_MARK);
   refreshInstallStore();

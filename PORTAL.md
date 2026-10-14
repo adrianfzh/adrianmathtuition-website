@@ -166,6 +166,11 @@ a later Home visit in the same load stays quiet; a fresh launch/reload asks
 again until installed or snoozed. PushToggle's old "install first" prose is
 the same `<InstallSteps>` component — one source of truth for the words.
 
+**14 Oct 2026 (Adrian) — both nudges changed. Read this first; the two paragraphs above and below are history.**
+- **Install card on Home: only in the account's first two days** (`portal_accounts.created_at`, `lib/install-prompt.ts installCardWindowOpen`, worked out on the server in `app/app/page.tsx`). After that, never on Home; ✕ still hides it at once; the Settings row is unchanged.
+- **Notifications: never asked on Home.** The Home push nudge is gone. `components/PushAskCard.tsx` on the marked-paper page asks ONCE: "Get a ping when your next paper is marked?" [Turn on] [Not now]. It shows the first time a student opens a marked paper on a device where the tap can work (`pushAskState` — an iPhone tab waits until the app is installed), and the account remembers the moment it shows (`prefs.push_asked`, whitelisted in `lib/portal-prefs.ts`). "Not now" also marks the device. Same `enablePush()` flow, same `push:nudge-*` event kinds.
+- **The health check is not login trouble**: `/api/health-check` sends `x-am-health-probe: 1` on its logged-out hand-in probes; `recordHandinLoggedOut` skips it (`lib/login-trouble.ts isHealthProbe`).
+
 **Push nudge** (`components/PushNudgeCard.tsx`) — "Turn on notifications ·
 We'll tell you when your paper is marked — and when Adrian sends you work."
 The mirror image: shows only **inside the installed app** (standalone), only

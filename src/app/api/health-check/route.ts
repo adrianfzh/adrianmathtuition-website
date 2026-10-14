@@ -12,6 +12,7 @@ import { publishedSolutions } from '@/data/model-solutions';
 import { fetchArrearsPool } from '@/lib/arrears-fetch';
 import { arrearsRunTarget } from '@/lib/year-end-billing';
 import { sgtTodayISO } from '@/lib/invoice-month';
+import { HEALTH_PROBE_HEADER, HEALTH_PROBE_VALUE } from '@/lib/login-trouble';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -449,7 +450,10 @@ export async function GET(req: NextRequest) {
     // auth gate is up); a 404 means students silently lose the submit path,
     // and a 500 usually means the Blob token env broke.
     timed('portal-submit', async () => {
-      const r = await fetch(`${base}/api/portal/submit-token?filename=probe.jpg`, { redirect: 'manual', signal: T(10000) });
+      // The probe header keeps this knock out of the login-trouble count (14 Oct 2026, lib/login-trouble).
+      const r = await fetch(`${base}/api/portal/submit-token?filename=probe.jpg`, {
+        redirect: 'manual', signal: T(10000), headers: { [HEALTH_PROBE_HEADER]: HEALTH_PROBE_VALUE },
+      });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
@@ -618,7 +622,9 @@ export async function GET(req: NextRequest) {
     }),
     // ➕ Add pages to a waiting hand-in (29 Sep 2026): the student's door; anonymous is refused.
     timed('add-pages', async () => {
-      const r = await fetch(`${base}/api/portal/handin/add-pages`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      const r = await fetch(`${base}/api/portal/handin/add-pages`, {
+        method: 'POST', redirect: 'manual', signal: T(10000), headers: { [HEALTH_PROBE_HEADER]: HEALTH_PROBE_VALUE },
+      });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),

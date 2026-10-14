@@ -3,6 +3,8 @@
 // it"). The cover ("Where your marks went") first, then every marked page, then
 // the sheet written from it, then the PDF for anyone who wants the file.
 // Same access rule as the list: the logged-in student's own released run.
+import PushAskCard from '@/components/PushAskCard';
+import { pushAskedOnAccount } from '@/lib/install-prompt';
 import Link from 'next/link';
 import { canAddPagesAfterMarking, pagesBeingAdded, type MarkedRow } from '@/lib/add-pages';
 import { notFound, redirect } from 'next/navigation';
@@ -225,6 +227,10 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
           )}
         </div>
       </header>
+
+      {/* 🔔 The one notifications ask (14 Oct 2026, Adrian): on a marked paper, once per
+          student — components/PushAskCard decides with lib/install-prompt pushAskState. */}
+      {!isAdmin && !supersededBy && account && <PushAskCard askedOnAccount={pushAskedOnAccount(account.prefs)} />}
 
       {/* 📝 the student's own remark (17 Sep 2026) — under the header, read by Adrian too. */}
       {!isScience && !supersededBy && !isAdmin && <PaperNote runId={paper.id} note={paper.note ?? null} />}

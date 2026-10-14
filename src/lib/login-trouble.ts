@@ -24,6 +24,20 @@ export const LOGIN_TROUBLE_KEEP_DAYS = 90;
 /** One 'handin_logged_out' row per browser per 10 minutes (a cookie of this name). */
 export const HANDIN_SEEN_COOKIE = 'am_handin_lo';
 export const HANDIN_SEEN_SECONDS = 600;
+/**
+ * The site's own health check (/api/health-check, every 6 hours) knocks on the hand-in
+ * door logged out on purpose, to prove the door is up. It sends this header so that
+ * knock is never written down as a student's login trouble (14 Oct 2026). A phone never
+ * sends it; at worst a stranger who sends it leaves no trace, which they could already do.
+ */
+export const HEALTH_PROBE_HEADER = 'x-am-health-probe';
+export const HEALTH_PROBE_VALUE = '1';
+
+/** True when the request is the site's own health check, not a visitor. */
+export function isHealthProbe(headers: { get(name: string): string | null } | null | undefined): boolean {
+  return headers?.get(HEALTH_PROBE_HEADER) === HEALTH_PROBE_VALUE;
+}
+
 /** Daily caps — the door has no login, so a script must not be able to flood the table. */
 export const ACCOUNT_DAILY_CAP = 30;
 export const ANON_DAILY_CAP = 300;

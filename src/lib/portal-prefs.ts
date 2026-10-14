@@ -20,8 +20,12 @@ export const SCIENCE_SUBJECTS = ['physics', 'chemistry', 'biology'] as const;
 export type ScienceSubject = (typeof SCIENCE_SUBJECTS)[number];
 export const SCIENCE_SUBJECT_LABEL: Record<ScienceSubject, string> = { physics: 'Physics', chemistry: 'Chemistry', biology: 'Biology' };
 
-/** Boolean preferences the Settings route accepts. */
-export const PORTAL_PREF_KEYS: readonly string[] = ['combined_science'];
+/**
+ * Boolean preferences the Settings route accepts. `push_asked` (14 Oct 2026):
+ * the one notifications ask on a marked paper has been shown to this account —
+ * it is never shown again (lib/install-prompt pushAskState).
+ */
+export const PORTAL_PREF_KEYS: readonly string[] = ['combined_science', 'push_asked'];
 /** List preferences: the key and the values it may hold. */
 export const PORTAL_PREF_LISTS: Readonly<Record<string, readonly string[]>> = { sciences: SCIENCE_SUBJECTS };
 

@@ -8,7 +8,7 @@
 //
 //   · variant="home"      a slim nudge near the top of /app, students only,
 //                         rendered only when the server says 'unlinked', no
-//                         install/notification nudge is showing (one at a
+//                         install nudge is showing (one at a
 //                         time — lib/install-prompt homeNudge), and ✕ was
 //                         never tapped on this device (21 Sep 2026).
 //   · variant="settings"  the Telegram card on /app/settings — the linked
@@ -32,9 +32,11 @@ function TelegramGlyph({ className }: { className?: string }) {
   );
 }
 
-export default function TelegramLinkCard({ variant, adminViewer = false, linked = false, chatId = '' }: {
+export default function TelegramLinkCard({ variant, adminViewer = false, linked = false, chatId = '', installWindowOpen = false }: {
   variant: 'home' | 'settings';
   adminViewer?: boolean;
+  /** Home: the install card may still show (account under two days old) — Telegram waits behind it. */
+  installWindowOpen?: boolean;
   linked?: boolean;
   chatId?: string;
 }) {
@@ -47,7 +49,7 @@ export default function TelegramLinkCard({ variant, adminViewer = false, linked 
   const pollRef = useRef<number | null>(null);
   const snap = useInstallStore();
   const homeSlot = variant === 'home' && !adminViewer && !linked && snap.ready
-    ? homeNudge({ state: snap.state, deferredPromptAvailable: snap.deferredPrompt !== null, push: snap.push, telegramUnlinked: true, telegramDismissed: snap.telegramDismissed })
+    ? homeNudge({ state: snap.state, deferredPromptAvailable: snap.deferredPrompt !== null, installWindowOpen, telegramUnlinked: true, telegramDismissed: snap.telegramDismissed })
     : null;
   const homeVisible = homeSlot === 'telegram';
 

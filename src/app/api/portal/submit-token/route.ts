@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   if (!user) {
     // A hand-in with no session (12 Oct 2026, lib/login-trouble): leave a trace, once per browser per 10 min.
     const res = NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    if (await recordHandinLoggedOut(rawCookies, req.headers.get('user-agent'), 'upload')) res.cookies.set(handinSeenCookie);
+    if (await recordHandinLoggedOut(rawCookies, req.headers, 'upload')) res.cookies.set(handinSeenCookie);
     return res;
   }
   const { data: account } = await supabase

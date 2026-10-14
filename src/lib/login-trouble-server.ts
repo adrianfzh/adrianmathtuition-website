@@ -6,7 +6,7 @@ import { sgtDayStart } from './sgt';
 import {
   ACCOUNT_DAILY_CAP, ANON_DAILY_CAP, ANON_IDENTITY, HANDIN_LOGGED_OUT_KIND, HANDIN_SEEN_COOKIE,
   HANDIN_SEEN_SECONDS, LOGIN_FAILED_KIND, accessTokenFromAuthCookies, classifyLoginFailure,
-  deviceFamily, normaliseEmail,
+  deviceFamily, isHealthProbe, normaliseEmail,
 } from './login-trouble';
 
 type CookieReader = { getAll(): { name: string; value: string }[]; get(name: string): { value: string } | undefined };
@@ -47,8 +47,10 @@ export async function recordLoginFailed(input: { email: unknown; code: unknown; 
  * a row was written (the caller then sets HANDIN_SEEN_COOKIE for 10 minutes). Reads the raw
  * cookies FIRST — a session lookup may clear a dead cookie.
  */
-export async function recordHandinLoggedOut(cookies: CookieReader, ua: string | null, via: 'page' | 'upload' | 'submit'): Promise<boolean> {
+export async function recordHandinLoggedOut(cookies: CookieReader, headers: { get(name: string): string | null }, via: 'page' | 'upload' | 'submit'): Promise<boolean> {
   try {
+    if (isHealthProbe(headers)) return false; // the site's own 6-hourly check, not a student (14 Oct 2026)
+    const ua = headers.get('user-agent');
     if (cookies.get(HANDIN_SEEN_COOKIE)) return false;
     const token = accessTokenFromAuthCookies(cookies.getAll());
     if (via === 'page' && await getSessionUser()) return false; // actually logged in

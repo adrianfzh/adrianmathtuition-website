@@ -6,7 +6,7 @@
 // browser's actual subscription on load, not a stored preference.
 //
 // The enable/disable flow itself lives in lib/portal-push-client.ts since
-// 2026-09-03 — the Home push nudge (components/PushNudgeCard.tsx) runs the
+// 2026-09-03 — the one ask on a marked paper (components/PushAskCard.tsx) runs the
 // identical steps; this file only maps outcomes to the toggle's messages.
 //
 // iPhone: Safari only exposes PushManager to web apps installed on the Home

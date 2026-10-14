@@ -4,7 +4,10 @@
 // with ONE set of instructions:
 //   · variant="home"      a slim card near the top of /app. Students only
 //                         (never Adrian's admin view), phones only, once per
-//                         page load, hidden when installed, ✕ = gone for good.
+//                         page load, hidden when installed, ✕ = gone for good,
+//                         and ONLY in the account's first two days (14 Oct 2026,
+//                         Adrian — lib/install-prompt installCardWindowOpen; the
+//                         page works it out on the server and passes windowOpen).
 //   · variant="settings"  the always-there row on /app/settings (replaced the
 //                         static "Add to Home Screen" paragraph, 2026-09-03).
 //                         Shows on every platform with platform-aware content,
@@ -164,10 +167,12 @@ export function InstallSteps({ snap, onInstalled }: { snap: InstallSnapshot; onI
 export const INSTALL_CARD_TITLE = 'Put AdrianMath on your Home Screen';
 export const INSTALL_CARD_BODY = 'Opens like an app — and it’s how you get a ping when your paper is marked.';
 
-export default function InstallCard({ variant, adminViewer = false }: {
+export default function InstallCard({ variant, adminViewer = false, windowOpen = false }: {
   variant: 'home' | 'settings';
   /** Adrian's admin cookie, not "viewing as student" — the Home card is for students only. */
   adminViewer?: boolean;
+  /** Home only: the account is under two days old (installCardWindowOpen). Closed = no card. */
+  windowOpen?: boolean;
 }) {
   const snap = useInstallStore();
   // This instance's claim token — stable for its life, new on every mount.
@@ -177,7 +182,7 @@ export default function InstallCard({ variant, adminViewer = false }: {
   // Home: iOS, or Android once Chrome has handed us its prompt (a button that
   // can't prompt is worse than no card); never installed/desktop/dismissed.
   const eligible =
-    variant === 'home' && !adminViewer && snap.ready &&
+    variant === 'home' && !adminViewer && windowOpen && snap.ready &&
     (snap.state === 'ios' || (snap.state === 'android' && snap.deferredPrompt !== null));
 
   // Claim the once-per-page-load slot. The store is the external system: the

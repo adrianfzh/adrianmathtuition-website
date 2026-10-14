@@ -18,13 +18,13 @@ import { loadActivePlan } from '@/lib/remediation-data';
 import { relockItems, nextOpenItem } from '@/lib/remediation';
 import PortalAnnouncementCard from '@/components/PortalAnnouncementCard';
 import InstallCard from '@/components/InstallCard';
-import PushNudgeCard from '@/components/PushNudgeCard';
 import TelegramLinkCard from '@/components/TelegramLinkCard';
 import { ensureTelegramLinked } from '@/lib/telegram-link-state';
 import { SURFACES } from '@/lib/portal-theme';
 import PortalIcon from '@/components/PortalIcon';
 import ExamCountdown from './exam-countdown';
 import { examTitle } from '@/lib/portal-exams';
+import { installCardWindowOpen } from '@/lib/install-prompt';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,6 +56,9 @@ export default async function DashboardPage() {
   // Learn units aren't released to students — the "start here" stack (which
   // deep-links into /app/learn) only renders for Adrian's admin cookie.
   const learnVisible = LEARN_OPEN_TO_STUDENTS || adminViewer;
+  // The install card only in the account's first two days (14 Oct 2026, Adrian).
+  // Adrian's viewing-as-student cookie sees the preview student's own age.
+  const installWindowOpen = installCardWindowOpen(account.created_at, new Date());
   // rec… for tuition, acct:<uuid> for strangers — the key every portal-owned
   // Supabase table uses (lib/portal-auth.portalIdentity).
   const sid = portalIdentity(account);
@@ -140,15 +143,16 @@ export default async function DashboardPage() {
         <PortalAnnouncementCard announcement={announcement} />
       )}
 
-      {/* 📱 Install → 🔔 notifications → 📨 Telegram: ONE nudge at a time, in
-          that order, and each gone for good once done or ✕-dismissed (Adrian,
-          21 Sep 2026: "show one nudge card at a time, and once a student has
-          dismissed or done it, never show it again"). The order and the
-          dismissals are lib/install-prompt.ts homeNudge (tested); the Telegram
-          card reads the same store so it yields to the other two. */}
-      <InstallCard variant="home" adminViewer={adminViewer} />
-      <PushNudgeCard adminViewer={adminViewer} />
-      {tgState === 'unlinked' && <TelegramLinkCard variant="home" adminViewer={adminViewer} />}
+      {/* 📱 Install → 📨 Telegram: ONE nudge at a time, in that order, and each
+          gone for good once done or ✕-dismissed (Adrian, 21 Sep 2026: "show one
+          nudge card at a time, and once a student has dismissed or done it,
+          never show it again"). The order and the dismissals are
+          lib/install-prompt.ts homeNudge (tested); the Telegram card reads the
+          same store so it yields to the install card. 14 Oct 2026 (Adrian): the
+          install card only in the account's first two days; notifications are
+          no longer asked here — the marked-paper page asks once (PushAskCard). */}
+      <InstallCard variant="home" adminViewer={adminViewer} windowOpen={installWindowOpen} />
+      {tgState === 'unlinked' && <TelegramLinkCard variant="home" adminViewer={adminViewer} installWindowOpen={installWindowOpen} />}
 
       {/* From Adrian — assigned work, at the top because it's the one thing
           Adrian specifically asked this student to do. Hidden when nothing is

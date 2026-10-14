@@ -1,6 +1,6 @@
 // Browser-side web push for the student portal — ONE implementation of
 // "turn notifications on/off", shared by the Settings toggle
-// (app/settings/PushToggle.tsx) and the Home nudge (components/PushNudgeCard).
+// (app/settings/PushToggle.tsx) and the one ask on a marked paper (components/PushAskCard).
 // Before 2026-09-03 the toggle owned this inline; the nudge would have been a
 // second copy of the same seven steps.
 //

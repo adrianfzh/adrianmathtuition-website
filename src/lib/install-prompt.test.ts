@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   INSTALL_DISMISSED_KEY, PORTAL_CLIENT_EVENT_KINDS, PUSH_NUDGE_DISMISSED_KEY, TELEGRAM_NUDGE_DISMISSED_KEY, DISMISSED_MARK, homeNudge,
+  INSTALL_CARD_WINDOW_MS, installCardWindowOpen, pushAskState, pushAskedOnAccount,
   installPlatform, installState, iosShareHint, isAndroid, isIOS, isIPad,
   isPortalClientEventKind, parseDismissed, pushNudgeState,
 } from './install-prompt';
@@ -94,18 +95,71 @@ describe('dismissal bookkeeping', () => {
   });
 });
 
-describe('homeNudge — one at a time (21 Sep 2026)', () => {
-  const base = { state: 'ios' as const, deferredPromptAvailable: false, push: 'not-installed' as const, telegramUnlinked: true, telegramDismissed: false };
-  it('install first, then notifications, then Telegram', () => {
+describe('homeNudge — one at a time (21 Sep 2026; push off Home 14 Oct 2026)', () => {
+  const base = { state: 'ios' as const, deferredPromptAvailable: false, installWindowOpen: true, telegramUnlinked: true, telegramDismissed: false };
+  it('install first (only in the first two days), then Telegram', () => {
     expect(homeNudge(base)).toBe('install');
     expect(homeNudge({ ...base, state: 'android', deferredPromptAvailable: true })).toBe('install');
     expect(homeNudge({ ...base, state: 'android', deferredPromptAvailable: false })).toBe('telegram');
-    expect(homeNudge({ ...base, state: 'installed', push: 'show' })).toBe('push');
-    expect(homeNudge({ ...base, state: 'installed', push: 'decided' })).toBe('telegram');
+    expect(homeNudge({ ...base, installWindowOpen: false })).toBe('telegram');
+    expect(homeNudge({ ...base, state: 'installed' })).toBe('telegram');
   });
   it('nothing once every ask is done or dismissed', () => {
-    expect(homeNudge({ ...base, state: 'dismissed', push: 'dismissed', telegramDismissed: true })).toBeNull();
-    expect(homeNudge({ ...base, state: 'installed', push: 'decided', telegramUnlinked: false })).toBeNull();
+    expect(homeNudge({ ...base, state: 'dismissed', telegramDismissed: true })).toBeNull();
+    expect(homeNudge({ ...base, state: 'installed', telegramUnlinked: false })).toBeNull();
+    expect(homeNudge({ ...base, installWindowOpen: false, telegramUnlinked: false })).toBeNull();
+  });
+});
+
+describe('installCardWindowOpen — the first two days only (14 Oct 2026)', () => {
+  const created = '2026-10-14T02:00:00.000Z';
+  const at = (h: number) => new Date(Date.parse(created) + h * 3_600_000);
+  it('open from sign-up until two days later, then closed for good', () => {
+    expect(installCardWindowOpen(created, at(0))).toBe(true);
+    expect(installCardWindowOpen(created, at(1))).toBe(true);
+    expect(installCardWindowOpen(created, at(47.9))).toBe(true);
+    expect(installCardWindowOpen(created, at(48))).toBe(false);
+    expect(installCardWindowOpen(created, at(24 * 30))).toBe(false);
+  });
+  it('tolerates a few seconds of clock skew but not a date in the future', () => {
+    expect(installCardWindowOpen(created, new Date(Date.parse(created) - 5_000))).toBe(true);
+    expect(installCardWindowOpen(created, at(-2))).toBe(false);
+  });
+  it('a missing or unreadable date = closed', () => {
+    expect(installCardWindowOpen(null, at(1))).toBe(false);
+    expect(installCardWindowOpen(undefined, at(1))).toBe(false);
+    expect(installCardWindowOpen('not a date', at(1))).toBe(false);
+  });
+  it('is exactly two days', () => {
+    expect(INSTALL_CARD_WINDOW_MS).toBe(48 * 3_600_000);
+  });
+});
+
+describe('pushAskState — ask once, on a marked paper (14 Oct 2026)', () => {
+  const base = { adminViewer: false, supported: true, permission: 'default' as const, askedOnAccount: false, dismissedOnDevice: false };
+  it('asks a student who has never been asked, on a device where the tap can work', () => {
+    expect(pushAskState(base)).toBe('show');
+  });
+  it('never asks twice — the account remembers, and an old ✕ on this phone counts as "not now"', () => {
+    expect(pushAskState({ ...base, askedOnAccount: true })).toBe('asked-before');
+    expect(pushAskState({ ...base, dismissedOnDevice: true })).toBe('asked-before');
+  });
+  it('an answer already given in the browser is final', () => {
+    expect(pushAskState({ ...base, permission: 'granted' })).toBe('decided');
+    expect(pushAskState({ ...base, permission: 'denied' })).toBe('decided');
+  });
+  it('waits for a device that can do it (an iPhone tab before the app is installed)', () => {
+    expect(pushAskState({ ...base, supported: false, permission: null })).toBe('unsupported');
+  });
+  it('never on Adrian\'s admin view', () => {
+    expect(pushAskState({ ...base, adminViewer: true })).toBe('admin');
+  });
+  it('reads the account flag from prefs', () => {
+    expect(pushAskedOnAccount({ push_asked: true })).toBe(true);
+    expect(pushAskedOnAccount({ push_asked: 'yes' })).toBe(false);
+    expect(pushAskedOnAccount({})).toBe(false);
+    expect(pushAskedOnAccount(null)).toBe(false);
+    expect(pushAskedOnAccount([])).toBe(false);
   });
 });
 

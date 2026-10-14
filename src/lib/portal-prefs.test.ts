@@ -3,7 +3,7 @@ import { PORTAL_PREF_KEYS, mergePrefs, readPrefsPatch, scienceChoiceLabel, stude
 
 describe('readPrefsPatch', () => {
   it('refuses the retired switches (21 Sep 2026 — the four switches went)', () => {
-    expect(PORTAL_PREF_KEYS).toEqual(['combined_science']);
+    expect(PORTAL_PREF_KEYS).toEqual(['combined_science', 'push_asked']);
     expect(readPrefsPatch({ exam_countdown: true })).toEqual({ error: 'unknown pref: exam_countdown' });
     expect(readPrefsPatch({ resurface: true })).toEqual({ error: 'unknown pref: resurface' });
   });
