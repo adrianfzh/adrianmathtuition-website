@@ -108,7 +108,9 @@ export function surfaceForHref(href: string): SurfaceIdentity {
   // Home is the science surface itself.
   if (href.startsWith('/app/science/')) {
     const sub = href.slice('/app/science/'.length).split(/[/?]/)[0];
-    return SURFACES[sub === 'submit' ? 'submit' : sub === 'papers' ? 'marking' : 'science'];
+    // Practise and My Notebook wear their maths icons too; only Home keeps the flask (Adrian, 14 Oct
+    // 2026: three flasks in the bottom menu → option "B").
+    return SURFACES[sub === 'submit' ? 'submit' : sub === 'papers' ? 'marking' : sub === 'practice' ? 'practice' : sub === 'my-notes' ? 'notebook' : 'science'];
   }
   // The Languages family the same way ('/app/languages/submit' → submit, '/app/languages/essays' → marking).
   if (href.startsWith('/app/languages/')) {
