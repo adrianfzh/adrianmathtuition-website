@@ -193,6 +193,14 @@ clumsy half answer, never generous.
 "an answer in the scheme's own words is right"): seeded 99/99 · repeats 25/25 · padding 20/20 ·
 swapped 18/18. Both of the batch's gross misses now read correctly. **Passes.**
 
+**The schools' marking habits, 14 Oct 2026** (Adrian: *"yes"*): 59 school schemes read for HOW they
+mark (excess denied, a quote with no explanation, a device named alone, feeling words too strong or
+too mild, the same idea twice, any two of three, lifting costs language not content in a summary).
+The rules, with counts: `docs/english-marking-conventions.md`. They live in `SHORT_RULES` /
+`SUMMARY_RULES` (`lib/english-practice.ts`), read by the page's prompt AND `plan.ts`'s sheets.
+Before/after on the plan: sample 388/389 both; hard set 55/57 → 54–56/57 (noise of one read);
+nothing worse. `run.ts --hard --answers conventions-answers.json` runs the 21 rule-check answers.
+
 **Pilot, 7 Oct 2026** (`results/pilot-2026-10-07.json`, 3 reading sets, 220 reads): seeded 128/128 ·
 repeats 33/33 · padding 25/25 · swapped 24/24 · summary 10/10, every point agreed. Limits: few sets,
 and clean seeded answers written by the set's own writer — a HARD set (answers the way students

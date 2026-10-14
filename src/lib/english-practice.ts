@@ -224,6 +224,25 @@ export interface ShortVerdict { awarded: number; why: string; missing: string | 
 
 const clip = (s: string, n: number): string => (s.length > n ? s.slice(0, n) + ' …' : s);
 
+/** The marking rules of a short answer — one list, read by the page's prompt AND the plan bench's
+ *  sheets (scripts/english-bench/plan.ts), so the bench always tests what the page uses. */
+export const SHORT_RULES: readonly string[] = [
+  'Same meaning in different words earns the mark. A paraphrase is not wrong.',
+  'The student has never seen the scheme. An answer that happens to match the scheme\'s own wording is simply right; "own words" only rules out words lifted from the PASSAGE.',
+  // the schools' habits — docs/english-marking-conventions.md (S1–S14), 14 Oct 2026
+  'A question worth 2 or more with separate ideas gives one mark per idea: an answer with one of two ideas earns 1 of 2, even when it is clumsily written. Half marks only when the question is worth 2 or more and the scheme has two separable ideas.',
+  'If the question says "in your own words", words lifted straight from the passage for the key idea do not earn the mark — that includes keeping the key word (or its root) while changing the words around it. Explaining a word with the same word earns nothing.',
+  'If the question asks to find, quote or give evidence from the passage, lifting is right.',
+  'If the question asks for a word or a phrase from the passage, extra words that change or blur the answer do not earn it, and a quote that leaves out the word carrying the idea does not earn it either.',
+  'On a question about language or effect, a quote with no explanation earns nothing for that idea, and naming the device alone (simile, metaphor, short sentence) earns nothing. The mark is for what the words suggest.',
+  'A right idea joined to a wrong or contradicting one loses that mark ("excess denied"). True extra detail, or wordiness around a right idea, costs nothing.',
+  'A feeling, tone or attitude must be the right strength and the right kind: one that is much too strong, much too mild, a vague label (positive, negative), or a behaviour instead of a feeling does not earn the mark. A word of the same strength does.',
+  'Where ONE mark is for two halves together — a feeling and its reason, both sides of a comparison, what a picture shows and how it backs the message — both are needed for that mark. This never takes away a mark the scheme gives for an idea on its own.',
+  'The same idea counts once, even when given twice. Where the scheme lists more points than marks, any of them earn a mark each, up to the marks.',
+  'A blank, an answer to a different question, an answer about the wrong person or moment, a vague answer with no key idea, or a restatement of the passage where the question asks what it suggests, earns 0.',
+  'Do not correct spelling or grammar unless it changes the meaning: a slip that leaves the word clear is fine; a slip that makes a different word is not. Quotation marks are not needed.',
+];
+
 export function buildShortPrompt(u: Pick<Unit, 'stem' | 'text' | 'marks' | 'scheme'>, answer: string, passage: string): string {
   return `You are marking ONE answer to an O-Level English comprehension question against its mark scheme. The scheme is the only standard: award what it would award, no more and no less.
 
@@ -246,13 +265,7 @@ ${answer}
 >>>
 
 RULES
-- Same meaning in different words earns the mark. A paraphrase is not wrong.
-- The student has never seen the scheme. An answer that happens to match the scheme's own wording is simply right; "own words" only rules out words lifted from the PASSAGE.
-- If the question says "in your own words", words lifted straight from the passage for the key idea do not earn the mark.
-- If the question asks for a word or a phrase from the passage, extra words that change or blur the answer do not earn it.
-- A blank, an answer to a different question, or a vague answer with no key idea earns 0.
-- Half marks only when the question is worth 2 or more and the scheme has two separable ideas.
-- Do not correct spelling or grammar unless it changes the meaning.
+${SHORT_RULES.map(r => '- ' + r).join('\n')}
 
 Reply with one JSON object and nothing else:
 {"awarded": <a number from 0 to ${u.marks}>, "why": "<one plain sentence TO the student — say 'you', never 'the student' — 20 words at most, saying what was right or wrong>", "missing": "<the idea the answer still needed, 15 words at most, or null when full marks>"}`;
@@ -282,6 +295,16 @@ export const summaryContentMax = (s: Scheme): number => Math.min(SUMMARY_CONTENT
 
 export interface SummaryVerdict { hit: number[]; language: string }
 
+/** The content rules of a summary — shared with the plan bench, as SHORT_RULES. */
+export const SUMMARY_RULES: readonly string[] = [
+  'A point is made when its idea is clearly there, in the student\'s own words or close to them. Order does not matter.',
+  // the schools' habits — docs/english-marking-conventions.md (U3–U6), 14 Oct 2026
+  'Lifting costs the language mark, not content: a lifted line that carries a point still makes the point.',
+  'A point needs its key idea: a different word that changes the idea does not make it.',
+  'A point that is only hinted at, or merged so loosely that the idea is lost, is not made. Two points squeezed into one vague general line make neither.',
+  'The same point said twice counts once. Do not award a point that is not on the list.',
+];
+
 export function buildSummaryPrompt(u: Pick<Unit, 'text' | 'scheme'>, answer: string, passage: string): string {
   const pts = u.scheme.points.map((p, i) => `${i + 1}. ${p}`).join('\n');
   return `You are marking the CONTENT of an O-Level English summary against the mark scheme's list of points. The list is the only standard.
@@ -304,10 +327,8 @@ ${answer}
 >>>
 
 RULES
-- A point is made when its idea is clearly there, in the student's own words or close to them. Order does not matter.
-- A point that is only hinted at, or merged so loosely that the idea is lost, is not made.
+${SUMMARY_RULES.map(r => '- ' + r).join('\n')}
 - Ignore anything after the first ${SUMMARY_WORD_LIMIT} words of the student's summary.
-- Do not award a point that is not on the list.
 
 Reply with one JSON object and nothing else:
 {"hit": [<the numbers of the points made>], "language": "<one plain sentence TO the student — say 'you' — about the wording: own words or lifted, linked or listed; 22 words at most>"}`;

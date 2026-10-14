@@ -18,7 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ownPassage, ownUnits } from '../../src/lib/english-own';
 import { OWN_READING } from '../../src/lib/english-own-data';
-import { SUMMARY_WORD_LIMIT, parseShortReply, parseSummaryReply, ruleShort, summaryContentMax, withinLimit, type Unit } from '../../src/lib/english-practice';
+import { SHORT_RULES, SUMMARY_RULES, SUMMARY_WORD_LIMIT, parseShortReply, parseSummaryReply, ruleShort, summaryContentMax, withinLimit, type Unit } from '../../src/lib/english-practice';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
@@ -40,18 +40,12 @@ const isSecond = (r: Row) => r.kind === 'repeat' || r.kind === 'summary_repeat';
 const RULES = `You are marking answers to O-Level English comprehension questions against the mark scheme. The scheme is the only standard: award what it would award, no more and no less. Judge EVERY answer entirely on its own, as if it were the only answer you had seen — never compare one answer with another on this sheet.
 
 SHORT ANSWERS
-- Same meaning in different words earns the mark. A paraphrase is not wrong.
-- The student has never seen the scheme. An answer that happens to match the scheme's own wording is simply right; "own words" only rules out words lifted from the PASSAGE.
-- If the question says "in your own words", words lifted straight from the passage for the key idea do not earn the mark.
-- If the question asks for a word or a phrase from the passage, extra words that change or blur the answer do not earn it.
-- A blank, an answer to a different question, or a vague answer with no key idea earns 0.
-- Half marks only when the question is worth 2 or more and the scheme has two separable ideas. Marks are whole numbers or halves, from 0 to the question's marks.
-- Do not correct spelling or grammar unless it changes the meaning.
+${SHORT_RULES.map(r => '- ' + r).join('\n')}
+- Marks are whole numbers or halves, from 0 to the question's marks.
 
 SUMMARIES (content only)
-- A point is made when its idea is clearly there, in the student's own words or close to them. Order does not matter.
-- A point that is only hinted at, or merged so loosely that the idea is lost, is not made.
-- Do not award a point that is not on the list. List the NUMBERS of the points made.
+${SUMMARY_RULES.map(r => '- ' + r).join('\n')}
+- List the NUMBERS of the points made.
 
 OUTPUT — one line per answer, nothing else, written to the output file named in your instructions:
 {"id": <row id>, "awarded": <number>, "why": "<8 words at most>"}        for a short answer
