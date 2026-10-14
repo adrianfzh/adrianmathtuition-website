@@ -33,7 +33,7 @@ function env(name: string): string {
 const toks = (s: string): string[] => s.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter(Boolean);
 const grams = (t: string[], n: number): string[] => { const out: string[] = []; for (let i = 0; i + n <= t.length; i++) out.push(t.slice(i, i + n).join(' ')); return out; };
 
-const ownText = (s: OwnSet): string => (isEditing(s) ? s.lines.map(l => l.text).join(' ') : s.kind === 'visual' ? visualWords(s.visual ?? []) : (s.paragraphs ?? []).join(' '));
+const ownText = (s: OwnSet): string => (isEditing(s) ? s.lines.map(l => l.text).join(' ') : s.kind === 'visual' ? [s.intro ?? '', visualWords(s.visual ?? []), s.text2?.intro ?? '', ...(s.text2?.paragraphs ?? [])].join(' ') : (s.paragraphs ?? []).join(' '));
 const ownQuestions = (s: OwnSet): string => (isEditing(s) ? '' : s.questions.map(q => [q.stem, q.text, ...(q.options ?? []).map(o => o.text)].filter(Boolean).join(' ')).join(' . '));
 
 async function main() {

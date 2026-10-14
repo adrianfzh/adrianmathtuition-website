@@ -84,14 +84,27 @@ describe('a reading set', () => {
       if (u.kind === 'choice') {
         const right = u.options!.find(o => o.text === u.scheme.answer)!;
         expect(ruleShort(u, right.label)).toBe(true);
-        expect(ruleShort(u, u.options!.find(o => o !== right)!.label)).toBe(false);
+        for (const o of u.options!) if (o !== right) expect(ruleShort(u, o.label)).toBe(false);
       }
       if (u.sectionKind === 'vocabulary') expect(ruleShort(u, u.scheme.answer!)).toBe(true);
     }
   });
   it('the checker reads numbered paragraphs, or the visual text in words', () => {
     expect(ownPassage(OWN_READING.find(x => x.kind === 'narrative')!)).toMatch(/^\[Paragraph 1\] /);
-    expect(ownPassage(OWN_READING.find(x => x.kind === 'visual')!)).toMatch(/\[Picture: /);
+    const v = ownPassage(OWN_READING.find(x => x.kind === 'visual')!);
+    expect(v).toMatch(/\[Picture: /);
+    expect(v).toMatch(/^TEXT 1 \(/);
+    expect(v).toMatch(/\n\nTEXT 2 \(/);
+  });
+  it('a visual set is the exam\'s Section A: a Text 2, a tick, the picture, Text 2 for Text 1, both texts', () => {
+    const base: OwnReading = OWN_READING.find(x => x.kind === 'visual')!;
+    const cut = (f: (s: OwnReading) => void): string => { const s: OwnReading = JSON.parse(JSON.stringify(base)); f(s); return ownProblems(s).join(' '); };
+    expect(cut(s => { delete s.text2; })).toMatch(/has a Text 2/);
+    expect(cut(s => { s.text2!.paragraphs = ['Too short.']; })).toMatch(/Text 2: 2 words/);
+    expect(cut(s => { for (const q of s.questions) if (q.type === 'choice') q.type = 'short'; })).toMatch(/tick-the-answer/);
+    expect(cut(s => { for (const q of s.questions) q.text = q.text.replace(/\b(picture|image|photo(graph)?)\b/gi, 'page'); })).toMatch(/how the picture supports/);
+    expect(cut(s => { for (const q of s.questions) { q.text = q.text.replace(/Texts? 2/g, 'the blog'); if (q.stem) q.stem = q.stem.replace(/Texts 1 and 2/g, 'the blog'); } })).toMatch(/words from Text 2/);
+    expect(cut(s => { for (const q of s.questions) { if (q.stem) q.stem = 'Choose the best ending.'; q.text = q.text.replace(/both texts|Texts 1 and 2/gi, 'the webpage'); } })).toMatch(/both texts together/);
   });
   it('every seed sits beside its unit', () => {
     for (const s of OWN_READING) for (const x of ownSeeds(s)) expect(x.unit?.itemId).toBe(ownUuid(s.id));

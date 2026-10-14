@@ -13720,6 +13720,7 @@
    "title": "Skill Swap Saturdays",
    "format": "webpage",
    "theme": "teal",
+   "intro": "Text 1 is a webpage for a volunteer programme at a community library.",
    "visual": [
     {
      "t": "kicker",
@@ -13768,87 +13769,76 @@
      "text": "Tampines West Community Library · every second Saturday of the month"
     }
    ],
+   "text2": {
+    "intro": "Text 2 is taken from a blog post by Mdm Goh, a retired tailor who joined the programme.",
+    "paragraphs": [
+     "When my neighbour first told me about these Saturday mornings, I laughed. What could a fifteen-year-old teach a woman who has been sewing since before his parents were born? Quite a lot, it turns out. Irfan showed me how to scan a code at the hawker centre without panicking, and how to send my sister in Penang a voice message instead of waiting for her to call. In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week. Every month I look forward to it more. It is not only the skills. For three hours, someone young listens to me as if what I know still matters."
+    ]
+   },
    "questions": [
     {
      "n": "1",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "inference",
-     "text": "Look at the headline: ‘You know your phone. They know everything else.’ What does it suggest teenagers can gain from the programme?",
-     "scheme": {
-      "answer": "Seniors have a great deal of knowledge and skills outside technology, and teenagers can learn these from them.",
-      "accept": [
-       "Teenagers can pick up many useful skills or life lessons from older people that they do not have themselves."
-      ]
-     },
-     "seeds": [
+     "text": "Look at Text 1. Which sentence best states the main message of the webpage?",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "It suggests that seniors know a lot of things other than technology, and teenagers can learn all these from them."
+       "label": "A",
+       "text": "Teenagers should help seniors who struggle with their phones."
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "Teens are only good with phones, but the old folks have plenty of other skills to pass on to them."
+       "label": "B",
+       "text": "Teenagers and seniors each have something worth teaching the other."
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "It suggests that teenagers can become better at using their phones."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "They can gain a lot from joining the programme."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Seniors do not know how to use phones."
+       "label": "C",
+       "text": "Seniors should pass on traditional crafts before they are forgotten."
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "Teenagers and seniors each have something worth teaching the other."
+     },
+     "seeds": []
     },
     {
      "n": "2",
      "marks": 1,
      "type": "short",
      "skill": "visual",
-     "text": "The webpage is written for teenagers. Give one piece of evidence from the webpage that shows this.",
+     "text": "Look at the picture in Text 1. How does it support the headline ‘You know your phone. They know everything else.’?",
      "scheme": {
-      "answer": "It says ‘Ages 13 to 18’.",
+      "answer": "The boy and the woman share a phone while a half-made rattan basket sits between them, showing that each has a skill to give: he knows the phone, she knows the craft.",
       "accept": [
-       "It says the mornings count towards ‘Values in Action hours’, which students need.",
-       "It speaks to the reader as ‘you’ who knows ‘your phone’ and has a ‘grandmother’.",
-       "It quotes Irfan, who is 15.",
-       "The picture shows a teenage boy as the volunteer."
+       "The phone stands for what the teenager can teach and the basket for what the senior can teach, so the picture shows the swap the headline describes.",
+       "They are laughing together over both a phone and a basket, which shows the two sides learning from each other."
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "It states that it is for ages 13 to 18."
+       "text": "The picture shows the boy with a phone and a half-finished basket on the table, so the boy can teach the phone and the old lady can teach the weaving, just like the headline says."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "It mentions Values in Action hours, which only students have to collect."
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The person quoted, Irfan, is 15 years old, the same age as the readers."
+       "text": "The phone is the teen's skill and the rattan basket is the senior's skill, so we see both of them have something to teach each other."
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "It is held at Tampines West Community Library."
+       "text": "It shows that the old woman does not know how to use a phone."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "The words used are simple and easy."
+       "text": "The picture shows two people who look happy together."
+      },
+      {
+       "mark": 0,
+       "flaw": "lifted",
+       "text": "A teenage boy and an elderly woman laugh over a phone."
       }
      ]
     },
@@ -13856,124 +13846,93 @@
      "n": "3",
      "marks": 1,
      "type": "short",
-     "skill": "visual",
-     "text": "Why does the webpage include Irfan’s words?",
+     "skill": "evidence",
+     "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that seniors can teach ‘something no app can teach’.",
      "scheme": {
-      "answer": "Irfan is a real teenager who has taken part, so his words make the benefits believable and show the reader that someone like them enjoyed it.",
+      "answer": "In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week.",
       "accept": [
-       "To convince teenagers to join by showing what a volunteer of their age gained from it."
+       "I taught him to thread a needle and sew on a button"
       ]
      },
      "seeds": [
       {
        "mark": 1,
        "flaw": "full",
-       "text": "He is a teenager who actually joined, so readers will believe the programme is worth it because someone like them enjoyed it."
+       "text": "In return, I taught him to thread a needle and sew on a button so it will not fall off again in a week."
       },
       {
        "mark": 1,
        "flaw": "paraphrase",
-       "text": "To persuade teens to sign up by showing a real volunteer their age who got something out of it."
+       "text": "‘In return, I taught him to thread a needle and sew on a button’"
       },
       {
        "mark": 0,
        "flaw": "wrong",
-       "text": "To tell us that Irfan knows how to sew a button."
+       "text": "Irfan showed me how to scan a code at the hawker centre without panicking."
+      },
+      {
+       "mark": 0,
+       "flaw": "wrong",
+       "text": "Every month I look forward to it more."
       },
       {
        "mark": 0,
        "flaw": "vague",
-       "text": "To make the webpage more interesting."
-      },
-      {
-       "mark": 0,
-       "flaw": "lifted",
-       "text": "I came to teach Mdm Goh how to pay with her phone."
+       "text": "The sentence where she says she taught him something."
       }
      ]
     },
     {
-     "n": "4",
+     "n": "4a",
      "marks": 1,
-     "type": "short",
-     "skill": "visual",
-     "text": "Which phrase in the sign-up button is meant to make the reader act quickly?",
+     "type": "choice",
+     "skill": "inference",
+     "stem": "Read Texts 1 and 2. Choose the best ending for each statement.",
+     "text": "Both texts show that the programme …",
+     "options": [
+      {
+       "label": "A",
+       "text": "is mainly about keeping seniors safe from scams."
+      },
+      {
+       "label": "B",
+       "text": "helps the teenagers as much as the seniors."
+      },
+      {
+       "label": "C",
+       "text": "is too short to make a real difference."
+      }
+     ],
      "scheme": {
-      "answer": "places are limited",
-      "accept": [
-       "places are limited to 40 pairs",
-       "limited to 40 pairs",
-       "by 30 June",
-       "Sign up by 30 June"
-      ]
+      "answer": "helps the teenagers as much as the seniors."
      },
-     "seeds": [
-      {
-       "mark": 1,
-       "flaw": "full",
-       "text": "places are limited"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "'limited to 40 pairs'"
-      },
-      {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "The phrase is \"by 30 June\"."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "No experience needed"
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "every second Saturday of the month"
-      }
-     ]
+     "seeds": []
     },
     {
-     "n": "5",
+     "n": "4b",
      "marks": 1,
-     "type": "short",
+     "type": "choice",
      "skill": "language_use",
-     "text": "‘They show you something no app can teach.’ What is the writer suggesting about the skills that seniors have?",
-     "scheme": {
-      "answer": "Their skills are hands-on and personal, so they cannot be learnt from a phone or the internet — they are special and worth learning in person.",
-      "accept": [
-       "The skills are valuable because technology cannot replace them."
-      ]
-     },
-     "seeds": [
+     "stem": "Read Texts 1 and 2. Choose the best ending for each statement.",
+     "text": "The tone of Text 2 is best described as …",
+     "options": [
       {
-       "mark": 1,
-       "flaw": "full",
-       "text": "The writer suggests their skills are special because you cannot get them from technology, only from the person."
+       "label": "A",
+       "text": "doubtful and worried"
       },
       {
-       "mark": 1,
-       "flaw": "paraphrase",
-       "text": "These are things you have to learn face to face from someone experienced, a phone cannot give you that, so they are precious."
+       "label": "B",
+       "text": "proud and boastful"
       },
       {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Seniors cannot use apps."
-      },
-      {
-       "mark": 0,
-       "flaw": "vague",
-       "text": "The seniors have skills."
-      },
-      {
-       "mark": 0,
-       "flaw": "wrong",
-       "text": "Apps are bad teachers and teenagers should stop using them."
+       "label": "C",
+       "text": "warm and thankful"
       }
-     ]
+     ],
+     "scheme": {
+      "answer": "warm and thankful"
+     },
+     "seeds": []
     }
    ]
   },

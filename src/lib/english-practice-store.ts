@@ -13,7 +13,7 @@ import {
   buildShortPrompt, buildSummaryPrompt, parseShortReply, parseSummaryReply, ruleShort, summaryContentMax, withinLimit,
   type EditingSet, type ShortVerdict, type SummaryVerdict, type Unit,
 } from './english-practice';
-import { editingLevel, isEditing, nextEditing, type EditLevel, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type VisualBlock, type VisualTheme } from './english-own';
+import { editingLevel, isEditing, nextEditing, type EditLevel, ownEditingSet, ownPassage, ownUnits, ownUuid, type OwnReading, type OwnText2, type VisualBlock, type VisualTheme } from './english-own';
 import { OWN_EDITING, OWN_READING, ownByUuid } from './english-own-data';
 import { kindRecord, type KindRecord } from './english-grammar';
 import type { EditKind } from './english-own';
@@ -59,7 +59,7 @@ export interface ReadingListing { textId: string; label: string; group: 'visual'
 export interface ReadingSet {
   textId: string; title: string; group: ReadingListing['group'];
   paragraphs: string[] | null;
-  visual: { format: string; theme: VisualTheme; blocks: VisualBlock[] } | null;
+  visual: { format: string; theme: VisualTheme; intro: string | null; blocks: VisualBlock[]; text2: OwnText2 | null } | null;
   units: Unit[];
 }
 
@@ -82,7 +82,7 @@ export async function loadReadingSet(textId: string): Promise<ReadingSet | null>
   return {
     textId: ownUuid(s.id), title: s.title, group: s.kind,
     paragraphs: s.kind === 'visual' ? null : (s.paragraphs ?? []),
-    visual: s.kind === 'visual' ? { format: s.format ?? 'poster', theme: s.theme ?? 'teal', blocks: s.visual ?? [] } : null,
+    visual: s.kind === 'visual' ? { format: s.format ?? 'poster', theme: s.theme ?? 'teal', intro: s.intro ?? null, blocks: s.visual ?? [], text2: s.text2 ?? null } : null,
     units: ownUnits(s),
   };
 }

@@ -25,6 +25,23 @@ longer a content-policy decision. What it waits on: the bench on all 51 own sets
 - **Questions point at paragraphs, never line numbers** — lines move on a phone.
 - The writers' brief for a batch: `docs/english-own-brief.md`.
 
+## Visual text = Paper 2 Section A: two texts (14 Oct 2026)
+
+Adrian, 14 Oct 2026: *"yes"* — make visual-text practice match O-Level Paper 2 Section A (1184
+syllabus: "Texts 1 and 2, one of which will include visuals … comprehension, the use of visuals
+and the use of language for effect", 5 marks). 2025 prelims from seven schools (read for shape
+only) all ask the same four things: tick the main message or best title; how the picture supports
+the words; a sentence from Text 2 that supports Text 1; two ticks on both texts (purpose, tone, or
+Text 1 / Text 2 / Both / Neither); some give the picture 2 marks.
+
+- A `vt..` set now carries `intro` (the line above Text 1), its blocks, and `text2: { intro,
+  paragraphs }`. `ownProblems` requires the Text 2 (70–200 words), a picture, 4–6 questions, a
+  choice, a picture question, a Text-2-for-Text-1 question and a both-texts question
+  (`text2Problems`). The question mix (patterns A and B) is in `docs/english-own-brief.md`.
+- The page shows "**Text 1** is a webpage …", the visual, "**Text 2** is taken from …", the
+  Text 2 card, then the questions; ticks are marked by rule, the rest as before.
+- The checker is given both texts, headed TEXT 1 / TEXT 2 (`ownPassage`).
+
 ## Editing starts from a difficulty, one passage at a time (8 Oct 2026)
 
 Adrian, 8 Oct 2026: *"we shouldn't list questions like that … they should select difficulty, then
