@@ -68,6 +68,18 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
+## ✏️ Draw on the student's own photo to explain (Adrian, 14 Oct 2026: "yes") — QUEUED, starts after the explanation work is live
+
+When a student sends a question with a diagram and asks "why is this angle 40°?", mark THEIR photo:
+circle/highlight the part being talked about and write a short label beside it (simple first
+version, ~1–2 days). Full version later (~a week+): precise lines, arrows between points,
+construction lines. Reuses: the red pen's photo drawing (bot ai/photo-overlay.js, marker-annotate),
+the marking's region finding, and the figure library (lib/figures) as the fallback — if the spot
+is not found confidently, send a clean figure instead of a mark in the wrong place. One extra
+picture-reading call only when the answer asks for a mark. Order: AFTER the 14 Oct explanation
+helper (drawing/tables/"didn't get it" mode) is live — both change the answer path. Today the chat
+draws on photos only when CHECKING working (ticks/crosses), never when explaining.
+
 ## 💬 Chat about MY marked paper (Adrian, 13 Oct 2026: "add it") — NOTED, not designed, not built
 
 A student asks about their own marked paper and keeps going: "why did I lose marks on Q3?" → "what
