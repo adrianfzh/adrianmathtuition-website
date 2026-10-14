@@ -1439,6 +1439,32 @@ export async function GET(req: NextRequest) {
     return 'no queue lag';
   }));
 
+  // marking-queue-lag skips parked papers (a cancelled bench script held it red
+  // for good), so a STUDENT's paper parked by the crash budget went unseen: Sophie
+  // Tan's 19-page E Math, 14 Oct 2026, marked by the Mac but never drawn, while
+  // this check said "all green". Bench / cancelled rows have no student or are
+  // archived; a re-run replaces the row (superseded_by) — those are not waiting.
+  results.push(await timed('marking-parked', async () => {
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const since = new Date(Date.now() - 14 * 86400e3).toISOString();
+    const { data, error } = await getSupabaseAdmin()
+      .from('paper_marking_runs')
+      .select('id, student_name, paper_name, queue_failed_reason')
+      .eq('queue_status', 'failed')
+      .not('student_id', 'is', null)
+      .is('archived_at', null)
+      .is('superseded_by', null)
+      .is('released_at', null)
+      .gte('created_at', since)
+      .limit(20);
+    if (error) throw new Error(`parked read failed: ${error.message}`);
+    if (data?.length) {
+      const who = data.slice(0, 3).map(r => `${r.student_name || 'a student'} — ${r.paper_name || 'paper'}`).join('; ');
+      throw new Error(`${data.length} student paper(s) parked unmarked (${who}): ${String(data[0].queue_failed_reason || '').slice(0, 120)}`);
+    }
+    return 'no student paper parked';
+  }));
+
   // The health check stamps its own row too, so /admin/ops shows when the watcher
   // itself last watched. Best-effort like every stamp.
   const failures = results.filter(r => !r.ok);
