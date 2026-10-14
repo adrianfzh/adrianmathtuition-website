@@ -413,9 +413,9 @@ export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREV
 // 15 Oct 2026: "yes"). An IP student is also served questions from IP schools'
 // papers on topics off the O-Level syllabus (Progressions, Permutations and
 // Combinations, Vectors, Power Graphs …); a mainstream student never is.
-// CLOSED until Adrian has tried it as the preview student; his admin view and
+// OPEN since 15 Oct 2026 (was closed while he tried it as the preview student); his admin view and
 // the preview student always see it.
-export const IP_TOPICS_OPEN_TO_STUDENTS = false;
+export const IP_TOPICS_OPEN_TO_STUDENTS = true; // Adrian, 15 Oct 2026: "open ip topics"
 export const IP_TOPICS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
 export async function practicePhotoOpen(): Promise<boolean> {
