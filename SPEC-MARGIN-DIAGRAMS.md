@@ -477,8 +477,7 @@ circuit or ray), where a part lost marks and has a model answer, gets its correc
 drawn in red onto the student's own printed figure. When a question is drawn on, its margin
 figure is not drawn as well.
 
-**Built in the bot** (`ai/figure-draw.js`, behind the switch **`PEN_ON_FIGURE=1`**,
-**off by default**):
+**Built in the bot** (`ai/figure-draw.js`, behind the switch **`PEN_ON_FIGURE=1`**):
 1. `figureAskFor(mo)` decides which questions ask (pure).
 2. One picture-reading call per page (`locateFigureDraws`, feature `pen_on_figure`)
    returns arrows / lines / text in 0–1000 page coordinates. It is the same idea as the
@@ -498,6 +497,9 @@ figure is not drawn as well.
 `figure-drawn-on-print`: at least 2 strokes on Q2's figure, on the photo, no margin copy) +
 `test/figure-draw.test.js`.
 
-**Not yet.** Live marking draws on the figure only once Adrian says to switch it on.
-Rainie's real page has not been redrawn or re-sent. Graph-paper curves and ray diagrams
+**Switched ON 15 Oct 2026** (Adrian: "switch it on, no need to redraw rainie's page") —
+`PEN_ON_FIGURE = '1'` in the bot's `fly.toml`; remove the line to switch off. New markings
+only; Rainie's page stays as first sent.
+
+**Not yet.** Graph-paper curves and ray diagrams
 use the same `line` stroke but have no bench case yet.

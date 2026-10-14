@@ -112,7 +112,7 @@ verdicts, `parts[]` with marks, `correct.full_solution_latex`. Plus, from 5 Sep 
   axes), then draw the dashed line at the midpoint height, the label, and the axis ticks
   from those boxes; fail closed like a ring. Same for sign tables: a cross inside the
   wrong cell needs cell boxes.
-  → **Science "draw on Fig. N" questions: BUILT 14 Oct 2026 behind `PEN_ON_FIGURE`** —
+  → **Science "draw on Fig. N" questions: BUILT 14 Oct 2026, ON since 15 Oct (`PEN_ON_FIGURE`)** —
   `SPEC-MARGIN-DIAGRAMS.md` §On the printed figure. Maths graph features still open.
 
 ## 3. Writing rules for every note (the clarity rule)
