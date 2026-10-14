@@ -1,0 +1,2320 @@
+{
+ "summary": {
+  "n": 90,
+  "exact": 90,
+  "off1": 0,
+  "off2": 0
+ },
+ "results": [
+  {
+   "k": "Q01a",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All marks: correct KE substitution and 98m J; mgh = 98m, h = 9.8 m, no air resistance stated.",
+   "parts": [
+    [
+     "a",
+     2,
+     "Correct formula and substitution giving $98m$ J with the unit."
+    ],
+    [
+     "b",
+     3,
+     "Energy equated correctly, $h = 9.8$ m, and the assumption of no air resistance is stated."
+    ]
+   ]
+  },
+  {
+   "k": "Q01b",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) C1 for substitution, A1 lost for no unit J; (b) C1 + A1 for h = 9.8 m, B1 lost because no assumption stated.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Correct working, but the answer $98m$ has no unit, so the accuracy mark is lost."
+    ],
+    [
+     "b",
+     2,
+     "Height correct as $9.8$ m, but the assumption asked for was not stated."
+    ]
+   ]
+  },
+  {
+   "k": "Q01c",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Wrong KE formula, wrong height method and a wrong assumption: no marks.",
+   "parts": [
+    [
+     "a",
+     0,
+     "$m \\times v$ is momentum, not kinetic energy; KE $= \\frac{1}{2}mv^2$."
+    ],
+    [
+     "b",
+     0,
+     "Height is not speed $\\times g$; the method is to equate KE to GPE, and the assumption given is wrong."
+    ]
+   ]
+  },
+  {
+   "k": "Q02a",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All three regions named in the correct order, cancer + ionising, v=f lambda with 6.0 x 10^14 Hz.",
+   "parts": [
+    [
+     "a.i",
+     2,
+     "Infrared, visible light, ultraviolet named and in the correct order."
+    ],
+    [
+     "a.ii",
+     2,
+     "Skin cancer as the effect and ionising as the property."
+    ],
+    [
+     "b",
+     2,
+     "Correct use of $v = f\\lambda$ giving $6.0 \\times 10^{14}$ Hz."
+    ]
+   ]
+  },
+  {
+   "k": "Q02b",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(ai) correct three regions but wrong order loses the order B1; (aii) 'high energy' is explicitly rejected so property B1 lost; (b) C1 for v=f lambda but final answer has no unit so A1 lost.",
+   "parts": [
+    [
+     "a.i",
+     1,
+     "The three regions are named, but infrared and visible light are in the wrong order."
+    ],
+    [
+     "a.ii",
+     1,
+     "Skin cancer is correct, but 'high energy' is not accepted; the property is that UV is ionising."
+    ],
+    [
+     "b",
+     1,
+     "Correct method and value, but the answer has no unit (Hz)."
+    ]
+   ]
+  },
+  {
+   "k": "Q02c",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Wrong regions, wrong effect/property, wrong equation and answer.",
+   "parts": [
+    [
+     "a.i",
+     0,
+     "The Sun's main regions are infrared, visible light and ultraviolet; the order given is also reversed."
+    ],
+    [
+     "a.ii",
+     0,
+     "UV causes skin cancer or cataracts because it is ionising; sleepiness and loudness are not relevant."
+    ],
+    [
+     "b",
+     0,
+     "The method must be $f = \\frac{v}{\\lambda}$ with $v = 3.0 \\times 10^8$ m/s and $\\lambda$ in metres."
+    ]
+   ]
+  },
+  {
+   "k": "Q03a",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All scheme points: vacuum, microwaves, wider coverage, 3.0x10^8 x 0.24 = 7.2 x 10^7 m.",
+   "parts": [
+    [
+     "a.i",
+     1,
+     "Correct: EM waves can travel through a vacuum."
+    ],
+    [
+     "a.ii",
+     1,
+     "Microwaves is correct."
+    ],
+    [
+     "a.iii",
+     1,
+     "Greater coverage and less obstruction are both accepted."
+    ],
+    [
+     "b",
+     2,
+     "Correct use of distance = speed $\\times$ time giving $7.2 \\times 10^7$ m."
+    ]
+   ]
+  },
+  {
+   "k": "Q03b",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(aii) infrared is the wrong region; (b) substitution B1 earned but final answer has no unit so second B1 lost.",
+   "parts": [
+    [
+     "a.i",
+     1,
+     "Correct: EM waves can travel through a vacuum."
+    ],
+    [
+     "a.ii",
+     0,
+     "Television signals to satellites use microwaves, not infrared."
+    ],
+    [
+     "a.iii",
+     1,
+     "Greater coverage is accepted."
+    ],
+    [
+     "b",
+     1,
+     "Correct method and value, but the distance has no unit."
+    ]
+   ]
+  },
+  {
+   "k": "Q03c",
+   "subject": "physics",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All wrong: no vacuum idea, wrong region, irrelevant reason, speed of sound used.",
+   "parts": [
+    [
+     "a.i",
+     0,
+     "The reason is that only EM waves can travel through a vacuum (space); cost is not relevant."
+    ],
+    [
+     "a.ii",
+     0,
+     "TV signals via satellite use microwaves."
+    ],
+    [
+     "a.iii",
+     0,
+     "Satellites give greater coverage or less obstruction; colour is not relevant."
+    ],
+    [
+     "b",
+     0,
+     "$340$ m/s is the speed of sound; the signal is an EM wave travelling at $3.0 \\times 10^8$ m/s."
+    ]
+   ]
+  },
+  {
+   "k": "Q04a",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Correct method and answers with units: 2500 m^3 and about 1260 kg/m^3; natural split B1 method / A1 answer in each subpart.",
+   "parts": [
+    [
+     "b.i",
+     2,
+     "Correct unit conversion and $V = \\frac{m}{\\rho}$ giving $2500$ m$^3$."
+    ],
+    [
+     "b.ii",
+     2,
+     "Mass per container found and divided by $33$ m$^3$ to give $1260$ kg/m$^3$."
+    ]
+   ]
+  },
+  {
+   "k": "Q04b",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(bi) correct working (B1) but no unit on 2500 so A1 lost; (bii) correct method (B1) but arithmetic slip gives 126 kg/m^3 so A1 lost.",
+   "parts": [
+    [
+     "b.i",
+     1,
+     "Correct method and value, but the volume has no unit."
+    ],
+    [
+     "b.ii",
+     1,
+     "Correct setup, but $41\\,667 \\div 33 = 1260$ kg/m$^3$, not $126$."
+    ]
+   ]
+  },
+  {
+   "k": "Q04c",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Wrong method and wrong units in both parts.",
+   "parts": [
+    [
+     "b.i",
+     0,
+     "Volume is mass divided by density in kg/m$^3$, not mass $\\times 1$; kg is not a unit of volume."
+    ],
+    [
+     "b.ii",
+     0,
+     "Density is mass of one container divided by its volume; $33 \\div 600$ divides a volume by a number of containers."
+    ]
+   ]
+  },
+  {
+   "k": "Q05a",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "Random motion and collisions with the wall (B1); force on the wall producing pressure (B1).",
+   "parts": [
+    [
+     "",
+     2,
+     "Random motion and collisions with the walls, then force on the wall's area giving pressure."
+    ]
+   ]
+  },
+  {
+   "k": "Q05b",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 1,
+   "given": 1,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "B1 for random collisions with the walls; B1 lost because no force on the wall linked to pressure.",
+   "parts": [
+    [
+     "",
+     1,
+     "Collisions are described, but the answer does not say they exert a force on the wall's area, which produces pressure."
+    ]
+   ]
+  },
+  {
+   "k": "Q05c",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "No molecular collisions and wrong idea (weight of air): no marks.",
+   "parts": [
+    [
+     "",
+     0,
+     "Gas pressure comes from molecules colliding with the walls, not from the weight of the air."
+    ]
+   ]
+  },
+  {
+   "k": "Q06a",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All correct; (bii) split 1 for a,b and 1 for x,y; (biii) 1 each for proton number and nucleon number.",
+   "parts": [
+    [
+     "a",
+     1,
+     "States that the time of decay of a particular nucleus cannot be predicted and is independent of other nuclei."
+    ],
+    [
+     "b.i",
+     1,
+     "Same element, same proton number, different nucleon number — complete definition."
+    ],
+    [
+     "b.ii",
+     2,
+     "All four values correct."
+    ],
+    [
+     "b.iii",
+     2,
+     "Correctly adds the neutron first, then removes the alpha particle: $90$ and $235$."
+    ]
+   ]
+  },
+  {
+   "k": "Q06b",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(a) correct; (bi) proton/nucleon swapped so 0; (bii) a,b right but y wrong so 1 of 2 (split a,b / x,y); (biii) proton number right but nucleon 234 ignores the absorbed neutron so 1 of 2.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Correctly states that it is impossible to predict when a particular nucleus will decay."
+    ],
+    [
+     "b.i",
+     0,
+     "Definition is reversed: isotopes have the same proton number but different nucleon numbers."
+    ],
+    [
+     "b.ii",
+     1,
+     "$a$, $b$, $x$ correct but $y$ should be $92$."
+    ],
+    [
+     "b.iii",
+     1,
+     "Proton number $90$ correct; nucleon number should be $238 + 1 - 4 = 235$."
+    ]
+   ]
+  },
+  {
+   "k": "Q06c",
+   "subject": "physics",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Decay is not affected by heating; random means the moment a nucleus decays cannot be predicted."
+    ],
+    [
+     "b.i",
+     0,
+     "Isotopes are not defined by being radioactive."
+    ],
+    [
+     "b.ii",
+     0,
+     "Values swapped/misread; correct values are $a = 1$, $b = 0$, $x = 56$, $y = 92$."
+    ],
+    [
+     "b.iii",
+     0,
+     "Numbers swapped and decay not applied; answer is proton number $90$, nucleon number $235$."
+    ]
+   ]
+  },
+  {
+   "k": "Q07a",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Return path; current to earth + fuse melts and breaks circuit; double insulation.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Return path for current completing the circuit."
+    ],
+    [
+     "b.i",
+     2,
+     "Current flows to earth through the earth wire, and the large current blows the fuse, cutting the circuit."
+    ],
+    [
+     "b.ii",
+     1,
+     "Double insulation is correct."
+    ]
+   ]
+  },
+  {
+   "k": "Q07b",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(bi) current-to-earth B1 earned but no large current / fuse melting so second B1 lost; (bii) a switch is not a safety feature in the scheme.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Completes the circuit and returns current to the mains."
+    ],
+    [
+     "b.i",
+     1,
+     "Current to earth is correct, but the fuse is never mentioned — the large current must blow the fuse and cut the supply."
+    ],
+    [
+     "b.ii",
+     0,
+     "An on/off switch is a control, not a safety feature; double insulation was expected."
+    ]
+   ]
+  },
+  {
+   "k": "Q07c",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The neutral wire provides the return path for current, not protection from overheating."
+    ],
+    [
+     "b.i",
+     0,
+     "The earth wire does not store electricity, and a fuse melts rather than switches on."
+    ],
+    [
+     "b.ii",
+     0,
+     "A longer cable is not a safety feature; double insulation was expected."
+    ]
+   ]
+  },
+  {
+   "k": "Q08a",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "Less signal degradation (B1) and many signals at the same time (B1).",
+   "parts": [
+    [
+     "1",
+     2,
+     "Both expected advantages given: less signal degradation and many signals at once."
+    ]
+   ]
+  },
+  {
+   "k": "Q08b",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 1,
+   "given": 1,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "B1 for multiple signals; flexibility is not a scheme advantage, so the second B1 is lost.",
+   "parts": [
+    [
+     "1",
+     1,
+     "Many signals at once is correct; flexibility is not an advantage for transmitting signals — less signal degradation was expected."
+    ]
+   ]
+  },
+  {
+   "k": "Q08c",
+   "subject": "physics",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 2,
+   "marks": 2,
+   "why": "Both advantages are wrong physics: no marks.",
+   "parts": [
+    [
+     "1",
+     0,
+     "Both statements are physically wrong: optical fibres carry light and do not conduct electricity."
+    ]
+   ]
+  },
+  {
+   "k": "Q09a",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Electron transfer cloth to plastic (1) and gain/loss explained (1); conductor, charge flows to earth (1); E = Pt and E/Q giving 1.3 x 10^8 V (2).",
+   "parts": [
+    [
+     "a",
+     2,
+     "Electron transfer from cloth to plastic by friction, and the resulting charges explained."
+    ],
+    [
+     "b",
+     1,
+     "Metal conducts, so charge flows through the body to earth."
+    ],
+    [
+     "c",
+     2,
+     "Energy found from $Pt$ and divided by charge; answer $1.3 \\times 10^{8}$ V with unit."
+    ]
+   ]
+  },
+  {
+   "k": "Q09b",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) transfer earns 1, but which gains/loses electrons is not stated; (b) 1; (c) energy step earns 1, final lost because multiplied by charge.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Electron transfer from cloth to plastic is correct, but you did not explain that the plastic gains electrons (negative) and the cloth loses electrons (positive)."
+    ],
+    [
+     "b",
+     1,
+     "Conductor, so charge flows through the body to earth."
+    ],
+    [
+     "c",
+     1,
+     "Energy correct, but e.m.f. is energy divided by charge, not multiplied: $1.3 \\times 10^{8}$ V."
+    ]
+   ]
+  },
+  {
+   "k": "Q09c",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Protons moving, wrong reason for metal, wrong calculation: no marks.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Protons do not move in charging by friction; electrons move from the cloth to the plastic."
+    ],
+    [
+     "b",
+     0,
+     "Mass has nothing to do with it; metal is a conductor so charge flows to earth through the body."
+    ],
+    [
+     "c",
+     0,
+     "Power was divided by charge; the energy $E = Pt$ was never found."
+    ]
+   ]
+  },
+  {
+   "k": "Q10a",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Ionising damage to cells (1); 400 nm substituted and 7.5 x 10^14 Hz (2); infra-red (1).",
+   "parts": [
+    [
+     "a",
+     1,
+     "UV is ionising and damages tissue cells if overused."
+    ],
+    [
+     "b",
+     2,
+     "Chose the longest wavelength and substituted correctly into $v = f\\lambda$; answer with unit."
+    ],
+    [
+     "c",
+     1,
+     "Infra-red has a lower frequency than UV."
+    ]
+   ]
+  },
+  {
+   "k": "Q10b",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) tanning is not ionising damage, 0; (b) B1 for substitution with 400 nm, A1 lost to the power-of-ten slip; (c) microwaves 1.",
+   "parts": [
+    [
+     "a",
+     0,
+     "A dark tan is not the reason; UV is ionising and can damage tissue cells."
+    ],
+    [
+     "b",
+     1,
+     "Correct substitution, but the power of ten is wrong: $7.5 \\times 10^{14}$ Hz."
+    ],
+    [
+     "c",
+     1,
+     "Microwaves have a lower frequency than UV."
+    ]
+   ]
+  },
+  {
+   "k": "Q10c",
+   "subject": "physics",
+   "type": "mixed",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Cost is not the reason, inverted equation, X-rays have higher frequency: no marks.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Cost is not the reason; UV is ionising and can damage tissue cells."
+    ],
+    [
+     "b",
+     0,
+     "Formula inverted and nm not converted to m; correct answer $7.5 \\times 10^{14}$ Hz."
+    ],
+    [
+     "c",
+     0,
+     "X-rays have a higher frequency than UV; visible light, infra-red, microwaves or radio waves were needed."
+    ]
+   ]
+  },
+  {
+   "k": "Q11a",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All three formulae and all three Mr values correct.",
+   "parts": [
+    [
+     "sodium oxide",
+     2,
+     "Correct formula $Na_2O$ and $M_r = 62$."
+    ],
+    [
+     "magnesium bromide",
+     2,
+     "Correct formula $MgBr_2$ and $M_r = 184$."
+    ],
+    [
+     "aluminium carbonate",
+     2,
+     "Correct formula $Al_2(CO_3)_3$ and $M_r = 234$."
+    ]
+   ]
+  },
+  {
+   "k": "Q11b",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Na2O + 62 (2); MgBr2 formula (1) but Mr arithmetic slip 174; aluminium carbonate formula wrong and no Mr (0).",
+   "parts": [
+    [
+     "sodium oxide",
+     2,
+     "Correct formula and $M_r = 62$."
+    ],
+    [
+     "magnesium bromide",
+     1,
+     "Formula correct, but $24 + 160 = 184$, not 174."
+    ],
+    [
+     "aluminium carbonate",
+     0,
+     "$AlCO_3$ does not balance the charges ($+3$ and $-2$), and no $M_r$ was given."
+    ]
+   ]
+  },
+  {
+   "k": "Q11c",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Describes properties instead of giving formulae or Mr values; nothing creditable.",
+   "parts": [
+    [
+     "sodium oxide",
+     0,
+     "No formula or $M_r$ given; describes properties instead."
+    ],
+    [
+     "magnesium bromide",
+     0,
+     "No formula or $M_r$ given."
+    ],
+    [
+     "aluminium carbonate",
+     0,
+     "No formula or $M_r$ given."
+    ]
+   ]
+  },
+  {
+   "k": "Q12a",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All six points of the heating-to-dryness method: weigh, heat in crucible, cool and reweigh, repeat, to constant mass, correct percentage expression.",
+   "parts": [
+    [
+     "a",
+     6,
+     "All six points of the heating-to-constant-mass method are present."
+    ]
+   ]
+  },
+  {
+   "k": "Q12b",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Weigh (1), heat in evaporating dish (1), cool and reweigh (1); no repeat heating and no constant mass (lose 2); percentage formula uses mass of residue b/a, wrong (lose 1).",
+   "parts": [
+    [
+     "a",
+     3,
+     "Weigh, heat in a dish, cool and reweigh are credited; no repeat to constant mass, and $\\dfrac{b}{a}$ gives the residue, not the water."
+    ]
+   ]
+  },
+  {
+   "k": "Q12c",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Reacting with acid is a wrong method, which the scheme scores zero.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Reacting with acid is a wrong method for this question and scores zero; the sample is never weighed and no percentage is worked out."
+    ]
+   ]
+  },
+  {
+   "k": "Q13a",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All names correct, balanced ionic equation with state symbols, moles (C1) and NO2 (A1).",
+   "parts": [
+    [
+     "a(i)",
+     1,
+     "Calcium hydroxide is correct."
+    ],
+    [
+     "a(ii)",
+     1,
+     "Calcium is correct."
+    ],
+    [
+     "a(iii)",
+     1,
+     "Calcium nitrate is correct."
+    ],
+    [
+     "b",
+     1,
+     "Correct, balanced ionic equation."
+    ],
+    [
+     "c",
+     2,
+     "Moles and ratio correct, giving $NO_2$."
+    ]
+   ]
+  },
+  {
+   "k": "Q13b",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(aiii) sulfate is wrong (nitric acid gives nitrate); (b) unbalanced, missing 2 OH-; (c) moles correct (C1) but wrong ratio conclusion NO so A1 lost.",
+   "parts": [
+    [
+     "a(i)",
+     1,
+     "Calcium hydroxide is correct."
+    ],
+    [
+     "a(ii)",
+     1,
+     "Calcium is correct."
+    ],
+    [
+     "a(iii)",
+     0,
+     "The metal reacted with nitric acid, so the salt is calcium nitrate, not sulfate."
+    ],
+    [
+     "b",
+     0,
+     "Formulae right but the equation is not balanced — two $OH^{-}$ are needed."
+    ],
+    [
+     "c",
+     1,
+     "Moles correct, but $0.152 : 0.0764 = 2 : 1$ for O : N, so the formula is $NO_2$, not $NO$."
+    ]
+   ]
+  },
+  {
+   "k": "Q13c",
+   "subject": "chemistry",
+   "type": "calculation",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a(i)",
+     0,
+     "D is calcium hydroxide."
+    ],
+    [
+     "a(ii)",
+     0,
+     "E is calcium."
+    ],
+    [
+     "a(iii)",
+     0,
+     "G is calcium nitrate; no chloride is involved."
+    ],
+    [
+     "b",
+     0,
+     "The equation must show the white precipitate forming from $Ca^{2+}$ and $OH^{-}$."
+    ],
+    [
+     "c",
+     0,
+     "Adding masses does not give a formula; moles of each element were never found."
+    ]
+   ]
+  },
+  {
+   "k": "Q14a",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) soluble K2SO4 gives mobile ions and insoluble BaSO4 has fixed ions (2); (b) OH- preferentially discharged giving O2, and 4e- gives 2H2 : 1O2 (2).",
+   "parts": [
+    [
+     "a",
+     2,
+     "Soluble $K_2SO_4$ gives mobile ions; insoluble $BaSO_4$ has ions fixed in a lattice and water is molecular."
+    ],
+    [
+     "b",
+     2,
+     "Hydrogen at the cathode and oxygen from preferential $OH^{-}$ discharge at the anode, linked by equal electrons to a $2 : 1$ ratio."
+    ]
+   ]
+  },
+  {
+   "k": "Q14b",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) K2SO4 point earned, but BaSO4 called a weak electrolyte instead of insoluble with fixed ions (lose 1); (b) preferential discharge of OH- giving O2 earned, but the 2:1 reason is wrong (no equal electron / 4e- argument), lose 1.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Potassium sulfate point correct; barium sulfate is insoluble (ions fixed in a lattice), not a weak electrolyte."
+    ],
+    [
+     "b",
+     1,
+     "Preferential discharge of $OH^{-}$ giving oxygen is credited; the $2 : 1$ ratio is not explained by electrons transferred at the cathode."
+    ]
+   ]
+  },
+  {
+   "k": "Q14c",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Neither part mentions solubility/mobile ions or discharge and electron transfer; both reasons are wrong.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The difference is the solubility of the salt formed, not alkali strength; neither marking point is made."
+    ],
+    [
+     "b",
+     0,
+     "Gas volume depends on moles, not mass; no electrode reactions given."
+    ]
+   ]
+  },
+  {
+   "k": "Q15a",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "0 to -1 (1), 0 to +1 (1), both oxidising and reducing agent (1).",
+   "parts": [
+    [
+     "a",
+     3,
+     "Both oxidation-state changes and both roles are stated correctly."
+    ]
+   ]
+  },
+  {
+   "k": "Q15b",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 1,
+   "given": 1,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "Scheme's accept clause: oxidising agent with 0 to -1 is 1 mark only; misses 0 to +1 and the dual role.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Oxidising agent with 0 to $-1$ earns the 1 mark allowed; the increase to $+1$ in $ClO^{-}$ and the reducing-agent role are missing."
+    ]
+   ]
+  },
+  {
+   "k": "Q15c",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "Wrong role and wrong oxidation-state claim; no scheme point.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Chlorine is a reactant and is used up; its oxidation state changes from 0 to $-1$ and to $+1$."
+    ]
+   ]
+  },
+  {
+   "k": "Q16a",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "All five scheme points present, which earns the maximum 4.",
+   "parts": [
+    [
+     "a",
+     4,
+     "All five scheme points are given in the right order, which earns the full 4 marks."
+    ]
+   ]
+  },
+  {
+   "k": "Q16b",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Two points (reagent + acid, add until no more dissolves) = 2 marks; no filtering, heating to dryness is not crystallisation, no wash/dry.",
+   "parts": [
+    [
+     "a",
+     2,
+     "Two scheme points (correct reagent, added in excess) earn 2 marks; there is no filtering of the excess solid and heating to dryness is not crystallisation."
+    ]
+   ]
+  },
+  {
+   "k": "Q16c",
+   "subject": "chemistry",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Makes barium sulfate by precipitation, not magnesium sulfate; no scheme point.",
+   "parts": [
+    [
+     "a",
+     0,
+     "This method makes barium sulfate, not magnesium sulfate; no magnesium reagent is used, so no scheme point is earned."
+    ]
+   ]
+  },
+  {
+   "k": "Q17a",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "All six formulae correct.",
+   "parts": [
+    [
+     "a",
+     1,
+     "$KMnO_4$ is decolourised by $SO_2$."
+    ],
+    [
+     "b",
+     1,
+     "Iron is the Haber process catalyst."
+    ],
+    [
+     "c",
+     1,
+     "Carbon monoxide reduces iron(III) oxide."
+    ],
+    [
+     "d",
+     1,
+     "$ZnO$ is amphoteric."
+    ],
+    [
+     "e",
+     1,
+     "Nickel is a transition metal with coloured compounds."
+    ],
+    [
+     "f",
+     1,
+     "$KI$ gives a yellow precipitate of $AgI$."
+    ]
+   ]
+  },
+  {
+   "k": "Q17b",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "a-c correct; d, e, f wrong substances.",
+   "parts": [
+    [
+     "a",
+     1,
+     "$KMnO_4$ is decolourised by $SO_2$."
+    ],
+    [
+     "b",
+     1,
+     "Iron is the Haber process catalyst."
+    ],
+    [
+     "c",
+     1,
+     "Carbon monoxide reduces iron(III) oxide."
+    ],
+    [
+     "d",
+     0,
+     "$CaCO_3$ does not form an amphoteric oxide; zinc does."
+    ],
+    [
+     "e",
+     0,
+     "Sulfur is not a transition metal; nickel forms coloured compounds."
+    ],
+    [
+     "f",
+     0,
+     "Chloride gives a white precipitate only if present, but the answer is $KI$ (yellow $AgI$); $NH_4Cl$ is not the scheme answer."
+    ]
+   ]
+  },
+  {
+   "k": "Q17c",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "Every answer is a wrong substance.",
+   "parts": [
+    [
+     "a",
+     0,
+     "$CO_2$ is not decolourised by $SO_2$; the answer is $KMnO_4$."
+    ],
+    [
+     "b",
+     0,
+     "The Haber process catalyst is iron, not nickel."
+    ],
+    [
+     "c",
+     0,
+     "Iron is extracted by carbon monoxide, not sulfur."
+    ],
+    [
+     "d",
+     0,
+     "$KI$ forms no amphoteric oxide; zinc does."
+    ],
+    [
+     "e",
+     0,
+     "$CaCO_3$ compounds are white; nickel, a transition metal, forms coloured compounds."
+    ],
+    [
+     "f",
+     0,
+     "$CO_2$ gives no precipitate with acidified silver nitrate; $KI$ gives yellow $AgI$."
+    ]
+   ]
+  },
+  {
+   "k": "Q18a",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All correct; (aii) split 1 for 1:1 mole ratio / moles Cu, 1 for 1.28 g.",
+   "parts": [
+    [
+     "a(i)",
+     1,
+     "Correct moles, $0.0200$ mol."
+    ],
+    [
+     "a(ii)",
+     2,
+     "Correct 1:1 ratio and mass $1.28$ g."
+    ],
+    [
+     "b",
+     1,
+     "Correct, balanced ionic equation."
+    ],
+    [
+     "c",
+     1,
+     "Blue solution turning colourless is the expected observation."
+    ]
+   ]
+  },
+  {
+   "k": "Q18b",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(aii) mole ratio mark kept but arithmetic slip 12.8 g loses the answer mark; (b) full molecular equation, not ionic, so 0.",
+   "parts": [
+    [
+     "a(i)",
+     1,
+     "Correct moles, $0.0200$ mol."
+    ],
+    [
+     "a(ii)",
+     1,
+     "Correct method ($0.0200 \\times 64$) but the value is wrong: it should be $1.28$ g."
+    ],
+    [
+     "b",
+     0,
+     "This is the full equation, not the ionic equation."
+    ],
+    [
+     "c",
+     1,
+     "Blue to colourless is correct."
+    ]
+   ]
+  },
+  {
+   "k": "Q18c",
+   "subject": "chemistry",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a(i)",
+     0,
+     "The volume was not converted to dm$^3$; the answer is $0.0200$ mol."
+    ],
+    [
+     "a(ii)",
+     0,
+     "Mass is moles times $A_r$ of copper ($64$), not moles divided by $65$; the answer is $1.28$ g."
+    ],
+    [
+     "b",
+     0,
+     "Wrong species and unbalanced charges; copper ions react with zinc."
+    ],
+    [
+     "c",
+     0,
+     "No precipitate forms; the blue solution turns colourless."
+    ]
+   ]
+  },
+  {
+   "k": "Q19a",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "0.000600 mol, 5:2 ratio and 0.00150 mol, sulfite identified with +4 to +6 working.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Correct, $0.000600$ mol with working."
+    ],
+    [
+     "b",
+     2,
+     "Correct 5:2 ratio and $0.00150$ mol."
+    ],
+    [
+     "c",
+     2,
+     "Sulfite identified, with the oxidation number of S calculated from $+4$ to $+6$."
+    ]
+   ]
+  },
+  {
+   "k": "Q19b",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) forgot /1000, 0; (b) correct 5:2 method on wrong value, ECF 2; (c) sulfite ion B1 but explanation uses oxygen gain not oxidation number, lose B1.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The volume was not converted to dm$^3$; the answer is $0.000600$ mol."
+    ],
+    [
+     "b",
+     2,
+     "Correct 5:2 ratio applied to the carried value from (a), so both marks stand by error carried forward."
+    ],
+    [
+     "c",
+     1,
+     "Sulfite is correctly identified, but the explanation uses oxygen gain, not oxidation numbers as asked."
+    ]
+   ]
+  },
+  {
+   "k": "Q19c",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Wrong mole formula, inverted ratio (no M1), wrong reducing agent.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Moles are concentration times volume in dm$^3$, not volume divided by concentration; the answer is $0.000600$ mol."
+    ],
+    [
+     "b",
+     0,
+     "The ratio is inverted: sulfite is $\\frac{5}{2}$ of the manganate moles, not $\\frac{2}{5}$."
+    ],
+    [
+     "c",
+     0,
+     "$H^+$ is not the reducing agent; the sulfite ion is, as S rises from $+4$ to $+6$."
+    ]
+   ]
+  },
+  {
+   "k": "Q20a",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Water vapour escapes, reaction complete, 0.740 kJ with working, endothermic.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Water vapour escapes from the tube."
+    ],
+    [
+     "b",
+     1,
+     "Ensures the reaction is complete / all water removed."
+    ],
+    [
+     "c",
+     2,
+     "Correct method and $0.740$ kJ."
+    ],
+    [
+     "d",
+     1,
+     "Endothermic / thermal decomposition."
+    ]
+   ]
+  },
+  {
+   "k": "Q20b",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) correct; (b) wrong reason; (c) correct method, arithmetic slip 7.40 kJ loses A mark; (d) exothermic is wrong.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Water vapour escapes from the tube."
+    ],
+    [
+     "b",
+     0,
+     "Constant mass shows the reaction is complete; cooling is not the reason."
+    ],
+    [
+     "c",
+     1,
+     "Correct method, but the value is wrong: it is $0.740$ kJ."
+    ],
+    [
+     "d",
+     0,
+     "Energy is taken in, so it is endothermic."
+    ]
+   ]
+  },
+  {
+   "k": "Q20c",
+   "subject": "chemistry",
+   "type": "mixed",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Wrong reasons in a and b, inverted calculation, wrong reaction type.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Mass is lost because water vapour escapes, not because glass expands."
+    ],
+    [
+     "b",
+     0,
+     "Heating to constant mass ensures the reaction is complete; heating turns pink hydrated cobalt chloride blue, not blue to pink."
+    ],
+    [
+     "c",
+     0,
+     "The scaling is inverted; energy $= \\frac{2.00}{238} \\times 88.1 = 0.740$ kJ."
+    ],
+    [
+     "d",
+     0,
+     "No acid and base react; it is endothermic thermal decomposition."
+    ]
+   ]
+  },
+  {
+   "k": "Q21a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All three (a) points (hybridise, F1 with both traits, inbreed F1) and both (b) points (better quality -> higher profit).",
+   "parts": [
+    [
+     "a",
+     3,
+     "Hybridisation of the two parent plants, an F1 with both traits, and inbreeding of the F1 to retain them are all stated."
+    ],
+    [
+     "b",
+     2,
+     "Better-quality produce from desired traits, leading to higher profit, is a complete cause-effect chain."
+    ]
+   ]
+  },
+  {
+   "k": "Q21b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) loses the inbreeding-of-F1 mark; (b) gives better quality but no economic consequence (profit/sales), losing the second mark.",
+   "parts": [
+    [
+     "a",
+     2,
+     "Crossing the two plants and the F1 having both traits are given, but the inbreeding of the F1 to retain the traits is missing."
+    ],
+    [
+     "b",
+     1,
+     "Better-quality traits is stated, but the economic consequence (higher profit / more money) is never given, so the explanation stops halfway."
+    ]
+   ]
+  },
+  {
+   "k": "Q21c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) describes genetic engineering, not breeding; (b) denies any economic value - no scheme point.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Genetic engineering is not selective breeding; the answer needed hybridisation, an F1 with both traits, and inbreeding of the F1."
+    ],
+    [
+     "b",
+     0,
+     "Claims artificial selection is not useful and confuses it with natural selection; no desired trait or economic benefit is given."
+    ]
+   ]
+  },
+  {
+   "k": "Q22a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "(a) explains how no pain/no movement helps; (b) names the pupil reflex test and the correct observation (no constriction).",
+   "parts": [
+    [
+     "a",
+     1,
+     "Explains that the patient feels no pain and cannot move and cause damage during surgery."
+    ],
+    [
+     "b",
+     2,
+     "Names the pupil reflex test and the correct expected observation (pupil does not constrict)."
+    ]
+   ]
+  },
+  {
+   "k": "Q22b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "(a) earns its mark; (b) gets the test mark but the observation is wrong (constriction means the reflex still works), losing the second mark.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Stopping the patient feeling pain during the operation is an accepted importance."
+    ],
+    [
+     "b",
+     1,
+     "The light-in-the-eye test is correct, but the observation is reversed: a patient under GA has lost the reflex, so the pupil does NOT constrict."
+    ]
+   ]
+  },
+  {
+   "k": "Q22c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 3,
+   "marks": 3,
+   "why": "(a) is wrong biology (cardiac muscle is not paralysed); (b) is not a reflex test and has no valid observation.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The stem says GA does not paralyse cardiac muscle; the heart keeps beating, so this importance is wrong."
+    ],
+    [
+     "b",
+     0,
+     "Blood sugar is not a reflex and does not show GA has taken effect; a reflex test and its absence were needed."
+    ]
+   ]
+  },
+  {
+   "k": "Q23a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) maintenance of a constant internal environment; (b) all four points: hypothalamus stimulated, less ADH, less water reabsorbed at collecting ducts, more water excreted as urine.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Keeping the internal environment constant is the definition of homeostasis."
+    ],
+    [
+     "b",
+     4,
+     "Hypothalamus stimulated, less ADH, less water reabsorbed at the collecting ducts, more water lost in urine - the full chain in order."
+    ]
+   ]
+  },
+  {
+   "k": "Q23b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) is not the definition; (b) earns hypothalamus and less ADH but omits reabsorption at the collecting ducts and more water excreted as urine.",
+   "parts": [
+    [
+     "a",
+     0,
+     "'Keeping the body healthy' is not the definition; it must be the maintenance of a constant internal environment."
+    ],
+    [
+     "b",
+     2,
+     "Hypothalamus stimulated and less ADH earn marks, but the effect on the collecting ducts and on urine is missing."
+    ]
+   ]
+  },
+  {
+   "k": "Q23c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) defines osmosis; (b) describes insulin/glycogen, no scheme point.",
+   "parts": [
+    [
+     "a",
+     0,
+     "This is (part of) the definition of osmosis, not homeostasis."
+    ],
+    [
+     "b",
+     0,
+     "Insulin controls blood glucose, not water; water potential is controlled by the hypothalamus, ADH and the collecting ducts."
+    ]
+   ]
+  },
+  {
+   "k": "Q24a",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "Constant movement + sweeping mucus to pharynx; mucus/bacteria into bronchi + infection/bronchitis; tar.",
+   "parts": [
+    [
+     "a",
+     2,
+     "Constant beating and sweeping mucus with trapped particles up to the pharynx are both given."
+    ],
+    [
+     "b.i",
+     2,
+     "Mucus and bacteria flowing into the bronchi plus lung infection / chronic bronchitis."
+    ],
+    [
+     "b.ii",
+     1,
+     "Tar is correct."
+    ]
+   ]
+  },
+  {
+   "k": "Q24b",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(a) movement point only, no sweeping of mucus to the pharynx; (bi) first point only, no second consequence (coughing/infection).",
+   "parts": [
+    [
+     "a",
+     1,
+     "Constant beating is stated, but not what the beating does (sweeps mucus and particles up to the pharynx)."
+    ],
+    [
+     "b.i",
+     1,
+     "Mucus and bacteria flowing into the bronchi is given, but no consequence such as persistent coughing or lung infection."
+    ],
+    [
+     "b.ii",
+     1,
+     "Tar is correct."
+    ]
+   ]
+  },
+  {
+   "k": "Q24c",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Cilia do not produce mucus (goblet cells do) and no digestion happens in the trachea; cilia beat to sweep mucus up to the pharynx."
+    ],
+    [
+     "b.i",
+     0,
+     "Taste is unrelated to the trachea; mucus and bacteria would flow into the bronchi, leading to coughing or infection."
+    ],
+    [
+     "b.ii",
+     0,
+     "Carbon dioxide is wrong; the substance is tar."
+    ]
+   ]
+  },
+  {
+   "k": "Q25a",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "All four MPs, with umbilical vein for oxygen and umbilical artery for CO2 and waste.",
+   "parts": [
+    [
+     "",
+     4,
+     "All four points given with diffusion, direction and the correct umbilical vessels."
+    ]
+   ]
+  },
+  {
+   "k": "Q25b",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "MP1 and MP4 earned; MP2 and MP3 lost for not naming the umbilical vein/artery (as the examiner comment says).",
+   "parts": [
+    [
+     "",
+     2,
+     "Nutrients and nitrogenous waste points are complete, but the oxygen and carbon dioxide points miss diffusion and the umbilical vein / artery."
+    ]
+   ]
+  },
+  {
+   "k": "Q25c",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Wrong biology throughout - no MP.",
+   "parts": [
+    [
+     "",
+     0,
+     "The statement is valid; the answer confuses the placenta with the amniotic fluid and wrongly says the bloods mix, so no marking point is made."
+    ]
+   ]
+  },
+  {
+   "k": "Q26a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) correct scale and correct labelled order; (b) ingested by small fish + not excreted / stored in fat / accumulates (2 of 4 points needed).",
+   "parts": [
+    [
+     "a",
+     2,
+     "Bar widths are in proportion to the biomass ($1$ square $= 20\\ \\text{g/m}^2$) and the levels are in the right order, each labelled."
+    ],
+    [
+     "b",
+     2,
+     "Ingestion by small fish, cannot be excreted, stored in fatty tissue and builds up in concentration are all given."
+    ]
+   ]
+  },
+  {
+   "k": "Q26b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) order + labels earned but not to scale; (b) only the ingestion point, nothing about no excretion, storage in fat or build-up.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Order and labels are right, but equal-width bars are not drawn to scale, so this is not a pyramid of biomass."
+    ],
+    [
+     "b",
+     1,
+     "Ingestion of mercury by small fish is credited, but nothing on why it stays (cannot be excreted, stored in fat) or that it builds up."
+    ]
+   ]
+  },
+  {
+   "k": "Q26c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "(a) wrong order and not to scale; (b) describes breakdown of mercury, the opposite of bioaccumulation.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The pyramid is upside down (producers must be at the bottom) and the widths $4,3,2,1$ do not match the biomass values."
+    ],
+    [
+     "b",
+     0,
+     "Mercury is not broken down; the answer describes the opposite of bioaccumulation."
+    ]
+   ]
+  },
+  {
+   "k": "Q27a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 6,
+   "given": 6,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(a) high temperature, denatures enzyme, gives enzyme time to work; (b) protease, digests proteins, into peptides/polypeptides.",
+   "parts": [
+    [
+     "a",
+     3,
+     "High temperature, enzyme denatured, and enzyme given time to work before cooking are all stated."
+    ],
+    [
+     "b",
+     3,
+     "Protease, digests proteins, into polypeptides and peptides: all three points."
+    ]
+   ]
+  },
+  {
+   "k": "Q27b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(a) earns heat + denature but omits why that matters (no time to tenderise); (b) protease only - 'breaks down' is rejected for 'digests' and amino acids is rejected.",
+   "parts": [
+    [
+     "a",
+     2,
+     "High temperature and denaturing are given, but not that putting it on earlier gives the enzyme time to tenderise the meat."
+    ],
+    [
+     "b",
+     1,
+     "Protease is right, but \"breaks down\" is not accepted for \"digests\", and amino acids means complete digestion, which is not tenderising."
+    ]
+   ]
+  },
+  {
+   "k": "Q27c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 6,
+   "marks": 6,
+   "why": "(a) no reference to heat or enzyme damage; (b) wrong enzyme and wrong substrate.",
+   "parts": [
+    [
+     "a",
+     0,
+     "The answer is about acid and flavour; it does not mention high temperature or the enzyme being denatured."
+    ],
+    [
+     "b",
+     0,
+     "Meat is mainly protein, so the enzyme is a protease, not amylase."
+    ]
+   ]
+  },
+  {
+   "k": "Q28a",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "All four points with the umbilical vein/artery named.",
+   "parts": [
+    [
+     "overall",
+     4,
+     "All three roles are covered with the direction of diffusion and the umbilical vessels named."
+    ]
+   ]
+  },
+  {
+   "k": "Q28b",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Both gas marks earned; small-intestine/nutrient point omitted and the kidney point has no nitrogenous waste diffusing from the umbilical artery.",
+   "parts": [
+    [
+     "overall",
+     2,
+     "The lung role is fully covered, but the small intestine role is missing and the kidney role names no waste and no diffusion."
+    ]
+   ]
+  },
+  {
+   "k": "Q28c",
+   "subject": "biology",
+   "type": "define/state",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Wrong functions - no point.",
+   "parts": [
+    [
+     "overall",
+     0,
+     "The statement is valid; the placenta does not make milk, and none of the exchange roles are described."
+    ]
+   ]
+  },
+  {
+   "k": "Q29a",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 5,
+   "given": 5,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All scheme points: replaced as fast as used; swallowed and blocks gut; not decomposed, accumulates in soil; named hormone oestrogen + fewer gametes/lower fertility.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Replaced at least as fast as used, so it does not run out: complete."
+    ],
+    [
+     "b.i",
+     1,
+     "Swallowed, cannot be digested, blocks gut, starves: complete."
+    ],
+    [
+     "b.ii",
+     1,
+     "Not broken down by decomposers, builds up in soil and reduces its quality."
+    ],
+    [
+     "c",
+     2,
+     "Oestrogen named and reduced; fewer gametes, reduced ovulation and lower fertility follow."
+    ]
+   ]
+  },
+  {
+   "k": "Q29b",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 3,
+   "given": 3,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "(bii) appearance is not a harmful ecological effect in the scheme; (c) named hormone mark earned but no effect on gametes/fertility so second mark lost.",
+   "parts": [
+    [
+     "a",
+     1,
+     "Replaced at least as fast as used, so it will not run out: credited."
+    ],
+    [
+     "b.i",
+     1,
+     "Animals eat plastic, gut blocked, starve: credited."
+    ],
+    [
+     "b.ii",
+     0,
+     "Looking ugly is not a harmful effect on the ecosystem."
+    ],
+    [
+     "c",
+     1,
+     "Oestrogen is named and reduced, but the effect on reproductive health is never stated."
+    ]
+   ]
+  },
+  {
+   "k": "Q29c",
+   "subject": "biology",
+   "type": "explain",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 5,
+   "marks": 5,
+   "why": "All wrong.",
+   "parts": [
+    [
+     "a",
+     0,
+     "Being made in a factory has nothing to do with being sustainable."
+    ],
+    [
+     "b.i",
+     0,
+     "Not a recognised harmful effect of plastic in water."
+    ],
+    [
+     "b.ii",
+     0,
+     "Non-biodegradable plastic does not add nutrients; this describes a benefit, not harm."
+    ],
+    [
+     "c",
+     0,
+     "Insulin is not a reproductive hormone, and growth in height is not reproductive health."
+    ]
+   ]
+  },
+  {
+   "k": "Q30a",
+   "subject": "biology",
+   "type": "other",
+   "expected": 4,
+   "given": 4,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Gives all six creditable points; max 4.",
+   "parts": [
+    [
+     "overall",
+     4,
+     "All six scheme points are present in order; the maximum of 4 is reached."
+    ]
+   ]
+  },
+  {
+   "k": "Q30b",
+   "subject": "biology",
+   "type": "other",
+   "expected": 2,
+   "given": 2,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Receptor and sensory-neurone points earned; no relay neurones, brain interpretation or motor-neurone damage (wrongly blames the muscles).",
+   "parts": [
+    [
+     "overall",
+     2,
+     "Receptor and sensory neurone are credited, but the relay neurone / brain step is missing and the damage is wrongly placed in the muscles."
+    ]
+   ]
+  },
+  {
+   "k": "Q30c",
+   "subject": "biology",
+   "type": "other",
+   "expected": 0,
+   "given": 0,
+   "diff": 0,
+   "outOf": 4,
+   "marks": 4,
+   "why": "Describes hormonal, not nervous, pathway - no scheme point.",
+   "parts": [
+    [
+     "overall",
+     0,
+     "The question asks for the pathway of electrical nerve impulses; the answer describes a hormone in the blood instead."
+    ]
+   ]
+  }
+ ]
+}
