@@ -873,3 +873,16 @@ space, now on maths too; the point said 3–6 times; marks on crossed-out work) 
 - **A strip heading names the wrong part** — "Q20(a):" over (b)'s angle-bisector steps; (a) was 3/3 (Chloe EM P1 p15). Pen (strip).
 - **A ring round her correct correction, with "should be" the same value** — (a)(ii)'s ellipse encloses her 7/15 and "should be 7/15" sits beside it (Chloe EM P2 p3). Misleads. Pen (ring) + corrections.
 - **The green-pen boilerplate where there is no green** — "Green = your corrections: checked, but no marks … In the exam, write the first step you know…" in ~10 parts, up to 3× a page, when her later work is black and even when the correction is ticked right (Chloe EM P1/P2). Words (pen rule) — for a proposal.
+
+# 15 Oct 2026 — the page reader: new defect classes (findings of 15 Oct: 4 papers, 40 pages; the fixer works them at 06:45)
+
+Eva E Math O-Level 2025 P1 and Sophie E Math 2023 P2 were drawn after every 14 Oct maths-pen commit; Rainie's E Math ACS Barker
+P2 and Physics 2023 P2 before Adrian's own fixes from those papers (95c249c, db756f1). One line per NEW class — returns (F102 now
+cut mid-word, the point said 3–4 times, codes on print, marks at nothing, marks on crossed-out work) are in the reader's findings file.
+
+- **F126's added answer row repeats a proof's conclusion with a stray "="** — "△APS ≡ △BQP ← AAS" then "= △APS ≡ △BQP (AAS)" (Eva EM O-Level 2025 P1 p13 Q20(a)). Pen (continuation).
+- **The ring on the line below the ✗** — the slip is on line ① (✗ there) but the ring is drawn on the next line, which also carries a half tick (Sophie EM 2023 P2 p8 Q4(c)(iii), p4 Q2(c)(ii); drawn after e21fc34). Pen (rings).
+- **A token "should be" on an unringed line reads as the line's value** — "∠ACB = 134/2" underlined, "should be 48" (the answer is 24°; 48° is ∠AOB) (Eva P1 p11 Q16(b)); ring round the whole "√125", "should be 125/6" (Eva p7 Q9); "should be 200 m" with her "north" untouched — the answer is 200 m south (Rainie Physics 2023 P2 p2 Q1(a)). Misleads. Pen rule + placement.
+- **A lost part with no words on the page** — 0/2, one bare uncoded ✗, no note, no strip line, no model answer, no overflow sheet, though the read wrote all three (Rainie Physics 2023 P2 p3 Q2(c)). Pen (science notes dropped).
+- **A mark seated on the nearest ink, not on what it credits** — ✗M0 in her Type C column while she chose Type D (Sophie EM 2023 P2 p19 Q9(c)); ✓B1 for her right cross beside her wrong side-working "x² − 64 = 204" (p16 Q8(a)(i)). Pen (marks).
+- **Another part's "why" opens a science box** — Q7(a)'s box begins with Q7(c)(i)'s "Higher V → smaller I → less I²R heating" (Rainie Physics 2023 P2 p10). Pen (science why join) — F130's family on a new path.
