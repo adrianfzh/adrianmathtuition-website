@@ -4,16 +4,18 @@
 // scripts/english-own/speaking-audio.mjs runs every line through sayAs() before the voice reads it.
 // Adding a word: put it here, run `node scripts/english-own/speaking-audio.mjs --check-sg` and
 // listen. Pure; tested (sg-say.test.ts).
+// 14 Oct 2026: Adrian listened to every word and picked between versions; Pasir Panjang, Choa Chu
+// Kang and Bedok still being settled. A plain word the voice already says right (laksa) is not listed.
 
 /** spelling → how to say it (a respelling the voice reads naturally). Longest names first is not needed: matching is whole-word. */
 export const SG_SAY = {
   // places
-  'Tampines': 'Tam-pi-niss',
+  'Tampines': 'Tam-pin-niss',
   'Bukit Timah': 'Boo-kit Tee-mah',
   'Bukit Batok': 'Boo-kit Bah-tok',
   'Bukit Panjang': 'Boo-kit Pahn-jahng',
   'Bukit Merah': 'Boo-kit May-rah',
-  'Toa Payoh': 'Toh-ah Pie-oh',
+  'Toa Payoh': 'Twah Pahyoh',
   'Ang Mo Kio': 'Ahng Moh Kee-oh',
   'Pasir Ris': 'Pah-seer Riss',
   'Pasir Panjang': 'Pah-seer Pahn-jahng',
@@ -23,28 +25,28 @@ export const SG_SAY = {
   'Yishun': 'Yee-shoon',
   'Bishan': 'Bee-shahn',
   'Jurong': 'Joo-rong',
-  'Kallang': 'Kah-lahng',
+  'Kallang': 'Kar-lang',
   'Geylang': 'Gay-lahng',
-  'Serangoon': 'Seh-rahng-goon',
-  'Choa Chu Kang': 'Choh-ah Choo Kahng',
+  'Serangoon': 'Seh-rung-goon',
+  'Choa Chu Kang': 'Chua Choo Kahng',
   'Bedok': 'Beh-dok',
   'Changi': 'Chahng-ee',
-  'Clementi': 'Kleh-men-tee',
+  'Clementi': 'Clementee',
   'Simei': 'See-may',
-  'Tanjong Pagar': 'Tahn-jong Pah-gar',
-  'Tiong Bahru': 'Tee-ong Bah-roo',
+  'Tanjong Pagar': 'Tanjong Pahgah',
+  'Tiong Bahru': 'Tiong Bahroo',
   'Sembawang': 'Sem-bah-wahng',
-  'Kranji': 'Krahn-jee',
+  'Kranji': 'Kranjee',
+  'Marsiling': 'Mar-see-ling',
   // food and everyday words
   'nasi lemak': 'nah-see leh-mah',
   'roti prata': 'roh-tee prah-tah',
   'char kway teow': 'char kway tee-ow',
-  'laksa': 'lahk-sah',
-  'kaya': 'kah-yah',
+  'kaya': 'kai-ya',
   'kopi': 'koh-pee',
-  'satay': 'sah-tay',
+  'satay': 'sah-teh',
   'makan': 'mah-kahn',
-  'kiasu': 'kee-ah-soo',
+  'kiasu': 'kya-soo',
 };
 
 const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
