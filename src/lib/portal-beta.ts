@@ -431,7 +431,7 @@ export const QA_FLASHCARDS_OPEN_TO_STUDENTS = false;
  * 📖 The Physics tab's definitions page (/app/science/definitions and its door
  * on /app/science): Adrian's cookie only until he has read the list (3 Oct 2026).
  */
-export const SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS = false;
+export const SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS = true; // Adrian, 14 Oct 2026: "why not just make definitions live for students now?"
 
 /**
  * 🧬 Biology study pages (3 Oct 2026), each Adrian's cookie only until he has
@@ -439,7 +439,7 @@ export const SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS = false;
  * Processes in pictures (/app/science/processes) and, for every science,
  * Command words (/app/science/command-words).
  */
-export const BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS = false;
+export const BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS = true; // Adrian, 14 Oct 2026: "why not just make definitions live for students now?"
 export const BIOLOGY_PROCESSES_OPEN_TO_STUDENTS = false;
 export const COMMAND_WORDS_OPEN_TO_STUDENTS = false;
 
@@ -467,7 +467,7 @@ export async function myDefinitionsOpenFor(identity: string | null): Promise<boo
  * door on the Chemistry tab, 14 Oct 2026): Adrian's cookie only until he has
  * read it. Data: lib/chemistry-definitions.ts.
  */
-export const CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS = false;
+export const CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS = true; // Adrian, 14 Oct 2026: "why not just make definitions live for students now?"
 
 /**
  * ✍️ Formats (/app/languages/formats, 6 Oct 2026): how to set out each
