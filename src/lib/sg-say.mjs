@@ -4,8 +4,7 @@
 // scripts/english-own/speaking-audio.mjs runs every line through sayAs() before the voice reads it.
 // Adding a word: put it here, run `node scripts/english-own/speaking-audio.mjs --check-sg` and
 // listen. Pure; tested (sg-say.test.ts).
-// 14 Oct 2026: Adrian listened to every word and picked between versions; Pasir Panjang, Choa Chu
-// Kang and Bedok still being settled. A plain word the voice already says right (laksa) is not listed.
+// 14 Oct 2026: Adrian listened to every word and picked between versions; Bedok still being settled. A plain word the voice already says right (laksa) is not listed.
 
 /** spelling → how to say it (a respelling the voice reads naturally). Longest names first is not needed: matching is whole-word. */
 export const SG_SAY = {
@@ -18,7 +17,7 @@ export const SG_SAY = {
   'Toa Payoh': 'Twah Pahyoh',
   'Ang Mo Kio': 'Ahng Moh Kee-oh',
   'Pasir Ris': 'Pah-seer Riss',
-  'Pasir Panjang': 'Pah-seer Pahn-jahng',
+  'Pasir Panjang': 'Pa-sir Pan-jang',
   'Punggol': 'Pung-gol',
   'Sengkang': 'Seng-kahng',
   'Hougang': 'How-gahng',
@@ -28,7 +27,7 @@ export const SG_SAY = {
   'Kallang': 'Kar-lang',
   'Geylang': 'Gay-lahng',
   'Serangoon': 'Seh-rung-goon',
-  'Choa Chu Kang': 'Chua Choo Kahng',
+  'Choa Chu Kang': 'Chwa Chu Kahng',
   'Bedok': 'Beh-dok',
   'Changi': 'Chahng-ee',
   'Clementi': 'Clementee',
