@@ -10,6 +10,10 @@ import { rest, LEVELS, SUBJECT, servableStructured, flat, figureUrls, openTopics
 
 const work = path.resolve(process.argv[2] || 'qcheck-work');
 const want = Number(process.argv[3] || 30);
+// Fill each OPEN topic up to about TARGET checked structured questions, then leave it (Adrian,
+// 14 Oct 2026: "A" — fill the open topics first; the other topics wait). About 7 in 10 pass, so a
+// topic is offered up to 1.5× what it still lacks.
+const TARGET = Number(process.env.QCHECK_TARGET || 40);
 fs.mkdirSync(path.join(work, 'img'), { recursive: true });
 const cols = 'id,level,school,year,question_text,parts,answer,solution,topics,total_marks,has_image,image_url,images,image_watermark_status,verified,ai_generated,quarantined,not_in_syllabus,practice_hidden,practice_checked_at,practice_check_note';
 const { pure, combined } = await openTopics();
@@ -28,6 +32,7 @@ for (const p of pools) {
   p.passed = s.filter(r => r.practice_checked_at).length;
   p.todo = s.filter(r => !r.practice_checked_at && !r.practice_check_note)
     .sort((a, b) => (figureUrls(a).length ? 1 : 0) - (figureUrls(b).length ? 1 : 0) || (b.year || 0) - (a.year || 0) || a.id.localeCompare(b.id));
+  p.todo = p.todo.slice(0, Math.max(0, Math.ceil((TARGET - p.passed) * 1.5)));
 }
 pools.sort((a, b) => a.passed - b.passed);
 const picked = new Map();
