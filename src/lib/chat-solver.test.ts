@@ -73,3 +73,23 @@ describe('the BANK tail line (the solver\'s verdict against the paper\'s answer 
     expect(formatMessage('The bank: agree with me')).toContain('The bank: agree with me');
   });
 });
+
+// 14 Oct 2026: the solver now answers comparisons with a short table. A live
+// answer drew it; the same answer restored after a reload showed raw "| a | b |".
+describe('formatMessage — a restored answer draws its table', () => {
+  const ans = 'Compare them:\n\n| | Range | IQR |\n|---|---|---|\n| Uses | max − min | $Q_3 - Q_1$ |\n| Outliers | changes a lot | $P(A|B)$ stays |\n\nDone.';
+  it('turns the pipe table into an HTML table', () => {
+    const html = formatMessage(ans);
+    expect(html).toContain('<table');
+    expect(html).toContain('<th style');
+    expect(html.match(/<tr>/g)?.length).toBe(3); // header + two rows
+    expect(html).not.toMatch(/\|---/);
+  });
+  it('keeps a pipe inside maths in its cell', () => {
+    const html = formatMessage(ans);
+    expect(html).toContain('$P(A|B)$ stays');
+  });
+  it('leaves a modulus line alone', () => {
+    expect(formatMessage('|x − 3| = 5')).toBe('|x − 3| = 5');
+  });
+});

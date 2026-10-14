@@ -77,3 +77,39 @@ export function markCurrencyDollars(text: string): string {
   }
   return out;
 }
+
+// ── An ESCAPED dollar, `\$` (14 Oct 2026) ──────────────────────────────────
+// The solver sometimes writes a price TeX-style, `\$`: in prose ("costs A\$60")
+// and inside maths ("$$\frac{\text{A}\$60}{16} = \text{A}\$3.75$$"). The page
+// used to turn every `\$` before a digit into a bare `$` — right in prose, but
+// inside a `$$…$$` block it added a third `$`, the block no longer paired, and
+// the student saw raw TeX (3 Oct 2026, the A$60 perfume-bottle question). Now
+// an escaped dollar is set aside BEFORE any pairing, so it never counts as a
+// delimiter, and comes back as a dollar the renderer can draw: `\char36` inside
+// maths (KaTeX's own dollar glyph, no `$` character in it), a plain `$` in prose.
+
+/** Stands in for an escaped `\$` while the chat renderer pairs math spans. */
+export const ESCAPED_DOLLAR = '';
+
+/** Hide every `\$` so no pairing pass ever sees it as a `$`. */
+export function hideEscapedDollars(text: string): string {
+  return text.replace(/\\\$/g, ESCAPED_DOLLAR);
+}
+
+/** Inside a maths span about to be typeset: the hidden dollar becomes KaTeX's dollar glyph. */
+export function escapedDollarsForTex(math: string): string {
+  return math.split(ESCAPED_DOLLAR).join('\\char36 ');
+}
+
+/**
+ * For text that a later pass typesets in place (a restored answer, auto-render):
+ * inside each `$…$` / `$$…$$` span the hidden dollar becomes `\char36`, and in
+ * prose it becomes `prose` (a plain `$` by default).
+ */
+export function restoreEscapedDollars(text: string, prose = '$'): string {
+  if (!text.includes(ESCAPED_DOLLAR)) return text;
+  return text
+    .split(/(\$\$[\s\S]*?\$\$|\$[^$]*?\$)/)
+    .map((seg, i) => i % 2 === 1 ? escapedDollarsForTex(seg) : seg.split(ESCAPED_DOLLAR).join(prose))
+    .join('');
+}

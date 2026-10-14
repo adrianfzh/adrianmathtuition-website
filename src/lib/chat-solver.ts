@@ -15,7 +15,7 @@
 // helpers at the top are safe to import in node and are unit-tested in
 // chat-solver.test.ts.
 
-import { markCurrencyDollars, CURRENCY_MARK } from './chat-currency';
+import { markCurrencyDollars, CURRENCY_MARK, ESCAPED_DOLLAR, hideEscapedDollars, escapedDollarsForTex, restoreEscapedDollars } from './chat-currency';
 
 export const BOT_API_BASE = 'https://adrianmath-telegram-math-bot.fly.dev';
 
@@ -97,11 +97,24 @@ export function trimUnclosedMath(t: string): string {
 
 /* ── renderToElement (KaTeX inline render) ── */
 export function renderToElement(el: HTMLDivElement, text: string, streaming = false) {
+  el.innerHTML = answerHtml(text, streaming);
+}
+
+type KatexLike = { renderToString: (math: string, opts: { displayMode: boolean; throwOnError: boolean }) => string };
+
+/** The answer bubble's HTML — pure, so node tests can run it with the real KaTeX. */
+export function answerHtml(
+  text: string,
+  streaming = false,
+  katex: KatexLike | undefined = typeof window !== 'undefined' ? window.katex : undefined,
+): string {
   // Prices first: a currency $ must never pair with a maths $ (28 Sep 2026 —
   // "Alice paid $400 for $x$ packs" typeset "400 for" as maths). Backticks
   // become $…$ BEFORE the scan (they pair too), and the scan runs before the
   // streaming trim, so a price no longer holds back the rest of the line.
-  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
+  // An escaped `\$` is set aside before ANY pairing (14 Oct 2026 — inside a
+  // $$…$$ block it used to become a bare $ and break the block; chat-currency.ts).
+  text = markCurrencyDollars(hideEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
   if (streaming) text = trimUnclosedMath(text);
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
@@ -122,8 +135,7 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
     .map((seg, i) => (i % 2 === 1 ? seg : seg.replace(BARE_ENV, (m) => `$$${m}$$`)))
     .join('');
 
-  // Fix 3: escaped dollar signs (\$123) → plain dollar ($123) so currency renders correctly
-  text = text.replace(/\\\$(\d)/g, '$$$1');
+  // (Fix 3, escaped dollars, now runs first — hideEscapedDollars above.)
 
   let html = text
     .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
@@ -140,20 +152,31 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
   // sentinels the un-stash regex would eat every digit in the answer.
   const mathChunks: string[] = [];
   const stash = (rendered: string) => `\uE000${mathChunks.push(rendered) - 1}\uE001`;
-  if (typeof window !== 'undefined' && window.katex) {
+  if (katex) {
     html = html.replace(/\$\$([^$]+?)\$\$/g, (_, math) => {
-      try { return stash(window.katex.renderToString(math, { displayMode: true, throwOnError: false })); }
+      try { return stash(katex.renderToString(escapedDollarsForTex(math), { displayMode: true, throwOnError: false })); }
       catch { return `$$${math}$$`; }
     });
     html = html.replace(/(?<!\$)\$([^$]{1,2000}?)\$(?!\$)/g, (_, math) => {
-      try { return stash(window.katex.renderToString(math, { displayMode: false, throwOnError: false })); }
+      try { return stash(katex.renderToString(escapedDollarsForTex(math), { displayMode: false, throwOnError: false })); }
       catch { return `$${math}$`; }
     });
   }
 
   // Markdown pipe tables → HTML tables. Runs AFTER math is stashed (so pipes
   // inside math like P(A|B) can't break cells) and BEFORE the newline→<br> pass.
-  html = html.replace(/(^|\n)((?:\|[^\n]*\|[ \t]*\n)\|[ \t:|-]+\|[ \t]*\n(?:\|[^\n]*\|[ \t]*(?:\n|$))+)/g, (_m, lead: string, tbl: string) => {
+  html = pipeTablesToHtml(html);
+
+  html = html.replace(/\n/g, '<br>');
+  html = html.replace(/\uE000(\d+)\uE001/g, (_, i) => mathChunks[+i]);
+  html = html.split(CURRENCY_MARK).join('$').split(ESCAPED_DOLLAR).join('$');
+  if (streaming) html += '<span class="stream-caret">▍</span>';
+  return html;
+}
+
+/** Markdown pipe tables → HTML tables (live answers and restored ones share it). */
+export function pipeTablesToHtml(html: string): string {
+  return html.replace(/(^|\n)((?:\|[^\n]*\|[ \t]*\n)\|[ \t:|-]+\|[ \t]*\n(?:\|[^\n]*\|[ \t]*(?:\n|$))+)/g, (_m, lead: string, tbl: string) => {
     const rows = tbl.trim().split('\n');
     const cells = (r: string) => r.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map(c => c.trim());
     const th = cells(rows[0]).map(c =>
@@ -162,12 +185,6 @@ export function renderToElement(el: HTMLDivElement, text: string, streaming = fa
       '<tr>' + cells(r).map(c => `<td style="border:1px solid hsl(220,15%,84%);padding:6px 12px;">${c}</td>`).join('') + '</tr>').join('');
     return `${lead}<table style="border-collapse:collapse;margin:10px 0;font-size:0.95em;max-width:100%;"><thead><tr>${th}</tr></thead><tbody>${body}</tbody></table>`;
   });
-
-  html = html.replace(/\n/g, '<br>');
-  html = html.replace(/\uE000(\d+)\uE001/g, (_, i) => mathChunks[+i]);
-  html = html.split(CURRENCY_MARK).join('$');
-  if (streaming) html += '<span class="stream-caret">▍</span>';
-  el.innerHTML = html;
 }
 
 /* ── formatMessage (for final display of user messages) ── */
@@ -175,14 +192,22 @@ export function formatMessage(text: string): string {
   // A price's $ goes out as its own <span>: auto-render (appendChatMessage)
   // pairs $ only within one run of text nodes, so the span keeps a price
   // from pairing with the next maths $ on a restored answer.
-  text = markCurrencyDollars(text.replace(/`([^`\n]+)`/g, '$$$1$').replace(/\\\$(\d)/g, '$$$1'));
+  text = markCurrencyDollars(hideEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
   text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
   text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
     '<span style="font-weight:700;display:block;margin-top:14px;color:hsl(40,80%,42%);font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">$1</span>');
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
+  // A restored answer's table is drawn too (14 Oct 2026 — it came back as raw
+  // "| a | b |" lines after a reload). Maths spans are set aside first so a pipe
+  // inside $P(A|B)$ never splits a cell; auto-render typesets them afterwards.
+  const spans: string[] = [];
+  text = text.replace(/\$\$[\s\S]*?\$\$|\$[^$\n]*?\$/g, (m) => `\uE003${spans.push(m) - 1}\uE004`);
+  text = pipeTablesToHtml(text);
+  text = text.replace(/\uE003(\d+)\uE004/g, (_, i) => spans[+i]);
   text = text.replace(/\n/g, '<br>');
+  text = restoreEscapedDollars(text, '<span class="cur">$</span>');
   return text.split(CURRENCY_MARK).join('<span class="cur">$</span>');
 }
 

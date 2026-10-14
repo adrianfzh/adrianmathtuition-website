@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { markCurrencyDollars, CURRENCY_MARK as M } from './chat-currency';
-import { formatMessage } from './chat-solver';
+import katex from 'katex';
+import { markCurrencyDollars, CURRENCY_MARK as M, ESCAPED_DOLLAR, hideEscapedDollars, restoreEscapedDollars } from './chat-currency';
+import { formatMessage, answerHtml } from './chat-solver';
 
 // The chat renderer's own inline pairing, applied to the scan's output: which
 // spans would KaTeX typeset?
@@ -63,5 +64,48 @@ describe('formatMessage — a restored answer keeps its prices as text', () => {
   it('a price $ becomes its own span, the maths $ pairs intact', () => {
     const html = formatMessage('Alice paid $400 for $x$ packs.');
     expect(html).toBe('Alice paid <span class="cur">$</span>400 for $x$ packs.');
+  });
+});
+
+// 3 Oct 2026, the A$60 perfume-bottle question: the solver wrote the price TeX-style,
+// `\$`, in prose AND inside a $$…$$ block. The page turned every `\$` into a bare `$`,
+// the block got a third `$`, and the student saw raw TeX ("A\$60", "\frac{\text{A}").
+describe('an escaped \\$ — prose and maths (14 Oct 2026)', () => {
+  const visible = (html: string) => html
+    .replace(/<annotation[\s\S]*?<\/annotation>/g, '')   // KaTeX keeps the source TeX here, hidden
+    .replace(/<[^>]+>/g, '');
+
+  it('a $$ block with \\$ inside is typeset, not shown as raw TeX', () => {
+    const html = answerHtml('**2. Price per oz in Australia**\n$$\\frac{\\text{A}\\$60}{16} = \\text{A}\\$3.75 \\text{ per oz}$$', false, katex);
+    expect(html).toContain('class="katex-display"');
+    expect(visible(html)).not.toMatch(/\\frac|\\text|\\char/);
+    expect(visible(html)).toContain('$');
+  });
+
+  it('a \\$ in prose shows as a plain dollar and never pairs with maths', () => {
+    const html = answerHtml('Reading: 16-oz bottle costs A\\$60, €1 = A\\$1.65.\n\nYour first step is correct. $\\frac{500}{29.5735} = 16.90703$ oz', false, katex);
+    const text = visible(html);
+    expect(text).toContain('costs A$60');
+    expect(text).toContain('A$1.65');
+    expect(html).toContain('class="katex"');            // the fraction is still typeset
+    expect(text).not.toMatch(/\\frac/);
+  });
+
+  it('inline maths with \\$ inside is typeset', () => {
+    const html = answerHtml('Interest $= \\$303.39$ in total.', false, katex);
+    expect(html).toContain('class="katex"');
+    expect(visible(html)).not.toMatch(/\\char|\\\$/);
+  });
+
+  it('a restored answer: \\$ in prose is a price span, inside maths it stays typesettable', () => {
+    const html = formatMessage('Costs A\\$60. $$\\frac{\\text{A}\\$60}{16}$$');
+    expect(html).toContain('A<span class="cur">$</span>60');
+    expect(html).toContain('$$\\frac{\\text{A}\\char36 60}{16}$$');
+    expect(html).not.toContain(ESCAPED_DOLLAR);
+  });
+
+  it('text without an escaped dollar is untouched by the helpers', () => {
+    expect(restoreEscapedDollars('Alice paid $400.')).toBe('Alice paid $400.');
+    expect(hideEscapedDollars('no dollars')).toBe('no dollars');
   });
 });
