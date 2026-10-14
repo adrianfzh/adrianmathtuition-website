@@ -17,6 +17,7 @@
 // Run:  node scripts/science-structured-check.mjs              # all answers
 //       node scripts/science-structured-check.mjs --only Q03,Q07   # re-mark some, merge into results.json
 //       node scripts/science-structured-check.mjs --summary          # re-score saved results, no grading
+//       SET=hard node scripts/science-structured-check.mjs   # the harder round: borderline answers
 //       CONCURRENCY=5 (default)
 // Needs .env.local (ANTHROPIC_API_KEY, SUPABASE_URL_SCIENCE, SUPABASE_SERVICE_KEY_SCIENCE).
 // Cost: one grader call per answer (~90 calls, a few dollars).
@@ -38,7 +39,8 @@ const { gradeAttempt, GRADING_MODEL } = await jiti.import(path.join(ROOT, 'src/l
 const { scienceQuestion } = await jiti.import(path.join(ROOT, 'src/lib/science-bank.ts'));
 const { scienceLevelForSubject } = await jiti.import(path.join(ROOT, 'src/lib/science-levels.ts'));
 
-const DIR = path.join(ROOT, 'scripts/science-structured-check');
+// SET=hard runs the harder round (borderline answers) in scripts/science-structured-check-hard/
+const DIR = path.join(ROOT, process.env.SET ? `scripts/science-structured-check-${process.env.SET}` : 'scripts/science-structured-check');
 const set = JSON.parse(fs.readFileSync(path.join(DIR, 'answers.json'), 'utf8'));
 // --only Q03,Q07 re-marks just those questions and merges them into the existing results.json
 const only = process.argv.includes('--only') ? new Set(process.argv[process.argv.indexOf('--only') + 1].split(',')) : null;

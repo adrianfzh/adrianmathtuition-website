@@ -1,0 +1,2183 @@
+[
+ {
+  "qid": "H01",
+  "bankId": "6a25c326-817b-4f5d-bfd2-09c2da4e6074",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 4,
+  "variant": "units",
+  "expected": 3,
+  "expectedParts": {
+   "whole": 3
+  },
+  "why": "Scale, correctly drawn forces and labelled angles earn both method marks; direction 60 deg to horizontal earns its mark; magnitude 276 given with no unit loses the magnitude A1.",
+  "lines": [
+   "Scale: 1 cm represents 40 N",
+   "Drew 240 N downwards as 6.0 cm and 140 N to the right as 3.5 cm, tip to tail",
+   "Closed the triangle with T, labelled 240 N, 140 N, T and the angle θ",
+   "Length of T line = 6.9 cm",
+   "T = 6.9 x 40 = 276",
+   "Direction: θ = 60° to the horizontal"
+  ]
+ },
+ {
+  "qid": "H01",
+  "bankId": "6a25c326-817b-4f5d-bfd2-09c2da4e6074",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 4,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Scale and forces drawn correctly (M1) and magnitude 278 N in range (A1); no labels or angles marked so the labelling M1 is lost; direction given as 30 deg to the horizontal is wrong (it is 30 deg to the vertical).",
+  "lines": [
+   "Scale 1 cm : 40 N",
+   "240 N drawn down 6.0 cm, 140 N drawn across 3.5 cm, joined to make a triangle",
+   "T = 6.95 cm x 40 = 278 N",
+   "Direction: tan θ = 140/240, θ = 30°",
+   "so the cable is at 30° to the horizontal"
+  ]
+ },
+ {
+  "qid": "H01",
+  "bankId": "6a25c326-817b-4f5d-bfd2-09c2da4e6074",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 4,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Scale and both forces drawn to scale earn M1; no labels or angles on the diagram (second M1 lost); 280 N is within range (A1); direction 'up and to the left' gives no angle so the direction mark is lost.",
+  "lines": [
+   "Scale 1 cm = 40 N",
+   "Drew the 240 N down 6 cm and the 140 N across 3.5 cm and joined them up",
+   "Cable force line = 7.0 cm",
+   "Tension = 7.0 x 40 = 280 N",
+   "Direction: it points up and to the left, along the cable"
+  ]
+ },
+ {
+  "qid": "H02",
+  "bankId": "83f78208-b7e1-42bf-b4e2-7cd79e3d5564",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 1,
+   "b": 2
+  },
+  "why": "a(i): hρg correct (M1) but atmospheric pressure not added so total is wrong (A1 lost). a(ii): F = PA correctly uses own 1.6x10^5 Pa, 64 N earns the mark by ECF. b: falls and stops at a height earn 2; reason given is atmospheric pressure, not equal liquid pressures at the same level, so third mark lost.",
+  "lines": [
+   "(a)(i) P = hρg = 1.0 x 1.6 x 10^4 x 10",
+   "= 1.6 x 10^5 Pa",
+   "total pressure = 1.6 x 10^5 Pa",
+   "(a)(ii) F = PA = 1.6 x 10^5 x 4.0 x 10^-4",
+   "= 64 N",
+   "(b) The liquid level in the tube falls.",
+   "Then it stops falling and stays at a certain height in the tube.",
+   "This is because the atmospheric pressure pushes it up and holds it."
+  ]
+ },
+ {
+  "qid": "H02",
+  "bankId": "83f78208-b7e1-42bf-b4e2-7cd79e3d5564",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "units",
+  "expected": 3,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 0,
+   "b": 2
+  },
+  "why": "a(i): method correct (M1) but final 2.6 x 10^5 has no unit, A1 lost. a(ii): answer 104 with no unit, the only mark is the answer mark so 0. b: falls + equal-pressure reason earn 2 marks; never says the liquid stops and stays at a height.",
+  "lines": [
+   "(a)(i) P(liquid) = hρg = 1.0 x 1.6x10^4 x 10 = 1.6 x 10^5 Pa",
+   "total = 1.6x10^5 + 1.0x10^5 = 2.6 x 10^5",
+   "(a)(ii) F = PA = 2.6x10^5 x 4.0x10^-4",
+   "= 104",
+   "(b) The liquid in the tube falls as it is at a higher pressure than the liquid in the container below the glass.",
+   "Liquid flows out until the pressure of the liquid in the tube equals the pressure of the liquid in the container at the same level."
+  ]
+ },
+ {
+  "qid": "H02",
+  "bankId": "83f78208-b7e1-42bf-b4e2-7cd79e3d5564",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "vague",
+  "expected": 4,
+  "expectedParts": {
+   "a(i)": 2,
+   "a(ii)": 1,
+   "b": 1
+  },
+  "why": "a(i) and a(ii) fully correct. b: 'goes down' earns the falls mark; 'until it balances out' does not show that it stops at a height, and 'the pressure changes' does not state equal pressures at the same level, so 1 of 3.",
+  "lines": [
+   "(a)(i) P = hρg + atm = (1.0)(1.6x10^4)(10) + 1.0x10^5",
+   "= 2.6 x 10^5 Pa",
+   "(a)(ii) F = PA = 2.6x10^5 x 4.0x10^-4 = 100 N",
+   "(b) The liquid goes down when the glass is taken away.",
+   "The pressure changes and it goes until it balances out."
+  ]
+ },
+ {
+  "qid": "H03",
+  "bankId": "2bd8f107-cf1c-4c73-a08f-20fc9cd5c665",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "vague",
+  "expected": 4,
+  "expectedParts": {
+   "a": 0,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a: 'it is right on top of B so it cannot turn' does not state the perpendicular distance from B is zero - 0. b and c fully correct with units.",
+  "lines": [
+   "(a) The load is right on top of B so it cannot turn the plank.",
+   "(b) Moments about B:",
+   "F_A x 1.4 = 24 x 0.7",
+   "F_A = 16.8 / 1.4 = 12 N",
+   "(c) When it is about to lift, F_A = 0",
+   "76 x d = 24 x 0.7",
+   "d = 16.8/76 = 0.22 m"
+  ]
+ },
+ {
+  "qid": "H03",
+  "bankId": "2bd8f107-cf1c-4c73-a08f-20fc9cd5c665",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "units",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 1
+  },
+  "why": "a correct (zero perpendicular distance). b: moment equation correct (C1) but answer 12 has no unit, A1 lost. c: equation correct (C1) but 0.22 has no unit, A1 lost.",
+  "lines": [
+   "(a) The line of action of the load passes through B, so the perpendicular distance from B is zero, so moment = 0.",
+   "(b) Taking moments about B:",
+   "F_A x 1.4 = 24 x 0.7",
+   "F_A = 12",
+   "(c) At max distance, force at A = 0",
+   "76 x d = 24 x 0.7 = 16.8",
+   "d = 0.22"
+  ]
+ },
+ {
+  "qid": "H03",
+  "bankId": "2bd8f107-cf1c-4c73-a08f-20fc9cd5c665",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a correct. b: correct moment equation (C1) but division slip gives 14 N (A1 lost). c: uses own F_A from b in a valid equation (76d = F_A x 1.4, which equals the weight's moment about B); 0.26 m earns both marks by ECF.",
+  "lines": [
+   "(a) The load acts straight through B, the perpendicular distance from the pivot B is zero so there is no moment.",
+   "(b) Moments about B:",
+   "F_A x 1.4 = 24 x 0.7 = 16.8",
+   "F_A = 16.8 / 1.4 = 14 N",
+   "(c) When the plank is just about to lift off A, the force at A becomes 0.",
+   "Clockwise moment of load about B = moment found in (b)",
+   "76 x d = 14 x 1.4 = 19.6",
+   "d = 19.6/76 = 0.26 m"
+  ]
+ },
+ {
+  "qid": "H04",
+  "bankId": "16baffbd-08d2-43a0-b5f4-9aea29e954f6",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "units",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a correct. b: P = F/A with 290 N (C1) but area given in m instead of m^2, A1 lost. c fully correct with unit.",
+  "lines": [
+   "(a) Pressure is the force per unit area.",
+   "(b) P = F/A",
+   "2300 = 290 / A",
+   "A = 0.126 m",
+   "(c) gas side is higher so gas pressure is less than atmospheric",
+   "h = 5.9 - 3.5 = 2.4 cm = 0.024 m",
+   "P = 100 000 - 13 600 x 10 x 0.024",
+   "= 96 700 Pa"
+  ]
+ },
+ {
+  "qid": "H04",
+  "bankId": "16baffbd-08d2-43a0-b5f4-9aea29e954f6",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 2,
+   "c": 1
+  },
+  "why": "a and b correct. c: misreads the height difference as 5.9 cm (0.059 m) and carries it correctly into P = atm - ρgh: method mark C1 kept, final answer 91 976 Pa wrong so A1 lost.",
+  "lines": [
+   "(a) Pressure is force acting per unit area.",
+   "(b) A = F/P = (29 x 10)/2300",
+   "= 0.126 m^2",
+   "(c) Mercury is higher on the gas side so the gas pressure is lower than atmospheric.",
+   "h = 5.9 cm = 0.059 m",
+   "P = P_atm - ρgh",
+   "= 100 000 - 13 600 x 10 x 0.059",
+   "= 100 000 - 8024",
+   "= 91 976 Pa"
+  ]
+ },
+ {
+  "qid": "H04",
+  "bankId": "16baffbd-08d2-43a0-b5f4-9aea29e954f6",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "vague",
+  "expected": 4,
+  "expectedParts": {
+   "a": 0,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a: 'how hard something pushes on the floor' has no force per unit area idea - 0. b and c correct with units.",
+  "lines": [
+   "(a) Pressure is how hard something pushes down on the floor.",
+   "(b) P = F/A",
+   "A = 290/2300 = 0.126 m^2",
+   "(c) h = 0.059 - 0.035 = 0.024 m",
+   "gas pressure is lower so",
+   "P = 100 000 - (13600)(10)(0.024) = 96 736 Pa"
+  ]
+ },
+ {
+  "qid": "H05",
+  "bankId": "da230408-91cd-44b6-9bf4-d2d078cff50b",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "vague",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a: force/area accepted. b: 'move about' does not give random high-speed motion (0); hitting the walls earns the collision point; no force per unit area link (0) - 1 of 3. c correct.",
+  "lines": [
+   "(a) Pressure = force / area",
+   "(b) The air molecules move about inside.",
+   "They hit the walls of the syringe.",
+   "This makes the pressure.",
+   "(c) P = 20/(1.5 x 10^-4) + 1.0 x 10^5",
+   "= 1.3 x 10^5 + 1.0 x 10^5 = 2.3 x 10^5 Pa"
+  ]
+ },
+ {
+  "qid": "H05",
+  "bankId": "da230408-91cd-44b6-9bf4-d2d078cff50b",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 0
+  },
+  "why": "a correct. b: random high-speed motion earns 1; says collisions with each other cause the pressure, not collisions with the walls exerting force (0), and no force per unit area (0). c: only F/A, initial pressure not added, so no M1 and wrong answer - 0.",
+  "lines": [
+   "(a) Pressure is the force acting per unit area.",
+   "(b) The molecules move randomly at high speed.",
+   "They collide with each other more and more,",
+   "and these collisions between molecules create the pressure.",
+   "(c) P = F/A = 20/(1.5 x 10^-4)",
+   "= 1.3 x 10^5 Pa"
+  ]
+ },
+ {
+  "qid": "H05",
+  "bankId": "da230408-91cd-44b6-9bf4-d2d078cff50b",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 6,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 2,
+   "c": 1
+  },
+  "why": "a correct. b: random high-speed motion and hitting the walls with a force earn 2; no 'force per unit area' link - third mark lost. c: method F/A + initial pressure correct (M1) but area copied as 1.5 x 10^-3, carried through to 1.13 x 10^5 Pa - A1 lost.",
+  "lines": [
+   "(a) Pressure is force per unit area.",
+   "(b) The air molecules move randomly at high speed.",
+   "They collide with the walls of the syringe and exert a force on the walls.",
+   "So there is a pressure in the syringe.",
+   "(c) P = F/A + P_before",
+   "= 20/(1.5 x 10^-3) + 1.0 x 10^5",
+   "= 1.3 x 10^4 + 1.0 x 10^5",
+   "= 1.13 x 10^5 Pa"
+  ]
+ },
+ {
+  "qid": "H06",
+  "bankId": "6f5b4ff2-e305-41e4-b903-24fa90789964",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "units",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Parallelogram with dotted lines (B1) and vertical upward resultant with double arrow (B1) earned; answer 47 has no unit so A1 lost.",
+  "lines": [
+   "Drew 60 N as 6.0 cm along wire A and 70 N as 7.0 cm along wire B from the joining point",
+   "Completed the parallelogram with dotted lines",
+   "Drew the diagonal from the joining point, it points straight up, marked with a double arrow",
+   "Diagonal = 4.7 cm",
+   "Resultant = 4.7 x 10 = 47",
+   "weight = 47"
+  ]
+ },
+ {
+  "qid": "H06",
+  "bankId": "6f5b4ff2-e305-41e4-b903-24fa90789964",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "partial",
+  "expected": 1,
+  "expectedParts": {
+   "whole": 1
+  },
+  "why": "Parallelogram correct (B1). Resultant drawn downwards as the weight with a single arrow, not the upward resultant (B1 lost). Did not apply the scale: 4.7 N is out of range (A1 lost).",
+  "lines": [
+   "Drew the 60 N line 6 cm and the 70 N line 7 cm from the point where the wires meet",
+   "Finished the parallelogram with dotted lines",
+   "Drew the weight arrow from the point downwards towards the camera",
+   "Measured 4.7 cm",
+   "weight = 4.7 N"
+  ]
+ },
+ {
+  "qid": "H06",
+  "bankId": "6f5b4ff2-e305-41e4-b903-24fa90789964",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Parallelogram completed (B1); resultant described only as 'the line goes up', no double-arrow resultant shown (B1 lost); 'about 50 N' is inside 44-50 N (A1).",
+  "lines": [
+   "I drew wire A 6 cm and wire B 7 cm",
+   "then finished the shape with dotted lines to make a parallelogram",
+   "the middle line goes up",
+   "it is about 5 cm",
+   "weight = about 50 N"
+  ]
+ },
+ {
+  "qid": "H07",
+  "bankId": "9023e087-c1d4-4744-bf04-11ca2157fd8e",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "units",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Scale stated (B1) and forces drawn at 60 deg with parallelogram completed (B1); resultant 390 given with no unit - A1 lost.",
+  "lines": [
+   "Scale: 1 cm : 50 N",
+   "200 N drawn 4.0 cm, 250 N drawn 5.0 cm, 60° between them from the same point",
+   "Completed the parallelogram, diagonal from the common point",
+   "Diagonal = 7.8 cm",
+   "Resultant = 7.8 x 50 = 390"
+  ]
+ },
+ {
+  "qid": "H07",
+  "bankId": "9023e087-c1d4-4744-bf04-11ca2157fd8e",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "partial",
+  "expected": 1,
+  "expectedParts": {
+   "whole": 1
+  },
+  "why": "Scale stated (B1). Tip-to-tail triangle drawn with 60 deg as the angle inside the triangle (should be 120 deg), so construction wrong (B1 lost) and resultant 230 N out of range (A1 lost).",
+  "lines": [
+   "Scale 1 cm : 50 N",
+   "Drew 200 N as 4 cm, then from its tip drew 250 N as 5 cm,",
+   "with 60° between the two lines in the triangle",
+   "Joined the start to the end for the resultant",
+   "Resultant = 4.6 cm x 50 = 230 N"
+  ]
+ },
+ {
+  "qid": "H07",
+  "bankId": "9023e087-c1d4-4744-bf04-11ca2157fd8e",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "No scale stated ('drew it to scale with a ruler') - B1 lost. Parallelogram drawn correctly at 60 deg (B1). 'About 400 N' lies within 390 +/- 20 N (A1).",
+  "lines": [
+   "I drew the two forces to scale using a ruler",
+   "with 60° between them, and completed the parallelogram",
+   "The diagonal is the resultant",
+   "Resultant force = about 400 N"
+  ]
+ },
+ {
+  "qid": "H08",
+  "bankId": "8173f25c-7de4-4e42-8af7-a5b45d7468c0",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b(i)": 1,
+   "b(ii)": 0,
+   "c": 1
+  },
+  "why": "a correct. b(i): random motion (B1); 'hit the piston so there is pressure' gives no force per unit area (0). b(ii): 'move more' is not gain KE / higher speed (0); no pressure-equalises point (0). c: no intermolecular forces point (0); 'does not expand much' earns the second point.",
+  "lines": [
+   "(a) F = pA = 1.0x10^5 x 1.2x10^-4 = 12 N",
+   "(b)(i) The air molecules are in random motion.",
+   "They hit the piston so there is pressure.",
+   "(b)(ii) When heated the molecules move more",
+   "and the pressure goes up so the piston moves.",
+   "(c) Water is a liquid so it does not expand much when heated."
+  ]
+ },
+ {
+  "qid": "H08",
+  "bankId": "8173f25c-7de4-4e42-8af7-a5b45d7468c0",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "partial",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b(i)": 2,
+   "b(ii)": 1,
+   "c": 1
+  },
+  "why": "a and b(i) correct. b(ii): gain KE / move faster (B1); then says pressure keeps increasing as the piston moves, instead of falling until equal to atmospheric - second B1 lost. c: stronger forces of attraction (B1); 'molecules move faster' is not the reason for smaller expansion - second B1 lost.",
+  "lines": [
+   "(a) F = pA = (1.0 x 10^5)(1.2 x 10^-4) = 12 N",
+   "(b)(i) Air molecules are in continuous random motion.",
+   "They collide with the piston and exert a force; the force per unit area on the piston is the pressure.",
+   "(b)(ii) The molecules gain kinetic energy and move faster.",
+   "They hit the piston more often and harder, so the piston moves right and the pressure inside keeps increasing.",
+   "(c) Water molecules are closer together with stronger forces of attraction between them,",
+   "so when heated the water molecules move faster than air molecules."
+  ]
+ },
+ {
+  "qid": "H08",
+  "bankId": "8173f25c-7de4-4e42-8af7-a5b45d7468c0",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "units",
+  "expected": 4,
+  "expectedParts": {
+   "a": 0,
+   "b(i)": 1,
+   "b(ii)": 2,
+   "c": 1
+  },
+  "why": "a: 12 with unit Pa instead of N - the only mark is the answer, 0. b(i): random motion (B1), no force per unit area (0). b(ii) both points. c: expands far less (B1), no intermolecular-force point.",
+  "lines": [
+   "(a) F = p x A = 1.0x10^5 x 1.2x10^-4 = 12 Pa",
+   "(b)(i) The molecules move randomly all the time and collide with the piston.",
+   "(b)(ii) The molecules gain kinetic energy and move at higher speed.",
+   "They hit the piston more often with more force so the pressure rises and pushes the piston right until the inside pressure equals atmospheric pressure.",
+   "(c) Water expands much less than air when heated, so the piston moves only a little."
+  ]
+ },
+ {
+  "qid": "H09",
+  "bankId": "b898a923-3fcf-4edb-9315-c3ad2e24a94b",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "units",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Scale stated (B1); parallelogram with arrowheads and double-arrow resultant (B1); weight given as 10.3 cm (a length, wrong unit) - A1 lost.",
+  "lines": [
+   "scale: 1 cm represents 1 N",
+   "Drew each 8.0 N tension as 8.0 cm at 40° to the horizontal, 100° apart",
+   "Completed the parallelogram, drew the resultant vertically up with a double arrowhead",
+   "Resultant = 10.3 cm",
+   "weight of object = 10.3 cm"
+  ]
+ },
+ {
+  "qid": "H09",
+  "bankId": "b898a923-3fcf-4edb-9315-c3ad2e24a94b",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "partial",
+  "expected": 1,
+  "expectedParts": {
+   "whole": 1
+  },
+  "why": "Scale correct (B1). Drew the tensions at 40 deg to the vertical instead of to the ceiling, so the construction does not match the figure (method B1 lost) and 12.3 N is out of range; answer not awarded with incorrect method.",
+  "lines": [
+   "scale: 1 cm represents 1 N",
+   "Drew both 8.0 N forces 8.0 cm long, each at 40° to the vertical",
+   "Completed the parallelogram, double arrow for resultant pointing up",
+   "Resultant = 12.3 cm",
+   "weight of object = 12.3 N"
+  ]
+ },
+ {
+  "qid": "H09",
+  "bankId": "b898a923-3fcf-4edb-9315-c3ad2e24a94b",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 3,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "whole": 2
+  },
+  "why": "Scale 'a few N' is not a stated scale - B1 lost. Parallelogram with double-arrow resultant described (B1); 10.3 N in range (A1).",
+  "lines": [
+   "scale: 1 cm represents a few N",
+   "Drew the two 8.0 N forces at 40° to the ceiling and completed the parallelogram",
+   "Drew the resultant upwards with a double arrow",
+   "weight of object = 10.3 N"
+  ]
+ },
+ {
+  "qid": "H10",
+  "bankId": "3989fe24-adda-45ff-b66a-b03fb6620813",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "ecf",
+  "expected": 8,
+  "expectedParts": {
+   "a": 1,
+   "b(i)": 1,
+   "b(ii)": 1,
+   "b(iii)": 1,
+   "c(i)": 1,
+   "c(ii)": 2,
+   "d": 1
+  },
+  "why": "b(ii): P = F/A correct (M1) but arithmetic slip gives 25 000 Pa (A1 lost). b(iii): own 25 000 Pa x 1.4 = 35 000 N earns its mark by ECF. d: volume decreases (B1); 'molecules move faster so hit harder' is wrong at constant temperature, no frequency-of-collision point (0). Rest correct.",
+  "lines": [
+   "(a) Oil is incompressible.",
+   "(b)(i) Pressure is the force acting per unit area.",
+   "(b)(ii) P = F/A = 4500 / 0.018",
+   "= 25 000 Pa",
+   "(b)(iii) F = P x A = 25 000 x 1.4",
+   "= 35 000 N",
+   "(c)(i) Pressure in a liquid increases with depth.",
+   "(c)(ii) Increase in P = ρgh = 900 x 10 x 0.50",
+   "= 4500 Pa",
+   "(d) The volume of the trapped air decreases.",
+   "The molecules move faster so they hit the bag walls harder, so pressure increases."
+  ]
+ },
+ {
+  "qid": "H10",
+  "bankId": "3989fe24-adda-45ff-b66a-b03fb6620813",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "vague",
+  "expected": 7,
+  "expectedParts": {
+   "a": 0,
+   "b(i)": 1,
+   "b(ii)": 2,
+   "b(iii)": 1,
+   "c(i)": 0,
+   "c(ii)": 2,
+   "d": 1
+  },
+  "why": "a: 'oil is smooth so it flows easily' - not incompressible, 0. c(i): 'more force on it' does not say pressure increases with depth / more oil above, 0. d: air squashed into a smaller volume (B1); 'molecules hit more' is not increased frequency of collisions with the walls, 0. Calculations all correct.",
+  "lines": [
+   "(a) Oil is smooth so it flows easily.",
+   "(b)(i) Pressure is force over area.",
+   "(b)(ii) P = 4500/0.018 = 250 000 Pa",
+   "(b)(iii) F = 250 000 x 1.4 = 350 000 N",
+   "(c)(i) Because there is more force on it as it goes down.",
+   "(c)(ii) P = hρg = 0.50 x 900 x 10 = 4500 Pa",
+   "(d) The air is squashed into a smaller volume",
+   "so the molecules hit more."
+  ]
+ },
+ {
+  "qid": "H10",
+  "bankId": "3989fe24-adda-45ff-b66a-b03fb6620813",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "partial",
+  "expected": 8,
+  "expectedParts": {
+   "a": 1,
+   "b(i)": 1,
+   "b(ii)": 2,
+   "b(iii)": 0,
+   "c(i)": 1,
+   "c(ii)": 2,
+   "d": 1
+  },
+  "why": "b(iii): uses area of X (0.018 m^2) instead of area of Y - 0. d: volume decreases (B1) but says molecules collide with each other more often, not with the walls of the bag - second B1 lost. Rest correct.",
+  "lines": [
+   "(a) Liquids cannot be compressed (incompressible).",
+   "(b)(i) Pressure = force per unit area.",
+   "(b)(ii) P = F/A = 4500/0.018 = 250 000 Pa",
+   "(b)(iii) F = PA = 250 000 x 0.018 = 4500 N",
+   "(c)(i) Pressure in the oil increases with depth, more oil above piston Y.",
+   "(c)(ii) ρgh = 900 x 10 x 0.50 = 4500 Pa",
+   "(d) The volume of the trapped air decreases,",
+   "so the air molecules collide with each other more often, so pressure increases."
+  ]
+ },
+ {
+  "qid": "H11",
+  "bankId": "2f058f73-c52d-437e-83d1-635cbd5110bd",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "vague",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 0,
+   "d(i)": 1,
+   "d(ii)": 2
+  },
+  "why": "a: 'only speeds it up' never gives the alternative pathway with lower Ea (0), ΔH unchanged because reactant/product energies same (1). b: only stage 1 S 0→+4 in oxidation-state terms (1); 'gains oxygen' and 'oxygen is reduced' with no states earn 0. c: 'some is lost' is vague (0). d(i): shape with species right (1) but axes unlabelled, ΔH and Ea not labelled (0). d(ii): 625 mol and 61 250 kJ (2).",
+  "lines": [
+   "(a) No. The catalyst only speeds up the reaction.",
+   "It does not change the enthalpy change because the reactants and products still have the same energy.",
+   "(b) Stage 1: S goes from 0 to +4 so sulfur is oxidised.",
+   "Stage 2: sulfur gains more oxygen so it is oxidised.",
+   "Oxygen is reduced in both.",
+   "(c) Because some of it is lost during the process.",
+   "(d)(i) [sketch] A curve that rises over a hump. 2SO3 drawn at the bottom on the left, 2SO2 + O2 drawn higher on the right.",
+   "An arrow going up between them labelled 'energy'. No axis labels.",
+   "(d)(ii) Mr SO3 = 32 + 48 = 80",
+   "moles SO3 = 50 000 / 80 = 625 mol",
+   "heat = 625/2 × 196 = 61 250 kJ ≈ 61 300 kJ"
+  ]
+ },
+ {
+  "qid": "H11",
+  "bankId": "2f058f73-c52d-437e-83d1-635cbd5110bd",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "units",
+  "expected": 8,
+  "expectedParts": {
+   "a": 2,
+   "b": 2,
+   "c": 1,
+   "d(i)": 2,
+   "d(ii)": 1
+  },
+  "why": "a full (2). b: S oxidised 0→+4 in stage 1 and +4→+6 in stage 2 (2); never says what is reduced. c: reversible and SO3 decomposes back (1). d(i): shape, axes, ΔH = +196 and Ea arrows (2, max). d(ii): moles 625 (1) but final heat given in J instead of kJ, A1 lost.",
+  "lines": [
+   "(a) Disagree. A catalyst provides an alternative pathway with a lower activation energy.",
+   "But ΔH stays the same because the energy levels of the reactants and products do not change.",
+   "(b) Stage 1: S is oxidised, oxidation state of S increases from 0 in S to +4 in SO2.",
+   "Stage 2: S is oxidised again, oxidation state increases from +4 in SO2 to +6 in SO3.",
+   "So stages 1 and 2 are redox.",
+   "(c) Stage 2 is reversible, so some SO3 decomposes back into SO2 and O2.",
+   "(d)(i) [sketch] y-axis 'energy', x-axis 'progress of reaction'. 2SO3(g) on the lower level, 2SO2(g) + O2(g) on the higher level.",
+   "Curve rises over a hump. Upward arrow ΔH = +196 kJ/mol. Arrow from 2SO3 up to the peak labelled Ea.",
+   "(d)(ii) n(SO3) = 50 000 / 80 = 625 mol",
+   "heat released = 625 ÷ 2 × 196 = 61 300 J"
+  ]
+ },
+ {
+  "qid": "H11",
+  "bankId": "2f058f73-c52d-437e-83d1-635cbd5110bd",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 10,
+  "variant": "ecf",
+  "expected": 6,
+  "expectedParts": {
+   "a": 2,
+   "b": 2,
+   "c": 0,
+   "d(i)": 1,
+   "d(ii)": 1
+  },
+  "why": "a full (2). b: two oxidation-state points (S in stages 1 and 2) (2). c: 'reversible' alone, scheme needs reversible AND SO3 decomposing (0). d(i): drew exothermic shape (0) but axes and species labelled correctly (1). d(ii): Mr slip 64 instead of 80 loses the moles mark; heat = 781.25/2 × 196 correctly carried through, ECF (1).",
+  "lines": [
+   "(a) No. A catalyst gives another route with lower activation energy so the reaction is faster.",
+   "The enthalpy change is the same since the reactants and products have the same energy as before.",
+   "(b) Stage 1: oxidation state of S rises from 0 to +4, so S is oxidised.",
+   "Stage 2: oxidation state of S rises from +4 to +6, so SO2 is oxidised.",
+   "(c) Because stage 2 is reversible.",
+   "(d)(i) [sketch] y-axis 'energy', x-axis 'progress of reaction'. 2SO3(g) drawn on the HIGHER level, 2SO2(g) + O2(g) lower.",
+   "Arrow down labelled ΔH = -196 kJ/mol, Ea arrow from 2SO3 to the peak.",
+   "(d)(ii) Mr SO3 = 64",
+   "n(SO3) = 50 000 / 64 = 781.25 mol",
+   "heat = 781.25 ÷ 2 × 196 = 76 562.5 ≈ 76 600 kJ"
+  ]
+ },
+ {
+  "qid": "H12",
+  "bankId": "5054c30c-99e7-4baa-9aa3-87a3e3142046",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 8,
+  "variant": "units",
+  "expected": 6,
+  "expectedParts": {
+   "NH3 moles": 1,
+   "NH3 mass": 1,
+   "H2 molar mass": 1,
+   "H2 mass": 1,
+   "N2 volume": 0,
+   "N2 molar mass": 1,
+   "O2 molar mass": 1,
+   "O2 mass": 0
+  },
+  "why": "Six cells right. N2 volume written as 96 cm³ (wrong unit, the value in dm³ is 96) and O2 mass given as '32 g/mol' (mass with a molar-mass unit): both lose the mark.",
+  "lines": [
+   "ammonia: moles = 24/24 = 1, mass = 1 × 17 = 17",
+   "hydrogen: molar mass = 2, mass = 2 × 2 = 4",
+   "nitrogen: volume = 4 × 24 = 96 cm³, molar mass = 112/4 = 28",
+   "oxygen: molar mass = 32, mass = 32 g/mol"
+  ]
+ },
+ {
+  "qid": "H12",
+  "bankId": "5054c30c-99e7-4baa-9aa3-87a3e3142046",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 8,
+  "variant": "ecf",
+  "expected": 6,
+  "expectedParts": {
+   "NH3 moles": 1,
+   "NH3 mass": 1,
+   "H2 molar mass": 0,
+   "H2 mass": 1,
+   "N2 volume": 1,
+   "N2 molar mass": 1,
+   "O2 molar mass": 0,
+   "O2 mass": 1
+  },
+  "why": "Used atomic masses for diatomic H2 (molar mass 1) and O2 (16): those two cells lose. Masses 2 × 1 = 2 and 1 × 16 = 16 follow correctly from them, ECF earns both mass cells. Other four right. 6/8.",
+  "lines": [
+   "ammonia: n = 24 ÷ 24 = 1, mass = 17",
+   "hydrogen: molar mass = 1, mass = 2 × 1 = 2",
+   "nitrogen: volume = 4 × 24 = 96, molar mass = 112 ÷ 4 = 28",
+   "oxygen: molar mass = 16, mass = 1 × 16 = 16"
+  ]
+ },
+ {
+  "qid": "H12",
+  "bankId": "5054c30c-99e7-4baa-9aa3-87a3e3142046",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 8,
+  "variant": "partial",
+  "expected": 5,
+  "expectedParts": {
+   "NH3 moles": 1,
+   "NH3 mass": 1,
+   "H2 molar mass": 1,
+   "H2 mass": 0,
+   "N2 volume": 0,
+   "N2 molar mass": 0,
+   "O2 molar mass": 1,
+   "O2 mass": 1
+  },
+  "why": "Five cells right. H2 mass written as 2 (confused moles with mass), N2 volume 4/24 = 0.17 (divided instead of multiplied), N2 molar mass 14 (atomic N): no ECF links between them, all three lose.",
+  "lines": [
+   "ammonia: moles 1, mass 17",
+   "hydrogen: molar mass 2, mass 2",
+   "nitrogen: volume = 4/24 = 0.17, molar mass 14",
+   "oxygen: molar mass 32, mass 32"
+  ]
+ },
+ {
+  "qid": "H13",
+  "bankId": "c020af04-c7d6-4989-b044-719b0a05ecae",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "units",
+  "expected": 5,
+  "expectedParts": {
+   "a": 3,
+   "b": 1,
+   "c(i)": 1,
+   "c(ii)": 0
+  },
+  "why": "a full (3). b: moles 0.000246 (1) but final mass written '39.9 g' when it is 39.9 mg: wrong unit, A1 lost. c(i) order right (1). c(ii): process B just 'distillation', scheme needs fractional distillation, and both needed (0).",
+  "lines": [
+   "(a) C: 74.1/12 = 6.175  H: 8.6/1 = 8.6  N: 17.3/14 = 1.236",
+   "ratio C:H:N = 5 : 6.96 : 1 → 5 : 7 : 1",
+   "empirical formula C5H7N, Mr = 60 + 7 + 14 = 81",
+   "n = 162/81 = 2, molecular formula C10H14N2",
+   "(b) 2 cm3 = 0.002 dm3",
+   "n = 0.123 × 0.002 = 0.000246 mol",
+   "mass = 0.000246 × 162 = 0.0399 g = 39.9 g",
+   "(c)(i) grind → soak in ethanol → stir → separate (process A) → obtain nicotine (process B)",
+   "(c)(ii) A = filtration, B = distillation"
+  ]
+ },
+ {
+  "qid": "H13",
+  "bankId": "c020af04-c7d6-4989-b044-719b0a05ecae",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "ecf",
+  "expected": 5,
+  "expectedParts": {
+   "a": 3,
+   "b": 1,
+   "c(i)": 1,
+   "c(ii)": 0
+  },
+  "why": "a full (3). b: volume conversion slip 2 cm³ = 0.02 dm³ gives n = 0.00246 mol (M mark lost); mass = 0.00246 × 162 = 399 mg correctly carried, ECF (1). c(i) right (1). c(ii): B = evaporation, wrong (ethanol and nicotine are both liquids) (0).",
+  "lines": [
+   "(a) moles C = 74.1/12 = 6.18, H = 8.6/1 = 8.6, N = 17.3/14 = 1.24",
+   "divide by 1.24: C 5, H 7, N 1 → C5H7N",
+   "Mr(C5H7N) = 81, 162/81 = 2 → C10H14N2",
+   "(b) 2 cm3 = 0.02 dm3",
+   "n = 0.123 × 0.02 = 0.00246 mol",
+   "mass = 0.00246 × 162 = 0.3985 g = 399 mg",
+   "(c)(i) grind, soak in ethanol, stir, separate by A, obtain nicotine by B",
+   "(c)(ii) A: filtration  B: evaporation"
+  ]
+ },
+ {
+  "qid": "H13",
+  "bankId": "c020af04-c7d6-4989-b044-719b0a05ecae",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "vague",
+  "expected": 6,
+  "expectedParts": {
+   "a": 3,
+   "b": 2,
+   "c(i)": 1,
+   "c(ii)": 0
+  },
+  "why": "a full (3). b: 0.000246 mol and 39.9 mg (2). c(i) right (1). c(ii): 'filter it' and 'heat it to separate' never name filtration AND fractional distillation; B is vague (0).",
+  "lines": [
+   "(a) C = 74.1 ÷ 12 = 6.175, H = 8.6, N = 17.3 ÷ 14 = 1.2357",
+   "simplest ratio 5 : 7 : 1, so C5H7N (Mr 81)",
+   "162 ÷ 81 = 2 so C10H14N2",
+   "(b) n = 0.123 × 2/1000 = 0.000246 mol",
+   "mass = 0.000246 × 162 = 0.0399 g = 39.9 mg",
+   "(c)(i) grind → soak → stir → separate (A) → obtain (B)",
+   "(c)(ii) A: filter it. B: heat it up so the nicotine separates out."
+  ]
+ },
+ {
+  "qid": "H14",
+  "bankId": "2609a16a-acca-4aff-b92e-035d5bc08662",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "ecf",
+  "expected": 6,
+  "expectedParts": {
+   "a": 2,
+   "b(i)": 1,
+   "b(ii)": 2,
+   "c": 1
+  },
+  "why": "a both right (2). b(i) right (1). b(ii): O% = 26.6 (1); moles of N slip 46.7/7 = 6.67 (atomic number) loses the moles mark; ratio worked correctly from it to N4H4CO, ECF (1). c: Farmer 2, ammonia gas formed (1); no nitrate-provides-N point and no loss-of-nitrogen link (0, 0).",
+  "lines": [
+   "(a) ammonium nitrate: NH4NO3",
+   "Ca(NO3)2: calcium nitrate",
+   "(b)(i) H+ + OH- → H2O",
+   "(b)(ii) O% = 100 - (46.7 + 6.7 + 20) = 26.6 %",
+   "moles: N = 46.7/7 = 6.67, H = 6.7/1 = 6.7, C = 20/12 = 1.667, O = 26.6/16 = 1.663",
+   "ratio ÷ 1.663: N 4, H 4, C 1, O 1",
+   "empirical formula N4H4CO",
+   "(c) Farmer 2.",
+   "Ammonium nitrate reacts with calcium hydroxide to give off ammonia gas."
+  ]
+ },
+ {
+  "qid": "H14",
+  "bankId": "2609a16a-acca-4aff-b92e-035d5bc08662",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "partial",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b(i)": 1,
+   "b(ii)": 2,
+   "c": 1
+  },
+  "why": "a: NH4NO3 right (1), 'calcium nitrite' wrong (0). b(i) right (1). b(ii): O% and moles right (2) but EF written N2H4CO2 (0). c: nitrate provides nitrogen (1); says ammonium nitrate neutralises Ca(OH)2 so pH not raised, no ammonia gas / nitrogen loss points (0).",
+  "lines": [
+   "(a) ammonium nitrate = NH4NO3",
+   "Ca(NO3)2 = calcium nitrite",
+   "(b)(i) H+ + OH- → H2O",
+   "(b)(ii) O = 100 - 73.4 = 26.6 %",
+   "N 46.7/14 = 3.34, H 6.7, C 20/12 = 1.67, O 26.6/16 = 1.66",
+   "ratio N 2 : H 4 : C 1 : O 1",
+   "empirical formula N2H4CO2",
+   "(c) Farmer 2 is correct.",
+   "The nitrate ions in calcium nitrate give the plants nitrogen.",
+   "Ammonium nitrate would neutralise the calcium hydroxide so the soil pH would not go up."
+  ]
+ },
+ {
+  "qid": "H14",
+  "bankId": "2609a16a-acca-4aff-b92e-035d5bc08662",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "vague",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "b(i)": 0,
+   "b(ii)": 3,
+   "c": 0
+  },
+  "why": "a right (2). b(i): 'acid + alkali → salt + water' is a word equation, not ionic (0). b(ii) full (3). c: 'it reacts and the nitrogen is lost' never names ammonia gas or nitrate supplying N; vague (0).",
+  "lines": [
+   "(a) NH4NO3 ; calcium nitrate",
+   "(b)(i) acid + alkali → salt + water",
+   "(b)(ii) O = 26.6 %",
+   "moles N 3.336, H 6.7, C 1.667, O 1.663",
+   "÷ 1.663 → 2 : 4 : 1 : 1",
+   "N2H4CO",
+   "(c) Farmer 2.",
+   "The ammonium one reacts with the calcium hydroxide and the nitrogen gets lost."
+  ]
+ },
+ {
+  "qid": "H15",
+  "bankId": "905a2ed9-9e5e-45e4-b35b-d20c544bd92b",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "units",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c(i)": 2,
+   "c(ii)": 1,
+   "d": 1
+  },
+  "why": "a right (1). b: 32/24 = 1.33 but unit written g/mol, wrong unit on a 1-mark answer (0). c(i): composition comparison and high-temperature N2 + O2 reaction (2). c(ii): 'speeds up' gives no alternative pathway / lower Ea (0); regenerated unchanged (1). d: CO2 traps heat (1).",
+  "lines": [
+   "(a) nitrogen 78, oxygen 21",
+   "(b) density = 32/24 = 1.33 g/mol",
+   "(c)(i) Mars has only 2.6 % N2 and 0.2 % O2 but Earth has 78 % and 21 %.",
+   "At high temperatures, in car engines or lightning, N2 and O2 react to form NO.",
+   "(c)(ii) NO speeds up the breakdown of ozone.",
+   "NO is used in step 1 but made again in step 2, so it is chemically unchanged at the end.",
+   "(d) Mars has 95 % CO2, which traps heat (greenhouse effect)."
+  ]
+ },
+ {
+  "qid": "H15",
+  "bankId": "905a2ed9-9e5e-45e4-b35b-d20c544bd92b",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c(i)": 1,
+   "c(ii)": 0,
+   "d": 0
+  },
+  "why": "a, b right (2). c(i): more N2 and O2 on Earth (1); 'cars produce nitrogen oxides' gives no high temperature / N2 reacting with O2 (0). c(ii): 'makes it faster' and 'NO is in both steps so it helps' — no lower-Ea pathway, no regeneration idea (0). d: 'a lot of CO2 so it is warmer' never says CO2 traps heat (0).",
+  "lines": [
+   "(a) 78 and 21",
+   "(b) 32 ÷ 24 = 1.33 g/dm3",
+   "(c)(i) There is a lot more nitrogen and oxygen on Earth than on Mars.",
+   "Also cars on Earth produce nitrogen oxides.",
+   "(c)(ii) NO makes ozone break down faster.",
+   "NO is in both steps so it helps the reaction.",
+   "(d) Mars has a lot of carbon dioxide so it is warmer."
+  ]
+ },
+ {
+  "qid": "H15",
+  "bankId": "905a2ed9-9e5e-45e4-b35b-d20c544bd92b",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 7,
+  "variant": "partial",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c(i)": 1,
+   "c(ii)": 1,
+   "d": 1
+  },
+  "why": "a right (1). b: used 16 (atomic O) → 0.667 g/dm3 (0). c(i): lightning / high temperature N2 + O2 → NO (1); no comparison of the composition data (0). c(ii): alternative pathway lower Ea (1); never says NO is regenerated unchanged (0). d right (1).",
+  "lines": [
+   "(a) N2 = 78 %, O2 = 21 %",
+   "(b) 16 / 24 = 0.667 g/dm3",
+   "(c)(i) On Earth there is lightning and car engines, and at high temperature nitrogen reacts with oxygen to form NO.",
+   "(c)(ii) In step 1, NO provides an alternative pathway with lower activation energy, so ozone breaks down faster.",
+   "(d) The carbon dioxide traps heat, so Mars is warmer than predicted."
+  ]
+ },
+ {
+  "qid": "H16",
+  "bankId": "dfe6cf31-f7dd-4d15-af33-0146324b99cc",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "units",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c(i)": 1,
+   "c(ii)": 1
+  },
+  "why": "a right (1). b: same moles stated, but the mass comparison is given in g/mol (molar-mass unit for a mass): wrong unit on the comparison, mark lost (0). c(i) excess Pb(NO3)2 contaminates (1). c(ii) KOH + HNO3 by titration (1).",
+  "lines": [
+   "(a) Precipitation.",
+   "(b) KCl 0.05 mol → 0.025 mol PbCl2, same as 0.025 mol PbI2.",
+   "mass PbCl2 = 0.025 × 278 = 6.95 g/mol, PbI2 = 0.025 × 461 = 11.5 g/mol",
+   "So there is less lead(II) chloride.",
+   "(c)(i) Lead(II) nitrate is in excess, so it stays in the solution with the KNO3 and makes it impure.",
+   "(c)(ii) Titrate potassium hydroxide with dilute nitric acid."
+  ]
+ },
+ {
+  "qid": "H16",
+  "bankId": "dfe6cf31-f7dd-4d15-af33-0146324b99cc",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c(i)": 0,
+   "c(ii)": 1
+  },
+  "why": "a right (1). b: same amount but no mass / lower Mr link (0, the single mark needs both). c(i): says KNO3 is mixed with the PbI2 precipitate, which can be filtered off; misses the excess Pb(NO3)2 (0). c(ii) KOH + nitric acid (1).",
+  "lines": [
+   "(a) Precipitation",
+   "(b) The same amount of lead(II) chloride forms because the mole ratio is the same in both reactions.",
+   "(c)(i) The potassium nitrate will be mixed with the lead(II) iodide precipitate.",
+   "(c)(ii) Use aqueous potassium hydroxide and dilute nitric acid (titration)."
+  ]
+ },
+ {
+  "qid": "H16",
+  "bankId": "dfe6cf31-f7dd-4d15-af33-0146324b99cc",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "ecf",
+  "expected": 3,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c(i)": 1,
+   "c(ii)": 1
+  },
+  "why": "a: 'displacement' wrong (0). b: took a 1:1 ratio (0.05 mol of each salt), but the slip is the same for both salts so 'same moles, smaller mass of PbCl2 because Mr 278 < 461' is still the scheme point (1). c(i) (1). c(ii) K2CO3 + HNO3 titration (1).",
+  "lines": [
+   "(a) Displacement",
+   "(b) moles KI = 0.05 × 1.0 = 0.05 so PbI2 = 0.05 mol.",
+   "KCl = 0.05 so PbCl2 = 0.05 mol too.",
+   "Same number of moles, but PbCl2 has smaller mass because its Mr (278) is less than PbI2 (461).",
+   "(c)(i) There is excess lead(II) nitrate left in the solution, contaminating the KNO3.",
+   "(c)(ii) Titration of potassium carbonate with dilute nitric acid."
+  ]
+ },
+ {
+  "qid": "H17",
+  "bankId": "8d474252-3de9-4443-bb68-1a3a698643d9",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 3,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 0,
+   "d": 0
+  },
+  "why": "1 mark per correct sentence, max 3. a Cl2 (1), b ZnO (1). c 'the halogen' names no formula (0). d gives CO2 and NO: NO is neutral, contradiction (0). Total 2.",
+  "lines": [
+   "(a) Cl2",
+   "(b) ZnO",
+   "(c) the halogen one",
+   "(d) CO2 / NO"
+  ]
+ },
+ {
+  "qid": "H17",
+  "bankId": "8d474252-3de9-4443-bb68-1a3a698643d9",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 3,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c": 0,
+   "d": 1
+  },
+  "why": "1 mark per correct sentence, max 3. a Cl2 (1). b 'ZnO and CO2': CO2 does not react with HCl, contradiction (0). c K wrong (0). d CO2 (1). Total 2.",
+  "lines": [
+   "(a) Cl2",
+   "(b) ZnO and CO2",
+   "(c) K",
+   "(d) CO2"
+  ]
+ },
+ {
+  "qid": "H17",
+  "bankId": "8d474252-3de9-4443-bb68-1a3a698643d9",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 3,
+  "variant": "ecf",
+  "expected": 1,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c": 0,
+   "d": 0
+  },
+  "why": "a NO is accepted (1). b NaCl wrong (0). c reuses NO from (a) 'because it is the diatomic gas': ECF does not apply to choosing from a list, NO does not displace iodine (0). d NO is neutral (0). Total 1.",
+  "lines": [
+   "(a) NO",
+   "(b) NaCl",
+   "(c) NO — same diatomic gas as (a)",
+   "(d) NO"
+  ]
+ },
+ {
+  "qid": "H18",
+  "bankId": "64e1e3f5-e967-4929-93e4-41251800eb7b",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c": 1,
+   "d": 0,
+   "e": 1
+  },
+  "why": "a Al3+ (1). b 'a hydrogen ion' does not say H- (could be H+) (0). c (1). d 'silver and a halide' names no formula, halide could be Cl- (0). e (1).",
+  "lines": [
+   "(a) Al3+",
+   "(b) a hydrogen ion",
+   "(c) H+ and CO3 2-",
+   "(d) silver and a halide",
+   "(e) Ca2+ and OH-"
+  ]
+ },
+ {
+  "qid": "H18",
+  "bankId": "64e1e3f5-e967-4929-93e4-41251800eb7b",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c": 1,
+   "d": 0,
+   "e": 0
+  },
+  "why": "a 'Al3+ and K+': K+ is argon-like, contradiction (0). b H- (1). c (1). d Ag+ and Cl- gives a white, not yellow, ppt (0). e Al3+ dissolves in excess NaOH (0).",
+  "lines": [
+   "(a) Al3+ and K+",
+   "(b) H-",
+   "(c) H+ and CO3 2-",
+   "(d) Ag+ and Cl-",
+   "(e) Al3+ and OH-"
+  ]
+ },
+ {
+  "qid": "H18",
+  "bankId": "64e1e3f5-e967-4929-93e4-41251800eb7b",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c": 1,
+   "d": 1,
+   "e": 1
+  },
+  "why": "a: miscounted Ca2+ as 2,8 (it is 2,8,8) (0). Later choices are independent; the slip is not used again, so no ECF question arises: b, c, d, e all right (4).",
+  "lines": [
+   "(a) Ca2+ (Ca has 20 electrons, loses 2 → 2,8 like neon)",
+   "(b) H-",
+   "(c) H+ and CO3 2-",
+   "(d) Ag+ and I-",
+   "(e) Ca2+ and OH-"
+  ]
+ },
+ {
+  "qid": "H19",
+  "bankId": "f735fd64-1a9e-4f04-81ec-e67afe3d1c75",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c": 1,
+   "d": 0,
+   "e": 1
+  },
+  "why": "a Zn(NO3)2 dissolves in excess ammonia (0). b NO2 (1). c PbO (1). d 'the acidic gas' names no compound (could be CO, which is neutral) (0). e Na2SO4 (1).",
+  "lines": [
+   "(a) Zn(NO3)2",
+   "(b) NO2",
+   "(c) PbO",
+   "(d) the acidic gas",
+   "(e) Na2SO4"
+  ]
+ },
+ {
+  "qid": "H19",
+  "bankId": "f735fd64-1a9e-4f04-81ec-e67afe3d1c75",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "partial",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c": 0,
+   "d": 1,
+   "e": 0
+  },
+  "why": "a Al(NO3)3 (1). b CO is not an acid-rain gas (0). c 'MgO and PbO': MgO cannot be reduced by H2, contradiction (0). d PbO (1). e Zn(NO3)2 is made by reacting an insoluble base/metal with acid, not titration (0).",
+  "lines": [
+   "(a) Al(NO3)3",
+   "(b) CO",
+   "(c) MgO and PbO",
+   "(d) PbO",
+   "(e) Zn(NO3)2"
+  ]
+ },
+ {
+  "qid": "H19",
+  "bankId": "f735fd64-1a9e-4f04-81ec-e67afe3d1c75",
+  "subject": "chemistry",
+  "type": "other",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 3,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c": 0,
+   "d": 1,
+   "e": 1
+  },
+  "why": "Student's slip: treats Zn and Mg as 'low' metals. a Zn(NO3)2 wrong (0); c MgO wrong, built on the same wrong reactivity idea, no ECF for a list choice (0). b NO2, d NO2, e Na2SO4 right (3).",
+  "lines": [
+   "(a) Zn(NO3)2",
+   "(b) NO2",
+   "(c) MgO — Mg is low like Zn so H2 can take its oxygen",
+   "(d) NO2",
+   "(e) Na2SO4"
+  ]
+ },
+ {
+  "qid": "H20",
+  "bankId": "5323db9b-6286-4bdc-8199-e9e9c542277f",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 7,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 0,
+   "b": 2,
+   "c(i)": 1,
+   "c(ii)": 0
+  },
+  "why": "a 'not very strong, does not react much' — no partial dissociation, no H+ (0). b equation and state symbols right (2). c(i): 'distillation uses more heat' does not give consistent heating vs only until saturation (0); solvent recovered vs lost (1). c(ii): 'it is easier' gives no valid reason (0).",
+  "lines": [
+   "(a) An acid that is not very strong and does not react much.",
+   "(b) HCOOH(aq) + NaOH(aq) → HCOONa(aq) + H2O(l)",
+   "(c)(i) Distillation uses more heat.",
+   "In distillation the water is collected, in crystallisation the water is lost.",
+   "(c)(ii) Crystallisation, because it is easier."
+  ]
+ },
+ {
+  "qid": "H20",
+  "bankId": "5323db9b-6286-4bdc-8199-e9e9c542277f",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 7,
+  "variant": "partial",
+  "expected": 5,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c(i)": 2,
+   "c(ii)": 2
+  },
+  "why": "a 'partially dissociates' with no H+ ions (0, both terms needed). b balanced (1) but no state symbols (0). c(i) both comparisons (2). c(ii) crystallisation with the lower-temperature / no-decomposition reason (2).",
+  "lines": [
+   "(a) It partially dissociates in water.",
+   "(b) HCOOH + NaOH → HCOONa + H2O",
+   "(c)(i) Distillation: heat all the time. Crystallisation: heat only until the solution is saturated.",
+   "Distillation gets the water back, crystallisation loses the water.",
+   "(c)(ii) Crystallisation, because it needs a lower temperature, so the sodium formate will not decompose above 290 °C."
+  ]
+ },
+ {
+  "qid": "H20",
+  "bankId": "5323db9b-6286-4bdc-8199-e9e9c542277f",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 7,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 2,
+   "c(i)": 1,
+   "c(ii)": 0
+  },
+  "why": "a full (1). b full (2). c(i): heating comparison swapped (0); solvent comparison right (1). c(ii): carries the swapped (i) to choose distillation; ECF not given for a wrong conclusion in an explanation, and distillation to dryness is the method that risks decomposition (0).",
+  "lines": [
+   "(a) It dissociates partially in water to give a low concentration of H+ ions.",
+   "(b) HCOOH(aq) + NaOH(aq) → HCOONa(aq) + H2O(l)",
+   "(c)(i) Distillation: heat only until saturated. Crystallisation: keep heating.",
+   "Distillation recovers the solvent, crystallisation loses it.",
+   "(c)(ii) Distillation, since from (i) it needs less heating, so the sodium formate stays below 290 °C and does not decompose."
+  ]
+ },
+ {
+  "qid": "H21",
+  "bankId": "b3725872-c75e-4820-a9cc-42839963a3a6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 2,
+   "b": 1,
+   "c": 0
+  },
+  "why": "a: P, Q right; R 'artery' alone not hepatic artery (0). b: 'sugar goes up' is an increase, not excess (0), no insulin (0), stored as glycogen (1). c: 'special shape', 'fits into it' - no active site, complementary or ES complex (0).",
+  "lines": [
+   "(a) P: hepatic vein",
+   "Q: hepatic portal vein",
+   "R: artery",
+   "(b) Glucose.",
+   "When the sugar in the blood goes up,",
+   "the liver keeps it and stores it as glycogen.",
+   "(c) Catalase has a special shape.",
+   "Hydrogen peroxide fits into it like a lock and key.",
+   "So catalase only works on hydrogen peroxide."
+  ]
+ },
+ {
+  "qid": "H21",
+  "bankId": "b3725872-c75e-4820-a9cc-42839963a3a6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "ecf",
+  "expected": 6,
+  "expectedParts": {
+   "a": 1,
+   "b": 3,
+   "c": 2
+  },
+  "why": "a: Q and R swapped (only P right, 1). b: content uses the student's 'Q' but glucose/excess/insulin/glycogen all correct - not penalised again (3). c: specific active site (1), complementary shape fits (1); no ES complex / other substances cannot bind (0).",
+  "lines": [
+   "(a) P: hepatic vein",
+   "Q: hepatic artery",
+   "R: hepatic portal vein",
+   "(b) Q carries glucose to the liver.",
+   "When there is excess glucose in the blood,",
+   "the pancreas secretes insulin, which travels in the blood to the liver.",
+   "The liver converts the excess glucose into glycogen to be stored.",
+   "(c) Catalase has an active site with a specific 3D shape.",
+   "Hydrogen peroxide has a complementary shape so it fits into the active site."
+  ]
+ },
+ {
+  "qid": "H21",
+  "bankId": "b3725872-c75e-4820-a9cc-42839963a3a6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "partial",
+  "expected": 7,
+  "expectedParts": {
+   "a": 3,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a: all three right (3). b: excess glucose (1) + converted to glycogen (1); insulin from pancreas missing (0). c: specific active site (1), complementary/binds to form ES complex (1); point 3 contradicted by 'other molecules can also bind' (0).",
+  "lines": [
+   "(a) P: hepatic vein",
+   "Q: hepatic portal vein",
+   "R: hepatic artery",
+   "(b) Glucose.",
+   "When there is excess glucose in the blood,",
+   "the liver converts it to glycogen and stores it.",
+   "(c) Catalase has a specific active site.",
+   "Hydrogen peroxide has a complementary shape, so it binds to form an enzyme-substrate complex.",
+   "Other molecules like starch can also bind to catalase, but they react more slowly."
+  ]
+ },
+ {
+  "qid": "H22",
+  "bankId": "3c3efbaf-0875-4edf-8fd1-fdc860d53380",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a(i)": 2,
+   "a(ii)": 0,
+   "b": 0,
+   "c": 0,
+   "d": 1
+  },
+  "why": "a(i) brown / colourless (2). a(ii) 'enzyme works', 'died' - no active site, ES complex or denatured (0). b 'kills the enzyme' (0). c 'a control' with no purpose (0). d temperature (1); 'amount of phenol' not volume/concentration (0).",
+  "lines": [
+   "(a)(i) Test-tube 1: brown",
+   "Test-tube 2: colourless",
+   "(a)(ii) In tube 1 the enzyme works so the phenol turns brown.",
+   "In tube 2 the enzyme died because it was boiled, so it cannot work.",
+   "(b) The sodium hydroxide kills the enzyme.",
+   "(c) It is a control.",
+   "(d) Temperature",
+   "Amount of phenol"
+  ]
+ },
+ {
+  "qid": "H22",
+  "bankId": "3c3efbaf-0875-4edf-8fd1-fdc860d53380",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "partial",
+  "expected": 7,
+  "expectedParts": {
+   "a(i)": 2,
+   "a(ii)": 2,
+   "b": 1,
+   "c": 1,
+   "d": 1
+  },
+  "why": "a(i) (2). a(ii) point 1 binding/ES complex/melanin (1), point 2 denatured (1); active-site shape change missing (0). b denatured by high pH (1). c control showing browning needs the enzyme (1). d temperature (1); pH is being varied in this investigation, not kept constant (0).",
+  "lines": [
+   "(a)(i) Test-tube 1: brown",
+   "Test-tube 2: colourless",
+   "(a)(ii) In tube 1, phenol binds to the active site of polyphenol oxidase to form an enzyme-substrate complex,",
+   "and melanin, which is brown, is formed.",
+   "In tube 2 the enzyme is denatured by the high temperature.",
+   "(b) The pH is too high, so the enzyme is denatured.",
+   "(c) As a control, to show that phenol does not turn brown by itself without the enzyme.",
+   "(d) Temperature",
+   "pH of the solution"
+  ]
+ },
+ {
+  "qid": "H22",
+  "bankId": "3c3efbaf-0875-4edf-8fd1-fdc860d53380",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 9,
+  "variant": "units",
+  "expected": 8,
+  "expectedParts": {
+   "a(i)": 2,
+   "a(ii)": 3,
+   "b": 1,
+   "c": 1,
+   "d": 1
+  },
+  "why": "All explanations full. d: temperature at 40 °C (1); 'concentration ... 5 cm³' gives concentration a volume unit - the quantity is muddled, no credit (0).",
+  "lines": [
+   "(a)(i) Test-tube 1: brown",
+   "Test-tube 2: colourless",
+   "(a)(ii) Tube 1: phenol fits into the active site of the enzyme and an enzyme-substrate complex forms,",
+   "so melanin is produced, which is brown.",
+   "Tube 2: boiling denatures the enzyme.",
+   "The 3D shape of the active site changes so phenol can no longer fit.",
+   "(b) The enzyme is denatured by the alkaline pH.",
+   "(c) It is a control to show that the colour change is due to the polyphenol oxidase.",
+   "(d) Temperature kept at 40 °C",
+   "Concentration of enzyme solution kept at 5 cm³"
+  ]
+ },
+ {
+  "qid": "H23",
+  "bankId": "ffe69acb-9b6a-4004-a5fe-8609259c7b8a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "vague",
+  "expected": 2,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 0,
+   "b": 1
+  },
+  "why": "a(i) xylem (1). a(ii) 'hollow' alone, not long/no cross-walls (0); 'flow easily' does not state water and mineral salts transported without obstruction (0). b 'more in the soil' with no reference to cell sap (0); diffusion into root hair (1).",
+  "lines": [
+   "(a)(i) Xylem",
+   "(a)(ii) It is hollow so water can flow easily.",
+   "(b) There are more mineral ions in the soil,",
+   "so they go into the root hair by diffusion."
+  ]
+ },
+ {
+  "qid": "H23",
+  "bankId": "ffe69acb-9b6a-4004-a5fe-8609259c7b8a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "partial",
+  "expected": 3,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 1,
+   "b": 1
+  },
+  "why": "a(i) (1). a(ii) lignified walls (1) but linked to water transport, not mechanical support (0). b lower concentration in soil than cell sap (1); 'osmosis' is wrong for ions, active transport needed (0).",
+  "lines": [
+   "(a)(i) Xylem",
+   "(a)(ii) The cell walls are thickened with lignin,",
+   "so water can be transported up the plant.",
+   "(b) The concentration of mineral ions in the soil is lower than in the cell sap of the root hair cell,",
+   "so the mineral ions move in by osmosis."
+  ]
+ },
+ {
+  "qid": "H23",
+  "bankId": "ffe69acb-9b6a-4004-a5fe-8609259c7b8a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a(i)": 0,
+   "a(ii)": 2,
+   "b": 2
+  },
+  "why": "a(i) phloem is wrong (0). a(ii) the description matches the tissue in the figure (long, hollow, no cross-walls -> water and salts without obstruction), so it is credited, not penalised twice (2). b both points (2).",
+  "lines": [
+   "(a)(i) Phloem",
+   "(a)(ii) It is made of long hollow tubes with no cross-walls,",
+   "so water and mineral salts can move up from the roots without obstruction.",
+   "(b) The concentration of mineral ions in the cell sap of the root hair cell is higher than in the soil,",
+   "so the ions are taken in by active transport, against the concentration gradient."
+  ]
+ },
+ {
+  "qid": "H24",
+  "bankId": "e1f14ada-65a3-4be6-9e5e-f83c99129c4f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "vague",
+  "expected": 1,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "a(i) protease (1). a(ii) 'breaks down the meat' - no proteins to peptides (0). b 'stops working' - no optimum pH or denaturing (0). c 'eats the gelatin' and 'killed' - neither digests nor denatured (0).",
+  "lines": [
+   "(a)(i) Protease",
+   "(a)(ii) It breaks down the meat so it becomes soft.",
+   "(b) The alkaline water makes the enzyme stop working,",
+   "so the meat is not broken down.",
+   "(c) Fresh pineapple has the enzyme that eats the gelatin so the jelly cannot set.",
+   "In canned pineapple the enzyme is killed by the heat."
+  ]
+ },
+ {
+  "qid": "H24",
+  "bankId": "e1f14ada-65a3-4be6-9e5e-f83c99129c4f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "partial",
+  "expected": 3,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 0,
+   "b": 1,
+   "c": 1
+  },
+  "why": "a(i) (1). a(ii) 'into amino acids' is a reject (0). b pH moved from optimum (1); no denaturing/active site (0). c active bromelain digests gelatin (1); 'no bromelain' in canned is wrong - it is denatured by heat (0).",
+  "lines": [
+   "(a)(i) Protease",
+   "(a)(ii) Bromelain digests the proteins in the meat into amino acids.",
+   "(b) The alkaline water changes the pH away from the optimum pH of bromelain,",
+   "so bromelain does not work as well.",
+   "(c) Fresh pineapple has active bromelain which digests the gelatin, so the jelly cannot solidify.",
+   "Canned pineapple does not have any bromelain in it."
+  ]
+ },
+ {
+  "qid": "H24",
+  "bankId": "e1f14ada-65a3-4be6-9e5e-f83c99129c4f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "ecf",
+  "expected": 4,
+  "expectedParts": {
+   "a(i)": 0,
+   "a(ii)": 0,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a(i) lipase wrong (0); a(ii) fats to fatty acids, wrong substrate (0). b and c reason about 'the enzyme' and are correct whatever its name - pH off optimum/denatured/active site no longer fits (2); active enzyme breaks gelatin, heat denatures it in canning (2).",
+  "lines": [
+   "(a)(i) Lipase",
+   "(a)(ii) Lipase digests the fats in the meat into fatty acids and glycerol.",
+   "(b) The alkaline pH is far from the enzyme's optimum pH, so the enzyme is denatured.",
+   "Its active site loses its shape and the substrate can no longer fit, so no enzyme-substrate complex forms.",
+   "(c) In fresh pineapple the enzyme is active and breaks down the gelatin, so the jelly cannot set.",
+   "In canned pineapple the enzyme was denatured by the high heat during canning."
+  ]
+ },
+ {
+  "qid": "H25",
+  "bankId": "edbdabf6-e012-4ddd-8395-841d9f90cac6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "vague",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a: no enzymes named (pts 1,3,5 lost); acidic condition in stomach (1); 'body temperature' is a reject. b: into blood and carried to muscles (1); 'used' - no synthesis into protein/growth (0). c: growth (1), enzymes (1); energy is not a listed function (0).",
+  "lines": [
+   "(a) Proteins are digested in the stomach by enzymes in acid.",
+   "Then they are digested more in the small intestine into amino acids.",
+   "The enzymes work best at body temperature.",
+   "(b) The amino acids go into the blood",
+   "and go to the muscles to be used.",
+   "(c) Proteins are needed for growth,",
+   "to make enzymes,",
+   "and to give energy."
+  ]
+ },
+ {
+  "qid": "H25",
+  "bankId": "edbdabf6-e012-4ddd-8395-841d9f90cac6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "partial",
+  "expected": 7,
+  "expectedParts": {
+   "a": 3,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a: pepsin to 'amino acids' (pt1 lost), acidic stomach (1), trypsin to polypeptides (1), 'acidic' in small intestine contradicts pt4 (0), peptidase to amino acids (1). b: diffuse through villus epithelium (1), hepatic portal vein to liver (1); used 'for energy' earns nothing. c: hormones (1), enzymes (1); cellulose cell walls wrong (0).",
+  "lines": [
+   "(a) Pepsin in the stomach breaks proteins into amino acids.",
+   "The stomach is acidic because of hydrochloric acid.",
+   "Trypsin in the small intestine breaks proteins into polypeptides,",
+   "in acidic conditions.",
+   "Peptidase breaks polypeptides into amino acids.",
+   "(b) Amino acids diffuse through the epithelium of the villi.",
+   "They are carried to the liver by the hepatic portal vein.",
+   "Then the muscles use them for energy.",
+   "(c) Hormones like insulin",
+   "Enzymes",
+   "Cellulose cell walls"
+  ]
+ },
+ {
+  "qid": "H25",
+  "bankId": "edbdabf6-e012-4ddd-8395-841d9f90cac6",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "units",
+  "expected": 8,
+  "expectedParts": {
+   "a": 3,
+   "b": 3,
+   "c": 2
+  },
+  "why": "a: pepsin to polypeptides (1), pH 2 (1), peptidase to amino acids (1); 'work best at 37' with no °C loses pt 7 (0). b: diffuse across villus epithelium (1), hepatic portal vein to liver (1), synthesised into proteins for repair (1). c: growth/repair (1), haemoglobin (1); storing energy as fat is wrong (0).",
+  "lines": [
+   "(a) Pepsin in the stomach breaks proteins into polypeptides,",
+   "at pH 2.",
+   "Peptidases in the small intestine break polypeptides into amino acids.",
+   "All these enzymes work best at 37.",
+   "(b) Amino acids diffuse across the epithelium of the villi into the blood capillaries.",
+   "They are carried to the liver by the hepatic portal vein, then to the muscles.",
+   "In muscle cells they are made into proteins to repair worn-out cells.",
+   "(c) Growth and repair of cells",
+   "Haemoglobin",
+   "Storing energy as fat"
+  ]
+ },
+ {
+  "qid": "H26",
+  "bankId": "f3acd86d-c453-4b30-88e1-aa65e66fa8f3",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "vague",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a: 'big' = large molecule (1), stays in cell (1); 'water go in' without osmosis/water potential (0). b: plants eaten (1); 'give out air' is not oxygen for aerobic respiration (0). c: eat more food (1), reduce alcohol (1); 'for the baby' and 'it is bad' give no growth/toxic effect (0).",
+  "lines": [
+   "(a) Starch is big so it stays in the cell.",
+   "Glucose would make water go into the cell.",
+   "(b) Animals eat plants to get food.",
+   "Plants give out air for animals to breathe.",
+   "(c) She has to eat more and eat healthy for the baby.",
+   "She should not drink alcohol because it is bad."
+  ]
+ },
+ {
+  "qid": "H26",
+  "bankId": "f3acd86d-c453-4b30-88e1-aa65e66fa8f3",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "partial",
+  "expected": 6,
+  "expectedParts": {
+   "a": 2,
+   "b": 2,
+   "c": 2
+  },
+  "why": "a: insoluble (1), no effect on water potential (1); 'can diffuse out easily' contradicts the stays-in-cell point (0). b: cannot photosynthesise (1), oxygen for respiration (1); 'plants need oxygen from animals' earns nothing. c: more protein (1) for growth of fetus (1); iron 'to make bones strong' is a wrong role (0).",
+  "lines": [
+   "(a) Starch is insoluble,",
+   "so it does not affect the water potential of the cell.",
+   "Starch can also diffuse out of the cell easily when it is needed.",
+   "(b) Animals cannot photosynthesise.",
+   "They use the oxygen from photosynthesis for respiration.",
+   "Plants also need oxygen from animals.",
+   "(c) She needs more protein for the growth of the fetus.",
+   "She needs more iron to make the baby's bones strong."
+  ]
+ },
+ {
+  "qid": "H26",
+  "bankId": "f3acd86d-c453-4b30-88e1-aa65e66fa8f3",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "ecf",
+  "expected": 8,
+  "expectedParts": {
+   "a": 3,
+   "b": 2,
+   "c": 3
+  },
+  "why": "a: insoluble, cannot cross membrane, no water-potential change (3). b: cannot make food (1), plants eaten (1); the early slip reversing the photosynthesis gases is carried into 'animals breathe in the CO2' - a biology error, so no gas mark (0). c: more energy (1), growth of fetus (1), more calcium (1); no role given for calcium (0).",
+  "lines": [
+   "(a) Starch is insoluble.",
+   "It cannot diffuse out across the cell membrane.",
+   "It does not change the water potential inside the cell.",
+   "(b) Animals cannot make their own food, so they eat plants.",
+   "Plants take in oxygen and give out carbon dioxide in photosynthesis.",
+   "Animals breathe in this carbon dioxide for respiration.",
+   "(c) She needs more energy",
+   "for the growth and development of the fetus.",
+   "She should take more calcium."
+  ]
+ },
+ {
+  "qid": "H27",
+  "bankId": "cc40a3d5-c28e-4f40-8f76-7ad9169be92f",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "units",
+  "expected": 7,
+  "expectedParts": {
+   "a": 3,
+   "b": 1,
+   "c": 3
+  },
+  "why": "a: less saturated fat (1) + less heart disease (1); more fibre (1) but 'better digestion' is not a named risk (0). b: correct working (M1) but 337 with no unit loses A1. c: extra trophic level (1), 90% lost per level (1), lost as heat in respiration (1).",
+  "lines": [
+   "(a) Soya has less saturated fat, so less risk of heart disease.",
+   "Soya has more fibre, so better digestion.",
+   "(b) 80 × 0.8 = 64",
+   "64 / 19 × 100 = 337",
+   "(c) When beef is eaten the food chain is soya → cow → human, which has one more trophic level.",
+   "About 90% of energy is lost at each trophic level,",
+   "lost as heat during respiration by the cow."
+  ]
+ },
+ {
+  "qid": "H27",
+  "bankId": "cc40a3d5-c28e-4f40-8f76-7ad9169be92f",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "ecf",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "b": 1,
+   "c": 2
+  },
+  "why": "a: less saturated fat (1) + less heart attack (1); 'more energy' is a reject. b: method (80 × 0.8)/19 × 100 set up correctly (M1) but 80 × 0.8 slipped to 6.4, so 33.7 g loses A1. c: longer chain (1), energy lost per level (1); no form of loss (0).",
+  "lines": [
+   "(a) Soya has less saturated fat, so less risk of a heart attack.",
+   "Soya has more energy, so you can be more active.",
+   "(b) Mass = (80 × 0.8) / 19 × 100",
+   "= 6.4 / 19 × 100",
+   "= 33.7 g",
+   "(c) Soya → cow → human has one more trophic level.",
+   "Energy is lost at each trophic level,",
+   "so there is less energy left for humans."
+  ]
+ },
+ {
+  "qid": "H27",
+  "bankId": "cc40a3d5-c28e-4f40-8f76-7ad9169be92f",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 9,
+  "variant": "partial",
+  "expected": 6,
+  "expectedParts": {
+   "a": 3,
+   "b": 2,
+   "c": 1
+  },
+  "why": "a: less saturated fat (1) + atherosclerosis (1); more fibre (1) but no health consequence (0). b: 336.8 g is correct with unit (2). c: longer food chain (1); 'only some turned into beef' does not state energy lost or how (0).",
+  "lines": [
+   "(a) Soya has less saturated fat, so less fatty deposits in arteries (atherosclerosis).",
+   "Soya also has more fibre.",
+   "(b) Protein needed = 80 × 0.8 = 64 g",
+   "Mass of soya = 64 / 19 × 100 = 336.8 g",
+   "(c) Eating beef makes the food chain longer.",
+   "Cows eat lots of soya beans but only some is turned into beef."
+  ]
+ },
+ {
+  "qid": "H28",
+  "bankId": "d404b9fe-c89f-4737-8c8e-fe3de1f692f7",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "vague",
+  "expected": 3,
+  "expectedParts": {
+   "a": 2,
+   "b": 1
+  },
+  "why": "a: 'long and thin' gives no surface area (0); 'thin walls' not one cell thick (0); 'food' is not products of digestion (0); single cell vs many cells (1); root hair has cell wall (1); 'both near blood vessels' is wrong for roots (0). b: ovum not moved so no fertilisation (1); no oviduct/wafting, sperm point has no cilium link (0).",
+  "lines": [
+   "(a) Both are long and thin so they absorb more.",
+   "Both have thin walls.",
+   "Root hairs take in water and minerals, villi take in food.",
+   "A root hair is one cell but a villus is made of many cells.",
+   "A root hair has a cell wall.",
+   "Both are near blood vessels.",
+   "(b) The cilia don't work so the egg can't move",
+   "and it won't get fertilised.",
+   "The sperm also can't move."
+  ]
+ },
+ {
+  "qid": "H28",
+  "bankId": "d404b9fe-c89f-4737-8c8e-fe3de1f692f7",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "partial",
+  "expected": 7,
+  "expectedParts": {
+   "a": 5,
+   "b": 2
+  },
+  "why": "a: surface area (1), one cell thick (1), near xylem / capillaries+lacteal (1), active transport with mitochondria (1), different substances absorbed (1); 'both have cell walls' is wrong (0); stops at 5 points. b: oviduct cilia waft ovum (1), not fertilised (1); nothing on sperm tails or implantation (0).",
+  "lines": [
+   "(a) Both increase the surface area for absorption.",
+   "Both have an epithelium only one cell thick, so a short diffusion distance.",
+   "Root hairs are near the xylem, villi have blood capillaries and a lacteal, to carry substances away.",
+   "Both absorb by active transport and have many mitochondria to release energy.",
+   "Root hairs absorb water and mineral salts; villi absorb glucose and amino acids.",
+   "Both have cell walls.",
+   "(b) Cilia in the oviduct sweep the ovum towards the uterus.",
+   "If they do not work, the ovum stays in the oviduct and is not fertilised."
+  ]
+ },
+ {
+  "qid": "H28",
+  "bankId": "d404b9fe-c89f-4737-8c8e-fe3de1f692f7",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "ecf",
+  "expected": 6,
+  "expectedParts": {
+   "a": 4,
+   "b": 2
+  },
+  "why": "a: surface area (1), one cell thick (1), single vs multicellular (1), lacteal (1). b: early slip puts the cilia in the uterus moving the ovum the wrong way (pt 1 lost); the consequence that the ovum cannot meet sperm so no fertilisation is still credited (1); sperm tail like a cilium cannot swim (1).",
+  "lines": [
+   "(a) Both increase the surface area for absorption.",
+   "Both have a wall only one cell thick.",
+   "A root hair is a single cell; a villus is made of many cells.",
+   "A villus has a lacteal to absorb fats; a root hair does not.",
+   "(b) Cilia line the uterus and move the ovum up into the oviduct.",
+   "If the cilia malfunction the ovum cannot get to where the sperm are, so there is no fertilisation.",
+   "The sperm tail is built like a cilium, so it cannot beat and the sperm cannot swim to the ovum."
+  ]
+ },
+ {
+  "qid": "H29",
+  "bankId": "363683b6-7c6d-4758-87da-33548cbbf53d",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "units",
+  "expected": 4,
+  "expectedParts": {
+   "a(i)": 0,
+   "a(ii)": 2,
+   "b": 2
+  },
+  "why": "a(i): 0.6 written with a unit of mm² - a ratio is not an area, wrong unit loses the mark. a(ii): trend with figures and units (1), large plants low SA:V cannot rely on diffusion alone (1). b: first student (1) + uses SA:V ratio (1).",
+  "lines": [
+   "(a)(i) 0.6 mm²",
+   "(a)(ii) As the SA:V ratio decreases from 3.0:1 to 0.2:1, the rate of diffusion falls from 0.020 mm/s to 0.013 mm/s.",
+   "Large plants have a small SA:V ratio, so they cannot rely on diffusion alone and need transport systems.",
+   "(b) The first student's method,",
+   "because it takes the SA:V ratio into account, not just the length of the cube."
+  ]
+ },
+ {
+  "qid": "H29",
+  "bankId": "363683b6-7c6d-4758-87da-33548cbbf53d",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "ecf",
+  "expected": 2,
+  "expectedParts": {
+   "a(i)": 0,
+   "a(ii)": 1,
+   "b": 1
+  },
+  "why": "a(i): 600/1000 slipped to 0.06:1 (0). a(ii): trend stated with figures, quoting the wrong 0.06:1 consistently - credited (1); 'diffusion is slower' for large plants does not say diffusion alone is not enough (0). b: first student (1); 'more accurate' is no reason (0).",
+  "lines": [
+   "(a)(i) 600 / 1000 = 0.06, so 0.06:1",
+   "(a)(ii) As the SA:V ratio goes down (3.0:1 to 0.06:1 to 0.2:1), the rate of diffusion goes down, 0.020 mm/s to 0.013 mm/s.",
+   "So in large plants diffusion is slower.",
+   "(b) The first student's method,",
+   "because it is more accurate."
+  ]
+ },
+ {
+  "qid": "H29",
+  "bankId": "363683b6-7c6d-4758-87da-33548cbbf53d",
+  "subject": "biology",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "partial",
+  "expected": 3,
+  "expectedParts": {
+   "a(i)": 1,
+   "a(ii)": 1,
+   "b": 1
+  },
+  "why": "a(i) 0.6:1 (1). a(ii): smaller ratio, slower diffusion (1); 'need bigger leaves' is not the scheme point (0). b: first student (1); repeats 'more accurate', no reason (0).",
+  "lines": [
+   "(a)(i) 0.6:1",
+   "(a)(ii) The smaller the SA:V ratio, the slower the rate of diffusion.",
+   "So large plants need bigger leaves.",
+   "(b) The first student,",
+   "because the first student's answers are more accurate."
+  ]
+ },
+ {
+  "qid": "H30",
+  "bankId": "e4d4d3b3-4b89-415d-b13e-a0315f73400f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "units",
+  "expected": 9,
+  "expectedParts": {
+   "a": 1,
+   "b": 8
+  },
+  "why": "a: heating 'for 5 seconds' - wrong time unit, procedure mark lost (0); brick-red precipitate (1). b: eight correct chain points (absorption, hepatic portal vein, deamination, hepatic vein, pulmonary artery, pulmonary vein, aorta + renal artery, ultrafiltration) = max 8.",
+  "lines": [
+   "(a) Add 2 cm³ of Benedict's solution to 2 cm³ of urine.",
+   "Heat in a boiling water bath for 5 seconds.",
+   "A brick-red precipitate forms if glucose is present.",
+   "(b) The amino acid is absorbed into the blood capillaries of the villi in the ileum.",
+   "It is carried to the liver by the hepatic portal vein.",
+   "In the liver, excess amino acids are deaminated to form urea.",
+   "Urea leaves the liver in the hepatic vein and goes to the heart.",
+   "The heart pumps it to the lungs in the pulmonary artery.",
+   "It comes back to the heart in the pulmonary vein.",
+   "It is pumped out through the aorta and into the renal artery to the kidney.",
+   "In the kidney, urea is removed by ultrafiltration at the glomerulus."
+  ]
+ },
+ {
+  "qid": "H30",
+  "bankId": "e4d4d3b3-4b89-415d-b13e-a0315f73400f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "ecf",
+  "expected": 9,
+  "expectedParts": {
+   "a": 2,
+   "b": 7
+  },
+  "why": "a: full (2). b: early slip names 'hepatic vein' into the liver and then carries it by naming 'hepatic portal vein' out of the liver - both vessel points lost (naming error, no ECF for facts); absorption, deamination, pulmonary artery, pulmonary vein, aorta + renal artery, glomerulus, ureter to bladder all earned (7).",
+  "lines": [
+   "(a) Add 2 cm³ of Benedict's solution to 2 cm³ of urine and heat in a boiling water bath for 5 minutes.",
+   "A brick-red precipitate shows glucose.",
+   "(b) The amino acid is absorbed into the blood at the ileum.",
+   "It travels to the liver in the hepatic vein.",
+   "In the liver, excess amino acids are deaminated to urea.",
+   "The urea leaves the liver in the hepatic portal vein to the heart.",
+   "It is pumped to the lungs through the pulmonary artery,",
+   "and returns to the heart through the pulmonary vein.",
+   "It goes out through the aorta and the renal artery to the kidney.",
+   "At the glomerulus the urea is ultrafiltered into the kidney tubule.",
+   "It goes down the ureter to the bladder as part of urine."
+  ]
+ },
+ {
+  "qid": "H30",
+  "bankId": "e4d4d3b3-4b89-415d-b13e-a0315f73400f",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 10,
+  "variant": "partial",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 4
+  },
+  "why": "a: no heating step (0); brick-red (1). b: absorption (1), hepatic portal vein (1), deamination (1), glomerulus ultrafiltration (1); 'goes in the blood to the kidney' skips heart/lungs/renal artery (0); urethra instead of ureter (0).",
+  "lines": [
+   "(a) Add Benedict's solution to the urine.",
+   "It turns from blue to brick-red if there is glucose.",
+   "(b) The amino acid is absorbed into the blood at the small intestine.",
+   "It goes to the liver through the hepatic portal vein.",
+   "The liver deaminates the excess amino acids into urea.",
+   "The urea goes in the blood to the kidney.",
+   "It is filtered out at the glomerulus by ultrafiltration.",
+   "Then it goes through the urethra to the bladder."
+  ]
+ }
+]

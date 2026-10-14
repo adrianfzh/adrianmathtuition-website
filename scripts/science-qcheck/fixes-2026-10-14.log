@@ -1,0 +1,21 @@
+Clean-up of the starter check's easy fails (14 Oct 2026, Adrian: "yes" — HANDOFF-2026-10-14 "Next (agreed)" 1).
+16 rows corrected in the science bank, re-checked with PROMPT.md by a separate Opus agent (16 pass), stamped by apply.mjs.
+Old values: _backups/science-structured-fixes-before-2026-10-14.json.
+
+Leftover "stored here as question N" notes (stem replaced; 7 stems were ONLY the note, an empty stem is never served,
+so they now read "Answer both/all parts of this question. Write your answers in full sentences."):
+  a338c684 c9b6f208 dc1f8a0c eb56b200 30e7eba2 af320b5a eb9b16a3 7f5f171a
+  eb56b200 + 30e7eba2 also failed the re-check once: their whole-question worked answer stopped mid-way
+  (the part answers were complete) — finished from the part answers, then passed.
+
+Wrong schemes (each worked again by hand):
+  aab2a4c5  toy car: resultant 55.7 N at 55.6° from the 70 N force → accept 54–58° (was 51–53°)
+  25f6e55d  catapult: resultant points from the object TOWARDS the fork, opposite to F (was "away from")
+  daad0efa  jawbone: the 45 N acts 7.0 + 4.0cos50° = 9.57 cm from the pivot, F acts 2.57 cm → F = 168 N,
+            pivot force 123 N down on the jaw (was 123 N / 78 N); the missing Fig. 2.1 is now described in words
+  fd160d01  scuba: 2×10^4 / 3×10^5 = 0.0667 → 0.067 m³ (was 0.070)
+  0cb02103  sucrose C12H22O11: H:O = 2:1 (was "C:H = 1:2")
+  faec3184  metal 3 = zinc (7.13), metal 4 = copper (8.96), accept the pair in either order; "Section B" line removed
+  5d6bd4d3  silver nitrate AgNO3 in the table and in (e) (was Ag(NO3)2)
+  18c630d9  (b) rocket pushes water down, water pushes rocket up (was reversed); (c) "weight decreases" removed
+            (it would RAISE the acceleration), garbled line rewritten

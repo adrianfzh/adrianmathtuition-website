@@ -1,0 +1,128 @@
+[
+ {
+  "case": "H01-partial",
+  "writer": 2,
+  "grader": 3,
+  "judge": 2,
+  "sided_with": "writer",
+  "scheme_ambiguous": false,
+  "why": "Scale/forces M1 and 278 N A1 earned. No labels for T or the angles are shown, so the labelling M1 is lost. 30 degrees is to the vertical, not the horizontal as stated, so the direction mark is lost."
+ },
+ {
+  "case": "H02-units",
+  "writer": 3,
+  "grader": 4,
+  "judge": 4,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "a(i) M1 only (2.6x10^5 has no unit); a(ii) 104 has no unit, so 0. b 3/3: 'flows out until the pressures at the same level are equal' gives both the stopping point and the equal-pressure reason."
+ },
+ {
+  "case": "H02-vague",
+  "writer": 4,
+  "grader": 5,
+  "judge": 5,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "a 3/3. b: 'goes down' (1); 'goes until it balances out' says it stops at a level (1); 'pressure changes / balances' never says which pressures become equal (0)."
+ },
+ {
+  "case": "H05-vague",
+  "writer": 4,
+  "grader": 3,
+  "judge": 4,
+  "sided_with": "writer",
+  "scheme_ambiguous": true,
+  "why": "b: 'hit the walls' earns the collision point (the scheme bundles force with it, and the collision is the core idea); 'move about' is not random high-speed motion and there is no force-per-area link. a 1, c 2."
+ },
+ {
+  "case": "H06-vague",
+  "writer": 2,
+  "grader": 3,
+  "judge": 2,
+  "sided_with": "writer",
+  "scheme_ambiguous": false,
+  "why": "Dotted parallelogram B1; 'about 50 N' is inside 44-50 N A1. The resultant is described only as 'the middle line goes up', with no marked (double-arrow) resultant, so that B1 is lost."
+ },
+ {
+  "case": "H14-vague",
+  "writer": 5,
+  "grader": 6,
+  "judge": 6,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "a 2, b(i) 0 (word equation, not ionic), b(ii) 3. c: 'nitrogen gets lost' earns the loss-of-nitrogen point (1); no ammonia gas, and nitrate supplying N is not stated (0, 0)."
+ },
+ {
+  "case": "H16-units",
+  "writer": 3,
+  "grader": 4,
+  "judge": 4,
+  "sided_with": "grader",
+  "scheme_ambiguous": true,
+  "why": "b is a one-mark qualitative comparison (equal moles, smaller mass from lower Mr), and the student gives both. The g/mol slip is in supporting working, not in a final numerical answer, so the mark stands."
+ },
+ {
+  "case": "H17-ecf",
+  "writer": 1,
+  "grader": 0,
+  "judge": 1,
+  "sided_with": "writer",
+  "scheme_ambiguous": true,
+  "why": "Only (a) NO is right. The scheme's note '1 mark for each of three correct' reads as 1 per correct answer, capped at 3, so 1 mark. Under the alternative Cambridge 4/3/2-correct threshold it would be 0. ECF does not apply to choosing from a list."
+ },
+ {
+  "case": "H17-vague",
+  "writer": 2,
+  "grader": 1,
+  "judge": 2,
+  "sided_with": "writer",
+  "scheme_ambiguous": true,
+  "why": "(a) Cl2 and (b) ZnO are right. (c) 'the halogen one' names no formula (0). (d) CO2/NO is a contradiction (0). Read as 1 per correct answer, capped at 3, this gives 2; under the threshold convention it would be 1."
+ },
+ {
+  "case": "H20-ecf",
+  "writer": 4,
+  "grader": 6,
+  "judge": 4,
+  "sided_with": "writer",
+  "scheme_ambiguous": false,
+  "why": "c(ii) needs crystallisation with a reason. Choosing distillation is a wrong chemical conclusion, and ECF is not given for a wrong choice in an explanation, so 0. a 1, b 2, c(i) 1."
+ },
+ {
+  "case": "H21-vague",
+  "writer": 3,
+  "grader": 4,
+  "judge": 4,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "a 2 ('artery' alone is not hepatic artery). b 1: glycogen only, since 'goes up' is not excess and insulin is absent. c 1: 'fits like a lock and key' carries the complementary-fit idea, but there is no active site or enzyme-substrate complex."
+ },
+ {
+  "case": "H22-units",
+  "writer": 8,
+  "grader": 9,
+  "judge": 9,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "d: temperature (1). 'Concentration of enzyme solution kept at 5 cm3' names a valid factor; the volume unit points to volume of solution, which is also on the scheme list, so either reading is creditable (1)."
+ },
+ {
+  "case": "H28-vague",
+  "writer": 3,
+  "grader": 2,
+  "judge": 2,
+  "sided_with": "grader",
+  "scheme_ambiguous": false,
+  "why": "a 1: only the single-cell vs multicellular contrast is precise. 'Absorb more' has no surface area; 'thin walls' is not one cell thick; 'food' is not products of digestion; 'cell wall' is one-sided with no contrast; 'both near blood vessels' is wrong for roots. b 1: egg not moved so no fertilisation; no oviduct and no sperm-tail/cilium link."
+ },
+ {
+  "case": "H29-partial",
+  "writer": 3,
+  "grader": 2,
+  "judge": 2,
+  "sided_with": "grader",
+  "scheme_ambiguous": true,
+  "why": "a(ii) asks 'with reference to Table 2.1' and the scheme requires figures with units. A bare trend with a wrong conclusion ('bigger leaves') earns 0. The scheme lists three ideas for 2 marks. a(i) 1. b 1: first student chosen, but the reason is circular."
+ }
+]
