@@ -300,6 +300,22 @@ A retired paper stops being served, shows on `/admin/listening-papers` with its 
 pile refills. Run at the start of every worker run (`POST {action:'retire'}`) — runs happen as
 students use papers, which is when results change.
 
+### The first batch (14 Oct 2026, written in a session on the plan)
+
+- 10 papers written (3 Easier, 4 Standard, 3 Harder), each by its own writer. **2 passed every check
+  first time.** The rest were sent back with the reasons, up to three rounds:
+  - the guesser (no recording) got 9–12 of 13–14 on all three Easier papers — the right answer was
+    the sensible one. Rewritten, the guesser fell to 0–2. This is the check that mattered most;
+  - the reviewer caught: a smoking detail (cigarette ends), a line given to the wrong speaker, a
+    Standard paper with changes of mind (Harder's job), questions out of recording order, a fill-in
+    with a second fair answer, a contradiction inside a conversation;
+  - the copy check threw two away for stock phrases shared with another paper ("let me take you
+    through it step by step") — reworded; the brief now warns writers off them;
+  - two of my own mistakes, fixed in the checklist: the reviewer's word counts disagreed with the
+    brief's (Easier is read slowly, so 210–300 words is right), and English place words ("East
+    Coast"), "CCA" and "Mdm" (the voice says "Madam") were failed as untaught Singapore words.
+- Every blind reader matched the key on every kept paper. Kept papers: `/admin/listening-papers`.
+
 ### Health and logs
 
 - Health-check `listening-papers-pile`: the worker's door answers 401 to a stranger; once recording is
