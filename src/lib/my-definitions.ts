@@ -18,8 +18,9 @@
 // limits. I/O is lib/my-definitions-store.ts; the door is /api/portal/definitions.
 import { DEFINITIONS, type Definition } from './science-definitions';
 import { BIOLOGY_DEFINITIONS } from './biology-definitions';
+import { CHEMISTRY_DEFINITIONS } from './chemistry-definitions';
 
-export type DefSubject = 'physics' | 'biology';
+export type DefSubject = 'physics' | 'biology' | 'chemistry';   // chemistry: 14 Oct 2026, Adrian "yes"
 export type DefSource = 'list' | 'notes' | 'written';
 
 /** At most this many saved definitions per student per account. */
@@ -32,9 +33,10 @@ export const MAX_TERM_LEN = 60;
 export const SUBJECT_INFO: Record<DefSubject, { name: string; syllabus: string; list: readonly Definition[] }> = {
   physics: { name: 'Physics', syllabus: 'O-Level Physics (6091)', list: DEFINITIONS },
   biology: { name: 'Biology', syllabus: 'O-Level Biology (6093)', list: BIOLOGY_DEFINITIONS },
+  chemistry: { name: 'Chemistry', syllabus: 'O-Level Chemistry (6092)', list: CHEMISTRY_DEFINITIONS },
 };
 
-export const isDefSubject = (s: unknown): s is DefSubject => s === 'physics' || s === 'biology';
+export const isDefSubject = (s: unknown): s is DefSubject => s === 'physics' || s === 'biology' || s === 'chemistry';
 
 /** "Specific Heat-Capacities!" → "specific heat capacity". The cache and duplicate key. */
 export function termKey(raw: string): string {

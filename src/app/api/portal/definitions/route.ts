@@ -14,7 +14,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import {
-  BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, myDefinitionsOpenFor, scienceMarkingOpen, viewingAsStudent,
+  BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, myDefinitionsOpenFor, scienceMarkingOpen, viewingAsStudent,
 } from '@/lib/portal-beta';
 import { isDefSubject, type DefSubject } from '@/lib/my-definitions';
 import { addMine, listMine, removeMine } from '@/lib/my-definitions-store';
@@ -26,6 +26,7 @@ export const maxDuration = 60;
 const PAGE_OPEN: Record<DefSubject, boolean> = {
   physics: SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS,
   biology: BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS,
+  chemistry: CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS,
 };
 
 async function caller(subject: DefSubject | null): Promise<string | null> {

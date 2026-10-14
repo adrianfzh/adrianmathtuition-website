@@ -8,7 +8,7 @@ const CARD = 'bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_1
 
 type Item = { id: string; term: string; text: string; formula: string | null };
 
-export default function MyDefinitions({ subject, example }: { subject: 'physics' | 'biology'; example: string }) {
+export default function MyDefinitions({ subject, example }: { subject: 'physics' | 'biology' | 'chemistry'; example: string }) {
   const [items, setItems] = useState<Item[] | null>(null);
   const [term, setTerm] = useState('');
   const [busy, setBusy] = useState(false);

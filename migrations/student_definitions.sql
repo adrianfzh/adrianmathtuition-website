@@ -8,7 +8,7 @@
 create table if not exists public.student_definitions (
   id uuid primary key default gen_random_uuid(),
   identity text not null,                 -- portal identity: rec… / acct:<uuid> / admin:preview
-  subject text not null check (subject in ('physics', 'biology')),
+  subject text not null check (subject in ('physics', 'biology', 'chemistry')),
   term_key text not null,                 -- lib/my-definitions termKey()
   term text not null,
   text text not null,                     -- one sentence, **bold** = the scoring words
@@ -23,7 +23,7 @@ alter table public.student_definitions enable row level security;
 -- One row per (subject, term key): the written definition, or the refusal
 -- ('not_in_syllabus' | 'not_a_term'), shared by every student so a term is written once.
 create table if not exists public.definition_cache (
-  subject text not null check (subject in ('physics', 'biology')),
+  subject text not null check (subject in ('physics', 'biology', 'chemistry')),
   term_key text not null,
   term text not null,
   text text,
@@ -35,3 +35,5 @@ create table if not exists public.definition_cache (
   check ((text is null) <> (refusal is null))
 );
 alter table public.definition_cache enable row level security;
+
+-- 14 Oct 2026: chemistry added to both subject checks (applied as migration student_definitions_chemistry).
