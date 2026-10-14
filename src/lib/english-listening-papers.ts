@@ -318,9 +318,9 @@ export const KEENEST_LEFT = 2;                // make one more when the keenest 
 export const PER_STUDENT_PER_DAY = 1;         // at most one new paper a day made because of one student
 /** Most new papers made in a calendar month (Singapore), all levels. Adrian sets it; shown on /admin/listening-papers. */
 export const MONTHLY_CAP = 30;
-/** Recording new papers costs MiniMax money (about US$0.75 a paper). Off until Adrian agrees the cost;
- *  while off, a paper that passes every check waits as 'checked' and is never served. */
-export const VOICE_NEW_PAPERS = false;
+/** Recording new papers costs MiniMax money (US$0.55–0.80 a paper). ON since 14 Oct 2026 (Adrian: "yes"
+ *  to the cost). Off = a paper that passes every check waits as 'checked' and is never served. */
+export const VOICE_NEW_PAPERS = true;
 
 /**
  * How many papers a level needs now. `stock` = ready + checked (being voiced). `leftPerStudent` =

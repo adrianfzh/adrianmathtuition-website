@@ -246,8 +246,11 @@ the good quality ones automatically?"*
 - **Cost of one paper**: writing, checking and reviewing = plan only (no paid key). The voice =
   MiniMax `speech-02-hd`, US$1 per 10,000 characters; a paper is about 7,500 characters ≈ **US$0.75**
   (Harder a little more). 30 a month ≈ US$23.
-- **Recording is OFF** (`VOICE_NEW_PAPERS = false`) until Adrian agrees the cost; while off, a kept
-  paper waits as `checked` and is never served.
+- **Recording is ON** (`VOICE_NEW_PAPERS = true`, Adrian 14 Oct 2026: "yes" to the cost). The first
+  batch costs: Easier ≈ US$0.55, Standard ≈ US$0.73, Harder ≈ US$0.80 a paper (10 papers ≈ US$6.80).
+  Off = a kept paper waits as `checked` and is never served.
+- The worker's door is on the website, so the worker makes papers only once this is on **www**
+  (a promote); until then its look gets no answer and it makes nothing.
 
 ### The checks — every one must pass before a paper is kept
 
