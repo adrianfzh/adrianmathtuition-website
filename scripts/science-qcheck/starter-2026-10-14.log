@@ -1,0 +1,72 @@
+246 structured science questions looked at: 175 passed (now served), 71 failed, 0 not reached
+  ✗ 8023234a [BIO|Cell Structure and Organisation] Part (a) scheme table has a wrong row (virus organelles 'present', animal cell 'absent') with an internal review note left in it; stem also starts with a Section B choice instruction
+  ✗ 96b13967 [BIO|Cell Structure and Organisation] Part (b) asks how the antibiotic acts on each structure but the scheme only gives each structure's function; part (a) scheme definition of pathogen is wrong (spreads, not causes, disease)
+  ✗ 8e64543f [BIO|Cell Structure and Organisation, BIO|Enzymes] Stem is only internal storage notes about an Either/Or alternative ('stored as question 10'), which would confuse a student
+  ✗ 50b5a6e7 [BIO|Cell Structure and Organisation, BIO|Nutrition in Plants] Part (b)(ii) asks the student to draw a bar chart (3 marks), which cannot be answered or graded as a written answer
+  ✗ f7e0ad2c [BIO|Cell Structure and Organisation, BIO|Enzymes] Stem opens with internal storage notes about an Either/Or alternative ('stored as question 10'), which would confuse a student
+  ✗ 42d2492e [BIO|Enzymes] Part (a) is plotting a graph on a grid (4 marks) and part (c) reads from and marks on that graph; not answerable as written answers
+  ✗ 8e4d946e [BIO|Enzymes] Part (c)(i) is plotting a graph on a grid (5 marks) and (c)(ii) refers to that graph; not answerable as a written answer
+  ✗ 8f8dc880 [BIO|Enzymes] Part (b) is plotting a graph (4 marks) and part (c) refers to that graph; not answerable as a written answer
+  ✗ 8fffd6a8 [BIO|Enzymes] part (a) asks the student to plot a graph on a grid that is not provided; it cannot be answered or marked as a written answer
+  ✗ 81d139d7 [BIO|Enzymes] the table is missing the 85 °C column that part (d)(ii) needs; part (a) also asks for a graph plot, and the (d) scheme says minutes where the table is in hours
+  ✗ a338c684 [BIO|Enzymes, BIO|Nutrition in Humans] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ c9b6f208 [BIO|Enzymes, BIO|Nutrition in Plants] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ 0cb02103 [BIO|Enzymes, BIO|Nutrition in Humans] part (c) scheme says the carbon to hydrogen ratio in sucrose is 1:2, which is wrong (sucrose is C12H22O11; the 2:1 ratio is hydrogen to oxygen)
+  ✗ 7113c9fb [BIO|Enzymes] part (a) is a hands-on practical: the student must carry out the iodine test and record results they do not have; part (c)(i) also asks for a graph plot
+  ✗ 48ce9c7e [BIO|Movement of Substances] part (a)(i) asks the student to plot two graphs on a grid that is not provided, and (a)(ii) reads values off that graph
+  ✗ c89101d1 [BIO|Movement of Substances] part (a)(ii) asks the student to plot a graph on a grid that is not provided, and (a)(iii) reads a value off that graph
+  ✗ dc1f8a0c [BIO|Movement of Substances, BIO|Nutrition in Plants] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ eb56b200 [BIO|Movement of Substances] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ deb57381 [BIO|Movement of Substances] off topic: (a) is energy flow/respiration and (b) is artificial insemination; no part is on movement of substances
+  ✗ 65f433bc [BIO|Movement of Substances] (b)(i) asks the student to draw a graph (4 marks) which cannot be written or marked as text, and (b)(ii) reads from that graph
+  ✗ 30e7eba2 [BIO|Nutrition in Humans] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ 552d3eac [BIO|Nutrition in Humans] (a) asks the student to plot graphs (4 marks) which cannot be written or marked as text, and (b) relies on that graph
+  ✗ af320b5a [BIO|Nutrition in Humans] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ adaa3149 [BIO|Nutrition in Humans] Part (a)(i) asks to plot a graph on a grid that is not shown, and the (a)(ii) scheme gives a difference of 16 mg per 100 cm3 although the question asks for a percentage difference.
+  ✗ e67cae89 [BIO|Nutrition in Humans] Part (a) asks the student to complete 'the pie chart below' but no pie chart is shown.
+  ✗ eb9b16a3 [BIO|Nutrition in Humans] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ 806d3a13 [BIO|Nutrition in Plants] Part (a) (4 marks) asks for a bar chart on 'the grid provided', which is not shown and cannot be answered or marked in writing; (b) depends on that graph.
+  ✗ b249eee2 [BIO|Nutrition in Plants] Part (a) (4 marks) asks for a bar chart on a grid that is not shown and cannot be answered or marked in writing.
+  ✗ c95f7fcf [BIO|Nutrition in Plants] Part (b)(i) (4 marks) asks for a plotted graph that cannot be answered in writing, and (b)(ii)-(iii) read values from that graph.
+  ✗ 2ff64f78 [BIO|Nutrition in Plants] Part (a) (4 marks) asks for a plotted graph on a grid that is not shown and cannot be answered or marked in writing.
+  ✗ 4b61a02f [BIO|Nutrition in Plants] off topic: both parts are on transpiration and wilting (transport in plants), not nutrition in plants
+  ✗ 5b65b6ed [BIO|Nutrition in Plants] off topic: every part is on energy flow along a food chain (ecology), not nutrition in plants
+  ✗ 7f5f171a [BIO|Nutrition in Plants] the question text still carries a storage note about the paper's Either/Or choice ("stored here as question N") — strip it and it can pass
+  ✗ dffafa98 [BIO|Nutrition in Plants] part (b) asks the student to plot a bar chart on a grid that is not shown (3 marks), and (a)(i) asks them to circle a value in the table; not answerable in written practice
+  ✗ 4dd4c293 [BIO|Nutrition in Plants] part (a) asks the student to draw a graph on a grid that is not shown (4 marks); not answerable in written practice
+  ✗ aa0e6b5e [CHEM|Acids and Bases] Part (c) says 'Complete Table 2.2' but Table 2.2 is not shown anywhere in the question.
+  ✗ 01742ec5 [CHEM|Acids and Bases] Practical task: (a)(i) asks the student to carry out a titration and record results, and (a)(ii)-(d) depend on those results, which the student does not have.
+  ✗ 7ce3cfe6 [CHEM|Chemical Calculations] Part (b) asks to plot on 'the grid below', which is not shown, and (c)(i)-(ii) are read from that plotted graph.
+  ✗ fa404541 [CHEM|Chemical Calculations] Practical task: (a)(i) asks the student to carry out the titration and record a results table marked against a supervisor's value; burette readings are not given.
+  ✗ 0362ccc0 [CHEM|Chemical Calculations, CHEM|Acids and Bases] Part (b) scheme contradicts itself: answer 6 or 9 min, but its reason says sulfuric acid lies between 18 and 80 min.
+  ✗ 673300f4 [CHEM|Chemical Calculations, CHEM|Acids and Bases] part (a)(i) is a hands-on titration needing the student to record their own burette readings; (a)(ii)-(b) depend on those results
+  ✗ 61e44a02 [CHEM|Salts] practical task: student must carry out tests on unknown mixture R and record observations in (a); (b)-(c) depend on them
+  ✗ 5d6bd4d3 [CHEM|Salts] Table 5.1 and the scheme for part (e) give silver nitrate the wrong formula Ag(NO3)2 (should be AgNO3)
+  ✗ faec3184 [CHEM|The Periodic Table] (a) scheme gives 'copper and zinc' for metals 3 and 4, the wrong way round for the densities (zinc 7.13, copper 8.96); the other parts are on alloys, rates, plastics and rusting, not the Periodic Table
+  ✗ 0fcac92d [CHEM|The Periodic Table] off topic: every part is on oxidation states and acid strength of chlorine oxyacids, none on the Periodic Table
+  ✗ 3b583f80 [CHEM|The Periodic Table] Stem refers to Fig 8.1, Fig 8.2 and a resonance-structure diagram of carboxylate anions but no figure file exists; only bracketed placeholder text is shown.
+  ✗ 53fc5d26 [CS_PHYS|Forces] the text points to a second diagram that is not stored, and the scheme ends with a note to the marker
+  ✗ aab2a4c5 [CS_PHYS|Forces] Scheme direction is wrong: with 60 N at 70 deg above and 70 N at 60 deg below the line, the resultant (about 56 N) is about 56 deg from the 70 N force, not the 51-53 deg the scheme accepts.
+  ✗ 25f6e55d [CS_PHYS|Forces] Scheme's direction mark says the resultant points away from the catapult fork, but both tensions pull the object towards the fork, so the resultant points towards it; a grader would mark a correct arrow wrong.
+  ✗ 5f582f57 [CS_PHYS|Turning Effect of Forces] Stated diameter 50 cm contradicts the figure (43 cm from centre to the step corner, 25 cm step); with radius 25 cm the force F would pass through the pivot, so the 0.25 m arm in the scheme cannot be derived
+  ✗ 18c630d9 [PHYS|Forces, PHYS|Pressure] Scheme for (b) states the force directions the wrong way round (says water pushes the rocket downwards), and (c) scheme line is garbled ('resistance / propulsive force decreases')
+  ✗ 3132bcf0 [PHYS|Forces] Practical task: parts ask the student to set up apparatus, measure L and time oscillations; needs real apparatus and results the student does not have
+  ✗ 5c092b80 [PHYS|Forces] Practical task: (b)-(h) need the student's own measurements of L and T, a results table and graph from real apparatus
+  ✗ 639ef651 [PHYS|Forces, PHYS|Turning Effect of Forces] Practical task: (a)-(d) ask the student to measure h, W, d and F with real apparatus; only (e) planning is self-contained
+  ✗ 53165399 [PHYS|Kinematics, PHYS|Forces] (b)(i) refers to Fig. 10.3 but no figure is attached; (a)(ii) scheme lists conflicting, wrong split times (correct: 0.91, 0.87, 0.85, 0.82, 0.82, 0.82, 0.83, 0.90)
+  ✗ ccd55e23 [PHYS|Kinematics, PHYS|Forces] (a) asks for a sketch on Fig. 2.1 but no figure is attached
+  ✗ 4ecc8893 [PHYS|Kinematics] No scheme for any part, and (a) refers to Fig 1.1 which is not attached
+  ✗ eb942cc5 [PHYS|Kinematics, PHYS|Forces] (a) scheme is wrong physics: says the shuttle pushes the ground; the rocket pushes exhaust gases down and the gases push it up
+  ✗ ed58f8a6 [PHYS|Kinematics] (a)(i) asks for a gradient value but the graph has no scale and g is not given; (a)(ii) scheme covers only the rise after the impact, not the fall from t = 0
+  ✗ 24583a62 [PHYS|Kinematics] (d) needs the resultant measured in cm at 1.0 cm = 10 m/s, but the arrow lengths are not given and cannot be measured on screen
+  ✗ 4e27a9ed [PHYS|Pressure] Fig 2.1 is referenced but no figure is attached; (b) needs the block's depth (2.0 m) which is only in the figure
+  ✗ fd160d01 [PHYS|Pressure] Scheme for (b) is wrong: 2x10^4/3x10^5 = 0.0667 m3, which rounds to 0.067 m3, not the stated 0.070 m3
+  ✗ e128f430 [PHYS|Pressure] Part (b) refers to Fig. 10.2 (modern air-filled tyre) but it is not attached; the Fig. 10.1 image is only a solid black shape
+  ✗ ece7552d [PHYS|Pressure] Scheme for (a) is wrong and garbled ('1.0 N of charge ... every 1 cm2'; 1.0x10^5 Pa is 1.0x10^5 N per m2); Fig. 12.1 also missing
+  ✗ 4053d83a [PHYS|Turning Effect of Forces] No figure: the stem and part (a) need Fig 10.1 (crane, X, counterweight) to draw forces and locate distances; none is attached.
+  ✗ a4039e6e [PHYS|Turning Effect of Forces] Practical task: parts (a)-(d) ask the student to set up apparatus and measure/record l and theta, which a student without the apparatus cannot do; Fig. 2.2 also missing.
+  ✗ daad0efa [PHYS|Turning Effect of Forces, PHYS|Pressure] (a)/(b) scheme uses 45 x 7.0 but the 45 N acts 7.0 + 4.0cos50 cm from the pivot in Fig. 2.2, so F = 123 N and 78 N are wrong; Fig. 2.1 (teeth positions, used in (c)) is also missing
+  ✗ 59b8abac [PHYS|Turning Effect of Forces] Fig. 13.2 (turning effect against time graph) is missing, so part (e)(i) cannot be answered
+  ✗ 716eb102 [PHYS|Turning Effect of Forces] Fig. 12.2 (crane with counterweight, pivot X, G and d) is missing, so part (c) cannot be answered
+  ✗ a23fede2 [PHYS|Turning Effect of Forces] part (b) needs the object's mass (0.472 kg) but it is not given in the stem or in (b); it only appears in (c)
+  ✗ aa1f99ec [PHYS|Turning Effect of Forces] practical task: (a)(i) and (a)(ii) need real timings of the student's own apparatus; also a leftover image placeholder in the stem

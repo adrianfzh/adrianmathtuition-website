@@ -112,6 +112,9 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'twin-batch':        { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
   // 🧪 The SCIENCE twins lane (5 Oct 2026, SPEC-TWINS §11, bot worker/fly/science-twins.sh): every 15 min
   // when lane_room says there is room; stamps every run that looked, so absence = a dead lane.
+  // 🧪 The structured science check (14 Oct 2026, Adrian: "yes"): scripts/science-qcheck/run.sh on the Fly worker,
+  // 01:40 nightly — 30 unchecked structured questions; passes get practice_checked_at. Stamps every night.
+  'science-qcheck':    { kind: 'interval', hours: 36, label: 'nightly 1:40am' },
   'science-twins':     { kind: 'interval', hours: 30, label: 'the Fly worker, by night or when marking is quiet' },
   // 🧹 The Fly worker's disk check (5 Oct 2026, bot worker/fly/jobs.sh disk_check): runs every tick,
   // stamps once a day — silence = the scheduler is dead. Its cleanups stamp 'disk-clean' (no rhythm).
