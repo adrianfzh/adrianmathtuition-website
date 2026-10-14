@@ -68,14 +68,11 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
-## 🩺 Question check on first serve (Adrian, 14 Oct 2026: "yes") — BUILT, OFF
+## 🩺 Question check on first serve (Adrian, 14 Oct 2026: "yes") — BUILT, then PARKED 14 Oct 2026 (Adrian: "park")
 A maths question is checked the first time it is about to reach a student: a separate solver
 works it blind, we compare, copy slips are fixed from the source page, a key is corrected only
 when the school's own answer agrees with the solver, a solver-vs-school dispute is paused on
-`/admin/question-health` for Adrian. `SPEC-QUESTION-HEALTH.md`. **Open for Adrian:** (1) yes to
-applying `migrations/question_health.sql` (it changes the live pickers); (2) merge the bot branch
-`question-health-lane`; (3) turn it on. Later (§7): student disputes / skips as suspects, levels
-from results.
+`/admin/question-health` for Adrian. `SPEC-QUESTION-HEALTH.md`. Why: twins already pass a blind solve + checker before they enter the bank, and A Math, E Math and Sec 1 already serve twins only (all 99 topics flipped; 3,538 verified twins), so the check would only cover Sec 2 / JC and sheets that still draw school rows — a gap that closes as twins finish. The code is on `dev`, dormant: `migrations/question_health.sql` NOT applied, bot branch `question-health-lane` NOT merged, switch off. Revisit only if Sec 2 / JC practice gets heavy before their twins are done. The part still worth building later is cheaper: a student's "my answer is right" / most-wrong-first-try sends ONE question back for a look (spec §7).
 
 ## ✏️ Draw on the student's own photo to explain (Adrian, 14 Oct 2026: "yes") — QUEUED, starts after the explanation work is live
 

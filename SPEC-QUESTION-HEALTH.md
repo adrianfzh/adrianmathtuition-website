@@ -1,6 +1,6 @@
 # SPEC-QUESTION-HEALTH — check a maths question the first time it reaches a student
 
-**Agreed 14 Oct 2026 (Adrian: "yes").** Status: **BUILT, switched OFF.** Two steps wait on
+**Agreed 14 Oct 2026 (Adrian: "yes"); PARKED 14 Oct 2026 (Adrian: "park") the same day.** Why: twins already pass a blind solve + checker before they enter the bank, and A Math, E Math and Sec 1 already serve twins only (all 99 topics flipped; 3,538 verified twins), so the check would only cover Sec 2 / JC and sheets that still draw school rows — a gap that closes as twins finish. Nothing below is live. Status before parking: **BUILT, switched OFF.** Two steps wait on
 Adrian: the database change (`migrations/question_health.sql`, not yet applied — it changes the
 live question pickers) and the switch on `/admin/question-health`. Runs on the plan (the Fly
 worker lane `question-health`), never the paid key.
