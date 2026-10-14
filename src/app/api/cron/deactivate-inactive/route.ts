@@ -109,7 +109,7 @@ async function run(req: NextRequest) {
     // fields are unfilterable by rec id, so we match in JS).
     const [enr, students] = await Promise.all([
       airtableRequestAll('Enrollments', '?fields[]=Student&fields[]=Status&fields[]=End Date'),
-      airtableRequestAll('Students', '?fields[]=Student Name&fields[]=Subject Level'),
+      airtableRequestAll('Students', '?fields[]=Student Name&fields[]=Subject Level&fields[]=Subjects'),
     ]);
     const byStudent = groupEnrollmentsByStudent((enr.records || []) as AirtableEnrollmentRecord[]);
     const nameById = new Map<string, string>();

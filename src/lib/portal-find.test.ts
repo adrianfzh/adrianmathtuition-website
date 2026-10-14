@@ -43,6 +43,10 @@ describe('practiceEligibility', () => {
     expect(practiceEligibility({ ...base, legacy_syllabus: true })).toEqual({ ok: false, reason: 'not in the current syllabus' });
     expect(practiceEligibility({ ...base, legacy_syllabus: false })).toEqual({ ok: true });
     expect(practiceEligibility({ ...base, legacy_syllabus: null })).toEqual({ ok: true });
+    // IP-only content (lib/ip-content.ts, 15 Oct 2026): an IP school's row opens only to an ipContent caller
+    expect(practiceEligibility({ ...base, legacy_syllabus: true, ip_syllabus: true })).toEqual({ ok: false, reason: 'not in the current syllabus' });
+    expect(practiceEligibility({ ...base, legacy_syllabus: true, ip_syllabus: true }, { ipContent: true })).toEqual({ ok: true });
+    expect(practiceEligibility({ ...base, legacy_syllabus: true, ip_syllabus: false }, { ipContent: true })).toEqual({ ok: false, reason: 'not in the current syllabus' });
   });
   const base = { question_text: 'Solve $x^2 = 4$.', answer: 'x = ±2' };
 

@@ -39,7 +39,7 @@ import PracticeFlow, { type FixedQuestion, type InitialAssignment } from './prac
 import PracticeTodo from './todo-list';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { qbLevelsFor } from '@/lib/practice';
+import { qbLevelsFor, accountIpContent } from '@/lib/practice';
 import { getStudentAssignment, paperNamesForStudent } from '@/lib/portal-assignments';
 import { dueLabel, opensInGrader } from '@/lib/assignments';
 import { practiceEligibility } from '@/lib/portal-find';
@@ -196,14 +196,16 @@ export default async function PracticePage({ searchParams }: { searchParams: Pro
     if (!account) redirect('/login');
     const { data: rawQ } = await getSupabaseAdmin()
       .from('questions')
-      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified, school, national, legacy_syllabus')
+      .select('id, question_text, parts, total_marks, has_image, image_url, images, figure_url, solution, answer, topics, deleted_at, flagged_count, ai_generated, verified, school, national, legacy_syllabus, ip_syllabus')
       .eq('id', qid)
       .maybeSingle();
     // Part marks: the student's row; null when too little is left (practiceEligibility refuses it too).
     const q = rawQ ? studentRow(rawQ) : null;
-    if (q && practiceEligibility(q).ok && !(await qidAudienceOk(q.id, account))) {
+    // IP-only content (lib/ip-content.ts): same rule as the practice list.
+    const eligible = q ? practiceEligibility(q, { ipContent: accountIpContent(account) }).ok : false;
+    if (q && eligible && !(await qidAudienceOk(q.id, account))) {
       qidBlocked = 'syllabus';
-    } else if (q && practiceEligibility(q).ok) {
+    } else if (q && eligible) {
       const { stem, parts } = questionStructured(q);
       const fromParam = QID_FROM.find(f => f === from) ?? null;
       const topics = Array.isArray(q.topics) ? q.topics.filter((t): t is string => typeof t === 'string' && !!t.trim()) : [];

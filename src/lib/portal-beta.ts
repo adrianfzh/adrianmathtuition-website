@@ -409,6 +409,15 @@ export const FIND_OPEN_TO_STUDENTS = true;
 export const PRACTICE_PHOTO_OPEN_TO_STUDENTS = true;
 export const PRACTICE_PHOTO_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
+// 🎓 IP-only topics (lib/ip-content.ts, migrations/ip_content.sql — Adrian,
+// 15 Oct 2026: "yes"). An IP student is also served questions from IP schools'
+// papers on topics off the O-Level syllabus (Progressions, Permutations and
+// Combinations, Vectors, Power Graphs …); a mainstream student never is.
+// CLOSED until Adrian has tried it as the preview student; his admin view and
+// the preview student always see it.
+export const IP_TOPICS_OPEN_TO_STUDENTS = false;
+export const IP_TOPICS_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
+
 export async function practicePhotoOpen(): Promise<boolean> {
   if (PRACTICE_PHOTO_OPEN_TO_STUDENTS) return true;
   if (!(await viewingAsStudent()) && (await isNotesAuthed())) return true;

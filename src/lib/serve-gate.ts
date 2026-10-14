@@ -18,6 +18,8 @@ export interface GateRow {
   verified?: boolean | null;
   flagged_count?: number | null;
   legacy_syllabus?: boolean | null;
+  /** From an IP school's paper (provenance). With legacy_syllabus = IP-only content (lib/ip-content.ts). */
+  ip_syllabus?: boolean | null;
   /** Optional: when the caller selected `parts` (+ `total_marks`), part marks are judged too. */
   parts?: unknown;
   total_marks?: unknown;
@@ -40,6 +42,8 @@ export interface GateContext {
   /** Bank levels this student may practise (null = Adrian's admin view: no level/quality rules). */
   allowedQLevels: string[] | null;
   isIp: boolean;
+  /** May be served IP-only content (lib/ip-content.ts — practice.ts accountIpContent). Absent = no. */
+  ipContent?: boolean;
   /** The question is on the student's own list (Adrian sent it, or they were given it). */
   assigned: boolean;
 }
@@ -58,7 +62,7 @@ export function serveRefusal(q: GateRow, ctx: GateContext): Refusal | null {
   if (partMarksBlockAlways(q)) return 'legacy';
   if (ctx.assigned) return null;
   if (partMarksBlockServing(q)) return 'legacy';
-  if (q.legacy_syllabus === true && !ctx.isIp) return 'legacy';
+  if (q.legacy_syllabus === true && !ctx.isIp && !(ctx.ipContent && q.ip_syllabus === true)) return 'legacy';
   if (!q.level || !ctx.allowedQLevels.includes(q.level)) return 'level';
   return null;
 }

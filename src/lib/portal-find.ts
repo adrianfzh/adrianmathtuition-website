@@ -17,6 +17,7 @@ import { isOurRow } from './serving-policy';
 import { qbLevelsFor } from './qb-levels';
 import { allowedSubjects, type PaperSubject } from './portal-subjects';
 import { partMarksBlockServing, studentRow } from './part-syllabus';
+import { syllabusAllows } from './ip-content';
 
 // ── Generation cap ───────────────────────────────────────────────────────────
 // Generated questions run the bot's full 4-gate worker (1–3 min of model time,
@@ -112,6 +113,8 @@ export type EligibilityRow = {
   national?: boolean | null;
   /** cut content / a question whose design is an out-of-syllabus method (docs/SEC-SYLLABUS-METHODS.md) */
   legacy_syllabus?: boolean | null;
+  /** from an IP school's paper; with legacy_syllabus = IP-only content (lib/ip-content.ts) */
+  ip_syllabus?: boolean | null;
   deleted_at?: string | null;
   flagged_count?: number | null;
   ai_generated?: boolean | null;
@@ -141,8 +144,11 @@ function partsHaveAnswer(parts: unknown): boolean {
  * @param opts.schoolRowsRetired — the topic has been FLIPPED (SPEC-TWINS §6,
  *   `serving_policy.school_rows = false`): only our own rows are served there.
  *   Mirrors `serving_school_rows()` in the four RPCs for direct reads.
+ * @param opts.ipContent — the caller may be served IP-only content
+ *   (lib/ip-content.ts, practice.ts accountIpContent): an IP school's row off
+ *   the O-Level syllabus is let through; an old-syllabus row never is.
  */
-export function practiceEligibility(q: EligibilityRow, opts?: { schoolRowsRetired?: boolean }): { ok: true } | { ok: false; reason: string } {
+export function practiceEligibility(q: EligibilityRow, opts?: { schoolRowsRetired?: boolean; ipContent?: boolean }): { ok: true } | { ok: false; reason: string } {
   if (q.deleted_at) return { ok: false, reason: 'removed from the bank' };
   // National papers are GROUNDING-ONLY (Adrian, 11 Sep 2026: "yes keep gce
   // questions out of serving"): SEAB sells them and licenses the TYS
@@ -154,7 +160,7 @@ export function practiceEligibility(q: EligibilityRow, opts?: { schoolRowsRetire
   // students are not taught — sum and product of roots, 11 Sep 2026) are what
   // the practice_next / practice_pool / kiosk_pool RPCs already skip; a
   // deep link or a finder match must not walk round that gate.
-  if (q.legacy_syllabus === true) return { ok: false, reason: 'not in the current syllabus' };
+  if (!syllabusAllows(q, opts?.ipContent === true)) return { ok: false, reason: 'not in the current syllabus' };
   // Part marks (lib/part-syllabus.ts): with its out-of-syllabus parts removed, too little is left.
   if (partMarksBlockServing(q)) return { ok: false, reason: 'not in the current syllabus (too little left once its old-syllabus part is removed)' };
   if ((q.flagged_count ?? 0) >= 3) return { ok: false, reason: 'flagged by students' };

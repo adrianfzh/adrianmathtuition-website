@@ -14,7 +14,9 @@
 import { NextRequest } from 'next/server';
 import { verifyAdminAuth } from './schedule-helpers';
 import { createSupabaseServer } from './supabase-server';
-import { getSessionUser, type PortalAccount } from './portal-auth';
+import { getSessionUser, portalIdentity, type PortalAccount } from './portal-auth';
+import { ipContentAllowed } from './ip-content';
+import { IP_TOPICS_OPEN_TO_STUDENTS, IP_TOPICS_PREVIEW_IDENTITIES } from './portal-beta';
 import { ALL_QB_LEVELS, qbLevelsFor } from './qb-levels';
 import { gateLevelsBySubject } from './practice-subject-gate';
 
@@ -49,9 +51,24 @@ export { ALL_QB_LEVELS, qbLevelsFor, bankScope } from './qb-levels';
  * account is IP. A student session ALWAYS wins in practiceAuth, so Adrian's
  * demo-student login shows him exactly that student's view.
  */
-export function rpcAudience(caller: NonNullable<PracticeCaller>): { p_is_ip: boolean; p_admin: boolean } {
-  if (caller.kind === 'admin') return { p_is_ip: true, p_admin: true };
-  return { p_is_ip: Boolean(caller.account.is_ip), p_admin: false };
+export function rpcAudience(caller: NonNullable<PracticeCaller>): { p_is_ip: boolean; p_admin: boolean; p_ip_content: boolean } {
+  if (caller.kind === 'admin') return { p_is_ip: true, p_admin: true, p_ip_content: true };
+  return { p_is_ip: Boolean(caller.account.is_ip), p_admin: false, p_ip_content: accountIpContent(caller.account) };
+}
+
+/**
+ * IP-only content (lib/ip-content.ts, Adrian 15 Oct 2026): may this student be
+ * served IP schools' questions on topics off the O-Level syllabus? An IP
+ * account once IP_TOPICS_OPEN_TO_STUDENTS is on; the preview student always.
+ */
+export function accountIpContent(account: { id: string; airtable_student_id?: string | null; is_ip?: boolean | null }): boolean {
+  return ipContentAllowed({
+    admin: false,
+    isIp: Boolean(account.is_ip),
+    switchOpen: IP_TOPICS_OPEN_TO_STUDENTS,
+    identity: portalIdentity(account),
+    previewIdentities: IP_TOPICS_PREVIEW_IDENTITIES,
+  });
 }
 
 /**

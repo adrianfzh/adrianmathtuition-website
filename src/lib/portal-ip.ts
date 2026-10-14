@@ -11,9 +11,14 @@
 
 export const IP_SUBJECT_LEVEL = 'IP';
 
-/** Airtable Students fields → is this an IP-stream student? Only the
- *  `Subject Level` verdict counts; a missing/blank field is not IP. */
+export const IP_SUBJECT = 'IP Math';
+
+/** Airtable Students fields → is this an IP-stream student? `Subject Level`
+ *  decides when it is filled in. When it is blank, 'IP Math' in `Subjects`
+ *  counts too (15 Oct 2026, IP-only topics — lib/ip-content.ts). */
 export function deriveIsIp(fields: Record<string, unknown> | null | undefined): boolean {
   const raw = fields?.['Subject Level'];
-  return typeof raw === 'string' && raw.trim().toUpperCase() === IP_SUBJECT_LEVEL;
+  if (typeof raw === 'string' && raw.trim() !== '') return raw.trim().toUpperCase() === IP_SUBJECT_LEVEL;
+  const subjects = fields?.['Subjects'];
+  return Array.isArray(subjects) && subjects.some((s) => typeof s === 'string' && s.trim().toLowerCase() === IP_SUBJECT.toLowerCase());
 }

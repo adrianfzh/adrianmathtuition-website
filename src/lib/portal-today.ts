@@ -11,7 +11,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { learnSubjectsForLevel } from './learn';
 import { unresolvedFails } from './learn-review';
-import { qbLevelsFor, bankScope } from './practice';
+import { qbLevelsFor, bankScope, accountIpContent } from './practice';
 import { airtableRequestAll } from './airtable';
 import type { PortalAccount } from './portal-auth';
 import { sgtTodayISO } from './sgt';
@@ -130,6 +130,7 @@ export async function getTodayCards(account: PortalAccount): Promise<TodayCard[]
           p_qlevel: scope.qlevel,
           p_is_ip: Boolean(account.is_ip), // sub-group audience — same pool the picker shows
           p_admin: false,
+          p_ip_content: accountIpContent(account), // IP-only topics (lib/ip-content.ts)
         });
         if (error) continue;
         for (const r of (data || []) as { topic: string; attempts: number; avg_mastery: number | null }[]) {

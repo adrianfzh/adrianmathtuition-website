@@ -19,4 +19,10 @@ describe('deriveIsIp — Airtable Students → portal_accounts.is_ip', () => {
   it("'IP Math' in Subjects alone does not make an account IP — Subject Level decides", () => {
     expect(deriveIsIp({ Subjects: ['IP Math'], 'Subject Level': 'G3' })).toBe(false);
   });
+
+  it("'IP Math' in Subjects counts when Subject Level is blank (15 Oct 2026)", () => {
+    expect(deriveIsIp({ Subjects: ['IP Math'] })).toBe(true);
+    expect(deriveIsIp({ Subjects: ['A Math', 'IP Math'], 'Subject Level': '' })).toBe(true);
+    expect(deriveIsIp({ Subjects: ['A Math'] })).toBe(false);
+  });
 });

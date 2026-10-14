@@ -28,6 +28,11 @@ describe('serveRefusal', () => {
   it('old-syllabus rows only for IP students; a question on their own list skips level + syllabus', () => {
     expect(serveRefusal({ ...ok, legacy_syllabus: true }, student)).toBe('legacy');
     expect(serveRefusal({ ...ok, legacy_syllabus: true }, { ...student, isIp: true })).toBeNull();
+    // IP-only content (lib/ip-content.ts): an IP-school row off the syllabus opens to an ipContent caller;
+    // an old-O-Level-syllabus row (ip_syllabus false) does not.
+    expect(serveRefusal({ ...ok, legacy_syllabus: true, ip_syllabus: true }, { ...student, ipContent: true })).toBeNull();
+    expect(serveRefusal({ ...ok, legacy_syllabus: true, ip_syllabus: false }, { ...student, ipContent: true })).toBe('legacy');
+    expect(serveRefusal({ ...ok, legacy_syllabus: true, ip_syllabus: true }, student)).toBe('legacy');
     expect(serveRefusal({ ...ok, level: 'JC2' }, { ...student, assigned: true })).toBeNull();
   });
 });
