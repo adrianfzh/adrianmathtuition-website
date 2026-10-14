@@ -464,3 +464,40 @@ student drew the curve and then left the "draw a suitable straight line" part or
 the "= k has two solutions" part blank, or answered it with the wrong line. Both
 sub-figures at once is right when both parts went blank (Chloe's Q4); only one
 when only one part went wrong — the figure is read at the width of a margin.
+
+## Addendum — On the printed figure: the pen draws on the student's own diagram (14 Oct 2026)
+
+Adrian, 14 Oct 2026: "let's do this", in reply to the note that marking cannot yet draw on
+the printed diagram (only the chat does). The trigger was Rainie's ACS Barker Road 2023
+Physics P2 Q2(a): "draw and label the forces acting on the man" on Fig. 2.1 and Fig. 2.2.
+
+**What it does.** A marked question that asks the student to draw on a printed figure
+(draw / label / complete / sketch / plot … on a Fig. N, diagram, graph, grid, axes,
+circuit or ray), where a part lost marks and has a model answer, gets its correct strokes
+drawn in red onto the student's own printed figure. When a question is drawn on, its margin
+figure is not drawn as well.
+
+**Built in the bot** (`ai/figure-draw.js`, behind the switch **`PEN_ON_FIGURE=1`**,
+**off by default**):
+1. `figureAskFor(mo)` decides which questions ask (pure).
+2. One picture-reading call per page (`locateFigureDraws`, feature `pen_on_figure`)
+   returns arrows / lines / text in 0–1000 page coordinates. It is the same idea as the
+   chat's draw-on-photo.
+3. `parseFigureDraws` fails closed. A part is dropped whole if: it is not sure; the figure
+   box is not a figure; any stroke leaves the figure (8% slack); an arrow is too short; a
+   label is over 24 characters; or a stroke type is unknown. The reason is logged.
+4. `seatLabels` places each label deterministically on blank paper beside its stroke. It
+   checks the page's own ink and slides out at most 3× the font size, wrapping to two
+   lines if needed. The model's label spot is only a fallback.
+5. `annotate.js` draws it as a `figdraw` object in the editable layer and claims its ink.
+   The no-overlap checks see it (`lib/layer-objects.js` INKED).
+6. The strokes are stored in `annotation_debug[].on_figure`. A redraw (reannotate, the
+   dry run, the bench) draws the stored strokes, never a fresh read.
+
+**Gate.** Pen bench case `rainie-phys-acsbr23p2-p3-forces-on-print` (check
+`figure-drawn-on-print`: at least 2 strokes on Q2's figure, on the photo, no margin copy) +
+`test/figure-draw.test.js`.
+
+**Not yet.** Live marking draws on the figure only once Adrian says to switch it on.
+Rainie's real page has not been redrawn or re-sent. Graph-paper curves and ray diagrams
+use the same `line` stroke but have no bench case yet.
