@@ -4,6 +4,7 @@
 //
 //   node scripts/english-own/speaking-audio.mjs              make what is missing
 //   node scripts/english-own/speaking-audio.mjs ls02 --force redo one set
+//   node scripts/english-own/speaking-audio.mjs --check-sg     every Singapore word in src/lib/sg-say.mjs, numbered → a file to listen to
 //   node scripts/english-own/speaking-audio.mjs --sample <voice_id> ["words"]   a test line (or your words) → a scratch file, its path printed
 //
 // Voice: the lessons' voice (MiniMax speech-02-hd, English_FriendlyPerson — the same constants as
@@ -18,6 +19,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+
+import { sayAs, SG_SAY } from '../../src/lib/sg-say.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const TTS_MODEL = 'speech-02-hd';
@@ -40,7 +43,8 @@ const KEY = ({ ...loadEnv(), ...process.env }.MINIMAX_API_KEY || '').trim();
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function speak(text, voice, emotion) {
-  const body = { model: TTS_MODEL, text, voice_setting: { voice_id: voice, speed: 1, vol: 1, pitch: 0, ...(emotion ? { emotion } : {}) },
+  // Singapore words are read the way they are said here (src/lib/sg-say.mjs) — the sound only.
+  const body = { model: TTS_MODEL, text: sayAs(text), voice_setting: { voice_id: voice, speed: 1, vol: 1, pitch: 0, ...(emotion ? { emotion } : {}) },
     audio_setting: { format: 'mp3', sample_rate: 24000, bitrate: 64000, channel: 1 } };
   for (let attempt = 1; attempt <= 3; attempt++) {
     const r = await fetch('https://api.minimax.io/v1/t2a_v2', { method: 'POST', headers: { Authorization: `Bearer ${KEY}`, 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -82,6 +86,17 @@ const args = process.argv.slice(2);
 const FORCE = args.includes('--force');
 const si = args.indexOf('--sample');
 if (!KEY) { console.error('MINIMAX_API_KEY missing (.env.local)'); process.exit(2); }
+
+// --check-sg: one recording that reads every Singapore word in the list, numbered, for a person to
+// listen to (Adrian, 14 Oct 2026). Path printed.
+if (args.includes('--check-sg')) {
+  const words = Object.keys(SG_SAY);
+  const out = path.join(os.tmpdir(), 'sg-words-check.mp3');
+  await render(words.map((w, i) => ({ text: `Number ${i + 1}. ${w}.`, voice: NARRATOR, emotion: 'calm', gap: 0.6 })), out);
+  console.log('\n' + out);
+  words.forEach((w, i) => console.log(`${i + 1}. ${w}`));
+  process.exit(0);
+}
 
 if (si >= 0) {
   const voice = args[si + 1];
