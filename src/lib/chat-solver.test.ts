@@ -93,3 +93,14 @@ describe('formatMessage — a restored answer draws its table', () => {
     expect(formatMessage('|x − 3| = 5')).toBe('|x − 3| = 5');
   });
 });
+
+describe('the PHOTO:MARK tail line (circle a part of the student\'s own photo, 14 Oct 2026)', () => {
+  const ans = 'Angle CDX = θ because DC ∥ the ground.\nCONFIDENCE:HIGH\nPHOTO:MARK {"marks":[{"target":"angle CDX","label":"∠CDX = θ"}]}';
+  it('is held back while streaming', () => {
+    expect(trimUnclosedMath(ans)).toBe('Angle CDX = θ because DC ∥ the ground.');
+    expect(trimUnclosedMath('Answer.\nCONFIDENCE:HIGH\nPHOT')).toBe('Answer.');
+  });
+  it('is stripped from the final render', () => {
+    expect(formatMessage(ans)).not.toMatch(/PHOTO|marks|CONFIDENCE/);
+  });
+});

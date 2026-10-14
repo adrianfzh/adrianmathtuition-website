@@ -86,12 +86,14 @@ export function trimUnclosedMath(t: string): string {
   const ticks = t.match(/`/g) || [];
   if (ticks.length % 2 === 1) t = t.slice(0, t.lastIndexOf('`'));
   // Hold back trailing marker lines while streaming (stripped fully on final
-  // render): CONFIDENCE:…, DIAGRAM:REQUEST …, DATA:MISSING …, BANK:… — the bot's
+  // render): CONFIDENCE:…, DIAGRAM:REQUEST …, DATA:MISSING …, BANK:…, PHOTO:MARK … — the bot's
   // machine-readable tail markers, which may stack after the answer (BANK is the
   // solver's verdict against the paper's answer key, 10 Sep 2026).
-  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA|BANK)\s*:[^\n]*)+\s*$/i, '');
+  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA|BANK|PHOTO)\s*:[^\n]*)+\s*$/i, '');
   // …and a partially-streamed marker keyword ("CONFID", "DIAGR", "DATA:")
   t = t.replace(/\n\s*[A-Z]{2,10}\s*:?\s*$/, '');
+  // …and the whole marker lines that sat above that partial one ("CONFIDENCE:HIGH\nPHOT").
+  t = t.replace(/(\n\s*(?:CONFIDENCE|DIAGRAM|DATA|BANK|PHOTO)\s*:[^\n]*)+\s*$/i, '');
   return t;
 }
 
@@ -116,7 +118,7 @@ export function answerHtml(
   // $$…$$ block it used to become a bare $ and break the block; chat-currency.ts).
   text = markCurrencyDollars(hideEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
   if (streaming) text = trimUnclosedMath(text);
-  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|PHOTO\s*:\s*MARK[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/`([^`\n]+)`/g, '$$$1$');
 
   // Fix 1: bare \begin{matrix} has no brackets in KaTeX — upgrade to \begin{pmatrix}
@@ -193,7 +195,7 @@ export function formatMessage(text: string): string {
   // pairs $ only within one run of text nodes, so the span keeps a price
   // from pairing with the next maths $ on a restored answer.
   text = markCurrencyDollars(hideEscapedDollars(text.replace(/`([^`\n]+)`/g, '$$$1$')));
-  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
+  text = text.replace(/\n\s*(?:CONFIDENCE\s*:\s*(?:HIGH|LOW)|DIAGRAM\s*:\s*REQUEST[^\n]*|DATA\s*:\s*MISSING[^\n]*|PHOTO\s*:\s*MARK[^\n]*|BANK\s*:\s*(?:AGREE|DISAGREE|UNSURE))(?=\n|$)/gi, '').trimEnd();
   text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
   text = text.replace(/\*([^*\n]+)\*/g, '<strong>$1</strong>');
   text = text.replace(/<strong>(Part\s*[\(\w\d]+[\):]?[^<\n]*)<\/strong>/g,
@@ -640,7 +642,7 @@ export async function runSolverStream(res: Response, opts: SolverStreamOpts): Pr
             const loader = document.createElement('div');
             loader.id = 'graphLoader';
             loader.style.cssText = 'margin-top:12px;padding:12px;background:rgba(0,0,0,0.03);border-radius:8px;display:flex;align-items:center;gap:8px;font-size:0.9em;color:#666;';
-            loader.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin 0.8s linear infinite;"></span> Generating graph...';
+            loader.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #ccc;border-top-color:#333;border-radius:50%;animation:spin 0.8s linear infinite;"></span> ' + (parsed.graphLabel === 'photo' ? 'Marking your photo…' : 'Generating graph...');
             streamDiv.parentElement?.appendChild(loader);
             continue;
           }
