@@ -4,7 +4,7 @@
 // scripts/english-own/speaking-audio.mjs runs every line through sayAs() before the voice reads it.
 // Adding a word: put it here, run `node scripts/english-own/speaking-audio.mjs --check-sg` and
 // listen. Pure; tested (sg-say.test.ts).
-// 14 Oct 2026: Adrian listened to every word and picked between versions; Bedok still being settled. A plain word the voice already says right (laksa) is not listed.
+// 14 Oct 2026: Adrian listened to every word and picked between versions; Bedok settled after a search (stress on the second part). A plain word the voice already says right (laksa) is not listed.
 
 /** spelling → how to say it (a respelling the voice reads naturally). Longest names first is not needed: matching is whole-word. */
 export const SG_SAY = {
@@ -28,7 +28,7 @@ export const SG_SAY = {
   'Geylang': 'Gay-lahng',
   'Serangoon': 'Seh-rung-goon',
   'Choa Chu Kang': 'Chwa Chu Kahng',
-  'Bedok': 'Beh-dok',
+  'Bedok': 'Buhdoke',
   'Changi': 'Chahng-ee',
   'Clementi': 'Clementee',
   'Simei': 'See-may',
