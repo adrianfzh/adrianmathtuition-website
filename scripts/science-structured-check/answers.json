@@ -1,0 +1,1849 @@
+[
+ {
+  "qid": "Q01",
+  "bankId": "acbd95ef-3e72-4783-ac46-b65231165288",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "b": 3
+  },
+  "why": "All marks: correct KE substitution and 98m J; mgh = 98m, h = 9.8 m, no air resistance stated.",
+  "lines": [
+   "(a) KE at the start = 1/2 x m x v^2",
+   "= 0.5 x m x 14^2",
+   "= 98m J",
+   "(b) At the top all the KE has become GPE, so m x g x h = 98m",
+   "10 x h = 98",
+   "h = 9.8 m",
+   "Assumption: there is no air resistance acting on the ball, so no energy is lost."
+  ]
+ },
+ {
+  "qid": "Q01",
+  "bankId": "acbd95ef-3e72-4783-ac46-b65231165288",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 2
+  },
+  "why": "(a) C1 for substitution, A1 lost for no unit J; (b) C1 + A1 for h = 9.8 m, B1 lost because no assumption stated.",
+  "lines": [
+   "(a) KE = 1/2 x m x 14^2 = 98m",
+   "(b) m x 10 x h = 98m",
+   "h = 9.8 m"
+  ]
+ },
+ {
+  "qid": "Q01",
+  "bankId": "acbd95ef-3e72-4783-ac46-b65231165288",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "Wrong KE formula, wrong height method and a wrong assumption: no marks.",
+  "lines": [
+   "(a) KE = m x v = 14m J",
+   "(b) height = speed x g = 14 x 10 = 140 m",
+   "Assumption: the ball keeps moving at a constant speed."
+  ]
+ },
+ {
+  "qid": "Q02",
+  "bankId": "0e4638cc-e716-4705-b022-2b0f610cb115",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "ai": 2,
+   "aii": 2,
+   "b": 2
+  },
+  "why": "All three regions named in the correct order, cancer + ionising, v=f lambda with 6.0 x 10^14 Hz.",
+  "lines": [
+   "(a)(i) Lowest frequency: infrared",
+   "Intermediate frequency: visible light",
+   "Highest frequency: ultraviolet",
+   "(a)(ii) Damaging effect: it can cause skin cancer",
+   "Property: UV radiation is ionising, it can ionise atoms in skin cells and damage DNA",
+   "(b) 500 nm = 5.00 x 10^-7 m",
+   "v = f x lambda, speed of light in space = 3.0 x 10^8 m/s",
+   "f = 3.0 x 10^8 / 5.00 x 10^-7",
+   "f = 6.0 x 10^14 Hz"
+  ]
+ },
+ {
+  "qid": "Q02",
+  "bankId": "0e4638cc-e716-4705-b022-2b0f610cb115",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 1,
+   "b": 1
+  },
+  "why": "(ai) correct three regions but wrong order loses the order B1; (aii) 'high energy' is explicitly rejected so property B1 lost; (b) C1 for v=f lambda but final answer has no unit so A1 lost.",
+  "lines": [
+   "(a)(i) Lowest frequency: visible light",
+   "Intermediate frequency: infrared",
+   "Highest frequency: ultraviolet",
+   "(a)(ii) Damaging effect: skin cancer",
+   "Property: ultraviolet has very high energy",
+   "(b) v = f x lambda",
+   "f = 3.0 x 10^8 / (500 x 10^-9)",
+   "f = 6.0 x 10^14"
+  ]
+ },
+ {
+  "qid": "Q02",
+  "bankId": "0e4638cc-e716-4705-b022-2b0f610cb115",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "ai": 0,
+   "aii": 0,
+   "b": 0
+  },
+  "why": "Wrong regions, wrong effect/property, wrong equation and answer.",
+  "lines": [
+   "(a)(i) Lowest: gamma rays",
+   "Intermediate: X-rays",
+   "Highest: radio waves",
+   "(a)(ii) Damaging effect: makes you sleepy",
+   "Property: it is very loud",
+   "(b) f = 500 x 3 = 1500 m"
+  ]
+ },
+ {
+  "qid": "Q03",
+  "bankId": "7d4aac09-4eea-4b3c-afab-a5613f97b5df",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 1,
+   "aiii": 1,
+   "b": 2
+  },
+  "why": "All scheme points: vacuum, microwaves, wider coverage, 3.0x10^8 x 0.24 = 7.2 x 10^7 m.",
+  "lines": [
+   "(a)(i) The signal has to cross space (a vacuum) to and from the satellite, and only electromagnetic waves can travel through a vacuum.",
+   "(a)(ii) Microwaves",
+   "(a)(iii) A satellite is high up so its signal covers a much wider area of the Earth and is not blocked by hills or buildings.",
+   "(b) extra distance = speed x time = 3.0 x 10^8 x 0.24",
+   "= 7.2 x 10^7 m"
+  ]
+ },
+ {
+  "qid": "Q03",
+  "bankId": "7d4aac09-4eea-4b3c-afab-a5613f97b5df",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 0,
+   "aiii": 1,
+   "b": 1
+  },
+  "why": "(aii) infrared is the wrong region; (b) substitution B1 earned but final answer has no unit so second B1 lost.",
+  "lines": [
+   "(a)(i) Electromagnetic waves can travel through a vacuum like space.",
+   "(a)(ii) Infrared",
+   "(a)(iii) Satellites give greater coverage over a large area.",
+   "(b) distance = 3.0 x 10^8 x 0.24",
+   "= 7.2 x 10^7"
+  ]
+ },
+ {
+  "qid": "Q03",
+  "bankId": "7d4aac09-4eea-4b3c-afab-a5613f97b5df",
+  "subject": "physics",
+  "type": "calculation",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "ai": 0,
+   "aii": 0,
+   "aiii": 0,
+   "b": 0
+  },
+  "why": "All wrong: no vacuum idea, wrong region, irrelevant reason, speed of sound used.",
+  "lines": [
+   "(a)(i) Because they are cheaper than sound waves.",
+   "(a)(ii) Gamma rays",
+   "(a)(iii) Satellites make the picture more colourful.",
+   "(b) distance = 340 x 0.24 = 81.6 m"
+  ]
+ },
+ {
+  "qid": "Q04",
+  "bankId": "b3272834-2d16-4fc8-8630-f9ae0d9e09dc",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "bi": 2,
+   "bii": 2
+  },
+  "why": "Correct method and answers with units: 2500 m^3 and about 1260 kg/m^3; natural split B1 method / A1 answer in each subpart.",
+  "lines": [
+   "(b)(i) density of water = 1 g/cm^3 = 1000 kg/m^3",
+   "volume = mass / density = 2 500 000 / 1000",
+   "= 2500 m^3",
+   "(b)(ii) mass of one container = 25 000 000 kg / 600 = 41 667 kg",
+   "density = mass / volume = 41 667 / 33",
+   "= 1260 kg/m^3 (3 s.f.)"
+  ]
+ },
+ {
+  "qid": "Q04",
+  "bankId": "b3272834-2d16-4fc8-8630-f9ae0d9e09dc",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "bi": 1,
+   "bii": 1
+  },
+  "why": "(bi) correct working (B1) but no unit on 2500 so A1 lost; (bii) correct method (B1) but arithmetic slip gives 126 kg/m^3 so A1 lost.",
+  "lines": [
+   "(b)(i) density of water = 1000 kg/m^3",
+   "volume = 2 500 000 / 1000 = 2500",
+   "(b)(ii) mass of one container = 25 000 000 / 600 = 41 667 kg",
+   "density = 41 667 / 33",
+   "= 126 kg/m^3"
+  ]
+ },
+ {
+  "qid": "Q04",
+  "bankId": "b3272834-2d16-4fc8-8630-f9ae0d9e09dc",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "bi": 0,
+   "bii": 0
+  },
+  "why": "Wrong method and wrong units in both parts.",
+  "lines": [
+   "(b)(i) volume = 2 500 000 x 1 = 2 500 000 kg",
+   "(b)(ii) density of container = 33 / 600 = 0.055 kg"
+  ]
+ },
+ {
+  "qid": "Q05",
+  "bankId": "f10db56d-8778-4d04-9401-2b7cf06afa33",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 2,
+  "variant": "a",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "Random motion and collisions with the wall (B1); force on the wall producing pressure (B1).",
+  "lines": [
+   "The air particles in the tyre move about randomly at high speed and keep hitting the inside walls of the tyre.",
+   "Each collision pushes on the wall, so the molecules exert a force on the wall's area, and force per unit area is the pressure."
+  ]
+ },
+ {
+  "qid": "Q05",
+  "bankId": "f10db56d-8778-4d04-9401-2b7cf06afa33",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 2,
+  "variant": "b",
+  "expected": 1,
+  "expectedParts": {
+   "all": 1
+  },
+  "why": "B1 for random collisions with the walls; B1 lost because no force on the wall linked to pressure.",
+  "lines": [
+   "The air molecules inside the tyre move randomly and collide with the walls of the tyre."
+  ]
+ },
+ {
+  "qid": "Q05",
+  "bankId": "f10db56d-8778-4d04-9401-2b7cf06afa33",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 2,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "No molecular collisions and wrong idea (weight of air): no marks.",
+  "lines": [
+   "The air molecules are squeezed tightly together, so the air becomes heavier, and the weight of the air is the pressure."
+  ]
+ },
+ {
+  "qid": "Q06",
+  "bankId": "bdc23b83-e69e-46e9-a8a6-ccdd9430a3f8",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "a": 1,
+   "bi": 1,
+   "bii": 2,
+   "biii": 2
+  },
+  "why": "All correct; (bii) split 1 for a,b and 1 for x,y; (biii) 1 each for proton number and nucleon number.",
+  "lines": [
+   "(a) We cannot predict which nucleus will decay or when it will decay, and each nucleus decays independently of the others.",
+   "(b)(i) Isotopes are atoms of the same element with the same number of protons (proton number) but a different nucleon number because they have different numbers of neutrons.",
+   "(b)(ii) a = 1, b = 0, x = 56, y = 92",
+   "(b)(iii) After absorbing a neutron: 239 nucleons, 92 protons. Alpha particle removes 4 nucleons and 2 protons.",
+   "Proton number = 90",
+   "Nucleon number = 235"
+  ]
+ },
+ {
+  "qid": "Q06",
+  "bankId": "bdc23b83-e69e-46e9-a8a6-ccdd9430a3f8",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "bi": 0,
+   "bii": 1,
+   "biii": 1
+  },
+  "why": "(a) correct; (bi) proton/nucleon swapped so 0; (bii) a,b right but y wrong so 1 of 2 (split a,b / x,y); (biii) proton number right but nucleon 234 ignores the absorbed neutron so 1 of 2.",
+  "lines": [
+   "(a) It is impossible to predict when a particular nucleus will decay.",
+   "(b)(i) Isotopes are atoms with the same nucleon number but a different proton number.",
+   "(b)(ii) a = 1, b = 0, x = 56, y = 95",
+   "(b)(iii) Proton number = 90",
+   "Nucleon number = 234"
+  ]
+ },
+ {
+  "qid": "Q06",
+  "bankId": "bdc23b83-e69e-46e9-a8a6-ccdd9430a3f8",
+  "subject": "physics",
+  "type": "explain",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "bi": 0,
+   "bii": 0,
+   "biii": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a) Random decay means the substance decays faster when heated.",
+   "(b)(i) Isotopes are elements that are radioactive.",
+   "(b)(ii) a = 0, b = 1, x = 36, y = 141",
+   "(b)(iii) Proton number = 238, nucleon number = 92"
+  ]
+ },
+ {
+  "qid": "Q07",
+  "bankId": "8875d197-5502-45e4-be09-bb6cb0462fa3",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "bi": 2,
+   "bii": 1
+  },
+  "why": "Return path; current to earth + fuse melts and breaks circuit; double insulation.",
+  "lines": [
+   "(a) The neutral wire is the return path that carries current back to the mains, completing the circuit with the live wire.",
+   "(b)(i) The live wire touching the case lets a very large current flow through the low-resistance earth wire to the ground.",
+   "This large current makes the fuse melt (blow), which breaks the circuit and cuts off the live supply, so the case is not live when touched.",
+   "(b)(ii) Double insulation (a plastic outer casing with no exposed metal)."
+  ]
+ },
+ {
+  "qid": "Q07",
+  "bankId": "8875d197-5502-45e4-be09-bb6cb0462fa3",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "bi": 1,
+   "bii": 0
+  },
+  "why": "(bi) current-to-earth B1 earned but no large current / fuse melting so second B1 lost; (bii) a switch is not a safety feature in the scheme.",
+  "lines": [
+   "(a) It completes the circuit so current can return to the mains.",
+   "(b)(i) The current flows from the metal case through the earth wire into the ground instead of through the user.",
+   "(b)(ii) An on/off switch."
+  ]
+ },
+ {
+  "qid": "Q07",
+  "bankId": "8875d197-5502-45e4-be09-bb6cb0462fa3",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "bi": 0,
+   "bii": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a) The neutral wire stops the appliance from overheating.",
+   "(b)(i) The earth wire stores the extra electricity so the fuse can switch on.",
+   "(b)(ii) A longer cable."
+  ]
+ },
+ {
+  "qid": "Q08",
+  "bankId": "c7b2fdb9-3923-45a8-9d84-1e2a02e6cd89",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 2,
+  "variant": "a",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "Less signal degradation (B1) and many signals at the same time (B1).",
+  "lines": [
+   "1. The signal is degraded much less as it travels along the fibre, so it keeps its quality over long distances.",
+   "2. Many signals can be carried along one fibre at the same time."
+  ]
+ },
+ {
+  "qid": "Q08",
+  "bankId": "c7b2fdb9-3923-45a8-9d84-1e2a02e6cd89",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 2,
+  "variant": "b",
+  "expected": 1,
+  "expectedParts": {
+   "all": 1
+  },
+  "why": "B1 for multiple signals; flexibility is not a scheme advantage, so the second B1 is lost.",
+  "lines": [
+   "1. A lot of signals can be sent at the same time through one fibre.",
+   "2. Optical fibre is more flexible than cables."
+  ]
+ },
+ {
+  "qid": "Q08",
+  "bankId": "c7b2fdb9-3923-45a8-9d84-1e2a02e6cd89",
+  "subject": "physics",
+  "type": "define/state",
+  "marks": 2,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Both advantages are wrong physics: no marks.",
+  "lines": [
+   "1. Optical fibres conduct electricity better than copper.",
+   "2. The signal travels as sound so it is louder at the other end."
+  ]
+ },
+ {
+  "qid": "Q09",
+  "bankId": "357b9dc5-b565-4aaa-b202-04a37d1ee968",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "b": 1,
+   "c": 2
+  },
+  "why": "Electron transfer cloth to plastic (1) and gain/loss explained (1); conductor, charge flows to earth (1); E = Pt and E/Q giving 1.3 x 10^8 V (2).",
+  "lines": [
+   "(a) Friction from rubbing makes electrons move from the cloth onto the plastic.",
+   "The plastic now has extra electrons, so it is negative; the cloth has lost electrons, so it is left positive.",
+   "(b) A metal is a conductor with free electrons, so any charge produced flows away through my hand and body to earth.",
+   "(c) Energy = power x time = 100 x 5.0 x 10^6 = 5.0 x 10^8 J",
+   "e.m.f. = energy / charge = 5.0 x 10^8 / 4.0",
+   "= 1.3 x 10^8 V"
+  ]
+ },
+ {
+  "qid": "Q09",
+  "bankId": "357b9dc5-b565-4aaa-b202-04a37d1ee968",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 1
+  },
+  "why": "(a) transfer earns 1, but which gains/loses electrons is not stated; (b) 1; (c) energy step earns 1, final lost because multiplied by charge.",
+  "lines": [
+   "(a) When they are rubbed, electrons are transferred from the cloth to the plastic.",
+   "(b) Metal is a good conductor, so the charge flows through my body to the earth.",
+   "(c) E = P x t = 100 x 5.0 x 10^6 = 5.0 x 10^8 J",
+   "e.m.f. = E x Q = 5.0 x 10^8 x 4.0 = 2.0 x 10^9 V"
+  ]
+ },
+ {
+  "qid": "Q09",
+  "bankId": "357b9dc5-b565-4aaa-b202-04a37d1ee968",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "Protons moving, wrong reason for metal, wrong calculation: no marks.",
+  "lines": [
+   "(a) Protons rub off the plastic onto the cloth.",
+   "(b) The metal is too heavy to hold any charge.",
+   "(c) e.m.f. = 100 / 4.0 = 25 V"
+  ]
+ },
+ {
+  "qid": "Q10",
+  "bankId": "17d18922-4cb2-46a0-a008-f58a0ab1c201",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "a": 1,
+   "b": 2,
+   "c": 1
+  },
+  "why": "Ionising damage to cells (1); 400 nm substituted and 7.5 x 10^14 Hz (2); infra-red (1).",
+  "lines": [
+   "(a) UV radiation is ionising, so too much of it damages the skin's cells and tissue.",
+   "(b) Lowest frequency means longest wavelength, 400 nm.",
+   "f = v / lambda = 3 x 10^8 / (400 x 10^-9)",
+   "f = 7.5 x 10^14 Hz",
+   "(c) Infra-red"
+  ]
+ },
+ {
+  "qid": "Q10",
+  "bankId": "17d18922-4cb2-46a0-a008-f58a0ab1c201",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 0,
+   "b": 1,
+   "c": 1
+  },
+  "why": "(a) tanning is not ionising damage, 0; (b) B1 for substitution with 400 nm, A1 lost to the power-of-ten slip; (c) microwaves 1.",
+  "lines": [
+   "(a) Too much UV gives you too dark a tan.",
+   "(b) 3 x 10^8 = f x 400 x 10^-9",
+   "f = 7.5 x 10^15 Hz",
+   "(c) Microwaves"
+  ]
+ },
+ {
+  "qid": "Q10",
+  "bankId": "17d18922-4cb2-46a0-a008-f58a0ab1c201",
+  "subject": "physics",
+  "type": "mixed",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "Cost is not the reason, inverted equation, X-rays have higher frequency: no marks.",
+  "lines": [
+   "(a) UV lamps are expensive to run.",
+   "(b) f = lambda / v = 400 / (3 x 10^8) = 1.3 x 10^-6 Hz",
+   "(c) X-rays"
+  ]
+ },
+ {
+  "qid": "Q11",
+  "bankId": "f45f4986-9c51-40a1-873c-be21489b988b",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "all": 6
+  },
+  "why": "All three formulae and all three Mr values correct.",
+  "lines": [
+   "sodium oxide: need two Na+ to cancel one O2-, so Na2O",
+   "Mr = 23 x 2 + 16 = 62",
+   "magnesium bromide: one Mg2+ balances two Br-, so MgBr2",
+   "Mr = 24 + 80 x 2 = 184",
+   "aluminium carbonate: 2 Al3+ give +6 and 3 CO3 2- give -6, so Al2(CO3)3",
+   "Mr = 27 x 2 + 3 x (12 + 16 x 3) = 54 + 180 = 234"
+  ]
+ },
+ {
+  "qid": "Q11",
+  "bankId": "f45f4986-9c51-40a1-873c-be21489b988b",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "all": 3
+  },
+  "why": "Na2O + 62 (2); MgBr2 formula (1) but Mr arithmetic slip 174; aluminium carbonate formula wrong and no Mr (0).",
+  "lines": [
+   "sodium oxide: Na2O, Mr = 2 x 23 + 16 = 62",
+   "magnesium bromide: MgBr2, Mr = 24 + 2 x 80 = 174",
+   "aluminium carbonate: AlCO3"
+  ]
+ },
+ {
+  "qid": "Q11",
+  "bankId": "f45f4986-9c51-40a1-873c-be21489b988b",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Describes properties instead of giving formulae or Mr values; nothing creditable.",
+  "lines": [
+   "sodium oxide is a white solid that dissolves in water to make an alkali",
+   "magnesium bromide is a salt made from magnesium and bromine",
+   "aluminium carbonate fizzes with acid to give carbon dioxide"
+  ]
+ },
+ {
+  "qid": "Q12",
+  "bankId": "f400bc5b-722e-4718-9f88-ccf59a5aa8b6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "all": 6
+  },
+  "why": "All six points of the heating-to-dryness method: weigh, heat in crucible, cool and reweigh, repeat, to constant mass, correct percentage expression.",
+  "lines": [
+   "1. Put a known mass of the crystals into a crucible that has been weighed, and record the mass of crystals, m1.",
+   "2. Heat the crucible strongly so the water of crystallisation is driven off.",
+   "3. Allow it to cool, then weigh it again.",
+   "4. Heat again, cool and reweigh, and keep doing this until two readings are the same (constant mass). Record the final mass of solid, m2.",
+   "5. Mass of water lost = m1 - m2",
+   "6. Percentage of water = (m1 - m2) / m1 x 100%"
+  ]
+ },
+ {
+  "qid": "Q12",
+  "bankId": "f400bc5b-722e-4718-9f88-ccf59a5aa8b6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "all": 3
+  },
+  "why": "Weigh (1), heat in evaporating dish (1), cool and reweigh (1); no repeat heating and no constant mass (lose 2); percentage formula uses mass of residue b/a, wrong (lose 1).",
+  "lines": [
+   "Weigh some of the washing soda crystals, mass a.",
+   "Put them in an evaporating dish and heat them to remove the water.",
+   "Let the dish cool and then weigh it again, mass b.",
+   "Percentage of water = b / a x 100%"
+  ]
+ },
+ {
+  "qid": "Q12",
+  "bankId": "f400bc5b-722e-4718-9f88-ccf59a5aa8b6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Reacting with acid is a wrong method, which the scheme scores zero.",
+  "lines": [
+   "Dissolve the crystals in water and add dilute hydrochloric acid.",
+   "Collect the carbon dioxide given off in a gas syringe.",
+   "The volume of gas tells you how much sodium carbonate there is, and the rest is water."
+  ]
+ },
+ {
+  "qid": "Q13",
+  "bankId": "df19aea4-2890-4268-9ca0-cffead2d36a6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 1,
+   "aiii": 1,
+   "b": 1,
+   "c": 2
+  },
+  "why": "All names correct, balanced ionic equation with state symbols, moles (C1) and NO2 (A1).",
+  "lines": [
+   "(a)(i) D is calcium hydroxide",
+   "(a)(ii) E is calcium",
+   "(a)(iii) G is calcium nitrate solution",
+   "(b) Ca2+(aq) + 2OH-(aq) -> Ca(OH)2(s)",
+   "(c) n(N) = 1.07 / 14 = 0.0764 mol",
+   "n(O) = 2.43 / 16 = 0.152 mol",
+   "ratio N : O = 0.0764/0.0764 : 0.152/0.0764 = 1 : 2",
+   "Empirical formula = NO2"
+  ]
+ },
+ {
+  "qid": "Q13",
+  "bankId": "df19aea4-2890-4268-9ca0-cffead2d36a6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 1,
+   "aiii": 0,
+   "b": 0,
+   "c": 1
+  },
+  "why": "(aiii) sulfate is wrong (nitric acid gives nitrate); (b) unbalanced, missing 2 OH-; (c) moles correct (C1) but wrong ratio conclusion NO so A1 lost.",
+  "lines": [
+   "(a)(i) calcium hydroxide",
+   "(a)(ii) calcium",
+   "(a)(iii) calcium sulfate",
+   "(b) Ca2+(aq) + OH-(aq) -> Ca(OH)2(s)",
+   "(c) moles N = 1.07/14 = 0.0764",
+   "moles O = 2.43/16 = 0.152",
+   "Empirical formula = NO"
+  ]
+ },
+ {
+  "qid": "Q13",
+  "bankId": "df19aea4-2890-4268-9ca0-cffead2d36a6",
+  "subject": "chemistry",
+  "type": "calculation",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "ai": 0,
+   "aii": 0,
+   "aiii": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a)(i) silver chloride",
+   "(a)(ii) silver",
+   "(a)(iii) sodium chloride",
+   "(b) Na+ + Cl- -> NaCl",
+   "(c) 1.07 + 2.43 = 3.50 so the formula is N3O5"
+  ]
+ },
+ {
+  "qid": "Q14",
+  "bankId": "baeeb98d-7a56-4261-a761-37977f25b9fb",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "a": 2,
+   "b": 2
+  },
+  "why": "(a) soluble K2SO4 gives mobile ions and insoluble BaSO4 has fixed ions (2); (b) OH- preferentially discharged giving O2, and 4e- gives 2H2 : 1O2 (2).",
+  "lines": [
+   "(a) With KOH the products are water and potassium sulfate. Potassium sulfate is soluble, so it dissolves and its ions are free to move and carry the current.",
+   "With Ba(OH)2 the salt formed is barium sulfate, which is insoluble; its ions are locked in a solid lattice and cannot move, and water is made of neutral molecules, so there are almost no mobile ions to conduct.",
+   "(b) In both dilute acids, Cl- is at low concentration so OH- from water is discharged at the anode instead (sulfate is never discharged), so oxygen is given off in both: 4OH- -> O2 + 2H2O + 4e-.",
+   "At the cathode 2H+ + 2e- -> H2, so the same 4 electrons give 2 H2 for every 1 O2.",
+   "At the same temperature and pressure the volume ratio equals the mole ratio, 2 : 1."
+  ]
+ },
+ {
+  "qid": "Q14",
+  "bankId": "baeeb98d-7a56-4261-a761-37977f25b9fb",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 1
+  },
+  "why": "(a) K2SO4 point earned, but BaSO4 called a weak electrolyte instead of insoluble with fixed ions (lose 1); (b) preferential discharge of OH- giving O2 earned, but the 2:1 reason is wrong (no equal electron / 4e- argument), lose 1.",
+  "lines": [
+   "(a) Potassium sulfate is formed, which is soluble in water so it gives mobile ions that can carry charge.",
+   "Barium sulfate formed is a weak electrolyte so it only partly ionises in the solution.",
+   "(b) The acids are dilute so there is very little Cl-, so OH- is discharged at the anode instead and oxygen is formed for both acids, and hydrogen is formed at the cathode.",
+   "The ratio is 2:1 because an acid has twice as many H+ ions as OH- ions."
+  ]
+ },
+ {
+  "qid": "Q14",
+  "bankId": "baeeb98d-7a56-4261-a761-37977f25b9fb",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "Neither part mentions solubility/mobile ions or discharge and electron transfer; both reasons are wrong.",
+  "lines": [
+   "(a) Potassium hydroxide is a strong alkali but barium hydroxide is a weak alkali, so it does not conduct well.",
+   "(b) Hydrogen is twice as light as oxygen so it takes up twice the volume."
+  ]
+ },
+ {
+  "qid": "Q15",
+  "bankId": "30d1094a-2e00-46e2-baff-fef9267b9641",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 3,
+  "variant": "a",
+  "expected": 3,
+  "expectedParts": {
+   "all": 3
+  },
+  "why": "0 to -1 (1), 0 to +1 (1), both oxidising and reducing agent (1).",
+  "lines": [
+   "Cl in Cl2 has oxidation state 0.",
+   "In Cl- it is -1, so some chlorine is reduced (oxidation state goes down by 1).",
+   "In ClO- it is +1 (x - 2 = -1), so some chlorine is oxidised (oxidation state goes up by 1).",
+   "So chlorine acts as both the oxidising agent and the reducing agent - it disproportionates."
+  ]
+ },
+ {
+  "qid": "Q15",
+  "bankId": "30d1094a-2e00-46e2-baff-fef9267b9641",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 3,
+  "variant": "b",
+  "expected": 1,
+  "expectedParts": {
+   "all": 1
+  },
+  "why": "Scheme's accept clause: oxidising agent with 0 to -1 is 1 mark only; misses 0 to +1 and the dual role.",
+  "lines": [
+   "Chlorine is an oxidising agent.",
+   "Its oxidation state decreases from 0 in Cl2 to -1 in Cl-, so it is reduced."
+  ]
+ },
+ {
+  "qid": "Q15",
+  "bankId": "30d1094a-2e00-46e2-baff-fef9267b9641",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 3,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Wrong role and wrong oxidation-state claim; no scheme point.",
+  "lines": [
+   "Chlorine is a catalyst in this reaction.",
+   "It speeds up the reaction and is not used up, so its oxidation state stays the same."
+  ]
+ },
+ {
+  "qid": "Q16",
+  "bankId": "d64a141b-d495-40b3-99e5-46ea0e4570f7",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "all": 4
+  },
+  "why": "All five scheme points present, which earns the maximum 4.",
+  "lines": [
+   "Warm some dilute sulfuric acid in a beaker and add magnesium oxide powder a little at a time, stirring.",
+   "Keep adding until some solid stays undissolved, so the acid is all used up and the oxide is in excess.",
+   "Filter the mixture to remove the excess magnesium oxide; collect the filtrate (magnesium sulfate solution).",
+   "Heat the filtrate to evaporate some water until it is saturated, then leave it to cool so crystals form.",
+   "Filter off the crystals, rinse with a little cold distilled water and pat dry between sheets of filter paper."
+  ]
+ },
+ {
+  "qid": "Q16",
+  "bankId": "d64a141b-d495-40b3-99e5-46ea0e4570f7",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "Two points (reagent + acid, add until no more dissolves) = 2 marks; no filtering, heating to dryness is not crystallisation, no wash/dry.",
+  "lines": [
+   "Add magnesium oxide to dilute sulfuric acid.",
+   "Keep adding until no more of it dissolves.",
+   "Then heat the solution until all the water has evaporated to get magnesium sulfate."
+  ]
+ },
+ {
+  "qid": "Q16",
+  "bankId": "d64a141b-d495-40b3-99e5-46ea0e4570f7",
+  "subject": "chemistry",
+  "type": "explain",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Makes barium sulfate by precipitation, not magnesium sulfate; no scheme point.",
+  "lines": [
+   "Add barium chloride solution to dilute sulfuric acid.",
+   "A white precipitate forms.",
+   "Filter off the precipitate, wash it and dry it to get the salt."
+  ]
+ },
+ {
+  "qid": "Q17",
+  "bankId": "3d45c2e3-08ba-460e-b9cb-04149d984073",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 1,
+   "d": 1,
+   "e": 1,
+   "f": 1
+  },
+  "why": "All six formulae correct.",
+  "lines": [
+   "(a) KMnO4",
+   "(b) Fe",
+   "(c) CO",
+   "(d) Zn",
+   "(e) Ni",
+   "(f) KI"
+  ]
+ },
+ {
+  "qid": "Q17",
+  "bankId": "3d45c2e3-08ba-460e-b9cb-04149d984073",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 1,
+   "d": 0,
+   "e": 0,
+   "f": 0
+  },
+  "why": "a-c correct; d, e, f wrong substances.",
+  "lines": [
+   "(a) KMnO4",
+   "(b) Fe",
+   "(c) CO",
+   "(d) CaCO3",
+   "(e) S",
+   "(f) NH4Cl"
+  ]
+ },
+ {
+  "qid": "Q17",
+  "bankId": "3d45c2e3-08ba-460e-b9cb-04149d984073",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "d": 0,
+   "e": 0,
+   "f": 0
+  },
+  "why": "Every answer is a wrong substance.",
+  "lines": [
+   "(a) CO2",
+   "(b) Ni",
+   "(c) S",
+   "(d) KI",
+   "(e) CaCO3",
+   "(f) CO2"
+  ]
+ },
+ {
+  "qid": "Q18",
+  "bankId": "5e43aa5e-7f6a-493a-a06d-3aa750511e09",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 2,
+   "b": 1,
+   "c": 1
+  },
+  "why": "All correct; (aii) split 1 for 1:1 mole ratio / moles Cu, 1 for 1.28 g.",
+  "lines": [
+   "(a)(i) n(CuSO4) = 0.5 x 40.0/1000 = 0.0200 mol",
+   "(a)(ii) From the equation 1 mol CuSO4 gives 1 mol Cu, so n(Cu) = 0.0200 mol",
+   "mass of Cu = 0.0200 x 64 = 1.28 g",
+   "(b) Zn(s) + Cu2+(aq) -> Zn2+(aq) + Cu(s)",
+   "(c) The blue colour of the solution fades until the solution is colourless."
+  ]
+ },
+ {
+  "qid": "Q18",
+  "bankId": "5e43aa5e-7f6a-493a-a06d-3aa750511e09",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "ai": 1,
+   "aii": 1,
+   "b": 0,
+   "c": 1
+  },
+  "why": "(aii) mole ratio mark kept but arithmetic slip 12.8 g loses the answer mark; (b) full molecular equation, not ionic, so 0.",
+  "lines": [
+   "(a)(i) moles = 40/1000 x 0.5 = 0.0200 mol",
+   "(a)(ii) moles of Cu = 0.0200 mol",
+   "mass = 0.0200 x 64 = 12.8 g",
+   "(b) Zn + CuSO4 -> ZnSO4 + Cu",
+   "(c) The blue solution becomes colourless."
+  ]
+ },
+ {
+  "qid": "Q18",
+  "bankId": "5e43aa5e-7f6a-493a-a06d-3aa750511e09",
+  "subject": "chemistry",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "ai": 0,
+   "aii": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a)(i) moles = 40 x 0.5 = 20 mol",
+   "(a)(ii) mass = 20 / 65 = 0.31 g",
+   "(b) Zn + SO4 -> ZnSO4",
+   "(c) A white precipitate of zinc forms."
+  ]
+ },
+ {
+  "qid": "Q19",
+  "bankId": "d12edb69-29ca-495a-8d39-3fcb0a9c7966",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 2,
+   "c": 2
+  },
+  "why": "0.000600 mol, 5:2 ratio and 0.00150 mol, sulfite identified with +4 to +6 working.",
+  "lines": [
+   "(a) n(MnO4-) = 30/1000 x 0.02 = 0.000600 mol",
+   "(b) mole ratio SO3 2- : MnO4- = 5 : 2",
+   "n(SO3 2-) = 0.000600 x 5/2 = 0.00150 mol, so 0.00150 mol Na2SO3 in 1 kg of meat",
+   "(c) The sulfite ion, SO3 2-, is the reducing agent.",
+   "S in SO3 2-: x + 3(-2) = -2, x = +4. S in SO4 2-: x + 4(-2) = -2, x = +6.",
+   "The oxidation number of S rises from +4 to +6, so sulfite is oxidised and it reduces MnO4-."
+  ]
+ },
+ {
+  "qid": "Q19",
+  "bankId": "d12edb69-29ca-495a-8d39-3fcb0a9c7966",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 0,
+   "b": 2,
+   "c": 1
+  },
+  "why": "(a) forgot /1000, 0; (b) correct 5:2 method on wrong value, ECF 2; (c) sulfite ion B1 but explanation uses oxygen gain not oxidation number, lose B1.",
+  "lines": [
+   "(a) moles of MnO4- = 0.02 x 30 = 0.6 mol",
+   "(b) 2 mol MnO4- reacts with 5 mol SO3 2-",
+   "moles of sodium sulfite = 0.6 x 5/2 = 1.5 mol",
+   "(c) The reducing agent is the sulfite ion SO3 2- because it gains oxygen to become SO4 2-."
+  ]
+ },
+ {
+  "qid": "Q19",
+  "bankId": "d12edb69-29ca-495a-8d39-3fcb0a9c7966",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0,
+   "c": 0
+  },
+  "why": "Wrong mole formula, inverted ratio (no M1), wrong reducing agent.",
+  "lines": [
+   "(a) moles = 30 / 0.02 = 1500 mol",
+   "(b) moles of sodium sulfite = 1500 x 2/5 = 600 mol",
+   "(c) H+ is the reducing agent because the solution is acidic."
+  ]
+ },
+ {
+  "qid": "Q20",
+  "bankId": "e2551205-981d-4786-b6dc-7fa99ace6d54",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 1,
+   "c": 2,
+   "d": 1
+  },
+  "why": "Water vapour escapes, reaction complete, 0.740 kJ with working, endothermic.",
+  "lines": [
+   "(a) Heating drives the water out of the crystals as steam, and the steam leaves the test-tube, so mass is lost.",
+   "(b) So that all the water has been removed and the decomposition has gone to completion.",
+   "(c) energy = 2.00/238 x 88.1 = 0.740 kJ",
+   "(d) It is an endothermic reaction (thermal decomposition)."
+  ]
+ },
+ {
+  "qid": "Q20",
+  "bankId": "e2551205-981d-4786-b6dc-7fa99ace6d54",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 0,
+   "c": 1,
+   "d": 0
+  },
+  "why": "(a) correct; (b) wrong reason; (c) correct method, arithmetic slip 7.40 kJ loses A mark; (d) exothermic is wrong.",
+  "lines": [
+   "(a) Water vapour is given off and escapes from the test-tube.",
+   "(b) To make sure the test-tube has cooled down properly before weighing.",
+   "(c) energy = (2.00 / 238) x 88.1 = 7.40 kJ",
+   "(d) Exothermic"
+  ]
+ },
+ {
+  "qid": "Q20",
+  "bankId": "e2551205-981d-4786-b6dc-7fa99ace6d54",
+  "subject": "chemistry",
+  "type": "mixed",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0,
+   "c": 0,
+   "d": 0
+  },
+  "why": "Wrong reasons in a and b, inverted calculation, wrong reaction type.",
+  "lines": [
+   "(a) The glass of the test-tube expands when hot so it weighs less.",
+   "(b) To make the cobalt chloride change from blue to pink.",
+   "(c) energy = 238 x 88.1 / 2 = 10484 kJ",
+   "(d) Neutralisation"
+  ]
+ },
+ {
+  "qid": "Q21",
+  "bankId": "51d9892d-64dc-49fc-a988-45ac34dbc32e",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 3,
+   "b": 2
+  },
+  "why": "All three (a) points (hybridise, F1 with both traits, inbreed F1) and both (b) points (better quality -> higher profit).",
+  "lines": [
+   "(a) Take a plant whose fruit has the improved flavour and a plant whose fruit has the attractive colour, and cross-pollinate them (hybridisation).",
+   "The offspring of this cross, the F1 generation, inherit both desired traits - the better flavour and the attractive colour.",
+   "The F1 plants are then inbred (crossed among themselves) for several generations so that both desired characteristics are kept in the offspring.",
+   "(b) The farmer selects and breeds only the plants with desired traits, e.g. bigger, disease-resistant fruit, so the produce is of better quality.",
+   "Better quality produce sells for higher prices, so the farmer earns more profit."
+  ]
+ },
+ {
+  "qid": "Q21",
+  "bankId": "51d9892d-64dc-49fc-a988-45ac34dbc32e",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 2,
+   "b": 1
+  },
+  "why": "(a) loses the inbreeding-of-F1 mark; (b) gives better quality but no economic consequence (profit/sales), losing the second mark.",
+  "lines": [
+   "(a) Cross the plant that has good flavour with the plant that has a nice colour.",
+   "The F1 generation will then have both the good flavour and the nice colour.",
+   "(b) The farmer can get plants with better quality traits."
+  ]
+ },
+ {
+  "qid": "Q21",
+  "bankId": "51d9892d-64dc-49fc-a988-45ac34dbc32e",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "(a) describes genetic engineering, not breeding; (b) denies any economic value - no scheme point.",
+  "lines": [
+   "(a) Use genetic engineering: insert a gene for sweetness into the fruit cells using a bacterial plasmid.",
+   "(b) Artificial selection is not useful to a farmer because natural selection already picks out the best plants in the field."
+  ]
+ },
+ {
+  "qid": "Q22",
+  "bankId": "aa29ed90-c3b3-4685-ae2e-23b662fa2029",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 3,
+  "variant": "a",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "b": 2
+  },
+  "why": "(a) explains how no pain/no movement helps; (b) names the pupil reflex test and the correct observation (no constriction).",
+  "lines": [
+   "(a) Because the patient is unconscious and feels no pain, the operation is not painful, and with the skeletal muscles paralysed the patient cannot move and cause accidental damage during surgery.",
+   "(b) Shine a bright torch into the patient's eye to test the pupil reflex.",
+   "If the pupil does not constrict (stays the same size), the GA has taken effect and the patient is ready for surgery."
+  ]
+ },
+ {
+  "qid": "Q22",
+  "bankId": "aa29ed90-c3b3-4685-ae2e-23b662fa2029",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 3,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 1
+  },
+  "why": "(a) earns its mark; (b) gets the test mark but the observation is wrong (constriction means the reflex still works), losing the second mark.",
+  "lines": [
+   "(a) It stops the patient from feeling pain during the operation.",
+   "(b) Shine a light into the patient's eye.",
+   "If he is ready, the pupil will become smaller."
+  ]
+ },
+ {
+  "qid": "Q22",
+  "bankId": "aa29ed90-c3b3-4685-ae2e-23b662fa2029",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 3,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "(a) is wrong biology (cardiac muscle is not paralysed); (b) is not a reflex test and has no valid observation.",
+  "lines": [
+   "(a) GA stops the patient's heart from beating so there is less bleeding during surgery.",
+   "(b) Measure the patient's blood sugar level; if it is high, the patient is ready for surgery."
+  ]
+ },
+ {
+  "qid": "Q23",
+  "bankId": "66282eda-458a-41b3-b8f6-a797dfb38385",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "b": 4
+  },
+  "why": "(a) maintenance of a constant internal environment; (b) all four points: hypothalamus stimulated, less ADH, less water reabsorbed at collecting ducts, more water excreted as urine.",
+  "lines": [
+   "(a) Homeostasis is keeping the internal environment of the body constant.",
+   "(b) The higher water potential of the blood plasma is detected by the hypothalamus, which is stimulated.",
+   "As a result, less ADH (anti-diuretic hormone) is released from the pituitary gland into the blood.",
+   "The collecting ducts become less permeable to water, so less water is reabsorbed back into the bloodstream.",
+   "More water is lost in a larger volume of dilute urine, so the water potential of the blood falls back to normal."
+  ]
+ },
+ {
+  "qid": "Q23",
+  "bankId": "66282eda-458a-41b3-b8f6-a797dfb38385",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 0,
+   "b": 2
+  },
+  "why": "(a) is not the definition; (b) earns hypothalamus and less ADH but omits reabsorption at the collecting ducts and more water excreted as urine.",
+  "lines": [
+   "(a) Homeostasis is keeping the body healthy.",
+   "(b) The hypothalamus is stimulated by the higher water potential.",
+   "Less ADH is released.",
+   "So the blood goes back to normal."
+  ]
+ },
+ {
+  "qid": "Q23",
+  "bankId": "66282eda-458a-41b3-b8f6-a797dfb38385",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "(a) defines osmosis; (b) describes insulin/glycogen, no scheme point.",
+  "lines": [
+   "(a) Homeostasis is the movement of water from a region of higher water potential to a region of lower water potential through a partially permeable membrane.",
+   "(b) The pancreas releases more insulin, which converts the extra water in the blood into glycogen to be stored in the liver."
+  ]
+ },
+ {
+  "qid": "Q24",
+  "bankId": "22a28fab-ea9a-4292-89b8-57467a41eb75",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 2,
+   "bi": 2,
+   "bii": 1
+  },
+  "why": "Constant movement + sweeping mucus to pharynx; mucus/bacteria into bronchi + infection/bronchitis; tar.",
+  "lines": [
+   "(a) The cilia beat continuously in a wave-like motion,",
+   "sweeping the mucus with trapped dust and bacteria upwards out of the trachea towards the pharynx (throat), where it is swallowed.",
+   "(b)(i) Mucus containing bacteria would not be removed and would flow down into the bronchi.",
+   "This could lead to lung infections such as chronic bronchitis.",
+   "(b)(ii) Tar"
+  ]
+ },
+ {
+  "qid": "Q24",
+  "bankId": "22a28fab-ea9a-4292-89b8-57467a41eb75",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "bi": 1,
+   "bii": 1
+  },
+  "why": "(a) movement point only, no sweeping of mucus to the pharynx; (bi) first point only, no second consequence (coughing/infection).",
+  "lines": [
+   "(a) The cilia keep beating constantly.",
+   "(b)(i) Mucus and bacteria would flow down into the bronchi.",
+   "(b)(ii) Tar"
+  ]
+ },
+ {
+  "qid": "Q24",
+  "bankId": "22a28fab-ea9a-4292-89b8-57467a41eb75",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "bi": 0,
+   "bii": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a) Cilia produce mucus to digest food in the trachea.",
+   "(b)(i) The person would not be able to taste food.",
+   "(b)(ii) Carbon dioxide"
+  ]
+ },
+ {
+  "qid": "Q25",
+  "bankId": "267d6111-6874-444c-9320-266511c75de3",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "all": 4
+  },
+  "why": "All four MPs, with umbilical vein for oxygen and umbilical artery for CO2 and waste.",
+  "lines": [
+   "The statement is valid.",
+   "Like the small intestine: digested food such as glucose and amino acids diffuses from the mother's blood across the placenta into the fetus's blood.",
+   "Like the lungs: oxygen diffuses from the mother's blood across the placenta into the fetal blood and is carried to the fetus in the umbilical vein.",
+   "Carbon dioxide is brought from the fetus in the umbilical artery and diffuses across the placenta into the mother's blood.",
+   "Like the kidneys: urea and other nitrogenous waste carried in the umbilical artery diffuse across the placenta into the mother's blood, and her kidneys excrete them."
+  ]
+ },
+ {
+  "qid": "Q25",
+  "bankId": "267d6111-6874-444c-9320-266511c75de3",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "MP1 and MP4 earned; MP2 and MP3 lost for not naming the umbilical vein/artery (as the examiner comment says).",
+  "lines": [
+   "The statement is valid.",
+   "Nutrients diffuse from the mother's blood across the placenta into the fetus's blood, like the small intestine.",
+   "Oxygen goes from the mother to the fetus, like the lungs.",
+   "Carbon dioxide goes from the fetus to the mother.",
+   "Nitrogenous waste such as urea in the umbilical artery diffuses from the fetus's blood across the placenta into the mother's blood, like the kidneys."
+  ]
+ },
+ {
+  "qid": "Q25",
+  "bankId": "267d6111-6874-444c-9320-266511c75de3",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Wrong biology throughout - no MP.",
+  "lines": [
+   "The statement is not valid.",
+   "The placenta only protects the fetus from shocks and keeps it warm.",
+   "The fetus breathes in amniotic fluid with its own lungs and the mother's blood mixes directly with the fetus's blood."
+  ]
+ },
+ {
+  "qid": "Q26",
+  "bankId": "8e2b41a5-92cf-41bc-8b13-b031dbe08410",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "a": 2,
+   "b": 2
+  },
+  "why": "(a) correct scale and correct labelled order; (b) ingested by small fish + not excreted / stored in fat / accumulates (2 of 4 points needed).",
+  "lines": [
+   "(a) Pyramid drawn to scale, 1 small square = 20 g/m2, bars stacked and centred, each bar labelled:",
+   "Top: large fish (20 g/m2) - 1 square wide",
+   "Small fish (80 g/m2) - 4 squares wide",
+   "Invertebrate animals (200 g/m2) - 10 squares wide",
+   "Bottom: algae (800 g/m2) - 40 squares wide",
+   "(b) The small fish eat many invertebrate animals that contain mercury taken in from the river.",
+   "The mercury cannot be excreted, so it is stored in the fatty (adipose) tissues of the small fish.",
+   "So the concentration of mercury builds up in the small fish's body over time."
+  ]
+ },
+ {
+  "qid": "Q26",
+  "bankId": "8e2b41a5-92cf-41bc-8b13-b031dbe08410",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "a": 1,
+   "b": 1
+  },
+  "why": "(a) order + labels earned but not to scale; (b) only the ingestion point, nothing about no excretion, storage in fat or build-up.",
+  "lines": [
+   "(a) Four bars all the same width, stacked: algae at the bottom, then invertebrate animals, then small fish, then large fish at the top, each bar labelled.",
+   "(b) Small fish eat invertebrate animals that contain mercury."
+  ]
+ },
+ {
+  "qid": "Q26",
+  "bankId": "8e2b41a5-92cf-41bc-8b13-b031dbe08410",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "(a) wrong order and not to scale; (b) describes breakdown of mercury, the opposite of bioaccumulation.",
+  "lines": [
+   "(a) Bars stacked: large fish at the bottom (4 squares wide), small fish (3 squares), invertebrate animals (2 squares), algae at the top (1 square).",
+   "(b) Bacteria in the river break the mercury down so it becomes harmless before the small fish can take it in."
+  ]
+ },
+ {
+  "qid": "Q27",
+  "bankId": "487d5a2c-81a3-4c8d-84a6-a4175b820599",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "a",
+  "expected": 6,
+  "expectedParts": {
+   "a": 3,
+   "b": 3
+  },
+  "why": "(a) high temperature, denatures enzyme, gives enzyme time to work; (b) protease, digests proteins, into peptides/polypeptides.",
+  "lines": [
+   "(a) Cooking uses high temperatures, well above 60 °C.",
+   "At this temperature the enzyme in the pineapple would be denatured - its active site changes shape.",
+   "Putting the pineapple on a few hours earlier gives the enzyme time to work on the meat before it is destroyed; added during cooking, it would not tenderise the meat.",
+   "(b) The enzyme is a protease.",
+   "It digests the proteins in the meat fibres,",
+   "only partly, into shorter polypeptides and peptides, so the meat becomes softer."
+  ]
+ },
+ {
+  "qid": "Q27",
+  "bankId": "487d5a2c-81a3-4c8d-84a6-a4175b820599",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 2,
+   "b": 1
+  },
+  "why": "(a) earns heat + denature but omits why that matters (no time to tenderise); (b) protease only - 'breaks down' is rejected for 'digests' and amino acids is rejected.",
+  "lines": [
+   "(a) The high temperature during cooking would denature the enzyme.",
+   "(b) Protease.",
+   "It breaks down the proteins in the meat into amino acids."
+  ]
+ },
+ {
+  "qid": "Q27",
+  "bankId": "487d5a2c-81a3-4c8d-84a6-a4175b820599",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 6,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "b": 0
+  },
+  "why": "(a) no reference to heat or enzyme damage; (b) wrong enzyme and wrong substrate.",
+  "lines": [
+   "(a) The acid in the pineapple needs a few hours to soak in so the meat absorbs the sweet flavour.",
+   "(b) It is amylase, which breaks down the starch in the meat into maltose."
+  ]
+ },
+ {
+  "qid": "Q28",
+  "bankId": "9dad8ffc-e317-44c8-93fb-7e86296861a5",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "all": 4
+  },
+  "why": "All four points with the umbilical vein/artery named.",
+  "lines": [
+   "Yes, this is valid, because the fetus's own gut, lungs and kidneys are not working yet.",
+   "Small intestine role: soluble nutrients (glucose, amino acids) diffuse from the maternal blood across the placenta into the fetal blood.",
+   "Lung role: oxygen diffuses from the maternal blood into the fetal blood and reaches the fetus through the umbilical vein,",
+   "while carbon dioxide arrives from the fetus in the umbilical artery and diffuses across into the maternal blood.",
+   "Kidney role: urea in the umbilical artery diffuses from the fetal blood across the placenta into the mother's blood, so her kidneys can excrete it."
+  ]
+ },
+ {
+  "qid": "Q28",
+  "bankId": "9dad8ffc-e317-44c8-93fb-7e86296861a5",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "Both gas marks earned; small-intestine/nutrient point omitted and the kidney point has no nitrogenous waste diffusing from the umbilical artery.",
+  "lines": [
+   "The statement is valid.",
+   "Acts as the lungs: oxygen carried in the umbilical vein diffuses from the mother's blood across the placenta into the fetus's blood.",
+   "Carbon dioxide in the umbilical artery diffuses from the fetus's blood into the mother's blood.",
+   "Acts as the kidneys: the placenta filters the fetus's blood."
+  ]
+ },
+ {
+  "qid": "Q28",
+  "bankId": "9dad8ffc-e317-44c8-93fb-7e86296861a5",
+  "subject": "biology",
+  "type": "define/state",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Wrong functions - no point.",
+  "lines": [
+   "The statement is not valid.",
+   "The placenta's job is to produce milk for the baby and to fight infections; the fetus digests its own food in its intestines."
+  ]
+ },
+ {
+  "qid": "Q29",
+  "bankId": "eabfd51a-1bbb-4c41-a965-40fb7ce3d24a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "a",
+  "expected": 5,
+  "expectedParts": {
+   "a": 1,
+   "bi": 1,
+   "bii": 1,
+   "c": 2
+  },
+  "why": "All scheme points: replaced as fast as used; swallowed and blocks gut; not decomposed, accumulates in soil; named hormone oestrogen + fewer gametes/lower fertility.",
+  "lines": [
+   "(a) A resource that is replenished at least as fast as we use it, so it does not run out and is still available for future generations.",
+   "(b)(i) Turtles and fish swallow plastic bags, thinking they are food; the plastic cannot be digested and blocks their gut, so they cannot feed and starve to death.",
+   "(b)(ii) Decomposers cannot break plastic down, so it builds up in the soil and landfills, reducing soil aeration and quality.",
+   "(c) The toxins lower the production of oestrogen.",
+   "With less oestrogen, ovulation is reduced so fewer eggs (gametes) are released, fertility falls and fewer offspring are born."
+  ]
+ },
+ {
+  "qid": "Q29",
+  "bankId": "eabfd51a-1bbb-4c41-a965-40fb7ce3d24a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "b",
+  "expected": 3,
+  "expectedParts": {
+   "a": 1,
+   "bi": 1,
+   "bii": 0,
+   "c": 1
+  },
+  "why": "(bii) appearance is not a harmful ecological effect in the scheme; (c) named hormone mark earned but no effect on gametes/fertility so second mark lost.",
+  "lines": [
+   "(a) A resource that is replaced at least as fast as it is used up, so it will not run out.",
+   "(b)(i) Seabirds and fish eat the plastic by mistake; it blocks their gut so they starve.",
+   "(b)(ii) Plastic litter makes parks look ugly.",
+   "(c) The toxic substances reduce the production of oestrogen in females."
+  ]
+ },
+ {
+  "qid": "Q29",
+  "bankId": "eabfd51a-1bbb-4c41-a965-40fb7ce3d24a",
+  "subject": "biology",
+  "type": "explain",
+  "marks": 5,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "a": 0,
+   "bi": 0,
+   "bii": 0,
+   "c": 0
+  },
+  "why": "All wrong.",
+  "lines": [
+   "(a) A resource that is made in a factory.",
+   "(b)(i) Plastic makes the water warmer so fish swim faster.",
+   "(b)(ii) Plastic helps plants grow by adding nutrients to the soil.",
+   "(c) Insulin is reduced so the female grows taller."
+  ]
+ },
+ {
+  "qid": "Q30",
+  "bankId": "e27a0485-b59c-4ea3-9903-6fe20be85c99",
+  "subject": "biology",
+  "type": "other",
+  "marks": 4,
+  "variant": "a",
+  "expected": 4,
+  "expectedParts": {
+   "all": 4
+  },
+  "why": "Gives all six creditable points; max 4.",
+  "lines": [
+   "Thermoreceptors in the skin of his right leg detect the heat and nerve impulses are produced.",
+   "The impulses travel along a sensory neurone to the spinal cord.",
+   "In the grey matter of the spinal cord they pass to relay neurones, which carry impulses up to the brain.",
+   "The brain interprets the impulses, so Robin feels that the object is hot.",
+   "Relay neurones also pass impulses across a synapse to motor neurones, but these are damaged, so no impulses reach the leg muscles and they do not contract - his leg does not move."
+  ]
+ },
+ {
+  "qid": "Q30",
+  "bankId": "e27a0485-b59c-4ea3-9903-6fe20be85c99",
+  "subject": "biology",
+  "type": "other",
+  "marks": 4,
+  "variant": "b",
+  "expected": 2,
+  "expectedParts": {
+   "all": 2
+  },
+  "why": "Receptor and sensory-neurone points earned; no relay neurones, brain interpretation or motor-neurone damage (wrongly blames the muscles).",
+  "lines": [
+   "Thermoreceptors in the skin detect the heat and produce a nerve impulse.",
+   "The impulse travels along the sensory neurone to the spinal cord.",
+   "He cannot move his leg because the muscles in his leg are damaged."
+  ]
+ },
+ {
+  "qid": "Q30",
+  "bankId": "e27a0485-b59c-4ea3-9903-6fe20be85c99",
+  "subject": "biology",
+  "type": "other",
+  "marks": 4,
+  "variant": "c",
+  "expected": 0,
+  "expectedParts": {
+   "all": 0
+  },
+  "why": "Describes hormonal, not nervous, pathway - no scheme point.",
+  "lines": [
+   "The adrenal glands release adrenaline into the blood.",
+   "The adrenaline is carried in the bloodstream to the leg muscles to tell them the object is hot, but the leg is paralysed so the hormone cannot reach it."
+  ]
+ }
+]
