@@ -4,85 +4,215 @@
   "title": "The Last Hour Before Bed",
   "format": "poster",
   "theme": "indigo",
+  "intro": "Text 1 is a poster put up by student peer helpers during the examination period.",
   "visual": [
-    { "t": "kicker", "text": "PEER SUPPORT LEADERS · EXAM SEASON" },
-    { "t": "headline", "text": "The last hour before bed decides the first paper tomorrow." },
-    { "t": "tagline", "text": "Close the book. Dim the screen. Let your brain file what you learnt." },
-    { "t": "picture", "text": "A picture in two halves. On the left, a girl is hunched over her desk at 1 am, with three empty coffee cans beside her. On the right, the same girl is asleep in a dark room, her notes stacked and her school bag packed by the door." },
-    { "t": "body", "text": "It feels responsible to squeeze in one more chapter at midnight. It is not. While you sleep, your brain sorts and stores what you studied; cut the sleep short and much of the day’s work is never put away. Tired students misread questions and blank on formulas they knew." },
-    { "t": "box", "title": "Your last hour", "items": [
-      "60 minutes to go — stop new topics; skim your own summary once",
-      "45 minutes — pack your bag: entry proof, pens, calculator",
-      "30 minutes — phone on the charger, outside your room",
-      "15 minutes — shower, stretch, lights low"
-    ] },
-    { "t": "quote", "text": "“I used to study until 2 am and feel proud. My marks went up the term I started sleeping at eleven.” — Daniel, Secondary 4" },
-    { "t": "small", "text": "Cannot sleep because of worry? Talk to a Peer Support Leader or the school counsellor in the Quiet Room, open every recess." },
-    { "t": "button", "text": "Tonight, try it once" }
+    {
+      "t": "kicker",
+      "text": "PEER SUPPORT LEADERS · EXAM SEASON"
+    },
+    {
+      "t": "headline",
+      "text": "The last hour before bed decides the first paper tomorrow."
+    },
+    {
+      "t": "tagline",
+      "text": "Close the book. Dim the screen. Let your brain file what you learnt."
+    },
+    {
+      "t": "picture",
+      "text": "A picture in two halves. On the left, a girl is hunched over her desk at 1 am, with three empty coffee cans beside her. On the right, the same girl is asleep in a dark room, her notes stacked and her school bag packed by the door."
+    },
+    {
+      "t": "body",
+      "text": "It feels responsible to squeeze in one more chapter at midnight. It is not. While you sleep, your brain sorts and stores what you studied; cut the sleep short and much of the day’s work is never put away. Tired students misread questions and blank on formulas they knew."
+    },
+    {
+      "t": "box",
+      "title": "Your last hour",
+      "items": [
+        "60 minutes to go — stop new topics; skim your own summary once",
+        "45 minutes — pack your bag: entry proof, pens, calculator",
+        "30 minutes — phone on the charger, outside your room",
+        "15 minutes — shower, stretch, lights low"
+      ]
+    },
+    {
+      "t": "quote",
+      "text": "“I used to study until 2 am and feel proud. My marks went up the term I started sleeping at eleven.” — Daniel, 16"
+    },
+    {
+      "t": "small",
+      "text": "Cannot sleep because of worry? Talk to a Peer Support Leader or the school counsellor in the Quiet Room, open every recess."
+    },
+    {
+      "t": "button",
+      "text": "Tonight, try it once"
+    }
   ],
+  "text2": {
+    "intro": "Text 2 is taken from a blog post by a student who changed her study habits.",
+    "paragraphs": [
+      "For most of last year, I was the friend who sent messages at 2 am asking if anyone else was still awake. I thought staying up proved I was serious. Then came the morning of my mid-year paper. In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before. I stared at the page while the clock moved on without me.",
+      "After that, my mother and I made a deal. My phone sleeps in the kitchen, and I stop starting new topics after ten. The first week was hard; lying in the dark felt like wasting time. But in the next round of tests, I finished early enough to check my working, and I actually remembered what I had revised. I still work hard. I just stop before my brain does."
+    ]
+  },
   "questions": [
     {
-      "n": "1", "marks": 1, "type": "short", "skill": "visual",
-      "text": "How do the two halves of the picture support the message of the poster?",
-      "scheme": { "answer": "They contrast a girl who is exhausted from studying late with the same girl resting and ready for the next day, which shows that sleeping is the better choice.", "accept": ["The left half makes late-night studying look tiring and unhealthy, while the right half makes going to bed look calm and well prepared."] },
+      "n": "1",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Look at Text 1. Which sentence best states the main message of the poster?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Studying late at night shows that you take your exams seriously."
+        },
+        {
+          "label": "B",
+          "text": "Resting well the night before is part of doing well in the exam."
+        },
+        {
+          "label": "C",
+          "text": "Students should drink less coffee during the exam period."
+        }
+      ],
+      "scheme": {
+        "answer": "Resting well the night before is part of doing well in the exam."
+      },
+      "seeds": []
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "visual",
+      "text": "How do the two halves of the picture in Text 1 support the message of the poster?",
+      "scheme": {
+        "answer": "The left half shows the girl exhausted at her desk at 1 am with empty coffee cans, while the right half shows her asleep with her notes and bag ready, so the contrast shows that preparing early and sleeping is the better choice.",
+        "accept": [
+          "The picture compares a tired girl studying very late with the same girl resting after getting ready, showing readers that sleep, not late-night studying, is the right way to end the day before a paper."
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "They contrast the girl who is worn out from studying late with the same girl resting and ready for the next day, to show that sleeping is the better choice." },
-        { "mark": 1, "flaw": "paraphrase", "text": "The left side makes staying up look tiring and unhealthy, but the right side looks calm and prepared, so we feel we should go to bed." },
-        { "mark": 0, "flaw": "wrong", "text": "They show that the girl studies very hard, so she will do well." },
-        { "mark": 0, "flaw": "wrong", "text": "They show that students should drink coffee to stay awake." },
-        { "mark": 0, "flaw": "vague", "text": "They show a girl studying and a girl sleeping." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "On the left she is studying at 1 am with coffee cans and looks very tired, but on the right she is sleeping with her bag already packed. The contrast shows sleeping is better than staying up, which is what the poster wants students to do."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "One side shows her worn out from staying up late and the other shows her resting after getting everything ready, so it compares the bad habit with the good one the poster is telling us to follow."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that students should not drink coffee because it is bad for health."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The two halves show the same girl in two different places."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "On the left, a girl is hunched over her desk at 1 am, with three empty coffee cans beside her."
+        }
       ]
     },
     {
-      "n": "2", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "‘It feels responsible to squeeze in one more chapter at midnight. It is not.’ What is the effect of the short sentence ‘It is not.’?",
-      "scheme": { "answer": "It firmly contradicts what students believe, stressing that studying late at night is not the sensible thing to do.", "accept": ["Its bluntness makes the reader stop and realise that a habit which seems hard-working is actually a mistake."] },
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Identify a sentence from Text 2 which supports the claim in Text 1 that tired students ‘blank on formulas they knew’.",
+      "scheme": {
+        "answer": "In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before.",
+        "accept": [
+          "I could not recall a formula I had copied out twenty times the night before"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It firmly goes against what students believe, and stresses that studying late at night is actually not the sensible thing to do." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It is very blunt, so the reader stops and realises that what seems hard-working is really a mistake." },
-        { "mark": 0, "flaw": "wrong", "text": "It saves space on the poster." },
-        { "mark": 0, "flaw": "wrong", "text": "It tells students that it is not midnight yet." },
-        { "mark": 0, "flaw": "vague", "text": "It creates an impact on the reader." },
-        { "mark": 0, "flaw": "vague", "text": "It makes the poster more interesting." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "In the very first question I read ‘radius’ as ‘diameter’, and I could not recall a formula I had copied out twenty times the night before."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "‘I could not recall a formula I had copied out twenty times the night before’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "I thought staying up proved I was serious."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "My phone sleeps in the kitchen, and I stop starting new topics after ten."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The part where she talks about her exam."
+        }
       ]
     },
     {
-      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "Which phrase in the tagline compares what the brain does during sleep to putting papers away in order?",
-      "scheme": { "answer": "file what you learnt", "accept": ["Let your brain file what you learnt", "your brain file what you learnt", "file"] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "file what you learnt" },
-        { "mark": 1, "flaw": "paraphrase", "text": "'Let your brain file what you learnt'" },
-        { "mark": 0, "flaw": "wrong", "text": "Close the book" },
-        { "mark": 0, "flaw": "wrong", "text": "Dim the screen" },
-        { "mark": 0, "flaw": "wrong", "text": "The last hour before bed" }
-      ]
+      "n": "4a",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "stem": "Consider Texts 1 and 2 together and pick the best ending for each statement.",
+      "text": "Daniel in Text 1 and the writer of Text 2 both …",
+      "options": [
+        {
+          "label": "A",
+          "text": "used to believe that studying late into the night was the right thing to do."
+        },
+        {
+          "label": "B",
+          "text": "were told by a counsellor to change their habits."
+        },
+        {
+          "label": "C",
+          "text": "gave up studying hard after one bad paper."
+        }
+      ],
+      "scheme": {
+        "answer": "used to believe that studying late into the night was the right thing to do."
+      },
+      "seeds": []
     },
     {
-      "n": "4", "marks": 1, "type": "short", "skill": "visual",
-      "text": "The poster is aimed at students who are sitting for examinations. Give one piece of evidence from the poster that shows this.",
-      "scheme": { "answer": "The headline mentions ‘the first paper tomorrow’.", "accept": ["The box tells readers to pack their entry proof, pens and calculator.", "The kicker says ‘Exam season’.", "It says tired students misread questions and blank on formulas.", "It tells readers to stop new topics and skim their own summary."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "The headline talks about 'the first paper tomorrow'." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It tells them to pack their entry proof, pens and calculator, which are things for an exam." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It says tired students will misread questions and forget formulas they knew." },
-        { "mark": 0, "flaw": "wrong", "text": "It tells readers to shower and stretch." },
-        { "mark": 0, "flaw": "wrong", "text": "There are three empty coffee cans in the picture." },
-        { "mark": 0, "flaw": "vague", "text": "It talks about things that students do." }
-      ]
-    },
-    {
-      "n": "5", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Daniel says he used to study until 2 am ‘and feel proud’. What does this suggest about how some students view staying up late to study?",
-      "scheme": { "answer": "They see it as a sign of hard work, something to be admired.", "accept": ["They believe that giving up sleep shows how dedicated and hard-working they are."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that some students see staying up late as a sign of hard work, something to be admired." },
-        { "mark": 1, "flaw": "paraphrase", "text": "They think that giving up sleep proves how dedicated they are to their studies." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that students are proud of getting good marks." },
-        { "mark": 0, "flaw": "wrong", "text": "Students stay up late because they enjoy it." },
-        { "mark": 0, "flaw": "vague", "text": "They have their own view about it." },
-        { "mark": 0, "flaw": "wrong", "text": "Students think staying up late is bad for their health." }
-      ]
+      "n": "4b",
+      "marks": 1,
+      "type": "choice",
+      "skill": "language_use",
+      "stem": "Consider Texts 1 and 2 together and pick the best ending for each statement.",
+      "text": "In Text 2, the phrase ‘the clock moved on without me’ suggests that the writer …",
+      "options": [
+        {
+          "label": "A",
+          "text": "felt stuck and helpless as the time ran out."
+        },
+        {
+          "label": "B",
+          "text": "finished the paper faster than she expected."
+        },
+        {
+          "label": "C",
+          "text": "forgot to bring her watch to the exam."
+        }
+      ],
+      "scheme": {
+        "answer": "felt stuck and helpless as the time ran out."
+      },
+      "seeds": []
     }
   ]
 }

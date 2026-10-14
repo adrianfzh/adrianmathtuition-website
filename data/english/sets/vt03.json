@@ -4,82 +4,214 @@
   "title": "The Borrow Shed",
   "format": "webpage",
   "theme": "amber",
+  "intro": "Text 1 is a webpage for a tool-lending cupboard run by the residents of a housing block.",
   "visual": [
-    { "t": "kicker", "text": "THE BORROW SHED · VOID DECK, BLOCK 318" },
-    { "t": "headline", "text": "You need a hole in the wall, not a drill in the cupboard." },
-    { "t": "tagline", "text": "Borrow the tool. Finish the job. Bring it back." },
-    { "t": "picture", "text": "A cupboard under a staircase with open doors, showing rows of drills, ladders and spanners, each with a numbered tag. A handwritten sign on the door reads ‘Take what you need. Return what you took.’" },
-    { "t": "body", "text": "Most tools in a home are used for a few minutes a year and spend the rest of their lives gathering dust. The Borrow Shed is a shared cupboard run by residents, for residents. Borrow a ladder to change a light bulb, a pump for your bicycle, or a sewing machine to hem new curtains — free, for up to three days." },
-    { "t": "box", "title": "Three steps", "items": [
-      "Scan the tag on the tool with your phone",
-      "Take it home and use it with care",
-      "Wipe it clean and hang it back on the same hook"
-    ] },
-    { "t": "quote", "text": "“My son wanted to build a shelf for a school project. We borrowed a saw and a sander, and the uncle on duty spent half an hour showing him how to use them safely.” — Mrs Kaur, Block 320" },
-    { "t": "button", "text": "See what is on the shelves today" },
-    { "t": "small", "text": "Have a tool you never use? Donate it and let it work for the whole block." }
+    {
+      "t": "kicker",
+      "text": "THE BORROW SHED · VOID DECK, BLOCK 318"
+    },
+    {
+      "t": "headline",
+      "text": "You need a hole in the wall, not a drill in the cupboard."
+    },
+    {
+      "t": "tagline",
+      "text": "Borrow the tool. Finish the job. Bring it back."
+    },
+    {
+      "t": "picture",
+      "text": "A cupboard under a staircase with open doors, showing rows of drills, ladders and spanners, each with a numbered tag. A handwritten sign on the door reads ‘Take what you need. Return what you took.’"
+    },
+    {
+      "t": "body",
+      "text": "Most tools in a home are used for a few minutes a year and spend the rest of their lives gathering dust. The Borrow Shed is a shared cupboard run by residents, for residents. Borrow a ladder to change a light bulb, a pump for your bicycle, or a sewing machine to hem new curtains — free, for up to three days."
+    },
+    {
+      "t": "box",
+      "title": "Three steps",
+      "items": [
+        "Scan the tag on the tool with your phone",
+        "Take it home and use it with care",
+        "Wipe it clean and hang it back on the same hook"
+      ]
+    },
+    {
+      "t": "quote",
+      "text": "“My son wanted to build a shelf for a school project. We borrowed a saw and a sander, and the uncle on duty spent half an hour showing him how to use them safely.” — Mrs Kaur, Block 320"
+    },
+    {
+      "t": "button",
+      "text": "See what is on the shelves today"
+    },
+    {
+      "t": "small",
+      "text": "Have a tool you never use? Donate it and let it work for the whole block."
+    }
   ],
+  "text2": {
+    "intro": "Text 2 is taken from a residents’ newsletter article about one of the volunteers at the Borrow Shed.",
+    "paragraphs": [
+      "Mr Tan, a retired aircraft technician of 68, spends two evenings a week beside the cupboard under the stairs. ‘People think I am here to guard the tools,’ he laughs. ‘Actually, I am here to talk.’ Nearly everything on the shelves was given by neighbours. ‘When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again.’",
+      "What surprises him most is who comes to borrow. It is not only fathers fixing taps, but teenagers building projects and grandmothers hanging photo frames. ‘Last week a boy came for a saw and stayed an hour asking me how planes stay up,’ he says. ‘The tools are the excuse. The shed is really about knowing your neighbours.’"
+    ]
+  },
   "questions": [
     {
-      "n": "1", "marks": 1, "type": "short", "skill": "inference",
-      "text": "Look at the headline: ‘You need a hole in the wall, not a drill in the cupboard.’ What does it suggest about owning tools?",
-      "scheme": { "answer": "People only need a tool for the short job it does, so there is no need to buy one and keep it at home.", "accept": ["What matters is getting the job done, not having your own tool, so borrowing makes more sense than buying."] },
+      "n": "1",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "text": "Look at Text 1. Which of these would be the best title for the webpage?",
+      "options": [
+        {
+          "label": "A",
+          "text": "Why buy it when you can borrow it?"
+        },
+        {
+          "label": "B",
+          "text": "How to fix things around the house"
+        },
+        {
+          "label": "C",
+          "text": "Give your old tools to charity"
+        }
+      ],
+      "scheme": {
+        "answer": "Why buy it when you can borrow it?"
+      },
+      "seeds": []
+    },
+    {
+      "n": "2",
+      "marks": 1,
+      "type": "short",
+      "skill": "visual",
+      "text": "Look at the picture in Text 1. How does it support the tagline ‘Borrow the tool. Finish the job. Bring it back.’?",
+      "scheme": {
+        "answer": "Each tool has a numbered tag and the sign tells people to return what they took, which shows the tools are shared and are meant to come back after use.",
+        "accept": [
+          "The rows of tagged tools and the sign on the door show a shared cupboard where you take a tool and put it back, as the tagline says."
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It suggests that people only need the tool to do one job, so they do not really need to buy and keep one at home." },
-        { "mark": 1, "flaw": "paraphrase", "text": "What you want is the job done, not the tool itself, so owning it is unnecessary and you can just borrow." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that drills should not be stored inside cupboards." },
-        { "mark": 0, "flaw": "wrong", "text": "It suggests that people should not make holes in their walls." },
-        { "mark": 0, "flaw": "vague", "text": "It suggests something about tools at home." },
-        { "mark": 0, "flaw": "lifted", "text": "You need a hole in the wall, not a drill in the cupboard." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "The tools all have number tags and the sign on the door says to return what you took, so it shows the tools are for everyone to borrow and then bring back, like the tagline."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "The handwritten sign and the tags show that you can take a tool but must put it back, which matches borrowing it and returning it."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "It shows that the tools are being sold cheaply to residents."
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "It shows a cupboard with a lot of tools."
+        },
+        {
+          "mark": 0,
+          "flaw": "lifted",
+          "text": "A cupboard under a staircase with open doors."
+        }
       ]
     },
     {
-      "n": "2", "marks": 1, "type": "short", "skill": "visual",
-      "text": "Besides free tools, what other benefit of the Borrow Shed does Mrs Kaur’s experience show?",
-      "scheme": { "answer": "The volunteers on duty teach borrowers how to use the tools safely.", "accept": ["Borrowers get help and guidance from a neighbour who knows how to use the tools.", "Residents can learn new skills from the volunteers."] },
+      "n": "3",
+      "marks": 1,
+      "type": "short",
+      "skill": "evidence",
+      "text": "Pick out one sentence from Text 2 that supports the claim in Text 1 that most home tools are ‘used for a few minutes a year’.",
+      "scheme": {
+        "answer": "When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again.",
+        "accept": [
+          "they bought it for one job years ago and never touched it again"
+        ]
+      },
       "seeds": [
-        { "mark": 1, "flaw": "full", "text": "The volunteer on duty will teach you how to use the tools safely." },
-        { "mark": 1, "flaw": "paraphrase", "text": "You can get guidance from a neighbour who knows about the tools, so you learn how to handle them properly." },
-        { "mark": 0, "flaw": "wrong", "text": "You can borrow a saw and a sander without paying." },
-        { "mark": 0, "flaw": "wrong", "text": "The volunteers will build the shelf for you." },
-        { "mark": 0, "flaw": "vague", "text": "It shows that the Borrow Shed is very good for residents." }
+        {
+          "mark": 1,
+          "flaw": "full",
+          "text": "When people donate, they always tell me the same thing: they bought it for one job years ago and never touched it again."
+        },
+        {
+          "mark": 1,
+          "flaw": "paraphrase",
+          "text": "‘they bought it for one job years ago and never touched it again’"
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "What surprises him most is who comes to borrow."
+        },
+        {
+          "mark": 0,
+          "flaw": "wrong",
+          "text": "‘Actually, I am here to talk.’"
+        },
+        {
+          "mark": 0,
+          "flaw": "vague",
+          "text": "The sentence where Mr Tan talks about the people who donate."
+        }
       ]
     },
     {
-      "n": "3", "marks": 1, "type": "short", "skill": "language_use",
-      "text": "Which phrase in the body text suggests that tools kept at home are mostly wasted?",
-      "scheme": { "answer": "gathering dust", "accept": ["spend the rest of their lives gathering dust", "the rest of their lives gathering dust", "used for a few minutes a year", "a few minutes a year"] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "gathering dust" },
-        { "mark": 1, "flaw": "paraphrase", "text": "'spend the rest of their lives gathering dust'" },
-        { "mark": 1, "flaw": "paraphrase", "text": "The phrase is \"used for a few minutes a year\"." },
-        { "mark": 0, "flaw": "wrong", "text": "a shared cupboard" },
-        { "mark": 0, "flaw": "wrong", "text": "free, for up to three days" }
-      ]
+      "n": "4a",
+      "marks": 1,
+      "type": "choice",
+      "skill": "inference",
+      "stem": "Using both texts, pick the ending that fits each sentence best.",
+      "text": "Both texts suggest that the Borrow Shed …",
+      "options": [
+        {
+          "label": "A",
+          "text": "is mostly used by fathers repairing their flats."
+        },
+        {
+          "label": "B",
+          "text": "brings neighbours together as well as lending tools."
+        },
+        {
+          "label": "C",
+          "text": "charges a small fee to keep the tools in good repair."
+        }
+      ],
+      "scheme": {
+        "answer": "brings neighbours together as well as lending tools."
+      },
+      "seeds": []
     },
     {
-      "n": "4", "marks": 1, "type": "short", "skill": "visual",
-      "text": "In the picture, a handwritten sign reads ‘Take what you need. Return what you took.’ What does the sign tell us the Borrow Shed expects of the people who use it?",
-      "scheme": { "answer": "It expects borrowers to be honest and responsible, taking only what they need and bringing every tool back.", "accept": ["It trusts residents to return the tools they borrow."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "It expects them to be honest and responsible and bring back whatever tools they borrowed." },
-        { "mark": 1, "flaw": "paraphrase", "text": "The shed depends on trust, so residents must not keep the things for themselves after using them." },
-        { "mark": 0, "flaw": "wrong", "text": "It tells us that people can take any tool they like and keep it." },
-        { "mark": 0, "flaw": "vague", "text": "It tells people about the Borrow Shed." },
-        { "mark": 0, "flaw": "wrong", "text": "It expects them to write neatly on the sign." }
-      ]
-    },
-    {
-      "n": "5", "marks": 1, "type": "short", "skill": "visual",
-      "text": "What is the purpose of the last line: ‘Have a tool you never use? Donate it and let it work for the whole block.’?",
-      "scheme": { "answer": "To encourage residents to give their unused tools to the Borrow Shed so that all their neighbours can use them.", "accept": ["To get more tools for the shed by asking residents to donate the ones they do not need."] },
-      "seeds": [
-        { "mark": 1, "flaw": "full", "text": "To encourage residents to donate tools they are not using so that everyone in the block can borrow them." },
-        { "mark": 1, "flaw": "paraphrase", "text": "It is asking people to give their spare tools to the shed, so the shed has more things for the neighbours to share." },
-        { "mark": 0, "flaw": "wrong", "text": "To ask residents to borrow more tools from the shed." },
-        { "mark": 0, "flaw": "wrong", "text": "To tell residents to throw away their old tools." },
-        { "mark": 0, "flaw": "vague", "text": "To end the webpage in a nice way." }
-      ]
+      "n": "4b",
+      "marks": 1,
+      "type": "choice",
+      "skill": "language_use",
+      "stem": "Using both texts, pick the ending that fits each sentence best.",
+      "text": "In Text 2, Mr Tan’s words ‘The tools are the excuse’ suggest that …",
+      "options": [
+        {
+          "label": "A",
+          "text": "many of the tools in the shed are broken."
+        },
+        {
+          "label": "B",
+          "text": "the real value of the shed is the people it brings together."
+        },
+        {
+          "label": "C",
+          "text": "residents make up reasons not to return what they borrow."
+        }
+      ],
+      "scheme": {
+        "answer": "the real value of the shed is the people it brings together."
+      },
+      "seeds": []
     }
   ]
 }

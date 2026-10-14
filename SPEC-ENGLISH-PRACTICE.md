@@ -41,6 +41,10 @@ Text 1 / Text 2 / Both / Neither); some give the picture 2 marks.
 - The page shows "**Text 1** is a webpage …", the visual, "**Text 2** is taken from …", the
   Text 2 card, then the questions; ticks are marked by rule, the rest as before.
 - The checker is given both texts, headed TEXT 1 / TEXT 2 (`ownPassage`).
+- All 12 sets rewritten the same day (8 pattern A, 4 pattern B; writers on the plan), copy check clean.
+- **A tick bug found on the way:** a choice whose right answer began with the word "a" ("a personal
+  request…") also marked option **A** right. `ruleShort` now takes a letter only when that option's
+  own words follow it; a test pins it, and every set's every wrong option is checked to score 0.
 
 ## Editing starts from a difficulty, one passage at a time (8 Oct 2026)
 

@@ -207,7 +207,11 @@ export function ruleShort(u: Pick<Unit, 'kind' | 'options' | 'scheme' | 'section
   if (u.kind === 'choice' && u.options) {
     const picked = u.options.find(o => norm(o.label) === a || norm(o.text) === a);
     if (!picked) return null;
-    return targets.some(t => t === norm(picked.label) || t === norm(picked.text) || t.startsWith(norm(picked.label) + ' ') || t.includes(norm(picked.text)));
+    // The scheme names the option by its words, its letter, or both ("B — Donating …"). A letter
+    // counts only with that option's own words after it: an answer that merely begins with the word
+    // "a" ("a personal request") is not option A (14 Oct 2026 — tapping A was marked right).
+    const L = norm(picked.label), T = norm(picked.text);
+    return targets.some(t => t === L || t === T || (t.startsWith(L + ' ') && t.slice(L.length).replace(/^[^a-z0-9]+/, '') === T));
   }
   // "Which word …" — the scheme is one or two words: an exact match is right; anything else needs a look.
   if (u.sectionKind === 'vocabulary' && targets.length > 0 && targets.every(t => t.split(' ').length <= 2)) {

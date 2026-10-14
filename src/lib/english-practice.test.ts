@@ -88,6 +88,20 @@ describe('editing', () => {
   });
 });
 
+describe('a choice', () => {
+  const opts = [{ label: 'A', text: 'an angry complaint' }, { label: 'B', text: 'a personal request, made politely' }, { label: 'C', text: 'a list of rules' }];
+  const c = (answer: string) => ({ kind: 'choice' as const, options: opts, sectionKind: 'visual_text', scheme: { answer, accept: [], points: [] } });
+  it('an answer that begins with the word "a" is not option A', () => {
+    expect(ruleShort(c('a personal request, made politely'), 'A')).toBe(false);
+    expect(ruleShort(c('a personal request, made politely'), 'B')).toBe(true);
+  });
+  it('the scheme may name the option by letter and words', () => {
+    expect(ruleShort(c('B — a personal request, made politely'), 'B')).toBe(true);
+    expect(ruleShort(c('B — a personal request, made politely'), 'C')).toBe(false);
+    expect(ruleShort(c('B'), 'B')).toBe(true);
+  });
+});
+
 describe('short answers', () => {
   const [u] = unitsOf(base);
   it('the rule decides only what is exact; a paraphrase goes to the reader', () => {
