@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-// @ts-expect-error — a plain .mjs module, shared with the audio script
 import { sayAs, SG_SAY } from './sg-say.mjs';
 
 describe('sayAs', () => {
