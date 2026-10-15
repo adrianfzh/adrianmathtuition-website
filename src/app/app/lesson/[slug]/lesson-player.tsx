@@ -367,7 +367,9 @@ function placeClipNotes(cont: HTMLElement) {
 /**
  * A clip's board must fit on the phone screen with the page at the top (Adrian's phone shots,
  * 15 Oct 2026: the top of the question or the last line hidden under a bar). When the stage would
- * run below the bottom bar, the working's maths is scaled down (--lsn-clip-fit, never under 0.7);
+ * run below the bottom bar, the working's maths is scaled down (--lsn-clip-fit, never under 0.56)
+ * and the gaps between its lines with it (--lsn-gap-fit, faster — 15 Oct 2026, when the subtitle
+ * strip took the board's foot);
  * words and notes keep their size. Measured, so it holds for any board on any phone.
  */
 function fitClipBoard(cont: HTMLElement) {
@@ -386,15 +388,32 @@ function fitClipBoard(cont: HTMLElement) {
   // slider below the clip"): leave room for it (its height + its 8 px gap) above the bottom bar.
   const scrub = document.querySelector<HTMLElement>('.lsn-scrub');
   const reserve = scrub ? scrub.getBoundingClientRect().height + 8 : 0;
-  for (let pass = 0; pass < 3; pass++) {
+  // The gaps between lines shrink with the maths, and faster (most of a board's height is gaps):
+  // 1 at full size, 0.5 when the maths reaches its floor — then the gaps alone go on down to 0.25.
+  const gapFor = (fit: number) => Math.max(0.5, (fit - 0.4) / 0.6);
+  // The maths may come down to 0.56 (≈ 14 px on a phone) since the board also carries the subtitle strip.
+  const floor = 0.56;
+  for (let pass = 0; pass < 8; pass++) {
     const cur = Number(stage.style.getPropertyValue('--lsn-clip-fit')) || 1;
+    const gap = Number(stage.style.getPropertyValue('--lsn-gap-fit')) || 1;
     const sr = stage.getBoundingClientRect();
     const over = sr.bottom + window.scrollY - (bar - 8 - reserve);
     const lines = cont.getBoundingClientRect().height;
     if (over <= 1 && cur >= 1) return;
-    const want = over > 1 ? Math.max(0.7, cur * (lines - over) / lines) : Math.min(1, cur * 1.02);
+    if (over > 1 && cur <= floor + 0.001) {
+      if (gap <= 0.251) return;
+      stage.style.setProperty('--lsn-gap-fit', Math.max(0.25, gap - 0.08).toFixed(3));
+      continue;
+    }
+    if (over <= 1 && gap < gapFor(cur) - 0.01) {
+      if (over > -24) return;  // room for a little more gap only when there is clearly room
+      stage.style.setProperty('--lsn-gap-fit', Math.min(gapFor(cur), gap + 0.08).toFixed(3));
+      continue;
+    }
+    const want = over > 1 ? Math.max(floor, cur * (lines - over) / lines) : Math.min(1, cur * 1.02);
     if (Math.abs(want - cur) < 0.01) return;
     stage.style.setProperty('--lsn-clip-fit', want.toFixed(3));
+    stage.style.setProperty('--lsn-gap-fit', gapFor(want).toFixed(3));
   }
 }
 
@@ -1457,7 +1476,7 @@ function subscribeWide(cb: () => void): () => void {
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null, question = null }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1495,6 +1514,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   startAt?: number;
   /** A clip: its question as written above the working, sent to Ask with the board. */
   askIntro?: string | null;
+  /** A question clip: the WHOLE question as set (TeX in $…$), shown beside the clip on a laptop and
+   *  behind a "📄 The whole question" bar above it on a phone (Adrian, 15 Oct 2026: "the whole
+   *  question on one side, then the explanation part by part on another side"). */
+  question?: string | null;
   /** A clip: the level the Ask solver answers at on a laptop ('AM', 'EM', …), or null. */
   askLevel?: string | null;
 }) {
@@ -1749,6 +1772,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
   const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
   const [chatOpen, setChatOpen] = useState(false);
+  const [qOpen, setQOpen] = useState(false);
   const wide = useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE_QUERY).matches, () => false);
   const sheet = chatOpen && !wide;
   const askLabel = `${title} · step ${stopAt + 1} of ${stops.length}`;
@@ -1884,9 +1908,44 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   // Re-fit whenever the scene, the step or the face changes the measurements.
   useFitToBoard(cardRef, themed, `${sceneIdx}:${step}:${faceReady}:${done}`);
 
+  // The whole question beside the clip (laptop, chat closed) — see the grid below.
+  const qSide = clip && !!question && wide && !chatOpen;
+  // The spoken line: under the board in a lesson; inside the bottom of the board in a clip (subtitles).
+  const ribbonCls = clip ? 'lsn-subs' : 'lsn-ribbon mt-3 px-1 min-h-[42px]';
+  const lineCls = clip ? 'lsn-subs-line' : 'lsn-ribbon-line border-l-2 border-amber-400 pl-3 text-[13px] leading-snug';
+  const subtitles = (
+    <>
+      {/* The spoken-line ribbon (Voice only): the narration sentence being
+          said, its words brightening as the voice reaches them. Fixed height
+          so the controls below never jump; empty on silent positions. */}
+      {pacing === 'narrated' && !done && (
+        <div ref={ribbonRef} className={ribbonCls} aria-hidden data-ribbon>
+          {ribbon && (
+            <p key={ribbon.key} className={lineCls}>
+              {ribbon.words.map((w, i) => (
+                <span key={i} data-w>{i > 0 ? ' ' : ''}{w}</span>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
+      {/* A clip with the sound OFF (▶ Auto): the beat's spoken line as a plain caption,
+          so a student watching on mute still gets the words (SPEC-CLIP-PIPELINE §2b). */}
+      {clip && pacing === 'auto' && !done && hasBeats(scene) && scene.beats[step] && (
+        <div className={ribbonCls} aria-hidden data-ribbon="caption">
+          <p key={`${sceneIdx}:${step}`} className={lineCls}>
+            {scene.beats[step].say.split(/\s+/).map((w, i) => (
+              <span key={i} data-w data-on="">{i > 0 ? ' ' : ''}{w}</span>
+            ))}
+          </p>
+        </div>
+      )}
+    </>
+  );
+
   return (
     <>
-    <div ref={rootRef} className={`max-w-lg mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
+    <div ref={rootRef} className={`${qSide ? 'max-w-4xl' : 'max-w-lg'} mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
       data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined}
       // The phone chat sheet covers the bottom half: the page needs that much more room to scroll the clip up.
       style={sheet ? { ...themeStyle, paddingBottom: '50dvh' } : themeStyle}>
@@ -1951,6 +2010,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               {auto ? 'Auto on' : '▶ Auto'}
             </button>
           )}
+          {clip && question && !wide && (
+            <button type="button" onClick={() => setQOpen(o => !o)} aria-pressed={qOpen} aria-label="The whole question" data-question-pill
+              className={`${PILL} ${qOpen ? PILL_ON : PILL_OFF}`}>📄</button>
+          )}
           {hasVoice && (
             <button type="button" onClick={toggleVoice} aria-pressed={narrated} data-voice={narrated ? 'on' : 'off'}
               className={`${PILL} ${narrated ? PILL_ON : PILL_OFF}`}>
@@ -1970,6 +2033,18 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         ))}
       </div>}
 
+      {/* A question clip on a laptop: the whole question on the left, the clip on the right
+          (Adrian, 15 Oct 2026). On a phone there is no room beside or above the board (it already
+          fills the screen), so the 📄 pill in the header lays the question over the board.
+          Hidden while the laptop chat panel is open. */}
+      <div className={qSide ? 'lg:grid lg:grid-cols-[minmax(0,300px)_minmax(0,512px)] lg:gap-5 lg:justify-center lg:items-start' : undefined}>
+      {qSide && question && (
+        <aside className="lsn-question lg:sticky lg:top-20 rounded-3xl p-5 text-[15px] leading-relaxed" data-lsn-question>
+          <p className="lsn-question-kicker text-[11px] font-bold uppercase tracking-wider mb-2">The question</p>
+          <div className="whitespace-pre-line"><MathText text={question} /></div>
+        </aside>
+      )}
+      <div className="min-w-0">
       {done ? (
         /* ── Completion — the closer CTA ── */
         <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 min-h-[440px] flex flex-col items-center justify-center text-center lsn-scene">
@@ -2055,6 +2130,18 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               </span>
             </div>
           )}
+          {/* A clip's subtitles: the spoken line over the bottom of the board, like a video's
+              (Adrian, 15 Oct 2026: "the voice transcript at the bottom of the clip, like how youtube
+              have subs"). The stage keeps that strip clear (padding), so no working is covered. */}
+          {clip && subtitles}
+          {clip && question && !wide && qOpen && (
+            <div role="dialog" aria-label="The whole question" data-lsn-question
+              onClick={(e) => { e.stopPropagation(); setQOpen(false); }}
+              className="lsn-question absolute inset-x-3 top-3 z-30 max-h-[78%] overflow-auto rounded-2xl p-4 text-[15px] leading-relaxed lsn-rise">
+              <p className="lsn-question-kicker text-[11px] font-bold uppercase tracking-wider mb-2">The question <span className="float-right normal-case">✕</span></p>
+              <div className="whitespace-pre-line"><MathText text={question} /></div>
+            </div>
+          )}
         </div>
       )}
 
@@ -2079,31 +2166,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         );
       })()}
 
-      {/* The spoken-line ribbon (Voice only): the narration sentence being
-          said, its words brightening as the voice reaches them. Fixed height
-          so the controls below never jump; empty on silent positions. */}
-      {pacing === 'narrated' && !done && (
-        <div ref={ribbonRef} className="lsn-ribbon mt-3 px-1 min-h-[42px]" aria-hidden data-ribbon>
-          {ribbon && (
-            <p key={ribbon.key} className="lsn-ribbon-line border-l-2 border-amber-400 pl-3 text-[13px] leading-snug">
-              {ribbon.words.map((w, i) => (
-                <span key={i} data-w>{i > 0 ? ' ' : ''}{w}</span>
-              ))}
-            </p>
-          )}
-        </div>
-      )}
-      {/* A clip with the sound OFF (▶ Auto): the beat's spoken line as a plain caption,
-          so a student watching on mute still gets the words (SPEC-CLIP-PIPELINE §2b). */}
-      {clip && pacing === 'auto' && !done && hasBeats(scene) && scene.beats[step] && (
-        <div className="lsn-ribbon mt-3 px-1 min-h-[42px]" aria-hidden data-ribbon="caption">
-          <p key={`${sceneIdx}:${step}`} className="lsn-ribbon-line border-l-2 border-amber-400 pl-3 text-[13px] leading-snug">
-            {scene.beats[step].say.split(/\s+/).map((w, i) => (
-              <span key={i} data-w data-on="">{i > 0 ? ' ' : ''}{w}</span>
-            ))}
-          </p>
-        </div>
-      )}
+      {!clip && subtitles}
 
       {/* Bottom controls — fixed shape, never jumps between scenes. */}
       {!done && (
@@ -2129,6 +2192,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           </button>
         </div>
       )}
+      </div>
+      </div>
     </div>
     {/* Outside the sliding column: a fixed panel inside a transformed box would move with it. */}
     {clip && askAbout && chatOpen && (
@@ -2294,16 +2359,16 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45 * var(--lsn-clip-fit, 1) * var(--lsn-row-scale, 1)); }
 [data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; flex-wrap: nowrap; }
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
-[data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
-[data-lsn-clip] .lsn-steps > * + * { margin-top: 2.8rem; }
+[data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
+[data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }
 /* The question above a clip's working: its maths is as large as its words. */
 [data-lsn-clip] .lsn-body-steps > p .katex { font-size: 1.22em; }
 /* Five lines or more: closer together, so the whole working stays on a phone screen (such a board has margin words, not arcs). */
-[data-lsn-clip] .lsn-steps:has(> :nth-child(5)) > * + * { margin-top: 1.7rem; }
+[data-lsn-clip] .lsn-steps:has(> :nth-child(5)) > * + * { margin-top: calc(1.7rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
 /* A board that carries laws beside its lines (the log clips, 15 Oct 2026) is taller: closer lines. */
-[data-lsn-clip] .lsn-steps:has(.lsn-note-up) { margin-top: 1.4rem; }
-[data-lsn-clip] .lsn-steps:has(.lsn-note-up) > * + * { margin-top: 1.25rem; }
+[data-lsn-clip] .lsn-steps:has(.lsn-note-up) { margin-top: calc(1.4rem * var(--lsn-gap-fit, 1)); }
+[data-lsn-clip] .lsn-steps:has(.lsn-note-up) > * + * { margin-top: calc(1.25rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
 /* Content sits in the UPPER part of the board with comfortable margins — a
    short scene should not float in the middle of a tall empty slate. */
@@ -2385,6 +2450,20 @@ const PLAYER_CSS = `
 /* In a clip a note is the notes' own margin words ("← Add up like terms"): no "↳" in front. */
 [data-lsn-clip] .lsn-note-row .lsn-note::before { content: none; }
 /* The clip slider: a navy track filled to where the clip is, a thumb big enough for a thumb. */
+/* A clip's subtitles: a dark strip over the bottom of the board, the words lighting up as they are
+   said; the stage keeps 84 px clear at its foot so the strip never covers working. */
+[data-lsn-clip] .lsn-stage { padding-bottom: 56px; }
+@media (min-width: 520px) { [data-lsn-clip] .lsn-stage { padding-bottom: 72px; } }
+.lsn-subs { position: absolute; left: 6px; right: 6px; bottom: 6px; min-height: 48px; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; z-index: 15; }
+.lsn-subs-line { animation: lsnFade 180ms ease both; background: rgba(8, 10, 14, 0.72); color: rgba(255, 255, 255, 0.62); border-radius: 10px; padding: 4px 10px; font-size: 13.5px; line-height: 1.35; text-align: center; max-width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+.lsn-subs-line [data-w] { transition: color 160ms ease; }
+.lsn-subs-line [data-w][data-on] { color: #fff; }
+@media (min-width: 520px) { .lsn-subs { left: 10px; right: 10px; bottom: 10px; min-height: 56px; } .lsn-subs-line { font-size: 16px; padding: 5px 12px; } }
+/* The whole question beside / above a question clip, on the board's colours. */
+.lsn-question { background: #fff; color: hsl(220, 60%, 20%); box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 6px 16px -4px rgba(15,23,42,0.08); }
+.lsn-question-kicker { color: rgb(148, 163, 184); }
+[data-lsn-themed] .lsn-question { background-color: var(--lsn-board); background-image: var(--lsn-texture); background-size: var(--lsn-texture-size); background-blend-mode: var(--lsn-texture-blend); color: var(--lsn-ink, #f8fafc); box-shadow: inset 0 0 0 1px var(--lsn-edge); }
+[data-lsn-themed] .lsn-question-kicker { color: var(--lsn-ribbon); }
 .lsn-scrub-range { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; touch-action: none; }
 .lsn-scrub-range::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, hsl(220, 60%, 20%) var(--lsn-scrub), rgb(226, 232, 240) var(--lsn-scrub)); }
 .lsn-scrub-range::-moz-range-track { height: 6px; border-radius: 999px; background: rgb(226, 232, 240); }

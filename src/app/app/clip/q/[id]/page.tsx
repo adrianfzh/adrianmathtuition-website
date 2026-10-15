@@ -13,6 +13,7 @@ import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { questionClipsAdmin, questionClipsVisible } from '@/lib/portal-beta';
 import { getQuestionClip } from '@/lib/question-clip-store';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { clipStatusLine } from '@/lib/question-clip';
 import { buildPlayScenes } from '@/lib/lesson-load';
 import LessonPlayer from '../../../lesson/[slug]/lesson-player';
@@ -45,6 +46,10 @@ export default async function QuestionClipPage({ params, searchParams }: { param
     );
   }
   const script = row!.script!;
+  // The whole question beside the clip: a photo clip keeps the reading it was made from; a bank
+  // clip reads its bank row.
+  const question = row!.question_text ?? (row!.source === 'photo' ? null
+    : (await getSupabaseAdmin().from('questions').select('question_text').eq('id', id).maybeSingle()).data?.question_text ?? null);
   return (
     <>
       <LessonPlayer
@@ -58,6 +63,7 @@ export default async function QuestionClipPage({ params, searchParams }: { param
         kicker="Clip"
         startAuto
         startVoice
+        question={question}
         backHref={back}
         startAt={Math.max(0, Number.parseInt(sp.at ?? '0', 10) || 0)}
         practiceHref={`/app/practice?qid=${id}`}
