@@ -22,6 +22,8 @@ export type Rhythm =
   | { kind: 'monthly'; day: number; graceDays: number; label: string; months?: number[] };
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
+  // ✉️ Emails a day old that never arrived and never bounced (15 Oct 2026) — vercel.json "0 1 * * *" UTC = 9am SGT.
+  'email-stuck':       { kind: 'interval', hours: 36, label: 'daily 9am' },
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },
   // 🧰 "What students asked for that we can't do yet" (13 Oct 2026, Adrian: "keep a weekly list"): bot
   // scripts/unmet-asks.js on the Fly worker, Mondays 07:41, into the morning brief.

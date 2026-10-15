@@ -116,6 +116,10 @@
       "schedule": "30 18-22 * * *"
     },
     {
+      "path": "/api/cron/email-stuck",
+      "schedule": "0 1 * * *"
+    },
+    {
       "path": "/api/cron/leak-test",
       "schedule": "0 20 * * 0"
     },
