@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseTranscript, transcribePrompt, UNREADABLE } from './humanities-photo';
+import { parseTranscript, transcribePrompt, parseWholeQuestion, UNREADABLE } from './humanities-photo';
 
 describe('parseTranscript', () => {
   it('keeps the words and paragraph breaks', () => {
@@ -24,7 +24,7 @@ describe('parseTranscript', () => {
 
 describe('transcribePrompt', () => {
   it('reads a printed question or sources, pictures in words', () => {
-    expect(transcribePrompt(1, '', 'question')).toContain('an exam question');
+    expect(transcribePrompt(1, '', 'question')).toContain('one question from');
     const s = transcribePrompt(2, '', 'sources');
     expect(s).toContain('2 photos show');
     expect(s).toContain('[Picture:');
@@ -34,5 +34,14 @@ describe('transcribePrompt', () => {
     expect(p).toContain('2 photos are');
     expect(p).toContain('page after page');
     expect(p).toContain('How far do the sources agree?');
+  });
+});
+
+describe('the whole question from photos', () => {
+  it('splits the question from its sources', () => {
+    expect(parseWholeQuestion('{"question":"2 How similar are Sources A and B? [6]","material":"Source A: …\\n\\nSource B: …"}'))
+      .toEqual({ question: '2 How similar are Sources A and B? [6]', material: 'Source A: …\n\nSource B: …' });
+    expect(parseWholeQuestion('{"question":"","material":"x"}')).toBeNull();
+    expect(transcribePrompt(3, '', 'question')).toContain('"material"');
   });
 });

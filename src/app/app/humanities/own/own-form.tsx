@@ -9,7 +9,7 @@ import type { OwnQuestion } from '@/lib/humanities-own';
 import { printedMarks } from '@/lib/humanities-marks';
 import type { HumanitiesSkill, HumanitiesSubject } from '@/lib/humanities-questions';
 
-const MAX_PAGES = 4;
+const MAX_PAGES = 6;
 // Combined Humanities = Social Studies + ONE elective (15 Oct 2026, Adrian: "allow them to choose their elect
 // too … only say it's for elect (not pure)"). The elective is saved in the student's settings.
 type Elective = 'geography' | 'history';
@@ -17,8 +17,7 @@ const ELECTIVE_LABEL: Record<Elective, string> = { geography: 'Geography Electiv
 const SOURCE_SKILLS: string[] = OWN_SOURCE_SKILLS;
 const words = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
 
-type Mode = 'question' | 'sources' | 'scheme' | 'answer';
-const POINT_SKILLS = ['geo_describe', 'geo_explain'];
+type Mode = 'question' | 'answer';
 
 function PhotoButton({ label, busy, onFiles }: { label: string; busy: boolean; onFiles: (f: FileList | null) => void }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -46,9 +45,9 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
   const [elective, setElective] = useState<Elective | null>(savedElective);
   const [choosing, setChoosing] = useState(!savedElective);
   const [question, setQuestion] = useState(prefill?.question ?? '');
+  // The sources, extracts or figures read from the question's photos — kept for the marker, folded away on screen.
   const [sources, setSources] = useState(prefill?.sources ?? '');
   const [answer, setAnswer] = useState('');
-  const [scheme, setScheme] = useState(prefill?.scheme ?? '');
   const [marksTyped, setMarksTyped] = useState(prefill?.marks ? String(prefill.marks) : '');
   const [reading, setReading] = useState<Mode | null>(null);
   const [busy, setBusy] = useState(false);
@@ -71,12 +70,11 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
   const guessed = guessSkill(subject, question);
   // A refill ("Write it again") keeps the type it was marked as.
   const skill = (prefill?.skill && prefill.subject === subject && skills[subject].includes(prefill.skill) ? prefill.skill : guessed) ?? '';
-  const pointsQ = POINT_SKILLS.includes(skill);
   // A Geography question with no printed marks asks for them, unless it is the 9-mark kind.
   const asksMarks = subject !== 'social-studies' && subject !== 'history' && !printedMarks(question) && skill !== 'geo_evaluate' && !!question.trim();
-  const needsSources = SOURCE_SKILLS.includes(skill) || mentionsSources(question) || pointsQ;
+  const usesSources = SOURCE_SKILLS.includes(skill) || mentionsSources(question);
   const marks = printedMarks(question) ?? (Number(marksTyped) > 0 ? Number(marksTyped) : null);
-  const gaps = [question, sources, scheme, answer].some(t => t.includes('[?]'));
+  const gaps = [question, sources, answer].some(t => t.includes('[?]'));
   const wc = words(answer);
   const ready = !busy && !reading && !gaps && words(question) >= 4 && wc >= 3 && wc <= maxWords
     && (!SOURCE_SKILLS.includes(skill) || words(sources) >= 10) && (!asksMarks || !!marks);
@@ -89,14 +87,12 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
       const images = await Promise.all(files.map(async f => ({ data: await fileToJpegDataUrl(f), mediaType: 'image/jpeg' })));
       const r = await fetch('/api/portal/humanities/transcribe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        // The school's scheme is printed or typed text too: read it as printed.
-        body: JSON.stringify({ mode: mode === 'scheme' ? 'sources' : mode, questionText: question, images }),
+        body: JSON.stringify({ mode, questionText: question, images }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setError(j.error || 'We could not read the photo.'); return; }
-      if (mode === 'question') setQuestion(j.text);
-      else if (mode === 'sources') setSources(prev => (prev.trim() ? `${prev.trim()}\n\n${j.text}` : j.text));
-      else if (mode === 'scheme') setScheme(prev => (prev.trim() ? `${prev.trim()}\n\n${j.text}` : j.text));
+      // The whole question: its words in the box, its sources and figures kept beside it.
+      if (mode === 'question') { setQuestion(j.text); setSources(j.material ?? ''); }
       else setAnswer(j.text);
       setCheckNote(mode);
     } catch {
@@ -111,7 +107,7 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
     try {
       const r = await fetch('/api/portal/humanities/own', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, skill, question, sources: needsSources ? sources : '', answer, marks, ...(pointsQ ? { scheme } : {}) }),
+        body: JSON.stringify({ subject, skill, question, sources, answer, marks }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setError(j.error || 'Something went wrong.'); setBusy(false); return; }
@@ -157,13 +153,23 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
       <div className={box}>
         <div className="flex items-center justify-between gap-2">
           {head(1, 'The question')}
-          <PhotoButton label="Photo" busy={reading === 'question'} onFiles={f => read('question', f)} />
+          <PhotoButton label="Photos" busy={reading === 'question'} onFiles={f => read('question', f)} />
         </div>
+        <p className="text-[12px] text-gray-500 mt-1">Photograph the whole question with its sources or figures. Several photos are fine.</p>
         <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={3}
-          placeholder="Type the question, or send a photo of it." className={area} />
+          placeholder="Send photos of the question, or type it." className={area} />
         {note('question')}
         {/* The type is worked out, never shown or asked (15 Oct 2026, Adrian: "let the app just work out the type"):
             the wording rules here, and a short read on the server when they find nothing. */}
+        {sources.trim() && (
+          <details className="mt-2">
+            <summary className="text-[13px] text-gray-600 cursor-pointer">Sources and figures read from your photos</summary>
+            <textarea value={sources} onChange={e => setSources(e.target.value)} rows={6} className={area} />
+          </details>
+        )}
+        {usesSources && !sources.trim() && question.trim() && !reading && (
+          <p className="text-[12px] text-amber-900 mt-2">This question uses sources. Send photos of the question together with its sources.</p>
+        )}
         {asksMarks && (
           <label className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
             <span className="shrink-0">Marks:</span>
@@ -173,37 +179,13 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
         )}
       </div>
 
-      {needsSources && (
-        <div className={box}>
-          <div className="flex items-center justify-between gap-2">
-            {head(2, pointsQ ? 'The figure or table (if any)' : 'The sources')}
-            <PhotoButton label="Photos" busy={reading === 'sources'} onFiles={f => read('sources', f)} />
-          </div>
-          <textarea value={sources} onChange={e => setSources(e.target.value)} rows={5}
-            placeholder={pointsQ ? 'If the question uses a figure, map, photo or table, send a photo of it.' : 'Type the sources this question uses, or send photos of them.'} className={area} />
-          {note('sources')}
-        </div>
-      )}
-
-      {pointsQ && (
-        <div className={box}>
-          <div className="flex items-center justify-between gap-2">
-            {head(3, "The school's answers (if you have them)")}
-            <PhotoButton label="Photos" busy={reading === 'scheme'} onFiles={f => read('scheme', f)} />
-          </div>
-          <textarea value={scheme} onChange={e => setScheme(e.target.value)} rows={3}
-            placeholder="If your teacher gave out the answers for this question, add them. We mark against them." className={area} />
-          {note('scheme')}
-        </div>
-      )}
-
       <div className={box}>
         <div className="flex items-center justify-between gap-2">
-          {head(pointsQ ? 4 : needsSources ? 3 : 2, 'Your answer')}
-          <PhotoButton label="Photo" busy={reading === 'answer'} onFiles={f => read('answer', f)} />
+          {head(2, 'Your answer')}
+          <PhotoButton label="Photos" busy={reading === 'answer'} onFiles={f => read('answer', f)} />
         </div>
         <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={8}
-          placeholder="Type your answer, or send a photo of what you wrote." className={area} />
+          placeholder="Send photos of what you wrote, or type it." className={area} />
         <div className="flex items-center justify-between mt-1">
           {note('answer') || <span />}
           <span className={`text-[12px] ${wc > maxWords ? 'text-rose-700 font-semibold' : 'text-gray-400'}`}>{wc} words</span>

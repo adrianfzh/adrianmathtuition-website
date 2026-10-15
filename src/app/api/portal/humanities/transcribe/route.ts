@@ -9,7 +9,7 @@ import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOwnOpen } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionById } from '@/lib/humanities-questions';
-import { transcribePrompt, parseTranscript, isPhotoMode, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
+import { transcribePrompt, parseTranscript, parseWholeQuestion, isPhotoMode, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
 import { sgtDayStartISO } from '@/lib/sgt';
 import { anthropicText } from '@/lib/claude-models';
 
@@ -70,11 +70,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'We could not read the photo just now. Try again in a minute.' }, { status: 503 });
   }
 
-  const out = parseTranscript(reply, mode);
+  // The whole question: the question for the box, its sources/figures as material for the marker.
+  const whole = mode === 'question' ? parseWholeQuestion(reply) : null;
+  const out = parseTranscript(whole ? whole.question : reply, mode);
   await sb.from('portal_event_log').insert({
     identity: sid, kind: KIND,
     detail: { questionId: body.questionId ? String(body.questionId) : 'own', mode, pages: images.length, ok: out.ok, ...(out.ok ? { words: out.text.split(/\s+/).length, unsure: out.unsure } : {}) },
   }).then(() => {});
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: 422 });
-  return NextResponse.json({ text: out.text, unsure: out.unsure });
+  return NextResponse.json({ text: out.text, unsure: out.unsure, ...(whole ? { material: whole.material } : {}) });
 }

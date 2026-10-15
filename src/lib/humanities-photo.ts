@@ -5,8 +5,8 @@
 // practice photo: "no student photos at rest"). Pure helpers; the call itself is in the route.
 import { SONNET_55 } from './claude-models';
 
-/** Pages one answer may span. */
-export const MAX_PHOTO_PAGES = 4;
+/** Photos one box may take: a question with its sources often runs to several pages (15 Oct 2026). */
+export const MAX_PHOTO_PAGES = 6;
 /** Photos a student may have typed out per Singapore day (a retake counts). */
 export const DAILY_PHOTO_CAP = 30;
 /** The reader for handwriting. A plain read of a page, so the mid-size model. */
@@ -35,7 +35,38 @@ function printedPrompt(pages: number, mode: 'question' | 'sources'): string {
   ].join('\n');
 }
 
+/**
+ * The whole question from photos — the question AND the sources, extracts, figures or tables that come with it
+ * (15 Oct 2026, Adrian: "student will just take photo of the question and send? … just question and your answer
+ * will do?"). One read splits them: the question for the box, the material for the marker.
+ */
+function wholeQuestionPrompt(pages: number): string {
+  return [
+    `The ${pages === 1 ? 'photo shows' : `${pages} photos show`} one question from a secondary-school Humanities paper (Social Studies, History or Geography), possibly with the sources, extracts, figures, maps, photographs or tables it uses, over one or more pages.`,
+    '',
+    'Type it out and split it in two:',
+    '- "question": the question itself exactly as printed — its number, its words and its marks such as [6]. If it has parts or the photos show several questions, give each on its own line.',
+    '- "material": everything the question uses, exactly as printed, in order — each source or extract starting with its label (Source A, Extract 1, Fig. 1 …) and the line saying where it comes from. A picture (cartoon, poster, photograph, chart, map) is written as [Picture: …] describing everything shown, every word in it and every number. "" when there is none.',
+    '- Keep the printed words. Leave out handwriting, page numbers and cover instructions.',
+    `- If there is no printed question to read, reply with the single word ${UNREADABLE}.`,
+    '',
+    'Reply with one JSON object only: {"question": "…", "material": "…"}',
+  ].join('\n');
+}
+
+/** The whole-question reply → the question and its material, or null. */
+export function parseWholeQuestion(reply: string): { question: string; material: string } | null {
+  const m = String(reply ?? '').match(/\{[\s\S]*\}/);
+  if (!m) return null;
+  try {
+    const j = JSON.parse(m[0]) as { question?: unknown; material?: unknown };
+    const question = String(j.question ?? '').trim();
+    return question ? { question, material: String(j.material ?? '').trim() } : null;
+  } catch { return null; }
+}
+
 export function transcribePrompt(pages: number, question: string, mode: PhotoMode = 'answer'): string {
+  if (mode === 'question') return wholeQuestionPrompt(pages);
   if (mode !== 'answer') return printedPrompt(pages, mode);
   return [
     `The ${pages === 1 ? 'photo is' : `${pages} photos are`} a secondary-school student's handwritten answer to this question:`,

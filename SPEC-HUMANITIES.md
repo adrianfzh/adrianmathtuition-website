@@ -270,6 +270,20 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **M — TWO BOXES: THE QUESTION AND YOUR ANSWER, 15 Oct 2026.** Adrian: "why are there three boxes? … student will just
+> take photo of the question and send? may have to take more than one photo … just question and your answer will do?
+> same for geography right? / what does 'to lift it' means?"
+> - "Check my answer" has two boxes. **1. The question** — "Photograph the whole question with its sources or figures.
+>   Several photos are fine" (up to 6). One read (`transcribe` mode `question`, `parseWholeQuestion`) returns the
+>   question for the box and every source, extract, figure or table as `material` (pictures as `[Picture: …]`) — kept for
+>   the marker, folded under "Sources and figures read from your photos". **2. Your answer** (photos or typed).
+>   A source question typed without its sources asks for photos. Geography is the same; the school's-answers box is
+>   gone (the server still takes `scheme` if sent). The Marks box appears only for a Geography question with no "[n]".
+> - "To lift it" is now **"How to score higher"** on the feedback page.
+> - Checked 15 Oct: a two-page question (question + Source A on page 1; a cartoon and Source D on page 2) → the question
+>   alone in the box, the three sources split out with the cartoon described in words; a handwriting-font answer → read;
+>   marked "3 to 4 out of 6 · Level 3 of 4", then **4 out of 6 marks** about 1¾ minutes after hand-in.
+
 > **L — "CHECK MY ANSWER", THE TYPE NEVER ASKED, ONE EXACT MARK, 15 Oct 2026.** Adrian: "do 'Check my answer.' / let the
 > app just work out the type from the question wording … don't have to let student tap 'Not right' / 3 to 5 out of 6
 > marks seems like a big range … able to give a tighter range?"
