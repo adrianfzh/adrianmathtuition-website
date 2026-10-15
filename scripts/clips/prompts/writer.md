@@ -64,7 +64,8 @@ no focus, no clear.
 - **Margin words** (`note`): the LAW a line uses, beside that line (bible §1b), or the bible's §3
   words — always with `near` = the token it explains (the board draws an ↑ under it; write no
   arrow). A note is plain handwriting text, not TeX: write × for times (never · — the hand font
-  has no dot), ² ³ ⁿ ˣ for powers, √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
+  has no dot), ² ³ ˣ for powers (raised letters like ʳ ⁿ ᵏ draw as ticks; write the power out or
+  leave it off), √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
 - **The plan first** (bible §1b): the second beat says the aim before the first move — and
   writes no working line (a highlight at most). Each working line
