@@ -43,10 +43,10 @@ export interface HumanitiesReport {
   summary?: string | null;
 }
 
-/** "3 of 4 marks", or "2–3 of 4 marks" when the reads differed. */
+/** "3 out of 4 marks", or "2 to 3 out of 4 marks" when the reads differed (words, not a dash — 15 Oct 2026). */
 export function marksLabel(lo: number, hi: number, max: number): string {
   const a = Math.min(lo, hi), b = Math.max(lo, hi);
-  return `${a === b ? a : `${a}–${b}`} of ${max} ${max === 1 ? 'mark' : 'marks'}`;
+  return `${a === b ? a : `${a} to ${b}`} out of ${max} ${max === 1 ? 'mark' : 'marks'}`;
 }
 
 /** The credited points as claims, so the answer can be shown with them marked. */
@@ -54,10 +54,10 @@ export function pointClaims(points: PointCredit[] | undefined): HumanitiesClaim[
   return (points ?? []).filter(p => p.credit > 0 && p.quote).map(p => ({ quote: p.quote as string, tag: p.credit >= 2 ? 'developed' : 'point', note: p.note ?? null }));
 }
 
-/** "Level 2–3 of 4", or "Level 3 of 4" when the reads agreed. */
+/** "Level 2 to 3 of 4", or "Level 3 of 4" when the reads agreed. */
 export function levelLabel(lo: number, hi: number, max: number): string {
   const a = Math.min(lo, hi), b = Math.max(lo, hi);
-  return a === b ? `Level ${a} of ${max}` : `Level ${a}–${b} of ${max}`;
+  return a === b ? `Level ${a} of ${max}` : `Level ${a} to ${b} of ${max}`;
 }
 
 export interface AnswerSegment { text: string; claim: HumanitiesClaim | null }

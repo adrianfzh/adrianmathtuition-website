@@ -11,7 +11,7 @@ import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
 import { nextOfSkill } from '@/lib/humanities-practice';
 import { contextForRun, isOwnId } from '@/lib/humanities-own';
 import { marksForLevels } from '@/lib/humanities-marks';
-import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
+import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard, DiagramCard } from '../sources';
 import { PhotoCard } from '../photo-card';
@@ -99,11 +99,15 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm space-y-3">
           <div>
             <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">{points && !showMark ? 'Your feedback' : 'Where this answer sits'}</p>
+            {/* Marks first, the level under it in grey (15 Oct 2026, Adrian: "Level 1-2 of 4 doesn't read well"). */}
             {points
               ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(report.level_lo, report.level_hi, max)}</p>
-              : <p className="text-2xl font-bold text-navy">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
-            {!points && run.skill !== 'geo_evaluate' && schoolMarks && <p className="text-[15px] font-semibold text-amber-800">About {schoolMarks}</p>}
-            {run.skill === 'geo_evaluate' && showMark && <p className="text-[15px] font-semibold text-amber-800">{geoEvaluateBand(report.level_lo, report.level_hi)} of 9</p>}
+              : <>
+                <p className="text-2xl font-bold text-navy">
+                  {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) ? schoolMarks : levelLabel(report.level_lo, report.level_hi, max)}
+                </p>
+                {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) && <p className="text-[14px] text-gray-500">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
+              </>}
             {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{points ? 'The reads did not fully agree on this one. Use the points below.' : humanitiesStatusLine('held')}</p>}
           </div>
           {report.lift && (

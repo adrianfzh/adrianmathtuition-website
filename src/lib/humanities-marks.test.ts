@@ -27,8 +27,8 @@ describe('markBands', () => {
 describe('marksForLevels', () => {
   it('says the range of the levels read', () => {
     expect(marksForLevels('comparison', 6, 3, 3)).toBe('5 out of 6 marks');
-    expect(marksForLevels('how_far', 10, 2, 3)).toBe('2–8 out of 10 marks');
-    expect(marksForLevels('sr_explain', 7, 3, 3)).toBe('5–7 out of 7 marks');
+    expect(marksForLevels('how_far', 10, 2, 3)).toBe('2 to 8 out of 10 marks');
+    expect(marksForLevels('sr_explain', 7, 3, 3)).toBe('5 to 7 out of 7 marks');
     expect(marksForLevels('inference', 5, 1, 1)).toBe('1 out of 5 marks');
   });
   it('is null outside the scale', () => {

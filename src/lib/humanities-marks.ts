@@ -60,12 +60,12 @@ export function markRange(skill: string, marks: number | null | undefined, lo: n
   return [bands[a - 1][0], bands[b - 1][1], bands[bands.length - 1][1]];
 }
 
-/** "4–5 out of 6 marks" for an answer read at levels lo…hi, or null. */
+/** "4 to 5 out of 6 marks" for an answer read at levels lo…hi, or null. */
 export function marksForLevels(skill: string, marks: number | null | undefined, lo: number, hi: number): string | null {
   const r = markRange(skill, marks, lo, hi);
   if (!r) return null;
   const [from, to, total] = r;
-  return `${from === to ? from : `${from}–${to}`} out of ${total} marks`;
+  return `${from === to ? from : `${from} to ${to}`} out of ${total} marks`;
 }
 
 /** The marks a question prints, e.g. "[6]" at its end. */

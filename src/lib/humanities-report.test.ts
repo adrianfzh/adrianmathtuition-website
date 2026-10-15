@@ -4,8 +4,8 @@ import { levelLabel, segmentAnswer, wordCount } from './humanities-report';
 describe('levelLabel', () => {
   it('one level when the reads agree, a range when they do not', () => {
     expect(levelLabel(3, 3, 4)).toBe('Level 3 of 4');
-    expect(levelLabel(2, 3, 4)).toBe('Level 2–3 of 4');
-    expect(levelLabel(3, 2, 4)).toBe('Level 2–3 of 4');
+    expect(levelLabel(2, 3, 4)).toBe('Level 2 to 3 of 4');
+    expect(levelLabel(3, 2, 4)).toBe('Level 2 to 3 of 4');
   });
 });
 

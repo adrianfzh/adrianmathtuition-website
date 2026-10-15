@@ -36,9 +36,9 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
     <div className="space-y-4 pb-24 sm:pb-4">
       {full && <Link href={subject === 'social-studies' ? '/app/humanities' : `/app/humanities?s=${subject}`} className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>}
       <div>
-        <h1 className="text-xl font-bold text-navy leading-snug">A question from school</h1>
-        <p className="text-sm text-gray-600 mt-1">Combined Humanities: Social Studies and your elective.</p>
-        <p className="text-sm text-gray-600">Give us the question and your answer. Type them, or send photos.</p>
+        <h1 className="text-xl font-bold text-navy leading-snug">Mark a question</h1>
+        <p className="text-sm text-gray-600 mt-1">Send a question you did and your answer. Type them, or send photos.</p>
+        <p className="text-[12px] text-gray-500">Combined Humanities: Social Studies and your elective.</p>
       </div>
       <OwnForm initialSubject={subject} elective={prefill && prefill.subject !== 'social-studies' ? prefill.subject as 'geography' | 'history' : elective} prefill={prefill} skills={OWN_SKILLS} labels={labels} maxWords={MAX_WORDS} />
     </div>

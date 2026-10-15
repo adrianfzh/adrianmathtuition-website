@@ -60,7 +60,7 @@ describe('ownContext', () => {
   });
   it('contextForRun takes the bank for a bank question', () => {
     expect(contextForRun({ question_id: 's11-q1' }, questionById)?.question.id).toBe('s11-q1');
-    expect(contextForRun({ question_id: 'own-3', own_question: { subject: 'history', skill: 'hist_evaluate', question: 'How far do you agree?', sources: '' } }, questionById)?.set.title).toBe('Your own question');
+    expect(contextForRun({ question_id: 'own-3', own_question: { subject: 'history', skill: 'hist_evaluate', question: 'How far do you agree?', sources: '' } }, questionById)?.set.title).toBe('Your question');
   });
 });
 

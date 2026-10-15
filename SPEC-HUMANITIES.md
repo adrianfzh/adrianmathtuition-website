@@ -270,6 +270,15 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **K — NAME AND READABILITY, 15 Oct 2026.** Adrian: "instead of 'A question from school' > make it 'Mark a question' /
+> does student knows about question types? / Level 1-2 of 4 doesn't read well".
+> - The door and page are **"Mark a question"** ("Send a question you did and your answer"); the report header says "Your question".
+> - The question type is not asked: the form says "Marked as a **Comparison** question. *Not right?*" and shows the
+>   picker only on that tap, or when the wording gives no type.
+> - **Marks first, in words**: the report's big line is "3 to 5 out of 6 marks" with "Level 2 to 3 of 4" under it in grey;
+>   the answers list shows the marks only. `levelLabel` / `marksLabel` / `marksForLevels` say "to", not a dash.
+> - Fixed: a Geography short question from school showed as "Level 1–2 of 4" in the list (no bank context) — it is marks.
+
 > **J — THE MARKER CHECKS AND IMPROVES ITSELF, 15 Oct 2026.** Adrian: "i want our own marker to self aware of
 > whether it is doing a good job and to auto fix or auto improve if required … again, i only want the live part to
 > be students being able to upload the question they did and get instant feedback on it".

@@ -15,11 +15,12 @@ export function AnswerCard({ row }: { row: HumanitiesListRow }) {
   const ctx = questionById(row.question_id);
   const read = row.status === 'marked' || row.status === 'held';
   // A point-marked answer (Geography) holds marks in the level fields, and 0 is a real result.
-  const points = ctx?.set.kind === 'points';
+  // A Geography short question from school has no bank context: its type says it is point-marked.
+  const points = ctx ? ctx.set.kind === 'points' : row.skill === 'geo_describe' || row.skill === 'geo_explain';
   const state = read && points && row.level_lo != null && row.level_hi != null
     ? (GEOGRAPHY_MARKS_OPEN_TO_STUDENTS && row.levels_max ? marksLabel(row.level_lo, row.level_hi, row.levels_max) : 'Read — see what to add')
     : read && row.level_lo && row.level_hi && row.levels_max
-    ? [levelLabel(row.level_lo, row.level_hi, row.levels_max), row.skill === 'geo_evaluate' ? null : marksForLevels(row.skill, ctx?.question.marks ?? (row.own_title ? printedMarks(row.own_title) : null), row.level_lo, row.level_hi)].filter(Boolean).join(' · ')
+    ? (marksForLevels(row.skill, ctx?.question.marks ?? (row.own_title ? printedMarks(row.own_title) : null), row.level_lo, row.level_hi) ?? levelLabel(row.level_lo, row.level_hi, row.levels_max))
     : row.status === 'failed' ? 'Not read — hand it in again' : 'Being read…';
   return (
     <Link href={`/app/humanities/${row.id}`}

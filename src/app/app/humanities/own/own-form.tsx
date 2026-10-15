@@ -52,6 +52,7 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
   const [scheme, setScheme] = useState(prefill?.scheme ?? '');
   const [marksTyped, setMarksTyped] = useState(prefill?.marks ? String(prefill.marks) : '');
   const [picked, setPicked] = useState<HumanitiesSkill | ''>(prefill?.skill ?? '');
+  const [changingType, setChangingType] = useState(false);
   const [reading, setReading] = useState<Mode | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,10 +162,18 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
         <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={3}
           placeholder="Type the question, or send a photo of it." className={area} />
         {note('question')}
-        {question.trim() && (
+        {/* The type is worked out from the wording; the student only sees it, and changes it only if it looks wrong
+            (15 Oct 2026, Adrian: "does student knows about question types?"). */}
+        {question.trim() && skill && !changingType && (
+          <p className="mt-2 text-[13px] text-gray-600">
+            Marked as a <span className="font-semibold text-navy">{labels[skill] ?? skill}</span> question.{' '}
+            <button type="button" onClick={() => setChangingType(true)} className="underline underline-offset-2 text-gray-500">Not right?</button>
+          </p>
+        )}
+        {question.trim() && (!skill || changingType) && (
           <label className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
-            <span className="shrink-0">Question type:</span>
-            <select value={skill} onChange={e => setPicked(e.target.value as HumanitiesSkill)}
+            <span className="shrink-0">{skill ? 'Mark it as:' : 'What kind of question is it?'}</span>
+            <select value={skill} onChange={e => { setPicked(e.target.value as HumanitiesSkill); setChangingType(false); }}
               className="flex-1 min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 text-[14px] text-navy">
               {!skill && <option value="">Pick one</option>}
               {skills[subject].map(k => <option key={k} value={k}>{labels[k] ?? k}</option>)}
