@@ -45,7 +45,8 @@ Never refuse because it is hard. Never invent a check that does not prove the li
   under the bottom bar is sent back). Budget: the heading, an `intro` of at most about two phone
   lines (≈ 70 characters of words + maths — cut story words: "A cylinder: volume $(6+2\sqrt3)\pi$,
   radius $1+\sqrt3$. Find its height."), then at most 5 working lines (4 when lines carry
-  fractions). More → a second board, whose intro is a one-line reminder.
+  fractions). More → a second board, whose intro is a one-line reminder. **Never more than 2
+  boards.** A line wider than the phone (about 22 characters of maths) is cut off — split it.
 - `lines[0]` is the first line of WORKING (the question sits in `intro`). A two-board plan has
   `boards: [{heading, intro}, …]` and `"board": 0|1` on each line.
 - Token ids are short, unique, lower-case. `hl`: `amber` for the line a key move makes, `emerald`

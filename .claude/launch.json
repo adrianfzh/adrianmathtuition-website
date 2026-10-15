@@ -4,22 +4,42 @@
     {
       "name": "Next.js Dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3000,
       "autoPort": true
     },
     {
       "name": "prod-serve",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start"],
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
       "port": 3000,
       "autoPort": true
     },
     {
       "name": "Next.js Prod",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["next", "start", "-p", "3210"],
+      "runtimeArgs": [
+        "next",
+        "start",
+        "-p",
+        "3210"
+      ],
       "port": 3210
+    },
+    {
+      "name": "Next.js Prod (local env)",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "set -a; . ./.env.local; set +a; exec npx next start -p 3211"
+      ],
+      "port": 3211
     }
   ]
 }

@@ -4,12 +4,13 @@
 // step 2 — 15 Oct 2026). No hand edits: what fails a check is refused or failed, never
 // patched by a person.
 //
-//   node scripts/clips/question-clip.mjs <questionId> [--base http://localhost:3210] [--from batch]
+//   node scripts/clips/question-clip.mjs <questionId> [--base http://localhost:3211] [--from batch]
 //
 // Needs: .env.local (Supabase service key, MINIMAX_API_KEY, GOOGLE_API_KEY, ADMIN_SESSION_SECRET),
 // the `claude` CLI signed in (the agents are plan-billed Claude Code runs, never the API),
 // /usr/bin/python3 with sympy, ffmpeg, Chrome, and a running site at --base (for the fit + the look):
-// a production server (`npx next start -p 3210`) — a dev server's live reloads stop a clip mid-play.
+// a production server with the local env (`.claude/launch.json` "Next.js Prod (local env)", port 3211 —
+// .env.production.local holds masked values, and a dev server's live reloads stop a clip mid-play).
 //
 // The steps (each stamped with its seconds in gate.steps):
 //   1 gather     the bank row + its sub-skill filing; refused up front when its working cannot be
@@ -44,7 +45,7 @@ import { ROOT, loadTs, parseArgs, resolveSupabase } from '../lessons/shared.mjs'
 const args = parseArgs(process.argv.slice(2));
 const QID = String(args._[0] || '');
 if (!/^[0-9a-f-]{36}$/i.test(QID)) { console.error('usage: node scripts/clips/question-clip.mjs <questionId> [--base URL] [--from batch]'); process.exit(2); }
-const BASE = String(args.base || 'http://localhost:3210').replace(/\/$/, '');
+const BASE = String(args.base || 'http://localhost:3211').replace(/\/$/, '');
 const FROM = String(args.from || 'admin');
 const WORKER = String(args.worker || `${os.hostname().split('.')[0]}:${process.pid}`);
 /** MiniMax speech-02-hd, US$ per 1,000 characters (list price; step 1 measured < US$0.12). */
@@ -224,21 +225,24 @@ if (!mc.pass) await finish('failed', `maths check: ${mc.bad[0] ?? ''}`.slice(0, 
 async function fitCheck() {
   const p = readJson(PLAN);
   const nb = Math.max(1, p.boards?.length ?? 1);
+  if (nb > 2) return { pass: false, detail: `${nb} boards — a clip has at most 2` };
   const scenes = Array.from({ length: nb }, (_, k) => {
     const board = p.boards?.[k] ?? { heading: p.heading, intro: p.intro };
     const lines = p.lines.filter(l => (l.board ?? 0) === k);
     return { type: 'equation-steps', heading: board.heading, ...(board.intro ? { intro: board.intro } : {}),
-      steps: lines.map(l => ({ tokens: l.tokens })), beats: lines.map((_, i) => ({ say: 'Line.', do: [{ do: 'write', step: i }] })) };
+      steps: lines.map(l => ({ tokens: l.tokens })),
+      // The worst case: every line with its rule note under it (house rule: the rule beside the step) — notes add height.
+      beats: lines.map((l, i) => ({ say: 'This line and its rule stay on the board while the voice explains the step slowly and clearly for every student here.', do: [{ do: 'write', step: i }, { do: 'note', text: 'Rule: (a + b)(a − b) = a² − b²', near: l.tokens[0].id, on: 'rule' }] })) };
   });
   await saveRow({ script: { slug: SLUG, title: p.title, level: p.level, topic: p.topic, minutes: 1, kind: 'clip', theme: 'chalk', scenes } });
   const r = sh('node', ['scripts/clips/fit.mjs', SLUG, '--base', BASE, '--path', `/app/clip/q/${QID}?check=1`], { timeout: 4 * 60_000 });
   const j = readJson(path.join(RUN, 'fit.json'));
-  return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
+  return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px${b.cut?.length ? `, maths cut off at the side: ${b.cut.join(', ')}` : ''}`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
 }
 let fit = await step('fit', fitCheck);
 for (let n = 0; !fit.pass && n < 2; n++) {
   await step(`fit-repair-${n + 1}`, () => agent('fit-repair', 'opus',
-    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
+    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
   mc = mathsCheck();
   if (!mc.pass) await finish('failed', `maths check after the fit repair: ${mc.bad[0] ?? ''}`.slice(0, 300));
   fit = await step('fit', fitCheck);
@@ -255,7 +259,7 @@ if (!readJson(path.join(RUN, 'draft-A.json')) && !readJson(path.join(RUN, 'draft
 async function blindRead(only) {
   fs.rmSync(path.join(RUN, 'blind-read.json'), { force: true });
   const which = only ? `This time there is ONE draft to read: data/clip-runs/${SLUG}/draft-${only}.json — "pick" it ("${only}") and score it.` : `Read both drafts (draft-A.json, draft-B.json; if one is missing, pick the other).`;
-  await agent(`read${only ? '-' + only : ''}`, 'opus', `Read scripts/clips/prompts/blind-reader.md and follow it. One clip only: slug ${SLUG}. ${which} Write data/clip-runs/${SLUG}/blind-read.json.`, { effort: 'high' });
+  await agent(`read${only ? '-' + only : ''}`, 'opus', `Read scripts/clips/prompts/blind-reader.md and follow it. One clip only: slug ${SLUG}. ${which} Write data/clip-runs/${SLUG}/blind-read.json.`, { effort: 'high', tools: WRITE_TOOL });
   const br = readJson(path.join(RUN, 'blind-read.json'));
   const low = br ? Math.min(...Object.values(br.scores ?? { x: 0 })) : 0;
   return { br, pass: !!br && br.verdict === 'pass' && low >= 4, low };

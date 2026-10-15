@@ -49,7 +49,15 @@ export function numberWordsToDigits(text) {
   return out.join(' ');
 }
 
-const canon = (t) => numberWordsToDigits(t).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.]/g, '').replace(/\.(?![0-9])/g, '');
+// Spoken maths the transcript writes as symbols (15 Oct 2026, question clips): "a half" → 1/2,
+// "times" → *, "cubed" → "cube". Both sides go through the same map, so a misheard word still costs.
+const SPOKEN_SYMBOLS = [
+  [/\b(a|one) half\b/g, ' 1/2 '], [/\b(a|one) third\b/g, ' 1/3 '], [/\b(a|one) quarter\b/g, ' 1/4 '],
+  [/\btimes\b|×|\*/g, ' x '], [/\bcubed\b/g, ' cube '], [/\bsquared\b/g, ' square '],
+  [/\bover\b/g, ' / '], [/\bplus\b|\+/g, ' plus '], [/\bequals\b|=/g, ' equals '],
+];
+const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
+const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');
 
 function similarity(a, b) {
   const m = a.length, n = b.length;

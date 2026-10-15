@@ -8,7 +8,8 @@ not change the board. You write what the voice says and when each piece appears.
 
 0. The house rules `data/clip-bibles/_house.md` (every topic). A QUESTION clip (plan `kind:
    "question"`) explains how to do THIS question: the first beat reads the question in `intro`
-   (shorten story words, keep every number), the second says the plan. Read the question in
+   (shorten story words, keep every number) — beat 1 is the question and nothing else, never
+   "Let F of X be…" first, never a fragment — the second says the plan. Read the question in
    the printed word order, as a sentence, and say what each power or root covers ("ten plus K X,
    times two minus a half X, all to the power eight" / "the bracket two minus a half X, to the
    power eight"). Each later beat names the move AND why it is the move (the bible's lead-in
@@ -62,9 +63,12 @@ no focus, no clear.
 - **The answer is boxed** (`mark` kind `box`) on the word where the voice says it.
 - **Margin words** (`note`): the LAW a line uses, beside that line (bible §1b), or the bible's §3
   words — always with `near` = the token it explains (the board draws an ↑ under it; write no
-  arrow). A note can only show once its line is on the board: put it after the action that
+  arrow). A note is plain handwriting text, not TeX: write × for times (never · — the hand font
+  has no dot), ² ³ ⁿ ˣ for powers, √ for roots, ⇒ for gives. A note can only show once its line is on the board: put it after the action that
   writes the line, or in a later beat.
-- **The plan first** (bible §1b): the second beat says the aim before the first move.
+- **The plan first** (bible §1b): the second beat says the aim before the first move — and
+  writes no working line (a highlight at most). Each working line
+  appears in the beat whose voice explains it, on the words that name it.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.
 - **Spoken maths**: words, never symbols or TeX. Letters as CAPITALS ("X", "K", "A")
