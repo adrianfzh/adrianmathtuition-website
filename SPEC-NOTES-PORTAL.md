@@ -84,9 +84,11 @@ Student login (portal auth), health-check entry, analytics per page, possible
 
 ## Skill layout — one topic organised (15 Oct 2026, Adrian: "okay go ahead")
 
-**Where things stand:** ONE sample topic done — **A Math · Quadratic Functions**
-(`/notes/am/quadratic-functions`), waiting for Adrian to read it on his phone.
-**Do not lay out another topic until he says yes to the sample.** Notes are still
+**Where things stand: ⏸ PAUSED (15 Oct 2026, Adrian: "pause this … will do later
+when model upgrades").** ONE sample topic done — **A Math · Quadratic Functions**
+(`/notes/am/quadratic-functions`); Adrian has not yet said yes or no to it. Resume
+only when a new model ships or he raises it: first his yes to the sample, then
+the other topics. **Do not lay out another topic before that.** Notes are still
 closed to students (`NOTES_OPEN_TO_STUDENTS = false`).
 
 Why: the notes were closed on 29 Aug 2026 because they did not read as one
