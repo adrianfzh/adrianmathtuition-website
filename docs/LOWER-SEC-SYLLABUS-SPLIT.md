@@ -125,10 +125,22 @@ copied from seeds now at Sec 2 were left alone (the 15 Oct twin read judged them
 Backup (every Sec 1 row's level + every filing + the 61 flags):
 `_backups/s1-bank-level-move-before-2026-10-15.json`.
 
-**Still open:** the nightly sub-skill filer (bot `scripts/file-subgroups.js`) offers every
-sub-skill of a level, hidden ones included, and newly extracted Sec 1 papers are not
-checked against this list — a new Sec 1 question with Sec 2 work can land in a kept Sec 1
-sub-skill again.
+**Closed 15 Oct 2026 (bot 42d0b2e3) — new Sec 2 work cannot come back into the Sec 1 bank.**
+The machine copy of this list is bot `extraction/lower_sec_split.json` (step codes + the rules
+above) — change both together.
+- **The sub-skill filer** already skipped hidden sub-skills (since 9 Oct). A Sec 1 bucket's
+  readers now get a fourth outcome, *needs later work* (`sec2_work`, a step code), which beats
+  filing and "fits none". When BOTH readers say so the question gets `legacy_syllabus = true`
+  (out of Sec 1 practice, twins and the filer, like the 61 above). One reader only, or the
+  readers disagree → held. A **Sec 3+** step is always held, never applied: those wait for
+  Adrian (the list below). Shown as `⤴` lines and `sec2_work` in the job stamp's `set_aside`.
+- **Extraction**: every row of a Sec 1 payload must carry `sec2_step` (null, or the step its
+  marks need). `bank_insert.py` refuses a payload without it, banks a flagged row at S1 with
+  `legacy_syllabus = true` (the paper stays whole at one level, as the house rules require) and
+  prints `SEC2 WORK: Qn (step)` into the finish notes. A re-sent row keeps a flag it already
+  has. The rule is on `/admin/extraction-rules` as `xr-sec1-syllabus-check`.
+- Not done: such a row is flagged, not moved to Sec 2 — Sec 2 students do not get it. Moving
+  needs a Sec 2 sub-skill filing and splits the paper across levels.
 
 ### The 28 flagged Sec 3+
 - `08d6c327-17aa-4725-b244-fced3daa9218` Catholic High (IP) 2013 — Laws of indices with negative indices
