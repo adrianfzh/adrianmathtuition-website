@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 🎬 The question-clip queue runner (SPEC-CLIP-PIPELINE.md §9). NOT loaded by default.
-     To run it on this Mac (needs `npx next start -p 3210` or `npm run dev` for the look step):
+     To run it on this Mac (needs the "Next.js Prod (local env)" server on port 3211 for the fit + look steps):
        cp scripts/clips/com.adrianmath.questionclips.plist ~/Library/LaunchAgents/
        launchctl load ~/Library/LaunchAgents/com.adrianmath.questionclips.plist
      Stop: launchctl unload ~/Library/LaunchAgents/com.adrianmath.questionclips.plist -->
@@ -13,7 +13,7 @@
   <array>
     <string>/opt/homebrew/bin/node</string>
     <string>scripts/clips/question-clip-worker.mjs</string>
-    <string>--base</string><string>http://localhost:3000</string>
+    <string>--base</string><string>http://localhost:3211</string>
   </array>
   <key>EnvironmentVariables</key>
   <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>

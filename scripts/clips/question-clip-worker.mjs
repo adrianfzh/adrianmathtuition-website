@@ -3,7 +3,7 @@
 // row of question_clips and runs scripts/clips/question-clip.mjs on it, one clip at a time
 // per worker (each clip already runs two writers in parallel), forever or --once.
 //
-//   node scripts/clips/question-clip-worker.mjs [--once] [--base http://localhost:3000] [--every 30]
+//   node scripts/clips/question-clip-worker.mjs [--once] [--base http://localhost:3211] [--every 30]
 //
 // The claim is a conditional update (status queued → making, only if still queued), so two
 // workers never take the same question. A row left `making` for 40 minutes (a crashed run)
@@ -19,7 +19,7 @@ import { spawn } from 'node:child_process';
 import { ROOT, parseArgs, resolveSupabase } from '../lessons/shared.mjs';
 
 const args = parseArgs(process.argv.slice(2));
-const BASE = String(args.base || 'http://localhost:3000');
+const BASE = String(args.base || 'http://localhost:3211');
 const EVERY_S = Number(args.every || 30);
 const STALE_MIN = 40;
 const WORKER = `${os.hostname().split('.')[0]}:${process.pid}`;
