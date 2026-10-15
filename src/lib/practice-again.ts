@@ -28,6 +28,12 @@ export type SheetQuestionIn = {
   answer_latex?: unknown;
   marks?: unknown;
   topic?: unknown;
+  // A job that read back an earlier job's questions[] sends them camelCase (15 Oct 2026:
+  // a photo sheet with 2 questions was counted as 0). Both spellings are read.
+  skillTitle?: unknown;
+  questionId?: unknown;
+  textLatex?: unknown;
+  answerLatex?: unknown;
 };
 
 /** One practice question, cleaned. `position` is its 0-based place in the payload — the sheet order. */
@@ -79,17 +85,17 @@ export function sanitizeSheetQuestions(raw: unknown): { questions: SheetQuestion
   for (const item of raw.slice(0, MAX_SHEET_QUESTIONS)) {
     if (!item || typeof item !== 'object' || Array.isArray(item)) { skipped++; continue; }
     const r = item as SheetQuestionIn;
-    const qidRaw = str(r.question_id, 60);
+    const qidRaw = str(r.question_id ?? r.questionId, 60);
     const questionId = qidRaw && UUID_RE.test(qidRaw) ? qidRaw.toLowerCase() : null;
-    const textLatex = str(r.text_latex, MAX_TEXT);
-    const answerLatex = str(r.answer_latex, MAX_ANSWER);
+    const textLatex = str(r.text_latex ?? r.textLatex, MAX_TEXT);
+    const answerLatex = str(r.answer_latex ?? r.answerLatex, MAX_ANSWER);
     // Nothing to practise: no bank row named and no written question+answer.
     if (!questionId && !(textLatex && answerLatex)) { skipped++; continue; }
     out.push({
       position: out.length,
       section: str(r.section, 60),
       index: intOrNull(r.index, 0, 999),
-      skillTitle: str(r.skill_title, 120),
+      skillTitle: str(r.skill_title ?? r.skillTitle, 120),
       questionId,
       textLatex,
       answerLatex,

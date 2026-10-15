@@ -119,3 +119,15 @@ describe('heldItemsLine', () => {
     expect(heldItemsLine({ created: 0, already: 0, bank: 0, generated: 0, skipped: 3 })).toBe('3 skipped');
   });
 });
+
+describe('sanitizeSheetQuestions — camelCase payloads (15 Oct 2026)', () => {
+  it('counts a written question sent as textLatex/answerLatex (a photo sheet read as 0 questions)', () => {
+    const { questions } = sanitizeSheetQuestions([
+      { index: 1, marks: 7, topic: 'Coordinate Geometry', section: 'Practice 1', textLatex: 'Write down the equation of $L_2$.', answerLatex: '$x = 6$' },
+      { questionId: '6F0C3E2A-1B2C-4D5E-8F90-123456789ABC', section: 'Practice 2' },
+    ]);
+    expect(questions).toHaveLength(2);
+    expect(questions[0].textLatex).toBe('Write down the equation of $L_2$.');
+    expect(questions[1].questionId).toBe('6f0c3e2a-1b2c-4d5e-8f90-123456789abc');
+  });
+});
