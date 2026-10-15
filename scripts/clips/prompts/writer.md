@@ -78,6 +78,9 @@ no focus, no clear.
   no "as you can see" / "on the board", no story, no model names, no "AI", never a
   person's name, no school or paper name.
 - The last beat says the answer in full.
+- **`asks` on every beat**: 1–3 short questions a student might ask at that step, in their words
+  ("Why does plus become multiply?", "Which law is this?") — the ready questions of "Ask about this
+  step" (SPEC-CLIP-PIPELINE §8b). `assemble.mjs` carries them; a beat without them fails the tests.
 
 ## Two drafts
 

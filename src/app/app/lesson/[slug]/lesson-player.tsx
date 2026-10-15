@@ -2340,6 +2340,8 @@ const PLAYER_CSS = `
    and a fresh stick leaves a soft glow round it. */
 [data-lsn-themed] .lsn-hl { background: none; padding: 0; margin: 0; }
 [data-lsn-themed] .lsn-hl-amber { color: var(--lsn-hl-amber); }
+/* A clip's highlight stays lit while it is talked about (lesson-board 2b): the chalk turns yellow. */
+[data-lsn-clip] .lsn-lit, [data-lsn-clip] .lsn-lit .katex { color: var(--lsn-hl-amber); transition: color 250ms ease; }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
 [data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
