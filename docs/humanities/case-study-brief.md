@@ -123,3 +123,13 @@ P3 inference · comparison · usefulness · purpose. P4 inference · comparison 
 3. Bench on the preview: `npx tsx scripts/humanities-bench/run.ts --base <preview> --name a1-<date> --sets s12,s13,…`
    — gate as SPEC §4. A set with a seeded answer the reader does not place is fixed or dropped,
    and the disagreements go to Adrian.
+
+## s41–s64 (15 Oct 2026) — the surprise batch
+
+Written to add "Are you surprised?" questions (in 56 of 68 real papers). Every set has ONE surprise question at
+Q3 or Q4 and NO reliability question. Patterns: SP1 inference · comparison · surprise · usefulness;
+SP2 purpose · comparison · usefulness · surprise; SP3 inference · comparison · purpose · surprise;
+SP4 inference · comparison · surprise · purpose. s41–s48 citizenship, s49–s56 diversity, s57–s64 globalised,
+cycling SP1–SP4. Extra red line: no government voice gives made-up figures about a national policy; a town
+council, school or committee may give figures about its own local scheme. Checked as in SPEC-HUMANITIES.md
+(15 Oct 2026 block).

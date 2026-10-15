@@ -15,9 +15,9 @@ describe('the humanities bank', () => {
     for (const skill of SOURCE_SKILLS.filter(k => k !== 'surprise')) expect(all.filter(q => q.skill === skill).length).toBe(5);
   });
 
-  it('H2: five structured sets (two parts each) and five History source sets', () => {
+  it('H2: twenty structured sets (two parts each; r06–r20 added 15 Oct 2026) and five History source sets', () => {
     const sr = setsFor('social-studies', 'structured');
-    expect(sr.length).toBe(5);
+    expect(sr.length).toBe(20);
     for (const set of sr) {
       expect(set.questions.map(q => q.skill)).toEqual(['sr_explain', 'sr_weigh']);
       expect(set.sources.length).toBe(1);
@@ -29,19 +29,19 @@ describe('the humanities bank', () => {
       expect(set.questions.length).toBe(3);
       for (const q of set.questions) expect(SOURCE_SKILLS).toContain(q.skill);
     }
-    expect(questionsBySkill('sr_explain').length).toBe(5);
+    expect(questionsBySkill('sr_explain').length).toBe(20);
   });
 
   it('every question id is unique across the three files', () => {
     const all = allSets().flatMap(s => s.questions);
-    expect(all.length).toBe(55 + caseStudies().length * 5 + [...setsFor('geography'), ...setsFor('history', 'structured')].flatMap(s => s.questions).length);
+    expect(all.length).toBe(85 + caseStudies().length * 5 + [...setsFor('geography'), ...setsFor('history', 'structured')].flatMap(s => s.questions).length);
     expect(new Set(all.map(q => q.id)).size).toBe(all.length);
     expect(new Set(allSets().map(s => s.id)).size).toBe(allSets().length);
   });
 
   it('the bench can take one subject or one kind at a time', () => {
     expect(seededAnswers({ subject: 'history', kind: 'source' }).length).toBe(35);
-    expect(seededAnswers({ subject: 'social-studies', kind: 'structured' }).length).toBe(21);
+    expect(seededAnswers({ subject: 'social-studies', kind: 'structured' }).length).toBe(126);
     const inCaseStudies = caseStudies().flatMap(s => s.questions).flatMap(q => q.seeded ?? []).length;
     expect(seededAnswers({ subject: 'social-studies', kind: 'source' }).length).toBe(46 + inCaseStudies);
     expect(seededAnswers({ sets: ['s01'] }).length).toBe(12);
@@ -81,7 +81,7 @@ describe('the humanities bank', () => {
       const max = levelsMax(q.skill);
       expect(q.seeded.map(s => s.level).sort(), q.id).toEqual(Array.from({ length: max }, (_, i) => i + 1));
     }
-    expect(seededAnswers().filter(a => a.subject !== 'geography' && a.skill !== 'hist_evaluate' && !questionById(a.questionId)!.set.background).length).toBe(102);
+    expect(seededAnswers().filter(a => a.subject !== 'geography' && a.skill !== 'hist_evaluate' && !questionById(a.questionId)!.set.background).length).toBe(207);
   });
 
   it('the model answer of a seeded question is its top answer', () => {

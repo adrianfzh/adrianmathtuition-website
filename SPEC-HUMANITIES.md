@@ -134,6 +134,23 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 > - Case-study pages now carry the line History already had: "These sources are written for practice.
 >   They are not real documents."
 
+> **15 Oct 2026 — more "surprised" and more Section B, to match the real papers (preview only, switch closed).**
+> Counted from 68 banked real Paper 1s: "Are you surprised?" is in 56 of them, Section B in every one; we had
+> 9 surprise questions and 5 structured sets. Reliability (with "prove wrong") was already over-supplied — none added.
+> - **24 new case studies, s41–s64** (eight per issue), each with ONE surprise question at Q3 or Q4 and no
+>   reliability question. Patterns: inference · comparison · surprise · usefulness / purpose · comparison ·
+>   usefulness · surprise / inference · comparison · purpose · surprise / inference · comparison · surprise ·
+>   purpose. Surprise questions now **33**. Case studies now **54** (18 per issue).
+> - **15 new structured sets, r06–r20** (five per issue, `theme` after `issue`): Section B now **20 sets**.
+> - Checks, plan only (as for s12–s40): the shape-and-quote checker (all fit to list); a blind placement by fresh
+>   readers who saw only the question, sources and level table, answers shuffled — **567/567 at the written
+>   level** (case studies 462, structured 105); the readers also checked the facts in the structured model
+>   answers (none wrong). One date clash (s44) and one clumsy source line (s62) fixed after reading. Same limit as before: a higher answer contains the one below. **Not through the live reader.**
+> - No government voice speaks made-up figures about a national policy; a town council or a school speaks
+>   figures about its own local scheme only (s41, s43, s45, s50, s53, s56). Sets for Adrian to read himself:
+>   **s52** (a migrant-worker dormitory near an estate; a worker says some residents cross the road),
+>   **s53** (school places set aside for lower-income families), **s49** (a prayer room in a mall).
+
 > **B — GEOGRAPHY STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "let's go do geography".
 > - **Point-marked.** A Geography question carries its own creditable points (`points[]`), its marks, a
 >   command word, and whether developing a point earns a second mark (`develop`) — the convention in the
