@@ -271,7 +271,11 @@ a student upload any questions? And retain such quality?"*
   the clip played. After the clip player or `/app/clip` changes: `cd ~/dev/adrianmath-clip-site &&
   git pull -q && npx next build`, then `launchctl kickstart -k gui/$UID/com.adrianmath.questionclips-site`.
   Plists in `scripts/clips/`; `launchctl unload ~/Library/LaunchAgents/<file>` stops them. The Mac
-  must be awake for a clip to be made. Logbook: `question-clips` per clip, `question-clips-worker` hourly
+  must be awake for a clip to be made. First live proof 15 Oct 2026: `4a7d4fe8` (partial fractions)
+  queued → ready in 10 min 11 s, every check passed. Two faults found on the way and fixed: another
+  session's rebuild broke the page mid-look (→ the clip site's own clone), and launchd throttled the
+  browser so a 1-minute clip took 4 minutes to play (→ `ProcessType Interactive` + Chrome without
+  background timer throttling). Logbook: `question-clips` per clip, `question-clips-worker` hourly
   (JOB_RHYTHMS 3 h); health check `question-clips` (a ready clip's voice is served; nothing waits
   over 2 h).
 
@@ -420,6 +424,23 @@ decimal answer printed by sympy as `2.65000000000000` counted 14 places — trai
 
 **Cost per photo clip**: the bank clip's cost (§9) plus three agent runs (the reading, two solves,
 ≈ 1 min together); voice ≈ US$0.08. A copy for the next student costs one reading (≈ 20 s).
+
+### The player layout for clips (Adrian, 15 Oct 2026)
+
+*"can we have the whole question on one side, then the explanation part by part on another side,
+then the voice transcript at the bottom of the clip, like how youtube have subs, then the drag
+slider at the bottom, after the clip"* — built in `lesson-player.tsx`:
+- **Laptop (≥ 1024 px)**: a question clip shows the WHOLE question in a panel on the left (photo
+  clips: the reading they were made from; bank clips: the bank text), the board on the right. The
+  panel steps aside while the "Ask about this step" chat is open, so the chat still has its room.
+- **Phone**: no room beside or above the board, so a 📄 pill in the header lays the whole question
+  over the board; a tap closes it.
+- **Subtitles** (every clip): the spoken line in a dark strip over the bottom of the board, words
+  lighting up as they are said. The board keeps that strip clear, so no working is covered.
+- **The slider** is last, under the clip.
+- To make room, `fitClipBoard` may now shrink the maths to 0.56 (≈ 14 px on a phone, was 0.7) and
+  shrinks the gaps between lines with it (down to a quarter) before the board would run under the
+  phone's bottom bar.
 
 ### Not done / next (photo questions)
 
