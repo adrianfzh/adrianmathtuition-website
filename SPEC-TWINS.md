@@ -415,3 +415,19 @@ skip marks `skip/S-<pool>-<subgroup>` (3 drops). The job_runs summary says how m
 
 **First samples (14 Oct 2026, by hand on the Mac, the lane's exact steps):** see
 `docs/HANDOFF-2026-10-14.md` §Structured science twins.
+
+## 12. Practice levels — Core / Advanced / Challenge (15 Oct 2026, AGREED, not yet wired)
+
+Adrian, 15 Oct 2026, after a sorted sample of 40 A Math twins: *"students must be able to answer level 1 and level 2 > that is a must"* … *"core should be B3-A1, advanced should be A1 and above"* … challenge = *"bonus questions that say raffles institute or raffles girls school set"*. Replaces the earlier Core / Exam / Challenge names (science, 5 Oct) and the maths Standard / Advanced column (`questions.difficulty`, hand-guessed at extraction, 96 % "Standard").
+
+| Level | Line under the button (student sees) | Meaning (for the sorter) |
+|---|---|---|
+| **Core** | Every exam question you must be able to do. | Routine AND typical multi-step exam questions with a signposted or standard method, however long. All of them mastered = B3 to A1. |
+| **Advanced** | For A1 and above, and harder school papers. | The student must DECIDE the approach with no signpost (substitution, identity, case split, model from a context, two topics joined), or a genuine trap. Top of the A1 band; what harder schools set. |
+| **Challenge** | Beyond the exam. | Bonus-style top-school questions: non-standard set-up, several unsignposted decisions. Never promoted from Advanced to fill the bucket. |
+
+Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ marks). No source type (school, national) is ever a choice — sources are never shown to students.
+
+**The sample** (`docs/samples/am-twins-levels-sample-v2.html`, 40 A Math twins, 22 topics, one Opus read with the meanings above): Core 32 (8 short, 24 long), Advanced 8, Challenge 0. Twins copy normal school questions, so Challenge must be WRITTEN on purpose (a harder twin of a hard seed, same gates, blind solve still full marks) — a later job.
+
+**Next, in order:** Adrian's ticks on the sample → sort every twin (one overnight run; ~3,600) → every new twin carries its level from the twin writer → the picker's Standard/Advanced toggle becomes Core/Advanced/Challenge (+ Short/Long) → science keeps its results-based sort but shows the same three names (its `exam` folds into Core, its `challenge` into Advanced until real Challenge questions exist). Labels live in `lib/practice-levels.ts`.
