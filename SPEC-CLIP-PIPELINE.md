@@ -350,6 +350,24 @@ Differentiation notes are not approved yet, so there is no bible to write from. 
 Differentiation, Integration, Kinematics and most Trigonometry topics are in the same state today
 (0 approved units) — their questions are refused until he approves those notes on /notes.
 
+### Re-cut to a new rule (15 Oct 2026)
+
+When a standing rule is added after clips were made, the finished clips that now fail the verifier
+are RE-CUT, not re-made: `node scripts/clips/recut.mjs <qc-slug | questionId>`. An Opus agent
+(`scripts/clips/prompts/recut.md`) changes only the flagged beats' board actions; guards with no
+model check that every spoken word, every board line and every voice file is unchanged (so the
+recorded voice still fits), and the verifier shows 0 errors and 0 warnings. Then the phone look and
+the picture read run again (one more agent round if the pictures show a problem); pass → `ready`
+with `gate.checks.recut`, fail → the stored clip stays the earlier version. About 2 minutes a clip,
+no voice money. First use: Adrian's second watch (commit 351565df — a mistake said is shown as a red
+✗ note, "the base" lights the bases) flagged 12 question clips. **Result (15–16 Oct 2026): 11 re-cut**
+in 1½–9 min each (qc-10efe9bc, 1a9842f6, 46db0804, 4a7d4fe8, 5827cfef, 8e1c35ef, a118ba7c,
+c9e82111, d7be01de, dc60d635, fe586b67) — every one through the look and the picture read again;
+**1 re-made** (qc-4e8ec758: both beats near its trap already held two things, so the ✗ note had no
+room without new words — the worker re-made it under the new rules, ready in 16 min). All 12 now
+show 0 findings. One picture read flagged a raised "ʳ" drawn as a tick in a note (a second read
+passed it); writers are now told to avoid ʳ ⁿ ᵏ in notes.
+
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
