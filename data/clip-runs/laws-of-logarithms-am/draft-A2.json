@@ -10,6 +10,9 @@
      "do": "write",
      "step": 0
     }
+   ],
+   "asks": [
+    "What does log base 3 mean?"
    ]
   },
   {
@@ -25,6 +28,10 @@
      ],
      "on": "Same base"
     }
+   ],
+   "asks": [
+    "Why must the bases be the same?",
+    "What if the bases are different?"
    ]
   },
   {
@@ -44,6 +51,10 @@
      "near": "b",
      "on": "this is Add Power"
     }
+   ],
+   "asks": [
+    "Why does plus become multiply?",
+    "Which law is this?"
    ]
   },
   {
@@ -54,6 +65,9 @@
      "step": 1,
      "on": "becomes log base three"
     }
+   ],
+   "asks": [
+    "Why is it log of 5 × 6?"
    ]
   },
   {
@@ -64,6 +78,9 @@
      "step": 2,
      "on": "So we have"
     }
+   ],
+   "asks": [
+    "Why multiply 5 and 6 before anything else?"
    ]
   },
   {
@@ -75,6 +92,9 @@
      "token": "ab",
      "on": "not log thirty"
     }
+   ],
+   "asks": [
+    "Why is log 5 × log 6 not log 30?"
    ]
   },
   {
@@ -94,6 +114,10 @@
      "near": "c2",
      "on": "this is Minus Power"
     }
+   ],
+   "asks": [
+    "Why does minus become divide?",
+    "Which law is this?"
    ]
   },
   {
@@ -104,6 +128,9 @@
      "step": 3,
      "on": "So we get"
     }
+   ],
+   "asks": [
+    "Why is it 30 over 10?"
    ]
   },
   {
@@ -120,6 +147,10 @@
      "near": "l3",
      "on": "of three"
     }
+   ],
+   "asks": [
+    "Why is log₃ 3 = 1?",
+    "What is log₃ 9?"
    ]
   },
   {
@@ -136,6 +167,9 @@
      "token": "ans",
      "on": "The answer is"
     }
+   ],
+   "asks": [
+    "How can I check the answer is 1?"
    ]
   }
  ]
