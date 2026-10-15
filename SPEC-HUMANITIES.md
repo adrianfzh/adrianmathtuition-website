@@ -239,6 +239,16 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **F — A HANDWRITTEN ANSWER BY PHOTO, 15 Oct 2026 (preview only, switch closed).** Adrian: "build let students
+> send photo of a handwritten answer".
+> - Every question page has **"Wrote it on paper? Send a photo"** (up to 4 pages). `/api/portal/humanities/transcribe`
+>   types the writing out (`lib/humanities-photo.ts`, Sonnet on the API key — a plain read, about 1–2 US cents a
+>   photo; the marking itself stays on plan). The words land in the answer box; the student checks them, types in
+>   any `[?]` (Get feedback stays off until none is left), then hands in as usual. No photo is stored.
+> - Cap 30 photos a student a day (`portal_event_log` kind `humanities:transcribe`). Health check: `portal-humanities-transcribe`.
+> - Checked 15 Oct on a page written in a handwriting font with a crossed-out word: typed out word for word, the
+>   crossed-out word left out. **Not yet tried on a real student's handwriting.** Not on the timed paper yet.
+
 > **E — BY TOPIC ON HOME, 15 Oct 2026 (preview only, switch closed).** Adrian: "yes, build the By topic door on Home".
 > - Social Studies Home now opens with **Practise by topic** (the three issues, each with its case-study and
 >   structured-set counts and "n of m done"), then Timed paper and Examples to use, then Practise a skill.
