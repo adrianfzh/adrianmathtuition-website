@@ -50,7 +50,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | The red pen · margin diagrams | [`SPEC-RED-PEN.md`](SPEC-RED-PEN.md) · [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md) |
 | GCE-format papers + Set papers · school-style papers | [`docs/GCE-PAPER.md`](docs/GCE-PAPER.md) · [`docs/SCHOOL-PAPER.md`](docs/SCHOOL-PAPER.md) |
 | Practice photo + photo sheets | [`SPEC-PRACTICE-PHOTO.md`](SPEC-PRACTICE-PHOTO.md) |
-| Twins (our own questions) | [`SPEC-TWINS.md`](SPEC-TWINS.md) |
+| Twins (our own questions) — **counted per SUB-SKILL (3, then 5), never per school question**: the work left is `math_twin_units`, not `twin_queue` (Adrian, 15 Oct 2026) | [`SPEC-TWINS.md`](SPEC-TWINS.md) |
 | 🩺 Question check on first serve — PARKED 14 Oct 2026, dormant (twins cover it) | [`SPEC-QUESTION-HEALTH.md`](SPEC-QUESTION-HEALTH.md) |
 | Measuring the marking (shadow reads, consistency) · ops, switches, safety checks, job_runs | [`docs/MARKING.md`](docs/MARKING.md) + [`docs/OPS.md`](docs/OPS.md) |
 | Running a batch of fixes with agents; which model does which job | [`docs/FANOUT.md`](docs/FANOUT.md) (§9 is LIVING) |
