@@ -55,6 +55,11 @@ export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' 
 export async function loadHumanitiesFor(identity: string, limit = 30): Promise<HumanitiesListRow[]> {
   await settleOpenHumanities({ identity });
   const sb = getSupabaseAdmin();
+  // The list shows the exact mark too: pick up any placing read that came back since (lib/humanities-place).
+  const { data: placing } = await sb.from('humanities_runs').select('id, status, report')
+    .eq('airtable_student_id', identity).eq('status', 'marked').is('report->mark', null)
+    .gte('marked_at', new Date(Date.now() - 86_400_000).toISOString()).limit(10);
+  await Promise.all((placing ?? []).map(r => settlePlacement(r as { id: string; status: string; report: { level?: number; mark?: number } | null }).catch(() => false)));
   const { data, error } = await sb.from('humanities_runs').select(HUMANITIES_LIST_COLUMNS)
     .eq('airtable_student_id', identity).order('created_at', { ascending: false }).limit(limit);
   if (error) throw new Error(error.message);
