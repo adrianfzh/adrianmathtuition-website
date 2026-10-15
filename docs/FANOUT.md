@@ -50,7 +50,7 @@ per bin, with the whole bin's evidence, is faster and merges cleanly.
 
 A rule or pen fix is verified by the golden bench (bot `CLAUDE.md` § Golden
 bench: replayed stored payloads in `npm test`, the local pen bench from stored
-boxes) and, if a live check is still wanted, by the desk's **🔁 Re-mark this
+boxes — since 15 Oct 2026 a push skips the pen bench when none of the files it draws with changed since a full pass (`--if-changed`, passes kept in the bot's `.git/golden-pen-passes.json`), and page photos are kept in `~/.cache/golden-pen` so a network blip cannot block a push) and, if a live check is still wanted, by the desk's **🔁 Re-mark this
 page** door on one page. A whole-paper re-mark is a last resort and never while
 the batch lane is off: on 10 Sep each one took 15–25 minutes on the Mac lane and
 three of them plus a hand-in melted the machine. A DEPLOY is still verified by
