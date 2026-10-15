@@ -445,6 +445,8 @@ Adrian, 15 Oct 2026, after a sorted sample of 40 A Math twins: *"students must b
 
 - **Moved twins done (15 Oct 2026):** Adrian tapped the 6 — **2 Advanced, 4 Core** (the 1 likely was right; maybe 1 of 5). The other 93 moved twins are Core. All Sec 2 twins now 628 Standard / 17 Advanced / 1 Challenging. Backup `_backups/s2-moved-twins-difficulty-before-2026-10-15.json`.
 
+- **Sec 1 done (15 Oct 2026):** Adrian tapped the 30 — **16 Advanced, 2 Challenge, 12 Core**. Likely right 5 of 7 (4 Advanced + 1 Challenge); maybe 13 of 23. Sec 1 twins now 608 Standard / 16 Advanced / 2 Challenging. Backup `_backups/s1-twins-difficulty-before-2026-10-15.json`. E Math (93 shortlisted) still waits for his taps.
+
 **Adrian's rule, in his words (15 Oct 2026):** *"a question is only Advanced if it needs an un-drilled idea or a genuine trap, not just a choice step … even if a question requires higher level thinking, schools may drill students until it becomes a standard question. so those questions not seen before may actually be the advanced questions, especially if they can't be easily solved."* And: *"the best way may just to open up the questions, then let the data from the students sort out the difficulty levels > that is the most accurate way."* → The tapped levels are the STARTING labels; once a question has enough first attempts, students' results replace them (as science does, `lib/practice-difficulty.ts`: 20 first tries; < 25 % wrong → Core, > 55 % wrong → Advanced).
 
 Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ marks). No source type (school, national) is ever a choice — sources are never shown to students.
