@@ -270,6 +270,22 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **N — UPLOADED SCHOOL QUESTIONS KEPT, FOR MARKING ONLY, 15 Oct 2026.** Adrian: "yes" (to keeping the questions
+> students upload). `lib/humanities-upload-bank.ts` → `humanities_uploaded_questions` (migration
+> `humanities_uploaded_questions.sql`; RLS on, no policies).
+> - **Nightly** (`/api/cron/humanities-upload-bank`, 19:30 UTC = 3:30am SGT, `job_runs`): every marked "Check my answer"
+>   run not yet banked (`humanities_runs.banked_at`) → its question, sources/figures, marks, type and — Geography short
+>   questions — the points list. **No student details**: no name, answer, photo or run id. One row per school question
+>   (`questionFingerprint`: subject + the question's words without its number, marks, case or punctuation + the start of
+>   its sources); a repeat adds to `times_seen`. The demo and preview accounts are left out.
+> - **At hand-in** (`/api/portal/humanities/own`): a question already in the bank keeps the type it was read as, and a
+>   Geography short question reuses its points list (no new writing call) — the same question, marked the same way.
+> - **Never served** to a student (`docs/CONTENT-POLICY.md`: a school's paper is the school's). Privacy: the page's
+>   "to improve our teaching and marking" covers it; the question alone is not personal data.
+> - `/admin/humanities-marker` shows how many are kept and how many came from more than one student.
+> - Checked 15 Oct with the demo account forced in: five uploads banked; the mangroves question sent again reused its
+>   8-point list. The test rows were deleted.
+
 > **M — TWO BOXES: THE QUESTION AND YOUR ANSWER, 15 Oct 2026.** Adrian: "why are there three boxes? … student will just
 > take photo of the question and send? may have to take more than one photo … just question and your answer will do?
 > same for geography right? / what does 'to lift it' means?"

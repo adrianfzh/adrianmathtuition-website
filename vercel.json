@@ -218,6 +218,10 @@
     {
       "path": "/api/cron/humanities-selfcheck",
       "schedule": "15 */2 * * *"
+    },
+    {
+      "path": "/api/cron/humanities-upload-bank",
+      "schedule": "30 19 * * *"
     }
   ]
 }

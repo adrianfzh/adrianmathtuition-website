@@ -25,12 +25,14 @@ export default async function HumanitiesMarkerPage() {
   if (!(await isNotesAuthed())) redirect('/admin');
   const sb = getSupabaseAdmin();
   const since = new Date(Date.now() - DAYS * 86_400_000).toISOString();
-  const [{ data }, { data: audits }, { data: rules }] = await Promise.all([
+  const [{ data }, { data: audits }, { data: rules }, { count: banked }, { data: repeats }] = await Promise.all([
     sb.from('humanities_runs')
       .select('id, created_at, airtable_student_id, student_name, subject, skill, status, level_lo, level_hi, levels_max, reads, question_id, own_question')
       .eq('source', 'app').gte('created_at', since).order('created_at', { ascending: false }).limit(1000),
     sb.from('humanities_audits').select('run_id, status, audit_level, verdict, why, missed_rule').gte('created_at', since),
     sb.from('humanities_rule_patches').select('id, skill, rule, status, test, created_at, decided_at').order('created_at', { ascending: false }).limit(40),
+    sb.from('humanities_uploaded_questions').select('id', { count: 'exact', head: true }),
+    sb.from('humanities_uploaded_questions').select('id').gt('times_seen', 1),
   ]);
   const auditBy = new Map((audits ?? []).map(a => [a.run_id, a]));
   const rows = (data ?? []).filter(r => !HUMANITIES_PREVIEW_IDENTITIES.includes(String(r.airtable_student_id))).map(r => {
@@ -73,6 +75,7 @@ export default async function HumanitiesMarkerPage() {
         {tile(pct(agreed, checked.length), 'The checker agreed', `${checked.length} answers checked`)}
         {tile(String(live), 'Rules learned, live', `${(rules ?? []).length} tried in all`)}
       </div>
+      <p className="text-sm text-gray-600"><span className="font-semibold text-navy">{banked ?? 0}</span> school questions kept from students&apos; uploads (no student details; used for marking only){repeats?.length ? `, ${repeats.length} sent by more than one student` : ''}.</p>
 
       <section className="space-y-2">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Rules the marker taught itself</h2>
