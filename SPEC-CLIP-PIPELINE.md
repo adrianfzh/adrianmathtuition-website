@@ -36,6 +36,11 @@ Looked at videotutor.io (interrupt-and-ask videos, captions, live diagrams, a ma
 - **Live graphs** — graph scenes for graph / trigonometry / calculus skills, not only equation steps.
 NOT taken: a character or presenter (the approved clip has none, 9 Oct), and "in seconds" (the 3–5 minutes are the checks; a made clip is instant for every later student).
 
+**From AI short-drama production lines** (Adrian, 15 Oct 2026: *"basically like production lines of how animation films or people use AI to make short dramas … especially the chinese companies"*). PROPOSED:
+- **Make two, keep the best** — the writer drafts 2 versions; the blind reader picks the clearer, then the checks run on it.
+- **A series look** — fixed board layouts and stock phrases per topic, so a topic's clips look and sound like one series.
+- **Numbers decide** — where students stop a clip or press "Still confused" sends that clip back for a rewrite.
+
 ## 3. Learning from Adrian
 
 - Every clip has a 👍 / 👎 + "what's wrong" for Adrian, and a "This helped / Still confused" for students.
