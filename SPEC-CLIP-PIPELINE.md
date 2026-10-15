@@ -28,6 +28,14 @@ Both run through the same steps and the same checks. A student who gets a questi
 
 Speed: write ~1 min, checks seconds, blind read ~1 min, voice + timing ~30 s, look ~1 min → **about 3–5 minutes** a clip. Runs on the Fly worker, never in a chat.
 
+## 2b. Ideas taken from elsewhere (15 Oct 2026, Adrian: "do we need to take ideas from the web? say: videotutor.io")
+
+Looked at videotutor.io (interrupt-and-ask videos, captions, live diagrams, a mascot and a presenter, "in seconds"). PROPOSED, pending Adrian's yes:
+- **Ask about this step** — pause at a beat, one tap opens our chat with the question and that beat's step already in it.
+- **Captions** — the spoken line under the board (students watch with the sound off).
+- **Live graphs** — graph scenes for graph / trigonometry / calculus skills, not only equation steps.
+NOT taken: a character or presenter (the approved clip has none, 9 Oct), and "in seconds" (the 3–5 minutes are the checks; a made clip is instant for every later student).
+
 ## 3. Learning from Adrian
 
 - Every clip has a 👍 / 👎 + "what's wrong" for Adrian, and a "This helped / Still confused" for students.
