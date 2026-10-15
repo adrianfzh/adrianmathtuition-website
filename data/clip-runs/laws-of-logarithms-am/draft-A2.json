@@ -1,0 +1,142 @@
+{
+ "slug": "laws-of-logarithms-am",
+ "draft": "A2",
+ "by": "session, after Adrian's 15 Oct note: highlight log5 + log6 at 'plus means multiply', the law right under that line, then log3(5x6), then log3 30, and so on",
+ "beats": [
+  {
+   "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "All three logs have base three. Same base, so we can combine them.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "underline",
+     "token": [
+      "a",
+      "b",
+      "c"
+     ],
+     "on": "Same base"
+    }
+   ]
+  },
+  {
+   "say": "Look at the first two. Plus means multiply: this is Add Power.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "a",
+      "b"
+     ],
+     "on": "the first two"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$",
+     "near": "b",
+     "on": "this is Add Power"
+    }
+   ]
+  },
+  {
+   "say": "So log base three of five, plus log base three of six, becomes log base three of five times six.",
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "becomes log base three"
+    }
+   ]
+  },
+  {
+   "say": "Five times six is thirty. So we have log base three of thirty, minus log base three of ten.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "So we have"
+    }
+   ]
+  },
+  {
+   "say": "Only added logs combine like this. Log five times log six is not log thirty.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "ab",
+     "on": "not log thirty"
+    }
+   ]
+  },
+  {
+   "say": "Now the minus. Minus means divide: this is Minus Power.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "ab",
+      "c2"
+     ],
+     "on": "Now the minus"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\log_a x - \\log_a y = \\log_a \\tfrac{x}{y}$",
+     "near": "c2",
+     "on": "this is Minus Power"
+    }
+   ]
+  },
+  {
+   "say": "So we get log base three of thirty over ten.",
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So we get"
+    }
+   ]
+  },
+  {
+   "say": "Thirty over ten is three, which leaves log base three of three.",
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "which leaves"
+    },
+    {
+     "do": "note",
+     "text": "$\\log_a a = 1$",
+     "near": "l3",
+     "on": "of three"
+    }
+   ]
+  },
+  {
+   "say": "The base matches the number inside, so the log is one. The answer is one.",
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "the log is one"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "The answer is"
+    }
+   ]
+  }
+ ]
+}

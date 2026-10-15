@@ -162,7 +162,7 @@ describe('boardStateAt — the recipe scene', () => {
     expect(b.pulses).toHaveLength(0);
     const all = boardStateAt(scene, 2, 4);
     expect(tokenShown(all, scene, 0, 4)).toBe(true);
-    expect(all.pulses).toEqual([{ tokens: ['magic'], seq: 6 }]);
+    expect(all.pulses).toEqual([{ tokens: ['magic'], seq: 6, beat: 2 }]);
   });
 
   it('a from-token with a move action waits for the move; an explicit reveal of its line does not fly it', () => {

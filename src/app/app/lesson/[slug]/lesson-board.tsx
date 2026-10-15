@@ -443,6 +443,16 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
       pulseRef.current = pulses.length;
     } else if (pulses.length < pulseRef.current) pulseRef.current = pulses.length;
 
+    // 2b. A clip keeps its last highlight LIT through its beat and the next (Adrian, 15 Oct 2026:
+    // "when you say plus means multiply, that's when you can just highlight log5+log6, then bring
+    // in the property") — a glow that fades in a second is gone before the eye gets there.
+    if (zoom.closest('[data-lsn-clip]')) {
+      const last = pulses[pulses.length - 1];
+      const keep = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? new Set(last.tokens) : new Set<string>();
+      zoom.querySelectorAll<HTMLElement>('.lsn-lit').forEach(el => { if (!keep.has(el.dataset.tokenId ?? '')) el.classList.remove('lsn-lit'); });
+      for (const id of keep) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add('lsn-lit');
+    }
+
     // 3. Marks: draw new ones, drop cleared ones.
     const svg = marksRef.current;
     if (svg) {

@@ -257,9 +257,16 @@ a student upload any questions? And retain such quality?"*
 - **Adrian's list**: `/admin/question-clips` — every clip, its checks ✓/✗, minutes, voice cost, ▶,
   and 👍 / 👎 + "what's wrong" (§3, stored on the row).
 - **Queue**: "Make a clip" queues the row; `scripts/clips/question-clip-worker.mjs` claims the oldest
-  and runs the command (one at a time; a crashed run is re-queued once). It runs on the Mac
-  (`scripts/clips/com.adrianmath.questionclips.plist`, **not loaded yet** — so a press of "Make a
-  clip" waits until it is). Logbook: `question-clips` per clip, `question-clips-worker` hourly
+  and runs the command (one at a time; a crashed run is re-queued once). **ON since 15 Oct 2026
+  (Adrian: "Yes, switch on the clip worker on this Mac")** — two launchd jobs on Mac B:
+  `com.adrianmath.questionclips` (the worker, log `/tmp/questionclips.log`) and
+  `com.adrianmath.questionclips-site` (the 3211 site it plays clips on, log
+  `/tmp/questionclips-site.log`). The site runs from its OWN clone, `~/dev/adrianmath-clip-site`
+  — the first live test failed its look because another session rebuilt the main checkout while
+  the clip played. After the clip player or `/app/clip` changes: `cd ~/dev/adrianmath-clip-site &&
+  git pull -q && npx next build`, then `launchctl kickstart -k gui/$UID/com.adrianmath.questionclips-site`.
+  Plists in `scripts/clips/`; `launchctl unload ~/Library/LaunchAgents/<file>` stops them. The Mac
+  must be awake for a clip to be made. Logbook: `question-clips` per clip, `question-clips-worker` hourly
   (JOB_RHYTHMS 3 h); health check `question-clips` (a ready clip's voice is served; nothing waits
   over 2 h).
 
@@ -337,9 +344,8 @@ Differentiation, Integration, Kinematics and most Trigonometry topics are in the
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
-- **The queue worker is not running** — load the plist (and keep the 3211 server up) on the Mac, or
-  move the runner to the Fly worker (it needs Chrome, ffmpeg, sympy and a copy of the site to play
-  the clip on). Until then a "Make a clip" press waits, and the health check alarms after 2 hours.
+- **The queue worker runs on the Mac** (above) — it stops when the Mac sleeps; moving it to the Fly
+  worker (Chrome, ffmpeg, sympy and a copy of the site to play the clip on) would keep it going.
 - **Photos a student uploads** (no bank row): not built. The marked-paper door shows only when the
   paper matched the bank. A photo-read question needs a checked answer first — that is the next
   piece.
@@ -348,3 +354,8 @@ Differentiation, Integration, Kinematics and most Trigonometry topics are in the
 - **"Ask about this step"** (§8b) is not switched on for question clips (its "back" link goes to
   `/app/lesson/<slug>`), and writers do not yet add `asks` to question-clip beats.
 - **3–5 minutes**: see Time above.
+9. *"When you say plus means multiply, that's when you can just highlight log5+log6, then bring in
+   the property right under this line, then the next line shows log(5x6), then the next line is
+   log30, then so on."* → the laws clip re-cut in exactly that order (and the same for the minus);
+   in a clip a `highlight` now STAYS lit — yellow chalk — through its beat and the next (it was a
+   0.9 s glow that had faded before the eye got there): `lesson-board.tsx` 2b, `BoardPulse.beat`.

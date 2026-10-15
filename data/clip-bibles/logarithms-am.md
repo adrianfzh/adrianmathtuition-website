@@ -34,6 +34,11 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
   by a law carries that law as its note, in his names: `Add Power: log x + log y = log xy`,
   `Minus Power: …`, `Bring down power: lg xʳ = r lg x`, `log_a a = 1`, `Take ln: ln eˣ = x`,
   `Un-log: lg x = c ⇒ x = 10ᶜ`.
+- **Highlight, then the law under that line, then the law applied as its own line** (15 Oct 2026:
+  "when you say plus means multiply, that's when you can just highlight log5+log6, then bring in the
+  property right under this line, then the next line shows log(5x6), then the next line is log30").
+  Highlight only the terms the law acts on, on the word that names the move; in a clip a highlight
+  stays lit (yellow chalk) through its beat and the next.
 - **A note points at its token.** "Arrow pointing leftwards … point[s] to nowhere." A note sits
   under its line with an ↑ under the token it explains (the board draws the ↑; write the note
   without an arrow).

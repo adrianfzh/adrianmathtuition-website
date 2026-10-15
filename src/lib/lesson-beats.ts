@@ -176,7 +176,8 @@ export const FOCUS_HOLD_S = 2.2;
 
 export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number; label?: string }
 export interface BoardNote { id: ElementKey; text: string; near: string | null; seq: number }
-export interface BoardPulse { tokens: string[]; seq: number }
+/** `beat` = the beat it fired in (a clip keeps the last highlight lit through that beat and the next). */
+export interface BoardPulse { tokens: string[]; seq: number; beat?: number }
 export interface BoardFocus { key: ElementKey; hold: number; seq: number }
 /** The sticker on the board right now — beside token `near` (null = the top-right corner). */
 export interface BoardSticker { kind: StickerKind; near: string | null; seq: number }
@@ -195,6 +196,8 @@ export interface BoardState {
   /** graph-morph: the state that holds. */
   state: number;
   pulses: BoardPulse[];
+  /** The beat the board stands at (boardStateAt). */
+  beat?: number;
   marks: BoardMark[];
   notes: BoardNote[];
   focus: BoardFocus | null;
@@ -284,7 +287,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       board.state = action.state;
       break;
     case 'highlight':
-      board.pulses.push({ tokens: asList(action.token), seq });
+      board.pulses.push({ tokens: asList(action.token), seq, beat: Number(slot.split(':')[0]) || 0 });
       break;
     case 'mark':
       board.marks.push({ kind: action.kind, tokens: asList(action.token), seq, ...(action.label ? { label: action.label.trim() } : {}) });
@@ -325,6 +328,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
 export function boardStateAt(scene: Scene | PlayScene, beat: number, fired: number): BoardState {
   const board = emptyBoard(scene);
   if (!hasBeats(scene)) return board;
+  board.beat = beat;
   scene.beats.forEach((b, k) => {
     if (k > beat) return;
     const upTo = k < beat ? b.do.length : Math.min(fired, b.do.length);
