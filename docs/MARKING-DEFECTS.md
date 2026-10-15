@@ -898,3 +898,16 @@ cut mid-word, the point said 3–4 times, codes on print, marks at nothing, mark
 - **A lost part with no words on the page** — 0/2, one bare uncoded ✗, no note, no strip line, no model answer, no overflow sheet, though the read wrote all three (Rainie Physics 2023 P2 p3 Q2(c)). Pen (science notes dropped).
 - **A mark seated on the nearest ink, not on what it credits** — ✗M0 in her Type C column while she chose Type D (Sophie EM 2023 P2 p19 Q9(c)); ✓B1 for her right cross beside her wrong side-working "x² − 64 = 204" (p16 Q8(a)(i)). Pen (marks).
 - **Another part's "why" opens a science box** — Q7(a)'s box begins with Q7(c)(i)'s "Higher V → smaller I → less I²R heating" (Rainie Physics 2023 P2 p10). Pen (science why join) — F130's family on a new path.
+
+# 16 Oct 2026 — the page reader: new defect classes (findings of 16 Oct: 4 papers, 37 pages; the fixer works them at 06:45)
+
+All four maths papers (Eva E Math St Gabriel's Prelim P1, Denise A Math 2022 P1 and E Math 2023 P1, Rainie E Math ACS Barker P1) were drawn after the 15 Oct fixer pushes and the name-the-slip ship. One line per NEW class — returns (F131 now on worded conclusions, six pages; F103 head said twice; the point said 3–4 times; a part's note in another part's space; marks on her writing; an awarded mark with no ✓) are in the reader's findings file.
+
+- **An insert drawn as a ring round the correct neighbour** — the slip is a missing middle term, the ring encloses her correct "81/16" with "+27/8 x" beside it (Denise AM 2022 P1 p9 Q8(a); the read said fix_kind insert). Misleads. Pen (insert vs ring).
+- **A ring on the wrong occurrence of its token** — slip "24" (her kept answer), the ring round "−24", the value she rejected (Denise AM 2022 P1 p12 Q8(b)). Pen (token match).
+- **The line where the error is made left bare** — the read's wrong line "r = 2.36553" (Eva St Gab P1 p12 Q17(b)) and "… = 112 (3sf)" (Denise EM 2023 P1 p2 Q2(a)) drawn with no ✗; only the answer is crossed. SPEC §4 red line. Pen (marks).
+- **A note aimed at the right answer on a shared answer row** — "Should be to 1 d.p." pointing at her correct 68.5; the slip is 112 (Denise EM 2023 P1 p2 Q2(a)). Misleads. Pen (note aim).
+- **A continuation's "①" on another part's line** — Q3(b)'s badge on Q3(a)'s correct answer; the read's from_line_index pointed there (Denise EM 2023 P1 p2). Misleads. Read + pen (no own-part check).
+- **A verdict bracket along correct lines** — "0.8578 is 0.858 to 3 s.f." braced against her first two ✓ lines, ten rows above the slip (Eva St Gab P1 p19 Q25). Pen (bracket seat).
+- **The side strip overprints the "Marking by AdrianMath" credit** (Denise EM 2023 P1 p18, Denise AM 2022 P1 p6). Pen (strip height).
+- **The maths underline fallback drawn through her drawing or writing** — a red stroke across her Venn circles (Denise EM 2023 P1 p10 Q17(a)); through "Q = (15.4, 11.8)" (Denise AM p9). Pen (underline seat).
