@@ -16,7 +16,8 @@
   "Ask (2) was missing: beat 2 gave the first move but not the overall plan. Fixed: 'The plan: take log on both sides, then bring the powers down.' (the bible's own words for this skill).",
   "Bible §3.3 order: take lg (line 1) → bring down (line 2) → expand → collect (line 3) → factorise and divide (line 4). Expand has no line of its own — it is merged into the collect line on the checked board. The voice says 'Expand' (beat 5), so the student hears it; a board change, not a voice fix, if the tutor wants it shown.",
   "Beat 7 'Factorise out X, then divide' gives no reason — plain algebra, acceptable.",
-  "Trap (beat 9) comes after the right answer is on the board, as a warning — plain and said once."
+  "Trap (beat 9) comes after the right answer is on the board, as a warning — plain and said once.",
+  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
  ],
  "fixed_beats": {
   "2": {
@@ -34,6 +35,25 @@
      "step": 1,
      "on": "take log on both sides"
     }
+   ]
+  },
+  "9": {
+   "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
+   "do": [
+    {
+     "do": "note",
+     "text": "✗ Common mistake: $x \\approx 8.57$ (the minus dropped)",
+     "near": "ans"
+    },
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "ans",
+     "on": "removes a minus"
+    }
+   ],
+   "asks": [
+    "Why keep the minus sign?"
    ]
   }
  },

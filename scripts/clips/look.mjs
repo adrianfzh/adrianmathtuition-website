@@ -182,7 +182,13 @@ for (const slug of slugs) {
         // The slider comes after the clip.
         const scrub = document.querySelector('.lsn-scrub');
         const order = scrub && scrub.getBoundingClientRect().top < sr.bottom - 2 ? ['the slider is not below the board'] : [];
-        return { cut, small, overlap, hidden, tall, subsHide, order, shown: shown.length };
+        // A law beside a line stays on ONE line (Adrian, 15 Oct 2026: "putting as two lines make it less clear").
+        const wrapped = [];
+        for (const t of stage.querySelectorAll('.lsn-note-up.on .lsn-note-text')) {
+          const fs = parseFloat(getComputedStyle(t).fontSize);
+          if (t.getBoundingClientRect().height > fs * 2.2) wrapped.push((t.textContent || '').trim().slice(0, 40));
+        }
+        return { cut, small, overlap, hidden, tall, subsHide, order, wrapped, shown: shown.length };
       }, MIN_PX);
       const cue = cueStarts[e.scene ?? 0]?.[e.beat]?.[e.index] ?? null;
       const offset = cue && cue.start != null && e.clipElapsed != null ? +(e.clipElapsed - cue.start).toFixed(3) : null;
@@ -199,7 +205,7 @@ for (const slug of slugs) {
 
   const cued = shots.filter(s => s.on);
   const cueBad = cued.filter(s => s.offset == null || Math.abs(s.offset) > CUE_GATE_S);
-  const lookBad = shots.filter(s => s.error || s.cut?.length || s.overlap?.length || s.small?.length || s.hidden?.length || s.tall?.length || s.subsHide?.length || s.order?.length);
+  const lookBad = shots.filter(s => s.error || s.cut?.length || s.overlap?.length || s.small?.length || s.hidden?.length || s.tall?.length || s.subsHide?.length || s.order?.length || s.wrapped?.length);
   const expected = beats.reduce((n, b) => n + b.do.length, 0);
   const result = {
     slug, at: new Date().toISOString(), width: WIDTH,
@@ -218,7 +224,7 @@ for (const slug of slugs) {
   anyFail ||= !result.pass;
   console.log(`${result.pass ? '✓' : '✗'} ${slug}: ${shots.length}/${expected} actions fired (${result.actions.fromClip} on the voice) · cues worst ${result.cue.worst.toFixed(2)} s, ${cueBad.length} over ${CUE_GATE_S} s · question ${question ?? 'MISSING'} · look problems ${lookBad.length}${consoleErrors.length ? ` · page errors ${consoleErrors.length}` : ''} → ${dir}`);
   for (const s of cueBad) console.log(`    cue  b${s.beat} ${s.kind} "${s.on}" fired ${s.clipElapsed?.toFixed(2)} s, word at ${s.wordStart?.toFixed?.(2)} s`);
-  for (const s of lookBad) console.log(`    look b${s.beat} ${s.kind}: ${[...(s.cut || []).map(x => 'cut off ' + x), ...(s.overlap || []).map(x => 'overlap ' + x), ...(s.small || []).map(x => 'small ' + x), ...(s.hidden || []).map(x => 'under the bottom bar ' + x), ...(s.tall || []).map(x => 'taller than the screen: ' + x), ...(s.subsHide || []).map(x => 'subtitle covers ' + x), ...(s.order || []), s.error].filter(Boolean).join('; ')}`);
+  for (const s of lookBad) console.log(`    look b${s.beat} ${s.kind}: ${[...(s.cut || []).map(x => 'cut off ' + x), ...(s.overlap || []).map(x => 'overlap ' + x), ...(s.small || []).map(x => 'small ' + x), ...(s.hidden || []).map(x => 'under the bottom bar ' + x), ...(s.tall || []).map(x => 'taller than the screen: ' + x), ...(s.subsHide || []).map(x => 'subtitle covers ' + x), ...(s.order || []), ...(s.wrapped || []).map(x => 'note on two lines: ' + x), s.error].filter(Boolean).join('; ')}`);
 }
 await browser.close();
 process.exit(anyFail ? 1 : 0);

@@ -231,7 +231,7 @@ export type BeatAction =
   /** The target appears by the plain reveal (fade/rise) — no pen. */
   | ({ do: 'reveal' } & BeatTarget & Timed)
   /** Pulse a token (or several) — the eye goes there. */
-  | ({ do: 'highlight'; token: string | string[] } & Timed)
+  | ({ do: 'highlight'; token: string | string[]; /** `sub` lights only the small subscript — a log's base (Adrian, 15 Oct 2026: "emphasize on the base 3 … with a different colour"). */ part?: 'sub' } & Timed)
   /** Fly the earlier token with this id onto the later line that declared `from` for it (the FLIP). */
   | ({ do: 'move'; from: string } & Timed)
   /** graph-morph: ease the curve to states[state]. */
@@ -239,7 +239,7 @@ export type BeatAction =
   /** A hand-drawn underline / circle / box around one or more tokens. */
   | ({ do: 'mark'; kind: MarkKind; token: string | string[]; /** An arc's number, drawn at its peak (①–④ on the Rainbow): one or two characters. */ label?: string } & Timed)
   /** A handwritten aside (inline `$…$` allowed), beside a token or under the working. */
-  | ({ do: 'note'; text: string; near?: string } & Timed)
+  | ({ do: 'note'; text: string; near?: string; /** A clip: the tokens (same line) whose MIDDLE the ↑ points at, e.g. both terms a law acts on. */ span?: string[] } & Timed)
   /** Ease the board's view onto the target for `hold` seconds (at 1×; default 2.2), then release. */
   | ({ do: 'focus'; hold?: number } & BeatTarget & Timed)
   /** Wipe the pen layer (default) or the whole board. */
@@ -618,6 +618,7 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       break;
     case 'highlight':
       tokens('token');
+      if (a.part !== undefined && a.part !== 'sub') errors.push(`${where}: part must be "sub" (the subscript — a log's base)`);
       break;
     case 'move':
       if (scope.type !== 'equation-steps') errors.push(`${where}: move only applies to equation-steps scenes`);
@@ -640,6 +641,9 @@ function validateAction(raw: unknown, scope: BeatScope, where: string, errors: s
       else if (a.text.trim().length > NOTE_MAX_CHARS) errors.push(`${where}: note is ${a.text.trim().length} chars — an aside, not a paragraph (≤ ${NOTE_MAX_CHARS})`);
       if (a.near !== undefined && (!nonEmptyString(a.near) || !scope.tokenIds.has(a.near))) {
         errors.push(`${where}: near "${String(a.near)}" is not a token id in this scene`);
+      }
+      if (a.span !== undefined && (!Array.isArray(a.span) || a.span.length < 2 || a.span.some((t: unknown) => !nonEmptyString(t) || !scope.tokenIds.has(t as string)))) {
+        errors.push(`${where}: span is two or more token ids of this scene (the ↑ points at their middle)`);
       }
       break;
     case 'clear':

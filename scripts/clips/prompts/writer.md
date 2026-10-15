@@ -71,6 +71,12 @@ no focus, no clear.
   appears in the beat whose voice explains it, on the words that name it.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.
+- **The base in its own colour**: a line that talks about the base ("same base", "the base
+  matches") lights the bases — `{"do": "highlight", "token": [...], "part": "sub"}` for a log's base.
+- **A law acting on two terms points at their middle**: give its note `"span": ["a", "b"]`; keep
+  the law short enough for one line.
+- **A mistake you say, you show**: a red `✗ Common mistake: …` note under the line where it bites,
+  on the word that names it, led into from that line — never say a trap without writing it.
 - **Spoken maths**: words, never symbols or TeX. Letters as CAPITALS ("X", "K", "A")
   so the voice reads the letter. Numbers in words ("seven point five", "minus eight
   point five seven"). Follow the bible's notation table (lg = "log", ln = "L N").

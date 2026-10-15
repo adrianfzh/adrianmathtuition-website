@@ -342,24 +342,40 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
  * its own row and the words end at the right edge below it. Pure DOM measurement — no state.
  */
 function placeClipNotes(cont: HTMLElement) {
+  // Adrian, 15 Oct 2026: "the up arrow should point in the middle … and the log property should be
+  // on one line, putting as two lines make it less clear". The ↑ sits under the MIDDLE of the
+  // token(s) it explains; the words stay on ONE line — beside the ↑ when they fit, else on the line
+  // under it, centred on the ↑ and kept inside the board, shrunk (never under 62 %) if still too long.
   for (const el of Array.from(cont.querySelectorAll<HTMLElement>('.lsn-note-up[data-point-at]'))) {
     const row = el.parentElement;
-    const tok = cont.querySelector<HTMLElement>(`[data-key="${el.dataset.pointAt}"]`);
+    const toks = (el.dataset.pointAt ?? '').split(' ').map(k => cont.querySelector<HTMLElement>(`[data-key="${k}"]`)).filter((t): t is HTMLElement => !!t);
     const arrow = el.querySelector<HTMLElement>('.lsn-note-arrow');
-    if (!row || !tok || !arrow) continue;
+    const text = el.querySelector<HTMLElement>('.lsn-note-text');
+    if (!row || !toks.length || !arrow || !text) continue;
     el.style.paddingLeft = '0px';
+    el.style.fontSize = '';
     el.classList.remove('stack');
     arrow.style.marginLeft = '';
+    text.style.marginLeft = '';
     const rr = row.getBoundingClientRect();
-    const tr = tok.getBoundingClientRect();
+    if (!rr.width) continue;
+    const rects = toks.map(t => t.getBoundingClientRect()).filter(r => r.width > 0);
+    if (!rects.length) continue;
+    const cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2 - rr.left;
+    let tw = text.getBoundingClientRect().width;
+    if (tw > rr.width) {
+      const base = parseFloat(getComputedStyle(el).fontSize);
+      el.style.fontSize = `${(base * Math.max(0.62, (rr.width / tw) * 0.98)).toFixed(2)}px`;
+      tw = text.getBoundingClientRect().width;
+    }
     const aw = arrow.getBoundingClientRect().width;
-    if (!rr.width || !tr.width) continue;
-    const x = Math.max(0, tr.left + tr.width / 2 - rr.left - aw / 2);
-    if (x <= rr.width * 0.5) {
+    const x = Math.max(0, cx - aw / 2);
+    if (x + aw * 2 + tw <= rr.width) {
       el.style.paddingLeft = `${x.toFixed(1)}px`;
     } else {
       el.classList.add('stack');
       arrow.style.marginLeft = `${x.toFixed(1)}px`;
+      text.style.marginLeft = `${Math.max(0, Math.min(rr.width - tw, cx - tw / 2)).toFixed(1)}px`;
     }
   }
 }
@@ -518,8 +534,10 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               {board && notes.some(n => n.line === i) && (
                 <div className="lsn-note-row">
                   {notes.filter(n => n.line === i).map(n => {
-                    const ti = clip && n.near ? s.tokens.findIndex(t => t.id === n.near) : -1;
-                    return <NoteSlotView key={n.id} note={n} board={board} pointAt={ti >= 0 ? tokKey(i, ti) : undefined} />;
+                    // The ↑ points at the middle of the note's span (else its `near` token).
+                    const ids = n.span?.length ? n.span : n.near ? [n.near] : [];
+                    const keys = clip ? ids.map(id => s.tokens.findIndex(t => t.id === id)).filter(ti => ti >= 0).map(ti => tokKey(i, ti)) : [];
+                    return <NoteSlotView key={n.id} note={n} board={board} pointAt={keys.length ? keys.join(' ') : undefined} />;
                   })}
                 </div>
               )}
@@ -2475,8 +2493,13 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-note-up { display: block; width: 100%; }
 [data-lsn-clip] .lsn-note-up .lsn-note-arrow { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
 [data-lsn-clip] .lsn-note-up .katex { font-size: 0.98em; }
-[data-lsn-clip] .lsn-note-up.stack { text-align: right; }
-[data-lsn-clip] .lsn-note-up.stack .lsn-note-arrow { display: block; width: max-content; text-align: left; }
+[data-lsn-clip] .lsn-note-up .lsn-note-text { display: inline-block; white-space: nowrap; }
+[data-lsn-clip] .lsn-note-up.stack .lsn-note-arrow { display: block; width: max-content; }
+[data-lsn-clip] .lsn-note-up.stack .lsn-note-text { display: block; width: max-content; }
+/* A mistake shown on the board (a note starting with ✗): red chalk. */
+[data-lsn-clip] .lsn-note.lsn-note-warn, [data-lsn-clip] .lsn-note.lsn-note-warn .katex { color: var(--lsn-hl-rose, #fda4af); }
+/* The base lit on its own (highlight part "sub"): the small 3 of log₃ in blue chalk. */
+[data-lsn-clip] .lsn-lit-sub .msupsub, [data-lsn-clip] .lsn-lit-sub .msupsub .mord { color: var(--lsn-hl-sky, #7dd3fc); transition: color 250ms ease; }
 /* An arrow is a clean line: no chalk grain eating into it, a touch finer. */
 [data-lsn-theme="chalk"] .lsn-marks path[data-mark^="arc"] { -webkit-mask-image: none; mask-image: none; stroke-width: 2; opacity: 1; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;

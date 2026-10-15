@@ -279,9 +279,13 @@ export function NoteSlotView({ note, board, pointAt }: {
   pointAt?: string;
 }) {
   if (pointAt) {
+    // A note that starts with ✗ is a mistake shown on the board (Adrian, 15 Oct 2026: "when saying
+    // log 5 times log 6 is not log 30 > you should put that out and emphasize on that"): red chalk.
+    const text = note.text.replace(/^\s*[←↑↳]\s*/, '');
+    const warn = /^\s*✗/.test(text);
     return (
-      <span data-key={note.id} data-prose="1" data-point-at={pointAt} className={`lsn-el lsn-note lsn-note-up w ${board.shown.has(note.id) ? 'on' : ''}`}>
-        <span className="lsn-note-arrow">↑</span>{' '}<MathText text={note.text.replace(/^\s*[←↑↳]\s*/, '')} />
+      <span data-key={note.id} data-prose="1" data-point-at={pointAt} className={`lsn-el lsn-note lsn-note-up${warn ? ' lsn-note-warn' : ''} w ${board.shown.has(note.id) ? 'on' : ''}`}>
+        <span className="lsn-note-arrow">↑</span>{' '}<span className="lsn-note-text"><MathText text={text} /></span>
       </span>
     );
   }
@@ -449,8 +453,12 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     if (zoom.closest('[data-lsn-clip]')) {
       const last = pulses[pulses.length - 1];
       const keep = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? new Set(last.tokens) : new Set<string>();
-      zoom.querySelectorAll<HTMLElement>('.lsn-lit').forEach(el => { if (!keep.has(el.dataset.tokenId ?? '')) el.classList.remove('lsn-lit'); });
-      for (const id of keep) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add('lsn-lit');
+      // part 'sub' lights only the base (the subscript) — its own colour (Adrian, 15 Oct 2026).
+      const cls = last?.part === 'sub' ? 'lsn-lit-sub' : 'lsn-lit';
+      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub').forEach(el => {
+        if (!keep.has(el.dataset.tokenId ?? '') || !el.classList.contains(cls)) el.classList.remove('lsn-lit', 'lsn-lit-sub');
+      });
+      for (const id of keep) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add(cls);
     }
 
     // 3. Marks: draw new ones, drop cleared ones.

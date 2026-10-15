@@ -93,6 +93,11 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
 - **Letters are written as capitals in `say`** ("A times A is A squared") so the voice
   reads the letter's name, not the word "a".
 - **Authoring one:** the author-lesson skill § 3c.
+- **Adrian's second watch (15 Oct 2026) — binding on every clip:** the base in its own colour when
+  it is talked about (`highlight` `part: "sub"`); a law's ↑ under the MIDDLE of the terms it acts on
+  (`note` `span`), the law on ONE line; a mistake the voice names is WRITTEN on the board as a red
+  `✗` note, led into from its line. `clipIssues` (lib/lesson-verify.ts) flags the first and last;
+  `scripts/clips/look.mjs` fails a note on two lines. Full text: `data/clip-bibles/_house.md` §2.
 - **Made by the clip pipeline (15 Oct 2026):** the 7 A Math Logarithms skill clips
   (`laws-of-logarithms-am` … `log-scales-am`) — topic bible → checked board plan → two drafts →
   blind read → voice → look, every check recorded per clip. How to run it, the results and the

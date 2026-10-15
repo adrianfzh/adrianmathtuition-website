@@ -16,7 +16,8 @@
   "Bible §3.2 key moves — rewrite (lines 1–2), compare (line 3), check roots (beat 9) — each has its line and is said.",
   "Beat 6 jumped from log₃[x(x − 8)] = log₃9 straight to the quadratic without saying what is compared, and 'drop the logs and compare' left 'compare' unsaid. Fixed: 'X times the bracket equals nine, so X squared …' — the compare is now spoken (the board has no x(x − 8) = 9 line; the voice carries it). 'One log each side' ties it back to the plan.",
   "Beat 2: the aim note points its ↑ at '= 2' (the middle token) — reads as 'under the question', fine.",
-  "Beat 8: the token 'or x = −1 (rej)' shows '(rej)' a beat before the voice says why — one token on the plan, board limit."
+  "Beat 8: the token 'or x = −1 (rej)' shows '(rej)' a beat before the voice says why — one token on the plan, board limit.",
+  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
  ],
  "fixed_beats": {
   "6": {
@@ -36,6 +37,27 @@
      "step": 3,
      "on": "X squared minus"
     }
+   ]
+  },
+  "9": {
+   "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "rej",
+     "on": "X equals minus one"
+    },
+    {
+     "do": "note",
+     "text": "✗ $x = -1$ gives $\\log_3(-9)$: undefined",
+     "near": "rej",
+     "on": "so reject it"
+    }
+   ],
+   "asks": [
+    "Why reject x = −1?",
+    "Why check every root?"
    ]
   }
  },

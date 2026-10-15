@@ -62,11 +62,11 @@
         },
         {
           "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred, not two.",
+          "asks": ["Why is P 200, not 2?", "What does doubling mean here?"],
           "do": [
             { "do": "write", "token": "dbl", "on": "P is two hundred" },
-            { "do": "mark", "kind": "circle", "token": "dbl", "on": "not two" }
+            { "do": "note", "text": "✗ Common mistake: $P = 2$ (doubling $100$ gives $200$)", "near": "dbl", "on": "not two" }
           ],
-          "asks": ["Why is P 200, not 2?", "What does doubling mean here?"],
           "audio": "/lessons/growth-and-decay-am/scene-01-b3.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b3.timing.json"
         },

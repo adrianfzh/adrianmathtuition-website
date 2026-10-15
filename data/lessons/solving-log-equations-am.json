@@ -128,10 +128,11 @@
         },
         {
           "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
-          "do": [
-            { "do": "mark", "kind": "circle", "token": "rej", "on": "X equals minus one" }
-          ],
           "asks": ["Why reject x = −1?", "Why check every root?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "rej", "on": "X equals minus one" },
+            { "do": "note", "text": "✗ $x = -1$ gives $\\log_3(-9)$: undefined", "near": "rej", "on": "so reject it" }
+          ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b9.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b9.timing.json"
         },

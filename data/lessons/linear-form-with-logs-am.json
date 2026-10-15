@@ -162,12 +162,11 @@
         },
         {
           "say": "M is minus N, so minus N is two. Watch the sign: N is minus two, not two.",
-          "do": [
-            { "do": "write", "token": "nn0", "on": "minus N is two" },
-            { "do": "write", "token": "nn", "on": "N is minus two" },
-            { "do": "mark", "kind": "circle", "token": "nn", "on": "not two" }
-          ],
           "asks": ["Why is n = −2, not 2?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "minus N is two" },
+            { "do": "note", "text": "✗ Common mistake: $n = 2$ (the gradient is $-n$)", "near": "nn", "on": "not two" }
+          ],
           "audio": "/lessons/linear-form-with-logs-am/scene-02-b3.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-02-b3.timing.json"
         },

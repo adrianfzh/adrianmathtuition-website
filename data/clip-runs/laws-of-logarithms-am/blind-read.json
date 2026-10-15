@@ -1,37 +1,32 @@
 {
  "slug": "laws-of-logarithms-am",
- "pick": "A2",
- "why": "Only draft scored (no pick asked): A2 is the shape the tutor asked for — highlight log 5 + log 6, Add Power right under line 1, then log3(5x6), then log3 30, and the same for the minus — once the two highlights are moved onto 'Plus means multiply' / 'Minus means divide'.",
- "scores": {
-  "clear": 5,
-  "one_idea": 5,
-  "voice_board": 5,
-  "why": 5,
-  "trap": 4,
-  "level": 5
- },
+ "pick": "A3",
+ "why": "Only draft scored (no pick asked): A3 does all three of the tutor's asks — the three bases light blue on 'base three', each law's arrow sits under the middle of the two logs it joins, and the mistake is written on the board in red — once the mistake is tied to the line it is about and given a reason.",
+ "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 5, "trap": 5, "level": 5 },
  "notes": [
-  "Beat 3 (as drafted): the highlight of log 5 + log 6 fires on 'the first two', before 'Plus means multiply' — the tutor asked for the highlight AT 'plus means multiply'. Fixed: highlight on 'Plus means multiply'; the Add Power note stays under line 1 (near log3 6) on 'This is Add Power'.",
-  "Beat 7 (as drafted): the highlight of log3 30 − log3 10 fires on 'Now the minus', not on 'Minus means divide'. Fixed the same way: highlight on 'Minus means divide'; Minus Power note stays right under the log3 30 − log3 10 line.",
-  "The order matches the tutor's request: highlight + law under the line (beat 3) → log3(5 × 6) (beat 4) → log3 30 − log3 10 (beat 5) → trap → highlight + Minus Power under that line (beat 7) → log3(30/10) (beat 8) → log3 3 with log_a a = 1 (beat 9) → 1 boxed (beat 10). Each board move has its own beat.",
-  "Beat 6 trap ('Log five times log six is not log thirty') is plain and said once, right after the combine where it bites; the circle on log3 30 is the thing it warns about. Scored 4, not 5: it sits one beat after the combine rather than on it, which is fine but not as tight as the reference.",
-  "Beat 2 says the aim ('Same base, so we can combine them') before the first move; no extra plan note under line 1, since that line already carries the Add Power note and two notes would crowd it."
+  "Ask 1 (base 3 in its own colour): beat 2 lights only the subscripts of all three logs (part 'sub') on 'base three' — right word, right tokens. Done.",
+  "Ask 2 (arrow in the middle, law on one line): beats 3 and 7 give each law note a span over the two logs it joins (a+b, ab+c2), so the ↑ sits under the middle; the laws are short single-line notes. Done. Beat 3's note cue read 'this is Add Power' but the voice says 'This is Add Power' — fixed to copy the say exactly.",
+  "Ask 3 (the mistake put out and emphasised): as drafted, beat 6 opens 'A common mistake:' with nothing linking it to the board, the red note fired at the start of the beat (no cue), and it sat under the log3 30 − log3 10 line — the same line that gets the Minus Power note one beat later, so two notes would share one row. Fixed: the beat now says why the mistake arises ('the times sits inside one log'), circles log3(5 × 6) on those words, and writes the red ✗ note under that line on 'is not log thirty'. The mistake now comes from the line the student just watched being made, not from nowhere.",
+  "one_idea 4: beat 10 does three things (light the base, write 1, box it) — acceptable because it is the closing beat and mirrors the reference, but it is busier than the rest.",
+  "Beat 10 lights only the base of log3 3 while saying 'the base matches the number inside' — the student sees the base lit and the 3 beside it, which is enough."
  ],
- "verdict": "pass",
  "fixed_beats": {
   "3": {
    "say": "Look at the first two. Plus means multiply. This is Add Power.",
+   "asks": ["Why does plus become multiply?", "Which law is this?"],
    "do": [
     { "do": "highlight", "token": ["a", "b"], "on": "Plus means multiply" },
-    { "do": "note", "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$", "near": "b", "on": "This is Add Power" }
+    { "do": "note", "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$", "near": "a", "span": ["a", "b"], "on": "This is Add Power" }
    ]
   },
-  "7": {
-   "say": "Now the minus. Minus means divide. This is Minus Power.",
+  "6": {
+   "say": "Careful: the times sits inside one log. Log five times log six is not log thirty. Only added logs combine.",
+   "asks": ["Why is log 5 × log 6 not log 30?"],
    "do": [
-    { "do": "highlight", "token": ["ab", "c2"], "on": "Minus means divide" },
-    { "do": "note", "text": "Minus Power: $\\log_a x - \\log_a y = \\log_a \\tfrac{x}{y}$", "near": "c2", "on": "This is Minus Power" }
+    { "do": "mark", "kind": "circle", "token": "p56", "on": "inside one log" },
+    { "do": "note", "text": "✗ Common mistake: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$", "near": "p56", "on": "is not log thirty" }
    ]
   }
- }
+ },
+ "verdict": "pass"
 }

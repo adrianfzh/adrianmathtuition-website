@@ -132,10 +132,11 @@
         },
         {
           "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
+          "asks": ["Why keep the minus sign?"],
           "do": [
+            { "do": "note", "text": "✗ Common mistake: $x \\approx 8.57$ (the minus dropped)", "near": "ans" },
             { "do": "mark", "kind": "circle", "token": "ans", "on": "removes a minus" }
           ],
-          "asks": ["Why keep the minus sign?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b9.timing.json"
         },

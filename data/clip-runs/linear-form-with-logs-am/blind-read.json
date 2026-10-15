@@ -30,7 +30,8 @@
   "With the fixed beats: 169 words, every beat ≤ 24 words, cues in spoken order ≥ 3 words apart, only plan token ids.",
   "Session: the reader's fixed beats are applied (assemble.mjs); 'scores' = the scores WITH the fixes (all >= 4), the draft as written is in 'scores_as_written'.",
   "Session: beat 10 writes its line in one go (was AA0 then AA: three new things in one beat).",
-  "Session: the last box marks A only (one box over both answer lines crossed the circle on n)."
+  "Session: the last box marks A only (one box over both answer lines crossed the circle on n).",
+  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
  ],
  "fixed_beats": {
   "1": {
@@ -124,25 +125,23 @@
    ]
   },
   "9": {
-   "board": 1,
    "say": "M is minus N, so minus N is two. Watch the sign: N is minus two, not two.",
    "do": [
     {
      "do": "write",
-     "token": "nn0",
+     "step": 2,
      "on": "minus N is two"
     },
     {
-     "do": "write",
-     "token": "nn",
-     "on": "N is minus two"
-    },
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "nn",
+     "do": "note",
+     "text": "✗ Common mistake: $n = 2$ (the gradient is $-n$)",
+     "near": "nn",
      "on": "not two"
     }
+   ],
+   "board": 1,
+   "asks": [
+    "Why is n = −2, not 2?"
    ]
   },
   "10": {

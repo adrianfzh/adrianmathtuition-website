@@ -177,7 +177,7 @@ export const FOCUS_HOLD_S = 2.2;
 export interface BoardMark { kind: MarkKind; tokens: string[]; seq: number; label?: string }
 export interface BoardNote { id: ElementKey; text: string; near: string | null; seq: number }
 /** `beat` = the beat it fired in (a clip keeps the last highlight lit through that beat and the next). */
-export interface BoardPulse { tokens: string[]; seq: number; beat?: number }
+export interface BoardPulse { tokens: string[]; seq: number; beat?: number; /** `sub` = only the subscript (a log's base) is lit. */ part?: 'sub' }
 export interface BoardFocus { key: ElementKey; hold: number; seq: number }
 /** The sticker on the board right now — beside token `near` (null = the top-right corner). */
 export interface BoardSticker { kind: StickerKind; near: string | null; seq: number }
@@ -287,7 +287,7 @@ export function applyAction(board: BoardState, scene: Scene | PlayScene, action:
       board.state = action.state;
       break;
     case 'highlight':
-      board.pulses.push({ tokens: asList(action.token), seq, beat: Number(slot.split(':')[0]) || 0 });
+      board.pulses.push({ tokens: asList(action.token), seq, beat: Number(slot.split(':')[0]) || 0, ...(action.part ? { part: action.part } : {}) });
       break;
     case 'mark':
       board.marks.push({ kind: action.kind, tokens: asList(action.token), seq, ...(action.label ? { label: action.label.trim() } : {}) });
@@ -347,6 +347,8 @@ export interface NoteSlot {
   near: string | null;
   /** The line the slot lives in (the near token's line), or null for the margin. */
   line: number | null;
+  /** The tokens whose middle a clip's ↑ points at (else `near`). */
+  span?: string[];
 }
 
 /** Every note a scene's beats will ever write, with the line each belongs to. */
@@ -358,7 +360,7 @@ export function sceneNotes(scene: Scene | PlayScene): NoteSlot[] {
     if (a.do !== 'note') return;
     const near = a.near ?? null;
     const ref = near ? tokens.find(r => r.id === near) : undefined;
-    out.push({ id: `note:${k}:${j}`, text: a.text, near, line: ref ? ref.line : null });
+    out.push({ id: `note:${k}:${j}`, text: a.text, near, line: ref ? ref.line : null, ...(a.span ? { span: a.span } : {}) });
   }));
   return out;
 }

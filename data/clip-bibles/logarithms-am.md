@@ -39,6 +39,21 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
   property right under this line, then the next line shows log(5x6), then the next line is log30").
   Highlight only the terms the law acts on, on the word that names the move; in a clip a highlight
   stays lit (yellow chalk) through its beat and the next.
+- **The base in its own colour** (15 Oct 2026, second watch: "should emphasize on the base 3 (perhaps
+  highlighting them with a different colour) when saying that"). When the voice talks about the base
+  ("same base", "the base matches"), light the bases: `{"do": "highlight", "token": [...], "part": "sub"}`
+  lights only a log's small base, in blue. (Exponentials, where the base is the big number, highlight
+  the whole power.) The clip checker flags a "base" line with no highlight.
+- **The ↑ points at the MIDDLE, and the law is ONE line** ("the up arrow should point in the middle …
+  the log property should be on one line, putting as two lines make it less clear"). A law that acts
+  on two terms gets `"span": ["a", "b"]` — the ↑ sits under the middle of both. The board keeps a
+  note on one line (beside the ↑ when it fits, else centred under it, shrunk if needed); the look
+  fails a note on two lines. Keep laws short: the law itself, its name in front.
+- **A mistake that is said is SHOWN** ("you should put that out and emphasize on that, not just say
+  it > students will get confuse why you suddenly say that"). Write it on the board as a red ✗ note
+  (`"text": "✗ Common mistake: …"`) under the line where it bites, and lead into it from that line
+  ("Careful: the times sits inside one log.") so it never comes from nowhere. The clip checker
+  flags a line that says "not / never / mistake" with no ✗ note.
 - **A note points at its token.** "Arrow pointing leftwards … point[s] to nowhere." A note sits
   under its line with an ↑ under the token it explains (the board draws the ↑; write the note
   without an arrow).

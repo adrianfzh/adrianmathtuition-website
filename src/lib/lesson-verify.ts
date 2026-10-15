@@ -743,6 +743,13 @@ export function motionIssues(script: LessonScript): Issue[] {
 }
 
 /** The shape of a clip (script.kind === 'clip'); empty for a long lesson. */
+/** Words that name a mistake in a clip's voice ("is not", "never", "mistake") — the board must show it. */
+export const CLIP_TRAP_WORDS = /\b(not|never|isn't|aren't|don't|mistake)\b/i;
+/** …except phrases that are not a mistake ("cannot be made the same base", "does not change"). */
+export const CLIP_TRAP_EXEMPT = /cannot be made|does not change|do not change|never negative|never zero|never needed|not needed/i;
+/** Words about the base itself — the bases light up as they are said. */
+export const CLIP_BASE_WORDS = /\b(same base|base matches|have base|the base)\b/i;
+
 export function clipIssues(script: LessonScript): Issue[] {
   if (script.kind !== 'clip') return [];
   const out: Issue[] = [];
@@ -759,6 +766,16 @@ export function clipIssues(script: LessonScript): Issue[] {
       const w = wordCount(b.say);
       words += w;
       if (w > CLIP_BEAT_MAX_WORDS) out.push(issue('warn', `${at}.beats[${k}].say`, `${w} words — in a clip a beat is one short step (≤ ${CLIP_BEAT_MAX_WORDS})`));
+      // Adrian, 15 Oct 2026: "when saying log 5 times log 6 is not log 30 > you should put that out
+      // and emphasize on that, not just say it". A mistake the voice names is written on the board.
+      if (CLIP_TRAP_WORDS.test(b.say) && !CLIP_TRAP_EXEMPT.test(b.say)
+        && !b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text))) {
+        out.push(issue('warn', `${at}.beats[${k}]`, 'the voice names a mistake but the board does not show it — add a ✗ note ("✗ Common mistake: …") where it bites'));
+      }
+      // "should emphasize on the base 3 (perhaps highlighting them with a different colour) when saying that."
+      if (CLIP_BASE_WORDS.test(b.say) && !b.do.some(a => a.do === 'highlight')) {
+        out.push(issue('warn', `${at}.beats[${k}]`, 'the voice talks about the base but nothing lights it — highlight the bases (part: "sub" lights a log\'s base only)'));
+      }
     });
   });
   if (words > CLIP_MAX_WORDS) out.push(issue('warn', 'scenes', `${words} spoken words — over about a minute; one concept, cut the rest (≤ ${CLIP_MAX_WORDS})`));
