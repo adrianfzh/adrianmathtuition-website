@@ -112,7 +112,7 @@ hard cap must be enforced"* … *"make it from september holidays to 1st week of
   and confirms before making a link for a full class. Students already above the cap are untouched.
 - **Makeup checks** in `add` + `reschedule` use `makeupLimit()` (409 says "exam period" when the
   period is what bit, `smallClassPeriod: true`); the pickers use `makeupLimitOnDate()` for the date picked.
-- **Bot** (branch `class-size-rules`, NOT on main until Adrian says "push the bot"): `buildRescheduleOptions`
+- **Bot** (on main since 15 Oct 2026, Adrian: "push the bot"): `buildRescheduleOptions`
   (WhatsApp, Telegram /rs, the app's Change button), the waiting-list room check, paid trials, the
   Telegram additional-lesson picker + its two re-checks, the trial confirm, admin-agent reschedule.
   Not yet: the admin-only availability views (`/available`, showAvailability*, showAdminRescheduleSlots,
