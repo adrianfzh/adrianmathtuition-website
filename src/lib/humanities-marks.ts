@@ -51,14 +51,20 @@ export function markBands(skill: string, marks?: number | null): Bands | null {
   return out.every(([a, b]) => a <= b) ? out : null;
 }
 
-/** "4–5 out of 6 marks" for an answer read at levels lo…hi, or null. */
-export function marksForLevels(skill: string, marks: number | null | undefined, lo: number, hi: number): string | null {
+/** The marks an answer read at levels lo…hi would earn: [from, to, total], or null. */
+export function markRange(skill: string, marks: number | null | undefined, lo: number, hi: number): [number, number, number] | null {
   const bands = markBands(skill, marks);
   if (!bands) return null;
   const a = Math.min(lo, hi), b = Math.max(lo, hi);
   if (a < 1 || b > bands.length) return null;
-  const from = bands[a - 1][0], to = bands[b - 1][1];
-  const total = bands[bands.length - 1][1];
+  return [bands[a - 1][0], bands[b - 1][1], bands[bands.length - 1][1]];
+}
+
+/** "4–5 out of 6 marks" for an answer read at levels lo…hi, or null. */
+export function marksForLevels(skill: string, marks: number | null | undefined, lo: number, hi: number): string | null {
+  const r = markRange(skill, marks, lo, hi);
+  if (!r) return null;
+  const [from, to, total] = r;
   return `${from === to ? from : `${from}–${to}`} out of ${total} marks`;
 }
 

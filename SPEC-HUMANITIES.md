@@ -270,6 +270,27 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **I — "A QUESTION FROM SCHOOL" OPENED TO STUDENTS; THE ELECTIVE; TRACKING THE MARKER, 15 Oct 2026.**
+> Adrian: "allow them to choose their elect too (either it's geo or hist), and only say it's for elect (not pure) /
+> let's just open these parts only: A question from school … Wrote it on paper? Send a photo … they have to upload
+> the questions themselves / and can we keep track of how the marker does on humanities?"
+> - **Switch `HUMANITIES_OWN_OPEN_TO_STUDENTS = true`** (`humanitiesOwnOpen()`): every student sees the Humanities
+>   button; it opens `/app/humanities/own` (Home tab) and Answers; their feedback pages and the teacher's-mark box.
+>   Our own questions, practice, the timed paper and the bank hand-in stay behind `HUMANITIES_OPEN_TO_STUDENTS`
+>   (closed): those pages send a student back to `/app`, and the bank hand-in answers 403. Checked 15 Oct as a
+>   student with the full switch forced shut.
+> - **The elective.** The form shows Social Studies and ONE elective — "Geography Elective" or "History Elective" —
+>   chosen once and saved as `portal_accounts.prefs.humanities_elective` (`lib/portal-prefs studentElective`);
+>   "Change elective" under the tabs. The page says "Combined Humanities: Social Studies and your elective."
+>   The reader is told "Geography Elective (Combined Humanities)". Pure Geography / Pure History are not offered.
+> - **Tracking the marker** (`lib/humanities-tracking.ts`, `/admin/humanities-marker`, in the Marking menu):
+>   tiles — answers handed in · how often the two reads agreed · teacher's marks in · how many fell inside our range —
+>   then **"The teacher disagreed — yours to look at"** (each links to the answer), then the latest answers.
+>   The teacher's mark comes from the student: **"Got it back from your teacher?"** on every feedback page →
+>   `POST /api/portal/humanities/teacher-mark` → `humanities_runs.teacher_mark / teacher_total / teacher_at`
+>   (migration `humanities_runs_teacher_mark.sql`). A different total is scaled; half a mark of give. The demo
+>   student and preview accounts are left out of the counts.
+
 > **H — SCHOOL-STYLE MARKS + GEOGRAPHY SHORT QUESTIONS FROM SCHOOL, 15 Oct 2026 (preview only, switch closed).**
 > Adrian: "yes" (to: show marks the way schools do; mark a school's "Describe/Explain" Geography question).
 > - **Marks beside the level.** `lib/humanities-marks.ts`: the mark range schools give each of OUR levels, per type and

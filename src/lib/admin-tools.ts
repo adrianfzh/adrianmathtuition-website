@@ -17,6 +17,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
     { label: 'Mark schemes', href: '/admin/schemes', emoji: '📘' }, { label: 'Calibration', href: '/admin/calibration', emoji: '⚖️' },
     { label: 'Stuck', href: '/admin/stuck', emoji: '🧭' }, { label: 'Generated', href: '/admin/generated', emoji: '📷' },
     { label: 'Essays', href: '/admin/essays', emoji: '📝' }, { label: 'Listening papers', href: '/admin/listening-papers', emoji: '🎧' },
+    { label: 'Humanities marker', href: '/admin/humanities-marker', emoji: '📜' },
   ] },
   { group: 'The machine', links: [
     { label: 'Ops logbook', href: '/admin/ops', emoji: '🩺' }, { label: 'Overnight', href: '/admin/overnight', emoji: '🌙' }, { label: 'Switches', href: '/admin/switches', emoji: '🎚' },

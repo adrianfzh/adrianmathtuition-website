@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PORTAL_PREF_KEYS, mergePrefs, readPrefsPatch, scienceChoiceLabel, studentSciences } from './portal-prefs';
+import { studentElective, PORTAL_PREF_KEYS, mergePrefs, readPrefsPatch, scienceChoiceLabel, studentSciences } from './portal-prefs';
 
 describe('readPrefsPatch', () => {
   it('refuses the retired switches (21 Sep 2026 — the four switches went)', () => {
@@ -53,5 +53,14 @@ describe('studentSciences', () => {
   it('labels the choice', () => {
     expect(scienceChoiceLabel({ subjects: ['physics', 'chemistry'], combined: true })).toBe('Physics · Chemistry — Combined Science');
     expect(scienceChoiceLabel({ subjects: ['physics', 'chemistry', 'biology'], combined: false })).toBe('Physics · Chemistry · Biology');
+  });
+});
+
+describe('studentElective', () => {
+  it('reads the one elective, and accepts it as a pref', () => {
+    expect(studentElective({ humanities_elective: ['history'] })).toBe('history');
+    expect(studentElective({})).toBeNull();
+    expect(readPrefsPatch({ humanities_elective: ['geography'] })).toEqual({ patch: { humanities_elective: ['geography'] } });
+    expect('error' in readPrefsPatch({ humanities_elective: ['literature'] })).toBe(true);
   });
 });

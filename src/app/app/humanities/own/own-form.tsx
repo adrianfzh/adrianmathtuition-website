@@ -10,11 +10,10 @@ import { printedMarks } from '@/lib/humanities-marks';
 import type { HumanitiesSkill, HumanitiesSubject } from '@/lib/humanities-questions';
 
 const MAX_PAGES = 4;
-const SUBJECTS: { key: HumanitiesSubject; label: string }[] = [
-  { key: 'social-studies', label: 'Social Studies' },
-  { key: 'history', label: 'History' },
-  { key: 'geography', label: 'Geography' },
-];
+// Combined Humanities = Social Studies + ONE elective (15 Oct 2026, Adrian: "allow them to choose their elect
+// too … only say it's for elect (not pure)"). The elective is saved in the student's settings.
+type Elective = 'geography' | 'history';
+const ELECTIVE_LABEL: Record<Elective, string> = { geography: 'Geography Elective', history: 'History Elective' };
 const SOURCE_SKILLS: string[] = OWN_SOURCE_SKILLS;
 const words = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
 
@@ -35,8 +34,9 @@ function PhotoButton({ label, busy, onFiles }: { label: string; busy: boolean; o
   );
 }
 
-export default function OwnForm({ initialSubject, prefill, skills, labels, maxWords }: {
+export default function OwnForm({ initialSubject, elective: savedElective, prefill, skills, labels, maxWords }: {
   initialSubject: HumanitiesSubject;
+  elective: Elective | null;
   prefill: OwnQuestion | null;
   skills: Record<HumanitiesSubject, HumanitiesSkill[]>;
   labels: Record<string, string>;
@@ -44,6 +44,8 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
 }) {
   const router = useRouter();
   const [subject, setSubject] = useState<HumanitiesSubject>(initialSubject);
+  const [elective, setElective] = useState<Elective | null>(savedElective);
+  const [choosing, setChoosing] = useState(!savedElective);
   const [question, setQuestion] = useState(prefill?.question ?? '');
   const [sources, setSources] = useState(prefill?.sources ?? '');
   const [answer, setAnswer] = useState('');
@@ -54,6 +56,19 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [checkNote, setCheckNote] = useState<Mode | null>(null);
+
+  async function chooseElective(e: Elective) {
+    setElective(e); setChoosing(false);
+    if (subject !== 'social-studies') { setSubject(e); setPicked(''); }
+    await fetch('/api/portal/settings', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prefs: { humanities_elective: [e] } }),
+    }).catch(() => {});
+  }
+  const tabs: { key: HumanitiesSubject; label: string }[] = [
+    { key: 'social-studies', label: 'Social Studies' },
+    ...(elective ? [{ key: elective as HumanitiesSubject, label: ELECTIVE_LABEL[elective] }] : []),
+  ];
 
   const guessed = guessSkill(subject, question);
   const skill = (picked && skills[subject].includes(picked) ? picked : guessed) ?? '';
@@ -115,13 +130,28 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
   return (
     <div className="space-y-3">
       <div role="tablist" className="flex gap-1 bg-black/5 rounded-2xl p-1">
-        {SUBJECTS.map(t => (
+        {tabs.map(t => (
           <button key={t.key} type="button" role="tab" aria-selected={t.key === subject} onClick={() => { setSubject(t.key); setPicked(''); }}
             className={`flex-1 text-center text-sm font-semibold rounded-xl py-1.5 transition ${t.key === subject ? 'bg-white text-navy shadow-sm' : 'text-gray-500'}`}>
             {t.label}
           </button>
         ))}
       </div>
+      {choosing ? (
+        <div className="bg-amber-50 border border-amber-100 rounded-3xl px-4 py-3">
+          <p className="text-[14px] font-semibold text-navy">Which elective do you take?</p>
+          <div className="flex gap-2 mt-2">
+            {(['geography', 'history'] as Elective[]).map(e => (
+              <button key={e} type="button" onClick={() => chooseElective(e)}
+                className={`flex-1 rounded-2xl border px-3 py-2 text-[14px] font-semibold ${elective === e ? 'bg-white border-amber-400 text-navy' : 'bg-white/70 border-amber-200 text-amber-900'}`}>
+                {ELECTIVE_LABEL[e]}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setChoosing(true)} className="text-[12px] text-gray-500 underline underline-offset-2">Change elective</button>
+      )}
 
       <div className={box}>
         <div className="flex items-center justify-between gap-2">

@@ -2,11 +2,11 @@
 // lib/humanities-photo.ts). POST { questionId | questionText, mode?, images: [{ data, mediaType }] } → { text, unsure }.
 // mode 'question' | 'sources' types out a printed question from school, or its sources (lib/humanities-own).
 // The text goes back into the answer box for the student to check; nothing is handed in here and
-// no photo is stored. Anonymous → 401 (the health-check probes this). Door: humanitiesOpen().
+// no photo is stored. Anonymous → 401 (the health-check probes this). Door: humanitiesOwnOpen().
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen } from '@/lib/portal-beta';
+import { humanitiesOwnOpen } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionById } from '@/lib/humanities-questions';
 import { transcribePrompt, parseTranscript, isPhotoMode, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
@@ -23,7 +23,7 @@ const MEDIA: readonly string[] = ['image/jpeg', 'image/png', 'image/webp'];
 export async function POST(req: NextRequest) {
   const account = await sessionAccount();
   if (!account) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
-  if (!(await humanitiesOpen())) return NextResponse.json({ error: 'Humanities feedback is not open yet.' }, { status: 403 });
+  if (!(await humanitiesOwnOpen())) return NextResponse.json({ error: 'Humanities feedback is not open yet.' }, { status: 403 });
   const sid = portalIdentity(account);
 
   const body = await req.json().catch(() => ({})) as { questionId?: unknown; questionText?: unknown; mode?: unknown; images?: unknown };

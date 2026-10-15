@@ -1,10 +1,10 @@
 // /api/portal/humanities/own — hand in an answer to a question the student brought from school
 // (15 Oct 2026, lib/humanities-own.ts). POST { subject, skill, question, sources, marks?, answer } → { id }.
 // The same reader, cap and report as our own questions (lib/humanities-submit). Anonymous → 401 (the
-// health-check probes this). Door: humanitiesOpen().
+// health-check probes this). Door: humanitiesOwnOpen().
 import { NextRequest, NextResponse } from 'next/server';
 import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen } from '@/lib/portal-beta';
+import { humanitiesOwnOpen } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { countHumanitiesToday } from '@/lib/humanities-runs';
 import { submitHumanities, DAILY_HUMANITIES_CAP } from '@/lib/humanities-submit';
@@ -18,7 +18,7 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   const account = await sessionAccount();
   if (!account) return NextResponse.json({ error: 'Not signed in' }, { status: 401 });
-  if (!(await humanitiesOpen())) return NextResponse.json({ error: 'Humanities feedback is not open yet.' }, { status: 403 });
+  if (!(await humanitiesOwnOpen())) return NextResponse.json({ error: 'Humanities feedback is not open yet.' }, { status: 403 });
   const sid = portalIdentity(account);
 
   const used = await countHumanitiesToday(sid, sgtDayStartISO());

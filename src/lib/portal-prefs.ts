@@ -27,7 +27,19 @@ export const SCIENCE_SUBJECT_LABEL: Record<ScienceSubject, string> = { physics: 
  */
 export const PORTAL_PREF_KEYS: readonly string[] = ['combined_science', 'push_asked'];
 /** List preferences: the key and the values it may hold. */
-export const PORTAL_PREF_LISTS: Readonly<Record<string, readonly string[]>> = { sciences: SCIENCE_SUBJECTS };
+export const PORTAL_PREF_LISTS: Readonly<Record<string, readonly string[]>> = { sciences: SCIENCE_SUBJECTS, humanities_elective: ['geography', 'history'] };
+
+/**
+ * 15 Oct 2026 — the Humanities elective (Adrian: "allow them to choose their elect too (either it's geo or
+ * hist), and only say it's for elect (not pure)"): Combined Humanities = Social Studies + ONE elective.
+ * Stored as a one-item list; null until chosen.
+ */
+export function studentElective(prefs: unknown): 'geography' | 'history' | null {
+  if (!prefs || typeof prefs !== 'object' || Array.isArray(prefs)) return null;
+  const v = (prefs as Record<string, unknown>).humanities_elective;
+  const first = Array.isArray(v) ? v[0] : null;
+  return first === 'geography' || first === 'history' ? first : null;
+}
 
 export type PrefsPatch = Record<string, boolean | string[]>;
 

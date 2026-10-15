@@ -41,6 +41,9 @@ export interface HumanitiesRunRow {
   own_question?: OwnQuestion | null;
   /** The list's short form of it: the question only. */
   own_title?: string | null;
+  /** The mark the school teacher gave, typed in by the student (lib/humanities-tracking). */
+  teacher_mark?: number | null;
+  teacher_total?: number | null;
 }
 
 /** The list columns — never the answer text, the report or the reads. */

@@ -77,7 +77,7 @@ export function ownContext(id: string, own: OwnQuestion): QuestionInContext | nu
   const sources = own.sources ? [{ id: label, provenance: 'As given with the question.', text: own.sources }] : [];
   const set: HumanitiesSet = {
     id, subject: own.subject, kind, title: 'Your own question',
-    issue: `A ${SUBJECT_NAME[own.subject]} question the student brought from school.`,
+    issue: `A ${own.subject === 'social-studies' ? 'Social Studies' : `${SUBJECT_NAME[own.subject]} Elective (Combined Humanities)`} question the student brought from school.`,
     sources,
     questions: [{
       id, skill: own.skill, sources: sources.map(s => s.id), question: own.question, ...(own.marks ? { marks: own.marks } : {}),

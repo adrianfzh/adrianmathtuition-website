@@ -308,6 +308,17 @@ export async function essayMarkingOpen(): Promise<boolean> {
 export const HUMANITIES_OPEN_TO_STUDENTS = false;
 export const HUMANITIES_PREVIEW_IDENTITIES: readonly string[] = SCIENCE_PREVIEW_IDENTITIES;
 
+// 📝 Humanities, the "question from school" part only (15 Oct 2026, Adrian: "let's just open these parts
+// only: A question from school … Wrote it on paper? Send a photo … they have to upload the questions
+// themselves"). OPEN: every student sees the Humanities button, and it opens /app/humanities/own (their own
+// question, sources and answer, typed or by photo) plus their answers and feedback. Our own questions, the
+// timed paper and practice stay behind HUMANITIES_OPEN_TO_STUDENTS. Flip to false to hide it again.
+export const HUMANITIES_OWN_OPEN_TO_STUDENTS = true;
+/** The "question from school" part: open to everyone when its switch is on, else as humanitiesOpen. */
+export async function humanitiesOwnOpen(): Promise<boolean> {
+  return HUMANITIES_OWN_OPEN_TO_STUDENTS || (await humanitiesOpen());
+}
+
 // 🌏 Geography marks (7 Oct 2026, SPEC-HUMANITIES.md §B). Geography is point-marked, so it
 // CAN show a real mark ("3 of 4 marks") — unlike Social Studies and History, which show a
 // level and never a mark. While this is false the report shows which points were made and

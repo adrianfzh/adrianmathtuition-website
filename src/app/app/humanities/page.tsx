@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen } from '@/lib/portal-beta';
+import { humanitiesOpen, humanitiesOwnOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
 import { setsFor, isCaseStudy, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, POINTS_SKILLS, type HumanitiesSet, type HumanitiesSubject, type SsTheme } from '@/lib/humanities-questions';
@@ -29,7 +29,7 @@ const TABS: { key: HumanitiesSubject; label: string }[] = [
 ];
 
 export default async function HumanitiesPage({ searchParams }: { searchParams: Promise<{ s?: string; t?: string }> }) {
-  if (!(await humanitiesOpen())) redirect('/app');
+  if (!(await humanitiesOpen())) redirect((await humanitiesOwnOpen()) ? '/app/humanities/own' : '/app');
   const { s, t } = await searchParams;
   const subject: HumanitiesSubject = s === 'history' ? 'history' : s === 'geography' ? 'geography' : 'social-studies';
   // Social Studies opens by topic (15 Oct 2026, Adrian: "yes, build the By topic door on Home"): Home shows

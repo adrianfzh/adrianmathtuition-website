@@ -769,6 +769,12 @@ export async function GET(req: NextRequest) {
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
       return 'auth gate up';
     }),
+    // 📝 Humanities: the teacher's mark a student types in (15 Oct 2026).
+    timed('portal-humanities-teacher-mark', async () => {
+      const r = await fetch(`${base}/api/portal/humanities/teacher-mark`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     // 📝 Humanities: a question the student brought from school (15 Oct 2026).
     timed('portal-humanities-own', async () => {
       const r = await fetch(`${base}/api/portal/humanities/own`, { method: 'POST', redirect: 'manual', signal: T(10000) });

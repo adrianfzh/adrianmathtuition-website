@@ -5,7 +5,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { currentAccount, portalIdentity } from '@/lib/portal-auth';
-import { humanitiesOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
+import { humanitiesOwnOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
 import { nextOfSkill } from '@/lib/humanities-practice';
@@ -17,6 +17,8 @@ import { SourceCards, DataTableCard, DiagramCard } from '../sources';
 import { PhotoCard } from '../photo-card';
 import { skillLabel } from '../skills';
 import RunPoll from './run-poll';
+import TeacherMark from './teacher-mark';
+import { markRange } from '@/lib/humanities-marks';
 
 export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -39,7 +41,7 @@ const POINT_TAGS = [{ key: 'point', label: 'A point' }, { key: 'developed', labe
 const tagLabel = (k: string, points = false) => (points ? POINT_TAGS.find(t => t.key === k)?.label : undefined) ?? ALL_TAGS.find(t => t.key === k)?.label ?? k;
 
 export default async function HumanitiesRunPage({ params }: { params: Promise<{ id: string }> }) {
-  if (!(await humanitiesOpen())) redirect('/app');
+  if (!(await humanitiesOwnOpen())) redirect('/app');
   const { id } = await params;
   if (!UUID.test(id)) notFound();
   const admin = (await isNotesAuthed()) && !(await viewingAsStudent());
@@ -211,6 +213,12 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
           <div className="mt-3"><SourceCards sources={ctx.inView} /></div>
         </details>
+      )}
+
+      {report && !admin && (
+        <TeacherMark runId={run.id}
+          total={points ? (ctx.question.marks ?? max) : markRange(run.skill, ctx.question.marks, 1, 1)?.[2] ?? null}
+          saved={run.teacher_mark != null && run.teacher_total ? { mark: Number(run.teacher_mark), total: run.teacher_total } : null} />
       )}
 
       {report && model && (

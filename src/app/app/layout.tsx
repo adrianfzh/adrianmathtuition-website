@@ -12,7 +12,7 @@ import TabBeacon from '@/components/TabBeacon';
 import { portalAccessAllowed } from '@/lib/portal-passes';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { LEARN_OPEN_TO_STUDENTS } from '@/lib/learn-gate';
-import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen, suggestionsOpen } from '@/lib/portal-beta';
+import { MARKING_ONLY_BETA, NOTES_OPEN_TO_STUDENTS, VIEW_AS_STUDENT_COOKIE, SCIENCE_PREVIEW_IDENTITIES, scienceMarkingOpen, essayMarkingOpen, humanitiesOpen, humanitiesOwnOpen, suggestionsOpen } from '@/lib/portal-beta';
 import SignOutButton from './signout-button';
 import InviteFriend from './invite-friend';
 import SuggestLink from './suggest-link';
@@ -123,12 +123,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // below are what its highlight ring measures — keep them on both the desktop
   // links and the mobile tabs, since only one set is on screen at a time.
   // Independent lookups — run them in parallel, not one after the other.
-  const [pendingWork, surfaces, scienceOpen, languagesOpen, humanitiesIsOpen, suggestVisible] = await Promise.all([
+  const [pendingWork, surfaces, scienceOpen, languagesOpen, humanitiesFull, humanitiesIsOpen, suggestVisible] = await Promise.all([
     pendingAssignmentCountForSession(),
     portalSurfaces(),
     scienceMarkingOpen(),
     essayMarkingOpen(),
     humanitiesOpen(),
+    humanitiesOwnOpen(),
     suggestionsOpen().catch(() => false),
   ]);
   // 🧪 The Science family's own bottom menu (SPEC-SCIENCE-MARKING.md, 10 Sep
@@ -153,9 +154,10 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     : [];
 
   // 📜 The Humanities family's menu (SPEC-HUMANITIES.md, 2 Oct 2026): Home · Answers.
+  // With only "a question from school" open (15 Oct 2026), Home is that page.
   const humanityTabs = humanitiesIsOpen
     ? [
-        { href: '/app/humanities', label: 'Home' },
+        { href: humanitiesFull ? '/app/humanities' : '/app/humanities/own', label: 'Home' },
         { href: '/app/humanities/answers', label: 'Answers' },
       ]
     : [];
