@@ -42,7 +42,7 @@ type LevelOpt = { key: string; label: string };
 // Picker types + the topic sheet live in ./topic-picker.tsx (student picker);
 // strand/family grouping is lib/practice-strands.ts (pure, tested).
 import {
-  MasteryRing, STATUS_META, TIER_KEY, TopicPicker, TopicSheet,
+  MasteryRing, STATUS_META, TIER_KEY, TopicPicker, TopicSheet, isTier, tierLabel, tierLevel,
   type Recommended, type Subgroup, type Tier, type TopicCard,
 } from './topic-picker';
 import { bankScope } from '@/lib/qb-levels';
@@ -71,6 +71,7 @@ type GradeResult = {
 // /app/find's finder ("Snap a question"), which sends the same kind of photo.
 import { fileToJpegDataUrl } from './image-downscale';
 import { findTierLabel } from '@/lib/assignments';
+import { PRACTICE_LEVEL_LINE } from '@/lib/practice-levels';
 import { ladderAssistLine } from '@/lib/proof-ladder';
 
 // `initialLevels` comes from the server page for a signed-in student (their
@@ -250,7 +251,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
     if (assignment || fixedQ) return;
     try {
       const t = window.localStorage.getItem(TIER_KEY);
-      if (t === 'Standard' || t === 'Advanced') setTier(t);
+      if (isTier(t)) setTier(t);
     } catch { /* private mode */ }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -835,13 +836,13 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
 
       {exhausted && subgroup && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-          You&apos;ve seen every {tier === 'Advanced' ? 'advanced ' : ''}“{subgroup.name}” question. <button onClick={widenToTopic} className="underline font-semibold">Try the whole topic</button>, <button onClick={() => setSheetTopic(topic)} className="underline font-semibold">pick another kind</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.
+          You&apos;ve seen every {tierLevel(tier) !== 'core' ? `${tierLabel(tier)} ` : ''}“{subgroup.name}” question. <button onClick={widenToTopic} className="underline font-semibold">Try the whole topic</button>, <button onClick={() => setSheetTopic(topic)} className="underline font-semibold">pick another kind</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.
         </div>
       )}
       {exhausted && !subgroup && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-          {tier === 'Advanced' ? (
-            <>You&apos;ve seen every advanced question for this topic. <button onClick={() => switchTier('Standard')} className="underline font-semibold">Switch to Standard</button>, <button onClick={changeTopic} className="underline font-semibold">try another topic</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.</>
+          {tier !== 'Standard' ? (
+            <>You&apos;ve seen every {tierLabel(tier)} question for this topic. <button onClick={() => switchTier('Standard')} className="underline font-semibold">Switch to Core</button>, <button onClick={changeTopic} className="underline font-semibold">try another topic</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.</>
           ) : (
             <>You&apos;ve seen every question we have for this topic. <button onClick={changeTopic} className="underline font-semibold">Try another topic</button>, or <button onClick={() => pickTier(tier)} className="underline font-semibold">go through them again</button>.</>
           )}
@@ -854,19 +855,17 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
         <div className="bg-white border border-slate-200 rounded-2xl p-5 mb-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-1">{topic}</p>
           <p className="text-sm text-slate-600 mb-3">How hard do you want it?</p>
-          <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => pickTier('Standard')}
-              className="rounded-2xl border-2 border-navy bg-navy text-[hsl(45,100%,96%)] px-3 py-4 text-left hover:opacity-90 transition-opacity">
-              <div className="font-bold text-sm">Standard</div>
-              <div className="text-[11px] opacity-80 mt-0.5">Typical exam questions</div>
-            </button>
-            <button onClick={() => pickTier('Advanced')} disabled={!!selected && selected.advancedCount === 0}
-              className="rounded-2xl border-2 border-amber-400 bg-amber-50 text-amber-900 px-3 py-4 text-left hover:bg-amber-100 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-              <div className="font-bold text-sm">🔥 Advanced</div>
-              <div className="text-[11px] opacity-80 mt-0.5">
-                {selected && selected.advancedCount === 0 ? 'None for this topic yet' : 'Harder, multi-step'}
-              </div>
-            </button>
+          <div className="grid grid-cols-3 gap-3">
+            {(['Standard', 'Advanced', 'Challenge'] as Tier[]).map((t) => {
+              const off = t !== 'Standard' && !!selected && selected.advancedCount === 0;
+              return (
+                <button key={t} onClick={() => pickTier(t)} disabled={off}
+                  className={`rounded-2xl border-2 px-3 py-4 text-left transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${t === 'Standard' ? 'border-navy bg-navy text-[hsl(45,100%,96%)] hover:opacity-90' : 'border-amber-400 bg-amber-50 text-amber-900 hover:bg-amber-100'}`}>
+                  <div className="font-bold text-sm">{t === 'Standard' ? '' : '🔥 '}{tierLabel(t)}</div>
+                  <div className="text-[11px] opacity-80 mt-0.5">{off ? 'None for this topic yet' : PRACTICE_LEVEL_LINE[tierLevel(t)]}</div>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -892,14 +891,17 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                 <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Question</span>
               ) : (
               <div className="inline-flex gap-1 bg-slate-100 rounded-lg p-0.5" role="radiogroup" aria-label="Question difficulty">
-                {(['Standard', 'Advanced'] as Tier[]).map((t) => (
-                  <button key={t} onClick={() => switchTier(t)} role="radio" aria-checked={tier === t}
-                    disabled={t === 'Advanced' && !!selected && selected.advancedCount === 0}
+                {(['Standard', 'Advanced', 'Challenge'] as Tier[]).map((t) => {
+                  const on = tierLevel(tier) === tierLevel(t);
+                  return (
+                  <button key={t} onClick={() => switchTier(on ? tier : t)} role="radio" aria-checked={on}
+                    disabled={t !== 'Standard' && !!selected && selected.advancedCount === 0}
                     className={`text-[11px] font-semibold rounded-md px-2.5 py-1 transition-colors disabled:opacity-40 ${
-                      tier === t ? (t === 'Advanced' ? 'bg-amber-500 text-white' : 'bg-navy text-[hsl(45,100%,96%)]') : 'text-slate-500 hover:text-navy'}`}>
-                    {t === 'Advanced' ? '🔥 Advanced' : 'Standard'}
+                      on ? (t !== 'Standard' ? 'bg-amber-500 text-white' : 'bg-navy text-[hsl(45,100%,96%)]') : 'text-slate-500 hover:text-navy'}`}>
+                    {t !== 'Standard' ? `🔥 ${tierLabel(t)}` : tierLabel(on ? tier : t)}
                   </button>
-                ))}
+                  );
+                })}
               </div>
               )}
               {q.marks ? (

@@ -15,11 +15,23 @@ export const runtime = 'nodejs';
 // POST /api/portal/practice/next  { level, topic, exclude?: string[], tier?: 'Standard'|'Advanced', subgroupId?: number }
 // Serves one random unseen real question (stem + parts, NO solution) from the
 // topic's subgroups. `question: null` means the bank is exhausted for that filter.
-// `tier` maps onto questions.difficulty: Advanced = Advanced + Challenging rows,
-// Standard = everything else (incl. untagged). Omitted/unknown → no tier filter.
+// `tier` maps onto questions.difficulty (15 Oct 2026, three levels): Advanced = Advanced rows,
+// Challenge = Challenging rows, Standard = Core = everything else (incl. untagged), optionally
+// 'Standard:short' (1–4 marks) / 'Standard:long' (5+). Omitted/unknown → no tier filter.
 // `subgroupId` narrows to one question type within the topic (the picker's
 // "pick a question type" rows); omitted → the whole topic.
 // Auth: portal student session (level-gated) OR admin Bearer (testing).
+// 🎚 Practice levels (SPEC-TWINS.md §12): Core = 'Standard' (+ ':short' 1–4 marks / ':long' 5+),
+// 'Advanced', 'Challenge' — read by the practice_next RPC (migrations/practice_next_levels.sql).
+const MATH_TIERS = ['Standard', 'Standard:short', 'Standard:long', 'Advanced', 'Challenge'];
+/** Science keeps its two-way tier: any Core → Standard, Advanced or Challenge → Advanced. */
+function scienceTier(t: unknown): 'Standard' | 'Advanced' | null {
+  const s = String(t ?? '');
+  if (s.startsWith('Standard')) return 'Standard';
+  if (s === 'Advanced' || s === 'Challenge') return 'Advanced';
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   const caller = await practiceAuth(req);
   if (!caller) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -59,7 +71,7 @@ export async function POST(req: NextRequest) {
       const runLevel = levelsOn ? parseAdaptiveLevel(difficulty) : null;
       const base = {
         kind: useKind, levelKey: level, topic, exclude: Array.isArray(exclude) ? exclude : [],
-        skill: useSkill, tier: tier === 'Standard' || tier === 'Advanced' ? tier as 'Standard' | 'Advanced' : null,
+        skill: useSkill, tier: scienceTier(tier),
         combined: pick.combined, checkedOnly: serve.checkedOnly,
       };
       let q: Awaited<ReturnType<typeof scienceNext>> = null;
@@ -97,7 +109,7 @@ export async function POST(req: NextRequest) {
       p_qlevel: scope.qlevel,
       p_topic: topic,
       p_exclude: skip,
-      p_tier: tier === 'Standard' || tier === 'Advanced' ? tier : null,
+      p_tier: MATH_TIERS.includes(String(tier)) ? tier : null,
       p_subgroup: Number.isFinite(sg) && sg > 0 ? sg : null,
       // Sub-group audience (lib/subgroup-visibility.ts): the RPC serves nothing
       // from a sub-group this caller may not see, whatever subgroupId they post,

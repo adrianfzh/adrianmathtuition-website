@@ -24,8 +24,23 @@ import Link from 'next/link';
 import { familyOf, groupTopics, strandKey, strandsFor, variantOf } from '@/lib/practice-strands';
 import type { LessonCatalogEntry } from '@/lib/lesson-catalog';
 import PortalIcon from '@/components/PortalIcon';
+import { PRACTICE_LEVELS, PRACTICE_LEVEL_LABEL, PRACTICE_LEVEL_LINE } from '@/lib/practice-levels';
 
-export type Tier = 'Standard' | 'Advanced';
+// 🎚 Three levels (SPEC-TWINS.md §12, Adrian 15 Oct 2026): Core = 'Standard' (B3–A1, every
+// exam question a student must master; optionally Short 1–4 marks / Long 5+), Advanced (A1 and
+// above), Challenge (beyond the exam). The string is what /api/portal/practice/next takes.
+export type Tier = 'Standard' | 'Standard:short' | 'Standard:long' | 'Advanced' | 'Challenge';
+export const TIERS: readonly Tier[] = ['Standard', 'Standard:short', 'Standard:long', 'Advanced', 'Challenge'];
+export function isTier(x: unknown): x is Tier { return (TIERS as readonly unknown[]).includes(x); }
+export type TierLevel = 'core' | 'advanced' | 'challenge';
+export function tierLevel(t: Tier): TierLevel { return t === 'Advanced' ? 'advanced' : t === 'Challenge' ? 'challenge' : 'core'; }
+/** The short chip label: "Core", "Core · Short", "Advanced", "Challenge". */
+export function tierLabel(t: Tier): string {
+  if (t === 'Standard:short') return 'Core · Short';
+  if (t === 'Standard:long') return 'Core · Long';
+  return PRACTICE_LEVEL_LABEL[tierLevel(t)];
+}
+const LEVEL_TIER: Record<TierLevel, Tier> = { core: 'Standard', advanced: 'Advanced', challenge: 'Challenge' };
 export type TopicStatus = 'strong' | 'practising' | 'weak' | 'new';
 export type TopicCard = {
   topic: string;
@@ -301,6 +316,12 @@ function SearchResults({ topics, typesByTopic, query, onPick, onStartType }: {
   );
 }
 
+function off_line(tier: Tier, noAdvanced: boolean): string {
+  const lv = tierLevel(tier);
+  if (lv !== 'core' && noAdvanced) return 'None for this topic yet.';
+  return PRACTICE_LEVEL_LINE[lv];
+}
+
 /**
  * The topic sheet — bottom sheet on phones, centred dialog on wider screens.
  * Start = whole-topic mix (tier applied); or one question type.
@@ -326,7 +347,7 @@ export function TopicSheet({ topic, types, tier, lesson = null, onTier, onStart,
   }, [onClose]);
 
   const noAdvanced = topic.advancedCount === 0;
-  const countFor = (n: number, adv: number) => tier === 'Advanced' ? adv : Math.max(0, n - adv);
+  const countFor = (n: number, adv: number) => tierLevel(tier) !== 'core' ? adv : Math.max(0, n - adv);
   const total = countFor(topic.questionCount, topic.advancedCount);
   const meta = STATUS_META[topic.status];
   const variant = variantOf(topic.topic);
@@ -366,23 +387,30 @@ export function TopicSheet({ topic, types, tier, lesson = null, onTier, onStart,
                 <PortalIcon name="chevron-right" className="w-4 h-4 text-sky-400 shrink-0" />
               </Link>
             )}
-            {/* Tier — segmented, remembered */}
-            <div className="grid grid-cols-2 gap-1 bg-slate-100 rounded-xl p-1 mb-4" role="radiogroup" aria-label="Difficulty">
-              {(['Standard', 'Advanced'] as Tier[]).map((t) => {
-                const on = tier === t;
-                const off = t === 'Advanced' && noAdvanced;
+            {/* Level — Core / Advanced / Challenge, remembered; Core can narrow to Short / Long */}
+            <div className="grid grid-cols-3 gap-1 bg-slate-100 rounded-xl p-1 mb-2" role="radiogroup" aria-label="Level">
+              {PRACTICE_LEVELS.map((lv) => {
+                const on = tierLevel(tier) === lv;
+                const off = lv !== 'core' && noAdvanced;
                 return (
-                  <button key={t} type="button" role="radio" aria-checked={on} disabled={off} onClick={() => onTier(t)}
-                    className={`rounded-lg px-3 py-2 text-sm font-semibold motion-safe:transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
-                      on ? (t === 'Advanced' ? 'bg-navy text-[hsl(45,100%,96%)] shadow-sm' : 'bg-white text-navy shadow-sm') : 'text-slate-500 hover:text-navy'}`}>
-                    {t === 'Advanced' ? <span className="inline-flex items-center gap-1"><PortalIcon name="flame" className="w-3.5 h-3.5" />Advanced</span> : 'Standard'}
-                    <span className="block text-[10px] font-medium opacity-70 mt-0.5">
-                      {t === 'Advanced' ? (noAdvanced ? 'none yet' : 'harder, multi-step') : 'typical exam'}
-                    </span>
+                  <button key={lv} type="button" role="radio" aria-checked={on} disabled={off} onClick={() => onTier(LEVEL_TIER[lv])}
+                    className={`rounded-lg px-2 py-2 text-sm font-semibold motion-safe:transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                      on ? (lv === 'core' ? 'bg-white text-navy shadow-sm' : 'bg-navy text-[hsl(45,100%,96%)] shadow-sm') : 'text-slate-500 hover:text-navy'}`}>
+                    {lv === 'core' ? 'Core' : <span className="inline-flex items-center gap-1"><PortalIcon name="flame" className="w-3.5 h-3.5" />{PRACTICE_LEVEL_LABEL[lv]}</span>}
                   </button>
                 );
               })}
             </div>
+            <p className="text-[12px] text-slate-500 mb-3 px-1">{off_line(tier, noAdvanced)}</p>
+            {tierLevel(tier) === 'core' && (
+              <div className="flex gap-1.5 mb-4 px-1" role="radiogroup" aria-label="Length">
+                {([['Standard', 'All'], ['Standard:short', 'Short (1–4 marks)'], ['Standard:long', 'Long (5+ marks)']] as [Tier, string][]).map(([t, label]) => (
+                  <button key={t} type="button" role="radio" aria-checked={tier === t} onClick={() => onTier(t)}
+                    className={`rounded-full px-3 py-1 text-[12px] font-semibold border motion-safe:transition-colors ${
+                      tier === t ? 'border-navy bg-navy text-[hsl(45,100%,96%)]' : 'border-slate-200 text-slate-500 hover:text-navy'}`}>{label}</button>
+                ))}
+              </div>
+            )}
 
             {/* Primary: the whole topic */}
             <button ref={startRef} type="button" onClick={() => onStart(null)} disabled={total === 0}
