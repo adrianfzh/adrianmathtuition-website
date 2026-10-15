@@ -3,6 +3,7 @@
     "id": "s01",
     "title": "The plastic bag charge",
     "issue": "Has charging for plastic bags helped the environment?",
+    "theme": "citizenship",
     "sources": [
       { "id": "A", "provenance": "A statement by a supermarket chain, one year after it began charging 5 cents for each plastic bag.", "text": "Since the 5-cent bag charge began, our shoppers have taken 60% fewer plastic bags. Most now bring their own. The money collected goes to a fund for environmental projects." },
       { "id": "B", "provenance": "A resident's post in a neighbourhood online group.", "text": "I now pay for bags at the supermarket, then buy rolls of bin liners because I have nothing to bag my rubbish with. I use just as much plastic as before. Only my bill has changed." },
@@ -46,6 +47,7 @@
     "id": "s02",
     "title": "A workers' dormitory beside the estate",
     "issue": "Should a dormitory for foreign workers be built next to a housing estate?",
+    "theme": "diversity",
     "sources": [
       { "id": "A", "provenance": "A resident's letter to the Member of Parliament, passed round the estate's chat group.", "text": "A dormitory for 2,000 workers beside our playground? Our children will not be safe, and our flat prices will fall. Build it somewhere else." },
       { "id": "B", "provenance": "A construction worker, interviewed for a volunteer group's newsletter.", "text": "On Sundays we used to sit at the field near the old dormitory. Some residents called the police though we were only eating. Now most of us stay inside on our day off." },
@@ -88,6 +90,7 @@
     "id": "s03",
     "title": "Delivery riders and the app",
     "issue": "Have delivery platforms been good for the people who depend on them?",
+    "theme": "globalised",
     "sources": [
       { "id": "A", "provenance": "A food delivery platform's blog, on its page for people thinking of signing up as riders.", "text": "Our riders choose their own hours. Eight in ten say flexibility is the main reason they ride with us. Riders are their own bosses." },
       { "id": "B", "provenance": "A delivery rider, interviewed by a student newspaper.", "text": "I can pick my hours, but if I turn down orders the app gives me fewer the next day. Last month I fell off my bike and earned nothing for three weeks." },
@@ -131,6 +134,7 @@
     "id": "s04",
     "title": "An elder-care centre at the void deck",
     "issue": "Should a day-care centre for the elderly be built at a block's void deck?",
+    "theme": "citizenship",
     "sources": [
       { "id": "A", "provenance": "A petition notice pinned at the lift lobby by a group of residents.", "text": "The void deck is where our children play and where we hold weddings and wakes. A day-care centre for the elderly will take all of it. We were told, not asked. Sign to say no." },
       { "id": "B", "provenance": "The agency's letter to residents of the block.", "text": "The centre will use one-third of the void deck. The rest stays open for residents' use. We held two briefing sessions in March; 14 households attended." },
@@ -173,6 +177,7 @@
     "id": "s05",
     "title": "Tourists in the old quarter",
     "issue": "Has tourism been good for a heritage district?",
+    "theme": "globalised",
     "sources": [
       { "id": "A", "provenance": "A tourism board's annual report.", "text": "Visitor numbers to the old quarter doubled in five years. Forty new businesses opened and 600 jobs were created." },
       { "id": "B", "provenance": "A third-generation spice shop owner, interviewed by a heritage society.", "text": "My rent tripled. The tailor and the coffee shop beside me have gone; a souvenir shop and a bar took their place. The tourists come to see the old quarter, but the old quarter is leaving." },
@@ -201,6 +206,7 @@
     "id": "s06",
     "title": "Cats in flats",
     "issue": "Should residents be allowed to keep cats in public flats?",
+    "theme": "citizenship",
     "sources": [
       { "id": "A", "provenance": "A resident's feedback to the town council.", "text": "The cat from the next unit walks along the corridor ledge and dirties my shoe rack. I have asked the owner three times. Rules exist for a reason." },
       { "id": "B", "provenance": "A fact sheet by a cat welfare group that wants the rule changed.", "text": "In our pilot in one estate, 120 cats were registered, sterilised and kept indoors with window mesh. Complaints about cats in that estate fell from 31 a year to 9." },
@@ -229,6 +235,7 @@
     "id": "s07",
     "title": "Hiring from abroad",
     "issue": "Has hiring foreign professionals benefited local workers?",
+    "theme": "globalised",
     "sources": [
       { "id": "A", "provenance": "The chief executive of a technology firm, speaking at a business forum.", "text": "We hired 40 engineers from abroad because we could not find these skills here. Their projects created 150 more jobs, most of them filled by locals." },
       { "id": "B", "provenance": "A local graduate's online post.", "text": "I sent 60 applications in a year. At my last interview the whole team had been brought in from overseas. They said I lacked experience. How do I get experience if nobody hires me?" },
@@ -257,6 +264,7 @@
     "id": "s08",
     "title": "Community service hours",
     "issue": "Does compulsory community service in schools make students care?",
+    "theme": "citizenship",
     "sources": [
       { "id": "A", "provenance": "A student's reflection in a school magazine.", "text": "We were sent to a nursing home for our six hours. Most of us stood at the back and looked at our phones. I signed the form and never went again." },
       { "id": "B", "provenance": "A school principal's speech to parents at the school's open house.", "text": "Every one of our students completes community service. Our students are caring and committed to serving others." },
@@ -285,6 +293,7 @@
     "id": "s09",
     "title": "Car-free weekends",
     "issue": "Have car-free weekends improved the town centre?",
+    "theme": "citizenship",
     "sources": [
       { "id": "A", "provenance": "A notice by the transport agency, announcing that the scheme will become permanent.", "text": "From January, the town centre's main street will be closed to cars on weekends. In the trial, footfall rose 30% and air quality improved." },
       { "id": "B", "provenance": "A furniture shop owner's letter to the agency.", "text": "My customers buy sofas and cupboards. They cannot carry them to a bus stop. My weekend sales fell by a third in the trial." },
@@ -313,6 +322,7 @@
     "id": "s10",
     "title": "A forwarded message",
     "issue": "How do false messages online affect harmony between neighbours?",
+    "theme": "diversity",
     "sources": [
       { "id": "A", "provenance": "A message forwarded widely in an estate's chat groups one evening. The sender is not known.", "text": "WARNING: a group of foreigners has been seen damaging cars at the Block 12 car park. Keep your children indoors. Forward to everyone." },
       { "id": "B", "provenance": "A police statement issued the next day.", "text": "Two cars were scratched at Block 12. A 15-year-old resident has been arrested. No group was involved. The message being forwarded is false." },

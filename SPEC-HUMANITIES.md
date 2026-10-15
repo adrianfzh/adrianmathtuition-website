@@ -239,6 +239,15 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **E — BY TOPIC ON HOME, 15 Oct 2026 (preview only, switch closed).** Adrian: "yes, build the By topic door on Home".
+> - Social Studies Home now opens with **Practise by topic** (the three issues, each with its case-study and
+>   structured-set counts and "n of m done"), then Timed paper and Examples to use, then Practise a skill.
+>   The long list of every set is gone from Home.
+> - `/app/humanities?t=citizenship|diversity|globalised` lists that issue's case studies, single questions and
+>   structured sets, with "‹ All topics" back. History and Geography are unchanged.
+> - Every Social Studies set carries `theme` (r01–r05 and s01–s10 tagged 15 Oct; a new set without one shows in
+>   no topic).
+
 > **D — PRACTICE BY SKILL BUILT 7 Oct 2026 (preview only, switch closed).** Adrian: "then do practice by skill".
 > - Home's **Practise a skill** card (it replaces "Your skills"): every skill of the subject on the tab, the
 >   weakest first, then the ones not tried — a levelled skill shows its usual level, a point-marked one

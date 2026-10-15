@@ -9,7 +9,7 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import PortalIcon from '@/components/PortalIcon';
 import { SURFACES } from '@/lib/portal-theme';
-import { setsFor, isCaseStudy, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, POINTS_SKILLS, type HumanitiesSet, type HumanitiesSubject } from '@/lib/humanities-questions';
+import { setsFor, isCaseStudy, SS_THEMES, SS_THEME_NAME, GEO_CLUSTERS, GEO_CLUSTER_NAME, POINTS_SKILLS, type HumanitiesSet, type HumanitiesSubject, type SsTheme } from '@/lib/humanities-questions';
 import { skillPicture, skillLineText } from '@/lib/humanities-skills';
 import { skillStandings, shareText } from '@/lib/humanities-practice';
 import { loadHumanitiesFor } from '@/lib/humanities-runs';
@@ -28,17 +28,25 @@ const TABS: { key: HumanitiesSubject; label: string }[] = [
   { key: 'geography', label: 'Geography' },
 ];
 
-export default async function HumanitiesPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
+export default async function HumanitiesPage({ searchParams }: { searchParams: Promise<{ s?: string; t?: string }> }) {
   if (!(await humanitiesOpen())) redirect('/app');
-  const s = (await searchParams).s;
+  const { s, t } = await searchParams;
   const subject: HumanitiesSubject = s === 'history' ? 'history' : s === 'geography' ? 'geography' : 'social-studies';
+  // Social Studies opens by topic (15 Oct 2026, Adrian: "yes, build the By topic door on Home"): Home shows
+  // the three issues and Practise a skill; ?t=<issue> lists that issue's case studies, single questions and
+  // structured sets. The exam's Section B is topic knowledge, so the topic is the first door.
+  const isSs = subject === 'social-studies';
+  const theme: SsTheme | null = isSs && (SS_THEMES as readonly string[]).includes(t ?? '') ? t as SsTheme : null;
+  const topicHome = isSs && !theme;
+  const inTopic = (set: HumanitiesSet) => !isSs || !theme || set.theme === theme;
   const account = await currentAccount();
   const sid = portalIdentity(account);
   const runs = await loadHumanitiesFor(sid, 500);
   const answered = new Set(runs.map(r => r.question_id));
   const allSource = setsFor(subject, 'source');
-  const caseStudies = allSource.filter(isCaseStudy);
-  const sourceSets = allSource.filter(s => !isCaseStudy(s));
+  const ssAll = isSs ? [...allSource, ...setsFor(subject, 'structured')] : [];
+  const caseStudies = topicHome ? [] : allSource.filter(isCaseStudy).filter(inTopic);
+  const sourceSets = topicHome ? [] : allSource.filter(s => !isCaseStudy(s)).filter(inTopic);
   // The skill picture (A2): this subject's read answers, weakest skill first.
   // Practice by skill (D): every skill of the subject, the weakest first. A levelled skill shows its usual
   // level; a point-marked one (Geography) shows its share of the marks.
@@ -46,7 +54,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
   const skills = skillPicture(mine.filter(r => !isPointSkill(r.skill)));
   const standings = skillStandings(subject, mine);
   const pointSets = setsFor(subject, 'points');
-  const structuredSets = setsFor(subject, 'structured');
+  const structuredSets = topicHome ? [] : setsFor(subject, 'structured').filter(inTopic);
   // One issue open at a time: the first with a question still to do. Ten open cards was a very long page.
   const sets = [...caseStudies, ...sourceSets, ...structuredSets, ...pointSets];
   const openId = (sets.find(set => set.questions.some(q => !answered.has(q.id))) ?? sets[0])?.id;
@@ -99,7 +107,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
             <p className="text-[12px] text-gray-500">This is feedback, not a mark. Ask your teacher about any doubt.</p></>}
       </div>
 
-      {runs.length > 0 && (
+      {!theme && runs.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-baseline justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Your latest answers</h2>
@@ -119,7 +127,61 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         ))}
       </div>
 
-      {standings.length > 0 && (
+      {topicHome && (
+        <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Practise by topic</h2>
+          <p className="text-[12px] text-gray-500 mt-0.5">Case studies and structured questions on one issue.</p>
+          <ul className="mt-1 divide-y divide-black/5">
+            {SS_THEMES.map(th => {
+              const list = ssAll.filter(x => x.theme === th);
+              const qs = list.flatMap(x => x.questions);
+              const done = qs.filter(q => answered.has(q.id)).length;
+              const cs = list.filter(isCaseStudy).length;
+              const sr = list.filter(x => x.kind === 'structured').length;
+              return (
+                <li key={th}>
+                  <Link href={`/app/humanities?t=${th}`} className="flex items-center gap-3 py-2.5 -mx-2 px-2 rounded-xl hover:bg-amber-50/60 transition">
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-bold text-navy">{SS_THEME_NAME[th]}</span>
+                      <span className="block text-[13px] text-gray-600">{cs} case {cs === 1 ? 'study' : 'studies'} · {sr} structured {sr === 1 ? 'set' : 'sets'}</span>
+                    </span>
+                    <span className="shrink-0 text-[12px] text-gray-400">{done} of {qs.length} done</span>
+                    <span className="shrink-0 text-gray-400">›</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+
+      {topicHome && (
+        <div className="space-y-2">
+          <Link href="/app/humanities/paper" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-bold text-navy">Timed paper</span>
+              <span className="block text-[12px] text-gray-500">1 h 45 min · one case study and one structured-response set</span>
+            </span>
+            <span className="shrink-0 text-gray-400">›</span>
+          </Link>
+          <Link href="/app/humanities/examples" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+            <span className="flex-1 min-w-0">
+              <span className="block text-[15px] font-bold text-navy">Examples to use</span>
+              <span className="block text-[12px] text-gray-500">Real examples for each issue, and what each one shows</span>
+            </span>
+            <span className="shrink-0 text-gray-400">›</span>
+          </Link>
+        </div>
+      )}
+
+      {theme && (
+        <div className="flex items-center gap-2 pt-1">
+          <Link href="/app/humanities" className="text-[13px] text-amber-800 font-semibold">‹ All topics</Link>
+        </div>
+      )}
+      {theme && <h2 className="text-lg font-bold text-navy leading-tight">{SS_THEME_NAME[theme]}</h2>}
+
+      {!theme && standings.length > 0 && (
         <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Practise a skill</h2>
           <p className="text-[12px] text-gray-500 mt-0.5">Five questions of one kind. {standings[0].share != null ? 'Your weakest is first.' : 'Pick one to begin.'}</p>
@@ -150,22 +212,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Case studies</h2>
           <p className="text-[12px] text-gray-500">Five questions on one set of sources, as in the exam. Do one, or all five.</p>
           <p className="text-[12px] text-gray-500">These sources are written for practice. They are not real documents.</p>
-          <Link href="/app/humanities/paper" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
-            <span className="flex-1 min-w-0">
-              <span className="block text-[15px] font-bold text-navy">Timed paper</span>
-              <span className="block text-[12px] text-gray-500">1 h 45 min · one case study and one structured-response set</span>
-            </span>
-            <span className="shrink-0 text-gray-400">›</span>
-          </Link>
-          {SS_THEMES.map(theme => {
-            const list = caseStudies.filter(s => s.theme === theme);
-            return list.length > 0 && (
-              <div key={theme} className="space-y-2">
-                <h3 className="text-[13px] font-semibold text-navy pt-1">{SS_THEME_NAME[theme]}</h3>
-                {list.map(setCard)}
-              </div>
-            );
-          })}
+          {caseStudies.map(setCard)}
         </div>
       )}
 
@@ -215,13 +262,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <div className="space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Structured response</h2>
           <p className="text-[12px] text-gray-500">No sources to read. Answer from what you have learnt.</p>
-          <Link href="/app/humanities/examples" className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
-            <span className="flex-1 min-w-0">
-              <span className="block text-[15px] font-bold text-navy">Examples to use</span>
-              <span className="block text-[12px] text-gray-500">Real examples for each issue, and what each one shows</span>
-            </span>
-            <span className="shrink-0 text-gray-400">›</span>
-          </Link>
+          <Link href="/app/humanities/examples" className="text-[13px] text-amber-800 font-semibold">Examples to use ›</Link>
           {structuredSets.map(setCard)}
         </div>
       )}

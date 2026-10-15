@@ -5,6 +5,7 @@
     "kind": "structured",
     "title": "Living with differences",
     "issue": "How can people of different backgrounds live well together?",
+    "theme": "diversity",
     "sources": [
       {
         "id": "Extract",
@@ -44,6 +45,7 @@
     "kind": "structured",
     "title": "Citizens and the needs of society",
     "issue": "Who should look after the needs of society?",
+    "theme": "citizenship",
     "sources": [
       {
         "id": "Extract",
@@ -83,6 +85,7 @@
     "kind": "structured",
     "title": "Living in a globalised world",
     "issue": "What does globalisation mean for a country and its people?",
+    "theme": "globalised",
     "sources": [
       {
         "id": "Extract",
@@ -122,6 +125,7 @@
     "kind": "structured",
     "title": "New arrivals",
     "issue": "How do newcomers become part of a society?",
+    "theme": "diversity",
     "sources": [
       {
         "id": "Extract",
@@ -152,6 +156,7 @@
     "kind": "structured",
     "title": "Paying for healthcare",
     "issue": "How should a society share the cost of healthcare?",
+    "theme": "citizenship",
     "sources": [
       {
         "id": "Extract",
