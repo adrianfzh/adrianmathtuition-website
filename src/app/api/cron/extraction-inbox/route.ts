@@ -52,7 +52,10 @@ export const maxDuration = 300;
 
 export const INBOX_FOLDER = process.env.EXTRACTION_INBOX_FOLDER || '/Extraction Inbox';
 const BUCKET = 'paper-library';
-const PER_TICK = 5;
+// 20 a tick (Adrian, 15 Oct 2026: "let's do it" — 5 left a 150-file drop queuing for hours);
+// TICK_BUDGET_MS stops taking new files well inside maxDuration.
+const PER_TICK = 20;
+const TICK_BUDGET_MS = 200_000;
 const MAX_BYTES = 60 * 1024 * 1024;
 
 function authed(req: NextRequest): boolean {
@@ -295,8 +298,9 @@ export async function GET(req: NextRequest) {
   const counts: Counts = { queued: 0, flagged: 0, duplicate: 0, moved: 0, waiting: 0, failed: 0, filed: 0, remarked: 0, split: 0, schemes: 0 };
   const out: Array<Record<string, unknown>> = [];
   let handled = 0;
+  const tickStart = Date.now();
   for (const e of entries) {
-    if (handled >= PER_TICK) { counts.waiting++; continue; }
+    if (handled >= PER_TICK || Date.now() - tickStart > TICK_BUDGET_MS) { counts.waiting++; continue; }
     const item: Record<string, unknown> = { file: e.name, size: e.size ?? null };
     out.push(item);
     try {
