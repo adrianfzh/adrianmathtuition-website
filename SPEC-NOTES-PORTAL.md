@@ -87,7 +87,8 @@ Student login (portal auth), health-check entry, analytics per page, possible
 **Where things stand: ⏸ PAUSED (15 Oct 2026, Adrian: "pause this … will do later
 when model upgrades").** ONE sample topic done — **A Math · Quadratic Functions**
 (`/notes/am/quadratic-functions`); Adrian has not yet said yes or no to it. Resume
-only when a new model ships or he raises it: first his yes to the sample, then
+only when a newer Opus or Fable ships (newest when paused: Opus 5.5, Fable 5.1 —
+the reminder line is in CLAUDE.md §Pending Tasks) or he raises it: first his yes to the sample, then
 the other topics. **Do not lay out another topic before that.** Notes are still
 closed to students (`NOTES_OPEN_TO_STUDENTS = false`).
 

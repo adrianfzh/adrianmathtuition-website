@@ -306,6 +306,8 @@ This takes 2 seconds and returns **no student data** — only field names, types
 
 ## Pending Tasks → [`IDEAS.md`](IDEAS.md)
 
+**⏰ Remind Adrian on a model upgrade (15 Oct 2026, Adrian: "remind me about this when opus or fable upgrades")** — every account, every session. Newest when set: **Opus 5.5, Fable 5.1**. If you run on a newer Opus or Fable, say in your first reply, in plain words, that **the student-app notes tidy-up is waiting** (one sample topic done: A Math Quadratic Functions; he checks it on his phone, then the rest) → [`SPEC-NOTES-PORTAL.md`](SPEC-NOTES-PORTAL.md) §Skill layout. Then update the versions on this line and push, so he is reminded once per upgrade.
+
 **Latest hand-over: [`docs/HANDOFF-2026-10-14.md`](docs/HANDOFF-2026-10-14.md)** (WhatsApp trials, chat bots, science study aids; read with [`docs/HANDOFF-2026-10-12.md`](docs/HANDOFF-2026-10-12.md) and [`docs/HANDOFF-2026-10-09.md`](docs/HANDOFF-2026-10-09.md)) — where everything stood on 9 Oct 2026 (replacing Gemini, the Ship button, the morning brief, subject heads, self-learning, the redraw buttons). Read it before picking up any of those.
 
 **The consolidated build queue lives in [`IDEAS.md`](IDEAS.md)** (its top section "📅 Shipped 4–5 Oct 2026" lists what those days changed and what is still open for Adrian) (repo root, 2026-08-29) —
