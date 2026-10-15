@@ -146,5 +146,6 @@
     "Step four, intercepts: x = 0 gives y = ln 2 (write x0, yint).",
     "y = 0: the inside equals e to the 0, which is 1, so x = 1 (write y0, xin, ans).",
     "Trap: asymptote — inside equals 0; x-intercept — inside equals 1. Two different equations (circle in0 or xin)."
-  ]
+  ],
+  "question": "Sketch the graph of $y = \\ln(2 - x)$, labelling the asymptote and any intercepts."
 }

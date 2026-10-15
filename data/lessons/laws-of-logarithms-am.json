@@ -6,6 +6,7 @@
   "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
+  "question": "Simplify $\\log_3 5 + \\log_3 6 - \\log_3 10$.",
   "scenes": [
     {
       "type": "equation-steps",

@@ -109,5 +109,6 @@
     "Un-log: 10 to the power 1.2 (write unlog).",
     "About 15.8 times as intense (write ans, box).",
     "Trap: the answer is not 12 — 12 is the difference in decibels; the question asks how many times."
-  ]
+  ],
+  "question": "The noise rating $N$ decibels and the intensity $I$ are connected by $N = 10\\lg\\dfrac{I}{k}$, where $k$ is a constant. A hot water pump is rated $50$ dB and a dishwasher $62$ dB. Find $\\dfrac{\\text{intensity of the dishwasher}}{\\text{intensity of the pump}}$."
 }

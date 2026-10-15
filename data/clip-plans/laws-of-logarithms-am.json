@@ -149,5 +149,6 @@
     "Trap: only added logs combine — log 5 times log 6 is not log 30.",
     "Same pattern for minus: highlight log3 30 - log3 10, Minus Power under that line, then log3(30/10).",
     "30/10 = 3: log3 3. log_a a = 1 beside it. Answer 1, boxed."
-  ]
+  ],
+  "question": "Simplify $\\log_3 5 + \\log_3 6 - \\log_3 10$."
 }

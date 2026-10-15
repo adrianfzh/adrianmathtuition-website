@@ -153,5 +153,6 @@
     "Factorise out x and divide (write frac).",
     "Press calculator: minus 8.57 (write ans).",
     "Trap, at the step it bites: the calculator shows minus 8.56654 — rounding never removes a minus (circle ans, box ans)."
-  ]
+  ],
+  "question": "Solve $7^{x-1} = 5^{x-3}$, giving your answer to 3 significant figures."
 }

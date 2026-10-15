@@ -95,7 +95,8 @@ for (const slug of slugs) {
   fs.mkdirSync(dir, { recursive: true });
 
   const page = await browser.newPage();
-  await page.setViewport({ width: WIDTH, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const wide = WIDTH >= 768;
+  await page.setViewport({ width: WIDTH, height: Number(args.height || (wide ? 800 : 844)), deviceScaleFactor: wide ? 1 : 2, isMobile: !wide, hasTouch: !wide });
   await page.setCookie({ name: 'admin_session', value: token, url: BASE });
   await page.evaluateOnNewDocument(() => {
     window.__lsn = [];
@@ -111,6 +112,12 @@ for (const slug of slugs) {
   const poster = await page.$('button[aria-label*="voice" i], [data-lsn-poster] button');
   if (poster) await poster.click().catch(() => {});
 
+  // The whole question: a panel beside the clip on a wide screen, the 📄 button on a phone.
+  const question = await page.evaluate(() => {
+    const panel = Array.from(document.querySelectorAll('.lsn-question')).find(el => el.getBoundingClientRect().width > 0);
+    const pill = Array.from(document.querySelectorAll('button')).find(b => /📄/.test(b.textContent || '') && b.getBoundingClientRect().width > 0);
+    return panel ? 'panel' : pill ? 'button' : null;
+  });
   const shots = [];
   let seen = 0;
   const t0 = Date.now();
@@ -161,7 +168,21 @@ for (const slug of slugs) {
         // The whole board must fit on the screen with the page at the top: its bottom (page
         // position) above the bottom bar. A taller board hides its top or bottom while it plays.
         const tall = sr.bottom + window.scrollY > fold + 1 ? [`board bottom ${Math.round(sr.bottom + window.scrollY)} px, screen ends at ${Math.round(fold)} px`] : [];
-        return { cut, small, overlap, hidden, tall, shown: shown.length };
+        // The subtitle (YouTube-style, over the board's foot) must never cover written maths.
+        const subs = stage.querySelector('.lsn-subs');
+        const subsHide = [];
+        if (subs && (subs.textContent || '').trim()) {
+          const ur = subs.getBoundingClientRect();
+          for (const { r, label } of boxes) {
+            const w = Math.min(ur.right, r.right) - Math.max(ur.left, r.left);
+            const h = Math.min(ur.bottom, r.bottom) - Math.max(ur.top, r.top);
+            if (w > 3 && h > 3) subsHide.push(label);
+          }
+        }
+        // The slider comes after the clip.
+        const scrub = document.querySelector('.lsn-scrub');
+        const order = scrub && scrub.getBoundingClientRect().top < sr.bottom - 2 ? ['the slider is not below the board'] : [];
+        return { cut, small, overlap, hidden, tall, subsHide, order, shown: shown.length };
       }, MIN_PX);
       const cue = cueStarts[e.scene ?? 0]?.[e.beat]?.[e.index] ?? null;
       const offset = cue && cue.start != null && e.clipElapsed != null ? +(e.clipElapsed - cue.start).toFixed(3) : null;
@@ -178,15 +199,16 @@ for (const slug of slugs) {
 
   const cued = shots.filter(s => s.on);
   const cueBad = cued.filter(s => s.offset == null || Math.abs(s.offset) > CUE_GATE_S);
-  const lookBad = shots.filter(s => s.error || s.cut?.length || s.overlap?.length || s.small?.length || s.hidden?.length || s.tall?.length);
+  const lookBad = shots.filter(s => s.error || s.cut?.length || s.overlap?.length || s.small?.length || s.hidden?.length || s.tall?.length || s.subsHide?.length || s.order?.length);
   const expected = beats.reduce((n, b) => n + b.do.length, 0);
   const result = {
     slug, at: new Date().toISOString(), width: WIDTH,
     actions: { expected, fired: shots.length, fromClip: shots.filter(s => s.source === 'clip').length },
     cue: { cued: cued.length, worst: cued.reduce((w, s) => Math.max(w, Math.abs(s.offset ?? 99)), 0), over: cueBad.length, gateS: CUE_GATE_S },
     look: { problems: lookBad.length },
+    question,
     pageErrors: consoleErrors,
-    pass: shots.length === expected && cueBad.length === 0 && lookBad.length === 0 && consoleErrors.length === 0,
+    pass: !!question && shots.length === expected && cueBad.length === 0 && lookBad.length === 0 && consoleErrors.length === 0,
     shots,
     picturesDir: dir,
   };
@@ -194,9 +216,9 @@ for (const slug of slugs) {
   fs.mkdirSync(runDir, { recursive: true });
   fs.writeFileSync(path.join(runDir, 'look.json'), JSON.stringify(result, null, 1) + '\n');
   anyFail ||= !result.pass;
-  console.log(`${result.pass ? '✓' : '✗'} ${slug}: ${shots.length}/${expected} actions fired (${result.actions.fromClip} on the voice) · cues worst ${result.cue.worst.toFixed(2)} s, ${cueBad.length} over ${CUE_GATE_S} s · look problems ${lookBad.length}${consoleErrors.length ? ` · page errors ${consoleErrors.length}` : ''} → ${dir}`);
+  console.log(`${result.pass ? '✓' : '✗'} ${slug}: ${shots.length}/${expected} actions fired (${result.actions.fromClip} on the voice) · cues worst ${result.cue.worst.toFixed(2)} s, ${cueBad.length} over ${CUE_GATE_S} s · question ${question ?? 'MISSING'} · look problems ${lookBad.length}${consoleErrors.length ? ` · page errors ${consoleErrors.length}` : ''} → ${dir}`);
   for (const s of cueBad) console.log(`    cue  b${s.beat} ${s.kind} "${s.on}" fired ${s.clipElapsed?.toFixed(2)} s, word at ${s.wordStart?.toFixed?.(2)} s`);
-  for (const s of lookBad) console.log(`    look b${s.beat} ${s.kind}: ${[...(s.cut || []).map(x => 'cut off ' + x), ...(s.overlap || []).map(x => 'overlap ' + x), ...(s.small || []).map(x => 'small ' + x), ...(s.hidden || []).map(x => 'under the bottom bar ' + x), ...(s.tall || []).map(x => 'taller than the screen: ' + x), s.error].filter(Boolean).join('; ')}`);
+  for (const s of lookBad) console.log(`    look b${s.beat} ${s.kind}: ${[...(s.cut || []).map(x => 'cut off ' + x), ...(s.overlap || []).map(x => 'overlap ' + x), ...(s.small || []).map(x => 'small ' + x), ...(s.hidden || []).map(x => 'under the bottom bar ' + x), ...(s.tall || []).map(x => 'taller than the screen: ' + x), ...(s.subsHide || []).map(x => 'subtitle covers ' + x), ...(s.order || []), s.error].filter(Boolean).join('; ')}`);
 }
 await browser.close();
 process.exit(anyFail ? 1 : 0);

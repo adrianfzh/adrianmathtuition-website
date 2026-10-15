@@ -275,5 +275,6 @@
       "heading": "Read m and c off the line",
       "intro": "The line passes through $(2, 3)$ and $(4, 7)$."
     }
-  ]
+  ],
+  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$."
 }

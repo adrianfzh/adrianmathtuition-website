@@ -6,6 +6,7 @@
   "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
+  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$.",
   "scenes": [
     {
       "type": "equation-steps",
@@ -51,58 +52,58 @@
       "beats": [
         {
           "say": "This is Linear Law. Plan: take L N of both sides, then compare with capital Y equals M capital X plus C.",
-          "asks": ["Why take ln, not lg?", "What is Linear Law for?"],
           "do": [],
+          "asks": ["Why take ln, not lg?", "What is Linear Law for?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b1.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b1.timing.json"
         },
         {
           "say": "Take L N of both sides. Add Power splits the right side.",
-          "asks": ["What is the Add Power law?", "Why does the ln split?"],
           "do": [
             { "do": "write", "step": 0 },
             { "do": "note", "text": "Add Power: $\\ln xy = \\ln x + \\ln y$", "near": "lnsplit", "on": "Add Power splits" }
           ],
+          "asks": ["What is the Add Power law?", "Why does the ln split?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b2.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b2.timing.json"
         },
         {
           "say": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A.",
-          "asks": ["Why does ln cancel e?", "Why is ln A the intercept?"],
           "do": [
             { "do": "write", "step": 1, "on": "So L N Y" },
             { "do": "note", "text": "Take ln: $\\ln e^{x} = x$", "near": "mx", "on": "plus L N A" }
           ],
+          "asks": ["Why does ln cancel e?", "Why is ln A the intercept?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b3.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b3.timing.json"
         },
         {
           "say": "Line it up with capital Y equals M capital X plus C.",
-          "asks": ["Why compare with Y = mX + c?"],
           "do": [
             { "do": "write", "step": 2, "on": "capital Y equals" }
           ],
+          "asks": ["Why compare with Y = mX + c?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b4.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b4.timing.json"
         },
         {
           "say": "Capital Y is the vertical axis, L N Y. Capital X is the horizontal axis, X.",
-          "asks": ["Why is Y = ln y?", "Why is X just x?"],
           "do": [
             { "do": "write", "token": "YY", "on": "Capital Y is" },
             { "do": "write", "token": "XX", "on": "Capital X is" }
           ],
+          "asks": ["Why is Y = ln y?", "Why is X just x?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b5.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b5.timing.json"
         },
         {
           "say": "Match the parts. Gradient M is minus N. Vertical intercept C is L N A.",
-          "asks": ["Why is the gradient −n?", "Why is c = ln A?"],
           "do": [
             { "do": "mark", "kind": "underline", "token": ["mx", "cc"], "on": "Match the parts" },
             { "do": "write", "token": "mm", "on": "Gradient M is" },
             { "do": "write", "token": "ccl", "on": "intercept C is" }
           ],
+          "asks": ["Why is the gradient −n?", "Why is c = ln A?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-01-b6.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-01-b6.timing.json"
         }
@@ -141,43 +142,43 @@
       "beats": [
         {
           "say": "Gradient from the two points: seven minus three over four minus two is two.",
-          "asks": ["How do I find the gradient?"],
           "do": [
             { "do": "write", "token": "grad", "on": "seven minus three" },
             { "do": "write", "token": "m2", "on": "is two" }
           ],
+          "asks": ["How do I find the gradient?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-02-b1.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-02-b1.timing.json"
         },
         {
           "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
-          "asks": ["Why substitute (2, 3)?", "Which point should I use?"],
           "do": [
             { "do": "write", "token": "sub", "on": "Three equals two" },
             { "do": "write", "token": "c1", "on": "C is minus one" }
           ],
+          "asks": ["Why substitute (2, 3)?", "Which point should I use?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-02-b2.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-02-b2.timing.json"
         },
         {
           "say": "M is minus N, so minus N is two. Watch the sign: N is minus two, not two.",
-          "asks": ["Why is n = −2, not 2?"],
           "do": [
             { "do": "write", "token": "nn0", "on": "minus N is two" },
             { "do": "write", "token": "nn", "on": "N is minus two" },
             { "do": "mark", "kind": "circle", "token": "nn", "on": "not two" }
           ],
+          "asks": ["Why is n = −2, not 2?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-02-b3.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-02-b3.timing.json"
         },
         {
           "say": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight.",
-          "asks": ["How do I un-log ln A = −1?", "Why is A = e⁻¹?"],
           "do": [
             { "do": "write", "step": 3, "on": "L N A is minus one" },
             { "do": "note", "text": "Un-log: $\\ln x = c \\Rightarrow x = e^{c}$", "near": "AA", "on": "E to the power" },
             { "do": "mark", "kind": "box", "token": "AA", "on": "zero point three" }
           ],
+          "asks": ["How do I un-log ln A = −1?", "Why is A = e⁻¹?"],
           "audio": "/lessons/linear-form-with-logs-am/scene-02-b4.mp3",
           "timing": "/lessons/linear-form-with-logs-am/scene-02-b4.timing.json"
         }

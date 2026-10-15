@@ -52,6 +52,7 @@ if (fs.existsSync(outPath)) {
     const old = prev.scenes?.[k]?.beats ?? [];
     list.forEach((b, i) => {
       if (old[i] && old[i].say === b.say) {
+        if (!b.asks && old[i].asks) b.asks = old[i].asks;   // ready questions written into the clip itself
         if (old[i].audio) b.audio = old[i].audio;
         if (old[i].timing) b.timing = old[i].timing;
       }
@@ -77,6 +78,7 @@ const lesson = {
   minutes: 1,
   kind: 'clip',
   theme: 'chalk',
+  ...(plan.question ? { question: plan.question } : {}),
   scenes,
 };
 fs.writeFileSync(outPath, formatJson(lesson) + '\n');

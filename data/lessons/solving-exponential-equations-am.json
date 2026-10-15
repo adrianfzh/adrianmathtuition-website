@@ -6,6 +6,7 @@
   "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
+  "question": "Solve $7^{x-1} = 5^{x-3}$, giving your answer to 3 significant figures.",
   "scenes": [
     {
       "type": "equation-steps",
@@ -56,94 +57,94 @@
       "beats": [
         {
           "say": "Solve seven to the power X minus one equals five to the power X minus three.",
-          "asks": ["Can I make the bases the same?"],
           "do": [
             { "do": "write", "step": 0 }
           ],
+          "asks": ["Can I make the bases the same?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b1.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b1.timing.json"
         },
         {
           "say": "Seven and five cannot be made the same base. The plan: take log on both sides, then bring the powers down.",
-          "asks": ["Why take lg of both sides?", "Can I use ln instead of lg?"],
           "do": [
             { "do": "highlight", "token": ["s7", "s5"] },
             { "do": "write", "step": 1, "on": "take log on both sides" }
           ],
+          "asks": ["Why take lg of both sides?", "Can I use ln instead of lg?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b2.timing.json"
         },
         {
           "say": "Bring down the powers. Each power comes down in front of its log.",
-          "asks": ["Why can the power come down?"],
           "do": [
             { "do": "note", "text": "Bring down power: $\\lg x^r = r\\lg x$", "near": "lg7" },
             { "do": "write", "token": "p7", "on": "comes down in front" }
           ],
+          "asks": ["Why can the power come down?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b3.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b3.timing.json"
         },
         {
           "say": "So X minus one, times log seven, equals X minus three, times log five.",
-          "asks": ["Why keep the brackets?"],
           "do": [
             { "do": "write", "token": "p5", "on": "equals X minus three" }
           ],
+          "asks": ["Why keep the brackets?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b4.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b4.timing.json"
         },
         {
           "say": "Log seven and log five are just numbers. Expand the brackets as usual.",
-          "asks": ["Why is lg 7 just a number?"],
           "do": [
             { "do": "write", "step": 3, "on": "Expand the brackets" }
           ],
+          "asks": ["Why is lg 7 just a number?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b5.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b5.timing.json"
         },
         {
           "say": "Put the X terms on the left, and the number terms on the right.",
-          "asks": ["Why move the x terms to the left?"],
           "do": [
             { "do": "write", "token": "xs", "on": "the X terms" },
             { "do": "write", "token": "ns", "on": "the number terms" }
           ],
+          "asks": ["Why move the x terms to the left?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b6.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b6.timing.json"
         },
         {
           "say": "Factorise out X, then divide by log seven minus log five.",
-          "asks": ["Why factorise out x?"],
           "do": [
             { "do": "write", "step": 5, "on": "then divide by" }
           ],
+          "asks": ["Why factorise out x?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b7.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b7.timing.json"
         },
         {
           "say": "Press calculator. X is about minus eight point five seven.",
-          "asks": ["How do I key this in?"],
           "do": [
             { "do": "write", "step": 6, "on": "X is about" }
           ],
+          "asks": ["How do I key this in?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b8.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b8.timing.json"
         },
         {
           "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
-          "asks": ["Why keep the minus sign?"],
           "do": [
             { "do": "mark", "kind": "circle", "token": "ans", "on": "removes a minus" }
           ],
+          "asks": ["Why keep the minus sign?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b9.timing.json"
         },
         {
           "say": "So X is about minus eight point five seven.",
-          "asks": ["How many significant figures?"],
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "minus eight point" }
           ],
+          "asks": ["How many significant figures?"],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b10.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b10.timing.json"
         }

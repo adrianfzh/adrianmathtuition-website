@@ -87,7 +87,7 @@ export default async function LessonPage({ params, searchParams }: {
     theme: script.theme ?? 'slide',
     scenes: buildPlayScenes(script, rows),
     // A clip is one concept in a minute: it opens playing, like a video.
-    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null } : {}),
+    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), question: script.question ?? clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null } : {}),
     ...toStep,
   };
   return extras && extrasOn

@@ -325,6 +325,9 @@ export interface LessonScript {
   topic: string;
   /** Honest estimate shown on entry points ("4 min"). */
   minutes: number;
+  /** A clip: the WHOLE question as set (TeX in $…$) — beside the clip on a laptop, behind the 📄
+   *  button on a phone (Adrian, 15 Oct 2026: "the whole question on one side"). */
+  question?: string;
   /** `clip` = ONE concept in about a minute (a single board, no checks, opens
    *  playing) — the unit Adrian asked for on 8 Oct 2026. Default `lesson`. */
   kind?: LessonKind;
@@ -915,6 +918,9 @@ export function validateLessonScript(input: unknown): ValidationResult {
   if (!nonEmptyString(input.topic)) errors.push('topic is required');
   if (!finiteNumber(input.minutes) || input.minutes <= 0 || input.minutes > 60) {
     errors.push('minutes must be a number between 1 and 60');
+  }
+  if (input.question !== undefined && (typeof input.question !== 'string' || !input.question.trim())) {
+    errors.push('question must be a non-empty string when present');
   }
   if (input.kind !== undefined && !(LESSON_KINDS as readonly unknown[]).includes(input.kind)) {
     errors.push(`kind must be one of ${LESSON_KINDS.join('/')} (got "${String(input.kind)}")`);

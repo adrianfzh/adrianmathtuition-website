@@ -149,5 +149,6 @@
     "Factorise (write fac).",
     "x = 9 or x = -1 (write ans, rej).",
     "Trap, at the step it bites: check every root in the logs — x = -1 gives log of a negative, so reject it (circle rej; box ans)."
-  ]
+  ],
+  "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$."
 }

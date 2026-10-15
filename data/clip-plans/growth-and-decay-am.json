@@ -131,5 +131,6 @@
     "e is involved, so take ln of both sides; ln e is 1 (write ln).",
     "k = ln 2 over 7.5, about 0.0924 (write ans, box).",
     "Adrian 15 Oct: 'ln e^(7.5k) = ln 2' is its own line (take ln on both sides is the key step). The model line is dropped — it is already in the question."
-  ]
+  ],
+  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$."
 }
