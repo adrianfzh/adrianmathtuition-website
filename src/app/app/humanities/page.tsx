@@ -103,8 +103,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <p>Pick a question. Read what comes with it. Type your answer.</p>
         {subject === 'geography'
           ? <p>In a few minutes you get your marks, the points you made and the points to add.</p>
-          : <><p>In a few minutes you get a level, and the one thing that would lift it.</p>
-            <p className="text-[12px] text-gray-500">This is feedback, not a mark. Ask your teacher about any doubt.</p></>}
+          : <p>In a few minutes you get a level, about how many marks it would earn, and the one thing that would lift it.</p>}
       </div>
 
       {!theme && runs.length > 0 && (

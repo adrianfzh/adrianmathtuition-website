@@ -10,6 +10,7 @@ import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
 import { nextOfSkill } from '@/lib/humanities-practice';
 import { contextForRun, isOwnId } from '@/lib/humanities-own';
+import { marksForLevels } from '@/lib/humanities-marks';
 import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard, DiagramCard } from '../sources';
@@ -66,6 +67,8 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const segs = report ? segmentAnswer(run.answer_text, claims) : [{ text: run.answer_text, claim: null }];
   const usedTags = (points ? POINT_TAGS : tagsFor(run.skill)).filter(t => claims.some(c => c.tag === t.key));
   const model = own ? null : modelAnswer(ctx.question);
+  // A level as a school mark: the range schools give that level (lib/humanities-marks, 15 Oct 2026).
+  const schoolMarks = report ? marksForLevels(run.skill, ctx.question.marks, report.level_lo, report.level_hi) : null;
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
   // A case study is a run of five: offer the next one.
@@ -99,6 +102,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
             {points
               ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(report.level_lo, report.level_hi, max)}</p>
               : <p className="text-2xl font-bold text-navy">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
+            {!points && run.skill !== 'geo_evaluate' && schoolMarks && <p className="text-[15px] font-semibold text-amber-800">About {schoolMarks}</p>}
             {run.skill === 'geo_evaluate' && showMark && <p className="text-[15px] font-semibold text-amber-800">{geoEvaluateBand(report.level_lo, report.level_hi)} of 9</p>}
             {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{points ? 'The reads did not fully agree on this one. Use the points below.' : humanitiesStatusLine('held')}</p>}
           </div>

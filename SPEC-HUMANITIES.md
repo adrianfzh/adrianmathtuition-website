@@ -270,6 +270,24 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **H — SCHOOL-STYLE MARKS + GEOGRAPHY SHORT QUESTIONS FROM SCHOOL, 15 Oct 2026 (preview only, switch closed).**
+> Adrian: "yes" (to: show marks the way schools do; mark a school's "Describe/Explain" Geography question).
+> - **Marks beside the level.** `lib/humanities-marks.ts`: the mark range schools give each of OUR levels, per type and
+>   total, read from the ~500 banked school schemes on 15 Oct 2026 (their extra levels folded into ours by what each
+>   asks); a total not in the table is scaled. The report page says "Level 2–3 of 4" then "About 3–5 out of 6 marks";
+>   the answer cards say both. The mark total is the question's printed marks, else the type's usual total.
+>   The reader still settles a level only — §5's "never a mark" is replaced by this range. Home's line now says
+>   students get "a level, about how many marks it would earn, and the one thing that would lift it"; the old
+>   "This is feedback, not a mark" line is gone (no disclaimers).
+> - **Geography short questions from school.** `geo_describe` / `geo_explain` join "A question from school": the
+>   form adds the marks (read from "[4]" or typed), a box for the figure or table, and an optional box for **the
+>   school's answers**. At hand-in `lib/humanities-own-points.ts` writes the list of creditable points once (Opus on
+>   the API key, one call — from the school's answers when given, else from the question and the syllabus, in
+>   `geography-brief.md`'s shape) and stores it on `own_question`; the same point-marking reader then marks it.
+> - Checked 15 Oct as the demo student: an "Explain how mangroves protect a coastline [4]" answer → a points list of
+>   four, marked "1–2 of 4 marks", the point made shown, three to add. **Not benched**: the written list may differ
+>   from a teacher's when no school answers are given.
+
 > **G — A QUESTION FROM SCHOOL, 15 Oct 2026 (preview only, switch closed).** Adrian: "why don't we just allow
 > student to take a photo and upload the question, or just type it, then their responses > then grade it?"
 > - Home (every subject tab) → **A question from school** → `/app/humanities/own`: the subject, then three boxes —

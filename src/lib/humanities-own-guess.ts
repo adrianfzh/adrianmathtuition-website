@@ -7,7 +7,7 @@ export const OWN_SOURCE_SKILLS: HumanitiesSkill[] = ['inference', 'comparison', 
 export const OWN_SKILLS: Record<HumanitiesSubject, HumanitiesSkill[]> = {
   'social-studies': [...OWN_SOURCE_SKILLS, 'sr_explain', 'sr_weigh'],
   history: [...OWN_SOURCE_SKILLS, 'hist_evaluate'],
-  geography: ['geo_evaluate'],
+  geography: ['geo_describe', 'geo_explain', 'geo_evaluate'],
 };
 
 /** Does the question lean on sources or an extract? */
@@ -18,7 +18,12 @@ export function mentionsSources(question: string): boolean {
 /** The likely type, from the question's wording. null = we cannot tell; the student picks. */
 export function guessSkill(subject: HumanitiesSubject, question: string): HumanitiesSkill | null {
   const q = question.toLowerCase().replace(/\s+/g, ' ');
-  if (subject === 'geography') return /to what extent|how far do you agree|do you agree|evaluate/.test(q) ? 'geo_evaluate' : null;
+  if (subject === 'geography') {
+    if (/to what extent|how far do you agree|do you agree|evaluate/.test(q)) return 'geo_evaluate';
+    if (/\b(describe|identify|state|name|compare|outline|give)\b/.test(q) && !/\b(explain|why|suggest|account for)\b/.test(q)) return 'geo_describe';
+    if (/\b(explain|why|suggest|account for|how)\b/.test(q)) return 'geo_explain';
+    return null;
+  }
   const withSources = /\bsources?\b/.test(q) && !/\bextracts?\b/.test(q);
   if (withSources) {
     if (/using the sources|how far do the sources|sources in this case study|the sources (support|agree)/.test(q)) return 'how_far';

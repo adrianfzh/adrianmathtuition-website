@@ -8,10 +8,12 @@ import { humanitiesOpen } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { countHumanitiesToday } from '@/lib/humanities-runs';
 import { submitHumanities, DAILY_HUMANITIES_CAP } from '@/lib/humanities-submit';
-import { checkOwn } from '@/lib/humanities-own';
+import { checkOwn, isOwnPoints } from '@/lib/humanities-own';
+import { writeOwnPoints } from '@/lib/humanities-own-points';
 import { sgtDayStartISO } from '@/lib/sgt';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const account = await sessionAccount();
@@ -27,17 +29,24 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({})) as Record<string, unknown>;
   const checked = checkOwn(body);
   if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
+  let own = checked.own;
+  if (isOwnPoints(own.skill)) {
+    // A Geography short question: write its list of creditable points first (lib/humanities-own-points).
+    const pts = await writeOwnPoints(own);
+    if (!pts) return NextResponse.json({ error: 'We could not set up the marking for this question. Try again in a minute.' }, { status: 503 });
+    own = { ...own, ...pts };
+  }
 
   const out = await submitHumanities({
     identity: sid,
     studentName: account.display_name,
     questionId: '',
-    own: checked.own,
+    own,
     answer: String(body.answer ?? ''),
     source: 'app',
   });
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status });
 
-  await getSupabaseAdmin().from('portal_event_log').insert({ identity: sid, kind: 'humanities:submit', detail: { id: out.id, own: true, subject: checked.own.subject, skill: checked.own.skill } }).then(() => {});
+  await getSupabaseAdmin().from('portal_event_log').insert({ identity: sid, kind: 'humanities:submit', detail: { id: out.id, own: true, subject: own.subject, skill: own.skill, scheme: !!own.scheme } }).then(() => {});
   return NextResponse.json({ id: out.id, state: 'queued' });
 }

@@ -6,8 +6,8 @@
 // our own questions. Only level-marked types: a Geography short question needs its own list of creditable
 // points, which a school question does not come with. Pure; stored on the run as `own_question`.
 import {
-  schemeFor, SUBJECT_NAME,
-  type HumanitiesSkill, type HumanitiesSubject, type HumanitiesSet, type QuestionInContext,
+  schemeFor, SUBJECT_NAME, POINTS_SKILLS,
+  type HumanitiesSkill, type HumanitiesSubject, type HumanitiesSet, type QuestionInContext, type CreditPoint,
 } from './humanities-questions';
 
 export interface OwnQuestion {
@@ -17,7 +17,16 @@ export interface OwnQuestion {
   /** The sources or extract, as typed out (one block; the student's own Source A, B … labels inside). */
   sources: string;
   marks?: number | null;
+  /** Geography short questions (point-marked): the school's answer scheme if the student gave one. */
+  scheme?: string;
+  /** The creditable points, written at hand-in from `scheme` or from the question (lib/humanities-own-points). */
+  points?: CreditPoint[];
+  command?: string;
+  develop?: boolean;
+  rules?: string[];
 }
+
+export const isOwnPoints = (skill: string): boolean => (POINTS_SKILLS as readonly string[]).includes(skill);
 
 export const OWN_PREFIX = 'own-';
 export const isOwnId = (id: string): boolean => id.startsWith(OWN_PREFIX);
@@ -25,12 +34,13 @@ export const OWN_MAX_QUESTION = 1500;
 export const OWN_MAX_SOURCES = 12000;
 
 import { OWN_SKILLS, OWN_SOURCE_SKILLS as SOURCE } from './humanities-own-guess';
+import { printedMarks } from './humanities-marks';
 export { OWN_SKILLS, guessSkill, mentionsSources } from './humanities-own-guess';
 
 export type OwnCheck = { ok: true; own: OwnQuestion } | { ok: false; error: string };
 
 /** Tidy and check what the student sent. */
-export function checkOwn(input: { subject?: unknown; skill?: unknown; question?: unknown; sources?: unknown; marks?: unknown }): OwnCheck {
+export function checkOwn(input: { subject?: unknown; skill?: unknown; question?: unknown; sources?: unknown; marks?: unknown; scheme?: unknown }): OwnCheck {
   const subject = String(input.subject ?? '') as HumanitiesSubject;
   if (!(subject in OWN_SKILLS)) return { ok: false, error: 'Pick the subject.' };
   const skill = String(input.skill ?? '') as HumanitiesSkill;
@@ -44,21 +54,35 @@ export function checkOwn(input: { subject?: unknown; skill?: unknown; question?:
     return { ok: false, error: 'This question uses sources. Add them (type them, or send a photo).' };
   }
   const m = Number(input.marks);
-  const marks = Number.isInteger(m) && m > 0 && m <= 30 ? m : null;
+  const marks = Number.isInteger(m) && m > 0 && m <= 30 ? m : printedMarks(question);
+  const scheme = String(input.scheme ?? '').replace(/\r\n?/g, '\n').trim().slice(0, OWN_MAX_SOURCES);
+  if (isOwnPoints(skill)) {
+    // One mark a point: the total must be known to mark it.
+    if (!marks) return { ok: false, error: 'Add the marks for this question, for example [4].' };
+    return { ok: true, own: { subject, skill, question, sources, marks, ...(scheme ? { scheme } : {}) } };
+  }
   return { ok: true, own: { subject, skill, question, sources, marks } };
 }
 
 /** The question in the shape the reader and the report already take. */
 export function ownContext(id: string, own: OwnQuestion): QuestionInContext | null {
-  const scheme = schemeFor(own.skill);
+  const points = isOwnPoints(own.skill);
+  if (points && !(own.points?.length && own.marks)) return null;
+  const scheme = points
+    ? { label: own.command ? own.command[0].toUpperCase() + own.command.slice(1) : 'Geography', asks: '', levels: [], lifts: [], slips: [] }
+    : schemeFor(own.skill);
   if (!scheme) return null;
-  const kind = SOURCE.includes(own.skill) ? 'source' : 'structured';
-  const sources = own.sources ? [{ id: kind === 'source' ? 'The sources' : 'The extract', provenance: 'As given with the question.', text: own.sources }] : [];
+  const kind = points ? 'points' : SOURCE.includes(own.skill) ? 'source' : 'structured';
+  const label = points ? 'The figure or table' : kind === 'source' ? 'The sources' : 'The extract';
+  const sources = own.sources ? [{ id: label, provenance: 'As given with the question.', text: own.sources }] : [];
   const set: HumanitiesSet = {
     id, subject: own.subject, kind, title: 'Your own question',
     issue: `A ${SUBJECT_NAME[own.subject]} question the student brought from school.`,
     sources,
-    questions: [{ id, skill: own.skill, sources: sources.map(s => s.id), question: own.question, ...(own.marks ? { marks: own.marks } : {}) }],
+    questions: [{
+      id, skill: own.skill, sources: sources.map(s => s.id), question: own.question, ...(own.marks ? { marks: own.marks } : {}),
+      ...(points ? { points: own.points, command: own.command ?? 'explain', develop: !!own.develop, rules: own.rules ?? [] } : {}),
+    }],
   };
   return { set, question: set.questions[0], sources, inView: sources, scheme };
 }

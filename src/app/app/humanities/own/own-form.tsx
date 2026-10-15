@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { fileToJpegDataUrl } from '@/app/app/practice/image-downscale';
 import { guessSkill, mentionsSources, OWN_SOURCE_SKILLS } from '@/lib/humanities-own-guess';
 import type { OwnQuestion } from '@/lib/humanities-own';
+import { printedMarks } from '@/lib/humanities-marks';
 import type { HumanitiesSkill, HumanitiesSubject } from '@/lib/humanities-questions';
 
 const MAX_PAGES = 4;
@@ -17,7 +18,8 @@ const SUBJECTS: { key: HumanitiesSubject; label: string }[] = [
 const SOURCE_SKILLS: string[] = OWN_SOURCE_SKILLS;
 const words = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
 
-type Mode = 'question' | 'sources' | 'answer';
+type Mode = 'question' | 'sources' | 'scheme' | 'answer';
+const POINT_SKILLS = ['geo_describe', 'geo_explain'];
 
 function PhotoButton({ label, busy, onFiles }: { label: string; busy: boolean; onFiles: (f: FileList | null) => void }) {
   const ref = useRef<HTMLInputElement>(null);
@@ -45,6 +47,8 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
   const [question, setQuestion] = useState(prefill?.question ?? '');
   const [sources, setSources] = useState(prefill?.sources ?? '');
   const [answer, setAnswer] = useState('');
+  const [scheme, setScheme] = useState(prefill?.scheme ?? '');
+  const [marksTyped, setMarksTyped] = useState(prefill?.marks ? String(prefill.marks) : '');
   const [picked, setPicked] = useState<HumanitiesSkill | ''>(prefill?.skill ?? '');
   const [reading, setReading] = useState<Mode | null>(null);
   const [busy, setBusy] = useState(false);
@@ -53,11 +57,13 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
 
   const guessed = guessSkill(subject, question);
   const skill = (picked && skills[subject].includes(picked) ? picked : guessed) ?? '';
-  const needsSources = SOURCE_SKILLS.includes(skill) || mentionsSources(question);
-  const gaps = [question, sources, answer].some(t => t.includes('[?]'));
+  const pointsQ = POINT_SKILLS.includes(skill);
+  const needsSources = SOURCE_SKILLS.includes(skill) || mentionsSources(question) || pointsQ;
+  const marks = printedMarks(question) ?? (Number(marksTyped) > 0 ? Number(marksTyped) : null);
+  const gaps = [question, sources, scheme, answer].some(t => t.includes('[?]'));
   const wc = words(answer);
   const ready = !busy && !reading && !gaps && !!skill && words(question) >= 4 && wc >= 3 && wc <= maxWords
-    && (!SOURCE_SKILLS.includes(skill) || words(sources) >= 10);
+    && (!SOURCE_SKILLS.includes(skill) || words(sources) >= 10) && (!pointsQ || !!marks);
 
   async function read(mode: Mode, list: FileList | null) {
     const files = Array.from(list ?? []).slice(0, MAX_PAGES);
@@ -67,12 +73,14 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
       const images = await Promise.all(files.map(async f => ({ data: await fileToJpegDataUrl(f), mediaType: 'image/jpeg' })));
       const r = await fetch('/api/portal/humanities/transcribe', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mode, questionText: question, images }),
+        // The school's scheme is printed or typed text too: read it as printed.
+        body: JSON.stringify({ mode: mode === 'scheme' ? 'sources' : mode, questionText: question, images }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setError(j.error || 'We could not read the photo.'); return; }
       if (mode === 'question') setQuestion(j.text);
       else if (mode === 'sources') setSources(prev => (prev.trim() ? `${prev.trim()}\n\n${j.text}` : j.text));
+      else if (mode === 'scheme') setScheme(prev => (prev.trim() ? `${prev.trim()}\n\n${j.text}` : j.text));
       else setAnswer(j.text);
       setCheckNote(mode);
     } catch {
@@ -87,7 +95,7 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
     try {
       const r = await fetch('/api/portal/humanities/own', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, skill, question, sources: needsSources ? sources : '', answer }),
+        body: JSON.stringify({ subject, skill, question, sources: needsSources ? sources : '', answer, marks, ...(pointsQ ? { scheme } : {}) }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) { setError(j.error || 'Something went wrong.'); setBusy(false); return; }
@@ -133,26 +141,42 @@ export default function OwnForm({ initialSubject, prefill, skills, labels, maxWo
             </select>
           </label>
         )}
-        {subject === 'geography' && (
-          <p className="text-[12px] text-gray-500 mt-2">For Geography we can read the longer &ldquo;To what extent do you agree?&rdquo; questions only.</p>
+        {pointsQ && !printedMarks(question) && (
+          <label className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
+            <span className="shrink-0">Marks:</span>
+            <input type="number" inputMode="numeric" min={1} max={30} value={marksTyped} onChange={e => setMarksTyped(e.target.value)}
+              className="w-20 rounded-xl border border-black/10 bg-white px-2 py-1 text-[14px] text-navy" />
+          </label>
         )}
       </div>
 
       {needsSources && (
         <div className={box}>
           <div className="flex items-center justify-between gap-2">
-            {head(2, 'The sources')}
+            {head(2, pointsQ ? 'The figure or table (if any)' : 'The sources')}
             <PhotoButton label="Photos" busy={reading === 'sources'} onFiles={f => read('sources', f)} />
           </div>
           <textarea value={sources} onChange={e => setSources(e.target.value)} rows={5}
-            placeholder="Type the sources this question uses, or send photos of them." className={area} />
+            placeholder={pointsQ ? 'If the question uses a figure, map, photo or table, send a photo of it.' : 'Type the sources this question uses, or send photos of them.'} className={area} />
           {note('sources')}
+        </div>
+      )}
+
+      {pointsQ && (
+        <div className={box}>
+          <div className="flex items-center justify-between gap-2">
+            {head(3, "The school's answers (if you have them)")}
+            <PhotoButton label="Photos" busy={reading === 'scheme'} onFiles={f => read('scheme', f)} />
+          </div>
+          <textarea value={scheme} onChange={e => setScheme(e.target.value)} rows={3}
+            placeholder="If your teacher gave out the answers for this question, add them. We mark against them." className={area} />
+          {note('scheme')}
         </div>
       )}
 
       <div className={box}>
         <div className="flex items-center justify-between gap-2">
-          {head(needsSources ? 3 : 2, 'Your answer')}
+          {head(pointsQ ? 4 : needsSources ? 3 : 2, 'Your answer')}
           <PhotoButton label="Photo" busy={reading === 'answer'} onFiles={f => read('answer', f)} />
         </div>
         <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={8}

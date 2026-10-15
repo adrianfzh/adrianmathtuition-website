@@ -4,6 +4,7 @@ import type { HumanitiesListRow } from '@/lib/humanities-runs';
 import { levelLabel, marksLabel } from '@/lib/humanities-report';
 import { GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { questionById } from '@/lib/humanities-questions';
+import { marksForLevels, printedMarks } from '@/lib/humanities-marks';
 import { skillLabel } from './skills';
 
 function when(iso: string): string {
@@ -18,7 +19,7 @@ export function AnswerCard({ row }: { row: HumanitiesListRow }) {
   const state = read && points && row.level_lo != null && row.level_hi != null
     ? (GEOGRAPHY_MARKS_OPEN_TO_STUDENTS && row.levels_max ? marksLabel(row.level_lo, row.level_hi, row.levels_max) : 'Read — see what to add')
     : read && row.level_lo && row.level_hi && row.levels_max
-    ? levelLabel(row.level_lo, row.level_hi, row.levels_max)
+    ? [levelLabel(row.level_lo, row.level_hi, row.levels_max), row.skill === 'geo_evaluate' ? null : marksForLevels(row.skill, ctx?.question.marks ?? (row.own_title ? printedMarks(row.own_title) : null), row.level_lo, row.level_hi)].filter(Boolean).join(' · ')
     : row.status === 'failed' ? 'Not read — hand it in again' : 'Being read…';
   return (
     <Link href={`/app/humanities/${row.id}`}

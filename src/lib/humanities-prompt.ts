@@ -32,6 +32,8 @@ export function buildHumanitiesPayload(ctx: QuestionInContext, answer: string): 
       ...(q.table ? [{ id: q.table.caption, provenance: '', text: tableText(q.table) }] : []),
       ...(q.diagram && diagramByKey(q.diagram.key) ? [{ id: q.diagram.caption, provenance: '', text: diagramText(diagramByKey(q.diagram.key)!) }] : []),
       ...(q.photo && photoByKey(q.photo.key) ? [{ id: q.photo.caption, provenance: '', text: photoText(photoByKey(q.photo.key)!) }] : []),
+      // A question brought from school (lib/humanities-own): its figure or table, typed out by the student.
+      ...ctx.sources.map(x => ({ id: x.id, provenance: x.provenance, text: x.text })),
     ],
     points: { max: maxOf(q), develop: !!q.develop, command: q.command ?? 'explain', list: q.points ?? [], rules: q.rules ?? [] },
   };
