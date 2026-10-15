@@ -834,6 +834,37 @@ a.nx-eyebrow:hover {
   color: var(--nx-navy);
   text-decoration: underline;
 }
+/* Skill layout (lib/notes-skill.ts, 15 Oct 2026): Key idea box first, the
+   worked examples, then the Common mistake box. Navy = the rule to learn,
+   rose = the trap. One idea a line, so paragraphs sit close. */
+.nx-skill {
+  margin: 0.75rem 0;
+  padding: 0.6rem 0.85rem 0.35rem;
+  border-radius: 10px;
+  border: 1px solid var(--nx-navy-line);
+  background: var(--nx-navy-soft);
+}
+.nx-skill-mistake {
+  border-color: var(--nx-rose-line);
+  background: var(--nx-rose-wash);
+}
+.nx-skill-label {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--nx-navy);
+}
+.nx-skill-mistake .nx-skill-label {
+  color: var(--nx-rose-deep);
+}
+.nx-skill .notes-prose p {
+  margin: 0 0 0.45rem;
+}
+.nx-skill .notes-prose .katex-display {
+  margin: 0.3rem 0 0.5rem;
+}
 @media (prefers-reduced-motion: reduce) {
   .nx-fold-head .nx-chevron {
     transition: none;

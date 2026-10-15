@@ -15,6 +15,7 @@ import { notesViewer } from '@/lib/notes-viewer';
 import { approvedSections } from '@/lib/notes-units';
 import { getLevelIndex, getNotesTree, getSubgroupPage, getTopicPage } from '@/lib/notes-data';
 import { cleanDescription, cleanTitle } from '@/lib/notes-text';
+import { ensureAnswerLine, type SkillNotes } from '@/lib/notes-skill';
 import {
   groupByFamily,
   levelLabel,
@@ -354,7 +355,8 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
               two taps from the topic page to any solution, no navigation. */}
           <div className="nx-list">
             {data.subgroups.map(s => {
-              const desc = cleanDescription(s.description).summary;
+              // A written skill intro replaces the filer's description.
+              const desc = s.skill.intro ?? cleanDescription(s.description).summary;
               return (
                 <details key={s.url} className="nx-fold">
                   <summary className="nx-fold-head">
@@ -376,12 +378,14 @@ async function TopicIndex({ level, topicSlugParam }: { level: string; topicSlugP
                     </span>
                   </summary>
                   <div className="nx-fold-body">
+                    <SkillIdea skill={s.skill} />
                     {s.examples.map((ex, i) => (
                       <Example
                         key={ex.id}
                         snippet={{ id: `t-${ex.id}`, card_title: ex.card_title, content: ex.content, n: i + 1 }}
                       />
                     ))}
+                    <SkillMistake skill={s.skill} />
                     <Link href={s.url} className="nx-fold-open">
                       Open this set as its own page ↗
                     </Link>
@@ -532,9 +536,31 @@ function Example({ snippet }: { snippet: NumberedSnippet }) {
         </svg>
       </summary>
       <div className="nx-ex-body">
-        <NotesMarkdown content={snippet.content} />
+        <NotesMarkdown content={ensureAnswerLine(snippet.content)} />
       </div>
     </details>
+  );
+}
+
+/** Step 1 of every skill (lib/notes-skill.ts): the key idea, always open. */
+function SkillIdea({ skill }: { skill: SkillNotes }) {
+  if (!skill.idea) return null;
+  return (
+    <div className="nx-skill nx-skill-idea">
+      <p className="nx-skill-label">Key idea</p>
+      <NotesMarkdown content={skill.idea} />
+    </div>
+  );
+}
+
+/** Last step of every skill: the common mistake, after the examples. */
+function SkillMistake({ skill }: { skill: SkillNotes }) {
+  if (!skill.mistake) return null;
+  return (
+    <div className="nx-skill nx-skill-mistake">
+      <p className="nx-skill-label">⚠️ Common mistake</p>
+      <NotesMarkdown content={skill.mistake} />
+    </div>
   );
 }
 
@@ -567,7 +593,10 @@ async function SubgroupPage({
   if (!data) notFound();
 
   const url = subgroupUrl(level, data.topic, data.subgroup.name);
-  const { summary, example } = cleanDescription(data.subgroup.description);
+  const described = cleanDescription(data.subgroup.description);
+  // A written skill intro replaces the filer's description and its "e.g.".
+  const summary = data.skill.intro ?? described.summary;
+  const example = data.skill.intro ? null : described.example;
 
   // Examples are numbered continuously down the page, not restarted per section
   // — "example 7" has to mean one thing when Adrian says it in a lesson.
@@ -627,6 +656,7 @@ async function SubgroupPage({
         </>
       }
     >
+      <SkillIdea skill={data.skill} />
       {sections.map(({ section, items }) => (
         <section key={section.id}>
           {showSections && (
@@ -639,6 +669,7 @@ async function SubgroupPage({
           ))}
         </section>
       ))}
+      <SkillMistake skill={data.skill} />
       <script dangerouslySetInnerHTML={{ __html: OPEN_FROM_HASH }} />
     </PageFrame>
   );

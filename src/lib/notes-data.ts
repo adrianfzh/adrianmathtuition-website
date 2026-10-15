@@ -14,6 +14,7 @@ import {
   type UnitSection,
 } from './notes-units';
 import { topicSlug } from './topic-slug';
+import { NO_SKILL_NOTES, SKILL_NOTE_KINDS, skillNotesBySubgroup, type SkillNoteRow, type SkillNotes } from './notes-skill';
 import { audienceBadge, subgroupInTree, visibleSubgroups } from './subgroup-visibility';
 import {
   buildPageTree,
@@ -245,6 +246,28 @@ const loadTopicCards = cache((level: string): Promise<TopicCardRow[]> =>
 );
 
 /**
+ * The key idea + common mistake rows of each skill (lib/notes-skill.ts), for a
+ * set of sub-groups. Same published/feature filter as the examples.
+ */
+async function loadSkillNotes(cacheKey: string, ids: number[]): Promise<Map<number, SkillNotes>> {
+  if (ids.length === 0) return new Map();
+  const rows = await notesCache(['skill-notes', cacheKey], async () => {
+    const supa = getSupabase();
+    return fetchAllRows<SkillNoteRow>((from, to) =>
+      supa
+        .from('content_snippets')
+        .select('subgroup_id, content_kind, card_title, content, order_index')
+        .in('subgroup_id', ids)
+        .in('content_kind', [...SKILL_NOTE_KINDS])
+        .in('feature', [...PUBLISHABLE.features])
+        .eq('is_published', true)
+        .range(from, to),
+    );
+  });
+  return skillNotesBySubgroup(rows);
+}
+
+/**
  * Learning units for one topic, split into sections — every status, because
  * this is the reviewer's read. Privileged client: `learning_units` is not
  * anon-readable, same RLS shape as `topic_cards`.
@@ -395,6 +418,8 @@ export interface TopicPageData {
     examples: { id: string; card_title: string | null; content: string }[];
     /** Admin only: "IP only" / "hidden" / "also IP S1" (sub-group audience). */
     badge: string | null;
+    /** Key idea + common mistake (lib/notes-skill.ts) — empty until written. */
+    skill: SkillNotes;
   }[];
 }
 
@@ -440,6 +465,7 @@ export const getTopicPage = cache(
             .range(from, to),
       );
     });
+    const skillNotes = await loadSkillNotes(`topic-${level}-${topic}`, ids);
     const examplesBySubgroup = new Map<number, { id: string; card_title: string | null; content: string }[]>();
     for (const r of snippetRows) {
       const a = examplesBySubgroup.get(r.subgroup_id) ?? [];
@@ -455,6 +481,7 @@ export const getTopicPage = cache(
         count: counts.get(s.id) ?? 0,
         examples: examplesBySubgroup.get(s.id) ?? [],
         badge: viewer.admin ? audienceBadge(s, level) : null,
+        skill: skillNotes.get(s.id) ?? NO_SKILL_NOTES,
       }))
       .filter(s => s.count > 0);
 
@@ -477,6 +504,8 @@ export interface SubgroupPageData {
   sections: NotesSection[];
   /** Admin only: "IP only" / "hidden" / "also IP S1" (sub-group audience). */
   badge: string | null;
+  /** Key idea + common mistake (lib/notes-skill.ts) — empty until written. */
+  skill: SkillNotes;
 }
 
 /** One sub-group page: its snippets, split into display_group sections. A
@@ -519,6 +548,7 @@ export const getSubgroupPage = cache(
       );
     });
     if (snippets.length === 0) return null;
+    const skill = (await loadSkillNotes(`subgroup-${subgroup.id}`, [subgroup.id])).get(subgroup.id) ?? NO_SKILL_NOTES;
 
     return {
       topic,
@@ -529,6 +559,7 @@ export const getSubgroupPage = cache(
         meta.filter(m => m.topic === topic),
       ),
       badge: viewer.admin ? audienceBadge(subgroup, level) : null,
+      skill,
     };
   },
 );

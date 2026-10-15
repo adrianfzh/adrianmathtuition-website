@@ -81,3 +81,61 @@ Student login (portal auth), health-check entry, analytics per page, possible
 - No new Airtable/Supabase columns in Phase 1.
 - One session in this repo at a time — check `git status` + recent pushes
   before starting (parallel-session collisions happened 2026-08-04).
+
+## Skill layout — one topic organised (15 Oct 2026, Adrian: "okay go ahead")
+
+**Where things stand:** ONE sample topic done — **A Math · Quadratic Functions**
+(`/notes/am/quadratic-functions`), waiting for Adrian to read it on his phone.
+**Do not lay out another topic until he says yes to the sample.** Notes are still
+closed to students (`NOTES_OPEN_TO_STUDENTS = false`).
+
+Why: the notes were closed on 29 Aug 2026 because they did not read as one
+organised set — headings in internal cluster words ("Coefficient Recovery from
+Geometric Conditions"), long descriptions written for the question filer, a
+"pitfall" mixed in as an example, examples filed under the wrong skill.
+
+**The fixed order, every skill (= one sub-group), every topic:**
+1. **Heading** — the sub-group `name`, in a student's words.
+2. **One line** under it — what the skill is (the `skill_idea` row's `card_title`).
+   It replaces the sub-group `description` on /notes (that column stays as it is:
+   the question filer reads it).
+3. **Key idea** box — the formula / rule, one idea a line (`content_kind 'skill_idea'`).
+4. **Worked examples**, easiest first (`order_index`). Each one: **Question:** →
+   **Solution:** one step a line → a bold **Answer:** line last. An optional
+   **Check:** after it. No mark codes, no "Key formula" inside an example (that is
+   the Key idea), no ⚠️ inside an example (that is the mistake).
+5. **Common mistake** box — what goes wrong, then what to do (`'skill_mistake'`).
+
+Skills are in **learning order** (`subgroups.order_index` 1..n): the basic
+technique first, then what builds on it.
+
+**Where it lives.** All in Supabase `content_snippets`, filed by `subgroup_id`;
+`display_group` is cleared (NULL falls back to the skill name, so no second set of
+headings). `'skill_idea'` / `'skill_mistake'` rows are `feature 'web'` — the /revise
+swipe decks read only `worked_example` / `recall_card`, so they never see them.
+Reader: `lib/notes-skill.ts` (pure/tested) → `getTopicPage` / `getSubgroupPage`
+(`lib/notes-data.ts`) → `SkillIdea` / `SkillMistake` in `app/notes/[[...slug]]/page.tsx`.
+Renderer net for topics not yet laid out: an example whose last block is a lone
+`$$\boxed{…}$$` shows it as a bold **Answer:** line (`ensureAnswerLine`).
+
+**How to lay out the next topic (after Adrian's yes):**
+1. Read the topic's sub-groups and every published example (and its recall cards
+   for the key ideas).
+2. Write `scripts/notes-layout/topics/<level>-<topic>.mjs` — copy the Quadratic
+   Functions file's shape. Every published example must be placed in a skill or
+   listed in `unpublish` (the script refuses otherwise). Move a misfiled example
+   to the right skill; a skill with no example gets a new one (`key`).
+3. Check every answer by computer (`scripts/notes-layout/check-quadratic-functions.py`
+   is the pattern; `/usr/bin/python3` has sympy).
+4. `node scripts/notes-layout/apply.mjs <name>` (dry run), then `--write` — it saves
+   every row it touches to `_backups/notes-layout-<name>-<time>.json` first (the
+   rollback) and is safe to re-run.
+5. Look at the page at phone width (admin cookie), then tell Adrian.
+
+What the sample changed (Quadratic Functions): 9 skills in learning order; 4
+renamed (Word problems: greatest or least value · Finding unknown constants from
+the curve · Line of symmetry and reflecting the curve · Sum and product of roots);
+the six sum-and-product examples moved out of "finding constants" into their own
+skill; the discriminant example moved out of "line meets curve"; 2 new examples
+for "finding constants"; the "line meets curve" example now finds the length AB;
+the min-value pitfall became skill 1's Common mistake (row unpublished, kept).
