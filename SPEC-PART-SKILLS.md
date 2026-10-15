@@ -31,3 +31,6 @@ Why a new table and not new rows in `question_subgroups`: `question_subgroups` a
 ## Not decided / risks
 - Each long question needs a reader per part, so the Opus plan usage is several times today's per-question cost; the re-tag is weeks of lanes, not days.
 - `part_path` must match how `parts[]` nests (`subparts` / `parts`); a re-extracted question orphans its rows (key on question_id + path, delete on re-extraction).
+
+## Next step (Adrian said yes, 15 Oct 2026)
+When the re-tag has finished (`FILING_PARTS=1` status shows 0 for both banks, `select * from question_main_vs_parts` looked at), adopt the part table in ONE place first: the bleed table / "where marks are lost" (report only, cannot change what a student is served). Then Practice photo, then Find, one at a time, each checked for what students are served. Remind Adrian when the re-tag backlog reaches 0.
