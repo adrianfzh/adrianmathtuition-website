@@ -95,7 +95,7 @@ In "transcribedLines", return these same lines in the same order — exactly one
   // nextStep or lineComment names the correct route, it names HIS route in his
   // words. Placed after the marking rules like the traps so it cannot move a mark.
   const methodRule = methods.length
-    ? `\nAdrian's own method for this question type, in his words. Use it ONLY to phrase the feedback — when a comment or next step names the correct route, name this route the way he does, and quote its watch-out when the student's own working shows that slip. It must never change awarded/outOf, and an alternative valid method the student used still earns full credit:\n` +
+    ? `\nAdrian's own method for this question type, in his words. Use it ONLY to phrase the feedback — when a comment or next step names the correct route, name this route the way he does, and quote its watch-out when the student's own working shows that slip. It must never change awarded/outOf, an alternative valid method the student used still earns full credit, and the feedback never says whose method it is or names anyone:\n` +
       methods.map(m => `- ${m.question_type ? `${m.question_type}: ` : ''}${m.method}${m.watch_out ? ` Watch out: ${m.watch_out}` : ''}`).join('\n')
     : '';
 

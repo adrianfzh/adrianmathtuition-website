@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   EMPTY_KNOWLEDGE, knowledgeSubjectForLevel, topicList, shapeKnowledge,
   methodHintMarkdown, methodsPromptLines, pitfallsPromptLines, loadTeachingKnowledge,
-  contentWords, filterRedundantMethods, loadDeckPlan,
+  contentWords, filterRedundantMethods, loadDeckPlan, scienceKnowledgeLevel,
 } from './teaching-knowledge';
 
 describe('knowledgeSubjectForLevel (mirror of SQL teaching_subject_for_level)', () => {
@@ -18,11 +18,25 @@ describe('knowledgeSubjectForLevel (mirror of SQL teaching_subject_for_level)', 
     expect(knowledgeSubjectForLevel('S1')).toBe('S1');
     expect(knowledgeSubjectForLevel('S2')).toBe('S2');
   });
-  it('sends science levels nowhere — CHEM must not read as EM', () => {
-    expect(knowledgeSubjectForLevel('CHEM')).toBeNull();
-    expect(knowledgeSubjectForLevel('PHY')).toBeNull();
-    expect(knowledgeSubjectForLevel('BIO')).toBeNull();
-    expect(knowledgeSubjectForLevel('S3_BIO')).toBeNull();
+  it('sends science levels to the science shelf — CHEM must not read as EM (15 Oct 2026)', () => {
+    expect(knowledgeSubjectForLevel('CHEM')).toBe('CHEM');
+    expect(knowledgeSubjectForLevel('CS_CHEM_NA')).toBe('CHEM');
+    expect(knowledgeSubjectForLevel('S3_CHEM')).toBe('CHEM');
+    expect(knowledgeSubjectForLevel('PHY')).toBe('PHYS');
+    expect(knowledgeSubjectForLevel('PHYS')).toBe('PHYS');
+    expect(knowledgeSubjectForLevel('CS_PHYS')).toBe('PHYS');
+    expect(knowledgeSubjectForLevel('BIO')).toBe('BIO');
+    expect(knowledgeSubjectForLevel('S3_BIO')).toBe('BIO');
+    expect(knowledgeSubjectForLevel('CS_BIO_NA')).toBe('BIO');
+    expect(knowledgeSubjectForLevel('SCI')).toBeNull();
+  });
+  it('scienceKnowledgeLevel: a science question never asks with S1/S2 (that is the maths shelf)', () => {
+    expect(scienceKnowledgeLevel('chemistry', 'CS_CHEM_NA')).toBe('CS_CHEM_NA');
+    expect(scienceKnowledgeLevel('physics', 'PHYS')).toBe('PHYS');
+    expect(scienceKnowledgeLevel('biology', 'S2')).toBe('BIO');
+    expect(scienceKnowledgeLevel('physics', 'CHEM')).toBe('PHYS'); // a mislabelled row asks its own subject
+    expect(scienceKnowledgeLevel('chemistry', null)).toBe('CHEM');
+    expect(scienceKnowledgeLevel('math', 'AM')).toBeNull();
   });
   it('is null for nothing', () => {
     expect(knowledgeSubjectForLevel('')).toBeNull();
@@ -78,7 +92,7 @@ describe('loadTeachingKnowledge', () => {
   it('skips the RPC entirely when the level has no shelf or there are no topics', async () => {
     let calls = 0;
     const admin = fakeAdmin(async () => { calls++; return { data: {} }; });
-    expect(await loadTeachingKnowledge(admin, { level: 'CHEM', topics: ['Acids'] })).toBe(EMPTY_KNOWLEDGE);
+    expect(await loadTeachingKnowledge(admin, { level: 'SCI', topics: ['Acids'] })).toBe(EMPTY_KNOWLEDGE);
     expect(await loadTeachingKnowledge(admin, { level: 'AM', topics: [] })).toBe(EMPTY_KNOWLEDGE);
     expect(calls).toBe(0);
   });

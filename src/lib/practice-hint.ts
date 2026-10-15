@@ -62,9 +62,18 @@ export function normaliseHint(raw: string | null | undefined): string {
   const lines = text.split(/\r?\n/)
     .map(l => l.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim())
     .filter(l => l.length > 0 && !/^(hint|how to approach it)\s*:?$/i.test(l))
-    .map(l => (l.length > HINT_MAX_LINE_CHARS ? `${l.slice(0, HINT_MAX_LINE_CHARS - 1).trimEnd()}…` : l))
+    .map(clipHintLine)
     .slice(0, HINT_MAX_LINES);
   return lines.join('\n');
+}
+
+/** Cap a line at HINT_MAX_LINE_CHARS — never inside a $…$ formula (a cut formula renders
+ *  as broken maths, 15 Oct 2026): an unclosed $ moves the cut back to before it. */
+export function clipHintLine(l: string): string {
+  if (l.length <= HINT_MAX_LINE_CHARS) return l;
+  let cut = l.slice(0, HINT_MAX_LINE_CHARS - 1);
+  if ((cut.match(/\$/g) || []).length % 2 === 1) cut = cut.slice(0, cut.lastIndexOf('$'));
+  return `${cut.trimEnd().replace(/[,;:]$/, '')}…`;
 }
 
 /** Markdown the practice page renders: one short paragraph per line. */

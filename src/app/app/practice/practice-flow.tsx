@@ -987,7 +987,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
                   className="bg-navy text-[hsl(45,100%,96%)] rounded-lg px-5 py-2 text-sm font-semibold disabled:opacity-40">
                   {grading ? (q.mcq ? 'Checking…' : 'Marking… (≈30s)') : grade ? (q.mcq ? '✅ Check again' : '✏️ Re-mark my working') : (q.mcq ? '✅ Check my answer' : '✅ Get it marked')}
                 </button>}
-                {hint === null && !q.mcq && !q.subject && (
+                {hint === null && !q.mcq && (
                   <button onClick={showHint} disabled={hintLoading}
                     className="bg-white border border-amber-300 text-amber-800 rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
                     {hintLoading ? '💡 Thinking…' : '💡 Hints'}
@@ -1166,7 +1166,7 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
           )}
 
           {/* Solution (both modes) */}
-          {!isStudent && q && hint === null && !q.mcq && !q.subject && (
+          {!isStudent && q && hint === null && !q.mcq && (
             <button onClick={showHint} disabled={hintLoading}
               className="mr-2 bg-amber-500 text-white rounded-lg px-4 py-2 text-sm font-semibold disabled:opacity-50">
               {hintLoading ? '💡 Thinking…' : '💡 Hints'}

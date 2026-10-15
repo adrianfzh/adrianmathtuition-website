@@ -40,7 +40,7 @@ export type KnowledgeFormula = {
 };
 
 export type TeachingKnowledge = {
-  subject: string | null; // AM | EM | JC | S1 | S2, or null when the level has no knowledge shelf
+  subject: string | null; // AM | EM | JC | S1 | S2 | CHEM | PHYS | BIO, or null when the level has no knowledge shelf
   methods: KnowledgeMethod[];
   pitfalls: KnowledgePitfall[];
   formulae: KnowledgeFormula[];
@@ -53,19 +53,33 @@ export const EMPTY_KNOWLEDGE: TeachingKnowledge = Object.freeze({
 /**
  * Level → knowledge subject. TS mirror of the SQL `teaching_subject_for_level`
  * (kept in step by the test): questions carry fine levels (S3_AM, EM_NA,
- * JC2_H1…), the knowledge tables carry AM/EM/JC/S1/S2. Science levels are
- * excluded explicitly — 'CHEM' would otherwise match the EM rule.
+ * JC2_H1…), the knowledge tables carry AM/EM/JC/S1/S2 and, since 15 Oct 2026
+ * (migration `teaching_subject_science`), CHEM/PHYS/BIO. The science checks
+ * come BEFORE the EM rule — 'CHEM' would otherwise read as E Math. Lower-sec
+ * Science shares the bare S1/S2 levels with maths, so a science caller passes
+ * its science level (CHEM/PHYS/BIO, `scienceKnowledgeLevel`), never S1/S2.
  */
 export function knowledgeSubjectForLevel(level: string | null | undefined): string | null {
   const l = String(level || '').trim().toUpperCase();
   if (!l) return null;
-  if (/^(PHY|CHEM|BIO|SCI)/.test(l) || /_(PHY|CHEM|BIO)/.test(l)) return null;
+  if (/^SCI/.test(l)) return null;
+  if (/(^|_)CHEM/.test(l)) return 'CHEM';
+  if (/(^|_)PHY/.test(l)) return 'PHYS';
+  if (/(^|_)BIO/.test(l)) return 'BIO';
   if (l === 'S1') return 'S1';
   if (l === 'S2') return 'S2';
   if (l.startsWith('JC')) return 'JC';
   if (l.includes('AM')) return 'AM';
   if (l.includes('EM')) return 'EM';
   return null;
+}
+
+/** The level a science question asks the shelf with: its bank level when it names the
+ *  subject (CS_CHEM_NA, S3_BIO…), else the subject's own (CHEM/PHYS/BIO) — never S1/S2. */
+export function scienceKnowledgeLevel(subject: string | null | undefined, rowLevel?: string | null): string | null {
+  const own = ({ physics: 'PHYS', chemistry: 'CHEM', biology: 'BIO' } as Record<string, string>)[String(subject || '').toLowerCase()];
+  if (!own) return null;
+  return knowledgeSubjectForLevel(rowLevel) === own ? String(rowLevel) : own;
 }
 
 export type KnowledgeQuery = {

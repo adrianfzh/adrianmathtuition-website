@@ -1,5 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { buildHintPrompt, normaliseHint, hintMarkdown, HINT_MAX_LINES } from './practice-hint';
+import { clipHintLine, buildHintPrompt, normaliseHint, hintMarkdown, HINT_MAX_LINES } from './practice-hint';
+
+describe('clipHintLine', () => {
+  it('never cuts inside a $…$ formula', () => {
+    const line = 'For stability and for equal 2 g samples, place each metal in the reactivity series, and then work out the number of moles of each using $n = \\frac{m}{M_r}$ carefully.';
+    const out = clipHintLine(line);
+    expect(out.length).toBeLessThanOrEqual(160);
+    expect((out.match(/\$/g) || []).length % 2).toBe(0);
+    expect(out.endsWith('…')).toBe(true);
+  });
+  it('leaves a short line alone', () => expect(clipHintLine('Short $x$ line.')).toBe('Short $x$ line.'));
+});
 
 describe('normaliseHint', () => {
   it('returns empty for NONE / blank', () => {

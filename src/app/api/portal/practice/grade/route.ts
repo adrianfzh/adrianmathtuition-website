@@ -17,7 +17,7 @@ import { canTransition, type AssignmentRow } from '@/lib/assignments';
 import { gradeLimit } from '@/lib/grade-limit';
 import { portalIdentity } from '@/lib/portal-auth';
 import { requireActiveAccess } from '@/lib/portal-passes';
-import { loadTeachingKnowledge } from '@/lib/teaching-knowledge';
+import { loadTeachingKnowledge, scienceKnowledgeLevel } from '@/lib/teaching-knowledge';
 import { parseTimedMeta } from '@/lib/timed-set';
 import { parseLadderMeta, ladderAssisted } from '@/lib/proof-ladder';
 import { gradeMcq, isScienceSubject, mcqKey, normaliseMcqChoice, scienceLevelForSubject, scienceLevelsFor } from '@/lib/science-levels';
@@ -137,8 +137,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Structured: the ordinary Opus grader with the physics framing. Daily cap
-    // applies (it costs the same as a math grade); math weakness tags and
-    // pitfalls are not used — they are math vocabulary.
+    // applies (it costs the same as a math grade); math weakness tags are not
+    // used — they are math vocabulary. The science tips are (below).
     const dayStartS = new Date(); dayStartS.setUTCHours(dayStartS.getUTCHours() - 24);
     const { count: usedS } = await admin
       .from('student_attempts').select('id', { count: 'exact', head: true })
@@ -146,11 +146,19 @@ export async function POST(req: NextRequest) {
     if ((usedS || 0) >= DAILY_GRADE_CAP) {
       return NextResponse.json({ error: `Daily limit reached (${DAILY_GRADE_CAP} graded attempts). Back tomorrow!` }, { status: 429 });
     }
+    // The science teaching tips (15 Oct 2026) — the same discipline as maths: feedback
+    // wording only, never a mark, empty on any failure. They live in the MATHS project's
+    // shelf (`admin`), asked with the science level so S1/S2 can never read the maths rows.
+    const sKnowledge = await loadTeachingKnowledge(admin, {
+      level: scienceKnowledgeLevel(scienceSubject, sq.level), topics,
+      context: `${sq.question_text || ''} ${sq.answer || ''}`,
+      methods: 2, pitfalls: 4,
+    });
     let sres;
     try {
       sres = await gradeAttempt({
         question: { ...sq, level: `O-Level ${sciLevel.label}` } as Record<string, unknown>,
-        lines: cleanLines, image: attemptImage, weaknessTags: [], pitfalls: [], subject: scienceSubject,
+        lines: cleanLines, image: attemptImage, weaknessTags: [], pitfalls: sKnowledge.pitfalls, methods: sKnowledge.methods, subject: scienceSubject,
       });
     } catch {
       return NextResponse.json({ error: 'Marking hiccup — try again in a moment' }, { status: 502 });
