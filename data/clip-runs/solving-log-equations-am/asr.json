@@ -16,8 +16,8 @@
   },
   {
    "beat": 3,
-   "bag": 0.92,
-   "score": 0.92,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -28,8 +28,8 @@
   },
   {
    "beat": 5,
-   "bag": 0.9,
-   "score": 0.9,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -40,12 +40,24 @@
   },
   {
    "beat": 7,
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
+  },
+  {
+   "beat": 8,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 8,
+   "beat": 9,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 10,
    "bag": 1,
    "score": 1,
    "heard": null

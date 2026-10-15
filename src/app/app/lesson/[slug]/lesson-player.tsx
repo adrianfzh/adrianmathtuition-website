@@ -332,8 +332,68 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   window.setTimeout(finish, 800); // belt-and-braces if transitionend is swallowed
 }
 
-function EquationStepsView({ scene, step, reduced, timed, board }: {
+/**
+ * Line a clip's notes up under the tokens they explain (Adrian, 15 Oct 2026: "annotation on the
+ * next line with arrow pointing leftwards seem to point to nowhere … put an up arrow so that arrow
+ * points exactly where it needs to be"). The note's ↑ sits under the centre of its token; the words
+ * follow it on the same row when the token is in the left half of the line, else the ↑ stands on
+ * its own row and the words end at the right edge below it. Pure DOM measurement — no state.
+ */
+function placeClipNotes(cont: HTMLElement) {
+  for (const el of Array.from(cont.querySelectorAll<HTMLElement>('.lsn-note-up[data-point-at]'))) {
+    const row = el.parentElement;
+    const tok = cont.querySelector<HTMLElement>(`[data-key="${el.dataset.pointAt}"]`);
+    const arrow = el.querySelector<HTMLElement>('.lsn-note-arrow');
+    if (!row || !tok || !arrow) continue;
+    el.style.paddingLeft = '0px';
+    el.classList.remove('stack');
+    arrow.style.marginLeft = '';
+    const rr = row.getBoundingClientRect();
+    const tr = tok.getBoundingClientRect();
+    const aw = arrow.getBoundingClientRect().width;
+    if (!rr.width || !tr.width) continue;
+    const x = Math.max(0, tr.left + tr.width / 2 - rr.left - aw / 2);
+    if (x <= rr.width * 0.5) {
+      el.style.paddingLeft = `${x.toFixed(1)}px`;
+    } else {
+      el.classList.add('stack');
+      arrow.style.marginLeft = `${x.toFixed(1)}px`;
+    }
+  }
+}
+
+/**
+ * A clip's board must fit on the phone screen with the page at the top (Adrian's phone shots,
+ * 15 Oct 2026: the top of the question or the last line hidden under a bar). When the stage would
+ * run below the bottom bar, the working's maths is scaled down (--lsn-clip-fit, never under 0.7);
+ * words and notes keep their size. Measured, so it holds for any board on any phone.
+ */
+function fitClipBoard(cont: HTMLElement) {
+  const stage = cont.closest<HTMLElement>('.lsn-stage');
+  if (!stage) return;
+  let bar = window.innerHeight;
+  for (const el of Array.from(document.querySelectorAll<HTMLElement>('nav, [data-bottom-bar], body > div *'))) {
+    const cs = getComputedStyle(el);
+    if (cs.position !== 'fixed') continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0 && r.top > window.innerHeight * 0.6 && r.top < bar) bar = r.top;
+  }
+  for (let pass = 0; pass < 3; pass++) {
+    const cur = Number(stage.style.getPropertyValue('--lsn-clip-fit')) || 1;
+    const sr = stage.getBoundingClientRect();
+    const over = sr.bottom + window.scrollY - (bar - 8);
+    const lines = cont.getBoundingClientRect().height;
+    if (over <= 1 && cur >= 1) return;
+    const want = over > 1 ? Math.max(0.7, cur * (lines - over) / lines) : Math.min(1, cur * 1.02);
+    if (Math.abs(want - cur) < 0.01) return;
+    stage.style.setProperty('--lsn-clip-fit', want.toFixed(3));
+  }
+}
+
+function EquationStepsView({ scene, step, reduced, timed, board, clip = false }: {
   scene: EquationStepsScene; step: number; reduced: boolean; timed: boolean; board: BoardState | null;
+  /** A clip: a note under a line points UP at the token it explains (placeClipNotes). */
+  clip?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const prevRevealed = useRef(0);
@@ -384,6 +444,21 @@ function EquationStepsView({ scene, step, reduced, timed, board }: {
 
   const intro = bitsOf(board, 'text:intro');
   const notes = useMemo(() => (board ? sceneNotes(scene) : []), [board, scene]);
+  // A clip's notes point UP at their token: placed before anything is written (the chalk hand
+  // measures a note's letters when it writes them), and again whenever the board reflows.
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (!clip || !cont || !board) return;
+    const place = () => placeClipNotes(cont);
+    const fit = () => { fitClipBoard(cont); placeClipNotes(cont); };
+    fit();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
+    ro?.observe(cont);
+    let live = true;
+    document.fonts?.ready?.then(() => { if (live) fit(); });
+    window.addEventListener('resize', fit);
+    return () => { live = false; ro?.disconnect(); window.removeEventListener('resize', fit); };
+  }, [clip, board === null, notes]);
   return (
     <div className="lsn-body lsn-body-steps flex-1 px-1 py-2">
       {scene.heading && (
@@ -415,7 +490,10 @@ function EquationStepsView({ scene, step, reduced, timed, board }: {
               {/* Handwritten asides beside this line's tokens: slots from mount, drawn on when their beat says so. */}
               {board && notes.some(n => n.line === i) && (
                 <div className="lsn-note-row">
-                  {notes.filter(n => n.line === i).map(n => <NoteSlotView key={n.id} note={n} board={board} />)}
+                  {notes.filter(n => n.line === i).map(n => {
+                    const ti = clip && n.near ? s.tokens.findIndex(t => t.id === n.near) : -1;
+                    return <NoteSlotView key={n.id} note={n} board={board} pointAt={ti >= 0 ? tokKey(i, ti) : undefined} />;
+                  })}
                 </div>
               )}
               {/* The note is the prose the voice reads for this line; the
@@ -1786,15 +1864,36 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         </div>
       </div>
 
+      {/* A clip: a slider to drag to any part (Adrian, 15 Oct 2026: "a drag slider to allow
+          students to go to any parts they want on the clip"). One stop per beat; landing on a
+          beat shows the board up to it and the voice starts that beat. */}
+      {clip && (() => {
+        const stops = scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const));
+        const at = done ? stops.length - 1 : Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
+        return (
+          <div className="lsn-scrub mb-3 px-0.5 flex items-center gap-2">
+            <input type="range" min={0} max={Math.max(0, stops.length - 1)} step={1} value={at}
+              aria-label="Go to a part of the clip"
+              onChange={e => {
+                const [si, k] = stops[Number(e.target.value)] ?? stops[0];
+                setDone(false); setSceneIdx(si); setStep(k);
+              }}
+              className="lsn-scrub-range flex-1"
+              style={{ ['--lsn-scrub' as string]: `${stops.length > 1 ? (at / (stops.length - 1)) * 100 : 0}%` }} />
+            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{stops.length}</span>
+          </div>
+        );
+      })()}
+
       {/* Progress dots — one per scene; the current one stretches. */}
-      <div className="lsn-dots flex items-center gap-1 mb-3 px-0.5" aria-hidden>
+      {!clip && <div className="lsn-dots flex items-center gap-1 mb-3 px-0.5" aria-hidden>
         {scenes.map((_, i) => (
           <span key={i}
             className={`h-1.5 rounded-full ${
               done || i < sceneIdx ? 'w-1.5 bg-navy/60' : i === sceneIdx ? 'w-6 bg-navy' : 'w-1.5 bg-slate-200'}`}
             style={{ transition: `width 300ms ${EASE}, background-color 300ms ease` }} />
         ))}
-      </div>
+      </div>}
 
       {done ? (
         /* ── Completion — the closer CTA ── */
@@ -1832,7 +1931,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
             {scene.type === 'title' && <TitleView scene={scene} minutes={minutes} timed={timed} board={board} />}
             {scene.type === 'caption' && <CaptionView scene={scene} timed={timed} board={board} />}
-            {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
+            {scene.type === 'equation-steps' && <EquationStepsView scene={scene} step={step} reduced={reduced} timed={timed} board={board} clip={clip} />}
             {scene.type === 'graph-morph' && <GraphMorphView scene={scene} step={step} reduced={reduced} board={board} />}
             {scene.type === 'motion-graph' && <MotionGraphView scene={scene} step={step} reduced={reduced} timed={timed} board={board} />}
             {scene.type === 'annotate' && <AnnotateView scene={scene} step={step} timed={timed} board={board} />}
@@ -2080,7 +2179,7 @@ const PLAYER_CSS = `
 /* A clip: one concept on a phone board. The working is the whole picture, so it
    is set large, and the lines stand apart so an arc over or under a row has
    its own air (never across the heading or the next line). */
-[data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45 * var(--lsn-row-scale, 1)); }
+[data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45 * var(--lsn-clip-fit, 1) * var(--lsn-row-scale, 1)); }
 [data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; flex-wrap: nowrap; }
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
 [data-lsn-clip] .lsn-steps { margin-top: 2.6rem; }
@@ -2090,6 +2189,9 @@ const PLAYER_CSS = `
 /* Five lines or more: closer together, so the whole working stays on a phone screen (such a board has margin words, not arcs). */
 [data-lsn-clip] .lsn-steps:has(> :nth-child(5)) > * + * { margin-top: 1.7rem; }
 [data-lsn-clip] .lsn-note-row { margin-top: 0.9rem; }
+/* A board that carries laws beside its lines (the log clips, 15 Oct 2026) is taller: closer lines. */
+[data-lsn-clip] .lsn-steps:has(.lsn-note-up) { margin-top: 1.4rem; }
+[data-lsn-clip] .lsn-steps:has(.lsn-note-up) > * + * { margin-top: 1.25rem; }
 [data-lsn-themed] .lsn-step-note { margin-top: 0.45rem; }
 /* Content sits in the UPPER part of the board with comfortable margins — a
    short scene should not float in the middle of a tall empty slate. */
@@ -2168,6 +2270,20 @@ const PLAYER_CSS = `
 .lsn-arc-label[data-mark="arc-under"] text { fill: var(--lsn-mark-arc-under, var(--lsn-pen, hsl(40, 85%, 52%))); }
 /* In a clip a note is the notes' own margin words ("← Add up like terms"): no "↳" in front. */
 [data-lsn-clip] .lsn-note-row .lsn-note::before { content: none; }
+/* The clip slider: a navy track filled to where the clip is, a thumb big enough for a thumb. */
+.lsn-scrub-range { -webkit-appearance: none; appearance: none; height: 28px; background: transparent; touch-action: none; }
+.lsn-scrub-range::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, hsl(220, 60%, 20%) var(--lsn-scrub), rgb(226, 232, 240) var(--lsn-scrub)); }
+.lsn-scrub-range::-moz-range-track { height: 6px; border-radius: 999px; background: rgb(226, 232, 240); }
+.lsn-scrub-range::-moz-range-progress { height: 6px; border-radius: 999px; background: hsl(220, 60%, 20%); }
+.lsn-scrub-range::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 999px; background: hsl(220, 60%, 20%); border: 3px solid white; box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35); }
+.lsn-scrub-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 999px; background: hsl(220, 60%, 20%); border: 3px solid white; }
+/* A clip's note points UP at its token (placeClipNotes): one note a row, the ↑ under the token. */
+[data-lsn-clip] .lsn-note-row:has(.lsn-note-up) { flex-direction: column; margin-top: 0.35rem; }
+[data-lsn-clip] .lsn-note-up { display: block; width: 100%; }
+[data-lsn-clip] .lsn-note-up .lsn-note-arrow { font-family: ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
+[data-lsn-clip] .lsn-note-up .katex { font-size: 0.98em; }
+[data-lsn-clip] .lsn-note-up.stack { text-align: right; }
+[data-lsn-clip] .lsn-note-up.stack .lsn-note-arrow { display: block; width: max-content; text-align: left; }
 /* An arrow is a clean line: no chalk grain eating into it, a touch finer. */
 [data-lsn-theme="chalk"] .lsn-marks path[data-mark^="arc"] { -webkit-mask-image: none; mask-image: none; stroke-width: 2; opacity: 1; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;

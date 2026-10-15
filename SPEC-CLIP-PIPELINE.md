@@ -162,3 +162,43 @@ against an independent word clock.
 - **Run on the Fly worker** instead of by hand, `job_runs` stamp + `JOB_RHYTHMS` line (§2 step 9).
 - The look's picture read should run AFTER the final look (step 1 ran it on an earlier set while fixes
   were landing; the session re-read the final pictures itself).
+
+### Adrian's first watch (15 Oct 2026, on his phone) — what changed
+
+His notes, in order, and what was done (all are now rules in the bible §1b and the writer's
+instructions, so the next topic starts with them):
+
+1. *"Annotation … with arrow pointing leftwards seem to point to nowhere … put an up arrow so that
+   arrow points exactly where it needs to be."* → in a clip, a note with `near` is drawn with an ↑
+   under the centre of its token (`placeClipNotes`, `lesson-player.tsx`; `NoteSlotView pointAt`).
+2. *"Would be good if the log rules are placed beside so that students can see which rule is used."*
+   → every line made by a law carries the law as its note, in his names (Add Power, Minus Power,
+   Bring down power, log_a a = 1, Take ln, Un-log).
+3. *"Show the intermediate step for the second step (shifting over to the other side)"* and
+   *"show the intermediate step of taking lg on both sides. That's the key step."* → every move his
+   notes write as a line is a board line: log equations, exponential equations, growth and decay
+   (`ln e^(7.5k) = ln 2`) and Linear Law (`ln y = ln A + ln e^(−nx)`) gained a line.
+4. *"Perhaps an overall idea that to solve the equation is to compare logs at the end first."* →
+   the log-equations clip says the aim second, and writes it under the question.
+5. *"A drag slider to allow students to go to any parts they want on the clip."* → a clip shows a
+   slider (one stop per beat) instead of the progress dot; dropping on a beat shows the board up
+   to it and the voice starts that beat.
+6. *"This question is actually under the topic linear law — indicate that. And also compare the
+   equation with Y = mX + c, where Y = ln y and X = x … then show clearly that −n is the gradient m
+   and ln A is the vertical intercept."* → the clip is now "Linear Law with logs" (catalog topic
+   Linear Law), on two boards: compare with Y = mX + c in matching colours, Y = ln y, X = x, then
+   m = −n and c = ln A; the second board reads m and c off the line. Plans may now have two boards
+   (`boards`, each line's `board`, each beat's `board`).
+7. *"Can students interrupt and ask why ln is used when e is involved? And a model answer it?"* —
+   the §2b "Ask about this step" idea; proposed as its own build.
+8. *"Able to generate these solution clips when a student uploads any question? And retain such
+   quality?"* — §5 step 2 (question clips); proposed as its own build.
+
+**After the re-cut (15 Oct 2026, same day):** all 7 pass every check again — rules, maths
+(log equations 8/8, exponential 9/9, growth 11/11, Linear Law 19/19 line checks), board = plan,
+blind read (each changed clip re-read by a fresh reader; lowest score 4), voice (re-voiced: log
+equations, exponential, growth, Linear Law), cues 0.15 s, and the look, which now also fails a board
+taller than the phone screen. The current numbers are in `data/clip-runs/<slug>/gate.json` (the
+table above is the first cut). Extra voice for the re-cut: about 3,000 characters, under US$0.35.
+New in the player: a clip board that would run below the screen scales its maths down to fit
+(`fitClipBoard`, never under 70 %); boards carrying laws set their lines closer.

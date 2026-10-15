@@ -1,6 +1,6 @@
 {
  "slug": "laws-of-logarithms-am",
- "at": "2026-10-15T08:00:40.590Z",
+ "at": "2026-10-15T09:15:47.538Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -24,7 +24,7 @@
   },
   "look": {
    "ok": true,
-   "detail": "9/9 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+   "detail": "11/11 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
   }
  },
  "pass": true

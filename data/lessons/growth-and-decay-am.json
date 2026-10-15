@@ -14,11 +14,6 @@
       "steps": [
         {
           "tokens": [
-            { "tex": "P=P_0e^{kt}", "id": "model" }
-          ]
-        },
-        {
-          "tokens": [
             { "tex": "t=0:", "id": "t0" },
             { "tex": "P_0=100", "id": "p0", "hl": "amber" }
           ]
@@ -36,6 +31,11 @@
         },
         {
           "tokens": [
+            { "tex": "\\ln e^{7.5k}=\\ln 2", "id": "lnboth" }
+          ]
+        },
+        {
+          "tokens": [
             { "tex": "7.5k=\\ln 2", "id": "ln" },
             { "tex": "\\Rightarrow\\;k\\approx 0.0924", "id": "ans", "hl": "emerald" }
           ]
@@ -44,9 +44,7 @@
       "beats": [
         {
           "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
-          "do": [
-            { "do": "write", "step": 0 }
-          ],
+          "do": [],
           "audio": "/lessons/growth-and-decay-am/scene-01-b1.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b1.timing.json"
         },
@@ -69,7 +67,7 @@
           "timing": "/lessons/growth-and-decay-am/scene-01-b3.timing.json"
         },
         {
-          "say": "So two hundred equals one hundred E to the power seven point five K.",
+          "say": "Two hundred equals one hundred E to the power seven point five K. The plan: get the E part alone, then take L N.",
           "do": [
             { "do": "write", "token": "rhs", "on": "equals one hundred" }
           ],
@@ -79,19 +77,27 @@
         {
           "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
           "do": [
-            { "do": "write", "step": 3, "on": "E to the power" }
+            { "do": "write", "step": 2, "on": "E to the power" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b5.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
         },
         {
-          "say": "E is involved, so take L N of both sides. L N E is one, so seven point five K equals L N two.",
+          "say": "E is involved, so take L N of both sides.",
           "do": [
-            { "do": "note", "text": "← ln, because e is involved", "near": "iso" },
-            { "do": "write", "token": "ln", "on": "seven point five K" }
+            { "do": "write", "step": 3, "on": "take L N" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "L N E is one, so the power comes down. Seven point five K equals L N two.",
+          "do": [
+            { "do": "note", "text": "Take ln: $\\ln e^{x} = x$", "near": "lnboth" },
+            { "do": "write", "token": "ln", "on": "Seven point five K" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
         },
         {
           "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
@@ -99,8 +105,8 @@
             { "do": "write", "token": "ans", "on": "K equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "zero point zero" }
           ],
-          "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
-          "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
+          "audio": "/lessons/growth-and-decay-am/scene-01-b8.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b8.timing.json"
         }
       ]
     }

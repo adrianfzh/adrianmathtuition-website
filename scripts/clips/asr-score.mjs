@@ -66,14 +66,16 @@ function similarity(a, b) {
 const args = parseArgs(process.argv.slice(2));
 let failed = false;
 for (const slug of args._) {
-  const beats = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lessons', `${slug}.json`), 'utf8')).scenes[0].beats;
+  const scenesB = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lessons', `${slug}.json`), 'utf8')).scenes.map(sc => sc.beats);
+  const beats = scenesB.flat();
   const txt = fs.readFileSync(path.join(ROOT, 'data/clip-runs', slug, 'asr.txt'), 'utf8').split('\n');
   const lines = [];
   for (let i = 0; i < txt.length; i++) {
-    const m = txt[i].match(/scene-\d+-b(\d+): (\d+)% of narration words heard/);
+    const m = txt[i].match(/scene-(\d+)-b(\d+): (\d+)% of narration words heard/);
     if (!m) continue;
-    const k = Number(m[1]);
-    const bag = Number(m[2]) / 100;
+    const sceneN = Number(m[1]);
+    const k = scenesB.slice(0, sceneN - 1).reduce((n, b) => n + b.length, 0) + Number(m[2]);
+    const bag = Number(m[3]) / 100;
     const heard = txt[i + 1]?.match(/^\s+heard: (.*)$/)?.[1] ?? null;
     const score = heard ? Math.max(bag, similarity(canon(beats[k - 1].say), canon(heard))) : bag;
     lines.push({ beat: k, bag, score: +score.toFixed(3), heard, said: heard ? beats[k - 1].say : undefined });

@@ -1,25 +1,26 @@
 {
  "slug": "linear-form-with-logs-am",
- "worst": 0.89,
+ "worst": 0.902,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.96,
-   "score": 0.96,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 2,
-   "bag": 0.57,
+   "bag": 0.83,
    "score": 1,
-   "heard": "X sits in the power. So, take ln of both sides. LNY equals minus NX plus LNA.",
-   "said": "X sits in the power, so take L N of both sides. L N Y equals minus N X plus L N A."
+   "heard": "Take Ln of both sides. Add power splits the right side.",
+   "said": "Take L N of both sides. Add Power splits the right side."
   },
   {
    "beat": 3,
-   "bag": 0.9,
-   "score": 0.9,
-   "heard": null
+   "bag": 0.62,
+   "score": 1,
+   "heard": "LN cancels E, leaving minus N X. So LNY equals minus N times X plus LNA.",
+   "said": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A."
   },
   {
    "beat": 4,
@@ -41,16 +42,28 @@
   },
   {
    "beat": 7,
-   "bag": 0.74,
-   "score": 0.909,
-   "heard": "unlog the intercept LNA is -1. So A is E to the power -1.",
-   "said": "Un-log the intercept. L N A is minus one, so A is E to the power minus one."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 8,
-   "bag": 0.89,
-   "score": 0.89,
+   "bag": 1,
+   "score": 1,
    "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 10,
+   "bag": 0.68,
+   "score": 0.902,
+   "heard": "LNA is minus one, unlog A is E to the power minus one, about 0.368.",
+   "said": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight."
   }
  ]
 }

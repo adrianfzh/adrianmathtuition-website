@@ -1,0 +1,136 @@
+{
+ "slug": "solving-log-equations-am",
+ "draft": "A2",
+ "by": "session, from draft A + Adrian's notes of 15 Oct 2026 (show the key step as its own line; the plan first; the law beside the step)",
+ "beats": [
+  {
+   "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "The plan: get one log on each side, then compare what is inside.",
+   "do": [
+    {
+     "do": "note",
+     "text": "Aim: one log each side, then compare",
+     "near": "two"
+    }
+   ]
+  },
+  {
+   "say": "Move minus log base three of X to the left. It becomes plus log base three of X.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l2"
+    },
+    {
+     "do": "write",
+     "step": 1,
+     "on": "It becomes plus"
+    }
+   ]
+  },
+  {
+   "say": "Add Power joins the two logs: log of X times the bracket X minus eight.",
+   "do": [
+    {
+     "do": "write",
+     "token": "comb"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$",
+     "near": "comb",
+     "on": "the bracket"
+    }
+   ]
+  },
+  {
+   "say": "Write two as log base three of nine. Three squared is nine.",
+   "do": [
+    {
+     "do": "write",
+     "token": "nine",
+     "on": "log base three of nine"
+    },
+    {
+     "do": "note",
+     "text": "$2 = \\log_3 3^2 = \\log_3 9$",
+     "near": "nine",
+     "on": "Three squared"
+    }
+   ]
+  },
+  {
+   "say": "One log on each side, so drop the logs and compare. X squared minus eight X minus nine equals zero.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "underline",
+     "token": [
+      "comb",
+      "nine"
+     ]
+    },
+    {
+     "do": "write",
+     "step": 3,
+     "on": "X squared minus"
+    }
+   ]
+  },
+  {
+   "say": "Factorise. X minus nine, times X plus one, equals zero.",
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "X minus nine"
+    }
+   ]
+  },
+  {
+   "say": "So X equals nine or X equals minus one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "ans",
+     "on": "X equals nine"
+    },
+    {
+     "do": "write",
+     "token": "rej",
+     "on": "minus one"
+    }
+   ]
+  },
+  {
+   "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "rej",
+     "on": "X equals minus one"
+    }
+   ]
+  },
+  {
+   "say": "The answer is X equals nine.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "X equals nine"
+    }
+   ]
+  }
+ ]
+}

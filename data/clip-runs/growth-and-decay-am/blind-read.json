@@ -1,7 +1,7 @@
 {
  "slug": "growth-and-decay-am",
- "pick": "A",
- "why": "A gives the trap in the same breath as the step with its reason ('Doubling means two times one hundred … P is two hundred, not two'); B spends a separate beat on it with a restatement ('Doubling doubles the starting value').",
+ "pick": "A2",
+ "why": "One draft (A2): 'ln e^(7.5k) = ln 2' is now its own line, with Take ln beside it.",
  "scores": {
   "clear": 5,
   "one_idea": 4,
@@ -11,17 +11,20 @@
   "level": 5
  },
  "notes": [
-  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
-  "Beat 1 read the setup but not the task. Fixed: added 'Find K.'",
-  "Beat 3 holds the doubling step and the trap circle — two things, at the limit but clear."
+  "Scores are for A2 with fixed_beats applied (keys are 1-based beat numbers).",
+  "Tutor's ask (1) met: line 3 'ln e^(7.5k) = ln 2' is written on 'take L N' (beat 6) before '7.5k = ln 2'. Ask (3) met: 'Take ln: ln eˣ = x' under it in beat 7.",
+  "Ask (2) was missing: no beat said the plan for solving. Fixed in beat 4 (the last set-up beat, just before the first solving move): 'The plan: get the E part alone, then take L N.' — the bible's 'isolate the exponential, then take lg/ln'. 'So' dropped to stay at 24 words.",
+  "Bible §3.5 moves: t = 0 for the start (line 0), doubling = 200 (line 1), isolate (line 2), take ln (line 3), solve (line 4) — each its own line and said. Traps (t = 0; 200 not 2) said where they bite; the circle on 200 is the one trap gesture.",
+  "Beat 1 has no board action — the question is the intro panel (the model line was dropped from the board, plan note of 15 Oct). Beat 1 is exactly 24 words."
  ],
  "fixed_beats": {
-  "1": {
-   "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
+  "4": {
+   "say": "Two hundred equals one hundred E to the power seven point five K. The plan: get the E part alone, then take L N.",
    "do": [
     {
      "do": "write",
-     "step": 0
+     "token": "rhs",
+     "on": "equals one hundred"
     }
    ]
   }

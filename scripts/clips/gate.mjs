@@ -54,7 +54,7 @@ for (const slug of args._) {
   // board
   const plan = rd(`data/clip-plans/${slug}.json`);
   const lesson = rd(`data/lessons/${slug}.json`);
-  const sameBoard = plan && lesson && JSON.stringify(lesson.scenes[0].steps.map(s => s.tokens)) === JSON.stringify(plan.lines.map(l => l.tokens));
+  const sameBoard = plan && lesson && JSON.stringify(lesson.scenes.flatMap(sc => sc.steps.map(s => s.tokens))) === JSON.stringify(plan.lines.map(l => l.tokens));
   put('board', !!sameBoard, sameBoard ? `${plan.lines.length} lines = the checked plan` : 'the lesson\'s lines differ from the checked plan — re-run assemble.mjs');
 
   // read
@@ -66,7 +66,7 @@ for (const slug of args._) {
 
   // voice
   if (args.voice) {
-    const beats = lesson?.scenes?.[0]?.beats ?? [];
+    const beats = (lesson?.scenes ?? []).flatMap(sc => sc.beats ?? []);
     const missing = beats.filter(b => !b.audio || !b.timing || !fs.existsSync(path.join(ROOT, 'public', b.audio)) || !fs.existsSync(path.join(ROOT, 'public', b.timing)));
     const asr = rd(`data/clip-runs/${slug}/asr.json`);
     const worst = asr?.worst ?? null;

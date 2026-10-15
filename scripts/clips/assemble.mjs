@@ -26,7 +26,7 @@ const runDir = `data/clip-runs/${slug}`;
 const blindPath = path.join(ROOT, runDir, 'blind-read.json');
 const blind = fs.existsSync(blindPath) ? JSON.parse(fs.readFileSync(blindPath, 'utf8')) : null;
 const draftKey = String(args.draft || blind?.pick || '').toUpperCase();
-if (!['A', 'B'].includes(draftKey)) { console.error('no draft picked — run the blind read or pass --draft A|B'); process.exit(2); }
+if (!/^[A-Z][0-9]*$/.test(draftKey)) { console.error('no draft picked — run the blind read or pass --draft A|B'); process.exit(2); }
 const draft = read(`${runDir}/draft-${draftKey}.json`);
 
 const beats = draft.beats.map((b, i) => {
@@ -35,25 +35,33 @@ const beats = draft.beats.map((b, i) => {
 });
 
 // Keep audio already made for an unchanged line (a rewrite drops it: it belongs to the old words).
+// A plan may have two boards (`boards`, each line's `board`, each beat's `board`): one scene each.
+const nBoards = Math.max(1, plan.boards?.length ?? 1);
+const sceneBeats = Array.from({ length: nBoards }, (_, k) => beats.filter((b, i) => (draft.beats[i].board ?? 0) === k));
 const outPath = path.join(ROOT, 'data/lessons', `${slug}.json`);
 if (fs.existsSync(outPath)) {
   const prev = JSON.parse(fs.readFileSync(outPath, 'utf8'));
-  const old = prev.scenes?.[0]?.beats ?? [];
-  beats.forEach((b, i) => {
-    if (old[i] && old[i].say === b.say) {
-      if (old[i].audio) b.audio = old[i].audio;
-      if (old[i].timing) b.timing = old[i].timing;
-    }
+  sceneBeats.forEach((list, k) => {
+    const old = prev.scenes?.[k]?.beats ?? [];
+    list.forEach((b, i) => {
+      if (old[i] && old[i].say === b.say) {
+        if (old[i].audio) b.audio = old[i].audio;
+        if (old[i].timing) b.timing = old[i].timing;
+      }
+    });
   });
 }
 
-const scene = {
-  type: 'equation-steps',
-  heading: plan.heading,
-  ...(plan.intro ? { intro: plan.intro } : {}),
-  steps: plan.lines.map(l => ({ tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}) })),
-  beats,
-};
+const scenes = sceneBeats.map((list, k) => {
+  const board = plan.boards?.[k] ?? { heading: plan.heading, intro: plan.intro };
+  return {
+    type: 'equation-steps',
+    heading: board.heading,
+    ...(board.intro ? { intro: board.intro } : {}),
+    steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}) })),
+    beats: list,
+  };
+});
 const lesson = {
   slug: plan.slug,
   title: plan.title,
@@ -62,7 +70,7 @@ const lesson = {
   minutes: 1,
   kind: 'clip',
   theme: 'chalk',
-  scenes: [scene],
+  scenes,
 };
 fs.writeFileSync(outPath, formatJson(lesson) + '\n');
-console.log(`data/lessons/${slug}.json ← plan + draft ${draftKey}${blind && !args.draft && blind.fixed_beats ? ` (+ ${Object.keys(blind.fixed_beats).length} fixed beat(s))` : ''} · ${beats.length} beats`);
+console.log(`data/lessons/${slug}.json ← plan + draft ${draftKey}${blind && !args.draft && blind.fixed_beats ? ` (+ ${Object.keys(blind.fixed_beats).length} fixed beat(s))` : ''} · ${beats.length} beats on ${nBoards} board(s)`);

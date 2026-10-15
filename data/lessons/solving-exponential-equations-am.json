@@ -20,8 +20,20 @@
         },
         {
           "tokens": [
+            { "tex": "\\lg 7^{x-1}", "id": "lg7" },
+            { "tex": "=\\,\\lg 5^{x-3}", "id": "lg5" }
+          ]
+        },
+        {
+          "tokens": [
             { "tex": "(x-1)\\lg 7", "id": "p7", "hl": "amber" },
             { "tex": "=\\,(x-3)\\lg 5", "id": "p5", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x\\lg 7-\\lg 7", "id": "ex7" },
+            { "tex": "=\\,x\\lg 5-3\\lg 5", "id": "ex5" }
           ]
         },
         {
@@ -51,70 +63,79 @@
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Take log on both sides. Seven and five cannot be made the same base.",
+          "say": "Seven and five cannot be made the same base. The plan: take log on both sides, then bring the powers down.",
           "do": [
-            { "do": "highlight", "token": ["s7", "s5"] }
+            { "do": "highlight", "token": ["s7", "s5"] },
+            { "do": "write", "step": 1, "on": "take log on both sides" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Bring down the powers. X minus one, times log seven, equals X minus three, times log five.",
+          "say": "Bring down the powers. Each power comes down in front of its log.",
           "do": [
-            { "do": "write", "token": "p7", "on": "X minus one" },
-            { "do": "write", "token": "p5", "on": "X minus three" }
+            { "do": "note", "text": "Bring down power: $\\lg x^r = r\\lg x$", "near": "lg7" },
+            { "do": "write", "token": "p7", "on": "comes down in front" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b3.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Log seven and log five are just numbers. Expand, and put the X terms on the left.",
+          "say": "So X minus one, times log seven, equals X minus three, times log five.",
           "do": [
-            { "do": "note", "text": "← Just numbers: collect like algebra", "near": "p7" },
-            { "do": "write", "token": "xs", "on": "the X terms" }
+            { "do": "write", "token": "p5", "on": "equals X minus three" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b4.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b4.timing.json"
         },
         {
-          "say": "The number terms, log seven minus three log five, go on the right.",
+          "say": "Log seven and log five are just numbers. Expand the brackets as usual.",
           "do": [
-            { "do": "write", "token": "ns", "on": "log seven minus" }
+            { "do": "write", "step": 3, "on": "Expand the brackets" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b5.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Factorise out X, then divide by log seven minus log five.",
+          "say": "Put the X terms on the left, and the number terms on the right.",
           "do": [
-            { "do": "write", "step": 3, "on": "then divide by" }
+            { "do": "write", "token": "xs", "on": "the X terms" },
+            { "do": "write", "token": "ns", "on": "the number terms" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b6.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Press calculator. X is about minus eight point five seven.",
+          "say": "Factorise out X, then divide by log seven minus log five.",
           "do": [
-            { "do": "write", "step": 4, "on": "X is about" }
+            { "do": "write", "step": 5, "on": "then divide by" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b7.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "Press calculator. X is about minus eight point five seven.",
+          "do": [
+            { "do": "write", "step": 6, "on": "X is about" }
+          ],
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b8.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b8.timing.json"
         },
         {
           "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
           "do": [
             { "do": "mark", "kind": "circle", "token": "ans", "on": "removes a minus" }
           ],
-          "audio": "/lessons/solving-exponential-equations-am/scene-01-b8.mp3",
-          "timing": "/lessons/solving-exponential-equations-am/scene-01-b8.timing.json"
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b9.timing.json"
         },
         {
           "say": "So X is about minus eight point five seven.",
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "minus eight point" }
           ],
-          "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
-          "timing": "/lessons/solving-exponential-equations-am/scene-01-b9.timing.json"
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b10.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b10.timing.json"
         }
       ]
     }

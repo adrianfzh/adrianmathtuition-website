@@ -1,7 +1,7 @@
 {
  "slug": "solving-exponential-equations-am",
- "pick": "A",
- "why": "A puts his words 'just numbers: collect like algebra' in the margin and gives the reason before the step; B has no margin note at all, otherwise the two are nearly the same.",
+ "pick": "A2",
+ "why": "One draft (A2): taking lg on both sides is now its own line, and Bring down power sits beside it.",
  "scores": {
   "clear": 4,
   "one_idea": 4,
@@ -11,36 +11,28 @@
   "level": 5
  },
  "notes": [
-  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
-  "Beat 3: 'X minus one times log seven equals X minus three times log five' with no pauses reads as X minus (one times log seven). Fixed with commas, as B has.",
-  "Beat 6: 'Factorise out X, then divide' — no reason given; acceptable as it is the plain algebra step.",
-  "Beat 9: 'The answer is X equals minus eight point five seven' while the board shows ≈. Fixed to 'X is about', matching the board and the bible's notation table.",
-  "Trap (beat 8) is plain and said once; it comes after the right answer is already written, so it lands as a warning rather than at a wrong step — fine."
+  "Scores are for A2 with fixed_beats applied (keys are 1-based beat numbers).",
+  "Tutor's ask (1) met: line 1 'lg 7^(x−1) = lg 5^(x−3)' is written on 'take log on both sides' before the powers come down. Ask (3) met: 'Bring down power: lg xʳ = r lg x' under lg 7^(x−1).",
+  "Ask (2) was missing: beat 2 gave the first move but not the overall plan. Fixed: 'The plan: take log on both sides, then bring the powers down.' (the bible's own words for this skill).",
+  "Bible §3.3 order: take lg (line 1) → bring down (line 2) → expand → collect (line 3) → factorise and divide (line 4). Expand has no line of its own — it is merged into the collect line on the checked board. The voice says 'Expand' (beat 5), so the student hears it; a board change, not a voice fix, if the tutor wants it shown.",
+  "Beat 7 'Factorise out X, then divide' gives no reason — plain algebra, acceptable.",
+  "Trap (beat 9) comes after the right answer is on the board, as a warning — plain and said once."
  ],
  "fixed_beats": {
-  "3": {
-   "say": "Bring down the powers. X minus one, times log seven, equals X minus three, times log five.",
+  "2": {
+   "say": "Seven and five cannot be made the same base. The plan: take log on both sides, then bring the powers down.",
    "do": [
     {
-     "do": "write",
-     "token": "p7",
-     "on": "X minus one"
+     "do": "highlight",
+     "token": [
+      "s7",
+      "s5"
+     ]
     },
     {
      "do": "write",
-     "token": "p5",
-     "on": "X minus three"
-    }
-   ]
-  },
-  "9": {
-   "say": "So X is about minus eight point five seven.",
-   "do": [
-    {
-     "do": "mark",
-     "kind": "box",
-     "token": "ans",
-     "on": "minus eight point"
+     "step": 1,
+     "on": "take log on both sides"
     }
    ]
   }

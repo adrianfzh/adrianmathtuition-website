@@ -1,50 +1,40 @@
 {
  "slug": "solving-log-equations-am",
- "pick": "A",
- "why": "A names the bad value concretely ('log of minus nine') and has the margin line '2 = 2 log₃ 3 = log₃ 9' from his notes; B says 'a negative number' and puts a vaguer note ('Rewrite, then compare') on a later step.",
+ "pick": "A2",
+ "why": "One draft (A2): the tutor's rewrite — plan said and written first, the move across its own line, Add Power beside the join.",
  "scores": {
-  "clear": 4,
+  "clear": 5,
   "one_idea": 4,
-  "voice_board": 4,
-  "why": 4,
+  "voice_board": 5,
+  "why": 5,
   "trap": 5,
   "level": 5
  },
  "notes": [
-  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
-  "Beat 2: 'log of X times X minus eight', spoken, sounds like X squared minus eight. Fixed: 'log of X times the bracket X minus eight', and 'Add Power joins them' so the move has its reason (both logs on one side so they can join).",
-  "Beat 4 jumps from the log equation to the quadratic without saying 'X times X minus eight equals nine'. A student can follow it once, but it is the biggest jump in the clip; left as is to stay inside 24 words.",
-  "Beat 6: the token 'or x = −1 (rej)' shows '(rej)' before beat 7 says why. Board limit (one token), not the writer's fault.",
-  "Session edit after the look: the margin note '← 2 = 2 log₃ 3 = log₃ 9' rendered tiny on a phone; now '← 2 = log₃ 9' (the voice says why)."
+  "Scores are for A2 with fixed_beats applied (assemble.mjs swaps them in; keys are 1-based beat numbers).",
+  "Tutor's three asks are met: beat 2 says the plan ('get one log on each side, then compare what is inside') and writes the aim under the question; beat 3 writes the move across (log₃(x − 8) + log₃x = 2) as its own line; beats 4 and 5 put Add Power and 2 = log₃9 beside their steps.",
+  "Bible §3.2 key moves — rewrite (lines 1–2), compare (line 3), check roots (beat 9) — each has its line and is said.",
+  "Beat 6 jumped from log₃[x(x − 8)] = log₃9 straight to the quadratic without saying what is compared, and 'drop the logs and compare' left 'compare' unsaid. Fixed: 'X times the bracket equals nine, so X squared …' — the compare is now spoken (the board has no x(x − 8) = 9 line; the voice carries it). 'One log each side' ties it back to the plan.",
+  "Beat 2: the aim note points its ↑ at '= 2' (the middle token) — reads as 'under the question', fine.",
+  "Beat 8: the token 'or x = −1 (rej)' shows '(rej)' a beat before the voice says why — one token on the plan, board limit."
  ],
  "fixed_beats": {
-  "2": {
-   "say": "Move log base three of X to the left. Add Power joins them: log of X times the bracket X minus eight.",
+  "6": {
+   "say": "One log each side: drop the logs. X times the bracket equals nine, so X squared minus eight X minus nine equals zero.",
    "do": [
     {
-     "do": "highlight",
-     "token": "l2"
+     "do": "mark",
+     "kind": "underline",
+     "token": [
+      "comb",
+      "nine"
+     ],
+     "on": "One log each side"
     },
     {
      "do": "write",
-     "token": "comb",
-     "on": "Add Power joins"
-    }
-   ]
-  },
-  "3": {
-   "say": "Write two as log base three of nine. Three squared is nine.",
-   "do": [
-    {
-     "do": "write",
-     "token": "nine",
-     "on": "log base three of nine"
-    },
-    {
-     "do": "note",
-     "text": "← $2 = \\log_3 9$",
-     "near": "nine",
-     "on": "Three squared"
+     "step": 3,
+     "on": "X squared minus"
     }
    ]
   }

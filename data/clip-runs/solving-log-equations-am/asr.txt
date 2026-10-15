@@ -1,12 +1,14 @@
-Verifying 8 clip(s) of solving-log-equations-am by transcription (gemini-2.5-flash)…
+Verifying 10 clip(s) of solving-log-equations-am by transcription (gemini-2.5-flash)…
 
   scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
-  scene-01-b3: 92% of narration words heard
+  scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard
-  scene-01-b5: 90% of narration words heard
+  scene-01-b5: 100% of narration words heard
   scene-01-b6: 100% of narration words heard
-  scene-01-b7: 100% of narration words heard
+  scene-01-b7: 90% of narration words heard
   scene-01-b8: 100% of narration words heard
+  scene-01-b9: 100% of narration words heard
+  scene-01-b10: 100% of narration words heard
 
 All clips match their narration.

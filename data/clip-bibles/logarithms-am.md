@@ -14,11 +14,29 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
 - One chalk board, one `equation-steps` scene, heading = the skill's short name.
 - The question on line 1, exactly as the notes print it. The working one line at a time.
   The answer last, in emerald, boxed on its word.
-- **≤ 6 tokens a line, ≤ 5 lines.** A line that is long is ONE token (it shrinks to fit).
-- Margin words are Adrian's own (§3), as a `note`, ≤ 8 words, starting "← ".
+- **≤ 6 tokens a line, ≤ 6 lines** — and the whole board must fit on a phone screen (look.mjs checks). A line that is long is ONE token (it shrinks to fit).
+- Margin words are Adrian's own (§3) or the law used (§1b), as a `note` with `near` = the token it explains.
 - One pointing gesture per beat at most (underline = "this part", circle = "watch this",
   box = the answer). The trap gets the circle, once, where it bites.
 - No character, no stickers, no prose on the board.
+
+## 1b. Adrian's notes after watching the first cut (15 Oct 2026) — binding
+
+- **The key step is its own line.** "Show the intermediate step of taking lg on both sides. That's
+  the key step." Every move his notes write as a line is a line on the board: `lg 7ˣ⁻¹ = lg 5ˣ⁻³`
+  before `(x − 1) lg 7 = …`; `log₃(x − 8) + log₃x = 2` (moving across) before joining;
+  `ln e^(7.5k) = ln 2` before `7.5k = ln 2`; `ln y = ln A + ln e^(−nx)` before `ln y = −nx + ln A`.
+  Never merge two moves into one line to save room — cut words, not steps.
+- **The plan first.** "An overall idea that to solve the equation is to compare logs at the end
+  first." Say the aim before the first move ("get one log on each side, then compare what is
+  inside") and write it under the question.
+- **The law beside the step.** "Show the log property that is used (side by side)." Every line made
+  by a law carries that law as its note, in his names: `Add Power: log x + log y = log xy`,
+  `Minus Power: …`, `Bring down power: lg xʳ = r lg x`, `log_a a = 1`, `Take ln: ln eˣ = x`,
+  `Un-log: lg x = c ⇒ x = 10ᶜ`.
+- **A note points at its token.** "Arrow pointing leftwards … point[s] to nowhere." A note sits
+  under its line with an ↑ under the token it explains (the board draws the ↑; write the note
+  without an arrow).
 
 ## 2. Notation on the board, words in the voice
 

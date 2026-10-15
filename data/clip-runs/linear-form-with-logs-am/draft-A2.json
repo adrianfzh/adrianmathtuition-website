@@ -1,0 +1,128 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "draft": "A2",
+ "by": "session, from draft A + Adrian's notes of 15 Oct 2026 (show the key step as its own line; the plan first; the law beside the step)",
+ "beats": [
+  {
+   "say": "L N Y against X is a line through two, three and four, seven. Y is A E to the power minus N X.",
+   "do": []
+  },
+  {
+   "say": "X sits in the power, so take L N of both sides. Add Power splits the right side.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0,
+     "on": "take L N"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\ln AB = \\ln A + \\ln B$",
+     "near": "lnsplit",
+     "on": "Add Power splits"
+    }
+   ]
+  },
+  {
+   "say": "L N E is one, so the power comes down. L N Y equals minus N X plus L N A.",
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "L N Y equals"
+    }
+   ]
+  },
+  {
+   "say": "This is Y equals M X plus C. The gradient is minus N, and the intercept is L N A.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "underline",
+     "token": [
+      "mX",
+      "c"
+     ],
+     "on": "The gradient is"
+    }
+   ]
+  },
+  {
+   "say": "Gradient from the two points: seven minus three over four minus two is two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "grad",
+     "on": "seven minus three"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "is two"
+    }
+   ]
+  },
+  {
+   "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "sub",
+     "on": "Three equals two"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "C is minus one"
+    }
+   ]
+  },
+  {
+   "say": "The gradient is minus N, not N. Minus N is two, so N is minus two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "n",
+     "on": "Minus N is two"
+    },
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "n",
+     "on": "minus two"
+    }
+   ]
+  },
+  {
+   "say": "Un-log the intercept. L N A is minus one, so A is E to the power minus one.",
+   "do": [
+    {
+     "do": "note",
+     "text": "Un-log: $\\ln A = c \\Rightarrow A = e^{c}$",
+     "near": "A"
+    },
+    {
+     "do": "write",
+     "token": "A",
+     "on": "so A is"
+    }
+   ]
+  },
+  {
+   "say": "N equals minus two. A equals E to the power minus one, about zero point three six eight.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "n"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "A",
+     "on": "zero point three"
+    }
+   ]
+  }
+ ]
+}

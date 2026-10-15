@@ -20,6 +20,12 @@
         },
         {
           "tokens": [
+            { "tex": "\\log_3(x-8)+\\log_3 x", "id": "lhs1", "hl": "amber" },
+            { "tex": "=\\,2", "id": "two1" }
+          ]
+        },
+        {
+          "tokens": [
             { "tex": "\\log_3[x(x-8)]", "id": "comb", "hl": "amber" },
             { "tex": "=\\,\\log_3 9", "id": "nine", "hl": "amber" }
           ]
@@ -51,39 +57,56 @@
           "timing": "/lessons/solving-log-equations-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Move log base three of X to the left. Add Power joins them: log of X times the bracket X minus eight.",
+          "say": "The plan: get one log on each side, then compare what is inside.",
           "do": [
-            { "do": "highlight", "token": "l2" },
-            { "do": "write", "token": "comb", "on": "Add Power joins" }
+            { "do": "note", "text": "Aim: one log each side, then compare", "near": "two" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Write two as log base three of nine. Three squared is nine.",
+          "say": "Move minus log base three of X to the left. It becomes plus log base three of X.",
           "do": [
-            { "do": "write", "token": "nine", "on": "log base three of nine" },
-            { "do": "note", "text": "← $2 = \\log_3 9$", "near": "nine", "on": "Three squared" }
+            { "do": "highlight", "token": "l2" },
+            { "do": "write", "step": 1, "on": "It becomes plus" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b3.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Same base on both sides, so drop the logs and compare. X squared minus eight X minus nine equals zero.",
+          "say": "Add Power joins the two logs: log of X times the bracket X minus eight.",
           "do": [
-            { "do": "mark", "kind": "underline", "token": ["comb", "nine"] },
-            { "do": "write", "step": 2, "on": "X squared minus" }
+            { "do": "write", "token": "comb" },
+            { "do": "note", "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$", "near": "comb", "on": "the bracket" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b4.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Factorise. X minus nine, times X plus one, equals zero.",
+          "say": "Write two as log base three of nine. Three squared is nine.",
           "do": [
-            { "do": "write", "step": 3, "on": "X minus nine" }
+            { "do": "write", "token": "nine", "on": "log base three of nine" },
+            { "do": "note", "text": "$2 = \\log_3 3^2 = \\log_3 9$", "near": "nine", "on": "Three squared" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b5.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "One log each side: drop the logs. X times the bracket equals nine, so X squared minus eight X minus nine equals zero.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["comb", "nine"], "on": "One log each side" },
+            { "do": "write", "step": 3, "on": "X squared minus" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b6.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Factorise. X minus nine, times X plus one, equals zero.",
+          "do": [
+            { "do": "write", "step": 4, "on": "X minus nine" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b7.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b7.timing.json"
         },
         {
           "say": "So X equals nine or X equals minus one.",
@@ -91,24 +114,24 @@
             { "do": "write", "token": "ans", "on": "X equals nine" },
             { "do": "write", "token": "rej", "on": "minus one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b6.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b6.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b8.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b8.timing.json"
         },
         {
           "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
           "do": [
             { "do": "mark", "kind": "circle", "token": "rej", "on": "X equals minus one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b7.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b7.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b9.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b9.timing.json"
         },
         {
           "say": "The answer is X equals nine.",
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b8.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b8.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b10.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b10.timing.json"
         }
       ]
     }

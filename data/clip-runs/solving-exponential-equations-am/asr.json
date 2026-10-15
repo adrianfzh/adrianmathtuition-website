@@ -1,6 +1,6 @@
 {
  "slug": "solving-exponential-equations-am",
- "worst": 0.91,
+ "worst": 0.974,
  "lines": [
   {
    "beat": 1,
@@ -34,26 +34,33 @@
   },
   {
    "beat": 6,
-   "bag": 0.91,
-   "score": 0.91,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 7,
+   "bag": 0.82,
+   "score": 0.974,
+   "heard": "Factorize out X, then divide by log 7 - log 5.",
+   "said": "Factorise out X, then divide by log seven minus log five."
+  },
+  {
+   "beat": 8,
    "bag": 0.8,
    "score": 1,
    "heard": "Press calculator. X is about minus 8.57.",
    "said": "Press calculator. X is about minus eight point five seven."
   },
   {
-   "beat": 8,
+   "beat": 9,
    "bag": 0.63,
    "score": 1,
    "heard": "The calculator shows minus 8.56654. Rounding never removes a minus.",
    "said": "The calculator shows minus eight point five six six five four. Rounding never removes a minus."
   },
   {
-   "beat": 9,
+   "beat": 10,
    "bag": 0.78,
    "score": 1,
    "heard": "So X is about minus 8.57.",

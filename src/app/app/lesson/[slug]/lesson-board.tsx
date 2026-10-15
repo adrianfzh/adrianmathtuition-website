@@ -271,7 +271,20 @@ function useWriter(
 }
 
 /** One note slot: laid out from mount, drawn on when its action fires. */
-export function NoteSlotView({ note, board }: { note: NoteSlot; board: BoardState }) {
+export function NoteSlotView({ note, board, pointAt }: {
+  note: NoteSlot; board: BoardState;
+  /** A clip's note under its line (Adrian, 15 Oct 2026: "← on the next line points to nowhere"):
+   *  the board key of the token it explains. The note then starts with an ↑ that the steps view
+   *  lines up exactly under that token (any ←/↑/↳ the author wrote is dropped). */
+  pointAt?: string;
+}) {
+  if (pointAt) {
+    return (
+      <span data-key={note.id} data-prose="1" data-point-at={pointAt} className={`lsn-el lsn-note lsn-note-up w ${board.shown.has(note.id) ? 'on' : ''}`}>
+        <span className="lsn-note-arrow">↑</span>{' '}<MathText text={note.text.replace(/^\s*[←↑↳]\s*/, '')} />
+      </span>
+    );
+  }
   return (
     <span data-key={note.id} data-prose="1" className={`lsn-el lsn-note w ${board.shown.has(note.id) ? 'on' : ''}`}>
       <MathText text={note.text} />

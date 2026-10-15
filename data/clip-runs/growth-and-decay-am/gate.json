@@ -1,6 +1,6 @@
 {
  "slug": "growth-and-decay-am",
- "at": "2026-10-15T08:00:43.000Z",
+ "at": "2026-10-15T09:15:54.788Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,7 +8,7 @@
   },
   "maths": {
    "ok": true,
-   "detail": "10/10 line checks"
+   "detail": "11/11 line checks"
   },
   "board": {
    "ok": true,
@@ -16,11 +16,11 @@
   },
   "read": {
    "ok": true,
-   "detail": "pick A · lowest score 4 · pass"
+   "detail": "pick A2 · lowest score 4 · pass"
   },
   "voice": {
    "ok": true,
-   "detail": "7/7 beats voiced + timed · speech round trip worst 88 %"
+   "detail": "8/8 beats voiced + timed · speech round trip worst 88 %"
   },
   "look": {
    "ok": true,

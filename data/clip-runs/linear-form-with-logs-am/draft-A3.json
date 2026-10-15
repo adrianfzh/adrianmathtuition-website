@@ -1,0 +1,155 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "draft": "A3",
+ "by": "session, after Adrian's 15 Oct note: Linear Law; compare with Y = mX + c; Y = ln y, X = x; m = -n, c = ln A",
+ "beats": [
+  {
+   "board": 0,
+   "say": "This is Linear Law. L N Y against X is a straight line, and Y is A E to the power minus N X.",
+   "do": []
+  },
+  {
+   "board": 0,
+   "say": "Take L N of both sides. Add Power splits the right side.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\ln AB = \\ln A + \\ln B$",
+     "near": "lnsplit",
+     "on": "Add Power splits"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "L N E is one, so L N Y equals minus N, times X, plus L N A.",
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "L N Y equals"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Compare with Y equals M X plus C.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "Y equals M"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "The vertical axis is L N Y, so Y is L N Y. The horizontal axis is X.",
+   "do": [
+    {
+     "do": "write",
+     "token": "YY",
+     "on": "so Y is"
+    },
+    {
+     "do": "write",
+     "token": "XX",
+     "on": "The horizontal axis"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "So the gradient M is minus N, and the vertical intercept C is L N A.",
+   "do": [
+    {
+     "do": "write",
+     "token": "mm",
+     "on": "the gradient M"
+    },
+    {
+     "do": "write",
+     "token": "ccl",
+     "on": "the vertical intercept"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Gradient from the two points: seven minus three over four minus two is two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "grad",
+     "on": "seven minus three"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "is two"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "sub",
+     "on": "Three equals two"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "C is minus one"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "M is minus N, so minus N is two. N is minus two, not two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "nn0",
+     "on": "minus N is two"
+    },
+    {
+     "do": "write",
+     "token": "nn",
+     "on": "N is minus two"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "So L N A is minus one. Un-log: A is E to the minus one, about zero point three six eight.",
+   "do": [
+    {
+     "do": "write",
+     "token": "AA0",
+     "on": "L N A is minus one"
+    },
+    {
+     "do": "write",
+     "token": "AA",
+     "on": "Un-log"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": [
+      "nn",
+      "AA"
+     ],
+     "on": "zero point three"
+    }
+   ]
+  }
+ ]
+}

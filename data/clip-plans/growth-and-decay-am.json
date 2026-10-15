@@ -3,22 +3,125 @@
   "title": "Growth and decay",
   "heading": "Growth and decay",
   "intro": "$P = P_0e^{kt}$, $t$ in hours. It starts at $100$ and doubles every $7.5$ hours. Find $k$.",
-  "level": "AM", "topic": "Logarithms",
-  "subgroup": { "id": 692, "name": "Exponential Growth & Decay Models" },
-  "source": { "unit": "1082.15", "also": ["1082.13", "1082.19"] },
+  "level": "AM",
+  "topic": "Logarithms",
+  "subgroup": {
+    "id": 692,
+    "name": "Exponential Growth & Decay Models"
+  },
+  "source": {
+    "unit": "1082.15",
+    "also": [
+      "1082.13",
+      "1082.19"
+    ]
+  },
   "bible": "data/clip-bibles/logarithms-am.md",
-  "answer": { "facts": ["k = log(2)/7.5"], "display": "0.0924" },
+  "answer": {
+    "facts": [
+      "k = log(2)/7.5"
+    ],
+    "display": "0.0924"
+  },
   "lines": [
-    { "tokens": [ { "tex": "P=P_0e^{kt}", "id": "model" } ],
-      "checks": [ { "model": { "P": "P0*exp(k*t)" } } ] },
-    { "tokens": [ { "tex": "t=0:", "id": "t0" }, { "tex": "P_0=100", "id": "p0", "hl": "amber" } ],
-      "checks": [ { "identity": "P0*exp(k*0) = P0" }, { "given": { "P0": 100 } } ] },
-    { "tokens": [ { "tex": "200", "id": "dbl", "hl": "amber" }, { "tex": "=100e^{7.5k}", "id": "rhs" } ],
-      "checks": [ { "fact": "2*P0 = 200" }, { "start": "200 = P0*exp(k*7.5)", "var": "k" } ] },
-    { "tokens": [ { "tex": "e^{7.5k}=2", "id": "iso" } ],
-      "checks": [ { "step": "exp(7.5*k) = 2" } ] },
-    { "tokens": [ { "tex": "7.5k=\\ln 2", "id": "ln" }, { "tex": "\\Rightarrow\\;k\\approx 0.0924", "id": "ans", "hl": "emerald" } ],
-      "checks": [ { "step": "7.5*k = log(2)" }, { "approx": 0.0924, "sf": 3 } ] }
+    {
+      "tokens": [
+        {
+          "tex": "t=0:",
+          "id": "t0"
+        },
+        {
+          "tex": "P_0=100",
+          "id": "p0",
+          "hl": "amber"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "P": "P0*exp(k*t)"
+          }
+        },
+        {
+          "identity": "P0*exp(k*0) = P0"
+        },
+        {
+          "given": {
+            "P0": 100
+          }
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "200",
+          "id": "dbl",
+          "hl": "amber"
+        },
+        {
+          "tex": "=100e^{7.5k}",
+          "id": "rhs"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "2*P0 = 200"
+        },
+        {
+          "start": "200 = P0*exp(k*7.5)",
+          "var": "k"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "e^{7.5k}=2",
+          "id": "iso"
+        }
+      ],
+      "checks": [
+        {
+          "step": "exp(7.5*k) = 2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\ln e^{7.5k}=\\ln 2",
+          "id": "lnboth"
+        }
+      ],
+      "checks": [
+        {
+          "step": "log(exp(7.5*k)) = log(2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "7.5k=\\ln 2",
+          "id": "ln"
+        },
+        {
+          "tex": "\\Rightarrow\\;k\\approx 0.0924",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k = log(2)"
+        },
+        {
+          "approx": 0.0924,
+          "sf": 3
+        }
+      ]
+    }
   ],
   "outline": [
     "Read the question (write model).",
@@ -26,6 +129,7 @@
     "Doubles every 7.5 hours: at t = 7.5, P = 200 (write dbl, rhs). Trap: P is 200, not 2.",
     "Make e to the 7.5k the subject: divide by 100 (write iso).",
     "e is involved, so take ln of both sides; ln e is 1 (write ln).",
-    "k = ln 2 over 7.5, about 0.0924 (write ans, box)."
+    "k = ln 2 over 7.5, about 0.0924 (write ans, box).",
+    "Adrian 15 Oct: 'ln e^(7.5k) = ln 2' is its own line (take ln on both sides is the key step). The model line is dropped — it is already in the question."
   ]
 }

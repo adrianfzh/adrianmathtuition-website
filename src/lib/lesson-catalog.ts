@@ -146,8 +146,8 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
   {
     slug: 'linear-form-with-logs-am',
     level: 'AM',
-    topic: 'Logarithms',
-    title: 'Straight-line form with logs',
+    topic: 'Linear Law',
+    title: 'Linear Law with logs',
     minutes: 1,
   },
   {

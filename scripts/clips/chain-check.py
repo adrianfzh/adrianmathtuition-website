@@ -28,6 +28,7 @@ The kinds:
   {"solves": "lhs = rhs", "var": "x",          the equation's ONLY real solution is this
    "gives": 2}                                 (and binds it)
   {"shape": "log(2 - x)", "family": "ln(-x)"}  which of the four basic log shapes it is
+  {"form": "Y = m*X + c"}                       a reference line (Y = mX + c) — no claim
 
 The plan's `answer.facts` must hold at the end, and every number in
 `answer.display` must be written on the last line of the board.
@@ -185,7 +186,7 @@ def check_plan(plan):
             continue
         for c in checks:
             kind = next((k for k in ('model', 'given', 'start', 'step', 'start_expr', 'step_expr', 'roots',
-                                     'approx', 'identity', 'fact', 'solves', 'shape') if k in c), None)
+                                     'approx', 'identity', 'fact', 'solves', 'shape', 'form') if k in c), None)
             if kind is None:
                 raise PlanError(f'line {li}: unknown check {c}')
             ok, detail = True, ''
@@ -301,6 +302,8 @@ def check_plan(plan):
                 if ok:
                     env[var] = sp.nsimplify(c['gives'])
                 detail = f"{c['solves']} → {c['var']} ∈ {fmt(sols)} ({'= ' if ok else '≠ '}{c['gives']})"
+            elif kind == 'form':
+                detail = f"general form {c['form']} (a reference line — the next lines say what each part is)"
             elif kind == 'shape':
                 var = local[c.get('var', 'x')]
                 f = P(c['shape'], local)

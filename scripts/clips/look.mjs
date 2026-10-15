@@ -82,11 +82,11 @@ let anyFail = false;
 
 for (const slug of slugs) {
   const script = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/lessons', `${slug}.json`), 'utf8'));
-  const beats = script.scenes[0].beats;
-  const cueStarts = beats.map(b => {
+  const beats = script.scenes.flatMap(sc => sc.beats);
+  const cueStarts = script.scenes.map(scene => scene.beats.map(b => {
     const sc = b.timing ? JSON.parse(fs.readFileSync(path.join(ROOT, 'public', b.timing), 'utf8')) : null;
     return cueWordStarts(b, sc);
-  });
+  }));
   const dir = path.join(OUT, slug);
   fs.rmSync(dir, { recursive: true, force: true });
   fs.mkdirSync(dir, { recursive: true });
@@ -119,7 +119,7 @@ for (const slug of slugs) {
     for (const e of fresh) {
       await new Promise(r => setTimeout(r, 700));
       const n = shots.length + 1;
-      const file = path.join(dir, `${String(n).padStart(2, '0')}-b${e.beat + 1}-${e.kind}.png`);
+      const file = path.join(dir, `${String(n).padStart(2, '0')}-${e.scene ? `s${e.scene + 1}` : ''}b${e.beat + 1}-${e.kind}.png`);
       const board = args.page ? null : await page.$('.lsn-stage');
       await (board || page).screenshot({ path: file });
       const m = await page.evaluate((MIN_PX) => {
@@ -160,9 +160,9 @@ for (const slug of slugs) {
         const tall = sr.bottom + window.scrollY > fold + 1 ? [`board bottom ${Math.round(sr.bottom + window.scrollY)} px, screen ends at ${Math.round(fold)} px`] : [];
         return { cut, small, overlap, hidden, tall, shown: shown.length };
       }, MIN_PX);
-      const cue = cueStarts[e.beat]?.[e.index] ?? null;
+      const cue = cueStarts[e.scene ?? 0]?.[e.beat]?.[e.index] ?? null;
       const offset = cue && cue.start != null && e.clipElapsed != null ? +(e.clipElapsed - cue.start).toFixed(3) : null;
-      shots.push({ file: path.relative(OUT, file), beat: e.beat + 1, index: e.index, kind: e.kind, on: e.on, source: e.source,
+      shots.push({ file: path.relative(OUT, file), scene: (e.scene ?? 0) + 1, beat: e.beat + 1, index: e.index, kind: e.kind, on: e.on, source: e.source,
         clipElapsed: e.clipElapsed, wordStart: cue?.start ?? null, offset, ...m });
     }
     if (done && fresh.length === 0) break;

@@ -1,10 +1,10 @@
 {
   "slug": "linear-form-with-logs-am",
-  "title": "Straight-line form with logs",
-  "heading": "Straight-line form with logs",
-  "intro": "$\\ln y$ against $x$: a line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$.",
+  "title": "Linear Law with logs",
+  "heading": "Linear Law with logs",
+  "intro": null,
   "level": "AM",
-  "topic": "Logarithms",
+  "topic": "Linear Law",
   "subgroup": {
     "id": 691,
     "name": "Linear-Form Modelling (lg/ln graphs)"
@@ -20,17 +20,18 @@
   "bible": "data/clip-bibles/logarithms-am.md",
   "answer": {
     "facts": [
-      "n = -2",
-      "A = exp(-1)"
+      "nv = -2",
+      "Av = exp(-1)"
     ],
-    "display": "n = -2 A = e^{-1} 0.368"
+    "display": "A = e^{-1} 0.368"
   },
   "lines": [
     {
+      "board": 0,
       "tokens": [
         {
-          "tex": "y=Ae^{-nx}",
-          "id": "model"
+          "tex": "\\ln y=\\ln A+\\ln e^{-nx}",
+          "id": "lnsplit"
         }
       ],
       "checks": [
@@ -38,10 +39,14 @@
           "model": {
             "y": "A*exp(-n*x)"
           }
+        },
+        {
+          "identity": "log(y) = log(A) + log(exp(-n*x))"
         }
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "\\ln y",
@@ -49,27 +54,119 @@
           "hl": "sky"
         },
         {
-          "tex": "=\\,-n\\,x",
-          "id": "mX",
-          "hl": "sky"
+          "tex": "="
+        },
+        {
+          "tex": "(-n)",
+          "id": "mx",
+          "hl": "amber"
+        },
+        {
+          "tex": "x",
+          "id": "xx",
+          "hl": "rose"
         },
         {
           "tex": "+\\,\\ln A",
-          "id": "c",
-          "hl": "sky"
+          "id": "cc",
+          "hl": "emerald"
         }
       ],
       "checks": [
         {
-          "identity": "log(y) = -n*x + log(A)"
+          "identity": "log(y) = (-n)*x + log(A)"
         }
       ]
     },
     {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "Y",
+          "id": "Yg",
+          "hl": "sky"
+        },
+        {
+          "tex": "="
+        },
+        {
+          "tex": "m",
+          "id": "mg",
+          "hl": "amber"
+        },
+        {
+          "tex": "X",
+          "id": "Xg",
+          "hl": "rose"
+        },
+        {
+          "tex": "+\\,c",
+          "id": "cg",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "form": "Y = m*X + c"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "Y=\\ln y",
+          "id": "YY",
+          "hl": "sky"
+        },
+        {
+          "tex": ",\\quad X=x",
+          "id": "XX",
+          "hl": "rose"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "Y": "log(y)",
+            "X": "x"
+          }
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "m=-n",
+          "id": "mm",
+          "hl": "amber"
+        },
+        {
+          "tex": ",\\quad c=\\ln A",
+          "id": "ccl",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "m": "-n",
+            "c": "log(A)"
+          }
+        },
+        {
+          "identity": "Y = m*X + c"
+        }
+      ]
+    },
+    {
+      "board": 1,
       "tokens": [
         {
           "tex": "m=\\tfrac{7-3}{4-2}",
-          "id": "grad"
+          "id": "grad",
+          "hl": "amber"
         },
         {
           "tex": "=\\,2",
@@ -78,14 +175,15 @@
       ],
       "checks": [
         {
-          "fact": "m = (7-3)/(4-2)"
+          "fact": "gm = (7-3)/(4-2)"
         },
         {
-          "fact": "m = 2"
+          "fact": "gm = 2"
         }
       ]
     },
     {
+      "board": 1,
       "tokens": [
         {
           "tex": "3=2(2)+c",
@@ -93,47 +191,66 @@
         },
         {
           "tex": "\\Rightarrow\\;c=-1",
-          "id": "c1"
+          "id": "c1",
+          "hl": "emerald"
         }
       ],
       "checks": [
         {
-          "solves": "3 = m*2 + c",
-          "var": "c",
+          "solves": "3 = gm*2 + gc",
+          "var": "gc",
           "gives": -1
         }
       ]
     },
     {
+      "board": 1,
       "tokens": [
         {
-          "tex": "n=-2",
-          "id": "n",
-          "hl": "emerald"
+          "tex": "-n=2",
+          "id": "nn0"
         },
         {
-          "tex": "A=e^{-1}\\approx 0.368",
-          "id": "A",
+          "tex": "\\Rightarrow\\;n=-2",
+          "id": "nn",
           "hl": "emerald"
         }
       ],
       "checks": [
         {
-          "fact": "n = -m"
+          "solves": "-nv = gm",
+          "var": "nv",
+          "gives": -2
+        }
+      ]
+    },
+    {
+      "board": 1,
+      "tokens": [
+        {
+          "tex": "\\ln A=-1",
+          "id": "AA0"
         },
         {
-          "fact": "A = exp(c)"
+          "tex": "\\Rightarrow\\;A=e^{-1}\\approx 0.368",
+          "id": "AA",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "Av = exp(gc)"
         },
         {
           "approx": 0.368,
           "sf": 3,
-          "of": "A"
+          "of": "Av"
         },
         {
-          "fact": "log(A*exp(-n*2)) = 3"
+          "fact": "log(Av*exp(-nv*2)) = 3"
         },
         {
-          "fact": "log(A*exp(-n*4)) = 7"
+          "fact": "log(Av*exp(-nv*4)) = 7"
         }
       ]
     }
@@ -145,6 +262,18 @@
     "Gradient from the two points: (7-3)/(4-2) = 2 (write grad, m2).",
     "Substitute (2, 3) to find c = -1 (write sub, c1).",
     "Trap: the gradient is MINUS n, so n = -2 (write n).",
-    "Un-log the intercept: ln A = -1, so A = e to the minus 1, about 0.368 (write A, box both)."
+    "Un-log the intercept: ln A = -1, so A = e to the minus 1, about 0.368 (write A, box both).",
+    "Adrian 15 Oct: 'ln y = ln A + ln e^(-nx)' is its own line before 'ln y = -nx + ln A'. The model moves into the question.",
+    "Adrian 15 Oct: this is Linear Law — say so; compare with Y = mX + c, write Y = ln y, X = x, then m = -n (gradient) and c = ln A (vertical intercept). Two boards."
+  ],
+  "boards": [
+    {
+      "heading": "Linear Law: compare with Y = mX + c",
+      "intro": "$\\ln y$ against $x$ is a straight line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$ in $y = Ae^{-nx}$."
+    },
+    {
+      "heading": "Read m and c off the line",
+      "intro": "The line passes through $(2, 3)$ and $(4, 7)$."
+    }
   ]
 }

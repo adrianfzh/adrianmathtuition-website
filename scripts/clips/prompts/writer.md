@@ -51,8 +51,13 @@ no focus, no clear.
 - **The trap: one plain sentence, at the step where it bites**, with a `circle` on the
   token it is about. Not a warning speech before it.
 - **The answer is boxed** (`mark` kind `box`) on the word where the voice says it.
-- **Margin words** (`note`) come from the bible's §3 words for this skill, start with
-  "← ", ≤ 8 words, `near` the token they explain. One or two per clip.
+- **Margin words** (`note`): the LAW a line uses, beside that line (bible §1b), or the bible's §3
+  words — always with `near` = the token it explains (the board draws an ↑ under it; write no
+  arrow). A note can only show once its line is on the board: put it after the action that
+  writes the line, or in a later beat.
+- **The plan first** (bible §1b): the second beat says the aim before the first move.
+- **Never skip a key step**: the plan's lines are the board — every line is written in its own
+  beat or on its own word, and the voice says what the move is.
 - **Spoken maths**: words, never symbols or TeX. Letters as CAPITALS ("X", "K", "A")
   so the voice reads the letter. Numbers in words ("seven point five", "minus eight
   point five seven"). Follow the bible's notation table (lg = "log", ln = "L N").

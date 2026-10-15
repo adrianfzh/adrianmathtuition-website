@@ -14,7 +14,63 @@
   "Beat 3: the margin note '← Plus means multiply' lands on 'log base three of thirty', about a second after the voice says 'Plus means multiply'. Acceptable (the note sits near ab, which only appears on 'Five times six'), but it is a lag.",
   "Beat 3 carries a new line and a note — two new things, at the limit.",
   "Neither draft uses his law names (Add Power / Minus Power). 'Plus means multiply, minus means divide' is also his wording, so not a fault; a later laws clip could name them.",
-  "Beat 4 trap ('Log five times log six is not log thirty') is plain, said once, right after the combine where it bites."
+  "Beat 4 trap ('Log five times log six is not log thirty') is plain, said once, right after the combine where it bites.",
+  "Adrian, 15 Oct 2026: 'would be good if the log rules are placed beside so that students can see which rule is used' — each step that uses a law has the law as its note (board only; the voice is unchanged)."
  ],
- "verdict": "pass"
+ "verdict": "pass",
+ "fixed_beats": {
+  "3": {
+   "say": "Plus means multiply. Five times six is thirty, so the first two make log base three of thirty.",
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "Five times six"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$",
+     "near": "ab",
+     "on": "log base three of thirty"
+    }
+   ]
+  },
+  "5": {
+   "say": "Minus means divide. So we get log base three of thirty over ten.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "So we get"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\log_a x - \\log_a y = \\log_a \\tfrac{x}{y}$",
+     "near": "q",
+     "on": "thirty over ten"
+    }
+   ]
+  },
+  "7": {
+   "say": "The base matches the number inside. So the answer is one.",
+   "do": [
+    {
+     "do": "note",
+     "text": "$\\log_a a = 1$",
+     "near": "l3"
+    },
+    {
+     "do": "write",
+     "step": 4,
+     "on": "So the answer"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "one"
+    }
+   ]
+  }
+ }
 }
