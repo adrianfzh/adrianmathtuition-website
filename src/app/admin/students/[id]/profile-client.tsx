@@ -480,12 +480,19 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
     if (!switchModal || !switchModal.date || !switchModal.newSlotId) return;
     setSwitchModal({ ...switchModal, saving: true });
     try {
-      const res = await fetch('/api/admin-schedule/switch', {
+      const send = (force: boolean) => fetch('/api/admin-schedule/switch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, oldSlotId: switchModal.enr.slotId, newSlotId: switchModal.newSlotId, switchDate: switchModal.date }),
+        body: JSON.stringify({ studentId, oldSlotId: switchModal.enr.slotId, newSlotId: switchModal.newSlotId, switchDate: switchModal.date, force }),
       });
-      const json = await res.json();
+      let res = await send(false);
+      let json = await res.json();
+      // Weekly class-size rule (15 Oct 2026): a full class needs Adrian's "Book anyway".
+      if (res.status === 409 && json.full) {
+        if (!window.confirm(`${json.error} (${json.currentCount}/${json.capacity}).\n\nSwitch anyway (admin override)?`)) { setSwitchModal(m => m && { ...m, saving: false }); return; }
+        res = await send(true);
+        json = await res.json();
+      }
       if (!res.ok || json.success === false) throw new Error(json.error || (json.errors || []).join('; ') || 'Failed');
       setSwitchModal(null);
       const adj = json.adjustment
@@ -503,12 +510,18 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
     if (!addModal || !addModal.slotId) return;
     setAddModal({ ...addModal, saving: true });
     try {
-      const res = await fetch('/api/admin-schedule/add-weekly-slot', {
+      const send = (force: boolean) => fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentId, slotId: addModal.slotId, startDate: addModal.date || undefined }),
+        body: JSON.stringify({ studentId, slotId: addModal.slotId, startDate: addModal.date || undefined, force }),
       });
-      const json = await res.json();
+      let res = await send(false);
+      let json = await res.json();
+      if (res.status === 409 && json.full) {
+        if (!window.confirm(`${json.error} (${json.currentCount}/${json.capacity}).\n\nAdd anyway (admin override)?`)) { setAddModal(m => m && { ...m, saving: false }); return; }
+        res = await send(true);
+        json = await res.json();
+      }
       if (!res.ok) throw new Error(json.error || 'Failed');
       setAddModal(null);
       showToast('ok', 'Weekly slot added');

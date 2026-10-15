@@ -92,6 +92,33 @@ Tab choice persists in `localStorage` (key: `schedule_view_mode`).
 
 **Tile reorder on phone = iOS-style arrange mode** (2026-07-30): long-press a tile (pointer events, `pointerType==='touch'` only) → tiles jiggle, taps stop navigating, `touchAction` flips to `'none'`, drag freely, ✓ Done exits. Plain long-press-drag can NEVER work here: tiles need `touchAction:'manipulation'` for page scroll, and Safari fixes touch-action at GESTURE START — the arming press can't drag, the NEXT touch can. The long-press detector COMPOSES dnd-kit's `onPointerDown` (spreading over it kills mouse drag).
 
+### Class sizes — weekly hard cap, makeup soft cap, small-class period (15 Oct 2026)
+
+Adrian, 15 Oct 2026: *"4 students per class for Sec, and 3 students per class for JC. This is hard
+cap. Allow up to 6 … (make up), and 4 … for JC (make up). this is soft cap. during EOY exam periods,
+hard cap must be enforced"* … *"make it from september holidays to 1st week of october"*.
+- **Pure rule = `lib/class-size-rules.ts`** (tested); the bot mirrors it in `lib/class-size-rules.js`
+  — change both together. No new Airtable fields: the WEEKLY limit is the slot's `Normal Capacity`
+  (Sec 4 / JC 3 in the data; level default when blank), the MAKEUP limit is `Makeup Capacity`
+  (Sec 6 / JC 4) with the Sec cap toggle applied as before.
+- **Small-class period** = the September school holidays (the Saturday after the first Friday of
+  September) to **7 October**, both ends in. Inside it a makeup / reschedule / additional / trial only
+  fills a class up to its weekly limit. This is NOT `lib/exam-season.ts`'s EOY window (20 Sep–10 Nov,
+  which drives the exam pills) — Adrian chose the narrower dates.
+- **Weekly cap is now enforced server-side**: `add-weekly-slot` and `switch` answer 409
+  `{full:true, currentCount, capacity}` when `Enrolled Count` (active enrollments only) ≥ the limit;
+  `force:true` = Adrian's override. Both clients (`/admin/schedule`, the student profile page) confirm
+  "… anyway (admin override)?" and retry. The trial sign-up link's class list shows `n/limit` / FULL
+  and confirms before making a link for a full class. Students already above the cap are untouched.
+- **Makeup checks** in `add` + `reschedule` use `makeupLimit()` (409 says "exam period" when the
+  period is what bit, `smallClassPeriod: true`); the pickers use `makeupLimitOnDate()` for the date picked.
+- **Bot** (branch `class-size-rules`, NOT on main until Adrian says "push the bot"): `buildRescheduleOptions`
+  (WhatsApp, Telegram /rs, the app's Change button), the waiting-list room check, paid trials, the
+  Telegram additional-lesson picker + its two re-checks, the trial confirm, admin-agent reschedule.
+  Not yet: the admin-only availability views (`/available`, showAvailability*, showAdminRescheduleSlots,
+  showTrialSlots) still show Makeup Capacity in the period — Adrian's own screens.
+- Bot paths that ENROL (`showSlotKeyboard`, `startSwitchFlow`) already used `Normal Capacity`.
+
 ### Sec-capacity toggle — the "Sec cap" pill (2026-08-03)
 
 - Header pill on `/admin/schedule` (mobile + desktop; amber while ON): caps Secondary slots'

@@ -9,6 +9,7 @@ import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth, localToday } from '@/lib/schedule-helpers';
 import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
+import { fullMessage, weeklyLimit } from '@/lib/class-size-rules';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -16,7 +17,7 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { studentId: string; slotId: string; startDate?: string; endDate?: string; ratePerLesson?: number; rateType?: string };
+  let body: { studentId: string; slotId: string; startDate?: string; endDate?: string; ratePerLesson?: number; rateType?: string; force?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const { studentId, slotId } = body;
@@ -36,6 +37,17 @@ export async function POST(req: NextRequest) {
     // Duplicate guard — don't create a second enrollment in the same slot
     if (studentEnrollments.some((r: any) => r.fields['Slot']?.[0] === slotId)) {
       return NextResponse.json({ error: 'Student already has an active enrollment in this slot' }, { status: 409 });
+    }
+
+    // Weekly class-size rule (15 Oct 2026): at most Sec 4 / JC 3 for good
+    // (lib/class-size-rules.ts). `force` = Adrian's "Book anyway".
+    if (!body.force) {
+      const slot = await airtableRequest('Slots', `/${slotId}`);
+      const limit = weeklyLimit(slot.fields['Normal Capacity'] ?? null, slot.fields['Level']);
+      const enrolled = enrollData.records.filter((r: any) => r.fields['Slot']?.[0] === slotId).length;
+      if (limit != null && enrolled >= limit) {
+        return NextResponse.json({ error: fullMessage('weekly', limit), full: true, currentCount: enrolled, capacity: limit }, { status: 409 });
+      }
     }
 
     // Rate: use provided values, else copy from an existing enrollment

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useLayoutEffect, useCallback, useRef, useMemo } from 'react';
+import { makeupLimitOnDate, weeklyLimit } from '@/lib/class-size-rules';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { findDoubleBookedIds } from '@/lib/double-booking';
 import { isBroughtForward } from '@/lib/reschedule-chain';
@@ -2270,16 +2271,24 @@ export default function SchedulePage() {
     if (!addSlotModal.startDate) { showToast('error', 'Pick a start date'); return; }
     setAddSlotSubmitting(true);
     try {
-      const res = await fetch('/api/admin-schedule/add-weekly-slot', {
+      const send = (force: boolean) => fetch('/api/admin-schedule/add-weekly-slot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           studentId: addSlotModal.studentId,
           slotId: addSlotModal.slot.id,
           startDate: addSlotModal.startDate,
+          force,
         }),
       });
-      const json = await res.json().catch(() => ({}));
+      let res = await send(false);
+      let json = await res.json().catch(() => ({}));
+      // Weekly class-size rule (15 Oct 2026): a full class needs Adrian's "Book anyway".
+      if (res.status === 409 && json.full) {
+        if (!window.confirm(`${json.error} (${json.currentCount}/${json.capacity}).\n\nBook anyway (admin override)?`)) return;
+        res = await send(true);
+        json = await res.json().catch(() => ({}));
+      }
       if (!res.ok) throw new Error(json.error || 'Failed to add weekly slot');
       setAddSlotModal(null);
       showToast('success', `✓ Added — ${json.lessonsCreated} lesson${json.lessonsCreated !== 1 ? 's' : ''} generated`);
@@ -2342,12 +2351,19 @@ export default function SchedulePage() {
         );
         if (!confirmed) { setSubmitting(false); return; }
         // Permanent slot switch: cancel future lessons, create new ones, update enrollment
-        const res = await fetch('/api/admin-schedule/switch', {
+        const sendSwitch = (force: boolean) => fetch('/api/admin-schedule/switch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate }),
+          body: JSON.stringify({ lessonId: lesson.id, newSlotId: toSlotId, switchDate: toDate, force }),
         });
-        const json = await res.json();
+        // "Show full slots" ticked = Adrian already chose a full class knowingly.
+        let res = await sendSwitch(showAllRescheduleSlots);
+        let json = await res.json();
+        if (res.status === 409 && json.full) {
+          if (!window.confirm(`${json.error} (${json.currentCount}/${json.capacity}).\n\nSwitch anyway (admin override)?`)) return;
+          res = await sendSwitch(true);
+          json = await res.json();
+        }
         if (!res.ok) throw new Error(json.error || 'Switch failed');
         setRescheduleModal(null);
         await fetchSchedule(monday);
@@ -2971,6 +2987,10 @@ export default function SchedulePage() {
     if (!trialEnrol.level || trialEnrol.subjects.length === 0 || !trialEnrol.slotId) {
       showToast('error', 'Pick level, subject(s) and slot first'); return;
     }
+    const pickedSlot = sortedSlots.find(s => s.id === trialEnrol.slotId);
+    const pickedLimit = pickedSlot ? weeklyLimit(pickedSlot.capacity, pickedSlot.level) : null;
+    if (pickedSlot && pickedLimit != null && pickedSlot.enrolledCount >= pickedLimit
+      && !window.confirm(`That class already has ${pickedSlot.enrolledCount} students (the most for a weekly class is ${pickedLimit}).\n\nMake the sign-up link anyway (admin override)?`)) return;
     setTrialEnrol({ ...trialEnrol, generating: true });
     try {
       const res = await fetch('/api/admin-schedule/trial-signup-link', {
@@ -4657,7 +4677,8 @@ export default function SchedulePage() {
                               // Reschedule mode: show makeup capacity. Counts come from
                               // slot-counts (any date, matches the server's 409 gate);
                               // fall back to the loaded week's lessons while it loads.
-                              const mkCap = s.makeupCapacity ?? s.capacity ?? 0;
+                              // Class-size rule: held to the weekly cap from the September holidays to 7 Oct.
+                              const mkCap = makeupLimitOnDate(s.makeupCapacity, s.capacity, s.level, rescheduleModal.toDate);
                               const dayCounts = rescheduleModal.toDate ? targetDayCounts[rescheduleModal.toDate] : undefined;
                               let existingLessons: number;
                               if (dayCounts) {
@@ -5005,7 +5026,13 @@ export default function SchedulePage() {
                       <option value="">Select a slot…</option>
                       {/* Enrolment is weekly and permanent, so a dated one-off
                           session is never a valid answer here. */}
-                      {sortedSlots.filter(s => !s.dated).map(s => <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level})</option>)}
+                      {/* Weekly class-size rule (15 Oct 2026): show how full each class is; a full one
+                          still works, after a "Book anyway" confirm in generateTrialLink. */}
+                      {sortedSlots.filter(s => !s.dated).map(s => {
+                        const lim = weeklyLimit(s.capacity, s.level);
+                        const full = lim != null && s.enrolledCount >= lim;
+                        return <option key={s.id} value={s.id}>{s.dayName} {s.time} ({s.level}){lim != null ? (full ? ` — FULL ${s.enrolledCount}/${lim}` : ` — ${s.enrolledCount}/${lim}`) : ''}</option>;
+                      })}
                     </select>
                   </div>
                   <div className="form-group" style={{ marginTop: 12 }}>
@@ -5088,7 +5115,8 @@ export default function SchedulePage() {
                   const capped = addModal.type !== 'Revision Makeup' && addModal.type !== 'Ad-hoc';
                   const dayCounts = addModal.date ? targetDayCounts[addModal.date] : undefined;
                   const occupancy = (s: typeof daySlots[number]) => {
-                    const cap = s.makeupCapacity ?? s.capacity ?? 0;
+                    // Class-size rule: held to the weekly cap from the September holidays to 7 Oct.
+                    const cap = makeupLimitOnDate(s.makeupCapacity, s.capacity, s.level, addModal.date);
                     // Fall back to the loaded week's lessons until slot-counts lands.
                     const booked = dayCounts
                       ? (dayCounts[s.id] ?? 0)

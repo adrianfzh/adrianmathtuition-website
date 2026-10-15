@@ -10,7 +10,7 @@ import {
   findStudentSlotConflict,
   fetchSecCapOverride,
 } from '@/lib/schedule-helpers';
-import { effectiveCapacity } from '@/lib/capacity-override';
+import { fullMessage, makeupLimit } from '@/lib/class-size-rules';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { invalidateScheduleStatics } from '@/lib/schedule-static-cache';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
@@ -81,7 +81,10 @@ export async function POST(req: NextRequest) {
     // Sec-capacity toggle: lowers the effective cap on Secondary slots for NEW
     // bookings (force still overrides, same as a genuinely full slot).
     const secCap = await fetchSecCapOverride();
-    const makeupCapacity = effectiveCapacity(storedMakeupCapacity, targetFields['Level'], secCap)!;
+    // Class-size rule (15 Oct 2026): Sec 6 / JC 4 for one date, held to the weekly cap
+      // (Sec 4 / JC 3) from the September holidays to 7 Oct — lib/class-size-rules.ts.
+      const cap = makeupLimit({ storedMakeup: storedMakeupCapacity, storedNormal: targetFields['Normal Capacity'] ?? null, level: targetFields['Level'], date: newDate, secCap })!;
+      const makeupCapacity = cap.limit;
 
     // 3. Capacity + away-date checks (both skipped when the admin forces an override)
     const { ranges: blockedRanges } = await fetchBlockedRecord();
@@ -96,10 +99,11 @@ export async function POST(req: NextRequest) {
     if (!force && currentCount >= makeupCapacity) {
       return NextResponse.json(
         {
-          error: makeupCapacity < storedMakeupCapacity ? `Slot full (Sec cap ${secCap} active)` : 'Slot full',
+          error: fullMessage('makeup', makeupCapacity, cap.reason, secCap),
           currentCount,
           capacity: makeupCapacity,
-          ...(makeupCapacity < storedMakeupCapacity ? { secCapApplied: secCap } : {}),
+          ...(cap.reason === 'sec-cap' ? { secCapApplied: secCap } : {}),
+          ...(cap.reason === 'small-class-period' ? { smallClassPeriod: true } : {}),
         },
         { status: 409 }
       );

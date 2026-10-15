@@ -6,7 +6,7 @@ import {
   findStudentSlotConflict,
   fetchSecCapOverride,
 } from '@/lib/schedule-helpers';
-import { effectiveCapacity } from '@/lib/capacity-override';
+import { fullMessage, makeupLimit } from '@/lib/class-size-rules';
 import { billingMonthOf } from '@/lib/lesson-generation';
 import { fetchBlockedRecord, findBlock } from '@/lib/blocked-dates';
 
@@ -85,7 +85,10 @@ export async function POST(req: NextRequest) {
       // Sec-capacity toggle: lowers the effective cap on Secondary slots for
       // NEW bookings only (already-booked lessons are untouched).
       const secCap = await fetchSecCapOverride();
-      const makeupCapacity = effectiveCapacity(storedMakeupCapacity, slotFields['Level'], secCap)!;
+      // Class-size rule (15 Oct 2026): Sec 6 / JC 4 for one date, held to the weekly cap
+      // (Sec 4 / JC 3) from the September holidays to 7 Oct — lib/class-size-rules.ts.
+      const cap = makeupLimit({ storedMakeup: storedMakeupCapacity, storedNormal: slotFields['Normal Capacity'] ?? null, level: slotFields['Level'], date: date, secCap })!;
+      const makeupCapacity = cap.limit;
 
       // `force` overrides a full slot — same semantics as the reschedule route,
       // which has always allowed it. Adrian routinely squeezes an extra makeup
@@ -95,10 +98,11 @@ export async function POST(req: NextRequest) {
       if (!force && currentCount >= makeupCapacity) {
         return NextResponse.json(
           {
-            error: makeupCapacity < storedMakeupCapacity ? `Slot full (Sec cap ${secCap} active)` : 'Slot full',
+            error: fullMessage('makeup', makeupCapacity, cap.reason, secCap),
             currentCount,
             capacity: makeupCapacity,
-            ...(makeupCapacity < storedMakeupCapacity ? { secCapApplied: secCap } : {}),
+            ...(cap.reason === 'sec-cap' ? { secCapApplied: secCap } : {}),
+          ...(cap.reason === 'small-class-period' ? { smallClassPeriod: true } : {}),
           },
           { status: 409 }
         );

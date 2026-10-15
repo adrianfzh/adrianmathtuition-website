@@ -68,10 +68,10 @@ learn-from-Adrian commit (d822178c)** — see "Open" below. Bot commits are on `
 - **Cost levers awaiting his read** — the shadow Sonnet and vision measurements (bot
   `scripts/shadow-sonnet-report.cjs --diffs`); a level moves to a cheaper reader only on his word.
 
-## 📏 Class sizes + reschedule cut-off (Adrian, 15 Oct 2026) — rulebook BUILT, the rest WAITING
+## 📏 Class sizes + reschedule cut-off (Adrian, 15 Oct 2026) — rulebook + class sizes BUILT, reschedule cut-off for Jan 2027
 - **Staff rulebook** — BUILT 15 Oct 2026: `/admin/rulebook` (see docs/APP-MAP.md).
 - **Reschedule cut-off — starts January 2027** (Adrian: "we will start next january, will be informing parents about the rules in nov/dec invoice - announcement, and that rescheduling can only be done through whatsapp/telegram/app"). Rule: a student moves a lesson themselves until 12 midnight the day before; after that, down to 1 hour before, it becomes a request Adrian approves with Telegram buttons; inside the hour, no change. Today's rule is the one-hour rule (bot `lib/reschedule.js hasEnoughNotice`). To do: (1) the Nov/Dec invoice announcement text for Adrian to approve; (2) build the cut-off + request flow before 1 Jan 2027, tested on the staging bot; nothing parent-facing goes live without his word.
-- **Class sizes** — his rule: new enrolment hard cap Sec 4 / JC 3; makeups up to Sec 6 / JC 4; during EOY (`lib/exam-season.ts` window 20 Sep–10 Nov) makeups held to Sec 4 / JC 3; his own "Book anyway" override stays. Parents already see only slots with room — what is new is the enrolment cap and the EOY makeup cap. Plan sent 15 Oct; NOT built — awaiting his yes. 15 Oct count: three Sec classes already hold more than 4 regular students (kept as they are).
+- **Class sizes** — BUILT 15 Oct 2026 (Adrian: "yes, but make it from september holidays to 1st week of october"): weekly cap Sec 4 / JC 3 enforced on the website with his override; makeups Sec 6 / JC 4, held to Sec 4 / JC 3 from the September holidays to 7 Oct. Website on `dev`; the bot half on branch `class-size-rules` — waiting for "push the bot". Detail: docs/SCHEDULE.md §Class sizes. 15 Oct count: four Sec classes already hold more than 4 regular students (kept as they are).
 
 ## 🩺 Question check on first serve (Adrian, 14 Oct 2026: "yes") — BUILT, then PARKED 14 Oct 2026 (Adrian: "park")
 A maths question is checked the first time it is about to reach a student: a separate solver

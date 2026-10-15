@@ -12,6 +12,7 @@
 // Mirrors the bot's /switch → sw_confirm flow exactly.
 
 import { NextRequest, NextResponse } from 'next/server';
+import { fullMessage, weeklyLimit } from '@/lib/class-size-rules';
 import { airtableRequest, airtableRequestAll } from '@/lib/airtable';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
 import { generateRegularLessonsForSlot, DEFAULT_WEEKS_AHEAD } from '@/lib/lesson-generation';
@@ -30,7 +31,7 @@ function fmtUTC(d: Date): string {
 export async function POST(req: NextRequest) {
   if (!verifyAdminAuth(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  let body: { lessonId?: string; studentId?: string; oldSlotId?: string; newSlotId: string; switchDate: string };
+  let body: { lessonId?: string; studentId?: string; oldSlotId?: string; newSlotId: string; switchDate: string; force?: boolean };
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
   const { lessonId, newSlotId, switchDate } = body;
@@ -58,6 +59,17 @@ export async function POST(req: NextRequest) {
   const newSlotTime: string = newSlot.fields['Time'] || '';
   const targetDay = DAY_NAMES.indexOf(newDayRaw);
   if (targetDay === -1) return NextResponse.json({ error: `Unknown day: ${newDayRaw}` }, { status: 400 });
+
+  // Weekly class-size rule (15 Oct 2026): a class takes at most Sec 4 / JC 3 for good
+  // (lib/class-size-rules.ts). `Enrolled Count` counts ACTIVE enrollments only. `force` =
+  // Adrian's "Book anyway"; students already above the cap stay where they are.
+  if (!body.force && newSlotId !== oldSlotId) {
+    const limit = weeklyLimit(newSlot.fields['Normal Capacity'] ?? null, newSlot.fields['Level']);
+    const enrolled = Number(newSlot.fields['Enrolled Count']) || 0;
+    if (limit != null && enrolled >= limit) {
+      return NextResponse.json({ error: fullMessage('weekly', limit), full: true, currentCount: enrolled, capacity: limit }, { status: 409 });
+    }
+  }
 
   // Old slot name for notes
   const oldSlot = await airtableRequest('Slots', `/${oldSlotId}`);
