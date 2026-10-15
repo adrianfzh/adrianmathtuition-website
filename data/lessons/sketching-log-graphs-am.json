@@ -1,0 +1,136 @@
+{
+  "slug": "sketching-log-graphs-am",
+  "title": "Sketching a log graph",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Sketching a log graph",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "y=\\ln(2-x)", "id": "eqn" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "2-x=0", "id": "in0" },
+            { "tex": "\\Rightarrow\\;x=2", "id": "asy", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{shape of}\\;\\; y=\\ln(-x)", "id": "shape", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=0:", "id": "x0" },
+            { "tex": "y=\\ln 2\\approx 0.693", "id": "yint" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "y=0:", "id": "y0" },
+            { "tex": "2-x=e^0=1", "id": "xin" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=1", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Sketch Y equals L N of two minus X. Four steps: asymptote, shape, draw, intercepts.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b1.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Step one, the asymptote. Let the inside of the log equal zero.",
+          "do": [
+            { "do": "write", "token": "in0", "on": "inside of the log" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b2.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Two minus X equals zero, so the asymptote is X equals two.",
+          "do": [
+            { "do": "note", "text": "← Asymptote: inside equals zero", "near": "in0" },
+            { "do": "write", "token": "asy", "on": "X equals two" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b3.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Step two, the shape. Minus in front of X flips the graph in the Y axis.",
+          "do": [
+            { "do": "highlight", "token": "eqn", "on": "Minus in front" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b4.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "So the curve has the shape of L N of minus X.",
+          "do": [
+            { "do": "write", "step": 2, "on": "shape of L N" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b5.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
+          "do": [
+            { "do": "highlight", "token": "asy", "on": "X equals two" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b6.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Step four, the intercepts. When X is zero, Y is L N two, about zero point six nine three.",
+          "do": [
+            { "do": "write", "token": "x0", "on": "When X is zero" },
+            { "do": "write", "token": "yint", "on": "Y is L N two" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b7.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "When Y is zero, the inside equals E to the power zero, which is one.",
+          "do": [
+            { "do": "write", "token": "y0", "on": "When Y is zero" },
+            { "do": "write", "token": "xin", "on": "the inside equals" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b8.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "The asymptote uses inside equals zero. The intercept uses inside equals one.",
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "xin", "on": "inside equals one" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b9.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "So two minus X is one, and the X intercept is X equals one.",
+          "do": [
+            { "do": "write", "token": "ans", "on": "two minus X" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals one" }
+          ],
+          "audio": "/lessons/sketching-log-graphs-am/scene-01-b10.mp3",
+          "timing": "/lessons/sketching-log-graphs-am/scene-01-b10.timing.json"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "pick": "A",
+ "why": "A says the model aloud as it appears ('Y equals A E to the power minus N X'); B writes the model line while the voice only reads the question, so the student sees a formula nobody mentions. A's margin note 'The graph gives ln A, not A' is also plainer than B's 'Un-log both read-offs'.",
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 4
+ },
+ "notes": [
+  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
+  "Beat 1 never says 'Find A and N' (it is printed in the question). Acceptable.",
+  "Beat 3 'This is Y equals M X plus C' uses spoken 'Y' for ln y right after 'L N Y' — a weaker student may hear the same Y. His notes use Y = mX + c, so kept.",
+  "Beats 4 and 5 wrote the whole line on the first cue, so '= 2' and 'c = −1' appeared before the voice said them. Fixed: each token on its own words (as B did).",
+  "Trap (beat 6) is plain and placed where the sign bites."
+ ],
+ "fixed_beats": {
+  "4": {
+   "say": "Gradient from the two points: seven minus three, over four minus two, is two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "grad",
+     "on": "seven minus three"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "is two"
+    }
+   ]
+  },
+  "5": {
+   "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "sub",
+     "on": "Three equals two"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "C is minus one"
+    }
+   ]
+  }
+ },
+ "verdict": "pass"
+}

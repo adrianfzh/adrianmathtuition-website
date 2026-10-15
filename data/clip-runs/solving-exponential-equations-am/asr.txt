@@ -1,0 +1,16 @@
+Verifying 9 clip(s) of solving-exponential-equations-am by transcription (gemini-2.5-flash)…
+
+  scene-01-b1: 100% of narration words heard
+  scene-01-b2: 100% of narration words heard
+  scene-01-b3: 100% of narration words heard
+  scene-01-b4: 100% of narration words heard
+  scene-01-b5: 100% of narration words heard
+  scene-01-b6: 91% of narration words heard
+  scene-01-b7: 80% of narration words heard  ⚠ LOW
+      heard: Press calculator. X is about minus 8.57.
+  scene-01-b8: 63% of narration words heard  ⚠ LOW
+      heard: The calculator shows minus 8.56654. Rounding never removes a minus.
+  scene-01-b9: 78% of narration words heard  ⚠ LOW
+      heard: So X is about minus 8.57.
+
+3 clip(s) below 85% — listen to those.

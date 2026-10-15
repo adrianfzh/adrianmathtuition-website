@@ -1,0 +1,119 @@
+{
+  "slug": "linear-form-with-logs-am",
+  "title": "Straight-line form with logs",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Straight-line form with logs",
+      "intro": "$\\ln y$ against $x$: a line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$.",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "y=Ae^{-nx}", "id": "model" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\ln y", "id": "Y", "hl": "sky" },
+            { "tex": "=\\,-n\\,x", "id": "mX", "hl": "sky" },
+            { "tex": "+\\,\\ln A", "id": "c", "hl": "sky" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "m=\\tfrac{7-3}{4-2}", "id": "grad" },
+            { "tex": "=\\,2", "id": "m2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "3=2(2)+c", "id": "sub" },
+            { "tex": "\\Rightarrow\\;c=-1", "id": "c1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "n=-2", "id": "n", "hl": "emerald" },
+            { "tex": "A=e^{-1}\\approx 0.368", "id": "A", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "L N Y against X: a straight line through two, three and four, seven. Y equals A E to the power minus N X.",
+          "do": [
+            { "do": "write", "step": 0, "on": "Y equals A" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b1.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "X sits in the power, so take L N of both sides. L N Y equals minus N X plus L N A.",
+          "do": [
+            { "do": "write", "step": 1, "on": "L N Y equals" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b2.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "This is Y equals M X plus C. The gradient is minus N, and the intercept is L N A.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["mX", "c"], "on": "The gradient is" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b3.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Gradient from the two points: seven minus three, over four minus two, is two.",
+          "do": [
+            { "do": "write", "token": "grad", "on": "seven minus three" },
+            { "do": "write", "token": "m2", "on": "is two" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b4.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+          "do": [
+            { "do": "write", "token": "sub", "on": "Three equals two" },
+            { "do": "write", "token": "c1", "on": "C is minus one" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b5.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "The gradient is minus N, not N. Minus N is two, so N is minus two.",
+          "do": [
+            { "do": "write", "token": "n", "on": "Minus N is two" },
+            { "do": "mark", "kind": "circle", "token": "n", "on": "minus two" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b6.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Un-log the intercept. L N A is minus one, so A is E to the power minus one.",
+          "do": [
+            { "do": "note", "text": "← The graph gives ln A, not A", "near": "c" },
+            { "do": "write", "token": "A", "on": "so A is" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b7.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "N equals minus two. A equals E to the power minus one, about zero point three six eight.",
+          "do": [
+            { "do": "mark", "kind": "box", "token": "n" },
+            { "do": "mark", "kind": "box", "token": "A", "on": "zero point three" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b8.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b8.timing.json"
+        }
+      ]
+    }
+  ]
+}

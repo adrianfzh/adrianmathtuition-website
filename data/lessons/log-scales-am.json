@@ -1,0 +1,108 @@
+{
+  "slug": "log-scales-am",
+  "title": "Log scales: decibels",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Log scales: decibels",
+      "intro": "$N = 10\\lg\\tfrac{I}{k}$. Dishwasher $62$ dB, pump $50$ dB. How many times as intense is the dishwasher?",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "62-50", "id": "diff" },
+            { "tex": "=10\\lg\\tfrac{I_d}{k}-10\\lg\\tfrac{I_p}{k}", "id": "two" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "12", "id": "twelve" },
+            { "tex": "=10\\lg\\tfrac{I_d}{I_p}", "id": "one", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\lg\\tfrac{I_d}{I_p}=1.2", "id": "div" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\tfrac{I_d}{I_p}=10^{1.2}", "id": "unlog" },
+            { "tex": "\\approx 15.8", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "A dishwasher is sixty-two decibels and a pump is fifty. Subtract the two readings to compare them.",
+          "do": [
+            { "do": "write", "step": 0, "on": "Subtract the two readings" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b1.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Sixty-two minus fifty is twelve.",
+          "do": [
+            { "do": "write", "token": "twelve", "on": "is twelve" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b2.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+          "do": [
+            { "do": "write", "token": "one", "on": "one log of the ratio" },
+            { "do": "note", "text": "← Minus Power: the constant cancels", "near": "one", "on": "K cancels" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Divide both sides by ten. Log of the ratio is one point two.",
+          "do": [
+            { "do": "write", "step": 2, "on": "Log of the ratio" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+          "do": [
+            { "do": "write", "token": "unlog", "on": "The ratio is ten" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Ten to the power one point two is about fifteen point eight.",
+          "do": [
+            { "do": "write", "token": "ans", "on": "about fifteen point eight" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "The answer is not twelve. Twelve is the difference in decibels, not how many times.",
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "twelve", "on": "not twelve" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+          "do": [
+            { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
+          ],
+          "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
+          "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
+        }
+      ]
+    }
+  ]
+}

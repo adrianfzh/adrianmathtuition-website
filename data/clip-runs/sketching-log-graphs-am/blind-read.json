@@ -1,0 +1,43 @@
+{
+ "slug": "sketching-log-graphs-am",
+ "pick": "B",
+ "why": "B reveals each intercept token as it is said, its margin note states the rule ('Asymptote: inside equals zero') instead of a bare label, its trap is two full sentences, and its last beat finishes the working ('two minus X is one'); A's trap is clipped fragments and its y-intercept line appears before it is said.",
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 4
+ },
+ "notes": [
+  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
+  "Beat 5 'It lives to the left of X equals two' gave no reason. Fixed: the reason ('The inside must be positive') moved into the step-three beat, so beat 5 is only the shape.",
+  "Step three says 'Draw that shape' but nothing is drawn — the board has no log curve yet (bible §3.6). The highlight on X = 2 is the best this board can do; a student may still wonder where the drawing is. Revisit when the live graph is built.",
+  "Beat 4 highlights the whole equation on 'Minus in front'; the minus is not its own token, so the gesture is broad but fine.",
+  "Session edit after the read: beat 6 says 'draw that shape on your paper' — the board cannot draw a log curve yet, so the student draws it."
+ ],
+ "fixed_beats": {
+  "5": {
+   "say": "So the curve has the shape of L N of minus X.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "shape of L N"
+    }
+   ]
+  },
+  "6": {
+   "say": "Step three. Draw that shape on your paper, hugging X equals two. The inside must be positive, so the curve stays left of it.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "asy",
+     "on": "X equals two"
+    }
+   ]
+  }
+ },
+ "verdict": "pass"
+}

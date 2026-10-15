@@ -1,0 +1,102 @@
+{
+  "slug": "solving-log-equations-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Move log base three of X to the left. Add Power: it becomes log base three of X times X minus eight.",
+      "do": [
+        {
+          "do": "highlight",
+          "token": "l2"
+        },
+        {
+          "do": "write",
+          "token": "comb",
+          "on": "it becomes"
+        }
+      ]
+    },
+    {
+      "say": "Write two as log base three of nine. Three squared is nine.",
+      "do": [
+        {
+          "do": "write",
+          "token": "nine",
+          "on": "log base three of nine"
+        }
+      ]
+    },
+    {
+      "say": "Drop the logs and compare. Both sides are log base three. So X squared minus eight X minus nine equals zero.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← Rewrite, then compare",
+          "near": "nine",
+          "on": "Drop the logs"
+        },
+        {
+          "do": "write",
+          "step": 2,
+          "on": "So X squared"
+        }
+      ]
+    },
+    {
+      "say": "Factorise. X minus nine, times X plus one, equals zero.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "X minus nine"
+        }
+      ]
+    },
+    {
+      "say": "So X equals nine, or X equals minus one.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans",
+          "on": "X equals nine"
+        },
+        {
+          "do": "write",
+          "token": "rej",
+          "on": "X equals minus one"
+        }
+      ]
+    },
+    {
+      "say": "Check every root in the logs. X equals minus one gives log of a negative number, so reject it.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "rej",
+          "on": "X equals minus one"
+        }
+      ]
+    },
+    {
+      "say": "The answer is X equals nine.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "X equals nine"
+        }
+      ]
+    }
+  ]
+}

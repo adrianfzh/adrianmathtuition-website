@@ -1,0 +1,31 @@
+{
+ "slug": "sketching-log-graphs-am",
+ "at": "2026-10-15T08:00:43.376Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "13/13 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "6 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "pick B · lowest score 4 · pass"
+  },
+  "voice": {
+   "ok": true,
+   "detail": "10/10 beats voiced + timed · speech round trip worst 87 %"
+  },
+  "look": {
+   "ok": true,
+   "detail": "14/14 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+  }
+ },
+ "pass": true
+}

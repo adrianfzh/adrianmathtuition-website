@@ -1,0 +1,14 @@
+Verifying 8 clip(s) of linear-form-with-logs-am by transcription (gemini-2.5-flash)…
+
+  scene-01-b1: 96% of narration words heard
+  scene-01-b2: 57% of narration words heard  ⚠ LOW
+      heard: X sits in the power. So, take ln of both sides. LNY equals minus NX plus LNA.
+  scene-01-b3: 90% of narration words heard
+  scene-01-b4: 100% of narration words heard
+  scene-01-b5: 100% of narration words heard
+  scene-01-b6: 100% of narration words heard
+  scene-01-b7: 74% of narration words heard  ⚠ LOW
+      heard: unlog the intercept LNA is -1. So A is E to the power -1.
+  scene-01-b8: 89% of narration words heard
+
+2 clip(s) below 85% — listen to those.

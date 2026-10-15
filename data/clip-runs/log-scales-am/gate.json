@@ -1,0 +1,31 @@
+{
+ "slug": "log-scales-am",
+ "at": "2026-10-15T08:00:43.731Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "8/8 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "4 lines = the checked plan"
+  },
+  "read": {
+   "ok": true,
+   "detail": "pick B · lowest score 4 · pass"
+  },
+  "voice": {
+   "ok": true,
+   "detail": "8/8 beats voiced + timed · speech round trip worst 86 %"
+  },
+  "look": {
+   "ok": true,
+   "detail": "9/9 actions on the voice · cues worst 0.15 s (gate 0.3 s) · look problems 0"
+  }
+ },
+ "pass": true
+}

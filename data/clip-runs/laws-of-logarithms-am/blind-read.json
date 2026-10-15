@@ -1,0 +1,20 @@
+{
+ "slug": "laws-of-logarithms-am",
+ "pick": "A",
+ "why": "A puts the reason and the result in the same beat ('The base matches the number inside. So the answer is one.'); B splits that into two beats and spends a whole beat on 'The answer is one.' after already saying it, and B's 'five times six gives log base three of thirty' skips 'is thirty'.",
+ "scores": {
+  "clear": 5,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 5,
+  "trap": 5,
+  "level": 5
+ },
+ "notes": [
+  "Beat 3: the margin note '← Plus means multiply' lands on 'log base three of thirty', about a second after the voice says 'Plus means multiply'. Acceptable (the note sits near ab, which only appears on 'Five times six'), but it is a lag.",
+  "Beat 3 carries a new line and a note — two new things, at the limit.",
+  "Neither draft uses his law names (Add Power / Minus Power). 'Plus means multiply, minus means divide' is also his wording, so not a fault; a later laws clip could name them.",
+  "Beat 4 trap ('Log five times log six is not log thirty') is plain, said once, right after the combine where it bites."
+ ],
+ "verdict": "pass"
+}

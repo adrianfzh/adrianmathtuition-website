@@ -1,0 +1,107 @@
+{
+  "slug": "linear-form-with-logs-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "L N Y against X: a straight line through two, three and four, seven. Y equals A E to the power minus N X.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0,
+          "on": "Y equals A"
+        }
+      ]
+    },
+    {
+      "say": "X sits in the power, so take L N of both sides. L N Y equals minus N X plus L N A.",
+      "do": [
+        {
+          "do": "write",
+          "step": 1,
+          "on": "L N Y equals"
+        }
+      ]
+    },
+    {
+      "say": "This is Y equals M X plus C. The gradient is minus N, and the intercept is L N A.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "underline",
+          "token": [
+            "mX",
+            "c"
+          ],
+          "on": "The gradient is"
+        }
+      ]
+    },
+    {
+      "say": "Gradient from the two points: seven minus three, over four minus two, is two.",
+      "do": [
+        {
+          "do": "write",
+          "step": 2,
+          "on": "seven minus three"
+        }
+      ]
+    },
+    {
+      "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "Three equals two"
+        }
+      ]
+    },
+    {
+      "say": "The gradient is minus N, not N. Minus N is two, so N is minus two.",
+      "do": [
+        {
+          "do": "write",
+          "token": "n",
+          "on": "Minus N is two"
+        },
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "n",
+          "on": "minus two"
+        }
+      ]
+    },
+    {
+      "say": "Un-log the intercept. L N A is minus one, so A is E to the power minus one.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← The graph gives ln A, not A",
+          "near": "c"
+        },
+        {
+          "do": "write",
+          "token": "A",
+          "on": "so A is"
+        }
+      ]
+    },
+    {
+      "say": "N equals minus two. A equals E to the power minus one, about zero point three six eight.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "n"
+        },
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "A",
+          "on": "zero point three"
+        }
+      ]
+    }
+  ]
+}

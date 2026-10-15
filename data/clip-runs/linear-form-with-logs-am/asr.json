@@ -1,0 +1,56 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "worst": 0.89,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 0.96,
+   "score": 0.96,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 0.57,
+   "score": 1,
+   "heard": "X sits in the power. So, take ln of both sides. LNY equals minus NX plus LNA.",
+   "said": "X sits in the power, so take L N of both sides. L N Y equals minus N X plus L N A."
+  },
+  {
+   "beat": 3,
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 0.74,
+   "score": 0.909,
+   "heard": "unlog the intercept LNA is -1. So A is E to the power -1.",
+   "said": "Un-log the intercept. L N A is minus one, so A is E to the power minus one."
+  },
+  {
+   "beat": 8,
+   "bag": 0.89,
+   "score": 0.89,
+   "heard": null
+  }
+ ]
+}

@@ -1897,6 +1897,17 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           )}
         </div>
       )}
+      {/* A clip with the sound OFF (▶ Auto): the beat's spoken line as a plain caption,
+          so a student watching on mute still gets the words (SPEC-CLIP-PIPELINE §2b). */}
+      {clip && pacing === 'auto' && !done && hasBeats(scene) && scene.beats[step] && (
+        <div className="lsn-ribbon mt-3 px-1 min-h-[42px]" aria-hidden data-ribbon="caption">
+          <p key={`${sceneIdx}:${step}`} className="lsn-ribbon-line border-l-2 border-amber-400 pl-3 text-[13px] leading-snug">
+            {scene.beats[step].say.split(/\s+/).map((w, i) => (
+              <span key={i} data-w data-on="">{i > 0 ? ' ' : ''}{w}</span>
+            ))}
+          </p>
+        </div>
+      )}
 
       {/* Bottom controls — fixed shape, never jumps between scenes. */}
       {!done && (

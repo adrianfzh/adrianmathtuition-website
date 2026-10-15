@@ -1,0 +1,92 @@
+{
+  "slug": "laws-of-logarithms-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "All three logs have base three. Same base, so we can combine them.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "underline",
+          "token": [
+            "a",
+            "b",
+            "c"
+          ]
+        }
+      ]
+    },
+    {
+      "say": "Plus means multiply. Five times six is thirty, so the first two make log base three of thirty.",
+      "do": [
+        {
+          "do": "write",
+          "step": 1,
+          "on": "Five times six"
+        },
+        {
+          "do": "note",
+          "text": "← Plus means multiply",
+          "near": "ab",
+          "on": "log base three of thirty"
+        }
+      ]
+    },
+    {
+      "say": "Only added logs combine like this. Log five times log six is not log thirty.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "ab",
+          "on": "not log thirty"
+        }
+      ]
+    },
+    {
+      "say": "Minus means divide. So we get log base three of thirty over ten.",
+      "do": [
+        {
+          "do": "write",
+          "step": 2,
+          "on": "So we get"
+        }
+      ]
+    },
+    {
+      "say": "Thirty over ten is three. That leaves log base three of three.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "That leaves"
+        }
+      ]
+    },
+    {
+      "say": "The base matches the number inside. So the answer is one.",
+      "do": [
+        {
+          "do": "write",
+          "step": 4,
+          "on": "So the answer"
+        },
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "one"
+        }
+      ]
+    }
+  ]
+}

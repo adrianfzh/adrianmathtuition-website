@@ -1,0 +1,109 @@
+{
+  "slug": "solving-exponential-equations-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "Solve seven to the power X minus one equals five to the power X minus three.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Take log on both sides. Seven and five cannot be made the same base.",
+      "do": [
+        {
+          "do": "highlight",
+          "token": [
+            "s7",
+            "s5"
+          ]
+        }
+      ]
+    },
+    {
+      "say": "Bring down the powers. X minus one times log seven equals X minus three times log five.",
+      "do": [
+        {
+          "do": "write",
+          "token": "p7",
+          "on": "X minus one"
+        },
+        {
+          "do": "write",
+          "token": "p5",
+          "on": "X minus three"
+        }
+      ]
+    },
+    {
+      "say": "Log seven and log five are just numbers. Expand, and put the X terms on the left.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← Just numbers: collect like algebra",
+          "near": "p7"
+        },
+        {
+          "do": "write",
+          "token": "xs",
+          "on": "the X terms"
+        }
+      ]
+    },
+    {
+      "say": "The number terms, log seven minus three log five, go on the right.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ns",
+          "on": "log seven minus"
+        }
+      ]
+    },
+    {
+      "say": "Factorise out X, then divide by log seven minus log five.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "then divide by"
+        }
+      ]
+    },
+    {
+      "say": "Press calculator. X is about minus eight point five seven.",
+      "do": [
+        {
+          "do": "write",
+          "step": 4,
+          "on": "X is about"
+        }
+      ]
+    },
+    {
+      "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "ans",
+          "on": "removes a minus"
+        }
+      ]
+    },
+    {
+      "say": "The answer is X equals minus eight point five seven.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "minus eight point"
+        }
+      ]
+    }
+  ]
+}

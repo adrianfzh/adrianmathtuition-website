@@ -1,0 +1,116 @@
+{
+  "slug": "solving-log-equations-am",
+  "title": "Solving log equations",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Solving log equations",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "\\log_3(x-8)", "id": "l1" },
+            { "tex": "=\\,2", "id": "two" },
+            { "tex": "-\\,\\log_3 x", "id": "l2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\log_3[x(x-8)]", "id": "comb", "hl": "amber" },
+            { "tex": "=\\,\\log_3 9", "id": "nine", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x^2-8x-9=0", "id": "quad" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "(x-9)(x+1)=0", "id": "fac" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=9", "id": "ans", "hl": "emerald" },
+            { "tex": "\\text{or}\\;\\; x=-1\\;(\\text{rej})", "id": "rej" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b1.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Move log base three of X to the left. Add Power joins them: log of X times the bracket X minus eight.",
+          "do": [
+            { "do": "highlight", "token": "l2" },
+            { "do": "write", "token": "comb", "on": "Add Power joins" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b2.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Write two as log base three of nine. Three squared is nine.",
+          "do": [
+            { "do": "write", "token": "nine", "on": "log base three of nine" },
+            { "do": "note", "text": "← $2 = \\log_3 9$", "near": "nine", "on": "Three squared" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b3.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Same base on both sides, so drop the logs and compare. X squared minus eight X minus nine equals zero.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["comb", "nine"] },
+            { "do": "write", "step": 2, "on": "X squared minus" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b4.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Factorise. X minus nine, times X plus one, equals zero.",
+          "do": [
+            { "do": "write", "step": 3, "on": "X minus nine" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b5.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "So X equals nine or X equals minus one.",
+          "do": [
+            { "do": "write", "token": "ans", "on": "X equals nine" },
+            { "do": "write", "token": "rej", "on": "minus one" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b6.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "rej", "on": "X equals minus one" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b7.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "The answer is X equals nine.",
+          "do": [
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine" }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b8.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b8.timing.json"
+        }
+      ]
+    }
+  ]
+}

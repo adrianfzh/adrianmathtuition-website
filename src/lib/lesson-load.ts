@@ -23,6 +23,13 @@ import specialProductsMixedS2 from '../../data/lessons/special-products-mixed-s2
 import usingTheIdentityS2 from '../../data/lessons/using-the-identity-s2.json';
 import withoutACalculatorS2 from '../../data/lessons/without-a-calculator-s2.json';
 import henceQuestionsS2 from '../../data/lessons/hence-questions-s2.json';
+import lawsOfLogarithmsAm from '../../data/lessons/laws-of-logarithms-am.json';
+import solvingLogEquationsAm from '../../data/lessons/solving-log-equations-am.json';
+import solvingExponentialEquationsAm from '../../data/lessons/solving-exponential-equations-am.json';
+import linearFormWithLogsAm from '../../data/lessons/linear-form-with-logs-am.json';
+import growthAndDecayAm from '../../data/lessons/growth-and-decay-am.json';
+import sketchingLogGraphsAm from '../../data/lessons/sketching-log-graphs-am.json';
+import logScalesAm from '../../data/lessons/log-scales-am.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -46,6 +53,13 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'using-the-identity-s2': usingTheIdentityS2,
   'without-a-calculator-s2': withoutACalculatorS2,
   'hence-questions-s2': henceQuestionsS2,
+  'laws-of-logarithms-am': lawsOfLogarithmsAm,
+  'solving-log-equations-am': solvingLogEquationsAm,
+  'solving-exponential-equations-am': solvingExponentialEquationsAm,
+  'linear-form-with-logs-am': linearFormWithLogsAm,
+  'growth-and-decay-am': growthAndDecayAm,
+  'sketching-log-graphs-am': sketchingLogGraphsAm,
+  'log-scales-am': logScalesAm,
 };
 
 /**

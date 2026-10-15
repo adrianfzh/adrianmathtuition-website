@@ -1,0 +1,150 @@
+{
+  "slug": "sketching-log-graphs-am",
+  "title": "Sketching a log graph",
+  "heading": "Sketching a log graph",
+  "intro": null,
+  "level": "AM",
+  "topic": "Logarithms",
+  "subgroup": {
+    "id": 693,
+    "name": "Graphs & Transformations of Log/Exp Functions"
+  },
+  "source": {
+    "unit": "1082.07",
+    "also": [
+      "1082.02",
+      "1082.04"
+    ]
+  },
+  "bible": "data/clip-bibles/logarithms-am.md",
+  "answer": {
+    "facts": [
+      "xa = 2",
+      "yi = log(2)",
+      "xi = 1"
+    ],
+    "display": "x = 1"
+  },
+  "lines": [
+    {
+      "tokens": [
+        {
+          "tex": "y=\\ln(2-x)",
+          "id": "eqn"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "y": "log(2-x)"
+          }
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "2-x=0",
+          "id": "in0"
+        },
+        {
+          "tex": "\\Rightarrow\\;x=2",
+          "id": "asy",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "solves": "2 - x = 0",
+          "var": "x",
+          "gives": 2
+        },
+        {
+          "fact": "xa = x"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\text{shape of}\\;\\; y=\\ln(-x)",
+          "id": "shape",
+          "hl": "amber"
+        }
+      ],
+      "checks": [
+        {
+          "shape": "log(2 - x)",
+          "family": "ln(-x)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "x=0:",
+          "id": "x0"
+        },
+        {
+          "tex": "y=\\ln 2\\approx 0.693",
+          "id": "yint"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "yi = log(2 - 0)"
+        },
+        {
+          "approx": 0.693,
+          "sf": 3,
+          "of": "yi"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "y=0:",
+          "id": "y0"
+        },
+        {
+          "tex": "2-x=e^0=1",
+          "id": "xin"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "log(2 - 1) = 0"
+        },
+        {
+          "fact": "2 - 1 = exp(0)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "x=1",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "solves": "log(2 - xi) = 0",
+          "var": "xi",
+          "gives": 1
+        }
+      ]
+    }
+  ],
+  "outline": [
+    "Write the question (line 0). Four steps: asymptote, shape, draw, intercepts.",
+    "Step one, asymptote: let the inside of the log equal zero (write in0, asy; note '← asymptote').",
+    "Step two, shape: minus in front of x flips in the y-axis — the shape of ln(-x); the curve lives to the left of x = 2 (write shape).",
+    "Step three: draw that shape against x = 2 (say only).",
+    "Step four, intercepts: x = 0 gives y = ln 2 (write x0, yint).",
+    "y = 0: the inside equals e to the 0, which is 1, so x = 1 (write y0, xin, ans).",
+    "Trap: asymptote — inside equals 0; x-intercept — inside equals 1. Two different equations (circle in0 or xin)."
+  ]
+}

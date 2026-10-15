@@ -1,0 +1,108 @@
+{
+  "slug": "growth-and-decay-am",
+  "title": "Growth and decay",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Growth and decay",
+      "intro": "$P = P_0e^{kt}$, $t$ in hours. It starts at $100$ and doubles every $7.5$ hours. Find $k$.",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "P=P_0e^{kt}", "id": "model" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "t=0:", "id": "t0" },
+            { "tex": "P_0=100", "id": "p0", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "200", "id": "dbl", "hl": "amber" },
+            { "tex": "=100e^{7.5k}", "id": "rhs" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "e^{7.5k}=2", "id": "iso" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "7.5k=\\ln 2", "id": "ln" },
+            { "tex": "\\Rightarrow\\;k\\approx 0.0924", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b1.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
+          "do": [
+            { "do": "write", "token": "t0", "on": "T equals zero" },
+            { "do": "write", "token": "p0", "on": "P nought is" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b2.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred, not two.",
+          "do": [
+            { "do": "write", "token": "dbl", "on": "P is two hundred" },
+            { "do": "mark", "kind": "circle", "token": "dbl", "on": "not two" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b3.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "So two hundred equals one hundred E to the power seven point five K.",
+          "do": [
+            { "do": "write", "token": "rhs", "on": "equals one hundred" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b4.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
+          "do": [
+            { "do": "write", "step": 3, "on": "E to the power" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b5.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "E is involved, so take L N of both sides. L N E is one, so seven point five K equals L N two.",
+          "do": [
+            { "do": "note", "text": "← ln, because e is involved", "near": "iso" },
+            { "do": "write", "token": "ln", "on": "seven point five K" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
+          "do": [
+            { "do": "write", "token": "ans", "on": "K equals" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "zero point zero" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
+        }
+      ]
+    }
+  ]
+}

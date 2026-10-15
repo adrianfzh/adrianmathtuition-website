@@ -1,0 +1,97 @@
+{
+  "slug": "growth-and-decay-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
+      "do": [
+        {
+          "do": "write",
+          "token": "t0",
+          "on": "T equals zero"
+        },
+        {
+          "do": "write",
+          "token": "p0",
+          "on": "P nought is"
+        }
+      ]
+    },
+    {
+      "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred, not two.",
+      "do": [
+        {
+          "do": "write",
+          "token": "dbl",
+          "on": "P is two hundred"
+        },
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "dbl",
+          "on": "not two"
+        }
+      ]
+    },
+    {
+      "say": "So two hundred equals one hundred E to the power seven point five K.",
+      "do": [
+        {
+          "do": "write",
+          "token": "rhs",
+          "on": "equals one hundred"
+        }
+      ]
+    },
+    {
+      "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "E to the power"
+        }
+      ]
+    },
+    {
+      "say": "E is involved, so take L N of both sides. L N E is one, so seven point five K equals L N two.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← ln, because e is involved",
+          "near": "iso"
+        },
+        {
+          "do": "write",
+          "token": "ln",
+          "on": "seven point five K"
+        }
+      ]
+    },
+    {
+      "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans",
+          "on": "K equals"
+        },
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "zero point zero"
+        }
+      ]
+    }
+  ]
+}

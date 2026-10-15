@@ -1,0 +1,113 @@
+{
+  "slug": "log-scales-am",
+  "title": "Log scales: decibels",
+  "heading": "Log scales: decibels",
+  "intro": "$N = 10\\lg\\tfrac{I}{k}$. Dishwasher $62$ dB, pump $50$ dB. How many times as intense is the dishwasher?",
+  "level": "AM",
+  "topic": "Logarithms",
+  "subgroup": {
+    "id": 1518,
+    "name": "Log scales: decibels, pH, Richter"
+  },
+  "source": {
+    "unit": "1082.25",
+    "also": [
+      "1082.24"
+    ]
+  },
+  "bible": "data/clip-bibles/logarithms-am.md",
+  "env": {
+    "Ip": 1,
+    "k": 0.37
+  },
+  "answer": {
+    "facts": [
+      "Id/Ip = 10**(6/5)"
+    ],
+    "display": "15.8"
+  },
+  "lines": [
+    {
+      "tokens": [
+        {
+          "tex": "62-50",
+          "id": "diff"
+        },
+        {
+          "tex": "=10\\lg\\tfrac{I_d}{k}-10\\lg\\tfrac{I_p}{k}",
+          "id": "two"
+        }
+      ],
+      "checks": [
+        {
+          "start": "62 - 50 = 10*log(Id/k,10) - 10*log(Ip/k,10)",
+          "var": "Id"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "12",
+          "id": "twelve"
+        },
+        {
+          "tex": "=10\\lg\\tfrac{I_d}{I_p}",
+          "id": "one",
+          "hl": "amber"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "10*log(a/q,10) - 10*log(b/q,10) = 10*log(a/b,10)"
+        },
+        {
+          "step": "12 = 10*log(Id/Ip,10)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\lg\\tfrac{I_d}{I_p}=1.2",
+          "id": "div"
+        }
+      ],
+      "checks": [
+        {
+          "step": "log(Id/Ip,10) = 1.2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\tfrac{I_d}{I_p}=10^{1.2}",
+          "id": "unlog"
+        },
+        {
+          "tex": "\\approx 15.8",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "step": "Id/Ip = 10**1.2"
+        },
+        {
+          "approx": 15.8,
+          "sf": 3
+        }
+      ]
+    }
+  ],
+  "outline": [
+    "Read the question. Compare two readings: subtract them (write diff, two).",
+    "Minus Power: one log of the ratio; the k cancels (write twelve, one).",
+    "Divide by 10 (write div).",
+    "Un-log: 10 to the power 1.2 (write unlog).",
+    "About 15.8 times as intense (write ans, box).",
+    "Trap: the answer is not 12 — 12 is the difference in decibels; the question asks how many times."
+  ]
+}

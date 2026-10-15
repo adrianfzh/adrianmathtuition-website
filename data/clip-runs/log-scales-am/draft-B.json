@@ -1,0 +1,94 @@
+{
+  "slug": "log-scales-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "A dishwasher is sixty-two decibels and a pump is fifty. Subtract the two readings to compare them.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0,
+          "on": "Subtract the two readings"
+        }
+      ]
+    },
+    {
+      "say": "Sixty-two minus fifty is twelve.",
+      "do": [
+        {
+          "do": "write",
+          "token": "twelve",
+          "on": "is twelve"
+        }
+      ]
+    },
+    {
+      "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+      "do": [
+        {
+          "do": "write",
+          "token": "one",
+          "on": "one log of the ratio"
+        },
+        {
+          "do": "note",
+          "text": "← Minus Power: the constant cancels",
+          "near": "one",
+          "on": "K cancels"
+        }
+      ]
+    },
+    {
+      "say": "Divide both sides by ten. Log of the ratio is one point two.",
+      "do": [
+        {
+          "do": "write",
+          "step": 2,
+          "on": "Log of the ratio"
+        }
+      ]
+    },
+    {
+      "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+      "do": [
+        {
+          "do": "write",
+          "token": "unlog",
+          "on": "The ratio is ten"
+        }
+      ]
+    },
+    {
+      "say": "Ten to the power one point two is about fifteen point eight.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans",
+          "on": "about fifteen point eight"
+        }
+      ]
+    },
+    {
+      "say": "The answer is not twelve. Twelve is the difference in decibels, not how many times.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "twelve",
+          "on": "not twelve"
+        }
+      ]
+    },
+    {
+      "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "fifteen point eight times"
+        }
+      ]
+    }
+  ]
+}

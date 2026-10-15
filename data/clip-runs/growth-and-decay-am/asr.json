@@ -1,0 +1,51 @@
+{
+ "slug": "growth-and-decay-am",
+ "worst": 0.882,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 0.83,
+   "score": 0.908,
+   "heard": "p = P not E to the power KT. It starts at 100 and doubles every 7.5 hours. Find K.",
+   "said": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K."
+  },
+  {
+   "beat": 2,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 0.67,
+   "score": 0.882,
+   "heard": "E is involved, so take ln of both sides. lnE is one, so 7.5k = ln2.",
+   "said": "E is involved, so take L N of both sides. L N E is one, so seven point five K equals L N two."
+  },
+  {
+   "beat": 7,
+   "bag": 0.65,
+   "score": 1,
+   "heard": "So K equals LN 2 over 7.5 about 0.0924.",
+   "said": "So K equals L N two over seven point five, about zero point zero nine two four."
+  }
+ ]
+}

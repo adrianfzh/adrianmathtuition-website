@@ -1,0 +1,110 @@
+{
+  "slug": "solving-log-equations-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Move log base three of X to the left. Add Power joins the two logs into log of X times X minus eight.",
+      "do": [
+        {
+          "do": "highlight",
+          "token": "l2"
+        },
+        {
+          "do": "write",
+          "token": "comb",
+          "on": "Add Power joins"
+        }
+      ]
+    },
+    {
+      "say": "Write two as log base three of nine. Three squared is nine.",
+      "do": [
+        {
+          "do": "write",
+          "token": "nine",
+          "on": "log base three of nine"
+        },
+        {
+          "do": "note",
+          "text": "← 2 = 2 log₃ 3 = log₃ 9",
+          "near": "nine",
+          "on": "Three squared"
+        }
+      ]
+    },
+    {
+      "say": "Same base on both sides, so drop the logs and compare. X squared minus eight X minus nine equals zero.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "underline",
+          "token": [
+            "comb",
+            "nine"
+          ]
+        },
+        {
+          "do": "write",
+          "step": 2,
+          "on": "X squared minus"
+        }
+      ]
+    },
+    {
+      "say": "Factorise. X minus nine, times X plus one, equals zero.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "X minus nine"
+        }
+      ]
+    },
+    {
+      "say": "So X equals nine or X equals minus one.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans",
+          "on": "X equals nine"
+        },
+        {
+          "do": "write",
+          "token": "rej",
+          "on": "minus one"
+        }
+      ]
+    },
+    {
+      "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "rej",
+          "on": "X equals minus one"
+        }
+      ]
+    },
+    {
+      "say": "The answer is X equals nine.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "X equals nine"
+        }
+      ]
+    }
+  ]
+}

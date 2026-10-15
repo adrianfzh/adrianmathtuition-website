@@ -122,6 +122,55 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Hence questions',
     minutes: 1,
   },
+  {
+    slug: 'laws-of-logarithms-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Laws of logarithms',
+    minutes: 1,
+  },
+  {
+    slug: 'solving-log-equations-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Solving log equations',
+    minutes: 1,
+  },
+  {
+    slug: 'solving-exponential-equations-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Solving exponential equations',
+    minutes: 1,
+  },
+  {
+    slug: 'linear-form-with-logs-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Straight-line form with logs',
+    minutes: 1,
+  },
+  {
+    slug: 'growth-and-decay-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Growth and decay',
+    minutes: 1,
+  },
+  {
+    slug: 'sketching-log-graphs-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Sketching a log graph',
+    minutes: 1,
+  },
+  {
+    slug: 'log-scales-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Log scales: decibels',
+    minutes: 1,
+  },
 ];
 
 /**

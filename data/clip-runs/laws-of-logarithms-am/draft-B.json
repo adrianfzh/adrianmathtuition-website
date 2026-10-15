@@ -1,0 +1,98 @@
+{
+  "slug": "laws-of-logarithms-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "All three logs are base three. Same base, so we can combine.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "underline",
+          "token": [
+            "a",
+            "b",
+            "c"
+          ],
+          "on": "base three"
+        }
+      ]
+    },
+    {
+      "say": "Add the first two. Plus means multiply, so five times six gives log base three of thirty.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← Plus means multiply",
+          "near": "ab",
+          "on": "Plus means multiply"
+        },
+        {
+          "do": "write",
+          "step": 1,
+          "on": "log base three of thirty"
+        }
+      ]
+    },
+    {
+      "say": "Only added logs combine. Log five times log six is not log thirty.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "ab",
+          "on": "Only added logs"
+        }
+      ]
+    },
+    {
+      "say": "Now the minus. Minus means divide, so it becomes log base three of thirty over ten.",
+      "do": [
+        {
+          "do": "write",
+          "step": 2,
+          "on": "log base three of thirty over ten"
+        }
+      ]
+    },
+    {
+      "say": "Thirty over ten is three. So we have log base three of three.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "log base three of three"
+        }
+      ]
+    },
+    {
+      "say": "The log is one. The base and the number inside are both three.",
+      "do": [
+        {
+          "do": "write",
+          "step": 4,
+          "on": "The log is one"
+        }
+      ]
+    },
+    {
+      "say": "The answer is one.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "answer is one"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "slug": "linear-form-with-logs-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "L N Y against X is a straight line through two, three and four, seven. Find A and N.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Take L N on both sides, because X sits in the power. L N Y equals minus N X, plus L N A.",
+      "do": [
+        {
+          "do": "write",
+          "step": 1,
+          "on": "L N Y equals"
+        }
+      ]
+    },
+    {
+      "say": "This is Y equals M X plus C. So the gradient is minus N, and the intercept is L N A.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "underline",
+          "token": [
+            "mX",
+            "c"
+          ],
+          "on": "gradient is minus N"
+        }
+      ]
+    },
+    {
+      "say": "Gradient from the two points: seven minus three, over four minus two, is two.",
+      "do": [
+        {
+          "do": "write",
+          "token": "grad",
+          "on": "seven minus three"
+        },
+        {
+          "do": "write",
+          "token": "m2",
+          "on": "is two"
+        }
+      ]
+    },
+    {
+      "say": "Substitute two, three. Three equals two times two, plus C, so C is minus one.",
+      "do": [
+        {
+          "do": "write",
+          "token": "sub",
+          "on": "Three equals"
+        },
+        {
+          "do": "write",
+          "token": "c1",
+          "on": "C is minus one"
+        }
+      ]
+    },
+    {
+      "say": "The gradient is minus N, not N. So minus N is two, and N is minus two.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "mX",
+          "on": "not N"
+        },
+        {
+          "do": "write",
+          "token": "n",
+          "on": "N is minus two"
+        }
+      ]
+    },
+    {
+      "say": "Un-log the intercept. L N A is minus one, so A equals E to the power minus one.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← Un-log both read-offs",
+          "near": "c",
+          "on": "Un-log the intercept"
+        },
+        {
+          "do": "write",
+          "token": "A",
+          "on": "so A equals"
+        }
+      ]
+    },
+    {
+      "say": "So N equals minus two, and A is about zero point three six eight.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": [
+            "n",
+            "A"
+          ],
+          "on": "N equals minus two"
+        }
+      ]
+    }
+  ]
+}

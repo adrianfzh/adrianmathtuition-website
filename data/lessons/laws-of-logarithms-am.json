@@ -1,0 +1,109 @@
+{
+  "slug": "laws-of-logarithms-am",
+  "title": "Laws of logarithms",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Laws of logarithms",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "\\log_3 5", "id": "a" },
+            { "tex": "+\\,\\log_3 6", "id": "b" },
+            { "tex": "-\\,\\log_3 10", "id": "c" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\log_3 30", "id": "ab", "hl": "amber" },
+            { "tex": "-\\,\\log_3 10", "id": "c2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\log_3 \\dfrac{30}{10}", "id": "q", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "\\log_3 3", "id": "l3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=" },
+            { "tex": "1", "id": "ans", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b1.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "All three logs have base three. Same base, so we can combine them.",
+          "do": [
+            { "do": "mark", "kind": "underline", "token": ["a", "b", "c"] }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b2.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Plus means multiply. Five times six is thirty, so the first two make log base three of thirty.",
+          "do": [
+            { "do": "write", "step": 1, "on": "Five times six" },
+            { "do": "note", "text": "← Plus means multiply", "near": "ab", "on": "log base three of thirty" }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b3.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "Only added logs combine like this. Log five times log six is not log thirty.",
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "ab", "on": "not log thirty" }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b4.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Minus means divide. So we get log base three of thirty over ten.",
+          "do": [
+            { "do": "write", "step": 2, "on": "So we get" }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b5.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "Thirty over ten is three. That leaves log base three of three.",
+          "do": [
+            { "do": "write", "step": 3, "on": "That leaves" }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b6.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "The base matches the number inside. So the answer is one.",
+          "do": [
+            { "do": "write", "step": 4, "on": "So the answer" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "one" }
+          ],
+          "audio": "/lessons/laws-of-logarithms-am/scene-01-b7.mp3",
+          "timing": "/lessons/laws-of-logarithms-am/scene-01-b7.timing.json"
+        }
+      ]
+    }
+  ]
+}

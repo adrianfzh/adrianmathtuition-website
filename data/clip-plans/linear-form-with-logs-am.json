@@ -1,0 +1,150 @@
+{
+  "slug": "linear-form-with-logs-am",
+  "title": "Straight-line form with logs",
+  "heading": "Straight-line form with logs",
+  "intro": "$\\ln y$ against $x$: a line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$.",
+  "level": "AM",
+  "topic": "Logarithms",
+  "subgroup": {
+    "id": 691,
+    "name": "Linear-Form Modelling (lg/ln graphs)"
+  },
+  "source": {
+    "unit": "115.185 (AM Linear Law)",
+    "also": [
+      "115.1",
+      "115.14",
+      "115.28"
+    ]
+  },
+  "bible": "data/clip-bibles/logarithms-am.md",
+  "answer": {
+    "facts": [
+      "n = -2",
+      "A = exp(-1)"
+    ],
+    "display": "n = -2 A = e^{-1} 0.368"
+  },
+  "lines": [
+    {
+      "tokens": [
+        {
+          "tex": "y=Ae^{-nx}",
+          "id": "model"
+        }
+      ],
+      "checks": [
+        {
+          "model": {
+            "y": "A*exp(-n*x)"
+          }
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\ln y",
+          "id": "Y",
+          "hl": "sky"
+        },
+        {
+          "tex": "=\\,-n\\,x",
+          "id": "mX",
+          "hl": "sky"
+        },
+        {
+          "tex": "+\\,\\ln A",
+          "id": "c",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "log(y) = -n*x + log(A)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "m=\\tfrac{7-3}{4-2}",
+          "id": "grad"
+        },
+        {
+          "tex": "=\\,2",
+          "id": "m2"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "m = (7-3)/(4-2)"
+        },
+        {
+          "fact": "m = 2"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "3=2(2)+c",
+          "id": "sub"
+        },
+        {
+          "tex": "\\Rightarrow\\;c=-1",
+          "id": "c1"
+        }
+      ],
+      "checks": [
+        {
+          "solves": "3 = m*2 + c",
+          "var": "c",
+          "gives": -1
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "n=-2",
+          "id": "n",
+          "hl": "emerald"
+        },
+        {
+          "tex": "A=e^{-1}\\approx 0.368",
+          "id": "A",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "n = -m"
+        },
+        {
+          "fact": "A = exp(c)"
+        },
+        {
+          "approx": 0.368,
+          "sf": 3,
+          "of": "A"
+        },
+        {
+          "fact": "log(A*exp(-n*2)) = 3"
+        },
+        {
+          "fact": "log(A*exp(-n*4)) = 7"
+        }
+      ]
+    }
+  ],
+  "outline": [
+    "Read the question: ln y against x is a straight line; the model is y = A e to the minus n x (write model).",
+    "Take ln of both sides: ln y = -n x + ln A — this is Y = mX + c (write Y, mX, c).",
+    "So the gradient is minus n and the intercept is ln A (underline mX and c).",
+    "Gradient from the two points: (7-3)/(4-2) = 2 (write grad, m2).",
+    "Substitute (2, 3) to find c = -1 (write sub, c1).",
+    "Trap: the gradient is MINUS n, so n = -2 (write n).",
+    "Un-log the intercept: ln A = -1, so A = e to the minus 1, about 0.368 (write A, box both)."
+  ]
+}

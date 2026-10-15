@@ -1,0 +1,105 @@
+{
+  "slug": "solving-exponential-equations-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "Solve seven to the power X minus one equals five to the power X minus three.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Take log on both sides. Seven and five cannot be made the same base.",
+      "do": [
+        {
+          "do": "highlight",
+          "token": [
+            "s7",
+            "s5"
+          ],
+          "on": "Seven and five"
+        }
+      ]
+    },
+    {
+      "say": "Bring down the powers. X minus one, times log seven, equals X minus three, times log five.",
+      "do": [
+        {
+          "do": "write",
+          "token": "p7",
+          "on": "X minus one"
+        },
+        {
+          "do": "write",
+          "token": "p5",
+          "on": "X minus three"
+        }
+      ]
+    },
+    {
+      "say": "Expand, and collect the X terms on the left. Log seven and log five are just numbers.",
+      "do": [
+        {
+          "do": "write",
+          "token": "xs",
+          "on": "collect the X terms"
+        }
+      ]
+    },
+    {
+      "say": "Keep the number terms on the right. That is log seven minus three log five.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ns",
+          "on": "log seven minus three"
+        }
+      ]
+    },
+    {
+      "say": "Factorise out X, then divide by log seven minus log five.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "divide by"
+        }
+      ]
+    },
+    {
+      "say": "Press calculator. X is about minus eight point five seven.",
+      "do": [
+        {
+          "do": "write",
+          "step": 4,
+          "on": "minus eight point five seven"
+        }
+      ]
+    },
+    {
+      "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "ans",
+          "on": "Rounding never removes"
+        }
+      ]
+    },
+    {
+      "say": "So X is about minus eight point five seven, to three significant figures.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "minus eight point five seven"
+        }
+      ]
+    }
+  ]
+}

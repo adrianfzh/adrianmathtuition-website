@@ -1,0 +1,30 @@
+{
+ "slug": "growth-and-decay-am",
+ "pick": "A",
+ "why": "A gives the trap in the same breath as the step with its reason ('Doubling means two times one hundred … P is two hundred, not two'); B spends a separate beat on it with a restatement ('Doubling doubles the starting value').",
+ "scores": {
+  "clear": 5,
+  "one_idea": 4,
+  "voice_board": 5,
+  "why": 5,
+  "trap": 5,
+  "level": 5
+ },
+ "notes": [
+  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
+  "Beat 1 read the setup but not the task. Fixed: added 'Find K.'",
+  "Beat 3 holds the doubling step and the trap circle — two things, at the limit but clear."
+ ],
+ "fixed_beats": {
+  "1": {
+   "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  }
+ },
+ "verdict": "pass"
+}

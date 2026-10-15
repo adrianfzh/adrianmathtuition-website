@@ -1,0 +1,49 @@
+{
+ "slug": "solving-exponential-equations-am",
+ "pick": "A",
+ "why": "A puts his words 'just numbers: collect like algebra' in the margin and gives the reason before the step; B has no margin note at all, otherwise the two are nearly the same.",
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 4,
+  "level": 5
+ },
+ "notes": [
+  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
+  "Beat 3: 'X minus one times log seven equals X minus three times log five' with no pauses reads as X minus (one times log seven). Fixed with commas, as B has.",
+  "Beat 6: 'Factorise out X, then divide' — no reason given; acceptable as it is the plain algebra step.",
+  "Beat 9: 'The answer is X equals minus eight point five seven' while the board shows ≈. Fixed to 'X is about', matching the board and the bible's notation table.",
+  "Trap (beat 8) is plain and said once; it comes after the right answer is already written, so it lands as a warning rather than at a wrong step — fine."
+ ],
+ "fixed_beats": {
+  "3": {
+   "say": "Bring down the powers. X minus one, times log seven, equals X minus three, times log five.",
+   "do": [
+    {
+     "do": "write",
+     "token": "p7",
+     "on": "X minus one"
+    },
+    {
+     "do": "write",
+     "token": "p5",
+     "on": "X minus three"
+    }
+   ]
+  },
+  "9": {
+   "say": "So X is about minus eight point five seven.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "minus eight point"
+    }
+   ]
+  }
+ },
+ "verdict": "pass"
+}

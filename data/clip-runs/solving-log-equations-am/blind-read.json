@@ -1,0 +1,53 @@
+{
+ "slug": "solving-log-equations-am",
+ "pick": "A",
+ "why": "A names the bad value concretely ('log of minus nine') and has the margin line '2 = 2 log₃ 3 = log₃ 9' from his notes; B says 'a negative number' and puts a vaguer note ('Rewrite, then compare') on a later step.",
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
+ "notes": [
+  "Scores are for the pick with fixed_beats applied (assemble.mjs swaps them in).",
+  "Beat 2: 'log of X times X minus eight', spoken, sounds like X squared minus eight. Fixed: 'log of X times the bracket X minus eight', and 'Add Power joins them' so the move has its reason (both logs on one side so they can join).",
+  "Beat 4 jumps from the log equation to the quadratic without saying 'X times X minus eight equals nine'. A student can follow it once, but it is the biggest jump in the clip; left as is to stay inside 24 words.",
+  "Beat 6: the token 'or x = −1 (rej)' shows '(rej)' before beat 7 says why. Board limit (one token), not the writer's fault.",
+  "Session edit after the look: the margin note '← 2 = 2 log₃ 3 = log₃ 9' rendered tiny on a phone; now '← 2 = log₃ 9' (the voice says why)."
+ ],
+ "fixed_beats": {
+  "2": {
+   "say": "Move log base three of X to the left. Add Power joins them: log of X times the bracket X minus eight.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l2"
+    },
+    {
+     "do": "write",
+     "token": "comb",
+     "on": "Add Power joins"
+    }
+   ]
+  },
+  "3": {
+   "say": "Write two as log base three of nine. Three squared is nine.",
+   "do": [
+    {
+     "do": "write",
+     "token": "nine",
+     "on": "log base three of nine"
+    },
+    {
+     "do": "note",
+     "text": "← $2 = \\log_3 9$",
+     "near": "nine",
+     "on": "Three squared"
+    }
+   ]
+  }
+ },
+ "verdict": "pass"
+}

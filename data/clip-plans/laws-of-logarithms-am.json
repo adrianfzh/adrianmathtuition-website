@@ -1,0 +1,32 @@
+{
+  "slug": "laws-of-logarithms-am",
+  "title": "Laws of logarithms",
+  "heading": "Laws of logarithms",
+  "intro": null,
+  "level": "AM", "topic": "Logarithms",
+  "subgroup": { "id": 688, "name": "Using the laws of logarithms" },
+  "source": { "unit": "109.1", "id": "aeedab34-4101-4ba6-b0f7-fe2a89af0290", "also": ["109.05", "109.11", "109.115"] },
+  "bible": "data/clip-bibles/logarithms-am.md",
+  "answer": { "facts": ["v = 1"], "display": "1" },
+  "lines": [
+    { "tokens": [ { "tex": "\\log_3 5", "id": "a" }, { "tex": "+\\,\\log_3 6", "id": "b" }, { "tex": "-\\,\\log_3 10", "id": "c" } ],
+      "checks": [ { "start_expr": "log(5,3) + log(6,3) - log(10,3)" } ] },
+    { "tokens": [ { "tex": "=" }, { "tex": "\\log_3 30", "id": "ab", "hl": "amber" }, { "tex": "-\\,\\log_3 10", "id": "c2" } ],
+      "checks": [ { "step_expr": "log(30,3) - log(10,3)" } ] },
+    { "tokens": [ { "tex": "=" }, { "tex": "\\log_3 \\dfrac{30}{10}", "id": "q", "hl": "amber" } ],
+      "checks": [ { "step_expr": "log(30/10,3)" } ] },
+    { "tokens": [ { "tex": "=" }, { "tex": "\\log_3 3", "id": "l3" } ],
+      "checks": [ { "step_expr": "log(3,3)" } ] },
+    { "tokens": [ { "tex": "=" }, { "tex": "1", "id": "ans", "hl": "emerald" } ],
+      "checks": [ { "step_expr": "1" }, { "fact": "v = 1" } ] }
+  ],
+  "outline": [
+    "Write the question (line 0).",
+    "All three logs are base 3: same base, so we can combine (underline a, b, c).",
+    "Plus means multiply: 5 x 6 = 30 (write ab\\; margin note '← Plus means multiply').",
+    "Minus means divide (write q).",
+    "30 over 10 is 3 (write l3).",
+    "Base matches the number inside, so the log is 1 (write ans, box it).",
+    "Trap, once: only ADDED logs combine — log 5 times log 6 is not log 30."
+  ]
+}

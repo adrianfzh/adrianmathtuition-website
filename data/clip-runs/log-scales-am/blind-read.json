@@ -1,0 +1,19 @@
+{
+ "slug": "log-scales-am",
+ "pick": "B",
+ "why": "B gives the reason for un-logging ('Log is base ten, so un-log with ten to the power'), says what Minus Power acts on ('turns the right side into one log of the ratio'), and works out 15.8 before naming the twelve trap; A states the trap before the answer exists and has no reason for the un-log.",
+ "scores": {
+  "clear": 4,
+  "one_idea": 4,
+  "voice_board": 4,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
+ "notes": [
+  "Beat 1 does not read the formula; the long line with two logs appears while the voice only says 'Subtract the two readings'. The formula is printed in the question, so acceptable.",
+  "'The ratio' is never said to be the ratio of the intensities; a student can infer it from the question.",
+  "Trap (beat 7) is plain and said once, with the circle on twelve."
+ ],
+ "verdict": "pass"
+}

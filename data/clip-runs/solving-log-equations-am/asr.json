@@ -1,0 +1,54 @@
+{
+ "slug": "solving-log-equations-am",
+ "worst": 0.9,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}

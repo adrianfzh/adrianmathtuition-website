@@ -1,6 +1,8 @@
 # Clip pipeline — one-minute explanation clips, made automatically, to the approved standard
 
-**Status:** PLAN, 15 Oct 2026, waiting for Adrian's yes. Nothing built.
+**Status:** Step 1 BUILT 15 Oct 2026 (Adrian approved the plan and said "yes" to step 1): the
+pipeline for skill clips, run by hand, and the 7 A Math Logarithms clips — admin-only, waiting
+for Adrian to watch them. Where it stands and how to run it: **§8**.
 **Asked for:** Adrian, 15 Oct 2026: *"is there a way to build a pipeline to generate clip solutions almost immediately? like within a few minutes … an automated one with all checks to ensure real good quality? this will highly enhance the app experience"* and *"before you do, can you plan how is it done to make it really good and high quality?"*
 **The standard:** `data/lessons/expand-two-brackets-s2.json`, the clip Adrian approved on 9 Oct (*"video is much better now. let's keep to this quality"*). Rules in `docs/LESSONS.md` §A clip, §Word cues, §Narration.
 **Why the old one-minute explanation is not good enough:** it is built straight from the marker's steps with no writing step, so the voice reads working instead of teaching, and nothing checks it (`src/lib/explain-clip.ts`, closed to students).
@@ -79,3 +81,84 @@ About two Opus calls and one voice call per clip — roughly US$0.30–0.60 a cl
 - Adrian's method, not a textbook's: where his notes teach a way, the clip uses it.
 - A clip that fails a check is never shown — no "close enough".
 - Voice money (MiniMax) is spent only on clips that passed steps 3–5.
+
+## 8. Step 1 — BUILT 15 Oct 2026: skill clips, A Math Logarithms
+
+### How to run it (one topic, by hand; every file is in the repo)
+
+| Step | What | Tool | Model? |
+|---|---|---|---|
+| 1 Gather | the topic's sub-skills (`subgroups`), Adrian's approved notes, the approved pitfalls | `node scripts/lessons/pull-notes.mjs AM Logarithms` · `teaching_knowledge` RPC | no |
+| Bible | `data/clip-bibles/<topic>.md` — his method + words per sub-skill, notation, spoken forms, traps, stock phrases | written by the session (Opus) from the notes | Opus |
+| 2a Board plan | `data/clip-plans/<slug>.json` — the lines (tokens + ids), each line's maths in sympy, the answer, an outline of beats | written by the session (Opus) | Opus |
+| 4 Maths | every line follows from the line before (an equation's every solution solves the next line; an expression keeps its value; roots = the solutions, a rejected root breaks a log, kept roots solve the question); the answer holds and its numbers are on the last line | `/usr/bin/python3 scripts/clips/chain-check.py <slug>` | no |
+| 2b Two drafts | two writers, each blind to the other, write `beats` (say + word-cued actions) on the checked board | Claude Code agents, `scripts/clips/prompts/writer.md` → `data/clip-runs/<slug>/draft-A.json`, `draft-B.json` | Opus × 2 |
+| 5 Blind read | a fresh agent picks the clearer draft, scores 6 things 1–5, fixes small beats; pass = every score ≥ 4 | `scripts/clips/prompts/blind-reader.md` → `blind-read.json` | Opus |
+| Assemble | board copied from the plan (never the draft) + the picked beats → `data/lessons/<slug>.json`; register | `node scripts/clips/assemble.mjs <slug>` · `node scripts/lessons/register-lesson.mjs <slug>` | no |
+| 3 Rules | the lesson verifier (structure, KaTeX, word limits, motion, narration rules); 0 errors AND 0 warnings | inside `node scripts/clips/gate.mjs <slug>` | no |
+| 6 Voice | MiniMax `speech-02-hd` `English_FriendlyPerson`, word timing, speech round trip (≥ 85 % a line — re-scored with number words = digits) | `generate-narration.mjs`, `align-narration.mjs`, `generate-narration.mjs --verify > data/clip-runs/<slug>/asr.txt`, `node scripts/clips/asr-score.mjs <slug>` | no (paid voice) |
+| 7 Look + cues | plays the clip at 390 × 844 with the voice on; per board action: when it fired vs its word (gate 0.3 s), a picture, and measurements — cut off, overlap, maths < 12 px, under the bottom menu bar; then an agent looks at every picture | `node scripts/clips/look.mjs <slug>` (needs `npm run dev` or `next start`) | Sonnet (pictures) |
+| Record | one record per clip, every check | `node scripts/clips/gate.mjs <slug> --voice` → `data/clip-runs/<slug>/gate.json` | no |
+
+Captions: the spoken line already runs under the board while the voice plays; since 15 Oct a clip
+watched with the sound OFF shows each beat's line under the board too (`lesson-player.tsx`).
+
+### The 7 clips (15 Oct 2026) — every check, per clip
+
+Admin-only (`/app/lesson/<slug>` sits behind `requireFullPortal`; no student switch opened).
+Each teaches one sub-skill with Adrian's own worked example from his approved notes.
+
+| Clip | Beats · words | Rules | Maths (line checks) | Board = plan | Blind read (pick, lowest of 6 scores) | Voice heard | Cues on the voice (fired, worst vs word) | Look problems |
+|---|---|---|---|---|---|---|---|---|
+| `laws-of-logarithms-am` | 7 · 100 | ✓ | ✓ 8/8 | ✓ | ✓ A, lowest 4 | ✓ worst 100 % | ✓ 9/9, worst 0.15 s | ✓ 0 |
+| `solving-log-equations-am` | 8 · 113 | ✓ | ✓ 7/7 | ✓ | ✓ A, lowest 4 | ✓ worst 90 % | ✓ 12/12, worst 0.15 s | ✓ 0 |
+| `solving-exponential-equations-am` | 9 · 123 | ✓ | ✓ 7/7 | ✓ | ✓ A, lowest 4 | ✓ worst 91 % | ✓ 11/11, worst 0.15 s | ✓ 0 |
+| `linear-form-with-logs-am` | 8 · 151 | ✓ | ✓ 15/15 | ✓ | ✓ A, lowest 4 | ✓ worst 89 % | ✓ 13/13, worst 0.15 s | ✓ 0 |
+| `growth-and-decay-am` | 7 · 133 | ✓ | ✓ 10/10 | ✓ | ✓ A, lowest 4 | ✓ worst 88 % | ✓ 11/11, worst 0.15 s | ✓ 0 |
+| `sketching-log-graphs-am` | 10 · 151 | ✓ | ✓ 13/13 | ✓ | ✓ B, lowest 4 | ✓ worst 87 % | ✓ 14/14, worst 0.15 s | ✓ 0 |
+| `log-scales-am` | 8 · 112 | ✓ | ✓ 8/8 | ✓ | ✓ B, lowest 4 | ✓ worst 86 % | ✓ 9/9, worst 0.15 s | ✓ 0 |
+What each teaches (Adrian's notes unit in brackets): laws — log₃5 + log₃6 − log₃10 = 1, "plus means
+multiply" (109.1) · log equations — log₃(x − 8) = 2 − log₃x, x = 9, x = −1 rejected (109.28) ·
+exponential equations — 7ˣ⁻¹ = 5ˣ⁻³, x ≈ −8.57, keep the minus (109.42) · straight-line form — ln y
+against x through (2, 3), (4, 7) for y = Ae^(−nx): n = −2, A = e⁻¹ (Linear Law 115.185) · growth and
+decay — doubles every 7.5 h from 100: k ≈ 0.0924 (1082.15) · sketching — y = ln(2 − x), the four steps
+(1082.07) · log scales — 62 dB vs 50 dB: 10^1.2 ≈ 15.8 times (1082.25).
+
+**What the checks caught on the way** (each fixed before the clip passed): the look found the
+straight-line board and the decibels board taller than a phone screen (top hidden under the header /
+bottom under the menu bar) and a margin note rendered tiny; the blind reader rewrote 8 beats (e.g. "log
+of X times X minus eight" heard as "X squared minus eight"); the reader flagged "Step three, draw that
+shape" on a board that cannot draw a log curve — it now says "draw that shape on your paper". The first
+speech round trip scored 6 lines under 85 % only because the transcript writes "8.57" where the script
+says "eight point five seven" — `asr-score.mjs` re-scores on digits, all real words matched.
+
+**What the cue number does and does not prove.** It is measured in a real browser playing the real
+voice: every board action fired 0.15 s before the word the timing file gives for it (the head start is on
+purpose). The word times themselves come from `align-narration.mjs` (pauses heard by ffmpeg, words dealt
+by length — good to about 0.1 s inside a stretch of speech, exact after a pause); nothing yet checks them
+against an independent word clock.
+
+### Real cost (step 1)
+
+- **Voice:** 57 lines, 4,282 characters on MiniMax `speech-02-hd` — under US$0.50 for all 7.
+- **Speech round trip:** 57 short Gemini Flash transcriptions — a few cents.
+- **Writing, blind read, picture read:** plan-billed Claude Code agents, no API money — two Opus writers
+  (≈ 120 k tokens each, all 7 clips), one Opus blind reader (≈ 130 k), one Sonnet picture reader (≈ 190 k,
+  79 pictures); the board plans and the bible were written by the session itself.
+- **Time:** about 3 minutes per clip of agent time when the 7 run together; checks seconds; voice
+  ≈ 1 minute per clip; the look ≈ 1 minute per clip (it plays the clip).
+- So the §6 estimate holds for voice (US$0.07 a clip); the model part is plan usage, not dollars, while
+  it runs as Claude Code agents.
+
+### Next (not done in step 1)
+
+- **Adrian watches the 7** — 👍 / 👎 + "what's wrong" per clip (§3) is not built yet; his words go into
+  the bible's rules by hand for now.
+- **Captions on a tall board:** the spoken line (and, since 15 Oct, the sound-off caption) sits UNDER the
+  board — on these taller boards it falls below the phone screen. Next: put the caption inside the board's
+  bottom edge.
+- **A live log graph** for the sketching clip (graph-morph draws polynomials only).
+- **Play next** clip of the topic from "Now try one" (§2b) — not built.
+- **Run on the Fly worker** instead of by hand, `job_runs` stamp + `JOB_RHYTHMS` line (§2 step 9).
+- The look's picture read should run AFTER the final look (step 1 ran it on an earlier set while fixes
+  were landing; the session re-read the final pictures itself).

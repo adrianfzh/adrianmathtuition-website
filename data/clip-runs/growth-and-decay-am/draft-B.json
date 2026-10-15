@@ -1,0 +1,98 @@
+{
+  "slug": "growth-and-decay-am",
+  "draft": "B",
+  "beats": [
+    {
+      "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0
+        }
+      ]
+    },
+    {
+      "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
+      "do": [
+        {
+          "do": "write",
+          "token": "t0",
+          "on": "T equals zero"
+        },
+        {
+          "do": "write",
+          "token": "p0",
+          "on": "P nought is"
+        }
+      ]
+    },
+    {
+      "say": "Doubling means P is two hundred. Put T equals seven point five into the model.",
+      "do": [
+        {
+          "do": "write",
+          "token": "dbl",
+          "on": "P is two hundred"
+        },
+        {
+          "do": "write",
+          "token": "rhs",
+          "on": "Put T equals"
+        }
+      ]
+    },
+    {
+      "say": "P is two hundred, not two. Doubling doubles the starting value.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "dbl",
+          "on": "not two"
+        }
+      ]
+    },
+    {
+      "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
+      "do": [
+        {
+          "do": "write",
+          "step": 3,
+          "on": "E to the power"
+        }
+      ]
+    },
+    {
+      "say": "Take L N on both sides, because E is involved. L N E is one, so seven point five K equals L N two.",
+      "do": [
+        {
+          "do": "note",
+          "text": "← ln is used because e is involved",
+          "near": "ln",
+          "on": "because E is involved"
+        },
+        {
+          "do": "write",
+          "token": "ln",
+          "on": "so seven point five K"
+        }
+      ]
+    },
+    {
+      "say": "Divide by seven point five. K equals L N two over seven point five, about zero point zero nine two four.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans",
+          "on": "K equals L N two"
+        },
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "zero point zero nine two four"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "slug": "log-scales-am",
+  "draft": "A",
+  "beats": [
+    {
+      "say": "N equals ten log I over K. A dishwasher is sixty two decibels, a pump is fifty. To compare, subtract them.",
+      "do": [
+        {
+          "do": "write",
+          "step": 0,
+          "on": "subtract them"
+        }
+      ]
+    },
+    {
+      "say": "Sixty two minus fifty is twelve.",
+      "do": [
+        {
+          "do": "write",
+          "token": "twelve",
+          "on": "is twelve"
+        }
+      ]
+    },
+    {
+      "say": "Minus Power makes one log of the ratio. The K cancels.",
+      "do": [
+        {
+          "do": "write",
+          "token": "one"
+        },
+        {
+          "do": "note",
+          "text": "← Minus Power: the k cancels",
+          "near": "one",
+          "on": "The K cancels"
+        }
+      ]
+    },
+    {
+      "say": "Divide both sides by ten. Log of the ratio is one point two.",
+      "do": [
+        {
+          "do": "write",
+          "step": 2,
+          "on": "Log of the ratio"
+        }
+      ]
+    },
+    {
+      "say": "Un-log with ten to the power. The ratio is ten to the power one point two.",
+      "do": [
+        {
+          "do": "write",
+          "token": "unlog",
+          "on": "The ratio is"
+        }
+      ]
+    },
+    {
+      "say": "Do not stop at twelve. Twelve is the difference in decibels. The question asks how many times.",
+      "do": [
+        {
+          "do": "mark",
+          "kind": "circle",
+          "token": "twelve"
+        }
+      ]
+    },
+    {
+      "say": "The dishwasher is about fifteen point eight times as intense as the pump.",
+      "do": [
+        {
+          "do": "write",
+          "token": "ans"
+        },
+        {
+          "do": "mark",
+          "kind": "box",
+          "token": "ans",
+          "on": "fifteen point eight"
+        }
+      ]
+    }
+  ]
+}

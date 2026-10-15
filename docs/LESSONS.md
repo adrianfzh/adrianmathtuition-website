@@ -93,6 +93,10 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
 - **Letters are written as capitals in `say`** ("A times A is A squared") so the voice
   reads the letter's name, not the word "a".
 - **Authoring one:** the author-lesson skill § 3c.
+- **Made by the clip pipeline (15 Oct 2026):** the 7 A Math Logarithms skill clips
+  (`laws-of-logarithms-am` … `log-scales-am`) — topic bible → checked board plan → two drafts →
+  blind read → voice → look, every check recorded per clip. How to run it, the results and the
+  cost: `SPEC-CLIP-PIPELINE.md` §8; the tools are `scripts/clips/`.
 
 ## ▶ The one-minute explanation (1 Oct 2026) — one question, on the board
 
