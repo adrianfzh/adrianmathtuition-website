@@ -6,6 +6,7 @@ import Link from 'next/link';
 import SendWorkCard from './send-work';
 import ShelfSection from './shelf-section';
 import NextLessonCard from './next-lesson-card';
+import SchoolExams from './school-exams';
 import LessonModal, { type LessonModalLesson } from '@/components/LessonModal';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
 import { resolveActiveExamType } from '@/lib/exam-season';
@@ -1224,6 +1225,8 @@ export default function StudentProfileClient({ papersTab }: { papersTab: React.R
               <ExamsEditor exams={exams} studentLevel={s.level} subjects={s.subjects}
                 cellState={examCell} topicsOpen={topicsOpen} setTopicsOpen={setTopicsOpen}
                 onSave={saveExamField} />
+              <SchoolExams studentId={studentId} level={s.level} firstName={(s.name || '').split(' ')[0]}
+                subjects={s.subjects || []} exams={exams} />
             </Section>
 
             {/* Payment records — true per-month outstanding (own-month charge with

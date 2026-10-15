@@ -1,6 +1,9 @@
 # School exam tracker — one scan per school exam, compared exam to exam
 
-**Status:** DESIGN, 15 Oct 2026. Adrian agreed the idea and the place ("we can put that in /students"); this plan and the mock-up wait for his yes before any code.
+**Status:** BUILT 15 Oct 2026 (steps 1–3 of §8), admin only. Adrian approved the mock-up, then moved it: *"why don't we put the exams information in overview (tab 1)? then don't build the fifth tab"* — so it is a "📝 School exam papers" block INSIDE the Exams box on Overview, not a fifth tab (§2 below describes the first plan). Only the latest paper is open; older ones show their score until tapped.
+**Code:** `lib/school-exam.ts` (+ test: parse, totals, loss by topic, exam-vs-exam), `lib/school-exam-store.ts` (the read on Opus 5.5 — PDF sent whole, photos shrunk; the report writer), `/api/admin/school-exams` (+ `/upload-token`, `/[id]`: PATCH edits, POST confirm|reread, DELETE), `src/app/admin/students/[id]/school-exams.tsx`, table `school_exam_scans` (`migrations/school_exam_scans.sql`). Pages under `uploads/` (Adrian-only).
+**Tested 15 Oct 2026** on one of our own marked E Math papers: 26 parts read in 31 s, total 44/54 exactly as marked. The parent-note writer once wrote "her" from a name — the prompt now forbids he/she.
+**Not yet:** the "Make a sheet" button on each next-lesson line (step 2 extra), a student view, the line over time.
 **Written in plain words first; the code word follows in brackets so it can be found in the repo.**
 
 ## 1. Why
