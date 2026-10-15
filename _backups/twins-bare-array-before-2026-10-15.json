@@ -1,0 +1,174 @@
+[
+ {
+  "id": "09a89250-b356-42eb-ac67-f826f30b564c",
+  "question_text": "Mei Ling is buying an apartment in Johor Bahru, Malaysia.",
+  "parts": [
+   {
+    "text": "The apartment costs RM $620\\,000$ (Malaysian ringgit). On the day she pays, the exchange rate is S\\$$1 = $ RM $3.45$. Find the cost of the apartment in Singapore dollars, correct to the nearest thousand dollars.",
+    "label": "a",
+    "marks": 2,
+    "answer": "S\\$$180\\,000$"
+   },
+   {
+    "text": "Mei Ling needs to borrow S\\$$180\\,000$ for 4 years. A finance company offers her two plans. $$\\begin{array}{|l|l|} \\hline \\text{Plan P} & \\text{Administrative charge of 0.8\\% of the amount borrowed. Simple interest rate of 4.6\\% per annum.} \\\\ \\hline \\text{Plan Q} & \\text{No administrative charge. Simple interest rate of 4.75\\% per annum.} \\\\ \\hline \\end{array}$$ Which plan costs her less? Show your working clearly.",
+    "label": "b",
+    "marks": 3,
+    "answer": "Plan P: interest + charge $= \\$34\\,560$; Plan Q: interest $= \\$34\\,200$. Plan Q costs less (by \\$360)."
+   }
+  ]
+ },
+ {
+  "id": "2361deaf-ce99-4329-9d1e-4edf24755054",
+  "question_text": "",
+  "parts": [
+   {
+    "text": "A bank counter displays its rates for exchanging Singapore dollars ($\\$$) and Philippine pesos (PHP).\n$$\\begin{array}{|c|c|c|c|} \\hline \\text{Unit} & \\text{Currency} & \\text{Selling} & \\text{Buying} \\\\ \\hline 100 & \\text{Philippine Peso} & 2.375 & 2.250 \\\\ \\hline \\end{array}$$\nMrs Lim is taking her school's hockey team to a tournament in Manila and uses this counter for the team's spending money.",
+    "label": "a",
+    "marks": 2,
+    "answer": "(i) $32\\,000$ PHP; (ii) $\\$81$",
+    "subparts": [
+     {
+      "text": "A week before the tournament she hands over $\\$760$ to be exchanged for pesos. Find the number of pesos the bank gives her.",
+      "label": "i",
+      "marks": 1,
+      "answer": "$32\\,000$ PHP"
+     },
+     {
+      "text": "After the tournament the team still has $3600$ PHP unspent, which she exchanges for Singapore dollars at the same counter. Find the amount, in dollars, that the bank gives her.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$\\$81$"
+     }
+    ]
+   },
+   {
+    "text": "A nature park had $15\\%$ more visitors in 2023 than in 2022. In 2024 it had $8\\%$ fewer visitors than in 2023. Express the number of visitors in 2024 as a percentage of the number of visitors in 2022.",
+    "label": "b",
+    "marks": 2,
+    "answer": "$105.8\\%$"
+   },
+   {
+    "text": "The aircraft of an airline fly a total of about $280$ million kilometres in a year. Cargo flights make up $35\\%$ of this distance and passenger flights make up the remainder. Given that $8$ kilometres is equal to $5$ miles, find the distance flown on cargo flights in a year, in miles. Give your answer in standard form.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$6.125 \\times 10^{7}$ miles (accept $6.13 \\times 10^{7}$)"
+   },
+   {
+    "text": "The output of a power station is $6.4 \\times 10^{8}$ watts. This can be written as $k$ gigawatts. Find $k$.",
+    "label": "d",
+    "marks": 1,
+    "answer": "$k = 0.64$"
+   }
+  ]
+ },
+ {
+  "id": "2fe97db9-8135-4601-8353-a539622914fb",
+  "question_text": "Priya runs a small business that 3D-prints custom desk organisers. She works from a rented workshop unit with a rectangular floor measuring 9 m by 6 m. Her printers sit on workbenches, and she sells every organiser she prints.\n\nHer running costs are as follows.\n- Electricity: $\\$0.32$ per kWh\n- Printing filament: $\\$26$ per kg\n- Packaging: $\\$0.40$ per organiser\n- Rent of the workshop unit: $\\$1350$ per month\n\nThe table shows the number of organisers sold, the selling price of each organiser, and the electricity and filament used in each month from March to August 2025.\n\n\\begin{array}{|c|c|c|c|c|}\n\\hline\n\\text{Month} & \\text{Organisers sold} & \\text{Price (\\$ each)} & \\text{Electricity (kWh)} & \\text{Filament (kg)} \\\\\n\\hline\n\\text{Mar} & 720 & 9.50 & 1150 & 36 \\\\\n\\text{Apr} & 780 & 9.30 & 1220 & 39 \\\\\n\\text{May} & 830 & 9.10 & 1290 & 42 \\\\\n\\text{Jun} & 880 & 8.90 & 1350 & 44 \\\\\n\\text{Jul} & 920 & 8.70 & 1400 & 46 \\\\\n\\text{Aug} & 960 & 8.50 & 1450 & 48 \\\\\n\\hline\n\\end{array}",
+  "parts": [
+   {
+    "text": "Find the profit Priya made in August.",
+    "label": "a",
+    "marks": 3,
+    "answer": "$\\$4714$"
+   },
+   {
+    "text": "The selling price of an organiser fell every month from March to August. Give one possible reason for this.",
+    "label": "b",
+    "marks": 1,
+    "answer": "Any one sensible reason, e.g. more sellers offering similar organisers so she lowers her price to compete; she lowers the price to attract more customers and sell more; demand for each organiser has weakened; she gives discounts for larger orders."
+   },
+   {
+    "text": "Priya wants to rearrange the workshop for September so that her revenue is as large as possible.\n\nEach workbench has a rectangular top measuring 1.6 m by 0.8 m and holds 4 printers. At full output, each printer makes 45 organisers in a month.\n\nAll the workbenches must face the same way, with their sides parallel to the walls of the workshop. For safe movement, there must be a clear gap of at least 0.6 m between any workbench and a wall, and at least 0.6 m between any two workbenches.\n\nThe workshop has a single ventilation system and a limited power supply, so the output depends on the number of workbenches in use.\n- With 7 workbenches or fewer, every printer runs at full output.\n- With 8 or more workbenches, heat builds up and every printer runs at only 80% of full output.\n- Each workbench after the 9th has to share a power circuit, so the printers on it run at only 60% of full output instead of 80%.\n\nAssume that the selling price in September is the same as in August and that every organiser printed is sold.\n\nDecide how many workbenches Priya should use in September. Support your answer with calculations that take into account both the space in the workshop and the limits on output.",
+    "label": "c",
+    "marks": 6,
+    "answer": "12 workbenches. At most 12 fit (6 by 2, with the 0.8 m sides along the 9 m wall). 12 workbenches give 1620 organisers, revenue $\\$13\\,770$, which is more than 7 workbenches at full output (1260 organisers, $\\$10\\,710$)."
+   }
+  ]
+ },
+ {
+  "id": "57edb7bb-aa83-498a-93a6-da83b2812e14",
+  "question_text": "The variables $x$ and $y$ are connected by the equation $y = \\dfrac{x}{2} + \\dfrac{8}{x^2}$.\n\nSome corresponding values of $x$ and $y$, correct to one decimal place where necessary, are shown in the table.\n\n\\begin{array}{|c|c|c|c|c|c|c|c|c|c|}\n\\hline\nx & 1 & 1.5 & 2 & 2.5 & 3 & 4 & 5 & 6 & 7 \\\\\n\\hline\ny & 8.5 & 4.3 & 3 & 2.5 & 2.4 & 2.5 & p & 3.2 & 3.7 \\\\\n\\hline\n\\end{array}",
+  "parts": [
+   {
+    "text": "Calculate the value of $p$.",
+    "label": "a",
+    "marks": 1,
+    "answer": "$p = 2.8$"
+   },
+   {
+    "text": "Using the grid provided, plot the points from the table and join them with a smooth curve for $1 \\le x \\le 7$.",
+    "label": "b",
+    "marks": 3,
+    "answer": "Graph drawn"
+   },
+   {
+    "text": "Use your curve to solve the equation $x + \\dfrac{16}{x^2} = 7$ for $1 \\le x \\le 7$.",
+    "label": "c",
+    "marks": 2,
+    "answer": "$x \\approx 1.75$ or $x \\approx 6.65$ (accept 1.65–1.85 and 6.55–6.75)"
+   },
+   {
+    "text": "",
+    "label": "d",
+    "marks": 0,
+    "subparts": [
+     {
+      "text": "On the same axes, draw the straight line $2y + x = 9$ for $1 \\le x \\le 7$.",
+      "label": "i",
+      "marks": 1,
+      "answer": "Line $y = 4.5 - \\frac{1}{2}x$ drawn, through $(1, 4)$ and $(7, 1)$"
+     },
+     {
+      "text": "State the $x$-coordinates of the two points at which this line meets the curve.",
+      "label": "ii",
+      "marks": 2,
+      "answer": "$x \\approx 1.7$ or $x = 4$ (accept 1.6–1.8 and 3.9–4.1)"
+     },
+     {
+      "text": "The $x$-coordinates in part (d)(ii) satisfy the equation $2x^3 + Ax^2 + B = 0$. Find the value of $A$ and the value of $B$.",
+      "label": "iii",
+      "marks": 3,
+      "answer": "$A = -9$, $B = 16$"
+     }
+    ]
+   },
+   {
+    "text": "Draw a tangent to the curve at the point $(2, 3)$ and use it to estimate the gradient of the curve at this point.",
+    "label": "e",
+    "marks": 2,
+    "answer": "Gradient $\\approx -1.5$ (accept $-1.8$ to $-1.2$)"
+   }
+  ]
+ },
+ {
+  "id": "cbf62e8d-d2f6-492f-9188-ecf9a166edd1",
+  "question_text": "A floor designer builds a sequence of tile patterns $P_1, P_2, P_3, P_4, \\ldots$ from identical square tiles, some grey and some white, as shown in the diagram. The letter $n$ represents the pattern number. The number of grey tiles, the number of white tiles and the total number of tiles, $S_n$, in the first four patterns are recorded in the table below.\n\n\\begin{array}{|c|c|c|c|}\n\\hline\n\\text{Pattern, } P_n & \\text{Number of grey tiles} & \\text{Number of white tiles} & \\text{Total number of tiles, } S_n \\\\\n\\hline\nP_1 & 1 & 3 & 4 \\\\\n\\hline\nP_2 & 3 & 5 & 8 \\\\\n\\hline\nP_3 & 6 & 7 & 13 \\\\\n\\hline\nP_4 & 10 & 9 & 19 \\\\\n\\hline\n\\end{array}",
+  "parts": [
+   {
+    "text": "Write down the total number of tiles, $S_n$, for the next two patterns $P_5$ and $P_6$.",
+    "label": "a",
+    "marks": 2,
+    "answer": "$S_5 = 26$, $S_6 = 34$"
+   },
+   {
+    "text": "",
+    "label": "b",
+    "marks": 0,
+    "subparts": [
+     {
+      "text": "Find a formula for $S_n$ in terms of $n$ in its simplest form.",
+      "label": "i",
+      "marks": 2,
+      "answer": "$S_n = \\dfrac{n^2 + 5n + 2}{2}$"
+     },
+     {
+      "text": "Hence find the total number of tiles used in $P_{20}$.",
+      "label": "ii",
+      "marks": 1,
+      "answer": "$251$"
+     }
+    ]
+   }
+  ]
+ }
+]

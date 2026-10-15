@@ -4,7 +4,10 @@ samp, scores, out, title, intro, order = sys.argv[1:7]
 s={x['id']:x for x in json.load(open(samp))}
 sc=json.load(open(scores))
 figs=json.load(open(sys.argv[7])) if len(sys.argv)>7 else {}
-def t(x): return html.escape(x or '').replace('\n','<br>')
+def t(x):
+    # keep display maths ($$…$$, e.g. tables) on one line so KaTeX can find it
+    seg=html.escape(x or '').split('$$')
+    return '$$'.join(g.replace('\n',' ') if i%2 else g.replace('\n','<br>') for i,g in enumerate(seg))
 def part(p, depth=0):
     sub=''.join(part(c, depth+1) for c in (p.get('subparts') or []))
     ans='' if p.get('subparts') else f'<div class="ans">Answer: {t(p.get("answer"))}</div>'
