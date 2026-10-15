@@ -142,3 +142,135 @@ export function estimateLevel(workScore: number, solve: TestSolve): DifficultyLe
   else if (solve === 'right' && w === 4) lvl = 'exam';
   return lvl;
 }
+
+// ── Maths: students' first tries correct Adrian's starting levels (15 Oct 2026) ─────────────
+// Adrian tapped a starting level on every maths twin (SPEC-TWINS §12) and said: "let the data
+// from the students sort out the difficulty levels > that is the most accurate way". Maths uses
+// questions.difficulty ('Standard' = Core, 'Advanced', 'Challenging' = Challenge) and the nightly
+// /api/cron/math-practice-difficulty writes it; the maths project's `math_practice_difficulty`
+// keeps the starting level so a result never silently loses his tap.
+//
+// The rules (SPEC-TWINS §12 "Results correct the start"):
+//   • A first try is WRONG when it scored under half the marks, or the student opened any
+//     "Stuck? next step" help (they could not do it alone). No marks recorded → the verdict.
+//   • Same thresholds as science: ≥ 20 first tries; under 25 % wrong → Core, over 55 % wrong →
+//     Advanced; in between → no change (the level it has stays).
+//   • Results move Core ↔ Advanced only. A Challenge question is never touched, and results
+//     never make one.
+//   • If Adrian changes a level by hand after results moved it, his tap wins: the question is
+//     pinned and results leave it alone.
+
+export type MathLevel = 'Standard' | 'Advanced' | 'Challenging';
+
+/** Any stored difficulty → one of the three. Anything not Advanced/Challenging is Core. */
+export function mathLevelOf(difficulty: string | null | undefined): MathLevel {
+  const d = (difficulty || '').trim().toLowerCase();
+  if (d === 'advanced') return 'Advanced';
+  if (d === 'challenging' || d === 'challenge') return 'Challenging';
+  return 'Standard';
+}
+
+export const MATH_LEVEL_LABEL: Record<MathLevel, string> = { Standard: 'Core', Advanced: 'Advanced', Challenging: 'Challenge' };
+
+/** A first try is wrong under this share of the marks. */
+export const MATH_WRONG_BELOW_SHARE = 0.5;
+
+export type MathAttempt = {
+  student: string;
+  questionId: string;
+  attemptedAt: string;
+  verdict: string | null;
+  score: number | null;
+  outOf: number | null;
+  /** steps of "Stuck? next step" the student opened before handing in */
+  helpSteps: number;
+};
+
+export function mathAttemptWrong(a: MathAttempt): boolean {
+  if (a.helpSteps > 0) return true;
+  if (a.outOf != null && a.outOf > 0 && a.score != null && Number.isFinite(a.score)) return a.score / a.outOf < MATH_WRONG_BELOW_SHARE;
+  return a.verdict !== 'correct';
+}
+
+/** Each student's first try per maths question, through the same tally science uses. */
+export function tallyMathFirstAttempts(rows: readonly MathAttempt[], exclude: ReadonlySet<string> = new Set()): FirstAttemptTally[] {
+  return tallyFirstAttempts(rows.map(a => ({ student: a.student, questionId: a.questionId, attemptedAt: a.attemptedAt, correct: !mathAttemptWrong(a) })), exclude);
+}
+
+/** What the results say: Core, Advanced, or null (the middle band — no change). */
+export function mathLevelFromWrongShare(share: number): 'Standard' | 'Advanced' | null {
+  const l = levelFromWrongShare(share);
+  return l === 'core' ? 'Standard' : l === 'challenge' ? 'Advanced' : null;
+}
+
+export type MathDifficultyStored = {
+  starting_level: string | null;
+  level: string;
+  source: 'start' | 'results';
+  pinned: boolean;
+};
+
+export type MathDifficultyPlan = {
+  /** the row for math_practice_difficulty, or null to leave it alone */
+  row: (MathDifficultyStored & { question_id: string; attempts: number; wrong: number; wrong_share: number; reason: string; changed?: boolean }) | null;
+  /** the new questions.difficulty to write, or null for no write */
+  write: 'Standard' | 'Advanced' | null;
+  /** the change to log for the weekly line */
+  change: { from: MathLevel; to: 'Standard' | 'Advanced' } | null;
+};
+
+/**
+ * One question's night: its current questions.difficulty, what the table remembers, and its
+ * first-try tally → what to store, whether to change the level, and the change to report.
+ */
+export function planMathLevel(
+  current: string | null,
+  stored: MathDifficultyStored | null,
+  tally: FirstAttemptTally,
+  min = MIN_FIRST_ATTEMPTS,
+): MathDifficultyPlan {
+  const cur = mathLevelOf(current);
+  const counts = {
+    question_id: tally.questionId,
+    attempts: tally.attempts,
+    wrong: tally.wrong,
+    wrong_share: Math.round(tally.wrongShare * 1000) / 1000,
+    reason: `${tally.wrong} of ${tally.attempts} students got it wrong first time (${Math.round(tally.wrongShare * 100)}%)`,
+  };
+  const none: MathDifficultyPlan = { row: null, write: null, change: null };
+  if (cur === 'Challenging') return none;                                   // Challenge stays as he set it
+  if (stored?.pinned) return { ...none, row: { ...stored, ...counts } };
+  // Adrian changed it by hand after results did → his tap wins from now on.
+  if (stored && stored.source === 'results' && mathLevelOf(stored.level) !== cur) {
+    return { ...none, row: { ...stored, ...counts, level: cur, pinned: true, reason: `${counts.reason}; changed by hand after results — your tap kept` } };
+  }
+  const base: MathDifficultyStored = stored ?? { starting_level: current, level: cur, source: 'start', pinned: false };
+  const target = tally.attempts >= min ? mathLevelFromWrongShare(tally.wrongShare) : null;
+  if (!target || target === cur) return { ...none, row: { ...base, ...counts, level: cur } };
+  return {
+    row: { ...base, ...counts, level: target, source: 'results', changed: true },
+    write: target,
+    change: { from: cur, to: target },
+  };
+}
+
+export type MathChange = { from_level: string; to_level: string; starting_level: string | null; attempts: number; wrong: number; label: string };
+
+/**
+ * The weekly line to Adrian (Mondays). Leads with the ones that would surprise him: a tapped
+ * Advanced that students found easy. Empty string when nothing changed.
+ */
+export function mathWeeklyLine(changes: readonly MathChange[], listMax = 5): string {
+  if (!changes.length) return '';
+  const down = changes.filter(c => c.from_level === 'Advanced' && c.to_level === 'Standard');
+  const up = changes.filter(c => c.from_level === 'Standard' && c.to_level === 'Advanced');
+  const lines = [`🎚 Maths practice levels: students' first tries moved ${changes.length} question${changes.length === 1 ? '' : 's'} this week.`];
+  if (down.length) {
+    lines.push(`⬇️ ${down.length} were Advanced → now Core (most students got them):`);
+    for (const c of down.slice(0, listMax)) lines.push(`• ${c.label} — ${c.wrong} of ${c.attempts} wrong`);
+    if (down.length > listMax) lines.push(`• …and ${down.length - listMax} more`);
+  }
+  if (up.length) lines.push(`⬆️ ${up.length} Core → now Advanced (more than half got them wrong).`);
+  lines.push('To undo one, set its level again by hand — your tap then stays.');
+  return lines.join('\n');
+}

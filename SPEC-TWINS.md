@@ -418,7 +418,7 @@ skip marks `skip/S-<pool>-<subgroup>` (3 drops). The job_runs summary says how m
 **First samples (14 Oct 2026, by hand on the Mac, the lane's exact steps):** see
 `docs/HANDOFF-2026-10-14.md` §Structured science twins.
 
-## 12. Practice levels — Core / Advanced / Challenge (15 Oct 2026, AGREED, not yet wired)
+## 12. Practice levels — Core / Advanced / Challenge (15 Oct 2026, AGREED; taps saved, results correction built)
 
 Adrian, 15 Oct 2026, after a sorted sample of 40 A Math twins: *"students must be able to answer level 1 and level 2 > that is a must"* … *"core should be B3-A1, advanced should be A1 and above"* … challenge = *"bonus questions that say raffles institute or raffles girls school set"*. Replaces the earlier Core / Exam / Challenge names (science, 5 Oct) and the maths Standard / Advanced column (`questions.difficulty`, hand-guessed at extraction, 96 % "Standard").
 
@@ -454,6 +454,15 @@ Adrian, 15 Oct 2026, after a sorted sample of 40 A Math twins: *"students must b
 - **Sec 3 A Math done (15 Oct 2026):** 6 shortlisted of 62 (2 likely, 4 maybe); Adrian tapped **1 Advanced, 5 Core** (both likely → Core) → 61 Standard / 1 Advanced. Backup `_backups/s3am-twins-difficulty-before-2026-10-15.json`. **Every maths twin set now carries Adrian's starting level.** Sec 3 sets are mostly routine — few Advanced.
 
 **Adrian's rule, in his words (15 Oct 2026):** *"a question is only Advanced if it needs an un-drilled idea or a genuine trap, not just a choice step … even if a question requires higher level thinking, schools may drill students until it becomes a standard question. so those questions not seen before may actually be the advanced questions, especially if they can't be easily solved."* And: *"the best way may just to open up the questions, then let the data from the students sort out the difficulty levels > that is the most accurate way."* → The tapped levels are the STARTING labels; once a question has enough first attempts, students' results replace them (as science does, `lib/practice-difficulty.ts`: 20 first tries; < 25 % wrong → Core, > 55 % wrong → Advanced).
+
+**Results correct the start — BUILT 15 Oct 2026 (Adrian: "build this"), dormant until students practise.** Nightly 3:45am SGT, `/api/cron/math-practice-difficulty` (pure rules in `lib/practice-difficulty.ts` maths section, tests `practice-difficulty-math.test.ts`):
+- **What counts.** Each student's FIRST try at a maths bank question in practice (`student_attempts`, `attempted_via = 'portal'`, `question_id` set; science and the preview student left out). A first try is **wrong** when it scored **under half the marks**, or the student opened any "Stuck? next step" help. No marks recorded → the verdict.
+- **The cut (same as science).** 20 first tries or more: under 25 % wrong → **Core**; over 55 % wrong → **Advanced**; in between → **no change**. Applies to school questions too (their levels were guesses at extraction).
+- **Challenge is never touched**, and results never make a Challenge — only Adrian (or a twin written as Challenge) does.
+- **Where the level lives.** `questions.difficulty` stays the one level everything reads (practice_next, the picker's counts, kiosk_pool) — the job writes it. The maths project's `math_practice_difficulty` keeps where it came from: `starting_level` (his tap, never overwritten), `source` (`start` / `results`), the tally and the reason. Every move is a row in `math_practice_difficulty_changes`. Migration `migrations/math_practice_difficulty.sql`.
+- **His tap after results wins.** If Adrian sets a level by hand after results moved it, the question is `pinned` and results leave it alone from then on.
+- **He is told.** Mondays 9am SGT, `/api/cron/math-practice-difficulty-weekly` sends one Telegram line (students topic) listing the week's moves, the surprising ones first (a question set Advanced that students found easy → Core); no moves → no message.
+- **Where things stand (15 Oct 2026):** tables made; every maths attempt so far is the preview student's, so nothing moves yet. Practice levels stay admin-only (`PRACTICE_PICKER_OPEN_TO_STUDENTS = false`); results only start once students can practise.
 
 Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ marks). No source type (school, national) is ever a choice — sources are never shown to students.
 
