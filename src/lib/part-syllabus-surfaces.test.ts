@@ -38,6 +38,7 @@ const EXEMPT: Record<string, string> = {
   'app/api/cron/auto-release-report/route.ts': 'counts',
   'app/api/cron/missing-papers/route.ts': 'which papers exist',
   'app/api/cron/practice-topup/route.ts': 'counts ids per topic',
+  'app/api/cron/math-practice-difficulty/route.ts': 'reads and writes only the level (difficulty) and a label for Adrian — no question text to a student',
   'app/api/agent/recrop/cut/route.ts': 'science figures',
   'app/api/agent/recrop/queue/route.ts': 'science figures',
   'app/api/agent/recrop/submit/route.ts': 'science figures',
