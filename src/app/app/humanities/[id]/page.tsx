@@ -17,8 +17,6 @@ import { SourceCards, DataTableCard, DiagramCard } from '../sources';
 import { PhotoCard } from '../photo-card';
 import { skillLabel } from '../skills';
 import RunPoll from './run-poll';
-import TeacherMark from './teacher-mark';
-import { markRange } from '@/lib/humanities-marks';
 
 export const dynamic = 'force-dynamic';
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -213,12 +211,6 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
           <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>
           <div className="mt-3"><SourceCards sources={ctx.inView} /></div>
         </details>
-      )}
-
-      {report && !admin && (
-        <TeacherMark runId={run.id}
-          total={points ? (ctx.question.marks ?? max) : markRange(run.skill, ctx.question.marks, 1, 1)?.[2] ?? null}
-          saved={run.teacher_mark != null && run.teacher_total ? { mark: Number(run.teacher_mark), total: run.teacher_total } : null} />
       )}
 
       {report && model && (

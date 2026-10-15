@@ -214,6 +214,10 @@
     {
       "path": "/api/cron/embed-index",
       "schedule": "40 18 * * *"
+    },
+    {
+      "path": "/api/cron/humanities-selfcheck",
+      "schedule": "15 */2 * * *"
     }
   ]
 }

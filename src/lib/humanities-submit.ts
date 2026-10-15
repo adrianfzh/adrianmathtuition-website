@@ -10,6 +10,7 @@ import { buildHumanitiesPayload } from './humanities-prompt';
 import { enqueueHumanitiesRead, HUMANITIES_PLAN_MODEL, type PlanModel } from './humanities-settle-run';
 import { wordCount } from './humanities-report';
 import { ownContext, OWN_PREFIX, type OwnQuestion } from './humanities-own';
+import { liveLearnedRules, withRules } from './humanities-selfcheck-run';
 import { randomUUID } from 'crypto';
 
 /** Answers a student may hand in per Singapore day. */
@@ -80,7 +81,8 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
   }).select('id').single();
   if (error || !row) return { ok: false, status: 500, error: error?.message ?? 'Could not save the answer.' };
 
-  const payload = buildHumanitiesPayload(ctx, answer);
+  // Rules the marker learned from its own self-check (lib/humanities-selfcheck), for this question type.
+  const payload = withRules(buildHumanitiesPayload(ctx, answer), (await liveLearnedRules()).get(ctx.question.skill) ?? []);
   let ok = false;
   let why = '';
   if (!onApi) {

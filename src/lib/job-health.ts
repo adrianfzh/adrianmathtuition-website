@@ -65,6 +65,7 @@ export const JOB_RHYTHMS: Record<string, Rhythm> = {
   'consistency-remark': { kind: 'interval', hours: 204, label: 'Sundays 10pm' },
   // 👻 The cheaper-reader shadow read back weekly (1 Oct 2026, Thursdays 9am SGT).
   'shadow-read-report': { kind: 'interval', hours: 204, label: 'Thursdays 9am' },
+  'humanities-selfcheck': { kind: 'interval', hours: 5, label: 'every 2 hours' },
   // 💰 The Monday cost check (5 Oct 2026, Mondays 8:30am SGT): a paper's cost, its parts, the lanes, savings that passed.
   'weekly-cost':        { kind: 'interval', hours: 204, label: 'Mondays 8:30am' },
   'scan-inbox':         { kind: 'interval', hours: 1, label: 'every 15 min' },

@@ -30,7 +30,8 @@ export async function enqueueHumanitiesRead(run: { id: string; identity: string 
   return !!id;
 }
 
-function check(payload: HumanitiesPayload, raw: Record<string, unknown> | null): Checked {
+/** Check one read of an answer against its payload (also the self-check's test reads, lib/humanities-selfcheck-run). */
+export function checkHumanitiesRead(payload: HumanitiesPayload, raw: Record<string, unknown> | null): Checked {
   const c = readContext(payload);
   const material = payloadMaterial(payload);
   return c.points
@@ -65,7 +66,7 @@ export async function settleHumanitiesRun(runId: string): Promise<void> {
     if (r.status === 'queued' || r.status === 'claimed') { passes.push({ pass, state: 'waiting' }); continue; }
     if (r.status !== 'replied' || !payload) { passes.push({ pass, state: 'bad' }); log.push({ pass, level: null, problems: [r.error || 'the read failed'], dropped: [], raw: null }); continue; }
     const raw = parseReadReply(r.reply);
-    const v = check(payload, raw);
+    const v = checkHumanitiesRead(payload, raw);
     log.push({ pass, level: v.read ? v.read.level : null, problems: raw ? v.problems : ['the reply was not JSON'], dropped: v.dropped, raw: raw ?? String(r.reply ?? '').slice(0, 1500) });
     passes.push(v.read ? { pass, state: 'clean', read: v.read } : { pass, state: 'bad' });
   }

@@ -270,6 +270,31 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **J — THE MARKER CHECKS AND IMPROVES ITSELF, 15 Oct 2026.** Adrian: "i want our own marker to self aware of
+> whether it is doing a good job and to auto fix or auto improve if required … again, i only want the live part to
+> be students being able to upload the question they did and get instant feedback on it".
+> - **The loop** (`lib/humanities-selfcheck.ts` says why each step; `lib/humanities-selfcheck-run.ts` does it;
+>   `/api/cron/humanities-selfcheck` every two hours at :15, `job_runs` `humanities-selfcheck`), every read on plan:
+>   1. **Check** — each real student's marked answer (not the demo or preview accounts; up to 30 a day) gets ONE more
+>      read by Opus, told what we gave: its own level, whether we were right, which way we were off, and the general
+>      rule we missed → `humanities_audits`.
+>   2. **Learn** — three or more misses naming a rule on one question type within 14 days → Opus drafts ONE general
+>      rule line for that type → `humanities_rule_patches` (status `drafting`).
+>   3. **Test** — the production reader reads 12 seeded answers of that type (level known by construction) and the
+>      missed students' answers (the checker's level), with and without the rule (`testing`).
+>   4. **Decide** — live only if the seeded answers score no worse AND the missed answers score better; else `rejected`.
+>      A live rule joins that type's rules for every NEW answer (`lib/humanities-submit` → `liveLearnedRules`;
+>      marked answers are not changed — forward only). One Telegram line to the marking topic when a rule goes live.
+> - **`/admin/humanities-marker`** (Marking menu): tiles — answers · two reads agreed · the checker agreed · rules
+>   live; the rules it taught itself (each with its test numbers and a Turn off / Turn back on button,
+>   `PATCH /api/admin/humanities-rules`); where the checker disagreed; the latest answers with their check.
+> - Tested 15 Oct on the demo student's two answers (`SELFCHECK_INCLUDE_PREVIEW=1`): the comparison answer —
+>   checker agreed; the Geography "mangroves [4]" answer — we gave 1–2, the checker 3, rule named ("one mark for each
+>   separate creditable point, however briefly worded"). The learn → test → decide steps were run end to end with
+>   stand-in misses: a rule was drafted, tested on 15 answers (30 reads, about 3 minutes) and correctly DROPPED —
+>   practice 12/12 with and without it, missed 1/3 both ways. The test rows were deleted afterwards.
+> - What students see is unchanged: only "A question from school" (I above).
+
 > **I — "A QUESTION FROM SCHOOL" OPENED TO STUDENTS; THE ELECTIVE; TRACKING THE MARKER, 15 Oct 2026.**
 > Adrian: "allow them to choose their elect too (either it's geo or hist), and only say it's for elect (not pure) /
 > let's just open these parts only: A question from school … Wrote it on paper? Send a photo … they have to upload
@@ -283,13 +308,8 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   chosen once and saved as `portal_accounts.prefs.humanities_elective` (`lib/portal-prefs studentElective`);
 >   "Change elective" under the tabs. The page says "Combined Humanities: Social Studies and your elective."
 >   The reader is told "Geography Elective (Combined Humanities)". Pure Geography / Pure History are not offered.
-> - **Tracking the marker** (`lib/humanities-tracking.ts`, `/admin/humanities-marker`, in the Marking menu):
->   tiles — answers handed in · how often the two reads agreed · teacher's marks in · how many fell inside our range —
->   then **"The teacher disagreed — yours to look at"** (each links to the answer), then the latest answers.
->   The teacher's mark comes from the student: **"Got it back from your teacher?"** on every feedback page →
->   `POST /api/portal/humanities/teacher-mark` → `humanities_runs.teacher_mark / teacher_total / teacher_at`
->   (migration `humanities_runs_teacher_mark.sql`). A different total is scaled; half a mark of give. The demo
->   student and preview accounts are left out of the counts.
+> - **Tracking the marker — superseded the same day by J below.** A "Got it back from your teacher?" box was built
+>   and removed within the hour (Adrian: "there is no need for that"); its columns were dropped.
 
 > **H — SCHOOL-STYLE MARKS + GEOGRAPHY SHORT QUESTIONS FROM SCHOOL, 15 Oct 2026 (preview only, switch closed).**
 > Adrian: "yes" (to: show marks the way schools do; mark a school's "Describe/Explain" Geography question).
