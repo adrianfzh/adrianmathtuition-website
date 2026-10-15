@@ -40,6 +40,9 @@ Read `SPEC-TWINS.md` first (what a twin is, the red lines). The deterministic ha
    `.claude/skills/gce-paper/prompts/figure-author.md` (RUN = the run dir, N = 1,
    ROOT/BOT filled) writes `Q1.figure.json|.cjs`; render with
    `node scripts/gce-paper/figure.mjs --run <dir> --slots 1` (verify fails closed).
+   A part with its own `figure_description` gets its own file `Q1<key>.figure.json|.cjs`
+   (`Q1b`, `Q1bii`) → `Q1<key>.figure.png` → that part's `image_url` at publish;
+   `node scripts/twins/twin.mjs figures --run <dir>` says whether every picture is drawn.
 8. **Publish** — `node scripts/twins/twin.mjs publish --run <dir>` (`--dry` first).
    Row: `school='AdrianMath'`, `exam_type='Twin'`, `ai_generated=true`, `twin_of`,
    **`verified=true`** — publish only runs once every gate and the moderator passed,

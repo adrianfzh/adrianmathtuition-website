@@ -5,7 +5,7 @@
 // the door `GET /api/agent/twins/figure?doc=<family>` instead of `figure.mjs --doc`.
 // Keep the two in step: a rule changed there is changed here.
 import {
-  flatParts, mathQuestionText, sciQuestionText, keyOf, type MathPlan, type MathTwinDraft, type MathPart, type SciTwinDraft, type SciKey,
+  flatParts, partFigures, mathQuestionText, sciQuestionText, keyOf, type MathPlan, type MathTwinDraft, type MathPart, type SciTwinDraft, type SciKey,
 } from './twin-gates';
 
 export const FIGURE_DOOR = 'curl -s -H "Authorization: Bearer $AGENT_TOKEN_TWINS" "https://www.adrianmathtuition.com/api/agent/twins/figure?doc=<family>"';
@@ -41,7 +41,7 @@ Level: ${plan.level} (${shape.subject}, ${shape.code}). Difficulty: ${plan.diffi
 Topics (bank names, keep exactly): ${plan.topics.join(' | ')}
 Sub-skill filing (the twin must test exactly these): ${plan.subgroups.map((s) => `${s.name}${s.is_primary ? ' (primary)' : ''}${s.description ? ` — ${s.description}` : ''}`).join('; ') || '(unfiled — test what the source tests)'}
 Structure to reproduce exactly: ${structText}
-Figure: ${plan.has_figure ? `the source HAS a diagram — the twin needs one too. Describe it in figure_description exactly (every given length/angle/label). It is drawn ONLY by the figure library from a typed spec: list the families with \`curl … /api/agent/twins/figure\`, read one family's spec language with ${FIGURE_DOOR}, and send the spec as figure_spec. No family fits = park this seed (say so), never a hand drawing.` : 'the source has no diagram; the twin must not need one either'}
+Figure: ${plan.has_figure ? `the source HAS a diagram — the twin needs one too. Describe it exactly (every given length/angle/label). The source's pictures sit ${(plan.figure_layout ?? []).join(', ') || 'above the question'}. ONE drawing per description: a drawing the whole question uses goes in the top-level figure_description (sent as figure_spec); a drawing that belongs to ONE part (it sits at that part in the source, or only that part uses it) goes on THAT part (or sub-part) as its own "figure_description", sent in part_figure_specs under the part's key — the labels without brackets, lower case: {"b": {…}, "bii": {…}} — so it prints beside its part. Never put two drawings for different parts in one figure. Every drawing comes ONLY from the figure library as a typed spec: list the families with \`curl … /api/agent/twins/figure\`, read one family's spec language with ${FIGURE_DOOR}. No family fits = park this seed (say so), never a hand drawing.` : 'the source has no diagram; the twin must not need one either'}
 
 ## THE SOURCE QUESTION (read for its skill, structure and method — then write something else)
 ${mathQuestionText(src)}
@@ -55,15 +55,25 @@ ${kText}
 
 ## OUTPUT
 Write ONE JSON file Q1.json in your run folder (no prose, no code fence):
-{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string}]}], "answer": string, "total_marks": ${plan.marks}, "topics": ${JSON.stringify(plan.topics)}, "difficulty": "${plan.difficulty}", "needs_figure": ${plan.has_figure}, "figure_description": string, "solution": string, "method_note": "one line: the method the source teaches and how your twin teaches the same one", "originality_note": "one line: what is new — context, numbers, sentences"}
+{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "figure_description"?: string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string, "figure_description"?: string}]}], "answer": string, "total_marks": ${plan.marks}, "topics": ${JSON.stringify(plan.topics)}, "difficulty": "${plan.difficulty}", "needs_figure": ${plan.has_figure}, "figure_description": string ("" when every drawing belongs to a part), "solution": string, "method_note": "one line: the method the source teaches and how your twin teaches the same one", "originality_note": "one line: what is new — context, numbers, sentences"}
 "parts" is [] for a single-part question (its final answer sits in "answer"). Labels and marks per part must match the structure above EXACTLY. The solution is one step a line and every part's working ends with a bold **Answer:** line. Never name a school, a year, a paper, or any computer program. Inside JSON strings every backslash is doubled (\\\\frac) and a newline is \\n.
 `;
+}
+
+/** The question text plus every drawing in words — the top one, then each part's own (15 Oct 2026). */
+function withFigureWords(text: string, q: MathTwinDraft, lead: string): string {
+  if (!q.needs_figure) return text;
+  const figs = [
+    ...(String(q.figure_description ?? '').trim() ? [`${lead}${String(q.figure_description).trim()}]`] : []),
+    ...partFigures(q.parts).map((f) => `[The diagram printed beside part ${f.label}, described in words: ${f.description}]`),
+  ];
+  return figs.length ? `${text}\n\n${figs.join('\n\n')}` : text;
 }
 
 export function mathSolverBrief(level: string, marks: number, q: MathTwinDraft): string {
   const shape = shapeOf(level);
   const text = mathQuestionText(q);
-  const shown = q.needs_figure && q.figure_description ? `${text}\n\n[The diagram, described in words — the printed question shows it as a figure: ${String(q.figure_description).trim()}]` : text;
+  const shown = withFigureWords(text, q, '[The diagram, described in words — the printed question shows it as a figure: ');
   return `You are an expert ${shape.subject} (${shape.code}) examiner. Solve the question below completely and independently, exactly as the strongest candidate would. Work it fully in your reasoning, then return only final answers. Be exact where the question demands exact form; otherwise give 3 significant figures. For a "show that"/"prove"/"explain why" part answer "shown" only if you completed the argument and the target is true; if the target is false or the part cannot be done from the given information, say so in issues.
 Write ONE JSON file Q1.blind.json: {"answers": {"<part label, e.g. (a) or (b)(ii), or 'single'>": "<final answer as a marker writes it>"}, "solvable": bool, "issues": ["specific ambiguity / missing information / false target / step that cannot be done — or empty"]}
 
@@ -76,7 +86,7 @@ ${shown}
 export function mathModeratorBrief(plan: MathPlan, q: MathTwinDraft, src: MathSeed): string {
   const shape = shapeOf(plan.level);
   const text = mathQuestionText(q);
-  const shown = q.needs_figure && q.figure_description ? `${text}\n\n[The diagram, described in words: ${String(q.figure_description).trim()}]` : text;
+  const shown = withFigureWords(text, q, '[The diagram, described in words: ');
   const flat = flatParts(q.parts);
   const key = flat.length ? flat.map((p) => `${p.label} [${p.marks}] ${p.answer}`).join('\n') : `single: ${q.answer}`;
   return `You are a SEAB moderator for ${shape.subject} (${shape.code}), and you are checking a TWIN: our own question written to teach the same sub-skill, with the same part structure and marks, as one school's question. Three jobs.

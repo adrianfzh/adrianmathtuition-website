@@ -932,3 +932,20 @@ needed, group them, tell him weekly; a shape needed by 3 seeds is ready to build
   `figure-needs-weekly`, rhythm 204 h), plain words, top shapes with counts, "build them?".
 - Building a family stays the figure-library rules above (verify fails closed, Adrian's look at the
   first figure); mark the shape **Built** with the family's name when it ships.
+
+## 🧩 A drawing per part (15 Oct 2026)
+
+Adrian: *"diagrams should be at their corresponding parts?"* A question whose drawings belong to
+different parts stores one picture per part — `parts[].image_url` (before the part text) or
+`image_url_after` (after it: a blank grid for "On the grid, draw …"), on sub-parts too — never one
+combined picture above the stem. `figure_url` / `image_url` above the stem is only for a drawing the
+whole question uses. Every renderer already draws part pictures (practice `questionStructured`,
+kiosk/Find sheets `flattenParts`, printed papers `render-paper-pdf`, the tap pages
+`scripts/practice-levels/sample-page.py`). Writers: twins → `SPEC-TWINS.md` §4 step 6 (per-part
+`figure_description` → `Q1<key>.figure.*`); gce-paper per-part figures were already `Q<n><letter>`.
+The figure step (`scripts/gce-paper/figure.mjs`) takes any letter key (`Q1bii`). Back-fill of old
+twins: `SPEC-TWINS.md` §13. Cutting a combined PNG: split on white gutters first; when a label sits
+nearer the wrong drawing, cluster the ink and give each small piece to the nearest drawing, counting
+a drawing BELOW a caption at half distance (captions sit above their drawing); mask the crop so no
+stray ink rides along; check every crop by eye against the original.
+

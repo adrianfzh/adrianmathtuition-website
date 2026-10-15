@@ -20,7 +20,7 @@
 //        RUN/Q1.figure-need.json {what, shape} (or Q1.json figure_need) → the "Figures we need" list (5 Oct 2026)
 //
 // Env: AGENT_TOKEN_TWINS (required, never printed); TWINS_BASE (default https://www.adrianmathtuition.com).
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const argv = process.argv.slice(2);
@@ -50,7 +50,9 @@ function bodyFor(dir, dry) {
   const packet = JSON.parse(readFileSync(join(dir, 'packet.json'), 'utf8'));
   const q = readJsonLoose(join(dir, 'Q1.json'));
   const fig = readIf(join(dir, 'Q1.figure.json'));
-  const body = { bank: packet.bank, seed_id: packet.seed_id, topic: packet.topic ?? undefined, pool: packet.pool ?? undefined, subgroup_id: packet.subgroup_id ?? undefined, question: q, figure_spec: q.needs_figure ? fig : undefined, dry };
+  // 🖼 a part's own drawing: Q1<key>.figure.json (Q1b, Q1bii) → part_figure_specs[key] (15 Oct 2026)
+  const partSpecs = Object.fromEntries(readdirSync(dir).map((f) => f.match(/^Q1([a-z]+)\.figure\.json$/)).filter(Boolean).map((m) => [m[1], readJsonLoose(join(dir, m[0]))]));
+  const body = { bank: packet.bank, seed_id: packet.seed_id, topic: packet.topic ?? undefined, pool: packet.pool ?? undefined, subgroup_id: packet.subgroup_id ?? undefined, question: q, figure_spec: q.needs_figure && fig ? fig : undefined, part_figure_specs: q.needs_figure && Object.keys(partSpecs).length ? partSpecs : undefined, dry };
   if (!dry) {
     const blind = readIf(join(dir, 'Q1.blind.json'));
     const verdict = readIf(join(dir, 'Q1.verdict.json'));
@@ -94,12 +96,20 @@ const modes = {
     else console.log(`family: ${json.family}  spec_version: ${json.spec_version ?? '?'}\n\n${json.doc ?? '(no doc)'}`);
   },
   async render() {
+    // every Q1.figure.json and Q1<key>.figure.json (a part's own drawing) → its .png
     const dir = resolve(argOf('--run', '.'));
-    const spec = readJsonLoose(join(dir, 'Q1.figure.json'));
-    const { status, json } = await call('POST', '/api/agent/twins/figure', { spec });
-    if (status !== 200) { console.log(`✗ ${json.reason ?? json.error}`); process.exit(1); }
-    writeFileSync(join(dir, 'Q1.figure.png'), Buffer.from(json.png, 'base64'));
-    console.log(`✓ ${json.family} → ${join(dir, 'Q1.figure.png')} (open it and look)`);
+    const files = readdirSync(dir).filter((f) => /^Q1([a-z]*)\.figure\.json$/.test(f)).sort();
+    if (!files.length) { console.log('✗ no Q1.figure.json / Q1<part>.figure.json in the run folder'); process.exit(1); }
+    let bad = 0;
+    for (const f of files) {
+      const spec = readJsonLoose(join(dir, f));
+      const { status, json } = await call('POST', '/api/agent/twins/figure', { spec });
+      if (status !== 200) { console.log(`✗ ${f}: ${json.reason ?? json.error}`); bad++; continue; }
+      const png = join(dir, f.replace(/\.json$/, '.png'));
+      writeFileSync(png, Buffer.from(json.png, 'base64'));
+      console.log(`✓ ${json.family} → ${png} (open it and look)`);
+    }
+    if (bad) process.exit(1);
   },
   async check() {
     const dir = resolve(argOf('--run', '.'));

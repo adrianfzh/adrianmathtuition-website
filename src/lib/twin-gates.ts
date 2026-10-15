@@ -25,11 +25,27 @@ export const TWIN_SCHOOL = 'AdrianMath';
 export const TWIN_EXAM_TYPE = 'Twin';
 
 // ── text helpers (identical to the scripts') ─────────────────────────────────────────
-export type MathPart = { label?: string; text?: string; marks?: number; answer?: string; subparts?: MathPart[] };
+export type MathPart = { label?: string; text?: string; marks?: number; answer?: string; figure_description?: string; subparts?: MathPart[] };
 export type MathQuestionLike = { stem?: string | null; question_text?: string | null; parts?: MathPart[] | null; total_marks?: number | null; answer?: string | null };
 
 const normLabel = (l: unknown) => { const s = String(l ?? '').trim().replace(/^\(|\)$/g, ''); return s ? `(${s})` : ''; };
 const bare = (l: unknown) => String(l ?? '').trim().replace(/^\(|\)$/g, '');
+
+// 🖼 A drawing per part (15 Oct 2026, Adrian: "diagrams should be at their corresponding parts?").
+// A part (or sub-part) with a drawing of its own carries figure_description; its picture goes in THAT
+// part's image_url, keyed by the labels without brackets ("b", "bii"). Same rule as twin.mjs.
+export const figKey = (label: unknown, prefix = '') => `${prefix}${bare(label).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+export type PartFigure = { key: string; label: string; description: string };
+export function partFigures(parts: MathPart[] | null | undefined, prefix = '', shown = ''): PartFigure[] {
+  const out: PartFigure[] = [];
+  for (const p of parts ?? []) {
+    const key = figKey(p.label, prefix);
+    const label = `${shown}${normLabel(p.label)}`;
+    if (String(p.figure_description ?? '').trim()) out.push({ key, label, description: String(p.figure_description).trim() });
+    if (p.subparts?.length) out.push(...partFigures(p.subparts, key, label));
+  }
+  return out;
+}
 
 function partsText(parts: MathPart[] | null | undefined, depth = 0): string {
   const pad = '  '.repeat(depth);
@@ -110,6 +126,8 @@ export type MathPlan = {
   source: string; level: string; marks: number; difficulty: string; topics: string[];
   subgroups: { id: number; name?: string | null; is_primary?: boolean; description?: string | null }[];
   structure: Structure; has_figure: boolean;
+  /** where the seed's pictures sit ("above the question", "at part (b)") — the twin copies the layout */
+  figure_layout?: string[];
 };
 
 export type GateResult = { pass: boolean; problems: string[]; novelty: Novelty };
@@ -135,7 +153,9 @@ export function gateMathTwin(q: MathTwinDraft, ctx: { plan: MathPlan; srcText: s
   const topics = Array.isArray(q.topics) ? q.topics : [];
   if (JSON.stringify([...topics].sort()) !== JSON.stringify([...(plan.topics ?? [])].sort())) problems.push(`topics ${JSON.stringify(topics)} ≠ source ${JSON.stringify(plan.topics ?? [])}`);
   if (plan.has_figure && !q.needs_figure) problems.push('source has a figure; twin says needs_figure=false');
-  if (q.needs_figure && !String(q.figure_description ?? '').trim()) problems.push('needs_figure without figure_description');
+  const perPart = partFigures(q.parts);
+  if (q.needs_figure && !String(q.figure_description ?? '').trim() && !perPart.length) problems.push('needs_figure without figure_description');
+  if (!q.needs_figure && perPart.length) problems.push('a part has a figure_description but needs_figure is false');
   const everything = `${text}\n${sol}`;
   for (const re of FORBIDDEN_MATH) if (re.test(everything)) problems.push(`names something a student must never read (${re})`);
   const g = grams(text);
@@ -317,6 +337,8 @@ export type SubmitBody = {
   bank: Bank; seed_id: string; dry: boolean;
   math?: MathTwinDraft; sci?: SciTwinDraft;
   figure_spec: Record<string, unknown> | null;
+  /** one spec per part that has its own drawing, keyed like partFigures ("b", "bii") */
+  part_figure_specs?: Record<string, Record<string, unknown>> | null;
   gate: { blind_answer: unknown; blind: Record<string, unknown> | null; checker: Record<string, unknown> | null; notes: string | null };
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -341,6 +363,8 @@ export function parseSubmit(raw: unknown): { ok: true; value: SubmitBody } | { o
   for (const k of ['options', 'answer', 'solution'] as const) if (b[k] != null) q0[k] = b[k];
   const fig = b.figure_spec;
   if (fig != null && (typeof fig !== 'object' || Array.isArray(fig))) return { ok: false, error: 'figure_spec must be an object {family, …fields}' };
+  const pfs = b.part_figure_specs;
+  if (pfs != null && (typeof pfs !== 'object' || Array.isArray(pfs) || Object.values(pfs as object).some((v) => !v || typeof v !== 'object' || Array.isArray(v)))) return { ok: false, error: 'part_figure_specs must be {"<part key, e.g. b or bii>": {family, …fields}}' };
   const gr = (b.gate_record && typeof b.gate_record === 'object' && !Array.isArray(b.gate_record)) ? b.gate_record as Record<string, unknown> : {};
   const asObj = (x: unknown) => (x && typeof x === 'object' && !Array.isArray(x) ? x as Record<string, unknown> : null);
   const gate = {
@@ -349,7 +373,7 @@ export function parseSubmit(raw: unknown): { ok: true; value: SubmitBody } | { o
     checker: asObj(gr.checker) ?? asObj(gr.verdict) ?? asObj(gr.checker_verdict),
     notes: gr.notes == null ? null : String(gr.notes).slice(0, 2000),
   };
-  const value: SubmitBody = { bank, seed_id: seed, dry: b.dry === true, figure_spec: (fig as Record<string, unknown>) ?? null, gate };
+  const value: SubmitBody = { bank, seed_id: seed, dry: b.dry === true, figure_spec: (fig as Record<string, unknown>) ?? null, part_figure_specs: (pfs as Record<string, Record<string, unknown>>) ?? null, gate };
   if (bank === 'maths') value.math = q0 as MathTwinDraft; else value.sci = q0 as SciTwinDraft;
   if (!value.dry && !gate.checker) return { ok: false, error: 'gate_record.checker (the checker / moderator verdict JSON) is required — send dry:true to run only the automatic gates' };
   if (!value.dry && gate.blind_answer == null) return { ok: false, error: 'gate_record.blind_answer is required (science: the letter; maths: {"(a)": "…", …})' };

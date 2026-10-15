@@ -53,7 +53,13 @@ For each folder RUN (up to four at once, each role a FRESH agent):
    author reads `node scripts/twins/cloud-door.mjs figure` (families) and
    `… figure --doc <family>` (the spec language), writes `RUN/Q1.figure.json` as ONE flat
    `{"family": …, …fields}` object, renders it with `… render --run RUN` and LOOKS at
-   `RUN/Q1.figure.png`. **Figures only from the library**; no family fits → park the seed AND
+   `RUN/Q1.figure.png`. **A drawing per part (15 Oct 2026):** a drawing that belongs to ONE
+   part (it sits at that part in the seed, or only that part uses it) is described on that part
+   as its own `figure_description` and written as `RUN/Q1<key>.figure.json` (key = the labels
+   without brackets: `Q1b`, `Q1bii`); `render` draws them all and `submit` sends them as
+   `part_figure_specs`, so each prints beside its part. The top `Q1.figure.json` is only for a
+   drawing the whole question uses — never fold two parts' drawings into one picture.
+   **Figures only from the library**; no family fits → park the seed AND
    record the picture it needed: the author writes `RUN/Q1.figure-need.json`
    `{"what": "<one plain line>", "shape": "<kebab-case kind, e.g. u-tube-manometer>"}`, then
    `node scripts/twins/cloud-door.mjs figure-need --run RUN` (→ the "Figures we need" list;

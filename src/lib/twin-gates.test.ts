@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import {
   gateMathTwin, mathVerdictOk, mathBlindAgrees, mathVerdictFailures, flatParts, structureOf, plainNumber,
   gateScienceTwin, scienceVerdictOk, scienceVerdictFailures, splitMcq, keyOf, sciQuestionText,
-  parseSubmit, flatFigureSpec, rateDecision, orderMathQueue, mathGapSummary, haveFromUnits, TWINS_PER_SKILL, TWIN_STAGES, spreadBySubgroup, interleaveTopics, closest,
+  parseSubmit, flatFigureSpec, partFigures, figKey, rateDecision, orderMathQueue, mathGapSummary, haveFromUnits, TWINS_PER_SKILL, TWIN_STAGES, spreadBySubgroup, interleaveTopics, closest,
   type MathPlan, type MathTwinDraft, type SciTwinDraft,
 } from './twin-gates';
 
@@ -226,3 +226,25 @@ describe('the maths twins gap — ONE definition (math_twin_units)', () => {
     expect(read('src/lib/twin-store.ts')).not.toMatch(/async function twinCounts/);
   });
 });
+
+// 🖼 A drawing per part (15 Oct 2026, SPEC-TWINS §4 step 6)
+describe('partFigures', () => {
+  const parts = [
+    { label: '(a)', text: 'Find x.', marks: 2, figure_description: 'Triangle KLM.' },
+    { label: '(b)', text: '', subparts: [{ label: '(i)', text: 'y', marks: 1 }, { label: '(ii)', text: 'z', marks: 1, figure_description: 'A badge.' }] },
+  ];
+  it('keys each part drawing by its labels without brackets', () => {
+    expect(partFigures(parts)).toEqual([
+      { key: 'a', label: '(a)', description: 'Triangle KLM.' },
+      { key: 'bii', label: '(b)(ii)', description: 'A badge.' },
+    ]);
+    expect(figKey('(c)')).toBe('c');
+  });
+  it('parseSubmit keeps part_figure_specs and refuses a bad shape', () => {
+    const base = { bank: 'maths', seed_id: '00000000-0000-4000-8000-000000000000', question: { stem: 's' }, dry: true };
+    const ok = parseSubmit({ ...base, part_figure_specs: { b: { family: 'sector' } } });
+    expect(ok.ok && ok.value.part_figure_specs).toEqual({ b: { family: 'sector' } });
+    expect(parseSubmit({ ...base, part_figure_specs: { b: 'x' } }).ok).toBe(false);
+  });
+});
+

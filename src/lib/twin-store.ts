@@ -25,7 +25,7 @@ import {
   TWINS_PER_SKILL, TWIN_STAGES, SCI_PER_SKILL, haveFromUnits, mathGapSummary, type MathTwinUnit, TWIN_SCHOOL, TWIN_EXAM_TYPE, orderMathQueue,
   mathQuestionText, structureOf, sumMarks, flatParts, gateMathTwin, mathVerdictOk, mathVerdictFailures, mathBlindAgrees,
   gateScienceTwin, scienceVerdictOk, scienceVerdictFailures, sciQuestionText, keyOf, closest, flatFigureSpec, LETTERS,
-  levelFromWork, sciTwinItem, scienceQueueFromUnits, type SciUnit,
+  levelFromWork, sciTwinItem, scienceQueueFromUnits, partFigures, figKey, type SciUnit,
   type MathPlan, type CorpusRow, type SubmitBody, type SciKey, type MathVerdict, type SciVerdict, type TwinQueueRow, type MathPart,
 } from './twin-gates';
 import {
@@ -99,6 +99,21 @@ async function stuckFocus(): Promise<Set<number>> {
   } catch { return new Set(); }
 }
 
+/** Where a seed's pictures sit — "above the question", "at part (b)" — so the twin copies the layout. */
+function seedFigureLayout(src: { figure_url?: string | null; image_url?: string | null; parts?: unknown }): string[] {
+  const at: string[] = [];
+  if (src.figure_url || (src.image_url && src.image_url !== '[]')) at.push('above the question');
+  const walk = (parts: any[] | null | undefined, prefix = '') => {
+    for (const p of parts ?? []) {
+      const l = `${prefix}(${String(p?.label ?? '').trim().replace(/^\(|\)$/g, '')})`;
+      if (p?.image_url || p?.image_url_after) at.push(`at part ${l}`);
+      walk(p?.subparts, l);
+    }
+  };
+  walk(Array.isArray(src.parts) ? src.parts : null);
+  return at;
+}
+
 async function mathSeedAndPlan(id: string) {
   const sb = getSupabaseAdmin();
   const { data: src, error } = await sb.from('questions').select('id, level, school, year, paper, question_number, question_text, parts, answer, solution, total_marks, topics, difficulty, has_image, figure_url, image_url, deleted_at, ai_generated, twin_of').eq('id', id).maybeSingle();
@@ -110,8 +125,9 @@ async function mathSeedAndPlan(id: string) {
   const marks = Number(src.total_marks) || sumMarks(src as any);
   const plan: MathPlan = {
     source: id, level: src.level, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups,
-    structure: structureOf(src.parts as MathPart[]), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')),
+    structure: structureOf(src.parts as MathPart[]), has_figure: false, figure_layout: seedFigureLayout(src),
   };
+  plan.has_figure = !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]') || plan.figure_layout!.length);
   return { src: src as any, plan };
 }
 
@@ -221,15 +237,30 @@ export async function submitMath(body: SubmitBody): Promise<SubmitOutcome> {
   const gates = gateMathTwin(q, { plan, srcText: mathQuestionText(src), corpus });
   if (!gates.pass) return fail('automatic', gates.problems, 422, gates);
   // the figure — drawn by the library or not at all
+  // 🖼 the top drawing (figure_description) + one per part that has its own (15 Oct 2026)
   let fig: Extract<FigureResult, { ok: true }> | null = null;
+  const perPart = q.needs_figure ? partFigures(q.parts) : [];
+  const partFigs: Record<string, Extract<FigureResult, { ok: true }>> = {};
+  const wantTop = !!String(q.figure_description ?? '').trim() || !perPart.length;
   if (q.needs_figure) {
-    if (!body.figure_spec) return fail('figure', ['needs_figure is true but no figure_spec was sent (a typed spec for the figure library)'], 422, gates);
-    const r = await renderFigure(body.figure_spec);
-    if (!r.ok) return fail('figure', [r.reason], 422, gates);
-    fig = r;
-  } else if (body.figure_spec) return fail('figure', ['a figure_spec was sent but needs_figure is false'], 422, gates);
+    if (wantTop) {
+      if (!body.figure_spec) return fail('figure', ['needs_figure is true but no figure_spec was sent (a typed spec for the figure library)'], 422, gates);
+      const r = await renderFigure(body.figure_spec);
+      if (!r.ok) return fail('figure', [r.reason], 422, gates);
+      fig = r;
+    } else if (body.figure_spec) return fail('figure', ['figure_spec was sent but figure_description is empty — every drawing here belongs to a part (part_figure_specs)'], 422, gates);
+    const specs = body.part_figure_specs ?? {};
+    const stray = Object.keys(specs).filter((k) => !perPart.some((f) => f.key === k));
+    if (stray.length) return fail('figure', [`part_figure_specs has ${stray.join(', ')} but no part with that key has a figure_description (keys: ${perPart.map((f) => f.key).join(', ') || 'none'})`], 422, gates);
+    for (const f of perPart) {
+      if (!specs[f.key]) return fail('figure', [`part ${f.label} has a figure_description but part_figure_specs["${f.key}"] was not sent`], 422, gates);
+      const r = await renderFigure(specs[f.key]);
+      if (!r.ok) return fail('figure', [`part ${f.label}: ${r.reason}`], 422, gates);
+      partFigs[f.key] = r;
+    }
+  } else if (body.figure_spec || (body.part_figure_specs && Object.keys(body.part_figure_specs).length)) return fail('figure', ['a figure spec was sent but needs_figure is false'], 422, gates);
   if (body.dry) {
-    return { ok: true, dry: true, bank: 'maths', gates, figure: fig ? { family: fig.family } : null, solve_brief: mathSolverBrief(plan.level, plan.marks, q), check_brief: mathModeratorBrief(plan, q, src) };
+    return { ok: true, dry: true, bank: 'maths', gates, figure: fig || perPart.length ? { family: fig?.family ?? Object.values(partFigs).map((f) => f.family).join(',') } : null, solve_brief: mathSolverBrief(plan.level, plan.marks, q), check_brief: mathModeratorBrief(plan, q, src) };
   }
   // blind + moderator, re-checked here
   const verdict = body.gate.checker as MathVerdict;
@@ -239,17 +270,29 @@ export async function submitMath(body: SubmitBody): Promise<SubmitOutcome> {
   const ba = mathBlindAgrees(flatParts(q.parts), q.answer, blindAnswers, verdict);
   if (!ba.ok) return fail('blind', ba.problems, 422, gates);
   // insert, exactly as twin.mjs publish
+  const upload = async (path: string, png: Buffer): Promise<string | { error: string }> => {
+    const { error } = await sb.storage.from(MATH_FIG_BUCKET).upload(path, png, { contentType: 'image/png', upsert: true });
+    if (error) return { error: `figure upload: ${error.message}` };
+    return `${(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '')}/storage/v1/object/public/${MATH_FIG_BUCKET}/${path}`;
+  };
   let figureUrl: string | null = null;
   if (fig) {
-    const path = `twins/${plan.source}.png`;
-    const { error } = await sb.storage.from(MATH_FIG_BUCKET).upload(path, fig.png, { contentType: 'image/png', upsert: true });
-    if (error) return fail('figure', [`figure upload: ${error.message}`], 500, gates);
-    figureUrl = `${(process.env.SUPABASE_URL || '').trim().replace(/\/$/, '')}/storage/v1/object/public/${MATH_FIG_BUCKET}/${path}`;
+    const u = await upload(`twins/${plan.source}.png`, fig.png);
+    if (typeof u !== 'string') return fail('figure', [u.error], 500, gates);
+    figureUrl = u;
   }
-  const bankParts = (parts: MathPart[] | undefined | null): any[] => (parts ?? []).map((p) => {
+  const partUrls: Record<string, string> = {};
+  for (const [k, f] of Object.entries(partFigs)) {
+    const u = await upload(`twins/${plan.source}-${k}.png`, f.png);
+    if (typeof u !== 'string') return fail('figure', [u.error], 500, gates);
+    partUrls[k] = u;
+  }
+  const bankParts = (parts: MathPart[] | undefined | null, prefix = ''): any[] => (parts ?? []).map((p) => {
+    const key = figKey(p.label, prefix);
     const row: any = { label: String(p.label ?? '').trim().replace(/^\(|\)$/g, ''), text: String(p.text ?? '').trim(), marks: Number(p.marks) || 0 };
+    if (partUrls[key]) row.image_url = partUrls[key];
     if (p.answer != null && String(p.answer).trim()) row.answer = String(p.answer).trim();
-    if (p.subparts?.length) row.subparts = bankParts(p.subparts);
+    if (p.subparts?.length) row.subparts = bankParts(p.subparts, key);
     return row;
   });
   const models = mathModels(plan.level);
@@ -266,7 +309,10 @@ export async function submitMath(body: SubmitBody): Promise<SubmitOutcome> {
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       author_model: `${models.author} (cloud Claude Code agent)`, blind_model: `${models.blind} (cloud Claude Code agent)`, moderate_model: `${models.moderate} (cloud Claude Code agent)`,
       gates: { novelty: gates.novelty, number_swap: gates.novelty.number_swap, structure: true, blind_agree: verdict.all_agree, moderator_score: verdict.score, figure_verify: fig ? true : null, rounds: 1, server_checked: true },
-      figure: fig ? { family: fig.family, spec: fig.spec, description: q.figure_description ?? null } : null,
+      figure: fig || perPart.length ? {
+        family: fig?.family ?? null, spec: fig?.spec ?? null, description: fig ? q.figure_description ?? null : null,
+        ...(perPart.length ? { parts: Object.fromEntries(perPart.map((f) => [f.key, { label: f.label, url: partUrls[f.key], family: partFigs[f.key].family, spec: partFigs[f.key].spec, description: f.description }])) } : {}),
+      } : null,
       blind_answers: blindAnswers,
       verdict: { key_verdict: verdict.key_verdict ?? null, why: verdict.why ?? null, fixes: verdict.fixes ?? [] },
       method_note: q.method_note ?? null, originality_note: q.originality_note ?? null, notes: body.gate.notes,

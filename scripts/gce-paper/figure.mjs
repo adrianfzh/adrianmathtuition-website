@@ -177,7 +177,7 @@ const slots = readdirSync(runDir)
   // Q<n>.figure.* is the slot's figure; Q<n><letter>.figure.* (Q5a, Q5b) is a PER-PART figure —
   // export-docx.py prints it under the part whose "figure" key names the letter (20 Sep 2026,
   // TJC IP4 EM Q5: a given sketch under (a) and blank answer axes under (b)).
-  .map((f) => f.match(/^Q(\d+)([a-z]?)\.figure\.(json|cjs)$/))
+  .map((f) => f.match(/^Q(\d+)([a-z]*)\.figure\.(json|cjs)$/))
   .filter(Boolean)
   .map((m) => ({ pos: Number(m[1]), key: `Q${m[1]}${m[2]}`, kind: m[3], file: join(runDir, m[0]) }))
   .filter((s) => !only || only.includes(s.pos))

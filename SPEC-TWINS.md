@@ -96,6 +96,23 @@ step, `assemble`'s gate logic).
    the registry refuses is a reject when the source had a figure; a twin may
    drop a purely decorative figure the source had only if the moderator says
    the question stands without it.
+   **A drawing per part (15 Oct 2026, Adrian: *"diagrams should be at their corresponding parts?"*).**
+   A drawing that belongs to ONE part (it sits at that part in the seed, or only that part uses it)
+   is described on that part (or sub-part) as its own `figure_description`, drawn as
+   `Q1<key>.figure.json|.cjs` (key = the labels without brackets: `Q1b`, `Q1bii`) and published into
+   that part's `parts[].image_url`; the top `figure_description` / `figure_url` is only for a drawing
+   the whole question uses (empty when every drawing belongs to a part). The brief tells the author
+   where the seed's pictures sit (`plan.figure_layout`); `twin.mjs figures --run` fails when any
+   picture Q1.json asks for is not drawn (the Fly lane parks on it); the cloud door takes
+   `part_figure_specs {"b": {…}}` beside `figure_spec`. **`has_image` = a picture ABOVE the
+   question**: a twin whose drawings all sit at their parts has `has_image=false`,
+   `figure_url=null` — the serving gates (`has_image=false or figure_url or clean`) then admit it,
+   every bank renderer draws `parts[].image_url` (practice `questionStructured`, kiosk/Find sheets
+   `flattenParts`, printed papers `render-paper-pdf`), and the bot's two "no unchecked pictures"
+   filters (`lib/portal-practice.js`, `ai/practice-questions.js`) count a part picture too.
+   `gen_meta.figure.parts = {key: {label, url, family, spec, description}}`; an engine `.cjs` drawing
+   now keeps its source in the spec so it can be redrawn. Back-fill of the twins written before:
+   §13.
 7. **Insert** with `verified=true` once all gates are green (the only way to
    reach publish), gates recorded in `gen_meta`. A rejected twin is not inserted; the
    reason goes to the batch log so the next attempt can avoid it (up to two
@@ -469,3 +486,25 @@ Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ ma
 **The sample** (`docs/samples/am-twins-levels-sample-v2.html`, 40 A Math twins, 22 topics, one Opus read with the meanings above): Core 32 (8 short, 24 long), Advanced 8, Challenge 0. Twins copy normal school questions, so Challenge must be WRITTEN on purpose (a harder twin of a hard seed, same gates, blind solve still full marks) — a later job.
 
 **Next, in order:** Adrian's ticks on the sample → sort every twin (one overnight run; ~3,600) → every new twin carries its level from the twin writer → the picker's Standard/Advanced toggle becomes Core/Advanced/Challenge (+ Short/Long) → science keeps its results-based sort but shows the same three names (its `exam` folds into Core, its `challenge` into Advanced until real Challenge questions exist). Labels live in `lib/practice-levels.ts`.
+
+## 13. Drawings at their parts — the back-fill (15 Oct 2026)
+
+Every twin had ONE picture above the stem, even when it held a drawing for (a) and another for (b).
+**Status: cut and checked, NOT yet written to the bank — waiting for Adrian's yes (the live-bank
+write needs his own go-ahead).** Looked at: the 964 twins with a picture and 2+ parts (a text sort of the figure descriptions, a
+gutter cutter over every PNG, then Sonnet eyes on all 204 candidates).
+- **143 need moving** — EM 75, S2 26, S1 19, AM 15, S3_EM 6, S3_AM 2. **137 are ready** (EM 72, S2 25,
+  S1 17, AM 15, S3_EM 6, S3_AM 2): 68 a single drawing that only a later part uses (**move** — the
+  same PNG goes to that part) and 69 separate drawings for different parts (**cut** — one crop per
+  part, `practice-figures/twins/parts/<id>-<key>.png`; a crop the whole question uses stays as
+  `figure_url`). Every cut was checked by eye against the original. **6 left on top** — too tangled
+  to cut cleanly (a label or caption between two drawings): EM 10ddf787, c0fa4f0a, e5bf13dc; S1
+  4650c31a, 52a52807; S2 86def712 — redraw them by hand or re-twin.
+- A blank grid/axes for an "On the grid, draw …" part goes AFTER the part text
+  (`image_url_after`); everything else before it.
+- The old combined picture's URL is kept in `gen_meta.figure.combined_url`; the rows were backed
+  up to `_backups/twins-part-figures-before-2026-10-15.json` before the write.
+- Scripts (scratchpad of that session, not committed): `seg2.py` (gutter cutter), `cc.py` (ink
+  clusters, a caption joins the drawing below it), `crop.py`, `apply.mjs` (dry by default; `--go`
+  backs up, uploads, PATCHes one row at a time).
+

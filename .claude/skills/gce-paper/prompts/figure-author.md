@@ -15,6 +15,13 @@ OUTPUT: write the spec into RUN as ONE of
 - `QN.figure.json` — a registry-family spec as ONE FLAT object: `{"family": "<name>", …the family's own fields beside it…}` exactly as the `--doc` example shows (the whole object is passed to verify(); do NOT nest the fields under a "spec" key — that fails with a misleading "spec needs a points array" error), or
 - `QN.figure.cjs` — a hand construction on the drawing engine when no family fits.
 Never write both.
+A DRAWING PER PART (15 Oct 2026): when a part or sub-part of the question carries its OWN
+`figure_description` (twins do this — a drawing that belongs to one part prints beside that
+part), draw each one into its own file named with the question number plus the part's key —
+the labels without brackets, lower case: the drawing for part (b) of question 1 is
+`Q1b.figure.json` (or `.cjs`), for (b)(ii) `Q1bii.figure.json`. The top-level
+`figure_description` (if not empty) is still `QN.figure.json`; an empty one means no
+top-level file. One `--run RUN --slots N` call renders them all. Look at every PNG.
 If NEITHER a family NOR the engine can draw it correctly, write neither: write
 `QN.figure-need.json` = `{"what": "one plain line: the picture the question needs", "shape": "a
 short kebab-case name for that kind of picture, e.g. venn-probability"}` and stop. (The twins

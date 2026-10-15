@@ -10,13 +10,15 @@
 //   node scripts/twins/twin.mjs need    --level EM --subgroup <id>   (prints how many more that sub-skill wants)
 //   node scripts/twins/twin.mjs brief   --source <uuid> --run <dir>
 //   node scripts/twins/twin.mjs check   --run <dir>          (gates → Q1.gates.json, Q1.solve.md, Q1.moderate.md)
+//   node scripts/twins/twin.mjs figures --run <dir>          (exit 1 when a picture Q1.json needs is not rendered)
 //   node scripts/twins/twin.mjs publish --run <dir> [--dry]  (insert/refresh the row, verified=true — every check passed)
 //   node scripts/twins/twin.mjs review  --runs <dir> [<dir>…] --out <file.html>
 //
 // Run dir files: source.json, corpus.json, plan.json, author-brief.md (from brief);
 // Q1.json (author); Q1.gates.json / Q1.solve.md / Q1.moderate.md (check);
 // Q1.blind.json (blind solver); Q1.verdict.json (moderator);
-// Q1.figure.json|.cjs → Q1.figure.svg/.png (scripts/gce-paper/figure.mjs --run <dir> --slots 1).
+// Q1.figure.json|.cjs → Q1.figure.svg/.png (scripts/gce-paper/figure.mjs --run <dir> --slots 1);
+// a part's own drawing: Q1<key>.figure.* (Q1b, Q1bii) → that part's image_url (15 Oct 2026).
 import { createRequire } from 'node:module';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -128,6 +130,31 @@ function flatParts(parts, prefix = '') {
     else out.push({ label, text: String(p.text ?? ''), marks: Number(p.marks) || 0, answer: p.answer });
   }
   return out;
+}
+// 🖼 A drawing per part (15 Oct 2026, Adrian: "diagrams should be at their corresponding parts?").
+// A part (or sub-part) with a drawing of its own carries `figure_description` in Q1.json; the figure
+// author draws it as Q1<key>.figure.json|.cjs (key = the labels without brackets: "b", "bii"), which
+// renders Q1<key>.figure.png, and publish puts it in THAT part's image_url. The top-level
+// figure_description is only for a drawing the whole question uses. Two drawings for two parts are
+// never folded into one picture above the stem.
+const figKey = (label, prefix = '') => `${prefix}${bare(label).toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+function partFigures(parts, prefix = '') {
+  const out = [];
+  for (const p of parts ?? []) {
+    const key = figKey(p.label, prefix);
+    if (String(p.figure_description ?? '').trim()) out.push({ key, label: `${prefix ? `(${prefix})` : ''}${normLabel(p.label)}`, description: String(p.figure_description).trim() });
+    if (p.subparts?.length) out.push(...partFigures(p.subparts, key));
+  }
+  return out;
+}
+// where the seed's own pictures sit — the twin copies the layout
+function seedFigureLayout(src) {
+  const at = [];
+  const stemImg = !!(src.figure_url || (src.image_url && src.image_url !== '[]') || (Array.isArray(src.images) && src.images.length));
+  if (stemImg) at.push('above the question');
+  const walk = (parts, prefix = '') => { for (const p of parts ?? []) { const l = `${prefix}${normLabel(p.label)}`; if (p.image_url || p.image_url_after) at.push(`at part ${l}`); walk(p.subparts, l); } };
+  walk(src.parts);
+  return at;
 }
 const SHAPE = {
   EM: { subject: 'Elementary Mathematics', code: '4052', tag: 'E Math' },
@@ -288,7 +315,7 @@ async function brief() {
     if (r.ok) { const k = await r.json(); knowledge = [...(k?.methods ?? []).map((m) => ({ kind: 'method', title: m.question_type, body: `${m.method}${m.watch_out ? ` Watch out: ${m.watch_out}` : ''}` })), ...(k?.pitfalls ?? []).map((m) => ({ kind: 'pitfall', title: m.context, body: `wrong move: ${m.wrong_move}. ${m.why_wrong ?? ''} ${m.corrective_cue ? `Cue: ${m.corrective_cue}` : ''}` }))]; }
   } catch { /* background only */ }
   const marks = Number(src.total_marks) || sumMarks(src);
-  const plan = { source: id, pass, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')), prompt_version: PROMPT_VERSION, models: modelsFor(src.level), briefed_at: new Date().toISOString() };
+  const plan = { source: id, pass, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]') || seedFigureLayout(src).length), figure_layout: seedFigureLayout(src), prompt_version: PROMPT_VERSION, models: modelsFor(src.level), briefed_at: new Date().toISOString() };
   writeFileSync(runFile(dir, 'source.json'), JSON.stringify(src, null, 1));
   writeFileSync(runFile(dir, 'corpus.json'), JSON.stringify(corpus));
   writeFileSync(runFile(dir, 'plan.json'), JSON.stringify(plan, null, 1));
@@ -304,7 +331,7 @@ Level: ${src.level} (${shape.subject}, ${shape.code}). Difficulty: ${plan.diffic
 Topics (bank names, keep exactly): ${(src.topics ?? []).join(' | ')}
 Sub-skill filing (the twin must test exactly these): ${subgroups.map((s) => `${s.name}${s.is_primary ? ' (primary)' : ''}${s.description ? ` — ${s.description}` : ''}`).join('; ') || '(unfiled — test what the source tests)'}
 Structure to reproduce exactly: ${structText}
-Figure: ${plan.has_figure ? 'the source HAS a diagram — the twin needs one too; describe it in figure_description exactly (every given length/angle/label) so a figure author can draw it from your words alone' : 'the source has no diagram; the twin must not need one either'}
+Figure: ${plan.has_figure ? `the source HAS a diagram — the twin needs one too; describe it exactly (every given length/angle/label) so a figure author can draw it from your words alone. The source's pictures sit ${(plan.figure_layout ?? []).join(', ') || 'above the question'}. ONE drawing per description: a drawing the whole question uses goes in the top-level figure_description; a drawing that belongs to ONE part (it sits at that part in the source, or only that part uses it) goes on THAT part (or sub-part) as its own "figure_description", so it prints beside its part. Never describe two drawings for different parts in one figure_description.` : 'the source has no diagram; the twin must not need one either'}
 
 ## THE SOURCE QUESTION (read for its skill, structure and method — then write something else)
 ${questionText(src)}
@@ -318,7 +345,7 @@ ${kText}
 
 ## OUTPUT
 Write ONE JSON file Q1.json in this folder (no prose, no code fence):
-{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string}]}], "answer": string, "total_marks": ${marks}, "topics": ${JSON.stringify(src.topics ?? [])}, "difficulty": "${plan.difficulty}", "needs_figure": ${plan.has_figure}, "figure_description": string, "solution": string, "method_note": "one line: the method the source teaches and how your twin teaches the same one", "originality_note": "one line: what is new — context, numbers, sentences"}
+{"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "figure_description"?: string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string, "figure_description"?: string}]}], "answer": string, "total_marks": ${marks}, "topics": ${JSON.stringify(src.topics ?? [])}, "difficulty": "${plan.difficulty}", "needs_figure": ${plan.has_figure}, "figure_description": string (the drawing the whole question uses; "" when every drawing belongs to a part), "solution": string, "method_note": "one line: the method the source teaches and how your twin teaches the same one", "originality_note": "one line: what is new — context, numbers, sentences"}
 "parts" is [] for a single-part question (its final answer sits in "answer"). Labels and marks per part must match the structure above EXACTLY. Inside JSON strings every backslash is doubled (\\\\frac) and a newline is \\n.
 `);
   log(`briefed ${raw} → ${dir} (${corpus.length} corpus rows, ${earlier.length} earlier twins, ${subgroups.length} sub-skills, ${knowledge.length} knowledge rows)`);
@@ -366,7 +393,9 @@ function check() {
   const wantTopics = plan.topics ?? [];
   if (JSON.stringify([...topics].sort()) !== JSON.stringify([...wantTopics].sort())) problems.push(`topics ${JSON.stringify(topics)} ≠ source ${JSON.stringify(wantTopics)}`);
   if (plan.has_figure && !q.needs_figure) problems.push('source has a figure; twin says needs_figure=false');
-  if (q.needs_figure && !String(q.figure_description ?? '').trim()) problems.push('needs_figure without figure_description');
+  const perPart = partFigures(q.parts);
+  if (q.needs_figure && !String(q.figure_description ?? '').trim() && !perPart.length) problems.push('needs_figure without figure_description');
+  if (!q.needs_figure && perPart.length) problems.push('a part has a figure_description but needs_figure is false');
   // novelty vs the source and the whole level
   const g = grams(text);
   const vsSource = Number(jaccard(g, grams(srcText)).toFixed(3));
@@ -389,7 +418,11 @@ function check() {
   if (gates.pass) {
     const earlierTw = readIf(runFile(dir, 'earlier-twins.json'), true) ?? [];
     const earlierShown = earlierTw.length ? `\n# EARLIER TWINS OF THE SAME SOURCE (the twin must not read as any of these either)\n\n${earlierTw.map((e, i) => `## Earlier twin ${i + 1}\n${e.text}`).join('\n\n')}\n` : '';
-    const shown = q.needs_figure && q.figure_description ? `${text}\n\n[The diagram, described in words — the printed question shows it as a figure: ${String(q.figure_description).trim()}]` : text;
+    const figs = [
+      ...(q.needs_figure && String(q.figure_description ?? '').trim() ? [`[The diagram, described in words — the printed question shows it as a figure: ${String(q.figure_description).trim()}]`] : []),
+      ...(q.needs_figure ? perPart.map((f) => `[The diagram printed beside part ${f.label}, described in words: ${f.description}]`) : []),
+    ];
+    const shown = figs.length ? `${text}\n\n${figs.join('\n\n')}` : text;
     writeFileSync(runFile(dir, 'Q1.solve.md'), `${SOLVER_BRIEF(shape)}\n\nWrite your answers to Q1.blind.json in this folder.\n\n# QUESTION (${plan.marks} marks)\n\n${shown}\n`);
     const key = flat.length ? flat.map((p) => `${p.label} [${p.marks}] ${p.answer}`).join('\n') : `single: ${q.answer}`;
     writeFileSync(runFile(dir, 'Q1.moderate.md'), `${MODERATOR_BRIEF(shape)}\n\nRead Q1.blind.json in this folder for the blind examiner's answers, then write Q1.verdict.json there.\n\n# THE TWIN (${plan.marks} marks; sub-skill: ${(plan.subgroups ?? []).map((s) => s.name).join('; ') || 'as the source'})\n\n${shown}\n\n## Setter's key\n${key}\n\n## Setter's solution\n${q.solution}\n\n## Setter's notes\nmethod: ${q.method_note ?? ''}\noriginality: ${q.originality_note ?? ''}\n\n# THE SOURCE (${src.school} ${src.year}, ${plan.marks} marks)\n\n${srcText}\n\nSource key:\n${flatParts(src.parts).map((p) => `${p.label} ${p.answer ?? ''}`).join('\n') || src.answer || ''}\n${earlierShown}`);
@@ -400,13 +433,29 @@ function check() {
 }
 
 // ------------------------------------------------------------- publish ----
-function bankParts(parts) {
+function bankParts(parts, prefix = '', partUrls = {}) {
   return (parts ?? []).map((p) => {
+    const key = figKey(p.label, prefix);
     const row = { label: bare(p.label), text: String(p.text ?? '').trim(), marks: Number(p.marks) || 0 };
+    if (partUrls[key]) row.image_url = partUrls[key];
     if (p.answer != null && String(p.answer).trim()) row.answer = String(p.answer).trim();
-    if (p.subparts?.length) row.subparts = bankParts(p.subparts);
+    if (p.subparts?.length) row.subparts = bankParts(p.subparts, key, partUrls);
     return row;
   });
+}
+// the pictures Q1.json asks for that the figure step has not rendered (the lane parks on any)
+function figuresMissing(dir, q) {
+  if (!q?.needs_figure) return [];
+  const want = [...(String(q.figure_description ?? '').trim() || !partFigures(q.parts).length ? [''] : []), ...partFigures(q.parts).map((f) => f.key)];
+  return want.filter((k) => !existsSync(runFile(dir, `Q1${k}.figure.png`))).map((k) => `Q1${k}.figure.png`);
+}
+// `figures --run <dir>`: exit 1 + the missing names when a picture Q1.json needs is not rendered
+function figures() {
+  const dir = resolve(argOf('--run', '.'));
+  const q = readJsonLoose(runFile(dir, 'Q1.json'));
+  const missing = figuresMissing(dir, q);
+  console.log(missing.length ? `missing: ${missing.join(' ')}` : `figures ✓ (${['', ...partFigures(q.parts).map((f) => f.key)].filter((k) => existsSync(runFile(dir, `Q1${k}.figure.png`))).map((k) => `Q1${k}`).join(' ')})`);
+  process.exit(missing.length ? 1 : 0);
 }
 function verdictOk(v) {
   return !!v && v.all_agree === true && v.reads_as_source !== true && v.same_skill !== false && v.same_method !== false && Number(v.score) >= 4;
@@ -423,9 +472,13 @@ async function publish() {
   const blind = readIf(runFile(dir, 'Q1.blind.json'), true);
   if (!gates?.pass) throw new Error('gates not passed — run check first');
   if (!verdictOk(verdict)) throw new Error(`verdict refuses: ${JSON.stringify({ all_agree: verdict?.all_agree, reads_as_source: verdict?.reads_as_source, same_skill: verdict?.same_skill, same_method: verdict?.same_method, score: verdict?.score })}`);
+  const missing = figuresMissing(dir, q);
+  if (missing.length) throw new Error(`needs_figure but not rendered: ${missing.join(', ')}`);
   const png = runFile(dir, 'Q1.figure.png');
-  if (q.needs_figure && !existsSync(png)) throw new Error('needs_figure but Q1.figure.png is not rendered');
-  const figSpec = existsSync(runFile(dir, 'Q1.figure.json')) ? JSON.parse(readFileSync(runFile(dir, 'Q1.figure.json'), 'utf8')) : (existsSync(runFile(dir, 'Q1.figure.cjs')) ? { family: 'engine', file: 'Q1.figure.cjs' } : null);
+  const stemFig = q.needs_figure && !!String(q.figure_description ?? '').trim() && existsSync(png);
+  const specOf = (k) => existsSync(runFile(dir, `Q1${k}.figure.json`)) ? JSON.parse(readFileSync(runFile(dir, `Q1${k}.figure.json`), 'utf8')) : (existsSync(runFile(dir, `Q1${k}.figure.cjs`)) ? { family: 'engine', file: `Q1${k}.figure.cjs`, source: readFileSync(runFile(dir, `Q1${k}.figure.cjs`), 'utf8') } : null);
+  const figSpec = specOf('');
+  const perPart = q.needs_figure ? partFigures(q.parts) : [];
   // 🌱 the 2nd / 3rd twin of a seed gets its own name, so it never overwrites the first
   const pass = Number(plan.pass) || 1;
   const item = pass > 1 ? `twin-${plan.source}-${pass}` : `twin-${plan.source}`;
@@ -436,17 +489,22 @@ async function publish() {
   }
   const sb = sbClient(env);
   let figureUrl = null;
-  if (q.needs_figure) {
+  const upload = async (path, file) => {
     if (!dry) {
-      const { error } = await sb.storage.from(BUCKET).upload(storagePath, readFileSync(png), { contentType: 'image/png', upsert: true });
+      const { error } = await sb.storage.from(BUCKET).upload(path, readFileSync(file), { contentType: 'image/png', upsert: true });
       if (error) throw new Error(`figure upload: ${error.message}`);
     }
-    figureUrl = `${env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
-  }
+    return `${env.SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  };
+  if (stemFig) figureUrl = await upload(storagePath, png);
+  // 🖼 each part's own drawing → that part's image_url (twins/<seed>[-n]-<key>.png)
+  const partUrls = {};
+  for (const f of perPart) partUrls[f.key] = await upload(storagePath.replace(/\.png$/, `-${f.key}.png`), runFile(dir, `Q1${f.key}.figure.png`));
+  const bankRows = bankParts(q.parts, '', partUrls);
   const row = {
     question_text: String(q.stem ?? '').trim(),
     answer: q.answer != null && String(q.answer).trim() ? String(q.answer).trim() : null,
-    parts: bankParts(q.parts),
+    parts: bankRows,
     total_marks: plan.marks,
     topics: plan.topics,
     level: plan.level,
@@ -456,6 +514,8 @@ async function publish() {
     paper: null,             // a twin sits in no paper — idx_questions_dedup keys on (school, year, paper, question_number, level, exam_type)
     question_number: null,   // and two sources sharing 'Paper 1 Q5' would collide; the source's paper/Q live in gen_meta.source_ref
     difficulty: plan.difficulty ?? 'Standard',
+    // has_image = a picture ABOVE the question. A twin whose drawings all sit at their parts has none
+    // there: the serving gates read (has_image=false or figure_url) and every renderer draws parts[].image_url.
     has_image: !!figureUrl,
     figure_url: figureUrl,
     image_url: null,
@@ -472,7 +532,8 @@ async function publish() {
       source_ref: { school: src.school, year: src.year, paper: src.paper ?? null, question_number: src.question_number ?? null },
       author_model: (plan.models ?? MODELS).author, blind_model: (plan.models ?? modelsFor(plan.level)).blind, moderate_model: (plan.models ?? MODELS).moderate,
       gates: { novelty: gates.novelty, number_swap: gates.novelty?.number_swap ?? null, structure: gates.structure?.ok ?? null, blind_agree: verdict.all_agree, moderator_score: verdict.score, figure_verify: q.needs_figure ? true : null, rounds: gates.rounds },
-      figure: figureUrl ? { family: figSpec?.family ?? null, spec: figSpec, description: q.figure_description ?? null } : null,
+      figure: figureUrl || perPart.length ? { family: figureUrl ? figSpec?.family ?? null : null, spec: figureUrl ? figSpec : null, description: figureUrl ? q.figure_description ?? null : null,
+        ...(perPart.length ? { parts: Object.fromEntries(perPart.map((f) => { const sp = specOf(f.key); return [f.key, { label: f.label, url: partUrls[f.key], family: sp?.family ?? null, spec: sp, description: f.description }]; })) } : {}) } : null,
       blind_answers: blind?.answers ?? null,
       verdict: { key_verdict: verdict.key_verdict, why: verdict.why, fixes: verdict.fixes ?? [] },
       method_note: q.method_note ?? null, originality_note: q.originality_note ?? null,
@@ -525,7 +586,8 @@ function review() {
     const pub = readIf(runFile(dir, 'published.json'));
     const accepted = !!(gates?.pass && verdictOk(verdict) && pub);
     if (accepted) ok++;
-    const fig = existsSync(runFile(dir, 'Q1.figure.png')) ? `<img src="data:image/png;base64,${readFileSync(runFile(dir, 'Q1.figure.png')).toString('base64')}" style="max-width:320px">` : '';
+    const figOf = (k) => existsSync(runFile(dir, `Q1${k}.figure.png`)) ? `${k ? `<div><small>part ${esc(k)}</small></div>` : ''}<img src="data:image/png;base64,${readFileSync(runFile(dir, `Q1${k}.figure.png`)).toString('base64')}" style="max-width:320px">` : '';
+    const fig = ['', ...(q ? partFigures(q.parts).map((f) => f.key) : [])].map(figOf).join('');
     const srcImg = src?.figure_url ? `<img src="${esc(src.figure_url)}" style="max-width:320px">` : (src?.has_image ? '<em>(source diagram lives in its image)</em>' : '');
     const status = accepted ? '✅ published (verified by the checks)' : !q ? '⛔ no draft' : !gates?.pass ? `✗ gates: ${esc((gates?.problems ?? []).join('; '))}` : !verdictOk(verdict) ? `✗ moderator: score ${verdict?.score ?? '?'}, agree ${verdict?.all_agree}, reads_as_source ${verdict?.reads_as_source} — ${esc(verdict?.why ?? '')}` : '⏳ not published';
     cards.push(`<section class="card ${accepted ? 'ok' : 'no'}"><h2>${n}. ${esc(plan?.subject ?? '')} · ${plan?.marks ?? '?'} marks · ${esc((plan?.subgroups ?? []).map((s) => s.name).join('; '))}</h2>
@@ -541,6 +603,6 @@ function review() {
   console.log(`${out}: ${ok}/${n} accepted`);
 }
 
-const modes = { queue, need, brief, check, publish, review };
+const modes = { queue, need, brief, check, figures, publish, review };
 if (!modes[MODE]) { log(`unknown mode ${MODE}`); process.exit(2); }
 Promise.resolve(modes[MODE]()).catch((e) => { log(`twin.mjs ${MODE}: ${e.message}`); process.exit(1); });

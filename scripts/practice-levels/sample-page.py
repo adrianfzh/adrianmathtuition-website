@@ -26,11 +26,18 @@ def t(x):
     if tbl: flush_tbl()
     if buf: out.append(t0('\n'.join(buf)))
     return ''.join(out)
+def pimg(v):
+    # a part's own picture (parts[].image_url / image_url_after, 15 Oct 2026): one url, a JSON list, or {url}
+    if not v: return ''
+    try: v=json.loads(v) if isinstance(v,str) and v.strip().startswith('[') else v
+    except Exception: pass
+    urls=[(u.get('url') if isinstance(u,dict) else u) for u in (v if isinstance(v,list) else [v])]
+    return ''.join(f'<img src="{html.escape(u)}">' for u in urls if isinstance(u,str) and len(u)>5)
 def part(p, depth=0):
     sub=''.join(part(c, depth+1) for c in (p.get('subparts') or []))
     ans='' if p.get('subparts') else f'<div class="ans">Answer: {t(p.get("answer"))}</div>'
     txt=t(p.get('text'))
-    return f'<div class="part" style="margin-left:{depth*18}px"><b>({html.escape(p.get("label",""))})</b> {txt} <span class="mk">[{p.get("marks","")}]</span>{ans}{sub}</div>'
+    return f'<div class="part" style="margin-left:{depth*18}px">{pimg(p.get("image_url"))}<b>({html.escape(p.get("label",""))})</b> {txt} <span class="mk">[{p.get("marks","")}]</span>{pimg(p.get("image_url_after"))}{ans}{sub}</div>'
 LINE={'Core':'Every exam question you must be able to do. B3 to A1.','Advanced':'For A1 and above, and harder school papers.','Challenge':'Beyond the exam.'}
 G=[('Advanced',None,'Advanced'),('Challenge',None,'Challenge'),('Core','Short','Core · Short (1–4 marks)'),('Core','Long','Core · Long (5+ marks)')]
 if order=='core-first': G=G[2:]+G[:2]
