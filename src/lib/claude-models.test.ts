@@ -26,6 +26,8 @@ const SWITCHED: Record<string, RegExp> = {
   'src/app/api/admin-schedule/extract-exam-topics/route.ts': /const EXTRACTION_MODEL = SONNET_55;/,
   // 📌 My definitions' writer (14 Oct 2026, built on Sonnet 5.5 from the start).
   'src/lib/my-definitions-store.ts': /MY_DEFINITIONS_MODEL = process\.env\.MY_DEFINITIONS_MODEL \|\| SONNET_55;/,
+  // 📷 Humanities: a handwritten answer typed out (15 Oct 2026, built on Sonnet 5.5 from the start).
+  'src/lib/humanities-photo.ts': /PHOTO_READ_MODEL = process\.env\.HUMANITIES_PHOTO_MODEL \|\| SONNET_55;/,
 };
 
 describe('Sonnet 5.5 setting', () => {

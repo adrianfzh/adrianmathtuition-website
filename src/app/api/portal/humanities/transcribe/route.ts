@@ -10,6 +10,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionById } from '@/lib/humanities-questions';
 import { transcribePrompt, parseTranscript, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
 import { sgtDayStartISO } from '@/lib/sgt';
+import { anthropicText } from '@/lib/claude-models';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
         ],
       }],
     });
-    reply = msg.content.map(c => (c.type === 'text' ? c.text : '')).join('');
+    reply = anthropicText(msg);
   } catch (e) {
     console.error('[humanities-transcribe]', e instanceof Error ? e.message : e);
     return NextResponse.json({ error: 'We could not read the photo just now. Try again in a minute.' }, { status: 503 });

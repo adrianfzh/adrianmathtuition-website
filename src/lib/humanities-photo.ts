@@ -3,13 +3,14 @@
 // student checks them against the page, and the ordinary hand-in (lib/humanities-submit) marks the text.
 // So the marking, its levels and its bench are unchanged, and no photo is kept (the same rule as the
 // practice photo: "no student photos at rest"). Pure helpers; the call itself is in the route.
+import { SONNET_55 } from './claude-models';
 
 /** Pages one answer may span. */
 export const MAX_PHOTO_PAGES = 4;
 /** Photos a student may have typed out per Singapore day (a retake counts). */
 export const DAILY_PHOTO_CAP = 30;
 /** The reader for handwriting. A plain read of a page, so the mid-size model. */
-export const PHOTO_READ_MODEL = 'claude-sonnet-5-5';
+export const PHOTO_READ_MODEL = process.env.HUMANITIES_PHOTO_MODEL || SONNET_55;
 
 export const UNREADABLE = 'UNREADABLE';
 
