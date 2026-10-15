@@ -426,6 +426,8 @@ Adrian, 15 Oct 2026, after a sorted sample of 40 A Math twins: *"students must b
 | **Advanced** | For A1 and above, and harder school papers. | The student must DECIDE the approach with no signpost (substitution, identity, case split, model from a context, two topics joined), or a genuine trap. Top of the A1 band; what harder schools set. |
 | **Challenge** | Beyond the exam. | Bonus-style top-school questions: non-standard set-up, several unsignposted decisions. Never promoted from Advanced to fill the bucket. |
 
+**How the sort works (Adrian, 15 Oct 2026: "most questions should be core. a better way would be to identify the advanced and the challenge questions").** Every question is **Core by default**. The sorter only looks for the exceptions: (1) a cheap first screen flags candidates — many marks, a last-in-paper position on the seed, a low share of students right where results exist, an unsignposted "hence"/set-up; (2) a careful Opus read decides Advanced or Challenge for the candidates only, and must name the decision the student has to make. No reason named → stays Core. Cheaper, and errs towards Core.
+
 Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ marks). No source type (school, national) is ever a choice — sources are never shown to students.
 
 **The sample** (`docs/samples/am-twins-levels-sample-v2.html`, 40 A Math twins, 22 topics, one Opus read with the meanings above): Core 32 (8 short, 24 long), Advanced 8, Challenge 0. Twins copy normal school questions, so Challenge must be WRITTEN on purpose (a harder twin of a hard seed, same gates, blind solve still full marks) — a later job.
