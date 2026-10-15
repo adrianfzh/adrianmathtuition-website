@@ -4,7 +4,7 @@ import { caseStudyProblems, quotedPieces } from './humanities-case-study';
 import { geographyProblems } from './humanities-geography';
 import fs from 'node:fs';
 import path from 'node:path';
-import { allDiagrams, diagramText, caseStudies, isCaseStudy, SS_THEMES, geoEvaluateBand, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
+import { allDiagrams, diagramText, allPhotos, photoByKey, photoText, photoCredit, caseStudies, isCaseStudy, SS_THEMES, geoEvaluateBand, maxOf, isPointsQuestion, tableText, allSets, setsFor, HUMANITIES_SKILLS, SOURCE_SKILLS, questionById, questionsBySkill, levelsMax, modelAnswer, seededAnswers, schemeFor, CLAIM_TAGS, rulesFor, tagsFor, isStructured } from './humanities-questions';
 
 describe('the humanities bank', () => {
   it('Social Studies single questions: 30, five per source skill', () => {
@@ -223,5 +223,35 @@ describe('Geography diagrams', () => {
   it('every question that shows a diagram names one in the bank', () => {
     const keys = new Set(allDiagrams().map(d => d.key));
     for (const set of setsFor('geography', 'points')) for (const q of set.questions) if (q.diagram) expect(keys.has(q.diagram.key), q.id).toBe(true);
+  });
+});
+
+describe('Geography photographs', () => {
+  it('every photo in the bank has its file, an open licence, a credit and its words for the reader', () => {
+    expect(allPhotos().length).toBeGreaterThanOrEqual(10);
+    const keys = new Set<string>();
+    for (const p of allPhotos()) {
+      expect(keys.has(p.key), p.key).toBe(false); keys.add(p.key);
+      const file = path.join(__dirname, '../../public/humanities/photos', p.file);
+      expect(fs.existsSync(file), p.key).toBe(true);
+      expect(fs.statSync(file).size, p.key).toBeLessThan(400_000);
+      expect(p.licence, p.key).toMatch(/^(Public domain|CC0( 1\.0)?|CC BY(-SA)? \d\.\d)$/);
+      expect(p.licenceUrl, p.key).toMatch(/^https:\/\/creativecommons\.org\//);
+      expect(p.sourceUrl, p.key).toMatch(/^https:\/\/(commons\.wikimedia\.org|[a-z.]*nasa\.gov)\//);
+      expect(p.author.trim().length, p.key).toBeGreaterThan(1);
+      expect(p.shows.split(/\s+/).length, p.key).toBeGreaterThan(40);
+      expect(photoText(p)).toMatch(/^\(A photograph shown to the student\.\) /);
+      expect(photoCredit(p)).toBe(`Photo: ${p.author}, ${p.licence}`);
+    }
+  });
+  it('every question that shows a photo names one in the bank, and its words reach the reader', () => {
+    let n = 0;
+    for (const set of setsFor('geography', 'points')) for (const q of set.questions) if (q.photo) {
+      const p = photoByKey(q.photo.key);
+      expect(p, q.id).not.toBeNull();
+      expect(q.photo.caption, q.id).toMatch(/^Fig\. \d+: /);
+      n++;
+    }
+    expect(n).toBeGreaterThanOrEqual(10);
   });
 });

@@ -13,6 +13,7 @@ import { contextForRun, isOwnId } from '@/lib/humanities-own';
 import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard, DiagramCard } from '../sources';
+import { PhotoCard } from '../photo-card';
 import { skillLabel } from '../skills';
 import RunPoll from './run-poll';
 
@@ -200,6 +201,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
       )}
 
       {points && ctx.question.diagram && <DiagramCard diagram={ctx.question.diagram} />}
+      {points && ctx.question.photo && <PhotoCard photo={ctx.question.photo} />}
       {points ? ctx.question.table && <DataTableCard table={ctx.question.table} /> : (
         <details className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
           <summary className="text-sm font-semibold text-navy cursor-pointer">{ctx.set.kind === 'structured' ? 'The extract' : 'The sources'}</summary>

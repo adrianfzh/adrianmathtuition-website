@@ -119,6 +119,13 @@ describe('the prompt', () => {
     }
     expect(n).toBeGreaterThan(100);
   });
+  it('a question with a photo sends the photo, in words, to the reader', () => {
+    const q = allSets().flatMap(s => s.questions).find(x => x.photo)!;
+    const p = buildHumanitiesPayload(questionById(q.id)!, 'an answer');
+    const src = p.sources!.find(x => x.id === q.photo!.caption)!;
+    expect(src.text).toMatch(/^\(A photograph shown to the student\.\) /);
+    expect(humanitiesPrompt(p, 1)).toContain(src.text);
+  });
 });
 
 // ── Point-marked answers (Geography) ──

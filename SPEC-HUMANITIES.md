@@ -232,8 +232,22 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   notes on loose tolerances applied. **Geography: 26 sets, 118 point-marked questions.** Not through the
 >   live reader: g05–g22 and g24–g26 (paid; it waits for Adrian's own word).
 >   Not drawn: a sketch map (a hand-drawn local map), which is a one-off drawing and not a figure from numbers.
-> - **Still to build:** photographs, satellite images and cartoons (parked until the reader can look at pictures)
->   on SEAB's level table, the full question set (the 367 banked rows are the guide), fieldwork questions.
+> - **Real photographs and satellite images (15 Oct 2026, Adrian: "for real photos, see if you can find any and
+>   credit them").** Twelve openly licensed pictures from Wikimedia Commons (six public domain — NASA, the US Navy,
+>   VOA; three CC BY; three CC BY-SA), resized to 1200 px in `public/humanities/photos/`. Their credits live in
+>   `data/humanities/geography/photos.json` (`author`, `licence`, `licenceUrl`, `sourceUrl`) and print in small grey
+>   under the picture ("Photo: <author>, <licence>", linking to the source) — `app/humanities/photo-card.tsx`, kept
+>   apart from `sources.tsx` because the timed paper's client page imports that file. A question carries
+>   `photo: {key, caption}`; the reader cannot see it, so it is given the photo's `shows` in words (`photoText`),
+>   exactly like a diagram. The question page and the report page show it. Sets **g27** (tectonics: an erupting
+>   volcano, earthquake damage, a tsunami's aftermath, fold mountains from space) and **g28** (climate: haze, a
+>   typhoon from space, a flooded street, mangroves, forest clearing from space), ten questions. Plan-only checks:
+>   the shape checker; blind marking of all 48 seeded answers by fresh readers, 48/48, twice (before and after
+>   the checkers' notes were applied: overlapping points merged, "best two only" made explicit, a caption that
+>   gave a point away shortened); a subject check of every real place and date. Both pages looked at at 390 px.
+>   Three photos have no question yet (a crowd at a heritage site, a resort coast, a housing estate) — ready for
+>   tourism and everyday-life sets. Not through the live reader. **Geography: 28 sets, 128 point-marked questions.**
+> - **Still to build:** cartoons (real ones are copyrighted; parked); questions on SEAB's level table; the full question set (the 367 banked rows are the guide), fieldwork questions.
 
 > **C — HISTORY ESSAYS STARTED 7 Oct 2026 (preview only, switch closed).** Adrian: "go ahead with history essays".
 > - **On the humanities reader, not the Languages essay marker** (a change from the hand-over note, made in the

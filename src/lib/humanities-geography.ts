@@ -2,7 +2,7 @@
 // 7 Oct 2026). Pure: the unit test runs it over the bank, and
 // scripts/humanities-bench/check-set.ts runs it over a draft. It checks the
 // SHAPE — whether a seeded answer earns its marks is the bench's job.
-import { GEO_CLUSTERS, POINTS_SKILLS, diagramByKey, type HumanitiesSet } from './humanities-questions';
+import { GEO_CLUSTERS, POINTS_SKILLS, diagramByKey, photoByKey, type HumanitiesSet } from './humanities-questions';
 import { figureProblem, moreFigureProblem } from './humanities-chart';
 import countryJson from '../../data/humanities/geography/country-x.json';
 const REGIONS = (countryJson as { regions: { name: string }[] }).regions.map(r => r.name);
@@ -38,10 +38,15 @@ export function geographyProblems(set: HumanitiesSet): string[] {
     // The points must be able to reach full marks, with at least one to spare for choice.
     const reach = pts.length * (q.develop ? 2 : 1);
     if (reach < marks) at(`the points reach only ${reach} of ${marks} marks`);
-    if (/\btable\b|fig\./i.test(q.question) && !q.table && !q.diagram) at('the question names a table or figure it does not carry');
+    if (/\btable\b|fig\./i.test(q.question) && !q.table && !q.diagram && !q.photo) at('the question names a table or figure it does not carry');
     if (q.diagram) {
       if (!diagramByKey(q.diagram.key)) at(`diagram ${q.diagram.key} is not in the diagram bank`);
       if (!/^Fig\. \d+:/.test(q.diagram.caption)) at('diagram caption is not "Fig. N: …"');
+    }
+    if (q.photo) {
+      if (!photoByKey(q.photo.key)) at(`photo ${q.photo.key} is not in the photo bank`);
+      if (!/^Fig\. \d+:/.test(q.photo.caption)) at('photo caption is not "Fig. N: …"');
+      if (q.diagram) at('a question shows one figure: a diagram or a photo, not both');
     }
     if (q.table) {
       if (!(q.table.figure ? /^Fig\. \d+:/ : /^Table \d+:/).test(q.table.caption)) at(`caption is not "${q.table.figure ? 'Fig.' : 'Table'} N: …"`);

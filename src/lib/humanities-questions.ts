@@ -16,6 +16,7 @@ import historyEssaysJson from '../../data/humanities/history/essays.json';
 import geographyJson from '../../data/humanities/geography/sets.json';
 import geoEvaluateJson from '../../data/humanities/geography/evaluate.json';
 import diagramsJson from '../../data/humanities/geography/diagrams.json';
+import photosJson from '../../data/humanities/geography/photos.json';
 
 export type HumanitiesSkill = 'inference' | 'comparison' | 'reliability' | 'usefulness' | 'purpose' | 'surprise' | 'how_far' | 'sr_explain' | 'sr_weigh' | 'geo_describe' | 'geo_explain' | 'geo_evaluate' | 'hist_evaluate';
 /** The source skills — Social Studies and History share them. 'surprise' joined on 7 Oct 2026 (Adrian: "do it"). */
@@ -63,6 +64,25 @@ export function diagramText(d: GeoDiagram): string {
   return `(A labelled diagram shown to the student.) ${d.shows}${letters ? ` ${letters}` : ''}`;
 }
 
+/**
+ * A real photograph a Geography question shows (15 Oct 2026, Adrian: "for real photos, see if you
+ * can find any and credit them") — openly licensed (public domain, CC BY, CC BY-SA), kept as
+ * public/humanities/photos/<file>, credited under the picture. The reader cannot see it, so each
+ * photo carries `shows`: everything a student could use in it, in words.
+ */
+export interface GeoPhoto { key: string; file: string; title: string; author: string; licence: string; licenceUrl: string; sourceUrl: string; caption: string; shows: string }
+const PHOTOS = photosJson as unknown as GeoPhoto[];
+export function allPhotos(): GeoPhoto[] { return PHOTOS; }
+export function photoByKey(key: string): GeoPhoto | null { return PHOTOS.find(p => p.key === key) ?? null; }
+/** The photograph as words — what the reader is given in place of the picture. */
+export function photoText(p: GeoPhoto): string {
+  return `(A photograph shown to the student.) ${p.shows}`;
+}
+/** The credit line printed under the photograph: "Photo: <author>, <licence>". */
+export function photoCredit(p: Pick<GeoPhoto, 'author' | 'licence'>): string {
+  return `Photo: ${p.author}, ${p.licence}`;
+}
+
 /** A small data table a Geography question gives ("Table 1"). */
 export interface DataTable {
   caption: string; columns: string[]; rows: string[][];
@@ -89,6 +109,8 @@ export interface HumanitiesQuestion {
   table?: DataTable;
   /** A drawn diagram shown with the question: its key in the diagram bank and its caption ("Fig. 1: …"). */
   diagram?: { key: string; caption: string };
+  /** A real photograph shown with the question: its key in the photo bank and its caption ("Fig. 1: …"). */
+  photo?: { key: string; caption: string };
 }
 export const isPointsQuestion = (q: Pick<HumanitiesQuestion, 'points'>): boolean => Array.isArray(q.points) && q.points.length > 0;
 export interface HumanitiesSet {

@@ -5,6 +5,7 @@ import { humanitiesOpen } from '@/lib/portal-beta';
 import { questionById, isCaseStudy } from '@/lib/humanities-questions';
 import { MAX_WORDS } from '@/lib/humanities-submit';
 import { SourceCards, BackgroundCard, DataTableCard, DiagramCard } from '../../sources';
+import { PhotoCard } from '../../photo-card';
 import { skillLabel } from '../../skills';
 import AnswerForm from './answer-form';
 
@@ -33,6 +34,7 @@ export default async function HumanitiesQuestionPage({ params }: { params: Promi
       {ctx.sources.length > 0 && <SourceCards sources={ctx.sources} />}
       {ctx.question.table && <DataTableCard table={ctx.question.table} />}
       {ctx.question.diagram && <DiagramCard diagram={ctx.question.diagram} />}
+      {ctx.question.photo && <PhotoCard photo={ctx.question.photo} />}
       {others.length > 0 && (
         <details className="group bg-white/60 rounded-3xl p-4 border border-black/5">
           <summary className="flex items-center cursor-pointer list-none [&::-webkit-details-marker]:hidden">

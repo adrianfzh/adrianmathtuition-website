@@ -8508,5 +8508,614 @@
     ]
    }
   ]
+ },
+ {
+  "id": "g27",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "tectonics",
+  "title": "Reading photographs: tectonic hazards",
+  "issue": "Using real photographs of a volcano, an earthquake, a tsunami and fold mountains",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g27-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe the shape of the volcano and what is happening at it.",
+    "rules": [
+     "Describe only what the photograph shows. A reason, the name of the type of volcano, or a fact taken from the caption earns nothing.",
+     "Ash coming \"from the top\" is fine for point e."
+    ],
+    "photo": {
+     "key": "volcano-eruption",
+     "caption": "Fig. 1: Mayon Volcano, the Philippines"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "The volcano is cone-shaped."
+     },
+     {
+      "id": "b",
+      "text": "Its sides are steep."
+     },
+     {
+      "id": "c",
+      "text": "It rises to a narrow, pointed top."
+     },
+     {
+      "id": "d",
+      "text": "Its sides are smooth and even, almost the same on both sides."
+     },
+     {
+      "id": "e",
+      "text": "A thick cloud of grey ash is coming out from near the top."
+     },
+     {
+      "id": "f",
+      "text": "The ash cloud is rolling down one side of the volcano."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "This is a volcano in the Philippines. Volcanoes are found at plate boundaries and they can be very dangerous to people who live near them."
+     },
+     {
+      "level": 1,
+      "text": "The volcano is shaped like a cone. It is a very famous volcano."
+     },
+     {
+      "level": 2,
+      "text": "The volcano is shaped like a cone. Grey ash is pouring out from the top of it."
+     },
+     {
+      "level": 3,
+      "text": "The volcano is shaped like a cone. Its slopes are very steep. Grey ash is pouring out from the top of it."
+     }
+    ]
+   },
+   {
+    "id": "g27-q2",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "The volcano in Fig. 1 has steep sides. Explain how a volcano with this shape is formed.",
+    "rules": [
+     "Credit the explanation of how the shape builds up. A description of the photograph alone earns nothing.",
+     "Saying why the lava is thick (it is rich in silica) is not needed for point a."
+    ],
+    "photo": {
+     "key": "volcano-eruption",
+     "caption": "Fig. 1: Mayon Volcano, the Philippines"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "The lava is thick and sticky (viscous).",
+      "develop": "so it flows slowly and only a short distance from the vent"
+     },
+     {
+      "id": "b",
+      "text": "The lava cools and hardens close to the vent.",
+      "develop": "so the volcano builds upwards rather than outwards, giving steep sides"
+     },
+     {
+      "id": "c",
+      "text": "The eruptions are explosive and throw out ash and rock fragments.",
+      "develop": "the ash and rock fall and settle around the vent, building up the cone"
+     },
+     {
+      "id": "d",
+      "text": "The volcano is built of layers of ash and hardened lava, one on top of another.",
+      "develop": "each eruption adds a new layer, so the cone grows taller over time"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The volcano in Fig. 1 has steep sides and a pointed top. It is erupting and there is a lot of grey ash in the sky."
+     },
+     {
+      "level": 1,
+      "text": "The lava from this volcano is very thick and sticky."
+     },
+     {
+      "level": 2,
+      "text": "The lava from this volcano is very thick and sticky. It cannot flow far, so it only moves a short way from the vent before it stops."
+     },
+     {
+      "level": 3,
+      "text": "The lava from this volcano is very thick and sticky. It cannot flow far, so it only moves a short way from the vent before it stops. The volcano is made of many layers of ash and lava."
+     },
+     {
+      "level": 4,
+      "text": "The lava from this volcano is very thick and sticky. It cannot flow far, so it only moves a short way from the vent before it stops. The volcano is made of many layers of ash and lava. Every time it erupts, another layer is added on top, so the cone gets taller and taller."
+     }
+    ]
+   },
+   {
+    "id": "g27-q3",
+    "skill": "geo_explain",
+    "command": "suggest",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Using evidence from Fig. 1, suggest why so many buildings in this city collapsed during the earthquake.",
+    "rules": [
+     "A reason earns its first mark only when it is linked to the earthquake's shaking or to something seen in the photograph.",
+     "Credit the best two reasons only; a third reason earns nothing more."
+    ],
+    "photo": {
+     "key": "earthquake-damage",
+     "caption": "Fig. 1: Port-au-Prince, Haiti, after the earthquake of January 2010"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Many buildings had heavy concrete floors and roofs.",
+      "develop": "when the walls or columns gave way, the heavy floors fell flat onto one another, as the photograph shows"
+     },
+     {
+      "id": "b",
+      "text": "The buildings were probably not built to withstand strong shaking.",
+      "develop": "for example, they had little steel reinforcement, so they cracked and fell instead of bending"
+     },
+     {
+      "id": "c",
+      "text": "The buildings are packed closely together along narrow streets.",
+      "develop": "so when one building fell it damaged or knocked down the buildings beside it"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The photograph shows a lot of damage. Many buildings are broken and there is rubble everywhere in the city."
+     },
+     {
+      "level": 1,
+      "text": "Many of the buildings were not built strongly enough to survive the shaking."
+     },
+     {
+      "level": 2,
+      "text": "Many of the buildings were not built strongly enough to survive the shaking. They probably had very little steel inside the concrete, so they cracked and fell down instead of bending."
+     },
+     {
+      "level": 3,
+      "text": "Many of the buildings were not built strongly enough to survive the shaking. They probably had very little steel inside the concrete, so they cracked and fell down instead of bending. Also the buildings are very close together."
+     },
+     {
+      "level": 4,
+      "text": "Many of the buildings were not built strongly enough to survive the shaking. They probably had very little steel inside the concrete, so they cracked and fell down instead of bending. Also the buildings are very close together, so when one building fell, it crashed into the buildings next to it and brought them down too."
+     }
+    ]
+   },
+   {
+    "id": "g27-q4",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe the effects of the tsunami on this area.",
+    "rules": [
+     "Describe what the photograph shows. A reason or an effect that cannot be seen in it earns nothing."
+    ],
+    "photo": {
+     "key": "tsunami-aftermath",
+     "caption": "Fig. 1: A village near Banda Aceh, Indonesia, a week after the tsunami of 26 December 2004"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Most of the houses on the flat land have been destroyed or washed away."
+     },
+     {
+      "id": "b",
+      "text": "Only a few buildings and roofs are still standing."
+     },
+     {
+      "id": "c",
+      "text": "The ground is covered with debris such as broken wood and rubble."
+     },
+     {
+      "id": "d",
+      "text": "Large pools of water are still lying on the land."
+     },
+     {
+      "id": "e",
+      "text": "The damage is on the low, flat land; the hills behind look undamaged."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tsunami is a series of huge waves caused by an earthquake under the sea. This one happened in 2004 in the Indian Ocean."
+     },
+     {
+      "level": 1,
+      "text": "Almost all the houses in the village have been destroyed."
+     },
+     {
+      "level": 2,
+      "text": "Almost all the houses in the village have been destroyed. There is broken wood and rubble lying everywhere."
+     },
+     {
+      "level": 3,
+      "text": "Almost all the houses in the village have been destroyed. There is broken wood and rubble lying everywhere. Big pools of water are still lying on the ground."
+     },
+     {
+      "level": 4,
+      "text": "Almost all the houses in the village have been destroyed. There is broken wood and rubble lying everywhere. Big pools of water are still lying on the ground. The hills at the back are still green and do not look damaged at all."
+     }
+    ]
+   },
+   {
+    "id": "g27-q5",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Fig. 1 shows a range of fold mountains. Explain how fold mountains like these are formed.",
+    "photo": {
+     "key": "fold-mountains",
+     "caption": "Fig. 1: The Himalayas, photographed from the International Space Station"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Two plates move towards each other at a convergent plate boundary.",
+      "develop": "the plates push into each other, for example the Indian Plate moving into the Eurasian Plate"
+     },
+     {
+      "id": "b",
+      "text": "The layers of rock between the plates are squeezed (compressed).",
+      "develop": "both plates are continental and too light to sink under each other, so the rock between them is squeezed and pushed up"
+     },
+     {
+      "id": "c",
+      "text": "The rock layers buckle and bend into folds.",
+      "develop": "the upfolds (anticlines) form ridges and the downfolds (synclines) form valleys"
+     },
+     {
+      "id": "d",
+      "text": "The folded rock is pushed upwards to form high mountains.",
+      "develop": "this takes millions of years, giving many high peaks and ridges close together"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Fold mountains are very high mountains with snow on top. There are many sharp peaks and deep valleys, as you can see in Fig. 1."
+     },
+     {
+      "level": 1,
+      "text": "Fold mountains form when two plates move towards each other."
+     },
+     {
+      "level": 2,
+      "text": "Fold mountains form when two plates move towards each other. The rock between the two plates gets squeezed."
+     },
+     {
+      "level": 3,
+      "text": "Fold mountains form when two plates move towards each other. The rock between the two plates gets squeezed, so the layers of rock bend and fold."
+     },
+     {
+      "level": 4,
+      "text": "Fold mountains form when two plates move towards each other. The rock between the two plates gets squeezed, so the layers of rock bend and fold. The parts that fold upwards become ridges and the parts that fold downwards become valleys."
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "g28",
+  "subject": "geography",
+  "kind": "points",
+  "cluster": "climate",
+  "title": "Reading photographs: weather and climate",
+  "issue": "Using real photographs and satellite images of haze, a typhoon, a flood, mangroves and forest clearing",
+  "sources": [],
+  "questions": [
+   {
+    "id": "g28-q1",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 3,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe what the air over the city looks like.",
+    "rules": [
+     "Describe only what the photograph shows. A cause of the haze earns nothing."
+    ],
+    "photo": {
+     "key": "city-haze",
+     "caption": "Fig. 1: A view across Singapore on a day in 2015"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "The whole sky is a flat pale grey or white, with no blue sky or sun."
+     },
+     {
+      "id": "b",
+      "text": "Buildings far away look faint and blurred, so you cannot see far."
+     },
+     {
+      "id": "c",
+      "text": "The nearest buildings are still clear and sharp."
+     },
+     {
+      "id": "d",
+      "text": "The greyness is spread evenly through the air, not in separate clouds."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "The photograph shows a city with many tall blocks of flats and some buildings with orange roofs. The haze comes from forest fires."
+     },
+     {
+      "level": 1,
+      "text": "The sky is all grey and you cannot see any blue sky."
+     },
+     {
+      "level": 2,
+      "text": "The sky is all grey and you cannot see any blue sky. The flats in the distance are very blurry, so you cannot see far."
+     },
+     {
+      "level": 3,
+      "text": "The sky is all grey and you cannot see any blue sky. The flats in the distance are very blurry, so you cannot see far. The buildings near the camera are still quite clear, but the ones further back get paler and paler."
+     }
+    ]
+   },
+   {
+    "id": "g28-q2",
+    "skill": "geo_describe",
+    "command": "describe",
+    "marks": 4,
+    "develop": false,
+    "sources": [],
+    "question": "Using Fig. 1, describe the features of the tropical cyclone seen from space.",
+    "rules": [
+     "Describe only what the image shows. A reason, or a feature that cannot be seen (such as wind speed or rainfall), earns nothing."
+    ],
+    "photo": {
+     "key": "typhoon-space",
+     "caption": "Fig. 1: Typhoon Haiyan on 7 November 2013 (satellite image)"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "It is a roughly round mass of thick white cloud."
+     },
+     {
+      "id": "b",
+      "text": "The cloud is arranged in curved bands that spiral around the centre."
+     },
+     {
+      "id": "c",
+      "text": "There is a small, round, cloud-free eye in the very centre."
+     },
+     {
+      "id": "d",
+      "text": "The thickest, brightest cloud forms a ring around the eye."
+     },
+     {
+      "id": "e",
+      "text": "It is over the sea, away from the land."
+     },
+     {
+      "id": "f",
+      "text": "It is very large, much bigger than the islands near it."
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "A tropical cyclone is a very strong storm. It brings strong winds and heavy rain and it can destroy houses."
+     },
+     {
+      "level": 1,
+      "text": "There is a hole in the middle of the storm with no clouds in it."
+     },
+     {
+      "level": 2,
+      "text": "There is a hole in the middle of the storm with no clouds in it. The clouds go round and round the middle in curved bands like a spiral."
+     },
+     {
+      "level": 3,
+      "text": "There is a hole in the middle of the storm with no clouds in it. The clouds go round and round the middle in curved bands like a spiral. Right next to the hole the cloud is the thickest and brightest, making a ring."
+     },
+     {
+      "level": 4,
+      "text": "There is a hole in the middle of the storm with no clouds in it. The clouds go round and round the middle in curved bands like a spiral. Right next to the hole the cloud is the thickest and brightest, making a ring. The whole storm is out over the sea, away from the islands."
+     }
+    ]
+   },
+   {
+    "id": "g28-q3",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Fig. 1 shows a street flooded after heavy rain. Explain how heavy rain can cause floods like this in a city.",
+    "rules": [
+     "Credit the best two reasons only."
+    ],
+    "photo": {
+     "key": "flooded-street",
+     "caption": "Fig. 1: A street in Jakarta, Indonesia, after heavy rain in January 2013"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Roads, pavements and buildings are made of concrete and tar, which water cannot soak through.",
+      "develop": "so a large amount of water runs off the surface all at once and reaches the drains quickly"
+     },
+     {
+      "id": "b",
+      "text": "The drains and canals fill up faster than they can carry the water away.",
+      "develop": "they overflow and the water spreads into the streets"
+     },
+     {
+      "id": "c",
+      "text": "There are few trees and little soil or grass left in the city.",
+      "develop": "so less rain is caught by leaves or soaks into the ground, and it reaches the drains faster"
+     },
+     {
+      "id": "d",
+      "text": "Rubbish can block the drains.",
+      "develop": "so the water cannot drain away and builds up on the road"
+     },
+     {
+      "id": "e",
+      "text": "Rivers flowing through the city overflow their banks.",
+      "develop": "low-lying areas next to the river are flooded first"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "In Fig. 1 the street is covered with brown water and a car is driving through it. People are walking through the water too."
+     },
+     {
+      "level": 1,
+      "text": "In a city most of the ground is covered with concrete and roads, so the rain cannot soak into the ground."
+     },
+     {
+      "level": 2,
+      "text": "In a city most of the ground is covered with concrete and roads, so the rain cannot soak into the ground. Instead, almost all of it flows over the surface and reaches the drains very quickly."
+     },
+     {
+      "level": 3,
+      "text": "In a city most of the ground is covered with concrete and roads, so the rain cannot soak into the ground. Instead, almost all of it flows over the surface and reaches the drains very quickly. The drains also cannot hold so much water."
+     },
+     {
+      "level": 4,
+      "text": "In a city most of the ground is covered with concrete and roads, so the rain cannot soak into the ground. Instead, almost all of it flows over the surface and reaches the drains very quickly. The drains also cannot hold so much water. They fill up and overflow, so the water spills out onto the roads."
+     }
+    ]
+   },
+   {
+    "id": "g28-q4",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Explain how mangroves like those in Fig. 1 can help protect a coast as sea levels rise and storms become stronger.",
+    "rules": [
+     "Credit the best two ways only."
+    ],
+    "photo": {
+     "key": "mangroves",
+     "caption": "Fig. 1: Mangroves in Singapore at low tide"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "The tangled roots and trunks slow down waves and storm surges.",
+      "develop": "so the waves have less energy when they reach the land, and there is less flooding behind the mangroves"
+     },
+     {
+      "id": "b",
+      "text": "The roots hold the mud together.",
+      "develop": "so the coast is not easily worn away (eroded) by waves"
+     },
+     {
+      "id": "c",
+      "text": "The roots trap mud and sediment carried in by the tide.",
+      "develop": "so the mudflat can build up higher over time, keeping pace with a slowly rising sea"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "Mangroves are trees that grow along the coast in muddy places. In Fig. 1 the tide is low and you can see the mud."
+     },
+     {
+      "level": 1,
+      "text": "The roots of the mangroves slow down the waves."
+     },
+     {
+      "level": 2,
+      "text": "The roots of the mangroves slow down the waves. So when a storm comes, the waves are weaker by the time they reach the land and there is less flooding."
+     },
+     {
+      "level": 3,
+      "text": "The roots of the mangroves slow down the waves. So when a storm comes, the waves are weaker by the time they reach the land and there is less flooding. The roots also hold the mud in place."
+     },
+     {
+      "level": 4,
+      "text": "The roots of the mangroves slow down the waves. So when a storm comes, the waves are weaker by the time they reach the land and there is less flooding. The roots also hold the mud in place, so the waves cannot wash the coast away so easily."
+     }
+    ]
+   },
+   {
+    "id": "g28-q5",
+    "skill": "geo_explain",
+    "command": "explain",
+    "marks": 4,
+    "develop": true,
+    "sources": [],
+    "question": "Fig. 1 shows rainforest being cleared. Explain how clearing forest like this can add to climate change.",
+    "rules": [
+     "Credit the best two ways only.",
+     "The greenhouse effect is not a separate way: explaining how the extra gas traps heat may develop a or b."
+    ],
+    "photo": {
+     "key": "deforestation-space",
+     "caption": "Fig. 1: Part of the Amazon rainforest in Rondônia, Brazil, in August 2007 (satellite image)"
+    },
+    "points": [
+     {
+      "id": "a",
+      "text": "Trees take in carbon dioxide from the air for photosynthesis.",
+      "develop": "so when they are cut down, less carbon dioxide is removed from the air"
+     },
+     {
+      "id": "b",
+      "text": "Burning the cleared trees releases carbon dioxide.",
+      "develop": "the carbon stored in the wood goes into the air; smoke from such fires can be seen in Fig. 1"
+     },
+     {
+      "id": "c",
+      "text": "Cleared land is often used to rear cattle, which give off methane.",
+      "develop": "methane is also a greenhouse gas that traps heat"
+     }
+    ],
+    "seeded": [
+     {
+      "level": 0,
+      "text": "In Fig. 1 the forest is dark green and the cleared parts are brown. The clearings are in long straight lines next to the roads."
+     },
+     {
+      "level": 1,
+      "text": "Trees absorb carbon dioxide from the air."
+     },
+     {
+      "level": 2,
+      "text": "Trees absorb carbon dioxide from the air. When the forest is cut down, there are fewer trees left to take the carbon dioxide out of the air."
+     },
+     {
+      "level": 3,
+      "text": "Trees absorb carbon dioxide from the air. When the forest is cut down, there are fewer trees left to take the carbon dioxide out of the air. Also the trees are often burnt, which gives off carbon dioxide."
+     },
+     {
+      "level": 4,
+      "text": "Trees absorb carbon dioxide from the air. When the forest is cut down, there are fewer trees left to take the carbon dioxide out of the air. Also the trees are often burnt, which gives off carbon dioxide, because the carbon that was stored in the wood goes into the air as smoke."
+     }
+    ]
+   }
+  ]
  }
 ]

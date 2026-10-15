@@ -3,7 +3,7 @@
 // (plan_reads) instead of the paid key. The website owns the question, the sources and the scheme,
 // so it can write the whole prompt itself; the plan reader adds nothing. Pure.
 // The prompt text below is the benched one: change a word and the bench (§4) must run again.
-import { maxOf, isPointsQuestion, tableText, diagramByKey, diagramText, rulesFor, tagsFor, SUBJECT_NAME, type QuestionInContext } from './humanities-questions';
+import { maxOf, isPointsQuestion, tableText, diagramByKey, diagramText, photoByKey, photoText, rulesFor, tagsFor, SUBJECT_NAME, type QuestionInContext } from './humanities-questions';
 
 export interface HumanitiesPayload {
   answer: string;
@@ -31,6 +31,7 @@ export function buildHumanitiesPayload(ctx: QuestionInContext, answer: string): 
     sources: [
       ...(q.table ? [{ id: q.table.caption, provenance: '', text: tableText(q.table) }] : []),
       ...(q.diagram && diagramByKey(q.diagram.key) ? [{ id: q.diagram.caption, provenance: '', text: diagramText(diagramByKey(q.diagram.key)!) }] : []),
+      ...(q.photo && photoByKey(q.photo.key) ? [{ id: q.photo.caption, provenance: '', text: photoText(photoByKey(q.photo.key)!) }] : []),
     ],
     points: { max: maxOf(q), develop: !!q.develop, command: q.command ?? 'explain', list: q.points ?? [], rules: q.rules ?? [] },
   };
