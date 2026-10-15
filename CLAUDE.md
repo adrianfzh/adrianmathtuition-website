@@ -57,6 +57,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | 🌙 Nightly builder | [`docs/NIGHTLY-BUILDER.md`](docs/NIGHTLY-BUILDER.md) |
 | Stale-doc sweeper | [`docs/OPS.md`](docs/OPS.md) §🧹 |
 | Other people's exam questions (what may be served) | [`docs/CONTENT-POLICY.md`](docs/CONTENT-POLICY.md) |
+| Is it Sec 1 or Sec 2 work today? (levels of lower-sec questions, twins, sub-skills) | [`docs/LOWER-SEC-SYLLABUS-SPLIT.md`](docs/LOWER-SEC-SYLLABUS-SPLIT.md) |
 | One PART of a question out of syllabus (part marks) — any new surface that reads the bank goes through `lib/part-syllabus.ts` | [`SPEC-PART-SYLLABUS.md`](SPEC-PART-SYLLABUS.md) |
 | Telegram `/ws` worksheet menu | [`SPEC-WORKSHEET-MENU.md`](SPEC-WORKSHEET-MENU.md) |
 | School exam tracker (📝 inside Overview's Exams box: scan a school-marked exam, marks lost by topic, exam vs last exam, parent note) — BUILT 15 Oct | [`SPEC-EXAM-TRACKER.md`](SPEC-EXAM-TRACKER.md) |
