@@ -490,8 +490,11 @@ Inside Core the student can also pick **Short** (1–4 marks) or **Long** (5+ ma
 ## 13. Drawings at their parts — the back-fill (15 Oct 2026)
 
 Every twin had ONE picture above the stem, even when it held a drawing for (a) and another for (b).
-**Status: cut and checked, NOT yet written to the bank — waiting for Adrian's yes (the live-bank
-write needs his own go-ahead).** Looked at: the 964 twins with a picture and 2+ parts (a text sort of the figure descriptions, a
+**Status: DONE 15 Oct 2026 (Adrian: "yes — move the 137 twin pictures to their parts").** 137 rows
+written, all 212 picture links open; checked on the live student practice page (preview student,
+`/app/practice?qid=`) and on a printed worksheet (kiosk/Find renderer). The worksheet renderer now
+prints a part's after-picture (a blank grid) right under the part text with no blank strip before it,
+as the paper PDF already did. Looked at: the 964 twins with a picture and 2+ parts (a text sort of the figure descriptions, a
 gutter cutter over every PNG, then Sonnet eyes on all 204 candidates).
 - **143 need moving** — EM 75, S2 26, S1 19, AM 15, S3_EM 6, S3_AM 2. **137 are ready** (EM 72, S2 25,
   S1 17, AM 15, S3_EM 6, S3_AM 2): 68 a single drawing that only a later part uses (**move** — the

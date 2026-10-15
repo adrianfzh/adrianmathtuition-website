@@ -48,9 +48,13 @@ export function flattenParts(stem: string, parts: Part[] | null): { text: string
         // followed by marks-proportional working space.
         const mk = p.marks ? ` <span class="ws-mk">[${p.marks}]</span>` : '';
         textLines.push(`**${label}** ${p.text}${mk}`);
-        if (p.marks) textLines.push(`<div class="ws-sp" style="height:${spaceMm(p.marks)}mm"></div>`);
+        // a picture AFTER the part (a blank grid for "On the grid, draw …") sits right under its
+        // text — it is the working space, so no blank strip before it (15 Oct 2026)
+        for (const u of partImagePaths(p.image_url_after)) textLines.push(`![diagram](${imgSrc(u)})`);
+        if (p.marks && !partImagePaths(p.image_url_after).length) textLines.push(`<div class="ws-sp" style="height:${spaceMm(p.marks)}mm"></div>`);
+      } else {
+        for (const u of partImagePaths(p.image_url_after)) textLines.push(`![diagram](${imgSrc(u)})`);
       }
-      for (const u of partImagePaths(p.image_url_after)) textLines.push(`![diagram](${imgSrc(u)})`);
       if (p.answer) answers.push(`${label} ${p.answer}`);
       if (p.subparts?.length) walk(p.subparts, label);
     }
