@@ -27,7 +27,7 @@ export function AnswerCard({ row }: { row: HumanitiesListRow }) {
         <span className="text-sm font-semibold text-navy">{skillLabel(row.skill)}</span>
         <span className="text-[12px] text-gray-500 shrink-0">{when(row.created_at)}</span>
       </div>
-      <p className="text-[13px] text-gray-600 mt-0.5 line-clamp-2">{ctx?.question.question ?? row.question_id}</p>
+      <p className="text-[13px] text-gray-600 mt-0.5 line-clamp-2">{ctx?.question.question ?? row.own_title ?? row.question_id}</p>
       <p className={`text-[13px] font-semibold mt-1 ${read ? 'text-amber-800' : 'text-gray-500'}`}>{state}</p>
     </Link>
   );

@@ -4,6 +4,7 @@
 // The reads come back on the plan queue, so every loader that a page or a poll uses first
 // SETTLES what is still in flight (lib/humanities-settle-run) — looking at an answer is what
 // finishes it.
+import type { OwnQuestion } from './humanities-own';
 import { getSupabaseAdmin } from './supabase';
 import type { HumanitiesReport, HumanitiesStatus } from './humanities-report';
 import { settleHumanitiesRun, settleOpenHumanities } from './humanities-settle-run';
@@ -36,13 +37,17 @@ export interface HumanitiesRunRow {
   cost_usd: number | null;
   paper_id: string | null;
   paper_minutes: number | null;
+  /** A question the student brought from school (lib/humanities-own). */
+  own_question?: OwnQuestion | null;
+  /** The list's short form of it: the question only. */
+  own_title?: string | null;
 }
 
 /** The list columns — never the answer text, the report or the reads. */
 export const HUMANITIES_LIST_COLUMNS =
-  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes';
+  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes, own_title:own_question->>question';
 
-export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error'>;
+export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error' | 'own_question'>;
 
 /** A student's own answers, newest first. Home asks for many: "done" ticks and the skill picture need them all. */
 export async function loadHumanitiesFor(identity: string, limit = 30): Promise<HumanitiesListRow[]> {

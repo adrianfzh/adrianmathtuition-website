@@ -1,5 +1,6 @@
 // /api/portal/humanities/transcribe — type out a photographed handwritten answer (15 Oct 2026,
-// lib/humanities-photo.ts). POST { questionId, images: [{ data, mediaType }] } → { text, unsure }.
+// lib/humanities-photo.ts). POST { questionId | questionText, mode?, images: [{ data, mediaType }] } → { text, unsure }.
+// mode 'question' | 'sources' types out a printed question from school, or its sources (lib/humanities-own).
 // The text goes back into the answer box for the student to check; nothing is handed in here and
 // no photo is stored. Anonymous → 401 (the health-check probes this). Door: humanitiesOpen().
 import { NextRequest, NextResponse } from 'next/server';
@@ -8,7 +9,7 @@ import { sessionAccount, portalIdentity } from '@/lib/portal-auth';
 import { humanitiesOpen } from '@/lib/portal-beta';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { questionById } from '@/lib/humanities-questions';
-import { transcribePrompt, parseTranscript, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
+import { transcribePrompt, parseTranscript, isPhotoMode, MAX_PHOTO_PAGES, DAILY_PHOTO_CAP, PHOTO_READ_MODEL } from '@/lib/humanities-photo';
 import { sgtDayStartISO } from '@/lib/sgt';
 import { anthropicText } from '@/lib/claude-models';
 
@@ -25,9 +26,11 @@ export async function POST(req: NextRequest) {
   if (!(await humanitiesOpen())) return NextResponse.json({ error: 'Humanities feedback is not open yet.' }, { status: 403 });
   const sid = portalIdentity(account);
 
-  const body = await req.json().catch(() => ({})) as { questionId?: unknown; images?: unknown };
-  const ctx = questionById(String(body.questionId ?? ''));
-  if (!ctx) return NextResponse.json({ error: 'That question is not in the bank.' }, { status: 400 });
+  const body = await req.json().catch(() => ({})) as { questionId?: unknown; questionText?: unknown; mode?: unknown; images?: unknown };
+  const mode = isPhotoMode(body.mode) ? body.mode : 'answer';
+  const bankQ = body.questionId ? questionById(String(body.questionId))?.question.question : null;
+  const questionText = bankQ ?? String(body.questionText ?? '').slice(0, 1500).trim();
+  if (mode === 'answer' && !questionText) return NextResponse.json({ error: 'That question is not in the bank.' }, { status: 400 });
   const raw = Array.isArray(body.images) ? body.images as { data?: unknown; mediaType?: unknown }[] : [];
   if (raw.length === 0) return NextResponse.json({ error: 'Add a photo of your answer.' }, { status: 400 });
   if (raw.length > MAX_PHOTO_PAGES) return NextResponse.json({ error: `Up to ${MAX_PHOTO_PAGES} photos for one answer.` }, { status: 400 });
@@ -57,7 +60,7 @@ export async function POST(req: NextRequest) {
         role: 'user',
         content: [
           ...images.map(im => ({ type: 'image' as const, source: { type: 'base64' as const, media_type: im.mediaType, data: im.data } })),
-          { type: 'text' as const, text: transcribePrompt(images.length, ctx.question.question) },
+          { type: 'text' as const, text: transcribePrompt(images.length, questionText, mode) },
         ],
       }],
     });
@@ -67,10 +70,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'We could not read the photo just now. Try again in a minute.' }, { status: 503 });
   }
 
-  const out = parseTranscript(reply);
+  const out = parseTranscript(reply, mode);
   await sb.from('portal_event_log').insert({
     identity: sid, kind: KIND,
-    detail: { questionId: ctx.question.id, pages: images.length, ok: out.ok, ...(out.ok ? { words: out.text.split(/\s+/).length, unsure: out.unsure } : {}) },
+    detail: { questionId: body.questionId ? String(body.questionId) : 'own', mode, pages: images.length, ok: out.ok, ...(out.ok ? { words: out.text.split(/\s+/).length, unsure: out.unsure } : {}) },
   }).then(() => {});
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: 422 });
   return NextResponse.json({ text: out.text, unsure: out.unsure });

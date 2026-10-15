@@ -6,6 +6,7 @@
 import { getSupabaseAdmin } from './supabase';
 import { enqueuePlanRead } from './plan-reads';
 import { questionById } from './humanities-questions';
+import { contextForRun, type OwnQuestion } from './humanities-own';
 import { buildHumanitiesPayload, humanitiesPrompt, readContext, payloadMaterial, type HumanitiesPayload } from './humanities-prompt';
 import { parseReadReply, validateRead, validatePointsRead, nextStep, buildReport, buildPointsReport, telegramLine, type PassState, type Checked } from './humanities-settle';
 import { sendTelegram } from './telegram';
@@ -45,14 +46,14 @@ function check(payload: HumanitiesPayload, raw: Record<string, unknown> | null):
 export async function settleHumanitiesRun(runId: string): Promise<void> {
   const sb = getSupabaseAdmin();
   const { data: run } = await sb.from('humanities_runs')
-    .select('id, status, airtable_student_id, student_name, skill, question_id, answer_text, source')
+    .select('id, status, airtable_student_id, student_name, skill, question_id, answer_text, source, own_question')
     .eq('id', runId).maybeSingle();
   if (!run || (run.status !== 'queued' && run.status !== 'marking')) return;
   const { data } = await sb.from('plan_reads').select('id, ref, status, reply, error, meta, created_at')
     .eq('kind', HUMANITIES_READ_KIND).like('ref', `${runId}:%`).order('created_at', { ascending: true });
   const rows = (data ?? []) as ReadRow[];
   if (!rows.length) return;   // the paid path's run (the bot writes it), or a hand-in still being queued
-  const ctx = questionById(String(run.question_id));
+  const ctx = contextForRun({ question_id: String(run.question_id), own_question: run.own_question as OwnQuestion | null }, questionById);
   const payload = ctx ? buildHumanitiesPayload(ctx, String(run.answer_text ?? '')) : null;
 
   // One row a pass (the earliest, should two settlers ever have queued the same one).

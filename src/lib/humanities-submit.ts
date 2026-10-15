@@ -9,6 +9,8 @@ import { questionById, maxOf, SCHEME_VERSION } from './humanities-questions';
 import { buildHumanitiesPayload } from './humanities-prompt';
 import { enqueueHumanitiesRead, HUMANITIES_PLAN_MODEL, type PlanModel } from './humanities-settle-run';
 import { wordCount } from './humanities-report';
+import { ownContext, OWN_PREFIX, type OwnQuestion } from './humanities-own';
+import { randomUUID } from 'crypto';
 
 /** Answers a student may hand in per Singapore day. */
 export const DAILY_HUMANITIES_CAP = 20;
@@ -34,6 +36,8 @@ export interface HumanitiesSubmission {
   paperMinutes?: number | null;
   /** The bench only: which plan reader reads it (to compare the two before one is chosen). */
   model?: PlanModel;
+  /** A question the student brought from school, in place of questionId (lib/humanities-own). */
+  own?: OwnQuestion;
 }
 
 export type SubmitOutcome =
@@ -42,7 +46,8 @@ export type SubmitOutcome =
 
 /** Validate, insert the QUEUED row, queue its two reads. A refusal is a failed row, never a silent queue. */
 export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitOutcome> {
-  const ctx = questionById(String(s.questionId ?? ''));
+  const ownId = s.own ? `${OWN_PREFIX}${randomUUID()}` : null;
+  const ctx = s.own ? ownContext(ownId!, s.own) : questionById(String(s.questionId ?? ''));
   if (!ctx) return { ok: false, status: 400, error: 'That question is not in the bank.' };
   const answer = String(s.answer ?? '').replace(/\r\n?/g, '\n').trim();
   const wc = wordCount(answer);
@@ -71,6 +76,7 @@ export async function submitHumanities(s: HumanitiesSubmission): Promise<SubmitO
     calibration_set: s.calibrationSet ?? null,
     truth_level: s.truthLevel ?? null,
     ...(s.paperId ? { paper_id: s.paperId, paper_minutes: s.paperMinutes ?? null } : {}),
+    ...(s.own ? { own_question: s.own } : {}),
   }).select('id').single();
   if (error || !row) return { ok: false, status: 500, error: error?.message ?? 'Could not save the answer.' };
 

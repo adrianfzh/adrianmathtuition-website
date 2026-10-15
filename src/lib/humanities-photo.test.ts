@@ -23,6 +23,12 @@ describe('parseTranscript', () => {
 });
 
 describe('transcribePrompt', () => {
+  it('reads a printed question or sources, pictures in words', () => {
+    expect(transcribePrompt(1, '', 'question')).toContain('an exam question');
+    const s = transcribePrompt(2, '', 'sources');
+    expect(s).toContain('2 photos show');
+    expect(s).toContain('[Picture:');
+  });
   it('names the page count and carries the question', () => {
     const p = transcribePrompt(2, 'How far do the sources agree?');
     expect(p).toContain('2 photos are');

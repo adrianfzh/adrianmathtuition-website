@@ -256,6 +256,24 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **G — A QUESTION FROM SCHOOL, 15 Oct 2026 (preview only, switch closed).** Adrian: "why don't we just allow
+> student to take a photo and upload the question, or just type it, then their responses > then grade it?"
+> - Home (every subject tab) → **A question from school** → `/app/humanities/own`: the subject, then three boxes —
+>   the question, its sources (shown when the question uses sources), the answer — each typed or filled from photos
+>   (`/api/portal/humanities/transcribe` with `mode: question | sources | answer`; a picture in a source is written as
+>   `[Picture: …]`). The question type is guessed from the wording (`lib/humanities-own-guess.ts guessSkill`) and the
+>   student can change it. `POST /api/portal/humanities/own` → the same reader, cap, report page as our questions.
+> - Stored on the run: `humanities_runs.own_question` (jsonb; migration `humanities_runs_own_question.sql`), with
+>   `question_id = own-<uuid>`. `lib/humanities-own.ts ownContext / contextForRun` builds the same context the
+>   reader and the report take. No model answer, no "more practice" on an own question; "Write it again" refills the form.
+> - Level-marked types only: every source type and Section B (Social Studies), sources + the essay (History), and the
+>   9-mark "To what extent" (Geography). A Geography short question needs its own list of points, which a school
+>   question does not come with.
+> - Checked 15 Oct end to end as the demo student: a printed question, printed sources and a handwriting-font answer,
+>   all by photo → typed out correctly, guessed "Comparison", marked Level 2–3 of 4 in a few minutes with a fair lift.
+>   **Not yet tried on a real school paper or real handwriting, and not benched** (the reader's levels were benched on
+>   our own questions, not on schools' wording).
+
 > **F — A HANDWRITTEN ANSWER BY PHOTO, 15 Oct 2026 (preview only, switch closed).** Adrian: "build let students
 > send photo of a handwritten answer".
 > - Every question page has **"Wrote it on paper? Send a photo"** (up to 4 pages). `/api/portal/humanities/transcribe`

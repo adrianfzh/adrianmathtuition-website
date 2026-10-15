@@ -127,6 +127,18 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         ))}
       </div>
 
+      {!theme && (
+        // A question from school (15 Oct 2026, lib/humanities-own): any subject tab.
+        <Link href={isSs ? '/app/humanities/own' : `/app/humanities/own?s=${subject}`} className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
+          <span className="text-xl" aria-hidden>📝</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-[15px] font-bold text-navy">A question from school</span>
+            <span className="block text-[12px] text-gray-500">Send the question and your answer. Get feedback the same way.</span>
+          </span>
+          <span className="shrink-0 text-gray-400">›</span>
+        </Link>
+      )}
+
       {topicHome && (
         <div className="bg-white rounded-3xl p-4 border border-black/5 shadow-sm">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-gray-400">Practise by topic</h2>

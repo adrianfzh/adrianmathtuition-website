@@ -9,6 +9,7 @@ import { humanitiesOpen, viewingAsStudent, GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } fr
 import { isNotesAuthed } from '@/lib/notes-auth';
 import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
 import { nextOfSkill } from '@/lib/humanities-practice';
+import { contextForRun, isOwnId } from '@/lib/humanities-own';
 import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion, geoEvaluateBand } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard, DiagramCard } from '../sources';
@@ -44,8 +45,11 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const sid = portalIdentity(account);
   const run = await loadHumanitiesRun(id, admin ? { admin: true } : sid);
   if (!run) notFound();
-  const ctx = questionById(run.question_id);
+  const ctx = contextForRun(run, questionById);
   if (!ctx) notFound();
+  // A question the student brought from school: no model answer, no next question, no retry link to our bank.
+  const own = isOwnId(run.question_id);
+  const again = own ? `/app/humanities/own?again=${run.id}` : `/app/humanities/q/${ctx.question.id}`;
 
   const inFlight = run.status === 'queued' || run.status === 'marking';
   const report = run.report;
@@ -60,14 +64,14 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const toAdd = (ctx.question.points ?? []).filter(p => (credited.get(p.id)?.credit ?? 0) === 0).slice(0, 3);
   const segs = report ? segmentAnswer(run.answer_text, claims) : [{ text: run.answer_text, claim: null }];
   const usedTags = (points ? POINT_TAGS : tagsFor(run.skill)).filter(t => claims.some(c => c.tag === t.key));
-  const model = modelAnswer(ctx.question);
+  const model = own ? null : modelAnswer(ctx.question);
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
   // A case study is a run of five: offer the next one.
   const next = ctx.set.background ? ctx.set.questions[ctx.set.questions.findIndex(q => q.id === ctx.question.id) + 1] : undefined;
   // Practice by skill: the next question of this skill the student has not answered.
   const mine = admin ? [] : await loadHumanitiesFor(sid, 500);
-  const more = admin ? null : nextOfSkill(ctx.set.subject, run.skill, new Set(mine.map(r => r.question_id)), ctx.question.id);
+  const more = admin || own ? null : nextOfSkill(ctx.set.subject, run.skill, new Set(mine.map(r => r.question_id)), ctx.question.id);
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
@@ -84,7 +88,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
         </p>
       )}
       {!report && run.status === 'failed' && (
-        <Link href={`/app/humanities/q/${ctx.question.id}`} className="inline-block text-sm font-semibold text-amber-800">Try this question again ›</Link>
+        <Link href={again} className="inline-block text-sm font-semibold text-amber-800">Try this question again ›</Link>
       )}
 
       {report && (
@@ -231,7 +235,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
       )}
 
       {report && (
-        <Link href={`/app/humanities/q/${ctx.question.id}`} className="block text-center bg-amber-600 text-white rounded-3xl px-4 py-3.5 font-semibold hover:brightness-105 active:scale-[0.98] transition">
+        <Link href={again} className="block text-center bg-amber-600 text-white rounded-3xl px-4 py-3.5 font-semibold hover:brightness-105 active:scale-[0.98] transition">
           Write it again
         </Link>
       )}

@@ -14,7 +14,29 @@ export const PHOTO_READ_MODEL = process.env.HUMANITIES_PHOTO_MODEL || SONNET_55;
 
 export const UNREADABLE = 'UNREADABLE';
 
-export function transcribePrompt(pages: number, question: string): string {
+export type PhotoMode = 'answer' | 'question' | 'sources';
+export const isPhotoMode = (m: unknown): m is PhotoMode => m === 'answer' || m === 'question' || m === 'sources';
+
+/** A printed question or its sources (a question brought from school, lib/humanities-own). */
+function printedPrompt(pages: number, mode: 'question' | 'sources'): string {
+  const what = mode === 'question' ? 'an exam question' : 'the sources or extracts that go with an exam question';
+  return [
+    `The ${pages === 1 ? 'photo shows' : `${pages} photos show`} ${what}, from a secondary-school Humanities paper.`,
+    '',
+    mode === 'question'
+      ? 'Type out the question exactly as printed: its words, its number and its marks (such as [6]). If the photo shows several questions, type them all, each on its own line.'
+      : 'Type out every source or extract exactly as printed, in order, each starting with its label (Source A, Extract 1 …) and the line that says where it comes from.',
+    '- Keep the printed words. Do not shorten, explain or add anything.',
+    '- For a picture (a cartoon, poster, photograph, chart or map), write [Picture: …] and describe everything shown in it, including every word written in it.',
+    '- Leave out handwriting, page numbers and the instructions on the cover.',
+    `- If there is nothing printed to read, reply with the single word ${UNREADABLE}.`,
+    '',
+    'Reply with the typed-out text only, no heading and no comment.',
+  ].join('\n');
+}
+
+export function transcribePrompt(pages: number, question: string, mode: PhotoMode = 'answer'): string {
+  if (mode !== 'answer') return printedPrompt(pages, mode);
   return [
     `The ${pages === 1 ? 'photo is' : `${pages} photos are`} a secondary-school student's handwritten answer to this question:`,
     '',
@@ -34,14 +56,15 @@ export function transcribePrompt(pages: number, question: string): string {
 export type TranscriptOutcome = { ok: true; text: string; unsure: number } | { ok: false; error: string };
 
 /** The reply → the text for the answer box, or the reason there is none. */
-export function parseTranscript(reply: string): TranscriptOutcome {
+export function parseTranscript(reply: string, mode: PhotoMode = 'answer'): TranscriptOutcome {
   const text = String(reply ?? '')
     .replace(/\r\n?/g, '\n')
     .replace(/^```[a-z]*\n?|\n?```$/g, '')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   if (!text || text.replace(/[^A-Za-z]/g, '').toUpperCase() === UNREADABLE) {
-    return { ok: false, error: 'We could not find a handwritten answer in that photo. Take it again, close up, in good light.' };
+    const what = mode === 'answer' ? 'a handwritten answer' : mode === 'question' ? 'a printed question' : 'printed sources';
+    return { ok: false, error: `We could not find ${what} in that photo. Take it again, close up, in good light.` };
   }
   const words = text.split(/\s+/).filter(Boolean);
   const unsure = words.filter(w => w.includes('[?]')).length;
