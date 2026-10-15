@@ -225,6 +225,11 @@ answer it? Possible to make it interactive like that?"*
   question. The answer is the normal Ask solver (same stream, quota, Questions log).
 - **Back**: a "‹ Back to the clip" bar above the chat → `/app/lesson/<slug>?at=<stop>`; the clip
   opens at that stop (the slider's numbering) and plays on.
+- **On a laptop** (screen ≥ 1024 px wide; Adrian, 15 Oct 2026: *"on a laptop, show the answer beside
+  the clip; keep the phone as it is"*): no new page — the chat opens in a panel beside the clip
+  (`clip-ask-panel.tsx`, same solver, text only), the clip slides left to make room and stays
+  paused; a later question at another step carries that step's board. ✕ closes it. Phones keep
+  the Ask page and the back button. `ask-look.mjs --laptop` checks it.
 - **Switch**: `CLIP_ASK_OPEN_TO_STUDENTS` (`lib/portal-beta.ts`, `docs/SWITCHES.md`). Clips themselves
   are still admin-only for students.
 - **Check it**: `node scripts/clips/ask-look.mjs [slug] [--stop N] [--ask K | --own]` against

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // 💬 "Ask about this step" — the round trip on a phone-sized browser (SPEC-CLIP-PIPELINE.md §2b).
 //
-//   node scripts/clips/ask-look.mjs [slug] [--stop 5] [--ask 0 | --own] [--base http://localhost:3210] [--out DIR]
+//   node scripts/clips/ask-look.mjs [slug] [--stop 5] [--ask 0 | --own] [--laptop] [--base http://localhost:3210] [--out DIR]
 //
 // Server: `node scripts/clips/serve-prod.mjs build` then `… start` (a local production build whose
 // student login works — the pulled .env.production.local has its secrets masked).
@@ -80,7 +80,9 @@ const browser = await puppeteer.default.launch({
 const out = { slug, stop: STOP, errors: [] };
 try {
   const page = await browser.newPage();
-  await page.setViewport({ width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  await page.setViewport(args.laptop
+    ? { width: 1280, height: 800, deviceScaleFactor: 1, isMobile: false, hasTouch: false }
+    : { width: 390, height: 844, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await page.setCookie({ name: 'admin_session', value: adminToken(), url: BASE });
   await page.setCookie(...(await studentCookies(String(args.student || 'portal-teste@example.com'))));
   page.on('pageerror', (e) => out.errors.push(String(e)));
@@ -118,6 +120,29 @@ try {
   if (args.debug) {
     await page.evaluateOnNewDocument(() => { console.log('[ss at load]', sessionStorage.getItem('am_ask_from_clip')?.slice(0, 80)); });
   }
+  if (args.laptop) {
+    // A laptop: the chat opens BESIDE the clip (clip-ask-panel.tsx), no new page.
+    await pick.click();
+    await sleep(1500);
+    out.stayedOnClip = page.url().includes('/app/lesson/');
+    out.panel = await page.evaluate(() => {
+      const p = document.querySelector('[data-clip-ask-panel]')?.getBoundingClientRect();
+      const b = document.querySelector('.lsn-stage')?.getBoundingClientRect();
+      if (!p) return null;
+      return { panelLeft: Math.round(p.left), panelRight: Math.round(p.right), boardRight: b ? Math.round(b.right) : null, clearOfBoard: b ? b.right <= p.left : null };
+    });
+    let last = '', stable = 0;
+    for (let i = 0; i < 90 && stable < 3; i++) {
+      await sleep(1000);
+      const t = await page.evaluate(() => document.querySelector('[data-clip-ask-panel]')?.innerText ?? '');
+      const streaming = await page.$('[data-clip-ask-panel] .stream-caret');
+      stable = t === last && !streaming && t.length > 120 ? stable + 1 : 0;
+      last = t;
+    }
+    out.chatText = last.slice(0, 3000);
+    await page.screenshot({ path: path.join(OUT, '3-answer.png') });
+    throw Object.assign(new Error('laptop done'), { laptopDone: true });
+  }
   await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60_000 }).catch(() => {}), pick.click()]);
   await sleep(1500);
   out.askUrl = page.url();
@@ -142,7 +167,7 @@ try {
   out.backAtStep = await page.$eval('[data-step]', el => Number(el.getAttribute('data-step'))).catch(() => null);
   await page.screenshot({ path: path.join(OUT, '4-back.png') });
 } catch (e) {
-  out.errors.push(String(e));
+  if (!e.laptopDone) out.errors.push(String(e));
 } finally {
   await browser.close();
 }

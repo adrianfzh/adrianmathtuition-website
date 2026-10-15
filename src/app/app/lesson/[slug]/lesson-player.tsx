@@ -74,6 +74,7 @@ import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
 import { checkTypedAnswer } from '@/lib/notebook';
 import { boardTexAt, clipContext, readyAsks, writeClipAsk } from '@/lib/clip-ask';
+import ClipAskPanel, { type ClipAskPanelHandle } from './clip-ask-panel';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
@@ -1447,7 +1448,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1485,6 +1486,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   startAt?: number;
   /** A clip: its question as written above the working, sent to Ask with the board. */
   askIntro?: string | null;
+  /** A clip: the level the Ask solver answers at on a laptop ('AM', 'EM', …), or null. */
+  askLevel?: string | null;
 }) {
   const theme = normalizeTheme(themeProp);
   // ?at= (back from Ask) opens the clip at that stop; out of range = the start.
@@ -1750,14 +1753,29 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     if (canPause) setPaused(true);
     setAskOpenAt(stopAt);
   };
+  // A laptop (Adrian, 15 Oct 2026: "on a laptop, show the answer beside the clip; keep the phone as
+  // it is"): the chat opens in a panel beside the clip (clip-ask-panel.tsx) and the clip slides left
+  // to make room. A phone goes to the Ask page.
+  const [sideOpen, setSideOpen] = useState(false);
+  const panelRef = useRef<ClipAskPanelHandle>(null);
+  const pendingSideAsk = useRef<Parameters<ClipAskPanelHandle['ask']>[0] | null>(null);
+  useEffect(() => {
+    if (!sideOpen || !pendingSideAsk.current || !panelRef.current) return;
+    panelRef.current.ask(pendingSideAsk.current);
+    pendingSideAsk.current = null;
+  });
   const goAsk = (question: string | null) => {
     if (!hasBeats(scene)) return;
-    writeClipAsk({
-      context: clipContext({ title, topic, intro: askIntro, lines: boardTexAt(scene, step), say: scene.beats[step]?.say ?? '' }),
-      label: `${title} · step ${stopAt + 1} of ${stops.length}`,
-      question,
-      backHref: `/app/lesson/${slug}?at=${stopAt}`,
-    });
+    const context = clipContext({ title, topic, intro: askIntro, lines: boardTexAt(scene, step), say: scene.beats[step]?.say ?? '' });
+    const label = `${title} · step ${stopAt + 1} of ${stops.length}`;
+    if (window.matchMedia('(min-width: 1024px)').matches) {
+      const req = { context, stopKey: `${sceneIdx}:${step}`, label, question };
+      if (sideOpen && panelRef.current) panelRef.current.ask(req);
+      else { pendingSideAsk.current = req; setSideOpen(true); }
+      setAskOpenAt(null);
+      return;
+    }
+    writeClipAsk({ context, label, question, backHref: `/app/lesson/${slug}?at=${stopAt}` });
     router.push('/app/ask?from=clip');
   };
 
@@ -1847,7 +1865,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   useFitToBoard(cardRef, themed, `${sceneIdx}:${step}:${faceReady}:${done}`);
 
   return (
-    <div className="max-w-lg mx-auto pb-24 sm:pb-6" data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
+    <>
+    <div className={`max-w-lg mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${sideOpen ? 'lg:-translate-x-[200px]' : ''}`} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
       data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
       <style>{PLAYER_CSS}</style>
       {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
@@ -2105,6 +2124,11 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         </div>
       )}
     </div>
+    {/* Outside the sliding column: a fixed panel inside a transformed box would move with it. */}
+    {clip && askAbout && sideOpen && (
+      <ClipAskPanel ref={panelRef} botLevel={askLevel} onClose={() => setSideOpen(false)} />
+    )}
+    </>
   );
 }
 
