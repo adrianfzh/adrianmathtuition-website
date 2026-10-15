@@ -47,6 +47,7 @@
       "beats": [
         {
           "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+          "asks": ["What does log base 3 mean?"],
           "do": [
             { "do": "write", "step": 0 }
           ],
@@ -55,6 +56,7 @@
         },
         {
           "say": "All three logs have base three. Same base, so we can combine them.",
+          "asks": ["Why must the bases be the same?", "What if the bases are different?"],
           "do": [
             { "do": "mark", "kind": "underline", "token": ["a", "b", "c"] }
           ],
@@ -63,6 +65,7 @@
         },
         {
           "say": "Plus means multiply. Five times six is thirty, so the first two make log base three of thirty.",
+          "asks": ["Why does plus become multiply?", "Which law is this?"],
           "do": [
             { "do": "write", "step": 1, "on": "Five times six" },
             {
@@ -77,6 +80,7 @@
         },
         {
           "say": "Only added logs combine like this. Log five times log six is not log thirty.",
+          "asks": ["Why is log 5 × log 6 not log 30?"],
           "do": [
             { "do": "mark", "kind": "circle", "token": "ab", "on": "not log thirty" }
           ],
@@ -85,6 +89,7 @@
         },
         {
           "say": "Minus means divide. So we get log base three of thirty over ten.",
+          "asks": ["Why does minus become divide?"],
           "do": [
             { "do": "write", "step": 2, "on": "So we get" },
             {
@@ -99,6 +104,7 @@
         },
         {
           "say": "Thirty over ten is three. That leaves log base three of three.",
+          "asks": ["Why simplify 30 over 10 first?"],
           "do": [
             { "do": "write", "step": 3, "on": "That leaves" }
           ],
@@ -107,6 +113,7 @@
         },
         {
           "say": "The base matches the number inside. So the answer is one.",
+          "asks": ["Why is log₃ 3 = 1?", "What is log₃ 9?"],
           "do": [
             { "do": "note", "text": "$\\log_a a = 1$", "near": "l3" },
             { "do": "write", "step": 4, "on": "So the answer" },

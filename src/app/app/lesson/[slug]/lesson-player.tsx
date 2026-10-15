@@ -68,10 +68,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
 import { checkTypedAnswer } from '@/lib/notebook';
+import { boardTexAt, clipContext, readyAsks, writeClipAsk } from '@/lib/clip-ask';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
@@ -1441,7 +1443,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc }: {
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1473,10 +1475,26 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   /** 🎬 The tutor's cheer clip (lib/lesson-extras): plays over the board after a correct quick check,
    *  and the timed pacings wait for it. Unset = no element, no change. */
   cheerSrc?: string;
+  /** 💬 A clip: show "Ask about this step" under the controls (lib/clip-ask, CLIP_ASK_OPEN_TO_STUDENTS). */
+  askAbout?: boolean;
+  /** A clip: open at this stop (one per beat, as the slider counts) — the way back from Ask. */
+  startAt?: number;
+  /** A clip: its question as written above the working, sent to Ask with the board. */
+  askIntro?: string | null;
 }) {
   const theme = normalizeTheme(themeProp);
-  const [sceneIdx, setSceneIdx] = useState(0);
-  const [step, setStep] = useState(0);
+  // ?at= (back from Ask) opens the clip at that stop; out of range = the start.
+  const [startStop] = useState(() => {
+    let n = startAt;
+    for (let si = 0; si < scenes.length; si++) {
+      const c = sceneStepCount(scenes[si]);
+      if (n < c) return { si, k: n };
+      n -= c;
+    }
+    return { si: 0, k: 0 };
+  });
+  const [sceneIdx, setSceneIdx] = useState(startStop.si);
+  const [step, setStep] = useState(startStop.k);
   const [done, setDone] = useState(false);
   const [auto, setAuto] = useState(startAuto);
   const [paused, setPaused] = useState(false);
@@ -1706,6 +1724,39 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const onContinue = () => { setPaused(false); tapAdvance(); };
   const onBack = () => { setPaused(false); back(); };
 
+  // 💬 Ask about this step (lib/clip-ask): the first tap pauses the clip and opens the ready
+  // questions; a question (or "my own") hands the board so far + this beat's line to /app/ask,
+  // whose "‹ Back to the clip" link comes back here at the same stop (?at=).
+  const router = useRouter();
+  const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
+  const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
+  const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
+  // The questions belong to the stop they were opened on: moving on (Continue, the slider) or
+  // resuming (a tap on the board) puts them away.
+  const [askOpenAt, setAskOpenAt] = useState<number | null>(null);
+  const askOpen = askOpenAt === stopAt && (paused || !canPause);
+  // On a phone the questions open below the fold, under the bottom menu bar: bring them up
+  // (scroll-margin keeps them clear of the bar).
+  const askPanelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (askOpen) askPanelRef.current?.scrollIntoView({ block: 'end', behavior: reduced ? 'auto' : 'smooth' });
+  }, [askOpen, reduced]);
+  const openAsk = () => {
+    if (askOpen) { setAskOpenAt(null); return; }
+    if (canPause) setPaused(true);
+    setAskOpenAt(stopAt);
+  };
+  const goAsk = (question: string | null) => {
+    if (!hasBeats(scene)) return;
+    writeClipAsk({
+      context: clipContext({ title, topic, intro: askIntro, lines: boardTexAt(scene, step), say: scene.beats[step]?.say ?? '' }),
+      label: `${title} · step ${stopAt + 1} of ${stops.length}`,
+      question,
+      backHref: `/app/lesson/${slug}?at=${stopAt}`,
+    });
+    router.push('/app/ask?from=clip');
+  };
+
   /** The YouTube gesture: a glyph in the middle of the board, gone in half a second. */
   const flashGesture = useCallback((glyph: string) => {
     gestureSeq.current += 1;
@@ -1868,8 +1919,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           students to go to any parts they want on the clip"). One stop per beat; landing on a
           beat shows the board up to it and the voice starts that beat. */}
       {clip && (() => {
-        const stops = scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const));
-        const at = done ? stops.length - 1 : Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
+        const at = done ? stops.length - 1 : stopAt;
         return (
           <div className="lsn-scrub mb-3 px-0.5 flex items-center gap-2">
             <input type="range" min={0} max={Math.max(0, stops.length - 1)} step={1} value={at}
@@ -2020,6 +2070,33 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             className="flex-1 h-12 bg-navy text-[hsl(45,100%,96%)] rounded-2xl font-semibold text-[15px] disabled:opacity-40 active:scale-[0.99] motion-safe:transition-transform">
             {gated ? 'Answer to continue' : atEnd ? 'Finish' : 'Continue'}
           </button>
+        </div>
+      )}
+
+      {/* 💬 Ask about this step: one tap pauses and offers this beat's ready questions. */}
+      {canAsk && (
+        <div className="mt-3" data-clip-ask>
+          <button type="button" onClick={openAsk} aria-expanded={askOpen}
+            className={`w-full h-11 rounded-2xl border text-[14px] font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.99] motion-safe:transition ${askOpen ? 'bg-amber-50 border-amber-300 text-navy' : 'bg-white border-slate-200 text-navy hover:bg-slate-50'}`}>
+            <span aria-hidden>💬</span> Ask about this step
+          </button>
+          {askOpen && (
+            <div ref={askPanelRef} className="mt-2 bg-white rounded-2xl border border-slate-200 p-3 lsn-rise scroll-mb-[calc(84px+env(safe-area-inset-bottom))]" style={{ animationDuration: '220ms' }} data-clip-asks>
+              <p className="text-[12px] font-semibold text-slate-500 mb-2">Tap a question, or ask your own.</p>
+              <div className="flex flex-col gap-1.5">
+                {readyAsks(scene, step).map(q => (
+                  <button key={q} type="button" onClick={() => goAsk(q)}
+                    className="text-left rounded-xl bg-[hsl(45,60%,97%)] border border-black/5 px-3 py-2.5 text-[14px] text-navy hover:bg-amber-50 active:scale-[0.99] motion-safe:transition">
+                    {q}
+                  </button>
+                ))}
+                <button type="button" onClick={() => goAsk(null)}
+                  className="text-left rounded-xl px-3 py-2.5 text-[14px] font-semibold text-slate-600 hover:text-navy">
+                  ✏️ Type my own question
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

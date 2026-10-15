@@ -190,7 +190,7 @@ instructions, so the next topic starts with them):
    m = −n and c = ln A; the second board reads m and c off the line. Plans may now have two boards
    (`boards`, each line's `board`, each beat's `board`).
 7. *"Can students interrupt and ask why ln is used when e is involved? And a model answer it?"* —
-   the §2b "Ask about this step" idea; proposed as its own build.
+   the §2b "Ask about this step" idea → BUILT 15 Oct 2026, §8b.
 8. *"Able to generate these solution clips when a student uploads any question? And retain such
    quality?"* — §5 step 2 (question clips); proposed as its own build.
 
@@ -202,3 +202,29 @@ taller than the phone screen. The current numbers are in `data/clip-runs/<slug>/
 table above is the first cut). Extra voice for the re-cut: about 3,000 characters, under US$0.35.
 New in the player: a clip board that would run below the screen scales its maths down to fit
 (`fitClipBoard`, never under 70 %); boards carrying laws set their lines closer.
+
+## 8b. "Ask about this step" — BUILT 15 Oct 2026 (admin + preview student)
+
+Adrian, 15 Oct 2026: *"Can students interrupt and ask why ln is used when e is involved? And a model
+answer it? Possible to make it interactive like that?"*
+
+- **Under every clip** (below Continue) one button, **💬 Ask about this step**. A tap pauses the clip
+  and opens the beat's ready questions plus **✏️ Type my own question**.
+- **Ready questions** are written per beat in the lesson JSON (`beats[].asks`, ≤ 3, a student's own
+  words, never spoken or drawn). All 7 Logarithms clips have them on every beat; a beat without
+  `asks` offers "Why this step?" / "Explain this step another way". The clip writer should add `asks`
+  to every beat of new clips (a test checks the 7: `src/lib/clip-ask.test.ts`).
+- **The hand-over** (`lib/clip-ask.ts`): the clip writes the context to sessionStorage and opens
+  `/app/ask`. Ask starts a FRESH chat (never the restored one), sends the tapped question at once
+  (or focuses the box for "my own"), with the context in front of the FIRST question only: the
+  clip's title and topic, its question (`intro`), the board lines written so far (TeX, only the
+  written tokens), and the beat's spoken line ("L N" → "ln"). The bubble shows only the student's
+  question. The answer is the normal Ask solver (same stream, quota, Questions log).
+- **Back**: a "‹ Back to the clip" bar above the chat → `/app/lesson/<slug>?at=<stop>`; the clip
+  opens at that stop (the slider's numbering) and plays on.
+- **Switch**: `CLIP_ASK_OPEN_TO_STUDENTS` (`lib/portal-beta.ts`, `docs/SWITCHES.md`). Clips themselves
+  are still admin-only for students.
+- **Check it**: `node scripts/clips/ask-look.mjs [slug] [--stop N] [--ask K | --own]` against
+  `next start -p 3210` — opens the clip at the stop, taps the button and a question, waits for the
+  answer, taps back, prints JSON + pictures.
+

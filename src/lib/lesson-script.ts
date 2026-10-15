@@ -261,6 +261,9 @@ export interface Beat {
   audio?: string;
   /** Optional timing sidecar for the clip (same contract as NarrationFields.timing). */
   timing?: string;
+  /** A clip's ready questions for this beat (≤ 3, a student's own words) — the chips under
+   *  "Ask about this step" (lib/clip-ask, SPEC-CLIP-PIPELINE §2b). Never spoken, never drawn. */
+  asks?: string[];
 }
 
 /** Every scene may carry beats instead of narration. */

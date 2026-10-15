@@ -50,6 +50,7 @@
       "beats": [
         {
           "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+          "asks": ["Where do I start?"],
           "do": [
             { "do": "write", "step": 0 }
           ],
@@ -58,6 +59,7 @@
         },
         {
           "say": "The plan: get one log on each side, then compare what is inside.",
+          "asks": ["Why one log on each side?"],
           "do": [
             { "do": "note", "text": "Aim: one log each side, then compare", "near": "two" }
           ],
@@ -66,6 +68,7 @@
         },
         {
           "say": "Move minus log base three of X to the left. It becomes plus log base three of X.",
+          "asks": ["Why does it become plus?"],
           "do": [
             { "do": "highlight", "token": "l2" },
             { "do": "write", "step": 1, "on": "It becomes plus" }
@@ -75,6 +78,7 @@
         },
         {
           "say": "Add Power joins the two logs: log of X times the bracket X minus eight.",
+          "asks": ["What is the Add Power law?"],
           "do": [
             { "do": "write", "token": "comb" },
             { "do": "note", "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$", "near": "comb", "on": "the bracket" }
@@ -84,6 +88,7 @@
         },
         {
           "say": "Write two as log base three of nine. Three squared is nine.",
+          "asks": ["Why write 2 as log₃ 9?"],
           "do": [
             { "do": "write", "token": "nine", "on": "log base three of nine" },
             { "do": "note", "text": "$2 = \\log_3 3^2 = \\log_3 9$", "near": "nine", "on": "Three squared" }
@@ -93,6 +98,7 @@
         },
         {
           "say": "One log each side: drop the logs. X times the bracket equals nine, so X squared minus eight X minus nine equals zero.",
+          "asks": ["Why can I drop the logs?"],
           "do": [
             { "do": "mark", "kind": "underline", "token": ["comb", "nine"], "on": "One log each side" },
             { "do": "write", "step": 3, "on": "X squared minus" }
@@ -102,6 +108,7 @@
         },
         {
           "say": "Factorise. X minus nine, times X plus one, equals zero.",
+          "asks": ["How do I factorise this?"],
           "do": [
             { "do": "write", "step": 4, "on": "X minus nine" }
           ],
@@ -110,6 +117,7 @@
         },
         {
           "say": "So X equals nine or X equals minus one.",
+          "asks": ["Why are there two answers?"],
           "do": [
             { "do": "write", "token": "ans", "on": "X equals nine" },
             { "do": "write", "token": "rej", "on": "minus one" }
@@ -119,6 +127,7 @@
         },
         {
           "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
+          "asks": ["Why reject x = −1?", "Why check every root?"],
           "do": [
             { "do": "mark", "kind": "circle", "token": "rej", "on": "X equals minus one" }
           ],
@@ -127,6 +136,7 @@
         },
         {
           "say": "The answer is X equals nine.",
+          "asks": ["Why not x = −1 as well?"],
           "do": [
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine" }
           ],

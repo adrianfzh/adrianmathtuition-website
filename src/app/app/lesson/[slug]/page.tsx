@@ -11,8 +11,9 @@
 // gate (and the matching `lessonsVisible` prop on the practice page) to
 // release. The /app layout still gates anonymous visitors to /login.
 import { notFound, redirect } from 'next/navigation';
-import { fullPortalVisible, learnStepVisible, lessonVideoExtrasVisible } from '@/lib/portal-beta';
-import { currentAccount, portalIdentity } from '@/lib/portal-auth';
+import { clipAskVisible, fullPortalVisible, learnStepVisible, lessonVideoExtrasVisible } from '@/lib/portal-beta';
+import { parseResumeStop } from '@/lib/clip-ask';
+import { currentAccount, portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { lessonExtras } from '@/lib/lesson-extras';
 import { learnStepForClip } from '@/lib/learn-steps';
 import { lessonBySlug } from '@/lib/lesson-catalog';
@@ -27,8 +28,12 @@ import LessonWithIntro from './lesson-intro';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function LessonPage({ params, searchParams }: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { slug } = await params;
+  const sp = await searchParams;
   // 🎬 A lesson with video extras (lib/lesson-extras) also opens for the preview
   // student while its switch is off; every other lesson keeps the admin-only gate.
   const extras = lessonExtras(slug);
@@ -66,6 +71,14 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
   const step = script.kind === 'clip' && (await learnStepVisible()) ? learnStepForClip(slug) : null;
   const toStep = step ? { backHref: `/app/learn-step/${step.slug}?seen=clip`, practiceHref: `/app/learn-step/${step.slug}?seen=clip`, practiceLabel: 'See an example' } : {};
 
+  // 💬 "Ask about this step" (lib/clip-ask): a clip shows the button while its switch allows,
+  // and ?at=<stop> (the way back from Ask) resumes the clip at that step.
+  // sessionAccount (never currentAccount): Adrian's admin cookie has no student account, and
+  // currentAccount would bounce it to /login.
+  const askAccount = script.kind === 'clip' ? await sessionAccount() : null;
+  const askAbout = script.kind === 'clip' && (await clipAskVisible(askAccount ? portalIdentity(askAccount) : null));
+  const startAt = script.kind === 'clip' ? parseResumeStop(sp.at) : 0;
+
   const player = {
     slug: script.slug,
     title: script.title,
@@ -74,10 +87,16 @@ export default async function LessonPage({ params }: { params: Promise<{ slug: s
     theme: script.theme ?? 'slide',
     scenes: buildPlayScenes(script, rows),
     // A clip is one concept in a minute: it opens playing, like a video.
-    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.' } : {}),
+    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes) } : {}),
     ...toStep,
   };
   return extras && extrasOn
     ? <LessonWithIntro intro={extras.intro} cheer={extras.cheer} {...player} />
     : <LessonPlayer {...player} />;
+}
+
+/** The clip's question as written above the working (its first scene's intro), for Ask. */
+function clipIntro(scenes: { type: string; intro?: string }[]): string | null {
+  const s = scenes.find(sc => sc.type === 'equation-steps' && sc.intro);
+  return s?.intro ?? null;
 }

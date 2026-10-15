@@ -44,12 +44,14 @@
       "beats": [
         {
           "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
+          "asks": ["What does k stand for?", "What is P₀?"],
           "do": [],
           "audio": "/lessons/growth-and-decay-am/scene-01-b1.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b1.timing.json"
         },
         {
           "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
+          "asks": ["Why is t = 0 at the start?", "Why is P₀ = 100?"],
           "do": [
             { "do": "write", "token": "t0", "on": "T equals zero" },
             { "do": "write", "token": "p0", "on": "P nought is" }
@@ -59,6 +61,7 @@
         },
         {
           "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred, not two.",
+          "asks": ["Why is P 200, not 2?", "What does doubling mean here?"],
           "do": [
             { "do": "write", "token": "dbl", "on": "P is two hundred" },
             { "do": "mark", "kind": "circle", "token": "dbl", "on": "not two" }
@@ -68,6 +71,7 @@
         },
         {
           "say": "Two hundred equals one hundred E to the power seven point five K. The plan: get the E part alone, then take L N.",
+          "asks": ["Why get the e part alone first?", "What does ln mean?"],
           "do": [
             { "do": "write", "token": "rhs", "on": "equals one hundred" }
           ],
@@ -76,6 +80,7 @@
         },
         {
           "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
+          "asks": ["Why divide by 100 first?", "Can I take ln straight away?"],
           "do": [
             { "do": "write", "step": 2, "on": "E to the power" }
           ],
@@ -84,6 +89,7 @@
         },
         {
           "say": "E is involved, so take L N of both sides.",
+          "asks": ["Why is ln used when e is involved?", "Can I use lg instead?", "What does ln do?"],
           "do": [
             { "do": "write", "step": 3, "on": "take L N" }
           ],
@@ -92,6 +98,7 @@
         },
         {
           "say": "L N E is one, so the power comes down. Seven point five K equals L N two.",
+          "asks": ["Why is ln e = 1?", "How does the power come down?"],
           "do": [
             { "do": "note", "text": "Take ln: $\\ln e^{x} = x$", "near": "lnboth" },
             { "do": "write", "token": "ln", "on": "Seven point five K" }
@@ -101,6 +108,7 @@
         },
         {
           "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
+          "asks": ["How do I key this in?", "How many decimal places?"],
           "do": [
             { "do": "write", "token": "ans", "on": "K equals" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "zero point zero" }

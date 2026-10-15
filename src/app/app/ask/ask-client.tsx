@@ -11,6 +11,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import Link from 'next/link';
+import { clipQuestion, takeClipAsk } from '@/lib/clip-ask';
 import {
   BOT_API_BASE,
   type HistoryEntry,
@@ -206,11 +208,34 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
     getChatId: () => sessionIdRef.current,
   }), []);
 
+  /* ── 💬 Arrived from a clip's "Ask about this step" (lib/clip-ask) ──────────
+     A fresh conversation (never the restored one): the board so far + the
+     beat's line ride in front of the FIRST question to the solver, the bubble
+     shows only the student's question, and "‹ Back to the clip" returns to the
+     same step. A tapped ready question is sent at once; "my own" focuses the box. */
+  const [fromClip, setFromClip] = useState<{ label: string; backHref: string } | null>(null);
+  const clipContextRef = useRef<string | null>(null);
+  const clipCheckedRef = useRef(false);
+  const pendingClipQuestionRef = useRef<string | null>(null);
+  const fromClipAtMountRef = useRef(false);
+  // Declared BEFORE the restore effect: effects run in order, so restore sees the flag.
+  useEffect(() => {
+    if (clipCheckedRef.current) return;
+    clipCheckedRef.current = true;
+    const h = takeClipAsk();
+    if (!h) return;
+    fromClipAtMountRef.current = true;
+    clipContextRef.current = h.context;
+    pendingClipQuestionRef.current = h.question;
+    setFromClip({ label: h.label, backHref: h.backHref });
+  }, []);
+
   /* ── Restore the previous conversation once on mount (7-day window) ── */
   const restoredOnceRef = useRef(false);
   useEffect(() => {
     if (restoredOnceRef.current) return;
     restoredOnceRef.current = true;
+    if (fromClipAtMountRef.current) return; // a clip question starts a fresh chat
     let savedId = '';
     try {
       savedId = localStorage.getItem(CHAT_ID_KEY) || '';
@@ -248,10 +273,14 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
   }, []);
 
   /* ── Send message ── */
-  const sendMessage = useCallback(async () => {
+  const sendMessage = useCallback(async (preset?: string) => {
     if (isLoading) return;
-    const text = inputRef.current?.value.trim() || '';
+    const text = (preset ?? inputRef.current?.value ?? '').trim();
     if (!text && !selectedFile) return;
+    // From a clip: the board + the step go in front of the first question only.
+    const clipCtx = clipContextRef.current;
+    const sent = clipCtx && text ? clipQuestion(clipCtx, text) : text;
+    if (clipCtx && text) clipContextRef.current = null;
 
     const capturedPreviewSrc = previewSrc;
     const capturedFile = selectedFile;
@@ -299,7 +328,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       if (capturedFile) {
         body.image = capturedPreviewSrc.split(',')[1];
         body.mediaType = capturedFile.type;
-        body.caption = text || '';
+        body.caption = sent || '';
         if (capturedExtraFiles.length) {
           body.images = [
             { data: capturedPreviewSrc.split(',')[1], mediaType: capturedFile.type },
@@ -307,7 +336,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
           ];
         }
       } else {
-        body.message = text;
+        body.message = sent;
       }
 
       const res = await postSolverChat(body);
@@ -333,7 +362,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       // rendered the notice; don't record the turn.
       if (!outcome.sawDone && !outcome.fullText && !outcome.gotError) return;
 
-      conversationHistoryRef.current.push({ role: 'user', content: text || '[image]' });
+      conversationHistoryRef.current.push({ role: 'user', content: sent || '[image]' });
       conversationHistoryRef.current.push({ role: 'assistant', content: outcome.fullText });
       if (conversationHistoryRef.current.length > 100) {
         // 40 → 100, 13 Oct 2026 (Adrian: "Make same as telegram"): the bot squeezes everything
@@ -354,6 +383,18 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
       inputRef.current?.focus();
     }
   }, [isLoading, selectedFile, previewSrc, extraFiles, extraPreviews, removeImage, scrollToBottom, autoScroll, showError, botLevel, feedbackOpts, ensurePortalToken]);
+
+  // A ready question tapped under the clip goes at once; "my own" waits in the box.
+  const sendRef = useRef(sendMessage);
+  useEffect(() => { sendRef.current = sendMessage; });
+  useEffect(() => {
+    if (!fromClipAtMountRef.current) return;
+    const q = pendingClipQuestionRef.current;
+    pendingClipQuestionRef.current = null;
+    if (q) { const t = window.setTimeout(() => sendRef.current(q), 60); return () => window.clearTimeout(t); }
+    const t = window.setTimeout(() => inputRef.current?.focus(), 80);
+    return () => window.clearTimeout(t);
+  }, []);
 
   return (
     <div className="max-w-2xl mx-auto ask-page">
@@ -386,8 +427,18 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
         )}
       </div>
 
+      {fromClip && (
+        <div className="flex items-center gap-2 bg-white rounded-2xl border border-amber-200 px-3 py-2 mb-3" data-from-clip>
+          <Link href={fromClip.backHref}
+            className="shrink-0 rounded-xl bg-navy text-[hsl(45,100%,96%)] px-3 py-1.5 text-[13px] font-semibold active:scale-95 motion-safe:transition-transform">
+            ‹ Back to the clip
+          </Link>
+          <span className="min-w-0 truncate text-[12px] text-slate-500">{fromClip.label}</span>
+        </div>
+      )}
+
       {/* Welcome card (until the first message) */}
-      {!started && (
+      {!started && !fromClip && (
         <div className="bg-white rounded-2xl border border-black/5 shadow-sm p-5 mb-4">
           <p className="font-semibold text-navy">Hi{firstName ? ` ${firstName}` : ''}! Stuck on a question?</p>
           <p className="text-sm text-gray-600 mt-2 leading-relaxed">
@@ -447,7 +498,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
             <div className="flex items-center gap-2">
               <textarea
                 ref={inputRef}
-                placeholder="Type a math question, or add a photo…"
+                placeholder={fromClip ? 'Type your question about this step…' : 'Type a math question, or add a photo…'}
                 rows={1}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
                 onChange={e => autoResize(e.currentTarget)}
@@ -473,7 +524,7 @@ export default function AskClient({ firstName, botLevel }: { firstName: string |
               </button>
               <button
                 type="button"
-                onClick={sendMessage}
+                onClick={() => sendMessage()}
                 disabled={isLoading}
                 title="Send"
                 aria-label="Send"

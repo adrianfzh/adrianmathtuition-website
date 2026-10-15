@@ -588,6 +588,21 @@ export async function lessonVideoExtrasVisible(identity?: string | null): Promis
   return admin && !(await viewingAsStudent());
 }
 
+// 💬 "Ask about this step" under a one-minute clip (SPEC-CLIP-PIPELINE.md §2b, 15 Oct 2026,
+// Adrian: "Can students interrupt and ask why ln is used when e is involved?"): one tap pauses
+// the clip and opens Ask with the board so far and that step's line in it; "‹ Back to the clip"
+// resumes at the same step. ADMIN + the preview student until Adrian has tried it on his phone —
+// flip this to show the button to every student who can open a clip.
+export const CLIP_ASK_OPEN_TO_STUDENTS = false;
+export async function clipAskVisible(identity?: string | null): Promise<boolean> {
+  if (CLIP_ASK_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}
+
 // ▶ Watch it — an animated worked solution under a science MCQ's solution
 // (5 Oct 2026, Adrian: "build the watch it animations for kinematics and
 // chemical calculations … gate keep it to me, then show me the results").
