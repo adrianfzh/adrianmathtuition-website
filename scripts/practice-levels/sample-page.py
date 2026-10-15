@@ -1,13 +1,31 @@
-import json, sys, html
+import json, sys, html, re
 # page.py <sample.json> <scores.json> <out.html> <title> <intro-html> <order: adv-first|core-first> [figs.json]
 samp, scores, out, title, intro, order = sys.argv[1:7]
 s={x['id']:x for x in json.load(open(samp))}
 sc=json.load(open(scores))
 figs=json.load(open(sys.argv[7])) if len(sys.argv)>7 else {}
-def t(x):
+def t0(x):
     # keep display maths ($$…$$, e.g. tables) on one line so KaTeX can find it
     seg=html.escape(x or '').split('$$')
     return '$$'.join(g.replace('\n',' ') if i%2 else g.replace('\n','<br>') for i,g in enumerate(seg))
+def t(x):
+    # markdown pipe tables (| a | b | rows) → a real table, as the app draws them
+    out=[];buf=[];tbl=[]
+    def flush_tbl():
+        rows=[[c.strip() for c in r.strip().strip('|').split('|')] for r in tbl]
+        rows=[r for r in rows if not all(re.fullmatch(r':?-{2,}:?',c) for c in r)]
+        if rows: out.append('<table class="pt">'+''.join('<tr>'+''.join(f'<td>{t0(c)}</td>' for c in r)+'</tr>' for r in rows)+'</table>')
+        tbl.clear()
+    for line in (x or '').split('\n'):
+        if line.strip().startswith('|') and line.strip().endswith('|'):
+            if buf: out.append(t0('\n'.join(buf))); buf.clear()
+            tbl.append(line)
+        else:
+            if tbl: flush_tbl()
+            buf.append(line)
+    if tbl: flush_tbl()
+    if buf: out.append(t0('\n'.join(buf)))
+    return ''.join(out)
 def part(p, depth=0):
     sub=''.join(part(c, depth+1) for c in (p.get('subparts') or []))
     ans='' if p.get('subparts') else f'<div class="ans">Answer: {t(p.get("answer"))}</div>'
@@ -51,7 +69,7 @@ img{max-width:100%;max-height:320px;display:block;margin:8px 0}details{margin-to
 .sol{background:#fafaf9;padding:8px;border-radius:8px;margin-top:6px}.vote{margin-top:10px;font-size:14px;border-top:1px solid #f5f5f4;padding-top:8px}
 .vote label{margin-right:10px;white-space:nowrap}#done{background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:12px;margin-top:20px}
 button{font-size:15px;padding:8px 14px;border-radius:8px;border:1px solid #a8a29e;background:#fff}textarea{width:100%;height:70px;margin-top:8px;font-size:13px}
-.katex-display{overflow-x:auto;overflow-y:hidden}'''
+.katex-display{overflow-x:auto;overflow-y:hidden}\n.pt{border-collapse:collapse;margin:8px 0;font-size:15px;display:block;overflow-x:auto}.pt td{border:1px solid #d6d3d1;padding:4px 8px}.pt tr:first-child td{font-weight:600;background:#f5f5f4}'''
 tag=title.split(':')[0]
 page=f'''<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(tag)}</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><style>{CSS}</style></head><body>
