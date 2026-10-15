@@ -64,7 +64,11 @@ for (let k = 0; k < nBoards; k++) {
     }
     const r = stage.getBoundingClientRect();
     const cut = [];
-    for (const el of stage.querySelectorAll('.lsn-el.on')) {
+    // Working lines, and any maths anywhere on the board (the intro's maths too — 15 Oct 2026, a
+    // long identity in a board-2 intro ran off the right edge and only the picture read saw it).
+    for (const el of stage.querySelectorAll('.lsn-el.on, .katex')) {
+      const host = el.closest('.lsn-el');
+      if (host && !host.classList.contains('on')) continue;  // a piece not on the board yet
       const e = el.getBoundingClientRect();
       if (e.width && (e.left < r.left - 1 || e.right > r.right + 1)) cut.push((el.textContent || '').trim().slice(0, 30));
     }
