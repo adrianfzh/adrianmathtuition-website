@@ -2499,7 +2499,7 @@ const PLAYER_CSS = `
 /* A mistake shown on the board (a note starting with ✗): red chalk. */
 [data-lsn-clip] .lsn-note.lsn-note-warn, [data-lsn-clip] .lsn-note.lsn-note-warn .katex { color: var(--lsn-hl-rose, #fda4af); }
 /* The base lit on its own (highlight part "sub"): the small 3 of log₃ in blue chalk. */
-[data-lsn-clip] .lsn-lit-sub .msupsub, [data-lsn-clip] .lsn-lit-sub .msupsub .mord { color: var(--lsn-hl-sky, #7dd3fc); transition: color 250ms ease; }
+[data-lsn-clip] .lsn-lit-sub .msupsub, [data-lsn-clip] .lsn-lit-sub .msupsub .mord { color: var(--lsn-hl-sky, #7dd3fc); text-shadow: 0 0 6px var(--lsn-hl-sky, #7dd3fc), 0 0 12px var(--lsn-hl-sky, #7dd3fc); transition: color 250ms ease, text-shadow 250ms ease; }
 /* An arrow is a clean line: no chalk grain eating into it, a touch finer. */
 [data-lsn-theme="chalk"] .lsn-marks path[data-mark^="arc"] { -webkit-mask-image: none; mask-image: none; stroke-width: 2; opacity: 1; }
 [data-lsn-theme="chalk"] .lsn-pen { width: 15px; height: 15px; margin: -7.5px 0 0 -7.5px;

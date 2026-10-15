@@ -98,7 +98,7 @@
           "say": "The answer is not twelve. Twelve is the difference in decibels, not how many times.",
           "asks": ["Why is the answer not 12?"],
           "do": [
-            { "do": "note", "text": "✗ Common mistake: $12$ is the difference in dB, not the ratio", "near": "twelve" },
+            { "do": "note", "text": "✗ Not $12$: that is the dB difference", "near": "twelve" },
             { "do": "mark", "kind": "circle", "token": "twelve", "on": "not twelve" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b7.mp3",

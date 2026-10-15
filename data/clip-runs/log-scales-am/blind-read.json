@@ -56,7 +56,7 @@
    "do": [
     {
      "do": "note",
-     "text": "✗ Common mistake: $12$ is the difference in dB, not the ratio",
+     "text": "✗ Not $12$: that is the dB difference",
      "near": "twelve"
     },
     {
