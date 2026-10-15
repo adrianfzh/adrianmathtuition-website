@@ -339,12 +339,19 @@ await step('store', async () => {
 
 // ── 7 look ──────────────────────────────────────────────────────────────────
 const lookDir = path.join(os.tmpdir(), 'question-clip-look');
-const look = await step('look', async () => {
+async function lookOnce() {
   const r = sh('node', ['scripts/clips/look.mjs', SLUG, '--base', BASE, '--path', `/app/clip/q/${QID}?check=1`, '--out', lookDir], { timeout: 6 * 60_000 });
   const lk = readJson(path.join(RUN, 'look.json'));
   if (!lk) return { ok: false, detail: `look did not run: ${r.out.trim().slice(-300)}` };
   return { ok: lk.pass, lk, detail: `${lk.actions.fired}/${lk.actions.expected} actions on the voice · cues worst ${lk.cue.worst.toFixed(2)} s (gate ${lk.cue.gateS} s) · look problems ${lk.look.problems}${lk.pageErrors?.length ? ` · page errors ${lk.pageErrors.length}` : ''}` };
-});
+}
+let look = await step('look', lookOnce);
+// A play that simply stopped (steps not fired, nothing wrong on screen, no page error) is the run,
+// not the clip — seen once on a freshly started server (15 Oct 2026). One more play, never more.
+if (!look.ok && look.lk && look.lk.actions.fired < look.lk.actions.expected && look.lk.look.problems === 0 && look.lk.cue.over === 0 && !look.lk.pageErrors?.length) {
+  log(`  look: ${look.detail} — the play stopped early; once more`);
+  look = await step('look-again', lookOnce);
+}
 put('look', look.ok, look.detail);
 if (!look.ok) await finish('failed', `look: ${look.detail}`);
 const pics = await step('pictures', async () => {

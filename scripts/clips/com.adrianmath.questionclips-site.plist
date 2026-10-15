@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 🎬 The site the question-clip worker plays clips on (fit + look steps), port 3211:
+     a production server (`next start`) with the LOCAL env — .env.production.local holds masked
+     values, and a dev server's live reloads stop a clip mid-play. It runs from its OWN clone,
+     ~/dev/adrianmath-clip-site (15 Oct 2026: a session rebuilding the main checkout mid-look broke
+     the page under the worker). After the clip player or /app/clip changes:
+       cd ~/dev/adrianmath-clip-site && git pull -q && npx next build
+       launchctl kickstart -k gui/$UID/com.adrianmath.questionclips-site
+     First set-up: git clone (branch dev), `cp -cR` the main checkout's node_modules (Turbopack
+     refuses a symlink), copy .env.local, `npx next build`.
+       cp scripts/clips/com.adrianmath.questionclips-site.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.adrianmath.questionclips-site.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.adrianmath.questionclips-site</string>
+  <key>WorkingDirectory</key><string>/Users/adrianfong/dev/adrianmath-clip-site</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/sh</string><string>-c</string>
+    <string>set -a; . ./.env.local; set +a; exec /opt/homebrew/bin/npx next start -p 3211</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/tmp/questionclips-site.log</string>
+  <key>StandardErrorPath</key><string>/tmp/questionclips-site.log</string>
+</dict>
+</plist>

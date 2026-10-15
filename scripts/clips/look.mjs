@@ -112,7 +112,7 @@ for (const slug of slugs) {
   const shots = [];
   let seen = 0;
   const t0 = Date.now();
-  while (Date.now() - t0 < 150_000) {
+  while (Date.now() - t0 < 240_000) {  // a ~1-minute clip; room for a slow first load
     const ev = await page.evaluate(() => window.__lsn.slice());
     const done = await page.evaluate(() => /Now try one/.test(document.body.innerText));
     const fresh = ev.slice(seen).filter(e => e.name === 'lsn:action');
