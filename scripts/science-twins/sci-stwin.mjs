@@ -54,7 +54,14 @@ const POOLS = ['PHY', 'CHEM', 'BIO', 'CS_PHY', 'CS_CHEM', 'CS_BIO'];
 const COLS = 'id,level,subject,school,year,topics,answer,solution,question_text,parts,total_marks,has_image,image_url,images,image_watermark_status,verified,ai_generated,quarantined,not_in_syllabus,practice_hidden,practice_checked_at,practice_check_note,twin_of,exam_type,gen_meta';
 
 /** One structured twin per seed PER POOL (its own key: an MCQ twin of the same seed id cannot clash). */
-export const stwinItem = (pool, seed) => (String(pool).startsWith('CS_') ? `sci-stwin-${pool}-${seed}` : `sci-stwin-${seed}`);
+export const stwinItem = (pool, seed, pass = 1) => `${String(pool).startsWith('CS_') ? `sci-stwin-${pool}-${seed}` : `sci-stwin-${seed}`}${pass > 1 ? `-${pass}` : ''}`;
+// 🌱 Short topics (15 Oct 2026, Adrian: "Let one school question seed up to 3 twins, but only for skills
+// that are short … do it" → "yes, do all 3"): a topic with fewer fresh seeds than it still wants lets a
+// seed that already has a twin in this pool carry a 2nd and 3rd (queued as "<uuid>~2" / "~3"; the lane
+// uses it as the run dir + claim name unchanged). The corpus (every row of the topic) already holds the
+// earlier twins, so the novelty gate compares against them; brief also puts them in front of the author.
+export const SEED_CAP = 3;
+export const splitSource = (raw) => { const [id, n] = String(raw ?? '').split('~'); return { id, pass: Math.max(1, Number(n) || 1) }; };
 export const flatParts = (ps, pre = '') => (Array.isArray(ps) ? ps : []).flatMap((p) => {
   const label = `${pre}${String(p?.label ?? '').trim()}`;
   const kids = Array.isArray(p?.subparts) && p.subparts.length ? flatParts(p.subparts, `${label}.`) : [];
@@ -139,6 +146,7 @@ export async function topicUnits() {
     let topics = [...new Set(subgroups.filter((s) => s.subject === sci.subject).map((s) => s.topic))];
     if (pp.combined) { const cs = new Set(inPool.flatMap((r) => r.topics ?? [])); topics = topics.filter((t) => cs.has(t) || isOpen.has(`${pool}|${t}`)); }
     const twinned = new Set(inPool.filter(isStructuredTwin).map((r) => r.twin_of).filter(Boolean));
+    const twinsOf = new Map(); for (const r of inPool) if (isStructuredTwin(r) && r.twin_of && !r.practice_hidden) twinsOf.set(r.twin_of, (twinsOf.get(r.twin_of) ?? 0) + 1);
     for (const topic of topics) {
       const ofTopic = inPool.filter((r) => (r.topics ?? []).includes(topic));
       const servable = ofTopic.filter((r) => servableStructured(r) && r.practice_checked_at);
@@ -147,16 +155,19 @@ export async function topicUnits() {
       for (const t of twins) { const sg = Number(t.gen_meta?.subskill ?? (filedBy.get(t.id) ?? [])[0] ?? 0); perSkill.set(sg, (perSkill.get(sg) ?? 0) + 1); }
       // seeds: a Combined pool prefers the Combined rows themselves, then pure rows; the twin's
       // sub-skill is the seed's filing in THIS topic (Combined: a Combined sub-skill when the view has any)
-      const cands = (pp.combined ? [...ofTopic, ...pure.filter((r) => (r.topics ?? []).includes(topic))] : ofTopic)
-        .filter((r) => seedUsable(r) && !twinned.has(r.id) && !tried.seed(pool, r.id));
+      const usable = (pp.combined ? [...ofTopic, ...pure.filter((r) => (r.topics ?? []).includes(topic))] : ofTopic).filter(seedUsable);
+      const cands = usable.filter((r) => !twinned.has(r.id) && !tried.seed(pool, r.id));
+      const skillOf = (r) => {
+        let sgs = (filedBy.get(r.id) ?? []).filter((id) => sgById.get(id)?.topic === topic);
+        if (pp.combined && combined.size && sgs.some((id) => combined.has(id))) sgs = sgs.filter((id) => combined.has(id));
+        const sg = sgs[0];
+        return !sg || tried.unit(pool, sg) ? null : sg;
+      };
       const bySkill = new Map();
       const seen = new Set();
       for (const r of cands) {
         if (seen.has(r.id)) continue; seen.add(r.id);
-        let sgs = (filedBy.get(r.id) ?? []).filter((id) => sgById.get(id)?.topic === topic);
-        if (pp.combined && combined.size && sgs.some((id) => combined.has(id))) sgs = sgs.filter((id) => combined.has(id));
-        const sg = sgs[0];
-        if (!sg || tried.unit(pool, sg)) continue;
+        const sg = skillOf(r); if (!sg) continue;
         const a = bySkill.get(sg) ?? []; a.push(r); bySkill.set(sg, a);
       }
       const order = (r) => [r.practice_checked_at ? 0 : 1, r.has_image ? 1 : 0, -(r.year || 0)];
@@ -169,6 +180,20 @@ export async function topicUnits() {
         let any = false;
         for (const s of skills) { const r = s.seeds[round]; if (!r) continue; any = true; seeds.push({ source_id: r.id, subgroup_id: s.sg, subgroup: s.name, checked: !!r.practice_checked_at, has_image: !!r.has_image }); }
         if (!any) break;
+      }
+      // 🌱 short of fresh seeds: seeds with 1–2 twins here offer their next one, fewest twins first
+      const want = Math.max(0, TARGET - servable.length);
+      if (seeds.length < want) {
+        const again = []; const seen2 = new Set();
+        for (const r of usable) {
+          if (seen2.has(r.id)) continue; seen2.add(r.id);
+          const n = twinsOf.get(r.id) ?? 0; const next = `${r.id}~${n + 1}`;
+          if (n < 1 || n >= SEED_CAP || tried.seed(pool, next)) continue;
+          const sg = skillOf(r); if (!sg) continue;
+          again.push({ n, r, sg });
+        }
+        again.sort((a, b) => a.n - b.n || cmp(a.r, b.r));
+        for (const { n, r, sg } of again) seeds.push({ source_id: `${r.id}~${n + 1}`, subgroup_id: sg, subgroup: sgById.get(sg)?.name ?? '', checked: !!r.practice_checked_at, has_image: !!r.has_image, reuse: n + 1 });
       }
       units.push({ pool, topic, tier: isOpen.get(`${pool}|${topic}`) ?? 3, servable: servable.length, twins: twins.length, need: Math.max(0, TARGET - servable.length), seed_count: seeds.length, seeds });
     }
@@ -245,9 +270,9 @@ const partLines = (parts, withScheme) => flatParts(parts).map((p) => {
 export const fullText = (q) => `${String(q.stem ?? q.question_text ?? '').trim()}\n${flatParts(q.parts).map((p) => `${p.lead ? `${p.lead}\n` : ''}${String(p.text ?? '')}`).join('\n')}`;
 
 async function brief() {
-  const id = argOf('--source');
+  const { id, pass } = splitSource(argOf('--source'));
   const dir = resolve(argOf('--run', '.'));
-  if (!id) throw new Error('--source <uuid> required');
+  if (!id) throw new Error('--source <uuid>[~2|~3] required');
   mkdirSync(dir, { recursive: true });
   const { data: src, error } = await sb().from('questions').select('id, level, subject, school, year, exam_type, paper, question_number, question_text, parts, answer, solution, total_marks, topics, skill, has_image, image_url, images').eq('id', id).single();
   if (error) throw new Error(error.message);
@@ -261,15 +286,19 @@ async function brief() {
   const { data: sg } = useSg ? await sb().from('subgroups').select('id, name, description, topic').eq('id', useSg).maybeSingle() : { data: null };
   const topic = argOf('--topic', null) ?? sg?.topic ?? (src.topics ?? [])[0];
   const { data: pd } = await sb().from('practice_difficulty').select('level, source, reason').eq('question_id', id).maybeSingle();
-  const corpus = await all(() => sb().from('questions').select('id, level, school, year, question_text, parts').eq('subject', src.subject).contains('topics', [topic]).neq('id', id).order('id'));
+  const corpus = await all(() => sb().from('questions').select('id, level, school, year, question_text, parts, twin_of, exam_type, practice_hidden, gen_meta').eq('subject', src.subject).contains('topics', [topic]).neq('id', id).order('id'));
   // the seed's figures, so the author SEES what the seed asks (never copied: a twin's figure is drawn by the library)
   const figs = [];
   for (const [i, u] of figurePaths(src).entries()) {
     try { const r = await fetch(u); if (!r.ok) continue; const f = join(dir, `seed-fig-${i + 1}.png`); writeFileSync(f, Buffer.from(await r.arrayBuffer())); figs.push(f); } catch { /* skip */ }
   }
+  // 🌱 the seed's earlier structured twins in this pool (a 2nd / 3rd twin must differ from each)
+  const earlier = corpus.filter((r) => r.twin_of === id && r.exam_type === 'Twin' && r.school === TWIN_SCHOOL && !r.practice_hidden && (r.gen_meta?.pool ?? pool) === pool);
+  if (pass > 1 && earlier.length >= SEED_CAP) throw new Error(`seed ${id} already has ${earlier.length} twins in ${pool} (cap ${SEED_CAP})`);
+  if (pass > 1 && !earlier.length) throw new Error(`seed ${id} has no first twin in ${pool} yet — brief it without ~${pass}`);
   const leaves = flatParts(src.parts);
   const plan = {
-    kind: 'structured', source: id, pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, topic,
+    kind: 'structured', source: id, pass, pool, key: pp.key, combined: pp.combined, subject: src.subject, bank_level: pp.combined ? SCI[pp.key].cs : SCI[pp.key].bank, topic,
     subgroups: sg ? [{ id: sg.id, name: sg.name, description: sg.description, is_primary: true }] : [],
     seed_level: ['results', 'estimate'].includes(pd?.source) ? pd.level : null,
     structure: { parts: src.parts.map(function shape(p) { return { label: p.label, marks: p.marks ?? null, ...(Array.isArray(p.subparts) && p.subparts.length ? { subparts: p.subparts.map(shape) } : {}) }; }), leaves: leaves.map((p) => ({ label: p.label, marks: Number(p.marks) })), total: leaves.reduce((s, p) => s + Number(p.marks), 0) },
@@ -298,6 +327,7 @@ Stem:
 \`\`\`
 ${String(src.question_text ?? '').trim()}
 \`\`\`
+${earlier.length ? `\n## Earlier twins of this seed — yours must differ from EACH (a new situation, new numbers, new sentences)\n${earlier.map((e, i) => `### Earlier twin ${i + 1}\n\`\`\`\n${fullText(e)}\n\`\`\``).join('\n')}\n` : ''}
 Parts with the seed's scheme:
 \`\`\`
 ${partLines(src.parts, true)}
@@ -571,7 +601,7 @@ async function publish() {
   if (!verdictOk(verdict, blind, gates.total_marks)) throw new Error(`refused: verdict ${JSON.stringify(verdict ?? null).slice(0, 400)}`);
   const png = join(dir, 'Q1.figure.png');
   if (q.needs_figure && !existsSync(png)) throw new Error('needs_figure but Q1.figure.png is not rendered');
-  const item = stwinItem(plan.pool, plan.source);
+  const item = stwinItem(plan.pool, plan.source, Number(plan.pass) || 1);
   const level = plan.seed_level ?? levelFromWork(verdict.work_score);
   const label = { core: 'Core', exam: 'Exam', challenge: 'Challenge' }[level];
   const imagePath = q.needs_figure ? `twins/${item}.png` : null;
@@ -600,6 +630,11 @@ async function publish() {
     },
   };
   if (dry) { console.log(JSON.stringify(row, null, 1)); return; }
+  if ((Number(plan.pass) || 1) > 1) {   // 🌱 never past SEED_CAP live twins of one seed in a pool
+    const { data: live } = await sb().from('questions').select('id, gen_meta').eq('twin_of', plan.source).eq('school', TWIN_SCHOOL).eq('exam_type', 'Twin').eq('practice_hidden', false);
+    const here = (live ?? []).filter((r) => (r.gen_meta?.pool ?? plan.pool) === plan.pool);
+    if (!here.some((r) => r.gen_meta?.twin_item === item) && here.length >= SEED_CAP) throw new Error(`seed ${plan.source} already has ${here.length} twins in ${plan.pool} (cap ${SEED_CAP})`);
+  }
   if (imagePath) {
     const { error } = await sb().storage.from(BUCKET).upload(imagePath, readFileSync(png), { contentType: 'image/png', upsert: true });
     if (error) throw new Error(`figure upload: ${error.message}`);

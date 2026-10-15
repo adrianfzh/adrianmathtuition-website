@@ -162,6 +162,19 @@ const familyOf = (level) => FAMILY[level] ?? [level];
 // (6 Oct 2026: this used to page twin_queue with no ORDER BY, which dropped rows between pages,
 // and counted Practice-photo rows as twins — its numbers did not match the door's.)
 const PER_SKILL = Number(process.env.TWINS_PER_SKILL || 3);
+// 🌱 Short sub-skills (15 Oct 2026, Adrian: "do it" — "Let one school question seed up to 3 twins,
+// but only for skills that are short" … "Some very small skills may not need 5 at all. Those can
+// stay at 2 or 3" → "agreed"): a sub-skill with fewer eligible seeds (text > 40 chars) than the
+// target lets each seed carry up to SEED_CAP twins; every other sub-skill keeps one twin a seed.
+// A 1-seed sub-skill so tops out at 3. The 2nd/3rd twin of a seed is queued as "<uuid>~2" / "~3"
+// (twins.sh uses it as the run dir + claim name unchanged); brief puts the earlier twins in front
+// of the author, the novelty gate and the moderator. math_twin_units() counts the same rule.
+const SEED_CAP = 3;
+const splitSource = (raw) => { const [id, n] = String(raw ?? '').split('~'); return { id, pass: Math.max(1, Number(n) || 1) }; };
+async function seedTwinCounts(env, levels) {
+  const rows = await restAll(env, `questions?select=twin_of&level=in.(${levels.join(',')})&school=eq.${TWIN_SCHOOL}&exam_type=eq.${TWIN_EXAM_TYPE}&verified=is.true&deleted_at=is.null&twin_of=not.is.null&order=id.asc`);
+  const m = new Map(); for (const r of rows) m.set(r.twin_of, (m.get(r.twin_of) ?? 0) + 1); return m;
+}
 async function twinCounts(env, level, per = PER_SKILL) {
   const r = await fetch(`${env.SUPABASE_URL}/rest/v1/rpc/math_twin_units`, { method: 'POST', headers: { apikey: env.SUPABASE_SECRET_KEY, Authorization: `Bearer ${env.SUPABASE_SECRET_KEY}`, 'content-type': 'application/json' },
     body: JSON.stringify({ p_levels: familyOf(level), p_per_skill: per }) });
@@ -187,11 +200,14 @@ async function queue() {
   const per = Number(argOf('--per-skill', String(PER_SKILL)));
   const levels = familyOf(level);
   const { units, have } = await twinCounts(env, level, per);
-  const rows = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&has_any_twin=is.false&subgroup_id=not.is.null&order=draws_90d.desc,source_id.asc`);
+  const all = await restAll(env, `twin_queue?select=*&level=in.(${levels.join(',')})&text_len=gt.40&subgroup_id=not.is.null&order=draws_90d.desc,source_id.asc`);
+  const seedTwins = await seedTwinCounts(env, levels);
+  const eligible = new Map(); for (const r of all) eligible.set(r.subgroup_id, (eligible.get(r.subgroup_id) ?? 0) + 1);
   // only sub-skills still short of `per`; inside one, the most-drawn sources first,
   // the lane's own level before the other year
   const buckets = new Map();
-  for (const r of rows) {
+  for (const r of all) {
+    if (r.has_any_twin) continue;
     const need = per - (have.get(r.subgroup_id) ?? 0);
     if (need <= 0) continue;
     if (!buckets.has(r.subgroup_id)) buckets.set(r.subgroup_id, { need, draws: 0, rows: [] });
@@ -199,6 +215,16 @@ async function queue() {
   }
   const inBucket = (a, b) => (b.draws_90d - a.draws_90d) || ((a.level === level ? 0 : 1) - (b.level === level ? 0 : 1)) || String(a.source_id).localeCompare(String(b.source_id));
   for (const b of buckets.values()) b.rows.sort(inBucket);
+  // 🌱 a short sub-skill (fewer eligible seeds than `per`): after its fresh seeds, a seed that
+  // already has a twin offers its next one (fewest twins first), up to SEED_CAP a seed
+  for (const r of [...all].sort((a, b) => (seedTwins.get(a.source_id) ?? 0) - (seedTwins.get(b.source_id) ?? 0) || inBucket(a, b))) {
+    const n = seedTwins.get(r.source_id) ?? 0;
+    if (n < 1 || n >= SEED_CAP || (eligible.get(r.subgroup_id) ?? 0) >= per) continue;
+    const need = per - (have.get(r.subgroup_id) ?? 0);
+    if (need <= 0) continue;
+    if (!buckets.has(r.subgroup_id)) buckets.set(r.subgroup_id, { need, draws: 0, rows: [] });
+    const b = buckets.get(r.subgroup_id); b.rows.push({ ...r, source_id: `${r.source_id}~${n + 1}`, reuse: n + 1, need, have: per - need }); b.draws += r.draws_90d;
+  }
   // sub-skills the week's stuck report named first, then the ones students meet (drawn in
   // 90 days), then the emptiest, then the biggest
   const focus = await stuckFocus(env);
@@ -232,9 +258,10 @@ async function need() {
 // ---------------------------------------------------------------- brief ----
 async function brief() {
   const env = loadEnv();
-  const id = argOf('--source', null);
-  const dir = resolve(argOf('--run', null) ?? `./twins/${id}`);
-  if (!id) throw new Error('--source <uuid>');
+  const raw = argOf('--source', null);
+  const { id, pass } = splitSource(raw);
+  const dir = resolve(argOf('--run', null) ?? `./twins/${raw}`);
+  if (!id) throw new Error('--source <uuid>[~2|~3]');
   mkdirSync(dir, { recursive: true });
   const [src] = await rest(env, `questions?select=id,level,school,year,exam_type,paper,question_number,question_text,parts,answer,solution,total_marks,topics,difficulty,has_image,figure_url,image_url,images&id=eq.${id}`);
   if (!src) throw new Error(`no question ${id}`);
@@ -246,6 +273,13 @@ async function brief() {
   // the whole real corpus at this level — the novelty gate compares against every one
   const corpus = (await restAll(env, `questions?select=id,school,year,question_text,parts&level=eq.${src.level}&deleted_at=is.null&ai_generated=not.is.true&order=id.asc`))
     .map((r) => ({ id: r.id, ref: `${r.school} ${r.year}`, text: questionText(r) })).filter((r) => r.text.length > 20);
+  // 🌱 our own live twins at this level too — a new twin must not read as an earlier one
+  const ours = await restAll(env, `questions?select=id,twin_of,question_text,parts&level=eq.${src.level}&school=eq.${TWIN_SCHOOL}&exam_type=eq.${TWIN_EXAM_TYPE}&deleted_at=is.null&order=id.asc`);
+  for (const r of ours) { const text = questionText(r); if (text.length > 20) corpus.push({ id: r.id, ref: `our twin ${String(r.id).slice(0, 8)}`, text }); }
+  const earlier = ours.filter((r) => r.twin_of === id).map((r) => ({ id: r.id, text: questionText(r) }));
+  if (pass > 1 && earlier.length >= SEED_CAP) throw new Error(`question ${id} already has ${earlier.length} twins (cap ${SEED_CAP})`);
+  if (pass > 1 && !earlier.length) throw new Error(`question ${id} has no first twin yet — brief it without ~${pass}`);
+  writeFileSync(runFile(dir, 'earlier-twins.json'), JSON.stringify(earlier, null, 1));
   // Adrian's method + pitfalls for the topics, as background the author reads (never quoted)
   let knowledge = [];
   try {
@@ -254,7 +288,7 @@ async function brief() {
     if (r.ok) { const k = await r.json(); knowledge = [...(k?.methods ?? []).map((m) => ({ kind: 'method', title: m.question_type, body: `${m.method}${m.watch_out ? ` Watch out: ${m.watch_out}` : ''}` })), ...(k?.pitfalls ?? []).map((m) => ({ kind: 'pitfall', title: m.context, body: `wrong move: ${m.wrong_move}. ${m.why_wrong ?? ''} ${m.corrective_cue ? `Cue: ${m.corrective_cue}` : ''}` }))]; }
   } catch { /* background only */ }
   const marks = Number(src.total_marks) || sumMarks(src);
-  const plan = { source: id, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')), prompt_version: PROMPT_VERSION, models: modelsFor(src.level), briefed_at: new Date().toISOString() };
+  const plan = { source: id, pass, level: src.level, subject: shape.subject, code: shape.code, marks, difficulty: src.difficulty ?? 'Standard', topics: src.topics ?? [], subgroups, structure: structure(src.parts), has_figure: !!(src.has_image || src.figure_url || (src.image_url && src.image_url !== '[]')), prompt_version: PROMPT_VERSION, models: modelsFor(src.level), briefed_at: new Date().toISOString() };
   writeFileSync(runFile(dir, 'source.json'), JSON.stringify(src, null, 1));
   writeFileSync(runFile(dir, 'corpus.json'), JSON.stringify(corpus));
   writeFileSync(runFile(dir, 'plan.json'), JSON.stringify(plan, null, 1));
@@ -278,7 +312,7 @@ ${questionText(src)}
 Source answer key:
 ${keyLines}
 ${src.solution ? `\nSource solution (method only — your twin has its own numbers):\n${String(src.solution).slice(0, 3000)}` : ''}
-
+${earlier.length ? `\n## EARLIER TWINS OF THIS QUESTION — yours must differ from EACH (a new context, new sentences, new numbers; same skill, same structure)\n${earlier.map((e, i) => `### Earlier twin ${i + 1}\n${e.text}`).join('\n\n')}\n` : ''}
 ## Adrian's method notes for these topics (background — teach the same method, never quote these)
 ${kText}
 
@@ -287,7 +321,7 @@ Write ONE JSON file Q1.json in this folder (no prose, no code fence):
 {"stem": string, "parts": [{"label": "(a)", "text": string, "marks": int, "answer": string, "subparts": [{"label": "(i)", "text": string, "marks": int, "answer": string}]}], "answer": string, "total_marks": ${marks}, "topics": ${JSON.stringify(src.topics ?? [])}, "difficulty": "${plan.difficulty}", "needs_figure": ${plan.has_figure}, "figure_description": string, "solution": string, "method_note": "one line: the method the source teaches and how your twin teaches the same one", "originality_note": "one line: what is new — context, numbers, sentences"}
 "parts" is [] for a single-part question (its final answer sits in "answer"). Labels and marks per part must match the structure above EXACTLY. Inside JSON strings every backslash is doubled (\\\\frac) and a newline is \\n.
 `);
-  log(`briefed ${id} → ${dir} (${corpus.length} corpus rows, ${subgroups.length} sub-skills, ${knowledge.length} knowledge rows)`);
+  log(`briefed ${raw} → ${dir} (${corpus.length} corpus rows, ${earlier.length} earlier twins, ${subgroups.length} sub-skills, ${knowledge.length} knowledge rows)`);
 }
 
 // ---------------------------------------------------------------- check ----
@@ -298,7 +332,7 @@ const MODERATOR_BRIEF = (shape) => `You are a SEAB moderator for ${shape.subject
 
 1. CHECK THE KEY. An independent examiner solved the twin blind (Q1.blind.json beside this brief). Compare part by part with the setter's key below. Two answers AGREE when mathematically equivalent or differing only in presentation (0.5 vs 1/2; 3\\sqrt{5} vs 6.71 to 3 s.f.; "shown" vs "proved"). They DISAGREE when a value, a sign, a root or an interval differs, or when the examiner reports the part cannot be done. Where they disagree, work the part yourself and say who is right.
 
-2. IS IT A TWIN, NOT A COPY. Put the twin beside the source (below). It must test the same sub-skill by the same method with the same structure — and it must NOT be the source re-numbered: a new context or situation, new sentences, numbers that are not a constant offset or multiple of the source's. If a candidate who had just done the source would recognise the twin as "the same question with different numbers", set reads_as_source to true (the twin is then rejected).
+2. IS IT A TWIN, NOT A COPY. Put the twin beside the source (below). It must test the same sub-skill by the same method with the same structure — and it must NOT be the source re-numbered: a new context or situation, new sentences, numbers that are not a constant offset or multiple of the source's. If a candidate who had just done the source would recognise the twin as "the same question with different numbers", set reads_as_source to true (the twin is then rejected). When EARLIER TWINS of the same source are listed below, the same test applies to each of them: a twin that reads as an earlier twin also sets reads_as_source to true.
 
 3. JUDGE THE QUESTION. Could it sit in a school's paper at this level? Register (imperatives, precision demands, part labels, mark discipline), difficulty for the marks, syllabus scope, clarity, examination-clean numbers, and the solution reads in a teacher's voice with the method shown.
 Scores: 5 = indistinguishable from a real question; 4 = real after a light edit; 3 = recognisably machine-made; 2 = wrong weight, scope or method; 1 = unusable.
@@ -353,10 +387,12 @@ function check() {
   const gates = { pass: problems.length === 0, problems, novelty: { vs_source: vsSource, nearest, nearest_jaccard: nearestS, max: NOVELTY_MAX, number_swap: numberSwap }, structure: { ok: want === got, marks }, checked_at: new Date().toISOString(), rounds: (prev.rounds ?? 0) + 1 };
   writeFileSync(runFile(dir, 'Q1.gates.json'), JSON.stringify(gates, null, 1));
   if (gates.pass) {
+    const earlierTw = readIf(runFile(dir, 'earlier-twins.json'), true) ?? [];
+    const earlierShown = earlierTw.length ? `\n# EARLIER TWINS OF THE SAME SOURCE (the twin must not read as any of these either)\n\n${earlierTw.map((e, i) => `## Earlier twin ${i + 1}\n${e.text}`).join('\n\n')}\n` : '';
     const shown = q.needs_figure && q.figure_description ? `${text}\n\n[The diagram, described in words — the printed question shows it as a figure: ${String(q.figure_description).trim()}]` : text;
     writeFileSync(runFile(dir, 'Q1.solve.md'), `${SOLVER_BRIEF(shape)}\n\nWrite your answers to Q1.blind.json in this folder.\n\n# QUESTION (${plan.marks} marks)\n\n${shown}\n`);
     const key = flat.length ? flat.map((p) => `${p.label} [${p.marks}] ${p.answer}`).join('\n') : `single: ${q.answer}`;
-    writeFileSync(runFile(dir, 'Q1.moderate.md'), `${MODERATOR_BRIEF(shape)}\n\nRead Q1.blind.json in this folder for the blind examiner's answers, then write Q1.verdict.json there.\n\n# THE TWIN (${plan.marks} marks; sub-skill: ${(plan.subgroups ?? []).map((s) => s.name).join('; ') || 'as the source'})\n\n${shown}\n\n## Setter's key\n${key}\n\n## Setter's solution\n${q.solution}\n\n## Setter's notes\nmethod: ${q.method_note ?? ''}\noriginality: ${q.originality_note ?? ''}\n\n# THE SOURCE (${src.school} ${src.year}, ${plan.marks} marks)\n\n${srcText}\n\nSource key:\n${flatParts(src.parts).map((p) => `${p.label} ${p.answer ?? ''}`).join('\n') || src.answer || ''}\n`);
+    writeFileSync(runFile(dir, 'Q1.moderate.md'), `${MODERATOR_BRIEF(shape)}\n\nRead Q1.blind.json in this folder for the blind examiner's answers, then write Q1.verdict.json there.\n\n# THE TWIN (${plan.marks} marks; sub-skill: ${(plan.subgroups ?? []).map((s) => s.name).join('; ') || 'as the source'})\n\n${shown}\n\n## Setter's key\n${key}\n\n## Setter's solution\n${q.solution}\n\n## Setter's notes\nmethod: ${q.method_note ?? ''}\noriginality: ${q.originality_note ?? ''}\n\n# THE SOURCE (${src.school} ${src.year}, ${plan.marks} marks)\n\n${srcText}\n\nSource key:\n${flatParts(src.parts).map((p) => `${p.label} ${p.answer ?? ''}`).join('\n') || src.answer || ''}\n${earlierShown}`);
   }
   console.log(JSON.stringify(gates));
   log(`${gates.pass ? '✓' : '✗'} vs source ${vsSource}, nearest ${nearest} @ ${nearestS}${problems.length ? ` — ${problems.join('; ')}` : ''}`);
@@ -390,8 +426,14 @@ async function publish() {
   const png = runFile(dir, 'Q1.figure.png');
   if (q.needs_figure && !existsSync(png)) throw new Error('needs_figure but Q1.figure.png is not rendered');
   const figSpec = existsSync(runFile(dir, 'Q1.figure.json')) ? JSON.parse(readFileSync(runFile(dir, 'Q1.figure.json'), 'utf8')) : (existsSync(runFile(dir, 'Q1.figure.cjs')) ? { family: 'engine', file: 'Q1.figure.cjs' } : null);
-  const item = `twin-${plan.source}`;
-  const storagePath = `twins/${plan.source}.png`;
+  // 🌱 the 2nd / 3rd twin of a seed gets its own name, so it never overwrites the first
+  const pass = Number(plan.pass) || 1;
+  const item = pass > 1 ? `twin-${plan.source}-${pass}` : `twin-${plan.source}`;
+  const storagePath = pass > 1 ? `twins/${plan.source}-${pass}.png` : `twins/${plan.source}.png`;
+  if (pass > 1 && !dry) {
+    const live = await rest(env, `questions?select=id,gen_meta&twin_of=eq.${plan.source}&school=eq.${TWIN_SCHOOL}&exam_type=eq.${TWIN_EXAM_TYPE}&deleted_at=is.null`);
+    if (!live.some((r) => r.gen_meta?.twin_item === item) && live.length >= SEED_CAP) throw new Error(`question ${plan.source} already has ${live.length} twins (cap ${SEED_CAP})`);
+  }
   const sb = sbClient(env);
   let figureUrl = null;
   if (q.needs_figure) {

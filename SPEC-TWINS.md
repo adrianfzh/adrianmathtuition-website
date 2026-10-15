@@ -124,6 +124,25 @@ them changes. **Applied 9 Oct 2026** on the maths project (the file also re-sets
 `security_invoker` option, which CREATE OR REPLACE VIEW had dropped). Science has no hidden sub-skills (`subgroups` there has no
 `visibility` column), so `science_twin_units` is unchanged.
 
+**Up to 3 twins from one school question, for short sub-skills only (15 Oct 2026).** Adrian: *"Let one
+school question seed up to 3 twins, but only for skills that are short. Each new twin must be clearly
+different from the school question and from the earlier twins … > do it"*, *"Some very small skills may
+not need 5 at all. Those can stay at 2 or 3. > agreed"*, *"yes, do all 3"*.
+- **Maths** (`twin.mjs`, `SEED_CAP` 3): a sub-skill with fewer eligible seeds (text > 40) than the
+  target lets each seed carry up to 3 twins; every other sub-skill keeps one a seed. After its fresh
+  seeds, the queue offers `<uuid>~2` / `~3` (fewest twins first); `twins.sh` uses the name as run dir
+  and claim unchanged. `brief` adds our own live twins at the level to the novelty corpus (**before
+  this, the maths gate compared only against school rows**), lists the earlier twins of the seed in the
+  author brief, and the moderator reads them too (reads_as_source covers "reads as an earlier twin").
+  `publish` files a 2nd/3rd twin as `twin-<uuid>-<n>` (figure `twins/<uuid>-<n>.png`) — it used to
+  overwrite by seed — and re-checks the cap. `math_twin_units.free_seeds` counts the same rule
+  (applied 15 Oct 2026): at 5 a sub-skill, writable went 450 → 922 across Sec 1, Sec 2, E Math, A Math.
+- **Science structured** (`sci-stwin.mjs`): a topic with fewer fresh seeds than it still wants lets a
+  seed with 1–2 structured twins in that pool offer its next (`stwinItem(pool, seed, pass)` →
+  `…-<n>`). Its corpus already held every row of the topic, our twins included. Tier-1 seeds after
+  the change: Cell Structure 1 → 5, Movement 3 → 8, Enzymes 1 → 9, Nutrition in Plants 2 → 14.
+  The MCQ side (`sci-twin.mjs`) is unchanged — the open topics' MCQ twins are already full.
+
 ## 6. The flip — per (level, topic), then everywhere
 
 School rows leave serving one topic at a time, never by surprise:
