@@ -622,18 +622,26 @@ export async function POST(req: NextRequest) {
       studentsData.records.map((r: any) => [r.id, r.fields])
     );
 
-    const pdfBuffers = await Promise.all(
+    // Stored PDFs download in parallel; the missing ones are then RENDERED ONE AT A
+    // TIME (15 Oct 2026: all 29 November drafts had no stored PDF, and rendering six
+    // at once failed five of them — a full 10am run would have failed most bills).
+    const nameOf = (record: any) => studentsById[record.fields['Student']?.[0]]?.['Student Name'] || '';
+    const pdfBuffers: (Buffer | null)[] = await Promise.all(
       invoiceRecords.map(async (record: any) => {
-        const studentName = studentsById[record.fields['Student']?.[0]]?.['Student Name'] || '';
         const pdfUrl = record.fields['PDF URL'];
-        if (pdfUrl) {
-          try { return await downloadPdf(pdfUrl); }
-          catch (e: any) { console.error(`[send-invoices] stored PDF download failed for ${studentName}, regenerating:`, e?.message); }
-        }
+        if (!pdfUrl) return null;
+        try { return await downloadPdf(pdfUrl); }
+        catch (e: any) { console.error(`[send-invoices] stored PDF download failed for ${nameOf(record)}, regenerating:`, e?.message); return null; }
+      })
+    );
+    for (let i = 0; i < invoiceRecords.length; i++) {
+      if (pdfBuffers[i]) continue;
+      pdfBuffers[i] = await (async (record: any) => {
+        const studentName = nameOf(record);
         // No usable blob PDF (signup invoice, or download failed). Generate one
         // now so the email never goes out without its invoice, and so it gets
-        // archived. RETRY once — Blob writes occasionally fail transiently under
-        // the parallel load of a bulk send (this caused silent no-attachment sends).
+        // archived. RETRY once — Blob writes occasionally fail transiently
+        // (this caused silent no-attachment sends).
         for (let attempt = 1; attempt <= 2; attempt++) {
           try {
             const { buffer, url } = await generateAndStoreInvoicePdf(record, studentName);
@@ -644,8 +652,8 @@ export async function POST(req: NextRequest) {
           }
         }
         return null;
-      })
-    );
+      })(invoiceRecords[i]);
+    }
 
     // Which of these invoices already had a COMPLETE (PDF-carrying) delivery —
     // checked before this send archives anything, so it reflects prior sends only.

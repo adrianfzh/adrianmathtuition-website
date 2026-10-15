@@ -7,6 +7,11 @@ import { waDisplay } from '@/lib/wa-number';
 import { parentFacingDescription } from './invoice-description';
 
 let browserInstance: Awaited<ReturnType<typeof puppeteer.launch>> | null = null;
+// The launch in flight, shared by every caller that arrives while it runs (15 Oct
+// 2026). Before this, six bills rendered at once each launched their OWN Chromium
+// (the cached instance was still null) and five of the six failed — the November
+// send had to go out one bill at a time.
+let launching: Promise<Awaited<ReturnType<typeof puppeteer.launch>>> | null = null;
 
 const MAC_CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
@@ -50,6 +55,16 @@ export async function getBrowser() {
     }
   }
 
+  if (!launching) {
+    launching = launchBrowser().then(
+      (b) => { browserInstance = b; launching = null; return b; },
+      (e) => { launching = null; throw e; },
+    );
+  }
+  return launching;
+}
+
+async function launchBrowser() {
   const isProd = process.env.VERCEL === '1';
   if (isProd) {
     // Bundled Chromium (5 Sep 2026): @sparticuz/chromium ships the brotli-packed
@@ -61,19 +76,17 @@ export async function getBrowser() {
     // the bin/ files travel with each route that renders.
     const chromium = await import('@sparticuz/chromium');
     const executablePath = await chromium.default.executablePath();
-    browserInstance = await puppeteer.launch({
+    return puppeteer.launch({
       args: chromium.default.args,
       executablePath,
       headless: true,
     });
-  } else {
-    browserInstance = await puppeteer.launch({
-      executablePath: localChromePath(),
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
-    });
   }
-  return browserInstance;
+  return puppeteer.launch({
+    executablePath: localChromePath(),
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+  });
 }
 
 export async function closeBrowser() {
@@ -86,34 +99,36 @@ export async function closeBrowser() {
 async function renderPDF(html: string): Promise<Buffer> {
   const browser = await getBrowser();
   const page = await browser.newPage();
+  try {
+    // Allow Google Fonts so the template renders in Open Sans (not DejaVu fallback).
+    // Without the actual font, headings render wider and the bot section overflows page 1.
+    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 20000 });
+    // Belt-and-braces: explicitly wait for the fontset to finish loading.
+    await page.evaluate(() => (document as any).fonts?.ready);
 
-  // Allow Google Fonts so the template renders in Open Sans (not DejaVu fallback).
-  // Without the actual font, headings render wider and the bot section overflows page 1.
-  await page.setContent(html, { waitUntil: 'networkidle0', timeout: 20000 });
-  // Belt-and-braces: explicitly wait for the fontset to finish loading.
-  await page.evaluate(() => (document as any).fonts?.ready);
+    // FIT TO ONE PAGE (15 Sep 2026). An invoice carrying a previous-balance row
+    // or an extras line ran a few pixels past A4, and the footer alone — or the
+    // whole Telegram box — landed on a second page (Alexis Wong's, Denise Chan's
+    // October 2026 drafts). Measure the rendered height and scale the page down
+    // just enough, but only for a near miss: an invoice genuinely longer than a
+    // page and a third keeps its second page rather than shrinking to a squint.
+    await page.evaluate(() => {
+      const A4_PX = 1123;   // 297 mm at 96 dpi
+      const h = document.documentElement.scrollHeight;
+      if (h > A4_PX && h < A4_PX * 1.34) (document.documentElement.style as any).zoom = String(Math.floor((A4_PX / h) * 0.995 * 1000) / 1000);
+    });
 
-  // FIT TO ONE PAGE (15 Sep 2026). An invoice carrying a previous-balance row
-  // or an extras line ran a few pixels past A4, and the footer alone — or the
-  // whole Telegram box — landed on a second page (Alexis Wong's, Denise Chan's
-  // October 2026 drafts). Measure the rendered height and scale the page down
-  // just enough, but only for a near miss: an invoice genuinely longer than a
-  // page and a third keeps its second page rather than shrinking to a squint.
-  await page.evaluate(() => {
-    const A4_PX = 1123;   // 297 mm at 96 dpi
-    const h = document.documentElement.scrollHeight;
-    if (h > A4_PX && h < A4_PX * 1.34) (document.documentElement.style as any).zoom = String(Math.floor((A4_PX / h) * 0.995 * 1000) / 1000);
-  });
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      preferCSSPageSize: true,
+    });
 
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    printBackground: true,
-    margin: { top: '0', bottom: '0', left: '0', right: '0' },
-    preferCSSPageSize: true,
-  });
-
-  await page.close();
-  return Buffer.from(pdfBuffer);
+    return Buffer.from(pdfBuffer);
+  } finally {
+    await page.close().catch(() => {});
+  }
 }
 
 export interface InvoiceData {
