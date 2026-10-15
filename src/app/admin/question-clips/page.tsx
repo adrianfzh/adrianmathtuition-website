@@ -13,6 +13,7 @@ import { QUESTION_CLIPS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 export const dynamic = 'force-dynamic';
 
 const CHECK_NAMES: Record<string, string> = {
+  'photo-read': 'read off the photo', solves: 'two blind solves agree', same: 'same question — copied',
   pre: 'can be checked', plan: 'plan', maths: 'maths', read: 'blind read', rules: 'rules', board: 'board = plan',
   voice: 'voice', look: 'look on a phone', pictures: 'pictures read',
 };
@@ -42,10 +43,10 @@ export default async function QuestionClipsAdmin() {
           return (
             <li key={r.question_id} className="rounded-xl border border-slate-200 p-4">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{r.topic ?? '—'} · {q?.school} {q?.year}</span>
+                <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{r.topic ?? '—'} · {r.source === 'photo' ? <a className="underline" href={`/app/marking/${r.origin?.run_id}`}>📷 photo, Q{r.origin?.question_number}</a> : <>{q?.school} {q?.year}</>}</span>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${r.status === 'ready' ? 'bg-emerald-100 text-emerald-800' : r.status === 'failed' ? 'bg-rose-100 text-rose-800' : r.status === 'refused' ? 'bg-slate-100 text-slate-600' : 'bg-amber-100 text-amber-800'}`}>{r.status}</span>
               </div>
-              <div className="mt-2 text-sm"><MathMarkdown content={q?.question_text ?? ''} /></div>
+              <div className="mt-2 text-sm"><MathMarkdown content={q?.question_text ?? r.question_text ?? ''} /></div>
               {checks.length > 0 && (
                 <p className="mt-2 text-xs text-slate-600">
                   {checks.map(([k, c]) => <span key={k} className="mr-3" title={c.detail}>{c.ok ? '✓' : '✗'} {CHECK_NAMES[k] ?? k}</span>)}

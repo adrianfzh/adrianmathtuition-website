@@ -5,7 +5,9 @@ pipeline for skill clips, run by hand, and the 7 A Math Logarithms clips — adm
 for Adrian to watch them. Where it stands and how to run it: **§8**. **Step 2 (question clips)
 BUILT 15 Oct 2026**: one command makes a checked clip for any bank question; 10 real A Math
 questions made end to end, all 10 passing every check, admin-only, waiting for Adrian's watch —
-**§9**.
+**§9**. **Photo questions (no bank row) BUILT 15 Oct 2026** — 3 real hand-in questions made end to
+end, every check passed, and a 4th student's photo of the same question given the clip in 18 s —
+**§9b**.
 **Asked for:** Adrian, 15 Oct 2026: *"is there a way to build a pipeline to generate clip solutions almost immediately? like within a few minutes … an automated one with all checks to ensure real good quality? this will highly enhance the app experience"* and *"before you do, can you plan how is it done to make it really good and high quality?"*
 **The standard:** `data/lessons/expand-two-brackets-s2.json`, the clip Adrian approved on 9 Oct (*"video is much better now. let's keep to this quality"*). Rules in `docs/LESSONS.md` §A clip, §Word cues, §Narration.
 **Why the old one-minute explanation is not good enough:** it is built straight from the marker's steps with no writing step, so the voice reads working instead of teaching, and nothing checks it (`src/lib/explain-clip.ts`, closed to students).
@@ -349,9 +351,7 @@ Differentiation, Integration, Kinematics and most Trigonometry topics are in the
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
 - **The queue worker runs on the Mac** (above) — it stops when the Mac sleeps; moving it to the Fly
   worker (Chrome, ffmpeg, sympy and a copy of the site to play the clip on) would keep it going.
-- **Photos a student uploads** (no bank row): not built. The marked-paper door shows only when the
-  paper matched the bank. A photo-read question needs a checked answer first — that is the next
-  piece.
+- **Photos a student uploads** (no bank row): BUILT 15 Oct 2026 — §9b.
 - **Graphs, proofs, words, figures** are refused (above); a "show that" could later land on the
   given result as its last line.
 - **"Ask about this step"** (§8b) is not switched on for question clips (its "back" link goes to
@@ -362,3 +362,80 @@ Differentiation, Integration, Kinematics and most Trigonometry topics are in the
    log30, then so on."* → the laws clip re-cut in exactly that order (and the same for the minus);
    in a clip a `highlight` now STAYS lit — yellow chalk — through its beat and the next (it was a
    0.9 s glow that had faded before the eye got there): `lesson-board.tsx` 2b, `BoardPulse.beat`.
+
+## 9b. Photo questions — BUILT 15 Oct 2026 (admin + preview student)
+
+Adrian, 15 Oct 2026: clips for ANY question a student uploads, not only bank questions. Until now
+the 🎬 door on a marked paper showed only when the marking matched the paper to the bank.
+
+### What is different from a bank question
+
+A bank question comes with a checked answer and solution. A photo question has neither, and the
+marker's own reading of it (`result_json.results[].marking_output.question.prompt`) is a SHORT
+retelling — it drops words and sometimes numbers ("Matrix P of prices at stores A and B…"). So
+three steps run first, then the bank pipeline of §9 unchanged:
+
+| Step | What | Check |
+|---|---|---|
+| Photo read | the hand-in photos of that question (plus the page before, in case it starts there) are fetched from `student-files`, shrunk to 2000 px, and an Opus agent copies the PRINTED question word for word, ignoring the handwriting (`prompts/photo-read.md`); it names the level and one topic from the canonical list | refused when not on the photos, cut off, or a value unreadable; **every number the marker read must be in the photo reading** (`numbersMissing`) — else refused (`reading`) |
+| Same question? | `text_hash` = sha-256 of the normalised reading (`questionTextHash`: case, spaces, `$`, `\left`, `\dfrac`, `[3]` taken out) | a READY clip with the same hash → copied (`same_as`), no drafting, no voice — **18 s** |
+| Two blind solves | two Opus agents, each reading only `solve-input.json` (the question and level), solve it (`prompts/blind-solve.md`; sympy allowed) and give each part's answer in sympy | `answers-agree.py`: roots as sets, ranges as sets of reals, points entry by entry, expressions by simplify(a − b) = 0, decimals rounded alike — **any part not agreed → refused (`unchecked`)**; nothing is guessed |
+| Then §9 | the agreed answer becomes `answer.bank` for the independent maths check; solve A's working is the "bank solution" the planner reads | plan → maths → fit → two drafts → blind read → rules → voice → look → pictures, exactly as §9 |
+
+The usual refusals still apply before any solve (figure, graph, show-that, words, > 2 parts).
+
+### Where it lives
+
+- `question_clips` (migration `migrations/question_clips_photo.sql`, applied 15 Oct): the foreign key
+  to `questions` is gone; new columns `source` ('bank' | 'photo'), `origin` {run_id,
+  question_number}, `question_text` (the photo reading), `text_hash`, `same_as`. A photo clip's id is
+  `photoClipId(run, number)` — a stable uuid, so the marked page finds its own door with no lookup.
+- Command: `node scripts/clips/question-clip.mjs --run <marked run id> --q <number>` (or the row id
+  once queued — the worker runs photo rows the same way as bank rows).
+- Door: on `/app/marking/<id>`, every lost-marks question the bank match did NOT cover gets the 🎬
+  door (`photoClipIdsForRun`); Adrian's "Make a clip" posts `{photo: {run, q}}` and
+  `enqueuePhotoClip` queues the row. A student only ever sees a READY clip, and only once
+  `QUESTION_CLIPS_OPEN_TO_STUDENTS` is on (admin + preview student until then).
+- `/admin/question-clips` shows a photo clip as "📷 photo, Q<n>" linking to the marked paper, with
+  its photo reading and the three new checks.
+
+### The 3 (15 Oct 2026) — every check, per clip
+
+Links (log in on the preview first): `https://adrianmath-dev.vercel.app/app/clip/q/<id>`.
+
+| Clip id | From (marked paper, question) | Question (read off the photo) | Topic | Result | Photo read | Two solves | Maths | Fit | Read (lowest) | Rules | Voice (worst line) | Look (cues worst) | Pictures | Time | Voice US$ | Agent runs |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `1a9842f6` | A MATH TKGS Paper 1, Q3 | Express $\frac{2x+3}{(x-1)(x^2+4)}$ in partial fractions. | Partial Fractions | **ready** | ✓ | ✓ $\frac{1}{x-1}-\frac{x-1}{x^2+4}$ both | ✓ 30/30 | ✓ | ✓ 4 | ✓ | ✓ 90 % | ✓ 0.15 s | ✓ 19 | 14 min 50 s | 0.083 | 9 |
+| `c9e82111` | A MATH TKGS Paper 1, Q1 | A line $3x + y = k$ meets the curve $y = x^2 - 2x + 3$ at only 1 point. Find $k$. | Nature of Roots (new bible) | **ready** | ✓ | ✓ $k = \frac{11}{4}$ both | ✓ 19/19 | ✓ | ✓ 4 | ✓ | ✓ 89 % | ✓ 0.15 s | ✓ 16 | 17 min 5 s | 0.083 | 10 |
+| `10efe9bc` | ADRIANMATH 2026 AM P1 Set 1, Q1 | $y = x^2 - 2kx + 3k$: (a) complete the square, minimum point $M$; (b) $k$ for which $M$ lies on $y = 2x - 6$ | Quadratic Functions (new bible) | **ready** | ✓ | ✓ (a) $(k, 3k-k^2)$ (b) $k=-2, 3$ both | ✓ 19/19 | ✓ | ✓ 4 | ✓ | ✓ 90 % | ✓ 0.15 s | ✓ 18 | 10 min 26 s | 0.079 | 10 |
+| `b3002e82` | AMATH set 1 paper 1 (another student), Q1 | the same question, read off a different student's photo | Quadratic Functions | **ready — copied** from `10efe9bc` | ✓ | — | — | — | — | — | — | — | — | **18 s** | 0 | 1 |
+| `3c6e9f0e` | 2025 Amath Paper 1, Q2 | the set of $k$ for which $y = kx^2 + 2x + k + 1$ is completely below $y = x + 1$ | Nature of Roots | **refused** — the working is a chain of inequalities, and the maths check has no inequality kind | ✓ | ✓ $k < -\frac12$ both | — | — | — | — | — | — | — | 2 min | 0 | 5 |
+
+The two readings of the same printed question by different students (306 and 308 characters) hashed
+alike — the normalising did its job on a real pair.
+
+**Fixes the runs forced** (both in `answers-agree.py`, before any clip was made from them): a point
+`(k, 3k − k²)` was compared as a number (always "different") — points now compare entry by entry; a
+decimal answer printed by sympy as `2.65000000000000` counted 14 places — trailing zeros are dropped.
+
+**Cost per photo clip**: the bank clip's cost (§9) plus three agent runs (the reading, two solves,
+≈ 1 min together); voice ≈ US$0.08. A copy for the next student costs one reading (≈ 20 s).
+
+### Not done / next (photo questions)
+
+- **Inequalities**: "find the set of values of k" questions are refused — `chain-check.py` needs an
+  inequality kind (each line's solution set equals the one before) before they can be checked. Many
+  Nature of Roots / Quadratic Inequalities questions are this shape.
+- **Only A Math topics with approved notes** (15 today: Logarithms, Indices, Surds, Polynomials,
+  Partial Fractions, Binomial, Nature of Roots, Quadratic Functions/Inequalities, Simultaneous
+  Equations, Linear Law, Coordinate Geometry, Circles, Plane Geometry, Trig Applications); the rest
+  are refused `no-notes` like bank questions. E Math has no approved notes yet.
+- **Asking happens on press**: a photo clip is made when Adrian presses "Make a clip" on the marked
+  paper (or the command). Making one for every lost-marks question automatically after marking is
+  the next step once he has watched these.
+- **Practice photos** (`practice-photo`, `portal_generation_log.seed_text`) are not wired: those
+  questions become generated bank rows already, so they take the bank door.
+- **The clip site** (port 3211) runs from its own clone (`~/dev/adrianmath-clip-site`); the door code
+  reaches it when that clone is updated — the pipeline itself only needs the clip page, which did
+  not change.
+

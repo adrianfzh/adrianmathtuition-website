@@ -14,8 +14,9 @@ import ClipDoor from '../clip/q/[id]/clip-door';
 // this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
 
-/** `clipIds`: question number → its bank row, when the paper matched the bank — the 🎬 solution-clip door (SPEC-CLIP-PIPELINE.md §9). */
-export default function LostMarks({ paper, explain = false, clipIds = {} }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string> }) {
+/** `clipIds`: question number → its bank row, when the paper matched the bank — the 🎬 solution-clip door (SPEC-CLIP-PIPELINE.md §9).
+ *  `photoClipIds`: question number → its photo-question clip id, for the rest (§9b). */
+export default function LostMarks({ paper, explain = false, clipIds = {}, photoClipIds = {} }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string>; photoClipIds?: Record<string, string> }) {
   if (paper.dropped.length === 0) {
     return paper.questions.length > 0
       ? <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">✅ Full marks on every question marked.</p>
@@ -81,9 +82,11 @@ export default function LostMarks({ paper, explain = false, clipIds = {} }: { pa
             {explain && canExplain(q) && (
               <Link href={explainHref(paper.id, q.questionNumber)} className="inline-block mt-2 text-[12px] font-semibold bg-navy text-white rounded-full px-3 py-1.5" data-explain-door>▶ Explain it · 1 min</Link>
             )}
-            {clipIds[q.questionNumber] && (
+            {clipIds[q.questionNumber] ? (
               <div className="mt-2"><ClipDoor questionId={clipIds[q.questionNumber]} from="paper" back={`/app/marking/${paper.id}`} /></div>
-            )}
+            ) : photoClipIds[q.questionNumber] ? (
+              <div className="mt-2"><ClipDoor questionId={photoClipIds[q.questionNumber]} from="paper" back={`/app/marking/${paper.id}`} photo={{ run: paper.id, q: q.questionNumber }} /></div>
+            ) : null}
             {q.solution && (
               <details className="mt-2 group/sol">
                 <summary className="cursor-pointer text-[13px] font-semibold text-navy list-none flex items-center gap-1.5">

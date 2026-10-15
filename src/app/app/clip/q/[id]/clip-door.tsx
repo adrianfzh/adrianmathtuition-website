@@ -8,8 +8,11 @@ import { useEffect, useState } from 'react';
 
 type Status = 'queued' | 'making' | 'ready' | 'refused' | 'failed' | null;
 
-export default function ClipDoor({ questionId, from, initial, verdict: verdictProp = null, watchOnly = false, back }: {
+// `photo`: a question on a marked paper the bank match did not cover (§9b) — "Make a clip" sends
+// the run + number so the worker reads the question off the hand-in photos.
+export default function ClipDoor({ questionId, from, initial, verdict: verdictProp = null, watchOnly = false, back, photo }: {
   questionId: string; from: 'practice' | 'paper' | 'admin'; initial?: Status; verdict?: 'good' | 'not_good' | null; watchOnly?: boolean; back?: string;
+  photo?: { run: string; q: string };
 }) {
   const [state, setState] = useState<{ status: Status; canMake: boolean; line: string } | null>(initial !== undefined ? { status: initial, canMake: true, line: '' } : null);
   const [busy, setBusy] = useState(false);
@@ -50,7 +53,7 @@ export default function ClipDoor({ questionId, from, initial, verdict: verdictPr
   if (!state.canMake) return null;
   const make = async (retry: boolean) => {
     setBusy(true);
-    const r = await fetch('/api/portal/question-clip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: questionId, from, retry }) }).catch(() => null);
+    const r = await fetch('/api/portal/question-clip', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: questionId, from, retry, ...(photo ? { photo } : {}) }) }).catch(() => null);
     const j = r && r.ok ? await r.json() : null;
     if (j) setState({ status: j.status, canMake: true, line: j.line ?? '' });
     setBusy(false);

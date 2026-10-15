@@ -6,6 +6,7 @@
 //
 // Pure and IO-free (testing policy, CLAUDE.md): the up-front refusal, the slug, the
 // bible file, the status words. The server half is lib/question-clip-store.ts.
+import { createHash } from 'node:crypto';
 import { hasPartMarks } from './part-syllabus';
 
 export type QuestionClipStatus = 'queued' | 'making' | 'ready' | 'refused' | 'failed';
@@ -120,3 +121,57 @@ export function parseBankKey(key: string | null | undefined): { school: string; 
 
 /** Bank school names compared loosely ("Nan Chiau" = "nan chiau" = "NanChiau"). */
 export const schoolSlug = (s: string | null | undefined): string => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g, '');
+
+// ── Photo questions (§9b, 15 Oct 2026): a question a student handed in on a paper the
+// marking did NOT match to the bank. No bank row, so the clip is keyed two ways:
+//   • its row id = photoClipId(run, number) — one per (marked paper, question), so the
+//     marked page can find its own door without a lookup table;
+//   • text_hash = questionTextHash(the question read off the photo) — the same question
+//     handed in by the next student is found by this and its clip copied, not made again.
+
+/** A uuid-shaped id from a string (sha-256, version nibble 5) — stable, never random. */
+export function uuidFromString(s: string): string {
+  const h = createHash('sha256').update(s).digest('hex');
+  const v = ((parseInt(h[16], 16) & 0x3) | 0x8).toString(16);
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-${v}${h.slice(17, 20)}-${h.slice(20, 32)}`;
+}
+
+/** The question_clips id for question `number` of marked run `runId`. */
+export function photoClipId(runId: string, number: string): string {
+  return uuidFromString(`photo:${runId.toLowerCase()}:${String(number).trim().toLowerCase()}`);
+}
+
+/**
+ * The question text with everything a second reading of the same page may write
+ * differently taken out: case, spaces, `$`, `\,` / `\;` / `\left` / `\right`, `\dfrac`→`\frac`,
+ * `[3]` mark brackets, unicode minus and times. Two readings of one printed question
+ * normalise to the same string far more often than not; when they do not, the clip is
+ * simply made again (never a wrong match).
+ */
+export function normaliseQuestionText(t: string): string {
+  return String(t ?? '')
+    .toLowerCase()
+    .replace(/\\[dt]frac/g, '\\frac')
+    .replace(/\\(left|right|displaystyle|,|;|!|quad|qquad)/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/[−–]/g, '-')
+    .replace(/×/g, '\\times')
+    .replace(/[$\s{}]/g, '')
+    .replace(/[.]+$/, '');
+}
+
+export function questionTextHash(t: string): string {
+  return createHash('sha256').update(normaliseQuestionText(t)).digest('hex');
+}
+
+/**
+ * Every number a marker's short reading of the question names must also be in the full
+ * reading off the photo (digit runs, so "1.5%" and "$1.5\%$" agree). A number missing means
+ * the two readings are of different questions, or the photo read dropped a value — the clip
+ * is refused rather than made from a misread question. Returns the missing numbers.
+ */
+export function numbersMissing(markerReading: string, photoReading: string): string[] {
+  const nums = (s: string) => String(s ?? '').replace(/\\frac\{(\d+)\}\{(\d+)\}/g, '$1/$2').match(/\d+(?:\.\d+)?/g) ?? [];
+  const have = new Set(nums(photoReading));
+  return [...new Set(nums(markerReading))].filter(n => !have.has(n));
+}

@@ -2,7 +2,7 @@
 // (refusals, slugs, status words) is lib/question-clip.ts; the pipeline that fills
 // a row is scripts/clips/question-clip.mjs, its queue runner question-clip-worker.mjs.
 import { getSupabaseAdmin } from './supabase';
-import { parseBankKey, preRefuse, schoolSlug, type ClipQuestionRow, type QuestionClipStatus } from './question-clip';
+import { parseBankKey, photoClipId, preRefuse, schoolSlug, type ClipQuestionRow, type QuestionClipStatus } from './question-clip';
 import type { LessonScript } from './lesson-script';
 // The part-marks door: preRefuse (lib/question-clip) refuses any question with a part marked out of
 // syllabus (hasPartMarks), so no clip ever shows a hidden part; bankQuestionsForRun reads ids only.
@@ -26,9 +26,14 @@ export interface QuestionClipRow {
   watched_at: string | null;
   verdict: 'good' | 'not_good' | null;
   note: string | null;
+  /** §9b: 'photo' = a question read off a hand-in (origin = its marked run + number). */
+  source: 'bank' | 'photo';
+  origin: { run_id: string; question_number: string } | null;
+  question_text: string | null;
+  same_as: string | null;
 }
 
-const LIST_COLUMNS = 'question_id, status, requested_from, requested_at, started_at, finished_at, seconds, slug, topic, gate, cost, refuse_reason, fail_reason, watched_at, verdict, note';
+const LIST_COLUMNS = 'question_id, source, origin, question_text, same_as, status, requested_from, requested_at, started_at, finished_at, seconds, slug, topic, gate, cost, refuse_reason, fail_reason, watched_at, verdict, note';
 
 export async function getQuestionClip(questionId: string, withScript = true): Promise<QuestionClipRow | null> {
   const { data } = await getSupabaseAdmin().from('question_clips')
@@ -91,4 +96,30 @@ export async function bankQuestionsForRun(resultJson: unknown, numbers: string[]
     if (pick) out[n] = pick.id;
   }
   return out;
+}
+
+/**
+ * Ask for a clip of a PHOTO question (§9b): question `number` of marked run `runId`, on a paper
+ * the marking did not match to the bank. The row id is photoClipId(run, number); the worker reads
+ * the question off the photos, checks it with two blind solves, and copies an existing clip when
+ * another student's photo of the same question was already made.
+ */
+export async function enqueuePhotoClip(runId: string, number: string, from: string, retry = false): Promise<{ id: string; status: QuestionClipStatus | 'missing' }> {
+  const sb = getSupabaseAdmin();
+  const id = photoClipId(runId, number);
+  const existing = await getQuestionClip(id, false);
+  if (existing && (['queued', 'making', 'ready'].includes(existing.status) || !retry)) return { id, status: existing.status };
+  const { data: run } = await sb.from('paper_marking_runs').select('id').eq('id', runId).maybeSingle();
+  if (!run) return { id, status: 'missing' };
+  const now = new Date().toISOString();
+  await sb.from('question_clips').upsert({
+    question_id: id, source: 'photo', origin: { run_id: runId, question_number: number },
+    requested_from: from, requested_at: now, updated_at: now, status: 'queued', refuse_reason: null, fail_reason: null, finished_at: null,
+  }, { onConflict: 'question_id' });
+  return { id, status: 'queued' };
+}
+
+/** The 🎬 door ids for a marked paper's questions the bank match did not cover: number → photoClipId. */
+export function photoClipIdsForRun(runId: string, numbers: string[]): Record<string, string> {
+  return Object.fromEntries(numbers.map(n => [n, photoClipId(runId, n)]));
 }

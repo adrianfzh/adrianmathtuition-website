@@ -43,15 +43,18 @@ import { spawn, spawnSync } from 'node:child_process';
 import { ROOT, loadTs, parseArgs, resolveSupabase } from '../lessons/shared.mjs';
 
 const args = parseArgs(process.argv.slice(2));
-const QID = String(args._[0] || '');
-if (!/^[0-9a-f-]{36}$/i.test(QID)) { console.error('usage: node scripts/clips/question-clip.mjs <questionId> [--base URL] [--from batch]'); process.exit(2); }
+const QC = await loadTs('src/lib/question-clip.ts');
+// A photo question (§9b): --run <marked run id> --q <question number> → its row id; or the row's
+// id when the row (source 'photo', origin {run_id, question_number}) is already queued.
+const PHOTO_ARG = args.run && args.q != null ? { run_id: String(args.run), question_number: String(args.q) } : null;
+const QID = PHOTO_ARG ? QC.photoClipId(PHOTO_ARG.run_id, PHOTO_ARG.question_number) : String(args._[0] || '');
+if (!/^[0-9a-f-]{36}$/i.test(QID)) { console.error('usage: node scripts/clips/question-clip.mjs <questionId> | --run <runId> --q <number>  [--base URL] [--from batch]'); process.exit(2); }
 const BASE = String(args.base || 'http://localhost:3211').replace(/\/$/, '');
 const FROM = String(args.from || 'admin');
 const WORKER = String(args.worker || `${os.hostname().split('.')[0]}:${process.pid}`);
 /** MiniMax speech-02-hd, US$ per 1,000 characters (list price; step 1 measured < US$0.12). */
 const VOICE_USD_PER_1K = 0.1;
 
-const QC = await loadTs('src/lib/question-clip.ts');
 const SLUG = QC.questionClipSlug(QID);
 const RUN = path.join(ROOT, 'data/clip-runs', SLUG);
 const PLAN = path.join(ROOT, 'data/clip-plans', `${SLUG}.json`);
@@ -145,12 +148,99 @@ async function finish(status, reason) {
 }
 const put = (k, ok, detail) => { gate.checks[k] = { ok: !!ok, detail }; log(`  ${ok ? '✓' : '✗'} ${k}: ${detail}`); };
 
-// ── 1 gather ────────────────────────────────────────────────────────────────
-const prev = (await rest(`question_clips?question_id=eq.${QID}&select=attempts,status`))?.[0];
-await saveRow({ status: 'making', claimed_by: WORKER, started_at: new Date().toISOString(), attempts: (prev?.attempts ?? 0) + 1,
-  requested_from: prev ? undefined : FROM, finished_at: null, fail_reason: null, refuse_reason: null });
+// ── 1 gather, photo question (§9b) ──────────────────────────────────────────
+// read the printed question off the hand-in photos → check it against the marker's reading →
+// the same question already made? copy it → two blind solves that must agree → a bank-like row.
+async function photoGather(origin) {
+  const SF = await loadTs('src/lib/student-files-url.ts');
+  const CT = await loadTs('src/lib/canonical-topics.ts');
+  fs.rmSync(RUN, { recursive: true, force: true });
+  fs.mkdirSync(RUN, { recursive: true });
+  const runRel = path.relative(ROOT, RUN);
+  const read = await step('photo-read', async () => {
+    const [run] = await rest(`paper_marking_runs?id=eq.${origin.run_id}&select=id,paper_subject,result_json->results,result_json->source`);
+    if (!run) return { refuse: 'not-found', why: 'the marked paper is gone' };
+    const entries = (run.results ?? []).filter(r => String(r.question_number) === origin.question_number);
+    if (!entries.length) return { refuse: 'not-found', why: `the marking has no question ${origin.question_number}` };
+    const markerReadings = entries.map(e => e.marking_output?.question?.prompt).filter(Boolean);
+    const idx = [...new Set(entries.map(e => e.photo_index).filter(i => i != null))].sort((a, b) => a - b);
+    // The question may start at the foot of the page before — give the reader the page before too.
+    const pages = [...new Set([...(idx.length ? [idx[0] - 1] : []), ...idx])].filter(i => i >= 0);
+    const photos = [];
+    for (const i of pages) {
+      const url = (run.source?.photos ?? []).find(p => p.photo_index === i)?.original_url;
+      const key = SF.keyFromUrl(url);
+      if (!key) continue;
+      const r = await fetch(`${sb.url}/storage/v1/object/${SF.STUDENT_FILES_BUCKET}/${key}`, { headers: { apikey: sb.key, Authorization: `Bearer ${sb.key}` } });
+      if (!r.ok) continue;
+      const file = path.join(RUN, `photo-${i}.jpg`);
+      fs.writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+      sh('sips', ['-Z', '2000', file]);  // a phone photo is too big for the reader; 2000 px keeps print sharp
+      photos.push(path.relative(ROOT, file));
+    }
+    if (!photos.length) return { refuse: 'not-found', why: 'the hand-in photos could not be fetched' };
+    const lv = /a\s*-?math|\bam\b/i.test(run.paper_subject ?? '') ? 'AM' : /e\s*-?math|\bem\b/i.test(run.paper_subject ?? '') ? 'EM' : null;
+    const topics = (lv === 'EM' ? CT.E_MATH_EXAM_TOPICS : CT.A_MATH_EXAM_TOPICS).flatMap(c => c.topics);
+    fs.writeFileSync(path.join(RUN, 'photo-input.json'), JSON.stringify({ question_number: origin.question_number, marker_readings: markerReadings, photos, level_hint: run.paper_subject, topics }, null, 1));
+    const reply = await agent('photo-read', 'opus', `Read scripts/clips/prompts/photo-read.md and follow it. Run folder: ${runRel}. Input: ${runRel}/photo-input.json. Write ${runRel}/photo-read.json.`, { effort: 'high', tools: 'Read,Write' });
+    log(`  photo-read: ${reply}`);
+    const pr = readJson(path.join(RUN, 'photo-read.json'));
+    if (!pr) return { refuse: 'unreadable', why: 'the photo reading was not written' };
+    pr.markerReadings = markerReadings;
+    return pr;
+  });
+  if (read.refuse) { put('photo-read', false, `${read.refuse}: ${read.why}`); return finish('refused', `${read.refuse}: ${read.why}`); }
+  if (!read.whole) { put('photo-read', false, 'not-whole'); return finish('refused', 'not-whole: part of the question is cut off in the photo'); }
+  const missing = QC.numbersMissing(read.markerReadings.join(' '), read.question_text);
+  put('photo-read', missing.length === 0, missing.length ? `the marker read ${missing.join(', ')} but the photo reading has no such number` : `read off the photo (${read.question_text.length} characters); every number the marker read is in it`);
+  if (missing.length) return finish('refused', `reading: the photo reading and the marker's reading disagree (${missing.join(', ')})`);
+  const textHash = QC.questionTextHash(read.question_text);
+  await saveRow({ question_text: read.question_text, text_hash: textHash, topic: read.topic });
 
-const q = await step('gather', async () => {
+  // The same question, already made for another student → copy it (no new drafting, no voice).
+  const [twin] = await rest(`question_clips?text_hash=eq.${textHash}&status=eq.ready&same_as=is.null&question_id=neq.${QID}&select=question_id,script,plan,gate,topic,bible,slug&limit=1`) ?? [];
+  if (twin) {
+    gate.checks = { ...(twin.gate?.checks ?? {}), ...gate.checks };
+    put('same', true, `the same question as clip ${twin.question_id.slice(0, 8)} — copied`);
+    await saveRow({ script: twin.script, plan: twin.plan, topic: twin.topic, bible: twin.bible, same_as: twin.question_id });
+    return finish('ready', null);
+  }
+
+  // Refusals that need no answer first (figure, graph, proof, words, > 2 parts).
+  const row = { id: QID, question_text: read.question_text, level: read.level, topics: [read.topic], parts: read.parts ?? [], has_image: !!read.figure, answer: '-', solution: '-' };
+  const early = QC.preRefuse(row);
+  if (early) { put('pre', false, `${early.kind}: ${early.why}`); return finish('refused', `${early.kind}: ${early.why}`); }
+
+  // Two blind solves (each sees only the question), which must agree.
+  fs.writeFileSync(path.join(RUN, 'solve-input.json'), JSON.stringify({ level: read.level, question: read.question_text }, null, 1));
+  const SOLVE = (k) => `Read scripts/clips/prompts/blind-solve.md and follow it. Read ONLY ${runRel}/solve-input.json (no other file in that folder). Write ${runRel}/solve-${k}.json.`;
+  await step('solves', () => Promise.all(['A', 'B'].map(k => agent(`solve-${k}`, 'opus', SOLVE(k), { effort: 'high', tools: 'Read,Write,Bash(/usr/bin/python3:*)' }))));
+  const A = readJson(path.join(RUN, 'solve-A.json'));
+  const B = readJson(path.join(RUN, 'solve-B.json'));
+  if (!A || !B) { put('solves', false, 'a blind solve was not written'); return finish('failed', 'a blind solve was not written'); }
+  const ag = sh('/usr/bin/python3', ['scripts/clips/answers-agree.py', path.join(RUN, 'solve-A.json'), path.join(RUN, 'solve-B.json')]);
+  const agree = (() => { try { return JSON.parse(ag.stdout); } catch { return null; } })();
+  fs.writeFileSync(path.join(RUN, 'agree.json'), JSON.stringify(agree ?? { error: ag.out }, null, 1));
+  const detail = agree ? agree.parts.map(p => `${p.part || 'answer'}: ${p.a}${p.same ? ' = ' : ' ≠ '}${p.b}${p.why ? ` (${p.why})` : ''}`).join(' · ') : ag.out.trim().slice(-200);
+  put('solves', !!agree?.agree, `two blind solves — ${detail}`);
+  if (!agree?.agree) return finish('refused', `unchecked: the two blind solves do not agree (${detail})`.slice(0, 300));
+  const answer = (A.answers ?? []).map(a => `${a.part ? a.part + ' ' : ''}${a.text}`).join('; ');
+  const out = { ...row, answer, solution: A.working, total_marks: null, subgroup: null };
+  const pre = QC.preRefuse(out);
+  if (pre) { put('pre', false, `${pre.kind}: ${pre.why}`); return finish('refused', `${pre.kind}: ${pre.why}`); }
+  await saveRow({ question_text: read.question_text });
+  return out;
+}
+
+// ── 1 gather ────────────────────────────────────────────────────────────────
+const prev = (await rest(`question_clips?question_id=eq.${QID}&select=attempts,status,source,origin`))?.[0];
+const PHOTO = PHOTO_ARG ?? (prev?.source === 'photo' ? prev.origin : null);
+if (prev?.source === 'photo' && !prev.origin?.run_id) { console.error('photo row without origin'); process.exit(2); }
+await saveRow({ status: 'making', claimed_by: WORKER, started_at: new Date().toISOString(), attempts: (prev?.attempts ?? 0) + 1,
+  requested_from: prev ? undefined : FROM, finished_at: null, fail_reason: null, refuse_reason: null,
+  ...(PHOTO ? { source: 'photo', origin: PHOTO } : {}) });
+
+const q = PHOTO ? await photoGather(PHOTO) : await step('gather', async () => {
   const [row] = await rest(`questions?id=eq.${QID}&select=id,question_text,answer,solution,level,topics,parts,has_image,figure_url,images,image_url,total_marks,legacy_syllabus,national,ai_generated,verified`);
   if (!row) return null;
   const filing = await rest(`question_subgroups?question_id=eq.${QID}&select=is_primary,subgroups(id,name,topic,level,description)`).catch(() => []);
@@ -158,14 +248,16 @@ const q = await step('gather', async () => {
   return row;
 });
 if (!q) await finish('failed', 'no such question in the bank');
-const pre = QC.preRefuse(q);
+const pre = PHOTO ? null : QC.preRefuse(q);
 if (pre) { put('pre', false, `${pre.kind}: ${pre.why}`); await finish('refused', `${pre.kind}: ${pre.why}`); }
 const level = String(q.level).toUpperCase();
 const topic = q.subgroup?.topic || q.topics?.[0];
 if (!topic) await finish('refused', 'no-topic: the question is not filed under a topic');
 const bibleRel = `data/clip-bibles/${QC.bibleFile(topic, level)}`;
-fs.rmSync(RUN, { recursive: true, force: true });
-fs.mkdirSync(RUN, { recursive: true });
+if (!PHOTO) {  // a photo run cleared and filled the folder in photoGather
+  fs.rmSync(RUN, { recursive: true, force: true });
+  fs.mkdirSync(RUN, { recursive: true });
+}
 for (const p of [PLAN, LESSON]) fs.rmSync(p, { force: true });
 fs.rmSync(path.join(ROOT, 'public/lessons', SLUG), { recursive: true, force: true });
 await saveRow({ topic, bible: bibleRel });
@@ -190,6 +282,8 @@ fs.writeFileSync(path.join(RUN, 'question.json'), JSON.stringify({
   question_id: QID, slug: SLUG, level, topic, bible: bibleRel, marks: q.total_marks,
   subskill: q.subgroup ? { id: q.subgroup.id, name: q.subgroup.name, description: q.subgroup.description } : null,
   question_text: q.question_text, parts: q.parts ?? [], solution: q.solution, answer: q.answer,
+  ...(PHOTO ? { source: 'photo — read off a student\'s hand-in; not in the bank',
+    answer_source: 'two independent blind solves that agreed (answers-agree.py); `solution` is one of them, checked by the other\'s answer — treat it as the bank\'s checked solution' } : {}),
 }, null, 1) + '\n');
 const CHAIN_TOOL = 'Read,Write,Edit,Glob,Grep,Bash(/usr/bin/python3 scripts/clips/chain-check.py:*)';
 const planReply = await step('plan', () => agent('plan', 'opus',

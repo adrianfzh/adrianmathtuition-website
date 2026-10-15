@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bibleFile, parseBankKey, preRefuse, questionClipSlug, type ClipQuestionRow } from './question-clip';
+import { bibleFile, numbersMissing, parseBankKey, photoClipId, preRefuse, questionClipSlug, questionTextHash, type ClipQuestionRow } from './question-clip';
 
 const q = (over: Partial<ClipQuestionRow> = {}): ClipQuestionRow => ({
   id: 'a118ba7c-0000-4000-8000-000000000000',
@@ -35,4 +35,25 @@ describe('never-served questions', () => {
   it('refuses a part marked out of syllabus', () => expect(preRefuse(q({ parts: [{ label: '(a)', legacy: true, marks: 2 }, { label: '(b)', marks: 3 }] }))?.kind).toBe('syllabus'));
   it('refuses a national row', () => expect(preRefuse(q({ national: true }))?.kind).toBe('not-served'));
   it('refuses an unchecked twin', () => expect(preRefuse(q({ ai_generated: true, verified: false }))?.kind).toBe('not-served'));
+});
+
+describe('photo questions', () => {
+  it('photo id is a stable uuid per run + number', () => {
+    const a = photoClipId('c1c3f68c-84f9-4d07-b323-7a6583b50104', '3');
+    expect(a).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    expect(photoClipId('C1C3F68C-84F9-4D07-B323-7A6583B50104', ' 3 ')).toBe(a);
+    expect(photoClipId('c1c3f68c-84f9-4d07-b323-7a6583b50104', '4')).not.toBe(a);
+  });
+  it('two readings of one question hash alike', () => {
+    expect(questionTextHash('Express $\\dfrac{2x+3}{(x-1)(x^2+4)}$ in partial fractions. [5]'))
+      .toBe(questionTextHash('Express $\\frac{2x + 3}{\\left(x - 1\\right)(x^{2} + 4)}$ in partial fractions.'));
+  });
+  it('different questions hash apart', () => {
+    expect(questionTextHash('Solve $x^2 = 4$.')).not.toBe(questionTextHash('Solve $x^2 = 9$.'));
+  });
+  it('numbers the marker read must be in the photo read', () => {
+    expect(numbersMissing('Dave invests $2000 at 1.5% quarterly', 'Dave invests \\$2000 at $1.5\\%$ interest compounded quarterly')).toEqual([]);
+    expect(numbersMissing('3x + y = k meets y = x² − 2x + 3', 'The line $3x + y = k$ meets $y = x^2 - 2x + 5$')).toEqual([]);
+    expect(numbersMissing('Bill receives $90', 'Bill receives \\$80')).toEqual(['90']);
+  });
 });

@@ -2,6 +2,7 @@
 //
 //   GET  /api/portal/question-clip?id=<qid>  → { status, line, href }   (status null = none yet)
 //   POST /api/portal/question-clip {id, from, retry?}  → { status }   ADMIN ONLY: queue the clip
+//   POST /api/portal/question-clip {id, from, retry?, photo: {run, q}}  ADMIN ONLY: queue a PHOTO question's clip (§9b)
 //   POST /api/portal/question-clip {id, verdict: 'good'|'not_good'|null, note?}  ADMIN ONLY: his watch
 //
 // Signed-in only (401), and the switch: questionClipsVisible() — Adrian's admin cookie and the
@@ -12,8 +13,8 @@ import { cookies } from 'next/headers';
 import { portalIdentity, sessionAccount } from '@/lib/portal-auth';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
 import { questionClipsAdmin, questionClipsVisible } from '@/lib/portal-beta';
-import { clipStatusLine } from '@/lib/question-clip';
-import { enqueueQuestionClip, getQuestionClip, setQuestionClipVerdict } from '@/lib/question-clip-store';
+import { clipStatusLine, photoClipId } from '@/lib/question-clip';
+import { enqueuePhotoClip, enqueueQuestionClip, getQuestionClip, setQuestionClipVerdict } from '@/lib/question-clip-store';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
   const from = ['practice', 'paper', 'admin'].includes(String(body.from)) ? String(body.from) : 'admin';
+  const photo = body.photo as { run?: unknown; q?: unknown } | undefined;
+  if (photo && typeof photo === 'object') {
+    const run = String(photo.run ?? ''), q = String(photo.q ?? '').trim();
+    if (!idOk(run) || !q || photoClipId(run, q) !== id) return NextResponse.json({ error: 'photo does not match id' }, { status: 400 });
+    const r = await enqueuePhotoClip(run, q, from, body.retry === true);
+    if (r.status === 'missing') return NextResponse.json({ error: 'No such marked paper' }, { status: 404 });
+    return NextResponse.json({ status: r.status, line: clipStatusLine(r.status) });
+  }
   const status = await enqueueQuestionClip(id, from, body.retry === true);
   if (status === 'missing') return NextResponse.json({ error: 'No such question' }, { status: 404 });
   return NextResponse.json({ status, line: clipStatusLine(status) });
