@@ -3,6 +3,7 @@
 // (SPEC-CLIP-PIPELINE.md §2). Adrian's rule: look at the rendered thing, not the source.
 //
 //   node scripts/clips/look.mjs <slug…> [--base http://localhost:3000] [--out <dir>] [--width 390]
+//   node scripts/clips/look.mjs qc-a118ba7c --path '/app/clip/q/<id>?check=1'   (a question clip, one slug)
 //
 // Needs a running server (npm run dev) with .env.local. Signs an admin session the
 // same way lib/admin-session.ts does, opens /app/lesson/<slug> at 390 × 844 with the
@@ -102,7 +103,7 @@ for (const slug of slugs) {
   });
   const consoleErrors = [];
   page.on('pageerror', (e) => consoleErrors.push(String(e)));
-  await page.goto(`${BASE}/app/lesson/${slug}`, { waitUntil: 'networkidle2', timeout: 120_000 });
+  await page.goto(`${BASE}${args.path ? String(args.path) : `/app/lesson/${slug}`}`, { waitUntil: 'networkidle2', timeout: 120_000 });
   // A refused autoplay shows the "Play with voice" poster — one tap starts it, as on a phone.
   await new Promise(r => setTimeout(r, 1500));
   const poster = await page.$('button[aria-label*="voice" i], [data-lsn-poster] button');

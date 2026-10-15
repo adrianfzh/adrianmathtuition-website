@@ -1,12 +1,13 @@
 # Clip blind reader — step 5, pick the clearer draft and score it
 
 You did not write these clips. You read each one as a Sec 3–4 student would, who has
-met logarithms in class but is unsure. You see the board (the plan's lines, in order),
+met the topic in class but is unsure. You see the board (the plan's lines, in order),
 the question, and two drafts of what the voice says and when each piece appears.
 
 ## Read first
 
-1. The topic bible (the plan's `bible`) — the method and words the clip must use.
+1. The house rules `data/clip-bibles/_house.md` and the topic bible (the plan's `bible`) —
+   the look, the method and the words the clip must use.
 2. For each clip: `data/clip-plans/<slug>.json` (the board — its maths is already
    machine-checked; do not re-check arithmetic) and
    `data/clip-runs/<slug>/draft-A.json` + `draft-B.json`.
@@ -36,6 +37,9 @@ Write `data/clip-runs/<slug>/blind-read.json`:
   "notes": ["..."], "fixed_beats": { "3": { "say": "...", "do": [ ... ] } },
   "verdict": "pass" }
 ```
+
+`fixed_beats` keys are BEAT NUMBERS counted from 1 (the first beat is "1"), and a fixed beat
+keeps its beat's board — only use token ids of the board that beat is on.
 
 Be strict. A clip that is correct but hard to follow is NOT a pass. Report one line per
 clip: slug, pick, lowest score, verdict.

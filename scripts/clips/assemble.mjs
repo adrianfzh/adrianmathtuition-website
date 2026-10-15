@@ -29,8 +29,12 @@ const draftKey = String(args.draft || blind?.pick || '').toUpperCase();
 if (!/^[A-Z][0-9]*$/.test(draftKey)) { console.error('no draft picked — run the blind read or pass --draft A|B'); process.exit(2); }
 const draft = read(`${runDir}/draft-${draftKey}.json`);
 
+// fixed_beats are keyed by beat number, first beat = "1". A reader that counted from 0 (a key
+// "0" present — seen 15 Oct 2026 on a question clip) is read as 0-based, never shifted silently.
+const fixKeys = Object.keys((blind && !args.draft ? blind.fixed_beats : null) ?? {});
+const zeroBased = fixKeys.includes('0');
 const beats = draft.beats.map((b, i) => {
-  const fix = blind && !args.draft ? blind.fixed_beats?.[String(i + 1)] : null;
+  const fix = blind && !args.draft ? blind.fixed_beats?.[String(zeroBased ? i : i + 1)] : null;
   return fix ? { say: fix.say, do: fix.do } : { say: b.say, do: b.do };
 });
 
@@ -38,7 +42,8 @@ const beats = draft.beats.map((b, i) => {
 // A plan may have two boards (`boards`, each line's `board`, each beat's `board`): one scene each.
 const nBoards = Math.max(1, plan.boards?.length ?? 1);
 const sceneBeats = Array.from({ length: nBoards }, (_, k) => beats.filter((b, i) => (draft.beats[i].board ?? 0) === k));
-const outPath = path.join(ROOT, 'data/lessons', `${slug}.json`);
+// --out <file>: write elsewhere (draft-check.mjs checks a draft without touching the clip).
+const outPath = args.out ? path.resolve(ROOT, String(args.out)) : path.join(ROOT, 'data/lessons', `${slug}.json`);
 if (fs.existsSync(outPath)) {
   const prev = JSON.parse(fs.readFileSync(outPath, 'utf8'));
   sceneBeats.forEach((list, k) => {

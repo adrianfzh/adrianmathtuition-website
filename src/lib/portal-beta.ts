@@ -654,3 +654,23 @@ export async function proofLadderVisible(identity?: string | null): Promise<bool
   const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
   return admin && !(await viewingAsStudent());
 }
+
+// 🎬 Question clips (SPEC-CLIP-PIPELINE.md §9, 15 Oct 2026, Adrian: "able to generate these
+// solution clips when a student upload any questions? And retain such quality?"): a one-minute
+// solution clip made for ONE bank question through every check (scripts/clips/question-clip.mjs),
+// kept in `question_clips` and played at /app/clip/q/<id>; the 🎬 door on the practice page and on a
+// marked paper's question. ADMIN + the preview student until Adrian has watched the first 20
+// (SPEC §4) — flip this to show ready clips to every student.
+export const QUESTION_CLIPS_OPEN_TO_STUDENTS = false;
+export async function questionClipsVisible(identity?: string | null): Promise<boolean> {
+  if (QUESTION_CLIPS_OPEN_TO_STUDENTS) return true;
+  if (identity && SCIENCE_PREVIEW_IDENTITIES.includes(identity)) return true;
+  return questionClipsAdmin();
+}
+/** Adrian's admin cookie (not viewing as a student) — the only one who may ASK for a clip to be made. */
+export async function questionClipsAdmin(): Promise<boolean> {
+  const { cookies } = await import('next/headers');
+  const { ADMIN_SESSION_COOKIE, verifyAdminSession } = await import('./admin-session');
+  const admin = verifyAdminSession((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
+  return admin && !(await viewingAsStudent());
+}

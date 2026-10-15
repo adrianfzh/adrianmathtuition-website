@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 🎬 The question-clip queue runner (SPEC-CLIP-PIPELINE.md §9). NOT loaded by default.
+     To run it on this Mac (needs `npx next start -p 3210` or `npm run dev` for the look step):
+       cp scripts/clips/com.adrianmath.questionclips.plist ~/Library/LaunchAgents/
+       launchctl load ~/Library/LaunchAgents/com.adrianmath.questionclips.plist
+     Stop: launchctl unload ~/Library/LaunchAgents/com.adrianmath.questionclips.plist -->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.adrianmath.questionclips</string>
+  <key>WorkingDirectory</key><string>/Users/adrianfong/dev/adrianmathtuition-website</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>scripts/clips/question-clip-worker.mjs</string>
+    <string>--base</string><string>http://localhost:3000</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <key>KeepAlive</key><true/>
+  <key>StandardOutPath</key><string>/tmp/questionclips.log</string>
+  <key>StandardErrorPath</key><string>/tmp/questionclips.log</string>
+</dict>
+</plist>

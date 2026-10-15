@@ -71,3 +71,9 @@ _backups/**/snapshot-all.json
 
 # ▶ Watch it authoring scratch (scripts/watch-it/candidates.ts)
 scripts/watch-it/work/
+
+# Question clips (scripts/clips/question-clip.mjs): working files only — the record is the question_clips row
+/data/lessons/qc-*.json
+/data/clip-plans/qc-*.json
+/data/clip-runs/qc-*/
+/public/lessons/qc-*/

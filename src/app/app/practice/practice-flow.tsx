@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import WatchIt from './watch-it';
+import ClipDoor from '../clip/q/[id]/clip-door';
 import { MathMarkdown } from '@/lib/math-markdown';
 import { getSupabaseBrowser } from '@/lib/supabase-client';
 import { ensureAdminSession, loginAdminSession } from '@/lib/admin-client';
@@ -1203,6 +1204,8 @@ export default function PracticeFlow({ initialLevels = null, initialAssignment =
               </div>
               {/* ▶ Watch it (5 Oct 2026): a science MCQ with an animated solution — the button shows only when the clip exists and the switch is open for this viewer. */}
               {q?.subject && q.mcq && <WatchIt questionId={q.id} />}
+              {/* 🎬 A maths question's one-minute solution clip (SPEC-CLIP-PIPELINE.md §9): shows only when one is ready and the switch is open for this viewer; Adrian also gets "Make a clip". */}
+              {q && !q.subject && <div className="mt-3"><ClipDoor questionId={q.id} from="practice" /></div>}
             </div>
           )}
         </div>

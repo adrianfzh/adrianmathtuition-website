@@ -22,6 +22,10 @@ export type Rhythm =
   | { kind: 'monthly'; day: number; graceDays: number; label: string; months?: number[] };
 
 export const JOB_RHYTHMS: Record<string, Rhythm> = {
+  // 🎬 The question-clip queue runner (15 Oct 2026, SPEC-CLIP-PIPELINE.md §9): stamps at most once an
+  // hour, idle or not (scripts/clips/question-clip-worker.mjs) — silence = the worker is down.
+  // Each finished clip also stamps 'question-clips' (on demand, no rhythm).
+  'question-clips-worker': { kind: 'interval', hours: 3, label: 'hourly heartbeat (clip worker)' },
   // ✉️ Emails a day old that never arrived and never bounced (15 Oct 2026) — vercel.json "0 1 * * *" UTC = 9am SGT.
   'email-stuck':       { kind: 'interval', hours: 36, label: 'daily 9am' },
   'qb-topup':          { kind: 'interval', hours: 36, label: 'nightly 3:30am' },

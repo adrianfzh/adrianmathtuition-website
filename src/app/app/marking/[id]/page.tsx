@@ -12,7 +12,8 @@ import { currentAccount, portalIdentity } from '@/lib/portal-auth';
 import { cookies } from 'next/headers';
 import { TEACHER_INK_IDENTITY } from '@/lib/student-ink';
 import { ADMIN_SESSION_COOKIE, verifyAdminSession } from '@/lib/admin-session';
-import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { BIOLOGY_DEFINITIONS_OPEN_TO_STUDENTS, CHEMISTRY_DEFINITIONS_OPEN_TO_STUDENTS, COMMAND_WORDS_OPEN_TO_STUDENTS, SCIENCE_DEFINITIONS_OPEN_TO_STUDENTS, explainClipVisible, questionClipsVisible, viewingAsStudent } from '@/lib/portal-beta';
+import { bankQuestionsForRun } from '@/lib/question-clip-store';
 import { lostPartLinks, type DefSubjectKey } from '@/lib/definition-asks';
 import { DEFINITIONS } from '@/lib/science-definitions';
 import { BIOLOGY_DEFINITIONS } from '@/lib/biology-definitions';
@@ -118,6 +119,11 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
   const tone = subjectTone(paper.subject);
   // ▶ Explain it (1 Oct 2026): admin-only until the flag flips; the preview student sees it.
   const explain = await explainClipVisible(sid);
+  // 🎬 A dropped question's one-minute solution clip (SPEC-CLIP-PIPELINE.md §9), when the
+  // marking matched this paper to the bank — admin + preview student until the switch flips.
+  const clipIds = !isScience && (await questionClipsVisible(sid))
+    ? await bankQuestionsForRun((row as { result_json?: unknown }).result_json, paper.dropped.map(q => q.questionNumber)).catch(() => ({}))
+    : {};
 
   const { data: sheetRows } = isScience ? { data: [] } : await sb.from('portal_assignments')
     .select('id, run_id, status, pdf_url, score, out_of, required_at, source_run_id, source_run_ids')
@@ -390,7 +396,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
 
           {/* Every question that dropped marks, with the comment and the annotated
               worked solution — moved here from the Papers list on 17 Sep 2026. */}
-          <LostMarks paper={paper} explain={explain} />
+          <LostMarks paper={paper} explain={explain} clipIds={clipIds} />
         </>
       ) : (
         <Suspense fallback={null}>
@@ -416,7 +422,7 @@ export default async function PaperPage({ params, under = 'math' }: { params: Pr
                 </div>
               )}
             </>}
-            marks={<LostMarks paper={paper} explain={explain} />} />
+            marks={<LostMarks paper={paper} explain={explain} clipIds={clipIds} />} />
         </Suspense>
       )}
 

@@ -29,6 +29,17 @@ The kinds:
    "gives": 2}                                 (and binds it)
   {"shape": "log(2 - x)", "family": "ln(-x)"}  which of the four basic log shapes it is
   {"form": "Y = m*X + c"}                       a reference line (Y = mX + c) — no claim
+  {"system": ["4*a - 2*b = 6", "9*a + 3*b = -54"], unknowns found together (question clips,
+   "vars": ["a", "b"]}                         15 Oct 2026): starts a system chain
+  {"system_step": ["...", "..."]}              every solution of the system before solves this one
+  {"solution": {"a": -3, "b": -9}}             exactly the system's solutions (binds them)
+
+Functions sympy knows (binomial, diff, sqrt, factorial, Rational, …) may be used inside a check;
+diff() must be written on the expression itself (`diff(x**2 - 4*x, x)`), never on a model name.
+Roots may be exact expressions ("1 + sqrt(2)/2").
+
+`answer.bank` (question clips): the bank's own answer, verbatim. Every number in it must be on
+the board's last line or in `answer.display` — the clip ends on the answer the bank holds.
 
 The plan's `answer.facts` must hold at the end, and every number in
 `answer.display` must be written on the last line of the board.
@@ -163,6 +174,9 @@ def check_plan(plan):
     for n in names:
         if n in ('log', 'exp', 'ln', 'sqrt', 'E', 'pi', 'Rational', 'oo', 'I'):
             continue
+        # A sympy function used inside a check (binomial, diff, factorial, …) stays a function.
+        if len(n) > 2 and n[0].islower() and callable(getattr(sp, n, None)):
+            continue
         local[n] = sp.Symbol(n, real=True)
     local['ln'] = sp.log
     local['lg'] = lambda a: sp.log(a, 10)
@@ -186,7 +200,8 @@ def check_plan(plan):
             continue
         for c in checks:
             kind = next((k for k in ('model', 'given', 'start', 'step', 'start_expr', 'step_expr', 'roots',
-                                     'approx', 'identity', 'fact', 'solves', 'shape', 'form') if k in c), None)
+                                     'approx', 'identity', 'fact', 'solves', 'shape', 'form',
+                                     'system', 'system_step', 'solution') if k in c), None)
             if kind is None:
                 raise PlanError(f'line {li}: unknown check {c}')
             ok, detail = True, ''
@@ -239,10 +254,10 @@ def check_plan(plan):
                 if not chain or chain['mode'] != 'eq':
                     raise PlanError(f'line {li}: "roots" needs an equation chain')
                 var = chain['var']
-                want = sorted(float(r) for r in c['roots'])
+                want = sorted(num(P(str(r), local)).real for r in c['roots'])
                 have = chain['sols']
                 same = len(want) == len(have) and all(abs(a - b) < 1e-6 for a, b in zip(want, have))
-                rej = [float(r) for r in c.get('reject', [])]
+                rej = [num(P(str(r), local)).real for r in c.get('reject', [])]
                 kept = [r for r in want if all(abs(r - x) > 1e-9 for x in rej)]
                 slhs, srhs = chain['start']
                 rej_ok = all(any(not bool(d.subs(var, r)) for d in chain['domain']) or not holds(slhs, srhs, {var: r}) for r in rej)
@@ -302,6 +317,37 @@ def check_plan(plan):
                 if ok:
                     env[var] = sp.nsimplify(c['gives'])
                 detail = f"{c['solves']} → {c['var']} ∈ {fmt(sols)} ({'= ' if ok else '≠ '}{c['gives']})"
+            elif kind in ('system', 'system_step'):
+                eqs = [rel(e, local) for e in c[kind]]
+                eqs = [sp.Eq(S(a), S(b)) for a, b in eqs]
+                if kind == 'system':
+                    vs = [local.setdefault(v, sp.Symbol(v, real=True)) for v in c['vars']]
+                else:
+                    if not chain or chain['mode'] != 'sys':
+                        raise PlanError(f'line {li}: "system_step" needs a system started first')
+                    vs = chain['vars']
+                try:
+                    sols = sp.solve(eqs, vs, dict=True)
+                except Exception as e:  # noqa: BLE001
+                    raise PlanError(f'line {li}: cannot solve {c[kind]}: {e}')
+                sols = [d for d in sols if all(num(d.get(v, v)) is not None and abs(num(d.get(v, v)).imag) < 1e-9 for v in vs)]
+                if kind == 'system':
+                    ok = len(sols) > 0
+                    detail = f"system {c[kind]}: {len(sols)} real solution(s)"
+                else:
+                    bad = [d for d in chain['sols'] if not all(holds(e.lhs, e.rhs, d) for e in eqs)]
+                    ok = not bad
+                    detail = f"system step {c[kind]}: " + ('follows' if ok else f'does NOT follow — {bad} solves the system before but not this')
+                chain = {'mode': 'sys', 'vars': vs, 'sols': sols if kind == 'system' or not ok else sols}
+            elif kind == 'solution':
+                if not chain or chain['mode'] != 'sys':
+                    raise PlanError(f'line {li}: "solution" needs a system chain')
+                want = {local.setdefault(k, sp.Symbol(k, real=True)): P(str(v), local) for k, v in c['solution'].items()}
+                have = chain['sols']
+                ok = len(have) == 1 and all(holds(have[0].get(k, k), v, {}) for k, v in want.items())
+                if ok:
+                    env.update(want)
+                detail = f"solution {c['solution']} {'=' if ok else '≠'} the system's {have}"
             elif kind == 'form':
                 detail = f"general form {c['form']} (a reference line — the next lines say what each part is)"
             elif kind == 'shape':
@@ -335,9 +381,24 @@ def check_plan(plan):
     for n in re.findall(r'-?\d+(?:\.\d+)?', ans.get('display', '')):
         ok = n in last_tex.replace(' ', '')
         results.append(('answer', ok, f"answer number {n} {'is' if ok else 'is NOT'} on the last line"))
+    if ans.get('bank') is not None:
+        board_end = (last_tex + ' ' + ans.get('display', '')).replace(' ', '')
+        have = set(re.findall(r'\d+(?:\.\d+)?', board_end))
+        for n in bank_numbers(ans['bank']):
+            ok = n in have
+            results.append(('bank', ok, f"bank answer number {n} {'is' if ok else 'is NOT'} on the board's last line"))
     if not ans.get('facts'):
         results.append(('answer', False, 'answer.facts is empty — the plan must state the answer'))
     return results
+
+
+def bank_numbers(text):
+    """The numbers of the bank's answer — not its units, accuracy notes or words."""
+    t = re.sub(r'\\text\{[^{}]*\}', ' ', str(text))
+    t = re.sub(r'\(?\s*\d+\s*(s\.?\s?f\.?|d\.?\s?p\.?|sig[^)]*)\s*\)?', ' ', t, flags=re.I)
+    t = re.sub(r'\b(cm|mm|km|m|s|kg|g)\s*\$?\s*(\^\s*\{?\s*\d\s*\}?)?', ' ', t)
+    t = re.sub(r'\\(log|lg|ln)_\{?\d+\}?', ' ', t)
+    return sorted(set(re.findall(r'\d+(?:\.\d+)?', t)))
 
 
 def fmt(vals):

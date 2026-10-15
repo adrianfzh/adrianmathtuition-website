@@ -9,11 +9,13 @@ import { promptLines, type StudentPaper } from '@/lib/portal-marking';
 import { mathHtml } from '@/lib/math-inline';
 import { canExplain, explainHref } from '@/lib/explain-clip';
 import AnnotatedSolution from './AnnotatedSolution';
+import ClipDoor from '../clip/q/[id]/clip-door';
 // Questions carry inline $…$ TeX — mathHtml KaTeXes only the math spans, and
 // this stylesheet is what makes the output render as maths.
 import 'katex/dist/katex.min.css';
 
-export default function LostMarks({ paper, explain = false }: { paper: StudentPaper; explain?: boolean }) {
+/** `clipIds`: question number → its bank row, when the paper matched the bank — the 🎬 solution-clip door (SPEC-CLIP-PIPELINE.md §9). */
+export default function LostMarks({ paper, explain = false, clipIds = {} }: { paper: StudentPaper; explain?: boolean; clipIds?: Record<string, string> }) {
   if (paper.dropped.length === 0) {
     return paper.questions.length > 0
       ? <p className="text-sm text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3">✅ Full marks on every question marked.</p>
@@ -78,6 +80,9 @@ export default function LostMarks({ paper, explain = false }: { paper: StudentPa
             {/* ▶ The one-minute explanation (1 Oct 2026): this question replayed on the board from the marker's own steps. */}
             {explain && canExplain(q) && (
               <Link href={explainHref(paper.id, q.questionNumber)} className="inline-block mt-2 text-[12px] font-semibold bg-navy text-white rounded-full px-3 py-1.5" data-explain-door>▶ Explain it · 1 min</Link>
+            )}
+            {clipIds[q.questionNumber] && (
+              <div className="mt-2"><ClipDoor questionId={clipIds[q.questionNumber]} from="paper" back={`/app/marking/${paper.id}`} /></div>
             )}
             {q.solution && (
               <details className="mt-2 group/sol">

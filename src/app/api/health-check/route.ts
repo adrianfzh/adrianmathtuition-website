@@ -1323,6 +1323,27 @@ export async function GET(req: NextRequest) {
   // serving threshold, which is worth a look but not an alarm.
   // 🩺 Question health (SPEC-QUESTION-HEALTH.md): the rules still pause a solver-vs-school dispute
   // (the moat line), and — when switched on — the queue is moving (nothing waiting over a day).
+  // 🎬 Question clips (15 Oct 2026, SPEC-CLIP-PIPELINE.md §9): the refusal rules hold, the table
+  // reads, a ready clip's first voice file is served, and nothing has waited over 2 hours in the queue.
+  results.push(await timed('question-clips', async () => {
+    const { preRefuse } = await import('@/lib/question-clip');
+    const base = { id: '0', question_text: 'Solve $2^x = 5$.', answer: '$x = 2.32$', solution: 'x', level: 'AM', parts: [] };
+    if (preRefuse(base) || preRefuse({ ...base, question_text: 'Sketch the graph of $y = 2^x$.' })?.kind !== 'graph') throw new Error('the up-front refusal rules changed');
+    const { getSupabaseAdmin } = await import('@/lib/supabase');
+    const sb = getSupabaseAdmin();
+    const { data: ready, error } = await sb.from('question_clips').select('script').eq('status', 'ready').limit(1).abortSignal(T(5000));
+    if (error) throw new Error(`question_clips: ${error.message}`);
+    const audio = (ready?.[0]?.script as { scenes?: { beats?: { audio?: string }[] }[] } | undefined)?.scenes?.[0]?.beats?.[0]?.audio;
+    if (audio) {
+      const r = await fetch(audio, { method: 'HEAD', signal: T(5000) });
+      if (!r.ok) throw new Error(`a ready clip's voice answers ${r.status}`);
+    }
+    const { data: old } = await sb.from('question_clips').select('requested_at').eq('status', 'queued').order('requested_at', { ascending: true }).limit(1).abortSignal(T(5000));
+    const hours = old?.[0]?.requested_at ? (Date.now() - Date.parse(old[0].requested_at)) / 3_600_000 : 0;
+    if (hours > 2) throw new Error(`a clip has waited ${Math.round(hours)} h in the queue — is the clip worker running?`);
+    return `rules ok · ${audio ? 'voice served' : 'no ready clip yet'} · oldest waiting ${hours.toFixed(1)} h`;
+  }));
+
   results.push(await timed('question-health', async () => {
     const { decide } = await import('@/lib/question-health');
     const q = { id: '00000000-0000-0000-0000-000000000000', question_text: 'Find x if 2x = 8.', answer: '4', topics: ['Algebra'], level: 'S1', school: 'X', ai_generated: false };

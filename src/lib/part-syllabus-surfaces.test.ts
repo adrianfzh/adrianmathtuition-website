@@ -16,6 +16,7 @@ const DOOR = /from '(@\/lib|\.)\/part-syllabus'|from '@\/lib\/(lesson-load|kiosk
 const EXEMPT: Record<string, string> = {
   // ── admin views: Adrian sees every part (a marked one is greyed on /admin/questions)
   'app/admin/watch-it/page.tsx': 'admin view',
+  'app/admin/question-clips/page.tsx': 'admin view (question text beside each clip)',
   'lib/my-definitions-store.ts': 'science bank text is background for the definition writer only, never shown to a student',
   'app/api/admin/bank-health/route.ts': 'admin counts',
   'app/api/admin/cards/bank-questions/route.ts': 'admin authoring view (he copies by hand)',
