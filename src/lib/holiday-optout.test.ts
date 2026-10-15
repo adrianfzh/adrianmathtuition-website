@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   upcomingOptionalMonths, weekdayDatesInMonth, slotDayIndex, slotLabel,
   monthChoices, changesForMonths, validateChanges, type MonthView, type DateEntry,
-  optoutDatesByStudent,
+  optoutDatesByStudent, skippedOptionalMonths,
 } from './holiday-optout';
 
 const d = (date: string, state: DateEntry['state'], slotId = 'recSlot123456789'): DateEntry =>
@@ -159,5 +159,27 @@ describe('optoutDatesByStudent — the dates the advance generator takes off the
     expect(m.get('recB')).toEqual(['2026-12-05']);
     expect(m.has('recC')).toBe(false);
     expect(optoutDatesByStudent([]).size).toBe(0);
+  });
+});
+
+describe('skippedOptionalMonths', () => {
+  const r = (sid: string, date: string, status: string, notes = '') => ({ fields: { Student: [sid], Date: date, Status: status, Notes: notes } });
+  it('a month with opt-outs and nothing scheduled is skipped', () => {
+    const recs = [
+      r('A', '2026-11-07', 'Cancelled', 'Holiday opt-out — November'),
+      r('A', '2026-11-14', 'Cancelled', 'Holiday opt-out — November'),
+      r('A', '2026-12-05', 'Scheduled'),
+      r('B', '2026-12-05', 'Cancelled', 'Holiday opt-out — December'),
+    ];
+    expect(skippedOptionalMonths(recs, 'A', 2026, [11, 12])).toEqual([11]);
+    expect(skippedOptionalMonths(recs, 'B', 2026, [11, 12])).toEqual([12]);
+  });
+  it('a partly skipped month, or a plain cancellation, is not', () => {
+    const recs = [
+      r('A', '2026-11-07', 'Cancelled', 'Holiday opt-out — November'),
+      r('A', '2026-11-14', 'Scheduled'),
+      r('A', '2026-12-05', 'Cancelled', 'travelling'),
+    ];
+    expect(skippedOptionalMonths(recs, 'A', 2026, [11, 12])).toEqual([]);
   });
 });

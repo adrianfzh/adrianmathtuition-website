@@ -138,6 +138,7 @@ national Maths paper, from the SEAB timetables (`EXAM_CUTOFFS`, one row per year
   with billable Additional lessons got an Additional-only invoice at cron time, which then
   made the real arrears run skip them and their attended lessons were never billed. Extras
   are swept by the arrears run instead.
+- **A student who has already opted out** (15 Oct 2026, Adrian, after Zane's amended November bill invited the parent to opt out again): every bill email reads the student's optional-month lessons once per batch (`skippedMonthsLookup` in `lib/holiday-optout.ts`) and passes the fully-skipped months to `holidayNoteHtml`. All optional months still ahead skipped → no holiday note; some → a short note ("Zane is skipping November … Lessons in December carry on as usual", change link, away dates) without the opt-out pitch. A month counts as skipped only when it has an opt-out cancellation and no Scheduled Regular lesson.
 - **Holiday opt-out** (Student profile → *Holiday opt-out*, `/api/admin/holiday-optout`)
   offers **Oct/Nov/Dec only** now (it used to include June): skipping a date cancels the
   lesson record, so the arrears run never bills it. For a Lane A student an opt-out changes

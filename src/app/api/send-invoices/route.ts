@@ -10,6 +10,7 @@ import { resolveRunMode, resolveTargetMonthLabel, jobNameFor } from '@/lib/invoi
 import { yearEndHoldReason, examCutoffNoteFrom, arrearsNoteFrom, examPrepNoteFrom, graduationNote } from '@/lib/year-end-billing';
 import { holidayNoteHtml, invoiceMonthNumber } from '@/lib/holiday-message';
 import { signOptoutToken, optoutLink } from '@/lib/holiday-optout-token';
+import { skippedMonthsLookup } from '@/lib/holiday-optout';
 import { copy } from '@vercel/blob';
 import { generateAndStoreInvoicePdf } from '@/lib/invoice-pdf';
 import { verifyAdminAuth } from '@/lib/schedule-helpers';
@@ -347,6 +348,8 @@ async function fetchDeliveredWithPdf(invoiceIds: string[]): Promise<Set<string>>
 }
 
 export async function POST(req: NextRequest) {
+  // Which optional months each student already skips — one Lessons read per batch (15 Oct 2026).
+  const skippedMonthsFor = skippedMonthsLookup();
   if (!checkAuth(req)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -466,6 +469,7 @@ export async function POST(req: NextRequest) {
             studentName,
             optOutUrlFor(sid),
             parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+            await skippedMonthsFor(sid, parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear()),
           ),
         });
       } else if (invoiceType === 'Adhoc') {
@@ -490,6 +494,7 @@ export async function POST(req: NextRequest) {
             studentName,
             optOutUrlFor(sid),
             parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+            await skippedMonthsFor(sid, parseInt(String(rec.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear()),
           ),
         });
       }
@@ -732,6 +737,7 @@ export async function POST(req: NextRequest) {
             invoice.studentName,
             optOutUrlFor(studentId),
             parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+            await skippedMonthsFor(studentId, parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear()),
           ),
         });
       } else if (invoiceType === 'Adhoc') {
@@ -756,6 +762,7 @@ export async function POST(req: NextRequest) {
             invoice.studentName,
             optOutUrlFor(studentId),
             parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear(),
+            await skippedMonthsFor(studentId, parseInt(String(invoiceRecord.fields['Month'] || '').slice(-4), 10) || new Date().getFullYear()),
           ),
         });
       }

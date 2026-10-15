@@ -85,6 +85,56 @@ export function optoutDatesByStudent(records: { fields: Record<string, unknown> 
   return out;
 }
 
+/**
+ * The optional months a student has ALREADY skipped in full, from their Regular
+ * lesson records: at least one opt-out-marked cancellation in the month and no
+ * lesson still Scheduled. The bill email uses it so a parent who has opted out
+ * is not invited to opt out again (Adrian, 15 Oct 2026, after Zane's amended
+ * November bill: "should fix that for subsequent invoices"). PURE.
+ */
+export function skippedOptionalMonths(
+  records: { fields: Record<string, unknown> }[],
+  studentId: string,
+  year: number,
+  months: readonly number[] = OPTOUT_MONTHS,
+): number[] {
+  const optedOut = new Set<number>(), scheduled = new Set<number>();
+  for (const r of records || []) {
+    const f = r.fields || {};
+    const sid = Array.isArray(f['Student']) ? String(f['Student'][0] || '') : '';
+    if (sid !== studentId) continue;
+    const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(String(f['Date'] || ''));
+    if (!m || Number(m[1]) !== year) continue;
+    const month = Number(m[2]);
+    const status = String(f['Status'] || '');
+    if (status === 'Scheduled') scheduled.add(month);
+    else if ((status === 'Cancelled' || status === 'Cancelled - Prorated') && String(f['Notes'] || '').includes(OPTOUT_MARKER)) optedOut.add(month);
+  }
+  return months.filter((mo) => optedOut.has(mo) && !scheduled.has(mo));
+}
+
+/**
+ * Per-request lookup for the bill emails: one read of the year's optional-month
+ * Regular lessons, shared by every invoice in the batch. Never throws — on a
+ * failed read it answers [] and the email carries the usual note.
+ */
+export function skippedMonthsLookup(): (studentId: string | undefined, year: number) => Promise<number[]> {
+  const cache = new Map<number, Promise<{ fields: Record<string, unknown> }[]>>();
+  return async (studentId, year) => {
+    if (!studentId || !OPTOUT_MONTHS.length) return [];
+    if (!cache.has(year)) {
+      const first = Math.min(...OPTOUT_MONTHS), last = Math.max(...OPTOUT_MONTHS);
+      const start = `${year}-${String(first).padStart(2, '0')}-01`;
+      const end = last === 12 ? `${year + 1}-01-01` : `${year}-${String(last + 1).padStart(2, '0')}-01`;
+      const formula = `AND({Type}='Regular',{Date}>='${start}',{Date}<'${end}')`;
+      cache.set(year, airtableRequestAll('Lessons',
+        `?filterByFormula=${encodeURIComponent(formula)}&fields[]=Student&fields[]=Date&fields[]=Status&fields[]=Notes`)
+        .then((d: any) => d.records || []).catch(() => []));
+    }
+    return skippedOptionalMonths(await cache.get(year)!, studentId, year);
+  };
+}
+
 /** All YYYY-MM-DD dates of `weekday` inside (year, month), excluding NO_LESSON_DATES. */
 export function weekdayDatesInMonth(year: number, month: number, weekday: number): string[] {
   const dates: string[] = [];

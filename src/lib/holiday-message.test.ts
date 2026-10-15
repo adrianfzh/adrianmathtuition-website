@@ -250,3 +250,26 @@ describe('the block title (Adrian, 15 Sep 2026)', () => {
     expect(holidayNoteHtml({ level: 'Sec 2', subjects: ['Math'] }, 10, 'Alven Seah', null, 2026)).toContain('A note on lessons in November and December 2026');
   });
 });
+
+describe('holidayNoteHtml — a student who has already opted out (15 Oct 2026)', () => {
+  const sec2 = { level: 'Sec 2' };
+  it('skipping every optional month still ahead → no note', () => {
+    expect(holidayNoteHtml(sec2, 11, 'Zane Ngo', 'https://x/opt', 2026, [11, 12])).toBe('');
+    expect(holidayNoteHtml(sec2, 12, 'Zane Ngo', 'https://x/opt', 2026, [12])).toBe('');
+  });
+  it('skipping some → says so, with no opt-out pitch', () => {
+    const h = holidayNoteHtml(sec2, 11, 'Zane Ngo', 'https://x/opt', 2026, [11]);
+    expect(h).toContain('Zane is skipping November.');
+    expect(h).toContain('Lessons in December carry on as usual');
+    expect(h).toContain('Change which months to skip');
+    expect(h).not.toContain('they are optional over these');
+    expect(h).not.toContain('I would encourage students');
+  });
+  it('a month already past does not count', () => {
+    // December invoice, November skipped: December is all that is ahead → full note.
+    expect(holidayNoteHtml(sec2, 12, 'Zane Ngo', 'https://x/opt', 2026, [11])).toContain('they are optional over these');
+  });
+  it('nothing skipped → the usual note', () => {
+    expect(holidayNoteHtml(sec2, 11, 'Zane Ngo', 'https://x/opt', 2026, [])).toContain('I would encourage students');
+  });
+});

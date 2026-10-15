@@ -148,8 +148,45 @@ export function holidayNoteHtml(
   optOutUrl?: string | null,
   // The invoice's year, for the block's title ("… November and December 2026").
   year: number = new Date().getFullYear(),
+  // Optional months this student has ALREADY skipped in full
+  // (lib/holiday-optout skippedOptionalMonths). Every one still ahead skipped →
+  // no note at all; some → a short note saying so, without the opt-out pitch
+  // (Adrian, 15 Oct 2026: a parent who has opted out was invited to opt out again).
+  skipped: readonly number[] = [],
 ): string {
+  if (!wantsHolidayNote(s, month)) return '';
+  const ahead = OPTOUT_MONTHS.filter((m) => m >= month);
+  const done = ahead.filter((m) => skipped.includes(m));
+  if (ahead.length && done.length === ahead.length) return '';
+  if (done.length) return skippedNoteHtml(studentName, ahead, done, optOutUrl, year);
   return holidayNoteHtmlImpl(s, month, studentName, optOutUrl, year);
+}
+
+/** The short note for a student who has already skipped some (not all) of the optional months. */
+function skippedNoteHtml(
+  studentName: string,
+  ahead: readonly number[],
+  done: readonly number[],
+  optOutUrl: string | null | undefined,
+  year: number,
+): string {
+  const name = withName('[Student]', studentName);
+  const words = (ms: readonly number[]) => optionalMonthsPhrase(ms);
+  const left = ahead.filter((m) => !done.includes(m));
+  const button = optOutUrl
+    ? `
+      <p style="margin:14px 0 10px;text-align:center;">
+        <a href="${esc(optOutUrl)}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;padding:11px 22px;border-radius:8px;font-weight:600;font-size:15px;">Change which months to skip</a>
+      </p>`
+    : '';
+  return `
+    <div style="background:#f8fafc;border-left:3px solid #cbd5e1;padding:12px 16px;margin:16px 0;">
+      <p style="margin:0 0 12px;font-size:17px;"><strong>A note on lessons in ${optionalMonthsPhrase()} ${year}</strong></p>
+      <p style="margin:0 0 10px;"><strong>${esc(name)} is skipping ${words(done)}.</strong> Those lessons are off the schedule and off the invoice. Lessons in ${words(left)} carry on as usual.</p>
+      <p style="margin:0 0 10px;">If you would also like to skip ${words(left)}, or change your mind, ${optOutUrl ? 'use the button below or just tell me' : 'just reply to this email'}.</p>
+${button}
+      <p style="margin:0;"><strong>Two periods when I will be away:</strong> Wed 28 October – Sun 1 November, and Sat 5 December – Sat 12 December. I will provide make-up lessons for every regular lesson of ${esc(name)}'s that falls in those two windows — the WhatsApp assistant can book them, or I will arrange them with you.</p>
+    </div>`;
 }
 
 function holidayNoteHtmlImpl(
@@ -162,7 +199,6 @@ function holidayNoteHtmlImpl(
   optOutUrl?: string | null,
   year: number = new Date().getFullYear(),
 ): string {
-  if (!wantsHolidayNote(s, month)) return '';
   const name = withName('[Student]', studentName);
   const step = stepUpParagraph(s);
 
