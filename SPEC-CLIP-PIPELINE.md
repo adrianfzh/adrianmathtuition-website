@@ -460,3 +460,11 @@ slider at the bottom, after the clip"* — built in `lesson-player.tsx`:
   reaches it when that clone is updated — the pipeline itself only needs the clip page, which did
   not change.
 
+10. **The new player layout** (whole question beside the clip on a laptop / behind 📄 on a phone,
+    YouTube-style subtitle over the board's foot, slider last — built in the photo-clips session,
+    a9566614): the 7 Logarithms clips had no question box, because only question clips passed one.
+    Now a clip script carries `question` (the whole question as his notes set it), the lessons page
+    passes it, and `look.mjs` checks the question shows, the subtitle never covers written maths and
+    the slider is below the board (`--width 1280` plays a laptop). Re-played on the preview,
+    15 Oct 2026: all 7 pass at 390 × 844 (📄 button) and at 1280 × 800 (question panel) — every board
+    move on its word (worst 0.18 s), no look problems.
