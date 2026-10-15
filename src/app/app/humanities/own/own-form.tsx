@@ -34,12 +34,11 @@ function PhotoButton({ label, busy, onFiles }: { label: string; busy: boolean; o
   );
 }
 
-export default function OwnForm({ initialSubject, elective: savedElective, prefill, skills, labels, maxWords }: {
+export default function OwnForm({ initialSubject, elective: savedElective, prefill, skills, maxWords }: {
   initialSubject: HumanitiesSubject;
   elective: Elective | null;
   prefill: OwnQuestion | null;
   skills: Record<HumanitiesSubject, HumanitiesSkill[]>;
-  labels: Record<string, string>;
   maxWords: number;
 }) {
   const router = useRouter();
@@ -51,8 +50,6 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
   const [answer, setAnswer] = useState('');
   const [scheme, setScheme] = useState(prefill?.scheme ?? '');
   const [marksTyped, setMarksTyped] = useState(prefill?.marks ? String(prefill.marks) : '');
-  const [picked, setPicked] = useState<HumanitiesSkill | ''>(prefill?.skill ?? '');
-  const [changingType, setChangingType] = useState(false);
   const [reading, setReading] = useState<Mode | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +57,7 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
 
   async function chooseElective(e: Elective) {
     setElective(e); setChoosing(false);
-    if (subject !== 'social-studies') { setSubject(e); setPicked(''); }
+    if (subject !== 'social-studies') setSubject(e);
     await fetch('/api/portal/settings', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prefs: { humanities_elective: [e] } }),
@@ -72,14 +69,17 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
   ];
 
   const guessed = guessSkill(subject, question);
-  const skill = (picked && skills[subject].includes(picked) ? picked : guessed) ?? '';
+  // A refill ("Write it again") keeps the type it was marked as.
+  const skill = (prefill?.skill && prefill.subject === subject && skills[subject].includes(prefill.skill) ? prefill.skill : guessed) ?? '';
   const pointsQ = POINT_SKILLS.includes(skill);
+  // A Geography question with no printed marks asks for them, unless it is the 9-mark kind.
+  const asksMarks = subject !== 'social-studies' && subject !== 'history' && !printedMarks(question) && skill !== 'geo_evaluate' && !!question.trim();
   const needsSources = SOURCE_SKILLS.includes(skill) || mentionsSources(question) || pointsQ;
   const marks = printedMarks(question) ?? (Number(marksTyped) > 0 ? Number(marksTyped) : null);
   const gaps = [question, sources, scheme, answer].some(t => t.includes('[?]'));
   const wc = words(answer);
-  const ready = !busy && !reading && !gaps && !!skill && words(question) >= 4 && wc >= 3 && wc <= maxWords
-    && (!SOURCE_SKILLS.includes(skill) || words(sources) >= 10) && (!pointsQ || !!marks);
+  const ready = !busy && !reading && !gaps && words(question) >= 4 && wc >= 3 && wc <= maxWords
+    && (!SOURCE_SKILLS.includes(skill) || words(sources) >= 10) && (!asksMarks || !!marks);
 
   async function read(mode: Mode, list: FileList | null) {
     const files = Array.from(list ?? []).slice(0, MAX_PAGES);
@@ -132,7 +132,7 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
     <div className="space-y-3">
       <div role="tablist" className="flex gap-1 bg-black/5 rounded-2xl p-1">
         {tabs.map(t => (
-          <button key={t.key} type="button" role="tab" aria-selected={t.key === subject} onClick={() => { setSubject(t.key); setPicked(''); }}
+          <button key={t.key} type="button" role="tab" aria-selected={t.key === subject} onClick={() => { setSubject(t.key); }}
             className={`flex-1 text-center text-sm font-semibold rounded-xl py-1.5 transition ${t.key === subject ? 'bg-white text-navy shadow-sm' : 'text-gray-500'}`}>
             {t.label}
           </button>
@@ -162,25 +162,9 @@ export default function OwnForm({ initialSubject, elective: savedElective, prefi
         <textarea value={question} onChange={e => setQuestion(e.target.value)} rows={3}
           placeholder="Type the question, or send a photo of it." className={area} />
         {note('question')}
-        {/* The type is worked out from the wording; the student only sees it, and changes it only if it looks wrong
-            (15 Oct 2026, Adrian: "does student knows about question types?"). */}
-        {question.trim() && skill && !changingType && (
-          <p className="mt-2 text-[13px] text-gray-600">
-            Marked as a <span className="font-semibold text-navy">{labels[skill] ?? skill}</span> question.{' '}
-            <button type="button" onClick={() => setChangingType(true)} className="underline underline-offset-2 text-gray-500">Not right?</button>
-          </p>
-        )}
-        {question.trim() && (!skill || changingType) && (
-          <label className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
-            <span className="shrink-0">{skill ? 'Mark it as:' : 'What kind of question is it?'}</span>
-            <select value={skill} onChange={e => { setPicked(e.target.value as HumanitiesSkill); setChangingType(false); }}
-              className="flex-1 min-w-0 rounded-xl border border-black/10 bg-white px-2 py-1 text-[14px] text-navy">
-              {!skill && <option value="">Pick one</option>}
-              {skills[subject].map(k => <option key={k} value={k}>{labels[k] ?? k}</option>)}
-            </select>
-          </label>
-        )}
-        {pointsQ && !printedMarks(question) && (
+        {/* The type is worked out, never shown or asked (15 Oct 2026, Adrian: "let the app just work out the type"):
+            the wording rules here, and a short read on the server when they find nothing. */}
+        {asksMarks && (
           <label className="mt-2 flex items-center gap-2 text-[13px] text-gray-600">
             <span className="shrink-0">Marks:</span>
             <input type="number" inputMode="numeric" min={1} max={30} value={marksTyped} onChange={e => setMarksTyped(e.target.value)}

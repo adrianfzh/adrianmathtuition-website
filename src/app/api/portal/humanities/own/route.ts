@@ -9,7 +9,9 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { countHumanitiesToday } from '@/lib/humanities-runs';
 import { submitHumanities, DAILY_HUMANITIES_CAP } from '@/lib/humanities-submit';
 import { checkOwn, isOwnPoints } from '@/lib/humanities-own';
-import { writeOwnPoints } from '@/lib/humanities-own-points';
+import { writeOwnPoints, classifyOwnType } from '@/lib/humanities-own-points';
+import { guessSkill, OWN_SKILLS } from '@/lib/humanities-own-guess';
+import type { HumanitiesSubject } from '@/lib/humanities-questions';
 import { sgtDayStartISO } from '@/lib/sgt';
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +29,13 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({})) as Record<string, unknown>;
+  // The type is worked out, never asked: the wording rules, then one short read when they find nothing.
+  const subject = String(body.subject ?? '') as HumanitiesSubject;
+  if (subject in OWN_SKILLS && !OWN_SKILLS[subject].includes(String(body.skill ?? '') as never)) {
+    const q = String(body.question ?? '');
+    body.skill = guessSkill(subject, q) ?? await classifyOwnType(subject, q) ?? '';
+    if (!body.skill) return NextResponse.json({ error: 'We could not tell what this question asks. Check the whole question is there.' }, { status: 400 });
+  }
   const checked = checkOwn(body);
   if (!checked.ok) return NextResponse.json({ error: checked.error }, { status: 400 });
   let own = checked.own;

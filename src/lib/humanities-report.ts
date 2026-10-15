@@ -31,6 +31,8 @@ export interface HumanitiesReport {
   points?: PointCredit[];
   /** The level the reads settled on. */
   level: number;
+  /** The exact mark inside that level's school range, picked by one more read (lib/humanities-place, 15 Oct 2026). */
+  mark?: number;
   level_lo: number;
   level_hi: number;
   levels_max: number;

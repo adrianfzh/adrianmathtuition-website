@@ -131,7 +131,7 @@ export default async function HumanitiesPage({ searchParams }: { searchParams: P
         <Link href={isSs ? '/app/humanities/own' : `/app/humanities/own?s=${subject}`} className="flex items-center gap-3 bg-white rounded-3xl px-4 py-3 border border-amber-200 shadow-sm hover:border-amber-300 active:scale-[0.99] transition">
           <span className="text-xl" aria-hidden>📝</span>
           <span className="flex-1 min-w-0">
-            <span className="block text-[15px] font-bold text-navy">Mark a question</span>
+            <span className="block text-[15px] font-bold text-navy">Check my answer</span>
             <span className="block text-[12px] text-gray-500">Send the question and your answer. Get feedback the same way.</span>
           </span>
           <span className="shrink-0 text-gray-400">›</span>

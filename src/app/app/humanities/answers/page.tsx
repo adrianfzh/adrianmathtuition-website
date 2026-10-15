@@ -19,7 +19,7 @@ export default async function HumanitiesAnswersPage() {
       {runs.length === 0 ? (
         <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm text-sm text-gray-700">
           <p>Nothing handed in yet.</p>
-          <Link href={full ? '/app/humanities' : '/app/humanities/own'} className="inline-block mt-2 font-semibold text-amber-800">{full ? 'Pick a question ›' : 'Mark a question ›'}</Link>
+          <Link href={full ? '/app/humanities' : '/app/humanities/own'} className="inline-block mt-2 font-semibold text-amber-800">{full ? 'Pick a question ›' : 'Check my answer ›'}</Link>
         </div>
       ) : runs.map(r => <AnswerCard key={r.id} row={r} />)}
     </div>

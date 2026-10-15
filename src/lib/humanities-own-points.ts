@@ -5,7 +5,9 @@
 // syllabus — in the shape our own Geography questions use (docs/humanities/geography-brief.md). The
 // answer is then read by the same point-marking reader. Server-only (one API call).
 import Anthropic from '@anthropic-ai/sdk';
-import { anthropicText } from './claude-models';
+import { anthropicText, SONNET_55 } from './claude-models';
+import { OWN_SKILLS } from './humanities-own-guess';
+import type { HumanitiesSkill, HumanitiesSubject } from './humanities-questions';
 import type { CreditPoint } from './humanities-questions';
 import type { OwnQuestion } from './humanities-own';
 
@@ -65,6 +67,44 @@ export async function writeOwnPoints(own: OwnQuestion): Promise<OwnPoints | null
     return parseOwnPoints(anthropicText(msg));
   } catch (e) {
     console.error('[humanities-own-points]', e instanceof Error ? e.message : e);
+    return null;
+  }
+}
+
+// ── The question type, when its wording gives no clue (15 Oct 2026, Adrian: "let the app just work out the type
+// from the question wording … don't have to let student tap 'Not right'"). The wording rules
+// (lib/humanities-own-guess) settle almost every question; this one short read settles the rest. ──
+export const OWN_TYPE_MODEL = process.env.OWN_TYPE_MODEL || SONNET_55;
+
+const TYPE_MEANING: Record<string, string> = {
+  inference: 'what a source says, shows or suggests; its message', comparison: 'how similar or different two sources are',
+  reliability: 'whether a source can be believed or trusted; whether one source proves another wrong',
+  usefulness: 'how useful a source is as evidence', purpose: 'why a source was made, published or said',
+  surprise: 'whether you are surprised by a source', how_far: 'how far the sources support a statement (uses all the sources)',
+  sr_explain: 'explain ways, reasons or factors from own knowledge', sr_weigh: 'weigh two factors or sides and decide (do you agree, which is more important)',
+  hist_evaluate: 'a History essay: how far do you agree, was X the main reason', geo_describe: 'describe or compare what a figure, table or place shows',
+  geo_explain: 'explain how or why, or suggest reasons', geo_evaluate: "'Statement.' To what extent do you agree? (9 marks)",
+};
+
+export function ownTypePrompt(subject: HumanitiesSubject, question: string): string {
+  return [
+    'Which ONE type is this Singapore secondary school Humanities exam question?',
+    '', 'QUESTION', question, '',
+    'TYPES',
+    ...OWN_SKILLS[subject].map(k => `- ${k}: ${TYPE_MEANING[k] ?? k}`),
+    '', 'Reply with one JSON object only: {"type": "<one of the type names above>"}',
+  ].join('\n');
+}
+
+export async function classifyOwnType(subject: HumanitiesSubject, question: string): Promise<HumanitiesSkill | null> {
+  try {
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await anthropic.messages.create({ model: OWN_TYPE_MODEL, max_tokens: 2000, messages: [{ role: 'user', content: ownTypePrompt(subject, question) }] });
+    const m = anthropicText(msg).match(/"type"\s*:\s*"([a-z_]+)"/);
+    const t = m?.[1] as HumanitiesSkill | undefined;
+    return t && OWN_SKILLS[subject].includes(t) ? t : null;
+  } catch (e) {
+    console.error('[humanities-own-type]', e instanceof Error ? e.message : e);
     return null;
   }
 }

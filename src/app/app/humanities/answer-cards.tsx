@@ -5,6 +5,7 @@ import { levelLabel, marksLabel } from '@/lib/humanities-report';
 import { GEOGRAPHY_MARKS_OPEN_TO_STUDENTS } from '@/lib/portal-beta';
 import { questionById } from '@/lib/humanities-questions';
 import { marksForLevels, printedMarks } from '@/lib/humanities-marks';
+import { placeBand } from '@/lib/humanities-place';
 import { skillLabel } from './skills';
 
 function when(iso: string): string {
@@ -17,10 +18,15 @@ export function AnswerCard({ row }: { row: HumanitiesListRow }) {
   // A point-marked answer (Geography) holds marks in the level fields, and 0 is a real result.
   // A Geography short question from school has no bank context: its type says it is point-marked.
   const points = ctx ? ctx.set.kind === 'points' : row.skill === 'geo_describe' || row.skill === 'geo_explain';
-  const state = read && points && row.level_lo != null && row.level_hi != null
-    ? (GEOGRAPHY_MARKS_OPEN_TO_STUDENTS && row.levels_max ? marksLabel(row.level_lo, row.level_hi, row.levels_max) : 'Read — see what to add')
-    : read && row.level_lo && row.level_hi && row.levels_max
-    ? (marksForLevels(row.skill, ctx?.question.marks ?? (row.own_title ? printedMarks(row.own_title) : null), row.level_lo, row.level_hi) ?? levelLabel(row.level_lo, row.level_hi, row.levels_max))
+  // A marked answer: the settled level (and the exact mark when it is back), not the spread of the reads.
+  const settled = row.status === 'marked' && row.level != null;
+  const lo = settled ? row.level : row.level_lo, hi = settled ? row.level : row.level_hi;
+  const marks = ctx?.question.marks ?? (row.own_title ? printedMarks(row.own_title) : null);
+  const band = settled ? placeBand(row.skill, marks, row.level) : null;
+  const state = read && points && lo != null && hi != null
+    ? (GEOGRAPHY_MARKS_OPEN_TO_STUDENTS && row.levels_max ? marksLabel(lo, hi, row.levels_max) : 'Read — see what to add')
+    : read && lo && hi && row.levels_max
+    ? (row.report_mark != null && band ? `${row.report_mark} out of ${band.total} marks` : marksForLevels(row.skill, marks, lo, hi) ?? levelLabel(lo, hi, row.levels_max))
     : row.status === 'failed' ? 'Not read — hand it in again' : 'Being read…';
   return (
     <Link href={`/app/humanities/${row.id}`}

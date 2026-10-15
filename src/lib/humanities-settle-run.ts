@@ -10,6 +10,7 @@ import { contextForRun, type OwnQuestion } from './humanities-own';
 import { buildHumanitiesPayload, humanitiesPrompt, readContext, payloadMaterial, type HumanitiesPayload } from './humanities-prompt';
 import { parseReadReply, validateRead, validatePointsRead, nextStep, buildReport, buildPointsReport, telegramLine, type PassState, type Checked } from './humanities-settle';
 import { sendTelegram } from './telegram';
+import { placeBand, placePrompt, parsePlace, PLACE_KIND } from './humanities-place';
 
 export const HUMANITIES_READ_KIND = 'humanities-read';
 /** The plan reader's model alias (plan_reads takes sonnet · opus · haiku). The bench in SPEC-HUMANITIES.md §4 chose it. */
@@ -107,6 +108,14 @@ export async function settleHumanitiesRun(runId: string): Promise<void> {
   }
   const { data: wrote, error } = await sb.from('humanities_runs').update(row).eq('id', runId).in('status', ['queued', 'marking']).select('id');
   if (error) { console.error('[humanities] settle failed:', error.message); return; }
+  // A marked level answer whose level spans several marks: one more read picks the exact mark (lib/humanities-place).
+  if (wrote?.length && step.do === 'marked' && ctx && payload && !readContext(payload).points) {
+    const band = placeBand(String(run.skill), ctx.question.marks, (row.report as { level?: number }).level ?? null);
+    if (band) await enqueuePlanRead({
+      kind: PLACE_KIND, identity: String(run.airtable_student_id), ref: `${runId}:place`,
+      prompt: placePrompt(payload, (row.report as { level: number }).level, band), model: HUMANITIES_PLAN_MODEL, meta: { runId, ...band },
+    }).catch(() => null);
+  }
   if (wrote?.length && step.do !== 'marked' && run.source !== 'calibration') {
     const rep = (row.report as Parameters<typeof telegramLine>[0]['report']) ?? null;
     await sendTelegram(telegramLine({ studentName: run.student_name, skill: String(run.skill), report: rep, held: step.do === 'held', heldReason: (row.held_reason as string) ?? null, error: step.do === 'failed' ? step.error : null }), 'marking').catch(() => false);
@@ -126,4 +135,20 @@ export async function settleOpenHumanities(scope: { identity?: string; paperId?:
   const ids = ((data ?? []) as { id: string }[]).map(r => r.id);
   await Promise.all(ids.map(id => settleHumanitiesRun(id).catch(e => console.error('[humanities] settle threw:', (e as Error).message))));
   return ids.length;
+}
+
+/**
+ * A marked answer waiting for its exact mark: when the placing read is back, write report.mark. → true when the
+ * page should keep looking (a placing read is still out). Safe to call any number of times.
+ */
+export async function settlePlacement(run: { id: string; status: string; report: { level?: number; mark?: number } | null }): Promise<boolean> {
+  if (run.status !== 'marked' || !run.report || run.report.mark != null) return false;
+  const sb = getSupabaseAdmin();
+  const { data: read } = await sb.from('plan_reads').select('status, reply, meta').eq('kind', PLACE_KIND).eq('ref', `${run.id}:place`).order('created_at', { ascending: false }).limit(1).maybeSingle();
+  if (!read) return false;
+  if (read.status === 'queued' || read.status === 'claimed') return true;
+  const band = read.meta as { lo: number; hi: number } | null;
+  const mark = read.status === 'replied' && band ? parsePlace(read.reply, band) : null;
+  if (mark != null) await sb.from('humanities_runs').update({ report: { ...run.report, mark } }).eq('id', run.id).eq('status', 'marked');
+  return false;
 }

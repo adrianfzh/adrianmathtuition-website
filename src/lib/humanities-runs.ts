@@ -7,7 +7,7 @@
 import type { OwnQuestion } from './humanities-own';
 import { getSupabaseAdmin } from './supabase';
 import type { HumanitiesReport, HumanitiesStatus } from './humanities-report';
-import { settleHumanitiesRun, settleOpenHumanities } from './humanities-settle-run';
+import { settleHumanitiesRun, settleOpenHumanities, settlePlacement } from './humanities-settle-run';
 
 const flying = (status: string): boolean => status === 'queued' || status === 'marking';
 
@@ -41,11 +41,13 @@ export interface HumanitiesRunRow {
   own_question?: OwnQuestion | null;
   /** The list's short form of it: the question only. */
   own_title?: string | null;
+  /** The list's copy of report.mark (the exact mark inside the level). */
+  report_mark?: number | null;
 }
 
 /** The list columns — never the answer text, the report or the reads. */
 export const HUMANITIES_LIST_COLUMNS =
-  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes, own_title:own_question->>question';
+  'id, created_at, airtable_student_id, student_name, subject, skill, question_id, word_count, status, marked_at, level, level_lo, level_hi, levels_max, held_reason, source, calibration_set, truth_level, cost_usd, paper_id, paper_minutes, own_title:own_question->>question, report_mark:report->mark';
 
 export type HumanitiesListRow = Omit<HumanitiesRunRow, 'answer_text' | 'report' | 'reads' | 'error' | 'own_question'>;
 
@@ -75,7 +77,13 @@ export async function loadHumanitiesRun(id: string, scope: string | { admin: tru
     return (data as HumanitiesRunRow | null) ?? null;
   };
   const row = await read();
-  if (!row || !flying(row.status)) return row;
+  if (!row) return row;
+  if (!flying(row.status)) {
+    // Marked: the exact mark inside its level may have just come back (lib/humanities-place).
+    if (row.status !== 'marked' || row.report?.mark != null) return row;
+    await settlePlacement(row);
+    return read();
+  }
   await settleHumanitiesRun(id);
   return read();
 }

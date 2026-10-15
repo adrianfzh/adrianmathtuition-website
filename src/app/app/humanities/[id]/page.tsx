@@ -11,6 +11,7 @@ import { loadHumanitiesRun, loadHumanitiesFor } from '@/lib/humanities-runs';
 import { nextOfSkill } from '@/lib/humanities-practice';
 import { contextForRun, isOwnId } from '@/lib/humanities-own';
 import { marksForLevels } from '@/lib/humanities-marks';
+import { placeBand } from '@/lib/humanities-place';
 import { questionById, modelAnswer, ALL_TAGS, tagsFor, isPointsQuestion } from '@/lib/humanities-questions';
 import { levelLabel, marksLabel, pointClaims, segmentAnswer, humanitiesStatusLine } from '@/lib/humanities-report';
 import { SourceCards, DataTableCard, DiagramCard } from '../sources';
@@ -68,7 +69,16 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
   const usedTags = (points ? POINT_TAGS : tagsFor(run.skill)).filter(t => claims.some(c => c.tag === t.key));
   const model = own ? null : modelAnswer(ctx.question);
   // A level as a school mark: the range schools give that level (lib/humanities-marks, 15 Oct 2026).
-  const schoolMarks = report ? marksForLevels(run.skill, ctx.question.marks, report.level_lo, report.level_hi) : null;
+  // Tighter (15 Oct 2026, Adrian: "able to give a tighter range?"): a marked answer shows the level the reads
+  // SETTLED on, not the spread of the reads; then the exact mark inside it once the placing read is back
+  // (lib/humanities-place). A held answer keeps its range.
+  const settled = report && run.status === 'marked' && report.level != null;
+  const lvLo = report ? (settled ? report.level : report.level_lo) : 0, lvHi = report ? (settled ? report.level : report.level_hi) : 0;
+  const band = settled ? placeBand(run.skill, ctx.question.marks, report.level) : null;
+  const schoolMarks = !report ? null
+    : report.mark != null && band ? `${report.mark} out of ${band.total} marks`
+    : marksForLevels(run.skill, ctx.question.marks, lvLo, lvHi);
+  const placing = !!band && report?.mark == null && !!run.marked_at && Date.now() - Date.parse(run.marked_at) < 10 * 60_000;
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
   // A case study is a run of five: offer the next one.
@@ -79,7 +89,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <RunPoll active={inFlight} />
+      <RunPoll active={inFlight || placing} />
       <Link href="/app/humanities/answers" className="text-[12px] text-gray-500 hover:text-navy">‹ Your answers</Link>
       <div>
         <p className="text-[12px] font-semibold text-amber-800">{skillLabel(run.skill)} · {ctx.set.title}</p>
@@ -101,12 +111,12 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
             <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">{points && !showMark ? 'Your feedback' : 'Where this answer sits'}</p>
             {/* Marks first, the level under it in grey (15 Oct 2026, Adrian: "Level 1-2 of 4 doesn't read well"). */}
             {points
-              ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(report.level_lo, report.level_hi, max)}</p>
+              ? showMark && <p className="text-2xl font-bold text-navy">{marksLabel(lvLo, lvHi, max)}</p>
               : <>
                 <p className="text-2xl font-bold text-navy">
-                  {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) ? schoolMarks : levelLabel(report.level_lo, report.level_hi, max)}
+                  {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) ? schoolMarks : levelLabel(lvLo, lvHi, max)}
                 </p>
-                {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) && <p className="text-[14px] text-gray-500">{levelLabel(report.level_lo, report.level_hi, max)}</p>}
+                {schoolMarks && (run.skill !== 'geo_evaluate' || showMark) && <p className="text-[14px] text-gray-500">{levelLabel(lvLo, lvHi, max)}{placing ? ' · working out the exact mark…' : ''}</p>}
               </>}
             {run.status === 'held' && <p className="text-[13px] text-gray-600 mt-1">{points ? 'The reads did not fully agree on this one. Use the points below.' : humanitiesStatusLine('held')}</p>}
           </div>

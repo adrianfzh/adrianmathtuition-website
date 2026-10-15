@@ -270,6 +270,21 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **L — "CHECK MY ANSWER", THE TYPE NEVER ASKED, ONE EXACT MARK, 15 Oct 2026.** Adrian: "do 'Check my answer.' / let the
+> app just work out the type from the question wording … don't have to let student tap 'Not right' / 3 to 5 out of 6
+> marks seems like a big range … able to give a tighter range?"
+> - The door and page are **"Check my answer"** (K's "Mark a question" replaced).
+> - **The type is never shown or asked.** The form sends the wording's guess (`lib/humanities-own-guess`); when the
+>   wording gives none, `POST /api/portal/humanities/own` asks one short read (`classifyOwnType`, Sonnet 5.5 on the
+>   API key, a fraction of a cent) — checked 15 Oct on four awkward wordings, all right. Nothing it decides is shown.
+> - **Tighter marks, two steps.** (1) A marked answer shows the level the reads SETTLED on (`report.level`), not the
+>   spread of the two reads; a held answer keeps its range. (2) When that level spans several marks, one more short
+>   read on plan (`lib/humanities-place.ts`, kind `humanities-place`) is given the level, its descriptor, the next
+>   level up and the mark range, and picks the exact mark → `report.mark`. The page shows the range with "working out
+>   the exact mark…" and refreshes; the answers list shows the mark (`report_mark`). The benched reader prompt is
+>   untouched. Checked 15 Oct: a 10-mark "How far" answer showed "5 to 8 out of 10 marks · Level 3 of 4", then
+>   **"7 out of 10 marks"** about a minute after hand-in.
+
 > **K — NAME AND READABILITY, 15 Oct 2026.** Adrian: "instead of 'A question from school' > make it 'Mark a question' /
 > does student knows about question types? / Level 1-2 of 4 doesn't read well".
 > - The door and page are **"Mark a question"** ("Send a question you did and your answer"); the report header says "Your question".

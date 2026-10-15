@@ -10,7 +10,6 @@ import { loadHumanitiesRun } from '@/lib/humanities-runs';
 import { OWN_SKILLS, type OwnQuestion } from '@/lib/humanities-own';
 import type { HumanitiesSubject } from '@/lib/humanities-questions';
 import { MAX_WORDS } from '@/lib/humanities-submit';
-import { skillLabel } from '../skills';
 import OwnForm from './own-form';
 
 export const dynamic = 'force-dynamic';
@@ -30,17 +29,16 @@ export default async function OwnQuestionPage({ searchParams }: { searchParams: 
   const asked = prefill?.subject ?? (s === 'history' ? 'history' : s === 'geography' ? 'geography' : 'social-studies');
   // Only Social Studies and the student's own elective.
   const subject: HumanitiesSubject = asked === 'social-studies' || asked === elective || prefill ? asked : 'social-studies';
-  const labels = Object.fromEntries(Object.values(OWN_SKILLS).flat().map(k => [k, skillLabel(k)]));
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
       {full && <Link href={subject === 'social-studies' ? '/app/humanities' : `/app/humanities?s=${subject}`} className="text-[12px] text-gray-500 hover:text-navy">‹ Humanities</Link>}
       <div>
-        <h1 className="text-xl font-bold text-navy leading-snug">Mark a question</h1>
+        <h1 className="text-xl font-bold text-navy leading-snug">Check my answer</h1>
         <p className="text-sm text-gray-600 mt-1">Send a question you did and your answer. Type them, or send photos.</p>
         <p className="text-[12px] text-gray-500">Combined Humanities: Social Studies and your elective.</p>
       </div>
-      <OwnForm initialSubject={subject} elective={prefill && prefill.subject !== 'social-studies' ? prefill.subject as 'geography' | 'history' : elective} prefill={prefill} skills={OWN_SKILLS} labels={labels} maxWords={MAX_WORDS} />
+      <OwnForm initialSubject={subject} elective={prefill && prefill.subject !== 'social-studies' ? prefill.subject as 'geography' | 'history' : elective} prefill={prefill} skills={OWN_SKILLS} maxWords={MAX_WORDS} />
     </div>
   );
 }
