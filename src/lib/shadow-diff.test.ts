@@ -118,3 +118,14 @@ describe('latestPair', () => {
     expect(latestPair(null)).toEqual({ latest: null, previous: null });
   });
 });
+
+// 15 Oct 2026 — every "whole question" spelling is ONE part. The bot twin
+// (test/shadow-diff.test.js) carries the same example.
+describe('whole-question labels', () => {
+  it('"" and "(whole)" / "(all)" / "(total)" / "whole question" are the same whole-question part', () => {
+    for (const w of ['(whole)', '(all)', '(total)', 'whole question']) {
+      const d = diffAssemblies([q('3', [p('', 4, 4)])], [q('3', [p(w, 4, 4)])]);
+      expect(d.parts, w).toEqual({ total: 1, moved: 0, same: 1, appeared: 0, disappeared: 0 });
+    }
+  });
+});

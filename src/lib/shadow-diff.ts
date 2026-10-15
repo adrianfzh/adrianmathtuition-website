@@ -55,13 +55,29 @@ export type PaperRollup = {
 
 const num = (v: unknown): number => (Number.isFinite(Number(v)) ? Number(v) : 0);
 
-// ── the label rules, mirrored from the bot's lib/calibration.js ──────────────
-const WHOLE_LABELS = new Set(['', '-', '—', 'whole', 'all', 'total', 'q', 'question']);
-const NOISE_TOKENS = new Set(['part', 'parts', 'q', 'question', 'no', 'number']);
+// ── the label rules, mirrored EXACTLY from the bot's lib/calibration.js and
+// lib/part-label.js (15 Oct 2026: the website list lacked '(whole)', '(all)',
+// '(total)', 'whole question', and its own-number check missed "Q10" / "(10)", so
+// "" vs "(whole)" counted as two parts here and one in the bot) ─────────────────
+const WHOLE_LABELS = new Set([
+  '', 'whole', '(whole)', 'whole question', '(whole question)',
+  'all', '(all)', 'total', '(total)', '-', '–', '—',
+]);
+const NOISE_TOKENS = new Set(['part', 'parts', 'q', 'qn', 'question']);
+const WHOLE_WORDS = new Set(['whole', 'wholequestion', 'all', 'total', '-', '–', '—']);
 
-function isWholeQuestionLabel(s: string, questionNumber: string | number): boolean {
-  const q = String(questionNumber).trim().toLowerCase();
-  return s === q || s === `q${q}` || s === `question ${q}`;
+/** "(a)" → "a", "Q10" → "10", "(whole)" → "whole" — the bot's part-label squash. */
+function squash(v: unknown): string {
+  return String(v == null ? '' : v).trim().toLowerCase().replace(/[()[\]\s.]/g, '').replace(/^q/, '');
+}
+
+/** The bot's lib/part-label isWholeQuestionLabel: "", a whole word, or the question's own number. */
+function isWholeQuestionLabel(label: string, questionNumber: string | number): boolean {
+  const l = squash(label);
+  if (!l) return true;
+  if (WHOLE_WORDS.has(l)) return true;
+  const q = squash(questionNumber);
+  return !!q && l === q;
 }
 
 /** "(a) (i)" → "(a)(i)"; a label that just names the whole question → "". */

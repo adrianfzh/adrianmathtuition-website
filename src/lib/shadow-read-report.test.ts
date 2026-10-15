@@ -1,7 +1,7 @@
 // 👻 lib/shadow-read-report — the website half of the cheaper-reader shadow.
 // The worked example is the TWIN of the bot's test/shadow-read.test.js §6.
 import { describe, it, expect } from 'vitest';
-import { summariseShadowReads, noiseFloor, levelOf, shadowLine, shadowReport, type ShadowRun, type ShadowPage } from './shadow-read-report';
+import { summariseShadowReads, noiseFloor, levelOf, shadowLine, shadowReport, computeAgreement, type ShadowRun, type ShadowPage } from './shadow-read-report';
 
 const delivered = [
   { question_number: '1', photo_index: 0, marking_output: { parts: [{ label: '(a)', awarded: 2, max: 2 }, { label: '(b)', awarded: 1, max: 3 }] } },
@@ -46,10 +46,53 @@ describe('shadow-read-report', () => {
     expect(shadowLine(summariseShadowReads([], null))).toBeNull();
     expect(shadowReport(summariseShadowReads([], null))).toBeNull();
     const s = summariseShadowReads([run('r1', 'E Math 2023 P2', agreeing), run('r2', 'A Math 2022 P1', disagreeing)], noiseFloor(noiseRuns));
-    expect(shadowLine(s)).toBe('👻 Shadow (claude-sonnet-5-5+ref): 2 papers; same mark on E Math 100% of 3, A Math 50% of 2 (marker vs itself 66.7%); 1 part to adjudicate.');
+    expect(shadowLine(s)).toBe('👻 Shadow (claude-sonnet-5-5+ref): 2 papers; same mark on E Math 100% of 3 (too few papers: 1, want ≥ 10), A Math 50% of 2 (too few papers: 1, want ≥ 10) (marker vs itself 66.7%); 1 part to adjudicate.');
     const msg = shadowReport(s)!;
     expect(msg).toContain('E Math: 1 papers — too few papers');
     expect(msg).toContain('Kai — A Math 2022 P1 · Q1(b) · 1 → 3 / 3 · "method mark for the substitution"');
     expect(msg).toContain('/admin/mark-paper?run=r2');
   });
+
+  // 15 Oct 2026 — counting faults. The SAME worked examples are in the bot's
+  // test/shadow-read.test.js, so the twins cannot drift.
+  it('computeAgreement: one reading per part — summed within a page, the highest across pages', () => {
+    const results = [
+      { question_number: '1', photo_index: 0, marking_output: { parts: [{ label: '(a)', awarded: 2, max: 2 }, { label: '(b)', awarded: 2, max: 3 }] } },
+    ];
+    const pages: ShadowPage[] = [
+      { photo_index: 0, parts: [{ q: '1', part: '(a)', awarded: 2, max: 2 }, { q: '1', part: '(b)', awarded: 1, max: 3 }, { q: '1', part: '(b)', awarded: 1, max: 3 }] },
+      { photo_index: 1, parts: [{ q: '1', part: '(a)', awarded: 2, max: 2 }, { q: '1', part: '(b)', awarded: 1, max: 3 }] },
+      { photo_index: 2, parts: [{ q: '1', part: '(a)', awarded: 2, max: 2 }] },
+    ];
+    const { agreement, diffs } = computeAgreement(results, pages);
+    // old code: (a) 2+2+2 = 6 ≠ 2 and (b) 1+1+1 = 3 ≠ 2 → two false disagreements
+    expect(agreement).toEqual({ parts: 2, same: 2, diff: 0, shadow_only: 0, delivered_only: 0, abs_diff: 0 });
+    expect(diffs).toHaveLength(0);
+  });
+
+  it('noiseFloor: measured over parts both readings have; a copied row counts once', () => {
+    const results = [
+      { question_number: '1', marking_output: { parts: [{ label: '(a)', awarded: 2, max: 2 }, { label: '(b)', awarded: 1, max: 3 }] } },
+      { question_number: '2', marking_output: { parts: [{ label: '', awarded: 4, max: 4 }] } },
+    ];
+    const reread = [
+      { question_number: '1', marking_output: { parts: [{ label: '(a)', awarded: 2, max: 2 }, { label: '(b)', awarded: 2, max: 3 }] } },
+    ];   // Q2 not in the re-read: not a disagreement
+    const row = (id: string): ShadowRun => ({ id, result_json: { results, shadow_runs: [{ at: '2026-10-11T14:00:00Z', results: reread }] } });
+    // old code: 1 same of 3 (Q2 counted) on each of two copies → 2/6
+    expect(noiseFloor([row('a'), row('b')])).toEqual({ papers: 1, parts: 2, same: 1, agree_pct: 50 });
+  });
+
+  it('the line names every arm, and every level under 10 papers carries the warning', () => {
+    const shortRun = (id: string): ShadowRun => ({
+      id, paper_name: 'A Math 2022 P1', created_at: '2026-10-14T00:00:00Z',
+      result_json: { results: delivered, shadow_read: { at: '2026-10-14T01:00:00Z', arms: [{ key: 'short', model: 'claude-opus-5-5', pages: agreeing }] } },
+    });
+    const many = Array.from({ length: 10 }, (_, i) => run(`m${i}`, 'E Math 2024 P1', agreeing));
+    // the short arm comes first in the data; the arm with the evidence still heads the line
+    const s = summariseShadowReads([shortRun('s1'), ...many], noiseFloor(noiseRuns));
+    expect(s.arms.map((a) => a.key)).toEqual(['claude-sonnet-5-5+ref', 'short']);
+    expect(shadowLine(s)).toBe('👻 Shadow (claude-sonnet-5-5+ref): 10 papers; same mark on E Math 100% of 30 (marker vs itself 66.7%); no disagreements; also short: 1 paper; same mark on A Math 100% of 3 (too few papers: 1, want ≥ 10); no disagreements.');
+  });
 });
+

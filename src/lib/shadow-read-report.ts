@@ -13,7 +13,7 @@
 //
 // It does not judge. A level moves to the cheaper reader only when Adrian says so,
 // after adjudicating the listed disagreements (CLAUDE.md §Measuring the marking).
-import { flattenParts, diffAssemblies, type MarkedResult } from './shadow-diff';
+import { flattenParts, diffAssemblies, type MarkedResult, type FlatPart } from './shadow-diff';
 
 export type ShadowPart = { q: string | null; part: string; awarded: number; max: number; why?: string | null; codes?: string | null };
 export type ShadowPage = { photo_index: number; parts: ShadowPart[]; error?: string | null; empty?: boolean };
@@ -57,14 +57,24 @@ export function levelOf(name: string | null | undefined): string {
 /** The marker against itself: latest consistency re-read vs the delivered marks, every paper that has one. */
 export function noiseFloor(runs: ShadowRun[] | null | undefined): NoiseFloor | null {
   let papers = 0, parts = 0, same = 0;
+  const seenAt = new Set<string>(), seenResults = new Set<string>();
   for (const r of runs ?? []) {
     const rj = r?.result_json ?? {};
     const reads = (rj.shadow_runs ?? []).filter((x) => x && Array.isArray(x.results));
     if (!reads.length || !Array.isArray(rj.results)) continue;
     const latest = [...reads].sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')))[0];
+    // A copied row (identical delivered results, or the very same re-read time) is one
+    // reading, not two — count it once (15 Oct 2026).
+    const resKey = JSON.stringify(rj.results);
+    if ((latest.at && seenAt.has(latest.at)) || seenResults.has(resKey)) continue;
+    if (latest.at) seenAt.add(latest.at);
+    seenResults.add(resKey);
     const d = diffAssemblies(rj.results, latest.results!);
-    if (!d.parts.total) continue;
-    papers += 1; parts += d.parts.total; same += d.parts.same;
+    // Measured like the arms: over the parts BOTH sides read (same + moved); a part
+    // only one side has is not a disagreement (15 Oct 2026).
+    const matched = d.parts.same + d.parts.moved;
+    if (!matched) continue;
+    papers += 1; parts += matched; same += d.parts.same;
   }
   return papers ? { papers, parts, same, agree_pct: pct(same, parts)! } : null;
 }
@@ -76,6 +86,24 @@ function pagesAsResults(pages: ShadowPage[]): MarkedResult[] {
   return out;
 }
 
+/**
+ * Shadow pages → part key → marks, ONE reading per part (15 Oct 2026). Within a page the
+ * same key is summed; across pages the HIGHEST reading wins — a reader that sees part (a)
+ * on three pages reports it three times, and summing made "2 + 2 + 2 = 6 out of 2".
+ */
+export function flattenPagesMax(pages: ShadowPage[]): Map<string, FlatPart> {
+  const out = new Map<string, FlatPart>();
+  for (const pg of pages ?? []) {
+    for (const [k, e] of flattenParts(pagesAsResults([pg]))) {
+      const cur = out.get(k);
+      if (!cur) { out.set(k, { ...e }); continue; }
+      cur.awarded = Math.max(cur.awarded, e.awarded);
+      cur.max = Math.max(cur.max, e.max);
+    }
+  }
+  return out;
+}
+
 /** Delivered vs one arm, part by part, over the pages the arm read without error. */
 export function computeAgreement(delivered: MarkedResult[], pages: ShadowPage[]) {
   const ok = (pages ?? []).filter((p) => p && !p.error && Array.isArray(p.parts));
@@ -84,7 +112,7 @@ export function computeAgreement(delivered: MarkedResult[], pages: ShadowPage[])
     const pi = (r as { photo_index?: number | null }).photo_index;
     return pi == null || read.has(pi);
   }));
-  const S = flattenParts(pagesAsResults(ok));
+  const S = flattenPagesMax(ok);
   const origin = new Map<string, { photo_index: number; why: string | null }>();
   for (const pg of ok) for (const p of pg.parts) {
     const k = [...flattenParts([{ question_number: p.q, marking_output: { parts: [{ label: p.part, awarded: 0, max: 0 }] } }]).keys()][0];
@@ -156,7 +184,8 @@ export function summariseShadowReads(runs: ShadowRun[] | null | undefined, noise
   });
   return {
     noise,
-    arms: [...arms.values()].map((A) => ({
+    // The arm with the most papers first — the headline arm is the one with the evidence.
+    arms: [...arms.values()].sort((x, y) => y.all.papers - x.all.papers).map((A) => ({
       key: A.key, model: A.model, all: finish(A.all),
       levels: [...A.levels.entries()].map(([level, b]) => ({ level, ...finish(b) })).sort((x, y) => y.papers - x.papers),
       diffs: A.diffs.sort((x, y) => String(y.at || '').localeCompare(String(x.at || '')) || x.key.localeCompare(y.key)),
@@ -164,14 +193,25 @@ export function summariseShadowReads(runs: ShadowRun[] | null | undefined, noise
   };
 }
 
-/** The Monday report's ONE line, or null while nothing has been shadowed. */
+/**
+ * The Monday report's ONE line, or null while nothing has been shadowed. Every arm is
+ * named (15 Oct 2026: the line showed whichever arm came first — sometimes the 5-paper
+ * short arm — and its per-level numbers with no warning). Every level under
+ * MIN_PAPERS_PER_LEVEL carries "too few papers", so a 1-paper 100% never reads as a result.
+ */
 export function shadowLine(s: ShadowSummary): string | null {
-  const A = s.arms[0];
-  if (!A || !A.all.papers) return null;
-  const lv = A.levels.filter((l) => l.parts).map((l) => `${l.level} ${l.agree_pct}% of ${l.parts}`).join(', ');
+  const arms = s.arms.filter((A) => A.all.papers);
+  if (!arms.length) return null;
+  const few = (n: number) => (n < MIN_PAPERS_PER_LEVEL ? ` (too few papers: ${n}, want ≥ ${MIN_PAPERS_PER_LEVEL})` : '');
+  const seg = (A: ArmSummary) => {
+    const lv = A.levels.filter((l) => l.parts).map((l) => `${l.level} ${l.agree_pct}% of ${l.parts}${few(l.papers)}`).join(', ');
+    const todo = A.diffs.length ? `${A.diffs.length} part${A.diffs.length === 1 ? '' : 's'} to adjudicate` : 'no disagreements';
+    return { key: A.key, body: `${A.all.papers} paper${A.all.papers === 1 ? '' : 's'}; same mark on ${lv || `${A.all.agree_pct}% of ${A.all.parts}${few(A.all.papers)}`}`, todo };
+  };
   const floor = s.noise ? ` (marker vs itself ${s.noise.agree_pct}%)` : '';
-  const todo = A.diffs.length ? `; ${A.diffs.length} part${A.diffs.length === 1 ? '' : 's'} to adjudicate` : '; no disagreements';
-  return `👻 Shadow (${A.key}): ${A.all.papers} paper${A.all.papers === 1 ? '' : 's'}; same mark on ${lv || `${A.all.agree_pct}% of ${A.all.parts}`}${floor}${todo}.`;
+  const [first, ...rest] = arms.map(seg);
+  const more = rest.map((x) => `; also ${x.key}: ${x.body}; ${x.todo}`).join('');
+  return `👻 Shadow (${first.key}): ${first.body}${floor}; ${first.todo}${more}.`;
 }
 
 /** The weekly message: the line, the verdict per level, and the first few disagreements with their doors. */
