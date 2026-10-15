@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 // 💬 "Ask about this step" — the round trip on a phone-sized browser (SPEC-CLIP-PIPELINE.md §2b).
 //
-//   node scripts/clips/ask-look.mjs [slug] [--stop 5] [--ask 0 | --own] [--laptop] [--base http://localhost:3210] [--out DIR]
+//   node scripts/clips/ask-look.mjs [slug] [--stop 5] [--ask 0] [--laptop] [--base http://localhost:3210] [--out DIR]
 //
 // Server: `node scripts/clips/serve-prod.mjs build` then `… start` (a local production build whose
 // student login works — the pulled .env.production.local has its secrets masked).
-// Signs an admin session (as look.mjs does) + the preview student's session (Ask needs a student;
-// --student <email> for another of Adrian's fixtures), opens /app/lesson/<slug>?at=<stop> at 390 × 844,
-// taps "Ask about this step", taps ready question <ask> (or --own for "Type my own question"),
-// waits for the chat's answer, then taps "‹ Back to the clip" and checks the clip is at the
-// same stop. Pictures at each stage go to <out>; the summary prints as JSON.
+// Signs an admin session (as look.mjs does) + the preview student's session (the chat needs a
+// student; --student <email> for another of Adrian's fixtures), opens /app/lesson/<slug>?at=<stop>
+// at 390 × 844 (--laptop: 1280 × 800), taps "Ask about this step" (the chat opens WITH the clip,
+// which must keep playing), taps ready question <ask>, waits for the answer, and checks the clip
+// moved on meanwhile and that the board + slider and the chat are on screen together.
+// Pictures go to <out>; the summary prints as JSON. The answer only comes on the real site or the
+// preview (the chat server answers those origins only).
 // Default: growth-and-decay-am at stop 5 — the "take L N" beat Adrian asked about.
 import fs from 'node:fs';
 import os from 'node:os';
@@ -99,75 +101,50 @@ try {
 
   const askBtn = await page.$('[data-clip-ask] > button');
   if (!askBtn) throw new Error('no "Ask about this step" button');
+  await askBtn.evaluate(el => el.scrollIntoView({ block: 'center' }));
   await askBtn.click();
-  await sleep(500);
-  out.pausedAfterTap = await page.$eval('[data-step]', el => el.hasAttribute('data-paused')).catch(() => null);
+  await sleep(900);
+  const stepAtOpen = await page.$eval('[data-step]', el => Number(el.getAttribute('data-step'))).catch(() => null);
+  out.pausedAfterOpen = await page.$eval('[data-step]', el => el.hasAttribute('data-paused')).catch(() => null);
+  out.stayedOnClip = page.url().includes('/app/lesson/');
   out.readyQuestions = await page.$$eval('[data-clip-asks] button', bs => bs.map(b => b.textContent.trim()));
-  await sleep(600); // the panel scrolls itself into view
-  out.questionsClearOfMenuBar = await page.evaluate(() => {
-    const p = document.querySelector('[data-clip-asks]')?.getBoundingClientRect();
-    const bar = Array.from(document.querySelectorAll('nav, [class*="fixed"]')).map(e => e.getBoundingClientRect())
-      .filter(r => r.bottom >= window.innerHeight - 2 && r.height < 200).reduce((m, r) => Math.min(m, r.top), window.innerHeight);
-    return p ? p.bottom <= bar + 0.5 : null;
-  });
-  await page.screenshot({ path: path.join(OUT, '2-questions.png') });
-  // Measurements at 390 px: nothing wider than the screen.
-  out.overflowX = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth);
+  await page.screenshot({ path: path.join(OUT, '2-chat-open.png') });
 
   const chips = await page.$$('[data-clip-asks] button');
-  const pick = args.own ? chips[chips.length - 1] : chips[ASK];
+  if (!chips.length) throw new Error('no ready questions in the chat');
+  const pick = chips[Math.min(ASK, chips.length - 1)];
   out.asked = await pick.evaluate(b => b.textContent.trim());
-  if (args.debug) {
-    await page.evaluateOnNewDocument(() => { console.log('[ss at load]', sessionStorage.getItem('am_ask_from_clip')?.slice(0, 80)); });
-  }
-  if (args.laptop) {
-    // A laptop: the chat opens BESIDE the clip (clip-ask-panel.tsx), no new page.
-    await pick.click();
-    await sleep(1500);
-    out.stayedOnClip = page.url().includes('/app/lesson/');
-    out.panel = await page.evaluate(() => {
-      const p = document.querySelector('[data-clip-ask-panel]')?.getBoundingClientRect();
-      const b = document.querySelector('.lsn-stage')?.getBoundingClientRect();
-      if (!p) return null;
-      return { panelLeft: Math.round(p.left), panelRight: Math.round(p.right), boardRight: b ? Math.round(b.right) : null, clearOfBoard: b ? b.right <= p.left : null };
-    });
-    let last = '', stable = 0;
-    for (let i = 0; i < 90 && stable < 3; i++) {
-      await sleep(1000);
-      const t = await page.evaluate(() => document.querySelector('[data-clip-ask-panel]')?.innerText ?? '');
-      const streaming = await page.$('[data-clip-ask-panel] .stream-caret');
-      stable = t === last && !streaming && t.length > 120 ? stable + 1 : 0;
-      last = t;
-    }
-    out.chatText = last.slice(0, 3000);
-    await page.screenshot({ path: path.join(OUT, '3-answer.png') });
-    throw Object.assign(new Error('laptop done'), { laptopDone: true });
-  }
-  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60_000 }).catch(() => {}), pick.click()]);
+  await pick.click();
+  // Both on screen: the board and its slider above the phone sheet / left of the laptop panel.
   await sleep(1500);
-  out.askUrl = page.url();
-  out.backBar = await page.$eval('[data-from-clip]', el => el.innerText.replace(/\s+/g, ' ').trim()).catch(() => null);
-  // Wait for the answer to finish streaming (no caret, text stable for 3 s), up to 90 s.
+  out.layout = await page.evaluate(() => {
+    const p = document.querySelector('[data-clip-ask-panel]')?.getBoundingClientRect();
+    const b = document.querySelector('.lsn-stage')?.getBoundingClientRect();
+    const sc = document.querySelector('.lsn-scrub')?.getBoundingClientRect();
+    if (!p) return { panel: null };
+    const r = (x) => (x ? { top: Math.round(x.top), bottom: Math.round(x.bottom), left: Math.round(x.left), right: Math.round(x.right) } : null);
+    const bothSeen = window.innerWidth >= 1024
+      ? !!b && b.right <= p.left && b.top >= 0
+      : !!b && b.top >= 0 && b.bottom <= p.top && (!sc || sc.bottom <= p.top);
+    return { panel: r(p), board: r(b), slider: r(sc), bothSeen };
+  });
+  await page.screenshot({ path: path.join(OUT, '2b-asked-while-playing.png') });
+  // Wait for the answer (no caret, text stable for 3 s), up to 90 s — the clip plays on meanwhile.
   let last = '', stable = 0;
   for (let i = 0; i < 90 && stable < 3; i++) {
     await sleep(1000);
-    const t = await page.evaluate(() => document.querySelector('.ask-page')?.innerText ?? '');
-    const streaming = await page.$('.stream-caret');
+    const t = await page.evaluate(() => document.querySelector('[data-clip-ask-panel]')?.innerText ?? '');
+    const streaming = await page.$('[data-clip-ask-panel] .stream-caret');
     stable = t === last && !streaming && t.length > 200 ? stable + 1 : 0;
     last = t;
   }
   out.chatText = last.slice(0, 3000);
-  await page.screenshot({ path: path.join(OUT, '3-answer.png'), fullPage: true });
-
-  const back = await page.$('[data-from-clip] a');
-  if (!back) throw new Error('no "Back to the clip" link');
-  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 60_000 }).catch(() => {}), back.click()]);
-  await sleep(2000);
-  out.backUrl = page.url();
-  out.backAtStep = await page.$eval('[data-step]', el => Number(el.getAttribute('data-step'))).catch(() => null);
-  await page.screenshot({ path: path.join(OUT, '4-back.png') });
+  out.stepAtOpen = stepAtOpen;
+  out.stepAfterAnswer = await page.$eval('[data-step]', el => Number(el.getAttribute('data-step'))).catch(() => null);
+  out.clipKeptPlaying = out.stepAfterAnswer !== stepAtOpen || (await page.evaluate(() => /Now try one/.test(document.body.innerText)));
+  await page.screenshot({ path: path.join(OUT, '3-answer.png') });
 } catch (e) {
-  if (!e.laptopDone) out.errors.push(String(e));
+  out.errors.push(String(e));
 } finally {
   await browser.close();
 }

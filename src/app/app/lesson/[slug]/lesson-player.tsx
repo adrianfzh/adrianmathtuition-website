@@ -68,13 +68,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
 import { checkTypedAnswer } from '@/lib/notebook';
-import { boardTexAt, clipContext, readyAsks, writeClipAsk } from '@/lib/clip-ask';
-import ClipAskPanel, { type ClipAskPanelHandle } from './clip-ask-panel';
+import { boardTexAt, clipContext, readyAsks } from '@/lib/clip-ask';
+import ClipAskPanel, { type ClipAskStep } from './clip-ask-panel';
 import {
   hasBeats, lessonHasAudio, narrationLayout, sceneStepCount,
   type AnnotateScene, type CaptionScene, type EquationStepsScene,
@@ -374,6 +373,8 @@ function placeClipNotes(cont: HTMLElement) {
 function fitClipBoard(cont: HTMLElement) {
   const stage = cont.closest<HTMLElement>('.lsn-stage');
   if (!stage) return;
+  // The phone chat sheet is open: the player shrinks the whole card itself (sheetScale).
+  if (stage.closest('[data-chat-sheet]')) return;
   let bar = window.innerHeight;
   for (const el of Array.from(document.querySelectorAll<HTMLElement>('nav, [data-bottom-bar], body > div *'))) {
     const cs = getComputedStyle(el);
@@ -1444,6 +1445,14 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
   }, [cardRef, active, key]);
 }
 
+/** A laptop-wide screen: the clip's chat opens beside it rather than over its bottom half. */
+const WIDE_QUERY = '(min-width: 1024px)';
+function subscribeWide(cb: () => void): () => void {
+  const mq = window.matchMedia(WIDE_QUERY);
+  mq.addEventListener('change', cb);
+  return () => mq.removeEventListener('change', cb);
+}
+
 // ── The player ───────────────────────────────────────────────────────────────
 
 type Pacing = 'manual' | 'auto' | 'narrated';
@@ -1731,53 +1740,64 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const onContinue = () => { setPaused(false); tapAdvance(); };
   const onBack = () => { setPaused(false); back(); };
 
-  // 💬 Ask about this step (lib/clip-ask): the first tap pauses the clip and opens the ready
-  // questions; a question (or "my own") hands the board so far + this beat's line to /app/ask,
-  // whose "‹ Back to the clip" link comes back here at the same stop (?at=).
-  const router = useRouter();
+  // 💬 Ask about this step (clip-ask-panel.tsx; Adrian, 15 Oct 2026: "on a phone, it shouldn't go
+  // to another page … a student should be able to continue watching the video, and type a side
+  // question, watch that being replied, while video is still playing and student can see both").
+  // The button opens the chat WITH the clip and never pauses it: on a phone a sheet over the bottom
+  // of the screen with the clip shrunk into the top part; on a laptop a panel beside the clip.
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
   const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
-  // The questions belong to the stop they were opened on: moving on (Continue, the slider) or
-  // resuming (a tap on the board) puts them away.
-  const [askOpenAt, setAskOpenAt] = useState<number | null>(null);
-  const askOpen = askOpenAt === stopAt && (paused || !canPause);
-  // On a phone the questions open below the fold, under the bottom menu bar: bring them up
-  // (scroll-margin keeps them clear of the bar).
-  const askPanelRef = useRef<HTMLDivElement>(null);
+  const [chatOpen, setChatOpen] = useState(false);
+  const wide = useSyncExternalStore(subscribeWide, () => window.matchMedia(WIDE_QUERY).matches, () => false);
+  const sheet = chatOpen && !wide;
+  const askLabel = `${title} · step ${stopAt + 1} of ${stops.length}`;
+  const askNow = canAsk ? readyAsks(scene, step) : [];
+  // Read when a question is SENT: the step on screen then, not when the chat was opened.
+  const stepRef = useRef<ClipAskStep | null>(null);
   useEffect(() => {
-    if (askOpen) askPanelRef.current?.scrollIntoView({ block: 'end', behavior: reduced ? 'auto' : 'smooth' });
-  }, [askOpen, reduced]);
-  const openAsk = () => {
-    if (askOpen) { setAskOpenAt(null); return; }
-    if (canPause) setPaused(true);
-    setAskOpenAt(stopAt);
-  };
-  // A laptop (Adrian, 15 Oct 2026: "on a laptop, show the answer beside the clip; keep the phone as
-  // it is"): the chat opens in a panel beside the clip (clip-ask-panel.tsx) and the clip slides left
-  // to make room. A phone goes to the Ask page.
-  const [sideOpen, setSideOpen] = useState(false);
-  const panelRef = useRef<ClipAskPanelHandle>(null);
-  const pendingSideAsk = useRef<Parameters<ClipAskPanelHandle['ask']>[0] | null>(null);
-  useEffect(() => {
-    if (!sideOpen || !pendingSideAsk.current || !panelRef.current) return;
-    panelRef.current.ask(pendingSideAsk.current);
-    pendingSideAsk.current = null;
-  });
-  const goAsk = (question: string | null) => {
-    if (!hasBeats(scene)) return;
-    const context = clipContext({ title, topic, intro: askIntro, lines: boardTexAt(scene, step), say: scene.beats[step]?.say ?? '' });
-    const label = `${title} · step ${stopAt + 1} of ${stops.length}`;
-    if (window.matchMedia('(min-width: 1024px)').matches) {
-      const req = { context, stopKey: `${sceneIdx}:${step}`, label, question };
-      if (sideOpen && panelRef.current) panelRef.current.ask(req);
-      else { pendingSideAsk.current = req; setSideOpen(true); }
-      setAskOpenAt(null);
-      return;
+    stepRef.current = hasBeats(scene) && !done
+      ? { context: clipContext({ title, topic, intro: askIntro, lines: boardTexAt(scene, step), say: scene.beats[step]?.say ?? '' }), stopKey: `${sceneIdx}:${step}`, label: askLabel }
+      : null;
+  }, [scene, step, sceneIdx, done, title, topic, askIntro, askLabel]);
+  const getAskStep = useCallback(() => stepRef.current, []);
+  // Phone + chat: bring the clip to the top of the screen and shrink the board card (a transform,
+  // so the chalk hand and the cues are untouched) until the board and its slider sit above the
+  // sheet. Re-measured on every step and on resize.
+  const [sheetFit, setSheetFit] = useState<{ scale: number; height: number }>({ scale: 1, height: 0 });
+  const rootRef = useRef<HTMLDivElement>(null);
+  /** The bottom of the site's own top bar (fixed or sticky), 0 when it scrolls away. */
+  const topBarBottom = () => {
+    let top = 0;
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('header, nav, body > div *'))) {
+      const cs = getComputedStyle(el);
+      if (cs.position !== 'fixed' && cs.position !== 'sticky') continue;
+      const r = el.getBoundingClientRect();
+      if (r.top <= 1 && r.height > 0 && r.height < 140 && r.bottom > top) top = r.bottom;
     }
-    writeClipAsk({ context, label, question, backHref: `/app/lesson/${slug}?at=${stopAt}` });
-    router.push('/app/ask?from=clip');
+    return top;
   };
+  useEffect(() => {
+    if (!sheet) return;
+    // The scale is worked out for the clip as it will sit once scrolled up under the top bar.
+    const measure = () => {
+      const root = rootRef.current, card = cardRef.current;
+      const panel = document.querySelector<HTMLElement>('[data-clip-ask-panel]');
+      if (!root || !card || !panel) return;
+      const cardTopAfter = topBarBottom() + 4 + (card.getBoundingClientRect().top - root.getBoundingClientRect().top);
+      const scrub = root.querySelector<HTMLElement>('.lsn-scrub');
+      const room = panel.getBoundingClientRect().top - 8 - (scrub ? scrub.offsetHeight + 8 : 0) - cardTopAfter;
+      setSheetFit({ scale: Math.max(0.4, Math.min(1, room / card.offsetHeight)), height: card.offsetHeight });
+    };
+    const t = window.setTimeout(measure, 80);
+    window.addEventListener('resize', measure);
+    return () => { window.clearTimeout(t); window.removeEventListener('resize', measure); };
+  }, [sheet, sceneIdx, step, done]);
+  // …then, once the shrink has landed, bring the clip up under the top bar.
+  useEffect(() => {
+    if (!sheet || !rootRef.current) return;
+    window.scrollBy({ top: rootRef.current.getBoundingClientRect().top - topBarBottom() - 4, behavior: 'instant' as ScrollBehavior });
+  }, [sheet, sheetFit]);
 
   /** The YouTube gesture: a glyph in the middle of the board, gone in half a second. */
   const flashGesture = useCallback((glyph: string) => {
@@ -1866,8 +1886,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 
   return (
     <>
-    <div className={`max-w-lg mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${sideOpen ? 'lg:-translate-x-[200px]' : ''}`} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
-      data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined} style={themeStyle}>
+    <div ref={rootRef} className={`max-w-lg mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
+      data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined}
+      // The phone chat sheet covers the bottom half: the page needs that much more room to scroll the clip up.
+      style={sheet ? { ...themeStyle, paddingBottom: '50dvh' } : themeStyle}>
       <style>{PLAYER_CSS}</style>
       {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
           (public/lessons/fonts, ~43 KB the pair), because the chalk writer has
@@ -1978,6 +2000,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         /* ── The scene card. Tapping it advances (except mid-check); while
               paused, a tap resumes instead. ── */
         <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
+          style={sheet && sheetFit.scale < 1 ? { scale: String(sheetFit.scale), transformOrigin: 'top center', marginBottom: `${-((1 - sheetFit.scale) * sheetFit.height)}px` } : undefined}
           data-step={step}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
@@ -2097,36 +2120,19 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         </div>
       )}
 
-      {/* 💬 Ask about this step: one tap pauses and offers this beat's ready questions. */}
+      {/* 💬 Ask about this step: opens the chat with the clip still playing (clip-ask-panel.tsx). */}
       {canAsk && (
         <div className="mt-3" data-clip-ask>
-          <button type="button" onClick={openAsk} aria-expanded={askOpen}
-            className={`w-full h-11 rounded-2xl border text-[14px] font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.99] motion-safe:transition ${askOpen ? 'bg-amber-50 border-amber-300 text-navy' : 'bg-white border-slate-200 text-navy hover:bg-slate-50'}`}>
-            <span aria-hidden>💬</span> Ask about this step
+          <button type="button" onClick={() => setChatOpen(o => !o)} aria-expanded={chatOpen}
+            className={`w-full h-11 rounded-2xl border text-[14px] font-semibold inline-flex items-center justify-center gap-2 active:scale-[0.99] motion-safe:transition ${chatOpen ? 'bg-amber-50 border-amber-300 text-navy' : 'bg-white border-slate-200 text-navy hover:bg-slate-50'}`}>
+            <span aria-hidden>💬</span> {chatOpen ? 'Close the chat' : 'Ask about this step'}
           </button>
-          {askOpen && (
-            <div ref={askPanelRef} className="mt-2 bg-white rounded-2xl border border-slate-200 p-3 lsn-rise scroll-mb-[calc(84px+env(safe-area-inset-bottom))]" style={{ animationDuration: '220ms' }} data-clip-asks>
-              <p className="text-[12px] font-semibold text-slate-500 mb-2">Tap a question, or ask your own.</p>
-              <div className="flex flex-col gap-1.5">
-                {readyAsks(scene, step).map(q => (
-                  <button key={q} type="button" onClick={() => goAsk(q)}
-                    className="text-left rounded-xl bg-[hsl(45,60%,97%)] border border-black/5 px-3 py-2.5 text-[14px] text-navy hover:bg-amber-50 active:scale-[0.99] motion-safe:transition">
-                    {q}
-                  </button>
-                ))}
-                <button type="button" onClick={() => goAsk(null)}
-                  className="text-left rounded-xl px-3 py-2.5 text-[14px] font-semibold text-slate-600 hover:text-navy">
-                  ✏️ Type my own question
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>
     {/* Outside the sliding column: a fixed panel inside a transformed box would move with it. */}
-    {clip && askAbout && sideOpen && (
-      <ClipAskPanel ref={panelRef} botLevel={askLevel} onClose={() => setSideOpen(false)} />
+    {clip && askAbout && chatOpen && (
+      <ClipAskPanel botLevel={askLevel} asks={askNow} label={askLabel} getStep={getAskStep} onClose={() => setChatOpen(false)} />
     )}
     </>
   );
@@ -2334,8 +2340,6 @@ const PLAYER_CSS = `
    and a fresh stick leaves a soft glow round it. */
 [data-lsn-themed] .lsn-hl { background: none; padding: 0; margin: 0; }
 [data-lsn-themed] .lsn-hl-amber { color: var(--lsn-hl-amber); }
-/* A clip's highlight stays lit while it is talked about (lesson-board 2b): the chalk turns yellow. */
-[data-lsn-clip] .lsn-lit, [data-lsn-clip] .lsn-lit .katex { color: var(--lsn-hl-amber); transition: color 250ms ease; }
 [data-lsn-themed] .lsn-hl-sky { color: var(--lsn-hl-sky); }
 [data-lsn-themed] .lsn-hl-rose { color: var(--lsn-hl-rose); }
 [data-lsn-themed] .lsn-hl-emerald { color: var(--lsn-hl-emerald); }
