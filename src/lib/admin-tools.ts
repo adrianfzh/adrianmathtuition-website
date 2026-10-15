@@ -11,6 +11,7 @@ export const ADMIN_TOOLS: { group: string; links: AdminTool[] }[] = [
     { label: 'Students', href: '/admin/students', emoji: '👤' }, { label: 'Exams', href: '/admin/exams', emoji: '📊' },
     { label: 'Follow-ups', href: '/admin/followups', emoji: '📌' }, { label: 'Parent digests', href: '/admin/digests', emoji: '📬' },
     { label: 'Waitlist', href: '/admin/waitlist', emoji: '⏳' }, { label: 'Suggestions', href: '/admin/suggestions', emoji: '💡' },
+    { label: 'Staff rulebook', href: '/admin/rulebook', emoji: '📏' },
   ] },
   { group: 'Marking', links: [
     { label: 'Mark a paper', href: '/admin/mark-paper', emoji: '✍️' }, { label: 'Marked papers', href: '/admin/papers', emoji: '🗂' },
@@ -49,8 +50,8 @@ export const ALL_ADMIN_TOOLS: AdminTool[] = ADMIN_TOOLS.flatMap((g) => g.links);
 /** What the row shows before it has learnt anything, in this order. */
 export const DEFAULT_TOOLS = ['/admin/schedule', '/admin/log', '/admin/students', '/admin/mark-paper', '/admin/invoices', '/admin/questions', '/admin/notes'];
 
-/** Always in the row, first, whatever the tally says (Adrian, 8 Oct 2026: "can you put bot analytics and switch on the admin hub?"). */
-export const PINNED_TOOLS = ['/admin/bot-analytics', '/admin/switches'];
+/** Always in the row, first, whatever the tally says (Adrian, 8 Oct 2026: "can you put bot analytics and switch on the admin hub?"; the rulebook 15 Oct 2026: "allow me to access in admin hub"). */
+export const PINNED_TOOLS = ['/admin/bot-analytics', '/admin/switches', '/admin/rulebook'];
 
 export const TAPS_KEY = 'admin_dash_taps_v1';
 /** Set once a device has handed its old private tally to the shared one. */
