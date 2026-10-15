@@ -3903,6 +3903,8 @@ Ticks/crosses stay, but they're decoration; the box and the sentence are the pro
 
 ### Margin diagrams — verified figures on marked pages (bot, 2026-08-20)
 
+**Where the figure sits (Adrian, 15 Oct 2026: "putting it close to where the original diagram is. If there is no space, then put on a separate page"):** beside the question's own printed figure (the stretch above the part, bounded by the part before it), else just under the part (within 30% of the page height, `FIG_NEAR_FRAC`); no spot → the extra sheet at full size. Never shrunk below 0.8 and never dropped at the foot of the page. Bot `ai/annotate.js` `figureSeatsNear`, test `test/figure-seats-near.test.js`.
+
 The marking model can attach an optional `diagram` spec to any attempt's
 `marking_output` (see DIAGRAM RULES appended to `MARK_JSON_SPEC` in
 `ai/paper-marker.js`). The spec carries **givens only** — labels, exact
