@@ -2,7 +2,10 @@
 
 **Status:** Step 1 BUILT 15 Oct 2026 (Adrian approved the plan and said "yes" to step 1): the
 pipeline for skill clips, run by hand, and the 7 A Math Logarithms clips — admin-only, waiting
-for Adrian to watch them. Where it stands and how to run it: **§8**.
+for Adrian to watch them. Where it stands and how to run it: **§8**. **Step 2 (question clips)
+BUILT 15 Oct 2026**: one command makes a checked clip for any bank question; 10 real A Math
+questions made end to end, all 10 passing every check, admin-only, waiting for Adrian's watch —
+**§9**.
 **Asked for:** Adrian, 15 Oct 2026: *"is there a way to build a pipeline to generate clip solutions almost immediately? like within a few minutes … an automated one with all checks to ensure real good quality? this will highly enhance the app experience"* and *"before you do, can you plan how is it done to make it really good and high quality?"*
 **The standard:** `data/lessons/expand-two-brackets-s2.json`, the clip Adrian approved on 9 Oct (*"video is much better now. let's keep to this quality"*). Rules in `docs/LESSONS.md` §A clip, §Word cues, §Narration.
 **Why the old one-minute explanation is not good enough:** it is built straight from the marker's steps with no writing step, so the voice reads working instead of teaching, and nothing checks it (`src/lib/explain-clip.ts`, closed to students).
@@ -192,7 +195,7 @@ instructions, so the next topic starts with them):
 7. *"Can students interrupt and ask why ln is used when e is involved? And a model answer it?"* —
    the §2b "Ask about this step" idea → BUILT 15 Oct 2026, §8b.
 8. *"Able to generate these solution clips when a student uploads any question? And retain such
-   quality?"* — §5 step 2 (question clips); proposed as its own build.
+   quality?"* — §5 step 2 (question clips) → BUILT 15 Oct 2026, §9.
 
 **After the re-cut (15 Oct 2026, same day):** all 7 pass every check again — rules, maths
 (log equations 8/8, exponential 9/9, growth 11/11, Linear Law 19/19 line checks), board = plan,
@@ -228,3 +231,115 @@ answer it? Possible to make it interactive like that?"*
   `next start -p 3210` — opens the clip at the stop, taps the button and a question, waits for the
   answer, taps back, prints JSON + pictures.
 
+## 9. Step 2 — BUILT 15 Oct 2026: question clips (admin + preview student)
+
+Adrian, 15 Oct 2026: *"These videos are a good start, but able to generate these solution clips when
+a student upload any questions? And retain such quality?"*
+
+### What it is
+
+- **One command makes one clip for one bank question**, with no hand edits:
+  `node scripts/clips/question-clip.mjs <questionId>` (needs the site running with the local env:
+  `.claude/launch.json` "Next.js Prod (local env)", port 3211 — `.env.production.local` holds masked
+  values, and a dev server's live reloads stop a clip mid-play).
+- **Kept once, played for everyone after**: table `question_clips` (one row per question: status
+  queued → making → ready / refused / failed, every check, seconds, cost, Adrian's verdict); the voice
+  in the public `lesson-audio` bucket under `question-clips/<id>/`. Page `/app/clip/q/<id>` plays it.
+- **Doors** (admin + preview student; switch `QUESTION_CLIPS_OPEN_TO_STUDENTS`, off): "🎬 Watch the
+  clip" under a maths question's worked solution on Practice, and under a lost-marks question on a
+  marked paper when the marking matched the paper to the bank (`bankQuestionsForRun`). Adrian also
+  gets "Make a clip". A student only ever sees a READY clip.
+- **Adrian's list**: `/admin/question-clips` — every clip, its checks ✓/✗, minutes, voice cost, ▶,
+  and 👍 / 👎 + "what's wrong" (§3, stored on the row).
+- **Queue**: "Make a clip" queues the row; `scripts/clips/question-clip-worker.mjs` claims the oldest
+  and runs the command (one at a time; a crashed run is re-queued once). It runs on the Mac
+  (`scripts/clips/com.adrianmath.questionclips.plist`, **not loaded yet** — so a press of "Make a
+  clip" waits until it is). Logbook: `question-clips` per clip, `question-clips-worker` hourly
+  (JOB_RHYTHMS 3 h); health check `question-clips` (a ready clip's voice is served; nothing waits
+  over 2 h).
+
+### The steps, each checked (the skill-clip steps of §8, plus four)
+
+| Step | What | Check |
+|---|---|---|
+| 1 Gather | the bank row, its sub-skill filing, refusals first | `lib/question-clip preRefuse`: figure, graph/sketch, show-that/proof, words, > 2 parts, out of syllabus (whole or a part), national rows, unchecked twins, not AM/EM |
+| Bible | the topic's bible, written ONCE by an Opus agent from Adrian's APPROVED notes (pull-notes) + approved pitfalls; `data/clip-bibles/_house.md` holds the rules every topic shares (his first-watch notes made general) | no approved notes → refused (`no-notes`) |
+| 2a Plan | Opus plans the board and runs the maths check itself until it passes, or refuses | `scripts/clips/prompts/question-plan.md` |
+| 4 Maths | `chain-check.py` again, independently, with `answer.bank` = the bank's answer verbatim | every line follows; every number of the bank's answer is on the last line. New kinds: `system` / `system_step` / `solution` (unknowns found together), sympy functions (`binomial`, `diff`), exact roots |
+| **Fit** (new) | the plan rendered at 390 × 844 BEFORE any writing: a stand-in note under every line, each board at its fullest | 16 px spare above the bottom bar, nothing cut at the side, ≤ 2 boards; too tall → the planner splits or shortens (`scripts/clips/fit.mjs`) |
+| 2b Drafts | two Opus writers in parallel, each running the verifier on its own draft (`draft-check.mjs`) until PASS | — |
+| 5 Read | a fresh Opus reader picks, fixes what words can fix, scores the FIXED clip | every score ≥ 4; up to 2 rewrites, each read by a fresh reader; else failed |
+| 3 Rules | assemble (board copied from the plan) + the lesson verifier | 0 errors, 0 warnings; board = the checked plan |
+| 6 Voice | MiniMax voice, word timing, speech round trip | every line ≥ 85 % (scorer now reads "a half" = 1/2, "times" = *) |
+| 7 Look | plays the stored clip at phone size; then a Sonnet agent looks at every picture | cues ≤ 0.3 s; nothing cut/overlapping/tiny/below the screen; pictures clean |
+| Record | `question_clips` ready / failed with the reason; `job_runs` | — |
+
+### The 10 (15 Oct 2026) — every check, per clip
+
+All 10 passed every check on their last run. Links for Adrian (log in on the preview first):
+`https://adrianmath-dev.vercel.app/app/clip/q/<id>` — or open the list at
+`https://adrianmath-dev.vercel.app/admin/question-clips`.
+
+| Question (bank) | Topic | Result | Maths | Fit | Read (lowest) | Rules | Voice (worst line) | Look (cues worst) | Pictures | Time | Voice US$ | Agent runs |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `010271e0` Given that $(1-2x)^n = 1 + bx + 112x^2 + \dots$, find the value of $n$… | Binomial Theorem | **ready** | ✓ 20/20 | ✓ | ✓ 4 | ✓ | ✓ 86 % | ✓ 0.15 s | ✓ | 14 min 37 s | 0.079 | 8 |
+| `46db0804` The coefficient of $x^3$ in the expansion of $(10 + kx)\left(2 - \frac… | Binomial Theorem | **ready** | ✓ 9/9 | ✓ | ✓ 4 | ✓ | ✓ 89 % | ✓ 0.15 s | ✓ | 8 min 41 s | 0.083 | 6 |
+| `e7ebb728` The curve has the equation $y = x^2 - 4x + 7$. A line with gradient 1 … | Differentiation (Tangents and Normals) | **refused** — no-notes: no approved notes for AM Differentiation (Tangents | —  | — | —  | — | —  | —  | — | 0 min 2 s | 0 | 0 |
+| `8e1c35ef` Solve the equation $3 - 2e^x = e^{-x}$.… | Indices | **ready** | ✓ 18/18 | ✓ | ✓ 4 | ✓ | ✓ 88 % | ✓ 0.15 s | ✓ | 6 min 50 s | 0.077 | 5 |
+| `fe586b67` Solve the equation $2\log_3 p + \frac{1}{\log_{27} 3} - 1 = \log_3(8p … | Logarithms | **ready** | ✓ 13/13 | ✓ | ✓ 4 | ✓ | ✓ 94 % | ✓ 0.14 s | ✓ | 12 min 55 s | 0.084 | 7 |
+| `a118ba7c` Solve the equation $\log_3 x-2\log_9 3=\log_9(x+4)$.… | Logarithms | **ready** | ✓ 13/13 | ✓ | ✓ 4 | ✓ | ✓ 92 % | ✓ 0.15 s | ✓ | 20 min 37 s | 0.083 | 8 |
+| `225d1e85` Express $\frac{4}{x^{2}(x + 2)}$ in partial fractions.… | Partial Fractions | **ready** | ✓ 26/26 | ✓ | ✓ 4 | ✓ | ✓ 94 % | ✓ 0.15 s | ✓ | 10 min 9 s | 0.079 | 6 |
+| `5827cfef` The expression $2x^3 + ax^2 + bx + 10$, where $a$ and $b$ are constant… | Polynomials | **ready** | ✓ 19/19 | ✓ | ✓ 4 | ✓ | ✓ 90 % | ✓ 0.15 s | ✓ | 13 min 1 s | 0.083 | 6 |
+| `4e8ec758` Solve the equation $2x^3 - 7x + 2 = 0$, leaving non-rational roots in … | Surds | **ready** | ✓ 30/30 | ✓ | ✓ 4 | ✓ | ✓ 92 % | ✓ 0.15 s | ✓ | 16 min 11 s | 0.083 | 6 |
+| `dc60d635` A right circular cylinder has a volume of $(6 + 2\sqrt{3})\pi$ cm$^3$ … | Surds | **ready** | ✓ 17/17 | ✓ | ✓ 4 | ✓ | ✓ 86 % | ✓ 0.15 s | ✓ | 8 min 22 s | 0.09 | 6 |
+| `d7be01de` Express $(4 - \sqrt{3})^{2} - \frac{5}{2 - \sqrt{3}}$ in the form $p +… | Surds | **ready** | ✓ 24/24 | ✓ | ✓ 4 | ✓ | ✓ 89 % | ✓ 0.15 s | ✓ | 11 min 27 s | 0.099 | 8 |
+
+**Time: median 12 min 11 s a clip (6 min 50 s – 20 min 37 s), NOT the 3–5 minutes aimed for.** Where
+it goes: the plan ≈ 1 min, two writers ≈ 1½–3 min, the blind read ≈ 1½–2 min, each rewrite + re-read
+≈ 3–4 min, voice ≈ 1 min, the look ≈ 1½ min (it plays the whole clip). Ways to shorten, not done:
+start the voice while the look of an earlier clip runs; one writer instead of two when the first
+read passes; the reader at medium effort. A made clip is instant for every later student.
+
+**Cost per clip**: voice ≈ US$0.08 (MiniMax, ~800 characters); the speech round trip a few cents;
+the agents run on the Claude plan (≈ 5–8 agent runs, ≈ US$4.8 a clip at list price — not charged
+while it runs as Claude Code agents, but that is the bill if it ever moves to the API).
+
+**Runs it took to get here**: 45 runs over these 10 questions while the pipeline was fixed (many
+stopped by hand mid-run). The fixes, each found by a check on a real question:
+1. The planner was told to put the law beside a line as a line note — the lesson format has no such
+   note; the rule beside the step is the writer's `note` action (all plans failed the rules).
+2. The blind reader numbered its fixed beats from 0; the assembler counts from 1 — a fix landed on
+   the wrong beat. Now said plainly in the reader's prompt; a "0" key is read as 0-based.
+3. Writers at medium effort, one rewrite: no clip passed the read. Back to step 1's shape: writers
+   and reader at high effort, up to two rewrites, and the reader fixes what words can fix and scores
+   the fixed clip (as it did on the 7 Logarithms clips).
+4. "3 things appear in one beat", "175 words": writers and readers now run the verifier on their
+   own drafts before handing in (`scripts/clips/draft-check.mjs`).
+5. Boards taller than a phone: the long question in the intro, then the rule notes, made boards
+   run under the bottom bar — caught by the look AFTER the voice was paid for. The fit check now
+   runs on the plan, with the worst case drawn.
+6. A dev server's live reloads (another session editing the player) stopped a clip mid-play; the
+   look now runs on a production server.
+7. The speech scorer counted "1/2" for "a half" as a miss (76 % on a correctly spoken line).
+8. The picture read caught a "·" missing from a handwritten note (the hand font has no dot) —
+   writers now use ×.
+
+**Refused (recorded, not retried)**: `e7ebb728` (tangent to y = x² − 4x + 7) — Adrian's
+Differentiation notes are not approved yet, so there is no bible to write from. Every
+Differentiation, Integration, Kinematics and most Trigonometry topics are in the same state today
+(0 approved units) — their questions are refused until he approves those notes on /notes.
+
+### Not done / next
+
+- **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
+- **The queue worker is not running** — load the plist (and keep the 3211 server up) on the Mac, or
+  move the runner to the Fly worker (it needs Chrome, ffmpeg, sympy and a copy of the site to play
+  the clip on). Until then a "Make a clip" press waits, and the health check alarms after 2 hours.
+- **Photos a student uploads** (no bank row): not built. The marked-paper door shows only when the
+  paper matched the bank. A photo-read question needs a checked answer first — that is the next
+  piece.
+- **Graphs, proofs, words, figures** are refused (above); a "show that" could later land on the
+  given result as its last line.
+- **"Ask about this step"** (§8b) is not switched on for question clips (its "back" link goes to
+  `/app/lesson/<slug>`), and writers do not yet add `asks` to question-clip beats.
+- **3–5 minutes**: see Time above.
