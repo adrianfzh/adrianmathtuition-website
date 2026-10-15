@@ -1,0 +1,1620 @@
+[
+ {
+  "id": "02aa0cc4-8ca8-4b72-a921-10b98254f862",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Practice 4 note: \"All statements must be supported with logical statements\" — quote the theorem (alt. seg thm, angles in opp. seg, corr. angles, vert. opp angles, ...) on every line."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "03bcc81e-56f5-4980-a9c5-d090db488a30",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Note that 10^x = 2^x × 5^x — group each prime base and glue the block back together; don't chase x."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "04671f0a-b18f-40da-ac0b-84b636bb2959",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "Adding a line to a drawn curve to solve an equation graphically (\"You need to include the y yourself\")"
+  },
+  "why": "Drops the name and keeps the tip. The maths checks out."
+ },
+ {
+  "id": "0ab17924-4acf-4f62-8d3c-6675dd3e09eb",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Law 4: if powers are the same, you can multiply the bases — the power stays put."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "108743c3-8108-4610-a56b-fab9338fd193",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "After solving any logarithmic equation (asterisked rule)",
+   "why_wrong": "Combining logs creates candidates that make log arguments zero or negative, where the log is undefined — e.g. $x = -7$ in $\\log_2(x+11) + \\log_2(x+4) = \\log_2(5x+23)$ makes $x+4 = -3$."
+  },
+  "why": "Drops the name; also 'squaring-style' is the wrong cause here — it is combining logs (roots −3 and −7 checked)."
+ },
+ {
+  "id": "17f1c860-3420-46f0-b63c-dda6083df63a",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Count your midpoints: two midpoints → parallel + half; one midpoint + parallel → the other midpoint (converse). The worked pair 1a/1b deliberately shows one direction each."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "21232f5e-401a-4f66-a2a2-d45aaf1d4fbe",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The formula gradient $= \\tan\\theta$ holds when $\\theta$ is the angle the line makes with the POSITIVE x-axis; any other reference line gives the wrong angle."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "222be1a6-98c6-4c55-b25d-2e524055102d",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "Cross-dividing gives $\\frac{AC}{BC} = \\frac{1}{2}$, i.e. $AC : BC = 1 : 2$ — the side with the coefficient is the SHORTER one. Cross divide to see the ratio."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "289cfc1b-bc61-4baa-bfd6-102230c62543",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "Sketching application graphs such as $P = 5080(1.3)^n$ (\"there is no negative n\")",
+   "why_wrong": "Years/minutes/hours cannot be negative — the model only exists for $t \\geq 0$. The sketch starts at the vertical intercept (the initial value) and only draws the positive part."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "35fb9830-012f-4049-99e1-676887720d4c",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Rule on the theorem sheet: \"(No ASS please)\". If the angle is not between the two sides, look for AAS or RHS instead."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "425e868b-eab2-4c5f-8152-d4189d26f56f",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The discriminant belongs to ax² + bx + c = 0. Reading coefficients off an unarranged equation (e.g. (p+3)x² = 12x − 2p) gets b and c with wrong signs — always arrange x², then x, then constant first."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "5ebd0dd3-af75-4b85-8a81-491ba0e6a9ec",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The question asks about $y$ and $x$, not the renamed variables. $Y = -2X + 8$ is only a waypoint: it must become $\\frac{y}{x} = -2x^2 + 8$ and then $y = -2x^3 + 8x$. Note that $Y$ is just $\\frac{y}{x}$ and $X$ is just $x^2$; we are just renaming."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "6be1739f-eee4-4f24-a19e-6d2c7f6b96f0",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "Expanding $(x-a)^2$ produces $-2ax$, so the printed coefficient already carries a minus. That is why centre $= \\left(\\frac{\\text{coeff of }x}{-2}, \\frac{\\text{coeff of }y}{-2}\\right)$."
+  },
+  "why": "Drops the name and keeps the tip. Centre (3, −1) checked."
+ },
+ {
+  "id": "6d107958-6530-4d84-8442-bad92fcddcfe",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Identify the correct sides to form the ratio: try highlighting them in the diagram — read the vertex order position by position before writing any ratio."
+  },
+  "why": "Drops the name and keeps the tip. Correspondence P↔Q, Y↔X, R↔R checked."
+ },
+ {
+  "id": "6ec7739c-f24c-4b54-8e27-2458bf525970",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "x²+4x+3 = (x+3)(x+1) — the intended split is separate constants over each linear factor; the Bx+C form hides the simpler structure."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "94382321-be54-48ff-8d5f-0c62e7869472",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The hypotenuse is a distance and is ALWAYS positive — so $\\cos\\theta = -\\frac{1}{3}$ is placed as $\\frac{-1}{3}$: \"$-1$ is placed at the numerator because hypotenuse is always positive\". The legs carry the signs of the $x$- and $y$-coordinates of the quadrant."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "95029180-acc8-4727-93d6-527b652388df",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "$\\log_3 2 \\approx 0.63$, not 2. The safe route is $2 = 2\\log_3 3 = \\log_3 3^2 = \\log_3 9$: the constant becomes the POWER of the base, not the argument."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "a7ec6e34-bd2a-4665-a541-4ecf7df510db",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "Multiplication must hit every term on both sides, or the equation changes. Write \"multiply the ENTIRE equation by 9\" because students scale only the fraction."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "a80f1699-5d95-4007-8532-43fd39b1ebb5",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "A pure exponential $a^x$ is always positive — it can never equal zero (or a negative number). The worked examples all end this line with \"(no solutions)\": the graph has an x-intercept only when a vertical shift lets the curve cross zero."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "a9a32a90-e553-447a-a367-cd875872f310",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Label an angle, call it say a°, and see which other angles are a° — chase it until you land equal corresponding/alternate angles or interior angles summing to 180°."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "b5989b49-1c31-489d-ae28-d0765b3d955f",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "A and B do NOT lie on the perpendicular bisector — only the midpoint does: \"Sub in the midpoint. Because the midpoint lies on the perpendicular bisector.\""
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "bd7e3bc0-3fe6-44d3-864e-477b4c94322a",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Write the invisible 1 before comparing: a^9 b = a^9 b^1."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "c8d2b562-66f2-41bb-aa19-1edbab512b3f",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "An identity proof transforms ONE side into the other using known identities. Multiplying both sides or shuttling terms assumes the thing being proven. Rule: start from the more complicated side, know the target, work towards it."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "d305b621-8717-4439-9c52-334a18b866f6",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "Identifying which axis a minus sign flips, e.g. $y = \\lg(2-x)$ vs $y = -\\lg x$ (\"learn when it is flipped in which axis\")"
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "daff7021-ef96-479b-9b3e-888df69e604d",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Recall you are solving for x, not u. You need to bring back x."
+  },
+  "why": "Drops the name; the quote said 'not a' while the row's substitution letter is u, so it now matches."
+ },
+ {
+  "id": "de457bb3-9334-4254-9343-96a1974b88d0",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The laws only hold for a COMMON base. Always change base first ($\\log_9 36 \\to \\frac{\\log_3 36}{\\log_3 9}$) because $\\log_3 2 - \\log_9 36 \\neq \\log$ of anything until the bases match."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "e170e01b-8151-4530-9e1b-39f8505c9e50",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "Any circle question (double-starred rule)",
+   "why_wrong": "\"For circles questions, it is helpful to draw a diagram to visualize the problem. (Like really, draw a diagram.)\" Rejection decisions (which of two centres/radii), tangent positions and reflection directions are all read off the sketch."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "e3c237d7-2f68-4b33-b8a6-5bf6428de07f",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The notes flag both explicitly: the first point IS repeated, and vertices must run anti-clockwise — clockwise ordering makes the bracket negative (the modulus rescues the area, but mixed-up orderings that jump around the polygon give garbage, not just a sign change)."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "e56fad4c-71b4-4bab-87e1-3a989a711565",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "That assumes the very thing to be shown — circular reasoning that earns no marks. You cannot just sub a, b, c into b²−4ac = 0; you have to prove it."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "f59e2da8-bd57-4ac3-b65e-c71b00ae775a",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "It is NOT algebraic expansion — the notes flag this in bold. The addition formulae are the only legal expansion, and cosine's sign FLIPS: $\\cos(A+B) = \\cos A\\cos B - \\sin A\\sin B$."
+  },
+  "why": "Drops the name and keeps the tip."
+ },
+ {
+  "id": "4dbed7af-2365-43e6-86ec-baff70a05972",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Physics is right (same direction attract, opposite repel) and forces between parallel current-carrying conductors are taught in SG O-Level Physics electromagnetism; low risk to keep."
+ },
+ {
+  "id": "a4f7ac85-0208-4695-a706-fdbb2623ee66",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "O-Level 6092 covers ozone depletion by chlorine from CFCs, and the method works from equations given in the question; chemistry is correct."
+ },
+ {
+  "id": "35a61f1c-1053-440a-9a04-672f6772ff15",
+  "table": "method_templates",
+  "decision": "fix",
+  "fields": {
+   "method": "1. Start: temperature rises quickly because concentrations are highest.\n2. Then it rises more slowly as the reactants are used up.\n3. The highest temperature is reached about when the reaction finishes.\n4. After that it falls slowly back to room temperature: no more heat is made, and heat is lost to the surroundings."
+  },
+  "why": "Step 4 gave the wrong cause for the fall (it is heat lost to the surroundings) and step 3 overstated the peak as the exact end."
+ },
+ {
+  "id": "80434616-8185-48ee-82b7-821f3b49c933",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Bromine/iodine decolourising as a measure of C=C content follows from the 6092 unsaturation test and appears in data-response questions; the chemistry is right."
+ },
+ {
+  "id": "d0e58afa-b81e-4d1c-b9e5-9db8403b60e5",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "Of the white hydroxides, only zinc hydroxide dissolves in excess ammonia; aluminium and lead(II) hydroxides do not. (Blue copper(II) hydroxide also dissolves, giving a dark blue solution.) Calcium ions give no precipitate with ammonia."
+  },
+  "why": "'Only zinc hydroxide dissolves' is false as written — copper(II) hydroxide dissolves too."
+ },
+ {
+  "id": "f09af48e-1832-4286-94a9-56f6e423b6df",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "With steam the product is the metal OXIDE and hydrogen. A hydroxide forms only when a reactive metal (K, Na, Ca, slowly Mg) reacts with cold water; zinc and iron do not react with cold water at all.",
+   "corrective_cue": "Cold water (K, Na, Ca, Mg): hydroxide + hydrogen. Steam: oxide + hydrogen."
+  },
+  "why": "The cue implied zinc and iron give a hydroxide with cold water; they do not react with it."
+ },
+ {
+  "id": "54084417-fd01-4fef-9117-8312f4748a84",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "RMB, yen, HK dollars and ringgit are quoted per 100 units because each unit is small: 21.10 buys 100 RMB, not 1. Dropping the 100 turns 6000 RMB into 126 600 local instead of 1266."
+  },
+  "why": "6000 ÷ 100 × 21.10 = 1266; 1242 came from a different rate (20.70)."
+ },
+ {
+  "id": "da76958e-c197-4975-a435-b2cbd48fd842",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "$\\frac{1}{2}r^2\\theta$ and $r\\theta$ are the RADIAN formulas, with $\\frac{\\theta}{360°} \\cdot 2\\pi$ already absorbed — feeding 70 (degrees) into them makes the answer about 57 times too big. Mixing the two systems double-counts the conversion."
+  },
+  "why": "Called the radian formulas the 'degree formulas' — the opposite of the truth."
+ },
+ {
+  "id": "5fcac61e-7062-40fe-adea-21657837cff1",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052 (nor H2 9758); no in-syllabus use."
+ },
+ {
+  "id": "6ebb487a-7d72-417a-9647-cd938fcc70cd",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052; the maths is right but no syllabus home."
+ },
+ {
+  "id": "702e4513-fade-45fb-bc7c-8a14a2857833",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052; no syllabus home."
+ },
+ {
+  "id": "9023e622-2ec4-42f4-9538-be35bb66ed48",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052; no syllabus home."
+ },
+ {
+  "id": "9833513b-4254-4ba3-9e06-9d81a19c5086",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052; no syllabus home."
+ },
+ {
+  "id": "273f8293-97d1-447b-8330-a8fb2225cdf4",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Matrices are not in E Math 4052; no syllabus home."
+ },
+ {
+  "id": "1730463a-0173-42a2-a31a-24347187e978",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Radians and segment area are in 4052; sin 4.2886 = −0.9116 checked."
+ },
+ {
+  "id": "629d73bf-abae-4f2d-88db-be27cf73647b",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Radians are in 4052; AB = 8 sin 0.9 = 6.267 and the 0.928 rad angle both check."
+ },
+ {
+  "id": "6dbe14f1-2b60-4776-9570-2f8b2e3320ad",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "The two angles are CO-INTERIOR: $\\angle XQB = \\pi - \\angle APX$ (1.792 vs 1.349 in Ex 3b). The tangent segment needs the constructed right triangle: hypotenuse $PQ = R + r$ and one leg $R - r$, giving $AB = \\sqrt{41^2 - 9^2} = 40$ — not $\\sqrt{41^2}$ or a copied angle."
+  },
+  "why": "Radians are in 4052 and the numbers check, but the text called R + r a leg when it is the hypotenuse."
+ },
+ {
+  "id": "f3c65e15-11e4-46b5-bad8-fd5db7104a16",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Radians are in 4052; the two-radii warning is correct."
+ },
+ {
+  "id": "f2303c0e-d564-4417-b817-ee71353d9a3a",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "Radians are in 4052; sin 0.8 = 0.717 vs sin 0.8° = 0.014 checked."
+ },
+ {
+  "id": "6ec700c0-083d-4a9b-aa3d-da9de89d94f8",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "Wrong at the core: the 180 tokens already include the winners' charges, so netting 5 − 2 again double-counts — owner's gain is 180 − 18×5 = 90 (the 'wrong move') and break-even is x = 10, not 12; expected gain is also outside 4052."
+ },
+ {
+  "id": "5557db9e-4091-4a13-b1ca-88921c625e3a",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "corrective_cue": "Set H0: μ = μ0. H1 is the direction you suspect against the claim — for \"does not exceed 2.5\", H1: μ > 2.5."
+  },
+  "why": "For the claim μ ≤ 2.5 the alternative is μ > 2.5, the opposite of the claimed direction, so the cue misled."
+ },
+ {
+  "id": "e5e2df99-8c6a-4f74-80c9-0972373443bf",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "context": "Two cards are drawn without replacement from six cards numbered 1 to 6, and you want P(sum of the numbers is even)"
+  },
+  "why": "With two fair dice P(even sum) is exactly 1/2; 12/30 = 2/5 is the without-replacement card case, so the context now matches the numbers."
+ },
+ {
+  "id": "a32330a3-bb66-4b27-a5ed-8506e79c2ab7",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6f4e11a4 (pending)"
+ },
+ {
+  "id": "dc2fa0cb-b99d-4661-b586-aa857df7632a",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "different question type: base percentages; adds single-strand caveat"
+ },
+ {
+  "id": "050c12f4-da0e-4a8e-809c-d730fb3f1381",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 157ff973 (pending)"
+ },
+ {
+  "id": "2078eebc-b17a-439b-beb0-3f564846da08",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 157ff973 (pending)"
+ },
+ {
+  "id": "5343d7d4-7e4c-44e3-8455-15559101ab97",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 157ff973 (pending)"
+ },
+ {
+  "id": "aab8c127-a87f-4ff0-816d-648d2b6766b7",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 157ff973 (pending)"
+ },
+ {
+  "id": "ac54377d-0be8-4ea3-87f8-6fbc977a7b1e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 157ff973 (pending)"
+ },
+ {
+  "id": "06545fcd-1207-4040-8dca-e1be8f037395",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 313f7367 (pending)"
+ },
+ {
+  "id": "5c7b853c-1d63-47ec-b408-b8eb917a2dc8",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 313f7367 (pending)"
+ },
+ {
+  "id": "18f0a5da-d6df-41b9-a4ea-bd9f040d22aa",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2241eae3 (pending)"
+ },
+ {
+  "id": "23ae2d03-6b0d-4e7c-b862-5c46dae96d51",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2241eae3 (pending)"
+ },
+ {
+  "id": "99dfcc99-ff6c-4011-9e85-03397e3c108e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2241eae3 (pending)"
+ },
+ {
+  "id": "b6a08d05-24fa-43b9-a117-48b8772908ce",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2241eae3 (pending)"
+ },
+ {
+  "id": "f2ea3013-1ab6-4970-9d4e-16b7a1a1c01a",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds activation-energy point for temperature, which dup lacks"
+ },
+ {
+  "id": "3a927cc8-8a92-4501-ad7b-de3ac6eb98e5",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "says why the acid is added (carbonate false positive); dup does not"
+ },
+ {
+  "id": "e46cb7b1-9954-4310-930b-a4ac5273f0dc",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2649180e (pending)"
+ },
+ {
+  "id": "3c7ef279-52e4-43d2-a2c9-4896009fe12c",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 29c1b387 (pending)"
+ },
+ {
+  "id": "38e041c5-6245-41bd-ac89-e732a8ce03b9",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds which metals cannot be used with acid"
+ },
+ {
+  "id": "70a69021-7cc2-4d98-87f2-bff01aa8d3a1",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2c09abee (pending)"
+ },
+ {
+  "id": "d48efa6f-7905-41c4-91bd-2f226c8a4521",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2c09abee (pending)"
+ },
+ {
+  "id": "311c83a5-1bb5-4cda-ae44-b3f51e67ae6d",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3e821e8b (pending)"
+ },
+ {
+  "id": "bae076e9-a98c-431f-bc33-4346badd04e2",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3e821e8b (pending)"
+ },
+ {
+  "id": "d0783c96-d3a9-4209-a008-8b3eb43615ef",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3e821e8b (pending)"
+ },
+ {
+  "id": "e2f5eb32-143c-4bb5-8d86-20ef5efd4d1e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3e821e8b (pending)"
+ },
+ {
+  "id": "427e239f-f99a-4664-a5c0-88bef7603e2e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5acb5df2 (pending)"
+ },
+ {
+  "id": "4bfbeef7-35b9-4d16-8c60-f4771081a86f",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5acb5df2 (pending)"
+ },
+ {
+  "id": "45b3473d-3094-4dd2-8123-e1ad940259b7",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 25ca4b01 (pending)"
+ },
+ {
+  "id": "48730a36-ecff-4ef1-bd8b-919a2f55791a",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 408deaae (pending)"
+ },
+ {
+  "id": "a1b52efc-1103-49f8-8cb2-1c1ff6886888",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 408deaae (pending)"
+ },
+ {
+  "id": "ce725298-7210-4d33-b3af-625bed4818a7",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 408deaae (pending)"
+ },
+ {
+  "id": "e80b5813-dea1-4c79-9125-b81233715ee1",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 408deaae (pending)"
+ },
+ {
+  "id": "49beb285-b4ba-40cb-aa93-42299a2c4771",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 163ab40d (pending)"
+ },
+ {
+  "id": "4b3f5860-ab02-4607-aef7-f1e38465d1e2",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4bf4e0fe (pending)"
+ },
+ {
+  "id": "8d0878d5-9649-47e9-8a83-a3c5ed0da116",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4bf4e0fe (pending)"
+ },
+ {
+  "id": "f08e9dce-1cf8-4952-a8e4-60655aea61e8",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds electrons-in-wire, ions-in-solution point"
+ },
+ {
+  "id": "4e29aa22-b3e8-408d-a1ff-3e4278362426",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 60ba42e1 (pending)"
+ },
+ {
+  "id": "525cfc4d-ce03-4462-9086-0cd5ac7714c5",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 23ca6318 (pending)"
+ },
+ {
+  "id": "543a6d95-78ee-40f5-8509-dca949ae63d4",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 23ca6318 (pending)"
+ },
+ {
+  "id": "a4ecf291-eca5-4909-ab2b-2a8e4da5c3ce",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 251475a0 (pending)"
+ },
+ {
+  "id": "a7b6d13d-3c92-41c7-acc2-a6cd4f8c20a8",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 251475a0 (pending)"
+ },
+ {
+  "id": "f669a7b6-3b05-4128-a2ca-8f00d473b1d6",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 251475a0 (pending)"
+ },
+ {
+  "id": "7a740dfa-2cd0-4f9f-bb7f-56c289ce754d",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 57ae2403 (pending)"
+ },
+ {
+  "id": "60a06766-18bc-42c0-9c34-a74133572164",
+  "table": "method_templates",
+  "decision": "fix",
+  "fields": {
+   "method": "1. Temperature: lower gives a higher yield but the reaction is too slow; higher is fast but the yield is too low. 450 °C is the compromise.\n2. Pressure: higher gives a higher yield, but very high pressure costs too much. About 250 atm is used.\n3. Iron catalyst speeds up the reaction.\n4. Unreacted nitrogen and hydrogen are recycled."
+  },
+  "why": "different question type (explaining the compromise vs stating conditions); pressure aligned to 250 atm as in approved e79d39e8"
+ },
+ {
+  "id": "61ab2552-5742-422d-b116-cb94f72748c3",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1e885e16 (pending)"
+ },
+ {
+  "id": "638b81e9-891a-44bc-a01c-22ba1092e6ce",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3cfe52ae (pending)"
+ },
+ {
+  "id": "67da886d-a47f-4f2e-ad54-f662cb776c69",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5f42ed58 (pending)"
+ },
+ {
+  "id": "6a201718-efe2-453a-85e3-b43bf128b091",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 39bfd5dc (pending)"
+ },
+ {
+  "id": "74bfc8a7-4fb9-4fd4-acd7-efb4578d2744",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1e64fc82 (pending)"
+ },
+ {
+  "id": "6b73630e-7a75-495d-8b0e-c767c3c475f8",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1c1da52c (pending)"
+ },
+ {
+  "id": "3daca7e3-5065-4b84-842e-15109afd8101",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6d1c9af1 (pending)"
+ },
+ {
+  "id": "6d4f35c4-0948-4deb-b5c4-bf7d7e2cb3f1",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6d5ec2a3 (pending)"
+ },
+ {
+  "id": "fdd4cb3f-7fd2-49d1-8e21-ce4fcf6da39f",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6d5ec2a3 (pending)"
+ },
+ {
+  "id": "720097f6-004c-4ab1-97db-7335f7ee766c",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4121d6af (pending)"
+ },
+ {
+  "id": "94ca91e4-8bba-4c54-84cc-fd20c8e602a0",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4121d6af (pending)"
+ },
+ {
+  "id": "ee946098-978b-47d8-b8ef-67bdf26192a9",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4121d6af (pending)"
+ },
+ {
+  "id": "7390f755-680a-4505-96b4-a92958cd81d9",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 76ded058 (pending)"
+ },
+ {
+  "id": "7e09e6ae-21af-41f0-b392-1f3499160033",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4dfe2346 (pending)"
+ },
+ {
+  "id": "83569af7-2c81-4c1e-92a3-b01395804c5a",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as c0d9a59b (pending)"
+ },
+ {
+  "id": "9fe4eaa3-709e-47df-bd06-7bb906193260",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "different question type: predicting from reactivity vs experiment comparing stability"
+ },
+ {
+  "id": "90a6c65d-6400-4819-b26b-e45aa9d36e75",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 73ca73e0 (pending)"
+ },
+ {
+  "id": "be3e7a75-1c94-41a4-afe3-1b6946cf975d",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 73ca73e0 (pending)"
+ },
+ {
+  "id": "e6a97f47-ab66-4b49-b75d-a1259f8110b5",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 73ca73e0 (pending)"
+ },
+ {
+  "id": "b17324ab-e562-4472-adff-fa3b2e18b604",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 945ddb3e (pending)"
+ },
+ {
+  "id": "94eab99e-b5b5-450b-a33a-6e5a5bc4366b",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 41a83223 (pending)"
+ },
+ {
+  "id": "c644ac68-ee37-416d-8c79-e34e5c931ab8",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "bromine specifically; adds neighbouring-carbons point"
+ },
+ {
+  "id": "958d22a8-a24a-4cda-8126-4f559dcb9a4b",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 95a3eeaf (pending)"
+ },
+ {
+  "id": "cd3789fe-8f1f-4d07-8521-0733f743fddf",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 95a3eeaf (pending)"
+ },
+ {
+  "id": "d5cb840f-66ff-484d-b2a2-d7dbce941c08",
+  "table": "method_templates",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds iron gives pale green solution, not colourless"
+ },
+ {
+  "id": "964788f1-5b4e-4c80-8452-b5722430a1c7",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 27425039 (pending)"
+ },
+ {
+  "id": "e2f33f32-7921-424f-b0bc-08d619eb1bd8",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 27425039 (pending)"
+ },
+ {
+  "id": "adf2a71f-7ec0-4a3c-984a-fa764b25a6c5",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 98856a7e (pending)"
+ },
+ {
+  "id": "da352da3-722d-4e09-b04e-056ff9d6102a",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 98856a7e (pending)"
+ },
+ {
+  "id": "9e8251a5-0ba1-4958-9225-3423bc1b3b23",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4839c8f9 (pending)"
+ },
+ {
+  "id": "9fd41a0b-678b-4c57-b74b-1d243787d26f",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 217adaa1 (pending)"
+ },
+ {
+  "id": "a94175f1-3804-4b50-b574-3e3201c8cf33",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 29ced2f5 (pending)"
+ },
+ {
+  "id": "b07cea22-cf8b-4893-a095-e61565bb85c8",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0fcb2e9f (pending)"
+ },
+ {
+  "id": "f56c8101-480a-4369-b599-d3eca88e322f",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0fcb2e9f (pending)"
+ },
+ {
+  "id": "b1a6c226-3e10-443a-a8b9-46e6dba1bb42",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0f23ddb5 (pending)"
+ },
+ {
+  "id": "c543700f-7c6a-4b54-85d4-cc8a55029118",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as eaf603d4 (pending)"
+ },
+ {
+  "id": "d66bf3e5-eadb-4db3-9e8a-263604701309",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as eaf603d4 (pending)"
+ },
+ {
+  "id": "e9fd10ae-f6e0-4981-9923-b8fd15f6357c",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as c74e697c (pending)"
+ },
+ {
+  "id": "ca6d2e0a-56b5-454d-8346-f22c274516f3",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1260edfd (pending)"
+ },
+ {
+  "id": "d6bff3a1-2a8c-43f5-bd47-9ea26340ab4e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as d4fb6313 (pending)"
+ },
+ {
+  "id": "d9b6a21f-d20e-4d51-8f9e-4b7f20fcaccd",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5806eeda (pending)"
+ },
+ {
+  "id": "da7b4ae4-7188-47ef-8fe8-56b9d34f5c5d",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as eab94536 (pending)"
+ },
+ {
+  "id": "e100af39-49c7-421e-ad69-443becb35b2e",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 15067f65 (pending)"
+ },
+ {
+  "id": "e298e2f2-b6ac-4b27-8bac-fc7d4d339b5c",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 9b93d67b (pending)"
+ },
+ {
+  "id": "e78d9c7b-3c0f-47ea-9334-02c48e589cbf",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 79df93f0 (pending)"
+ },
+ {
+  "id": "ed117280-b11f-4ec5-9649-f835912104a3",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2b564584 (pending)"
+ },
+ {
+  "id": "5ecf559c-1992-4116-8445-06a65c69c3ef",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2b564584 (pending)"
+ },
+ {
+  "id": "f22929d4-7638-4d0f-8bf5-1655ff289624",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 641b49c1 (pending)"
+ },
+ {
+  "id": "fd428877-0a39-4752-9399-30c4a77a28e5",
+  "table": "method_templates",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5896bab8 (pending)"
+ },
+ {
+  "id": "3dff9221-a48c-49ca-8a76-e02e6db82537",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 177f967c (pending)"
+ },
+ {
+  "id": "2500d28f-1ad4-42a2-bc8f-046738c5ac39",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 17bd0910 (pending)"
+ },
+ {
+  "id": "1df8e08c-11ff-4394-a8cc-795712003b71",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1a0f6619 (pending)"
+ },
+ {
+  "id": "59e180bb-003c-4281-9c59-bbdd05b449b0",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 31372395 (pending)"
+ },
+ {
+  "id": "0e2093df-8532-4ccf-a2f4-f6095f3fb5f3",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 056b9257 (pending)"
+ },
+ {
+  "id": "34f2ba17-157b-47c8-92a0-3d18acb0c1cf",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 056b9257 (pending)"
+ },
+ {
+  "id": "fc3fc7d7-54cf-4463-ba2b-37a19f2450ef",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 056b9257 (pending)"
+ },
+ {
+  "id": "6babea16-8abe-4f3d-be07-939b76e461b5",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2d78fa9f (pending)"
+ },
+ {
+  "id": "fcd5a248-4300-400e-a66a-5057e5f9e018",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds 'no reaction' is a conclusion, not an observation"
+ },
+ {
+  "id": "402d9fe5-40f6-4ca6-9236-105ec5902bde",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0105e7bf (pending)"
+ },
+ {
+  "id": "7dadeaf5-d840-402e-b294-bd37e27e1f2f",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 40ac1c25 (pending)"
+ },
+ {
+  "id": "928c4875-8efc-4656-8668-aa16bc8c2c25",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 40ac1c25 (pending)"
+ },
+ {
+  "id": "4c7b204a-7aa9-4abb-8bc6-29ebc67ea4e8",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4b50b801 (pending)"
+ },
+ {
+  "id": "bfd15c7e-2f6b-4b37-a6d7-9712874edfd2",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4b50b801 (pending)"
+ },
+ {
+  "id": "e4cca8e9-d53f-43c1-b401-0e11e6769bd6",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4b50b801 (pending)"
+ },
+ {
+  "id": "ee08263a-05b1-4d41-a405-77540fd3065e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4b50b801 (pending)"
+ },
+ {
+  "id": "493f0a11-fb90-4b8b-87bb-7e2de1898c40",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 18e3ab1f (pending)"
+ },
+ {
+  "id": "846a502b-ff96-445f-8a76-b1513ba91b14",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4bd13aa3 (pending)"
+ },
+ {
+  "id": "0511808b-95aa-4e22-8724-2b2926c9231d",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 149cb6a1 (pending)"
+ },
+ {
+  "id": "30a18639-e56b-4e2a-97a8-cd824cf57614",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 149cb6a1 (pending)"
+ },
+ {
+  "id": "17897cf0-b9c6-44a5-a2fd-fc164005be7e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same as 0e3dd731, and its 'same colour' cue is wrong (appearance may change)"
+ },
+ {
+  "id": "0e88cfcf-ec2d-4432-abb3-72354642132d",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 08d72421 (pending)"
+ },
+ {
+  "id": "837f3273-739c-42db-b1d6-04dacfc6997e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 08d72421 (pending)"
+ },
+ {
+  "id": "0cfbf091-8988-47d6-b4af-68ff5c23bfa5",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 08fcf2d8 (pending)"
+ },
+ {
+  "id": "d52fdb24-7eae-4920-9458-db343917176f",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "different mistake: electrons through electrolyte (circuit), not ionic-compound electrons"
+ },
+ {
+  "id": "a3c3ee65-76e4-4bd0-bcbd-0e53c2c54eab",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 08fcf2d8 (pending)"
+ },
+ {
+  "id": "71cb0c6c-c5aa-4fb7-adc2-96a3a337f0e8",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 2892ccee (pending)"
+ },
+ {
+  "id": "6d92fb87-87c2-4770-9bbf-30745b2d761a",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 03a9e21f (pending)"
+ },
+ {
+  "id": "635c7049-4259-41be-880d-1b5ebd92fd27",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "different mistake: alloy no longer conducts; dup is only steel-as-compound"
+ },
+ {
+  "id": "e9e58b97-ecf5-4e00-8e2f-798303747012",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0d995b9b (pending)"
+ },
+ {
+  "id": "6980227b-b6c6-4d44-b766-e1c535bf2d6d",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6698c1e8 (pending)"
+ },
+ {
+  "id": "967729ed-1e4d-4d80-8ac2-4b47f716347d",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 6698c1e8 (pending)"
+ },
+ {
+  "id": "788c65e3-4d65-46cf-ae4f-6546515c7e30",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5fafa1c2 (pending)"
+ },
+ {
+  "id": "93399b7d-abbf-4c38-b678-0ec942b0cd59",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0517c067 (pending)"
+ },
+ {
+  "id": "94364e75-8842-461f-b7bc-11affeca4ae9",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 93a7d883 (pending)"
+ },
+ {
+  "id": "e6629e38-f72a-4636-b6c3-0cb00ba2ffc2",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 93a7d883 (pending)"
+ },
+ {
+  "id": "94811794-934b-405c-81ba-4707776d29f9",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 7ccd80bb (pending)"
+ },
+ {
+  "id": "b8361bae-79dc-4f61-be2f-5c0dad4921c7",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 96a26c5b (pending)"
+ },
+ {
+  "id": "9afafdc6-dae1-4162-99e0-28f6b609ce63",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 00aa0692 (pending)"
+ },
+ {
+  "id": "ce4dec76-6720-4eb5-8ea0-4a16b666944c",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 00aa0692 (pending)"
+ },
+ {
+  "id": "89c36c09-89f0-442e-8127-4ba09098475e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0f01ff30 (pending)"
+ },
+ {
+  "id": "a5e0a786-8338-43c6-9295-9c506c1363fe",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 177f967c (pending)"
+ },
+ {
+  "id": "e1f0a942-caf7-413f-a222-3f5be597470c",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 177f967c (pending)"
+ },
+ {
+  "id": "a84f7281-6e5f-4362-b0c7-2b680d40e3a4",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3e9f9fad (pending)"
+ },
+ {
+  "id": "a8c065dc-f695-42c6-b7d6-f7e8279160b9",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 64c62104 (pending)"
+ },
+ {
+  "id": "a9aa80b4-6e3e-4a03-8553-2b9399ec2f4b",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 24cbb362 (pending)"
+ },
+ {
+  "id": "b5564f6f-0967-41c3-9940-df8eddcc256e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 24cbb362 (pending)"
+ },
+ {
+  "id": "ca51f0c2-917a-4fd9-9707-e3e8c4b6ea5a",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 24cbb362 (pending)"
+ },
+ {
+  "id": "77ccc0f1-062a-4c1e-9ddd-aa8ed6805b8b",
+  "table": "pitfalls",
+  "decision": "approve",
+  "fields": null,
+  "why": "adds the separation reason: two insoluble solids cannot be filtered apart"
+ },
+ {
+  "id": "ae736a77-08d2-4844-bfb0-020644c5648a",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0330c7c8 (pending)"
+ },
+ {
+  "id": "b4a09e39-28d4-4121-a7d7-0685d0273c6c",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 296ba06a (pending)"
+ },
+ {
+  "id": "c81fc49f-bf6b-40d0-ad27-d0d942668cff",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as b901f6e2 (pending)"
+ },
+ {
+  "id": "b93bbb34-2283-4f72-a022-0f53609baa0c",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 05abf225 (approved)"
+ },
+ {
+  "id": "ba8e2825-dc0d-4713-8b5b-3e1395a1895b",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 8d57ef29 (pending)"
+ },
+ {
+  "id": "c9cc6e78-145c-46b9-8f8e-9309f31de56b",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as c3937ef1 (pending)"
+ },
+ {
+  "id": "8c0da2da-d1a8-4939-b482-0ae090ae9046",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5c080118 (pending)"
+ },
+ {
+  "id": "cbb89cdb-2317-43b1-b4e3-b3e7036780ce",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 5c080118 (pending)"
+ },
+ {
+  "id": "9024d7df-b1dd-448e-93f7-5b2246716026",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 22d6d7ec (pending)"
+ },
+ {
+  "id": "ed49f9f8-9d48-4969-aa4e-eeb15a17cee3",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 22d6d7ec (pending)"
+ },
+ {
+  "id": "d059a646-df63-4e0f-ad62-5cfe40390218",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as bbf3507e (pending)"
+ },
+ {
+  "id": "d52dea6f-2249-48d6-8749-5aaf61d34812",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 522b0b74 (pending)"
+ },
+ {
+  "id": "d7681f89-3a86-44ce-b390-3d7a7fc0d01f",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as e2430f13 (pending)"
+ },
+ {
+  "id": "da227ae5-1f53-4aa5-bb30-6cb8548764a1",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4001b2eb (pending)"
+ },
+ {
+  "id": "dc26d1cd-837e-4da6-a216-7dba7429d39a",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 731607bc (pending)"
+ },
+ {
+  "id": "ee6bfe91-196d-47f6-911e-90793b42d372",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 0b933563 (pending)"
+ },
+ {
+  "id": "eeeae2f1-3755-4956-b80b-cb4d36637340",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 72642651 (pending)"
+ },
+ {
+  "id": "f44c6915-2eb0-4d74-9b6a-c315e7b63e6f",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 3d4ae200 (pending)"
+ },
+ {
+  "id": "f5625c35-1745-4fca-9f4b-9e1b96da57d5",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as bb476bb7 (pending)"
+ },
+ {
+  "id": "fa8ed234-6317-46bd-b1c7-4824368f523e",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 8020d140 (pending)"
+ },
+ {
+  "id": "fc76a6af-906a-4a10-98fe-e82a72cb9f97",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 1d40e65a (pending)"
+ },
+ {
+  "id": "fdde6f23-963e-496d-92e6-c34cca7e4d53",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 55fb0f16 (pending)"
+ },
+ {
+  "id": "46ed4172-7a0f-4c91-9efd-44c44c91b6b0",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 4b576a68 (pending)"
+ },
+ {
+  "id": "4422dba4-658c-45e6-8bf0-0aefacfe731d",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 363b5ad1 (pending)"
+ },
+ {
+  "id": "dd4c64b6-a282-4f24-a16f-07cc9b8734d7",
+  "table": "pitfalls",
+  "decision": "fix",
+  "fields": {
+   "why_wrong": "$\\varnothing = \\{\\,\\}$ has NO elements — $\\{0\\}$ has one element, the number 0. Edge conventions matter too: whether 0 counts as a perfect square changes the set, and so the answer.",
+   "corrective_cue": "∅ means nothing inside. At boundaries (0, 1, the number itself), state the convention you're using."
+  },
+  "why": "different mistake ({0} for ∅) from dup (0 for ∅); removed reference to a specific worksheet's key"
+ },
+ {
+  "id": "4c4f7426-c176-404d-8e75-8b1daad5e7a6",
+  "table": "pitfalls",
+  "decision": "reject",
+  "fields": null,
+  "why": "same point as 45a11620 (pending)"
+ }
+]
