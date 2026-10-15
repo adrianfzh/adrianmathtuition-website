@@ -41,6 +41,14 @@ NOT taken: a character or presenter (the approved clip has none, 9 Oct), and "in
 - **A series look** — fixed board layouts and stock phrases per topic, so a topic's clips look and sound like one series.
 - **Numbers decide** — where students stop a clip or press "Still confused" sends that clip back for a rewrite.
 
+**From AI short-drama workflow tutorials** (Adrian sent 7 on 15 Oct 2026 — AI Master, feicaiclub "Opus 5.5 as director", Xuan Studio, CyberJungle "Bible skill file", AI漫劇 tutorials). Their line: pick script → break it down → prepare assets → shoot → sound + edit → watch the cut and revise; a series "bible" every step reads; controlled "film set" work instead of re-rolling; "expensive is cheap" (the cheaper model cost more in rework); hook first, then binge. PROPOSED for us:
+- **A bible per topic** (`data/clip-bibles/<topic>.md`): Adrian's method and words from his notes, board layout, notation, the topic's traps. Writer and blind reader both read it.
+- **Board plan before words**: step 2 splits into (2a) the beat plan — what is on the board each beat, maths-checked (step 4) — then (2b) the narration. No voice money on a plan that fails.
+- **First line = the point** (what this clip fixes), no warm-up.
+- **Play the next** clip of the topic after "Now try one".
+- **Best model for writing** — rework costs more than the call.
+Not needed: face/scene consistency — our board is drawn by code, identical every time.
+
 ## 3. Learning from Adrian
 
 - Every clip has a 👍 / 👎 + "what's wrong" for Adrian, and a "This helped / Still confused" for students.
