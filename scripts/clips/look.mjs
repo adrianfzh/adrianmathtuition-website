@@ -76,7 +76,9 @@ const chromePath = process.env.CHROME_PATH || '/Applications/Google Chrome.app/C
 const browser = await puppeteer.default.launch({
   executablePath: chromePath,
   headless: 'new',
-  args: ['--autoplay-policy=no-user-gesture-required', '--mute-audio'],
+  // No timer throttling: under launchd (the clip worker) a background Chrome played a 1-minute
+  // clip in 4 minutes (15 Oct 2026).
+  args: ['--autoplay-policy=no-user-gesture-required', '--mute-audio', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'],
 });
 const token = adminToken();
 let anyFail = false;

@@ -17,6 +17,8 @@
   </array>
   <key>EnvironmentVariables</key>
   <dict><key>PATH</key><string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string></dict>
+  <!-- Interactive: no App Nap / timer throttling for the browser that plays each clip. -->
+  <key>ProcessType</key><string>Interactive</string>
   <key>KeepAlive</key><true/>
   <key>StandardOutPath</key><string>/tmp/questionclips.log</string>
   <key>StandardErrorPath</key><string>/tmp/questionclips.log</string>
