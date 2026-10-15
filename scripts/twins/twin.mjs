@@ -416,7 +416,9 @@ function check() {
   const gates = { pass: problems.length === 0, problems, novelty: { vs_source: vsSource, nearest, nearest_jaccard: nearestS, max: NOVELTY_MAX, number_swap: numberSwap }, structure: { ok: want === got, marks }, checked_at: new Date().toISOString(), rounds: (prev.rounds ?? 0) + 1 };
   writeFileSync(runFile(dir, 'Q1.gates.json'), JSON.stringify(gates, null, 1));
   if (gates.pass) {
-    const earlierTw = readIf(runFile(dir, 'earlier-twins.json'), true) ?? [];
+    // strict parse: the file is our own JSON.stringify of an ARRAY — the loose reader looks for '{'
+    // and threw on '[]', so every first twin of a seed failed check after passing (15 Oct 2026)
+    const earlierTw = readIf(runFile(dir, 'earlier-twins.json')) ?? [];
     const earlierShown = earlierTw.length ? `\n# EARLIER TWINS OF THE SAME SOURCE (the twin must not read as any of these either)\n\n${earlierTw.map((e, i) => `## Earlier twin ${i + 1}\n${e.text}`).join('\n\n')}\n` : '';
     const figs = [
       ...(q.needs_figure && String(q.figure_description ?? '').trim() ? [`[The diagram, described in words — the printed question shows it as a figure: ${String(q.figure_description).trim()}]`] : []),
