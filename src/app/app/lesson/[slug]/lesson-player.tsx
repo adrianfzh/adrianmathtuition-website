@@ -380,10 +380,14 @@ function fitClipBoard(cont: HTMLElement) {
     const r = el.getBoundingClientRect();
     if (r.height > 0 && r.top > window.innerHeight * 0.6 && r.top < bar) bar = r.top;
   }
+  // The slider sits under the board, like a video's progress bar (Adrian, 15 Oct 2026: "put the
+  // slider below the clip"): leave room for it (its height + its 8 px gap) above the bottom bar.
+  const scrub = document.querySelector<HTMLElement>('.lsn-scrub');
+  const reserve = scrub ? scrub.getBoundingClientRect().height + 8 : 0;
   for (let pass = 0; pass < 3; pass++) {
     const cur = Number(stage.style.getPropertyValue('--lsn-clip-fit')) || 1;
     const sr = stage.getBoundingClientRect();
-    const over = sr.bottom + window.scrollY - (bar - 8);
+    const over = sr.bottom + window.scrollY - (bar - 8 - reserve);
     const lines = cont.getBoundingClientRect().height;
     if (over <= 1 && cur >= 1) return;
     const want = over > 1 ? Math.max(0.7, cur * (lines - over) / lines) : Math.min(1, cur * 1.02);
@@ -1915,26 +1919,6 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         </div>
       </div>
 
-      {/* A clip: a slider to drag to any part (Adrian, 15 Oct 2026: "a drag slider to allow
-          students to go to any parts they want on the clip"). One stop per beat; landing on a
-          beat shows the board up to it and the voice starts that beat. */}
-      {clip && (() => {
-        const at = done ? stops.length - 1 : stopAt;
-        return (
-          <div className="lsn-scrub mb-3 px-0.5 flex items-center gap-2">
-            <input type="range" min={0} max={Math.max(0, stops.length - 1)} step={1} value={at}
-              aria-label="Go to a part of the clip"
-              onChange={e => {
-                const [si, k] = stops[Number(e.target.value)] ?? stops[0];
-                setDone(false); setSceneIdx(si); setStep(k);
-              }}
-              className="lsn-scrub-range flex-1"
-              style={{ ['--lsn-scrub' as string]: `${stops.length > 1 ? (at / (stops.length - 1)) * 100 : 0}%` }} />
-            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{stops.length}</span>
-          </div>
-        );
-      })()}
-
       {/* Progress dots — one per scene; the current one stretches. */}
       {!clip && <div className="lsn-dots flex items-center gap-1 mb-3 px-0.5" aria-hidden>
         {scenes.map((_, i) => (
@@ -2031,6 +2015,27 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           )}
         </div>
       )}
+
+      {/* A clip: a slider to drag to any part (Adrian, 15 Oct 2026: "a drag slider to allow
+          students to go to any parts they want on the clip"). One stop per beat; landing on a
+          beat shows the board up to it and the voice starts that beat. Under the board, like a video's
+          progress bar (Adrian, 15 Oct 2026: "put the slider below the clip"). */}
+      {clip && (() => {
+        const at = done ? stops.length - 1 : stopAt;
+        return (
+          <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-2">
+            <input type="range" min={0} max={Math.max(0, stops.length - 1)} step={1} value={at}
+              aria-label="Go to a part of the clip"
+              onChange={e => {
+                const [si, k] = stops[Number(e.target.value)] ?? stops[0];
+                setDone(false); setSceneIdx(si); setStep(k);
+              }}
+              className="lsn-scrub-range flex-1"
+              style={{ ['--lsn-scrub' as string]: `${stops.length > 1 ? (at / (stops.length - 1)) * 100 : 0}%` }} />
+            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{stops.length}</span>
+          </div>
+        );
+      })()}
 
       {/* The spoken-line ribbon (Voice only): the narration sentence being
           said, its words brightening as the voice reaches them. Fixed height
