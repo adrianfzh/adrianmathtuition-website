@@ -249,6 +249,9 @@ New in the player: a clip board that would run below the screen scales its maths
 - Watch 13: whatever was just written is always in full view (an older line scrolls back out of the fade —
   the pink "(rej)"); a finger drag or the mouse wheel looks back up the board WHILE the clip plays on
   (`attachBoardLook`), with "⬇ Back to now" (bottom right) or 4 s untouched gliding back to the writing.
+- Watch 14: the slider is a video bar — a touch anywhere brings the thumb to the finger at once and it
+  follows the drag, the clip seeks when the finger lifts; ⏪ 10 / 10 ⏩ jump about ten seconds of voice
+  (a part's length from its words); "⬇ Back to now" sits just above the subtitle.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
