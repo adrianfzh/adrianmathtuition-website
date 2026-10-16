@@ -61,7 +61,8 @@ export function keyboard(slugs, names = []) {
   const rows = [];
   slugs.forEach((s, i) => {
     if (!/^[a-z0-9][a-z0-9-]{1,58}$/.test(s)) return;
-    const t = (names[i] || s.replace(/-/g, ' ')).slice(0, 48);
+    const full = names[i] || s.replace(/-/g, ' ');
+    const t = full.length <= 44 ? full : `${full.slice(0, 44).replace(/\s+\S*$/, '')}…`;   // a whole word
     rows.push([{ text: `✅ Apply ${t}`, callback_data: `lf:a:${s}` }]);
     rows.push([{ text: '✏️ Change', callback_data: `lf:c:${s}` }, { text: '🗑 Drop', callback_data: `lf:d:${s}` }]);
   });
