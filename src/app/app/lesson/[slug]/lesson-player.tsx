@@ -494,8 +494,9 @@ function scrollClipBoard(cont: HTMLElement) {
   if (offset < was && cont.dataset.scrollBack !== '1') offset = was;
   delete cont.dataset.scrollBack;
   cont.dataset.scrollAt = String(offset);
-  if (!zoom.style.transition) zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)';
   zoom.style.translate = offset ? `0 ${-offset}px` : '0 0';
+  // The first placement (a fresh board, or one drawn afresh by a seek) is instant; after that it glides.
+  if (!zoom.style.transition) requestAnimationFrame(() => { zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)'; });
   const fade = offset ? 'linear-gradient(to bottom, transparent 0, #000 36px)' : '';
   boardEl.style.maskImage = fade;
   boardEl.style.setProperty('-webkit-mask-image', fade);
@@ -553,7 +554,8 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const prevRevealed = useRef(0);
-  const prevMoved = useRef<Set<string>>(new Set());
+  // Seeded with what has already moved: a board drawn afresh mid-clip (a seek back) re-flies nothing.
+  const prevMoved = useRef<Set<string>>(new Set(board?.moved ?? []));
   const revealed = step + 1;
 
   // A line rewritten in place changes width: fit the rows and the board again BEFORE any flight
@@ -2008,6 +2010,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   // question, watch that being replied, while video is still playing and student can see both").
   // The button opens the chat WITH the clip and never pauses it: on a phone a sheet over the bottom
   // of the screen with the clip shrunk into the top part; on a laptop a panel beside the clip.
+  // Seeking BACK (← or the slider) draws the board afresh at that point, like a video player seeking:
+  // nothing written later (ink, notes, a piece that moved) can linger (Adrian, 16 Oct 2026: "Add Power
+  // and the arrow just sticks there").
+  const [seekEpoch, setSeekEpoch] = useState(0);
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
   const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
@@ -2128,6 +2134,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       const to = Math.min(stops.length - 1, Math.max(0, at + (e.key === 'ArrowRight' ? 1 : -1)));
       if (to === at && !done) return;
       const [si, k] = stops[to];
+      if (to < at) setSeekEpoch(n => n + 1);
       setDone(false); setSceneIdx(si); setStep(k);
       flashGesture(e.key === 'ArrowRight' ? '⏩' : '⏪');
     };
@@ -2337,7 +2344,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
       ) : (
         /* ── The scene card. Tapping it advances (except mid-check); while
               paused, a tap resumes instead. ── */
-        <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
+        <div key={`${sceneIdx}:${seekEpoch}`} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
           style={sheet && sheetFit.scale < 1 ? { scale: String(sheetFit.scale), transformOrigin: 'top center', marginBottom: `${-((1 - sheetFit.scale) * sheetFit.height)}px` } : undefined}
           data-step={step} data-leaving={leaving || undefined}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
@@ -2438,6 +2445,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               aria-label="Go to a part of the clip"
               onChange={e => {
                 const [si, k] = stops[Number(e.target.value)] ?? stops[0];
+                if (Number(e.target.value) < at) setSeekEpoch(n => n + 1);
                 setDone(false); setSceneIdx(si); setStep(k);
               }}
               className="lsn-scrub-range flex-1"
