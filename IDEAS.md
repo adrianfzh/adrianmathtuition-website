@@ -215,6 +215,8 @@ Done that evening: the Science tab (hidden from students, `SCIENCE_MARKING_OPEN_
 
 ## Product — student portal
 
+- ⏸ **"Login link" button on a student's admin page** (16 Oct 2026, Adrian: "hold the login link button for now") — one tap makes a one-time login link Adrian sends on WhatsApp, for a student who cannot get in and cannot use "Forgot password?" (no access to that email, reset email lost). Held because "Forgot password?" already works (test account used it 16 Oct). Build notes if it is picked up: service-key `auth.admin.generateLink({type:'magiclink'})`; the WhatsApp link must open a page with a **Log in** button that does the sign-in on tap (a POST), never sign in on the link's GET — WhatsApp link previews fetch the URL and would use up the one-time link. Button beside "Copy invite link" in `src/app/admin/students/[id]/profile-client.tsx`.
+
 - 📐 **Preparing worksheets in advance** (Adrian, 5 Oct 2026: "for preparing worksheets in advance - put in memory"). Options discussed that day — **the lesson package is built and B was declined (5 Oct 2026); C is still open — ask before building it, and reuse A's machinery** (the stuck-topics analysis, held sheets, the assign path), not a second pipeline:
   - **A. Stuck-topics sheets — ✅ BUILT 5 Oct 2026** (`/admin/stuck`, cron `stuck-weekly` Sunday 19:00 SGT; bot `handlers/stuck.js`): the 1–3 biggest gaps each week get a 10-question sheet, held until Adrian says send. Runs once the website is promoted.
   - **B. Before each exam** — ❌ NOT BUILT, Adrian 5 Oct 2026: "don't build option B". (Exam season still changes the Next lesson suggestion — the tested topics + the next Set papers on the card — but there is no separate pack and no message.)
