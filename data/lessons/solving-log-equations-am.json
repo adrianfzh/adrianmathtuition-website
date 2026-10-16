@@ -27,21 +27,12 @@
         },
         {
           "tokens": [
-            { "tex": "\\log_3(", "id": "g1" },
-            { "tex": "x-8", "id": "a1" },
-            { "tex": ")+\\log_3", "id": "g2" },
-            { "tex": "x", "id": "b1" },
-            { "tex": "=\\,2", "id": "two1" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "2=", "id": "t2", "hl": "amber" },
-            { "tex": "2", "id": "k2" },
-            { "tex": "\\log_3 3", "id": "lg3" },
-            { "tex": "=\\log_3 3", "id": "lg3b" },
-            { "tex": "{}^{2}", "id": "pw", "from": "k2", "tight": true },
-            { "tex": "=\\,\\log_3 9", "id": "e3" }
+            { "tex": "\\log_3(x-8)+\\log_3 x", "id": "lhs" },
+            { "tex": "=", "id": "eqR" },
+            { "tex": "2", "id": "two1", "hl": "amber" },
+            { "tex": "\\log_3 3", "id": "lg3", "replaces": [] },
+            { "tex": "{}^{2}", "id": "pw", "from": "two1", "tight": true, "replaces": ["two1"] },
+            { "tex": "\\log_3 9", "id": "e3", "replaces": ["lg3", "pw"] }
           ]
         }
       ],
@@ -88,8 +79,7 @@
           "say": "Now the two on the right. To match the plan, the two must become a log with base three.",
           "asks": ["Why must 2 become a log?"],
           "do": [
-            { "do": "highlight", "token": "two1", "on": "the two on the right" },
-            { "do": "write", "token": "t2", "on": "must become a log" }
+            { "do": "highlight", "token": "two1", "on": "the two on the right" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b5.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b5.timing.json"
@@ -98,8 +88,7 @@
           "say": "So two is two times one, which is two times log base three of three.",
           "asks": ["Why is 2 = 2 log base 3 of 3?"],
           "do": [
-            { "do": "write", "token": "k2", "on": "two times one" },
-            { "do": "write", "token": "lg3", "on": "log base three of three" }
+            { "do": "write", "token": "lg3", "on": "two times log" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b6.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b6.timing.json"
@@ -117,8 +106,7 @@
           "say": "Now bring the power up: the two in front goes up as the power of three.",
           "asks": ["Why can the 2 go up as the power?"],
           "do": [
-            { "do": "write", "token": "lg3b", "on": "bring the power up" },
-            { "do": "move", "from": "k2", "on": "goes up as the power" }
+            { "do": "move", "from": "two1", "on": "goes up as the power" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b8.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b8.timing.json"
@@ -174,7 +162,7 @@
       ],
       "beats": [
         {
-          "say": "Two is log base three of nine. Put it in place of the two.",
+          "say": "We carry on from here: log base three of X minus eight, plus log base three of X, equals log base three of nine.",
           "asks": ["Where did log base 3 of 9 come from?"],
           "do": [
             { "do": "write", "step": 0 }

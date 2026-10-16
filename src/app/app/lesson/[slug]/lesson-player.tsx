@@ -87,7 +87,7 @@ import {
 } from '@/lib/lesson-speech';
 import {
   beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, pieceKey, proseGroup, sceneNotes, scenesHaveCharacter,
-  tokKey, tokenShown, tokenWritten, type BoardState,
+  tokKey, tokenGone, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
   HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, THEME_TOKENS, TITLE_FONT_FAMILY, TITLE_FONT_URL,
@@ -189,9 +189,9 @@ const TONE = {
   emerald: { hl: 'lsn-hl-emerald', chip: 'lsn-chip-emerald bg-emerald-50 border-emerald-200 text-emerald-900', stroke: '#10b981' },
 } as const satisfies Record<LessonTone, { hl: string; chip: string; stroke: string }>;
 
-function TokenSpan({ t, bits }: { t: StepToken; bits?: ElementBits | null }) {
+function TokenSpan({ t, bits, gone = false }: { t: StepToken; bits?: ElementBits | null; gone?: boolean }) {
   return (
-    <span
+    <span data-gone={gone ? '1' : undefined}
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
       data-key={bits?.key}
@@ -284,12 +284,15 @@ function CaptionView({ scene, timed, board }: { scene: CaptionScene; timed: bool
 
 // ── Scene: equation-steps (with moved-term FLIP) ─────────────────────────────
 
-function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement) {
-  const s = offsetRect(source, container);
+type Rect = ReturnType<typeof offsetRect>;
+
+function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect) {
+  const s = was ?? offsetRect(source, container);
   const t = offsetRect(target, container);
   if (s.width === 0 || t.width === 0) return;
 
   const clone = source.cloneNode(true) as HTMLElement;
+  clone.removeAttribute('data-gone');
   clone.removeAttribute('data-token-id');
   clone.removeAttribute('data-key');
   clone.setAttribute('aria-hidden', 'true');
@@ -487,6 +490,9 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   const prevMoved = useRef<Set<string>>(new Set());
   const revealed = step + 1;
 
+  // Where each token last sat: a piece rewritten out of its line ("2 log₃3" → "log₃3²") takes no
+  // room by the time it flies, so it flies from where it was.
+  const lastAt = useRef<Map<Element, Rect>>(new Map());
   // Fly a token from the earlier line that declared its `from` id.
   const fly = useCallback((cont: HTMLElement, fromId: string, lineIdx: number) => {
     const line = cont.querySelector<HTMLElement>(`[data-line="${lineIdx}"]`);
@@ -498,7 +504,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           // An earlier line, or an earlier token of the same line (the 2 going up into the power).
           return l && Number(l.getAttribute('data-line')) <= lineIdx && el !== target;
         });
-      if (source) flyClone(cont, source, target);
+      if (source) flyClone(cont, source, target, source.dataset.gone ? lastAt.current.get(source) : undefined);
     }
   }, []);
 
@@ -529,6 +535,14 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
       if (fromId) fly(cont, fromId, lineIdx);
     }
   }, [revealed, reduced, board, scene.steps, fly]);
+  // After any flight: note where each token on the board now sits (see lastAt).
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (!cont || !board) return;
+    for (const el of Array.from(cont.querySelectorAll<HTMLElement>('[data-token-id]'))) {
+      if (!el.dataset.gone) lastAt.current.set(el, offsetRect(el, cont));
+    }
+  });
 
   const intro = bitsOf(board, 'text:intro');
   const notes = useMemo(() => (board ? sceneNotes(scene) : []), [board, scene]);
@@ -571,14 +585,17 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               className={`lsn-line ${on ? 'on' : ''}`}>
               <div data-fit className="lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
                 {s.tokens.map((t, ti) => (
-                  <TokenSpan key={ti} t={t}
+                  <TokenSpan key={ti} t={t} gone={!!board && tokenGone(board, scene, i, ti)}
                     bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
                 ))}
               </div>
               {/* Handwritten asides beside this line's tokens: slots from mount, drawn on when their beat says so. */}
               {board && notes.some(n => n.line === i) && (
                 <div className="lsn-note-row">
-                  {notes.filter(n => n.line === i).map(n => {
+                  {notes.filter(n => n.line === i && !(n.near && (() => {
+                    const ti = s.tokens.findIndex(t => t.id === n.near);
+                    return ti >= 0 && tokenGone(board, scene, i, ti);
+                  })())).map(n => {
                     // The ↑ points at the middle of the note's span (else its `near` token).
                     const ids = n.span?.length ? n.span : n.near ? [n.near] : [];
                     const keys = clip ? ids.map(id => s.tokens.findIndex(t => t.id === id)).filter(ti => ti >= 0).map(ti => tokKey(i, ti)) : [];
@@ -2485,6 +2502,7 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
 /* A tight token (a power or a base that flies into place) sits against the one before it. */
 .lsn-tokrow > .lsn-tok-tight { margin-left: -0.375rem; }
+.lsn-tok[data-gone] { display: none !important; }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }

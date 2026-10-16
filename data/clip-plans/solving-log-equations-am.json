@@ -75,64 +75,45 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "\\log_3(",
-          "id": "g1"
+          "tex": "\\log_3(x-8)+\\log_3 x",
+          "id": "lhs"
         },
         {
-          "tex": "x-8",
-          "id": "a1"
+          "tex": "=",
+          "id": "eqR"
         },
         {
-          "tex": ")+\\log_3",
-          "id": "g2"
+          "tex": "2",
+          "id": "two1",
+          "hl": "amber"
         },
         {
-          "tex": "x",
-          "id": "b1"
+          "tex": "\\log_3 3",
+          "id": "lg3",
+          "replaces": []
         },
         {
-          "tex": "=\\,2",
-          "id": "two1"
+          "tex": "{}^{2}",
+          "id": "pw",
+          "from": "two1",
+          "tight": true,
+          "replaces": [
+            "two1"
+          ]
+        },
+        {
+          "tex": "\\log_3 9",
+          "id": "e3",
+          "replaces": [
+            "lg3",
+            "pw"
+          ]
         }
       ],
       "checks": [
         {
           "step": "log(x-8,3) + log(x,3) = 2"
-        }
-      ]
-    },
-    {
-      "board": 0,
-      "tokens": [
-        {
-          "tex": "2=",
-          "id": "t2",
-          "hl": "amber"
         },
-        {
-          "tex": "2",
-          "id": "k2"
-        },
-        {
-          "tex": "\\log_3 3",
-          "id": "lg3"
-        },
-        {
-          "tex": "=\\log_3 3",
-          "id": "lg3b"
-        },
-        {
-          "tex": "{}^{2}",
-          "id": "pw",
-          "from": "k2",
-          "tight": true
-        },
-        {
-          "tex": "=\\,\\log_3 9",
-          "id": "e3"
-        }
-      ],
-      "checks": [
         {
           "fact": "2 = 2*log(3,3)"
         },
@@ -387,7 +368,8 @@
     "Compare: light the two insides, then write x(x-8) = 9 as its own line.",
     "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive.",
     "Adrian 16 Oct 2026 (fourth watch): the 2 FLIES up into the power; 'both sides are equal, so compare' and the insides FLY out of the logs; each board starts with the line the last one ended on; 'negative one', never 'minus one'; log3(-9): the 3 and the -9 move into 3^? = -9 as spoken, then the powers of 3 one by one.",
-    "Adrian 16 Oct 2026: 2 = 2log3 3 = log3 3^2 on ONE line; say 'bring the power up', never 'fly'; step 4 says always check answers for logs."
+    "Adrian 16 Oct 2026: 2 = 2log3 3 = log3 3^2 on ONE line; say 'bring the power up', never 'fly'; step 4 says always check answers for logs.",
+    "Adrian 16 Oct 2026 (watch 6): explain the 2 AT the 2 of line 3 — the line is rewritten in place: = 2 -> = 2 log3 3 -> the 2 goes up into the power -> = log3 3^2 -> = log3 9."
   ],
   "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
   "boards": [

@@ -63,6 +63,11 @@ export interface StepToken {
   /** Sits right against the token before it, no gap — a power or a base that flies into place
    *  (Adrian, 16 Oct 2026: "perhaps the 2 can move to the power position? its an animation right?"). */
   tight?: boolean;
+  /** Beat scenes only: the line is REWRITTEN in place. Until this token is shown it takes no room;
+   *  once it is shown, the tokens named here (earlier tokens of the same line) leave the line. An
+   *  empty list = the line grows in place ("= 2" → "= 2 log₃3"). Adrian, 16 Oct 2026: "from the 3rd
+   *  line, at the number 2 on the right side, just explain from there … at the line itself". */
+  replaces?: string[];
 }
 
 export interface EquationStep {
@@ -777,8 +782,16 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         // the 2 going up into the power on the same line, Adrian 16 Oct 2026).
         // A tap-through line appears all at once, so there it must be an earlier step.
         const byToken = Array.isArray(scene.beats);
+        const lineIds = new Set<string>();
         step.tokens.forEach((t, ti) => {
           validateToken(t, `${sAt}.tokens[${ti}]`, errors, sceneIds, earlier);
+          if (isRecord(t) && t.replaces !== undefined) {
+            if (!byToken) errors.push(`${sAt}.tokens[${ti}]: "replaces" needs a beat scene (the line is rewritten beat by beat)`);
+            else if (!Array.isArray(t.replaces) || t.replaces.some(r => !nonEmptyString(r) || !lineIds.has(r))) {
+              errors.push(`${sAt}.tokens[${ti}]: "replaces" must list earlier token ids of the same line`);
+            }
+          }
+          if (isRecord(t) && nonEmptyString(t.id)) lineIds.add(t.id);
           if (byToken && isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
         });
         for (const t of step.tokens) {

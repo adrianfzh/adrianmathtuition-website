@@ -53,13 +53,13 @@ import {
 export type ElementKey = string;
 
 /** Where a token sits, for the tok:n:i key. */
-export interface TokenRef { line: number; index: number; id?: string; from?: string }
+export interface TokenRef { line: number; index: number; id?: string; from?: string; replaces?: string[] }
 
 /** Every token of a scene in writing order (equation-steps lines / annotate's one row). */
 export function sceneTokens(scene: Scene | PlayScene): TokenRef[] {
   if (scene.type === 'equation-steps' || scene.type === 'motion-graph') {
     if (scene.type === 'motion-graph' && !scene.steps) return [];
-    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from })));
+    return (scene.steps ?? []).flatMap((s, line) => s.tokens.map((t, index) => ({ line, index, id: t.id, from: t.from, ...(t.replaces ? { replaces: t.replaces } : {}) })));
   }
   if (scene.type === 'annotate') return scene.tokens.map((t, index) => ({ line: 0, index, id: t.id, from: t.from }));
   return [];
@@ -388,6 +388,17 @@ export function tokenShown(board: BoardState, scene: Scene | PlayScene, line: nu
     if (targeted && !own) return false;
   }
   return true;
+}
+
+/** Does this token take no room on the board right now? A `replaces` token before it is shown, or a
+ *  token a shown `replaces` token of its line has rewritten (the line rewritten in place). */
+export function tokenGone(board: BoardState, scene: Scene | PlayScene, line: number, index: number): boolean {
+  const row = sceneTokens(scene).filter(r => r.line === line);
+  const me = row.find(r => r.index === index);
+  if (!me) return false;
+  if (me.replaces && !tokenShown(board, scene, line, index)) return true;
+  if (!me.id) return false;
+  return row.some(r => r.replaces?.includes(me.id!) && tokenShown(board, scene, line, r.index));
 }
 
 /** Did this token arrive by draw-on (its own write, or its line's)? */

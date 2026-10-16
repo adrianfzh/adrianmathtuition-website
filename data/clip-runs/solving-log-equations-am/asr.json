@@ -1,6 +1,6 @@
 {
  "slug": "solving-log-equations-am",
- "worst": 0.86,
+ "worst": 0.87,
  "lines": [
   {
    "beat": 1,
@@ -64,8 +64,8 @@
   },
   {
    "beat": 11,
-   "bag": 0.86,
-   "score": 0.86,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -82,8 +82,8 @@
   },
   {
    "beat": 14,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -124,10 +124,9 @@
   },
   {
    "beat": 21,
-   "bag": 0.8,
-   "score": 0.933,
-   "heard": "Factorize x - 9 x + 1 = 0",
-   "said": "Factorise: X minus nine, times X plus one, equals zero."
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
   },
   {
    "beat": 22,
@@ -151,7 +150,7 @@
    "beat": 25,
    "bag": 0.81,
    "score": 1,
-   "heard": "-1 - 8 is -9. So we get log base 3 of -9.",
+   "heard": "-1 - 8 is -9 So we get log base 3 of -9",
    "said": "Negative one minus eight is negative nine. So we get log base three of negative nine."
   },
   {
