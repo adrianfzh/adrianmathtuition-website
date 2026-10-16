@@ -407,8 +407,10 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         const lines = Math.max(1, Math.round(rect.height / lh));
         if (plainTextOf(el).trim()) {
           const dur = scaleBeat(isProse ? wipeMs(lines) : sweepMs(rect.width), r);
-          writer.animate(el, dur, fresh ? 0 : delay, fresh);   // claims it NOW, so no frame of bare text
-          if (!fresh) cursor = now + delay + dur + 60;
+          // Paused (a seek while paused shows the part done): the hand is not moving, so it is written already.
+          const instant = fresh || writer.paused;
+          writer.animate(el, dur, instant ? 0 : delay, instant);   // claims it NOW, so no frame of bare text
+          if (!instant) cursor = now + delay + dur + 60;
         } else {
           el.classList.remove('lsn-dust');
           void el.offsetWidth;                      // restart the keyframe
