@@ -1259,6 +1259,11 @@ function useSpeechCursor({ cardRef, ribbonRef, active, sceneIdx, step, scene, cl
           litRef.current = lit;
           const words = ribbonRef.current?.querySelectorAll<HTMLElement>('[data-w]');
           words?.forEach((w, i) => { if (i < lit) w.setAttribute('data-on', ''); else w.removeAttribute('data-on'); });
+          // A clip's subtitle in pieces: show the piece holding the next word to be said.
+          const next = words?.[Math.min(lit, (words?.length ?? 1) - 1)]?.parentElement?.dataset.piece;
+          if (next != null) ribbonRef.current?.querySelectorAll<HTMLElement>('[data-piece]').forEach(p => {
+            if (p.dataset.piece === next) p.setAttribute('data-active', ''); else p.removeAttribute('data-active');
+          });
         }
       } else if (!c && ribbonKeyRef.current && !ribbonKeyRef.current.startsWith(`${sceneIdx}:`)) {
         // Moved to a position with no clip: the old scene's line goes.
@@ -1494,6 +1499,42 @@ function subscribeWide(cb: () => void): () => void {
   const mq = window.matchMedia(WIDE_QUERY);
   mq.addEventListener('change', cb);
   return () => mq.removeEventListener('change', cb);
+}
+
+/**
+ * A clip's subtitle never runs past two lines (Adrian's look, 16 Oct 2026: a 3-line line covered the
+ * board's last working line). A beat's line is cut into pieces of at most SUBTITLE_PIECE_CHARS
+ * characters — two lines on a phone — at word boundaries, the way video captions are; the pieces
+ * play one after another with the voice.
+ */
+const SUBTITLE_PIECE_CHARS = 72;
+function subtitlePieces(words: string[]): { w: string; i: number }[][] {
+  const out: { w: string; i: number }[][] = [];
+  let cur: { w: string; i: number }[] = [];
+  let len = 0;
+  words.forEach((w, i) => {
+    if (cur.length && len + 1 + w.length > SUBTITLE_PIECE_CHARS) { out.push(cur); cur = []; len = 0; }
+    len += (cur.length ? 1 : 0) + w.length;
+    cur.push({ w, i });
+  });
+  if (cur.length) out.push(cur);
+  return out;
+}
+
+/** The sound-off caption of a clip: its pieces in turn, a reading pace apart (no voice to follow). */
+function MutedCaption({ words, className, paused }: { words: string[]; className: string; paused: boolean }) {
+  const pieces = useMemo(() => subtitlePieces(words), [words]);
+  const [at, setAt] = useState(0);
+  useEffect(() => {
+    if (paused || at >= pieces.length - 1) return;
+    const t = window.setTimeout(() => setAt(a => a + 1), 900 + pieces[at].length * 330);
+    return () => window.clearTimeout(t);
+  }, [at, pieces, paused]);
+  return (
+    <p className={className}>
+      {pieces[at]?.map(({ w, i }) => <span key={i} data-w data-on="">{i > pieces[at][0].i ? ' ' : ''}{w}</span>)}
+    </p>
+  );
 }
 
 // ── The player ───────────────────────────────────────────────────────────────
@@ -1946,7 +1987,13 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         <div ref={ribbonRef} className={ribbonCls} aria-hidden data-ribbon>
           {ribbon && (
             <p key={ribbon.key} className={lineCls}>
-              {ribbon.words.map((w, i) => (
+              {clip ? subtitlePieces(ribbon.words).map((piece, pi) => (
+                // A clip's line in pieces of at most two lines; the speech cursor shows the piece
+                // being said (data-active). Words keep their order, so [data-w] indices still match.
+                <span key={pi} data-piece={pi} data-active={pi === 0 ? '' : undefined}>
+                  {piece.map(({ w, i }) => <span key={i} data-w>{i > piece[0].i ? ' ' : ''}{w}</span>)}
+                </span>
+              )) : ribbon.words.map((w, i) => (
                 <span key={i} data-w>{i > 0 ? ' ' : ''}{w}</span>
               ))}
             </p>
@@ -1957,11 +2004,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           so a student watching on mute still gets the words (SPEC-CLIP-PIPELINE §2b). */}
       {clip && pacing === 'auto' && !done && hasBeats(scene) && scene.beats[step] && (
         <div className={ribbonCls} aria-hidden data-ribbon="caption">
-          <p key={`${sceneIdx}:${step}`} className={lineCls}>
-            {scene.beats[step].say.split(/\s+/).map((w, i) => (
-              <span key={i} data-w data-on="">{i > 0 ? ' ' : ''}{w}</span>
-            ))}
-          </p>
+          <MutedCaption key={`${sceneIdx}:${step}`} className={lineCls} words={scene.beats[step].say.split(/\s+/).filter(Boolean)} paused={paused} />
         </div>
       )}
     </>
@@ -2484,6 +2527,7 @@ const PLAYER_CSS = `
 .lsn-subs { position: absolute; left: 6px; right: 6px; bottom: 6px; min-height: 48px; display: flex; align-items: flex-end; justify-content: center; pointer-events: none; z-index: 15; }
 .lsn-subs-line { animation: lsnFade 180ms ease both; background: rgba(8, 10, 14, 0.72); color: rgba(255, 255, 255, 0.62); border-radius: 10px; padding: 4px 10px; font-size: 13.5px; line-height: 1.35; text-align: center; max-width: 100%; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
 .lsn-subs-line [data-w] { transition: color 160ms ease; }
+.lsn-subs-line [data-piece]:not([data-active]) { display: none; }
 .lsn-subs-line [data-w][data-on] { color: #fff; }
 @media (min-width: 520px) { .lsn-subs { left: 10px; right: 10px; bottom: 10px; min-height: 56px; } .lsn-subs-line { font-size: 16px; padding: 5px 12px; } }
 /* The whole question beside / above a question clip, on the board's colours. */
