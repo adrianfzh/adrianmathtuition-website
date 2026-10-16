@@ -152,8 +152,14 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   at most a small grey code. Alternatives go AFTER the working, set apart.
 - **Asides and checks are quieter** (grey, smaller); the main line is not.
 - **Short, plain words.** Say what went wrong, then what to do. Fewer words wins a tie.
-- **Look at the rendered thing** (PDF, page, phone screen) before calling it done — not the
-  source text. A page that is correct but hard to read is NOT done.
+- **Check it yourself before you show Adrian or say done** (29 Sep → 17 Oct 2026; Adrian,
+  17 Oct, after a cover with the wrong total: *"seems like errors keep coming up"*). Why: he
+  kept finding the slips himself — a clip label cut off on his phone, a number turning black.
+  - Open the finished thing at phone size: the PDF, the page, the clip played through and
+    stepped back and forward. Not the source text.
+  - Read every number, label and total on it against where it came from.
+  - Say in one line what you checked ("Checked at phone size: totals, labels, nothing cut off").
+  - A page that is correct but hard to read is NOT done.
 - **Fix at the source, keep the renderer's net.** Writers (gce-paper, the sheet worker, the
   marker, the notes miners) write clean content; the renderers also clean what reaches them
   (`lib/render-solutions-pdf.ts` `splitSolution` / `markNotesToCodes`, 29 Sep 2026), so old
