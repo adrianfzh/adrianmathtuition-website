@@ -34,6 +34,17 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
 - **One mistake, one circle, one note led to it.** Two errors in one answer get a note each,
   each beside its own words — never two circles with the notes swapped (same paper, Q2(b)(ii):
   *"why are there double circles? and it says should be ionic, then says should be covalent?"*).
+- **A circle goes round the wrong part ONLY, tight** — "−20", not "−20 − 0)"; never round a
+  neighbouring number (Adrian, 17 Oct 2026, Gavin's EM 2021 P2 Q5(c)(ii) and Alessi's Venn:
+  *"the circles aren't circling exactly at the part it needs to circle"*; pen_reports 30, 31).
+- **Never underline on a diagram or sketch.** An underline is for a line of writing. On a
+  diagram, circle the wrong label and point an arrow to the note (same paper: *"putting it on a
+  diagram is... what's the point? perhaps should circle instead and point an arrow and
+  annotate"*; pen_reports 32).
+- **A vector is written as a vector everywhere**: |→RS| with the arrow over RS, never "|RS|"
+  (same paper Q8: *"magnitude |RS| should have an arrow on top of RS (its a vector)"*).
+- **A missing geometric reason is labelled "missing reason"**, not "incomplete answer" (Chloe's
+  EM 2020 P1 Q21: *"for not writing reasons for angle properties > say 'missing reason'"*).
 
 ## 1. Inputs
 
@@ -481,6 +492,31 @@ mode only** (`MARK_RED_INK=1`); the professional look is untouched. Bot
 
 Follow-up noted, not built: prose inside a typeset (`$…$`) note still comes out in
 MathJax's serif, which reads printed beside the wobbled pen lines.
+
+## 16 Oct 2026 — ticks at the end, marks by her own words (pen_reports 25–30, bot 8d50264f)
+
+Adrian, on Isabelle's Pasir Ris chemistry and Alessi's EM Set 3: *"if ticks can be placed at the
+end of the sentence, why not? why place them in front?"* · *"why are there double circles?"* ·
+*"the arrows and the crosses does not seem in the correct position"* · *"red circled 15, but
+annotation says its 1?"*. What changed (each behind its own `PEN_*=0` switch, bot `ai/annotate.js`):
+- **A sentence's mark never goes to the left margin** (the 30 Sep fallback is gone,
+  `lib/prose-mark.js`): after the last word, else a little further along, else just above or below
+  the end, else where it was.
+- **Shadowed photos**: the prose rows and seats read the shadow-flattened page (a shadow had merged
+  three written rows and blocked every seat).
+- **A part's ✓ after the whole row's writing**, not after the printed "(i) cathode:".
+- **A printed dotted rule is not writing**: a coded ✓ no longer walks to the page edge because the
+  rule runs on (`PEN_RULE_NOT_INK`).
+- **Science, tilted page**: a mark whose walk ran on along tilted PRINT stays at her box's end
+  (not for a ✗ with a long note — its arrow would cross her writing); a short fix ("+ NO₃⁻") is written
+  on her line right after the ✗ (`PEN_SCI_FIX_INLINE`).
+- **Rings**: a ring taller than it is wide round a word is refused (`lib/row-picks.js cleanRing`);
+  a 1–2 character token with writing running on from it is part of a longer number — no ring
+  (`PEN_TOKEN_FRAGMENT`).
+- Verified: golden pen bench 1327/1327, `npm test` 4999/4999, `pen-dryrun` before/after on Isabelle's
+  photos 2, 3, 6, 7 and Alessi's photo 5. Released papers are not re-inked (forward-only).
+- **Still open**: on Q2(b)(ii) a redraw drew only one of the two notes ("should be ionic"); the
+  second ("should be covalent") is not drawn on some renders.
 
 ## Page check before release (6 Oct 2026)
 

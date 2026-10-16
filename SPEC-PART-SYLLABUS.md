@@ -218,8 +218,16 @@ It still never decides. But a mark can no longer be saved, or served, with one u
 
 - No student-facing text explains any of this. The part is simply not there.
 - Admin views never hide a marked part: it is greyed, with its reason.
-- Marking of a REAL paper a student hands in (the bot's bank grounding) keeps every part —
-  the student sat the whole paper. The door is for material WE hand out.
+- ~~Marking of a REAL paper a student hands in (the bot's bank grounding) keeps every part —
+  the student sat the whole paper. The door is for material WE hand out.~~ **Changed 17 Oct
+  2026 (Adrian, Chloe's A Math 2020 P1 — Q1 sum/product of roots and Q5 marked 0/5 and 0/4 "not
+  attempted"):** *"for questions not in the latest syllabus anymore (we can remove the marks from
+  the total and mark only based on the marks that are in syllabus, then put on cover page to tell
+  students that > make it obvious)"*. So on a handed-in paper the bank recognises: a question
+  (or part) flagged `legacy_syllabus` / out of syllabus is **taken out of the total** (out of 80 −
+  5 − 4 = 71 there), is not marked down when blank, and the **cover page says so plainly** —
+  which questions, and that they are no longer examined. An attempt at one may still get its
+  red-pen notes, but no marks either way. **Not built yet** (bot: paper totals + the cover).
 - Rows with no `parts` list (the parts live only inside `question_text`) cannot be marked.
   `applyPartMark` refuses with a plain message; mark the whole question instead.
 
