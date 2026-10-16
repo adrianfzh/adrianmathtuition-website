@@ -65,8 +65,15 @@ function record(row) { mkdirSync(HOME, { recursive: true }); appendFileSync(LEDG
 
 // ---------------------------------------------------- the deterministic half ----
 const SCRIPTS = { maths: 'scripts/twins/twin.mjs', sci: 'scripts/science-twins/sci-stwin.mjs', 'sci-mcq': 'scripts/science-twins/sci-twin.mjs' };
+const NET_DOWN = /fetch failed|ENOTFOUND|ECONNRESET|ETIMEDOUT|EAI_AGAIN|Connection error/;
 function sh(bank, args, dir) {
-  const r = spawnSync('node', [SCRIPTS[bank], ...args], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, BOT_REPO: BOT }, maxBuffer: 64 << 20 });
+  // a dropped connection is not a failed twin: wait and try again (up to ~30 min) before judging
+  let r;
+  for (let t = 0; t < 30; t++) {
+    r = spawnSync('node', [SCRIPTS[bank], ...args], { cwd: ROOT, encoding: 'utf8', env: { ...process.env, BOT_REPO: BOT }, maxBuffer: 64 << 20 });
+    if (r.status === 0 || !NET_DOWN.test(`${r.stdout}${r.stderr}`)) break;
+    log(`  network down (${args[0]}) — waiting a minute`); spawnSync('sleep', ['60']);
+  }
   if (dir) appendFileSync(join(dir, 'lane.log'), `$ ${args.join(' ')}\n${r.stdout ?? ''}${r.stderr ?? ''}\n`);
   return { ok: r.status === 0, out: r.stdout ?? '', err: r.stderr ?? '' };
 }
@@ -160,6 +167,21 @@ function applyReply(it, msg, expect) {
 }
 
 // ----------------------------------------------------------- the API calls ----
+/** Keep trying a call while the connection is down (the Mac lost its network mid-run on 16 Oct 2026). */
+async function patient(fn) {
+  for (let t = 0; ; t++) {
+    try { return await fn(); } catch (e) {
+      if (t >= 120 || !NET_DOWN.test(`${e?.message} ${e?.cause?.message ?? ''} ${e?.cause?.cause?.code ?? ''}`)) throw e;
+      log(`  network down — waiting a minute (${e.message})`); await new Promise((r) => setTimeout(r, 60000));
+    }
+  }
+}
+const batchCreate = (body) => patient(() => client.messages.batches.create(body));
+async function batchWait(id) {
+  let st = await patient(() => client.messages.batches.retrieve(id));
+  while (st.processing_status !== 'ended') { await new Promise((r) => setTimeout(r, 20000)); st = await patient(() => client.messages.batches.retrieve(id)); }
+  return patient(async () => { const out = []; for await (const r of await client.messages.batches.results(id)) out.push(r); return out; });
+}
 /** One batch for [{it, role}] — waits, finishes any tool turn synchronously, writes files. */
 async function runBatch(jobs, cap) {
   if (!jobs.length) return true;
@@ -173,12 +195,9 @@ async function runBatch(jobs, cap) {
     await Promise.all(Array.from({ length: 8 }, async () => { for (let j; (j = queue.shift());) j.msg = await sync(j, []); }));
     return true;
   }
-  const b = await client.messages.batches.create({ requests: reqs });
+  const b = await batchCreate({ requests: reqs });
   log(`batch ${b.id}: ${jobs.length} × ${[...new Set(jobs.map((j) => j.role))].join('/')}`);
-  let st = b;
-  while (st.processing_status !== 'ended') { await new Promise((r) => setTimeout(r, 20000)); st = await client.messages.batches.retrieve(b.id); }
-  const byId = new Map();
-  for await (const r of await client.messages.batches.results(b.id)) byId.set(r.custom_id, r);
+  const byId = new Map((await batchWait(b.id)).map((r) => [r.custom_id, r]));
   await Promise.all(jobs.map(async (j, i) => {
     const r = byId.get(`j${i}`);
     let msg = r?.result?.type === 'succeeded' ? r.result.message : null;
@@ -197,7 +216,7 @@ async function sync(j, extra) {
   const p = params(j.rq); p.messages.push(...extra);
   for (let turn = 0; turn < 6; turn++) {
     let msg;
-    try { msg = await client.messages.stream(p).finalMessage(); } catch (e) { log(`  ${j.it.name} ${j.role}: ${e.message}`); return null; }
+    try { msg = await patient(() => client.messages.stream(p).finalMessage()); } catch (e) { log(`  ${j.it.name} ${j.role}: ${e.message}`); return null; }
     record({ bank: j.it.bank, run: j.it.name, role: j.role, batch: false, usage: msg.usage, usd: costOf(msg.usage, false) });
     if (msg.stop_reason !== 'tool_use') return msg;
     p.messages.push({ role: 'assistant', content: msg.content }, toolResults(msg));
@@ -384,7 +403,7 @@ if (MODE === 'run') {
   const H = { apikey: ENV.SUPABASE_SECRET_KEY, Authorization: `Bearer ${ENV.SUPABASE_SECRET_KEY}` };
   const rows = [];
   for (let i = 0; i < ids.length; i += 40) {
-    const r = await fetch(`${ENV.SUPABASE_URL}/rest/v1/questions?select=id,level,topics,total_marks,question_text,parts,solution,figure_url,difficulty&id=in.(${ids.slice(i, i + 40).join(',')})`, { headers: H });
+    const r = await patient(() => fetch(`${ENV.SUPABASE_URL}/rest/v1/questions?select=id,level,topics,total_marks,question_text,parts,solution,figure_url,difficulty&id=in.(${ids.slice(i, i + 40).join(',')})`, { headers: H }));
     rows.push(...(await r.json()));
   }
   const byId = new Map(rows.map((r) => [r.id, r]));
@@ -394,10 +413,9 @@ if (MODE === 'run') {
   const jobs = todo.filter((id) => byId.has(id)).map((id) => { const q = byId.get(id); return { id, q, text: `Level: ${LV[q.level] ?? q.level}. Topic: ${(q.topics ?? []).join(', ')}. ${q.total_marks} marks.\n\n${q.question_text}\n\n${(q.parts ?? []).map((p) => `${p.label} ${p.text ?? ''} [${p.marks ?? ''}]${(p.subparts ?? []).map((s) => `\n  ${s.label} ${s.text ?? ''} [${s.marks ?? ''}]`).join('')}`).join('\n')}\n\nWorked solution:\n${q.solution ?? ''}` }; });
   if (jobs.length) {
     if (spentTotal() + jobs.length * 0.1 > cap) { log('🛑 HARD STOP before the level read'); process.exit(3); }
-    const b = await client.messages.batches.create({ requests: jobs.map((j, i) => ({ custom_id: `l${i}`, params: { model: MODEL, max_tokens: 8000, thinking: { type: 'adaptive' }, output_config: { effort: 'high' }, system: sys, messages: [{ role: 'user', content: j.text }] } })) });
+    const b = await batchCreate({ requests: jobs.map((j, i) => ({ custom_id: `l${i}`, params: { model: MODEL, max_tokens: 8000, thinking: { type: 'adaptive' }, output_config: { effort: 'high' }, system: sys, messages: [{ role: 'user', content: j.text }] } })) });
     log(`level batch ${b.id}: ${jobs.length}`);
-    let st = b; while (st.processing_status !== 'ended') { await new Promise((r) => setTimeout(r, 20000)); st = await client.messages.batches.retrieve(b.id); }
-    for await (const r of await client.messages.batches.results(b.id)) {
+    for (const r of await batchWait(b.id)) {
       const j = jobs[Number(r.custom_id.slice(1))]; const m = r.result?.type === 'succeeded' ? r.result.message : null; if (!m) continue;
       record({ bank: 'maths', run: j.id, role: 'level', batch: true, usage: m.usage, usd: costOf(m.usage, true) });
       const t = m.content.filter((c) => c.type === 'text').map((c) => c.text).join(''); const a = t.indexOf('{'); const z = t.lastIndexOf('}');
