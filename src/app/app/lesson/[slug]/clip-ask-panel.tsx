@@ -136,7 +136,7 @@ export default function ClipAskPanel({ botLevel, asks, label, getStep, onClose }
 
   return (
     <aside data-clip-ask-panel aria-label="Ask about this step"
-      className="ask-page fixed z-[60] inset-x-0 bottom-0 h-[46dvh] rounded-t-3xl lg:inset-x-auto lg:top-[76px] lg:right-4 lg:bottom-4 lg:w-[380px] lg:h-auto lg:rounded-3xl bg-white border border-slate-200 shadow-[0_-10px_40px_-12px_rgba(15,23,42,0.35)] lg:shadow-[0_10px_40px_-12px_rgba(15,23,42,0.35)] flex flex-col overflow-hidden lsn-rise"
+      className="ask-page fixed z-[60] inset-x-0 bottom-0 h-[38dvh] rounded-t-3xl lg:inset-x-auto lg:top-[76px] lg:right-4 lg:bottom-4 lg:w-[380px] lg:h-auto lg:rounded-3xl bg-white border border-slate-200 shadow-[0_-10px_40px_-12px_rgba(15,23,42,0.35)] lg:shadow-[0_10px_40px_-12px_rgba(15,23,42,0.35)] flex flex-col overflow-hidden lsn-rise"
       style={{ animationDuration: '240ms' }}>
       <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" strategy="afterInteractive" />
       <Script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" strategy="afterInteractive" />
@@ -145,9 +145,11 @@ export default function ClipAskPanel({ botLevel, asks, label, getStep, onClose }
         @keyframes tdot { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-5px); opacity:1; } }
         .stream-caret { display:inline-block; color:hsl(220,40%,40%); animation: caretBlink 1s steps(1) infinite; margin-left:1px; }
         @keyframes caretBlink { 0%,60% { opacity:1; } 61%,100% { opacity:0; } }
-        [data-clip-ask-panel] .katex { font-size:1.05em; }
+        [data-clip-ask-panel] .katex { font-size:1em; }
         [data-clip-ask-panel] .katex-display { margin:10px 0; overflow-x:auto; }
-        [data-clip-ask-panel] [style*="font-size:17px"] { font-size:15px !important; line-height:1.6 !important; }
+        /* Smaller answers so the sheet is smaller and the clip above it shrinks less (Adrian, 16 Oct 2026:
+           "ask about this step can be smaller (slightly smaller fonts) and player need not shrink so much"). */
+        [data-clip-ask-panel] [style*="font-size:17px"], [data-clip-ask-panel] [style*="font-size:16px"], [data-clip-ask-panel] [style*="font-size: 17px"], [data-clip-ask-panel] [style*="font-size: 16px"] { font-size:14px !important; line-height:1.55 !important; }
       `}</style>
       <div className="flex items-center gap-2 px-4 pt-3 pb-2 border-b border-slate-100">
         <div className="min-w-0 flex-1">

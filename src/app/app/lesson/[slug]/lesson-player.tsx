@@ -357,18 +357,24 @@ function placeClipNotes(cont: HTMLElement) {
     el.classList.remove('stack');
     arrow.style.marginLeft = '';
     text.style.marginLeft = '';
-    const rr = row.getBoundingClientRect();
-    if (!rr.width) continue;
+    const raw = row.getBoundingClientRect();
+    if (!raw.width || !row.offsetWidth) continue;
+    // Measure in the board's OWN units: the "Ask about this step" sheet scales the whole card down
+    // (CSS scale), and a position set from scaled measurements moved the typed maths away from the
+    // chalk the hand had already written (Adrian, 16 Oct 2026: "the add power words and the
+    // property words are overlapping").
+    const k = raw.width / row.offsetWidth;
+    const rr = { left: raw.left / k, width: raw.width / k };
     const rects = toks.map(t => t.getBoundingClientRect()).filter(r => r.width > 0);
     if (!rects.length) continue;
-    const cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2 - rr.left;
-    let tw = text.getBoundingClientRect().width;
+    const cx = (Math.min(...rects.map(r => r.left)) + Math.max(...rects.map(r => r.right))) / 2 / k - rr.left;
+    let tw = text.getBoundingClientRect().width / k;
     if (tw > rr.width) {
       const base = parseFloat(getComputedStyle(el).fontSize);
       el.style.fontSize = `${(base * Math.max(0.62, (rr.width / tw) * 0.98)).toFixed(2)}px`;
-      tw = text.getBoundingClientRect().width;
+      tw = text.getBoundingClientRect().width / k;
     }
-    const aw = arrow.getBoundingClientRect().width;
+    const aw = arrow.getBoundingClientRect().width / k;
     const x = Math.max(0, cx - aw / 2);
     if (x + aw * 2 + tw <= rr.width) {
       el.style.paddingLeft = `${x.toFixed(1)}px`;
@@ -1966,7 +1972,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     <div ref={rootRef} className={`${qSide ? 'max-w-4xl' : 'max-w-lg'} mx-auto pb-24 sm:pb-6 motion-safe:transition-transform duration-300 ${chatOpen && wide ? '-translate-x-[200px]' : ''}`} data-chat-sheet={sheet ? '' : undefined} data-lsn-theme={theme} data-lsn-themed={themed ? '' : undefined} data-lsn-clip={clip ? '' : undefined}
       data-lsn-tip={tipStyle} data-lsn-write={writing ? 'on' : undefined}
       // The phone chat sheet covers the bottom half: the page needs that much more room to scroll the clip up.
-      style={sheet ? { ...themeStyle, paddingBottom: '50dvh' } : themeStyle}>
+      style={sheet ? { ...themeStyle, paddingBottom: '42dvh' } : themeStyle}>
       <style>{PLAYER_CSS}</style>
       {/* The two handwriting faces for the board stages: SELF-HOSTED subsets
           (public/lessons/fonts, ~43 KB the pair), because the chalk writer has
