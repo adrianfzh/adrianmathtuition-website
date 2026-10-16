@@ -147,6 +147,11 @@ pen, Practice Again sheets, notes, cards, the app's copy, Telegram messages, rep
   paragraph that carries three things.
 - **The result stands out.** Every solution and every part ends with a bold **Answer:**
   line; a verdict on a marked page comes before the explanation.
+- **For Adrian's eyes: a picture or a number first, not a paragraph** (Adrian, 6 Oct 2026:
+  *"i want something visual, not wordy"*; 9 Oct: *"be visual - remember?"*; 16 Oct: *"SHOW
+  the plan, instead of just saying"*). Admin pages, the morning brief and status reports lead
+  with a big number, a bar, a tick or a small picture; words only label it. When he says
+  "show me", send the picture or the link to it — not a description.
 - **Marker's material stays out of what a student reads.** Mark codes, "[M1 for …]", a
   "Mark scheme:" paragraph, examiner commentary belong to the scheme, not the solution —
   at most a small grey code. Alternatives go AFTER the working, set apart.
