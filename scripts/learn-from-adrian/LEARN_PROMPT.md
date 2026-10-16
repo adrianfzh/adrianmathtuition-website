@@ -171,46 +171,37 @@ telegram chat instead of having to come to a session?"*). So:
 - Plain words, no jargon (no "ledger", "hook", "regex", "frontmatter", "JSONL",
   "pathspec", "slug", "draft", "branch", "memory note" — say "a note every session
   reads", "a check that stops …").
-- **Every item is four short lines at most**: a title (what it is about, ≤ 8 words),
-  then what he said, then what is missing today, then what we would do. One idea a
-  line. No line over ~15 words.
+- **Styled like the ☀️ Staff brief, NO emojis** (16 Oct 2026, Adrian: "make it like in
+  topic staff … too many emojis" and "i do not like brain emojis"). It is posted in the
+  ☀️ Staff topic. Every item is at most four short lines: the title line
+  `N. <title, ≤ 8 words> · new` (or `· waiting since 5 Oct`, `· rule not working`,
+  `· already done`), then up to three labelled lines — `You said:` (what he said, with
+  the count), `Now:` (what exists or is missing today), `Proposed:` (what we would do).
+  One idea a line, no line over ~15 words.
 - **Never** write "To apply: tell a session …" or "drop learn …" — the buttons do that.
-- Plain text. The wrapper makes the first line and each numbered title line bold;
-  write no asterisks, no Markdown, no HTML.
-- At most 5 numbered items. Items whose rule was already written somewhere go last,
-  under "Already done — tap Drop to clear:".
-- "Still waiting" proposals (drafted earlier, said again this week) go in ONE item
-  each only when they are among the 5 that matter most; otherwise one closing line:
+- Plain text. The wrapper makes the first line and each numbered title bold, and the three
+  labels bold; write no asterisks, no Markdown, no HTML, no emojis.
+- At most 5 numbered items; the "already done" ones last.
+- Older "still waiting" proposals not among the 5: one closing line,
   "18 older ideas are still waiting — not shown."
-
-- **Emojis carry the structure** (Adrian, 16 Oct 2026: "improve on readability by adding
-  different emojis"). The title line is `N. <emoji> <title>`: 🆕 a new idea, 🔁 said
-  again and still waiting, 🛠 a rule that is not working, ✅ already done. The lines under
-  it start with 💬 (what he said), 📍 (what is there / missing today), 💡 (what we would
-  do). No other emojis.
 
 Shape:
 
 ```
-🧠 Learning from our chats — 16 Oct
-2 new ideas, 1 still waiting. Tap the buttons below.
+Learning from our chats — 16 Oct
+Tap the buttons below to apply or drop each idea.
 
-1. 🆕 Write your decisions where every account sees them
-💬 You said "put it in memory" 8 times this week.
-📍 That note only reaches the account that wrote it.
-💡 Write your decisions into the website's notes instead.
+1. Write your decisions where every account sees them · waiting since 5 Oct
+You said: "put it in memory" 8 times this week.
+Now: that note only reaches the account that wrote it.
+Proposed: sessions write your decisions into the website's notes instead.
 
-2. 🆕 Say where to see it
-💬 You asked "where do I see this?" 7 times.
-💡 Give the link, which login to use, and what you should see.
+2. Say where to see it · new
+You said: "where do I see this?" 7 times.
+Proposed: give the link, which login to use, and what you should see.
 
-3. 🔁 Plain words (waiting since 5 Oct)
-💬 You asked for plain words 20 more times.
-💡 A sharper rule at the top of every session's notes.
-
-Already done — tap Drop to clear:
-4. ✅ Twins counted per skill
-📍 Written down on 15 Oct.
+3. Twins counted per skill · already done
+Now: written down on 15 Oct. Tap Drop to clear it.
 ```
 
 `buttons.json` — the slugs of the numbered items, **in the same order**:

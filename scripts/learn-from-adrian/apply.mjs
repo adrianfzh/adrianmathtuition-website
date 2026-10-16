@@ -39,8 +39,8 @@ function tg(...args) {
 
 function itemNumber(messageId, slug) {
   try {
-    const kb = JSON.parse(fs.readFileSync(path.join(STATE, 'messages', `${messageId}.json`), 'utf8'));
-    for (const row of kb.inline_keyboard) for (const b of row) {
+    const saved = JSON.parse(fs.readFileSync(path.join(STATE, 'messages', `${messageId}.json`), 'utf8'));
+    for (const row of (saved.kb || saved).inline_keyboard) for (const b of row) {
       if (b.callback_data === `lf:a:${slug}`) return (/(\d+)\s*$/.exec(b.text) || [])[1] || '';
     }
   } catch { /* no saved keyboard */ }

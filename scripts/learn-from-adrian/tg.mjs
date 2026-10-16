@@ -5,8 +5,11 @@
 //   node tg.mjs mark <message_id> <slug> <text>     → that item's buttons become one status line
 //   node tg.mjs reply <message_id> <text>           → a short answer under the message
 //
-// The message is HTML: everything escaped, then the first line and every "N. title" line
-// bold. Buttons: one row per item, "✅ Apply N" (lf:a:<slug>) and "🗑 Drop N" (lf:d:<slug>);
+// The message is HTML, styled like the ☀️ Staff brief (16 Oct 2026, Adrian: "make it like in
+// topic staff … too many emojis"): everything escaped, the first line and every "N. title" line
+// bold, and the labels "You said:", "Now:", "Proposed:" bold. It goes to the ☀️ Staff topic
+// (the Airtable Settings row telegram_topics that /bindtopic staff writes), or the DM when
+// Staff is not bound. Buttons: one row per item, "✅ Apply N" (lf:a:<slug>) and "🗑 Drop N" (lf:d:<slug>);
 // the bot records the tap (bot handlers/learn-buttons.js), apply.mjs carries it out.
 // Telegram cannot read a sent message back, so each sent keyboard is kept in
 // $LFA_STATE/messages/<id>.json for `mark` to redraw. Env: TELEGRAM_BOT_TOKEN,
@@ -16,16 +19,33 @@ import path from 'node:path';
 
 const TOKEN = (process.env.TELEGRAM_BOT_TOKEN || '').trim();
 const CHAT = (process.env.TELEGRAM_CHAT_ID || '').trim();
+const AT_TOKEN = (process.env.AIRTABLE_TOKEN || '').trim();
+const AT_BASE = (process.env.AIRTABLE_BASE_ID || '').trim();
 const STATE = process.env.LFA_STATE || path.join(process.env.HOME, '.adrianmath_learn');
 const KB_DIR = path.join(STATE, 'messages');
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
+const LABEL = /^(You said|Now|Proposed):/;
 export function toHtml(text) {
   return text.trim().split('\n').map((line, i) => {
     const e = esc(line);
-    return (i === 0 || /^\d+\.\s+\S/.test(line) || /^Already done\b/.test(line)) && line.trim() ? `<b>${e}</b>` : e;
+    if ((i === 0 || /^\d+\.\s+\S/.test(line)) && line.trim()) return `<b>${e}</b>`;
+    const m = LABEL.exec(line);
+    return m ? `<b>${esc(m[0])}</b>${esc(line.slice(m[0].length))}` : e;
   }).join('\n');
+}
+
+/** The ☀️ Staff topic: { chat_id, message_thread_id } — or the DM when it is not bound. */
+export async function staffTarget() {
+  try {
+    if (!AT_TOKEN || !AT_BASE) throw new Error('no Airtable config');
+    const f = encodeURIComponent("{Setting Name}='telegram_topics'");
+    const r = await fetch(`https://api.airtable.com/v0/${AT_BASE}/Settings?filterByFormula=${f}&maxRecords=1`, { headers: { Authorization: `Bearer ${AT_TOKEN}` } });
+    const v = JSON.parse((await r.json()).records?.[0]?.fields?.Value || 'null');
+    if (v && v.chatId && v.topics && v.topics.staff) return { chat_id: v.chatId, message_thread_id: v.topics.staff };
+  } catch (e) { console.error('staff topic not found, sending to the DM:', e.message); }
+  return { chat_id: CHAT };
 }
 
 export function keyboard(slugs) {
@@ -54,26 +74,31 @@ async function tg(method, body) {
 async function main() {
   const [cmd, a, b, c] = process.argv.slice(2);
   if (!TOKEN || !CHAT) throw new Error('no Telegram config');
+  const saved = (id) => { try { return JSON.parse(fs.readFileSync(path.join(KB_DIR, `${id}.json`), 'utf8')); } catch { return null; } };
   if (cmd === 'send') {
     const text = fs.readFileSync(a, 'utf8');
     const slugs = b && fs.existsSync(b) ? JSON.parse(fs.readFileSync(b, 'utf8')) : [];
     const kb = keyboard(Array.isArray(slugs) ? slugs : []);
+    const to = await staffTarget();
     const res = await tg('sendMessage', {
-      chat_id: CHAT, text: toHtml(text), parse_mode: 'HTML', disable_web_page_preview: true,
+      ...to, text: toHtml(text), parse_mode: 'HTML', disable_web_page_preview: true,
       ...(kb ? { reply_markup: kb } : {}),
     });
-    if (kb) { fs.mkdirSync(KB_DIR, { recursive: true }); fs.writeFileSync(path.join(KB_DIR, `${res.message_id}.json`), JSON.stringify(kb)); }
+    // kept with the chat and topic it went to, so mark/reply find it again
+    if (kb) { fs.mkdirSync(KB_DIR, { recursive: true }); fs.writeFileSync(path.join(KB_DIR, `${res.message_id}.json`), JSON.stringify({ ...to, kb })); }
     console.log(JSON.stringify({ ok: true, message_id: res.message_id }));
   } else if (cmd === 'mark') {
-    const f = path.join(KB_DIR, `${a}.json`);
-    if (!fs.existsSync(f)) return;   // an old message sent before buttons — nothing to redraw
-    const kb = markRow(JSON.parse(fs.readFileSync(f, 'utf8')), b, c);
-    await tg('editMessageReplyMarkup', { chat_id: CHAT, message_id: Number(a), reply_markup: kb }).catch((e) => {
+    const s0 = saved(a);
+    if (!s0) return;   // an old message sent before buttons — nothing to redraw
+    const kb = markRow(s0.kb || s0, b, c);   // (16 Oct morning files held the keyboard alone, in the DM)
+    await tg('editMessageReplyMarkup', { chat_id: s0.chat_id || CHAT, message_id: Number(a), reply_markup: kb }).catch((e) => {
       if (!/not modified/.test(e.message)) throw e;
     });
-    fs.writeFileSync(f, JSON.stringify(kb));
+    fs.writeFileSync(path.join(KB_DIR, `${a}.json`), JSON.stringify({ chat_id: s0.chat_id || CHAT, message_thread_id: s0.message_thread_id, kb }));
   } else if (cmd === 'reply') {
-    await tg('sendMessage', { chat_id: CHAT, text: b, disable_web_page_preview: true,
+    const s0 = a && a !== '0' ? saved(a) : null;
+    const to = s0 && s0.chat_id ? { chat_id: s0.chat_id, ...(s0.message_thread_id ? { message_thread_id: s0.message_thread_id } : {}) } : await staffTarget();
+    await tg('sendMessage', { ...to, text: b, disable_web_page_preview: true,
       ...(a && a !== '0' ? { reply_to_message_id: Number(a), allow_sending_without_reply: true } : {}) });
   } else {
     throw new Error('usage: tg.mjs send|mark|reply …');

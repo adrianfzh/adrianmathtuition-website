@@ -29,11 +29,12 @@ the specs, the skills, `~/.claude/CLAUDE.md`, the memory folder), then drafts:
 | decision not written down | the one line to add, in the area's doc |
 
 It **drafts, never applies on its own**. Adrian gets ONE Telegram message, only on a
-morning when there is something new: a bold numbered title per idea (🆕 new, 🔁 still
-waiting, 🛠 rule not working, ✅ already done), then 💬 what he said, 📍 what is there
-today, 💡 what we would do — and **✅ Apply N / 🗑 Drop N buttons under it** (16 Oct 2026,
-Adrian: *"allow me to take action in the telegram chat instead of having to come to a
-session"*; *"improve on readability by adding different emojis"*).
+morning when there is something new, **in the ☀️ Staff topic, styled like the brief**: a bold
+numbered title per idea ("· new", "· waiting since …", "· already done"), then up to three
+lines with bold labels — You said / Now / Proposed — no emojis, and **✅ Apply N / 🗑 Drop N
+buttons under it** (16 Oct 2026, Adrian: *"allow me to take action in the telegram chat
+instead of having to come to a session"*; then *"make it like in topic staff … too many
+emojis"*, *"i do not like brain emojis"*, and Staff, not the DM, as its place).
 
 ## Where rules live (the split it follows)
 
