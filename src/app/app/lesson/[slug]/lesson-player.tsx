@@ -2880,7 +2880,7 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
-.lsn-back-now { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
+.lsn-back-now { position: absolute; right: 10px; bottom: 70px; z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }

@@ -246,6 +246,9 @@ New in the player: a clip board that would run below the screen scales its maths
   the board scrolls (notes stay); the space the 2 left closes in one 0.6 s glide after it lands; the x = 9
   check names both logs (`log₃(9−8) = log₃1`, then `log₃x = log₃9 ✓`); the slider glides with the voice
   and follows a drag (step "any", thumb from the audio clock each frame), like a video bar. Draft G8.
+- Watch 13: whatever was just written is always in full view (an older line scrolls back out of the fade —
+  the pink "(rej)"); a finger drag or the mouse wheel looks back up the board WHILE the clip plays on
+  (`attachBoardLook`), with "⬇ Back to now" (bottom right) or 4 s untouched gliding back to the writing.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
