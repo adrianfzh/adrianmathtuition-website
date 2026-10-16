@@ -490,6 +490,17 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   const prevMoved = useRef<Set<string>>(new Set());
   const revealed = step + 1;
 
+  // A line rewritten in place changes width: fit the rows and the board again BEFORE any flight
+  // measures its landing spot (this effect is declared first, so it runs first).
+  const goneKey = board ? scene.steps.map((st, i) => st.tokens.map((_, ti) => (tokenGone(board, scene, i, ti) ? 1 : 0)).join('')).join('|') : '';
+  const firstGone = useRef(goneKey);
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (!cont || goneKey === firstGone.current) return;
+    firstGone.current = goneKey;
+    cont.dispatchEvent(new Event('lsn-refit', { bubbles: true }));
+    if (clip) { fitClipBoard(cont); placeClipNotes(cont); }
+  }, [goneKey, clip]);
   // Where each token last sat: a piece rewritten out of its line ("2 log₃3" → "log₃3²") takes no
   // room by the time it flies, so it flies from where it was.
   const lastAt = useRef<Map<Element, Rect>>(new Map());
@@ -1522,7 +1533,7 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
         row.style.removeProperty('--lsn-row-scale');
         let scale = 1;
         for (let i = 0; i < 4; i++) {
-          const toks = Array.from(row.querySelectorAll<HTMLElement>(':scope > .lsn-tok, :scope > [data-key]'));
+          const toks = Array.from(row.querySelectorAll<HTMLElement>(':scope > .lsn-tok:not([data-gone]), :scope > [data-key]:not([data-gone])'));
           if (toks.length === 0) break;
           const gap = parseFloat(getComputedStyle(row).columnGap) || 0;
           const need = toks.reduce((w, t) => w + t.getBoundingClientRect().width, 0) + gap * (toks.length - 1);
@@ -1543,9 +1554,11 @@ function useFitToBoard(cardRef: React.RefObject<HTMLDivElement | null>, active: 
       ? new ResizeObserver(() => { if (card.clientWidth !== lastWidth) { lastWidth = card.clientWidth; fitAll(); } })
       : null;
     ro?.observe(card);
+    // A line rewritten in place grows or shrinks mid-beat: the board asks for a re-fit.
+    card.addEventListener('lsn-refit', fitAll);
     let cancelled = false;
     document.fonts?.ready?.then(() => { if (!cancelled) fit(); });
-    return () => { cancelled = true; ro?.disconnect(); };
+    return () => { cancelled = true; ro?.disconnect(); card.removeEventListener('lsn-refit', fitAll); };
   }, [cardRef, active, key]);
 }
 
