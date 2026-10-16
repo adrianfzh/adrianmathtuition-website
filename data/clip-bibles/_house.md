@@ -93,6 +93,9 @@ on 15 Oct 2026 — his notes are binding.
   a rewritten piece leave with it.
 - **A board change is a breath, not a cut** (watch 7): the player fades the old board out, then the new one in.
 - **One scrolling board, not new screens** (watch 8): a clip's board slides up as lines are written (`scroll: true`); step titles sit above their first line; no repeated carry lines.
+- **Watch 11**: routine algebra the level already knows (solving a quadratic at A Math) goes FAST, a
+  few words a line; a check shows where its expression comes from (fly it from the question line);
+  every answer kept is checked ON THE BOARD, not only said; a "why" detour is a side clip in a popup.
 - **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
 - **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";

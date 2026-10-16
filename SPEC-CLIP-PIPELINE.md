@@ -236,6 +236,12 @@ New in the player: a clip board that would run below the screen scales its maths
   the slide is a 1.1 s glide that only goes up in play. Seeking back (← or the slider) draws the board
   afresh at that point, with what earlier parts wrote already written (also anything shown while
   paused) — no stuck "Add Power", no half-written notes.
+- Watch 11 (17 Oct 2026): routine steps go fast ("for solving of quadratic equations > can go faster … at
+  AM level, students should know this well": step 3 is three short beats); a check takes the expression
+  FROM the question line (`log₃(x−8)` flies down from line 1, "students may have forgotten"); EVERY
+  answer is checked on the board, not only in the voice (x = 9: log₃(9−8) = log₃1, log₃9 ✓); a side
+  link (Beat `aside`) opens its clip in a POPUP over the clip (page.tsx loads the side clips; the main
+  clip pauses, ✕ / Esc / the end card closes it and the clip carries on). Draft G7: 13 lines, 27 beats.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
