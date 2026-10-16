@@ -18,11 +18,12 @@ Verifying 28 clip(s) of solving-log-equations-am by transcription (gemini-2.5-fl
   scene-02-b6: 100% of narration words heard
   scene-02-b7: 100% of narration words heard
   scene-03-b1: 100% of narration words heard
-  scene-03-b2: 100% of narration words heard
+  scene-03-b2: 94% of narration words heard
   scene-03-b3: 94% of narration words heard
-  scene-03-b4: 90% of narration words heard
+  scene-03-b4: 80% of narration words heard  ⚠ LOW
+      heard: Factorize x - 9 x + 1 = 0
   scene-03-b5: 93% of narration words heard
-  scene-04-b1: 94% of narration words heard
+  scene-04-b1: 95% of narration words heard
   scene-04-b2: 100% of narration words heard
   scene-04-b3: 81% of narration words heard  ⚠ LOW
       heard: -1 - 8 is -9. So we get log base 3 of -9.
@@ -30,4 +31,4 @@ Verifying 28 clip(s) of solving-log-equations-am by transcription (gemini-2.5-fl
   scene-04-b5: 100% of narration words heard
   scene-04-b6: 100% of narration words heard
 
-1 clip(s) below 85% — listen to those.
+2 clip(s) below 85% — listen to those.

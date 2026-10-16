@@ -105,12 +105,9 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "2",
+          "tex": "2=",
           "id": "t2",
           "hl": "amber"
-        },
-        {
-          "tex": "="
         },
         {
           "tex": "2",
@@ -119,22 +116,9 @@
         {
           "tex": "\\log_3 3",
           "id": "lg3"
-        }
-      ],
-      "checks": [
-        {
-          "fact": "2 = 2*log(3,3)"
-        }
-      ]
-    },
-    {
-      "board": 0,
-      "tokens": [
-        {
-          "tex": "="
         },
         {
-          "tex": "\\log_3 3",
+          "tex": "=\\log_3 3",
           "id": "lg3b"
         },
         {
@@ -149,6 +133,9 @@
         }
       ],
       "checks": [
+        {
+          "fact": "2 = 2*log(3,3)"
+        },
         {
           "fact": "2 = log(3**2,3)"
         },
@@ -399,7 +386,8 @@
     "Add Power with M (orange) <-> x - 8 and N (blue) <-> x lit as spoken; log3[x(x-8)] keeps the colours.",
     "Compare: light the two insides, then write x(x-8) = 9 as its own line.",
     "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive.",
-    "Adrian 16 Oct 2026 (fourth watch): the 2 FLIES up into the power; 'both sides are equal, so compare' and the insides FLY out of the logs; each board starts with the line the last one ended on; 'negative one', never 'minus one'; log3(-9): the 3 and the -9 move into 3^? = -9 as spoken, then the powers of 3 one by one."
+    "Adrian 16 Oct 2026 (fourth watch): the 2 FLIES up into the power; 'both sides are equal, so compare' and the insides FLY out of the logs; each board starts with the line the last one ended on; 'negative one', never 'minus one'; log3(-9): the 3 and the -9 move into 3^? = -9 as spoken, then the powers of 3 one by one.",
+    "Adrian 16 Oct 2026: 2 = 2log3 3 = log3 3^2 on ONE line; say 'bring the power up', never 'fly'; step 4 says always check answers for logs."
   ],
   "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
   "boards": [

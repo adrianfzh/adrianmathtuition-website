@@ -772,12 +772,17 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
           errors.push(`${sAt}: needs at least one token`);
           return;
         }
-        // `from` may only reference ids revealed on EARLIER steps — a token
-        // cannot fly out of a line that appears at the same moment it does.
-        step.tokens.forEach((t, ti) =>
-          validateToken(t, `${sAt}.tokens[${ti}]`, errors, sceneIds, earlier));
+        // `from` may only reference ids revealed BEFORE it — an earlier step, or an earlier token of
+        // the same line (a beat scene writes a line's tokens one by one: "2 = 2 log₃3 = log₃3²" with
+        // the 2 going up into the power on the same line, Adrian 16 Oct 2026).
+        // A tap-through line appears all at once, so there it must be an earlier step.
+        const byToken = Array.isArray(scene.beats);
+        step.tokens.forEach((t, ti) => {
+          validateToken(t, `${sAt}.tokens[${ti}]`, errors, sceneIds, earlier);
+          if (byToken && isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
+        });
         for (const t of step.tokens) {
-          if (isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
+          if (!byToken && isRecord(t) && nonEmptyString(t.id)) earlier.add(t.id);
           if (isRecord(t) && nonEmptyString(t.from)) scope.fromIds.add(t.from);
         }
         if (step.note !== undefined && !nonEmptyString(step.note)) {

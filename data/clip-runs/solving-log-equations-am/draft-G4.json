@@ -1,0 +1,477 @@
+{
+ "slug": "solving-log-equations-am",
+ "draft": "G4",
+ "by": "session, Adrian 16 Oct 2026: the 2 line on one line, 'bring the power up' (not fly), 'always check each answer' for logs",
+ "beats": [
+  {
+   "board": 0,
+   "say": "Solve log base three of X minus eight equals two minus log base three of X.",
+   "asks": [
+    "What does log base 3 mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Here is the plan: get one log on each side, with the same base three.",
+   "asks": [
+    "Why one log on each side?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "one log on each side"
+    },
+    {
+     "do": "highlight",
+     "token": "p1",
+     "part": "sub",
+     "on": "same base three"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Then the logs match, so what is inside must be equal: square equals triangle.",
+   "asks": [
+    "Why can we compare the insides?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p2",
+     "on": "square equals triangle"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Move minus log base three of X across the equals sign, and it becomes plus.",
+   "asks": [
+    "Why does the minus become plus?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l2",
+     "on": "move minus log"
+    },
+    {
+     "do": "write",
+     "step": 2,
+     "on": "it becomes plus"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Now the two on the right. To match the plan, the two must become a log with base three.",
+   "asks": [
+    "Why must 2 become a log?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "two1",
+     "on": "the two on the right"
+    },
+    {
+     "do": "write",
+     "token": "t2",
+     "on": "must become a log"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "So two is two times one, which is two times log base three of three.",
+   "asks": [
+    "Why is 2 = 2 log base 3 of 3?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "k2",
+     "on": "two times one"
+    },
+    {
+     "do": "write",
+     "token": "lg3",
+     "on": "log base three of three"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Log base three of three is one, because three to the power one is three.",
+   "asks": [
+    "Why is log base 3 of 3 equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "$\\log_3 3 = 1$, since $3^1 = 3$",
+     "near": "lg3",
+     "on": "because three"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Now bring the power up: the two in front goes up as the power of three.",
+   "asks": [
+    "Why can the 2 go up as the power?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "lg3b",
+     "on": "bring the power up"
+    },
+    {
+     "do": "move",
+     "from": "k2",
+     "on": "goes up as the power"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Two log base three of three is log base three of three squared. That is Bring down power, used backwards.",
+   "asks": [
+    "What is Bring down power?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Bring down power: $r\\log_a M = \\log_a M^r$",
+     "near": "pw",
+     "on": "Bring down power"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Three squared is nine. So the two on the right is log base three of nine.",
+   "asks": [
+    "Why is 2 = log base 3 of 9?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "e3",
+     "on": "is log base three of nine"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Two is log base three of nine. Put it in place of the two.",
+   "asks": [
+    "Where did log base 3 of 9 come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Now join the two logs on the left with Add Power.",
+   "asks": [
+    "What is Add Power?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a \\textcolor{#ff9a3c}{M} + \\log_a \\textcolor{#a8ecfb}{N} = \\log_a \\textcolor{#ff9a3c}{M}\\textcolor{#a8ecfb}{N}$",
+     "near": "g1",
+     "span": [
+      "g1",
+      "b1"
+     ],
+     "on": "Add Power"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "In the law, M is X minus eight, and N is X.",
+   "asks": [
+    "Which part is M and which is N?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "a1",
+     "tone": "orange",
+     "on": "M is X minus eight"
+    },
+    {
+     "do": "highlight",
+     "token": "b1",
+     "tone": "sky",
+     "on": "N is X"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Adding logs multiplies the insides: log base three of X times X minus eight equals log base three of nine.",
+   "asks": [
+    "Why is it x times x minus 8?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "log base three of X times"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Now both sides are equal, and both are log base three. One log on each side, just like the plan.",
+   "asks": [
+    "Why does the same base matter?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "c0",
+      "c4"
+     ],
+     "part": "sub",
+     "on": "both are log base three"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "Since both sides are equal, by comparison, the insides are equal.",
+   "asks": [
+    "Why can we drop the logs?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "xin",
+      "nine"
+     ],
+     "on": "the insides are equal"
+    }
+   ]
+  },
+  {
+   "board": 1,
+   "say": "X times X minus eight equals nine.",
+   "asks": [
+    "Why is x(x−8) = 9?"
+   ],
+   "do": [
+    {
+     "do": "move",
+     "from": "xin",
+     "on": "X times X minus eight"
+    },
+    {
+     "do": "move",
+     "from": "nine",
+     "on": "equals nine"
+    }
+   ]
+  },
+  {
+   "board": 2,
+   "say": "We carry on from X times X minus eight equals nine.",
+   "asks": [
+    "Where did this line come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "board": 2,
+   "say": "Expand: X times X is X squared, and X times negative eight is minus eight X.",
+   "asks": [
+    "How do I expand x(x−8)?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "X squared, and"
+    }
+   ]
+  },
+  {
+   "board": 2,
+   "say": "Take nine from both sides to factorise. X squared minus eight X minus nine equals zero.",
+   "asks": [
+    "Why make it equal zero?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "X squared minus eight X minus nine"
+    }
+   ]
+  },
+  {
+   "board": 2,
+   "say": "Factorise: X minus nine, times X plus one, equals zero.",
+   "asks": [
+    "How do I factorise this?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "X minus nine"
+    }
+   ]
+  },
+  {
+   "board": 2,
+   "say": "Either bracket can be zero. So X equals nine, or X equals negative one.",
+   "asks": [
+    "Why are there two answers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "r9s",
+     "on": "X equals nine"
+    },
+    {
+     "do": "write",
+     "token": "rm1s",
+     "on": "negative one"
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "For log equations, always check each answer: a log only takes a positive number inside. Start with X equals negative one.",
+   "asks": [
+    "Why must I check the answers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "Put X equals negative one into log base three of X minus eight.",
+   "asks": [
+    "How do I put x = −1 in?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "kx",
+     "on": "Put X equals negative one"
+    },
+    {
+     "do": "write",
+     "token": "ksub",
+     "on": "log base three of X minus eight"
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "Negative one minus eight is negative nine. So we get log base three of negative nine.",
+   "asks": [
+    "Why negative nine?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "log base three of negative nine"
+    },
+    {
+     "do": "highlight",
+     "token": [
+      "lg",
+      "b3",
+      "arg"
+     ],
+     "on": "negative nine."
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
+   "asks": [
+    "Why is a log of a negative number undefined?"
+   ],
+   "aside": {
+    "text": "Why is a log of a negative number undefined?",
+    "slug": "log-of-negative-undefined-am"
+   },
+   "do": [
+    {
+     "do": "note",
+     "text": "a log of a negative number is undefined",
+     "near": "arg",
+     "on": "is undefined"
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "So we reject X equals negative one.",
+   "asks": [
+    "What does reject mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "rej",
+     "on": "we reject"
+    }
+   ]
+  },
+  {
+   "board": 3,
+   "say": "For X equals nine, the insides are one and nine, both positive. The answer is X equals nine.",
+   "asks": [
+    "How do I check x = 9?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "The answer is"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "X equals nine."
+    }
+   ]
+  }
+ ]
+}

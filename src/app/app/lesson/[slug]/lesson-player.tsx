@@ -327,12 +327,22 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
 
   // Commit the start frame, then animate to the measured destination.
   void clone.getBoundingClientRect();
-  const dx = t.left - s.left;
+  // One scale for both directions, so a piece keeps its shape (Adrian, 16 Oct 2026: "why is the 9
+  // flattened in transition? … it's just a translation right?"). It changes size only when its
+  // landing spot is a different size (a 2 going up into a power); a landing spot with more in it
+  // ("= 9" for a 9) takes the piece at the end where its text sits.
+  const k = t.height / Math.max(s.height, 1);
+  const w = s.width * k;
+  const seen = (el: HTMLElement) => Array.from(el.querySelectorAll('.katex-html')).map(n => n.textContent ?? '').join('')
+    .replace(/\s+/g, '');
+  const st = seen(source);
+  const tt = seen(target);
+  const dx = (t.width - w < 2 || !st ? (t.width - w) / 2
+    : tt.endsWith(st) && !tt.startsWith(st) ? t.width - w
+    : tt.startsWith(st) ? 0 : (t.width - w) / 2) + t.left - s.left;
   const dy = t.top - s.top;
-  const sx = t.width / Math.max(s.width, 1);
-  const sy = t.height / Math.max(s.height, 1);
   requestAnimationFrame(() => {
-    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
+    clone.style.transform = `translate(${dx}px, ${dy}px) scale(${k})`;
     clone.style.opacity = '0';
   });
 
@@ -470,7 +480,8 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
       const source = Array.from(cont.querySelectorAll<HTMLElement>(`[data-token-id="${CSS.escape(fromId)}"]`))
         .find(el => {
           const l = el.closest('[data-line]');
-          return l && Number(l.getAttribute('data-line')) < lineIdx;
+          // An earlier line, or an earlier token of the same line (the 2 going up into the power).
+          return l && Number(l.getAttribute('data-line')) <= lineIdx && el !== target;
         });
       if (source) flyClone(cont, source, target);
     }

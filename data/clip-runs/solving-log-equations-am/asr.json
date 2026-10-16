@@ -112,8 +112,8 @@
   },
   {
    "beat": 19,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -124,9 +124,10 @@
   },
   {
    "beat": 21,
-   "bag": 0.9,
-   "score": 0.9,
-   "heard": null
+   "bag": 0.8,
+   "score": 0.933,
+   "heard": "Factorize x - 9 x + 1 = 0",
+   "said": "Factorise: X minus nine, times X plus one, equals zero."
   },
   {
    "beat": 22,
@@ -136,8 +137,8 @@
   },
   {
    "beat": 23,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
