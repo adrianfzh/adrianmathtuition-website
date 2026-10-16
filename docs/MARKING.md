@@ -550,7 +550,9 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   2023 Pure Chemistry prelim is out of 80; her photos skipped Q8(b) [3] and science totals were
   the counted sum, so the paper quietly shrank. Now, when most printed questions match ONE school
   paper the science bank holds whole (`lib/science-grounding.js fetchScienceSchoolPaper`, ≥3
-  matches and ≥60% agreeing, numbers 1..N with no hole), its total grounds the badge
+  distinct questions and either ≥60% of them or twice the runner-up — short sub-questions stray to
+  other schools, so her re-mark was Pasir Ris 9 of 19; numbers 1..N with no hole; the EITHER/OR
+  alternative is the one whose wording the pages show; bot f24b8e5e), its total grounds the badge
   (`max_source:'bank'`, EITHER/OR counted once) and its per-part split becomes `bank_allocation`,
   so the allocation audit adds a part missing from every photo as a flagged 0 and the >2-mark
   shortfall watch-out fires. A GCE science paper takes its printed total (40 / 80). Science never
