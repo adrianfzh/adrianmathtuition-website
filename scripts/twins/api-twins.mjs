@@ -10,7 +10,7 @@
 // maths figure step (it draws and looks at the picture with Bash). Opus 5.5 for every role.
 //
 //   node scripts/twins/api-twins.mjs run   --bank maths|sci|sci-mcq --n 20 [--levels S2,EM,AM,S1] [--cap 190]
-//   node scripts/twins/api-twins.mjs all   [--cap 120] [--now]   (the full run: maths and science take turns, 20 a round)
+//   node scripts/twins/api-twins.mjs all   [--cap 120] [--now] [--banks maths,sci] [--from-end]   (rounds of --n; --from-end = science tier 3, last first)
 //   node scripts/twins/api-twins.mjs levels                      (practice levels: a shortlist of possible Advanced for Adrian's tap)
 //   node scripts/twins/api-twins.mjs spent                       (the ledger: dollars so far, per bank and role)
 //   node scripts/twins/api-twins.mjs report --bank maths|sci [--since ISO]   (published / parked / cost a twin)
@@ -258,8 +258,13 @@ function pick(bank, n, levels) {
       }
     }
   } else {
-    const r = sh(bank, ['queue', '--json', '--limit', '400', '--done-dir', join(HOME, bank)]);
+    const FROM_END = process.argv.includes('--from-end');
+    const r = sh(bank, ['queue', '--json', '--limit', FROM_END ? '20000' : '400', '--done-dir', join(HOME, bank)]);
     let rows = []; try { rows = JSON.parse(r.out); } catch { /* */ }
+    // --from-end (16 Oct 2026, Adrian: "yes"): the free science lanes work the list from the top
+    // (open topics first), so the credit run takes it from the far end — tier 3 only, last first —
+    // and the two never write the same seed.
+    if (FROM_END) rows = rows.filter((x) => Number(x.tier ?? 3) === 3).reverse();
     for (const x of rows) {
       const seeds = x.seeds ? x.seeds : [x.source_id];
       const sid = seeds.find((s) => !done(bank === 'sci' ? `S-${x.pool}-${s}` : `${x.pool}-${s}`));
