@@ -25,7 +25,6 @@
   },
   "lines": [
     {
-      "board": 0,
       "tokens": [
         {
           "tex": "\\log_3(x-8)",
@@ -49,10 +48,10 @@
             "x > 0"
           ]
         }
-      ]
+      ],
+      "heading": "Step 1: one log on each side"
     },
     {
-      "board": 0,
       "tokens": [
         {
           "tex": "\\log_3(\\,\\square\\,)=\\log_3(\\,\\triangle\\,)",
@@ -72,11 +71,22 @@
       ]
     },
     {
-      "board": 0,
       "tokens": [
         {
-          "tex": "\\log_3(x-8)+\\log_3 x",
-          "id": "lhs"
+          "tex": "\\log_3(",
+          "id": "g1"
+        },
+        {
+          "tex": "x-8",
+          "id": "a1"
+        },
+        {
+          "tex": ")+\\log_3",
+          "id": "g2"
+        },
+        {
+          "tex": "x",
+          "id": "b1"
         },
         {
           "tex": "=",
@@ -126,37 +136,6 @@
       ]
     },
     {
-      "board": 1,
-      "tokens": [
-        {
-          "tex": "\\log_3(",
-          "id": "g1"
-        },
-        {
-          "tex": "x-8",
-          "id": "a1"
-        },
-        {
-          "tex": ")+\\log_3",
-          "id": "g2"
-        },
-        {
-          "tex": "x",
-          "id": "b1"
-        },
-        {
-          "tex": "=\\,\\log_3 9",
-          "id": "r9"
-        }
-      ],
-      "checks": [
-        {
-          "step": "log(x-8,3) + log(x,3) = log(9,3)"
-        }
-      ]
-    },
-    {
-      "board": 1,
       "tokens": [
         {
           "tex": "\\log_3[",
@@ -184,10 +163,10 @@
         {
           "step": "log(x*(x-8),3) = log(9,3)"
         }
-      ]
+      ],
+      "heading": "Step 2: join the logs, then compare"
     },
     {
-      "board": 1,
       "tokens": [
         {
           "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})",
@@ -209,21 +188,6 @@
       ]
     },
     {
-      "board": 2,
-      "tokens": [
-        {
-          "tex": "x(x-8)=9",
-          "id": "s0"
-        }
-      ],
-      "checks": [
-        {
-          "step": "x*(x-8) = 9"
-        }
-      ]
-    },
-    {
-      "board": 2,
       "tokens": [
         {
           "tex": "x^2-8x=9",
@@ -234,10 +198,10 @@
         {
           "step": "x**2 - 8*x = 9"
         }
-      ]
+      ],
+      "heading": "Step 3: solve"
     },
     {
-      "board": 2,
       "tokens": [
         {
           "tex": "x^2-8x-9=0",
@@ -251,7 +215,6 @@
       ]
     },
     {
-      "board": 2,
       "tokens": [
         {
           "tex": "(x-9)(x+1)=0",
@@ -265,7 +228,6 @@
       ]
     },
     {
-      "board": 2,
       "tokens": [
         {
           "tex": "x=9",
@@ -274,30 +236,6 @@
         {
           "tex": "\\text{or}\\;\\; x=-1",
           "id": "rm1s"
-        }
-      ],
-      "checks": [
-        {
-          "roots": [
-            9,
-            -1
-          ],
-          "reject": [
-            -1
-          ]
-        }
-      ]
-    },
-    {
-      "board": 3,
-      "tokens": [
-        {
-          "tex": "x=9",
-          "id": "k9"
-        },
-        {
-          "tex": "\\text{or}\\;\\; x=-1",
-          "id": "km1"
         },
         {
           "tex": "(\\text{rej})",
@@ -312,7 +250,6 @@
       ]
     },
     {
-      "board": 3,
       "tokens": [
         {
           "tex": "x=-1:",
@@ -341,10 +278,10 @@
         {
           "fact": "-1 - 8 = -9"
         }
-      ]
+      ],
+      "heading": "Step 4: check each answer"
     },
     {
-      "board": 3,
       "tokens": [
         {
           "tex": "x=9",
@@ -369,26 +306,17 @@
     "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive.",
     "Adrian 16 Oct 2026 (fourth watch): the 2 FLIES up into the power; 'both sides are equal, so compare' and the insides FLY out of the logs; each board starts with the line the last one ended on; 'negative one', never 'minus one'; log3(-9): the 3 and the -9 move into 3^? = -9 as spoken, then the powers of 3 one by one.",
     "Adrian 16 Oct 2026: 2 = 2log3 3 = log3 3^2 on ONE line; say 'bring the power up', never 'fly'; step 4 says always check answers for logs.",
-    "Adrian 16 Oct 2026 (watch 6): explain the 2 AT the 2 of line 3 — the line is rewritten in place: = 2 -> = 2 log3 3 -> the 2 goes up into the power -> = log3 3^2 -> = log3 9."
+    "Adrian 16 Oct 2026 (watch 6): explain the 2 AT the 2 of line 3 — the line is rewritten in place: = 2 -> = 2 log3 3 -> the 2 goes up into the power -> = log3 3^2 -> = log3 9.",
+    "Adrian 16 Oct 2026 (watch 8): ONE scrolling board — 'make the lines move up, like scrolling up, then we don't have to change screen'. Repeated carry lines dropped; each step's title sits above its first line."
   ],
   "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
   "boards": [
     {
-      "heading": "Step 1: one log on each side",
-      "intro": null
-    },
-    {
-      "heading": "Step 2: join the logs, then compare",
-      "intro": null
-    },
-    {
-      "heading": "Step 3: solve",
-      "intro": null
-    },
-    {
-      "heading": "Step 4: check each answer",
-      "intro": null
+      "heading": null,
+      "intro": null,
+      "scroll": true
     }
   ],
-  "minutes": 3
+  "minutes": 3,
+  "scroll": true
 }

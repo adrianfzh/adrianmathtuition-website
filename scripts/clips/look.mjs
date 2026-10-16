@@ -148,9 +148,16 @@ for (const slug of slugs) {
           if (r.height > 0 && r.top > window.innerHeight * 0.6 && r.top < fold) fold = r.top;
         }
         const boxes = [];
+        // A scrolling board slides older lines up off its top on purpose (they fade there): a piece
+        // above the board's fade line is scrolled away, not cut off.
+        const boardEl = stage.querySelector('.lsn-board');
+        const zoomEl = stage.querySelector('.lsn-zoom');
+        const slid = zoomEl && zoomEl.style.translate && zoomEl.style.translate !== '0px';
+        const scrollTop = slid && boardEl ? boardEl.getBoundingClientRect().top + 36 : -Infinity;
         for (const el of shown) {
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) continue;
+          if (r.top < scrollTop) continue;
           const label = (el.getAttribute('data-key') || '') + ' ' + (el.textContent || '').trim().slice(0, 30);
           if (r.left < sr.left - 1 || r.right > sr.right + 1 || r.top < sr.top - 1 || r.bottom > sr.bottom + 1) cut.push(label);
           if (r.bottom > fold - 2 + window.scrollY - window.scrollY) hidden.push(`${label} (bottom ${r.bottom.toFixed(0)} px, bar at ${fold.toFixed(0)} px)`);

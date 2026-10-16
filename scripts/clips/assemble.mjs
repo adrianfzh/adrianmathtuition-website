@@ -66,9 +66,11 @@ const scenes = sceneBeats.map((list, k) => {
   const board = plan.boards?.[k] ?? { heading: plan.heading, intro: plan.intro };
   return {
     type: 'equation-steps',
-    heading: board.heading,
+    ...(board.heading ? { heading: board.heading } : {}),
     ...(board.intro ? { intro: board.intro } : {}),
-    steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}) })),
+    // A scrolling board (one long board that slides up) carries each step's title on its first line.
+    ...(board.scroll ? { scroll: true } : {}),
+    steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}) })),
     beats: list,
   };
 });

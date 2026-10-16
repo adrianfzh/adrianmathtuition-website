@@ -10,9 +10,10 @@
   "scenes": [
     {
       "type": "equation-steps",
-      "heading": "Step 1: one log on each side",
+      "scroll": true,
       "steps": [
         {
+          "heading": "Step 1: one log on each side",
           "tokens": [
             { "tex": "\\log_3(x-8)", "id": "l1" },
             { "tex": "=\\,2", "id": "two" },
@@ -27,12 +28,69 @@
         },
         {
           "tokens": [
-            { "tex": "\\log_3(x-8)+\\log_3 x", "id": "lhs" },
+            { "tex": "\\log_3(", "id": "g1" },
+            { "tex": "x-8", "id": "a1" },
+            { "tex": ")+\\log_3", "id": "g2" },
+            { "tex": "x", "id": "b1" },
             { "tex": "=", "id": "eqR" },
             { "tex": "2", "id": "two1", "hl": "amber" },
             { "tex": "\\log_3 3", "id": "lg3", "replaces": [] },
             { "tex": "{}^{2}", "id": "pw", "from": "two1", "tight": true, "replaces": ["two1"] },
             { "tex": "\\log_3 9", "id": "e3", "replaces": ["lg3", "pw"] }
+          ]
+        },
+        {
+          "heading": "Step 2: join the logs, then compare",
+          "tokens": [
+            { "tex": "\\log_3[", "id": "c0" },
+            { "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})", "id": "xin" },
+            { "tex": "]", "id": "c3", "tight": true },
+            { "tex": "=\\,\\log_3", "id": "c4" },
+            { "tex": "9", "id": "nine" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})", "id": "cmpL", "hl": "amber", "from": "xin" },
+            { "tex": "=\\,9", "id": "cmpR", "hl": "amber", "from": "nine" }
+          ]
+        },
+        {
+          "heading": "Step 3: solve",
+          "tokens": [
+            { "tex": "x^2-8x=9", "id": "s1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x^2-8x-9=0", "id": "s2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "(x-9)(x+1)=0", "id": "s3" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=9", "id": "r9s" },
+            { "tex": "\\text{or}\\;\\; x=-1", "id": "rm1s" },
+            { "tex": "(\\text{rej})", "id": "rej", "hl": "rose" }
+          ]
+        },
+        {
+          "heading": "Step 4: check each answer",
+          "tokens": [
+            { "tex": "x=-1:", "id": "kx" },
+            { "tex": "\\log_3(-1-8)=", "id": "ksub" },
+            { "tex": "\\log", "id": "lg" },
+            { "tex": "{}_{3}", "id": "b3", "tight": true },
+            { "tex": "(-9)", "id": "arg", "tight": true }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=9", "id": "ans", "hl": "emerald" }
           ]
         }
       ],
@@ -128,47 +186,6 @@
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b10.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b10.timing.json"
-        }
-      ]
-    },
-    {
-      "type": "equation-steps",
-      "heading": "Step 2: join the logs, then compare",
-      "steps": [
-        {
-          "tokens": [
-            { "tex": "\\log_3(", "id": "g1" },
-            { "tex": "x-8", "id": "a1" },
-            { "tex": ")+\\log_3", "id": "g2" },
-            { "tex": "x", "id": "b1" },
-            { "tex": "=\\,\\log_3 9", "id": "r9" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "\\log_3[", "id": "c0" },
-            { "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})", "id": "xin" },
-            { "tex": "]", "id": "c3", "tight": true },
-            { "tex": "=\\,\\log_3", "id": "c4" },
-            { "tex": "9", "id": "nine" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})", "id": "cmpL", "hl": "amber", "from": "xin" },
-            { "tex": "=\\,9", "id": "cmpR", "hl": "amber", "from": "nine" }
-          ]
-        }
-      ],
-      "beats": [
-        {
-          "say": "We carry on from here: log base three of X minus eight, plus log base three of X, equals log base three of nine.",
-          "asks": ["Where did log base 3 of 9 come from?"],
-          "do": [
-            { "do": "write", "step": 0 }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b1.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b1.timing.json"
         },
         {
           "say": "Now join the two logs on the left with Add Power.",
@@ -182,8 +199,8 @@
               "on": "Add Power"
             }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b2.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b2.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b11.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b11.timing.json"
         },
         {
           "say": "In the law, M is X minus eight, and N is X.",
@@ -192,17 +209,17 @@
             { "do": "highlight", "token": "a1", "tone": "orange", "on": "M is X minus eight" },
             { "do": "highlight", "token": "b1", "tone": "sky", "on": "N is X" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b3.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b3.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b12.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b12.timing.json"
         },
         {
           "say": "Adding logs multiplies the insides: log base three of X times X minus eight equals log base three of nine.",
           "asks": ["Why is it x times x minus 8?"],
           "do": [
-            { "do": "write", "step": 1, "on": "log base three of X times" }
+            { "do": "write", "step": 3, "on": "log base three of X times" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b4.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b4.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b13.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b13.timing.json"
         },
         {
           "say": "Now both sides are equal, and both are log base three. One log on each side, just like the plan.",
@@ -210,8 +227,8 @@
           "do": [
             { "do": "highlight", "token": ["c0", "c4"], "part": "sub", "on": "both are log base three" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b5.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b5.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b14.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b14.timing.json"
         },
         {
           "say": "Since both sides are equal, by comparison, the insides are equal.",
@@ -219,8 +236,8 @@
           "do": [
             { "do": "highlight", "token": ["xin", "nine"], "on": "the insides are equal" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b6.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b6.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b15.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b15.timing.json"
         },
         {
           "say": "X times X minus eight equals nine.",
@@ -229,78 +246,35 @@
             { "do": "move", "from": "xin", "on": "X times X minus eight" },
             { "do": "move", "from": "nine", "on": "equals nine" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-02-b7.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-02-b7.timing.json"
-        }
-      ]
-    },
-    {
-      "type": "equation-steps",
-      "heading": "Step 3: solve",
-      "steps": [
-        {
-          "tokens": [
-            { "tex": "x(x-8)=9", "id": "s0" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "x^2-8x=9", "id": "s1" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "x^2-8x-9=0", "id": "s2" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "(x-9)(x+1)=0", "id": "s3" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "x=9", "id": "r9s" },
-            { "tex": "\\text{or}\\;\\; x=-1", "id": "rm1s" }
-          ]
-        }
-      ],
-      "beats": [
-        {
-          "say": "We carry on from X times X minus eight equals nine.",
-          "asks": ["Where did this line come from?"],
-          "do": [
-            { "do": "write", "step": 0 }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-03-b1.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-03-b1.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b16.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b16.timing.json"
         },
         {
           "say": "Expand: X times X is X squared, and X times negative eight is minus eight X.",
           "asks": ["How do I expand x(x−8)?"],
           "do": [
-            { "do": "write", "step": 1, "on": "X squared, and" }
+            { "do": "write", "step": 5, "on": "X squared, and" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-03-b2.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-03-b2.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b17.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b17.timing.json"
         },
         {
           "say": "Take nine from both sides to factorise. X squared minus eight X minus nine equals zero.",
           "asks": ["Why make it equal zero?"],
           "do": [
-            { "do": "write", "step": 2, "on": "X squared minus eight X minus nine" }
+            { "do": "write", "step": 6, "on": "X squared minus eight X minus nine" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-03-b3.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-03-b3.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b18.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b18.timing.json"
         },
         {
           "say": "Factorise: X minus nine, times X plus one, equals zero.",
           "asks": ["How do I factorise this?"],
           "do": [
-            { "do": "write", "step": 3, "on": "X minus nine" }
+            { "do": "write", "step": 7, "on": "X minus nine" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-03-b4.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-03-b4.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b19.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b19.timing.json"
         },
         {
           "say": "Either bracket can be zero. So X equals nine, or X equals negative one.",
@@ -309,46 +283,17 @@
             { "do": "write", "token": "r9s", "on": "X equals nine" },
             { "do": "write", "token": "rm1s", "on": "negative one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-03-b5.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-03-b5.timing.json"
-        }
-      ]
-    },
-    {
-      "type": "equation-steps",
-      "heading": "Step 4: check each answer",
-      "steps": [
-        {
-          "tokens": [
-            { "tex": "x=9", "id": "k9" },
-            { "tex": "\\text{or}\\;\\; x=-1", "id": "km1" },
-            { "tex": "(\\text{rej})", "id": "rej", "hl": "rose" }
-          ]
+          "audio": "/lessons/solving-log-equations-am/scene-01-b20.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b20.timing.json"
         },
-        {
-          "tokens": [
-            { "tex": "x=-1:", "id": "kx" },
-            { "tex": "\\log_3(-1-8)=", "id": "ksub" },
-            { "tex": "\\log", "id": "lg" },
-            { "tex": "{}_{3}", "id": "b3", "tight": true },
-            { "tex": "(-9)", "id": "arg", "tight": true }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "x=9", "id": "ans", "hl": "emerald" }
-          ]
-        }
-      ],
-      "beats": [
         {
           "say": "For log equations, always check each answer: a log only takes a positive number inside. Start with X equals negative one.",
           "asks": ["Why must I check the answers?"],
           "do": [
-            { "do": "write", "step": 0 }
+            { "do": "highlight", "token": "rm1s", "on": "Start with X equals negative one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b1.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b1.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b21.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b21.timing.json"
         },
         {
           "say": "Put X equals negative one into log base three of X minus eight.",
@@ -357,18 +302,18 @@
             { "do": "write", "token": "kx", "on": "Put X equals negative one" },
             { "do": "write", "token": "ksub", "on": "log base three of X minus eight" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b2.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b2.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b22.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b22.timing.json"
         },
         {
           "say": "Negative one minus eight is negative nine. So we get log base three of negative nine.",
           "asks": ["Why negative nine?"],
           "do": [
-            { "do": "write", "step": 1, "on": "log base three of negative nine" },
+            { "do": "write", "step": 9, "on": "log base three of negative nine" },
             { "do": "highlight", "token": ["lg", "b3", "arg"], "on": "negative nine." }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b3.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b3.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b23.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b23.timing.json"
         },
         {
           "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
@@ -377,8 +322,8 @@
           "do": [
             { "do": "note", "text": "a log of a negative number is undefined", "near": "arg", "on": "is undefined" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b4.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b4.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b24.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b24.timing.json"
         },
         {
           "say": "So we reject X equals negative one.",
@@ -386,18 +331,18 @@
           "do": [
             { "do": "write", "token": "rej", "on": "we reject" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b5.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b5.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b25.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b25.timing.json"
         },
         {
           "say": "For X equals nine, the insides are one and nine, both positive. The answer is X equals nine.",
           "asks": ["How do I check x = 9?"],
           "do": [
-            { "do": "write", "step": 2, "on": "The answer is" },
+            { "do": "write", "step": 10, "on": "The answer is" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b6.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b6.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b26.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b26.timing.json"
         }
       ]
     }

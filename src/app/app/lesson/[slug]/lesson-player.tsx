@@ -437,6 +437,51 @@ function placeClipNotes(cont: HTMLElement) {
  * strip took the board's foot);
  * words and notes keep their size. Measured, so it holds for any board on any phone.
  */
+/**
+ * A SCROLLING clip board (scene.scroll): the board fills the screen down to the slider and keeps the
+ * maths at full size; when the newest line (and its notes) would go below the subtitle, the whole
+ * board slides up — words, chalk ink and marks together (they share the zoom wrapper) — and the top
+ * of the board fades where lines leave it. Adrian, 16 Oct 2026: "make the lines move up, like
+ * scrolling up, then we don't have to change screen".
+ */
+function scrollClipBoard(cont: HTMLElement) {
+  const stage = cont.closest<HTMLElement>('.lsn-stage');
+  const boardEl = cont.closest<HTMLElement>('.lsn-board');
+  const zoom = cont.closest<HTMLElement>('.lsn-zoom');
+  if (!stage || !boardEl || !zoom) return;
+  if (!stage.closest('[data-chat-sheet]')) {
+    let bar = window.innerHeight;
+    for (const el of Array.from(document.querySelectorAll<HTMLElement>('nav, [data-bottom-bar], body > div *'))) {
+      if (getComputedStyle(el).position !== 'fixed') continue;
+      const r = el.getBoundingClientRect();
+      if (r.height > 0 && r.top > window.innerHeight * 0.6 && r.top < bar) bar = r.top;
+    }
+    const scrub = document.querySelector<HTMLElement>('.lsn-scrub');
+    const reserve = scrub ? scrub.getBoundingClientRect().height + 8 : 0;
+    const sr = stage.getBoundingClientRect();
+    const br = boardEl.getBoundingClientRect();
+    const h = Math.max(240, Math.floor(bar - 8 - reserve - (sr.bottom - br.bottom) - (br.top + window.scrollY)));
+    boardEl.style.height = `${h}px`;
+  }
+  boardEl.style.overflow = 'hidden';
+  // How far down the board's newest writing reaches, in the board's own (unslid) frame.
+  const zr = zoom.getBoundingClientRect();
+  let low = 0;
+  for (const el of Array.from(zoom.querySelectorAll<HTMLElement>('.lsn-line.on, .lsn-note.on'))) {
+    const r = el.getBoundingClientRect();
+    if (r.height > 0) low = Math.max(low, r.bottom - zr.top);
+  }
+  const subs = stage.querySelector<HTMLElement>('.lsn-subs');
+  const keepClear = (subs?.offsetHeight ?? 0) + 18;
+  const room = boardEl.clientHeight - zoom.offsetTop - keepClear;
+  const offset = Math.max(0, Math.ceil(low - room));
+  zoom.style.transition = 'translate 650ms cubic-bezier(0.4, 0, 0.2, 1)';
+  zoom.style.translate = offset ? `0 ${-offset}px` : '';
+  const fade = offset ? 'linear-gradient(to bottom, transparent 0, #000 36px)' : '';
+  boardEl.style.maskImage = fade;
+  boardEl.style.setProperty('-webkit-mask-image', fade);
+}
+
 function fitClipBoard(cont: HTMLElement) {
   const stage = cont.closest<HTMLElement>('.lsn-stage');
   if (!stage) return;
@@ -501,8 +546,13 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     if (!cont || goneKey === firstGone.current) return;
     firstGone.current = goneKey;
     cont.dispatchEvent(new Event('lsn-refit', { bubbles: true }));
-    if (clip) { fitClipBoard(cont); placeClipNotes(cont); }
-  }, [goneKey, clip]);
+    if (clip) { if (scene.scroll) scrollClipBoard(cont); else fitClipBoard(cont); placeClipNotes(cont); }
+  }, [goneKey, clip, scene.scroll]);
+  // A scrolling board follows the writing: each beat may slide it up.
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (clip && scene.scroll && cont && board) scrollClipBoard(cont);
+  });
   // Where each token last sat: a piece rewritten out of its line ("2 log₃3" → "log₃3²") takes no
   // room by the time it flies, so it flies from where it was.
   const lastAt = useRef<Map<Element, Rect>>(new Map());
@@ -565,7 +615,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     const cont = containerRef.current;
     if (!clip || !cont || !board) return;
     const place = () => placeClipNotes(cont);
-    const fit = () => { fitClipBoard(cont); placeClipNotes(cont); };
+    const fit = () => { if (scene.scroll) scrollClipBoard(cont); else fitClipBoard(cont); placeClipNotes(cont); };
     fit();
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(place) : null;
     ro?.observe(cont);
@@ -596,6 +646,9 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
           return (
             <div key={i} data-line={i} data-key={board ? lineKey(i) : undefined} aria-hidden={!on}
               className={`lsn-line ${on ? 'on' : ''}`}>
+              {s.heading && (
+                <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 lsn-muted lsn-heading mb-1 lsn-step-heading">{s.heading}</p>
+              )}
               <div data-fit className="lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
                 {s.tokens.map((t, ti) => (
                   <TokenSpan key={ti} t={t} gone={!!board && tokenGone(board, scene, i, ti)}

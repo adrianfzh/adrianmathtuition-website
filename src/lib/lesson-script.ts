@@ -74,6 +74,9 @@ export interface EquationStep {
   tokens: StepToken[];
   /** One plain sentence under the line (inline `$…$` allowed). */
   note?: string;
+  /** A section heading written above this line, with it ("Step 2: join the logs, then compare") —
+   *  a scrolling board's stand-in for a new board's heading. */
+  heading?: string;
 }
 
 /** One labelled state of a graph morph: y = Σ coeffs[i]·x^i (constant first). */
@@ -286,6 +289,10 @@ export type TitleScene = NarrationFields & BeatFields & { type: 'title'; title: 
 export type CaptionScene = NarrationFields & BeatFields & { type: 'caption'; heading?: string; text: string };
 export type EquationStepsScene = NarrationFields & BeatFields & {
   type: 'equation-steps'; heading?: string; intro?: string; steps: EquationStep[];
+  /** A clip's ONE long board: instead of shrinking to fit or changing screen, the board slides up
+   *  as new lines are written (Adrian, 16 Oct 2026: "make the lines move up, like scrolling up, then
+   *  we don't have to change screen"). */
+  scroll?: boolean;
 };
 export type GraphMorphScene = NarrationFields & BeatFields & {
   type: 'graph-morph'; heading?: string; caption?: string;
@@ -759,6 +766,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
     case 'equation-steps': {
       if (!optionalString(scene.heading)) errors.push(`${at}: bad heading`);
       if (!optionalString(scene.intro)) errors.push(`${at}: bad intro`);
+      if (scene.scroll !== undefined && typeof scene.scroll !== 'boolean') errors.push(`${at}: scroll must be true or false`);
       const stepsArr = scene.steps;
       if (!Array.isArray(stepsArr) || stepsArr.length === 0) {
         errors.push(`${at} (equation-steps): needs at least one step`);
@@ -801,6 +809,7 @@ function validateScene(scene: unknown, i: number, errors: string[]): void {
         if (step.note !== undefined && !nonEmptyString(step.note)) {
           errors.push(`${sAt}: note must be a non-empty string when present`);
         }
+        if (step.heading !== undefined && !nonEmptyString(step.heading)) errors.push(`${sAt}: heading must be a non-empty string when present`);
       });
       scope.tokenIds = sceneIds;
       break;

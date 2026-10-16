@@ -421,6 +421,7 @@ const round = (v: number) => Math.round(v * 100) / 100;
 
 export const MAX_TOKENS_PER_LINE = 6;
 const MAX_STEPS = 7;
+const MAX_SCROLL_STEPS = 18;
 const MAX_NOTE_CHARS = 170;
 const MAX_CAPTION_CHARS = 520;
 const MAX_HEADING_CHARS = 64;
@@ -523,12 +524,16 @@ export function craftIssues(script: LessonScript): Issue[] {
         if (s.text.length > MAX_CAPTION_CHARS) out.push(issue('warn', `${at}.text`, `${s.text.length} chars — a caption is one idea, not a page (aim ≤ ${MAX_CAPTION_CHARS})`));
         break;
       case 'equation-steps': {
-        if (s.steps.length > MAX_STEPS) out.push(issue('warn', at, `${s.steps.length} steps — split the scene (aim ≤ ${MAX_STEPS})`));
+        // A scrolling clip board is one long board by design: its lines slide up instead of splitting.
+        const maxSteps = s.scroll ? MAX_SCROLL_STEPS : MAX_STEPS;
+        if (s.steps.length > maxSteps) out.push(issue('warn', at, `${s.steps.length} steps — split the scene (aim ≤ ${maxSteps})`));
         const declared = new Set<string>();
         const referenced = new Set<string>();
         s.steps.forEach((st, si) => {
-          if (st.tokens.length > MAX_TOKENS_PER_LINE) {
-            out.push(issue('warn', `${at}.steps[${si}]`, `${st.tokens.length} tokens on one line — merge glyphs that move together (aim ≤ ${MAX_TOKENS_PER_LINE})`));
+          // A token that rewrites the line in place (`replaces`) is never on the board beside the ones it replaces.
+          const onLine = st.tokens.filter(t => !t.replaces).length;
+          if (onLine > MAX_TOKENS_PER_LINE) {
+            out.push(issue('warn', `${at}.steps[${si}]`, `${onLine} tokens on one line — merge glyphs that move together (aim ≤ ${MAX_TOKENS_PER_LINE})`));
           }
           if (st.note && st.note.length > MAX_NOTE_CHARS) out.push(issue('warn', `${at}.steps[${si}].note`, `${st.note.length} chars — one plain sentence per line`));
           for (const t of st.tokens) {
