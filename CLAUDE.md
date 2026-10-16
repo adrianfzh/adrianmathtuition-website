@@ -126,6 +126,11 @@ This binds every session, every model and every account, in both repos.
 5. **Short sections, plain headings, one idea per line.** When he must do something, give
    numbered steps, the exact words to type, and **which app each step is in** (Telegram,
    WhatsApp, the website).
+   **Something is ready for him to look at → say where, unasked** (Adrian, 13–16 Oct 2026, four
+   sessions: *"where do i see this?"* · *"do i need to login as admin or test student?"* · *"i
+   can't see it when i click the link?"*). Give the full link (test site or main site), which
+   login (his admin or the test student), where to tap and what he should see. Open it yourself
+   first the same way; if he cannot see it yet (switched off, still building), say that instead.
 6. If he says he does not understand, **start again from the problem** — do not repeat the
    same explanation with more detail.
 
