@@ -97,6 +97,24 @@ const THEMES: { key: string; title: string; test: RegExp }[] = [
 
 /** Which theme a lost part belongs to, or null. Blank wins over topic: a part
  *  nobody attempted teaches nothing about its topic. */
+/**
+ * The part a label adds after "Q8": "(b)", "(a)(ii)", or nothing for a whole question.
+ * The marker sometimes labels a one-part question with its own NUMBER ("4" on Q4) or
+ * "(whole)"; glued on, that printed "Q44" on a cover (Chloe's A Math 2020 P1, 17 Oct
+ * 2026). A bare letter or numeral ("b", "ii") is bracketed; "4(a)" drops its number.
+ * Pure.
+ */
+export function partSuffix(question: unknown, label: unknown): string {
+  const q = String(question ?? '').trim().replace(/^q/i, '');
+  let l = String(label ?? '').replace(/\s+/g, '').replace(/^q/i, '');
+  if (!l || /^\(?whole\)?$/i.test(l) || l === q || l === `(${q})`) return '';
+  if (q && l.startsWith(q) && /^[(]/.test(l.slice(q.length))) l = l.slice(q.length);
+  if (/^\(/.test(l)) return l;
+  if (/^[a-h]\(/i.test(l)) return `(${l[0].toLowerCase()})${l.slice(1)}`;
+  if (/^(?:[a-h]|i{1,3}|iv|vi{0,3}|ix|x)$/i.test(l)) return `(${l.toLowerCase()})`;
+  return /^\d+$/.test(l) ? '' : l;
+}
+
 export function classify(part: Pick<LostPart, 'why' | 'blank'>): string | null {
   const why = String(part.why || '');
   if (part.blank || THEMES[0].test.test(why)) return 'blank';
@@ -149,7 +167,7 @@ export function analyse(parts: LostPart[], latestPaperId: string): Theme[] {
     }
     th.marks += p.lost;
     th.occasions += 1;
-    const example = p.why ? { paperName: p.paperName, question: `Q${p.question}${p.label || ''}`, why: p.why } : null;
+    const example = p.why ? { paperName: p.paperName, question: `Q${p.question}${partSuffix(p.question, p.label)}`, why: p.why } : null;
     if (!th.gap && typeof p.gap === 'string' && p.gap.trim()) {
       th.gap = p.gap.trim().slice(0, 160);
       // THE GAP AND ITS QUESTION TRAVEL TOGETHER (Adrian, 5 Oct 2026, Denise's

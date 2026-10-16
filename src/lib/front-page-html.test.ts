@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { partSuffix, analyse } from './paper-analysis';
 import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject, outOfSyllabusLine } from './front-page-html';
 import { changedPartCount, ungroundedFrontPage, lostPartsFromRun, outOfSyllabusFrontPage } from './front-page-build';
 import type { Theme } from './paper-analysis';
@@ -730,5 +731,34 @@ describe('the cover names questions left out for the syllabus', () => {
     expect(html).toContain('class="oos-tag">Total marks reduced — some questions are not in the syllabus');
     expect(html).toMatch(/\.oos-tag\{[^}]*color:#c2410c/);
     expect(frontPageHtml({ ...base, awarded: 70, max: 80 })).not.toContain('oos-tag');
+  });
+});
+
+// "Q44" on a cover (Chloe's A Math 2020 P1, 17 Oct 2026): the marker labelled Q4's one part "4",
+// and the label was glued onto the number. paper-analysis partSuffix.
+describe('a part label never doubles the question number', () => {
+  it('Q4 with part label "4" reads "Q4", not "Q44"', () => {
+    expect(partSuffix('4', '4')).toBe('');
+    expect(`Q4${partSuffix('4', '4')}`).toBe('Q4');
+    expect(partSuffix('4', '(4)')).toBe('');
+    expect(partSuffix('6', '')).toBe('');
+    expect(partSuffix('6', '(whole)')).toBe('');
+  });
+  it('real parts keep their letters', () => {
+    expect(partSuffix('8', '(a)')).toBe('(a)');
+    expect(partSuffix('9', 'ii')).toBe('(ii)');
+    expect(partSuffix('9', 'b')).toBe('(b)');
+    expect(partSuffix('12', '(a)(ii)')).toBe('(a)(ii)');
+    expect(partSuffix('4', '4(a)')).toBe('(a)');
+    expect(partSuffix('7', 'a(i)')).toBe('(a)(i)');
+  });
+  it('the cover\'s theme example for such a part says Q4', () => {
+    const themes = analyse([{ paperId: 'p', paperName: 'p', createdAt: '2026-10-16', question: '4', label: '4', lost: 1, max: 4, blank: false, why: 'the quotient rule divides by v²: the denominator is squared', topic: 'increasing functions', gap: null }] as never, 'p');
+    const ex = themes.flatMap(t => t.examples);
+    expect(ex.length).toBeGreaterThan(0);
+    expect(ex.every(e => e.question === 'Q4')).toBe(true);
+  });
+  it('the score box sits at the top of its row, beside the heading', () => {
+    expect(frontPageHtml(base)).toMatch(/\.hero\{[^}]*align-items:start/);
   });
 });

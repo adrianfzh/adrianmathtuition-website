@@ -2421,6 +2421,11 @@ Anything outside the eight (older runs' free-text `error_type` like `ratio_inver
   The marker flags it on the wrong line as `"pen_label": "missing_reason" | "graph_read" | "missed_case"`
   (ai/paper-marker CLEARER WORDS BESIDE THE ✗); runs without the flag fall back to the correction's
   words, conservatively. Tests: bot `test/pen-label-clearer.test.js`.
+- **"Q44" on a cover (17 Oct 2026, Chloe's A Math 2020 P1).** The marker sometimes labels a one-part
+  question's only part with the question's own number ("4" on Q4); the cover glued it on and printed "Q44".
+  `paper-analysis partSuffix` (used by the cover's themes and `sheet-diagnosis lostPartsForFocus`) reads a
+  label equal to the number, or "(whole)", as no part. Same day: the cover's score box sits at the TOP of the
+  hero row (`.hero` align-items:start) — centred, it left a big gap above it beside the heading.
 - **The truth channel:** Override on the desk / triage has an optional "kind of error" select (never pre-filled
   from the marker's own label). The route validates it (`isErrorKind`, 400 otherwise) and stores
   `triage_override.error_kind` beside `awarded/previous/note/at` — the latest edit is the whole record, like

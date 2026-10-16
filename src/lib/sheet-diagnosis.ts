@@ -22,7 +22,7 @@
 // malformed diagnosis is logged and skipped, never a reason to fail the sheet),
 // and both front-page builders map it to themes with themesFromDiagnosis.
 
-import type { Theme } from './paper-analysis';
+import { partSuffix, type Theme } from './paper-analysis';
 import { CARELESS_KINDS, reconcileKind, type ErrorKind } from './error-kinds';
 
 /** The sheet's own triage (skill Step 2): ① teach and practise, ② show the line
@@ -221,8 +221,8 @@ export function lostPartsForFocus(resultJson: unknown): FocusPart[] {
       if (!part || part.added_by_audit) continue;
       const mx = Number(part.max), aw = Number(part.awarded);
       if (!Number.isFinite(mx) || !Number.isFinite(aw) || mx - aw <= 0) continue;
-      const label = String(part.label ?? '').replace(/[^a-z0-9()]/gi, '');
-      const suffix = !label || label === 'whole' ? '' : /^\(/.test(label) ? label : `(${label})`;
+      // "4" on Q4 or "(whole)" is the whole question, not a part (17 Oct 2026 — paper-analysis partSuffix).
+      const suffix = partSuffix(qn.n, String(part.label ?? '').replace(/[^a-z0-9()]/gi, ''));
       const gap = typeof part.gap === 'string' && part.gap.trim() ? part.gap.trim() : null;
       out.push({
         question: questionLabel(`${qn.n}${qn.p ? `(${qn.p})` : ''}${suffix}`),

@@ -607,7 +607,7 @@ body{margin:0;background:var(--sheet);color:var(--ink);width:210mm;min-height:29
 .brand{font-family:"IBM Plex Mono",monospace;font-size:.64rem;font-weight:600;
        letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
 .paper-name{font-size:.78rem;color:var(--ink-soft);font-style:italic}
-.hero{display:grid;grid-template-columns:auto 1fr;gap:0 1.4rem;align-items:center;margin:1.1rem 0 1.15rem}
+.hero{display:grid;grid-template-columns:auto 1fr;gap:0 1.4rem;align-items:start;margin:1.1rem 0 1.15rem}
 /* The score: a cream tile with the red verdict rule — upright. */
 .badge{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
        background:var(--shade);border:1px solid var(--rule);border-left:4px solid var(--verdict);
