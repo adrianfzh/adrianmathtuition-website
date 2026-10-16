@@ -381,7 +381,13 @@ Fail → the stored clip keeps the old voice. **Result (16 Oct 2026): 13 of 15 r
 (speech round trip ≥ 85 % on every line, every board move on its word). The other 2 were re-made
 by the worker instead: qc-225d1e85 (the new subtitle strip covered part of a working line — a
 layout clash with the new player, not a voice fault) and qc-b3002e82 (made by a test run whose
-working files were not kept, so there was nothing local to re-voice from).
+working files were not kept, so there was nothing local to re-voice from). qc-b3002e82 turned out
+to be a photo question identical to qc-10efe9bc, so the worker copied that (re-voiced) clip in 16 s.
+**qc-225d1e85 is FAILED for now**: under the new player a beat whose spoken line wraps to three
+subtitle lines covers the board's last working line (the player reserves less room than a 24-word
+line needs). Reported to the session that owns the subtitles; `fit.mjs` now fails a plan whose maths
+sits under a 24-word subtitle (`--shot <dir>` saves what it measured), so new plans leave room. Re-queue
+qc-225d1e85 once the player reserves room for three lines.
 
 ### Not done / next
 

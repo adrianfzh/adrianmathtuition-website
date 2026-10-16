@@ -326,17 +326,17 @@ async function fitCheck() {
     return { type: 'equation-steps', heading: board.heading, ...(board.intro ? { intro: board.intro } : {}),
       steps: lines.map(l => ({ tokens: l.tokens })),
       // The worst case: every line with its rule note under it (house rule: the rule beside the step) — notes add height.
-      beats: lines.map((l, i) => ({ say: 'This line and its rule stay on the board while the voice explains the step slowly and clearly for every student here.', do: [{ do: 'write', step: i }, { do: 'note', text: 'Rule: (a + b)(a − b) = a² − b²', near: l.tokens[0].id, on: 'rule' }] })) };
+      beats: lines.map((l, i) => ({ say: 'This line and its rule stay on the board while the voice explains the step slowly and very clearly for every single student watching here.', do: [{ do: 'write', step: i }, { do: 'note', text: 'Rule: (a + b)(a − b) = a² − b²', near: l.tokens[0].id, on: 'rule' }] })) };
   });
   await saveRow({ script: { slug: SLUG, title: p.title, level: p.level, topic: p.topic, minutes: 1, kind: 'clip', theme: 'chalk', scenes } });
   const r = sh('node', ['scripts/clips/fit.mjs', SLUG, '--base', BASE, '--path', `/app/clip/q/${QID}?check=1`], { timeout: 4 * 60_000 });
   const j = readJson(path.join(RUN, 'fit.json'));
-  return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px${b.cut?.length ? `, maths cut off at the side: ${b.cut.join(', ')}` : ''}`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
+  return j ? { pass: j.pass, detail: j.boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ends ${b.bottom} px, screen ${b.fold} px${b.cut?.length ? `, maths cut off at the side: ${b.cut.join(', ')}` : ''}${b.under?.length ? `, maths under the subtitle strip: ${b.under.join(', ')}` : ''}`).join(' · ') } : { pass: false, detail: r.out.trim().slice(-300) };
 }
 let fit = await step('fit', fitCheck);
 for (let n = 0; !fit.pass && n < 2; n++) {
   await step(`fit-repair-${n + 1}`, () => agent('fit-repair', 'opus',
-    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
+    `Read scripts/clips/prompts/question-plan.md. The plan data/clip-plans/${SLUG}.json passes the maths check but a board is TALLER than a phone screen (390 × 844): ${fit.detail}. Make every board fit: maths under the subtitle strip → fewer or shorter lines on that board (the strip covers the board's foot); a line cut off at the side → split it into two lines or shorten it; too tall → shorten the intro to the question's numbers and ask (cut story words), and/or move lines to a second board (boards + "board" on each line), never merge two steps into one line. Keep every check true and run the maths check until it passes.`, { tools: CHAIN_TOOL }));
   mc = mathsCheck();
   if (!mc.pass) await finish('failed', `maths check after the fit repair: ${mc.bad[0] ?? ''}`.slice(0, 300));
   fit = await step('fit', fitCheck);

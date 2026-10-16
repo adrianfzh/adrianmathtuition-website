@@ -3,7 +3,7 @@
 // before any narration or voice is paid for (SPEC-CLIP-PIPELINE.md §9; Adrian's rule: the
 // whole board on one phone screen — look.mjs checks the same thing again on the finished clip).
 //
-//   node scripts/clips/fit.mjs <slug> --path '/app/clip/q/<id>?check=1' [--base http://localhost:3211]
+//   node scripts/clips/fit.mjs <slug> --path '/app/clip/q/<id>?check=1' [--base http://localhost:3211] [--shot <dir>]
 //
 // The caller has stored a stand-in script (one silent beat per board line) in question_clips;
 // this opens the page at the first stop of each board (`&at=N`) at 390 × 844 and measures the
@@ -72,15 +72,29 @@ for (let k = 0; k < nBoards; k++) {
       const e = el.getBoundingClientRect();
       if (e.width && (e.left < r.left - 1 || e.right > r.right + 1)) cut.push((el.textContent || '').trim().slice(0, 30));
     }
-    return { bottom: Math.round(r.bottom + window.scrollY), fold: Math.round(fold), cut };
+    // The subtitle strip over the board's foot (the stand-in says a 24-word line, the longest a
+    // beat may say, so the strip is at its tallest) must not cover any maths that is showing —
+    // 16 Oct 2026: a three-line subtitle covered a partial-fractions clip's last line.
+    const subs = stage.querySelector('.lsn-subs');
+    const under = [];
+    if (subs && (subs.textContent || '').trim()) {
+      const u = subs.getBoundingClientRect();
+      for (const el of stage.querySelectorAll('.lsn-el.on')) {
+        const e = el.getBoundingClientRect();
+        const w = Math.min(u.right, e.right) - Math.max(u.left, e.left), h = Math.min(u.bottom, e.bottom) - Math.max(u.top, e.top);
+        if (w > 3 && h > 3) under.push((el.textContent || '').trim().slice(0, 30));
+      }
+    }
+    return { bottom: Math.round(r.bottom + window.scrollY), fold: Math.round(fold), cut, under };
   });
+  if (args.shot) { fs.mkdirSync(String(args.shot), { recursive: true }); await page.screenshot({ path: path.join(String(args.shot), `${slug}-board${k + 1}.png`) }); }
   await page.close();
   // 16 px spare: the finished clip's own notes and marks wrap a little differently from the stand-in's.
-  boards.push(m ? { board: k, ...m, over: Math.max(0, m.bottom - (m.fold - 16)) + (m.cut.length ? 1 : 0) } : { board: k, error: 'no board on the page', over: 999 });
+  boards.push(m ? { board: k, ...m, over: Math.max(0, m.bottom - (m.fold - 16)) + (m.cut.length ? 1 : 0) + (m.under.length ? 1 : 0) } : { board: k, error: 'no board on the page', over: 999 });
 }
 await browser.close();
 const pass = boards.every(b => b.over === 0);
 fs.mkdirSync(path.join(ROOT, 'data/clip-runs', slug), { recursive: true });
 fs.writeFileSync(path.join(ROOT, 'data/clip-runs', slug, 'fit.json'), JSON.stringify({ slug, pass, boards }, null, 1) + '\n');
-console.log(`${pass ? '✓' : '✗'} ${slug}: ${boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ${b.bottom}/${b.fold} px${b.cut?.length ? ` · cut off at the side: ${b.cut.join(', ')}` : ''}`).join(' · ')}`);
+console.log(`${pass ? '✓' : '✗'} ${slug}: ${boards.map(b => b.error ? `board ${b.board + 1}: ${b.error}` : `board ${b.board + 1} ${b.bottom}/${b.fold} px${b.cut?.length ? ` · cut off at the side: ${b.cut.join(', ')}` : ''}${b.under?.length ? ` · under the subtitles: ${b.under.join(', ')}` : ''}`).join(' · ')}`);
 process.exit(pass ? 0 : 1);
