@@ -1,63 +1,34 @@
 {
  "slug": "solving-log-equations-am",
- "pick": "G1",
- "why": "Only draft (G1, after Adrian's third watch); scored as fixed.",
+ "pick": "G2",
+ "why": "Only draft scored (G2, after Adrian's fourth watch); scored as fixed.",
  "scores": {
-  "clear": 5,
-  "one_idea": 5,
+  "clear": 4,
+  "one_idea": 4,
   "voice_board": 4,
-  "why": 5,
-  "trap": 5,
+  "why": 4,
+  "trap": 4,
   "level": 5
  },
  "notes": [
-  "All five asks are met at the right words: the plan is written as maths (p1 on 'one log on each side', p2 on the insides); 2 → log₃9 is built AT the 2 (2 lit, then 2 log₃3, log₃3 = 1 note under it, log₃3², log₃9, one piece a beat); M = x − 8 orange and N = x blue lit as named, and the joined line keeps the colours; the insides are lit, then x(x − 8) = 9 is its own line; x = −1 is put into the question, log₃(−9) asks '3 to what power gives −9', the note shows 3¹, 3⁰, 3⁻¹ all positive, and only then '(rej)' on 'we reject'.",
-  "Beat 2 named 'base three' with nothing lit; now lights the plan's bases on 'same base three'.",
-  "Beat 3 'the two logs match, so the insides must be equal' — now says what is compared and reads the board: 'square equals triangle'.",
-  "Beat 4 'It becomes plus' gave no reason; now 'Crossing the equals sign, it becomes plus'.",
-  "Beats 6 and 7 both said 'Log base three of three is one' (beat 6 used it before beat 7 explained it). Beat 6 now reads 'two is two times one, which is two log base three of three'; beat 7 gives the reason under it.",
-  "Beat 8 'Bring the two up as a power' did not name the law; now 'Bring down power, used backwards'.",
-  "Beat 14 'the logs match' — now says why the insides may be compared (equal logs, same base) and lights the bases.",
-  "Beat 18 wrote the whole check line on one cue; now 'x = −1:' on 'Put X equals minus one' and the substitution on 'log base three of X minus eight'. Beat 19 now says 'minus one minus eight is minus nine' — the board line shows it.",
-  "Beat 22 said 'X equals nine keeps both insides positive' with nothing on the board; now a note under x = 9 shows 9 − 8 = 1 > 0, 9 > 0 as the voice says it.",
-  "Left for the board (words cannot fix): line 4 (2 = 2 log₃3 = log₃3² = log₃9) carries only the log₃3 = 1 note; the Bring down power law is said but not written beside log₃3², because a second note on that line would crowd the log₃3 = 1 note. If the look allows, add the note `Bring down power: r log_a x = log_a x^r` near e2.",
-  "Session: beat 8 also writes the Bring down power law beside log₃3² (the reader's board note; house rule: the law beside the step)."
+  "Fourth-watch asks are met: the 2 flies up into the power on 'into the power' (beat 8) and Bring down power is written beside it (beat 9); beat 15 says both sides are equal and both log base three (bases lit), beat 16 lights the insides, beat 17 flies x(x − 8) and 9 out of the logs on the words; boards 1–3 each open with the line the last ended on; 'negative one' throughout; log₃(−9): the 3 and the −9 fly into 3^? = −9 on 'three, to what power' / 'gives negative nine', then the powers of 3 one by one, then '(rej)' on 'we reject'.",
+  "Beat 4 'First, move … Crossing the equals sign, it becomes plus log base three of X' said the same thing twice; tightened to one sentence to keep the clip within 460 words.",
+  "Beat 8 'Watch it move' is filler and gives no reason; now says the 2 is the multiplier in front and flies up to become the power.",
+  "Beat 11 'Put log base three of nine in place of the two' — a student jumping here with the slider does not know where log₃9 came from; now says it was just shown that two is log base three of nine.",
+  "Beat 16 now says the comparison in Adrian's words: 'Since both sides are equal, by comparison …'.",
+  "Beat 19 'X times minus eight' — that is a negative number being multiplied; now 'X times negative eight is minus eight X'.",
+  "Beat 20 'Bring nine across to make zero on the right' gave no reason for zero; now 'so we can factorise'.",
+  "Beat 22 'So X equals nine, or X equals negative one' gave no reason for two answers; now 'Either bracket can be zero'.",
+  "Beat 23 'Now check each answer' gave no reason; now 'a log cannot take every number'.",
+  "Beat 24 wrote the whole check line (x = −1: log₃(−1 − 8) = log₃(−9)) on 'Put X equals negative one', before the voice reached −9; now x = −1: and log₃(−1 − 8) are written as named, and beat 25 writes log₃(−9) on its words, so the board keeps pace.",
+  "Beat 29 'Every power of three is positive' was a bare claim (Adrian: explain WHY it is undefined); now gives the reason: multiplying or dividing threes never gives a negative.",
+  "Beat 31 'X equals nine keeps both insides positive' had nothing to show it; now says the numbers: nine minus eight is one, and nine — both positive.",
+  "Left for the board (words cannot fix): the trial powers stop at 3⁻²; adding 3² = 9 (positive nine, not −9) would show the nearest miss. No ✗ Watch out step — none is named in the voice, and rejecting −1 is a method step, so none is needed."
  ],
  "fixed_beats": {
-  "2": {
-   "say": "Here is the plan. Get one log on each side, both with the same base three.",
-   "asks": [
-    "Why one log on each side?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "p1",
-     "on": "one log on each side"
-    },
-    {
-     "do": "highlight",
-     "token": "p1",
-     "part": "sub",
-     "on": "same base three"
-    }
-   ]
-  },
-  "3": {
-   "say": "Then the logs match, so the insides must be equal: square equals triangle.",
-   "asks": [
-    "Why can we compare the insides?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "p2",
-     "on": "the insides must be equal"
-    }
-   ]
-  },
   "4": {
-   "say": "Move minus log base three of X to the left. Crossing the equals sign, it becomes plus.",
+   "board": 0,
+   "say": "Move minus log base three of X across the equals sign, and it becomes plus.",
    "asks": [
     "Why does the minus become plus?"
    ],
@@ -65,7 +36,7 @@
     {
      "do": "highlight",
      "token": "l2",
-     "on": "Move minus log"
+     "on": "move minus log"
     },
     {
      "do": "write",
@@ -74,110 +45,186 @@
     }
    ]
   },
-  "6": {
-   "say": "Two is two times one, which is two log base three of three.",
-   "asks": [
-    "Why is log base 3 of 3 equal to 1?"
-   ],
-   "do": [
-    {
-     "do": "write",
-     "token": "t2",
-     "on": "Two is two times one"
-    },
-    {
-     "do": "write",
-     "token": "e1",
-     "on": "two log base three"
-    }
-   ]
-  },
   "8": {
-   "say": "Bring down power, backwards: the two goes up. We get log base three of three squared.",
+   "board": 0,
+   "say": "By a law, the two in front flies up into the power.",
    "asks": [
     "Why can the 2 go up as a power?"
    ],
    "do": [
     {
-     "do": "note",
-     "text": "Bring down power: $r\\log_a M = \\log_a M^r$",
-     "near": "e2"
+     "do": "write",
+     "step": 4,
+     "on": "the two in front"
     },
     {
-     "do": "write",
-     "token": "e2",
-     "on": "We get log base three"
+     "do": "move",
+     "from": "k2",
+     "on": "flies up into the power"
     }
    ]
   },
-  "14": {
-   "say": "Equal logs, same base three, so equal insides: X times X minus eight equals nine.",
+  "11": {
+   "board": 1,
+   "say": "Two is log base three of nine. Put it in place of the two.",
    "asks": [
-    "Why are the insides equal?"
+    "Where did log base 3 of 9 come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  "16": {
+   "board": 1,
+   "say": "Since both sides are equal, by comparison, the insides are equal.",
+   "asks": [
+    "Why can we drop the logs?"
    ],
    "do": [
     {
      "do": "highlight",
      "token": [
-      "c1",
-      "c4"
+      "xin",
+      "nine"
      ],
-     "part": "sub",
-     "on": "same base three"
-    },
-    {
-     "do": "write",
-     "step": 5,
-     "on": "X times X minus eight equals"
+     "on": "the insides are equal"
     }
    ]
   },
-  "18": {
-   "say": "Check each answer in the question. Put X equals minus one into log base three of X minus eight.",
+  "19": {
+   "board": 2,
+   "say": "Expand: X times X is X squared, and X times negative eight is minus eight X.",
+   "asks": [
+    "How do I expand x(x−8)?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "X squared, and"
+    }
+   ]
+  },
+  "20": {
+   "board": 2,
+   "say": "Take nine from both sides to factorise. X squared minus eight X minus nine equals zero.",
+   "asks": [
+    "Why make it equal zero?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "X squared minus eight X minus nine"
+    }
+   ]
+  },
+  "22": {
+   "board": 2,
+   "say": "Either bracket can be zero. So X equals nine, or X equals negative one.",
+   "asks": [
+    "Why are there two answers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "r9s",
+     "on": "X equals nine"
+    },
+    {
+     "do": "write",
+     "token": "rm1s",
+     "on": "negative one"
+    }
+   ]
+  },
+  "23": {
+   "board": 3,
+   "say": "A log cannot take every number, so check each answer. Start with X equals negative one.",
    "asks": [
     "Why must I check the answers?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "chk0",
-     "on": "Put X equals minus one"
-    },
-    {
-     "do": "write",
-     "token": "chk",
-     "on": "log base three of X minus eight"
+     "step": 0
     }
    ]
   },
-  "19": {
-   "say": "Minus one minus eight is minus nine. Log base three of minus nine means: three to what power gives minus nine.",
+  "24": {
+   "board": 3,
+   "say": "Put X equals negative one into log base three of X minus eight.",
    "asks": [
-    "What does log base 3 of −9 mean?"
+    "How do I put x = −1 in?"
    ],
    "do": [
     {
      "do": "write",
-     "token": "why",
-     "on": "three to what power"
+     "token": "kx",
+     "on": "Put X equals negative one"
+    },
+    {
+     "do": "write",
+     "token": "ksub",
+     "on": "log base three of X minus eight"
     }
    ]
   },
-  "22": {
-   "say": "Nine minus eight is one, and nine: both positive. The answer is X equals nine.",
+  "25": {
+   "board": 3,
+   "say": "Negative one minus eight is negative nine. So we get log base three of negative nine.",
+   "asks": [
+    "Why negative nine?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "log base three of negative nine"
+    },
+    {
+     "do": "highlight",
+     "token": [
+      "lg",
+      "b3",
+      "arg"
+     ],
+     "on": "negative nine."
+    }
+   ]
+  },
+  "29": {
+   "board": 3,
+   "say": "Every power of three is positive: multiplying or dividing threes stays positive. None gives negative nine.",
+   "asks": [
+    "Why is every power of 3 positive?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "all positive: no power of $3$ is $-9$",
+     "near": "q1",
+     "span": [
+      "q1",
+      "qm2"
+     ],
+     "on": "Every power"
+    }
+   ]
+  },
+  "31": {
+   "board": 3,
+   "say": "For X equals nine, the insides are one and nine, both positive. The answer is X equals nine.",
    "asks": [
     "How do I check x = 9?"
    ],
    "do": [
     {
-     "do": "note",
-     "text": "$9-8=1>0,\\ 9>0$",
-     "near": "r9",
-     "on": "both positive"
-    },
-    {
      "do": "write",
-     "step": 5,
+     "step": 4,
      "on": "The answer is"
     },
     {

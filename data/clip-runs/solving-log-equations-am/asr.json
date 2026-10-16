@@ -1,6 +1,6 @@
 {
  "slug": "solving-log-equations-am",
- "worst": 0.93,
+ "worst": 0.86,
  "lines": [
   {
    "beat": 1,
@@ -10,8 +10,8 @@
   },
   {
    "beat": 2,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.87,
+   "score": 0.87,
    "heard": null
   },
   {
@@ -22,8 +22,8 @@
   },
   {
    "beat": 4,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
@@ -64,8 +64,8 @@
   },
   {
    "beat": 11,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.86,
+   "score": 0.86,
    "heard": null
   },
   {
@@ -82,8 +82,8 @@
   },
   {
    "beat": 14,
-   "bag": 0.93,
-   "score": 0.93,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -94,10 +94,9 @@
   },
   {
    "beat": 16,
-   "bag": 0.8,
-   "score": 0.967,
-   "heard": "factorize x - 9 x x + 1 = 0",
-   "said": "Factorise. X minus nine, times X plus one, equals zero."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 17,
@@ -113,24 +112,79 @@
   },
   {
    "beat": 19,
-   "bag": 0.95,
-   "score": 0.95,
-   "heard": null
-  },
-  {
-   "beat": 20,
-   "bag": 1,
-   "score": 1,
-   "heard": null
-  },
-  {
-   "beat": 21,
    "bag": 0.94,
    "score": 0.94,
    "heard": null
   },
   {
+   "beat": 20,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 21,
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
+  },
+  {
    "beat": 22,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 23,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 24,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 25,
+   "bag": 0.81,
+   "score": 1,
+   "heard": "-1 - 8 is -9. So we get log base 3 of -9.",
+   "said": "Negative one minus eight is negative nine. So we get log base three of negative nine."
+  },
+  {
+   "beat": 26,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 27,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 28,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 29,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 30,
+   "bag": 0.88,
+   "score": 0.88,
+   "heard": null
+  },
+  {
+   "beat": 31,
    "bag": 1,
    "score": 1,
    "heard": null

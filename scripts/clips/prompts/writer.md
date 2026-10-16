@@ -46,7 +46,7 @@ no focus, no clear.
 
 ## Rules (each one is checked)
 
-- **Beats ≤ 24 words each, ≤ 340 words in all** — as many beats as the explanation needs (house rules §2).
+- **Beats ≤ 24 words each, ≤ 460 words in all** — as many beats as the explanation needs (house rules §2).
 - **The first beat states the question** (if `intro` is present, read it; the first
   beat writes line 0). First word = the first word of the maths. No warm-up.
 - **Each beat: the step, then why** — in its own short sentence. ("Take log on both
@@ -74,6 +74,11 @@ no focus, no clear.
   light the exact part you are talking about as you name it; the note sits right under it; a
   rejection is explained (substitute, show what breaks) before "(rej)" appears on "reject". Up to
   340 spoken words.
+- **Use the animation**: when a piece moves in the maths (a coefficient up into a power, the insides
+  out of the logs, a base and an argument into an index equation), the board moves it — the later
+  line's token has `from` the earlier one (a power `tight`), and a `move` action fires on the word.
+- **"negative one", never "minus one"** for a negative number; "minus" only for subtraction.
+- **A new board opens with the line the last board ended on.**
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.
 - **The base in its own colour**: a line that talks about the base ("same base", "the base

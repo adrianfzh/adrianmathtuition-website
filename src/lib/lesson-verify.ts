@@ -698,11 +698,11 @@ export function directIssues(script: LessonScript): Issue[] {
 
 // ── A clip: one concept, about a minute ──────────────────────────────────────
 
-export const CLIP_MAX_SCENES = 2;
+export const CLIP_MAX_SCENES = 4;   // a long working runs over boards, each starting with the last line (16 Oct 2026)
 // 16 Oct 2026 (Adrian, after a third watch): "take reference from how this professor (Herbert Gross)
 // explains … the essence of how he explains each part very clearly (he doesn't rush)" — a clip may
 // run to about 2½ minutes so every step is explained; sentences stay short (CLIP_BEAT_MAX_WORDS).
-export const CLIP_MAX_WORDS = 340;          // ≈ 2½ min of voice at ~2.6 words a second (was 170, one minute)
+export const CLIP_MAX_WORDS = 460;          // ≈ 3 min of voice C (~2.9 words a second); was 170 (one minute), then 340
 export const CLIP_BEAT_MAX_WORDS = 24;
 export const CLIP_BEAT_MIN_WORDS = 4;
 /** Things that APPEAR in one beat (write / reveal / move / morph / note). */
@@ -792,7 +792,7 @@ export function clipIssues(script: LessonScript): Issue[] {
       }
     });
   }
-  if (words > CLIP_MAX_WORDS) out.push(issue('warn', 'scenes', `${words} spoken words — over about two and a half minutes; one concept, cut the rest (≤ ${CLIP_MAX_WORDS})`));
+  if (words > CLIP_MAX_WORDS) out.push(issue('warn', 'scenes', `${words} spoken words — over about three minutes; one concept, cut the rest (≤ ${CLIP_MAX_WORDS})`));
   else out.push(issue('info', 'clip', `${words} spoken words ≈ ${Math.round(words / 2.6 + 0.65 * script.scenes.reduce((p, s) => p + (hasBeats(s) ? s.beats.length : 0), 0))} s with the breaths between beats`));
   return out;
 }

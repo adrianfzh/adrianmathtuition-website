@@ -195,7 +195,7 @@ function TokenSpan({ t, bits }: { t: StepToken; bits?: ElementBits | null }) {
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
       data-key={bits?.key}
-      className={`lsn-tok inline-block ${t.hl ? `lsn-hl ${TONE[t.hl].hl}` : ''} ${elCls(bits ?? null)}`}
+      className={`lsn-tok inline-block ${t.tight ? 'lsn-tok-tight' : ''} ${t.hl ? `lsn-hl ${TONE[t.hl].hl}` : ''} ${elCls(bits ?? null)}`}
     >
       <Tex tex={t.tex} />
     </span>
@@ -2426,6 +2426,9 @@ const PLAYER_CSS = `
 [data-lsn-clip] .lsn-line .lsn-tok { font-size: calc(var(--lsn-line-px) * 1.45 * var(--lsn-clip-fit, 1) * var(--lsn-row-scale, 1)); }
 [data-lsn-clip] .lsn-tokrow { column-gap: 0.7rem; flex-wrap: nowrap; }
 [data-lsn-clip] .lsn-tokrow > * { flex-shrink: 0; white-space: nowrap; }
+/* A tight token (a power or a base that flies into place) sits against the one before it. */
+.lsn-tokrow > .lsn-tok-tight { margin-left: -0.375rem; }
+[data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }
 /* The question above a clip's working: its maths is as large as its words. */

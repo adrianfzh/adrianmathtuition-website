@@ -60,6 +60,9 @@ export interface StepToken {
   id?: string;
   /** Fly in from the earlier-revealed token with this id (moved-term FLIP). */
   from?: string;
+  /** Sits right against the token before it, no gap — a power or a base that flies into place
+   *  (Adrian, 16 Oct 2026: "perhaps the 2 can move to the power position? its an animation right?"). */
+  tight?: boolean;
 }
 
 export interface EquationStep {

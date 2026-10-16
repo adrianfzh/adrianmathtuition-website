@@ -70,6 +70,20 @@ on 15 Oct 2026 — his notes are binding.
 - **A rejection is EXPLAINED, then shown**: substitute the bad root into the question, show what goes
   wrong (log₃(−9): 3 to what power gives −9? none — 3 to any power is positive), and only THEN write
   "(rej)" on the word "reject" — a token of its own, never part of the roots line's first write.
+- **Use the animation like a teacher's finger** (16 Oct 2026, fourth watch: "its an animation right? you
+  should take advantage of the animation … like a teacher physically can use fingers to point and draw
+  attention"). When a piece MOVES in the maths, move it on the board: the 2 of `2 log₃3` flies up into
+  the power of `log₃3²` (`from` + `move`, the power token `tight`); the insides fly out of the logs to
+  `x(x − 8) = 9`; the 3 and the −9 of `log₃(−9)` fly into `3^? = −9`. Light each part as it is named.
+- **Say the reason for a comparison**: "both sides are equal, both log base three, so what is inside
+  must be equal" — then the comparison line.
+- **Each new board starts with the line the last one ended on** ("when switching over to the next screen,
+  show x(x−8)=9 first"), so a student sees where it comes from.
+- **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
+  ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
+- **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";
+  try powers of 3 one by one on the board; every one is positive; so none gives −9.
+- A long working may run over up to four boards and about 3 minutes (460 spoken words).
 - **A slider** lets the student jump to any beat — so every beat must make sense on its own
   board state (no "as we said before").
 

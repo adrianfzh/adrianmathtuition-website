@@ -110,22 +110,45 @@
           "hl": "amber"
         },
         {
-          "tex": "=2\\log_3 3",
-          "id": "e1"
+          "tex": "="
         },
         {
-          "tex": "=\\log_3 3^2",
-          "id": "e2"
+          "tex": "2",
+          "id": "k2"
         },
         {
-          "tex": "=\\log_3 9",
-          "id": "e3"
+          "tex": "\\log_3 3",
+          "id": "lg3"
         }
       ],
       "checks": [
         {
           "fact": "2 = 2*log(3,3)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "="
         },
+        {
+          "tex": "\\log_3 3",
+          "id": "lg3b"
+        },
+        {
+          "tex": "{}^{2}",
+          "id": "pw",
+          "from": "k2",
+          "tight": true
+        },
+        {
+          "tex": "=\\,\\log_3 9",
+          "id": "e3"
+        }
+      ],
+      "checks": [
         {
           "fact": "2 = log(3**2,3)"
         },
@@ -135,19 +158,50 @@
       ]
     },
     {
-      "board": 0,
+      "board": 1,
       "tokens": [
         {
-          "tex": "\\log_3[\\textcolor{#a8ecfb}{x}(",
-          "id": "c1"
+          "tex": "\\log_3(",
+          "id": "g1"
         },
         {
-          "tex": "\\textcolor{#ff9a3c}{x-8}",
-          "id": "c2"
+          "tex": "x-8",
+          "id": "a1"
         },
         {
-          "tex": ")]",
-          "id": "c3"
+          "tex": ")+\\log_3",
+          "id": "g2"
+        },
+        {
+          "tex": "x",
+          "id": "b1"
+        },
+        {
+          "tex": "=\\,\\log_3 9",
+          "id": "r9"
+        }
+      ],
+      "checks": [
+        {
+          "step": "log(x-8,3) + log(x,3) = log(9,3)"
+        }
+      ]
+    },
+    {
+      "board": 1,
+      "tokens": [
+        {
+          "tex": "\\log_3[",
+          "id": "c0"
+        },
+        {
+          "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})",
+          "id": "xin"
+        },
+        {
+          "tex": "]",
+          "id": "c3",
+          "tight": true
         },
         {
           "tex": "=\\,\\log_3",
@@ -155,7 +209,7 @@
         },
         {
           "tex": "9",
-          "id": "c9"
+          "id": "nine"
         }
       ],
       "checks": [
@@ -165,17 +219,19 @@
       ]
     },
     {
-      "board": 0,
+      "board": 1,
       "tokens": [
         {
-          "tex": "x(x-8)",
-          "id": "cmp1",
-          "hl": "amber"
+          "tex": "\\textcolor{#a8ecfb}{x}(\\textcolor{#ff9a3c}{x-8})",
+          "id": "cmpL",
+          "hl": "amber",
+          "from": "xin"
         },
         {
-          "tex": "=9",
-          "id": "cmp2",
-          "hl": "amber"
+          "tex": "=\\,9",
+          "id": "cmpR",
+          "hl": "amber",
+          "from": "nine"
         }
       ],
       "checks": [
@@ -185,11 +241,39 @@
       ]
     },
     {
-      "board": 1,
+      "board": 2,
+      "tokens": [
+        {
+          "tex": "x(x-8)=9",
+          "id": "s0"
+        }
+      ],
+      "checks": [
+        {
+          "step": "x*(x-8) = 9"
+        }
+      ]
+    },
+    {
+      "board": 2,
+      "tokens": [
+        {
+          "tex": "x^2-8x=9",
+          "id": "s1"
+        }
+      ],
+      "checks": [
+        {
+          "step": "x**2 - 8*x = 9"
+        }
+      ]
+    },
+    {
+      "board": 2,
       "tokens": [
         {
           "tex": "x^2-8x-9=0",
-          "id": "quad"
+          "id": "s2"
         }
       ],
       "checks": [
@@ -199,11 +283,11 @@
       ]
     },
     {
-      "board": 1,
+      "board": 2,
       "tokens": [
         {
           "tex": "(x-9)(x+1)=0",
-          "id": "fac"
+          "id": "s3"
         }
       ],
       "checks": [
@@ -213,20 +297,15 @@
       ]
     },
     {
-      "board": 1,
+      "board": 2,
       "tokens": [
         {
           "tex": "x=9",
-          "id": "r9"
+          "id": "r9s"
         },
         {
           "tex": "\\text{or}\\;\\; x=-1",
-          "id": "rm1"
-        },
-        {
-          "tex": "(\\text{rej})",
-          "id": "rej",
-          "hl": "rose"
+          "id": "rm1s"
         }
       ],
       "checks": [
@@ -242,15 +321,52 @@
       ]
     },
     {
-      "board": 1,
+      "board": 3,
+      "tokens": [
+        {
+          "tex": "x=9",
+          "id": "k9"
+        },
+        {
+          "tex": "\\text{or}\\;\\; x=-1",
+          "id": "km1"
+        },
+        {
+          "tex": "(\\text{rej})",
+          "id": "rej",
+          "hl": "rose"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the two answers, carried from step 3"
+        }
+      ]
+    },
+    {
+      "board": 3,
       "tokens": [
         {
           "tex": "x=-1:",
-          "id": "chk0"
+          "id": "kx"
         },
         {
-          "tex": "\\log_3(-1-8)=\\log_3(-9)",
-          "id": "chk"
+          "tex": "\\log_3(-1-8)=",
+          "id": "ksub"
+        },
+        {
+          "tex": "\\log",
+          "id": "lg"
+        },
+        {
+          "tex": "{}_{3}",
+          "id": "b3",
+          "tight": true
+        },
+        {
+          "tex": "(-9)",
+          "id": "arg",
+          "tight": true
         }
       ],
       "checks": [
@@ -260,21 +376,69 @@
       ]
     },
     {
-      "board": 1,
+      "board": 3,
       "tokens": [
         {
-          "tex": "3^{\\,?}=-9",
-          "id": "why"
+          "tex": "3",
+          "id": "b3m",
+          "hl": "amber",
+          "from": "b3"
+        },
+        {
+          "tex": "{}^{\\,?}",
+          "id": "q",
+          "tight": true
+        },
+        {
+          "tex": "=\\,-9",
+          "id": "argm",
+          "hl": "amber",
+          "from": "arg"
         }
       ],
       "checks": [
         {
-          "form": "3 to any power is positive: no power of 3 is -9, so log3(-9) does not exist"
+          "form": "log3(-9) asks: 3 to what power gives -9"
         }
       ]
     },
     {
-      "board": 1,
+      "board": 3,
+      "tokens": [
+        {
+          "tex": "3^1=3,",
+          "id": "q1"
+        },
+        {
+          "tex": "3^0=1,",
+          "id": "q0"
+        },
+        {
+          "tex": "3^{-1}=\\tfrac{1}{3},",
+          "id": "qm1"
+        },
+        {
+          "tex": "3^{-2}=\\tfrac{1}{9}",
+          "id": "qm2"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "3**1 = 3"
+        },
+        {
+          "fact": "3**0 = 1"
+        },
+        {
+          "fact": "3**(-1) = 1/3"
+        },
+        {
+          "fact": "3**(-2) = 1/9"
+        }
+      ]
+    },
+    {
+      "board": 3,
       "tokens": [
         {
           "tex": "x=9",
@@ -296,18 +460,27 @@
     "2 -> log3 9 explained AT the 2: highlight the 2; 2 = 2 log3 3 (log3 3 = 1) = log3 3^2 = log3 9, one piece per beat.",
     "Add Power with M (orange) <-> x - 8 and N (blue) <-> x lit as spoken; log3[x(x-8)] keeps the colours.",
     "Compare: light the two insides, then write x(x-8) = 9 as its own line.",
-    "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive."
+    "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive.",
+    "Adrian 16 Oct 2026 (fourth watch): the 2 FLIES up into the power; 'both sides are equal, so compare' and the insides FLY out of the logs; each board starts with the line the last one ended on; 'negative one', never 'minus one'; log3(-9): the 3 and the -9 move into 3^? = -9 as spoken, then the powers of 3 one by one."
   ],
   "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
   "boards": [
     {
-      "heading": "Solving log equations: one log each side",
+      "heading": "Step 1: one log on each side",
       "intro": null
     },
     {
-      "heading": "Solve, then check each answer",
+      "heading": "Step 2: join the logs, then compare",
+      "intro": null
+    },
+    {
+      "heading": "Step 3: solve",
+      "intro": null
+    },
+    {
+      "heading": "Step 4: check each answer",
       "intro": null
     }
   ],
-  "minutes": 2
+  "minutes": 3
 }

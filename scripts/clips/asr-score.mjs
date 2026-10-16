@@ -57,6 +57,8 @@ const SPOKEN_SYMBOLS = [
   [/\bover\b/g, ' / '], [/\bplus\b|\+/g, ' plus '], [/\bequals\b|=/g, ' equals '],
   // 16 Oct 2026: "seven to the power X" heard as "7 ^ x"; "write two" heard as "right two".
   [/\^|\bto the power( of)?\b/g, ' pow '], [/\b(write|rite)\b/g, ' right '],
+  // 'negative one' is heard as '-1' (the transcript writes the sign): both read as minus.
+  [/\bnegative\b/g, ' minus '],
 ];
 const spoken = (t) => SPOKEN_SYMBOLS.reduce((acc, [re, to]) => acc.replace(re, to), t.toLowerCase());
 const canon = (t) => numberWordsToDigits(spoken(t)).replace(/\bnought\b/g, 'not').replace(/[^a-z0-9.\/]/g, '').replace(/\.(?![0-9])/g, '');
