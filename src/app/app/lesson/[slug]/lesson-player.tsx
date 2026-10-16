@@ -456,6 +456,86 @@ function placeNotes(cont: HTMLElement, notes: HTMLElement[]) {
  * of the board fades where lines leave it. Adrian, 16 Oct 2026: "make the lines move up, like
  * scrolling up, then we don't have to change screen".
  */
+/**
+ * Look back up a scrolling board while the clip plays on (Adrian, 17 Oct 2026: "allow users to scroll
+ * up the lines using their finger … WHILE the narration and animation is still on going"). A finger
+ * drag (or the mouse wheel) moves the view; the voice and the writing never stop. A "⬇ Back to now"
+ * button shows while the view is off the writing; it, or 4 s untouched, glides the board back.
+ * A drag is never a tap: the card's tap-to-pause is swallowed after one.
+ */
+function attachBoardLook(cont: HTMLElement): () => void {
+  const board = cont.closest<HTMLElement>('.lsn-board');
+  const zoom = cont.closest<HTMLElement>('.lsn-zoom');
+  if (!board || !zoom) return () => {};
+  board.style.touchAction = 'pan-x pinch-zoom';
+  board.style.position = board.style.position || 'relative';
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.textContent = '⬇ Back to now';
+  btn.className = 'lsn-back-now';
+  btn.style.display = 'none';
+  board.appendChild(btn);
+  const GLIDE = 'translate 650ms cubic-bezier(0.45, 0, 0.3, 1)';
+  const auto = () => Number(cont.dataset.scrollAt ?? 0);
+  const view = () => (cont.dataset.viewAt ? Number(cont.dataset.viewAt) : auto());
+  let timer = 0;
+  const show = (v: number, glide: boolean) => {
+    const a = auto();
+    const at = Math.max(0, Math.min(a, v));
+    if (at >= a - 2) delete cont.dataset.viewAt; else cont.dataset.viewAt = String(at);
+    zoom.style.transition = glide ? GLIDE : 'none';
+    zoom.style.translate = `0 ${-(cont.dataset.viewAt ? at : a)}px`;
+    btn.style.display = cont.dataset.viewAt ? '' : 'none';
+  };
+  const back = () => { window.clearTimeout(timer); show(auto(), true); };
+  const arm = () => { window.clearTimeout(timer); timer = window.setTimeout(back, 4000); };
+  let startY = 0, startV = 0, down = false, moved = false;
+  const onDown = (e: PointerEvent) => {
+    if (e.button !== 0 || auto() <= 0 || (e.target as HTMLElement).closest('button')) return;
+    down = true; moved = false; startY = e.clientY; startV = view();
+  };
+  const onMove = (e: PointerEvent) => {
+    if (!down) return;
+    const dy = e.clientY - startY;
+    if (!moved && Math.abs(dy) < 8) return;
+    moved = true;
+    window.clearTimeout(timer);
+    show(startV - dy, false);
+  };
+  const swallow = (e: MouseEvent) => { e.stopPropagation(); e.preventDefault(); };
+  const onUp = () => {
+    if (!down) return;
+    down = false;
+    if (!moved) return;
+    window.addEventListener('click', swallow, { capture: true, once: true });
+    window.setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 400);
+    zoom.style.transition = GLIDE;
+    if (cont.dataset.viewAt) arm();
+  };
+  const onWheel = (e: WheelEvent) => {
+    if (auto() <= 0) return;
+    e.preventDefault();
+    show(view() + e.deltaY, false);
+    if (cont.dataset.viewAt) arm(); else zoom.style.transition = GLIDE;
+  };
+  const onBtn = (e: MouseEvent) => { e.stopPropagation(); back(); };
+  board.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+  board.addEventListener('wheel', onWheel, { passive: false });
+  btn.addEventListener('click', onBtn);
+  return () => {
+    window.clearTimeout(timer);
+    board.removeEventListener('pointerdown', onDown);
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+    board.removeEventListener('wheel', onWheel);
+    btn.remove();
+  };
+}
+
 /** Board elements a scrolling board has already seen written (so only a NEW one pulls it into view). */
 const seenOnBoard = new WeakSet<Element>();
 
@@ -523,7 +603,11 @@ function scrollClipBoard(cont: HTMLElement) {
   }
   if (fresh < offset + FADE) offset = Math.max(0, Math.floor(fresh - FADE));
   cont.dataset.scrollAt = String(offset);
-  zoom.style.translate = offset ? `0 ${-offset}px` : '0 0';
+  // A student looking back up the working with a finger (attachBoardLook) keeps their view while the
+  // writing goes on below; "Back to now" (or 4 s of no touching) returns the board to the writing.
+  const look = cont.dataset.viewAt;
+  const at = look !== undefined && look !== '' ? Math.min(Number(look), offset) : offset;
+  zoom.style.translate = at ? `0 ${-at}px` : '0 0';
   // The first placement (a fresh board, or one drawn afresh by a seek) is instant; after that it glides.
   if (!zoom.style.transition) requestAnimationFrame(() => { zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)'; });
   const fade = offset ? 'linear-gradient(to bottom, transparent 0, #000 36px)' : '';
@@ -632,6 +716,12 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     }
   }, [goneKey, clip, scene.scroll]);
   const lastSeq = useRef(0);
+  // A finger (or wheel) can look back up a scrolling board while it plays.
+  useEffect(() => {
+    const cont = containerRef.current;
+    if (!clip || !scene.scroll || !cont) return;
+    return attachBoardLook(cont);
+  }, [clip, scene.scroll]);
   // A scrolling board follows the writing: each beat may slide it up.
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
@@ -2790,6 +2880,7 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
+.lsn-back-now { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }
