@@ -136,7 +136,8 @@ for (const slug of slugs) {
         const stage = document.querySelector('.lsn-stage');
         if (!stage) return { error: 'no board' };
         const sr = stage.getBoundingClientRect();
-        const shown = Array.from(stage.querySelectorAll('.lsn-el.on'));
+        // A piece in flight is a copy (aria-hidden) over its landing spot — not an overlap.
+        const shown = Array.from(stage.querySelectorAll('.lsn-el.on')).filter(el => el.getAttribute('aria-hidden') !== 'true');
         const cut = [], small = [], overlap = [], hidden = [];
         // The fold: the top of whatever is pinned to the bottom of the screen (the tab bar).
         let fold = window.innerHeight;
