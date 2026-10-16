@@ -866,6 +866,12 @@ export async function GET(req: NextRequest) {
     }),
     // 📨 In-app Telegram linking (8 Sep 2026): the bot posts the /start token
     // here; an open or missing route means every tap "links" nothing.
+    // Telegram /login one-time links (16 Oct 2026): the bot's door must hold its gate.
+    timed('bot-login-link', async () => {
+      const r = await fetch(`${base}/api/bot/login-link`, { method: 'POST', redirect: 'manual', signal: T(10000) });
+      if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);
+      return 'auth gate up';
+    }),
     timed('telegram-link', async () => {
       const r = await fetch(`${base}/api/portal/telegram-link`, { method: 'POST', redirect: 'manual', signal: T(10000) });
       if (r.status !== 401) throw new Error(`expected 401 (auth gate), got HTTP ${r.status}`);

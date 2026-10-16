@@ -15,7 +15,7 @@ const input = 'w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm fo
 const btn = 'bg-navy text-[hsl(45,100%,96%)] rounded-xl px-4 py-2 text-sm font-semibold hover:opacity-90 transition-opacity disabled:opacity-50';
 
 export default function SettingsClient({
-  email, displayName, level, telegramChatId, telegramLinked, tuition = false, showSuggestions = false, privacyTag = null,
+  email, displayName, level, telegramChatId, telegramLinked, tuition = false, showSuggestions = false, privacyTag = null, fromLoginLink = false,
 }: {
   email: string; displayName: string; level: string; telegramChatId: string; telegramLinked: boolean;
   /** A tuition student (linked to Adrian's roster) — sees the "When your lessons end" note. */
@@ -24,6 +24,8 @@ export default function SettingsClient({
   showSuggestions?: boolean;
   /** "Updated October 2026" beside the Privacy row for a month after /privacy changes; null = no tag. */
   privacyTag?: string | null;
+  /** Arrived through a Telegram /login link — say so above the password box (16 Oct 2026). */
+  fromLoginLink?: boolean;
 }) {
   const router = useRouter();
   const [pw, setPw] = useState({ next: '', confirm: '', msg: '', busy: false });
@@ -111,6 +113,11 @@ export default function SettingsClient({
 
       <div className={card}>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">Change password</p>
+        {fromLoginLink && (
+          <p className="text-sm text-green-800 bg-green-50 rounded-xl px-3 py-2 mb-2.5">
+            ✓ You&apos;re logged in. Choose a new password below, so you can log in with it next time.
+          </p>
+        )}
         <form onSubmit={changePassword} className="space-y-2.5">
           <input type="password" autoComplete="new-password" placeholder="New password (min 8 characters)"
             value={pw.next} onChange={e => setPw(s => ({ ...s, next: e.target.value }))} className={input} />

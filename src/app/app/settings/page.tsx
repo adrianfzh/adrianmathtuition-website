@@ -9,7 +9,8 @@ import { sgtTodayISO } from '@/lib/sgt';
 
 export const dynamic = 'force-dynamic';
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ from?: string }> }) {
+  const { from } = await searchParams;
   const account = await currentAccount();
   const [tg, suggest] = await Promise.all([ensureTelegramLinked(account), suggestionsOpen().catch(() => false)]);
   return (
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
       tuition={Boolean(account.airtable_student_id?.trim())}
       showSuggestions={suggest}
       privacyTag={privacyUpdatedTag(sgtTodayISO())}
+      fromLoginLink={from === 'login-link'}
     />
   );
 }
