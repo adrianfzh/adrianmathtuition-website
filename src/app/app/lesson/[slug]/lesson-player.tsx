@@ -392,7 +392,7 @@ function placeClipNotes(cont: HTMLElement) {
   // token(s) it explains; the words stay on ONE line — beside the ↑ when they fit, else on the line
   // under it, centred on the ↑ and kept inside the board, shrunk (never under 62 %) if still too long.
   for (const el of Array.from(cont.querySelectorAll<HTMLElement>('.lsn-note-up[data-point-at]'))) {
-    const row = el.parentElement;
+    const row = el.closest<HTMLElement>('.lsn-note-row');   // (a note sits in a display: contents wrapper)
     const toks = (el.dataset.pointAt ?? '').split(' ').map(k => cont.querySelector<HTMLElement>(`[data-key="${k}"]`)).filter((t): t is HTMLElement => !!t);
     const arrow = el.querySelector<HTMLElement>('.lsn-note-arrow');
     const text = el.querySelector<HTMLElement>('.lsn-note-text');
