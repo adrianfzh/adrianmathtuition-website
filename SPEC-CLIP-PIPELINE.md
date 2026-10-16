@@ -368,6 +368,21 @@ room without new words — the worker re-made it under the new rules, ready in 1
 show 0 findings. One picture read flagged a raised "ʳ" drawn as a tick in a note (a second read
 passed it); writers are now told to avoid ʳ ⁿ ᵏ in notes.
 
+### Re-voice in the current voice (16 Oct 2026)
+
+Adrian picked a new clip voice on 16 Oct 2026 ("can the voice be more upbeat?" … "use voice C":
+MiniMax `English_FriendlyPerson`, emotion happy, speed 1.1 — the defaults of
+`generate-narration.mjs`). New clips get it automatically. Finished clips are re-voiced with
+`node scripts/clips/revoice.mjs <qc-slug | questionId>`: words and board guarded unchanged, every line
+re-recorded, timing redone, the speech round trip (a low line → recorded again once), the files under
+a NEW folder (`question-clips/<id>/v<time>/`, so a phone never mixes cached old and new), then the
+phone look again (every board move on its word). No writing model; ≈ 2½ min and ≈ US$0.09 a clip.
+Fail → the stored clip keeps the old voice. **Result (16 Oct 2026): 13 of 15 ready clips re-voiced**
+(speech round trip ≥ 85 % on every line, every board move on its word). The other 2 were re-made
+by the worker instead: qc-225d1e85 (the new subtitle strip covered part of a working line — a
+layout clash with the new player, not a voice fault) and qc-b3002e82 (made by a test run whose
+working files were not kept, so there was nothing local to re-voice from).
+
 ### Not done / next
 
 - **Adrian watches** — the first 20 question clips, 👍 / 👎 on each (§4); the switch stays off.
