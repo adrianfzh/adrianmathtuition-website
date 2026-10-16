@@ -486,6 +486,11 @@ function attachBoardLook(cont: HTMLElement): () => void {
     zoom.style.transition = glide ? GLIDE : 'none';
     zoom.style.translate = `0 ${-(cont.dataset.viewAt ? at : a)}px`;
     btn.style.display = cont.dataset.viewAt ? '' : 'none';
+    // Low on the board, just above the subtitle strip (Adrian: "the back to now can be placed lower").
+    const subs = board.closest('.lsn-stage')?.querySelector<HTMLElement>('.lsn-subs');
+    const sr = subs?.getBoundingClientRect();
+    const br = board.getBoundingClientRect();
+    btn.style.bottom = `${Math.max(8, sr && sr.height ? br.bottom - sr.top + 6 : 12)}px`;
   };
   const back = () => { window.clearTimeout(timer); show(auto(), true); };
   const arm = () => { window.clearTimeout(timer); timer = window.setTimeout(back, 4000); };
@@ -2191,12 +2196,32 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const [seekEpoch, setSeekEpoch] = useState(0);
   const scrubRef = useRef<HTMLInputElement>(null);
   const scrubDrag = useRef(false);
+  const scrubLabel = useRef<HTMLSpanElement>(null);
   // The side clip open in the popup (null = none). The main clip pauses under it and goes on after.
   const [side, setSide] = useState<string | null>(null);
   const openSide = (s: string) => { setPaused(true); setSide(s); };
   const closeSide = useCallback(() => { setSide(null); setPaused(false); }, []);
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
+  // ⏪ 10 / 10 ⏩: about ten seconds of voice back or forward, landing at the start of that part. A
+  // part's length is its words at a steady speaking pace (the voice clips load only as they play).
+  const partSecs = useMemo(() => stops.map(([si, k]) => {
+    const sc = scenes[si];
+    const say = hasBeats(sc) ? (sc.beats[k]?.say ?? '') : '';
+    return Math.max(1.5, say.split(/\s+/).filter(Boolean).length / 2.6 + 0.5) / rate;
+  }), [stops, scenes, rate]);
+  const jumpSeconds = (d: number): number => {
+    const at = done ? stops.length - 1 : stopAt;
+    const c = narration.clock();
+    const f = c && c.duration ? Math.min(1, c.elapsed / c.duration) : 0;
+    let t = partSecs.slice(0, at).reduce((a, b) => a + b, 0) + f * (partSecs[at] ?? 0) + d;
+    if (t <= 0) return 0;
+    for (let i = 0; i < partSecs.length; i++) {
+      if (t < partSecs[i]) return d > 0 && i <= at ? at + 1 : i;
+      t -= partSecs[i];
+    }
+    return partSecs.length - 1;
+  };
   // scrubTick: the slider's thumb glides through the part being spoken (its share of the voice
   // played), straight from the audio clock each frame — no re-render; a drag in progress wins.
   const { clock: narrationClock } = narration;
@@ -2654,27 +2679,56 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         const at = done ? stops.length - 1 : stopAt;
         const n = stops.length;
         // A video's bar (Adrian, 17 Oct 2026: "when moving the scroll bar … able to make it smooth? like
-        // youtube"): the thumb glides through each part with the voice (scrubTick below), and a drag
-        // follows the finger, landing on the part under it.
+        // youtube"): the thumb glides through each part with the voice (scrubTick), a touch ANYWHERE on
+        // the bar brings the thumb to the finger at once and it follows the drag; the clip goes to that
+        // part when the finger lifts ("I want the slider to come to the finger immediately"). ⏪ 10 / 10 ⏩
+        // jump about ten seconds of voice.
+        const valueAt = (x: number) => {
+          const el = scrubRef.current;
+          if (!el) return 0;
+          const r = el.getBoundingClientRect();
+          return Math.max(0, Math.min(n, ((x - r.left) / Math.max(1, r.width)) * n));
+        };
+        const paint = (v: number) => {
+          const el = scrubRef.current;
+          if (!el) return;
+          el.value = String(v);
+          el.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
+          if (scrubLabel.current) scrubLabel.current.textContent = `${Math.min(n, Math.floor(v) + 1)}/${n}`;
+        };
+        const seekTo = (to: number) => {
+          to = Math.min(n - 1, Math.max(0, to));
+          if (to === at && !done) return;
+          const [si, k] = stops[to] ?? stops[0];
+          if (to < at) setSeekEpoch(x => x + 1);
+          setDone(false); setSceneIdx(si); setStep(k);
+        };
         return (
-          <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-2">
-            <input ref={scrubRef} type="range" min={0} max={Math.max(1, n)} step="any" defaultValue={at}
-              aria-label="Go to a part of the clip"
-              onPointerDown={() => { scrubDrag.current = true; }}
-              onPointerUp={() => { scrubDrag.current = false; }}
-              onPointerCancel={() => { scrubDrag.current = false; }}
-              onBlur={() => { scrubDrag.current = false; }}
-              onChange={e => {
-                const v = Number(e.target.value);
-                e.target.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
-                const to = Math.min(n - 1, Math.max(0, Math.floor(v)));
-                if (to === at && !done) return;
-                const [si, k] = stops[to] ?? stops[0];
-                if (to < at) setSeekEpoch(x => x + 1);
-                setDone(false); setSceneIdx(si); setStep(k);
+          <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-1.5">
+            <button type="button" onClick={() => seekTo(jumpSeconds(-10))} aria-label="Back 10 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">⏪ 10</button>
+            <div className="relative flex-1 flex items-center touch-none"
+              onPointerDown={e => {
+                if (e.button !== 0) return;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                scrubDrag.current = true;
+                paint(valueAt(e.clientX));
               }}
-              className="lsn-scrub-range flex-1" />
-            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{n}</span>
+              onPointerMove={e => { if (scrubDrag.current) paint(valueAt(e.clientX)); }}
+              onPointerUp={e => {
+                if (!scrubDrag.current) return;
+                scrubDrag.current = false;
+                seekTo(Math.floor(valueAt(e.clientX)));
+              }}
+              onPointerCancel={() => { scrubDrag.current = false; }}>
+              <input ref={scrubRef} type="range" min={0} max={Math.max(1, n)} step="any" defaultValue={at}
+                aria-label="Go to a part of the clip"
+                onChange={e => { paint(Number(e.target.value)); seekTo(Math.floor(Number(e.target.value))); }}
+                className="lsn-scrub-range flex-1 pointer-events-none" />
+            </div>
+            <button type="button" onClick={() => seekTo(jumpSeconds(10))} aria-label="Forward 10 seconds"
+              className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">10 ⏩</button>
+            <span ref={scrubLabel} className="text-[11px] tabular-nums text-slate-400 w-9 text-right">{at + 1}/{n}</span>
           </div>
         );
       })()}
@@ -2880,7 +2934,7 @@ const PLAYER_CSS = `
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
-.lsn-back-now { position: absolute; right: 10px; bottom: 70px; z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
+.lsn-back-now { position: absolute; right: 10px; bottom: 12px; z-index: 30; border-radius: 999px; padding: 6px 14px; font: 600 13px/1.2 ui-sans-serif, system-ui, sans-serif; color: hsl(220, 60%, 20%); background: hsl(45, 100%, 92%); box-shadow: 0 4px 14px -4px rgba(0,0,0,0.45); }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }
