@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject } from './front-page-html';
-import { changedPartCount, ungroundedFrontPage, lostPartsFromRun } from './front-page-build';
+import { frontPageHtml, paperBar, chooseThemes, kindsScore, type FrontPageInput, oLevelGrade, ungroundedLine, coverSubject, outOfSyllabusLine } from './front-page-html';
+import { changedPartCount, ungroundedFrontPage, lostPartsFromRun, outOfSyllabusFrontPage } from './front-page-build';
 import type { Theme } from './paper-analysis';
 
 const theme = (over: Partial<Theme> = {}): Theme => ({
@@ -698,5 +698,30 @@ describe('the whole-paper bar, zoomed into the lost marks', () => {
     const h = frontPageHtml({ ...base, awarded: 95, max: 90 });
     expect(h).toContain('The questions that cost you most.');
     expect(h).not.toContain('class="pbar"');
+  });
+});
+
+// 📚 Questions no longer in the syllabus (Adrian, 17 Oct 2026, a GCE A Math 2020 P1: Q1 and Q5
+// left out, out of 71 instead of 80) — the cover says so, plainly and in a box.
+describe('the cover names questions left out for the syllabus', () => {
+  const rj = {
+    out_of_syllabus: [{ q: '5', marks: 4, attempted: false }, { q: '1', marks: 5, attempted: false }],
+    totals: { awarded: 70, max: 71, counted_max: 71, max_source: 'cover', paper_max: 80, out_of_syllabus_marks: 9 },
+  };
+
+  it('reads the list and the paper\'s own total off result_json', () => {
+    expect(outOfSyllabusFrontPage(rj)).toEqual({ questions: ['1', '5'], marks: 9, paperMax: 80 });
+    expect(outOfSyllabusFrontPage({ totals: { max: 80 } })).toBeNull();
+    expect(outOfSyllabusFrontPage(null)).toBeNull();
+  });
+
+  it('one boxed line: which questions, why, and the new total', () => {
+    const line = outOfSyllabusLine({ max: 71, outOfSyllabus: outOfSyllabusFrontPage(rj) });
+    expect(line).toContain('<b>Not counted: Q1 and Q5</b>');
+    expect(line).toContain('no longer in the syllabus');
+    expect(line).toContain('out of <b>71</b> instead of 80');
+    expect(line).not.toMatch(/Adrian|Claude|Opus|Sonnet|AI/);
+    expect(outOfSyllabusLine({ max: 71, outOfSyllabus: { questions: ['3'], marks: 4, paperMax: null } })).toContain('Not counted: Q3</b> — it is no longer');
+    expect(outOfSyllabusLine({ max: 80, outOfSyllabus: null })).toBe('');
   });
 });

@@ -561,6 +561,29 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   report had "QA1" beside "Q9", and the audit could not match "A1" to the bank's "1".
   **Rule for every subject: a paper's total comes from the paper (cover, code, bank), never from
   adding up what the photos happened to show.**
+- **📚 Questions no longer in the syllabus leave a handed-in paper's total (17 Oct 2026, built).**
+  Adrian, on a GCE A Math 2020 P1 where Q1 (sum/product of roots, 5) and Q5 (|7 − 2x|, 4) came back
+  0/5 and 0/4 "not attempted": *"for questions not in the latest syllabus anymore (we can remove the
+  marks from the total and mark only based on the marks that are in syllabus, then put on cover page
+  to tell students that > make it obvious)"*. Bot `lib/out-of-syllabus.js`. **Only when the bank
+  recognised the paper** (its rows were vouched by the student's pages or the paper library — the
+  bank allocation, the bank grounding, the science GCE whole paper, or the science school paper):
+  a question whose bank row is `legacy_syllabus` (maths) / `not_in_syllabus` (science) is taken
+  OFF the results before anything counts (`ai/marker-assemble groundStep`) — not marked down when
+  blank, no marks either way when attempted; its red-pen ink on the page stays. The paper's total
+  (override, cover, recognised, bank or registry) drops by its marks (`ai/paper-totals
+  groundPaperTotals`, `outOfSyllabus`) → **70 / 71 instead of 70 / 80** on that paper. It is not a
+  "not attempted" question, and the allocation audit never adds it back (`applyAllocationAudit(…,
+  { outOfSyllabus })`). `result_json.out_of_syllabus = [{ q, marks, attempted }]`, the rows taken
+  off on `out_of_syllabus_results`, and `totals.paper_max` / `totals.out_of_syllabus_marks`. The
+  queue Telegram adds "📚 Q1 and Q5 are no longer in the syllabus: not counted (9 marks) — out of 71
+  instead of 80." **The cover** (`front-page-build outOfSyllabusFrontPage` → `front-page-html
+  outOfSyllabusLine`) prints a red-ruled box under the heading: "**Not counted: Q1 and Q5** — they
+  are no longer in the syllabus, so they are left out of your score. This paper is out of **71**
+  instead of 80." EITHER/OR: out only when every alternative is. A returned Practice Again sheet is
+  never cut. **Not covered yet:** a single PART marked out of syllabus inside `parts`; a paper whose
+  allocation is Adrian's APPROVED split (the bank is not asked then); papers already released
+  (nothing was re-marked — a 🔁 Re-mark applies it).
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
   wrong most of the time on Adrian's compiled sets — a skipped-blank question never enters
@@ -2383,6 +2406,18 @@ Anything outside the eight (older runs' free-text `error_type` like `ratio_inver
   — plus one encouraging sub-line for the careless bucket. **Hidden when nothing is labelled**, and the row
   carries its own styles, so an unlabelled run renders byte-identical (test pins it). Student words on the page
   (`ERROR_KIND_LABEL`: transfer → "copied wrongly"); the codes stay the codes everywhere else.
+- **Clearer words beside a ✗ (17 Oct 2026, Adrian on three papers).** Like "show working", the CODE never
+  changes (cover buckets and Notebook do not move); only the page's words do — bot `lib/error-kinds.js
+  kindLabel` / `penLabelFromText`, `lib/pen-labels.js lineKindLabel`:
+  **"missing reason"** for `incomplete`/`concept` when what is missing is a reason (the fix is a bracketed
+  geometry reason "(base ∠s, isos △)", or the correction says "add the reason" / "say why" / "justify" —
+  E Math 2020 P1 Q21, "so 1 is the minimum"); **"read the graph wrongly"** for `misread` when a value was
+  read off a graph, chart, box plot, table or diagram (1.86 for 1.859 at the peak; a box-plot quartile 36
+  for 32) — a correction about what the QUESTION asks keeps "misread question"; **"missed a case"** for
+  `concept`/`incomplete` when one item the student knows was left out (the cubes 8, 27 without 1 = 1³).
+  The marker flags it on the wrong line as `"pen_label": "missing_reason" | "graph_read" | "missed_case"`
+  (ai/paper-marker CLEARER WORDS BESIDE THE ✗); runs without the flag fall back to the correction's
+  words, conservatively. Tests: bot `test/pen-label-clearer.test.js`.
 - **The truth channel:** Override on the desk / triage has an optional "kind of error" select (never pre-filled
   from the marker's own label). The route validates it (`isErrorKind`, 400 otherwise) and stores
   `triage_override.error_kind` beside `awarded/previous/note/at` — the latest edit is the whole record, like

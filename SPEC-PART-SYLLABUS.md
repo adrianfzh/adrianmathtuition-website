@@ -27,6 +27,11 @@ without removed content**.
   `~/dev/adrianmathtuition-website/.scratch_shot/bank-cleanup-2026-10-09/plan-step7.json` and
   `held81/verdicts.json`.
 
+**Built (17 Oct 2026):** on a handed-in paper the bank recognises, a whole question flagged old
+syllabus is taken out of the total and named on the cover ("Not counted: Q1 and Q5 — they are no
+longer in the syllabus … out of 71 instead of 80"). Not yet: one out-of-syllabus PART inside a
+question; a paper marked to Adrian's approved split. `docs/MARKING.md` §📚.
+
 **The order he said yes to:**
 
 1. Re-lettering + the two fixes, six pictures for him. *(done — waiting for his look)*
@@ -227,7 +232,9 @@ It still never decides. But a mark can no longer be saved, or served, with one u
   (or part) flagged `legacy_syllabus` / out of syllabus is **taken out of the total** (out of 80 −
   5 − 4 = 71 there), is not marked down when blank, and the **cover page says so plainly** —
   which questions, and that they are no longer examined. An attempt at one may still get its
-  red-pen notes, but no marks either way. **Not built yet** (bot: paper totals + the cover).
+  red-pen notes, but no marks either way. **Built 17 Oct 2026 for whole questions** (bot
+  `lib/out-of-syllabus.js`, the cover's "Not counted" box — `docs/MARKING.md` §📚). A single
+  out-of-syllabus PART inside a question is not taken out yet.
 - Rows with no `parts` list (the parts live only inside `question_text`) cannot be marked.
   `applyPartMark` refuses with a plain message; mark the whole question instead.
 

@@ -113,6 +113,14 @@ export type FrontPageInput = {
    */
   ungrounded?: { countedMax: number } | null;
   /**
+   * 📚 QUESTIONS NO LONGER IN THE SYLLABUS (Adrian, 17 Oct 2026: "remove the marks from the
+   * total and mark only based on the marks that are in syllabus, then put on cover page to tell
+   * students that > make it obvious"). The bot took them off the results and the total
+   * (lib/out-of-syllabus.js); one boxed line under the heading names them. Absent → the cover
+   * is byte-identical to before. front-page-build `outOfSyllabusFrontPage`.
+   */
+  outOfSyllabus?: { questions: string[]; marks: number; paperMax: number | null } | null;
+  /**
    * The paper's subject (`paper_marking_runs.paper_subject`: 'A Math' | 'E Math' |
    * 'H2 Math' | 'Physics' | 'Chemistry' | 'Biology' | 'Other'), 25 Sep 2026 —
    * Adrian: colour-code the cover "so it's easily recognizable". A FRAME, not a
@@ -460,6 +468,29 @@ export function ungroundedLine(input: Pick<FrontPageInput, 'awarded' | 'unground
     + `The official total will be confirmed once the paper is in.</p>`;
 }
 
+/** "Q1", "Q1 and Q5", "Q1, Q5 and Q9". Pure. */
+export function questionList(qs: string[]): string {
+  const list = qs.map(q => `Q${q}`);
+  return list.length <= 1 ? list.join('') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`;
+}
+
+/**
+ * The one line that says which questions were left out of the total because they are no longer
+ * in the syllabus. Written to the STUDENT: which questions, why, and what the paper is now out of.
+ * Boxed so it cannot be missed. Pure; '' when there are none.
+ */
+export function outOfSyllabusLine(input: Pick<FrontPageInput, 'max' | 'outOfSyllabus'>): string {
+  const o = input.outOfSyllabus;
+  if (!o || !Array.isArray(o.questions) || !o.questions.length) return '';
+  const one = o.questions.length === 1;
+  const total = o.paperMax && o.paperMax > input.max
+    ? ` This paper is out of <b>${input.max}</b> instead of ${o.paperMax}.` : '';
+  return `<style>.oos-line{margin:-.15rem 0 .7rem;font-size:.88rem;color:var(--ink);background:var(--rail);
+border:1.5px solid var(--verdict);border-left:5px solid var(--verdict);padding:.45rem .7rem}
+.oos-line b{font-weight:700}</style>`
+    + `<p class="oos-line"><b>Not counted: ${esc(questionList(o.questions))}</b> — ${one ? 'it is' : 'they are'} no longer in the syllabus, so ${one ? 'it is' : 'they are'} left out of your score.${total}</p>`;
+}
+
 /**
  * The score the MARKS LOST row reasons about. Normally the paper's own total.
  * On a paper marked without the question paper it is what the marker could see,
@@ -647,7 +678,7 @@ h2::before{content:none}
   ${badge(input)}
   <div>
     <p class="student">${esc(input.studentName || '')}</p>
-    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}${ungroundedLine(input)}
+    <h1>Where your marks went${remarkBadge(input.remarked)}</h1>${remarkLine(input.remarked)}${ungroundedLine(input)}${outOfSyllabusLine(input)}
     <p class="verdict">${lead}</p>
   </div>
 </div>

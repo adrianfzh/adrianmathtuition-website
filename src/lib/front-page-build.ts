@@ -96,10 +96,13 @@ export async function buildFrontPage(
   // not the paper's. `ungroundedFrontPage` reads the run's own record of that
   // (grounding.source + totals) and the page then shows what was actually seen.
   const ungrounded = ungroundedFrontPage(run.result_json);
+  // 📚 Questions no longer in the syllabus, left out of the total (17 Oct 2026).
+  const outOfSyllabus = outOfSyllabusFrontPage(run.result_json);
 
   return renderFrontPagePng({
     remarked,
     ungrounded,
+    outOfSyllabus,
     errorKinds,
     remark,
     studentName: meta.studentName || run.student_name,
@@ -185,6 +188,25 @@ export function ungroundedFrontPage(resultJson: unknown): { countedMax: number }
     max: Number(t.max),
   });
   return ok ? { countedMax } : null;
+}
+
+/**
+ * The cover's `outOfSyllabus` input, read off a run's `result_json` (the bot's
+ * lib/out-of-syllabus.js writes `out_of_syllabus: [{ q, marks, attempted }]` and
+ * `totals.paper_max`), or null. Pure.
+ */
+export function outOfSyllabusFrontPage(resultJson: unknown): { questions: string[]; marks: number; paperMax: number | null } | null {
+  const rj = (resultJson && typeof resultJson === 'object' ? resultJson : {}) as {
+    out_of_syllabus?: unknown; totals?: { paper_max?: unknown } | null;
+  };
+  const list = Array.isArray(rj.out_of_syllabus) ? rj.out_of_syllabus as Array<{ q?: unknown; marks?: unknown }> : [];
+  const items = list
+    .map(x => ({ q: String(x?.q ?? '').trim(), marks: Number(x?.marks) || 0 }))
+    .filter(x => /^\d+$/.test(x.q) && x.marks > 0)
+    .sort((a, b) => Number(a.q) - Number(b.q));
+  if (!items.length) return null;
+  const paperMax = Number(rj.totals?.paper_max);
+  return { questions: items.map(x => x.q), marks: items.reduce((s, x) => s + x.marks, 0), paperMax: paperMax > 0 ? paperMax : null };
 }
 
 /**
