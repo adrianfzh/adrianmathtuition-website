@@ -53,7 +53,7 @@
     },
     {
      "do": "note",
-     "text": "Add Power: $\\log_a \\textcolor{#ffb86b}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ffb86b}{x}\\textcolor{#a8ecfb}{y}$",
+     "text": "Add Power: $\\log_a \\textcolor{#ff9a3c}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ff9a3c}{x}\\textcolor{#a8ecfb}{y}$",
      "near": "a",
      "span": [
       "a",
@@ -140,7 +140,7 @@
     },
     {
      "do": "note",
-     "text": "Minus Power: $\\log_a \\textcolor{#ffb86b}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ffb86b}{x}}{\\textcolor{#a8ecfb}{y}}$",
+     "text": "Minus Power: $\\log_a \\textcolor{#ff9a3c}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ff9a3c}{x}}{\\textcolor{#a8ecfb}{y}}$",
      "near": "l30",
      "span": [
       "l30",

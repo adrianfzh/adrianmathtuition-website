@@ -61,7 +61,7 @@
           "tex": "="
         },
         {
-          "tex": "\\log_3(\\textcolor{#ffb86b}{5}\\times \\textcolor{#a8ecfb}{6})",
+          "tex": "\\log_3(\\textcolor{#ff9a3c}{5}\\times \\textcolor{#a8ecfb}{6})",
           "id": "p56"
         },
         {
@@ -109,7 +109,7 @@
           "tex": "="
         },
         {
-          "tex": "\\log_3 \\tfrac{\\textcolor{#ffb86b}{30}}{\\textcolor{#a8ecfb}{10}}",
+          "tex": "\\log_3 \\tfrac{\\textcolor{#ff9a3c}{30}}{\\textcolor{#a8ecfb}{10}}",
           "id": "q"
         }
       ],

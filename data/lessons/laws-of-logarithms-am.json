@@ -24,7 +24,7 @@
         {
           "tokens": [
             { "tex": "=" },
-            { "tex": "\\log_3(\\textcolor{#ffb86b}{5}\\times \\textcolor{#a8ecfb}{6})", "id": "p56" },
+            { "tex": "\\log_3(\\textcolor{#ff9a3c}{5}\\times \\textcolor{#a8ecfb}{6})", "id": "p56" },
             { "tex": "-\\,\\log_3 10", "id": "c1" }
           ]
         },
@@ -40,7 +40,7 @@
         {
           "tokens": [
             { "tex": "=" },
-            { "tex": "\\log_3 \\tfrac{\\textcolor{#ffb86b}{30}}{\\textcolor{#a8ecfb}{10}}", "id": "q" }
+            { "tex": "\\log_3 \\tfrac{\\textcolor{#ff9a3c}{30}}{\\textcolor{#a8ecfb}{10}}", "id": "q" }
           ]
         },
         {
@@ -82,7 +82,7 @@
             { "do": "highlight", "token": ["a", "n5", "b", "n6"], "on": "Plus means multiply" },
             {
               "do": "note",
-              "text": "Add Power: $\\log_a \\textcolor{#ffb86b}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ffb86b}{x}\\textcolor{#a8ecfb}{y}$",
+              "text": "Add Power: $\\log_a \\textcolor{#ff9a3c}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ff9a3c}{x}\\textcolor{#a8ecfb}{y}$",
               "near": "a",
               "span": ["a", "n6"],
               "on": "This is Add Power"
@@ -133,7 +133,7 @@
             { "do": "highlight", "token": ["l30", "n30", "m", "n10"], "on": "Minus means divide" },
             {
               "do": "note",
-              "text": "Minus Power: $\\log_a \\textcolor{#ffb86b}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ffb86b}{x}}{\\textcolor{#a8ecfb}{y}}$",
+              "text": "Minus Power: $\\log_a \\textcolor{#ff9a3c}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ff9a3c}{x}}{\\textcolor{#a8ecfb}{y}}$",
               "near": "l30",
               "span": ["l30", "n10"],
               "on": "This is Minus Power"
