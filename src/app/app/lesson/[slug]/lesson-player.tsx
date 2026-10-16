@@ -486,9 +486,16 @@ function scrollClipBoard(cont: HTMLElement) {
   const subs = stage.querySelector<HTMLElement>('.lsn-subs');
   const keepClear = (subs?.offsetHeight ?? 0) + 18;
   const room = boardEl.clientHeight - zoom.offsetTop - keepClear;
-  const offset = Math.max(0, Math.ceil(low - room));
-  zoom.style.transition = 'translate 650ms cubic-bezier(0.4, 0, 0.2, 1)';
-  zoom.style.translate = offset ? `0 ${-offset}px` : '';
+  let offset = Math.max(0, Math.ceil(low - room));
+  // Like someone scrolling: in play the board only ever moves UP (notes leaving a line never pull it
+  // back down — Adrian, 16 Oct 2026: "should see the scroll instead of a jump"); stepping back
+  // (← or the slider) lets it come back down.
+  const was = Number(cont.dataset.scrollAt ?? 0);
+  if (offset < was && cont.dataset.scrollBack !== '1') offset = was;
+  delete cont.dataset.scrollBack;
+  cont.dataset.scrollAt = String(offset);
+  if (!zoom.style.transition) zoom.style.transition = 'translate 1100ms cubic-bezier(0.45, 0, 0.3, 1)';
+  zoom.style.translate = offset ? `0 ${-offset}px` : '0 0';
   const fade = offset ? 'linear-gradient(to bottom, transparent 0, #000 36px)' : '';
   boardEl.style.maskImage = fade;
   boardEl.style.setProperty('-webkit-mask-image', fade);
@@ -563,10 +570,14 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
       placeClipNotes(cont);
     }
   }, [goneKey, clip, scene.scroll]);
+  const lastSeq = useRef(0);
   // A scrolling board follows the writing: each beat may slide it up.
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
     if (!clip || !scene.scroll || !cont || !board) return;
+    // Stepped back: the board may scroll back down to where that part was.
+    if (board.seq < lastSeq.current) cont.dataset.scrollBack = '1';
+    lastSeq.current = board.seq;
     // After this commit's flights have started (their effect runs later in the commit), so a slide
     // can see a piece in the air and wait for it.
     const raf = requestAnimationFrame(() => scrollClipBoard(cont));

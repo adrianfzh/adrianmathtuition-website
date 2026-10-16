@@ -152,7 +152,7 @@ for (const slug of slugs) {
         // above the board's fade line is scrolled away, not cut off.
         const boardEl = stage.querySelector('.lsn-board');
         const zoomEl = stage.querySelector('.lsn-zoom');
-        const slid = zoomEl && zoomEl.style.translate && zoomEl.style.translate !== '0px';
+        const slid = zoomEl && Math.abs(parseFloat((zoomEl.style.translate || '0 0').split(' ')[1] || '0')) > 0.5;
         const scrollTop = slid && boardEl ? boardEl.getBoundingClientRect().top + 36 : -Infinity;
         for (const el of shown) {
           const r = el.getBoundingClientRect();
