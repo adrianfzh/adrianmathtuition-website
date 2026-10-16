@@ -313,6 +313,7 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
   const pen = usePen(penRef);
   const writerRef = useWriter(zoomRef, inkRef, tipRef, writing && board !== null, paused);
   const onRef = useRef<Set<string>>(new Set());        // keys animated as shown
+  const mountedRef = useRef(false);                      // the first diff of this board has run
   const pulseRef = useRef(0);                            // pulses handled
   const marksDrawn = useRef<Map<number, SVGPathElement>>(new Map());
   const labelsDrawn = useRef<Map<number, SVGGElement>>(new Map());
@@ -373,8 +374,13 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     if (!zoom || !board) return;
     const r = rateRef.current;
 
-    // 1. Newly shown elements: written ones draw on (in DOM order, one pen).
+    // 1. Newly shown elements: written ones draw on (in DOM order, one pen). A board drawn afresh
+    // mid-clip (a seek back, or opening at a part) shows what earlier parts wrote already written —
+    // the hand writes only what this part adds.
     const now = performance.now();
+    // (Only mid-clip: a board opened at its first part writes everything as usual.)
+    const fresh = !mountedRef.current && (zoom.closest<HTMLElement>('[data-step]')?.dataset.step ?? '0') !== '0';
+    mountedRef.current = true;
     const onNow = Array.from(zoom.querySelectorAll<HTMLElement>('[data-key].lsn-el.on'));
     const nextOn = new Set(onNow.map(el => el.dataset.key as string));
     // ONE THING MOVES AT A TIME: the queue carries over from the last commit,
@@ -401,8 +407,8 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
         const lines = Math.max(1, Math.round(rect.height / lh));
         if (plainTextOf(el).trim()) {
           const dur = scaleBeat(isProse ? wipeMs(lines) : sweepMs(rect.width), r);
-          writer.animate(el, dur, delay);          // claims it NOW, so no frame of bare text
-          cursor = now + delay + dur + 60;
+          writer.animate(el, dur, fresh ? 0 : delay, fresh);   // claims it NOW, so no frame of bare text
+          if (!fresh) cursor = now + delay + dur + 60;
         } else {
           el.classList.remove('lsn-dust');
           void el.offsetWidth;                      // restart the keyframe

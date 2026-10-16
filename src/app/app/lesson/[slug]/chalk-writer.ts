@@ -279,11 +279,12 @@ export class ChalkWriter {
    * its own glyphs go transparent before the next paint and there is never a
    * frame of bare text; the hand then starts after `delayMs`.
    */
-  animate(el: HTMLElement, durMs: number, delayMs = 0): void {
+  animate(el: HTMLElement, durMs: number, delayMs = 0, instant = false): void {
     const u = this.claim(el, 'timed');
     if (!u) return;
     u.durMs = Math.max(120, durMs);
-    u.elapsedMs = -Math.max(0, delayMs);
+    // `instant`: already written (a board drawn afresh mid-clip) — whole on the next frame, paused or not.
+    u.elapsedMs = instant ? u.durMs : -Math.max(0, delayMs);
     u.done = false;
   }
 
