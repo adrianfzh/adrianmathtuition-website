@@ -1,81 +1,57 @@
 {
  "slug": "solving-exponential-equations-am",
- "pick": "W1",
- "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
- "scores": {
-  "clear": 5,
-  "one_idea": 4,
-  "voice_board": 5,
-  "why": 5,
-  "trap": 5,
-  "level": 5
- },
+ "pick": "R1",
+ "why": "Only draft (R1, rebuilt 17 Oct 2026 to the house rules); scored as fixed.",
+ "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 4, "trap": 5, "level": 5 },
  "notes": [
-  "Working flows lg both sides → bring powers down → expand → collect → factorise → calculator with no stop; x ≈ −8.57 boxed in beat 8; beat 9 opens 'Watch out:', circles the answer line, red ✗ note.",
-  "Beat 2 lit both powers with no cue; now on 'Seven and five'. Beat 3's law note had no cue (appeared before the voice); now on 'Bring down the powers'.",
-  "Beat 9 never said the wrong answer itself ('the calculator shows minus eight point five six six five four') while the ✗ note shows x ≈ 8.57. Fixed: 'Watch out: do not write X is about eight point five seven. Rounding never removes a minus.' — circle first, then the ✗ note on the wrong value.",
-  "The plan is said in beat 2 but not written under the question as a note; left as is (the next line, lg both sides, appears in the same beat)."
+  "Beat 1 read the question without 'giving your answer to 3 significant figures' — the condition that the trap at the end depends on. Fixed: '…, to three significant figures.'",
+  "Beats 5–7 moved both powers down and only THEN said the law ('This law is Bring down power …'), so the rule came after the step it explains. House rules §2: highlight, then the law under that line, then the law applied as its own line. Fixed by reordering: beat 5 lights the powers and writes the law under the lg line (span lgA→e5, the ↑ under the middle); beats 6 and 7 bring X minus one and X minus three down.",
+  "Beat 11 'Divide by log seven minus log five.' gave no reason. Fixed: 'Divide both sides by log seven minus log five, to get X on its own.'",
+  "Beat 13 never said the wrong answer the ✗ note shows ('the calculator shows negative eight point five six six five four' is the right value, not the mistake), and wrote the note before the circle. Fixed: 'Watch out: do not write X is about eight point five seven. Rounding never removes the minus.' — circle on 'do not write', then the red ✗ note on 'Rounding never removes'.",
+  "one_idea 4: beat 9 writes both sides of the collect step in one beat (two cued writes) — routine A Math algebra, so kept fast as the house rules allow.",
+  "why 4: beat 4 does not say why lg (base ten) rather than another log; beat 3 carries the reason for taking logs at all, which is enough at this level."
  ],
  "fixed_beats": {
-  "2": {
-   "say": "Seven and five cannot be made the same base. The plan: take log on both sides, then bring the powers down.",
+  "1": {
+   "say": "Solve seven to the power X minus one equals five to the power X minus three, to three significant figures.",
+   "asks": ["What does to the power X minus one mean?"],
+   "do": [ { "do": "write", "step": 0 } ]
+  },
+  "5": {
+   "say": "Now bring the powers down, with the law Bring down power: log of A to the N is N times log A.",
+   "asks": ["What is Bring down power?", "Why does the power come down?"],
    "do": [
-    {
-     "do": "highlight",
-     "token": [
-      "s7",
-      "s5"
-     ],
-     "on": "Seven and five"
-    },
-    {
-     "do": "write",
-     "step": 1,
-     "on": "take log on both sides"
-    }
-   ],
-   "asks": [
-    "Why take lg of both sides?",
-    "Can I use ln instead of lg?"
+    { "do": "highlight", "token": ["e7", "e5"], "on": "bring the powers down" },
+    { "do": "note", "text": "Bring down power: $\\lg a^n = n\\lg a$", "near": "lgA", "span": ["lgA", "e5"], "on": "Bring down power" }
    ]
   },
-  "3": {
-   "say": "Bring down the powers. Each power comes down in front of its log.",
+  "6": {
+   "say": "X minus one comes down in front of log seven.",
+   "asks": ["Why can the power come down?"],
    "do": [
-    {
-     "do": "note",
-     "text": "Bring down power: $\\lg x^r = r\\lg x$",
-     "near": "lg7",
-     "on": "Bring down the powers"
-    },
-    {
-     "do": "write",
-     "token": "p7",
-     "on": "comes down in front"
-    }
-   ],
-   "asks": [
-    "Why can the power come down?"
+    { "do": "write", "token": "l7" },
+    { "do": "move", "from": "e7", "on": "comes down in front" }
    ]
   },
-  "9": {
-   "say": "Watch out: do not write X is about eight point five seven. Rounding never removes a minus.",
+  "7": {
+   "say": "And X minus three comes down in front of log five.",
+   "asks": ["Which law is this?"],
    "do": [
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "ans",
-     "on": "Watch out"
-    },
-    {
-     "do": "note",
-     "text": "✗ Watch out: $x \\approx 8.57$ (the minus dropped)",
-     "near": "ans",
-     "on": "eight point five seven"
-    }
-   ],
-   "asks": [
-    "Why keep the minus sign?"
+    { "do": "write", "token": "l5" },
+    { "do": "move", "from": "e5", "on": "comes down in front" }
+   ]
+  },
+  "11": {
+   "say": "Divide both sides by log seven minus log five, to get X on its own.",
+   "asks": ["Why divide by log 7 minus log 5?"],
+   "do": [ { "do": "write", "step": 7, "on": "Divide both sides by" } ]
+  },
+  "13": {
+   "say": "Watch out: do not write X is about eight point five seven. Rounding never removes the minus.",
+   "asks": ["Why keep the minus sign?"],
+   "do": [
+    { "do": "mark", "kind": "circle", "token": "ans", "on": "do not write" },
+    { "do": "note", "text": "✗ Watch out: keep the minus, not $x \\approx 8.57$", "near": "ans", "on": "Rounding never removes" }
    ]
   }
  },

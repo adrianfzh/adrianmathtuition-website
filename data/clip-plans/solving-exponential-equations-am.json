@@ -1,7 +1,6 @@
 {
   "slug": "solving-exponential-equations-am",
   "title": "Solving exponential equations",
-  "heading": "Solving exponential equations",
   "intro": null,
   "level": "AM",
   "topic": "Logarithms",
@@ -25,13 +24,16 @@
   },
   "lines": [
     {
+      "board": 0,
+      "heading": "Step 1: take lg on both sides",
       "tokens": [
         {
           "tex": "7^{x-1}",
           "id": "s7"
         },
         {
-          "tex": "="
+          "tex": "=",
+          "id": "eq0"
         },
         {
           "tex": "5^{x-3}",
@@ -46,14 +48,40 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
-          "tex": "\\lg 7^{x-1}",
-          "id": "lg7"
+          "tex": "\\square=\\triangle\\;\\Rightarrow\\;\\lg\\square=\\lg\\triangle",
+          "id": "p1",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: equal sides have equal logs, then bring the powers down"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\lg 7",
+          "id": "lgA"
         },
         {
-          "tex": "=\\,\\lg 5^{x-3}",
-          "id": "lg5"
+          "tex": "{}^{x-1}",
+          "id": "e7",
+          "tight": true
+        },
+        {
+          "tex": "=\\,\\lg 5",
+          "id": "lgB"
+        },
+        {
+          "tex": "{}^{x-3}",
+          "id": "e5",
+          "tight": true
         }
       ],
       "checks": [
@@ -63,16 +91,26 @@
       ]
     },
     {
+      "board": 0,
+      "heading": "Step 2: bring the powers down",
       "tokens": [
         {
-          "tex": "(x-1)\\lg 7",
-          "id": "p7",
-          "hl": "amber"
+          "tex": "(x-1)",
+          "id": "m7",
+          "from": "e7"
         },
         {
-          "tex": "=\\,(x-3)\\lg 5",
-          "id": "p5",
-          "hl": "amber"
+          "tex": "\\lg 7",
+          "id": "l7"
+        },
+        {
+          "tex": "=\\,(x-3)",
+          "id": "m5",
+          "from": "e5"
+        },
+        {
+          "tex": "\\lg 5",
+          "id": "l5"
         }
       ],
       "checks": [
@@ -82,6 +120,8 @@
       ]
     },
     {
+      "board": 0,
+      "heading": "Step 3: solve — lg 7 and lg 5 are just numbers",
       "tokens": [
         {
           "tex": "x\\lg 7-\\lg 7",
@@ -99,6 +139,7 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "x\\lg 7-x\\lg 5",
@@ -116,6 +157,21 @@
       ]
     },
     {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "x(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5",
+          "id": "fx"
+        }
+      ],
+      "checks": [
+        {
+          "step": "x*(log(7,10) - log(5,10)) = log(7,10) - 3*log(5,10)"
+        }
+      ]
+    },
+    {
+      "board": 0,
       "tokens": [
         {
           "tex": "x=\\dfrac{\\lg 7-3\\lg 5}{\\lg 7-\\lg 5}",
@@ -129,6 +185,7 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "x\\approx -8.57",
@@ -145,14 +202,15 @@
     }
   ],
   "outline": [
-    "Write the question (line 0).",
-    "Adrian 15 Oct: show 'lg 7^(x-1) = lg 5^(x-3)' — taking lg on both sides is the key step, its own line.",
-    "7 and 5 cannot be the same base, so take lg of both sides.",
-    "Bring the powers down (write p7, p5).",
-    "lg 7 and lg 5 are just numbers: expand, x terms together, number terms together (write xs, ns).",
-    "Factorise out x and divide (write frac).",
-    "Press calculator: minus 8.57 (write ans).",
-    "Trap, at the step it bites: the calculator shows minus 8.56654 — rounding never removes a minus (circle ans, box ans)."
+    "Rebuilt 17 Oct 2026 to the house rules (watches 1–14 of the log-equations clip): one scrolling board, step titles, the plan shown as maths, the powers MOVE down in front of their logs, factorise-out-x as its own line, routine algebra fast, 'negative' for a negative number, the rounding trap last as a Watch out."
   ],
-  "question": "Solve $7^{x-1} = 5^{x-3}$, giving your answer to 3 significant figures."
+  "question": "Solve $7^{x-1} = 5^{x-3}$, giving your answer to 3 significant figures.",
+  "boards": [
+    {
+      "heading": null,
+      "intro": null,
+      "scroll": true
+    }
+  ],
+  "minutes": 1
 }

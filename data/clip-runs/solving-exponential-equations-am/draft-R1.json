@@ -1,0 +1,211 @@
+{
+ "slug": "solving-exponential-equations-am",
+ "draft": "R1",
+ "by": "session, 17 Oct 2026: rebuilt to the house rules",
+ "beats": [
+  {
+   "say": "Solve seven to the power X minus one equals five to the power X minus three.",
+   "asks": [
+    "What does to the power X minus one mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "Seven and five cannot be made the same base, so we cannot just compare the powers.",
+   "asks": [
+    "Why can't 7 and 5 be the same base?",
+    "When can I compare powers?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "s7",
+      "s5"
+     ],
+     "on": "Seven and five"
+    }
+   ]
+  },
+  {
+   "say": "Here is the plan: the two sides are equal, so their logs are equal. Then bring the powers down.",
+   "asks": [
+    "Why take log of both sides?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "the two sides are equal"
+    }
+   ]
+  },
+  {
+   "say": "Take log on both sides. Log seven to the power X minus one equals log five to the power X minus three.",
+   "asks": [
+    "Which log do I take?",
+    "Why is it allowed to take log on both sides?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "Take log on both sides"
+    }
+   ]
+  },
+  {
+   "say": "Now bring the powers down. X minus one comes down in front of log seven.",
+   "asks": [
+    "Why can the power come down?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l7",
+     "on": "Now bring the powers down"
+    },
+    {
+     "do": "move",
+     "from": "e7",
+     "on": "comes down in front"
+    }
+   ]
+  },
+  {
+   "say": "And X minus three comes down in front of log five.",
+   "asks": [
+    "What is Bring down power?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l5"
+    },
+    {
+     "do": "move",
+     "from": "e5",
+     "on": "comes down in front"
+    }
+   ]
+  },
+  {
+   "say": "This law is Bring down power: log of A to the N is N times log A.",
+   "asks": [
+    "Why does the power come down?",
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Bring down power: $\\lg a^n = n\\lg a$",
+     "near": "m7",
+     "span": [
+      "m7",
+      "l5"
+     ]
+    }
+   ]
+  },
+  {
+   "say": "Log seven and log five are just numbers, so solve it like normal algebra. Expand the brackets.",
+   "asks": [
+    "Why are log 7 and log 5 just numbers?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "Expand the brackets"
+    }
+   ]
+  },
+  {
+   "say": "X terms to the left, number terms to the right.",
+   "asks": [
+    "How do I move the terms across?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "xs",
+     "on": "X terms to the left"
+    },
+    {
+     "do": "write",
+     "token": "ns",
+     "on": "number terms to the right"
+    }
+   ]
+  },
+  {
+   "say": "Now factorise out the X.",
+   "asks": [
+    "How do I factorise out x?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "factorise out the X"
+    }
+   ]
+  },
+  {
+   "say": "Divide by log seven minus log five.",
+   "asks": [
+    "Why divide by log 7 minus log 5?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 7,
+     "on": "Divide by log seven"
+    }
+   ]
+  },
+  {
+   "say": "Press the calculator. X is about negative eight point five seven.",
+   "asks": [
+    "How do I key this into the calculator?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 8,
+     "on": "X is about"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "negative eight point"
+    }
+   ]
+  },
+  {
+   "say": "Watch out: the calculator shows negative eight point five six six five four. Rounding never removes the minus.",
+   "asks": [
+    "Why keep the minus sign?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "✗ Watch out: keep the minus, not $x \\approx 8.57$",
+     "near": "ans"
+    },
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "ans",
+     "on": "never removes the minus"
+    }
+   ]
+  }
+ ]
+}

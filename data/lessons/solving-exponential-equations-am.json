@@ -10,28 +10,40 @@
   "scenes": [
     {
       "type": "equation-steps",
-      "heading": "Solving exponential equations",
+      "scroll": true,
       "steps": [
         {
+          "heading": "Step 1: take lg on both sides",
           "tokens": [
             { "tex": "7^{x-1}", "id": "s7" },
-            { "tex": "=" },
+            { "tex": "=", "id": "eq0" },
             { "tex": "5^{x-3}", "id": "s5" }
           ]
         },
         {
           "tokens": [
-            { "tex": "\\lg 7^{x-1}", "id": "lg7" },
-            { "tex": "=\\,\\lg 5^{x-3}", "id": "lg5" }
+            { "tex": "\\square=\\triangle\\;\\Rightarrow\\;\\lg\\square=\\lg\\triangle", "id": "p1", "hl": "sky" }
           ]
         },
         {
           "tokens": [
-            { "tex": "(x-1)\\lg 7", "id": "p7", "hl": "amber" },
-            { "tex": "=\\,(x-3)\\lg 5", "id": "p5", "hl": "amber" }
+            { "tex": "\\lg 7", "id": "lgA" },
+            { "tex": "{}^{x-1}", "id": "e7", "tight": true },
+            { "tex": "=\\,\\lg 5", "id": "lgB" },
+            { "tex": "{}^{x-3}", "id": "e5", "tight": true }
           ]
         },
         {
+          "heading": "Step 2: bring the powers down",
+          "tokens": [
+            { "tex": "(x-1)", "id": "m7", "from": "e7" },
+            { "tex": "\\lg 7", "id": "l7" },
+            { "tex": "=\\,(x-3)", "id": "m5", "from": "e5" },
+            { "tex": "\\lg 5", "id": "l5" }
+          ]
+        },
+        {
+          "heading": "Step 3: solve — lg 7 and lg 5 are just numbers",
           "tokens": [
             { "tex": "x\\lg 7-\\lg 7", "id": "ex7" },
             { "tex": "=\\,x\\lg 5-3\\lg 5", "id": "ex5" }
@@ -41,6 +53,11 @@
           "tokens": [
             { "tex": "x\\lg 7-x\\lg 5", "id": "xs" },
             { "tex": "=\\,\\lg 7-3\\lg 5", "id": "ns" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5", "id": "fx" }
           ]
         },
         {
@@ -56,8 +73,8 @@
       ],
       "beats": [
         {
-          "say": "Solve seven to the power X minus one equals five to the power X minus three.",
-          "asks": ["Can I make the bases the same?"],
+          "say": "Solve seven to the power X minus one equals five to the power X minus three, to three significant figures.",
+          "asks": ["What does to the power X minus one mean?"],
           "do": [
             { "do": "write", "step": 0 }
           ],
@@ -65,86 +82,129 @@
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Seven and five cannot be made the same base. The plan: take log on both sides, then bring the powers down.",
-          "asks": ["Why take lg of both sides?", "Can I use ln instead of lg?"],
+          "say": "Seven and five cannot be made the same base, so we cannot just compare the powers.",
+          "asks": ["Why can't 7 and 5 be the same base?", "When can I compare powers?"],
           "do": [
-            { "do": "highlight", "token": ["s7", "s5"], "on": "Seven and five" },
-            { "do": "write", "step": 1, "on": "take log on both sides" }
+            { "do": "highlight", "token": ["s7", "s5"], "on": "Seven and five" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b2.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Bring down the powers. Each power comes down in front of its log.",
-          "asks": ["Why can the power come down?"],
+          "say": "Here is the plan: the two sides are equal, so their logs are equal. Then bring the powers down.",
+          "asks": ["Why take log of both sides?"],
           "do": [
-            { "do": "note", "text": "Bring down power: $\\lg x^r = r\\lg x$", "near": "lg7", "on": "Bring down the powers" },
-            { "do": "write", "token": "p7", "on": "comes down in front" }
+            { "do": "write", "token": "p1", "on": "the two sides are equal" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b3.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b3.timing.json"
         },
         {
-          "say": "So X minus one, times log seven, equals X minus three, times log five.",
-          "asks": ["Why keep the brackets?"],
+          "say": "Take log on both sides. Log seven to the power X minus one equals log five to the power X minus three.",
+          "asks": ["Which log do I take?", "Why is it allowed to take log on both sides?"],
           "do": [
-            { "do": "write", "token": "p5", "on": "equals X minus three" }
+            { "do": "write", "step": 2, "on": "Take log on both sides" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b4.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Log seven and log five are just numbers. Expand the brackets as usual.",
-          "asks": ["Why is lg 7 just a number?"],
+          "say": "Now bring the powers down, with the law Bring down power: log of A to the N is N times log A.",
+          "asks": ["What is Bring down power?", "Why does the power come down?"],
           "do": [
-            { "do": "write", "step": 3, "on": "Expand the brackets" }
+            { "do": "highlight", "token": ["e7", "e5"], "on": "bring the powers down" },
+            {
+              "do": "note",
+              "text": "Bring down power: $\\lg a^n = n\\lg a$",
+              "near": "lgA",
+              "span": ["lgA", "e5"],
+              "on": "Bring down power"
+            }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b5.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b5.timing.json"
         },
         {
-          "say": "Put the X terms on the left, and the number terms on the right.",
-          "asks": ["Why move the x terms to the left?"],
+          "say": "X minus one comes down in front of log seven.",
+          "asks": ["Why can the power come down?"],
           "do": [
-            { "do": "write", "token": "xs", "on": "the X terms" },
-            { "do": "write", "token": "ns", "on": "the number terms" }
+            { "do": "write", "token": "l7" },
+            { "do": "move", "from": "e7", "on": "comes down in front" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b6.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b6.timing.json"
         },
         {
-          "say": "Factorise out X, then divide by log seven minus log five.",
-          "asks": ["Why factorise out x?"],
+          "say": "And X minus three comes down in front of log five.",
+          "asks": ["Which law is this?"],
           "do": [
-            { "do": "write", "step": 5, "on": "then divide by" }
+            { "do": "write", "token": "l5" },
+            { "do": "move", "from": "e5", "on": "comes down in front" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b7.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b7.timing.json"
         },
         {
-          "say": "Press calculator. X is about minus eight point five seven.",
-          "asks": ["How do I key this in?"],
+          "say": "Log seven and log five are just numbers, so solve it like normal algebra. Expand the brackets.",
+          "asks": ["Why are log 7 and log 5 just numbers?"],
           "do": [
-            { "do": "write", "step": 6, "on": "X is about" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "minus eight point" }
+            { "do": "write", "step": 4, "on": "Expand the brackets" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b8.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b8.timing.json"
         },
         {
-          "say": "Watch out: do not write X is about eight point five seven. Rounding never removes a minus.",
-          "asks": ["Why keep the minus sign?"],
+          "say": "X terms to the left, number terms to the right.",
+          "asks": ["How do I move the terms across?"],
           "do": [
-            { "do": "mark", "kind": "circle", "token": "ans", "on": "Watch out" },
-            {
-              "do": "note",
-              "text": "✗ Watch out: $x \\approx 8.57$ (the minus dropped)",
-              "near": "ans",
-              "on": "eight point five seven"
-            }
+            { "do": "write", "token": "xs", "on": "X terms to the left" },
+            { "do": "write", "token": "ns", "on": "number terms to the right" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "Now factorise out the X.",
+          "asks": ["How do I factorise out x?"],
+          "do": [
+            { "do": "write", "step": 6, "on": "factorise out the X" }
+          ],
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b10.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "Divide both sides by log seven minus log five, to get X on its own.",
+          "asks": ["Why divide by log 7 minus log 5?"],
+          "do": [
+            { "do": "write", "step": 7, "on": "Divide both sides by" }
+          ],
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b11.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b11.timing.json"
+        },
+        {
+          "say": "Press the calculator. X is about negative eight point five seven.",
+          "asks": ["How do I key this into the calculator?"],
+          "do": [
+            { "do": "write", "step": 8, "on": "X is about" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "negative eight point" }
+          ],
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b12.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b12.timing.json"
+        },
+        {
+          "say": "Watch out: do not write X is about eight point five seven. Rounding never removes the minus.",
+          "asks": ["Why keep the minus sign?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "ans", "on": "do not write" },
+            {
+              "do": "note",
+              "text": "✗ Watch out: keep the minus, not $x \\approx 8.57$",
+              "near": "ans",
+              "on": "Rounding never removes"
+            }
+          ],
+          "audio": "/lessons/solving-exponential-equations-am/scene-01-b13.mp3",
+          "timing": "/lessons/solving-exponential-equations-am/scene-01-b13.timing.json"
         }
       ]
     }

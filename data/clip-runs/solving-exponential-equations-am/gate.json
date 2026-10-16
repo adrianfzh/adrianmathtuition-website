@@ -1,6 +1,6 @@
 {
  "slug": "solving-exponential-equations-am",
- "at": "2026-10-15T09:15:52.398Z",
+ "at": "2026-10-16T17:45:17.650Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,19 +8,15 @@
   },
   "maths": {
    "ok": true,
-   "detail": "9/9 line checks"
+   "detail": "11/11 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "7 lines = the checked plan"
+   "detail": "9 lines = the checked plan"
   },
   "read": {
    "ok": true,
-   "detail": "pick A2 · lowest score 4 · pass"
-  },
-  "voice": {
-   "ok": true,
-   "detail": "10/10 beats voiced + timed · speech round trip worst 97 %"
+   "detail": "pick R1 · lowest score 4 · pass"
   },
   "look": {
    "ok": true,

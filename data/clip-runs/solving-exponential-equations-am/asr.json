@@ -1,6 +1,6 @@
 {
  "slug": "solving-exponential-equations-am",
- "worst": 0.91,
+ "worst": 0.88,
  "lines": [
   {
    "beat": 1,
@@ -16,8 +16,8 @@
   },
   {
    "beat": 3,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.89,
+   "score": 0.89,
    "heard": null
   },
   {
@@ -28,8 +28,8 @@
   },
   {
    "beat": 5,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -46,17 +46,41 @@
   },
   {
    "beat": 8,
-   "bag": 0.8,
+   "bag": 1,
    "score": 1,
-   "heard": "Press calculator X is about -8.57",
-   "said": "Press calculator. X is about minus eight point five seven."
+   "heard": null
   },
   {
    "beat": 9,
-   "bag": 0.71,
-   "score": 0.911,
-   "heard": "Watch out, do not write X's about 8.57, rounding never removes a value",
-   "said": "Watch out: do not write X is about eight point five seven. Rounding never removes a minus."
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 10,
+   "bag": 0.8,
+   "score": 0.947,
+   "heard": "Now, factorize out the X.",
+   "said": "Now factorise out the X."
+  },
+  {
+   "beat": 11,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 0.73,
+   "score": 1,
+   "heard": "Press the calculator. X is about -8.57.",
+   "said": "Press the calculator. X is about negative eight point five seven."
+  },
+  {
+   "beat": 13,
+   "bag": 0.88,
+   "score": 0.88,
+   "heard": null
   }
  ]
 }
