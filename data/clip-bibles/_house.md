@@ -92,6 +92,7 @@ on 15 Oct 2026 — his notes are binding.
   `replaces` tokens: `= 2` → `= 2 log₃3` → the 2 goes up as the power → `= log₃3²` → `= log₃9`. Notes on
   a rewritten piece leave with it.
 - **A board change is a breath, not a cut** (watch 7): the player fades the old board out, then the new one in.
+- **One scrolling board, not new screens** (watch 8): a clip's board slides up as lines are written (`scroll: true`); step titles sit above their first line; no repeated carry lines.
 - **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
 - **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";

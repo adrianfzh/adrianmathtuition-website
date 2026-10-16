@@ -321,6 +321,7 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
     width: `${s.width}px`,
     height: `${s.height}px`,
     margin: '0',
+    whiteSpace: 'nowrap',   // the copy is exactly the piece's width: never let it break onto two lines
     opacity: '1',
     clipPath: 'none',
     transformOrigin: 'top left',
