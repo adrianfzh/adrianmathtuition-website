@@ -222,6 +222,8 @@ New in the player: a clip board that would run below the screen scales its maths
 - Watch 6: the 2 is explained AT the 2 of `log₃(x−8) + log₃x = 2`, rewriting that line in place (new token
   field `replaces`, beat scenes only — a replacing token takes no room until shown; the tokens it names
   leave the line; the board re-fits and the chalk ink is wiped and re-laid). Draft G5, 28 beats.
+- Watch 7 ("the transition to another screen is too sudden"): in a clip, the finished board fades out
+  (0.7 s, `SCENE_LEAVE_MS`) and only then does the next board fade in (0.7 s) — every clip.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
