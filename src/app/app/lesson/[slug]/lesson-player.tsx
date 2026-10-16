@@ -298,7 +298,11 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   // 16 Oct 2026: "why did 9 become black during the movement?"): it carries the piece's own colour,
   // with a soft glow so the eye follows it. A clip flies slower and fades only as it lands
   // ("are you able to show 2 from 2log_3 3 moving to 3^2?").
-  const colour = getComputedStyle(source).color;
+  const css = getComputedStyle(source);
+  const colour = css.color;
+  // …and its line's text size, which it would also lose outside the line (the 9 came out small).
+  clone.style.fontSize = css.fontSize;
+  clone.style.lineHeight = css.lineHeight;
   clone.style.setProperty('color', colour, 'important');
   clone.style.textShadow = `0 0 10px ${colour}`;
   for (const k of Array.from(clone.querySelectorAll<HTMLElement>('.katex, .katex *'))) {
