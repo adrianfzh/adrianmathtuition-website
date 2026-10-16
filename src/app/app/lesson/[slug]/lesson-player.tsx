@@ -2240,6 +2240,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           el.value = String(v);
           el.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
         }
+        // The part counter (written here and by a drag, never by React, so the two never fight).
+        const label = `${done ? n : stopAt + 1}/${n}`;
+        if (scrubLabel.current && scrubLabel.current.textContent !== label) scrubLabel.current.textContent = label;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -2728,7 +2731,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
             </div>
             <button type="button" onClick={() => seekTo(jumpSeconds(10))} aria-label="Forward 10 seconds"
               className="shrink-0 h-8 px-2 rounded-full bg-white text-navy text-[12px] font-bold shadow-[0_1px_2px_rgba(15,23,42,0.08)] active:scale-95">10 ⏩</button>
-            <span ref={scrubLabel} className="text-[11px] tabular-nums text-slate-400 w-9 text-right">{at + 1}/{n}</span>
+            <span ref={scrubLabel} className="text-[11px] tabular-nums text-slate-400 w-9 text-right" />
           </div>
         );
       })()}
