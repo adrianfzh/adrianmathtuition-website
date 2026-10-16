@@ -688,14 +688,19 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               {/* Handwritten asides beside this line's tokens: slots from mount, drawn on when their beat says so. */}
               {board && notes.some(n => n.line === i) && (
                 <div className="lsn-note-row">
-                  {notes.filter(n => n.line === i && !(n.near && (() => {
-                    const ti = s.tokens.findIndex(t => t.id === n.near);
-                    return ti >= 0 && tokenGone(board, scene, i, ti);
-                  })())).map(n => {
+                  {notes.filter(n => n.line === i).map(n => {
                     // The ↑ points at the middle of the note's span (else its `near` token).
                     const ids = n.span?.length ? n.span : n.near ? [n.near] : [];
                     const keys = clip ? ids.map(id => s.tokens.findIndex(t => t.id === id)).filter(ti => ti >= 0).map(ti => tokKey(i, ti)) : [];
-                    return <NoteSlotView key={n.id} note={n} board={board} pointAt={keys.length ? keys.join(' ') : undefined} />;
+                    // A note on a piece the line has rewritten away leaves with it — hidden, never
+                    // unmounted, so stepping back brings the same written note back.
+                    const ni = n.near ? s.tokens.findIndex(t => t.id === n.near) : -1;
+                    const away = ni >= 0 && tokenGone(board, scene, i, ni);
+                    return (
+                      <span key={n.id} data-gone={away ? '1' : undefined} className={away ? 'lsn-note-away' : 'contents'}>
+                        <NoteSlotView note={n} board={board} pointAt={keys.length ? keys.join(' ') : undefined} />
+                      </span>
+                    );
                   })}
                 </div>
               )}
@@ -2642,6 +2647,7 @@ const PLAYER_CSS = `
 .lsn-tokrow > .lsn-tok-tight { margin-left: -0.375rem; }
 .lsn-tok[data-gone] { display: none !important; }
 .lsn-tok[data-held] { visibility: hidden !important; }
+.lsn-note-away { display: none !important; }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }
