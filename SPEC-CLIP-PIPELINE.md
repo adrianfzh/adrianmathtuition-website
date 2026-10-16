@@ -252,6 +252,11 @@ New in the player: a clip board that would run below the screen scales its maths
 - Watch 14: the slider is a video bar — a touch anywhere brings the thumb to the finger at once and it
   follows the drag, the clip seeks when the finger lifts; ⏪ 10 / 10 ⏩ jump about ten seconds of voice
   (a part's length from its words); "⬇ Back to now" sits just above the subtitle.
+- **Rebuilt to the house rules (17 Oct 2026): Solving exponential equations** — one scrolling board,
+  13 beats / ~180 words / ~1 min, the law first then each power moves down, factorise-out-x its own
+  line, the rounding mistake as the last Watch out. Maths 11/11, blind read pass (6 beats fixed),
+  voice 13/13 ≥ 88 %, look 19/19 on the voice, 0 problems. Next to rebuild: Linear Law with logs,
+  Growth and decay, Log scales.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
