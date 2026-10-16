@@ -9,7 +9,7 @@
 // topic staff … too many emojis"): everything escaped, the first line and every "N. title" line
 // bold, and the labels "You said:", "Now:", "Proposed:" bold. It goes to the ☀️ Staff topic
 // (the Airtable Settings row telegram_topics that /bindtopic staff writes), or the DM when
-// Staff is not bound. Buttons: one row per item, "✅ Apply N" (lf:a:<slug>) and "🗑 Drop N" (lf:d:<slug>);
+// Staff is not bound. Buttons as on the Ship card: "✅ Apply <title>" (lf:a:<slug>), then "✏️ Change" (lf:c) and "🗑 Drop" (lf:d);
 // the bot records the tap (bot handlers/learn-buttons.js), apply.mjs carries it out.
 // Telegram cannot read a sent message back, so each sent keyboard is kept in
 // $LFA_STATE/messages/<id>.json for `mark` to redraw. Env: TELEGRAM_BOT_TOKEN,
@@ -30,7 +30,7 @@ const LABEL = /^(You said|Now|Proposed):/;
 export function toHtml(text) {
   return text.trim().split('\n').map((line, i) => {
     const e = esc(line);
-    if ((i === 0 || /^\d+\.\s+\S/.test(line)) && line.trim()) return `<b>${e}</b>`;
+    if ((i === 0 || /^\d+\.\s+\S/.test(line) || line === 'Nothing has changed yet. You decide each one:') && line.trim()) return `<b>${e}</b>`;
     const m = LABEL.exec(line);
     return m ? `<b>${esc(m[0])}</b>${esc(line.slice(m[0].length))}` : e;
   }).join('\n');
@@ -49,18 +49,43 @@ export async function staffTarget() {
   return { chat_id: CHAT };
 }
 
-export function keyboard(slugs) {
-  const ok = slugs.filter((s) => /^[a-z0-9][a-z0-9-]{1,58}$/.test(s));
-  if (!ok.length) return null;
-  return { inline_keyboard: ok.map((s, i) => [
-    { text: `✅ Apply ${i + 1}`, callback_data: `lf:a:${s}` },
-    { text: `🗑 Drop ${i + 1}`, callback_data: `lf:d:${s}` },
-  ]) };
+/** Each idea's name, from its numbered title line ("1. 🆕 Say where to see it · new" → "Say where to see it"). */
+export function titles(text) {
+  return text.split('\n').filter((l) => /^\d+\.\s+\S/.test(l))
+    .map((l) => l.replace(/^\d+\.\s+/, '').replace(/^\p{Extended_Pictographic}\uFE0F?\s*/u, '').replace(/\s+·.*$/, '').trim());
 }
 
+// The Ship card's shape (16 Oct 2026, Adrian: "can you have the interface [of the Ship card]
+// instead?"): ✅ Apply <title> on its own row, then ✏️ Change and 🗑 Drop.
+export function keyboard(slugs, names = []) {
+  const rows = [];
+  slugs.forEach((s, i) => {
+    if (!/^[a-z0-9][a-z0-9-]{1,58}$/.test(s)) return;
+    const t = (names[i] || s.replace(/-/g, ' ')).slice(0, 48);
+    rows.push([{ text: `✅ Apply ${t}`, callback_data: `lf:a:${s}` }]);
+    rows.push([{ text: '✏️ Change', callback_data: `lf:c:${s}` }, { text: '🗑 Drop', callback_data: `lf:d:${s}` }]);
+  });
+  return rows.length ? { inline_keyboard: rows } : null;
+}
+
+export const FOOTER = 'Nothing has changed yet. You decide each one:\n✅ Apply = yes, do this from now on\n✏️ Change = yes, but differently — you say how\n🗑 Drop = no, leave it as it is';
+
+/** The idea's rows (Apply, then Change + Drop) folded into ONE status line. */
 export function markRow(kb, slug, text) {
-  return { inline_keyboard: (kb.inline_keyboard || []).map((row) =>
-    row.some((b) => String(b.callback_data || '').endsWith(':' + slug)) ? [{ text, callback_data: `lf:s:${slug}` }] : row) };
+  const out = []; let done = false;
+  for (const row of kb.inline_keyboard || []) {
+    if (!row.some((b) => String(b.callback_data || '').endsWith(':' + slug))) { out.push(row); continue; }
+    if (!done) { out.push([{ text, callback_data: `lf:s:${slug}` }]); done = true; }
+  }
+  return { inline_keyboard: out };
+}
+
+/** The idea's name as its Apply button shows it. */
+export function titleOf(kb, slug) {
+  for (const row of (kb && kb.inline_keyboard) || []) for (const b of row) {
+    if (b.callback_data === `lf:a:${slug}`) return String(b.text).replace(/^✅\s*Apply\s*/, '').replace(/^\d+$/, '').trim();
+  }
+  return '';
 }
 
 async function tg(method, body) {
@@ -77,9 +102,10 @@ async function main() {
   if (!TOKEN || !CHAT) throw new Error('no Telegram config');
   const saved = (id) => { try { return JSON.parse(fs.readFileSync(path.join(KB_DIR, `${id}.json`), 'utf8')); } catch { return null; } };
   if (cmd === 'send') {
-    const text = fs.readFileSync(a, 'utf8');
+    let text = fs.readFileSync(a, 'utf8').trim();
     const slugs = b && fs.existsSync(b) ? JSON.parse(fs.readFileSync(b, 'utf8')) : [];
-    const kb = keyboard(Array.isArray(slugs) ? slugs : []);
+    const kb = keyboard(Array.isArray(slugs) ? slugs : [], titles(text));
+    if (kb) text = `${text}\n\n${FOOTER}`;
     const to = await staffTarget();
     const res = await tg('sendMessage', {
       ...to, text: toHtml(text), parse_mode: 'HTML', disable_web_page_preview: true,

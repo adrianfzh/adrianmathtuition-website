@@ -31,8 +31,9 @@ the specs, the skills, `~/.claude/CLAUDE.md`, the memory folder), then drafts:
 It **drafts, never applies on its own**. Adrian gets ONE Telegram message, only on a
 morning when there is something new, **in the ☀️ Staff topic, styled like the brief**: a bold
 numbered title per idea ("· new", "· waiting since …", "· already done"), then up to three
-lines with bold labels — You said / Now / Proposed — no emojis, and **✅ Apply N / 🗑 Drop N
-buttons under it** (16 Oct 2026, Adrian: *"allow me to take action in the telegram chat
+lines with bold labels — You said / Now / Proposed — one emoji per title (🆕 🔁 🛠 ✅), and
+**the Ship card's buttons under each idea: ✅ Apply <title>, then ✏️ Change + 🗑 Drop** (Change
+asks what should change; his next message is applied with the idea) (16 Oct 2026, Adrian: *"allow me to take action in the telegram chat
 instead of having to come to a session"*; then *"make it like in topic staff … too many
 emojis"*, *"i do not like brain emojis"*, and Staff, not the DM, as its place).
 

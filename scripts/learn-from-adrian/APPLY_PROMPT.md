@@ -6,6 +6,10 @@ message. That tap IS his approval for this one proposal — nothing else.
 
 Proposal: **{{SLUG}}**. Today (SGT): **{{TODAY}}**.
 
+**His change** (he tapped ✏️ Change and typed this): {{NOTE}}
+When there is one, apply the proposal WITH that change — his words win over the drafted
+text. Say in the result line what you did differently.
+
 ## Read first
 - `{{STATE}}/proposals/{{SLUG}}.md` — what he said, what exists, the exact text.
 - The group `{{SLUG}}` in `{{STATE}}/ledger.json` (its `kind`, `branch`, `home`).

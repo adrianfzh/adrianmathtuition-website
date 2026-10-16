@@ -37,11 +37,11 @@ function tg(...args) {
   catch (e) { log('telegram:', e.message); }
 }
 
-function itemNumber(messageId, slug) {
+function titleFor(messageId, slug) {
   try {
     const saved = JSON.parse(fs.readFileSync(path.join(STATE, 'messages', `${messageId}.json`), 'utf8'));
     for (const row of (saved.kb || saved).inline_keyboard) for (const b of row) {
-      if (b.callback_data === `lf:a:${slug}`) return (/(\d+)\s*$/.exec(b.text) || [])[1] || '';
+      if (b.callback_data === `lf:a:${slug}`) return String(b.text).replace(/^✅\s*Apply\s*/, '').replace(/^\d+$/, '').trim();
     }
   } catch { /* no saved keyboard */ }
   return '';
@@ -77,7 +77,7 @@ function drop(slug) {
   return { ok: true, line: known ? 'Dropped — it will not be raised again.' : 'Dropped.' };
 }
 
-function apply(slug) {
+function apply(slug, note) {
   if (!fs.existsSync(path.join(STATE, 'proposals', `${slug}.md`))) {
     return Promise.resolve({ ok: false, line: 'Could not find that idea any more — nothing changed.' });
   }
@@ -85,7 +85,8 @@ function apply(slug) {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const prompt = fs.readFileSync(path.join(HERE, 'APPLY_PROMPT.md'), 'utf8')
     .replaceAll('{{SLUG}}', slug).replaceAll('{{TODAY}}', TODAY).replaceAll('{{STATE}}', STATE)
-    .replaceAll('{{WEBSITE}}', process.env.LFA_REPO).replaceAll('{{OUT}}', out);
+    .replaceAll('{{WEBSITE}}', process.env.LFA_REPO).replaceAll('{{OUT}}', out)
+    .replaceAll('{{NOTE}}', note ? note.replace(/\s+/g, ' ').trim() : '(none — apply it as written)');
   return new Promise((resolve) => {
     const child = spawn('claude', ['-p', prompt,
       '--model', process.env.APPLY_MODEL || 'opus', '--effort', process.env.APPLY_EFFORT || 'medium',
@@ -109,18 +110,17 @@ async function main() {
     const claimed = await rest('PATCH', `?id=eq.${row.id}&status=eq.pending`, { status: 'running', claimed_at: new Date().toISOString() });
     if (!claimed.length) continue;   // another run took it
     log(`${row.action} ${row.slug} (request ${row.id})`);
-    const n = row.message_id ? itemNumber(row.message_id, row.slug) : '';
+    const name = (row.message_id ? titleFor(row.message_id, row.slug) : '') || row.slug.replace(/-/g, ' ');
     let res;
-    try { res = row.action === 'drop' ? drop(row.slug) : await apply(row.slug); }
+    try { res = row.action === 'drop' ? drop(row.slug) : await apply(row.slug, row.action === 'change' ? row.note : ''); }
     catch (e) { res = { ok: false, line: `Something went wrong: ${e.message.slice(0, 120)}` }; }
     await rest('PATCH', `?id=eq.${row.id}`, { status: res.ok ? 'done' : 'failed', result: res.line, finished_at: new Date().toISOString() });
     log(`→ ${res.ok ? 'done' : 'failed'}: ${res.line}`);
     if (row.message_id) {
-      const head = n ? `${n} · ` : '';
-      const label = row.action === 'drop' ? `🗑 ${head}Dropped` : res.ok ? `✅ ${head}Applied` : `❌ ${head}Not applied — see the reply`;
+      const label = row.action === 'drop' ? `🗑 Dropped: ${name}` : res.ok ? `✅ Applied: ${name}` : `❌ Not applied: ${name} — see the reply`;
       tg('mark', String(row.message_id), row.slug, label);
     }
-    if (row.action === 'apply') tg('reply', String(row.message_id || 0), `${res.ok ? '✅' : '❌'} ${n ? n + '. ' : ''}${res.line}`);
+    if (row.action !== 'drop') tg('reply', String(row.message_id || 0), `${res.ok ? '✅' : '❌'} ${name}: ${res.line}`);
   }
 }
 
