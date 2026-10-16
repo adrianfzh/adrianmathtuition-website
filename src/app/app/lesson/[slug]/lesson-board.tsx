@@ -257,10 +257,14 @@ function useWriter(
     // landing, the phone's URL bar) invalidates every measured pen path.
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => w.resize()) : null;
     ro?.observe(host);
+    // A line rewritten in place moves the words under the ink without resizing the board.
+    const relayout = () => w.relayout();
+    host.addEventListener('lsn-refit', relayout);
     return () => {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = 0;
       ro?.disconnect();
+      host.removeEventListener('lsn-refit', relayout);
       w.release();
       ref.current = null;
     };

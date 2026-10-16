@@ -331,10 +331,16 @@ export class ChalkWriter {
       this.claim(el, 'sentence');   // claimed while still `waiting`: never a frame of bare text
     }
 
+    // Something the hand wrote has left the board (a line rewritten in place takes its notes with it):
+    // its ink is still on the canvas, so wipe the canvas and let every remaining unit build and
+    // reveal again at its own progress — a finished one comes back whole in the same frame.
+    let gone = false;
+    for (const u of this.units.values()) if (!u.el.isConnected) { this.units.delete(u.el); gone = true; }
+    if (gone) this.relayout();
+
     let active: Unit | null = null;
     let activeT = 0;
     for (const u of this.units.values()) {
-      if (!u.el.isConnected) { this.units.delete(u.el); continue; }
       let p: number;
       if (u.kind === 'sentence') {
         const state = u.el.dataset.state;
@@ -359,6 +365,15 @@ export class ChalkWriter {
 
     if (active) { this.activeUnit = active; this.activeT = activeT; this.lastActiveAt = now; }
     this.drawTip(now);
+  }
+
+  /** The board moved under the ink (a line rewritten in place, a re-fit): wipe the canvas and
+   *  re-lay every unit at its own progress on the next tick. */
+  relayout(): void {
+    if (!this.ictx || !this.img) return;
+    this.img = this.ictx.createImageData(this.W, this.H);
+    this.ictx.clearRect(0, 0, this.W, this.H);
+    for (const u of this.units.values()) { u.plan = null; u.failed = false; }
   }
 
   /** Everything this writer owns, released (scene change). */
