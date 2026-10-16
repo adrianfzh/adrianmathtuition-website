@@ -69,7 +69,8 @@ const scenes = sceneBeats.map((list, k) => {
     ...(board.heading ? { heading: board.heading } : {}),
     ...(board.intro ? { intro: board.intro } : {}),
     // A scrolling board (one long board that slides up) carries each step's title on its first line.
-    ...(board.scroll ? { scroll: true } : {}),
+    // ONE scrolling board is the default for a clip (house rules §1); a plan opts out with "scroll": false.
+    ...(board.scroll || (nBoards === 1 && plan.scroll !== false) ? { scroll: true } : {}),
     steps: plan.lines.filter(l => (l.board ?? 0) === k).map(l => ({ ...(l.heading ? { heading: l.heading } : {}), tokens: l.tokens.map(t => ({ ...t })), ...(l.note ? { note: l.note } : {}) })),
     beats: list,
   };

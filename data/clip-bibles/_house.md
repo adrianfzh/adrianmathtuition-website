@@ -6,105 +6,97 @@ where the two disagree, the topic bible wins on METHOD and this file wins on LOO
 Taken from the Logarithms bible (`logarithms-am.md` §1, §1b, §2, §4, §5) and Adrian's first watch
 on 15 Oct 2026 — his notes are binding.
 
+**Keep this file current — the habit (Adrian, 17 Oct 2026: "make sure what we have learnt in building
+the clips are going to be used in future clips … in other claude accounts too").** Every note Adrian
+gives after watching a clip is written into §2 below in the SAME commit — his words, the rule, dated.
+When a later note replaces an earlier one, edit the old rule (never leave two that disagree). When a
+rule can be checked by a machine, also add it to `scripts/clips/prompts/writer.md` and to
+`clipIssues` in `src/lib/lesson-verify.ts`. This file is what every clip writer, checker and session
+reads — on every Claude account, because it lives in the repo.
+
 ## 1. The series look
 
-- One chalk board per idea (a clip may have two boards when the question has two clear halves),
-  one `equation-steps` scene each, heading = what this board does, in a few words.
-- The question sits on the board from the start (`intro`), short and exactly as printed — cut
-  story words, never a number or a condition.
+- **ONE scrolling board** (`"scroll": true` on the one `equation-steps` scene; Adrian, 16 Oct 2026:
+  "make the lines move up, like scrolling up, then we don't have to change screen"). The maths stays
+  full size; when the newest line would reach the subtitle the board glides up and older lines fade off
+  the top. Never split a clip into boards / screens. Each step's title is a `heading` on its first
+  line ("Step 2: join the logs, then compare"). Never repeat a line just to carry it forward.
+- The question is the first line, exactly as printed (cut story words, never a number or condition).
 - The working one line at a time. The answer last, in emerald (`"hl": "emerald"`), boxed on its word.
-- **≤ 6 tokens a line, ≤ 7 lines a board** — and the whole board must fit on a phone screen
-  (the look checks it). A long line is ONE token (it shrinks to fit). Too many lines → two boards.
-- Margin words are the topic bible's words or the law/rule a line uses, as a `note` with `near` =
-  the token it explains.
-- One pointing gesture per beat at most (underline = "this part", circle = "watch this",
-  box = the answer). The trap gets the circle, once, where it bites.
+- **≤ 6 tokens a line** (a `replaces` token does not count); a long line is one token (it shrinks to
+  fit). Lines are not limited — the board scrolls.
+- Margin words are the topic bible's words or the law a line uses, as a `note` with `near` = the token
+  it explains. One pointing gesture per beat at most (underline / circle / box = the answer).
 - No character, no stickers, no prose on the board.
+- What the PLAYER does for every clip (nothing to write): fades, the scroll glide, keeping just-written
+  things in view, finger / wheel look-back with "Back to now", the video-bar slider with ⏪ 10 / 10 ⏩,
+  ← / → keys, seeks that redraw the board cleanly, moving pieces that keep their colour, size and shape.
 
-## 2. Adrian's notes after his first watch (15 Oct 2026) — binding on every topic
+## 2. How Adrian wants a clip to teach (his watches of 15–17 Oct 2026 — binding on every topic)
 
-- **The key step is its own line.** "Show the intermediate step … That's the key step." Every
-  move a school's working writes as a line is a line on the board: taking logs on both sides,
-  moving a term across, substituting a value, multiplying by the conjugate, comparing
-  coefficients. Never merge two moves into one line to save room — cut words, not steps.
-- **The plan first.** "An overall idea … first." The second beat says the aim before the first
-  move ("rationalise the denominator, then collect the like surds"), and the plan writes it under
-  the question (a note on the first line).
-- **The rule beside the step.** Every line made by a law or rule carries that rule as its note,
-  in the topic bible's names (e.g. `Add Power: log x + log y = log xy`, `Remainder Theorem: f(a)`,
-  `(a − b)(a + b) = a² − b²`).
-- **A note points at its token.** The board draws an ↑ under the token named in `near`; write the
-  note without an arrow.
-- **The base in its own colour** (15 Oct 2026, second watch: "should emphasize on the base 3 (perhaps
-  highlighting them with a different colour) when saying that"). When the voice talks about the base
-  ("same base", "the base matches"), light the bases: `{"do": "highlight", "token": [...], "part": "sub"}`
-  lights only a log's small base, in blue. (Exponentials, where the base is the big number, highlight
-  the whole power.) The clip checker flags a "base" line with no highlight.
-- **The ↑ points at the MIDDLE, and the law is ONE line** ("the up arrow should point in the middle …
-  the log property should be on one line, putting as two lines make it less clear"). A law that acts
-  on two terms gets `"span": ["a", "b"]` — the ↑ sits under the middle of both. The board keeps a
-  note on one line (beside the ↑ when it fits, else centred under it, shrunk if needed); the look
-  fails a note on two lines. Keep laws short: the law itself, its name in front.
-- **A mistake that is said is SHOWN — at the END, as a "Watch out" step** ("you should put that out
-  and emphasize on that, not just say it > students will get confuse why you suddenly say that";
-  16 Oct 2026: "put each common mistake at the end of its clip as a 'Watch out' step"). After the
-  answer is boxed, a last beat opens "Watch out: …", circles the line the mistake is about and
-  writes it as a red ✗ note under that line (`"text": "✗ Watch out: …"`). The working itself never
-  stops for a mistake. (A step of the METHOD — rejecting x = −1, checking a root — stays in place,
-  as a plain reason, not a ✗.) The clip checker flags a line that says "not / never / mistake"
-  with no ✗ note, and a ✗ note before the answer's box.
-- **Explain every part, don't rush** (16 Oct 2026, third watch: "take reference from how this professor
-  (Herbert Gross) explains … the essence of how he explains each part very clearly (he doesn't rush)").
-  Assume the student does not know WHY: each move gets its reason, in its own short sentence. A clip
-  may run to about 2½ minutes (340 spoken words) when the steps need it — never cut a reason to save time.
-- **Show, don't just say.** "SHOW the plan, instead of just saying" — the plan is written on the board
-  as maths (e.g. `log₃(□) = log₃(△) ⇒ □ = △`) on the words that say it.
-- **The explanation sits AT the thing it explains** ("right now the explanation is quite far away from
-  2"). Light the exact part being talked about (`highlight`) as the voice names it, and put its note
-  right under it. Turning a number into a form ("2 becomes log₃9") gets its own line of small steps:
-  `2 = 2 log₃3 = log₃3² = log₃9`, one piece per beat, each with its reason.
-- **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue; use M, N — not x,
-  y — when the question already uses x), then the result line keeps those colours.
-- **Don't skip the comparison step**: after "one log each side", light the insides, then write
-  `x(x − 8) = 9` as its own line.
-- **A rejection is EXPLAINED, then shown**: substitute the bad root into the question, show what goes
-  wrong (log₃(−9): 3 to what power gives −9? none — 3 to any power is positive), and only THEN write
-  "(rej)" on the word "reject" — a token of its own, never part of the roots line's first write.
-- **Use the animation like a teacher's finger** (16 Oct 2026, fourth watch: "its an animation right? you
-  should take advantage of the animation … like a teacher physically can use fingers to point and draw
-  attention"). When a piece MOVES in the maths, move it on the board: the 2 of `2 log₃3` flies up into
-  the power of `log₃3²` (`from` + `move`, the power token `tight`); the insides fly out of the logs to
-  `x(x − 8) = 9`; the 3 and the −9 of `log₃(−9)` fly into `3^? = −9`. Light each part as it is named.
-- **Say the reason for a comparison**: "both sides are equal, both log base three, so what is inside
-  must be equal" — then the comparison line.
-- **Each new board starts with the line the last one ended on** ("when switching over to the next screen,
-  show x(x−8)=9 first"), so a student sees where it comes from.
-- **Fifth watch (16 Oct 2026)**:
-  - A chain that rewrites ONE thing stays on ONE line: `2 = 2log₃3 = log₃3² = log₃9` (Adrian: "can you
-    do 2 = 2 log_3 3 = log_3 3^2 on the same line?"). In a beat clip a piece may move to a later token
-    of its own line.
-  - Never say a piece "flies" — say the maths: "bring the power up" ("don't say fly - say power bring up").
-  - A moving piece keeps its shape: the player scales it the same both ways ("why is the 9 flattened
-    in transition? … it's just a translation right?").
-  - A log equation's check opens with "For log equations, always check each answer".
-- **Explain a number AT the number, on its own line** (16 Oct 2026, watch 6: "why not from the 3rd line,
-  at the number 2 on the right side, just explain from there"): rewrite the line in place with
-  `replaces` tokens: `= 2` → `= 2 log₃3` → the 2 goes up as the power → `= log₃3²` → `= log₃9`. Notes on
-  a rewritten piece leave with it.
-- **A board change is a breath, not a cut** (watch 7): the player fades the old board out, then the new one in.
-- **One scrolling board, not new screens** (watch 8): a clip's board slides up as lines are written (`scroll: true`); step titles sit above their first line; no repeated carry lines.
-- **Watch 11**: routine algebra the level already knows (solving a quadratic at A Math) goes FAST, a
-  few words a line; a check shows where its expression comes from (fly it from the question line);
-  every answer kept is checked ON THE BOARD, not only said; a "why" detour is a side clip in a popup.
-- **Watch 12**: prefer a NEW line under the old one (and let the board scroll) over rewriting a line in
-  place; a check writes each log of the question by name (`log₃x = log₃9`), never a bare value.
-- **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
-  ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
-- **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";
-  try powers of 3 one by one on the board; every one is positive; so none gives −9.
-- A long working may run over up to four boards and about 3 minutes (460 spoken words).
-- **A slider** lets the student jump to any beat — so every beat must make sense on its own
-  board state (no "as we said before").
+Quotes are his. Rules a later watch replaced are gone from this list; SPEC-CLIP-PIPELINE.md §8 keeps
+the history.
+
+### Pace
+- **Explain every part, don't rush** (Herbert Gross: "he explains each part very clearly (he doesn't
+  rush)"). Assume the student does not know WHY: each move gets its reason, in its own short sentence.
+  Up to about 3 minutes (460 spoken words).
+- **But routine steps go FAST** ("for solving of quadratic equations > can go faster … at AM level,
+  students should know this well"): algebra the level already knows is a few words a line ("Expand,
+  then bring nine across." "Factorise it into two brackets.").
+
+### What goes on the board
+- **The plan first, SHOWN as maths** ("SHOW the plan, instead of just saying"): the second beat writes
+  the plan (e.g. `log₃(□) = log₃(△) ⇒ □ = △`) on the words that say it.
+- **The key step is its own line** ("Show the intermediate step … That's the key step"). Never merge
+  two moves to save room — the board scrolls. Don't skip the comparison step (`x(x − 8) = 9`).
+- **The rule beside the step**: a line made by a law carries the law as its note, in the topic bible's
+  names (`Add Power: logₐM + logₐN = logₐMN`). A law acting on two terms: `"span": [a, b]`, the ↑ under
+  their middle; the law on ONE line ("putting as two lines make it less clear").
+- **Highlight, then the law under that line, then the law applied as its own line** ("highlight
+  log5+log6, then bring in the property right under this line, then the next line shows log(5x6),
+  then the next line is log30").
+- **Explain a number AT the number** ("explain it at the number 2 itself … the explanation is quite far
+  away from 2"): the part being explained is lit as it is named, its note right under it.
+- **A new line under the old one, not a rewrite** ("why not just have log₃(x−8) + log₃x = log₃9 on the
+  next line … then scroll up"): when the working changes, write the next line and let the board
+  scroll; keep the notes. A chain that rewrites one thing may grow on its own line
+  (`2 = 2log₃3 = log₃3²`) — but its result goes on the next line.
+- **A mistake that is said is SHOWN, at the END** ("put each common mistake at the end of its clip as
+  a 'Watch out' step"): after the answer is boxed, a beat opens "Watch out: …", circles the line and
+  writes a red `✗ Watch out: …` note. The working never stops for a mistake. A step of the method
+  (rejecting a root) stays in place as a plain reason.
+
+### Checks and answers
+- **A log equation's check opens "For log equations, always check each answer."**
+- **Show where a checked expression comes from** ("it's from the first line, so students may have
+  forgotten"): move it from the question line (`from` + `move`) before substituting.
+- **Check EVERY answer on the board, not only in the voice** ("you didn't show for x=9 why the answer
+  is okay instead you only narrated"), naming each log of the question (`log₃x = log₃9 ✓`, "isn't
+  relevant?" was the bare `log₃9`).
+- **A rejection is explained, then shown**: substitute, show what breaks, and only then write "(rej)"
+  (its own token) on the word "reject".
+- **A "why" detour is a side clip in a popup** ("a popup hint … that students can link to"): say the
+  fact in one line on the board ("a log of a negative number is undefined") and give the beat an
+  `aside` to a short clip that explains why. Never stop the main working for it.
+
+### Animation (the teacher's finger)
+- **When a piece moves in the maths, move it on the board** ("its an animation right? you should take
+  advantage of the animation … like a teacher physically can use fingers to point"): a coefficient
+  goes up into the power (`from` + `move`, the power `tight`), the insides come out of the logs, the
+  base and the argument go into `3^? = −9`.
+- **While a piece moves, NOTHING else moves** ("only thing that moves is 2 going up … then you can shift
+  the frame"). Only the moving piece moves; the space it leaves closes after it lands (the player does
+  this when the power token `replaces` the piece).
+- **The base in its own colour** when the voice talks about the base (`"part": "sub"`).
+- **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue), and keep those
+  colours in the result line.
+
+### Voice
+- **Never say "fly"** — say the maths ("don't say fly - say power bring up").
+- **"Negative" for a negative number** ("x equals negative one"); "minus" only for taking away
+  ("minus sounds weird").
+- Every beat must make sense on its own (the slider, ⏪ 10 and ← jump to any beat) — no "as we said".
 
 ## 3. Words in the voice
 

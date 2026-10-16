@@ -45,6 +45,7 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 | "From Adrian" assigned work | [`SPEC-ASSIGN.md`](SPEC-ASSIGN.md) |
 | Self-learning: LEARN steps (`/app/learn-step`, his notes) · REVISE (from exam papers) · the next-test loop · topic maps | [`SPEC-SELF-LEARNING.md`](SPEC-SELF-LEARNING.md) — its top section says where things stand |
 | Animated lessons, ▶ one-minute explanation, voice, characters, stickers | [`docs/LESSONS.md`](docs/LESSONS.md) |
+| **Teaching clips** (skill + question clips, `scripts/clips/`, the clip player) — **every note Adrian gives after watching a clip goes into `_house.md` §2 in the same commit**, and into the writer prompt / a checker rule when it can be checked | [`data/clip-bibles/_house.md`](data/clip-bibles/_house.md) (the rules) · [`SPEC-CLIP-PIPELINE.md`](SPEC-CLIP-PIPELINE.md) §8 (the history) |
 | Paper match at hand-in · missing questions at hand-in | [`SPEC-PAPER-MATCH.md`](SPEC-PAPER-MATCH.md) · [`SPEC-HANDIN-COMPLETENESS.md`](SPEC-HANDIN-COMPLETENESS.md) |
 | Chat solver bank grounding | [`SPEC-SOLVER-BANK-GROUNDING.md`](SPEC-SOLVER-BANK-GROUNDING.md) |
 | The red pen · margin diagrams | [`SPEC-RED-PEN.md`](SPEC-RED-PEN.md) · [`SPEC-MARGIN-DIAGRAMS.md`](SPEC-MARGIN-DIAGRAMS.md) |

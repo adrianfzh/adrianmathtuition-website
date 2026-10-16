@@ -47,6 +47,8 @@ no focus, no clear.
 ## Rules (each one is checked)
 
 - **Beats ≤ 24 words each, ≤ 460 words in all** — as many beats as the explanation needs (house rules §2).
+- **House rules §2 is Adrian's standard** — every point in it is something he asked for after watching
+  a clip. Read all of it before writing; a draft that breaks one is sent back.
 - **The first beat states the question** (if `intro` is present, read it; the first
   beat writes line 0). First word = the first word of the maths. No warm-up.
 - **Each beat: the step, then why** — in its own short sentence. ("Take log on both
@@ -78,7 +80,17 @@ no focus, no clear.
   out of the logs, a base and an argument into an index equation), the board moves it — the later
   line's token has `from` the earlier one (a power `tight`), and a `move` action fires on the word.
 - **"negative one", never "minus one"** for a negative number; "minus" only for subtraction.
-- **A new board opens with the line the last board ended on.**
+- **Never say a piece "flies"** — say the maths ("bring the power up").
+- **One scrolling board**: the plan is one board that scrolls (house rules §1); never write a beat that
+  re-writes a carried line. When the working changes, the next LINE shows it — not a rewrite.
+- **Routine steps go fast** (solving a quadratic at A Math): a few words a line. The new idea of the
+  clip gets the slow, every-reason treatment.
+- **Checks**: a log equation's check opens "For log equations, always check each answer."; the
+  expression checked comes from the question line (a `move` from its token); EVERY answer is checked
+  on the board, each log of the question named (`log₃x = log₃9 ✓`), never only in the voice.
+- **A "why" detour is a side clip**: one line on the board states the fact, and the beat carries
+  `"aside": {"text": "Why …?", "slug": "<side clip>"}` — it opens in a popup; never stop the working.
+- **While a piece moves, nothing else is written**: the `move` is the only action on its words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.
 - **The base in its own colour**: a line that talks about the base ("same base", "the base
@@ -113,8 +125,7 @@ every line shown.
 `node scripts/clips/draft-check.mjs <slug> <your draft key>` (the same verifier the clip must
 pass). Its exact numbers: at most **2 things APPEAR in a beat** — `write` and `note` each count,
 `mark`/`highlight` do not (so a line + its rule note is a full beat; the circle may join them);
-**4–24 words a beat**, ≤ 170 in all, ≤ 2 boards; cued actions ≥ 3 spoken words apart. A beat that
-needs a third thing is two beats. On a two-board plan every beat carries `"board": 0|1` and only
-uses that board's token ids.
+**4–24 words a beat**, ≤ 460 in all, ONE scrolling board; cued actions ≥ 3 spoken words apart. A
+beat that needs a third thing is two beats.
 
 Report one line per clip: slug, beats, words, and the draft-check result.

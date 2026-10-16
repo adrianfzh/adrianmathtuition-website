@@ -764,6 +764,11 @@ export function clipIssues(script: LessonScript): Issue[] {
   const n = script.scenes.length;
   if (n > CLIP_MAX_SCENES) out.push(issue('warn', 'scenes', `${n} scenes — a clip is ONE concept on one board (≤ ${CLIP_MAX_SCENES})`));
   if (script.theme !== 'chalk') out.push(issue('warn', 'theme', 'a clip plays on the chalk board — set "theme": "chalk"'));
+  // Adrian, 16 Oct 2026: "make the lines move up, like scrolling up, then we don't have to change screen".
+  const boards = script.scenes.filter(sc => sc.type === 'equation-steps');
+  if (boards.length > 1 || boards.some(sc => sc.type === 'equation-steps' && sc.steps.length > 7 && !sc.scroll)) {
+    out.push(issue('warn', 'scenes', 'a clip is ONE scrolling board — put every line on one equation-steps scene with "scroll": true (step titles as line headings)'));
+  }
   if (!(script.minutes >= 1 && script.minutes <= 3)) out.push(issue('warn', 'minutes', 'a clip runs one to three minutes — set "minutes" to its length'));
   let words = 0;
   script.scenes.forEach((s, i) => {
@@ -782,6 +787,12 @@ export function clipIssues(script: LessonScript): Issue[] {
       }
       if (b.aside !== undefined && (typeof b.aside?.text !== 'string' || !b.aside.text.trim() || b.aside.text.length > 70 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(b.aside?.slug)))) {
         out.push(issue('error', `${at}.beats[${k}].aside`, 'a side link is { text (≤ 70 chars), slug of another clip }'));
+      }
+      // Adrian, 16 Oct 2026: "don't say fly - say power bring up" · "x equals minus one > minus sounds weird".
+      if (/\b(fly|flies|flying|flew)\b/i.test(b.say)) out.push(issue('warn', `${at}.beats[${k}].say`, 'never say a piece "flies" — say the maths ("bring the power up", "goes up as the power")'));
+      if (/\b(equals|is|be|gives)\s+minus\s+(one|two|three|four|five|six|seven|eight|nine|ten|\w+teen|twenty|thirty|forty|fifty|a|an)\b/i.test(b.say)
+        && !/\bminus\s+\w+\s+[A-Z]\b/.test(b.say)) {
+        out.push(issue('warn', `${at}.beats[${k}].say`, 'a negative number is "negative …" ("X equals negative one"); "minus" only for taking away'));
       }
       // "should emphasize on the base 3 (perhaps highlighting them with a different colour) when saying that."
       if (CLIP_BASE_WORDS.test(b.say) && !b.do.some(a => a.do === 'highlight')) {

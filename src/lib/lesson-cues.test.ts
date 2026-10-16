@@ -135,6 +135,21 @@ describe('the verifier’s new rules', () => {
     const long = clip(Array.from({ length: 30 }, () => ({ say: 'Multiply the first term by the second term and write the product down on the next line now.', do: [] })));
     expect(clipIssues(long).map(m => m.message).join(' | ')).toMatch(/over about three minutes/);
   });
+  it('clipIssues: Adrian\'s voice rules — never "flies", "negative one" not "minus one"', () => {
+    const bad = clip([
+      { say: 'Now the two in front flies up into the power.', do: [] },
+      { say: 'So X equals nine, or X equals minus one.', do: [] },
+    ]);
+    const msgs = clipIssues(bad).map(m => m.message).join(' | ');
+    expect(msgs).toMatch(/never say a piece "flies"/);
+    expect(msgs).toMatch(/"negative …"/);
+    const good = clip([
+      { say: 'Now bring the power up: the two goes up as the power.', do: [] },
+      { say: 'So X equals nine, or X equals negative one.', do: [] },
+      { say: 'X times negative eight is minus eight X.', do: [] },
+    ]);
+    expect(clipIssues(good).map(m => m.message).join(' | ')).not.toMatch(/flies|"negative …"/);
+  });
 });
 
 describe('expand-two-brackets-s2 — the first one-concept clip', () => {
