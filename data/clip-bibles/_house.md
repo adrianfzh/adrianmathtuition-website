@@ -45,11 +45,14 @@ on 15 Oct 2026 — his notes are binding.
   on two terms gets `"span": ["a", "b"]` — the ↑ sits under the middle of both. The board keeps a
   note on one line (beside the ↑ when it fits, else centred under it, shrunk if needed); the look
   fails a note on two lines. Keep laws short: the law itself, its name in front.
-- **A mistake that is said is SHOWN** ("you should put that out and emphasize on that, not just say
-  it > students will get confuse why you suddenly say that"). Write it on the board as a red ✗ note
-  (`"text": "✗ Common mistake: …"`) under the line where it bites, and lead into it from that line
-  ("Careful: the times sits inside one log.") so it never comes from nowhere. The clip checker
-  flags a line that says "not / never / mistake" with no ✗ note.
+- **A mistake that is said is SHOWN — at the END, as a "Watch out" step** ("you should put that out
+  and emphasize on that, not just say it > students will get confuse why you suddenly say that";
+  16 Oct 2026: "put each common mistake at the end of its clip as a 'Watch out' step"). After the
+  answer is boxed, a last beat opens "Watch out: …", circles the line the mistake is about and
+  writes it as a red ✗ note under that line (`"text": "✗ Watch out: …"`). The working itself never
+  stops for a mistake. (A step of the METHOD — rejecting x = −1, checking a root — stays in place,
+  as a plain reason, not a ✗.) The clip checker flags a line that says "not / never / mistake"
+  with no ✗ note, and a ✗ note before the answer's box.
 - **A slider** lets the student jump to any beat — so every beat must make sense on its own
   board state (no "as we said before").
 

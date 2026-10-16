@@ -76,8 +76,10 @@ no focus, no clear.
   matches") lights the bases — `{"do": "highlight", "token": [...], "part": "sub"}` for a log's base.
 - **A law acting on two terms points at their middle**: give its note `"span": ["a", "b"]`; keep
   the law short enough for one line.
-- **A mistake you say, you show**: a red `✗ Common mistake: …` note under the line where it bites,
-  on the word that names it, led into from that line — never say a trap without writing it.
+- **A mistake goes LAST, as a "Watch out" step**: after the answer is boxed, one beat opens
+  "Watch out: …", circles the line it is about and writes a red `✗ Watch out: …` note under it —
+  never say a trap without writing it, and never stop the working for one. A step of the method
+  (rejecting a root) stays in place as a plain reason.
 - **Spoken maths**: words, never symbols or TeX. Letters as CAPITALS ("X", "K", "A")
   so the voice reads the letter. Numbers in words ("seven point five", "minus eight
   point five seven"). Follow the bible's notation table (lg = "log", ln = "L N").

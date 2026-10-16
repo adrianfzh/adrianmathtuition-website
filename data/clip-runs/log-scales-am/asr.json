@@ -4,8 +4,8 @@
  "lines": [
   {
    "beat": 1,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -41,14 +41,14 @@
   },
   {
    "beat": 7,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.93,
+   "score": 0.93,
    "heard": null
   },
   {
    "beat": 8,
-   "bag": 0.93,
-   "score": 0.93,
+   "bag": 1,
+   "score": 1,
    "heard": null
   }
  ]

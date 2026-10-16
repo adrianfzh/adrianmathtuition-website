@@ -1,180 +1,43 @@
 {
  "slug": "linear-form-with-logs-am",
- "pick": "A3",
- "why": "Only draft (A3), written for the current two-board plan; every line is written and spoken in order.",
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
  "scores": {
   "clear": 4,
   "one_idea": 4,
-  "voice_board": 4,
+  "voice_board": 5,
   "why": 4,
-  "trap": 4,
-  "level": 4
- },
- "scores_with_fixes": {
-  "clear": 4,
-  "one_idea": 4,
-  "voice_board": 4,
-  "why": 4,
-  "trap": 4,
+  "trap": 5,
   "level": 4
  },
  "notes": [
-  "Beat 1 says 'This is Linear Law' but never gives the plan; the tutor asked for the comparison with Y = mX + c up front (bible §1b 'The plan first'). Fixed: 'The plan: take L N of both sides, then compare with capital Y equals M capital X plus C.' The question and model are already in the board intro, so beat 1 no longer repeats them.",
-  "Capital Y vs small y is lost in the voice: beat 5 'so Y is L N Y' and beat 4 'Compare with Y equals M X plus C' sound like y = ln y. Fixed by saying 'capital Y' / 'capital X' wherever the transformed variables are meant (beats 1, 4, 5).",
-  "Beat 3 'L N E is one' is not the move on the board: the line comes from ln e^(−nx) = −nx, and that line has no law beside it (bible §1b). Fixed: 'L N cancels E, leaving minus N X' + note 'Take ln: ln eˣ = x' near mx, after the line is written.",
-  "Beat 2 note 'ln AB = ln A + ln B' reuses the question's A — reads as if it were about this A. Changed to the series form 'Add Power: ln xy = ln x + ln y'.",
-  "Beat 6 says gradient and intercept but nothing points back at (−n) and ln A on the line above, so 'show clearly' is only in the colours. Fixed: 'Match the parts.' underlines mx and cc, then m = −n and c = ln A are written on their words.",
-  "Beat 9 trap: 'not two' is said but nothing on the board marks it; the series circles the trap once where it bites. Fixed: 'Watch the sign: N is minus two, not two.' with a circle on nn on 'not two'.",
-  "Beat 10 un-log has no law beside it and says 'E to the minus one' (bible §2: 'E to the power'). Fixed: note 'Un-log: ln x = c ⇒ x = eᶜ' near AA after it is written; 'E to the power minus one'. Box on nn and AA kept.",
-  "Beat 7 (gradient two) is clean and stays. Beat 8 (substitute for C) is clean and stays.",
-  "With the fixed beats: 169 words, every beat ≤ 24 words, cues in spoken order ≥ 3 words apart, only plan token ids.",
-  "Session: the reader's fixed beats are applied (assemble.mjs); 'scores' = the scores WITH the fixes (all >= 4), the draft as written is in 'scores_as_written'.",
-  "Session: beat 10 writes its line in one go (was AA0 then AA: three new things in one beat).",
-  "Session: the last box marks A only (one box over both answer lines crossed the circle on n).",
-  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
+  "Working flows: ln both sides → Y = mX + c matched → gradient → c → n → A, no stop for a mistake; A ≈ 0.368 boxed in beat 10; beat 11 opens 'Watch out:', circles n = −2, red ✗ note.",
+  "Beat 11 wrote the ✗ note before the circle and with no cue. Fixed: circle on 'Watch out', ✗ note on 'not two'.",
+  "Beat 1 opens 'This is Linear Law' rather than the question; the question sits on screen, and the word budget (169 of 170) leaves no room to read it — kept.",
+  "Only A is boxed (n = −2 is emerald but not boxed); kept from the earlier session's layout note (one box across both lines crossed the circle)."
  ],
  "fixed_beats": {
-  "1": {
-   "board": 0,
-   "say": "This is Linear Law. Plan: take L N of both sides, then compare with capital Y equals M capital X plus C.",
-   "do": []
-  },
-  "2": {
-   "board": 0,
-   "say": "Take L N of both sides. Add Power splits the right side.",
-   "do": [
-    {
-     "do": "write",
-     "step": 0
-    },
-    {
-     "do": "note",
-     "text": "Add Power: $\\ln xy = \\ln x + \\ln y$",
-     "near": "lnsplit",
-     "on": "Add Power splits"
-    }
-   ]
-  },
-  "3": {
-   "board": 0,
-   "say": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A.",
-   "do": [
-    {
-     "do": "write",
-     "step": 1,
-     "on": "So L N Y"
-    },
-    {
-     "do": "note",
-     "text": "Take ln: $\\ln e^{x} = x$",
-     "near": "mx",
-     "on": "plus L N A"
-    }
-   ]
-  },
-  "4": {
-   "board": 0,
-   "say": "Line it up with capital Y equals M capital X plus C.",
-   "do": [
-    {
-     "do": "write",
-     "step": 2,
-     "on": "capital Y equals"
-    }
-   ]
-  },
-  "5": {
-   "board": 0,
-   "say": "Capital Y is the vertical axis, L N Y. Capital X is the horizontal axis, X.",
-   "do": [
-    {
-     "do": "write",
-     "token": "YY",
-     "on": "Capital Y is"
-    },
-    {
-     "do": "write",
-     "token": "XX",
-     "on": "Capital X is"
-    }
-   ]
-  },
-  "6": {
-   "board": 0,
-   "say": "Match the parts. Gradient M is minus N. Vertical intercept C is L N A.",
+  "11": {
+   "board": 1,
+   "say": "Watch out: N is minus two, not two. The gradient is minus N.",
    "do": [
     {
      "do": "mark",
-     "kind": "underline",
-     "token": [
-      "mx",
-      "cc"
-     ],
-     "on": "Match the parts"
-    },
-    {
-     "do": "write",
-     "token": "mm",
-     "on": "Gradient M is"
-    },
-    {
-     "do": "write",
-     "token": "ccl",
-     "on": "intercept C is"
-    }
-   ]
-  },
-  "9": {
-   "say": "M is minus N, so minus N is two. Watch the sign: N is minus two, not two.",
-   "do": [
-    {
-     "do": "write",
-     "step": 2,
-     "on": "minus N is two"
+     "kind": "circle",
+     "token": "nn",
+     "on": "Watch out"
     },
     {
      "do": "note",
-     "text": "✗ Common mistake: $n = 2$ (the gradient is $-n$)",
+     "text": "✗ Watch out: $n = 2$ (the gradient is $-n$)",
      "near": "nn",
      "on": "not two"
     }
    ],
-   "board": 1,
    "asks": [
-    "Why is n = −2, not 2?"
-   ]
-  },
-  "10": {
-   "board": 1,
-   "say": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight.",
-   "do": [
-    {
-     "do": "write",
-     "step": 3,
-     "on": "L N A is minus one"
-    },
-    {
-     "do": "note",
-     "text": "Un-log: $\\ln x = c \\Rightarrow x = e^{c}$",
-     "near": "AA",
-     "on": "E to the power"
-    },
-    {
-     "do": "mark",
-     "kind": "box",
-     "token": "AA",
-     "on": "zero point three"
-    }
+    "Why is n negative?"
    ]
   }
  },
- "verdict": "pass",
- "scores_as_written": {
-  "clear": 3,
-  "one_idea": 4,
-  "voice_board": 4,
-  "why": 3,
-  "trap": 3,
-  "level": 4
- }
+ "verdict": "pass"
 }

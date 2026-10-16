@@ -1,15 +1,15 @@
 Verifying 10 clip(s) of solving-log-equations-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 94% of narration words heard
+  scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard
-  scene-01-b5: 83% of narration words heard  ⚠ LOW
-      heard: Right two is log base 3 of 9. 3 squared is 9.
+  scene-01-b5: 100% of narration words heard
   scene-01-b6: 100% of narration words heard
   scene-01-b7: 90% of narration words heard
   scene-01-b8: 100% of narration words heard
   scene-01-b9: 94% of narration words heard
-  scene-01-b10: 100% of narration words heard
+  scene-01-b10: 83% of narration words heard  ⚠ LOW
+      heard: The answer is X equals 2
 
 1 clip(s) below 85% — listen to those.

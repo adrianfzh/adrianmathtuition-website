@@ -1,0 +1,220 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "draft": "W1",
+ "by": "session, Adrian 16 Oct 2026: 'put each common mistake at the end of its clip as a Watch out step'",
+ "beats": [
+  {
+   "say": "This is Linear Law. Plan: take L N of both sides, then compare with capital Y equals M capital X plus C.",
+   "do": [],
+   "asks": [
+    "Why take ln, not lg?",
+    "What is Linear Law for?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "Take L N of both sides. Add Power splits the right side.",
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\ln xy = \\ln x + \\ln y$",
+     "near": "lnsplit",
+     "on": "Add Power splits"
+    }
+   ],
+   "asks": [
+    "What is the Add Power law?",
+    "Why does the ln split?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A.",
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "So L N Y"
+    },
+    {
+     "do": "note",
+     "text": "Take ln: $\\ln e^{x} = x$",
+     "near": "mx",
+     "on": "plus L N A"
+    }
+   ],
+   "asks": [
+    "Why does ln cancel e?",
+    "Why is ln A the intercept?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "Line it up with capital Y equals M capital X plus C.",
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "capital Y equals"
+    }
+   ],
+   "asks": [
+    "Why compare with Y = mX + c?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "Capital Y is the vertical axis, L N Y. Capital X is the horizontal axis, X.",
+   "do": [
+    {
+     "do": "write",
+     "token": "YY",
+     "on": "Capital Y is"
+    },
+    {
+     "do": "write",
+     "token": "XX",
+     "on": "Capital X is"
+    }
+   ],
+   "asks": [
+    "Why is Y = ln y?",
+    "Why is X just x?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "Match the parts. Gradient M is minus N. Vertical intercept C is L N A.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "underline",
+     "token": [
+      "mx",
+      "cc"
+     ],
+     "on": "Match the parts"
+    },
+    {
+     "do": "write",
+     "token": "mm",
+     "on": "Gradient M is"
+    },
+    {
+     "do": "write",
+     "token": "ccl",
+     "on": "intercept C is"
+    }
+   ],
+   "asks": [
+    "Why is the gradient −n?",
+    "Why is c = ln A?"
+   ],
+   "board": 0
+  },
+  {
+   "say": "Gradient: seven minus three over four minus two is two.",
+   "do": [
+    {
+     "do": "write",
+     "token": "grad",
+     "on": "seven minus three"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "is two"
+    }
+   ],
+   "asks": [
+    "How do I find the gradient?"
+   ],
+   "board": 1
+  },
+  {
+   "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
+   "do": [
+    {
+     "do": "write",
+     "token": "sub",
+     "on": "Three equals two"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "C is minus one"
+    }
+   ],
+   "asks": [
+    "Why substitute (2, 3)?",
+    "Which point should I use?"
+   ],
+   "board": 1
+  },
+  {
+   "say": "Minus N is two, so N is minus two.",
+   "asks": [
+    "Why is n = −2, not 2?"
+   ],
+   "board": 1,
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "minus N is two"
+    }
+   ]
+  },
+  {
+   "say": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight.",
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "L N A is minus one"
+    },
+    {
+     "do": "note",
+     "text": "Un-log: $\\ln x = c \\Rightarrow x = e^{c}$",
+     "near": "AA",
+     "on": "E to the power"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "AA",
+     "on": "zero point three"
+    }
+   ],
+   "asks": [
+    "How do I un-log ln A = −1?",
+    "Why is A = e⁻¹?"
+   ],
+   "board": 1
+  },
+  {
+   "say": "Watch out: N is minus two, not two. The gradient is minus N.",
+   "asks": [
+    "Why is n negative?"
+   ],
+   "board": 1,
+   "do": [
+    {
+     "do": "note",
+     "text": "✗ Watch out: $n = 2$ (the gradient is $-n$)",
+     "near": "nn"
+    },
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "nn",
+     "on": "not two"
+    }
+   ]
+  }
+ ]
+}

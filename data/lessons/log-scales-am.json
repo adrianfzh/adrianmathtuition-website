@@ -39,77 +39,83 @@
       ],
       "beats": [
         {
-          "say": "A dishwasher is sixty-two decibels and a pump is fifty. Subtract the two readings to compare them.",
+          "say": "Dishwasher sixty-two decibels, pump fifty. Find how many times as intense. Subtract the two readings, each ten log I over K.",
+          "asks": ["Why subtract the two readings?", "What is a decibel?"],
           "do": [
             { "do": "write", "step": 0, "on": "Subtract the two readings" }
           ],
-          "asks": ["Why subtract the two readings?", "What is a decibel?"],
           "audio": "/lessons/log-scales-am/scene-01-b1.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b1.timing.json"
         },
         {
           "say": "Sixty-two minus fifty is twelve.",
+          "asks": ["Why work out 62 − 50 first?"],
           "do": [
             { "do": "write", "token": "twelve", "on": "is twelve" }
           ],
-          "asks": ["Why work out 62 − 50 first?"],
           "audio": "/lessons/log-scales-am/scene-01-b2.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b2.timing.json"
         },
         {
           "say": "Minus Power turns the right side into one log of the ratio. The K cancels.",
+          "asks": ["What is the Minus Power law?", "Why does k cancel?"],
           "do": [
+            { "do": "highlight", "token": "two", "on": "Minus Power" },
             { "do": "write", "token": "one", "on": "one log of the ratio" },
             { "do": "note", "text": "Minus Power: $\\lg a - \\lg b = \\lg\\tfrac{a}{b}$", "near": "one", "on": "K cancels" }
           ],
-          "asks": ["What is the Minus Power law?", "Why does k cancel?"],
           "audio": "/lessons/log-scales-am/scene-01-b3.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b3.timing.json"
         },
         {
           "say": "Divide both sides by ten. Log of the ratio is one point two.",
+          "asks": ["Why divide both sides by 10?"],
           "do": [
             { "do": "write", "step": 2, "on": "Log of the ratio" }
           ],
-          "asks": ["Why divide both sides by 10?"],
           "audio": "/lessons/log-scales-am/scene-01-b4.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b4.timing.json"
         },
         {
           "say": "Log is base ten, so un-log with ten to the power. The ratio is ten to the power one point two.",
+          "asks": ["What does un-log mean?", "Why 10 to the power?"],
           "do": [
             { "do": "write", "token": "unlog", "on": "The ratio is ten" },
             { "do": "note", "text": "Un-log: $\\lg x = c \\Rightarrow x = 10^{c}$", "near": "unlog", "on": "one point two" }
           ],
-          "asks": ["What does un-log mean?", "Why 10 to the power?"],
           "audio": "/lessons/log-scales-am/scene-01-b5.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b5.timing.json"
         },
         {
           "say": "Ten to the power one point two is about fifteen point eight.",
+          "asks": ["How do I key this in?"],
           "do": [
             { "do": "write", "token": "ans", "on": "about fifteen point eight" }
           ],
-          "asks": ["How do I key this in?"],
           "audio": "/lessons/log-scales-am/scene-01-b6.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b6.timing.json"
         },
         {
-          "say": "The answer is not twelve. Twelve is the difference in decibels, not how many times.",
-          "asks": ["Why is the answer not 12?"],
+          "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+          "asks": ["What does 'times as intense' mean?"],
           "do": [
-            { "do": "note", "text": "✗ Not $12$: that is the dB difference", "near": "twelve" },
-            { "do": "mark", "kind": "circle", "token": "twelve", "on": "not twelve" }
+            { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
           ],
           "audio": "/lessons/log-scales-am/scene-01-b7.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b7.timing.json"
         },
         {
-          "say": "So the dishwasher is about fifteen point eight times as intense as the pump.",
+          "say": "Watch out: the answer is not twelve. Twelve is the difference in decibels, not how many times.",
+          "asks": ["Why is the answer not 12?"],
           "do": [
-            { "do": "mark", "kind": "box", "token": "ans", "on": "fifteen point eight times" }
+            { "do": "mark", "kind": "circle", "token": "twelve", "on": "Watch out" },
+            {
+              "do": "note",
+              "text": "✗ Watch out: not $12$: that is the dB difference",
+              "near": "twelve",
+              "on": "difference in decibels"
+            }
           ],
-          "asks": ["What does 'times as intense' mean?"],
           "audio": "/lessons/log-scales-am/scene-01-b8.mp3",
           "timing": "/lessons/log-scales-am/scene-01-b8.timing.json"
         }

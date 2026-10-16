@@ -1,11 +1,11 @@
 {
  "slug": "laws-of-logarithms-am",
- "worst": 0.94,
+ "worst": 1,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -28,14 +28,14 @@
   },
   {
    "beat": 5,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
    "beat": 6,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {

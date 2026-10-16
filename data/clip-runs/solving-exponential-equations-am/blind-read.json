@@ -1,23 +1,20 @@
 {
  "slug": "solving-exponential-equations-am",
- "pick": "A2",
- "why": "One draft (A2): taking lg on both sides is now its own line, and Bring down power sits beside it.",
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
  "scores": {
-  "clear": 4,
+  "clear": 5,
   "one_idea": 4,
-  "voice_board": 4,
-  "why": 4,
-  "trap": 4,
+  "voice_board": 5,
+  "why": 5,
+  "trap": 5,
   "level": 5
  },
  "notes": [
-  "Scores are for A2 with fixed_beats applied (keys are 1-based beat numbers).",
-  "Tutor's ask (1) met: line 1 'lg 7^(x−1) = lg 5^(x−3)' is written on 'take log on both sides' before the powers come down. Ask (3) met: 'Bring down power: lg xʳ = r lg x' under lg 7^(x−1).",
-  "Ask (2) was missing: beat 2 gave the first move but not the overall plan. Fixed: 'The plan: take log on both sides, then bring the powers down.' (the bible's own words for this skill).",
-  "Bible §3.3 order: take lg (line 1) → bring down (line 2) → expand → collect (line 3) → factorise and divide (line 4). Expand has no line of its own — it is merged into the collect line on the checked board. The voice says 'Expand' (beat 5), so the student hears it; a board change, not a voice fix, if the tutor wants it shown.",
-  "Beat 7 'Factorise out X, then divide' gives no reason — plain algebra, acceptable.",
-  "Trap (beat 9) comes after the right answer is on the board, as a warning — plain and said once.",
-  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
+  "Working flows lg both sides → bring powers down → expand → collect → factorise → calculator with no stop; x ≈ −8.57 boxed in beat 8; beat 9 opens 'Watch out:', circles the answer line, red ✗ note.",
+  "Beat 2 lit both powers with no cue; now on 'Seven and five'. Beat 3's law note had no cue (appeared before the voice); now on 'Bring down the powers'.",
+  "Beat 9 never said the wrong answer itself ('the calculator shows minus eight point five six six five four') while the ✗ note shows x ≈ 8.57. Fixed: 'Watch out: do not write X is about eight point five seven. Rounding never removes a minus.' — circle first, then the ✗ note on the wrong value.",
+  "The plan is said in beat 2 but not written under the question as a note; left as is (the next line, lg both sides, appears in the same beat)."
  ],
  "fixed_beats": {
   "2": {
@@ -28,28 +25,53 @@
      "token": [
       "s7",
       "s5"
-     ]
+     ],
+     "on": "Seven and five"
     },
     {
      "do": "write",
      "step": 1,
      "on": "take log on both sides"
     }
+   ],
+   "asks": [
+    "Why take lg of both sides?",
+    "Can I use ln instead of lg?"
    ]
   },
-  "9": {
-   "say": "The calculator shows minus eight point five six six five four. Rounding never removes a minus.",
+  "3": {
+   "say": "Bring down the powers. Each power comes down in front of its log.",
    "do": [
     {
      "do": "note",
-     "text": "✗ Common mistake: $x \\approx 8.57$ (the minus dropped)",
-     "near": "ans"
+     "text": "Bring down power: $\\lg x^r = r\\lg x$",
+     "near": "lg7",
+     "on": "Bring down the powers"
     },
+    {
+     "do": "write",
+     "token": "p7",
+     "on": "comes down in front"
+    }
+   ],
+   "asks": [
+    "Why can the power come down?"
+   ]
+  },
+  "9": {
+   "say": "Watch out: do not write X is about eight point five seven. Rounding never removes a minus.",
+   "do": [
     {
      "do": "mark",
      "kind": "circle",
      "token": "ans",
-     "on": "removes a minus"
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: $x \\approx 8.57$ (the minus dropped)",
+     "near": "ans",
+     "on": "eight point five seven"
     }
    ],
    "asks": [

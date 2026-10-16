@@ -25,7 +25,7 @@ the question, and two drafts of what the voice says and when each piece appears.
    - `level` — nothing a Sec 3–4 student cannot follow; Adrian's method, not another.
    Check the 15 Oct rules too (house rules §2): the bases light when the base is talked about; a
    law's ↑ points at the middle of the terms it acts on and the law is one line; every mistake the
-   voice names is WRITTEN as a red ✗ note, led into so it does not come from nowhere.
+   voice names is WRITTEN as a red ✗ note, in a "Watch out" step at the END (after the answer).
 3. **Notes**: every concrete problem, quoting the words ("beat 4 says 'compare' but never
    says what is compared").
 4. **Fix what words can fix.** Every problem that a change to a beat's `say` / `do` can fix

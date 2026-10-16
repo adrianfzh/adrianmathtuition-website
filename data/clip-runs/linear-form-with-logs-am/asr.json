@@ -11,15 +11,15 @@
   {
    "beat": 2,
    "bag": 0.83,
-   "score": 0.935,
-   "heard": "Take Ellen of both sides, add power, splits the right side.",
+   "score": 1,
+   "heard": "Take ln of both sides, add power, splits the right side.",
    "said": "Take L N of both sides. Add Power splits the right side."
   },
   {
    "beat": 3,
-   "bag": 0.52,
+   "bag": 0.48,
    "score": 1,
-   "heard": "LN cancels E, leaving - NX. So LN Y = - N * X + LN A.",
+   "heard": "ln cancels E leaving minus nx. So lny = -n * x + lnA.",
    "said": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A."
   },
   {
@@ -48,8 +48,8 @@
   },
   {
    "beat": 8,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.89,
+   "score": 0.89,
    "heard": null
   },
   {
@@ -60,10 +60,16 @@
   },
   {
    "beat": 10,
-   "bag": 0.68,
+   "bag": 0.73,
    "score": 0.886,
-   "heard": "LNA is -1. Unlog. A is E to the power -1 about 0.368.",
+   "heard": "LN A is -1, unlog A is E to the power -1, about 0.368.",
    "said": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight."
+  },
+  {
+   "beat": 11,
+   "bag": 1,
+   "score": 1,
+   "heard": null
   }
  ]
 }

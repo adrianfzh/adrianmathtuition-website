@@ -4,10 +4,9 @@
  "lines": [
   {
    "beat": 1,
-   "bag": 0.63,
+   "bag": 1,
    "score": 1,
-   "heard": "Solve 7 ^ x - 1 = 5 ^ x - 3.",
-   "said": "Solve seven to the power X minus one equals five to the power X minus three."
+   "heard": null
   },
   {
    "beat": 2,
@@ -49,22 +48,15 @@
    "beat": 8,
    "bag": 0.8,
    "score": 1,
-   "heard": "Press calculator. X is about -8.57.",
+   "heard": "Press calculator X is about -8.57",
    "said": "Press calculator. X is about minus eight point five seven."
   },
   {
    "beat": 9,
-   "bag": 0.63,
-   "score": 1,
-   "heard": "The calculator shows minus 8.56654. Rounding never removes a minus.",
-   "said": "The calculator shows minus eight point five six six five four. Rounding never removes a minus."
-  },
-  {
-   "beat": 10,
-   "bag": 0.78,
-   "score": 1,
-   "heard": "So X is about -8.57.",
-   "said": "So X is about minus eight point five seven."
+   "bag": 0.71,
+   "score": 0.911,
+   "heard": "Watch out, do not write X's about 8.57, rounding never removes a value",
+   "said": "Watch out: do not write X is about eight point five seven. Rounding never removes a minus."
   }
  ]
 }

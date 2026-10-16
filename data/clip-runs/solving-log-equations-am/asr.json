@@ -1,11 +1,11 @@
 {
  "slug": "solving-log-equations-am",
- "worst": 0.867,
+ "worst": 0.9,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -28,10 +28,9 @@
   },
   {
    "beat": 5,
-   "bag": 0.83,
-   "score": 0.867,
-   "heard": "Right two is log base 3 of 9. 3 squared is 9.",
-   "said": "Write two as log base three of nine. Three squared is nine."
+   "bag": 1,
+   "score": 1,
+   "heard": null
   },
   {
    "beat": 6,
@@ -59,9 +58,10 @@
   },
   {
    "beat": 10,
-   "bag": 1,
-   "score": 1,
-   "heard": null
+   "bag": 0.83,
+   "score": 0.947,
+   "heard": "The answer is X equals 2",
+   "said": "The answer is X equals nine."
   }
  ]
 }

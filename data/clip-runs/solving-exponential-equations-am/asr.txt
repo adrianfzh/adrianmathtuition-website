@@ -1,7 +1,6 @@
-Verifying 10 clip(s) of solving-exponential-equations-am by transcription (gemini-2.5-flash)…
+Verifying 9 clip(s) of solving-exponential-equations-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 63% of narration words heard  ⚠ LOW
-      heard: Solve 7 ^ x - 1 = 5 ^ x - 3.
+  scene-01-b1: 100% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard
@@ -9,10 +8,8 @@ Verifying 10 clip(s) of solving-exponential-equations-am by transcription (gemin
   scene-01-b6: 100% of narration words heard
   scene-01-b7: 91% of narration words heard
   scene-01-b8: 80% of narration words heard  ⚠ LOW
-      heard: Press calculator. X is about -8.57.
-  scene-01-b9: 63% of narration words heard  ⚠ LOW
-      heard: The calculator shows minus 8.56654. Rounding never removes a minus.
-  scene-01-b10: 78% of narration words heard  ⚠ LOW
-      heard: So X is about -8.57.
+      heard: Press calculator X is about -8.57
+  scene-01-b9: 71% of narration words heard  ⚠ LOW
+      heard: Watch out, do not write X's about 8.57, rounding never removes a value
 
-4 clip(s) below 85% — listen to those.
+2 clip(s) below 85% — listen to those.

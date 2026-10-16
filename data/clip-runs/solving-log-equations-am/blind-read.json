@@ -1,7 +1,7 @@
 {
  "slug": "solving-log-equations-am",
- "pick": "A2",
- "why": "One draft (A2): the tutor's rewrite — plan said and written first, the move across its own line, Add Power beside the join.",
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
  "scores": {
   "clear": 5,
   "one_idea": 4,
@@ -11,53 +11,51 @@
   "level": 5
  },
  "notes": [
-  "Scores are for A2 with fixed_beats applied (assemble.mjs swaps them in; keys are 1-based beat numbers).",
-  "Tutor's three asks are met: beat 2 says the plan ('get one log on each side, then compare what is inside') and writes the aim under the question; beat 3 writes the move across (log₃(x − 8) + log₃x = 2) as its own line; beats 4 and 5 put Add Power and 2 = log₃9 beside their steps.",
-  "Bible §3.2 key moves — rewrite (lines 1–2), compare (line 3), check roots (beat 9) — each has its line and is said.",
-  "Beat 6 jumped from log₃[x(x − 8)] = log₃9 straight to the quadratic without saying what is compared, and 'drop the logs and compare' left 'compare' unsaid. Fixed: 'X times the bracket equals nine, so X squared …' — the compare is now spoken (the board has no x(x − 8) = 9 line; the voice carries it). 'One log each side' ties it back to the plan.",
-  "Beat 2: the aim note points its ↑ at '= 2' (the middle token) — reads as 'under the question', fine.",
-  "Beat 8: the token 'or x = −1 (rej)' shows '(rej)' a beat before the voice says why — one token on the plan, board limit.",
-  "Adrian 15 Oct 2026 rule (a mistake said is shown): beat 9 writes the mistake as a red ✗ note."
+  "Working flows move across → Add Power → 2 = log₃9 → drop logs → factorise; the rejection of x = −1 stays in place as a method step (beat 9: circle + plain reason, no ✗), then x = 9 boxed last. No separate Watch-out beat: the one trap (giving both roots) is this rejection, as intended.",
+  "Beat 3's highlight had no cue; now on 'Move minus log'.",
+  "Beat 4 said 'log of X times the bracket' (base dropped) and wrote the line with no cue and nothing lit. Fixed: lights log₃(x − 8) + log₃ x on 'joins the two logs', writes on 'log base three of X', law note on 'the bracket'."
  ],
  "fixed_beats": {
-  "6": {
-   "say": "One log each side: drop the logs. X times the bracket equals nine, so X squared minus eight X minus nine equals zero.",
+  "3": {
+   "say": "Move minus log base three of X to the left. It becomes plus log base three of X.",
    "do": [
     {
-     "do": "mark",
-     "kind": "underline",
-     "token": [
-      "comb",
-      "nine"
-     ],
-     "on": "One log each side"
+     "do": "highlight",
+     "token": "l2",
+     "on": "Move minus log"
     },
     {
      "do": "write",
-     "step": 3,
-     "on": "X squared minus"
-    }
-   ]
-  },
-  "9": {
-   "say": "Check every root in the logs. X equals minus one gives log of minus nine, so reject it.",
-   "do": [
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "rej",
-     "on": "X equals minus one"
-    },
-    {
-     "do": "note",
-     "text": "✗ $x = -1$ gives $\\log_3(-9)$: undefined",
-     "near": "rej",
-     "on": "so reject it"
+     "step": 1,
+     "on": "It becomes plus"
     }
    ],
    "asks": [
-    "Why reject x = −1?",
-    "Why check every root?"
+    "Why does it become plus?"
+   ]
+  },
+  "4": {
+   "say": "Add Power joins the two logs: log base three of X times the bracket X minus eight.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "lhs1",
+     "on": "joins the two logs"
+    },
+    {
+     "do": "write",
+     "token": "comb",
+     "on": "log base three of X"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$",
+     "near": "comb",
+     "on": "the bracket"
+    }
+   ],
+   "asks": [
+    "What is the Add Power law?"
    ]
   }
  },

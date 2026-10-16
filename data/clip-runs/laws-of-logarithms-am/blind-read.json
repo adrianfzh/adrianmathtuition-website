@@ -1,24 +1,84 @@
 {
  "slug": "laws-of-logarithms-am",
- "pick": "A4",
- "why": "Only draft scored (no pick asked): A4 does the tutor's 16 Oct ask — each law shows X orange and Y blue, the beat after lights 5 orange and 6 blue (then 30 orange and 10 blue) exactly as the voice says 'five is X', 'six is Y', and the next line writes log₃(5 × 6) / log₃(30/10) in the same colours, so the law visibly turns into the line.",
- "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 5, "trap": 5, "level": 5 },
+ "pick": "W1",
+ "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
+ "scores": {
+  "clear": 5,
+  "one_idea": 4,
+  "voice_board": 5,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
  "notes": [
-  "Colour match (the ask): beat 3 puts up 'Add Power: log x + log y = log xy' with X orange, Y blue; beat 4 lights 5 orange on 'five is X' and 6 blue on 'six is Y', then writes log₃(5 × 6) with 5 orange and 6 blue on 'So we get'. Beats 7–8 do the same for Minus Power with 30 / 10. At speaking speed each colour lands on the word that names it — the match is obvious.",
-  "Beat 4 / 8 sentences are short and one idea each ('Here five is X and six is Y.' then the line) — reads cleanly; the pairing beat sits between the law and the line, which is exactly the order the tutor described (highlight, law, then the law applied).",
-  "Beat 3's yellow highlight of log₃5 + log₃6 is still lit in beat 4 (highlights last a beat and the next); the orange/blue tones on 5 and 6 sit over it — worth a glance in the look that the yellow does not wash out the orange.",
-  "Beat 10: the base highlight had no 'on' cue, so it fired at the start of the beat before the voice reached 'The base'. Fixed: it now lights on 'The base matches'.",
-  "Common-mistake beat (6) left where it is, as asked — its place is the tutor's open question. It is led into from the line ('the times sits inside one log'), circled and written as a red ✗ note.",
-  "one_idea 4: beat 10 lights the base, writes 1 and boxes it — acceptable as the closing beat, but busier than the rest."
+  "Working runs straight through Add Power, Minus Power and log_a a = 1 with no stop for a mistake; answer 1 boxed in beat 9; beat 10 opens 'Watch out:', circles log₃(5 × 6) and writes the ✗ note.",
+  "Beat 8 put the law 'log_a a = 1' on the board before the voice gave the reason (it is said in beat 9). Fixed: beat 8 only writes log₃ 3; the law appears in beat 9 on 'number inside', after 'The base matches' lights the base.",
+  "Beat 10 said 'log five times log six is not log thirty' while the board and the ✗ note say log base three. Fixed: the voice reads 'log base three of …' to match, and the circle now lands on 'Watch out' before the ✗ note on 'is not'."
  ],
  "fixed_beats": {
-  "10": {
-   "say": "The base matches the number inside, so the log is one. The answer is one.",
-   "asks": ["How can I check the answer is 1?"],
+  "8": {
+   "say": "Thirty over ten is three, which leaves log base three of three.",
    "do": [
-    { "do": "highlight", "token": "l3", "part": "sub", "on": "The base matches" },
-    { "do": "write", "step": 5, "on": "the log is one" },
-    { "do": "mark", "kind": "box", "token": "ans", "on": "The answer is" }
+    {
+     "do": "write",
+     "step": 4,
+     "on": "which leaves"
+    }
+   ],
+   "asks": [
+    "Why is log₃ 3 = 1?",
+    "What is log₃ 9?"
+   ]
+  },
+  "9": {
+   "say": "The base matches the number inside, so the log is one. The answer is one.",
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l3",
+     "part": "sub",
+     "on": "The base matches"
+    },
+    {
+     "do": "note",
+     "text": "$\\log_a a = 1$",
+     "near": "l3",
+     "on": "number inside"
+    },
+    {
+     "do": "write",
+     "step": 5,
+     "on": "the log is one"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "The answer is"
+    }
+   ],
+   "asks": [
+    "How can I check the answer is 1?"
+   ]
+  },
+  "10": {
+   "say": "Watch out: log base three of five, times log base three of six, is not log base three of thirty. Only added logs combine.",
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "p56",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$",
+     "near": "p56",
+     "on": "is not log base"
+    }
+   ],
+   "asks": [
+    "Why is log 5 × log 6 not log 30?"
    ]
   }
  },

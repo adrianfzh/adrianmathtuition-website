@@ -778,6 +778,17 @@ export function clipIssues(script: LessonScript): Issue[] {
       }
     });
   });
+  // Adrian, 16 Oct 2026: "put each common mistake at the end of its clip as a 'Watch out' step" —
+  // a ✗ note never comes before the answer is boxed.
+  {
+    const flat = script.scenes.flatMap((s, i) => (hasBeats(s) ? s.beats.map((b, k) => ({ b, at: `scenes[${i}].beats[${k}]` })) : []));
+    const lastBox = flat.reduce((n, x, j) => (x.b.do.some(a => a.do === 'mark' && a.kind === 'box') ? j : n), -1);
+    flat.forEach((x, j) => {
+      if (j < lastBox && x.b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text))) {
+        out.push(issue('warn', x.at, 'a common mistake goes at the END, after the answer is boxed — a "Watch out:" step'));
+      }
+    });
+  }
   if (words > CLIP_MAX_WORDS) out.push(issue('warn', 'scenes', `${words} spoken words — over about a minute; one concept, cut the rest (≤ ${CLIP_MAX_WORDS})`));
   else out.push(issue('info', 'clip', `${words} spoken words ≈ ${Math.round(words / 2.6 + 0.65 * script.scenes.reduce((p, s) => p + (hasBeats(s) ? s.beats.length : 0), 0))} s with the breaths between beats`));
   return out;
