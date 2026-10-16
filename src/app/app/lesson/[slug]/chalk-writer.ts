@@ -336,7 +336,11 @@ export class ChalkWriter {
     // reveal again at its own progress — a finished one comes back whole in the same frame.
     let gone = false;
     for (const u of this.units.values()) {
-      if (u.el.isConnected && !u.el.closest('[data-gone], [data-held]')) continue;
+      // …or is no longer shown at all (stepped back past it with ← or the slider: a note's hand-written
+      // words would otherwise stay on the board as ink — Adrian, 16 Oct 2026: "Add Power and the arrow
+      // just sticks there").
+      const hidden = u.kind === 'timed' && u.el.classList.contains('lsn-el') && !u.el.classList.contains('on');
+      if (u.el.isConnected && !hidden && !u.el.closest('[data-gone], [data-held]')) continue;
       u.el.removeAttribute('data-ink');
       this.units.delete(u.el);
       gone = true;
