@@ -462,6 +462,7 @@ function scrollClipBoard(cont: HTMLElement) {
     const br = boardEl.getBoundingClientRect();
     const h = Math.max(240, Math.floor(bar - 8 - reserve - (sr.bottom - br.bottom) - (br.top + window.scrollY)));
     boardEl.style.height = `${h}px`;
+    boardEl.style.flex = 'none';   // .lsn-board is flex: 1 — a flex-basis would let it grow with its lines
   }
   boardEl.style.overflow = 'hidden';
   // How far down the board's newest writing reaches, in the board's own (unslid) frame.
