@@ -386,8 +386,10 @@ to be a photo question identical to qc-10efe9bc, so the worker copied that (re-v
 **qc-225d1e85 is FAILED for now**: under the new player a beat whose spoken line wraps to three
 subtitle lines covers the board's last working line (the player reserves less room than a 24-word
 line needs). Reported to the session that owns the subtitles; `fit.mjs` now fails a plan whose maths
-sits under a 24-word subtitle (`--shot <dir>` saves what it measured), so new plans leave room. Re-queue
-qc-225d1e85 once the player reserves room for three lines.
+sits under a 24-word subtitle (`--shot <dir>` saves what it measured), so new plans leave room. **Fixed 16 Oct 2026**:
+the player now plays a spoken line in pieces of ≤ 72 characters (never more than two subtitle lines,
+f0877f92); qc-225d1e85 re-made by the worker in the new voice, every check passed (11 min). All 15
+ready clips are in voice C.
 
 ### Not done / next
 
