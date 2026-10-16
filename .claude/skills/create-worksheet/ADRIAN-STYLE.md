@@ -547,6 +547,28 @@ The reference is his own notes: `Dropbox/Apps/AdrianMathNotes/Notes/AM/15–20 *
   answered from the page. **A multi-panel question needs the panel labels IN the
   pictures** — the bank stores each panel as its own image and nothing re-letters them,
   so check the render before keeping one.
+- **A WRITE-ON version follows the GCE paper layout** (16 Oct 2026, Adrian: "is there
+  also a version that gives working space? … gce papers put working spaces well" → "save
+  it as a rule"). The plain practice sheet above stays the default; when a sheet is
+  wanted with room to write, build it as a second file (`… - with working space.docx`)
+  laid out like `scripts/gce-paper/export-docx.py`:
+  - every question starts on a new page;
+  - space under each part in proportion to its marks, at least 3 lines a mark plus one
+    extra line for a `[1]`;
+  - a part is never split from its space (`ws.keep_lines_with_text = 10_000`, his
+    3 Oct 2026 GCE rule);
+  - the space is stretched to FILL the page(s) the question needs — one page, or two
+    for a long one — so no page is left half empty. Measure each question's real height
+    first (render a no-space copy, one question a page, through Word) — the library's
+    `block_heights()` estimate ran ~2× low on figure-heavy questions and pushed every
+    question onto a second, mostly empty page;
+  - the answers leave the questions and go on an "Answers" page at the back.
+  **How Adrian asks:** "worksheet on X" → the plain sheet only; add "with working space"
+  (or "write-on", "for them to write on") → the plain sheet AND this version. Both go to
+  the same Dropbox folder.
+  Worked example: `examples/vectors-coefficients-plain.py` is the plain sheet (each
+  question opens with a `# Q<n>` comment); `examples/write-on-gce-layout.py <plain.py>`
+  turns it into the write-on version (it calls `examples/word-topdf.sh` to measure).
 - **No rubric line under a "Practice" heading** (14 Sep 2026: "don't have to put the
   statement 'answers are at the end of each question…'"). The heading goes straight
   into question 1. The `[Ans:]` line is visible at the foot of every question, so

@@ -336,6 +336,10 @@ The library hardcodes Adrian's house style. To change it, edit `worksheet_lib.py
 
 ### Working space and question tags (2026-08-29)
 
+> **16 Oct 2026:** a write-on VERSION of a practice sheet follows the GCE paper layout
+> (question a page, space stretched to fill, answers at the back) — `ADRIAN-STYLE.md` §5
+> and `examples/write-on-gce-layout.py`. The rule below is the older single-file default.
+
 **Build every write-on worksheet with `Worksheet(working_space=4.0)`.** The
 library then leaves blank writing space after each paragraph that carries a mark
 allocation, sized `marks x working_space` body lines — a `[3]` part gets three
