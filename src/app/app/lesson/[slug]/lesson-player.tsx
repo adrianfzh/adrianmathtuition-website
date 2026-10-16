@@ -331,7 +331,18 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   // flattened in transition? … it's just a translation right?"). It changes size only when its
   // landing spot is a different size (a 2 going up into a power); a landing spot with more in it
   // ("= 9" for a 9) takes the piece at the end where its text sits.
-  const k = t.height / Math.max(s.height, 1);
+  // The size is the letters' own size (the last letter drawn), not the box's height: a token's box
+  // also holds the line's strut, so box heights made a 9 shrink on its way to "= 9".
+  const letter = (el: HTMLElement) => {
+    const walk = document.createTreeWalker(el.querySelector('.katex-html') ?? el, NodeFilter.SHOW_TEXT);
+    let last: Node | null = null;
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) if ((n.textContent ?? '').trim()) last = n;
+    const at = last?.parentElement;
+    return at ? parseFloat(getComputedStyle(at).fontSize) || 0 : 0;
+  };
+  const fs = letter(source);
+  const ft = letter(target);
+  const k = fs > 0 && ft > 0 ? ft / fs : t.height / Math.max(s.height, 1);
   const w = s.width * k;
   const seen = (el: HTMLElement) => Array.from(el.querySelectorAll('.katex-html')).map(n => n.textContent ?? '').join('')
     .replace(/\s+/g, '');

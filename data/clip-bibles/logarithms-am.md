@@ -83,6 +83,14 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
   must be equal" — then the comparison line.
 - **Each new board starts with the line the last one ended on** ("when switching over to the next screen,
   show x(x−8)=9 first"), so a student sees where it comes from.
+- **Fifth watch (16 Oct 2026)**:
+  - A chain that rewrites ONE thing stays on ONE line: `2 = 2log₃3 = log₃3² = log₃9` (Adrian: "can you
+    do 2 = 2 log_3 3 = log_3 3^2 on the same line?"). In a beat clip a piece may move to a later token
+    of its own line.
+  - Never say a piece "flies" — say the maths: "bring the power up" ("don't say fly - say power bring up").
+  - A moving piece keeps its shape: the player scales it the same both ways ("why is the 9 flattened
+    in transition? … it's just a translation right?").
+  - A log equation's check opens with "For log equations, always check each answer".
 - **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
 - **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";
