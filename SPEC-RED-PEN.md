@@ -27,6 +27,13 @@ marker (`ai/paper-marker.js` prompt) + overlay (`ai/photo-overlay.js` placement,
 - Solutions: only for the parts that lost marks, only where that part's working is, once;
   in the blank space when there is any, **together with** the quadrant figure; and never
   with the last word orphaned on its own line.
+- **A tick or cross goes just after the END of the answer it marks, on its line** — never in
+  front of the answer, never out in the far margin when there is room at the end (Adrian,
+  16 Oct 2026, Isabelle's Pasir Ris chemistry: *"if ticks can be placed at the end of the
+  sentence, why not? why place them in front?"*; `pen_reports` rows filed the same day).
+- **One mistake, one circle, one note led to it.** Two errors in one answer get a note each,
+  each beside its own words — never two circles with the notes swapped (same paper, Q2(b)(ii):
+  *"why are there double circles? and it says should be ionic, then says should be covalent?"*).
 
 ## 1. Inputs
 
