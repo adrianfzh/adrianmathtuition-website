@@ -83,6 +83,14 @@ export default async function LessonPage({ params, searchParams }: {
   const askAbout = script.kind === 'clip' && (await clipAskVisible(askAccount ? portalIdentity(askAccount) : null));
   const startAt = script.kind === 'clip' ? parseResumeStop(sp.at) : 0;
 
+  // Side clips a beat links to (Beat.aside) open in a popup over this clip (Adrian, 16 Oct 2026:
+  // "a popup hint that students can link to to explain if required").
+  const asideSlugs = [...new Set(script.scenes.flatMap(sc => ('beats' in sc && Array.isArray(sc.beats) ? sc.beats : []).map(b => b.aside?.slug).filter((x): x is string => !!x)))];
+  const asides = Object.fromEntries(asideSlugs.flatMap(sl => {
+    const side = lessonBySlug(sl) ? loadLessonScript(sl) : null;
+    return side ? [[sl, { slug: side.slug, title: side.title, topic: side.topic, minutes: side.minutes, theme: side.theme ?? 'slide', scenes: buildPlayScenes(side, new Map()), question: side.question ?? null }]] : [];
+  }));
+
   const player = {
     slug: script.slug,
     title: script.title,
@@ -91,7 +99,7 @@ export default async function LessonPage({ params, searchParams }: {
     theme: script.theme ?? 'slide',
     scenes: buildPlayScenes(script, rows),
     // A clip is one concept in a minute: it opens playing, like a video.
-    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), question: script.question ?? clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null } : {}),
+    ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), question: script.question ?? clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null, asides } : {}),
     ...toStep,
     ...toFrom,
   };

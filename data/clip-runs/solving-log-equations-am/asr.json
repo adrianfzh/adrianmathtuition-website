@@ -76,14 +76,14 @@
   },
   {
    "beat": 13,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
    "beat": 14,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -106,38 +106,40 @@
   },
   {
    "beat": 18,
-   "bag": 1,
-   "score": 1,
-   "heard": null
+   "bag": 0.8,
+   "score": 0.958,
+   "heard": "factorize it into two brackets.",
+   "said": "Factorise it into two brackets."
   },
   {
    "beat": 19,
-   "bag": 0.94,
-   "score": 0.94,
+   "bag": 0.89,
+   "score": 0.89,
    "heard": null
   },
   {
    "beat": 20,
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 21,
    "bag": 0.94,
    "score": 0.94,
    "heard": null
   },
   {
-   "beat": 21,
-   "bag": 0.9,
-   "score": 0.9,
-   "heard": null
-  },
-  {
    "beat": 22,
-   "bag": 0.93,
-   "score": 0.93,
-   "heard": null
+   "bag": 0.8,
+   "score": 1,
+   "heard": "Put in -1 -1 - 8 is -9 so we get log base 3 of -9",
+   "said": "Put in negative one: negative one minus eight is negative nine. So we get log base three of negative nine."
   },
   {
    "beat": 23,
-   "bag": 0.95,
-   "score": 0.95,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {
@@ -148,25 +150,18 @@
   },
   {
    "beat": 25,
-   "bag": 0.81,
-   "score": 1,
-   "heard": "-1 - 8 is -9 So we get log base 3 of -9",
-   "said": "Negative one minus eight is negative nine. So we get log base three of negative nine."
-  },
-  {
-   "beat": 26,
-   "bag": 0.94,
-   "score": 0.94,
-   "heard": null
-  },
-  {
-   "beat": 27,
    "bag": 1,
    "score": 1,
    "heard": null
   },
   {
-   "beat": 28,
+   "beat": 26,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 27,
    "bag": 1,
    "score": 1,
    "heard": null

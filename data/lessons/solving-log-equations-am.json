@@ -82,10 +82,21 @@
           "heading": "Step 4: check each answer",
           "tokens": [
             { "tex": "x=-1:", "id": "kx" },
-            { "tex": "\\log_3(-1-8)=", "id": "ksub" },
-            { "tex": "\\log", "id": "lg" },
-            { "tex": "{}_{3}", "id": "b3", "tight": true },
-            { "tex": "(-9)", "id": "arg", "tight": true }
+            { "tex": "\\log_3(x-8)", "id": "q1", "from": "l1", "hl": "amber" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "=\\log_3(-1-8)=", "id": "ksub" },
+            { "tex": "\\log_3(-9)", "id": "lgm" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "x=9:", "id": "k9" },
+            { "tex": "\\log_3(9-8)=\\log_3 1,", "id": "k9a" },
+            { "tex": "\\log_3 9", "id": "k9b" },
+            { "tex": "\\checkmark", "id": "k9c", "hl": "emerald" }
           ]
         },
         {
@@ -250,41 +261,33 @@
           "timing": "/lessons/solving-log-equations-am/scene-01-b16.timing.json"
         },
         {
-          "say": "Expand: X times X is X squared, and X times negative eight is minus eight X.",
-          "asks": ["How do I expand x(x−8)?"],
+          "say": "Expand, then bring nine across.",
+          "asks": ["How do I expand x times x minus 8?"],
           "do": [
-            { "do": "write", "step": 5, "on": "X squared, and" }
+            { "do": "write", "step": 5, "on": "Expand" },
+            { "do": "write", "step": 6, "on": "bring nine across" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b17.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b17.timing.json"
         },
         {
-          "say": "Take nine from both sides to factorise. X squared minus eight X minus nine equals zero.",
-          "asks": ["Why make it equal zero?"],
+          "say": "Factorise it into two brackets.",
+          "asks": ["How do I factorise this?"],
           "do": [
-            { "do": "write", "step": 6, "on": "X squared minus eight X minus nine" }
+            { "do": "write", "step": 7, "on": "Factorise" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b18.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b18.timing.json"
         },
         {
-          "say": "Factorise: X minus nine, times X plus one, equals zero.",
-          "asks": ["How do I factorise this?"],
-          "do": [
-            { "do": "write", "step": 7, "on": "X minus nine" }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b19.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b19.timing.json"
-        },
-        {
-          "say": "Either bracket can be zero. So X equals nine, or X equals negative one.",
-          "asks": ["Why are there two answers?"],
+          "say": "So X equals nine, or X equals negative one.",
+          "asks": ["Why two answers?"],
           "do": [
             { "do": "write", "token": "r9s", "on": "X equals nine" },
             { "do": "write", "token": "rm1s", "on": "negative one" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b20.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b20.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b19.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b19.timing.json"
         },
         {
           "say": "For log equations, always check each answer: a log only takes a positive number inside. Start with X equals negative one.",
@@ -292,38 +295,38 @@
           "do": [
             { "do": "highlight", "token": "rm1s", "on": "Start with X equals negative one" }
           ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b20.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b20.timing.json"
+        },
+        {
+          "say": "For X equals negative one, take log base three of X minus eight from the question.",
+          "asks": ["Why use log base 3 of x minus 8?"],
+          "do": [
+            { "do": "write", "token": "kx", "on": "For X equals negative one" },
+            { "do": "move", "from": "l1", "on": "from the question" }
+          ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b21.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b21.timing.json"
         },
         {
-          "say": "Put X equals negative one into log base three of X minus eight.",
-          "asks": ["How do I put x = −1 in?"],
+          "say": "Put in negative one: negative one minus eight is negative nine. So we get log base three of negative nine.",
+          "asks": ["What does log base 3 of −9 mean?"],
           "do": [
-            { "do": "write", "token": "kx", "on": "Put X equals negative one" },
-            { "do": "write", "token": "ksub", "on": "log base three of X minus eight" }
+            { "do": "write", "token": "ksub", "on": "Put in negative one" },
+            { "do": "write", "token": "lgm", "on": "log base three of negative nine" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b22.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b22.timing.json"
-        },
-        {
-          "say": "Negative one minus eight is negative nine. So we get log base three of negative nine.",
-          "asks": ["Why negative nine?"],
-          "do": [
-            { "do": "write", "step": 9, "on": "log base three of negative nine" },
-            { "do": "highlight", "token": ["lg", "b3", "arg"], "on": "negative nine." }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b23.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b23.timing.json"
         },
         {
           "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
           "asks": ["Why is a log of a negative number undefined?"],
           "aside": { "text": "Why is a log of a negative number undefined?", "slug": "log-of-negative-undefined-am" },
           "do": [
-            { "do": "note", "text": "a log of a negative number is undefined", "near": "arg", "on": "is undefined" }
+            { "do": "note", "text": "a log of a negative number is undefined", "near": "lgm", "on": "is undefined" }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-01-b24.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-01-b24.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-01-b23.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b23.timing.json"
         },
         {
           "say": "So we reject X equals negative one.",
@@ -331,18 +334,38 @@
           "do": [
             { "do": "write", "token": "rej", "on": "we reject" }
           ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b24.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b24.timing.json"
+        },
+        {
+          "say": "Now X equals nine. Log base three of nine minus eight is log base three of one.",
+          "asks": ["Why check x = 9 too?"],
+          "do": [
+            { "do": "write", "token": "k9", "on": "Now X equals nine" },
+            { "do": "write", "token": "k9a", "on": "is log base three of one" }
+          ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b25.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b25.timing.json"
         },
         {
-          "say": "For X equals nine, the insides are one and nine, both positive. The answer is X equals nine.",
-          "asks": ["How do I check x = 9?"],
+          "say": "And log base three of X is log base three of nine. Both insides are positive, so X equals nine works.",
+          "asks": ["Why must the insides be positive?"],
           "do": [
-            { "do": "write", "step": 10, "on": "The answer is" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
+            { "do": "write", "token": "k9b", "on": "is log base three of nine" },
+            { "do": "write", "token": "k9c", "on": "X equals nine works" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b26.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b26.timing.json"
+        },
+        {
+          "say": "The answer is X equals nine.",
+          "asks": ["How do I check x = 9?"],
+          "do": [
+            { "do": "write", "step": 12, "on": "The answer is" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
+          ],
+          "audio": "/lessons/solving-log-equations-am/scene-01-b27.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-01-b27.timing.json"
         }
       ]
     }

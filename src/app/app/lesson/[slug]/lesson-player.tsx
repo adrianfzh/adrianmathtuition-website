@@ -68,6 +68,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { createPortal } from 'react-dom';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
 import { MathMarkdown, katexOptions } from '@/lib/math-markdown';
@@ -1711,7 +1712,31 @@ function MutedCaption({ words, className, paused }: { words: string[]; className
 
 type Pacing = 'manual' | 'auto' | 'narrated';
 
-export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null, question = null }: {
+/** The side clip's popup: over the main clip (which waits, paused), its own player; ✕, Esc or the
+ *  end card's button closes it and the main clip carries on from the same spot. */
+function SidePopup({ clip: c, onClose }: { clip: SideClip; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [onClose]);
+  return (
+    <div className="fixed inset-0 z-[70] overflow-y-auto bg-[hsl(45,40%,97%)]" role="dialog" aria-modal="true" aria-label={c.title} data-side-popup>
+      <div className="mx-auto max-w-lg px-4 pt-[max(12px,env(safe-area-inset-top))] pb-10">
+        <LessonPlayer slug={c.slug} title={c.title} topic={c.topic} minutes={c.minutes} theme={c.theme} scenes={c.scenes}
+          question={c.question} clip startAuto startVoice kicker="Why?" doneTitle="That's why"
+          doneText="Back to the clip to carry on." practiceLabel="‹ Back to the clip" onClose={onClose} />
+      </div>
+    </div>
+  );
+}
+
+/** A side clip a beat links to, ready to play in a popup (page.tsx loads it). */
+export interface SideClip { slug: string; title: string; topic: string; minutes: number; theme: LessonTheme; scenes: PlayScene[]; question: string | null }
+
+export default function LessonPlayer({ slug, title, topic, minutes, scenes, theme: themeProp, character, backHref = '/app/practice', kicker = 'Lesson', practiceHref: practiceHrefProp, practiceLabel, doneTitle = 'Lesson complete', doneText = "That's the whole idea — the fastest way to make it stick is to use it on real questions while it's fresh.", startAuto = false, startVoice = false, clip = false, onClose, cheerSrc, askAbout = false, startAt = 0, askIntro = null, askLevel = null, question = null, asides = {} }: {
   slug: string; title: string; topic: string; minutes: number; scenes: PlayScene[]; theme?: LessonTheme;
   /**
    * The character at the board's corner (lesson-character.tsx). `teacher`
@@ -1755,6 +1780,8 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   question?: string | null;
   /** A clip: the level the Ask solver answers at on a laptop ('AM', 'EM', …), or null. */
   askLevel?: string | null;
+  /** Side clips the beats link to (Beat.aside), by slug: a link opens its clip in a popup over this one. */
+  asides?: Record<string, SideClip>;
 }) {
   const theme = normalizeTheme(themeProp);
   // ?at= (back from Ask) opens the clip at that stop; out of range = the start.
@@ -2023,6 +2050,10 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   // nothing written later (ink, notes, a piece that moved) can linger (Adrian, 16 Oct 2026: "Add Power
   // and the arrow just sticks there").
   const [seekEpoch, setSeekEpoch] = useState(0);
+  // The side clip open in the popup (null = none). The main clip pauses under it and goes on after.
+  const [side, setSide] = useState<string | null>(null);
+  const openSide = (s: string) => { setPaused(true); setSide(s); };
+  const closeSide = useCallback(() => { setSide(null); setPaused(false); }, []);
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
   const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
@@ -2116,7 +2147,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') { setRateOpen(false); return; }
-      if (e.code !== 'Space' || e.repeat || !canPause) return;
+      if (e.code !== 'Space' || e.repeat || !canPause || side) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest(TAP_INTERACTIVE_SELECTOR)) return;
       e.preventDefault();
@@ -2127,7 +2158,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [canPause, paused, flashGesture]);
+  }, [canPause, paused, flashGesture, side]);
 
   // ← / → step back and forward one part, like a video player's arrow keys (Adrian, 16 Oct 2026:
   // "allow left and right arrows to go forward and backwards in the video? like in youtube?").
@@ -2135,6 +2166,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     if (!clip) return;
     const onArrow = (e: KeyboardEvent) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      if (side) return;   // the popup's own clip has the keys
       if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest('input, textarea, select, [contenteditable="true"]')) return;
@@ -2149,7 +2181,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     };
     window.addEventListener('keydown', onArrow);
     return () => window.removeEventListener('keydown', onArrow);
-  }, [clip, done, stops, stopAt, flashGesture]);
+  }, [clip, done, stops, stopAt, flashGesture, side]);
   useEffect(() => {
     if (!rateOpen) return;
     const onDown = (e: PointerEvent) => {
@@ -2436,12 +2468,19 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         if (!links.length) return null;
         return (
           <div className="mt-2 flex flex-wrap gap-2 px-0.5">
-            {links.map(a => (
+            {links.map(a => asides[a.slug] ? (
+              <button key={a.slug} type="button" onClick={() => openSide(a.slug)} data-aside-chip
+                className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
+                💡 {a.text}
+              </button>
+            ) : (
               <Link key={a.slug} href={`/app/lesson/${a.slug}?from=${encodeURIComponent(slug)}&fromAt=${stopAt}`}
                 className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
                 ▶ {a.text}
               </Link>
             ))}
+            {side && asides[side] && typeof document !== 'undefined' && createPortal(
+              <SidePopup clip={asides[side]} onClose={closeSide} />, document.body)}
           </div>
         );
       })()}
