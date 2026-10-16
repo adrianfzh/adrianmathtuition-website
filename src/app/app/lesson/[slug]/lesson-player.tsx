@@ -456,6 +456,9 @@ function placeNotes(cont: HTMLElement, notes: HTMLElement[]) {
  * of the board fades where lines leave it. Adrian, 16 Oct 2026: "make the lines move up, like
  * scrolling up, then we don't have to change screen".
  */
+/** Board elements a scrolling board has already seen written (so only a NEW one pulls it into view). */
+const seenOnBoard = new WeakSet<Element>();
+
 function scrollClipBoard(cont: HTMLElement) {
   // A piece is moving (the 2 going up into the power): that is the only thing that moves — the board
   // slides after it lands (Adrian, 16 Oct 2026: "from 2 going up to power 2, should not have any frame
@@ -503,6 +506,22 @@ function scrollClipBoard(cont: HTMLElement) {
   const was = Number(cont.dataset.scrollAt ?? 0);
   if (offset < was && cont.dataset.scrollBack !== '1') offset = was;
   delete cont.dataset.scrollBack;
+  // Whatever was JUST written must be in full view, even on an older line that has slid up into the
+  // fade (Adrian, 17 Oct 2026: "when narrator says reject and the pink rejects appears, it's partly
+  // hidden"): the board scrolls back down just enough to show it.
+  // (A board just drawn — the start, or a seek — has seen everything on it already.)
+  const FADE = 40;
+  const first = cont.dataset.scrollSeen !== '1';
+  cont.dataset.scrollSeen = '1';
+  let fresh = Infinity;
+  for (const el of Array.from(zoom.querySelectorAll<HTMLElement>('.lsn-el.on[data-key]'))) {
+    if (seenOnBoard.has(el)) continue;
+    seenOnBoard.add(el);
+    if (first) continue;
+    const r = el.getBoundingClientRect();
+    if (r.height > 0) fresh = Math.min(fresh, r.top - zr.top);
+  }
+  if (fresh < offset + FADE) offset = Math.max(0, Math.floor(fresh - FADE));
   cont.dataset.scrollAt = String(offset);
   zoom.style.translate = offset ? `0 ${-offset}px` : '0 0';
   // The first placement (a fresh board, or one drawn afresh by a seek) is instant; after that it glides.
