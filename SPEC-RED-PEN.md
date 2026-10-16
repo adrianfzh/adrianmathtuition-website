@@ -493,7 +493,7 @@ mode only** (`MARK_RED_INK=1`); the professional look is untouched. Bot
 Follow-up noted, not built: prose inside a typeset (`$…$`) note still comes out in
 MathJax's serif, which reads printed beside the wobbled pen lines.
 
-## 16 Oct 2026 — ticks at the end, marks by her own words (pen_reports 25–30, bot 8d50264f)
+## 16 Oct 2026 — ticks at the end, marks by her own words (pen_reports 25–30, bot b8c68b97)
 
 Adrian, on Isabelle's Pasir Ris chemistry and Alessi's EM Set 3: *"if ticks can be placed at the
 end of the sentence, why not? why place them in front?"* · *"why are there double circles?"* ·
