@@ -924,3 +924,15 @@ All four maths papers (Eva E Math St Gabriel's Prelim P1, Denise A Math 2022 P1 
 - **A verdict bracket along correct lines** — "0.8578 is 0.858 to 3 s.f." braced against her first two ✓ lines, ten rows above the slip (Eva St Gab P1 p19 Q25). Pen (bracket seat).
 - **The side strip overprints the "Marking by AdrianMath" credit** (Denise EM 2023 P1 p18, Denise AM 2022 P1 p6). Pen (strip height).
 - **The maths underline fallback drawn through her drawing or writing** — a red stroke across her Venn circles (Denise EM 2023 P1 p10 Q17(a)); through "Q = (15.4, 11.8)" (Denise AM p9). Pen (underline seat).
+
+# 17 Oct 2026 — the page reader: new defect classes (findings of 17 Oct: 15 papers, 40 pages; the fixer works them at 06:45)
+
+All maths papers drawn after the 16 Oct fixer pushes; only Eva's E Math St Gabriel's P2 after b8c68b97 (ticks at the end). Adrian's own reports on four of these papers (pen_reports 25–32) are not repeated. One line per NEW class — returns (F88/F103 head said twice, sixth sighting after a1843ab8; two ✓ on one spot after f57b7b8d; the point said 3–4 times; marks on her writing; a part's words in another part's space) are in the reader's findings file.
+
+- **"right method, wrong value from earlier" on a part that was not follow-through** — written over (b)'s printed question beside a ✗B0 "2^{3t} is 8^t; put k in directly" (Sophie EM 2022 P1 p15 Q25(b), kind incomplete); on her own miss "2/10" next to "should be 3/10" (Alessi Set 3 P1 p6 Q13(d)(i)). The carried value stays "open" across parts. Misleads. Pen (carried note).
+- **A ✓ on an answer the chip scores A0, and the reason dropped** — her 296.2° ticked twice, the footer's correct working ends at 296.2°, chip 1/3; the read's "two wrong steps cancelling out" is not on the page (Chloe EM 2020 P2 p9 Q4(b)). Misleads. Pen (marks) + read.
+- **Strip text cut off at the page edge** — "mass = 48.3 × 23.2 + (38.545 + 50.462" runs off the right edge, then "< 2100 kg, so yes." (Rainie EM O-Level 2021 P2 p21 Q10(c)). Pen (strip wrap).
+- **A ✓ seated in the next table cell** — ✓B1 for her "2" drawn against the printed "5" in the next cell (Rainie EM 2021 P2 p19 Q9(b)). Pen (marks).
+- **"should be" + a verb** — "43 should be remove" (Alessi Set 3 P1 p6 Q13(a)). Words (phrase frame).
+- **The printed note is the verdict squeezed to a riddle; the clear error_summary is not printed** — "(2x²+ax−3)(x+2) gives a – you used −10x−6 instead." (Gavin AM 2021 P1 p7 Q6(b)). Words (which field is printed).
+- **A science page's model answers not drawn** — the read wrote model answers for four lost parts; none on the page, no overflow sheet; a drawing part described, not drawn (Isabelle Chemistry Pasir Ris 2023 p12–13). Pen (science).
