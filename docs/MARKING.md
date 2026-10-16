@@ -545,6 +545,20 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   matched; the bank's own marks answer where the table cannot (school papers). Maths only.
   `max_source` gains `'identified'` and `'bank'`, and both get the PAPER TOTAL strip like a
   registry match. The bullet below is the history it builds on.
+- **🧪 Science papers get their total from the bank too (16 Oct 2026, bot f0116715).** Adrian:
+  *"why is this paper upon 77? is that correct for a chemistry paper?"* — Isabelle's Pasir Ris
+  2023 Pure Chemistry prelim is out of 80; her photos skipped Q8(b) [3] and science totals were
+  the counted sum, so the paper quietly shrank. Now, when most printed questions match ONE school
+  paper the science bank holds whole (`lib/science-grounding.js fetchScienceSchoolPaper`, ≥3
+  matches and ≥60% agreeing, numbers 1..N with no hole), its total grounds the badge
+  (`max_source:'bank'`, EITHER/OR counted once) and its per-part split becomes `bank_allocation`,
+  so the allocation audit adds a part missing from every photo as a flagged 0 and the >2-mark
+  shortfall watch-out fires. A GCE science paper takes its printed total (40 / 80). Science never
+  reads the maths SEAB table. Also: section letters on question numbers ("A1", "B10") are dropped
+  when the paper numbers straight through (`ai/marker-assemble.js normaliseSectionLabels`) — the
+  report had "QA1" beside "Q9", and the audit could not match "A1" to the bank's "1".
+  **Rule for every subject: a paper's total comes from the paper (cover, code, bank), never from
+  adding up what the photos happened to show.**
 - **📏 Paper totals are GROUNDED, not counted (2026-08-14):** the red `PAPER TOTAL x / y`
   denominator used to be the sum of the model's per-question `total_max` guesses, which was
   wrong most of the time on Adrian's compiled sets — a skipped-blank question never enters
