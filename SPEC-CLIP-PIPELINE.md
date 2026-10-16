@@ -232,6 +232,10 @@ New in the player: a clip board that would run below the screen scales its maths
 - Watch 9: ← / → step back / forward one part of any clip (like a video player). A piece that goes up into
   a power leaves an empty space (`tokenAway` 'held'), so only it moves; the next rewrite of the line
   closes the space (`log₃3²` → `log₃9` replaces the 2 too).
+- Watch 10: the board never slides while a piece is moving (the 2 goes up alone, then the board slides);
+  the slide is a 1.1 s glide that only goes up in play. Seeking back (← or the slider) draws the board
+  afresh at that point, with what earlier parts wrote already written (also anything shown while
+  paused) — no stuck "Add Power", no half-written notes.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
