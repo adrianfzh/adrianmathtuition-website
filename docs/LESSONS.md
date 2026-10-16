@@ -98,6 +98,11 @@ before a school test (`SPEC-SELF-LEARNING.md` §3, §4, §8). A clip is a lesson
   (`note` `span`), the law on ONE line; a mistake the voice names is WRITTEN on the board as a red
   `✗` note, in a final "Watch out" step after the answer (16 Oct 2026). `clipIssues` (lib/lesson-verify.ts) flags the first and last;
   `scripts/clips/look.mjs` fails a note on two lines. Full text: `data/clip-bibles/_house.md` §2.
+- **Adrian's third watch (16 Oct 2026) — explain every part, don't rush** (his reference: Herbert
+  Gross's lectures): show the plan as maths, light the part being talked about, the note AT the thing
+  it explains, small steps for any change of form, a rejection explained before "(rej)" appears. A
+  clip may now run to about 2½ minutes (`CLIP_MAX_WORDS` 340, `minutes` 1–3). Full text:
+  `data/clip-bibles/_house.md` §2.
 - **Made by the clip pipeline (15 Oct 2026):** the 7 A Math Logarithms skill clips
   (`laws-of-logarithms-am` … `log-scales-am`) — topic bible → checked board plan → two drafts →
   blind read → voice → look, every check recorded per clip. How to run it, the results and the

@@ -46,7 +46,7 @@ no focus, no clear.
 
 ## Rules (each one is checked)
 
-- **7–10 beats, each ≤ 24 words, ≤ 170 words in all.**
+- **Beats ≤ 24 words each, ≤ 340 words in all** — as many beats as the explanation needs (house rules §2).
 - **The first beat states the question** (if `intro` is present, read it; the first
   beat writes line 0). First word = the first word of the maths. No warm-up.
 - **Each beat: the step, then why** — in its own short sentence. ("Take log on both
@@ -70,6 +70,10 @@ no focus, no clear.
 - **The plan first** (bible §1b): the second beat says the aim before the first move — and
   writes no working line (a highlight at most). Each working line
   appears in the beat whose voice explains it, on the words that name it.
+- **Explain every part, don't rush** (house rules §2, Herbert Gross): every move gets its reason;
+  light the exact part you are talking about as you name it; the note sits right under it; a
+  rejection is explained (substitute, show what breaks) before "(rej)" appears on "reject". Up to
+  340 spoken words.
 - **Never skip a key step**: the plan's lines are the board — every line is written in its own
   beat or on its own word, and the voice says what the move is.
 - **The base in its own colour**: a line that talks about the base ("same base", "the base

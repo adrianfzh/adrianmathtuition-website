@@ -75,7 +75,7 @@ const lesson = {
   title: plan.title,
   level: plan.level,
   topic: plan.topic,
-  minutes: 1,
+  minutes: plan.minutes ?? 1,
   kind: 'clip',
   theme: 'chalk',
   ...(plan.question ? { question: plan.question } : {}),

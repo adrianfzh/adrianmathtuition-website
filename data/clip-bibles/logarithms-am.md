@@ -57,6 +57,23 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
   stops for a mistake. (A step of the METHOD — rejecting x = −1, checking a root — stays in place,
   as a plain reason, not a ✗.) The clip checker flags a line that says "not / never / mistake"
   with no ✗ note, and a ✗ note before the answer's box.
+- **Explain every part, don't rush** (16 Oct 2026, third watch: "take reference from how this professor
+  (Herbert Gross) explains … the essence of how he explains each part very clearly (he doesn't rush)").
+  Assume the student does not know WHY: each move gets its reason, in its own short sentence. A clip
+  may run to about 2½ minutes (340 spoken words) when the steps need it — never cut a reason to save time.
+- **Show, don't just say.** "SHOW the plan, instead of just saying" — the plan is written on the board
+  as maths (e.g. `log₃(□) = log₃(△) ⇒ □ = △`) on the words that say it.
+- **The explanation sits AT the thing it explains** ("right now the explanation is quite far away from
+  2"). Light the exact part being talked about (`highlight`) as the voice names it, and put its note
+  right under it. Turning a number into a form ("2 becomes log₃9") gets its own line of small steps:
+  `2 = 2 log₃3 = log₃3² = log₃9`, one piece per beat, each with its reason.
+- **Highlight the parts a law acts on**, colour-matched to the law (M orange, N blue; use M, N — not x,
+  y — when the question already uses x), then the result line keeps those colours.
+- **Don't skip the comparison step**: after "one log each side", light the insides, then write
+  `x(x − 8) = 9` as its own line.
+- **A rejection is EXPLAINED, then shown**: substitute the bad root into the question, show what goes
+  wrong (log₃(−9): 3 to what power gives −9? none — 3 to any power is positive), and only THEN write
+  "(rej)" on the word "reject" — a token of its own, never part of the roots line's first write.
 - **A note points at its token.** "Arrow pointing leftwards … point[s] to nowhere." A note sits
   under its line with an ↑ under the token it explains (the board draws the ↑; write the note
   without an arrow).

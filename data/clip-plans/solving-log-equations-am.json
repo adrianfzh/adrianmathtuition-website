@@ -1,7 +1,6 @@
 {
   "slug": "solving-log-equations-am",
   "title": "Solving log equations",
-  "heading": "Solving log equations",
   "intro": null,
   "level": "AM",
   "topic": "Logarithms",
@@ -26,6 +25,7 @@
   },
   "lines": [
     {
+      "board": 0,
       "tokens": [
         {
           "tex": "\\log_3(x-8)",
@@ -52,11 +52,43 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
-          "tex": "\\log_3(x-8)+\\log_3 x",
-          "id": "lhs1",
-          "hl": "amber"
+          "tex": "\\log_3(\\,\\square\\,)=\\log_3(\\,\\triangle\\,)",
+          "id": "p1",
+          "hl": "sky"
+        },
+        {
+          "tex": "\\Rightarrow\\;\\square=\\triangle",
+          "id": "p2",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "one log on each side, then the insides are equal"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\log_3(",
+          "id": "g1"
+        },
+        {
+          "tex": "x-8",
+          "id": "a1"
+        },
+        {
+          "tex": ")+\\log_3",
+          "id": "g2"
+        },
+        {
+          "tex": "x",
+          "id": "b1"
         },
         {
           "tex": "=\\,2",
@@ -70,16 +102,60 @@
       ]
     },
     {
+      "board": 0,
       "tokens": [
         {
-          "tex": "\\log_3[x(x-8)]",
-          "id": "comb",
+          "tex": "2",
+          "id": "t2",
           "hl": "amber"
         },
         {
-          "tex": "=\\,\\log_3 9",
-          "id": "nine",
-          "hl": "amber"
+          "tex": "=2\\log_3 3",
+          "id": "e1"
+        },
+        {
+          "tex": "=\\log_3 3^2",
+          "id": "e2"
+        },
+        {
+          "tex": "=\\log_3 9",
+          "id": "e3"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "2 = 2*log(3,3)"
+        },
+        {
+          "fact": "2 = log(3**2,3)"
+        },
+        {
+          "fact": "2 = log(9,3)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\log_3[\\textcolor{#a8ecfb}{x}(",
+          "id": "c1"
+        },
+        {
+          "tex": "\\textcolor{#ff9a3c}{x-8}",
+          "id": "c2"
+        },
+        {
+          "tex": ")]",
+          "id": "c3"
+        },
+        {
+          "tex": "=\\,\\log_3",
+          "id": "c4"
+        },
+        {
+          "tex": "9",
+          "id": "c9"
         }
       ],
       "checks": [
@@ -89,6 +165,27 @@
       ]
     },
     {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "x(x-8)",
+          "id": "cmp1",
+          "hl": "amber"
+        },
+        {
+          "tex": "=9",
+          "id": "cmp2",
+          "hl": "amber"
+        }
+      ],
+      "checks": [
+        {
+          "step": "x*(x-8) = 9"
+        }
+      ]
+    },
+    {
+      "board": 1,
       "tokens": [
         {
           "tex": "x^2-8x-9=0",
@@ -102,6 +199,7 @@
       ]
     },
     {
+      "board": 1,
       "tokens": [
         {
           "tex": "(x-9)(x+1)=0",
@@ -115,15 +213,20 @@
       ]
     },
     {
+      "board": 1,
       "tokens": [
         {
           "tex": "x=9",
-          "id": "ans",
-          "hl": "emerald"
+          "id": "r9"
         },
         {
-          "tex": "\\text{or}\\;\\; x=-1\\;(\\text{rej})",
-          "id": "rej"
+          "tex": "\\text{or}\\;\\; x=-1",
+          "id": "rm1"
+        },
+        {
+          "tex": "(\\text{rej})",
+          "id": "rej",
+          "hl": "rose"
         }
       ],
       "checks": [
@@ -137,18 +240,74 @@
           ]
         }
       ]
+    },
+    {
+      "board": 1,
+      "tokens": [
+        {
+          "tex": "x=-1:",
+          "id": "chk0"
+        },
+        {
+          "tex": "\\log_3(-1-8)=\\log_3(-9)",
+          "id": "chk"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "-1 - 8 = -9"
+        }
+      ]
+    },
+    {
+      "board": 1,
+      "tokens": [
+        {
+          "tex": "3^{\\,?}=-9",
+          "id": "why"
+        }
+      ],
+      "checks": [
+        {
+          "form": "3 to any power is positive: no power of 3 is -9, so log3(-9) does not exist"
+        }
+      ]
+    },
+    {
+      "board": 1,
+      "tokens": [
+        {
+          "tex": "x=9",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "x = 9"
+        }
+      ]
     }
   ],
   "outline": [
-    "Write the question (line 0).",
-    "The plan first: get one log on each side, then compare what is inside (note under '=').",
-    "Move minus log x to the left: it becomes plus log x (write line 1). Adrian 15 Oct: show this step.",
-    "Move log x to the left; Add Power: log of x times (x - 8) (write comb).",
-    "Write 2 as log base 3 of 9, because 3 squared is 9 (write nine).",
-    "Same base on both sides: drop the logs and compare (write quad).",
-    "Factorise (write fac).",
-    "x = 9 or x = -1 (write ans, rej).",
-    "Trap, at the step it bites: check every root in the logs — x = -1 gives log of a negative, so reject it (circle rej; box ans)."
+    "Adrian 16 Oct 2026 (third watch) + 'take reference from how this professor (Herbert Gross) explains … he doesn't rush':",
+    "SHOW the plan: log3(square) = log3(triangle) => square = triangle, written as the voice says it.",
+    "Move -log3 x across as its own line.",
+    "2 -> log3 9 explained AT the 2: highlight the 2; 2 = 2 log3 3 (log3 3 = 1) = log3 3^2 = log3 9, one piece per beat.",
+    "Add Power with M (orange) <-> x - 8 and N (blue) <-> x lit as spoken; log3[x(x-8)] keeps the colours.",
+    "Compare: light the two insides, then write x(x-8) = 9 as its own line.",
+    "Board 2: solve; (rej) appears only when the voice says reject, AFTER explaining why: x = -1 gives log3(-9); 3 to what power is -9? none — 3 to any power is positive."
   ],
-  "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$."
+  "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
+  "boards": [
+    {
+      "heading": "Solving log equations: one log each side",
+      "intro": null
+    },
+    {
+      "heading": "Solve, then check each answer",
+      "intro": null
+    }
+  ],
+  "minutes": 2
 }

@@ -132,8 +132,8 @@ describe('the verifier’s new rules', () => {
   });
   it('clipIssues: nothing for a long lesson; a check or too many words on a clip', () => {
     expect(clipIssues(loadLessonScript('quadratic-functions-am')!)).toEqual([]);
-    const long = clip(Array.from({ length: 12 }, () => ({ say: 'Multiply the first term by the second term and write the product down on the next line now.', do: [] })));
-    expect(clipIssues(long).map(m => m.message).join(' | ')).toMatch(/over about a minute/);
+    const long = clip(Array.from({ length: 24 }, () => ({ say: 'Multiply the first term by the second term and write the product down on the next line now.', do: [] })));
+    expect(clipIssues(long).map(m => m.message).join(' | ')).toMatch(/over about two and a half minutes/);
   });
 });
 
