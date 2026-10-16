@@ -34,7 +34,8 @@ const LEDGER = join(HOME, 'ledger.jsonl');
 const MODEL = 'claude-opus-5-5';
 // $ per million tokens (Opus 5.5): input, output, 5-minute cache write, cache read. Batch = half.
 const PRICE = { in: 4, out: 20, cw: 5, cr: 0.2 };
-const WORST_PER_REQUEST = process.argv.includes('--now') ? 0.9 : 0.45;   // a batch is reserved at this per request before it is sent
+// measured 16–17 Oct 2026: a science long question ≈ US$0.20 all roles, a request rarely above US$0.10 at half price
+const WORST_PER_REQUEST = process.argv.includes('--now') ? 0.5 : 0.25;   // a batch is reserved at this per request before it is sent
 const MAX_TOKENS = 32000;
 const NOW = process.argv.includes('--now');   // plain calls instead of the Batch API
 
@@ -117,7 +118,7 @@ function fileBlocks(dir, names, images = []) {
   }
   return blocks;
 }
-const pngs = (dir, re) => readdirSync(dir).filter((f) => re.test(f)).sort();
+const pngs = (dir, re) => (existsSync(dir) ? readdirSync(dir).filter((f) => re.test(f)).sort() : []);
 const FIG_TOOL = { name: 'figure_doc', description: 'Print one figure family\'s spec language (fields, ranges, an example) — what `node scripts/gce-paper/figure.mjs --doc <family>` prints.', input_schema: { type: 'object', properties: { family: { type: 'string' } }, required: ['family'], additionalProperties: false } };
 function figureDoc(family) {
   if (!/^[a-z0-9-]+$/.test(String(family))) return 'unknown family';
@@ -274,8 +275,10 @@ function pick(bank, n, levels) {
       const seeds = x.seeds ? x.seeds : [x.source_id];
       const sid = seeds.find((s) => !done(bank === 'sci' ? `S-${x.pool}-${s}` : `${x.pool}-${s}`));
       const unit = `${x.pool}-${x.subgroup_id}`;
-      if (!sid || usedUnit.has(unit)) continue;
-      const name = bank === 'sci' ? `S-${x.pool}-${sid}` : `${x.pool}-${sid}`;
+      const name0 = bank === 'sci' ? `S-${x.pool}-${sid}` : `${x.pool}-${sid}`;
+      // one seed can be offered under two sub-skills — one run folder per seed a round (17 Oct 2026)
+      if (!sid || usedUnit.has(unit) || items.some((i) => i.name === name0)) continue;
+      const name = name0;
       usedUnit.add(unit); items.push({ bank, name, sid, pool: x.pool, sg: x.subgroup_id, dir: dirOf(name), label: `${x.pool} · ${x.topic} · ${x.subgroup}` });
       if (items.length >= n) break;
     }
