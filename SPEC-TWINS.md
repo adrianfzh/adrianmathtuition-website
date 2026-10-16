@@ -37,6 +37,10 @@ Why this is enough, and why less is not: copyright protects the expression of a
 question, not the mathematical idea. A twin that swaps one number keeps the
 school's expression. A twin that reads as a new question is ours.
 
+**Part skills (17 Oct 2026, SPEC-PART-SKILLS §Twins).** Every part of a twin gets its own sub-skill in
+`question_part_subgroups`: copied from the seed at publish when the seed's parts are labelled and line up,
+otherwise labelled by the filer's twins-only job (`file-twin-parts`). The main filing above never changes.
+
 ## 2. Inputs
 
 - One source row of `questions` (a school row, or a national one — a twin of a
