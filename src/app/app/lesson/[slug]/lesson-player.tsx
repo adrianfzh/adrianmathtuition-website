@@ -285,6 +285,8 @@ function CaptionView({ scene, timed, board }: { scene: CaptionScene; timed: bool
 // ── Scene: equation-steps (with moved-term FLIP) ─────────────────────────────
 
 type Rect = ReturnType<typeof offsetRect>;
+/** A clip's finished board fades for this long before the next board comes in. */
+const SCENE_LEAVE_MS = 700;
 
 function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLElement, was?: Rect) {
   const s = was ?? offsetRect(source, container);
@@ -1723,6 +1725,16 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     setDone(true);
   }, [done, step, maxStep, sceneIdx, scenes.length]);
 
+  // The board fading away before the next one (see onClipEnded). Any move (scrub, back, pause) cancels it.
+  const [leavingScene, setLeavingScene] = useState<number | null>(null);
+  const leaving = leavingScene === sceneIdx && !paused;
+  useEffect(() => {
+    if (!leaving) return;
+    const t = window.setTimeout(() => { setLeavingScene(null); advance(); }, SCENE_LEAVE_MS);
+    return () => window.clearTimeout(t);
+  }, [leaving, advance]);
+  useEffect(() => { setLeavingScene(null); }, [sceneIdx, step]);
+
   const nextScene = useCallback(() => {
     if (done) return;
     if (sceneIdx < scenes.length - 1) { setSceneIdx(sceneIdx + 1); setStep(0); return; }
@@ -1738,6 +1750,12 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     revealStep: setStep,
     onClipEnded: (layout) => {
       if (scene.type === 'check') return;
+      // A clip's board change is a breath, not a cut (Adrian, 16 Oct 2026: "the transition to another
+      // screen is too sudden"): the finished board fades away first, then the next one comes in.
+      if (clip && layout !== 'scene' && step >= maxStep - 1 && sceneIdx < scenes.length - 1) {
+        setLeavingScene(sceneIdx);
+        return;
+      }
       if (layout === 'scene') nextScene(); else advance();
     },
     onFirstPlay: () => setNarratedUsed(true),
@@ -1783,7 +1801,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   const beatRef = useRef<{ key: string; totalMs: number; remainingMs: number; startedAt: number; running: boolean } | null>(null);
   const beatKey = `${sceneIdx}:${step}:${voiceVersion}:${gated}:${pacing}`;
   useEffect(() => {
-    if (pacing === 'manual' || done || gated || cheering) { beatRef.current = null; return; }
+    if (pacing === 'manual' || done || gated || cheering || leavingScene !== null) { beatRef.current = null; return; }
     if (pacing === 'narrated' && (voiceLocked || voiceDriving())) { beatRef.current = null; return; }
     const base = scene.type === 'check' ? CHECK_WHY_BEAT_MS : beatDuration(scene, step);
     if (base === null) { beatRef.current = null; return; }
@@ -1805,7 +1823,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         b.running = false;
       }
     };
-  }, [pacing, done, gated, cheering, scene, step, rate, paused, beatKey, voiceLocked, voiceDriving]);
+  }, [pacing, done, gated, cheering, scene, step, rate, paused, beatKey, voiceLocked, voiceDriving, leavingScene]);
   const beatClock = useCallback((): BeatClock | null => {
     const b = beatRef.current;
     if (!b) return null;
@@ -2212,7 +2230,7 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
               paused, a tap resumes instead. ── */
         <div key={sceneIdx} ref={cardRef} onClick={onCardTap} data-paused={paused || undefined} data-beats={board ? maxStep : undefined}
           style={sheet && sheetFit.scale < 1 ? { scale: String(sheetFit.scale), transformOrigin: 'top center', marginBottom: `${-((1 - sheetFit.scale) * sheetFit.height)}px` } : undefined}
-          data-step={step}
+          data-step={step} data-leaving={leaving || undefined}
           className={`lsn-scene relative bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-5 flex flex-col ${themed ? 'lsn-stage' : 'min-h-[440px]'} ${gated ? '' : 'cursor-pointer'}`}>
           <BoardLayer board={board} notes={marginNotes} reduced={reduced} rate={rate} writing={writing} paused={paused}
             character={characterOn ? (board?.pose ?? 'idle') : null} look={look}>
@@ -2392,6 +2410,9 @@ const PLAYER_CSS = `
 /* Typeset maths arrives as a puff of chalk dust — it is never written. */
 @keyframes lsnDust { 0% { opacity: 0; filter: blur(3px); } 55% { opacity: 1; } 100% { opacity: 1; filter: none; } }
 .lsn-scene { animation: lsnSceneIn 300ms ${EASE} both; }
+[data-lsn-clip] .lsn-scene { animation: lsnFade 700ms ease-out both; }
+[data-lsn-clip] .lsn-scene .lsn-board { transition: opacity ${SCENE_LEAVE_MS}ms ease-in; }
+[data-lsn-clip] .lsn-scene[data-leaving] .lsn-board { opacity: 0; }
 .lsn-rise { animation: lsnRise 420ms ${EASE} both; }
 .lsn-line { opacity: 0; transform: translateY(6px); transition: opacity 420ms ${EASE}, transform 420ms ${EASE}; }
 .lsn-line.on { opacity: 1; transform: none; }
