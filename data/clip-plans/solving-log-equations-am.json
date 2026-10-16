@@ -73,20 +73,8 @@
     {
       "tokens": [
         {
-          "tex": "\\log_3(",
-          "id": "g1"
-        },
-        {
-          "tex": "x-8",
-          "id": "a1"
-        },
-        {
-          "tex": ")+\\log_3",
-          "id": "g2"
-        },
-        {
-          "tex": "x",
-          "id": "b1"
+          "tex": "\\log_3(x-8)+\\log_3 x",
+          "id": "lhs2"
         },
         {
           "tex": "=",
@@ -110,15 +98,6 @@
           "replaces": [
             "two1"
           ]
-        },
-        {
-          "tex": "\\log_3 9",
-          "id": "e3",
-          "replaces": [
-            "two1",
-            "lg3",
-            "pw"
-          ]
         }
       ],
       "checks": [
@@ -130,9 +109,35 @@
         },
         {
           "fact": "2 = log(3**2,3)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\log_3(",
+          "id": "g1"
         },
         {
-          "fact": "2 = log(9,3)"
+          "tex": "x-8",
+          "id": "a1"
+        },
+        {
+          "tex": ")+\\log_3",
+          "id": "g2"
+        },
+        {
+          "tex": "x",
+          "id": "b1"
+        },
+        {
+          "tex": "=\\,\\log_3 9",
+          "id": "e3"
+        }
+      ],
+      "checks": [
+        {
+          "step": "log(x-8,3) + log(x,3) = log(9,3)"
         }
       ]
     },
@@ -294,11 +299,20 @@
           "id": "k9"
         },
         {
-          "tex": "\\log_3(9-8)=\\log_3 1,",
+          "tex": "\\log_3(9-8)=\\log_3 1",
           "id": "k9a"
-        },
+        }
+      ],
+      "checks": [
         {
-          "tex": "\\log_3 9",
+          "fact": "9 - 8 = 1"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "\\log_3 x=\\log_3 9",
           "id": "k9b"
         },
         {
@@ -309,10 +323,7 @@
       ],
       "checks": [
         {
-          "fact": "9 - 8 = 1"
-        },
-        {
-          "form": "both insides (1 and 9) are positive, so x = 9 is kept"
+          "form": "the other log of the question, log3 x, at x = 9: inside 9 is positive; with inside 1 above, x = 9 is kept"
         }
       ]
     },
@@ -343,7 +354,8 @@
     "Adrian 16 Oct 2026: 2 = 2log3 3 = log3 3^2 on ONE line; say 'bring the power up', never 'fly'; step 4 says always check answers for logs.",
     "Adrian 16 Oct 2026 (watch 6): explain the 2 AT the 2 of line 3 — the line is rewritten in place: = 2 -> = 2 log3 3 -> the 2 goes up into the power -> = log3 3^2 -> = log3 9.",
     "Adrian 16 Oct 2026 (watch 8): ONE scrolling board — 'make the lines move up, like scrolling up, then we don't have to change screen'. Repeated carry lines dropped; each step's title sits above its first line.",
-    "Adrian 17 Oct 2026 (watch 11): step 3 fast (A Math students know it); the check takes log3(x-8) FROM the first line (it flies down); x = 9 checked on the board, not only in the voice; the 'why undefined' link opens a popup."
+    "Adrian 17 Oct 2026 (watch 11): step 3 fast (A Math students know it); the check takes log3(x-8) FROM the first line (it flies down); x = 9 checked on the board, not only in the voice; the 'why undefined' link opens a popup.",
+    "Adrian 17 Oct 2026 (watch 12): no rewrite of the line — log3(x-8) + log3 x = log3 9 is written on the NEXT line and the board scrolls up; the space the 2 left closes after it lands."
   ],
   "question": "Solve $\\log_3(x-8) = 2 - \\log_3 x$.",
   "boards": [

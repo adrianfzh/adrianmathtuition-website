@@ -572,6 +572,36 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
   // measures its landing spot (this effect is declared first, so it runs first).
   const goneKey = board ? scene.steps.map((st, i) => st.tokens.map((_, ti) => ({ gone: 1, held: 2 } as Record<string, number>)[String(tokenAway(board, scene, i, ti))] ?? 0).join('')).join('|') : '';
   const firstGone = useRef(goneKey);
+  // A piece that just went up into a power keeps its room while it flies, so nothing else moves; once
+  // it has landed the room closes in one glide (Adrian, 17 Oct 2026: "just 2 move" … then no gap left).
+  // A board drawn afresh (a seek) shows it closed already.
+  const heldSeen = useRef<Set<Element> | null>(null);
+  useIsoLayoutEffect(() => {
+    const cont = containerRef.current;
+    if (!cont) return;
+    const held = Array.from(cont.querySelectorAll<HTMLElement>('.lsn-tok[data-held]'));
+    if (!heldSeen.current) { heldSeen.current = new Set(held); return; }
+    for (const el of held) {
+      if (heldSeen.current.has(el)) continue;
+      heldSeen.current.add(el);
+      if (!lastAt.current.get(el)?.width || reduced) continue;
+      el.style.setProperty('display', 'inline-block', 'important');
+      const w = lastAt.current.get(el)!.width;
+      const gap = parseFloat(getComputedStyle(el.parentElement ?? el).columnGap) || 0;
+      window.setTimeout(() => {
+        if (!el.isConnected) return;
+        el.style.overflow = 'hidden';
+        const a = el.animate([{ width: `${w}px`, marginRight: '0px' }, { width: '0px', marginRight: `${-gap}px` }],
+          { duration: 600, easing: 'cubic-bezier(0.45, 0, 0.3, 1)', fill: 'forwards' });
+        a.onfinish = () => {
+          el.style.removeProperty('display'); el.style.removeProperty('overflow'); a.cancel();
+          placeClipNotes(cont);
+        };
+      }, 1200);
+    }
+    for (const el of Array.from(heldSeen.current)) if (!el.isConnected || !el.hasAttribute('data-held')) heldSeen.current.delete(el);
+  });
+
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
     if (!cont || goneKey === firstGone.current) return;
@@ -2050,12 +2080,38 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
   // nothing written later (ink, notes, a piece that moved) can linger (Adrian, 16 Oct 2026: "Add Power
   // and the arrow just sticks there").
   const [seekEpoch, setSeekEpoch] = useState(0);
+  const scrubRef = useRef<HTMLInputElement>(null);
+  const scrubDrag = useRef(false);
   // The side clip open in the popup (null = none). The main clip pauses under it and goes on after.
   const [side, setSide] = useState<string | null>(null);
   const openSide = (s: string) => { setPaused(true); setSide(s); };
   const closeSide = useCallback(() => { setSide(null); setPaused(false); }, []);
   const stops = useMemo(() => scenes.flatMap((sc, si) => Array.from({ length: sceneStepCount(sc) }, (_, k) => [si, k] as const)), [scenes]);
   const stopAt = Math.max(0, stops.findIndex(([si, k]) => si === sceneIdx && k === step));
+  // scrubTick: the slider's thumb glides through the part being spoken (its share of the voice
+  // played), straight from the audio clock each frame — no re-render; a drag in progress wins.
+  const { clock: narrationClock } = narration;
+  useEffect(() => {
+    if (!clip) return;
+    let raf = 0;
+    const n = stops.length;
+    const tick = () => {
+      const el = scrubRef.current;
+      if (el && !scrubDrag.current) {
+        let f = 0;
+        const c = narrationClock();
+        if (c && c.scene === sceneIdx && c.step === step && c.duration) f = Math.min(0.995, Math.max(0, c.elapsed / c.duration));
+        const v = done ? n : stopAt + f;
+        if (Math.abs(Number(el.value) - v) > 0.001) {
+          el.value = String(v);
+          el.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [clip, stops.length, stopAt, sceneIdx, step, done, narrationClock]);
   const canAsk = clip && askAbout && !done && hasBeats(scene) && !gated;
   const [chatOpen, setChatOpen] = useState(false);
   const [qOpen, setQOpen] = useState(false);
@@ -2487,18 +2543,29 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
 
       {clip && (() => {
         const at = done ? stops.length - 1 : stopAt;
+        const n = stops.length;
+        // A video's bar (Adrian, 17 Oct 2026: "when moving the scroll bar … able to make it smooth? like
+        // youtube"): the thumb glides through each part with the voice (scrubTick below), and a drag
+        // follows the finger, landing on the part under it.
         return (
           <div className="lsn-scrub mt-2 px-0.5 flex items-center gap-2">
-            <input type="range" min={0} max={Math.max(0, stops.length - 1)} step={1} value={at}
+            <input ref={scrubRef} type="range" min={0} max={Math.max(1, n)} step="any" defaultValue={at}
               aria-label="Go to a part of the clip"
+              onPointerDown={() => { scrubDrag.current = true; }}
+              onPointerUp={() => { scrubDrag.current = false; }}
+              onPointerCancel={() => { scrubDrag.current = false; }}
+              onBlur={() => { scrubDrag.current = false; }}
               onChange={e => {
-                const [si, k] = stops[Number(e.target.value)] ?? stops[0];
-                if (Number(e.target.value) < at) setSeekEpoch(n => n + 1);
+                const v = Number(e.target.value);
+                e.target.style.setProperty('--lsn-scrub', `${(v / Math.max(1, n)) * 100}%`);
+                const to = Math.min(n - 1, Math.max(0, Math.floor(v)));
+                if (to === at && !done) return;
+                const [si, k] = stops[to] ?? stops[0];
+                if (to < at) setSeekEpoch(x => x + 1);
                 setDone(false); setSceneIdx(si); setStep(k);
               }}
-              className="lsn-scrub-range flex-1"
-              style={{ ['--lsn-scrub' as string]: `${stops.length > 1 ? (at / (stops.length - 1)) * 100 : 0}%` }} />
-            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{stops.length}</span>
+              className="lsn-scrub-range flex-1" />
+            <span className="text-[11px] tabular-nums text-slate-400 w-10 text-right">{at + 1}/{n}</span>
           </div>
         );
       })()}
@@ -2702,7 +2769,7 @@ const PLAYER_CSS = `
 /* A tight token (a power or a base that flies into place) sits against the one before it. */
 .lsn-tokrow > .lsn-tok-tight { margin-left: -0.375rem; }
 .lsn-tok[data-gone] { display: none !important; }
-.lsn-tok[data-held] { visibility: hidden !important; }
+.lsn-tok[data-held] { display: none !important; visibility: hidden !important; }
 .lsn-note-away { display: none !important; }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }

@@ -28,15 +28,20 @@
         },
         {
           "tokens": [
+            { "tex": "\\log_3(x-8)+\\log_3 x", "id": "lhs2" },
+            { "tex": "=", "id": "eqR" },
+            { "tex": "2", "id": "two1", "hl": "amber" },
+            { "tex": "\\log_3 3", "id": "lg3", "replaces": [] },
+            { "tex": "{}^{2}", "id": "pw", "from": "two1", "tight": true, "replaces": ["two1"] }
+          ]
+        },
+        {
+          "tokens": [
             { "tex": "\\log_3(", "id": "g1" },
             { "tex": "x-8", "id": "a1" },
             { "tex": ")+\\log_3", "id": "g2" },
             { "tex": "x", "id": "b1" },
-            { "tex": "=", "id": "eqR" },
-            { "tex": "2", "id": "two1", "hl": "amber" },
-            { "tex": "\\log_3 3", "id": "lg3", "replaces": [] },
-            { "tex": "{}^{2}", "id": "pw", "from": "two1", "tight": true, "replaces": ["two1"] },
-            { "tex": "\\log_3 9", "id": "e3", "replaces": ["two1", "lg3", "pw"] }
+            { "tex": "=\\,\\log_3 9", "id": "e3" }
           ]
         },
         {
@@ -94,8 +99,12 @@
         {
           "tokens": [
             { "tex": "x=9:", "id": "k9" },
-            { "tex": "\\log_3(9-8)=\\log_3 1,", "id": "k9a" },
-            { "tex": "\\log_3 9", "id": "k9b" },
+            { "tex": "\\log_3(9-8)=\\log_3 1", "id": "k9a" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\log_3 x=\\log_3 9", "id": "k9b" },
             { "tex": "\\checkmark", "id": "k9c", "hl": "emerald" }
           ]
         },
@@ -193,7 +202,7 @@
           "say": "Three squared is nine. So the two on the right is log base three of nine.",
           "asks": ["Why is 2 = log base 3 of 9?"],
           "do": [
-            { "do": "write", "token": "e3", "on": "is log base three of nine" }
+            { "do": "write", "on": "is log base three of nine", "step": 3 }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b10.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b10.timing.json"
@@ -227,7 +236,7 @@
           "say": "Adding logs multiplies the insides: log base three of X times X minus eight equals log base three of nine.",
           "asks": ["Why is it x times x minus 8?"],
           "do": [
-            { "do": "write", "step": 3, "on": "log base three of X times" }
+            { "do": "write", "step": 4, "on": "log base three of X times" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b13.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b13.timing.json"
@@ -264,8 +273,8 @@
           "say": "Expand, then bring nine across.",
           "asks": ["How do I expand x times x minus 8?"],
           "do": [
-            { "do": "write", "step": 5, "on": "Expand" },
-            { "do": "write", "step": 6, "on": "bring nine across" }
+            { "do": "write", "step": 6, "on": "Expand" },
+            { "do": "write", "step": 7, "on": "bring nine across" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b17.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b17.timing.json"
@@ -274,7 +283,7 @@
           "say": "Factorise it into two brackets.",
           "asks": ["How do I factorise this?"],
           "do": [
-            { "do": "write", "step": 7, "on": "Factorise" }
+            { "do": "write", "step": 8, "on": "Factorise" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b18.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-01-b18.timing.json"
@@ -361,7 +370,7 @@
           "say": "The answer is X equals nine.",
           "asks": ["How do I check x = 9?"],
           "do": [
-            { "do": "write", "step": 12, "on": "The answer is" },
+            { "do": "write", "step": 14, "on": "The answer is" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-01-b27.mp3",
