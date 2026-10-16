@@ -229,6 +229,9 @@ New in the player: a clip board that would run below the screen scales its maths
   down to the slider, keeps the maths full size, and slides up (0.65 s) when the newest line would reach
   the subtitle; older lines fade off the top. Each step's title is a `heading` on its first line; the
   repeated "carry on" lines and beats are gone (draft G6: 11 lines, 26 beats, ~391 words). Voice reused.
+- Watch 9: ← / → step back / forward one part of any clip (like a video player). A piece that goes up into
+  a power leaves an empty space (`tokenAway` 'held'), so only it moves; the next rewrite of the line
+  closes the space (`log₃3²` → `log₃9` replaces the 2 too).
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
