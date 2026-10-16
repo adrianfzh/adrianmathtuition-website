@@ -335,7 +335,12 @@ export class ChalkWriter {
     // its ink is still on the canvas, so wipe the canvas and let every remaining unit build and
     // reveal again at its own progress — a finished one comes back whole in the same frame.
     let gone = false;
-    for (const u of this.units.values()) if (!u.el.isConnected) { this.units.delete(u.el); gone = true; }
+    for (const u of this.units.values()) {
+      if (u.el.isConnected && !u.el.closest('[data-gone], [data-held]')) continue;
+      u.el.removeAttribute('data-ink');
+      this.units.delete(u.el);
+      gone = true;
+    }
     if (gone) this.relayout();
 
     let active: Unit | null = null;

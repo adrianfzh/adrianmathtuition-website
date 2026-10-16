@@ -36,7 +36,7 @@
             { "tex": "2", "id": "two1", "hl": "amber" },
             { "tex": "\\log_3 3", "id": "lg3", "replaces": [] },
             { "tex": "{}^{2}", "id": "pw", "from": "two1", "tight": true, "replaces": ["two1"] },
-            { "tex": "\\log_3 9", "id": "e3", "replaces": ["lg3", "pw"] }
+            { "tex": "\\log_3 9", "id": "e3", "replaces": ["two1", "lg3", "pw"] }
           ]
         },
         {

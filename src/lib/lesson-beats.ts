@@ -390,15 +390,27 @@ export function tokenShown(board: BoardState, scene: Scene | PlayScene, line: nu
   return true;
 }
 
-/** Does this token take no room on the board right now? A `replaces` token before it is shown, or a
- *  token a shown `replaces` token of its line has rewritten (the line rewritten in place). */
-export function tokenGone(board: BoardState, scene: Scene | PlayScene, line: number, index: number): boolean {
+/** Is this token off the board right now, and does its room stay?
+ *  - 'gone': it takes no room — a `replaces` token not yet shown, or one a shown `replaces` token of
+ *    its line has rewritten.
+ *  - 'held': it went UP into a power (the only shown tokens replacing it fly from it): it leaves an
+ *    empty space, so the rest of the line stays still while just that piece moves (Adrian, 16 Oct
+ *    2026: "just 2 move, log_3 3 does not move"). The next rewrite of the line closes the space.
+ *  - false: on the board as usual. */
+export function tokenAway(board: BoardState, scene: Scene | PlayScene, line: number, index: number): false | 'gone' | 'held' {
   const row = sceneTokens(scene).filter(r => r.line === line);
   const me = row.find(r => r.index === index);
   if (!me) return false;
-  if (me.replaces && !tokenShown(board, scene, line, index)) return true;
+  if (me.replaces && !tokenShown(board, scene, line, index)) return 'gone';
   if (!me.id) return false;
-  return row.some(r => r.replaces?.includes(me.id!) && tokenShown(board, scene, line, r.index));
+  const by = row.filter(r => r.replaces?.includes(me.id!) && tokenShown(board, scene, line, r.index));
+  if (!by.length) return false;
+  return by.every(r => r.from === me.id) ? 'held' : 'gone';
+}
+
+/** Does this token take no room on the board right now? (See tokenAway.) */
+export function tokenGone(board: BoardState, scene: Scene | PlayScene, line: number, index: number): boolean {
+  return tokenAway(board, scene, line, index) === 'gone';
 }
 
 /** Did this token arrive by draw-on (its own write, or its line's)? */

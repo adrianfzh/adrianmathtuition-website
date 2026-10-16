@@ -87,7 +87,7 @@ import {
 } from '@/lib/lesson-speech';
 import {
   beatAutoMs, beatTimeline, boardStateAt, elementShown, firedCountAt, lineKey, lineOn, pieceKey, proseGroup, sceneNotes, scenesHaveCharacter,
-  tokKey, tokenGone, tokenShown, tokenWritten, type BoardState,
+  tokKey, tokenAway, tokenGone, tokenShown, tokenWritten, type BoardState,
 } from '@/lib/lesson-beats';
 import {
   HAND_FONT_FACES, HAND_FONT_FAMILY, HAND_FONT_URL, THEME_TOKENS, TITLE_FONT_FAMILY, TITLE_FONT_URL,
@@ -189,9 +189,9 @@ const TONE = {
   emerald: { hl: 'lsn-hl-emerald', chip: 'lsn-chip-emerald bg-emerald-50 border-emerald-200 text-emerald-900', stroke: '#10b981' },
 } as const satisfies Record<LessonTone, { hl: string; chip: string; stroke: string }>;
 
-function TokenSpan({ t, bits, gone = false }: { t: StepToken; bits?: ElementBits | null; gone?: boolean }) {
+function TokenSpan({ t, bits, away = false }: { t: StepToken; bits?: ElementBits | null; away?: false | 'gone' | 'held' }) {
   return (
-    <span data-gone={gone ? '1' : undefined}
+    <span data-gone={away === 'gone' ? '1' : undefined} data-held={away === 'held' ? '1' : undefined}
       data-token-id={t.id || undefined}
       data-from={t.from || undefined}
       data-key={bits?.key}
@@ -295,6 +295,7 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
 
   const clone = source.cloneNode(true) as HTMLElement;
   clone.removeAttribute('data-gone');
+  clone.removeAttribute('data-held');
   clone.removeAttribute('data-token-id');
   clone.removeAttribute('data-key');
   clone.setAttribute('aria-hidden', 'true');
@@ -541,7 +542,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
 
   // A line rewritten in place changes width: fit the rows and the board again BEFORE any flight
   // measures its landing spot (this effect is declared first, so it runs first).
-  const goneKey = board ? scene.steps.map((st, i) => st.tokens.map((_, ti) => (tokenGone(board, scene, i, ti) ? 1 : 0)).join('')).join('|') : '';
+  const goneKey = board ? scene.steps.map((st, i) => st.tokens.map((_, ti) => ({ gone: 1, held: 2 } as Record<string, number>)[String(tokenAway(board, scene, i, ti))] ?? 0).join('')).join('|') : '';
   const firstGone = useRef(goneKey);
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
@@ -653,7 +654,7 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
               )}
               <div data-fit className="lsn-tokrow text-[17px] text-slate-800 lsn-ink leading-relaxed flex flex-wrap items-baseline gap-x-1.5 gap-y-1.5">
                 {s.tokens.map((t, ti) => (
-                  <TokenSpan key={ti} t={t} gone={!!board && tokenGone(board, scene, i, ti)}
+                  <TokenSpan key={ti} t={t} away={!!board && tokenAway(board, scene, i, ti)}
                     bits={board ? { key: tokKey(i, ti), on: tokenShown(board, scene, i, ti), written: tokenWritten(board, i, ti) } : null} />
                 ))}
               </div>
@@ -2080,6 +2081,27 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [canPause, paused, flashGesture]);
+
+  // ← / → step back and forward one part, like a video player's arrow keys (Adrian, 16 Oct 2026:
+  // "allow left and right arrows to go forward and backwards in the video? like in youtube?").
+  useEffect(() => {
+    if (!clip) return;
+    const onArrow = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t?.closest('input, textarea, select, [contenteditable="true"]')) return;
+      e.preventDefault();
+      const at = done ? stops.length - 1 : stopAt;
+      const to = Math.min(stops.length - 1, Math.max(0, at + (e.key === 'ArrowRight' ? 1 : -1)));
+      if (to === at && !done) return;
+      const [si, k] = stops[to];
+      setDone(false); setSceneIdx(si); setStep(k);
+      flashGesture(e.key === 'ArrowRight' ? '⏩' : '⏪');
+    };
+    window.addEventListener('keydown', onArrow);
+    return () => window.removeEventListener('keydown', onArrow);
+  }, [clip, done, stops, stopAt, flashGesture]);
   useEffect(() => {
     if (!rateOpen) return;
     const onDown = (e: PointerEvent) => {
@@ -2592,6 +2614,7 @@ const PLAYER_CSS = `
 /* A tight token (a power or a base that flies into place) sits against the one before it. */
 .lsn-tokrow > .lsn-tok-tight { margin-left: -0.375rem; }
 .lsn-tok[data-gone] { display: none !important; }
+.lsn-tok[data-held] { visibility: hidden !important; }
 [data-lsn-clip] .lsn-tokrow > .lsn-tok-tight { margin-left: -0.7rem; }
 [data-lsn-clip] .lsn-steps { margin-top: calc(2.6rem * var(--lsn-gap-fit, 1)); }
 [data-lsn-clip] .lsn-steps > * + * { margin-top: calc(2.8rem * var(--lsn-gap-fit, 1)); }

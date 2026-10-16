@@ -115,6 +115,7 @@
           "tex": "\\log_3 9",
           "id": "e3",
           "replaces": [
+            "two1",
             "lg3",
             "pw"
           ]
