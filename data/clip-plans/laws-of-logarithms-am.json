@@ -29,12 +29,20 @@
     {
       "tokens": [
         {
-          "tex": "\\log_3 5",
+          "tex": "\\log_3",
           "id": "a"
         },
         {
-          "tex": "+\\,\\log_3 6",
+          "tex": "5",
+          "id": "n5"
+        },
+        {
+          "tex": "+\\,\\log_3",
           "id": "b"
+        },
+        {
+          "tex": "6",
+          "id": "n6"
         },
         {
           "tex": "-\\,\\log_3 10",
@@ -53,9 +61,8 @@
           "tex": "="
         },
         {
-          "tex": "\\log_3(5\\times 6)",
-          "id": "p56",
-          "hl": "amber"
+          "tex": "\\log_3(\\textcolor{#ffb86b}{5}\\times \\textcolor{#a8ecfb}{6})",
+          "id": "p56"
         },
         {
           "tex": "-\\,\\log_3 10",
@@ -74,12 +81,20 @@
           "tex": "="
         },
         {
-          "tex": "\\log_3 30",
-          "id": "ab"
+          "tex": "\\log_3",
+          "id": "l30"
         },
         {
-          "tex": "-\\,\\log_3 10",
-          "id": "c2"
+          "tex": "30",
+          "id": "n30"
+        },
+        {
+          "tex": "-\\,\\log_3",
+          "id": "m"
+        },
+        {
+          "tex": "10",
+          "id": "n10"
         }
       ],
       "checks": [
@@ -94,9 +109,8 @@
           "tex": "="
         },
         {
-          "tex": "\\log_3 \\tfrac{30}{10}",
-          "id": "q",
-          "hl": "amber"
+          "tex": "\\log_3 \\tfrac{\\textcolor{#ffb86b}{30}}{\\textcolor{#a8ecfb}{10}}",
+          "id": "q"
         }
       ],
       "checks": [
@@ -148,7 +162,8 @@
     "Next line: log3(5 x 6) - log3 10. Then: log3 30 - log3 10.",
     "Trap: only added logs combine — log 5 times log 6 is not log 30.",
     "Same pattern for minus: highlight log3 30 - log3 10, Minus Power under that line, then log3(30/10).",
-    "30/10 = 3: log3 3. log_a a = 1 beside it. Answer 1, boxed."
+    "30/10 = 3: log3 3. log_a a = 1 beside it. Answer 1, boxed.",
+    "Adrian 16 Oct: in each law colour x (orange) and y (blue); light the 5 / 30 orange and the 6 / 10 blue as the voice reads them, so log(5 x 6) and log(30/10) visibly come from xy and x/y."
   ],
   "question": "Simplify $\\log_3 5 + \\log_3 6 - \\log_3 10$."
 }

@@ -1,6 +1,6 @@
 Verifying 10 clip(s) of laws-of-logarithms-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 100% of narration words heard
+  scene-01-b1: 94% of narration words heard
   scene-01-b2: 100% of narration words heard
   scene-01-b3: 100% of narration words heard
   scene-01-b4: 100% of narration words heard

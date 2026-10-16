@@ -1,0 +1,223 @@
+{
+ "slug": "laws-of-logarithms-am",
+ "draft": "A4",
+ "by": "session, after Adrian's 16 Oct note: colour x and y in each law, light the 5/30 and 6/10 to match as the voice reads them",
+ "beats": [
+  {
+   "say": "Simplify log base three of five, plus log base three of six, minus log base three of ten.",
+   "asks": [
+    "What does log base 3 mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "All three logs have base three. Same base, so we can combine them.",
+   "asks": [
+    "Why must the bases be the same?",
+    "What if the bases are different?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "a",
+      "b",
+      "c"
+     ],
+     "part": "sub",
+     "on": "base three"
+    }
+   ]
+  },
+  {
+   "say": "Look at the first two. Plus means multiply. This is Add Power.",
+   "asks": [
+    "Why does plus become multiply?",
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "a",
+      "n5",
+      "b",
+      "n6"
+     ],
+     "on": "Plus means multiply"
+    },
+    {
+     "do": "note",
+     "text": "Add Power: $\\log_a \\textcolor{#ffb86b}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ffb86b}{x}\\textcolor{#a8ecfb}{y}$",
+     "near": "a",
+     "span": [
+      "a",
+      "n6"
+     ],
+     "on": "This is Add Power"
+    }
+   ]
+  },
+  {
+   "say": "Here five is X and six is Y. So we get log base three of five times six.",
+   "asks": [
+    "Why is it log of 5 × 6?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "n5",
+     "tone": "orange",
+     "on": "five is X"
+    },
+    {
+     "do": "highlight",
+     "token": "n6",
+     "tone": "sky",
+     "on": "six is Y"
+    },
+    {
+     "do": "write",
+     "step": 1,
+     "on": "So we get"
+    }
+   ]
+  },
+  {
+   "say": "Five times six is thirty. So we have log base three of thirty, minus log base three of ten.",
+   "asks": [
+    "Why multiply 5 and 6 before anything else?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "So we have"
+    }
+   ]
+  },
+  {
+   "say": "Careful: the times sits inside one log. Log five times log six is not log thirty. Only added logs combine.",
+   "asks": [
+    "Why is log 5 × log 6 not log 30?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "p56",
+     "on": "inside one log"
+    },
+    {
+     "do": "note",
+     "text": "✗ Common mistake: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$",
+     "near": "p56",
+     "on": "is not log thirty"
+    }
+   ]
+  },
+  {
+   "say": "Now the minus. Minus means divide. This is Minus Power.",
+   "asks": [
+    "Why does minus become divide?",
+    "Which law is this?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "l30",
+      "n30",
+      "m",
+      "n10"
+     ],
+     "on": "Minus means divide"
+    },
+    {
+     "do": "note",
+     "text": "Minus Power: $\\log_a \\textcolor{#ffb86b}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ffb86b}{x}}{\\textcolor{#a8ecfb}{y}}$",
+     "near": "l30",
+     "span": [
+      "l30",
+      "n10"
+     ],
+     "on": "This is Minus Power"
+    }
+   ]
+  },
+  {
+   "say": "Now thirty is X and ten is Y. So we get log base three of thirty over ten.",
+   "asks": [
+    "Why is it 30 over 10?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "n30",
+     "tone": "orange",
+     "on": "thirty is X"
+    },
+    {
+     "do": "highlight",
+     "token": "n10",
+     "tone": "sky",
+     "on": "ten is Y"
+    },
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So we get"
+    }
+   ]
+  },
+  {
+   "say": "Thirty over ten is three, which leaves log base three of three.",
+   "asks": [
+    "Why is log₃ 3 = 1?",
+    "What is log₃ 9?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "which leaves"
+    },
+    {
+     "do": "note",
+     "text": "$\\log_a a = 1$",
+     "near": "l3",
+     "on": "of three"
+    }
+   ]
+  },
+  {
+   "say": "The base matches the number inside, so the log is one. The answer is one.",
+   "asks": [
+    "How can I check the answer is 1?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l3",
+     "part": "sub"
+    },
+    {
+     "do": "write",
+     "step": 5,
+     "on": "the log is one"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "The answer is"
+    }
+   ]
+  }
+ ]
+}

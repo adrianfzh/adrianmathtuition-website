@@ -451,14 +451,19 @@ export default function BoardLayer({ board, notes, reduced, rate, writing = fals
     // "when you say plus means multiply, that's when you can just highlight log5+log6, then bring
     // in the property") — a glow that fades in a second is gone before the eye gets there.
     if (zoom.closest('[data-lsn-clip]')) {
+      // Every highlight of the latest beat that has one stays lit (two at once: the 5 in orange and
+      // the 6 in blue, matching a law's x and y — Adrian, 16 Oct 2026), through that beat and the next.
       const last = pulses[pulses.length - 1];
-      const keep = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? new Set(last.tokens) : new Set<string>();
+      const live = last && (board.beat ?? 0) - (last.beat ?? 0) <= 1 ? pulses.filter(p => p.beat === last.beat) : [];
       // part 'sub' lights only the base (the subscript) — its own colour (Adrian, 15 Oct 2026).
-      const cls = last?.part === 'sub' ? 'lsn-lit-sub' : 'lsn-lit';
-      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub').forEach(el => {
-        if (!keep.has(el.dataset.tokenId ?? '') || !el.classList.contains(cls)) el.classList.remove('lsn-lit', 'lsn-lit-sub');
+      const want = new Map<string, string>();
+      for (const p of live) for (const id of p.tokens) want.set(id, p.part === 'sub' ? 'lsn-lit-sub' : p.tone === 'orange' ? 'lsn-lit-orange' : p.tone === 'sky' ? 'lsn-lit-blue' : 'lsn-lit');
+      const ALL = ['lsn-lit', 'lsn-lit-sub', 'lsn-lit-orange', 'lsn-lit-blue'];
+      zoom.querySelectorAll<HTMLElement>('.lsn-lit, .lsn-lit-sub, .lsn-lit-orange, .lsn-lit-blue').forEach(el => {
+        const w = want.get(el.dataset.tokenId ?? '');
+        for (const c of ALL) if (c !== w) el.classList.remove(c);
       });
-      for (const id of keep) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add(cls);
+      for (const [id, c] of want) zoom.querySelector(`[data-token-id="${CSS.escape(id)}"]`)?.classList.add(c);
     }
 
     // 3. Marks: draw new ones, drop cleared ones.

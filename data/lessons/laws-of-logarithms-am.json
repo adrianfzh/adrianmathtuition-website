@@ -14,29 +14,33 @@
       "steps": [
         {
           "tokens": [
-            { "tex": "\\log_3 5", "id": "a" },
-            { "tex": "+\\,\\log_3 6", "id": "b" },
+            { "tex": "\\log_3", "id": "a" },
+            { "tex": "5", "id": "n5" },
+            { "tex": "+\\,\\log_3", "id": "b" },
+            { "tex": "6", "id": "n6" },
             { "tex": "-\\,\\log_3 10", "id": "c" }
           ]
         },
         {
           "tokens": [
             { "tex": "=" },
-            { "tex": "\\log_3(5\\times 6)", "id": "p56", "hl": "amber" },
+            { "tex": "\\log_3(\\textcolor{#ffb86b}{5}\\times \\textcolor{#a8ecfb}{6})", "id": "p56" },
             { "tex": "-\\,\\log_3 10", "id": "c1" }
           ]
         },
         {
           "tokens": [
             { "tex": "=" },
-            { "tex": "\\log_3 30", "id": "ab" },
-            { "tex": "-\\,\\log_3 10", "id": "c2" }
+            { "tex": "\\log_3", "id": "l30" },
+            { "tex": "30", "id": "n30" },
+            { "tex": "-\\,\\log_3", "id": "m" },
+            { "tex": "10", "id": "n10" }
           ]
         },
         {
           "tokens": [
             { "tex": "=" },
-            { "tex": "\\log_3 \\tfrac{30}{10}", "id": "q", "hl": "amber" }
+            { "tex": "\\log_3 \\tfrac{\\textcolor{#ffb86b}{30}}{\\textcolor{#a8ecfb}{10}}", "id": "q" }
           ]
         },
         {
@@ -75,12 +79,12 @@
           "say": "Look at the first two. Plus means multiply. This is Add Power.",
           "asks": ["Why does plus become multiply?", "Which law is this?"],
           "do": [
-            { "do": "highlight", "token": ["a", "b"], "on": "Plus means multiply" },
+            { "do": "highlight", "token": ["a", "n5", "b", "n6"], "on": "Plus means multiply" },
             {
               "do": "note",
-              "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$",
+              "text": "Add Power: $\\log_a \\textcolor{#ffb86b}{x} + \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\textcolor{#ffb86b}{x}\\textcolor{#a8ecfb}{y}$",
               "near": "a",
-              "span": ["a", "b"],
+              "span": ["a", "n6"],
               "on": "This is Add Power"
             }
           ],
@@ -88,10 +92,12 @@
           "timing": "/lessons/laws-of-logarithms-am/scene-01-b3.timing.json"
         },
         {
-          "say": "So log base three of five, plus log base three of six, becomes log base three of five times six.",
+          "say": "Here five is X and six is Y. So we get log base three of five times six.",
           "asks": ["Why is it log of 5 × 6?"],
           "do": [
-            { "do": "write", "step": 1, "on": "becomes log base three" }
+            { "do": "highlight", "token": "n5", "tone": "orange", "on": "five is X" },
+            { "do": "highlight", "token": "n6", "tone": "sky", "on": "six is Y" },
+            { "do": "write", "step": 1, "on": "So we get" }
           ],
           "audio": "/lessons/laws-of-logarithms-am/scene-01-b4.mp3",
           "timing": "/lessons/laws-of-logarithms-am/scene-01-b4.timing.json"
@@ -124,22 +130,24 @@
           "say": "Now the minus. Minus means divide. This is Minus Power.",
           "asks": ["Why does minus become divide?", "Which law is this?"],
           "do": [
-            { "do": "highlight", "token": ["ab", "c2"], "on": "Minus means divide" },
+            { "do": "highlight", "token": ["l30", "n30", "m", "n10"], "on": "Minus means divide" },
             {
               "do": "note",
-              "text": "Minus Power: $\\log_a x - \\log_a y = \\log_a \\tfrac{x}{y}$",
-              "near": "ab",
-              "on": "This is Minus Power",
-              "span": ["ab", "c2"]
+              "text": "Minus Power: $\\log_a \\textcolor{#ffb86b}{x} - \\log_a \\textcolor{#a8ecfb}{y} = \\log_a \\tfrac{\\textcolor{#ffb86b}{x}}{\\textcolor{#a8ecfb}{y}}$",
+              "near": "l30",
+              "span": ["l30", "n10"],
+              "on": "This is Minus Power"
             }
           ],
           "audio": "/lessons/laws-of-logarithms-am/scene-01-b7.mp3",
           "timing": "/lessons/laws-of-logarithms-am/scene-01-b7.timing.json"
         },
         {
-          "say": "So we get log base three of thirty over ten.",
+          "say": "Now thirty is X and ten is Y. So we get log base three of thirty over ten.",
           "asks": ["Why is it 30 over 10?"],
           "do": [
+            { "do": "highlight", "token": "n30", "tone": "orange", "on": "thirty is X" },
+            { "do": "highlight", "token": "n10", "tone": "sky", "on": "ten is Y" },
             { "do": "write", "step": 3, "on": "So we get" }
           ],
           "audio": "/lessons/laws-of-logarithms-am/scene-01-b8.mp3",
@@ -159,7 +167,7 @@
           "say": "The base matches the number inside, so the log is one. The answer is one.",
           "asks": ["How can I check the answer is 1?"],
           "do": [
-            { "do": "highlight", "token": "l3", "part": "sub" },
+            { "do": "highlight", "token": "l3", "part": "sub", "on": "The base matches" },
             { "do": "write", "step": 5, "on": "the log is one" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "The answer is" }
           ],

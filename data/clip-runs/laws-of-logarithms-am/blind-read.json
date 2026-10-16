@@ -1,30 +1,24 @@
 {
  "slug": "laws-of-logarithms-am",
- "pick": "A3",
- "why": "Only draft scored (no pick asked): A3 does all three of the tutor's asks — the three bases light blue on 'base three', each law's arrow sits under the middle of the two logs it joins, and the mistake is written on the board in red — once the mistake is tied to the line it is about and given a reason.",
+ "pick": "A4",
+ "why": "Only draft scored (no pick asked): A4 does the tutor's 16 Oct ask — each law shows X orange and Y blue, the beat after lights 5 orange and 6 blue (then 30 orange and 10 blue) exactly as the voice says 'five is X', 'six is Y', and the next line writes log₃(5 × 6) / log₃(30/10) in the same colours, so the law visibly turns into the line.",
  "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 5, "trap": 5, "level": 5 },
  "notes": [
-  "Ask 1 (base 3 in its own colour): beat 2 lights only the subscripts of all three logs (part 'sub') on 'base three' — right word, right tokens. Done.",
-  "Ask 2 (arrow in the middle, law on one line): beats 3 and 7 give each law note a span over the two logs it joins (a+b, ab+c2), so the ↑ sits under the middle; the laws are short single-line notes. Done. Beat 3's note cue read 'this is Add Power' but the voice says 'This is Add Power' — fixed to copy the say exactly.",
-  "Ask 3 (the mistake put out and emphasised): as drafted, beat 6 opens 'A common mistake:' with nothing linking it to the board, the red note fired at the start of the beat (no cue), and it sat under the log3 30 − log3 10 line — the same line that gets the Minus Power note one beat later, so two notes would share one row. Fixed: the beat now says why the mistake arises ('the times sits inside one log'), circles log3(5 × 6) on those words, and writes the red ✗ note under that line on 'is not log thirty'. The mistake now comes from the line the student just watched being made, not from nowhere.",
-  "one_idea 4: beat 10 does three things (light the base, write 1, box it) — acceptable because it is the closing beat and mirrors the reference, but it is busier than the rest.",
-  "Beat 10 lights only the base of log3 3 while saying 'the base matches the number inside' — the student sees the base lit and the 3 beside it, which is enough."
+  "Colour match (the ask): beat 3 puts up 'Add Power: log x + log y = log xy' with X orange, Y blue; beat 4 lights 5 orange on 'five is X' and 6 blue on 'six is Y', then writes log₃(5 × 6) with 5 orange and 6 blue on 'So we get'. Beats 7–8 do the same for Minus Power with 30 / 10. At speaking speed each colour lands on the word that names it — the match is obvious.",
+  "Beat 4 / 8 sentences are short and one idea each ('Here five is X and six is Y.' then the line) — reads cleanly; the pairing beat sits between the law and the line, which is exactly the order the tutor described (highlight, law, then the law applied).",
+  "Beat 3's yellow highlight of log₃5 + log₃6 is still lit in beat 4 (highlights last a beat and the next); the orange/blue tones on 5 and 6 sit over it — worth a glance in the look that the yellow does not wash out the orange.",
+  "Beat 10: the base highlight had no 'on' cue, so it fired at the start of the beat before the voice reached 'The base'. Fixed: it now lights on 'The base matches'.",
+  "Common-mistake beat (6) left where it is, as asked — its place is the tutor's open question. It is led into from the line ('the times sits inside one log'), circled and written as a red ✗ note.",
+  "one_idea 4: beat 10 lights the base, writes 1 and boxes it — acceptable as the closing beat, but busier than the rest."
  ],
  "fixed_beats": {
-  "3": {
-   "say": "Look at the first two. Plus means multiply. This is Add Power.",
-   "asks": ["Why does plus become multiply?", "Which law is this?"],
+  "10": {
+   "say": "The base matches the number inside, so the log is one. The answer is one.",
+   "asks": ["How can I check the answer is 1?"],
    "do": [
-    { "do": "highlight", "token": ["a", "b"], "on": "Plus means multiply" },
-    { "do": "note", "text": "Add Power: $\\log_a x + \\log_a y = \\log_a xy$", "near": "a", "span": ["a", "b"], "on": "This is Add Power" }
-   ]
-  },
-  "6": {
-   "say": "Careful: the times sits inside one log. Log five times log six is not log thirty. Only added logs combine.",
-   "asks": ["Why is log 5 × log 6 not log 30?"],
-   "do": [
-    { "do": "mark", "kind": "circle", "token": "p56", "on": "inside one log" },
-    { "do": "note", "text": "✗ Common mistake: $\\log_3 5 \\times \\log_3 6 \\neq \\log_3 30$", "near": "p56", "on": "is not log thirty" }
+    { "do": "highlight", "token": "l3", "part": "sub", "on": "The base matches" },
+    { "do": "write", "step": 5, "on": "the log is one" },
+    { "do": "mark", "kind": "box", "token": "ans", "on": "The answer is" }
    ]
   }
  },
