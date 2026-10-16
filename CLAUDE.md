@@ -72,6 +72,19 @@ One line per area; the full table with every detail and date is [`docs/AREAS.md`
 
 The marking, kiosk, schedule and invoices rows also exist as auto-loading skills in `.claude/skills/`.
 
+## 📝 Say it once — write it where every session reads it (Adrian, 21 Sep → 6 Oct 2026)
+
+Adrian, 2 Oct 2026: *"can you save as memory so that other claude sessions from other claude
+accounts also follow?"* — about 20 times since 21 Sep, latest 6 Oct: *"does future sessions and
+in other claude accounts know about this?"*. Why: a memory file reaches one account on one Mac;
+cloud sessions and his other accounts never see it, so he says it again.
+- **He states a preference, a rule or a product decision → write it into the repo in the same
+  turn, unasked**: the area's doc or spec (dated, his words), plus one line here only when every
+  session needs it. A memory file is extra, never the only copy.
+- **A build lands or changes state → update its doc in the same commit.**
+- **End with one line:** "Saved for every session: <where>". Not sure it is standing? Ask in one
+  line: "Keep this as a rule?"
+
 ## 🏗 Building doctrine (Adrian, 2026-08-27) — LIVING, expected to change
 
 Apply this whenever designing a NEW feature, process, or automation — it's the shape every build should take, not a checklist to paste into code.
@@ -113,6 +126,11 @@ This binds every session, every model and every account, in both repos.
 5. **Short sections, plain headings, one idea per line.** When he must do something, give
    numbered steps, the exact words to type, and **which app each step is in** (Telegram,
    WhatsApp, the website).
+   **Something is ready for him to look at → say where, unasked** (Adrian, 13–16 Oct 2026, four
+   sessions: *"where do i see this?"* · *"do i need to login as admin or test student?"* · *"i
+   can't see it when i click the link?"*). Give the full link (test site or main site), which
+   login (his admin or the test student), where to tap and what he should see. Open it yourself
+   first the same way; if he cannot see it yet (switched off, still building), say that instead.
 6. If he says he does not understand, **start again from the problem** — do not repeat the
    same explanation with more detail.
 

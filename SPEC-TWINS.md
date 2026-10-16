@@ -1,4 +1,4 @@
-# SPEC-TWINS — our own question for every school question we serve
+# SPEC-TWINS — our own questions for every skill we serve (a few per skill, not one per school question)
 
 **🎯 Where things stand (15 Oct 2026, Adrian: *"finish 3 per skill first for both math and science, then we consider 5 next"*).** Maths lanes stop at **3** twins per sub-skill (bot `fly.worker.toml` `TWINS_TARGETS = '3'`, was `'3 5'`; the stuck report's E Math / A Math sub-skills also stop at 3). Science lanes write **multiple-choice twins to 3 first** and no structured twin until that list is empty, then structured again by themselves (`SCI_TWINS_MCQ_FIRST = '1'`, bot `worker/fly/science-twins.sh`). JC maths is still not in the lanes (Adrian 1 Oct: *"there is no need for JC yet"*). Left on 15 Oct: maths Sec 1–4 ≈ 190 writable to reach 3, science ≈ 120 multiple-choice. **Free API credit (16 Oct 2026):** `scripts/twins/api-twins.mjs` writes twins on the promotional credit with the same gates — trial 16/20 maths + 15/19 science long questions, US$14 spent; the full run (stop line US$120) waits for Adrian → §14. **Going to 5 is Adrian's next decision** — then put `TWINS_TARGETS` back to `'3 5'` and remove `SCI_TWINS_MCQ_FIRST`.
 
@@ -260,6 +260,11 @@ draws. The GCE generator validated exactly this figure step blind on 9 Sep 2026.
   5) and the lane wrote past the cap of 5 (E Math ~120 extra over 46 sub-skills). The sub-skill id
   is now the last ORDER BY key. At 5 a sub-skill that day: **E Math 9 to write, A Math 205, Sec 1
   100, Sec 2 246**.
+- **Progress is reported by skill, never by school question (11 Oct 2026, Adrian, the fourth
+  time: *"Twins should be for every skill, not every question"*).** A status report had led with
+  "school questions that now have a twin: 1,364 of 5,054 (27%)", which reads as if 5,000 twins
+  were the goal. Say, per level: skills at the target, skills still short, twins left to write
+  (`to_write` above; science §11) — and that the writer stops at the target (3, then 5).
 - Every run stamps `job_runs` `twin-batch` with counts (verified / rejected /
   parked); a `JOB_RHYTHMS` line so a dead task alarms by absence; the ops
   board's content row shows twins verified, pending, parked, and per-topic
