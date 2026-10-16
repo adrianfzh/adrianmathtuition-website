@@ -43,7 +43,7 @@
           ]
         },
         {
-          "heading": "Step 3: solve — lg 7 and lg 5 are just numbers",
+          "heading": "Step 3: solve like algebra",
           "tokens": [
             { "tex": "x\\lg 7-\\lg 7", "id": "ex7" },
             { "tex": "=\\,x\\lg 5-3\\lg 5", "id": "ex5" }
