@@ -2536,8 +2536,10 @@ const PLAYER_CSS = `
 /* An element the hand has taken over keeps its text — layout, selection and a
    screen reader all still see it — and simply stops painting it; the canvas
    carries the ink. Its maths keeps the element's own colour and dusts in. */
-[data-lsn-write="on"] [data-ink], [data-lsn-write="on"] [data-ink] * { color: transparent !important; text-shadow: none !important; }
-[data-lsn-write="on"] [data-ink] .katex, [data-lsn-write="on"] [data-ink] .katex * { color: var(--lsn-own-color, var(--lsn-ink)) !important; }
+[data-lsn-write="on"] [data-ink], [data-lsn-write="on"] [data-ink] *:not([style*="color"]):not([style*="color"] *) { color: transparent !important; text-shadow: none !important; }
+[data-lsn-write="on"] [data-ink] .katex, [data-lsn-write="on"] [data-ink] .katex *:not([style*="color"]):not([style*="color"] *) { color: var(--lsn-own-color, var(--lsn-ink)) !important; }
+/* …except maths that carries its OWN colour (a textcolor — a law's x in orange and y in blue, Adrian
+   16 Oct 2026): it keeps that colour. */
 [data-lsn-write="on"] [data-ink] .katex[data-dust="wait"] { opacity: 0; }
 [data-lsn-write="on"] [data-ink] .katex[data-dust="on"] { animation: lsnDust 560ms ${EASE} both; }
 [data-lsn-write="on"] .lsn-sent[data-ink] { transition: none; }
