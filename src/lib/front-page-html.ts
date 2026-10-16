@@ -451,11 +451,16 @@ function badge(input: FrontPageInput): string {
   // Beside the marks, in a colour of its own (Adrian, 17 Oct 2026: "beside the marks > put in
   // another colour > total marks reduced due to some questions not in syllabus"). Blue: red is
   // the verdict and brown the teaching, so the note reads as neither.
-  const oos = input.outOfSyllabus && input.outOfSyllabus.questions.length ? `<style>
-.oos-tag{font-size:.82rem;line-height:1.3;font-weight:600;color:#1d4ed8;margin-top:.4rem;max-width:22rem;text-align:left}
-</style><div class="oos-tag">Total marks reduced — some questions are not in the syllabus</div>` : '';
-  return `<div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
-       <div class="pct">${pct}%</div>${oos}${remark}</div>`;
+  // On the RIGHT of the total, on the same row (Adrian, 17 Oct 2026: "put BESIDE the total
+  // marks … on the right").
+  const oos = input.outOfSyllabus && input.outOfSyllabus.questions.length;
+  const score = `<div class="score">${input.awarded}<span class="of">/${input.max}</span></div>`;
+  const scoreRow = oos ? `<style>
+.score-row{display:flex;align-items:center;gap:.9rem}
+.oos-tag{font-size:.82rem;line-height:1.3;font-weight:600;color:#1d4ed8;max-width:13rem;text-align:left}
+</style><div class="score-row">${score}<div class="oos-tag">Total marks reduced — some questions are not in the syllabus</div></div>` : score;
+  return `<div class="badge">${scoreRow}
+       <div class="pct">${pct}%</div>${remark}</div>`;
 }
 
 /**
