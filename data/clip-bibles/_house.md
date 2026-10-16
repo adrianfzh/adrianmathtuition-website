@@ -96,6 +96,8 @@ on 15 Oct 2026 — his notes are binding.
 - **Watch 11**: routine algebra the level already knows (solving a quadratic at A Math) goes FAST, a
   few words a line; a check shows where its expression comes from (fly it from the question line);
   every answer kept is checked ON THE BOARD, not only said; a "why" detour is a side clip in a popup.
+- **Watch 12**: prefer a NEW line under the old one (and let the board scroll) over rewriting a line in
+  place; a check writes each log of the question by name (`log₃x = log₃9`), never a bare value.
 - **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
 - **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";

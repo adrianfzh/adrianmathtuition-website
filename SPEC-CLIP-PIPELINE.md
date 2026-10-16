@@ -242,6 +242,10 @@ New in the player: a clip board that would run below the screen scales its maths
   answer is checked on the board, not only in the voice (x = 9: log₃(9−8) = log₃1, log₃9 ✓); a side
   link (Beat `aside`) opens its clip in a POPUP over the clip (page.tsx loads the side clips; the main
   clip pauses, ✕ / Esc / the end card closes it and the clip carries on). Draft G7: 13 lines, 27 beats.
+- Watch 12: no rewrite of a line any more — `log₃(x−8) + log₃x = log₃9` is written on the NEXT line and
+  the board scrolls (notes stay); the space the 2 left closes in one 0.6 s glide after it lands; the x = 9
+  check names both logs (`log₃(9−8) = log₃1`, then `log₃x = log₃9 ✓`); the slider glides with the voice
+  and follows a drag (step "any", thumb from the audio clock each frame), like a video bar. Draft G8.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
