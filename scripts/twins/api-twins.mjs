@@ -259,12 +259,17 @@ function pick(bank, n, levels) {
     }
   } else {
     const FROM_END = process.argv.includes('--from-end');
-    const r = sh(bank, ['queue', '--json', '--limit', FROM_END ? '20000' : '400', '--done-dir', join(HOME, bank)]);
+    const r = sh(bank, ['queue', '--json', '--limit', FROM_END || argOf('--tiers', null) ? '20000' : '400', '--done-dir', join(HOME, bank)]);
     let rows = []; try { rows = JSON.parse(r.out); } catch { /* */ }
     // --from-end (16 Oct 2026, Adrian: "yes"): the free science lanes work the list from the top
     // (open topics first), so the credit run takes it from the far end — tier 3 only, last first —
     // and the two never write the same seed.
     if (FROM_END) rows = rows.filter((x) => Number(x.tier ?? 3) === 3).reverse();
+    // --tiers 1,2 (17 Oct 2026): the open topics. The free lane parked 104 of their 158 seeds, 44 of
+    // them only because its checker could not save a verdict, and skipped the rest — the credit run
+    // (no such save fault) takes them on.
+    const TIERS = argOf('--tiers', null);
+    if (TIERS) { const want = new Set(TIERS.split(',').map(Number)); rows = rows.filter((x) => want.has(Number(x.tier))); }
     for (const x of rows) {
       const seeds = x.seeds ? x.seeds : [x.source_id];
       const sid = seeds.find((s) => !done(bank === 'sci' ? `S-${x.pool}-${s}` : `${x.pool}-${s}`));
