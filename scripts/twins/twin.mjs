@@ -24,6 +24,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { homedir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { copySeedPartLabels } from '../../src/lib/twin-part-labels.mjs';
 
 const require = createRequire(import.meta.url);
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -562,6 +563,9 @@ async function publish() {
     const { error } = await sb.from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id,source' });
     if (error) log(`filing warning: ${error.message}`);
   }
+  // the seed's PART skills too, when its parts line up (SPEC-PART-SKILLS.md §Twins); else the filer's re-tag labels it
+  const pl = await copySeedPartLabels(sb, qid, plan.source);
+  if (pl.copied) log(`part skills: ${pl.copied} copied from the seed`);
   writeFileSync(runFile(dir, 'published.json'), JSON.stringify({ id: qid, item, at: row.gen_meta.generated_at, figure_url: figureUrl }, null, 1));
   console.log(`${existing?.length ? 'updated' : 'inserted'} ${qid} (twin of ${plan.source}, verified by the checks)`);
 }

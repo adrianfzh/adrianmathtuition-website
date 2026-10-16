@@ -32,6 +32,7 @@ import {
   mathAuthorBrief, mathSolverBrief, mathModeratorBrief, mathModels, scienceAuthorBrief, scienceSolveBrief, scienceCheckBrief, type SciPlan, type MathSeed,
 } from './twin-briefs';
 import { hasPartMarks } from './part-syllabus';
+import { copySeedPartLabels } from './twin-part-labels.mjs';
 
 const MATH_FIG_BUCKET = 'practice-figures';
 const SCI_FIG_BUCKET = 'question_images';
@@ -327,6 +328,8 @@ export async function submitMath(body: SubmitBody): Promise<SubmitOutcome> {
     const { error: fe } = await sb.from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id,source' });
     if (fe) console.warn('[twins-cloud] filing warning:', fe.message);
   }
+  // the seed's PART skills too, when its parts line up (SPEC-PART-SKILLS.md §Twins); else the filer's re-tag labels it
+  await copySeedPartLabels(sb, qid, plan.source);
   return { ok: true, dry: false, id: qid, bank: 'maths', gates, figure: fig ? { family: fig.family } : null };
 }
 

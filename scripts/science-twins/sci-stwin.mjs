@@ -32,6 +32,7 @@ import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { copySeedPartLabels } from '../../src/lib/twin-part-labels.mjs';
 import {
   SCI, poolLevels, poolName, parsePool, syllabusOf, SCOPE_WORDS, FORBIDDEN, sb, all, readJsonLoose, readIf,
   grams, jaccard, masked, levelFromWork, openTopics, esc, mdLite,
@@ -652,6 +653,9 @@ async function publish() {
   }
   const filing = (plan.subgroups ?? []).map((s) => ({ question_id: qid, subgroup_id: s.id, is_primary: true, confidence: 1, source: 'twin', reason: `structured science twin of ${plan.source}` }));
   if (filing.length) { const { error } = await sb().from('question_subgroups').upsert(filing, { onConflict: 'question_id,subgroup_id' }); if (error) log(`filing warning: ${error.message}`); }
+  // the seed's PART skills too, when its parts line up (SPEC-PART-SKILLS.md §Twins); else the filer's re-tag labels it
+  const pl = await copySeedPartLabels(sb(), qid, plan.source);
+  if (pl.copied) log(`part skills: ${pl.copied} copied from the seed`);
   const { error: pdErr } = await sb().from('practice_difficulty').upsert({
     question_id: qid, level, source: 'twin', attempts: 0, wrong: 0, wrong_share: null,
     work_score: verdict.work_score, test_solve: null, reason: `Our own ${label} structured question; ${String(q.why_level ?? verdict.why ?? '').slice(0, 200)}`,
