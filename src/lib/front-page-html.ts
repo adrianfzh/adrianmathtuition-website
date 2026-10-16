@@ -448,8 +448,14 @@ function badge(input: FrontPageInput): string {
 .remark{font-family:"Patrick Hand","Segoe Print",cursive;font-size:.98rem;line-height:1.3;color:var(--ink);
         margin-top:.5rem;max-width:22rem;text-align:left}
 </style><div class="remark">${escapeHtml(input.remark)}</div>` : '';
+  // Beside the marks, in a colour of its own (Adrian, 17 Oct 2026: "beside the marks > put in
+  // another colour > total marks reduced due to some questions not in syllabus"). Blue: red is
+  // the verdict and brown the teaching, so the note reads as neither.
+  const oos = input.outOfSyllabus && input.outOfSyllabus.questions.length ? `<style>
+.oos-tag{font-size:.82rem;line-height:1.3;font-weight:600;color:#1d4ed8;margin-top:.4rem;max-width:22rem;text-align:left}
+</style><div class="oos-tag">Total marks reduced — some questions are not in the syllabus</div>` : '';
   return `<div class="badge"><div class="score">${input.awarded}<span class="of">/${input.max}</span></div>
-       <div class="pct">${pct}%</div>${remark}</div>`;
+       <div class="pct">${pct}%</div>${oos}${remark}</div>`;
 }
 
 /**
