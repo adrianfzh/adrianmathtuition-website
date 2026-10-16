@@ -580,8 +580,8 @@ Upload the student's working (+ optionally the question paper PDF) → `/api/adm
   instead of 80." **The cover** (`front-page-build outOfSyllabusFrontPage` → `front-page-html
   outOfSyllabusLine`) prints a red-ruled box under the heading: "**Not counted: Q1 and Q5** — they
   are no longer in the syllabus, so they are left out of your score. This paper is out of **71**
-  instead of 80." **Beside the score, on its right on the same row**, in blue (its own colour — red is the verdict, brown the
-  teaching): "Total marks reduced — some questions are not in the syllabus" (Adrian, 17 Oct 2026:
+  instead of 80." **Beside the score, on its right on the same row**, in dark orange (#c2410c — Adrian chose it from blue,
+  teal, dark orange and slate grey, 17 Oct 2026): "Total marks reduced — some questions are not in the syllabus" (Adrian, 17 Oct 2026:
   *"beside the marks > put in another colour > total marks reduced due to some questions not in
   syllabus"*; then *"put BESIDE the total marks … on the right"*). EITHER/OR: out only when every alternative is. A returned Practice Again sheet is
   never cut. **Not covered yet:** a single PART marked out of syllabus inside `parts`; a paper whose
