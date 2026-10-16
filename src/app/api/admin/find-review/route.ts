@@ -213,8 +213,9 @@ export async function POST(req: NextRequest) {
     // A day with nothing for Adrian sends nothing: no finds (8 Oct 2026), and since 16 Oct 2026
     // also no wrong match (Adrian, of "1 find · 0 judged · 0 wrong matches · Nothing for you
     // today": "what is this for?") — lib/quiet-messages 'find-review-empty'. The brief keeps the line.
+    // ☀️ Staff topic since 16 Oct 2026 (was Ops): it only goes out when a wrong match is for him.
     const empty = counts.byVerdict.off + counts.byVerdict['same-chapter'] === 0 && !note;
-    try { telegram = empty && isQuiet('find-review-empty') ? false : await sendTelegram(digest, 'ops'); } catch { /* the digest is a courtesy; the review is stored */ }
+    try { telegram = empty && isQuiet('find-review-empty') ? false : await sendTelegram(digest, 'staff'); } catch { /* the digest is a courtesy; the review is stored */ }
     return NextResponse.json({ ok: true, updated, counts, digest, telegram });
   } catch (e) {
     return NextResponse.json({ ok: true, updated, error: `stored, but the digest failed: ${(e as Error).message}` });

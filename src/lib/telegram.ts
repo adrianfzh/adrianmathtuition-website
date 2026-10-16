@@ -65,7 +65,7 @@ export async function sendTelegramDocumentTo(
 // "yes we should do structural, group topics" — a day of ~11 notifications where a
 // $280 payment sat between a filing-backfill count and a self-referential health
 // check. Each kind gets its own forum thread instead of one flat DM.
-export type NotifyCategory = 'alerts' | 'money' | 'students' | 'marking' | 'ops';
+export type NotifyCategory = 'alerts' | 'money' | 'students' | 'marking' | 'ops' | 'staff';
 
 let _topicCache: { map: { chatId: string | number; topics: Record<string, number> } | null; at: number } = { map: null, at: 0 };
 
