@@ -43,7 +43,8 @@ export async function staffTarget() {
     const f = encodeURIComponent("{Setting Name}='telegram_topics'");
     const r = await fetch(`https://api.airtable.com/v0/${AT_BASE}/Settings?filterByFormula=${f}&maxRecords=1`, { headers: { Authorization: `Bearer ${AT_TOKEN}` } });
     const v = JSON.parse((await r.json()).records?.[0]?.fields?.Value || 'null');
-    if (v && v.chatId && v.topics && v.topics.staff) return { chat_id: v.chatId, message_thread_id: v.topics.staff };
+    const chat = v && (v.chat_id || v.chatId);   // /bindtopic stores chat_id
+    if (chat && v.topics && v.topics.staff) return { chat_id: chat, message_thread_id: v.topics.staff };
   } catch (e) { console.error('staff topic not found, sending to the DM:', e.message); }
   return { chat_id: CHAT };
 }
