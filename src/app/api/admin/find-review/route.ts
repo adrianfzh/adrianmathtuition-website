@@ -210,8 +210,10 @@ export async function POST(req: NextRequest) {
     const counts = reviewCounts(day, all);
     const digest = reviewDigest(date, day, all) + (note ? `\n📝 ${note.replace(/&/g, '&amp;').replace(/</g, '&lt;')}` : '');
     let telegram = false;
-    // A day with no finds sends nothing (Adrian, 8 Oct 2026 — lib/quiet-messages 'find-review-empty').
-    const empty = counts.finds === 0 && !note;
+    // A day with nothing for Adrian sends nothing: no finds (8 Oct 2026), and since 16 Oct 2026
+    // also no wrong match (Adrian, of "1 find · 0 judged · 0 wrong matches · Nothing for you
+    // today": "what is this for?") — lib/quiet-messages 'find-review-empty'. The brief keeps the line.
+    const empty = counts.byVerdict.off + counts.byVerdict['same-chapter'] === 0 && !note;
     try { telegram = empty && isQuiet('find-review-empty') ? false : await sendTelegram(digest, 'ops'); } catch { /* the digest is a courtesy; the review is stored */ }
     return NextResponse.json({ ok: true, updated, counts, digest, telegram });
   } catch (e) {

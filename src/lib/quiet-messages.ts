@@ -10,8 +10,9 @@
 export const QUIET: Readonly<Record<string, string>> = Object.freeze({
   'handin-queued': '2026-10-08',        // 📥 / 🕒 "X handed in … queued for marking" — the marked-paper message for the same paper follows
   'scan-line': '2026-10-08',            // 📠 scanned and queued · 🏷 tagged · 📁 filed — the same paper is announced again when marked
-  'find-review-empty': '2026-10-08',    // the Find-a-question digest on a day with no finds (33 of 41 runs)
-  'desk-reminder': '2026-10-08',        // 🗂 "N marked papers waiting on the desk" at 08:00 — the brief shows the number
+  'find-review-empty': '2026-10-08',    // the Find-a-question digest on a day with nothing for Adrian — no finds (8 Oct), or no wrong match (16 Oct)
+  'desk-reminder': '2026-10-08',
+  'dropbox-tray': '2026-10-16',         // 🗑 / 🗄 "Dropbox tray: N paper folders removed / archived" — Adrian: "there is no need to send me this anymore"; the clean-up carries on        // 🗂 "N marked papers waiting on the desk" at 08:00 — the brief shows the number
 });
 
 // RULE: a switched-off message is never a failed send. A job that stamps job_runs from the

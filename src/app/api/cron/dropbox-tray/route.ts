@@ -17,6 +17,7 @@ import { getSupabaseAdmin } from '@/lib/supabase';
 import { deletePath, dropboxConfigured, listFolder, movePath } from '@/lib/dropbox';
 import { ARCHIVE_FOLDER, paperFolder, STUDENTS_ROOT, UNTAGGED_FOLDER } from '@/lib/paper-folder';
 import { sendTelegram } from '@/lib/telegram';
+import { unlessQuiet } from '@/lib/quiet-messages';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 120;
@@ -95,8 +96,8 @@ export async function GET(req: NextRequest) {
   const moved = out.filter(o => o.action === 'moved to _archive').length;
   if (!dry) {
     await logJobRun('dropbox-tray', true, `${deleted} folder(s) deleted, ${moved} archived, ${out.length - deleted - moved} other`).catch(() => {});
-    if (moved) await sendTelegram(`🗄 Dropbox tray: ${moved} archived paper folder${moved === 1 ? '' : 's'} moved under ${ARCHIVE_FOLDER}/.`, 'marking').catch(() => {});
-    if (deleted) await sendTelegram(`🗑 Dropbox tray: ${deleted} paper folder${deleted === 1 ? '' : 's'} removed — released more than ${TRAY_DAYS} days ago; the app keeps every copy.`, 'marking').catch(() => {});
+    if (moved) await unlessQuiet('dropbox-tray', () => sendTelegram(`🗄 Dropbox tray: ${moved} archived paper folder${moved === 1 ? '' : 's'} moved under ${ARCHIVE_FOLDER}/.`, 'marking')).catch(() => {});
+    if (deleted) await unlessQuiet('dropbox-tray', () => sendTelegram(`🗑 Dropbox tray: ${deleted} paper folder${deleted === 1 ? '' : 's'} removed — released more than ${TRAY_DAYS} days ago; the app keeps every copy.`, 'marking')).catch(() => {});
   }
   return NextResponse.json({ ok: true, dry, cutoff, results: out });
 }
