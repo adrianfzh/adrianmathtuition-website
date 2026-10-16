@@ -208,6 +208,20 @@ table above is the first cut). Extra voice for the re-cut: about 3,000 character
 New in the player: a clip board that would run below the screen scales its maths down to fit
 (`fitClipBoard`, never under 70 %); boards carrying laws set their lines closer.
 
+### The log-equations clip, watches 3–5 (16 Oct 2026) — where it stands
+
+- Rebuilt to Adrian's rules (`data/clip-bibles/_house.md` §2: Herbert Gross pace, the plan shown,
+  pieces moving like a teacher's finger, each board opens with the last line, "negative" not "minus",
+  a side link instead of a long aside). Draft G4: 4 boards, 28 beats, ~416 words.
+- New side clip `log-of-negative-undefined-am` ("Why a log of a negative is undefined"), opened from
+  step 4 by a link chip under the board (Beat `aside`); its back button returns to the same step.
+- Watch 5 fixes: `2 = 2log₃3 = log₃3² = log₃9` on one line (a piece may move to a later token of its
+  own line in a beat scene); "bring the power up", never "fly"; step 4 opens "For log equations, always
+  check each answer"; a moving copy keeps its colour AND its line's text size (it fell to the board's
+  17 px, so the 9 looked squashed) and scales the same both ways.
+- On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
+  (the laws clip he called good).
+
 ## 8b. "Ask about this step" — BUILT 15 Oct 2026 (admin + preview student)
 
 Adrian, 15 Oct 2026: *"Can students interrupt and ask why ln is used when e is involved? And a model
