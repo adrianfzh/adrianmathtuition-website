@@ -447,6 +447,15 @@ function placeClipNotes(cont: HTMLElement) {
  * scrolling up, then we don't have to change screen".
  */
 function scrollClipBoard(cont: HTMLElement) {
+  // A piece is moving (the 2 going up into the power): that is the only thing that moves — the board
+  // slides after it lands (Adrian, 16 Oct 2026: "from 2 going up to power 2, should not have any frame
+  // shift … then you can shift the frame").
+  if (cont.querySelector('.lsn-landing')) {
+    const retry = Number(cont.dataset.scrollRetry ?? 0);
+    if (retry) window.clearTimeout(retry);
+    cont.dataset.scrollRetry = String(window.setTimeout(() => { delete cont.dataset.scrollRetry; scrollClipBoard(cont); }, 200));
+    return;
+  }
   const stage = cont.closest<HTMLElement>('.lsn-stage');
   const boardEl = cont.closest<HTMLElement>('.lsn-board');
   const zoom = cont.closest<HTMLElement>('.lsn-zoom');
@@ -549,12 +558,19 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     if (!cont || goneKey === firstGone.current) return;
     firstGone.current = goneKey;
     cont.dispatchEvent(new Event('lsn-refit', { bubbles: true }));
-    if (clip) { if (scene.scroll) scrollClipBoard(cont); else fitClipBoard(cont); placeClipNotes(cont); }
+    if (clip) {
+      if (scene.scroll) requestAnimationFrame(() => scrollClipBoard(cont)); else fitClipBoard(cont);
+      placeClipNotes(cont);
+    }
   }, [goneKey, clip, scene.scroll]);
   // A scrolling board follows the writing: each beat may slide it up.
   useIsoLayoutEffect(() => {
     const cont = containerRef.current;
-    if (clip && scene.scroll && cont && board) scrollClipBoard(cont);
+    if (!clip || !scene.scroll || !cont || !board) return;
+    // After this commit's flights have started (their effect runs later in the commit), so a slide
+    // can see a piece in the air and wait for it.
+    const raf = requestAnimationFrame(() => scrollClipBoard(cont));
+    return () => cancelAnimationFrame(raf);
   });
   // Where each token last sat: a piece rewritten out of its line ("2 log₃3" → "log₃3²") takes no
   // room by the time it flies, so it flies from where it was.
