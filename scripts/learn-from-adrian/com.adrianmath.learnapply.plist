@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.adrianmath.learnapply</string>
+
+	<!-- The COPY install.sh puts in ~/.adrianmath_learn, not the repo file: the shared
+	     website checkout flips branches under peer sessions (find-review precedent). -->
+	<key>ProgramArguments</key>
+	<array>
+		<string>/bin/bash</string>
+		<string>/Users/adrianfong/.adrianmath_learn/apply.sh</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>/Users/adrianfong/.adrianmath_learn</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>PATH</key>
+		<string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+		<key>LANG</key>
+		<string>en_US.UTF-8</string>
+	</dict>
+
+	<!-- Every 10 minutes: carries out the ✅ Apply / 🗑 Drop taps under the morning
+	     message (16 Oct 2026). A quiet run is one database read. -->
+	<key>StartInterval</key>
+	<integer>600</integer>
+
+	<key>RunAtLoad</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>/Users/adrianfong/.adrianmath_learn/apply-launchd.log</string>
+	<key>StandardErrorPath</key>
+	<string>/Users/adrianfong/.adrianmath_learn/apply-launchd.log</string>
+</dict>
+</plist>

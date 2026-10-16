@@ -20,6 +20,8 @@ BOT_REPO="$HOME/dev/adrianmath-telegram-math-bot"
 
 mkdir -p "$STATE/work" "$STATE/proposals" "$STATE/repos"
 cp "$HERE/run.sh" "$STATE/run.sh" && chmod 755 "$STATE/run.sh"
+cp "$HERE/apply.sh" "$STATE/apply.sh" && chmod 755 "$STATE/apply.sh"
+cp "$HERE/apply.mjs" "$HERE/tg.mjs" "$HERE/APPLY_PROMPT.md" "$STATE/"   # copies: the checkout flips branches
 ln -sf "$HERE/LEARN_PROMPT.md" "$STATE/LEARN_PROMPT.md"
 [ -f "$STATE/ledger.json" ] || echo '{"groups": []}' > "$STATE/ledger.json"
 
@@ -34,6 +36,9 @@ process.stdout.write(v === '[SENSITIVE]' ? '' : v);
 TOKEN="$(read_env CRON_SECRET)"; [ -n "$TOKEN" ] || TOKEN="$(read_env ADMIN_PASSWORD)"
 TG_TOKEN="$(read_env TELEGRAM_BOT_TOKEN)"
 TG_CHAT="$(read_env TELEGRAM_CHAT_ID)"
+SB_URL="$(read_env SUPABASE_URL)"
+SB_KEY="$(read_env SUPABASE_SECRET_KEY)"; [ -n "$SB_KEY" ] || SB_KEY="$(read_env SUPABASE_SERVICE_ROLE_KEY)"
+[ -n "$SB_URL" ] && [ -n "$SB_KEY" ] || echo "⚠ Supabase vars missing — the Telegram Apply/Drop buttons will not be carried out"
 [ -n "$TOKEN" ] || { echo "✗ neither CRON_SECRET nor ADMIN_PASSWORD readable from $REPO/.env.local"; exit 1; }
 [ -n "$TG_TOKEN" ] && [ -n "$TG_CHAT" ] || echo "⚠ Telegram vars missing — the job will draft messages but not send them"
 umask 077
@@ -44,6 +49,8 @@ TELEGRAM_BOT_TOKEN=$TG_TOKEN
 TELEGRAM_CHAT_ID=$TG_CHAT
 LFA_REPO=$REPO
 LFA_BOT_REPO=$BOT_REPO
+SUPABASE_URL=$SB_URL
+SUPABASE_SECRET_KEY=$SB_KEY
 ENVEOF
 chmod 600 "$STATE/env"
 umask 022
@@ -77,5 +84,13 @@ else
   launchctl unload "$AGENT" 2>/dev/null || true
   launchctl load "$AGENT"
   echo "✓ loaded — runs daily at 07:30 SGT (and catches up at login); logs: $STATE/learn.log"
+fi
+# the Apply/Drop taps from Telegram, every 10 min
+APPLY_AGENT="$HOME/Library/LaunchAgents/com.adrianmath.learnapply.plist"
+cp "$HERE/com.adrianmath.learnapply.plist" "$APPLY_AGENT"
+if [ "${LFA_NO_LOAD:-}" != "1" ]; then
+  launchctl unload "$APPLY_AGENT" 2>/dev/null || true
+  launchctl load "$APPLY_AGENT"
+  echo "✓ loaded — Telegram Apply/Drop taps carried out every 10 min; log: $STATE/apply.log"
 fi
 echo "  Manual run:  LFA_FORCE=1 bash $STATE/run.sh"

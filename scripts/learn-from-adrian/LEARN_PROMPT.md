@@ -159,32 +159,65 @@ exists and he does not know, the proposal is "tell him it exists" in one line).
    job once Adrian says yes.
 5. Set the group `status: "proposed"`, `proposed_on: $LFA_TODAY`, and the branch name.
 
-## 6. The message to Adrian — `$LFA_WORK/message.txt`
+## 6. The message to Adrian — `$LFA_WORK/message.txt` + `$LFA_WORK/buttons.json`
 
-Write it ONLY when this run raised something (a new proposal, a rule that is not
-working, or a "still waiting" with new occurrences). Nothing new → no file, no message.
+Write them ONLY when this run raised something (a new proposal, a rule that is not
+working, or a "still waiting" with new occurrences). Nothing new → no files, no message.
 
-Adrian's rules for anything he reads: plain words, background first then what is
-proposed, no jargon (no "ledger", "hook", "regex", "frontmatter", "JSONL", "pathspec",
-"slug" — say "a check that stops …", "a note sessions read"), one idea per line, short.
-Plain text — no Markdown asterisks or headings, Telegram shows them raw.
+Adrian reads it on his phone and acts on it **with the buttons under it** (16 Oct 2026,
+Adrian: *"can we make readability even clearer, and allow me to take action in the
+telegram chat instead of having to come to a session?"*). So:
 
-Shape (≤ 5 items, blank line between):
+- Plain words, no jargon (no "ledger", "hook", "regex", "frontmatter", "JSONL",
+  "pathspec", "slug", "draft", "branch", "memory note" — say "a note every session
+  reads", "a check that stops …").
+- **Every item is four short lines at most**: a title (what it is about, ≤ 8 words),
+  then what he said, then what is missing today, then what we would do. One idea a
+  line. No line over ~15 words.
+- **Never** write "To apply: tell a session …" or "drop learn …" — the buttons do that.
+- Plain text. The wrapper makes the first line and each numbered title line bold;
+  write no asterisks, no Markdown, no HTML.
+- At most 5 numbered items. Items whose rule was already written somewhere go last,
+  under "Already done — tap Drop to clear:".
+- "Still waiting" proposals (drafted earlier, said again this week) go in ONE item
+  each only when they are among the 5 that matter most; otherwise one closing line:
+  "18 older ideas are still waiting — not shown."
+
+- **Emojis carry the structure** (Adrian, 16 Oct 2026: "improve on readability by adding
+  different emojis"). The title line is `N. <emoji> <title>`: 🆕 a new idea, 🔁 said
+  again and still waiting, 🛠 a rule that is not working, ✅ already done. The lines under
+  it start with 💬 (what he said), 📍 (what is there / missing today), 💡 (what we would
+  do). No other emojis.
+
+Shape:
 
 ```
-Learning from our chats — 5 Oct
+🧠 Learning from our chats — 16 Oct
+2 new ideas, 1 still waiting. Tap the buttons below.
 
-1. You asked for plain words in reports 4 times this week (latest: "explain simply and clearly", 4 Oct).
-The rule already exists, but sessions still use jargon.
-Proposed: a sharper first line in the rule, and a check that flags reports with words like "pathspec" or "regex".
-To apply: tell any Claude session "apply learn plain-words-in-reports".
+1. 🆕 Write your decisions where every account sees them
+💬 You said "put it in memory" 8 times this week.
+📍 That note only reaches the account that wrote it.
+💡 Write your decisions into the website's notes instead.
 
-2. You typed "promote" 18 times in 14 days.
-Proposed: …
-To apply: …
+2. 🆕 Say where to see it
+💬 You asked "where do I see this?" 7 times.
+💡 Give the link, which login to use, and what you should see.
 
-To skip one: "drop learn <name>".
+3. 🔁 Plain words (waiting since 5 Oct)
+💬 You asked for plain words 20 more times.
+💡 A sharper rule at the top of every session's notes.
+
+Already done — tap Drop to clear:
+4. ✅ Twins counted per skill
+📍 Written down on 15 Oct.
 ```
+
+`buttons.json` — the slugs of the numbered items, **in the same order**:
+`["say-it-once-write-it-down", "say-where-to-see-it", "plain-words-to-adrian", "twins-per-subskill"]`.
+The wrapper puts "✅ Apply N" and "🗑 Drop N" under the message for each; a tap is
+carried out on this Mac by `apply.sh` (docs/LEARN-FROM-ADRIAN.md). Every slug listed
+must have its `proposals/<slug>.md`.
 
 ## 7. The report and the summary
 

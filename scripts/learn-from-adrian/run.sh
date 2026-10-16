@@ -67,7 +67,7 @@ fi
 [ -r "$STATE/env" ] || { say "FATAL: missing $STATE/env — run install.sh"; cleanup_pid; exit 1; }
 # shellcheck disable=SC1091
 . "$STATE/env"
-export LFA_API_BASE LFA_API_TOKEN
+export LFA_API_BASE LFA_API_TOKEN TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID
 export LFA_REPO="${LFA_REPO:-$HOME/dev/adrianmathtuition-website}"
 export LFA_BOT_REPO="${LFA_BOT_REPO:-$HOME/dev/adrianmath-telegram-math-bot}"
 export LFA_MEMORY="${LFA_MEMORY:-$HOME/.claude/projects/-Users-adrianfong-dev-adrianmathtuition-website/memory}"
@@ -150,11 +150,8 @@ if [ -s "$LFA_WORK/message.txt" ]; then
   if [ "${LFA_NO_SEND:-}" = "1" ]; then
     SENT="message drafted, not sent (LFA_NO_SEND)"
   elif [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ]; then
-    RESP=$(curl -s -m 30 "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
-      --data-urlencode "chat_id=$TELEGRAM_CHAT_ID" \
-      --data-urlencode "text@$LFA_WORK/message.txt" \
-      --data-urlencode "disable_web_page_preview=true")
-    if printf '%s' "$RESP" | grep -q '"ok":true'; then SENT="message sent"; else SENT="message FAILED: $(printf '%s' "$RESP" | head -c 120)"; fi
+    # HTML with bold titles + ✅ Apply / 🗑 Drop buttons per item (tg.mjs, 16 Oct 2026)
+    if RESP=$(node "$STATE/tg.mjs" send "$LFA_WORK/message.txt" "$LFA_WORK/buttons.json" 2>&1); then SENT="message sent"; else SENT="message FAILED: $(printf '%s' "$RESP" | head -c 120)"; fi
   else
     SENT="message drafted, no Telegram config"
   fi

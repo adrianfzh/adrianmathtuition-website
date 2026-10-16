@@ -28,9 +28,12 @@ the specs, the skills, `~/.claude/CLAUDE.md`, the memory folder), then drafts:
 | repeated chore | one line: the automation (a command, a scheduled job, a page, a button) — or "this already exists" |
 | decision not written down | the one line to add, in the area's doc |
 
-It **drafts, never applies**. Adrian gets ONE Telegram message, only on a morning when
-there is something new, in plain words: the background, then what is proposed, then the
-words to say.
+It **drafts, never applies on its own**. Adrian gets ONE Telegram message, only on a
+morning when there is something new: a bold numbered title per idea (🆕 new, 🔁 still
+waiting, 🛠 rule not working, ✅ already done), then 💬 what he said, 📍 what is there
+today, 💡 what we would do — and **✅ Apply N / 🗑 Drop N buttons under it** (16 Oct 2026,
+Adrian: *"allow me to take action in the telegram chat instead of having to come to a
+session"*; *"improve on readability by adding different emojis"*).
 
 ## Where rules live (the split it follows)
 
@@ -41,9 +44,27 @@ words to say.
   `~/.claude/projects/-Users-adrianfong-dev-adrianmathtuition-website/memory/` plus its
   `MEMORY.md` line.
 
-## Applying or dropping a proposal — what a session does
+## Applying or dropping from Telegram — the buttons (16 Oct 2026)
 
-Adrian says, in any Claude session on the MacBook Pro: **"apply learn &lt;name&gt;"** or
+1. The morning run writes `message.txt` + `buttons.json` (the items' slugs in order);
+   `tg.mjs send` posts it as HTML (titles bold) with one button row per item
+   (`lf:a:<slug>` / `lf:d:<slug>`) and keeps the keyboard in `messages/<id>.json`.
+2. A tap → the bot (`handlers/learn-buttons.js`) writes a `learn_requests` row (math
+   Supabase) and turns that row into "⏳ N · Applying …" / "🗑 N · Dropped".
+3. The Mac — launchd `com.adrianmath.learnapply`, every 10 min, `apply.sh` → `apply.mjs`
+   — claims pending rows. **Drop**: no model; ledger `dropped`, proposal branches deleted.
+   **Apply**: one headless session (plan, Opus medium) follows `APPLY_PROMPT.md` — the
+   same steps as below, in the job's own clones; a memory-only rule goes into the repo
+   instead; an automation becomes a 🌙 nightly-builder row (`approved … Adrian (Telegram ✅)`).
+   It writes one plain line; the button becomes "✅ N · Applied" and the line is replied
+   under the message. A skill file under `.claude/` cannot be written headless — the
+   reply then says to apply it in a session.
+4. The Mac must be on; a tap while it sleeps is carried out when it wakes.
+   Log: `~/.adrianmath_learn/apply.log`.
+
+## Applying or dropping a proposal in a session — what a session does
+
+Adrian can still say, in any Claude session on the MacBook Pro: **"apply learn &lt;name&gt;"** or
 **"drop learn &lt;name&gt;"**.
 
 1. Read `~/.adrianmath_learn/proposals/<name>.md` (what he said, what exists, the exact
