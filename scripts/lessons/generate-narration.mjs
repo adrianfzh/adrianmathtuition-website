@@ -45,8 +45,8 @@
 //                      default Charon — see VOICES below)
 //   --model <id>       TTS model (minimax default speech-02-hd; gemini default
 //                      gemini-2.5-flash-preview-tts)
-//   --emotion <e>      minimax only (default calm)
-//   --speed <x>        minimax only (default 1)
+//   --emotion <e>      minimax only (default happy — Adrian's pick 16 Oct 2026; was calm)
+//   --speed <x>        minimax only (default 1.1)
 //   --style "<text>"   gemini only — the spoken-style instruction prefixed to every segment
 //   --bitrate <k>      MP3 bitrate of the ffmpeg encode (default 40k mono, ~5 KB/s
 //                      — both providers; lesson-script.test.ts caps a lesson's
@@ -82,7 +82,8 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 
 const DEFAULTS = {
   provider: 'minimax',
-  minimax: { model: 'speech-02-hd', voice: 'English_FriendlyPerson', emotion: 'calm', speed: 1, bitrate: '40k' },
+  // Adrian, 16 Oct 2026: "can the voice be more upbeat?" → picked sample C (happy, 1.1×) over calm 1×.
+  minimax: { model: 'speech-02-hd', voice: 'English_FriendlyPerson', emotion: 'happy', speed: 1.1, bitrate: '40k' },
   // gemini-3.1-flash-tts-preview also works (same request shape; mime differs
   // only in casing) but read the maths at ~1.6 words/s in the 2026-09-02 probe
   // — the 2.5 flash TTS model lands at a natural 2.0–2.4 words/s.

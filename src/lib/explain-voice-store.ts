@@ -29,8 +29,8 @@ export const TTS_PROVIDER = 'minimax';
 export const TTS_MODEL = 'speech-02-hd';
 export const TTS_VOICE = 'English_FriendlyPerson';
 /** calm, a touch of warmth — a student is reading their own mistake. */
-export const TTS_EMOTION = 'calm';
-export const TTS_SPEED = 1;
+export const TTS_EMOTION = 'happy'; // Adrian, 16 Oct 2026: "more upbeat" — sample C (was calm, 1×)
+export const TTS_SPEED = 1.1;
 
 const CONCURRENCY = 4;
 /** Questions pre-warmed per release — the paper's first lost-marks questions, not every one. */

@@ -1,6 +1,6 @@
 {
  "slug": "laws-of-logarithms-am",
- "worst": 0.92,
+ "worst": 0.94,
  "lines": [
   {
    "beat": 1,
@@ -28,8 +28,8 @@
   },
   {
    "beat": 5,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.95,
+   "score": 0.95,
    "heard": null
   },
   {
@@ -52,8 +52,8 @@
   },
   {
    "beat": 9,
-   "bag": 0.92,
-   "score": 0.92,
+   "bag": 1,
+   "score": 1,
    "heard": null
   },
   {

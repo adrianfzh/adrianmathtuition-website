@@ -4,9 +4,9 @@
  "lines": [
   {
    "beat": 1,
-   "bag": 0.83,
-   "score": 1,
-   "heard": "P equals P not E to the power KT. It starts at 100 and doubles every 7.5 hours. Find K.",
+   "bag": 0.79,
+   "score": 0.948,
+   "heard": "P equals P not E to the power KT. It starts at 100 doubles every 7.5 hours. Find K.",
    "said": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K."
   },
   {
@@ -35,23 +35,23 @@
   },
   {
    "beat": 6,
-   "bag": 0.7,
-   "score": 0.968,
-   "heard": "He is involved. So take ln of both sides.",
+   "bag": 0.8,
+   "score": 1,
+   "heard": "E is involved, so take LN of both sides.",
    "said": "E is involved, so take L N of both sides."
   },
   {
    "beat": 7,
-   "bag": 0.67,
-   "score": 0.974,
-   "heard": "LNE is one so the power comes down 7.5K equals LN2",
+   "bag": 0.78,
+   "score": 0.951,
+   "heard": "L and E is one so the power comes down. 7.5k equals Ln2.",
    "said": "L N E is one, so the power comes down. Seven point five K equals L N two."
   },
   {
    "beat": 8,
-   "bag": 0.76,
+   "bag": 0.65,
    "score": 1,
-   "heard": "So K equals L N 2 over 7.5 about 0.0924.",
+   "heard": "So K equals LN 2 over 7.5 about 0.0924.",
    "said": "So K equals L N two over seven point five, about zero point zero nine two four."
   }
  ]

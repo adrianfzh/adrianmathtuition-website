@@ -144,7 +144,7 @@ page is the video.**
   route. Telemetry rides the player's existing `lesson:<slug>:…` events (the slug is
   `explain-<run8>-<q>`), so "did anyone tap it" is answerable before opening it.
 - **Voice (1 Oct 2026).** Every beat's `say` is read by **MiniMax Speech-02**
-  (`speech-02-hd`, voice `English_FriendlyPerson`, emotion calm, speed 1 — Adrian's pick
+  (`speech-02-hd`, voice `English_FriendlyPerson`, emotion happy, speed 1.1 since 16 Oct 2026 (was calm, 1) — Adrian's pick
   out of fifteen samples that evening; the constants sit in `lib/explain-voice-store.ts`
   and the topic lessons use the same voice through `generate-narration.mjs --provider
   minimax`; change them together). MiniMax answers MP3 (hex in the JSON), ~28 KB for a
@@ -1112,7 +1112,7 @@ node scripts/lessons/generate-narration.mjs <slug> --verify     # ASR round-trip
 
 - **Provider: MiniMax Speech-02 since 1 Oct 2026** (`--provider minimax`, the
   default): model `speech-02-hd`, voice **`English_FriendlyPerson`**, emotion
-  `calm`, speed 1 — Adrian's pick after fifteen samples (the Gemini voices
+  `happy`, speed 1.1 since 16 Oct 2026 (Adrian: "can the voice be more upbeat?" — sample C; was `calm`, speed 1, his pick after fifteen samples) (the Gemini voices
   sounded too Western / too deep). `MINIMAX_API_KEY` in `.env.local`. The
   one-minute explanation's clips use the SAME voice and the same request
   (`lib/explain-voice-store.ts` `TTS_*` constants) — change them together.

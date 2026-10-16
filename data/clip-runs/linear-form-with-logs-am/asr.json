@@ -1,25 +1,25 @@
 {
  "slug": "linear-form-with-logs-am",
- "worst": 0.902,
+ "worst": 0.886,
  "lines": [
   {
    "beat": 1,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.91,
+   "score": 0.91,
    "heard": null
   },
   {
    "beat": 2,
    "bag": 0.83,
-   "score": 1,
-   "heard": "Take Ln of both sides. Add power splits the right side.",
+   "score": 0.935,
+   "heard": "Take Ellen of both sides, add power, splits the right side.",
    "said": "Take L N of both sides. Add Power splits the right side."
   },
   {
    "beat": 3,
-   "bag": 0.62,
+   "bag": 0.52,
    "score": 1,
-   "heard": "LN cancels E, leaving minus N X. So LNY equals minus N times X plus LNA.",
+   "heard": "LN cancels E, leaving - NX. So LN Y = - N * X + LN A.",
    "said": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A."
   },
   {
@@ -30,8 +30,8 @@
   },
   {
    "beat": 5,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -48,8 +48,8 @@
   },
   {
    "beat": 8,
-   "bag": 1,
-   "score": 1,
+   "bag": 0.94,
+   "score": 0.94,
    "heard": null
   },
   {
@@ -61,8 +61,8 @@
   {
    "beat": 10,
    "bag": 0.68,
-   "score": 0.902,
-   "heard": "LNA is minus one, unlog A is E to the power minus one, about 0.368.",
+   "score": 0.886,
+   "heard": "LNA is -1. Unlog. A is E to the power -1 about 0.368.",
    "said": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight."
   }
  ]
