@@ -391,7 +391,16 @@ function placeClipNotes(cont: HTMLElement) {
   // on one line, putting as two lines make it less clear". The ↑ sits under the MIDDLE of the
   // token(s) it explains; the words stay on ONE line — beside the ↑ when they fit, else on the line
   // under it, centred on the ↑ and kept inside the board, shrunk (never under 62 %) if still too long.
-  for (const el of Array.from(cont.querySelectorAll<HTMLElement>('.lsn-note-up[data-point-at]'))) {
+  const where = (el: HTMLElement) => `${el.className}|${el.getAttribute('style') ?? ''}|${el.querySelector('.lsn-note-arrow')?.getAttribute('style') ?? ''}|${el.querySelector('.lsn-note-text')?.getAttribute('style') ?? ''}`;
+  const notes = Array.from(cont.querySelectorAll<HTMLElement>('.lsn-note-up[data-point-at]'));
+  const before = notes.map(where);
+  placeNotes(cont, notes);
+  // A note the hand already wrote has moved: its ink must follow (the chalk re-lays itself).
+  if (notes.some((el, i) => where(el) !== before[i])) cont.dispatchEvent(new Event('lsn-refit', { bubbles: true }));
+}
+
+function placeNotes(cont: HTMLElement, notes: HTMLElement[]) {
+  for (const el of notes) {
     const row = el.closest<HTMLElement>('.lsn-note-row');   // (a note sits in a display: contents wrapper)
     const toks = (el.dataset.pointAt ?? '').split(' ').map(k => cont.querySelector<HTMLElement>(`[data-key="${k}"]`)).filter((t): t is HTMLElement => !!t);
     const arrow = el.querySelector<HTMLElement>('.lsn-note-arrow');
