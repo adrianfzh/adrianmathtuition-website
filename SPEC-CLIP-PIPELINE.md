@@ -219,6 +219,9 @@ New in the player: a clip board that would run below the screen scales its maths
   own line in a beat scene); "bring the power up", never "fly"; step 4 opens "For log equations, always
   check each answer"; a moving copy keeps its colour AND its line's text size (it fell to the board's
   17 px, so the 9 looked squashed) and scales the same both ways.
+- Watch 6: the 2 is explained AT the 2 of `log₃(x−8) + log₃x = 2`, rewriting that line in place (new token
+  field `replaces`, beat scenes only — a replacing token takes no room until shown; the tokens it names
+  leave the line; the board re-fits and the chalk ink is wiped and re-laid). Draft G5, 28 beats.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

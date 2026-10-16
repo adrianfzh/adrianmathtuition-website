@@ -91,6 +91,10 @@ plus the approved pitfalls from the teaching-knowledge layer (`teaching_knowledg
   - A moving piece keeps its shape: the player scales it the same both ways ("why is the 9 flattened
     in transition? … it's just a translation right?").
   - A log equation's check opens with "For log equations, always check each answer".
+- **Explain a number AT the number, on its own line** (16 Oct 2026, watch 6: "why not from the 3rd line,
+  at the number 2 on the right side, just explain from there"): rewrite the line in place with
+  `replaces` tokens: `= 2` → `= 2 log₃3` → the 2 goes up as the power → `= log₃3²` → `= log₃9`. Notes on
+  a rewritten piece leave with it.
 - **Say "negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("x minus eight"). ("minus sounds weird (that's not proper pronunciation)")
 - **Explain WHY something is undefined from what it means**: log₃(−9) asks "3 to what power gives −9";
