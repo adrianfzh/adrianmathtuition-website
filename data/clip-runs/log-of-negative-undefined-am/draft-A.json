@@ -1,0 +1,152 @@
+{
+ "slug": "log-of-negative-undefined-am",
+ "draft": "A",
+ "by": "session, from the log-equations clip's step 4 (Adrian 16 Oct 2026: a side link to a clip explaining why)",
+ "beats": [
+  {
+   "board": 0,
+   "say": "Why is log base three of negative nine undefined.",
+   "asks": [
+    "What does log base 3 mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "A log asks a question. Log base three of negative nine asks: three, to what power, gives negative nine.",
+   "asks": [
+    "Why does a log ask for a power?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": [
+      "lg",
+      "b3",
+      "arg"
+     ],
+     "on": "Log base three of negative nine"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Here is that question written with powers: three, to what power, equals negative nine.",
+   "asks": [
+    "How does the log become a power?"
+   ],
+   "do": [
+    {
+     "do": "move",
+     "from": "b3",
+     "on": "three, to what power"
+    },
+    {
+     "do": "move",
+     "from": "arg",
+     "on": "equals negative nine"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Let us try some powers. Three squared is nine. That is positive nine.",
+   "asks": [
+    "Is 3 squared ever negative?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "q2",
+     "on": "Three squared"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Three to the one is three. Three to the zero is one.",
+   "asks": [
+    "Why is 3 to the 0 equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "q1",
+     "on": "Three to the one"
+    },
+    {
+     "do": "write",
+     "token": "q0",
+     "on": "Three to the zero"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Three to the negative one is a third: one divided by three.",
+   "asks": [
+    "Why is 3 to the −1 a third?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "qm1",
+     "on": "Three to the negative one"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "Big powers, zero, negative powers: every answer is positive. Multiplying or dividing threes always gives a positive number.",
+   "asks": [
+    "Why are they all positive?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "always positive: $3^{\\text{power}} > 0$",
+     "near": "q2",
+     "span": [
+      "q2",
+      "qm1"
+     ],
+     "on": "every answer is positive"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "So no power of three gives negative nine. Log base three of negative nine does not exist: it is undefined.",
+   "asks": [
+    "What does undefined mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "it is undefined"
+    }
+   ]
+  },
+  {
+   "board": 0,
+   "say": "The same is true for any base and any negative number, and for zero. A log only takes a positive number inside.",
+   "asks": [
+    "What about log of 0?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "concl",
+     "on": "only takes a positive number"
+    }
+   ]
+  }
+ ]
+}

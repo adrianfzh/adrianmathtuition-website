@@ -37,7 +37,9 @@ const beats = draft.beats.map((b, i) => {
   const fix = blind && !args.draft ? blind.fixed_beats?.[String(zeroBased ? i : i + 1)] : null;
   // `asks` (the ready questions of "Ask about this step", lib/clip-ask.ts) ride with the draft's beat.
   const asks = fix?.asks ?? b.asks;
-  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), do: fix ? fix.do : b.do };
+  // `aside` (a side link to another clip, Beat.aside) rides with the beat too.
+  const aside = fix?.aside ?? b.aside;
+  return { say: fix ? fix.say : b.say, ...(asks?.length ? { asks } : {}), ...(aside ? { aside } : {}), do: fix ? fix.do : b.do };
 });
 
 // Keep audio already made for an unchanged line (a rewrite drops it: it belongs to the old words).

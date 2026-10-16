@@ -1,0 +1,122 @@
+{
+  "slug": "log-of-negative-undefined-am",
+  "title": "Why a log of a negative is undefined",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "Why is $\\log_3(-9)$ undefined?",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Why is a log of a negative number undefined",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "\\log", "id": "lg" },
+            { "tex": "{}_{3}", "id": "b3", "tight": true },
+            { "tex": "(-9)", "id": "arg", "tight": true },
+            { "tex": "=\\,?", "id": "eqq" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "3", "id": "b3m", "hl": "amber", "from": "b3" },
+            { "tex": "{}^{\\,?}", "id": "q", "tight": true },
+            { "tex": "=\\,-9", "id": "argm", "hl": "amber", "from": "arg" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "3^2=9,", "id": "q2" },
+            { "tex": "3^1=3,", "id": "q1" },
+            { "tex": "3^0=1,", "id": "q0" },
+            { "tex": "3^{-1}=\\tfrac{1}{3}", "id": "qm1" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\log(\\text{negative})\\;\\text{is undefined}", "id": "concl", "hl": "emerald" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "Why is log base three of negative nine undefined.",
+          "asks": ["What does log base 3 mean?"],
+          "do": [
+            { "do": "write", "step": 0 }
+          ]
+        },
+        {
+          "say": "A log asks for a power. Log base three of negative nine asks: three, to what power, gives negative nine.",
+          "asks": ["Why does a log ask for a power?"],
+          "do": [
+            { "do": "highlight", "token": ["lg", "b3", "arg"], "on": "Log base three of negative nine" },
+            { "do": "highlight", "token": "b3", "on": "three, to what power" },
+            { "do": "highlight", "token": "arg", "on": "gives negative nine" }
+          ]
+        },
+        {
+          "say": "Here is that question written with powers: three, to what power, equals negative nine.",
+          "asks": ["How does the log become a power?"],
+          "do": [
+            { "do": "move", "from": "b3", "on": "three, to what power" },
+            { "do": "move", "from": "arg", "on": "equals negative nine" }
+          ]
+        },
+        {
+          "say": "Let us try some powers. Three squared is nine. That is positive nine.",
+          "asks": ["Is 3 squared ever negative?"],
+          "do": [
+            { "do": "write", "token": "q2", "on": "Three squared" }
+          ]
+        },
+        {
+          "say": "Three to the one is three. Three to the zero is one.",
+          "asks": ["Why is 3 to the 0 equal to 1?"],
+          "do": [
+            { "do": "write", "token": "q1", "on": "Three to the one" },
+            { "do": "write", "token": "q0", "on": "Three to the zero" }
+          ]
+        },
+        {
+          "say": "Three to the negative one is a third: one divided by three.",
+          "asks": ["Why is 3 to the −1 a third?"],
+          "do": [
+            { "do": "write", "token": "qm1", "on": "Three to the negative one" }
+          ]
+        },
+        {
+          "say": "Positive powers, zero, negative powers: every answer is positive. Multiplying or dividing threes always gives a positive number.",
+          "asks": ["Why are they all positive?"],
+          "do": [
+            {
+              "do": "note",
+              "text": "always positive: $3^{\\text{power}} > 0$",
+              "near": "q2",
+              "span": ["q2", "qm1"],
+              "on": "every answer is positive"
+            }
+          ]
+        },
+        {
+          "say": "So no power of three gives negative nine. The question has no answer: log base three of negative nine is undefined.",
+          "asks": ["What does undefined mean?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "q", "on": "The question has no answer" }
+          ]
+        },
+        {
+          "say": "Any base, any negative number: the same. A log of a negative number is undefined. Zero too, since no power gives zero.",
+          "asks": ["What about log of 0?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "A log of a negative number" },
+            { "do": "mark", "kind": "box", "token": "concl", "on": "is undefined" }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -775,6 +775,9 @@ export function clipIssues(script: LessonScript): Issue[] {
         && !b.do.some(a => a.do === 'note' && /^\s*✗/.test(a.text))) {
         out.push(issue('warn', `${at}.beats[${k}]`, 'the voice names a mistake but the board does not show it — add a ✗ note ("✗ Common mistake: …") where it bites'));
       }
+      if (b.aside !== undefined && (typeof b.aside?.text !== 'string' || !b.aside.text.trim() || b.aside.text.length > 70 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(b.aside?.slug)))) {
+        out.push(issue('error', `${at}.beats[${k}].aside`, 'a side link is { text (≤ 70 chars), slug of another clip }'));
+      }
       // "should emphasize on the base 3 (perhaps highlighting them with a different colour) when saying that."
       if (CLIP_BASE_WORDS.test(b.say) && !b.do.some(a => a.do === 'highlight')) {
         out.push(issue('warn', `${at}.beats[${k}]`, 'the voice talks about the base but nothing lights it — highlight the bases (part: "sub" lights a log\'s base only)'));

@@ -30,6 +30,7 @@ import linearFormWithLogsAm from '../../data/lessons/linear-form-with-logs-am.js
 import growthAndDecayAm from '../../data/lessons/growth-and-decay-am.json';
 import sketchingLogGraphsAm from '../../data/lessons/sketching-log-graphs-am.json';
 import logScalesAm from '../../data/lessons/log-scales-am.json';
+import logOfNegativeUndefinedAm from '../../data/lessons/log-of-negative-undefined-am.json';
 import {
   validateLessonScript, type CheckScene, type LessonScript,
   type PlayScene, type ResolvedCheckScene, type SkippedCheckScene,
@@ -60,6 +61,7 @@ const RAW_SCRIPTS: Record<string, unknown> = {
   'growth-and-decay-am': growthAndDecayAm,
   'sketching-log-graphs-am': sketchingLogGraphsAm,
   'log-scales-am': logScalesAm,
+  'log-of-negative-undefined-am': logOfNegativeUndefinedAm,
 };
 
 /**

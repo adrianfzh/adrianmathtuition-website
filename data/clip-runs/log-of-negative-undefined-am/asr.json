@@ -1,0 +1,60 @@
+{
+ "slug": "log-of-negative-undefined-am",
+ "worst": 0.85,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 0.85,
+   "score": 0.85,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 0.86,
+   "score": 0.86,
+   "heard": null
+  },
+  {
+   "beat": 4,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 5,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 8,
+   "bag": 0.9,
+   "score": 0.9,
+   "heard": null
+  },
+  {
+   "beat": 9,
+   "bag": 0.91,
+   "score": 0.91,
+   "heard": null
+  }
+ ]
+}

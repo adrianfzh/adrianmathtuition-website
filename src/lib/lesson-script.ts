@@ -267,6 +267,11 @@ export interface Beat {
   /** A clip's ready questions for this beat (≤ 3, a student's own words) — the chips under
    *  "Ask about this step" (lib/clip-ask, SPEC-CLIP-PIPELINE §2b). Never spoken, never drawn. */
   asks?: string[];
+  /** A side link from this beat to another clip that explains one point in depth (Adrian, 16 Oct
+   *  2026: "put a side link … to another clip explaining why … if student needs to know that they
+   *  can click the link instead of interrupting the main lesson"). Shown under the board from this
+   *  beat on; the other clip's back button returns here. */
+  aside?: { text: string; slug: string };
 }
 
 /** Every scene may carry beats instead of narration. */

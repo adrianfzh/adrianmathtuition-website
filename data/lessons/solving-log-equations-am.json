@@ -353,28 +353,13 @@
         },
         {
           "tokens": [
-            { "tex": "3", "id": "b3m", "hl": "amber", "from": "b3" },
-            { "tex": "{}^{\\,?}", "id": "q", "tight": true },
-            { "tex": "=\\,-9", "id": "argm", "hl": "amber", "from": "arg" }
-          ]
-        },
-        {
-          "tokens": [
-            { "tex": "3^1=3,", "id": "q1" },
-            { "tex": "3^0=1,", "id": "q0" },
-            { "tex": "3^{-1}=\\tfrac{1}{3},", "id": "qm1" },
-            { "tex": "3^{-2}=\\tfrac{1}{9}", "id": "qm2" }
-          ]
-        },
-        {
-          "tokens": [
             { "tex": "x=9", "id": "ans", "hl": "emerald" }
           ]
         }
       ],
       "beats": [
         {
-          "say": "A log cannot take every number, so check each answer. Start with X equals negative one.",
+          "say": "A log only takes a positive number inside, so check each answer. Start with X equals negative one.",
           "asks": ["Why must I check the answers?"],
           "do": [
             { "do": "write", "step": 0 }
@@ -403,68 +388,33 @@
           "timing": "/lessons/solving-log-equations-am/scene-04-b3.timing.json"
         },
         {
-          "say": "This log asks a question: three, to what power, gives negative nine.",
-          "asks": ["What does log base 3 of −9 ask?"],
+          "say": "A log of a negative number is undefined, so log base three of negative nine does not exist.",
+          "asks": ["Why is a log of a negative number undefined?"],
+          "aside": { "text": "Why is a log of a negative number undefined?", "slug": "log-of-negative-undefined-am" },
           "do": [
-            { "do": "move", "from": "b3", "on": "three, to what power" },
-            { "do": "move", "from": "arg", "on": "gives negative nine" }
+            { "do": "note", "text": "a log of a negative number is undefined", "near": "arg", "on": "is undefined" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-04-b4.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-04-b4.timing.json"
         },
         {
-          "say": "Try some powers of three. Three to the one is three. Three to the zero is one.",
-          "asks": ["What is 3 to the power 0?"],
+          "say": "So we reject X equals negative one.",
+          "asks": ["What does reject mean?"],
           "do": [
-            { "do": "write", "token": "q1", "on": "Three to the one" },
-            { "do": "write", "token": "q0", "on": "Three to the zero" }
+            { "do": "write", "token": "rej", "on": "we reject" }
           ],
           "audio": "/lessons/solving-log-equations-am/scene-04-b5.mp3",
           "timing": "/lessons/solving-log-equations-am/scene-04-b5.timing.json"
         },
         {
-          "say": "Three to the negative one is a third. Three to the negative two is a ninth.",
-          "asks": ["Why is 3 to the −1 a third?"],
-          "do": [
-            { "do": "write", "token": "qm1", "on": "Three to the negative one" },
-            { "do": "write", "token": "qm2", "on": "Three to the negative two" }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b6.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b6.timing.json"
-        },
-        {
-          "say": "Every power of three is positive: multiplying or dividing threes stays positive. None gives negative nine.",
-          "asks": ["Why is every power of 3 positive?"],
-          "do": [
-            {
-              "do": "note",
-              "text": "all positive: no power of $3$ is $-9$",
-              "near": "q1",
-              "span": ["q1", "qm2"],
-              "on": "Every power"
-            }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b7.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b7.timing.json"
-        },
-        {
-          "say": "So log base three of negative nine does not exist, and we reject X equals negative one.",
-          "asks": ["What does reject mean?"],
-          "do": [
-            { "do": "write", "token": "rej", "on": "we reject" }
-          ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b8.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b8.timing.json"
-        },
-        {
           "say": "For X equals nine, the insides are one and nine, both positive. The answer is X equals nine.",
           "asks": ["How do I check x = 9?"],
           "do": [
-            { "do": "write", "step": 4, "on": "The answer is" },
+            { "do": "write", "step": 2, "on": "The answer is" },
             { "do": "mark", "kind": "box", "token": "ans", "on": "X equals nine." }
           ],
-          "audio": "/lessons/solving-log-equations-am/scene-04-b9.mp3",
-          "timing": "/lessons/solving-log-equations-am/scene-04-b9.timing.json"
+          "audio": "/lessons/solving-log-equations-am/scene-04-b6.mp3",
+          "timing": "/lessons/solving-log-equations-am/scene-04-b6.timing.json"
         }
       ]
     }

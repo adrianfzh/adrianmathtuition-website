@@ -70,6 +70,10 @@ export default async function LessonPage({ params, searchParams }: {
   // student on to that step — and back to it — while the step is visible to them.
   const step = script.kind === 'clip' && (await learnStepVisible()) ? learnStepForClip(slug) : null;
   const toStep = step ? { backHref: `/app/learn-step/${step.slug}?seen=clip`, practiceHref: `/app/learn-step/${step.slug}?seen=clip`, practiceLabel: 'See an example' } : {};
+  // Opened from another clip's side link (Beat.aside): back goes to that clip, at the same step.
+  const fromSlug = typeof sp.from === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sp.from) ? sp.from : null;
+  const fromAt = typeof sp.fromAt === 'string' && /^\d{1,3}$/.test(sp.fromAt) ? sp.fromAt : '0';
+  const toFrom = fromSlug ? { backHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceHref: `/app/lesson/${fromSlug}?at=${fromAt}`, practiceLabel: 'Back to the clip' } : {};
 
   // 💬 "Ask about this step" (lib/clip-ask): a clip shows the button while its switch allows,
   // and ?at=<stop> (the way back from Ask) resumes the clip at that step.
@@ -89,6 +93,7 @@ export default async function LessonPage({ params, searchParams }: {
     // A clip is one concept in a minute: it opens playing, like a video.
     ...(script.kind === 'clip' ? { clip: true, kicker: 'Clip', startAuto: true, startVoice: true, doneTitle: 'Now try one', doneText: 'Use it on a real question while it is fresh.', askAbout, startAt, askIntro: clipIntro(script.scenes), question: script.question ?? clipIntro(script.scenes), askLevel: ['EM', 'AM', 'JC', 'S1', 'S2'].includes(script.level) ? script.level : null } : {}),
     ...toStep,
+    ...toFrom,
   };
   return extras && extrasOn
     ? <LessonWithIntro intro={extras.intro} cheer={extras.cheer} {...player} />

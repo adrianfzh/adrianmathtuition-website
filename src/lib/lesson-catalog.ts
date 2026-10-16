@@ -171,6 +171,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Log scales: decibels',
     minutes: 1,
   },
+  {
+    slug: 'log-of-negative-undefined-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Why a log of a negative is undefined',
+    minutes: 1,
+  },
 ];
 
 /**

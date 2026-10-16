@@ -294,6 +294,17 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
   clone.removeAttribute('data-key');
   clone.setAttribute('aria-hidden', 'true');
   for (const a of clone.getAnimations?.() ?? []) a.cancel();
+  // The copy flies outside its line, so it would lose the chalk colour and turn black (Adrian,
+  // 16 Oct 2026: "why did 9 become black during the movement?"): it carries the piece's own colour,
+  // with a soft glow so the eye follows it. A clip flies slower and fades only as it lands
+  // ("are you able to show 2 from 2log_3 3 moving to 3^2?").
+  const colour = getComputedStyle(source).color;
+  clone.style.setProperty('color', colour, 'important');
+  clone.style.textShadow = `0 0 10px ${colour}`;
+  for (const k of Array.from(clone.querySelectorAll<HTMLElement>('.katex, .katex *'))) {
+    if (!k.getAttribute('style')?.includes('color')) k.style.setProperty('color', 'inherit', 'important');
+  }
+  const slow = !!container.closest('[data-lsn-clip]');
   Object.assign(clone.style, {
     position: 'absolute',
     left: `${s.left}px`,
@@ -304,7 +315,9 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
     opacity: '1',
     clipPath: 'none',
     transformOrigin: 'top left',
-    transition: `transform 620ms cubic-bezier(0.3, 0.85, 0.25, 1), opacity 200ms ease 440ms`,
+    transition: slow
+      ? `transform 1100ms cubic-bezier(0.45, 0, 0.25, 1), opacity 180ms ease 1000ms`
+      : `transform 620ms cubic-bezier(0.3, 0.85, 0.25, 1), opacity 200ms ease 440ms`,
     willChange: 'transform',
     pointerEvents: 'none',
     zIndex: '20',
@@ -331,7 +344,7 @@ function flyClone(container: HTMLElement, source: HTMLElement, target: HTMLEleme
     clone.remove();
   };
   clone.addEventListener('transitionend', (e) => { if (e.propertyName === 'opacity') finish(); });
-  window.setTimeout(finish, 800); // belt-and-braces if transitionend is swallowed
+  window.setTimeout(finish, slow ? 1350 : 800); // belt-and-braces if transitionend is swallowed
 }
 
 /**
@@ -2216,6 +2229,24 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           students to go to any parts they want on the clip"). One stop per beat; landing on a
           beat shows the board up to it and the voice starts that beat. Under the board, like a video's
           progress bar (Adrian, 15 Oct 2026: "put the slider below the clip"). */}
+      {/* Side links from the beats so far (Beat.aside): another clip that explains one point in
+          depth, a tap away, without stopping the main lesson for everyone. */}
+      {clip && !done && (() => {
+        const sc = scenes[sceneIdx];
+        const links = hasBeats(sc) ? sc.beats.slice(0, step + 1).map(b => b.aside).filter((a): a is { text: string; slug: string } => !!a) : [];
+        if (!links.length) return null;
+        return (
+          <div className="mt-2 flex flex-wrap gap-2 px-0.5">
+            {links.map(a => (
+              <Link key={a.slug} href={`/app/lesson/${a.slug}?from=${encodeURIComponent(slug)}&fromAt=${stopAt}`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[hsl(45,60%,97%)] border border-amber-200 px-3 py-1.5 text-[13px] font-semibold text-navy hover:bg-amber-50">
+                ▶ {a.text}
+              </Link>
+            ))}
+          </div>
+        );
+      })()}
+
       {clip && (() => {
         const at = done ? stops.length - 1 : stopAt;
         return (
