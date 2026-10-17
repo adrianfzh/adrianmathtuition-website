@@ -2549,6 +2549,18 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
         </aside>
       )}
       <div className="min-w-0">
+      {/* The question on a phone: always in view ABOVE the clip, off the board (Adrian, 17 Oct 2026:
+          "we should put the question out for students to see, perhaps the question should be at the
+          top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
+      {clip && question && !wide && !done && (
+        <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
+          className="lsn-question block w-full text-left mb-2 rounded-2xl px-4 py-2.5 text-[14px] leading-snug">
+          <span className="line-clamp-2 block">
+            <span className="lsn-question-kicker text-[10px] font-bold uppercase tracking-wider mr-1.5">Question</span>
+            <MathText text={question} />
+          </span>
+        </button>
+      )}
       {done ? (
         /* ── Completion — the closer CTA ── */
         <div className="bg-white rounded-3xl shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-4px_rgba(15,23,42,0.08)] p-6 min-h-[440px] flex flex-col items-center justify-center text-center lsn-scene">
