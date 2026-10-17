@@ -2566,8 +2566,9 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           className="lsn-qstrip block w-full text-left mb-2.5 rounded-2xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.45)] active:scale-[0.99] motion-safe:transition-transform">
           <span className="flex items-center gap-1.5 bg-navy px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-300">
             <span aria-hidden>📝</span> Question
+            {question.length > 110 && <span className="ml-auto normal-case tracking-normal font-medium text-white/60">Tap to read all</span>}
           </span>
-          <span className="line-clamp-3 block px-3.5 py-2.5 text-[15.5px] leading-snug text-navy [font-family:Georgia,'Times_New_Roman',serif]">
+          <span className="line-clamp-3 mx-3.5 my-2.5 text-[15.5px] leading-snug text-navy [font-family:Georgia,'Times_New_Roman',serif]" style={{ display: '-webkit-box' }}>
             <MathText text={question} />
           </span>
         </button>
