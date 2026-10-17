@@ -98,10 +98,9 @@ const GRAPH_FN = /^(?:[0-9x+\-*/().^ ,]|ln|log|exp|sqrt|abs|e)*$/;
 /** The curve as a function of x, or null when `fn` is not plain maths in x. */
 export function graphFn(fn: string): ((x: number) => number) | null {
   if (typeof fn !== 'string' || !GRAPH_FN.test(fn)) return null;
-  const js = fn
-    .replace(/\bln\b/g, 'Math.log').replace(/\blog\b/g, 'Math.log10').replace(/\bexp\b/g, 'Math.exp')
-    .replace(/\bsqrt\b/g, 'Math.sqrt').replace(/\babs\b/g, 'Math.abs').replace(/\be\b/g, 'Math.E')
-    .replace(/\^/g, '**');
+  // One pass, word by word (a chain of replaces turned "ln" into Math.log and then "log" again).
+  const WORDS: Record<string, string> = { ln: 'Math.log', log: 'Math.log10', exp: 'Math.exp', sqrt: 'Math.sqrt', abs: 'Math.abs', e: 'Math.E' };
+  const js = fn.replace(/[a-z]+/g, w => (w === 'x' ? 'x' : WORDS[w] ?? w)).replace(/\^/g, '**');
   try {
     const f = new Function('x', `return (${js});`) as (x: number) => number;
     f(0.5);
