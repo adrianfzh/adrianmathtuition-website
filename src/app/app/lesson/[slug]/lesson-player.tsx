@@ -608,7 +608,9 @@ function scrollClipBoard(cont: HTMLElement) {
     if (seenOnBoard.has(el)) continue;
     seenOnBoard.add(el);
     if (first) continue;
-    const r = el.getBoundingClientRect();
+    // A note brings its LINE into view too (a Watch out under an older line: the line it is about
+    // must show, not only the note).
+    const r = (el.closest<HTMLElement>('.lsn-line') ?? el).getBoundingClientRect();
     if (r.height > 0) fresh = Math.min(fresh, r.top - zr.top);
   }
   if (fresh < offset + FADE) offset = Math.max(0, Math.floor(fresh - FADE));
