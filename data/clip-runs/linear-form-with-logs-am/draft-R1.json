@@ -1,0 +1,327 @@
+{
+ "slug": "linear-form-with-logs-am",
+ "draft": "R1",
+ "by": "session, 17 Oct 2026: rebuilt to the house rules",
+ "beats": [
+  {
+   "say": "Find A and N. L N Y against X is a straight line, for Y equals A E to the power minus N X.",
+   "asks": [
+    "What does L N Y against X mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "Here is the plan: take L N of both sides, then compare with capital Y equals M capital X plus C.",
+   "asks": [
+    "Why compare with Y = mX + c?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p1",
+     "on": "take L N of both sides"
+    }
+   ]
+  },
+  {
+   "say": "Take L N of both sides. L N Y equals L N of A times E to the power minus N X.",
+   "asks": [
+    "Why take L N, not log?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "Take L N of both sides"
+    }
+   ]
+  },
+  {
+   "say": "The right side is a product: A, times E to the power minus N X.",
+   "asks": [
+    "Why is it a product?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "l2A",
+     "tone": "orange",
+     "on": "A, times"
+    },
+    {
+     "do": "highlight",
+     "token": "l2e",
+     "tone": "sky",
+     "on": "E to the power"
+    }
+   ]
+  },
+  {
+   "say": "Add Power splits a log of a product: L N of M N is L N M plus L N N.",
+   "asks": [
+    "What is Add Power?"
+   ],
+   "do": [
+    {
+     "do": "note",
+     "text": "Add Power: $\\ln MN = \\ln M + \\ln N$",
+     "near": "l2A",
+     "span": [
+      "l2A",
+      "l2e"
+     ]
+    }
+   ]
+  },
+  {
+   "say": "So L N Y equals L N A, plus L N of E to the power minus N X.",
+   "asks": [
+    "Where did the plus come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So L N Y equals"
+    }
+   ]
+  },
+  {
+   "say": "Now bring the power down: minus N X comes down in front of L N E.",
+   "asks": [
+    "Why can the power come down?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l4a",
+     "on": "bring the power down"
+    },
+    {
+     "do": "move",
+     "from": "pw3",
+     "on": "comes down in front"
+    }
+   ]
+  },
+  {
+   "say": "L N E is one, because E to the power one is E.",
+   "asks": [
+    "Why is L N E equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l4e"
+    },
+    {
+     "do": "note",
+     "text": "$\\ln e = 1$, since $e^1 = e$",
+     "near": "l4e",
+     "on": "because E"
+    }
+   ]
+  },
+  {
+   "say": "So L N Y equals minus N X plus L N A.",
+   "asks": [
+    "What happened to L N E?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "So L N Y equals"
+    }
+   ]
+  },
+  {
+   "say": "Now compare with the straight line, capital Y equals M capital X plus C.",
+   "asks": [
+    "What is Y = mX + c?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 6,
+     "on": "Now compare"
+    },
+    {
+     "do": "write",
+     "step": 7,
+     "on": "capital Y equals"
+    }
+   ]
+  },
+  {
+   "say": "Match the parts by colour. Capital Y is L N Y, and capital X is X.",
+   "asks": [
+    "Why is Y equal to L N Y?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "YY",
+     "on": "Capital Y is L N Y"
+    },
+    {
+     "do": "write",
+     "token": "XX",
+     "on": "capital X is X"
+    }
+   ]
+  },
+  {
+   "say": "The gradient M is minus N, and the intercept C is L N A.",
+   "asks": [
+    "What is the intercept?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "mm",
+     "on": "The gradient M"
+    },
+    {
+     "do": "write",
+     "token": "ccl",
+     "on": "the intercept C"
+    }
+   ]
+  },
+  {
+   "say": "The question says the line passes through two, three and four, seven.",
+   "asks": [
+    "Which point do I use?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "pt1",
+     "on": "passes through two, three"
+    },
+    {
+     "do": "write",
+     "token": "pt2",
+     "on": "and four, seven"
+    }
+   ]
+  },
+  {
+   "say": "Gradient: seven minus three, over four minus two, which is two.",
+   "asks": [
+    "How do I find the gradient?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "grad",
+     "on": "seven minus three"
+    },
+    {
+     "do": "write",
+     "token": "m2",
+     "on": "which is two"
+    }
+   ]
+  },
+  {
+   "say": "Put in two, three: three equals two times two plus C, so C is negative one.",
+   "asks": [
+    "Why put in a point?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "sub",
+     "on": "three equals two times"
+    },
+    {
+     "do": "write",
+     "token": "c1",
+     "on": "so C is negative one"
+    }
+   ]
+  },
+  {
+   "say": "Minus N is the gradient, two. So N is negative two.",
+   "asks": [
+    "Why is n negative?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "nn0",
+     "on": "Minus N is the gradient"
+    },
+    {
+     "do": "write",
+     "token": "nn",
+     "on": "So N is negative two"
+    }
+   ]
+  },
+  {
+   "say": "L N A is the intercept, negative one. So A is E to the power negative one.",
+   "asks": [
+    "How do I undo L N?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "AA0",
+     "on": "L N A is the intercept"
+    },
+    {
+     "do": "write",
+     "token": "AA1",
+     "on": "So A is E"
+    }
+   ]
+  },
+  {
+   "say": "So N is negative two, and A is zero point three six eight, correct to three significant figures.",
+   "asks": [
+    "How do I check the answer?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 15,
+     "on": "So N is negative two"
+    },
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "ans",
+     "on": "correct to three significant"
+    }
+   ]
+  },
+  {
+   "say": "Watch out: N is negative two, not two. The gradient is minus N, so N has the opposite sign.",
+   "asks": [
+    "Why does n have the opposite sign?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "circle",
+     "token": "nn",
+     "on": "Watch out"
+    },
+    {
+     "do": "note",
+     "text": "✗ Watch out: not $n = 2$ — the gradient is $-n$",
+     "near": "nn",
+     "on": "The gradient is minus N"
+    }
+   ]
+  }
+ ]
+}

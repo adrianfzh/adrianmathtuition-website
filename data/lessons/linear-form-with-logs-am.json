@@ -3,192 +3,311 @@
   "title": "Linear Law with logs",
   "level": "AM",
   "topic": "Linear Law",
-  "minutes": 1,
+  "minutes": 2,
   "kind": "clip",
   "theme": "chalk",
-  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$.",
+  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$, giving $A$ correct to 3 significant figures.",
   "scenes": [
     {
       "type": "equation-steps",
-      "heading": "Linear Law: compare with Y = mX + c",
-      "intro": "$\\ln y$ against $x$ is a straight line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$ in $y = Ae^{-nx}$.",
+      "scroll": true,
       "steps": [
         {
+          "heading": "Step 1: take ln on both sides",
           "tokens": [
-            { "tex": "\\ln y=\\ln A+\\ln e^{-nx}", "id": "lnsplit" }
+            { "tex": "y=Ae^{-nx}", "id": "q0" }
           ]
         },
         {
           "tokens": [
-            { "tex": "\\ln y", "id": "Y", "hl": "sky" },
-            { "tex": "=" },
-            { "tex": "(-n)", "id": "mx", "hl": "amber" },
-            { "tex": "x", "id": "xx", "hl": "rose" },
-            { "tex": "+\\,\\ln A", "id": "cc", "hl": "emerald" }
+            { "tex": "\\ln\\square=\\ln\\triangle\\;\\Rightarrow\\;Y=mX+c", "id": "p1", "hl": "sky" }
           ]
         },
         {
           "tokens": [
-            { "tex": "Y", "id": "Yg", "hl": "sky" },
-            { "tex": "=" },
-            { "tex": "m", "id": "mg", "hl": "amber" },
-            { "tex": "X", "id": "Xg", "hl": "rose" },
-            { "tex": "+\\,c", "id": "cg", "hl": "emerald" }
+            { "tex": "\\ln y=\\ln(", "id": "l2a" },
+            { "tex": "\\textcolor{#ff9a3c}{A}", "id": "l2A", "tight": true },
+            { "tex": "\\textcolor{#a8ecfb}{e^{-nx}}", "id": "l2e", "tight": true },
+            { "tex": ")", "id": "l2b", "tight": true }
           ]
         },
         {
           "tokens": [
-            { "tex": "Y=\\ln y", "id": "YY", "hl": "sky" },
-            { "tex": ",\\quad X=x", "id": "XX", "hl": "rose" }
+            { "tex": "\\ln y=\\ln\\textcolor{#ff9a3c}{A}+\\ln \\textcolor{#a8ecfb}{e}", "id": "l3a" },
+            { "tex": "\\textcolor{#a8ecfb}{{}^{-nx}}", "id": "pw3", "tight": true }
           ]
         },
         {
           "tokens": [
-            { "tex": "m=-n", "id": "mm", "hl": "amber" },
-            { "tex": ",\\quad c=\\ln A", "id": "ccl", "hl": "emerald" }
+            { "tex": "\\ln y=\\ln A+", "id": "l4a" },
+            { "tex": "(-nx)", "id": "pw4", "from": "pw3" },
+            { "tex": "\\ln e", "id": "l4e" }
           ]
-        }
-      ],
-      "beats": [
-        {
-          "say": "This is Linear Law. Plan: take L N of both sides, then compare with capital Y equals M capital X plus C.",
-          "asks": ["Why take ln, not lg?", "What is Linear Law for?"],
-          "do": [],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b1.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b1.timing.json"
         },
-        {
-          "say": "Take L N of both sides. Add Power splits the right side.",
-          "asks": ["What is the Add Power law?", "Why does the ln split?"],
-          "do": [
-            { "do": "write", "step": 0 },
-            { "do": "note", "text": "Add Power: $\\ln xy = \\ln x + \\ln y$", "near": "lnsplit", "on": "Add Power splits" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b2.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b2.timing.json"
-        },
-        {
-          "say": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A.",
-          "asks": ["Why does ln cancel e?", "Why is ln A the intercept?"],
-          "do": [
-            { "do": "write", "step": 1, "on": "So L N Y" },
-            { "do": "note", "text": "Take ln: $\\ln e^{x} = x$", "near": "mx", "on": "plus L N A" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b3.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b3.timing.json"
-        },
-        {
-          "say": "Line it up with capital Y equals M capital X plus C.",
-          "asks": ["Why compare with Y = mX + c?"],
-          "do": [
-            { "do": "write", "step": 2, "on": "capital Y equals" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b4.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b4.timing.json"
-        },
-        {
-          "say": "Capital Y is the vertical axis, L N Y. Capital X is the horizontal axis, X.",
-          "asks": ["Why is Y = ln y?", "Why is X just x?"],
-          "do": [
-            { "do": "write", "token": "YY", "on": "Capital Y is" },
-            { "do": "write", "token": "XX", "on": "Capital X is" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b5.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b5.timing.json"
-        },
-        {
-          "say": "Match the parts. Gradient M is minus N. Vertical intercept C is L N A.",
-          "asks": ["Why is the gradient −n?", "Why is c = ln A?"],
-          "do": [
-            { "do": "mark", "kind": "underline", "token": ["mx", "cc"], "on": "Match the parts" },
-            { "do": "write", "token": "mm", "on": "Gradient M is" },
-            { "do": "write", "token": "ccl", "on": "intercept C is" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-01-b6.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-01-b6.timing.json"
-        }
-      ]
-    },
-    {
-      "type": "equation-steps",
-      "heading": "Read m and c off the line",
-      "intro": "The line passes through $(2, 3)$ and $(4, 7)$.",
-      "steps": [
         {
           "tokens": [
-            { "tex": "m=\\tfrac{7-3}{4-2}", "id": "grad", "hl": "amber" },
+            { "tex": "\\ln y=-nx+\\ln A", "id": "l5" }
+          ]
+        },
+        {
+          "heading": "Step 2: compare with Y = mX + c",
+          "tokens": [
+            { "tex": "\\textcolor{#a8ecfb}{\\ln y}", "id": "c6Y" },
+            { "tex": "=", "id": "c6q" },
+            { "tex": "\\textcolor{#ff9a3c}{(-n)}", "id": "c6m" },
+            { "tex": "x", "id": "c6X" },
+            { "tex": "+\\,\\textcolor{#f9a8d4}{\\ln A}", "id": "c6c" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\textcolor{#a8ecfb}{Y}", "id": "c7Y" },
+            { "tex": "=", "id": "c7q" },
+            { "tex": "\\textcolor{#ff9a3c}{m}", "id": "c7m" },
+            { "tex": "X", "id": "c7X" },
+            { "tex": "+\\,\\textcolor{#f9a8d4}{c}", "id": "c7c" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\textcolor{#a8ecfb}{Y}=\\textcolor{#a8ecfb}{\\ln y},", "id": "YY" },
+            { "tex": "\\quad X=x", "id": "XX" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\textcolor{#ff9a3c}{m}=\\textcolor{#ff9a3c}{-n},", "id": "mm" },
+            { "tex": "\\quad \\textcolor{#f9a8d4}{c}=\\textcolor{#f9a8d4}{\\ln A}", "id": "ccl" }
+          ]
+        },
+        {
+          "heading": "Step 3: read m and c off the line",
+          "tokens": [
+            { "tex": "\\text{line through }(2,\\,3)", "id": "pt1" },
+            { "tex": "\\text{and }(4,\\,7)", "id": "pt2" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\textcolor{#ff9a3c}{m}=\\dfrac{7-3}{4-2}", "id": "grad" },
             { "tex": "=\\,2", "id": "m2" }
           ]
         },
         {
           "tokens": [
-            { "tex": "3=2(2)+c", "id": "sub" },
-            { "tex": "\\Rightarrow\\;c=-1", "id": "c1", "hl": "emerald" }
+            { "tex": "3=2(2)+\\textcolor{#f9a8d4}{c}", "id": "sub" },
+            { "tex": "\\Rightarrow\\;\\textcolor{#f9a8d4}{c}=-1", "id": "c1" }
+          ]
+        },
+        {
+          "heading": "Step 4: find n and A",
+          "tokens": [
+            { "tex": "\\textcolor{#ff9a3c}{-n}=2", "id": "nn0" },
+            { "tex": "\\Rightarrow\\;n=-2", "id": "nn" }
           ]
         },
         {
           "tokens": [
-            { "tex": "-n=2", "id": "nn0" },
-            { "tex": "\\Rightarrow\\;n=-2", "id": "nn", "hl": "emerald" }
+            { "tex": "\\textcolor{#f9a8d4}{\\ln A}=-1", "id": "AA0" },
+            { "tex": "\\Rightarrow\\;A=e^{-1}", "id": "AA1" }
           ]
         },
         {
           "tokens": [
-            { "tex": "\\ln A=-1", "id": "AA0" },
-            { "tex": "\\Rightarrow\\;A=e^{-1}\\approx 0.368", "id": "AA", "hl": "emerald" }
+            { "tex": "n=-2,\\;A=e^{-1}=0.368\\;\\text{(3 s.f.)}", "id": "ans", "hl": "emerald" }
           ]
         }
       ],
       "beats": [
         {
-          "say": "Gradient: seven minus three over four minus two is two.",
+          "say": "Find A and N. L N Y against X is a straight line, for Y equals A E to the power minus N X.",
+          "asks": ["What does L N Y against X mean?"],
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b1.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "The plan: X is in a power, so take L N of both sides, then match capital Y equals M capital X plus C.",
+          "asks": ["Why compare with Y = mX + c?"],
+          "do": [
+            { "do": "write", "token": "p1", "on": "take L N of both sides" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b2.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "Take L N of both sides. L N Y equals L N of A times E to the power minus N X.",
+          "asks": ["Why take L N, not log?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "Take L N of both sides" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b3.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "The right side is a product: A, times E to the power minus N X.",
+          "asks": ["Why is it a product?"],
+          "do": [
+            { "do": "highlight", "token": "l2A", "tone": "orange", "on": "A, times" },
+            { "do": "highlight", "token": "l2e", "tone": "sky", "on": "E to the power" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b4.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "Add Power splits a log of a product: L N of M N is L N M plus L N N.",
+          "asks": ["What is Add Power?"],
+          "do": [
+            { "do": "note", "text": "Add Power: $\\ln MN = \\ln M + \\ln N$", "near": "l2A", "span": ["l2A", "l2e"] }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b5.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "So L N Y equals L N A, plus L N of E to the power minus N X. Now use bring down power.",
+          "asks": ["Where did the plus come from?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "So L N Y equals" },
+            { "do": "note", "text": "Bring down power: $\\ln M^r = r\\ln M$", "near": "pw3", "on": "Now use bring down" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b6.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "The power minus N X comes down in front of the L N.",
+          "asks": ["Why can the power come down?"],
+          "do": [
+            { "do": "write", "token": "l4a", "on": "The power minus N" },
+            { "do": "move", "from": "pw3", "on": "comes down in front" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b7.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b7.timing.json"
+        },
+        {
+          "say": "That leaves L N E, which is one, because E to the power one is E.",
+          "asks": ["Why is L N E equal to 1?"],
+          "do": [
+            { "do": "write", "token": "l4e", "on": "That leaves L N E" },
+            { "do": "note", "text": "$\\ln e = 1$, since $e^1 = e$", "near": "l4e", "on": "because E to" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b8.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b8.timing.json"
+        },
+        {
+          "say": "So L N Y equals minus N X plus L N A, with the X term first, like M X plus C.",
+          "asks": ["What happened to L N E?"],
+          "do": [
+            { "do": "write", "step": 5, "on": "So L N Y equals" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b9.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "Now compare with the straight line, capital Y equals M capital X plus C.",
+          "asks": ["What is Y = mX + c?"],
+          "do": [
+            { "do": "write", "step": 6, "on": "Now compare" },
+            { "do": "write", "step": 7, "on": "capital Y equals" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b10.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "Match the parts by colour. Capital Y is L N Y, and capital X is X.",
+          "asks": ["Why is Y equal to L N Y?"],
+          "do": [
+            { "do": "write", "token": "YY", "on": "Capital Y is L N Y" },
+            { "do": "write", "token": "XX", "on": "capital X is X" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b11.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b11.timing.json"
+        },
+        {
+          "say": "The gradient M is minus N, and the intercept C is L N A.",
+          "asks": ["What is the intercept?"],
+          "do": [
+            { "do": "write", "token": "mm", "on": "The gradient M" },
+            { "do": "write", "token": "ccl", "on": "the intercept C" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b12.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b12.timing.json"
+        },
+        {
+          "say": "The question says the line passes through two, three and four, seven.",
+          "asks": ["Which point do I use?"],
+          "do": [
+            { "do": "write", "token": "pt1", "on": "passes through two, three" },
+            { "do": "write", "token": "pt2", "on": "and four, seven" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b13.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b13.timing.json"
+        },
+        {
+          "say": "Gradient: seven minus three, over four minus two, which is two.",
           "asks": ["How do I find the gradient?"],
           "do": [
             { "do": "write", "token": "grad", "on": "seven minus three" },
-            { "do": "write", "token": "m2", "on": "is two" }
+            { "do": "write", "token": "m2", "on": "which is two" }
           ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-02-b1.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-02-b1.timing.json"
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b14.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b14.timing.json"
         },
         {
-          "say": "Substitute two, three to find C. Three equals two times two plus C, so C is minus one.",
-          "asks": ["Why substitute (2, 3)?", "Which point should I use?"],
+          "say": "Put in two, three: three equals two times two plus C, so C is negative one.",
+          "asks": ["Why put in a point?"],
           "do": [
-            { "do": "write", "token": "sub", "on": "Three equals two" },
-            { "do": "write", "token": "c1", "on": "C is minus one" }
+            { "do": "write", "token": "sub", "on": "three equals two times" },
+            { "do": "write", "token": "c1", "on": "so C is negative one" }
           ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-02-b2.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-02-b2.timing.json"
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b15.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b15.timing.json"
         },
         {
-          "say": "Minus N is two, so N is minus two.",
-          "asks": ["Why is n = −2, not 2?"],
-          "do": [
-            { "do": "write", "step": 2, "on": "minus N is two" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-02-b3.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-02-b3.timing.json"
-        },
-        {
-          "say": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight.",
-          "asks": ["How do I un-log ln A = −1?", "Why is A = e⁻¹?"],
-          "do": [
-            { "do": "write", "step": 3, "on": "L N A is minus one" },
-            { "do": "note", "text": "Un-log: $\\ln x = c \\Rightarrow x = e^{c}$", "near": "AA", "on": "E to the power" },
-            { "do": "mark", "kind": "box", "token": "AA", "on": "zero point three" }
-          ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-02-b4.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-02-b4.timing.json"
-        },
-        {
-          "say": "Watch out: N is minus two, not two. The gradient is minus N.",
+          "say": "Minus N is the gradient, two. So N is negative two.",
           "asks": ["Why is n negative?"],
           "do": [
-            { "do": "mark", "kind": "circle", "token": "nn", "on": "Watch out" },
-            { "do": "note", "text": "✗ Watch out: $n = 2$ (the gradient is $-n$)", "near": "nn", "on": "not two" }
+            { "do": "write", "token": "nn0", "on": "Minus N is the gradient" },
+            { "do": "write", "token": "nn", "on": "So N is negative two" }
           ],
-          "audio": "/lessons/linear-form-with-logs-am/scene-02-b5.mp3",
-          "timing": "/lessons/linear-form-with-logs-am/scene-02-b5.timing.json"
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b16.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b16.timing.json"
+        },
+        {
+          "say": "C is L N A, negative one. Undo the L N: A is E to the power negative one.",
+          "asks": ["How do I undo L N?"],
+          "do": [
+            { "do": "write", "token": "AA0", "on": "C is L N" },
+            { "do": "write", "token": "AA1", "on": "Undo the L N" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b17.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b17.timing.json"
+        },
+        {
+          "say": "So N is negative two, and A is zero point three six eight, correct to three significant figures.",
+          "asks": ["How do I check the answer?"],
+          "do": [
+            { "do": "write", "step": 15, "on": "So N is negative two" },
+            { "do": "mark", "kind": "box", "token": "ans", "on": "correct to three significant" }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b18.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b18.timing.json"
+        },
+        {
+          "say": "Watch out: N is negative two, not two. The gradient is minus N, so N has the opposite sign.",
+          "asks": ["Why does n have the opposite sign?"],
+          "do": [
+            { "do": "mark", "kind": "circle", "token": "nn", "on": "Watch out" },
+            {
+              "do": "note",
+              "text": "✗ Watch out: not $n = 2$ — the gradient is $-n$",
+              "near": "nn",
+              "on": "The gradient is minus N"
+            }
+          ],
+          "audio": "/lessons/linear-form-with-logs-am/scene-01-b19.mp3",
+          "timing": "/lessons/linear-form-with-logs-am/scene-01-b19.timing.json"
         }
       ]
     }

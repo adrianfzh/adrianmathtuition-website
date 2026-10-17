@@ -1,6 +1,6 @@
 {
  "slug": "linear-form-with-logs-am",
- "at": "2026-10-15T09:15:54.025Z",
+ "at": "2026-10-17T12:55:51.527Z",
  "checks": {
   "rules": {
    "ok": true,
@@ -8,19 +8,15 @@
   },
   "maths": {
    "ok": true,
-   "detail": "19/19 line checks"
+   "detail": "26/26 line checks"
   },
   "board": {
    "ok": true,
-   "detail": "9 lines = the checked plan"
+   "detail": "16 lines = the checked plan"
   },
   "read": {
    "ok": true,
-   "detail": "pick A3 · lowest score 4 · pass"
-  },
-  "voice": {
-   "ok": true,
-   "detail": "10/10 beats voiced + timed · speech round trip worst 90 %"
+   "detail": "pick R1 · lowest score 4 · pass"
   },
   "look": {
    "ok": true,

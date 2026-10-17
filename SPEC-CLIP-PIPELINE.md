@@ -258,6 +258,12 @@ New in the player: a clip board that would run below the screen scales its maths
   voice 13/13 ≥ 88 %, look 19/19 on the voice, 0 problems. Next to rebuild: Linear Law with logs,
   Growth and decay, Log scales.
 - 17 Oct 2026: the exponential clip ends `x = −8.57 (3 s.f.)`, said "correct to three significant figures" (draft R3, recorded after the voice top-up).
+- **Rebuilt to the house rules (17 Oct 2026): Linear Law with logs** — one scrolling board, 16 lines, 19 beats,
+  ~1.9 min: ln both sides, Add Power highlighted then applied, the power moves down in front of ln e, ln e = 1,
+  compare with Y = mX + c by colour, the points from the question, n and A = e⁻¹ = 0.368 (3 s.f.), one
+  Watch out (the sign of n). Maths 26/26, blind read pass (6 beats fixed), voice 19/19 ≥ 91 %.
+  Player, same day: dragging the slider moves the board live (voice holds while dragging); skip buttons
+  are ⏪ 5 / 5 ⏩; the question card is a navy "📝 QUESTION" band over white paper.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

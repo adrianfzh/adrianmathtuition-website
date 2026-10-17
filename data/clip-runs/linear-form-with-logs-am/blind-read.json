@@ -1,41 +1,123 @@
 {
  "slug": "linear-form-with-logs-am",
- "pick": "W1",
- "why": "Only draft (W1, the Watch-out layout of 16 Oct 2026); scored as fixed.",
+ "pick": "R1",
+ "why": "Only draft (R1, rebuilt 17 Oct 2026 to the house rules); scored as fixed.",
  "scores": {
   "clear": 4,
   "one_idea": 4,
-  "voice_board": 5,
+  "voice_board": 4,
   "why": 4,
   "trap": 5,
-  "level": 4
+  "level": 5
  },
  "notes": [
-  "Working flows: ln both sides → Y = mX + c matched → gradient → c → n → A, no stop for a mistake; A ≈ 0.368 boxed in beat 10; beat 11 opens 'Watch out:', circles n = −2, red ✗ note.",
-  "Beat 11 wrote the ✗ note before the circle and with no cue. Fixed: circle on 'Watch out', ✗ note on 'not two'.",
-  "Beat 1 opens 'This is Linear Law' rather than the question; the question sits on screen, and the word budget (169 of 170) leaves no room to read it — kept.",
-  "Only A is boxed (n = −2 is emerald but not boxed); kept from the earlier session's layout note (one box across both lines crossed the circle)."
+  "Beat 2 shows the plan as maths, but no beat says WHY we take ln: the bible's reason is 'the variable sits in a power'. Fixed: beat 2 says 'X is in a power, so take L N of both sides'.",
+  "Beat 7 brought the power down with no law beside the step (house rules: a line made by a law carries its name, here Bring down power) and said 'in front of L N E' before ln e is written. Fixed: beat 6 writes the law under line 3 on 'Now use bring down' (law under the line, then the next line applies it); beat 7 is only the write and the move, 'in front of the L N'.",
+  "Beat 8 wrote ln e on no words. Fixed: ln e appears on 'That leaves L N E', the ln e = 1 note on 'because E to'.",
+  "Beat 9 rewrote the line in a new order with no reason. Fixed: 'with the X term first, like M X plus C'.",
+  "Beat 17 did not say the line gives ln A, not A, so it must be undone (bible trap). Fixed as a plain step: 'C is L N A, negative one. Undo the L N: A is E to the power negative one.'",
+  "Beat 19's Watch out (n has the opposite sign of the gradient) is the bible's named common slip for e^(−nx) — kept; it comes after the boxed answer with a circle and a red ✗ note.",
+  "Routine algebra (gradient, c from a point) is fast, a few words a line; the new idea (ln both sides, the laws, matching Y = mX + c) is slow with a reason each — as _house.md §2 asks."
  ],
  "fixed_beats": {
-  "11": {
-   "board": 1,
-   "say": "Watch out: N is minus two, not two. The gradient is minus N.",
+  "2": {
+   "say": "The plan: X is in a power, so take L N of both sides, then match capital Y equals M capital X plus C.",
+   "asks": [
+    "Why compare with Y = mX + c?"
+   ],
    "do": [
     {
-     "do": "mark",
-     "kind": "circle",
-     "token": "nn",
-     "on": "Watch out"
+     "do": "write",
+     "token": "p1",
+     "on": "take L N of both sides"
+    }
+   ]
+  },
+  "7": {
+   "say": "The power minus N X comes down in front of the L N.",
+   "asks": [
+    "Why can the power come down?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l4a",
+     "on": "The power minus N"
+    },
+    {
+     "do": "move",
+     "from": "pw3",
+     "on": "comes down in front"
+    }
+   ]
+  },
+  "8": {
+   "say": "That leaves L N E, which is one, because E to the power one is E.",
+   "asks": [
+    "Why is L N E equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l4e",
+     "on": "That leaves L N E"
     },
     {
      "do": "note",
-     "text": "✗ Watch out: $n = 2$ (the gradient is $-n$)",
-     "near": "nn",
-     "on": "not two"
+     "text": "$\\ln e = 1$, since $e^1 = e$",
+     "near": "l4e",
+     "on": "because E to"
     }
-   ],
+   ]
+  },
+  "9": {
+   "say": "So L N Y equals minus N X plus L N A, with the X term first, like M X plus C.",
    "asks": [
-    "Why is n negative?"
+    "What happened to L N E?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "So L N Y equals"
+    }
+   ]
+  },
+  "17": {
+   "say": "C is L N A, negative one. Undo the L N: A is E to the power negative one.",
+   "asks": [
+    "How do I undo L N?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "AA0",
+     "on": "C is L N"
+    },
+    {
+     "do": "write",
+     "token": "AA1",
+     "on": "Undo the L N"
+    }
+   ]
+  },
+  "6": {
+   "say": "So L N Y equals L N A, plus L N of E to the power minus N X. Now use bring down power.",
+   "asks": [
+    "Where did the plus come from?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "So L N Y equals"
+    },
+    {
+     "do": "note",
+     "text": "Bring down power: $\\ln M^r = r\\ln M$",
+     "near": "pw3",
+     "on": "Now use bring down"
+    }
    ]
   }
  },

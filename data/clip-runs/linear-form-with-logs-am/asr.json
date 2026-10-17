@@ -1,26 +1,26 @@
 {
  "slug": "linear-form-with-logs-am",
- "worst": 0.886,
+ "worst": 0.91,
  "lines": [
   {
    "beat": 1,
-   "bag": 0.91,
-   "score": 0.91,
-   "heard": null
+   "bag": 0.83,
+   "score": 1,
+   "heard": "Find A and N L N Y against X is a straight line for Y equals AE to the power minus NX",
+   "said": "Find A and N. L N Y against X is a straight line, for Y equals A E to the power minus N X."
   },
   {
    "beat": 2,
-   "bag": 0.83,
-   "score": 1,
-   "heard": "Take ln of both sides, add power, splits the right side.",
-   "said": "Take L N of both sides. Add Power splits the right side."
+   "bag": 0.92,
+   "score": 0.92,
+   "heard": null
   },
   {
    "beat": 3,
-   "bag": 0.48,
+   "bag": 0.55,
    "score": 1,
-   "heard": "ln cancels E leaving minus nx. So lny = -n * x + lnA.",
-   "said": "L N cancels E, leaving minus N X. So L N Y equals minus N, times X, plus L N A."
+   "heard": "Take LN of both sides. LNY = LN of A * E to the power - NX.",
+   "said": "Take L N of both sides. L N Y equals L N of A times E to the power minus N X."
   },
   {
    "beat": 4,
@@ -30,9 +30,10 @@
   },
   {
    "beat": 5,
-   "bag": 0.94,
-   "score": 0.94,
-   "heard": null
+   "bag": 0.62,
+   "score": 1,
+   "heard": "add power splits a log of a product ln of MN is ln M plus ln N",
+   "said": "Add Power splits a log of a product: L N of M N is L N M plus L N N."
   },
   {
    "beat": 6,
@@ -42,15 +43,17 @@
   },
   {
    "beat": 7,
-   "bag": 1,
+   "bag": 0.69,
    "score": 1,
-   "heard": null
+   "heard": "The power minus NX comes down in front of the LN.",
+   "said": "The power minus N X comes down in front of the L N."
   },
   {
    "beat": 8,
-   "bag": 0.89,
-   "score": 0.89,
-   "heard": null
+   "bag": 0.81,
+   "score": 1,
+   "heard": "That leaves LNE which is one because E to the power one is E.",
+   "said": "That leaves L N E, which is one, because E to the power one is E."
   },
   {
    "beat": 9,
@@ -60,13 +63,62 @@
   },
   {
    "beat": 10,
-   "bag": 0.73,
-   "score": 0.886,
-   "heard": "LN A is -1, unlog A is E to the power -1, about 0.368.",
-   "said": "L N A is minus one. Un-log: A is E to the power minus one, about zero point three six eight."
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
   },
   {
    "beat": 11,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 12,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 13,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 14,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  },
+  {
+   "beat": 15,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 16,
+   "bag": 0.91,
+   "score": 0.91,
+   "heard": null
+  },
+  {
+   "beat": 17,
+   "bag": 0.68,
+   "score": 1,
+   "heard": "C is ln A -1. Undo the ln A is e to the power -1.",
+   "said": "C is L N A, negative one. Undo the L N: A is E to the power negative one."
+  },
+  {
+   "beat": 18,
+   "bag": 0.83,
+   "score": 1,
+   "heard": "So N is -2 and A is 0.368 correct to three significant figures.",
+   "said": "So N is negative two, and A is zero point three six eight, correct to three significant figures."
+  },
+  {
+   "beat": 19,
    "bag": 1,
    "score": 1,
    "heard": null

@@ -1,7 +1,6 @@
 {
   "slug": "linear-form-with-logs-am",
   "title": "Linear Law with logs",
-  "heading": "Linear Law with logs",
   "intro": null,
   "level": "AM",
   "topic": "Linear Law",
@@ -23,15 +22,16 @@
       "nv = -2",
       "Av = exp(-1)"
     ],
-    "display": "A = e^{-1} 0.368"
+    "display": "n = -2, A = e^{-1} = 0.368 (3 s.f.)"
   },
   "lines": [
     {
       "board": 0,
+      "heading": "Step 1: take ln on both sides",
       "tokens": [
         {
-          "tex": "\\ln y=\\ln A+\\ln e^{-nx}",
-          "id": "lnsplit"
+          "tex": "y=Ae^{-nx}",
+          "id": "q0"
         }
       ],
       "checks": [
@@ -39,7 +39,67 @@
           "model": {
             "y": "A*exp(-n*x)"
           }
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\ln\\square=\\ln\\triangle\\;\\Rightarrow\\;Y=mX+c",
+          "id": "p1",
+          "hl": "sky"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the plan: take ln of both sides, then compare with Y = mX + c"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\ln y=\\ln(",
+          "id": "l2a"
         },
+        {
+          "tex": "\\textcolor{#ff9a3c}{A}",
+          "id": "l2A",
+          "tight": true
+        },
+        {
+          "tex": "\\textcolor{#a8ecfb}{e^{-nx}}",
+          "id": "l2e",
+          "tight": true
+        },
+        {
+          "tex": ")",
+          "id": "l2b",
+          "tight": true
+        }
+      ],
+      "checks": [
+        {
+          "identity": "log(y) = log(A*exp(-n*x))"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\ln y=\\ln\\textcolor{#ff9a3c}{A}+\\ln \\textcolor{#a8ecfb}{e}",
+          "id": "l3a"
+        },
+        {
+          "tex": "\\textcolor{#a8ecfb}{{}^{-nx}}",
+          "id": "pw3",
+          "tight": true
+        }
+      ],
+      "checks": [
         {
           "identity": "log(y) = log(A) + log(exp(-n*x))"
         }
@@ -49,27 +109,62 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "\\ln y",
-          "id": "Y",
-          "hl": "sky"
+          "tex": "\\ln y=\\ln A+",
+          "id": "l4a"
         },
         {
-          "tex": "="
+          "tex": "(-nx)",
+          "id": "pw4",
+          "from": "pw3"
         },
         {
-          "tex": "(-n)",
-          "id": "mx",
-          "hl": "amber"
+          "tex": "\\ln e",
+          "id": "l4e"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "log(y) = log(A) + (-n*x)*log(exp(1))"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\ln y=-nx+\\ln A",
+          "id": "l5"
+        }
+      ],
+      "checks": [
+        {
+          "identity": "log(y) = -n*x + log(A)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "heading": "Step 2: compare with Y = mX + c",
+      "tokens": [
+        {
+          "tex": "\\textcolor{#a8ecfb}{\\ln y}",
+          "id": "c6Y"
+        },
+        {
+          "tex": "=",
+          "id": "c6q"
+        },
+        {
+          "tex": "\\textcolor{#ff9a3c}{(-n)}",
+          "id": "c6m"
         },
         {
           "tex": "x",
-          "id": "xx",
-          "hl": "rose"
+          "id": "c6X"
         },
         {
-          "tex": "+\\,\\ln A",
-          "id": "cc",
-          "hl": "emerald"
+          "tex": "+\\,\\textcolor{#f9a8d4}{\\ln A}",
+          "id": "c6c"
         }
       ],
       "checks": [
@@ -82,27 +177,24 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "Y",
-          "id": "Yg",
-          "hl": "sky"
+          "tex": "\\textcolor{#a8ecfb}{Y}",
+          "id": "c7Y"
         },
         {
-          "tex": "="
+          "tex": "=",
+          "id": "c7q"
         },
         {
-          "tex": "m",
-          "id": "mg",
-          "hl": "amber"
+          "tex": "\\textcolor{#ff9a3c}{m}",
+          "id": "c7m"
         },
         {
           "tex": "X",
-          "id": "Xg",
-          "hl": "rose"
+          "id": "c7X"
         },
         {
-          "tex": "+\\,c",
-          "id": "cg",
-          "hl": "emerald"
+          "tex": "+\\,\\textcolor{#f9a8d4}{c}",
+          "id": "c7c"
         }
       ],
       "checks": [
@@ -115,14 +207,12 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "Y=\\ln y",
-          "id": "YY",
-          "hl": "sky"
+          "tex": "\\textcolor{#a8ecfb}{Y}=\\textcolor{#a8ecfb}{\\ln y},",
+          "id": "YY"
         },
         {
-          "tex": ",\\quad X=x",
-          "id": "XX",
-          "hl": "rose"
+          "tex": "\\quad X=x",
+          "id": "XX"
         }
       ],
       "checks": [
@@ -138,14 +228,12 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "m=-n",
-          "id": "mm",
-          "hl": "amber"
+          "tex": "\\textcolor{#ff9a3c}{m}=\\textcolor{#ff9a3c}{-n},",
+          "id": "mm"
         },
         {
-          "tex": ",\\quad c=\\ln A",
-          "id": "ccl",
-          "hl": "emerald"
+          "tex": "\\quad \\textcolor{#f9a8d4}{c}=\\textcolor{#f9a8d4}{\\ln A}",
+          "id": "ccl"
         }
       ],
       "checks": [
@@ -161,12 +249,30 @@
       ]
     },
     {
-      "board": 1,
+      "board": 0,
+      "heading": "Step 3: read m and c off the line",
       "tokens": [
         {
-          "tex": "m=\\tfrac{7-3}{4-2}",
-          "id": "grad",
-          "hl": "amber"
+          "tex": "\\text{line through }(2,\\,3)",
+          "id": "pt1"
+        },
+        {
+          "tex": "\\text{and }(4,\\,7)",
+          "id": "pt2"
+        }
+      ],
+      "checks": [
+        {
+          "form": "the two points of the line, from the question: (X, Y) = (2, 3) and (4, 7)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\textcolor{#ff9a3c}{m}=\\dfrac{7-3}{4-2}",
+          "id": "grad"
         },
         {
           "tex": "=\\,2",
@@ -183,16 +289,15 @@
       ]
     },
     {
-      "board": 1,
+      "board": 0,
       "tokens": [
         {
-          "tex": "3=2(2)+c",
+          "tex": "3=2(2)+\\textcolor{#f9a8d4}{c}",
           "id": "sub"
         },
         {
-          "tex": "\\Rightarrow\\;c=-1",
-          "id": "c1",
-          "hl": "emerald"
+          "tex": "\\Rightarrow\\;\\textcolor{#f9a8d4}{c}=-1",
+          "id": "c1"
         }
       ],
       "checks": [
@@ -204,16 +309,16 @@
       ]
     },
     {
-      "board": 1,
+      "board": 0,
+      "heading": "Step 4: find n and A",
       "tokens": [
         {
-          "tex": "-n=2",
+          "tex": "\\textcolor{#ff9a3c}{-n}=2",
           "id": "nn0"
         },
         {
           "tex": "\\Rightarrow\\;n=-2",
-          "id": "nn",
-          "hl": "emerald"
+          "id": "nn"
         }
       ],
       "checks": [
@@ -225,22 +330,33 @@
       ]
     },
     {
-      "board": 1,
+      "board": 0,
       "tokens": [
         {
-          "tex": "\\ln A=-1",
+          "tex": "\\textcolor{#f9a8d4}{\\ln A}=-1",
           "id": "AA0"
         },
         {
-          "tex": "\\Rightarrow\\;A=e^{-1}\\approx 0.368",
-          "id": "AA",
-          "hl": "emerald"
+          "tex": "\\Rightarrow\\;A=e^{-1}",
+          "id": "AA1"
         }
       ],
       "checks": [
         {
           "fact": "Av = exp(gc)"
-        },
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "n=-2,\\;A=e^{-1}=0.368\\;\\text{(3 s.f.)}",
+          "id": "ans",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
         {
           "approx": 0.368,
           "sf": 3,
@@ -256,25 +372,15 @@
     }
   ],
   "outline": [
-    "Read the question: ln y against x is a straight line; the model is y = A e to the minus n x (write model).",
-    "Take ln of both sides: ln y = -n x + ln A — this is Y = mX + c (write Y, mX, c).",
-    "So the gradient is minus n and the intercept is ln A (underline mX and c).",
-    "Gradient from the two points: (7-3)/(4-2) = 2 (write grad, m2).",
-    "Substitute (2, 3) to find c = -1 (write sub, c1).",
-    "Trap: the gradient is MINUS n, so n = -2 (write n).",
-    "Un-log the intercept: ln A = -1, so A = e to the minus 1, about 0.368 (write A, box both).",
-    "Adrian 15 Oct: 'ln y = ln A + ln e^(-nx)' is its own line before 'ln y = -nx + ln A'. The model moves into the question.",
-    "Adrian 15 Oct: this is Linear Law — say so; compare with Y = mX + c, write Y = ln y, X = x, then m = -n (gradient) and c = ln A (vertical intercept). Two boards."
+    "Rebuilt 17 Oct 2026 to the house rules: one scrolling board; ln both sides is its own line; Add Power highlighted then applied; the power moves down in front of ln e; ln e = 1; compare with Y = mX + c by colour; the points from the question; n and A; one Watch out (the sign of n, a common slip)."
   ],
   "boards": [
     {
-      "heading": "Linear Law: compare with Y = mX + c",
-      "intro": "$\\ln y$ against $x$ is a straight line through $(2, 3)$ and $(4, 7)$. Find $A$ and $n$ in $y = Ae^{-nx}$."
-    },
-    {
-      "heading": "Read m and c off the line",
-      "intro": "The line passes through $(2, 3)$ and $(4, 7)$."
+      "heading": null,
+      "intro": null,
+      "scroll": true
     }
   ],
-  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$."
+  "question": "A straight line is obtained by plotting $\\ln y$ against $x$. The line passes through $(2, 3)$ and $(4, 7)$ and represents $y = Ae^{-nx}$. Find $A$ and $n$, giving $A$ correct to 3 significant figures.",
+  "minutes": 2
 }

@@ -1,18 +1,30 @@
-Verifying 11 clip(s) of linear-form-with-logs-am by transcription (gemini-2.5-flash)…
+Verifying 19 clip(s) of linear-form-with-logs-am by transcription (gemini-2.5-flash)…
 
-  scene-01-b1: 91% of narration words heard
-  scene-01-b2: 83% of narration words heard  ⚠ LOW
-      heard: Take ln of both sides, add power, splits the right side.
-  scene-01-b3: 48% of narration words heard  ⚠ LOW
-      heard: ln cancels E leaving minus nx. So lny = -n * x + lnA.
+  scene-01-b1: 83% of narration words heard  ⚠ LOW
+      heard: Find A and N L N Y against X is a straight line for Y equals AE to the power minus NX
+  scene-01-b2: 92% of narration words heard
+  scene-01-b3: 55% of narration words heard  ⚠ LOW
+      heard: Take LN of both sides. LNY = LN of A * E to the power - NX.
   scene-01-b4: 100% of narration words heard
-  scene-01-b5: 94% of narration words heard
+  scene-01-b5: 62% of narration words heard  ⚠ LOW
+      heard: add power splits a log of a product ln of MN is ln M plus ln N
   scene-01-b6: 100% of narration words heard
-  scene-02-b1: 100% of narration words heard
-  scene-02-b2: 89% of narration words heard
-  scene-02-b3: 100% of narration words heard
-  scene-02-b4: 73% of narration words heard  ⚠ LOW
-      heard: LN A is -1, unlog A is E to the power -1, about 0.368.
-  scene-02-b5: 100% of narration words heard
+  scene-01-b7: 69% of narration words heard  ⚠ LOW
+      heard: The power minus NX comes down in front of the LN.
+  scene-01-b8: 81% of narration words heard  ⚠ LOW
+      heard: That leaves LNE which is one because E to the power one is E.
+  scene-01-b9: 100% of narration words heard
+  scene-01-b10: 93% of narration words heard
+  scene-01-b11: 94% of narration words heard
+  scene-01-b12: 100% of narration words heard
+  scene-01-b13: 100% of narration words heard
+  scene-01-b14: 100% of narration words heard
+  scene-01-b15: 94% of narration words heard
+  scene-01-b16: 91% of narration words heard
+  scene-01-b17: 68% of narration words heard  ⚠ LOW
+      heard: C is ln A -1. Undo the ln A is e to the power -1.
+  scene-01-b18: 83% of narration words heard  ⚠ LOW
+      heard: So N is -2 and A is 0.368 correct to three significant figures.
+  scene-01-b19: 100% of narration words heard
 
-3 clip(s) below 85% — listen to those.
+7 clip(s) below 85% — listen to those.
