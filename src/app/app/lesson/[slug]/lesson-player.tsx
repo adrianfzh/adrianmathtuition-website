@@ -2663,11 +2663,11 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
       {clip && question && !wide && !done && (
         <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
-          className="lsn-qstrip relative block w-full text-left mt-3 mb-2.5 rounded-2xl bg-white ring-1 ring-slate-200 px-3.5 pt-3.5 pb-2.5 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.4)] active:scale-[0.99] motion-safe:transition-transform">
+          className="lsn-qstrip relative block w-full text-left mt-3 mb-2 rounded-2xl bg-white ring-1 ring-slate-200 px-3.5 pt-3 pb-2 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.4)] active:scale-[0.99] motion-safe:transition-transform">
           {/* Design B (Adrian picked it, 17 Oct 2026): an amber tag floats on the card's top edge. */}
           <span className="absolute -top-2.5 left-3 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-amber-950 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">Question</span>
           {/* The WHOLE question, always (Adrian, 18 Oct 2026: "the question itself is only partially shown"). */}
-          <span className={`block ${question.length > 140 ? 'text-[13.5px]' : 'text-[15px]'} leading-snug text-navy`}><MathText text={question} /></span>
+          <span className={`block ${question.length > 140 ? 'text-[13px] leading-[1.3]' : 'text-[15px] leading-snug'} text-navy`}><MathText text={question} /></span>
         </button>
       )}
       {done ? (
