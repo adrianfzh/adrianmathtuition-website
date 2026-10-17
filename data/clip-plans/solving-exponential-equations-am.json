@@ -124,12 +124,20 @@
       "heading": "Step 3: solve like algebra",
       "tokens": [
         {
-          "tex": "x\\lg 7-\\lg 7",
-          "id": "ex7"
+          "tex": "x\\lg 7",
+          "id": "ex7x"
         },
         {
-          "tex": "=\\,x\\lg 5-3\\lg 5",
-          "id": "ex5"
+          "tex": "-\\lg 7",
+          "id": "ex7n"
+        },
+        {
+          "tex": "=\\,x\\lg 5",
+          "id": "ex5x"
+        },
+        {
+          "tex": "-3\\lg 5",
+          "id": "ex5n"
         }
       ],
       "checks": [
@@ -142,7 +150,7 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "x\\lg 7-x\\lg 5",
+          "tex": "\\textcolor{#a8ecfb}{x}\\lg 7-\\textcolor{#a8ecfb}{x}\\lg 5",
           "id": "xs"
         },
         {
@@ -160,7 +168,7 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "x(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5",
+          "tex": "\\textcolor{#a8ecfb}{x}(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5",
           "id": "fx"
         }
       ],
@@ -174,7 +182,7 @@
       "board": 0,
       "tokens": [
         {
-          "tex": "x=\\dfrac{\\lg 7-3\\lg 5}{\\lg 7-\\lg 5}",
+          "tex": "\\textcolor{#a8ecfb}{x}=\\dfrac{\\lg 7-3\\lg 5}{\\lg 7-\\lg 5}",
           "id": "frac"
         }
       ],
@@ -202,7 +210,8 @@
     }
   ],
   "outline": [
-    "Rebuilt 17 Oct 2026 to the house rules (watches 1–14 of the log-equations clip): one scrolling board, step titles, the plan shown as maths, the powers MOVE down in front of their logs, factorise-out-x as its own line, routine algebra fast, 'negative' for a negative number, the rounding trap last as a Watch out."
+    "Rebuilt 17 Oct 2026 to the house rules (watches 1–14 of the log-equations clip): one scrolling board, step titles, the plan shown as maths, the powers MOVE down in front of their logs, factorise-out-x as its own line, routine algebra fast, 'negative' for a negative number, the rounding trap last as a Watch out.",
+    "Adrian 17 Oct 2026: highlight the x terms (they stay blue on the lines after); no Watch out for the minus — 'it is not a common thing students do'."
   ],
   "question": "Solve $7^{x-1} = 5^{x-3}$, giving your answer to 3 significant figures.",
   "boards": [

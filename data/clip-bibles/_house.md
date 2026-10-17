@@ -65,7 +65,12 @@ the history.
 - **A mistake that is said is SHOWN, at the END** ("put each common mistake at the end of its clip as
   a 'Watch out' step"): after the answer is boxed, a beat opens "Watch out: …", circles the line and
   writes a red `✗ Watch out: …` note. The working never stops for a mistake. A step of the method
-  (rejecting a root) stays in place as a plain reason.
+  (rejecting a root) stays in place as a plain reason. **Only a mistake students COMMONLY make gets a
+  Watch out** (17 Oct 2026, of "rounding never removes the minus": "we don't have to write the watch
+  out … it is not a common thing students do") — no Watch out at all is fine.
+- **Light the terms a step moves** ("we can highlight the x, so students can see the x terms
+  clearly"): when the voice says "X terms to the left", light those terms, and keep the x in the same
+  colour on the lines that follow.
 
 ### Checks and answers
 - **A log equation's check opens "For log equations, always check each answer."**

@@ -59,7 +59,8 @@ Answers to 3 significant figures unless exact. A negative answer keeps its minus
 - Order of moves (109.42): take lg both sides → bring the powers down → expand → x terms
   together, number terms together → factorise out x and divide.
 - Worked example used: **109.42** — 7ˣ⁻¹ = 5ˣ⁻³ → x ≈ −8.57.
-- Trap (109.43, pitfall): copying −8.56654 as 8.57. "Rounding never removes a minus."
+- Trap (109.43, pitfall): copying −8.56654 as 8.57. NOT used in the clip (Adrian, 17 Oct 2026: "it is
+  not a common thing students do").
 
 ### 3.4 Linear-form modelling (lg / ln graphs)
 - "When the variable sits in an exponent or a power, take logs on both sides — then you will

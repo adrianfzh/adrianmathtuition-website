@@ -45,24 +45,26 @@
         {
           "heading": "Step 3: solve like algebra",
           "tokens": [
-            { "tex": "x\\lg 7-\\lg 7", "id": "ex7" },
-            { "tex": "=\\,x\\lg 5-3\\lg 5", "id": "ex5" }
+            { "tex": "x\\lg 7", "id": "ex7x" },
+            { "tex": "-\\lg 7", "id": "ex7n" },
+            { "tex": "=\\,x\\lg 5", "id": "ex5x" },
+            { "tex": "-3\\lg 5", "id": "ex5n" }
           ]
         },
         {
           "tokens": [
-            { "tex": "x\\lg 7-x\\lg 5", "id": "xs" },
+            { "tex": "\\textcolor{#a8ecfb}{x}\\lg 7-\\textcolor{#a8ecfb}{x}\\lg 5", "id": "xs" },
             { "tex": "=\\,\\lg 7-3\\lg 5", "id": "ns" }
           ]
         },
         {
           "tokens": [
-            { "tex": "x(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5", "id": "fx" }
+            { "tex": "\\textcolor{#a8ecfb}{x}(\\lg 7-\\lg 5)=\\lg 7-3\\lg 5", "id": "fx" }
           ]
         },
         {
           "tokens": [
-            { "tex": "x=\\dfrac{\\lg 7-3\\lg 5}{\\lg 7-\\lg 5}", "id": "frac" }
+            { "tex": "\\textcolor{#a8ecfb}{x}=\\dfrac{\\lg 7-3\\lg 5}{\\lg 7-\\lg 5}", "id": "frac" }
           ]
         },
         {
@@ -157,7 +159,8 @@
           "say": "X terms to the left, number terms to the right.",
           "asks": ["How do I move the terms across?"],
           "do": [
-            { "do": "write", "token": "xs", "on": "X terms to the left" },
+            { "do": "highlight", "token": ["ex7x", "ex5x"], "tone": "sky" },
+            { "do": "write", "token": "xs", "on": "left" },
             { "do": "write", "token": "ns", "on": "number terms to the right" }
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b9.mp3",
@@ -190,21 +193,6 @@
           ],
           "audio": "/lessons/solving-exponential-equations-am/scene-01-b12.mp3",
           "timing": "/lessons/solving-exponential-equations-am/scene-01-b12.timing.json"
-        },
-        {
-          "say": "Watch out: do not write X is about eight point five seven. Rounding never removes the minus.",
-          "asks": ["Why keep the minus sign?"],
-          "do": [
-            { "do": "mark", "kind": "circle", "token": "ans", "on": "do not write" },
-            {
-              "do": "note",
-              "text": "✗ Watch out: keep the minus, not $x \\approx 8.57$",
-              "near": "ans",
-              "on": "Rounding never removes"
-            }
-          ],
-          "audio": "/lessons/solving-exponential-equations-am/scene-01-b13.mp3",
-          "timing": "/lessons/solving-exponential-equations-am/scene-01-b13.timing.json"
         }
       ]
     }
