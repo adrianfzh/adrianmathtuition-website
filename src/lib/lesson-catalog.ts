@@ -162,7 +162,7 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     level: 'AM',
     topic: 'Logarithms',
     title: 'Sketching a log graph',
-    minutes: 1,
+    minutes: 2,
   },
   {
     slug: 'log-scales-am',
