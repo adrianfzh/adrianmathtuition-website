@@ -2564,14 +2564,11 @@ export default function LessonPlayer({ slug, title, topic, minutes, scenes, them
           top (but not in the clip?)"). Two lines at most; a long one opens whole on a tap. */}
       {clip && question && !wide && !done && (
         <button type="button" onClick={() => setQOpen(o => !o)} data-question-strip
-          className="lsn-qstrip block w-full text-left mb-2.5 rounded-2xl overflow-hidden bg-white ring-1 ring-slate-200 shadow-[0_8px_20px_-14px_rgba(15,23,42,0.45)] active:scale-[0.99] motion-safe:transition-transform">
-          <span className="flex items-center gap-1.5 bg-navy px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-300">
-            <span aria-hidden>📝</span> Question
-            {question.length > 110 && <span className="ml-auto normal-case tracking-normal font-medium text-white/60">Tap to read all</span>}
-          </span>
-          <span className="line-clamp-3 mx-3.5 my-2.5 text-[15.5px] leading-snug text-navy [font-family:Georgia,'Times_New_Roman',serif]" style={{ display: '-webkit-box' }}>
-            <MathText text={question} />
-          </span>
+          className="lsn-qstrip relative block w-full text-left mt-3 mb-2.5 rounded-2xl bg-white ring-1 ring-slate-200 px-3.5 pt-3.5 pb-2.5 shadow-[0_6px_16px_-12px_rgba(15,23,42,0.4)] active:scale-[0.99] motion-safe:transition-transform">
+          {/* Design B (Adrian picked it, 17 Oct 2026): an amber tag floats on the card's top edge. */}
+          <span className="absolute -top-2.5 left-3 rounded-full bg-amber-400 px-2.5 py-0.5 text-[11px] font-semibold text-amber-950 shadow-[0_1px_2px_rgba(0,0,0,0.12)]">Question</span>
+          {question.length > 110 && <span className="absolute -top-2 right-3 rounded-full bg-white px-2 text-[10.5px] font-medium text-slate-400 ring-1 ring-slate-200">Tap to read all</span>}
+          <span className="line-clamp-3 text-[15px] leading-snug text-navy" style={{ display: '-webkit-box' }}><MathText text={question} /></span>
         </button>
       )}
       {done ? (
