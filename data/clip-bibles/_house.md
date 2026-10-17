@@ -30,7 +30,10 @@ reads — on every Claude account, because it lives in the repo.
 - No character, no stickers, no prose on the board.
 - What the PLAYER does for every clip (nothing to write): fades, the scroll glide, keeping just-written
   things in view, finger / wheel look-back with "Back to now", the video-bar slider with ⏪ 10 / 10 ⏩,
-  ← / → keys, seeks that redraw the board cleanly, moving pieces that keep their colour, size and shape.
+  ← / → keys, seeks that redraw the board cleanly, moving pieces that keep their colour, size and shape,
+  and the whole question (the plan's `question`) shown ABOVE the clip on a phone / beside it on a
+  laptop ("the question should be at the top (but not in the clip?)") — so every clip's plan needs a
+  `question`: the full question as printed, with its conditions ("giving your answer to 3 s.f.").
 
 ## 2. How Adrian wants a clip to teach (his watches of 15–17 Oct 2026 — binding on every topic)
 
