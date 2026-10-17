@@ -46,6 +46,10 @@ const has = (k) => argv.includes(k);
 const log = (s) => console.error(s);
 
 export const TARGET = Number(process.env.SCI_STWINS_TARGET || 40);   // servable structured questions per (pool, topic)
+// 18 Oct 2026 (Adrian: "finish math and science up to 3, for long questions too"): with
+// SCI_STWINS_PER_SKILL=3 the target is 3 structured twins per (pool, sub-skill) instead of 40
+// servable a topic. Off (0) by default, so the Fly lane keeps the topic target until switched.
+export const PER_SKILL_S = Number(process.env.SCI_STWINS_PER_SKILL || 0);
 const NOVELTY_MAX = 0.4;
 const TWIN_SCHOOL = 'AdrianMath';
 const PROMPT_VERSION = 'sci-stwin-1';
@@ -182,6 +186,34 @@ export async function topicUnits() {
         for (const s of skills) { const r = s.seeds[round]; if (!r) continue; any = true; seeds.push({ source_id: r.id, subgroup_id: s.sg, subgroup: s.name, checked: !!r.practice_checked_at, has_image: !!r.has_image }); }
         if (!any) break;
       }
+      if (PER_SKILL_S > 0) {
+        // per sub-skill: each short sub-skill offers fresh seeds, then a seed's next twin ("~n"), up to its need
+        const reuseOf = new Map();
+        const seen3 = new Set();
+        for (const r of usable) {
+          if (seen3.has(r.id)) continue; seen3.add(r.id);
+          const n = twinsOf.get(r.id) ?? 0; if (n < 1 || n >= SEED_CAP || tried.seed(pool, `${r.id}~${n + 1}`)) continue;
+          const sg = skillOf(r); if (!sg) continue;
+          const a = reuseOf.get(sg) ?? []; a.push({ n, r }); reuseOf.set(sg, a);
+        }
+        const all = new Set([...bySkill.keys(), ...reuseOf.keys()]);
+        const per = [...all].map((sg) => {
+          const have = perSkill.get(sg) ?? 0; const need = Math.max(0, PER_SKILL_S - have);
+          const fresh = (bySkill.get(sg) ?? []).sort(cmp).map((r) => ({ source_id: r.id, r }));
+          const again = (reuseOf.get(sg) ?? []).sort((a, b) => a.n - b.n || cmp(a.r, b.r)).map(({ n, r }) => ({ source_id: `${r.id}~${n + 1}`, r, reuse: n + 1 }));
+          return { sg, name: sgById.get(sg)?.name ?? '', have, need, cands: [...fresh, ...again] };
+        }).filter((x) => x.need > 0).sort((a, b) => a.have - b.have || a.name.localeCompare(b.name));
+        const seedsPS = [];
+        for (let round = 0; ; round++) {
+          let any = false;
+          for (const x of per) { const c = x.cands[round]; if (!c) continue; any = true; seedsPS.push({ source_id: c.source_id, subgroup_id: x.sg, subgroup: x.name, checked: !!c.r.practice_checked_at, has_image: !!c.r.has_image, ...(c.reuse ? { reuse: c.reuse } : {}) }); }
+          if (!any) break;
+        }
+        const needPS = per.reduce((a, x) => a + x.need, 0);
+        const writable = per.reduce((a, x) => a + Math.min(x.need, x.cands.length), 0);
+        units.push({ pool, topic, tier: isOpen.get(`${pool}|${topic}`) ?? 3, servable: servable.length, twins: twins.length, need: needPS, writable, skills_short: per.length, seed_count: seedsPS.length, seeds: seedsPS });
+        continue;
+      }
       // 🌱 short of fresh seeds: seeds with 1–2 twins here offer their next one, fewest twins first
       const want = Math.max(0, TARGET - servable.length);
       if (seeds.length < want) {
@@ -225,6 +257,14 @@ export function queueFromUnits(units, limit) {
 async function gap() {
   const units = await topicUnits();
   if (has('--json')) { console.log(JSON.stringify({ target: TARGET, units: units.map(({ seeds, ...u }) => u) })); return; }
+  if (PER_SKILL_S > 0) {
+    for (const tier of [1, 2, 3]) {
+      const us = units.filter((u) => u.tier === tier);
+      const t = us.reduce((a, u) => ({ skills: a.skills + (u.skills_short ?? 0), need: a.need + u.need, writable: a.writable + (u.writable ?? 0) }), { skills: 0, need: 0, writable: 0 });
+      console.log(`${['', 'Tier 1 — open pure topics', 'Tier 2 — open Combined topics', 'Tier 3 — every other topic'][tier]}: ${t.skills} sub-skills short of ${PER_SKILL_S} structured twins · ${t.need} twins needed · ${t.writable} writable from the seeds`);
+    }
+    return;
+  }
   for (const tier of [1, 2, 3]) {
     const us = units.filter((u) => u.tier === tier);
     const need = us.reduce((s, u) => s + u.need, 0);
