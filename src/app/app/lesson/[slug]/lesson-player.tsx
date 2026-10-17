@@ -615,6 +615,29 @@ function scrollClipBoard(cont: HTMLElement) {
     if (r.height > 0) fresh = Math.min(fresh, r.top - zr.top);
   }
   if (fresh < offset + FADE) offset = Math.max(0, Math.floor(fresh - FADE));
+  // The current part's own targets (EquationStepsView sets data-focus): keep every one between the
+  // fade and the subtitle — scrolling back down if needed; when they cannot all fit, the lowest wins.
+  try {
+    const f = JSON.parse(cont.dataset.focus || '{}') as { ids?: string[]; lines?: number[] };
+    let top = Infinity, bottom = -Infinity;
+    const take = (el: Element | null) => {
+      const line = el?.closest('.lsn-line') ?? el;
+      const r = (el as HTMLElement | null)?.getBoundingClientRect();
+      const lr = (line as HTMLElement | null)?.getBoundingClientRect();
+      if (!r || !lr || r.height === 0) return;
+      top = Math.min(top, lr.top - zr.top);
+      bottom = Math.max(bottom, r.bottom - zr.top);
+    };
+    for (const id of f.ids ?? []) for (const el of Array.from(zoom.querySelectorAll(`[data-token-id="${CSS.escape(id)}"]`))) take(el);
+    for (const n of f.lines ?? []) take(zoom.querySelector(`[data-line="${n}"]`));
+    if (top < Infinity) {
+      const lo = Math.ceil(bottom - room);
+      const hi = Math.floor(top - FADE);
+      if (lo <= hi) offset = Math.min(Math.max(offset, lo), hi);
+      else offset = lo;
+      offset = Math.max(0, offset);
+    }
+  } catch { /* no focus: the writing alone decides */ }
   cont.dataset.scrollAt = String(offset);
   // A student looking back up the working with a finger (attachBoardLook) keeps their view while the
   // writing goes on below; "Back to now" (or 4 s of no touching) returns the board to the writing.
@@ -742,6 +765,20 @@ function EquationStepsView({ scene, step, reduced, timed, board, clip = false }:
     // Stepped back: the board may scroll back down to where that part was.
     if (board.seq < lastSeq.current) cont.dataset.scrollBack = '1';
     lastSeq.current = board.seq;
+    // What this part of the voice talks about — everything its actions touch (written, lit, circled,
+    // noted, and where a moving piece STARTS) — must be in full view while it is said (Adrian, 17 Oct
+    // 2026: "when -nx power flies down from the top it is already obscure partially … make sure
+    // content is not obscure (even partially) when narrator is talking about it").
+    const beat = (scene.beats ?? [])[step];
+    const ids = new Set<string>();
+    const lines = new Set<number>();
+    const ref = (v: unknown) => { for (const x of Array.isArray(v) ? v : v === undefined ? [] : [v]) if (typeof x === 'string') ids.add(x); };
+    for (const a of beat?.do ?? []) {
+      const r = a as unknown as Record<string, unknown>;
+      if (typeof r.step === 'number') lines.add(r.step);
+      ref(r.token); ref(r.near); ref(r.span); ref(r.from);
+    }
+    cont.dataset.focus = JSON.stringify({ ids: [...ids], lines: [...lines] });
     // After this commit's flights have started (their effect runs later in the commit), so a slide
     // can see a piece in the air and wait for it.
     const raf = requestAnimationFrame(() => scrollClipBoard(cont));

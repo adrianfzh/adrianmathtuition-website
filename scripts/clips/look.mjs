@@ -132,7 +132,12 @@ for (const slug of slugs) {
       const file = path.join(dir, `${String(n).padStart(2, '0')}-${e.scene ? `s${e.scene + 1}` : ''}b${e.beat + 1}-${e.kind}.png`);
       const board = args.page ? null : await page.$('.lsn-stage');
       await (board || page).screenshot({ path: file });
-      const m = await page.evaluate((MIN_PX) => {
+      // What this beat talks about (Adrian, 17 Oct 2026: "make sure content is not obscure (even
+      // partially) when narrator is talking about it"): its actions' tokens and lines.
+      const beatDo = script.scenes[e.scene ?? 0]?.beats?.[e.beat]?.do ?? [];
+      const focusIds = [...new Set(beatDo.flatMap(a => [a.token, a.near, a.span, a.from].flat().filter(x => typeof x === 'string')))];
+      const focusLines = beatDo.map(a => a.step).filter(x => typeof x === 'number');
+      const m = await page.evaluate((MIN_PX, focusIds, focusLines) => {
         const stage = document.querySelector('.lsn-stage');
         if (!stage) return { error: 'no board' };
         const sr = stage.getBoundingClientRect();
@@ -154,6 +159,22 @@ for (const slug of slugs) {
         const zoomEl = stage.querySelector('.lsn-zoom');
         const slid = zoomEl && Math.abs(parseFloat((zoomEl.style.translate || '0 0').split(' ')[1] || '0')) > 0.5;
         const scrollTop = slid && boardEl ? boardEl.getBoundingClientRect().top + 36 : -Infinity;
+        // The beat's own targets: never under the top fade or the board's edges while it is said.
+        if (boardEl) {
+          const br = boardEl.getBoundingClientRect();
+          const zoomEl2 = stage.querySelector('.lsn-zoom');
+          const fadeTop = zoomEl2 && Math.abs(parseFloat((zoomEl2.style.translate || '0 0').split(' ')[1] || '0')) > 0.5 ? br.top + 36 : br.top;
+          const targets = [
+            ...focusIds.flatMap(id => Array.from(stage.querySelectorAll(`[data-token-id="${CSS.escape(id)}"]`))),
+            ...focusLines.map(n => stage.querySelector(`[data-line="${n}"]`)).filter(Boolean),
+          ];
+          for (const el of targets) {
+            if (!el.classList.contains('on') && !el.closest('.lsn-line.on')) continue;
+            const r = el.getBoundingClientRect();
+            if (r.height === 0) continue;
+            if (r.top < fadeTop - 1 || r.bottom > br.bottom + 1) cut.push(`talked about but hidden: ${(el.getAttribute('data-token-id') || el.getAttribute('data-key') || '')} ${(el.textContent || '').trim().slice(0, 24)}`);
+          }
+        }
         for (const el of shown) {
           const r = el.getBoundingClientRect();
           if (r.width === 0 || r.height === 0) continue;
@@ -197,7 +218,7 @@ for (const slug of slugs) {
           if (t.getBoundingClientRect().height > fs * 2.2) wrapped.push((t.textContent || '').trim().slice(0, 40));
         }
         return { cut, small, overlap, hidden, tall, subsHide, order, wrapped, shown: shown.length };
-      }, MIN_PX);
+      }, MIN_PX, focusIds, focusLines);
       const cue = cueStarts[e.scene ?? 0]?.[e.beat]?.[e.index] ?? null;
       const offset = cue && cue.start != null && e.clipElapsed != null ? +(e.clipElapsed - cue.start).toFixed(3) : null;
       shots.push({ file: path.relative(OUT, file), scene: (e.scene ?? 0) + 1, beat: e.beat + 1, index: e.index, kind: e.kind, on: e.on, source: e.source,
