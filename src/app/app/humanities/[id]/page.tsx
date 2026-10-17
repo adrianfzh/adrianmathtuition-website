@@ -79,6 +79,8 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
     : report.mark != null && band ? `${report.mark} out of ${band.total} marks`
     : marksForLevels(run.skill, ctx.question.marks, lvLo, lvHi);
   const placing = !!band && report?.mark == null && !!run.marked_at && Date.now() - Date.parse(run.marked_at) < 10 * 60_000;
+  const built = run.model_answer ?? null;
+  const modelPending = (built?.state === 'writing' || built?.state === 'checking') && !!run.marked_at && Date.now() - Date.parse(run.marked_at) < 15 * 60_000;
   const lo = report ? Math.min(report.level_lo, report.level_hi) : 0;
   const hi = report ? Math.max(report.level_lo, report.level_hi) : 0;
   // A case study is a run of five: offer the next one.
@@ -89,7 +91,7 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
 
   return (
     <div className="space-y-4 pb-24 sm:pb-4">
-      <RunPoll active={inFlight || placing} />
+      <RunPoll active={inFlight || placing || modelPending} />
       <Link href="/app/humanities/answers" className="text-[12px] text-gray-500 hover:text-navy">‹ Your answers</Link>
       <div>
         <p className="text-[12px] font-semibold text-amber-800">{skillLabel(run.skill)} · {ctx.set.title}</p>
@@ -199,6 +201,23 @@ export default async function HumanitiesRunPage({ params }: { params: Promise<{ 
             {report.gap.map((g, i) => <li key={i} className="text-[15px] text-gray-800 leading-snug">{g}</li>)}
           </ul>
         </div>
+      )}
+
+      {/* The model answer, built from the student's own answer (lib/humanities-model, 17 Oct 2026): shown only once
+          a check read put it at full marks; the added pieces are highlighted. */}
+      {report && built?.state === 'ready' && (
+        <div className="bg-white rounded-3xl p-5 border border-black/5 shadow-sm">
+          <p className="text-[12px] font-semibold uppercase tracking-wide text-gray-400">Model answer</p>
+          <p className="text-[13px] text-gray-500 mt-0.5 mb-3">Built from your answer. The highlighted parts are what it adds.</p>
+          <p className="text-[15px] text-gray-800 leading-loose whitespace-pre-line">
+            {built.segments.map((seg, i) => seg.added
+              ? <mark key={i} className="bg-emerald-100 text-inherit rounded px-0.5">{seg.text}</mark>
+              : <span key={i}>{seg.text}</span>)}
+          </p>
+        </div>
+      )}
+      {report && modelPending && (
+        <p className="text-[13px] text-gray-500 px-1">Writing a model answer from yours…</p>
       )}
 
       {report && !points && (

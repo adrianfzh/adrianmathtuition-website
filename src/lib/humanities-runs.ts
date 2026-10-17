@@ -5,9 +5,10 @@
 // SETTLES what is still in flight (lib/humanities-settle-run) — looking at an answer is what
 // finishes it.
 import type { OwnQuestion } from './humanities-own';
+import type { ModelState } from './humanities-model';
 import { getSupabaseAdmin } from './supabase';
 import type { HumanitiesReport, HumanitiesStatus } from './humanities-report';
-import { settleHumanitiesRun, settleOpenHumanities, settlePlacement } from './humanities-settle-run';
+import { settleHumanitiesRun, settleOpenHumanities, settlePlacement, settleModel } from './humanities-settle-run';
 
 const flying = (status: string): boolean => status === 'queued' || status === 'marking';
 
@@ -41,6 +42,8 @@ export interface HumanitiesRunRow {
   own_question?: OwnQuestion | null;
   /** The list's short form of it: the question only. */
   own_title?: string | null;
+  /** The model answer built from the student's answer (lib/humanities-model). */
+  model_answer?: ModelState | null;
   /** The list's copy of report.mark (the exact mark inside the level). */
   report_mark?: number | null;
 }
@@ -84,9 +87,13 @@ export async function loadHumanitiesRun(id: string, scope: string | { admin: tru
   const row = await read();
   if (!row) return row;
   if (!flying(row.status)) {
-    // Marked: the exact mark inside its level may have just come back (lib/humanities-place).
-    if (row.status !== 'marked' || row.report?.mark != null) return row;
-    await settlePlacement(row);
+    // Marked: the exact mark inside its level (lib/humanities-place) and the model answer (lib/humanities-model)
+    // may have just come back.
+    if (row.status !== 'marked') return row;
+    const placing = row.report?.mark == null;
+    const modelling = row.model_answer?.state === 'writing' || row.model_answer?.state === 'checking';
+    if (!placing && !modelling) return row;
+    await Promise.all([placing ? settlePlacement(row) : null, modelling ? settleModel(row) : null]);
     return read();
   }
   await settleHumanitiesRun(id);

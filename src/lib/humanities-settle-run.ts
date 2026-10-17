@@ -11,6 +11,7 @@ import { buildHumanitiesPayload, humanitiesPrompt, readContext, payloadMaterial,
 import { parseReadReply, validateRead, validatePointsRead, nextStep, buildReport, buildPointsReport, telegramLine, type PassState, type Checked } from './humanities-settle';
 import { sendTelegram } from './telegram';
 import { placeBand, placePrompt, parsePlace, PLACE_KIND } from './humanities-place';
+import { modelPrompt, parseModel, isTop, MODEL_WRITE_KIND, MODEL_CHECK_KIND, type ModelState } from './humanities-model';
 
 export const HUMANITIES_READ_KIND = 'humanities-read';
 /** The plan reader's model alias (plan_reads takes sonnet · opus · haiku). The bench in SPEC-HUMANITIES.md §4 chose it. */
@@ -116,6 +117,18 @@ export async function settleHumanitiesRun(runId: string): Promise<void> {
       prompt: placePrompt(payload, (row.report as { level: number }).level, band), model: HUMANITIES_PLAN_MODEL, meta: { runId, ...band },
     }).catch(() => null);
   }
+  // A question the student brought from school, not yet at full marks: write the model answer from their own
+  // answer (lib/humanities-model) — shown only once a check read puts it at full marks.
+  if (wrote?.length && step.do === 'marked' && run.own_question && payload) {
+    const rep = row.report as { level?: number; lift?: string; gap?: string[] };
+    if (!isTop(rep.level ?? null, readContext(payload).max)) {
+      const readId = await enqueuePlanRead({
+        kind: MODEL_WRITE_KIND, identity: String(run.airtable_student_id), ref: `${runId}:model`,
+        prompt: modelPrompt(payload, { lift: rep.lift ?? null, gap: rep.gap ?? [] }), model: 'opus', meta: { runId },
+      }).catch(() => null);
+      if (readId) await sb.from('humanities_runs').update({ model_answer: { state: 'writing', readId } satisfies ModelState }).eq('id', runId);
+    }
+  }
   if (wrote?.length && step.do !== 'marked' && run.source !== 'calibration') {
     const rep = (row.report as Parameters<typeof telegramLine>[0]['report']) ?? null;
     await sendTelegram(telegramLine({ studentName: run.student_name, skill: String(run.skill), report: rep, held: step.do === 'held', heldReason: (row.held_reason as string) ?? null, error: step.do === 'failed' ? step.error : null }), 'marking').catch(() => false);
@@ -150,5 +163,42 @@ export async function settlePlacement(run: { id: string; status: string; report:
   const band = read.meta as { lo: number; hi: number } | null;
   const mark = read.status === 'replied' && band ? parsePlace(read.reply, band) : null;
   if (mark != null) await sb.from('humanities_runs').update({ report: { ...run.report, mark } }).eq('id', run.id).eq('status', 'marked');
+  return false;
+}
+
+/**
+ * The model answer's next step (lib/humanities-model): the written answer back → queue its check read; the check
+ * back → ready when it reaches full marks, else dropped. → true while a step is still out (the page keeps looking).
+ */
+export async function settleModel(run: { id: string; status: string; airtable_student_id: string; question_id: string; own_question?: unknown; model_answer?: unknown }): Promise<boolean> {
+  const m = run.model_answer as ModelState | null | undefined;
+  if (!m || (m.state !== 'writing' && m.state !== 'checking')) return false;
+  const sb = getSupabaseAdmin();
+  const { data: read } = await sb.from('plan_reads').select('status, reply').eq('id', m.readId).maybeSingle();
+  if (!read) return false;
+  if (read.status === 'queued' || read.status === 'claimed') return true;
+  const drop = (why: string) => sb.from('humanities_runs').update({ model_answer: { state: 'dropped', why } satisfies ModelState }).eq('id', run.id);
+  if (read.status !== 'replied') { await drop('the read failed'); return false; }
+  const ctx = contextForRun({ question_id: run.question_id, own_question: run.own_question as OwnQuestion | null }, questionById);
+  if (!ctx) { await drop('no question'); return false; }
+  if (m.state === 'writing') {
+    const model = parseModel(read.reply);
+    if (!model) { await drop('the written answer was not usable'); return false; }
+    const payload = buildHumanitiesPayload(ctx, model.text);
+    const readId = await enqueuePlanRead({
+      kind: MODEL_CHECK_KIND, identity: run.airtable_student_id, ref: `${run.id}:modelcheck`,
+      prompt: humanitiesPrompt(payload, 1), model: HUMANITIES_PLAN_MODEL, meta: { runId: run.id },
+    }).catch(() => null);
+    if (!readId) { await drop('the check was not queued'); return false; }
+    await sb.from('humanities_runs').update({ model_answer: { state: 'checking', readId, segments: model.segments } satisfies ModelState }).eq('id', run.id);
+    return true;
+  }
+  // checking: the production reader marks the model answer; shown only at full marks.
+  const text = m.segments.map(s => s.text).join('').replace(/[ \t]{2,}/g, ' ').trim();
+  const payload = buildHumanitiesPayload(ctx, text);
+  const v = checkHumanitiesRead(payload, parseReadReply(read.reply));
+  const level = v.read ? v.read.level : null;
+  if (!isTop(level, readContext(payload).max)) { await drop(`re-marked at ${level ?? 'no level'} of ${readContext(payload).max}`); return false; }
+  await sb.from('humanities_runs').update({ model_answer: { state: 'ready', segments: m.segments } satisfies ModelState }).eq('id', run.id);
   return false;
 }

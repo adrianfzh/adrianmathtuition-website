@@ -270,6 +270,20 @@ Social Studies first: every O-Level student takes it, and it is the most skill-d
 >   Poland …). The revised essays were not blind-placed again as a whole; y05 and y07, the most changed, went
 >   through the live reader.
 
+> **O — THE MODEL ANSWER, BUILT FROM THE STUDENT'S OWN, 17 Oct 2026.** Adrian: "students feedback that the app does not give
+> answers" → "yes, but don't name it as 'Your answer, at full marks'" → **"Model answer"**.
+> - After a "Check my answer" answer is marked below full marks, ONE read on plan (Opus, `lib/humanities-model.ts`, kind
+>   `humanities-model`) rewrites the student's OWN answer to full marks — keeps what earned credit, adds what was missing,
+>   one point a paragraph, every added piece wrapped `[[+ … +]]`. Then the production reader marks it (kind
+>   `humanities-model-check`); it is shown ONLY when that read puts it at the top of the scale, else dropped silently.
+>   Stored in `humanities_runs.model_answer` {state writing → checking → ready | dropped} (migration
+>   `humanities_runs_model_answer.sql`); steps in `lib/humanities-settle-run.ts settleModel`, picked up when the page is
+>   opened (`loadHumanitiesRun`). Already-full-marks answers get none.
+> - The feedback page: **"Model answer"** — "Built from your answer. The highlighted parts are what it adds." — after
+>   "What a top answer does"; "Writing a model answer from yours…" while it is on its way (the page refreshes itself).
+> - Checked 17 Oct as the demo student: a 6-mark comparison answer at 3 → model shown about 1½–2 minutes after hand-in,
+>   re-marked at Level 4, the student's sentences kept, the difference and the tone/purpose comparison highlighted.
+
 > **N — UPLOADED SCHOOL QUESTIONS KEPT, FOR MARKING ONLY, 15 Oct 2026.** Adrian: "yes" (to keeping the questions
 > students upload). `lib/humanities-upload-bank.ts` → `humanities_uploaded_questions` (migration
 > `humanities_uploaded_questions.sql`; RLS on, no policies).
