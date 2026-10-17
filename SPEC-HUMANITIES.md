@@ -1,6 +1,6 @@
 # Humanities — instant feedback on written answers
 
-**Status: agreed 2 Oct 2026, nothing built. H0 draft written the same day — the seven
+**Status: agreed 2 Oct 2026; built in stages since (H1 2 Oct, H2 3 Oct, own questions + marking 15–17 Oct — `src/lib/humanities-*`, the switches in docs/SWITCHES.md). H0 draft written the same day — the seven
 level schemes are in [`docs/humanities/social-studies-level-schemes.md`](docs/humanities/social-studies-level-schemes.md), waiting for Adrian's read.** Adrian's decisions that day:
 
 - Our own questions are fine — the exam tests skills on unseen sources, so a student

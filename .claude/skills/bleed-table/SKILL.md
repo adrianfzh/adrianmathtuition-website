@@ -74,4 +74,4 @@ VALUES ('<seed uuid>', 'similar', 3, 'admin-bleed', 'pending', '{}');
 ```
 
 Poll `status` (~30-60s/question; rejections are the gates working). Report what
-landed in `practice_questions`.
+landed in `questions` (the ids in `generation_requests.generated_ids`; `practice_questions` was folded into `questions` and dropped 12 Jul 2026).
