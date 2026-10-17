@@ -162,7 +162,7 @@
           "do": [
             { "do": "write", "step": 6, "on": "take L N of both sides" },
             { "do": "highlight", "token": "pw6", "on": "Now the power" },
-            { "do": "note", "text": "Power law: $\\ln M^{n} = n\\ln M$", "near": "pw6", "on": "can come down" }
+            { "do": "note", "text": "Bring down power: $\\ln M^{n} = n\\ln M$", "near": "pw6", "on": "can come down" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b9.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b9.timing.json"

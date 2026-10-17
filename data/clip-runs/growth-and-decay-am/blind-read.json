@@ -2,7 +2,14 @@
  "slug": "growth-and-decay-am",
  "pick": "R1",
  "why": "Only draft (R1, rebuilt 17 Oct 2026 to the house rules); scored as fixed.",
- "scores": { "clear": 5, "one_idea": 4, "voice_board": 5, "why": 4, "trap": 5, "level": 5 },
+ "scores": {
+  "clear": 5,
+  "one_idea": 4,
+  "voice_board": 5,
+  "why": 4,
+  "trap": 5,
+  "level": 5
+ },
  "notes": [
   "Beat 1 'Find K, for P equals P nought E to the power K T.' left out the doubling and the start of one hundred, so the student hears the question only in part. Fixed: the question read in full, starting on the first word of the maths.",
   "Beat 8 'Divide both sides by one hundred.' gave no reason. Fixed: 'to get the E part alone' (kept fast, it is routine).",
@@ -13,21 +20,52 @@
  "fixed_beats": {
   "1": {
    "say": "P equals P nought E to the power K T. It doubles every seven point five hours, from one hundred. Find K.",
-   "asks": ["What is P nought?"],
-   "do": [ { "do": "write", "step": 0 } ]
+   "asks": [
+    "What is P nought?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
   },
   "8": {
    "say": "Divide both sides by one hundred, to get the E part alone. E to the power seven point five K equals two.",
-   "asks": ["Why divide by 100?"],
-   "do": [ { "do": "write", "step": 5, "on": "E to the power seven" } ]
+   "asks": [
+    "Why divide by 100?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "E to the power seven"
+    }
+   ]
   },
   "9": {
    "say": "E is involved, so take L N of both sides. Now the power can come down.",
-   "asks": ["Why take L N and not log?", "Which law brings the power down?"],
+   "asks": [
+    "Why take L N and not log?",
+    "Which law brings the power down?"
+   ],
    "do": [
-    { "do": "write", "step": 6, "on": "take L N of both sides" },
-    { "do": "highlight", "token": "pw6", "on": "Now the power" },
-    { "do": "note", "text": "Power law: $\\ln M^{n} = n\\ln M$", "near": "pw6", "on": "can come down" }
+    {
+     "do": "write",
+     "step": 6,
+     "on": "take L N of both sides"
+    },
+    {
+     "do": "highlight",
+     "token": "pw6",
+     "on": "Now the power"
+    },
+    {
+     "do": "note",
+     "text": "Bring down power: $\\ln M^{n} = n\\ln M$",
+     "near": "pw6",
+     "on": "can come down"
+    }
    ]
   }
  },
