@@ -211,7 +211,9 @@ export async function topicUnits() {
         }
         const needPS = per.reduce((a, x) => a + x.need, 0);
         const writable = per.reduce((a, x) => a + Math.min(x.need, x.cands.length), 0);
-        units.push({ pool, topic, tier: isOpen.get(`${pool}|${topic}`) ?? 3, servable: servable.length, twins: twins.length, need: needPS, writable, skills_short: per.length, seed_count: seedsPS.length, seeds: seedsPS });
+        // every sub-skill of the topic with its own need, for `need --subgroup` (asked right before writing)
+        const skillNeeds = Object.fromEntries([...new Set([...perSkill.keys(), ...all])].filter(Boolean).map((sg) => [sg, Math.max(0, PER_SKILL_S - (perSkill.get(sg) ?? 0))]));
+        units.push({ pool, topic, tier: isOpen.get(`${pool}|${topic}`) ?? 3, servable: servable.length, twins: twins.length, need: needPS, writable, skills_short: per.length, skill_needs: skillNeeds, seed_count: seedsPS.length, seeds: seedsPS });
         continue;
       }
       // 🌱 short of fresh seeds: seeds with 1–2 twins here offer their next one, fewest twins first
@@ -283,6 +285,8 @@ async function need() {
   if (!parsePool(pool) || !sg) throw new Error('--pool PHY|CHEM|BIO|CS_… --subgroup <id> required');
   const { data: s } = await sb().from('subgroups').select('topic').eq('id', sg).maybeSingle();
   const u = (await topicUnits()).find((x) => x.pool === pool && x.topic === s?.topic);
+  // per-skill mode: THIS sub-skill's need (3 − its structured twins), not the whole topic's
+  if (PER_SKILL_S > 0) { console.log(u ? (u.skill_needs?.[sg] ?? PER_SKILL_S) : 0); return; }
   console.log(u ? u.need : 0);
 }
 
