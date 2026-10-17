@@ -264,6 +264,13 @@ New in the player: a clip board that would run below the screen scales its maths
   Watch out (the sign of n). Maths 26/26, blind read pass (6 beats fixed), voice 19/19 ≥ 91 %.
   Player, same day: dragging the slider moves the board live (voice holds while dragging); skip buttons
   are ⏪ 5 / 5 ⏩; the question card is a navy "📝 QUESTION" band over white paper.
+- **Gotcha (17 Oct 2026):** when beats are re-ordered or audio refs are dropped before `assemble.mjs`,
+  `generate-narration.mjs` re-records EVERY line while `align-narration.mjs` only writes missing
+  sidecars — old timings then sit against new recordings and cues fire early. After any voice change,
+  run `align-narration.mjs <slug> --force`.
+- Same day: the player keeps everything the current part talks about in view (a "focus" from the beat's
+  actions); the question card is design B (white card, amber "Question" tag on its edge — Adrian's pick
+  of six mock-ups).
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 
