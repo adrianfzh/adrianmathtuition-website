@@ -1,101 +1,194 @@
 {
  "slug": "growth-and-decay-am",
  "draft": "A2",
- "by": "session, from draft A + Adrian's notes of 15 Oct 2026 (show the key step as its own line; the plan first; the law beside the step)",
+ "by": "session, 18 Oct 2026: Adrian's changes on the approved cut",
  "beats": [
   {
    "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
+   "asks": [
+    "What is P nought?"
+   ],
    "do": []
   },
   {
-   "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
+   "say": "Starts at one hundred means: when T equals zero, P equals one hundred.",
+   "asks": [
+    "What does to start with mean?"
+   ],
    "do": [
     {
      "do": "write",
      "token": "t0",
-     "on": "T equals zero"
+     "on": "when T equals zero"
     },
     {
      "do": "write",
-     "token": "p0",
-     "on": "P nought is"
+     "token": "pA",
+     "on": "P equals one hundred"
     }
    ]
   },
   {
-   "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred, not two.",
+   "say": "E to the power zero is one, so at T equals zero, P is P nought. So P nought is one hundred.",
+   "asks": [
+    "Why is e to the power zero equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "p0",
+     "on": "So P nought is"
+    }
+   ]
+  },
+  {
+   "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred.",
+   "asks": [
+    "Why is P 200?"
+   ],
    "do": [
     {
      "do": "write",
      "token": "dbl",
      "on": "P is two hundred"
-    },
-    {
-     "do": "mark",
-     "kind": "circle",
-     "token": "dbl",
-     "on": "not two"
     }
    ]
   },
   {
    "say": "So two hundred equals one hundred E to the power seven point five K.",
+   "asks": [
+    "Where did this equation come from?"
+   ],
    "do": [
     {
      "do": "write",
      "token": "rhs",
-     "on": "equals one hundred"
+     "on": "one hundred E to the power"
     }
    ]
   },
   {
-   "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
+   "say": "We need to find K, and K is in the power. A log brings a power down, so we will take a log.",
+   "asks": [
+    "Why does a log bring the power down?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "rhs",
+     "on": "K is in the power"
+    }
+   ]
+  },
+  {
+   "say": "E is involved, so we use L N, which is log base E.",
+   "asks": [
+    "Why L N and not log?"
+   ],
+   "do": [
+    {
+     "do": "highlight",
+     "token": "rhs",
+     "on": "E is involved"
+    }
+   ],
+   "aside": {
+    "text": "Why L N when E is involved?",
+    "slug": "why-ln-when-e-am"
+   }
+  },
+  {
+   "say": "But first, make E to the power seven point five K the subject: divide both sides by one hundred.",
+   "asks": [
+    "Why divide first?"
+   ],
    "do": [
     {
      "do": "write",
      "step": 2,
-     "on": "E to the power"
+     "on": "divide both sides by"
     }
    ]
   },
   {
-   "say": "E is involved, so take L N of both sides.",
+   "say": "Now take L N of both sides: L N of E to the power seven point five K equals L N two.",
+   "asks": [
+    "Why take L N of both sides?"
+   ],
    "do": [
     {
      "do": "write",
      "step": 3,
-     "on": "take L N"
+     "on": "take L N of both sides"
     }
    ]
   },
   {
-   "say": "L N E is one, so the power comes down. Seven point five K equals L N two.",
+   "say": "Bring the power down: seven point five K comes down in front of L N E.",
+   "asks": [
+    "Why can the power come down?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "l4",
+     "on": "Bring the power down"
+    },
+    {
+     "do": "move",
+     "from": "pw3",
+     "on": "comes down in front"
+    }
+   ]
+  },
+  {
+   "say": "L N E is one, because E to the power one is E. So seven point five K equals L N two.",
+   "asks": [
+    "Why is L N E equal to 1?"
+   ],
    "do": [
     {
      "do": "note",
-     "text": "Take ln: $\\ln e^{x} = x$",
-     "near": "lnboth"
+     "text": "$\\ln e = 1$, since $e^1 = e$",
+     "near": "l4",
+     "on": "because E to the power"
     },
     {
      "do": "write",
-     "token": "ln",
-     "on": "Seven point five K"
+     "step": 5,
+     "on": "So seven point five K"
     }
    ]
   },
   {
-   "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
+   "say": "Divide both sides by seven point five: K equals L N two over seven point five.",
+   "asks": [
+    "Why divide by 7.5?"
+   ],
    "do": [
     {
      "do": "write",
-     "token": "ans",
-     "on": "K equals"
+     "token": "k1",
+     "on": "K equals L N two"
+    }
+   ]
+  },
+  {
+   "say": "That is zero point zero nine two four, correct to three significant figures.",
+   "asks": [
+    "How do I key ln 2 over 7.5?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "token": "k2",
+     "on": "That is zero point"
     },
     {
      "do": "mark",
      "kind": "box",
-     "token": "ans",
-     "on": "zero point zero"
+     "token": "k2",
+     "on": "correct to three significant"
     }
    ]
   }

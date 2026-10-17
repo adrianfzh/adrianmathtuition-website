@@ -1,0 +1,98 @@
+{
+ "slug": "why-ln-when-e-am",
+ "draft": "A",
+ "by": "session, 18 Oct 2026: side clip for Growth and decay",
+ "beats": [
+  {
+   "say": "We want to solve E to the power seven point five K equals two. Why take L N, rather than log base ten.",
+   "asks": [
+    "What is L N?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 0
+    }
+   ]
+  },
+  {
+   "say": "Both logs bring the power down. With log base ten, we get seven point five K, times log E, equals log two.",
+   "asks": [
+    "Why does the power come down?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 1,
+     "on": "With log base ten"
+    }
+   ]
+  },
+  {
+   "say": "But log E is an awkward number, about zero point four three four. It stays in the working.",
+   "asks": [
+    "What is log of e?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 2,
+     "on": "log E is an awkward number"
+    }
+   ]
+  },
+  {
+   "say": "L N is log base E. With L N, we get seven point five K, times L N E, equals L N two.",
+   "asks": [
+    "What does base e mean?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 3,
+     "on": "With L N, we get"
+    }
+   ]
+  },
+  {
+   "say": "And L N E is exactly one, because E to the power one is E.",
+   "asks": [
+    "Why is L N E equal to 1?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 4,
+     "on": "is exactly one"
+    }
+   ]
+  },
+  {
+   "say": "So the L N E simply leaves the working: seven point five K equals L N two.",
+   "asks": [
+    "Do both ways give the same K?"
+   ],
+   "do": [
+    {
+     "do": "write",
+     "step": 5,
+     "on": "seven point five K equals"
+    }
+   ]
+  },
+  {
+   "say": "Both ways give the same K. L N is just neater, because L N E is one.",
+   "asks": [
+    "When do I use log base ten?"
+   ],
+   "do": [
+    {
+     "do": "mark",
+     "kind": "box",
+     "token": "lne",
+     "on": "L N E is one"
+    }
+   ]
+  }
+ ]
+}

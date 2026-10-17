@@ -30,6 +30,14 @@ reads — on every Claude account, because it lives in the repo.
 - **The whole question is shown** above the clip (never cut off), and on a scrolling board the maths is
   smaller (fit 0.74) so the lines before stay in view ("font is too large, so when narration goes to the
   next part, previous parts can't be seen").
+- **No Watch out by default** (18 Oct 2026, of "P is 200, not 2": "there is no need for the watch out at
+  the end that watchout is NOT helpful"). Add one only when Adrian asks for it, or the mistake is one
+  his students really make on this exact step.
+- **Say WHY a method is chosen before using it** (18 Oct 2026, Growth and decay): "emphasize that need
+  to find k > since k is the power, we can take lg or ln to bring the power down > since e is involved,
+  ln is used instead". The "why this and not that" detour is a side clip in a popup (`aside`), e.g.
+  `why-ln-when-e-am`. Then the order on the board: make the power part the subject FIRST, THEN take the
+  log of both sides, then bring the power down in front of ln e, and ln e = 1.
 - **An approved clip is changed only where Adrian asks.** Don't rebuild a clip he passed into a busier
   one; apply his named change and keep everything else.
 - **ONE scrolling board** (`"scroll": true` on the one `equation-steps` scene; Adrian, 16 Oct 2026:

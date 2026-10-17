@@ -21,7 +21,7 @@
     "facts": [
       "k = log(2)/7.5"
     ],
-    "display": "0.0924"
+    "display": "k = 0.0924 (3 s.f.)"
   },
   "lines": [
     {
@@ -31,7 +31,11 @@
           "id": "t0"
         },
         {
-          "tex": "P_0=100",
+          "tex": "P=100",
+          "id": "pA"
+        },
+        {
+          "tex": "\\;\\Rightarrow\\;P_0=100",
           "id": "p0",
           "hl": "amber"
         }
@@ -90,8 +94,17 @@
     {
       "tokens": [
         {
-          "tex": "\\ln e^{7.5k}=\\ln 2",
-          "id": "lnboth"
+          "tex": "\\ln e",
+          "id": "l3a"
+        },
+        {
+          "tex": "{}^{7.5k}",
+          "id": "pw3",
+          "tight": true
+        },
+        {
+          "tex": "=\\ln 2",
+          "id": "l3b"
         }
       ],
       "checks": [
@@ -103,18 +116,49 @@
     {
       "tokens": [
         {
-          "tex": "7.5k=\\ln 2",
-          "id": "ln"
+          "tex": "7.5k",
+          "id": "m4",
+          "from": "pw3"
         },
         {
-          "tex": "\\Rightarrow\\;k\\approx 0.0924",
-          "id": "ans",
-          "hl": "emerald"
+          "tex": "\\ln e=\\ln 2",
+          "id": "l4"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k*log(exp(1)) = log(2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "7.5k=\\ln 2",
+          "id": "l5"
         }
       ],
       "checks": [
         {
           "step": "7.5*k = log(2)"
+        }
+      ]
+    },
+    {
+      "tokens": [
+        {
+          "tex": "k=\\dfrac{\\ln 2}{7.5}",
+          "id": "k1"
+        },
+        {
+          "tex": "=0.0924\\;\\text{(3 s.f.)}",
+          "id": "k2",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "step": "k = log(2)/7.5"
         },
         {
           "approx": 0.0924,
@@ -130,7 +174,8 @@
     "Make e to the 7.5k the subject: divide by 100 (write iso).",
     "e is involved, so take ln of both sides; ln e is 1 (write ln).",
     "k = ln 2 over 7.5, about 0.0924 (write ans, box).",
-    "Adrian 15 Oct: 'ln e^(7.5k) = ln 2' is its own line (take ln on both sides is the key step). The model line is dropped — it is already in the question."
+    "Adrian 15 Oct: 'ln e^(7.5k) = ln 2' is its own line (take ln on both sides is the key step). The model line is dropped — it is already in the question.",
+    "Adrian 18 Oct 2026 (on the approved cut, his changes only): 'starts at 100 means when t = 0, P = 100'; emphasise we need k, k is the power, a log brings the power down, e is involved so ln (side clip popup: why ln); first make e^7.5k the subject, THEN take ln; the power comes down in front of ln e; ln e = 1; no Watch out."
   ],
-  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$."
+  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$, correct to 3 significant figures."
 }

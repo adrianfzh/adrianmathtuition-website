@@ -6,7 +6,7 @@
   "minutes": 1,
   "kind": "clip",
   "theme": "chalk",
-  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$.",
+  "question": "A bacteria population is $P = P_0e^{kt}$, where $t$ is in hours. It doubles every $7.5$ hours, and there were approximately $100$ bacteria to start with. Find $k$, correct to 3 significant figures.",
   "scenes": [
     {
       "type": "equation-steps",
@@ -16,7 +16,8 @@
         {
           "tokens": [
             { "tex": "t=0:", "id": "t0" },
-            { "tex": "P_0=100", "id": "p0", "hl": "amber" }
+            { "tex": "P=100", "id": "pA" },
+            { "tex": "\\;\\Rightarrow\\;P_0=100", "id": "p0", "hl": "amber" }
           ]
         },
         {
@@ -32,99 +33,149 @@
         },
         {
           "tokens": [
-            { "tex": "\\ln e^{7.5k}=\\ln 2", "id": "lnboth" }
+            { "tex": "\\ln e", "id": "l3a" },
+            { "tex": "{}^{7.5k}", "id": "pw3", "tight": true },
+            { "tex": "=\\ln 2", "id": "l3b" }
           ]
         },
         {
           "tokens": [
-            { "tex": "7.5k=\\ln 2", "id": "ln" },
-            { "tex": "\\Rightarrow\\;k\\approx 0.0924", "id": "ans", "hl": "emerald" }
+            { "tex": "7.5k", "id": "m4", "from": "pw3" },
+            { "tex": "\\ln e=\\ln 2", "id": "l4" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "7.5k=\\ln 2", "id": "l5" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "k=\\dfrac{\\ln 2}{7.5}", "id": "k1" },
+            { "tex": "=0.0924\\;\\text{(3 s.f.)}", "id": "k2", "hl": "emerald" }
           ]
         }
       ],
       "beats": [
         {
           "say": "P equals P nought E to the power K T. It starts at one hundred and doubles every seven point five hours. Find K.",
-          "asks": ["What does k stand for?", "What is P₀?"],
+          "asks": ["What is P nought?"],
           "do": [],
           "audio": "/lessons/growth-and-decay-am/scene-01-b1.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b1.timing.json"
         },
         {
-          "say": "Starts at one hundred means T equals zero. So P nought is one hundred.",
-          "asks": ["Why is t = 0 at the start?", "Why is P₀ = 100?"],
+          "say": "Starts at one hundred means: when T equals zero, P equals one hundred.",
+          "asks": ["What does to start with mean?"],
           "do": [
-            { "do": "write", "token": "t0", "on": "T equals zero" },
-            { "do": "write", "token": "p0", "on": "P nought is" }
+            { "do": "write", "token": "t0", "on": "when T equals zero" },
+            { "do": "write", "token": "pA", "on": "P equals one hundred" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b2.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b2.timing.json"
         },
         {
-          "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred.",
-          "asks": ["Why is P 200, not 2?", "What does doubling mean here?"],
+          "say": "E to the power zero is one, so at T equals zero, P is P nought. So P nought is one hundred.",
+          "asks": ["Why is e to the power zero equal to 1?"],
           "do": [
-            { "do": "write", "token": "dbl", "on": "P is two hundred" }
+            { "do": "write", "token": "p0", "on": "So P nought is" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b3.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b3.timing.json"
         },
         {
-          "say": "Two hundred equals one hundred E to the power seven point five K. The plan: get the E part alone, then take L N.",
-          "asks": ["Why get the e part alone first?", "What does ln mean?"],
+          "say": "Doubling means two times one hundred. At T equals seven point five, P is two hundred.",
+          "asks": ["Why is P 200?"],
           "do": [
-            { "do": "write", "token": "rhs", "on": "equals one hundred" }
+            { "do": "write", "token": "dbl", "on": "P is two hundred" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b4.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b4.timing.json"
         },
         {
-          "say": "Divide both sides by one hundred, so the E part stands alone. E to the power seven point five K equals two.",
-          "asks": ["Why divide by 100 first?", "Can I take ln straight away?"],
+          "say": "So two hundred equals one hundred E to the power seven point five K.",
+          "asks": ["Where did this equation come from?"],
           "do": [
-            { "do": "write", "step": 2, "on": "E to the power" }
+            { "do": "write", "token": "rhs", "on": "one hundred E to the power" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b5.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b5.timing.json"
         },
         {
-          "say": "E is involved, so take L N of both sides.",
-          "asks": ["Why is ln used when e is involved?", "Can I use lg instead?", "What does ln do?"],
+          "say": "We need to find K, and K is in the power. A log brings a power down, so we will take a log.",
+          "asks": ["Why does a log bring the power down?"],
           "do": [
-            { "do": "write", "step": 3, "on": "take L N" }
+            { "do": "highlight", "token": "rhs", "on": "K is in the power" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b6.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b6.timing.json"
         },
         {
-          "say": "L N cancels E, leaving the power. Seven point five K equals L N two.",
-          "asks": ["Why is ln e = 1?", "How does the power come down?"],
+          "say": "E is involved, so we use L N, which is log base E.",
+          "asks": ["Why L N and not log?"],
+          "aside": { "text": "Why L N when E is involved?", "slug": "why-ln-when-e-am" },
           "do": [
-            { "do": "note", "text": "Take ln: $\\ln e^{x} = x$", "near": "lnboth", "on": "L N cancels E" },
-            { "do": "write", "token": "ln", "on": "Seven point five K" }
+            { "do": "highlight", "token": "rhs", "on": "E is involved" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b7.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b7.timing.json"
         },
         {
-          "say": "So K equals L N two over seven point five, about zero point zero nine two four.",
-          "asks": ["How do I key this in?", "How many decimal places?"],
+          "say": "But first, make E to the power seven point five K the subject: divide both sides by one hundred.",
+          "asks": ["Why divide first?"],
           "do": [
-            { "do": "write", "token": "ans", "on": "K equals" },
-            { "do": "mark", "kind": "box", "token": "ans", "on": "zero point zero" }
+            { "do": "write", "step": 2, "on": "divide both sides by" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b8.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b8.timing.json"
         },
         {
-          "say": "Watch out: P is two hundred, not two. Doubling one hundred gives two hundred.",
-          "asks": ["Why is P 200 and not 2?"],
+          "say": "Now take L N of both sides: L N of E to the power seven point five K equals L N two.",
+          "asks": ["Why take L N of both sides?"],
           "do": [
-            { "do": "mark", "kind": "circle", "token": "dbl", "on": "Watch out" },
-            { "do": "note", "text": "✗ Watch out: $P = 2$ (doubling $100$ gives $200$)", "near": "dbl", "on": "not two" }
+            { "do": "write", "step": 3, "on": "take L N of both sides" }
           ],
           "audio": "/lessons/growth-and-decay-am/scene-01-b9.mp3",
           "timing": "/lessons/growth-and-decay-am/scene-01-b9.timing.json"
+        },
+        {
+          "say": "Bring the power down: seven point five K comes down in front of L N E.",
+          "asks": ["Why can the power come down?"],
+          "do": [
+            { "do": "write", "token": "l4", "on": "Bring the power down" },
+            { "do": "move", "from": "pw3", "on": "comes down in front" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b10.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b10.timing.json"
+        },
+        {
+          "say": "L N E is one, because E to the power one is E. So seven point five K equals L N two.",
+          "asks": ["Why is L N E equal to 1?"],
+          "do": [
+            { "do": "note", "text": "$\\ln e = 1$, since $e^1 = e$", "near": "l4", "on": "because E to the power" },
+            { "do": "write", "step": 5, "on": "So seven point five K" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b11.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b11.timing.json"
+        },
+        {
+          "say": "Divide both sides by seven point five: K equals L N two over seven point five.",
+          "asks": ["Why divide by 7.5?"],
+          "do": [
+            { "do": "write", "token": "k1", "on": "K equals L N two" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b12.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b12.timing.json"
+        },
+        {
+          "say": "That is zero point zero nine two four, correct to three significant figures.",
+          "asks": ["How do I key ln 2 over 7.5?"],
+          "do": [
+            { "do": "write", "token": "k2", "on": "That is zero point" },
+            { "do": "mark", "kind": "box", "token": "k2", "on": "correct to three significant" }
+          ],
+          "audio": "/lessons/growth-and-decay-am/scene-01-b13.mp3",
+          "timing": "/lessons/growth-and-decay-am/scene-01-b13.timing.json"
         }
       ]
     }

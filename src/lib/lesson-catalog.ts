@@ -178,6 +178,13 @@ export const LESSON_CATALOG: LessonCatalogEntry[] = [
     title: 'Why a log of a negative is undefined',
     minutes: 1,
   },
+  {
+    slug: 'why-ln-when-e-am',
+    level: 'AM',
+    topic: 'Logarithms',
+    title: 'Why ln when e is involved',
+    minutes: 1,
+  },
 ];
 
 /**

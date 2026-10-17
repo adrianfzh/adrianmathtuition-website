@@ -76,7 +76,9 @@ Answers to 3 significant figures unless exact. A negative answer keeps its minus
 ### 3.5 Exponential growth & decay models
 - "Initial value → sub t = 0. Solve for the time → isolate the exponential, then take lg/ln.
   Long run → let t → ∞." (1082.13)
-- "ln is used because e is involved (ln e = 1)."
+- "ln is used because e is involved (ln e = 1)." Say it at the equation: we need k, k is in the power, a
+  log brings a power down, e is involved so ln (side clip `why-ln-when-e-am`). "Starts at 100" means
+  WHEN t = 0, P = 100. Make e^(…) the subject first, then take ln (Adrian, 18 Oct 2026).
 - Worked example used: **1082.15** — P = P₀e^(kt), doubles every 7.5 hours from 100:
   P₀ = 100, 200 = 100e^(7.5k), e^(7.5k) = 2, k = ln 2 / 7.5 ≈ 0.0924.
 - Traps: "to start with" means t = 0; doubling means P = 2 × 100 = 200, not 2; the long-run

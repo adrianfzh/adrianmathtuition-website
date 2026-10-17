@@ -1,0 +1,27 @@
+{
+ "slug": "why-ln-when-e-am",
+ "at": "2026-10-17T22:50:57.076Z",
+ "checks": {
+  "rules": {
+   "ok": true,
+   "detail": "PASS — 0 errors, 0 warnings"
+  },
+  "maths": {
+   "ok": true,
+   "detail": "8/8 line checks"
+  },
+  "board": {
+   "ok": true,
+   "detail": "6 lines = the checked plan"
+  },
+  "read": {
+   "ok": false,
+   "detail": "no blind read yet"
+  },
+  "look": {
+   "ok": false,
+   "detail": "not looked at yet (scripts/clips/look.mjs)"
+  }
+ },
+ "pass": false
+}

@@ -1,0 +1,126 @@
+{
+  "slug": "why-ln-when-e-am",
+  "title": "Why ln when e is involved",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "subgroup": {
+    "id": 692,
+    "name": "Exponential Growth & Decay Models"
+  },
+  "source": {
+    "unit": "1082.15",
+    "note": "the bible: 'ln is used because e is involved (ln e = 1)'"
+  },
+  "bible": "data/clip-bibles/logarithms-am.md",
+  "question": "Why do we take $\\ln$, not $\\lg$, to solve $e^{7.5k} = 2$?",
+  "boards": [
+    {
+      "heading": "Why ln when e is involved",
+      "intro": null
+    }
+  ],
+  "answer": {
+    "facts": [
+      "log(exp(1)) = 1"
+    ],
+    "display": ""
+  },
+  "lines": [
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "e^{7.5k}=2",
+          "id": "q"
+        }
+      ],
+      "checks": [
+        {
+          "start": "exp(7.5*k) = 2",
+          "var": "k"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\text{with }\\lg:\\;7.5k\\,\\lg e=\\lg 2",
+          "id": "wlg"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k*log(exp(1),10) = log(2,10)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\lg e\\approx 0.434",
+          "id": "lge",
+          "hl": "rose"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "log(exp(1),10) = 1/log(10)"
+        },
+        {
+          "approx": 0.434,
+          "sf": 3,
+          "of": "log(exp(1),10)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\text{with }\\ln:\\;7.5k\\,\\ln e=\\ln 2",
+          "id": "wln"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k*log(exp(1)) = log(2)"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "\\ln e=1",
+          "id": "lne",
+          "hl": "emerald"
+        }
+      ],
+      "checks": [
+        {
+          "fact": "log(exp(1)) = 1"
+        }
+      ]
+    },
+    {
+      "board": 0,
+      "tokens": [
+        {
+          "tex": "7.5k=\\ln 2",
+          "id": "res"
+        }
+      ],
+      "checks": [
+        {
+          "step": "7.5*k = log(2)"
+        }
+      ]
+    }
+  ],
+  "outline": [
+    "Side clip for Growth and decay (Adrian, 18 Oct 2026: 'since e is involved, ln is used instead (then a side note of why > can we do a popup for that explanation outside of the clip?)')."
+  ]
+}

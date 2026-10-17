@@ -291,6 +291,10 @@ New in the player: a clip board that would run below the screen scales its maths
   rebuilds stay in git history (and the sketch feature, StepGraph, stays in the player for later). Kept in
   the new style: Solving log equations, Solving exponential equations, Linear Law. The question card now
   shows the whole question; scrolling boards draw the maths smaller.
+- 18 Oct 2026: Growth and decay (the approved cut) changed ONLY where Adrian asked: "starts at 100 means when
+  t = 0, P = 100"; we need k → k is the power → a log brings it down → e involved → ln, with a 💡 popup to the
+  new side clip `why-ln-when-e-am` (lg works too but leaves lg e ≈ 0.434; ln e = 1); make e^7.5k the subject,
+  THEN take ln; the power comes down in front of ln e; no Watch out. 13 beats, maths 14/14, voice 13/13.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

@@ -1,0 +1,13 @@
+Verifying 7 clip(s) of why-ln-when-e-am by transcription (gemini-2.5-flash)…
+
+  scene-01-b1: 87% of narration words heard
+  scene-01-b2: 95% of narration words heard
+  scene-01-b3: 78% of narration words heard  ⚠ LOW
+      heard: But Logi is an awkward number, about 0.434. It stays in the working.
+  scene-01-b4: 57% of narration words heard  ⚠ LOW
+      heard: LN is log base E with LN we get 7.5k times LNE equals LN2.
+  scene-01-b5: 93% of narration words heard
+  scene-01-b6: 94% of narration words heard
+  scene-01-b7: 100% of narration words heard
+
+2 clip(s) below 85% — listen to those.

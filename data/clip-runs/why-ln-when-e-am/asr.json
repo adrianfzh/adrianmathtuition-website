@@ -1,0 +1,50 @@
+{
+ "slug": "why-ln-when-e-am",
+ "worst": 0.87,
+ "lines": [
+  {
+   "beat": 1,
+   "bag": 0.87,
+   "score": 0.87,
+   "heard": null
+  },
+  {
+   "beat": 2,
+   "bag": 0.95,
+   "score": 0.95,
+   "heard": null
+  },
+  {
+   "beat": 3,
+   "bag": 0.78,
+   "score": 0.981,
+   "heard": "But Logi is an awkward number, about 0.434. It stays in the working.",
+   "said": "But log E is an awkward number, about zero point four three four. It stays in the working."
+  },
+  {
+   "beat": 4,
+   "bag": 0.57,
+   "score": 1,
+   "heard": "LN is log base E with LN we get 7.5k times LNE equals LN2.",
+   "said": "L N is log base E. With L N, we get seven point five K, times L N E, equals L N two."
+  },
+  {
+   "beat": 5,
+   "bag": 0.93,
+   "score": 0.93,
+   "heard": null
+  },
+  {
+   "beat": 6,
+   "bag": 0.94,
+   "score": 0.94,
+   "heard": null
+  },
+  {
+   "beat": 7,
+   "bag": 1,
+   "score": 1,
+   "heard": null
+  }
+ ]
+}

@@ -1,0 +1,113 @@
+{
+  "slug": "why-ln-when-e-am",
+  "title": "Why ln when e is involved",
+  "level": "AM",
+  "topic": "Logarithms",
+  "minutes": 1,
+  "kind": "clip",
+  "theme": "chalk",
+  "question": "Why do we take $\\ln$, not $\\lg$, to solve $e^{7.5k} = 2$?",
+  "scenes": [
+    {
+      "type": "equation-steps",
+      "heading": "Why ln when e is involved",
+      "steps": [
+        {
+          "tokens": [
+            { "tex": "e^{7.5k}=2", "id": "q" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{with }\\lg:\\;7.5k\\,\\lg e=\\lg 2", "id": "wlg" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\lg e\\approx 0.434", "id": "lge", "hl": "rose" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\text{with }\\ln:\\;7.5k\\,\\ln e=\\ln 2", "id": "wln" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "\\ln e=1", "id": "lne", "hl": "emerald" }
+          ]
+        },
+        {
+          "tokens": [
+            { "tex": "7.5k=\\ln 2", "id": "res" }
+          ]
+        }
+      ],
+      "beats": [
+        {
+          "say": "We want to solve E to the power seven point five K equals two. Why take L N, rather than log base ten.",
+          "asks": ["What is L N?"],
+          "do": [
+            { "do": "write", "step": 0 }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b1.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b1.timing.json"
+        },
+        {
+          "say": "Both logs bring the power down. With log base ten, we get seven point five K, times log E, equals log two.",
+          "asks": ["Why does the power come down?"],
+          "do": [
+            { "do": "write", "step": 1, "on": "With log base ten" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b2.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b2.timing.json"
+        },
+        {
+          "say": "But log E is an awkward number, about zero point four three four. It stays in the working.",
+          "asks": ["What is log of e?"],
+          "do": [
+            { "do": "write", "step": 2, "on": "log E is an awkward number" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b3.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b3.timing.json"
+        },
+        {
+          "say": "L N is log base E. With L N, we get seven point five K, times L N E, equals L N two.",
+          "asks": ["What does base e mean?"],
+          "do": [
+            { "do": "write", "step": 3, "on": "With L N, we get" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b4.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b4.timing.json"
+        },
+        {
+          "say": "And L N E is exactly one, because E to the power one is E.",
+          "asks": ["Why is L N E equal to 1?"],
+          "do": [
+            { "do": "write", "step": 4, "on": "is exactly one" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b5.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b5.timing.json"
+        },
+        {
+          "say": "So the L N E simply leaves the working: seven point five K equals L N two.",
+          "asks": ["Do both ways give the same K?"],
+          "do": [
+            { "do": "write", "step": 5, "on": "seven point five K equals" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b6.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b6.timing.json"
+        },
+        {
+          "say": "Both ways give the same K. L N is just neater, because L N E is one.",
+          "asks": ["When do I use log base ten?"],
+          "do": [
+            { "do": "mark", "kind": "box", "token": "lne", "on": "L N E is one" }
+          ],
+          "audio": "/lessons/why-ln-when-e-am/scene-01-b7.mp3",
+          "timing": "/lessons/why-ln-when-e-am/scene-01-b7.timing.json"
+        }
+      ]
+    }
+  ]
+}
