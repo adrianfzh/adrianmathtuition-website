@@ -25,7 +25,7 @@ Logarithms-specific (notation, the method skill by skill, stock phrases).
 | `e^{7.5k}` | "E to the power seven point five K" |
 | `x^2` | "X squared" |
 | `(\text{rej})` | "reject" |
-| `\approx` | "is about" |
+| `\approx` | not used for a final answer: write `x = −8.57 (3 s.f.)`, say "correct to three significant figures" |
 | `10^{1.2}` | "ten to the power one point two" |
 
 Letters are capitals in `say` ("X", "K", "A") so the voice reads the letter, not the word.

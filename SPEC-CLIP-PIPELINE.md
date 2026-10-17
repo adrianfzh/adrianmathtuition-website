@@ -257,6 +257,9 @@ New in the player: a clip board that would run below the screen scales its maths
   line, the rounding mistake as the last Watch out. Maths 11/11, blind read pass (6 beats fixed),
   voice 13/13 ≥ 88 %, look 19/19 on the voice, 0 problems. Next to rebuild: Linear Law with logs,
   Growth and decay, Log scales.
+- **Waiting (17 Oct 2026):** the exponential clip's last line as `x = −8.57 (3 s.f.)` + "correct to three
+  significant figures" is ready (scratchpad copy) but NOT recorded — MiniMax answered 1008 (balance
+  empty). After a top-up: re-apply (plan `ans` tex, last beat's say), record that one line, align, check.
 - On the test site only, admin-only. The other 5 Logarithms clips get this style once Adrian passes it
   (the laws clip he called good).
 

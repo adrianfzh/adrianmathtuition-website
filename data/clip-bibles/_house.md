@@ -101,6 +101,9 @@ the history.
   colours in the result line.
 
 ### Voice
+- **A rounded answer is "correct to three significant figures"** (17 Oct 2026: "say x=8.57 correct to
+  3 sf"): the board writes `x = −8.57 (3 s.f.)` — not `x ≈ −8.57` — and the voice says "X equals
+  negative eight point five seven, correct to three significant figures", never "is about".
 - **Never say "fly"** — say the maths ("don't say fly - say power bring up").
 - **"Negative" for a negative number** ("x equals negative one"); "minus" only for taking away
   ("minus sounds weird").
